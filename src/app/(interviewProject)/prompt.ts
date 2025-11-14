@@ -454,6 +454,7 @@ export const interviewAgentSystemPrompt = ({
 }) =>
   locale === "zh-CN"
     ? `
+你的角色是一位专业的访谈员，
 你正在根据以下研究简介进行研究访谈：
 
 ${brief}
@@ -478,27 +479,25 @@ ${questions
   })
   .join("\n")}
 
-**使用 selectQuestion 工具提问**：
-- 工具调用格式：selectQuestion({ questionIndex: 1 })（使用 1-based 索引）
-- 每个问题只能选择一次，重复选择会报错
-- 可以根据对话流程灵活选择提问顺序，不必按编号顺序
-- 工具会自动展示预生成的表单，等待用户回答
-- 用户提交答案后，你会收到包含问题和答案的 tool output
+**如何提问预设问题**：
 
-**重要提醒**：
-- 使用 selectQuestion 工具时，不要在同一轮对话中输出额外的文字
-- 只调用工具即可，让工具自动展示问题表单
-- 等待用户回答后，再根据答案进行自然的追问或继续下一个问题
+   - **必须**使用 selectQuestion 工具：selectQuestion({ questionIndex: 1 })（使用 1-based 索引）
+   - 工具会自动展示选项表单，等待用户选择
+   - 用户提交后，你会收到包含问题和答案的 tool output
+   - 使用工具时，不要在同一轮对话中输出额外的文字
+
+**通用规则**：
+- 每个问题只能使用一次，不要重复提问，必须问完所有预设问题才能结束访谈
+- 两个预设问题中间可以有自然过渡性问题，但不要重复提问，目的是帮助受访对象补充一些答案
+- 但是除了预设问题以外不能增加超过两个题目
+- 只要是预设问题，都必须使用sēlectQuestion工具，不要对问题本身进行任何的改写，扩写
+
+
 `
     : ""
 }
 
-你的角色是一位专业的访谈员，需要：
-- 提出深思熟虑的开放式问题，但避免一次性抛出复杂问题让受访者陷入纠结
-- 针对有趣的回答进行深入追问
-- 保持对话式但专注的语调
-- 帮助受访者感到舒适，愿意分享他们的想法
-- 引导对话以收集与研究简介相关的见解
+
 
 ${
   !isPersonaInterview && // persona 永远用开放性问题，不做选择题
@@ -607,17 +606,23 @@ ${questions
   })
   .join("\n")}
 
-**Using the selectQuestion tool**:
-- Tool call format: selectQuestion({ questionIndex: 1 }) (using 1-based indexing)
-- Each question can only be selected once; duplicate selection will cause an error
-- You can flexibly choose the question order based on conversation flow, not necessarily in numerical order
-- The tool will automatically display a pre-generated form and wait for the user's answer
-- After the user submits an answer, you will receive tool output containing the question and answer
+**How to Ask Pre-defined Questions**:
 
-**Important Reminders**:
-- When using the selectQuestion tool, do not output additional text in the same conversation turn
-- Just call the tool, and let it automatically display the question form
-- After receiving the user's answer, naturally follow up or continue to the next question
+1. **Choice Questions (single-choice and multiple-choice)**:
+   - Use the selectQuestion tool: selectQuestion({ questionIndex: 1 }) (using 1-based indexing)
+   - The tool will automatically display an options form and wait for the user's selection
+   - After the user submits, you will receive tool output containing the question and answer
+   - When using the tool, do not output additional text in the same conversation turn
+
+2. **Open-ended Questions**:
+   - **Do NOT call the selectQuestion tool**
+   - Simply ask the question directly in the conversation
+   - The user will answer using the bottom input field
+   - After receiving the user's answer, naturally follow up or continue to the next question
+
+**General Rules**:
+- Each question can only be asked once; do not repeat questions
+- You can flexibly choose the question order based on conversation flow, not necessarily in numerical order
 `
     : ""
 }

@@ -2,6 +2,7 @@
 
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,11 @@ export interface QuestionData {
   text: string;
   image?: ChatMessageAttachment;
   questionType?: "open" | "single-choice" | "multiple-choice";
-  options?: string[];
+  options?: Array<string | { text: string; endInterview?: boolean }>;
+  validation?: {
+    minSelections?: number;
+    maxSelections?: number;
+  };
 }
 
 interface EditQuestionDialogProps {
@@ -52,7 +57,12 @@ export function EditQuestionDialog({
   const [questionType, setQuestionType] = useState<"open" | "single-choice" | "multiple-choice">(
     "open",
   );
-  const [options, setOptions] = useState<string[]>(["", ""]);
+  const [options, setOptions] = useState<Array<{ text: string; endInterview: boolean }>>([
+    { text: "", endInterview: false },
+    { text: "", endInterview: false },
+  ]);
+  const [minSelections, setMinSelections] = useState<number | undefined>();
+  const [maxSelections, setMaxSelections] = useState<number | undefined>();
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Initialize form when question changes
@@ -61,12 +71,35 @@ export function EditQuestionDialog({
       setText(question.text);
       setImage(question.image);
       setQuestionType(question.questionType || "open");
-      setOptions(question.options || ["", ""]);
+
+      // Convert options to internal format
+      const normalizedOptions = (question.options || []).map((opt) => {
+        if (typeof opt === "string") {
+          return { text: opt, endInterview: false };
+        }
+        return { text: opt.text, endInterview: opt.endInterview || false };
+      });
+      setOptions(
+        normalizedOptions.length >= 2
+          ? normalizedOptions
+          : [
+              { text: "", endInterview: false },
+              { text: "", endInterview: false },
+            ],
+      );
+
+      setMinSelections(question.validation?.minSelections);
+      setMaxSelections(question.validation?.maxSelections);
     } else {
       setText("");
       setImage(undefined);
       setQuestionType("open");
-      setOptions(["", ""]);
+      setOptions([
+        { text: "", endInterview: false },
+        { text: "", endInterview: false },
+      ]);
+      setMinSelections(undefined);
+      setMaxSelections(undefined);
     }
   }, [question]);
 
@@ -119,7 +152,7 @@ export function EditQuestionDialog({
 
     // Validate options for choice questions
     if (questionType === "single-choice" || questionType === "multiple-choice") {
-      const validOptions = options.filter((opt) => opt.trim().length > 0);
+      const validOptions = options.filter((opt) => opt.text.trim().length > 0);
 
       if (validOptions.length < 2) {
         toast.error(t("atLeastTwoOptions"));
@@ -131,12 +164,44 @@ export function EditQuestionDialog({
         return;
       }
 
-      onSave({
+      // Validate min/max selections for multiple-choice
+      if (questionType === "multiple-choice") {
+        if (minSelections !== undefined && maxSelections !== undefined) {
+          if (minSelections > maxSelections) {
+            toast.error("最少选择数量不能大于最多选择数量");
+            return;
+          }
+        }
+        if (maxSelections !== undefined && maxSelections > validOptions.length) {
+          toast.error("最多选择数量不能超过选项总数");
+          return;
+        }
+      }
+
+      // Convert options to save format
+      const optionsToSave = validOptions.map((opt) => {
+        if (opt.endInterview) {
+          return { text: opt.text, endInterview: true };
+        }
+        return opt.text; // Save as string if no special metadata
+      });
+
+      const questionData: QuestionData = {
         text: text.trim(),
         image,
         questionType,
-        options: validOptions,
-      });
+        options: optionsToSave,
+      };
+
+      // Add validation for multiple-choice if specified
+      if (questionType === "multiple-choice" && (minSelections || maxSelections)) {
+        questionData.validation = {
+          minSelections,
+          maxSelections,
+        };
+      }
+
+      onSave(questionData);
     } else {
       // Open question - don't save options
       onSave({
@@ -147,7 +212,7 @@ export function EditQuestionDialog({
     }
 
     onOpenChange(false);
-  }, [text, image, questionType, options, onSave, onOpenChange, t]);
+  }, [text, image, questionType, options, minSelections, maxSelections, onSave, onOpenChange, t]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + " B";
@@ -306,54 +371,125 @@ export function EditQuestionDialog({
 
           {/* Options - Only show for choice questions */}
           {(questionType === "single-choice" || questionType === "multiple-choice") && (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">
-                {t("options")} <span className="text-red-500">*</span>
-              </Label>
-
-              {/* Options List */}
+            <div className="space-y-4">
               <div className="space-y-2">
-                {options.map((option, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={option}
-                      onChange={(e) => {
-                        const newOptions = [...options];
-                        newOptions[index] = e.target.value;
-                        setOptions(newOptions);
-                      }}
-                      placeholder={t("optionPlaceholder", { number: index + 1 })}
-                      className="flex-1"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        setOptions(options.filter((_, i) => i !== index));
-                      }}
-                      disabled={options.length <= 2}
-                      title={t("deleteOption")}
-                    >
-                      <XIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                <Label className="text-sm font-medium">
+                  {t("options")} <span className="text-red-500">*</span>
+                </Label>
+
+                {/* Options List */}
+                <div className="space-y-2">
+                  {options.map((option, index) => (
+                    <div key={index} className="flex gap-2 items-start">
+                      <Input
+                        value={option.text}
+                        onChange={(e) => {
+                          const newOptions = [...options];
+                          newOptions[index] = { ...newOptions[index], text: e.target.value };
+                          setOptions(newOptions);
+                        }}
+                        placeholder={t("optionPlaceholder", { number: index + 1 })}
+                        className="flex-1"
+                      />
+                      <div className="flex items-center gap-1 pt-2">
+                        <Checkbox
+                          id={`endInterview-${index}`}
+                          checked={option.endInterview}
+                          onCheckedChange={(checked) => {
+                            const newOptions = [...options];
+                            newOptions[index] = { ...newOptions[index], endInterview: !!checked };
+                            setOptions(newOptions);
+                          }}
+                        />
+                        <Label
+                          htmlFor={`endInterview-${index}`}
+                          className="text-xs text-muted-foreground whitespace-nowrap cursor-pointer"
+                          title="选择此选项后将结束访谈"
+                        >
+                          终止
+                        </Label>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          setOptions(options.filter((_, i) => i !== index));
+                        }}
+                        disabled={options.length <= 2}
+                        title={t("deleteOption")}
+                      >
+                        <XIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add Option Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOptions([...options, { text: "", endInterview: false }])}
+                  disabled={options.length >= 15}
+                  className="w-full"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  {t("addOption")}
+                </Button>
+
+                {/* Hint Text */}
+                <p className="text-xs text-muted-foreground">{t("optionsHint")}</p>
               </div>
 
-              {/* Add Option Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setOptions([...options, ""])}
-                disabled={options.length >= 15}
-                className="w-full"
-              >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                {t("addOption")}
-              </Button>
+              {/* Validation Settings - Only for multiple-choice */}
+              {questionType === "multiple-choice" && (
+                <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+                  <Label className="text-sm font-medium">多选题设置</Label>
 
-              {/* Hint Text */}
-              <p className="text-xs text-muted-foreground">{t("optionsHint")}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="minSelections" className="text-xs text-muted-foreground">
+                        最少选择
+                      </Label>
+                      <Input
+                        id="minSelections"
+                        type="number"
+                        min={1}
+                        max={options.length}
+                        value={minSelections ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setMinSelections(value ? parseInt(value) : undefined);
+                        }}
+                        placeholder="不限制"
+                        className="h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="maxSelections" className="text-xs text-muted-foreground">
+                        最多选择
+                      </Label>
+                      <Input
+                        id="maxSelections"
+                        type="number"
+                        min={1}
+                        max={options.length}
+                        value={maxSelections ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setMaxSelections(value ? parseInt(value) : undefined);
+                        }}
+                        placeholder="不限制"
+                        className="h-9"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    设置用户可选择的选项数量范围（留空表示不限制）
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

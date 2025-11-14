@@ -29,50 +29,71 @@ import { interviewProjectQuestionsSchema, questionSchema, Question } from "./too
  * This ensures consistent form structure with requestInteractionForm
  */
 function generateFormFieldsForQuestion(question: Question, questionIndex: number) {
-  const { text, questionType = "open", options } = question;
+  const { text, questionType = "open", options, validation } = question;
 
-  // Open-ended questions: single text field
+  // Open-ended questions: no form fields, user answers using the chat input
   if (questionType === "open") {
-    return [
-      {
-        id: `answer`,
-        label: text,
-        type: "text" as const,
-      },
-    ];
+    return undefined;
   }
 
   // Single-choice or multiple-choice questions
   if ((questionType === "single-choice" || questionType === "multiple-choice") && options) {
-    return [
+    // Normalize options to strings for display (extract text property if needed)
+    const normalizedOptions = options.map((opt) => {
+      if (typeof opt === "string") {
+        return opt;
+      }
+      return opt.text;
+    });
+
+    const formFields = [
       {
         id: `answer`,
         label: text,
         type: "choice" as const,
-        options,
+        options: normalizedOptions,
         multipleChoice: questionType === "multiple-choice",
       },
     ];
+
+    // Add validation if present
+    if (validation) {
+      formFields[0] = {
+        ...formFields[0],
+        ...validation,
+      };
+    }
+
+    return formFields;
   }
 
-  // Fallback: treat as open-ended
-  return [
-    {
-      id: `answer`,
-      label: text,
-      type: "text" as const,
-    },
-  ];
+  // Fallback: treat as open-ended (no form fields)
+  return undefined;
 }
 
 /**
  * Create a snapshot of questions with pre-generated form fields
+ * Also extract trigger information for backend processing
  */
 function createQuestionsSnapshot(questions: Question[]) {
-  return questions.map((q, index) => ({
-    ...q,
-    formFields: generateFormFieldsForQuestion(q, index),
-  }));
+  return questions.map((q, index) => {
+    // Extract options that trigger endInterview
+    const triggerOptions: string[] = [];
+    if (q.options) {
+      q.options.forEach((opt) => {
+        if (typeof opt === "object" && opt.endInterview) {
+          triggerOptions.push(opt.text);
+        }
+      });
+    }
+
+    return {
+      ...q,
+      formFields: generateFormFieldsForQuestion(q, index),
+      // Store trigger options for backend processing
+      ...(triggerOptions.length > 0 ? { triggerOptions } : {}),
+    };
+  });
 }
 
 /**

@@ -71,6 +71,14 @@ export function useFormValidation(
           return false;
         }
 
+        // For choice fields, check if "其他" option is selected without text input
+        if (field.type === "choice" && typeof value === "string") {
+          // If value is exactly "其他" without any text, it's invalid
+          if (value === "其他") {
+            return false;
+          }
+        }
+
         // For multi-choice fields (array), check if at least one option is selected
         if (
           field.type === "choice" &&
@@ -79,6 +87,26 @@ export function useFormValidation(
           value.length === 0
         ) {
           return false;
+        }
+
+        // For multi-choice arrays, check if "其他" option is selected without text
+        if (field.type === "choice" && Array.isArray(value)) {
+          if (value.includes("其他") && !value.some((v) => v.startsWith("其他："))) {
+            return false;
+          }
+
+          // Check minSelections and maxSelections for multiple-choice
+          if (!SINGLE_CHOICE_FIELD_IDS.has(field.id)) {
+            const minSelections = field.minSelections;
+            const maxSelections = field.maxSelections;
+
+            if (minSelections && value.length < minSelections) {
+              return false;
+            }
+            if (maxSelections && value.length > maxSelections) {
+              return false;
+            }
+          }
         }
       }
     }

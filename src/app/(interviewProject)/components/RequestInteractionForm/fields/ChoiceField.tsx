@@ -75,6 +75,11 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     setOtherInputValue(value);
     if (!field.id) return;
 
+    // Keep the "其他" option selected state
+    if (!isOtherOptionSelected) {
+      setIsOtherOptionSelected(true);
+    }
+
     const otherValue = value.trim() ? `其他：${value}` : OTHER_OPTION_KEY;
 
     if (isSingleChoice) {
@@ -91,6 +96,36 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     }
   };
 
+  // Validation logic for multiple-choice
+  const minSelections = field.minSelections;
+  const maxSelections = field.maxSelections;
+  const currentSelections = Array.isArray(fieldValue) ? fieldValue.length : 0;
+
+  // Check if selection is valid
+  const isSelectionValid = (() => {
+    if (isSingleChoice) return true; // Single choice doesn't need validation
+
+    if (minSelections && currentSelections < minSelections) return false;
+    if (maxSelections && currentSelections > maxSelections) return false;
+    return true;
+  })();
+
+  // Generate validation hint text
+  const validationHint = (() => {
+    if (isSingleChoice || isCompleted) return null;
+
+    if (minSelections && maxSelections) {
+      return t("selectRange", { min: minSelections, max: maxSelections });
+    }
+    if (minSelections) {
+      return t("selectAtLeast", { count: minSelections });
+    }
+    if (maxSelections) {
+      return t("selectAtMost", { count: maxSelections });
+    }
+    return null;
+  })();
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -104,6 +139,21 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
           </Badge>
         )}
       </div>
+
+      {/* Validation hint */}
+      {validationHint && !isCompleted && (
+        <div className={cn(
+          "text-xs px-2 py-1 rounded",
+          isSelectionValid ? "text-muted-foreground" : "text-destructive bg-destructive/10"
+        )}>
+          {validationHint}
+          {!isSelectionValid && currentSelections > 0 && (
+            <span className="ml-1">
+              (已选 {currentSelections} 个)
+            </span>
+          )}
+        </div>
+      )}
 
       <div className={cn("grid gap-2", gridLayout)}>
         {optionsWithOther.map((option, index) => {

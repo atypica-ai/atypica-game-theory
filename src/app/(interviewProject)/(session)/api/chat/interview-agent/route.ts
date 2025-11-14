@@ -48,6 +48,50 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
 }
 
 /**
+ * Check if the last user message contains an answer that triggers endInterview
+ */
+function shouldTriggerEndInterview(
+  messages: ModelMessage[],
+  sessionExtra: InterviewSessionExtra,
+): boolean {
+  // Get the last user message
+  const lastUserMessage = messages.findLast((m) => m.role === "user");
+  if (!lastUserMessage) return false;
+
+  // Extract text content from the message
+  const messageText = lastUserMessage.content
+    .filter((part): part is { type: "text"; text: string } => part.type === "text")
+    .map((part) => part.text)
+    .join(" ");
+
+  if (!messageText) return false;
+
+  // Get questions from session
+  const questions = sessionExtra.questions || [];
+  if (questions.length === 0) return false;
+
+  // Check if any question's trigger options match the user's answer
+  for (const question of questions) {
+    const triggerOptions = question.triggerOptions;
+    if (!triggerOptions || triggerOptions.length === 0) continue;
+
+    // Check if any trigger option is mentioned in the message
+    for (const triggerOption of triggerOptions) {
+      if (messageText.includes(triggerOption)) {
+        rootLogger.info({
+          msg: "endInterview triggered by user answer",
+          triggerOption,
+          messageText,
+        });
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
  * ⚠️ fetchInterviewSessionChat 会检查权限，所以这里无需另外检查权限
  */
 export async function POST(req: Request) {
@@ -175,13 +219,23 @@ export async function POST(req: Request) {
     messages: coreMessages,
 
     prepareStep: async ({ messages }) => {
+      // Check if answer triggers endInterview
+      if (shouldTriggerEndInterview(messages, sessionExtra)) {
+        chatLogger.info("Forcing endInterview due to trigger option selected");
+        return {
+          toolChoice: { type: "tool", toolName: InterviewToolName.endInterview },
+          activeTools: [InterviewToolName.endInterview],
+        };
+      }
+
+      // TODO
       const assistantCount = messages.filter(({ role }) => role === "assistant").length;
-      if (assistantCount < 8) {
+      if (assistantCount < 80) {
         return {
           toolChoice: "auto",
           activeTools: [InterviewToolName.requestInteractionForm],
         };
-      } else if (assistantCount < 15) {
+      } else if (assistantCount < 150) {
         return {
           toolChoice: "auto",
         };
@@ -195,7 +249,7 @@ export async function POST(req: Request) {
 
     tools: tools,
 
-    stopWhen: stepCountIs(3),
+    stopWhen: stepCountIs(1),
 
     experimental_transform: smoothStream({
       delayInMs: 30,
