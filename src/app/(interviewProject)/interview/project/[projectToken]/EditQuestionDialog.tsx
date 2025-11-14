@@ -126,7 +126,7 @@ export function EditQuestionDialog({
         return;
       }
 
-      if (validOptions.length > 4) {
+      if (validOptions.length > 15) {
         toast.error(t("atMostFourOptions"));
         return;
       }
@@ -345,7 +345,7 @@ export function EditQuestionDialog({
                 variant="outline"
                 size="sm"
                 onClick={() => setOptions([...options, ""])}
-                disabled={options.length >= 4}
+                disabled={options.length >= 15}
                 className="w-full"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
