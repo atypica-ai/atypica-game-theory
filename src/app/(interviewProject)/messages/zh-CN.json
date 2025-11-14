@@ -281,6 +281,7 @@
       "notSelected": "未选择",
       "submitForm": "提交表单",
       "formSubmitted": "表单已提交",
+      "otherInputPlaceholder": "请输入其他内容",
       "ok": "确定",
       "continue": "继续",
       "back": "返回",

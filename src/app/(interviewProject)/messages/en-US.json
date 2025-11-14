@@ -281,6 +281,7 @@
       "notSelected": "Not selected",
       "submitForm": "Submit Form",
       "formSubmitted": "Form submitted",
+      "otherInputPlaceholder": "Please specify",
       "ok": "OK",
       "continue": "Continue",
       "back": "Back",

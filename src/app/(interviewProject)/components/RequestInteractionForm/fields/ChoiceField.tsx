@@ -1,9 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FC } from "react";
+import { FC, useState } from "react";
 import { MULTIPLE_CHOICE_STYLE } from "../config";
 import type { ChoiceFieldProps } from "../types";
 
@@ -18,6 +19,9 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
   onToggleMultiple,
 }) => {
   const t = useTranslations("InterviewProject.requestInteractionForm");
+
+  const OTHER_OPTION_KEY = "其他";
+  const [otherInputValue, setOtherInputValue] = useState("");
 
   // Determine grid layout
   const gridLayout = (() => {
@@ -35,6 +39,43 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     return MULTIPLE_CHOICE_STYLE === "A" ? "grid-cols-1" : "grid-cols-2";
   })();
 
+  // Add "其他" option to the list
+  const optionsWithOther = [...(field.options || []), OTHER_OPTION_KEY];
+
+  // Check if "其他" is selected
+  const isOtherSelected = isSingleChoice
+    ? fieldValue === OTHER_OPTION_KEY || (typeof fieldValue === "string" && fieldValue.startsWith("其他："))
+    : Array.isArray(fieldValue) && fieldValue.some(v => v === OTHER_OPTION_KEY || v.startsWith("其他："));
+
+  // Handle "其他" option selection
+  const handleOtherOptionClick = () => {
+    if (isCompleted || !field.id) return;
+
+    if (isSingleChoice) {
+      onSelectSingle(field.id, OTHER_OPTION_KEY);
+    } else {
+      onToggleMultiple(field.id, OTHER_OPTION_KEY);
+    }
+  };
+
+  // Handle "其他" input change and update field value
+  const handleOtherInputChange = (value: string) => {
+    setOtherInputValue(value);
+    if (!field.id) return;
+
+    const otherValue = value.trim() ? `其他：${value}` : OTHER_OPTION_KEY;
+
+    if (isSingleChoice) {
+      onSelectSingle(field.id, otherValue);
+    } else {
+      // For multiple choice, replace the old "其他" entry with new value
+      if (Array.isArray(fieldValue)) {
+        const filtered = fieldValue.filter(v => v !== OTHER_OPTION_KEY && !v.startsWith("其他："));
+        onSelectSingle(field.id, otherValue); // Update through parent
+      }
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -50,41 +91,63 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
       </div>
 
       <div className={cn("grid gap-2", gridLayout)}>
-        {field.options?.map((option, index) => {
+        {optionsWithOther.map((option, index) => {
+          const isOther = option === OTHER_OPTION_KEY;
           const isSelected = isSingleChoice
-            ? fieldValue === option
+            ? isOther
+              ? isOtherSelected
+              : fieldValue === option
             : Array.isArray(fieldValue) && option
-              ? fieldValue.includes(option)
+              ? isOther
+                ? isOtherSelected
+                : fieldValue.includes(option)
               : fieldValue === option;
 
           return (
-            <Button
-              variant="outline"
-              key={index}
-              data-selected={isSelected}
-              onClick={
-                isCompleted
-                  ? undefined
-                  : () => {
-                      if (!field.id || !option) return;
-                      if (isSingleChoice) {
-                        onSelectSingle(field.id, option);
-                      } else {
-                        onToggleMultiple(field.id, option);
+            <div key={index} className="space-y-2">
+              <Button
+                variant="outline"
+                data-selected={isSelected}
+                onClick={
+                  isCompleted
+                    ? undefined
+                    : () => {
+                        if (!field.id || !option) return;
+                        if (isOther) {
+                          handleOtherOptionClick();
+                        } else {
+                          if (isSingleChoice) {
+                            onSelectSingle(field.id, option);
+                          } else {
+                            onToggleMultiple(field.id, option);
+                          }
+                        }
                       }
-                    }
-              }
-              className={cn(
-                "flex items-center justify-between",
-                "data-[selected=true]:bg-primary dark:data-[selected=true]:bg-primary",
-                "data-[selected=true]:text-primary-foreground dark:data-[selected=true]:text-primary-foreground",
-                "bg-transparent dark:bg-transparent data-[selected=true]:border-transparent",
-                "data-[selected=true]:hover:bg-primary/90 dark:data-[selected=true]:hover:bg-primary/90",
+                }
+                className={cn(
+                  "flex items-center justify-between w-full",
+                  "data-[selected=true]:bg-primary dark:data-[selected=true]:bg-primary",
+                  "data-[selected=true]:text-primary-foreground dark:data-[selected=true]:text-primary-foreground",
+                  "bg-transparent dark:bg-transparent data-[selected=true]:border-transparent",
+                  "data-[selected=true]:hover:bg-primary/90 dark:data-[selected=true]:hover:bg-primary/90",
+                )}
+              >
+                {option}
+                {isSelected && <Check className="size-4" />}
+              </Button>
+
+              {/* Show input field when "其他" is selected */}
+              {isOther && isSelected && !isCompleted && (
+                <Input
+                  type="text"
+                  placeholder={t("otherInputPlaceholder")}
+                  value={otherInputValue}
+                  onChange={(e) => handleOtherInputChange(e.target.value)}
+                  className="w-full"
+                  autoFocus
+                />
               )}
-            >
-              {option}
-              {isSelected && <Check className="size-4" />}
-            </Button>
+            </div>
           );
         })}
       </div>
