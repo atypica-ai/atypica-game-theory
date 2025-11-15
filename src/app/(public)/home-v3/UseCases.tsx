@@ -105,7 +105,7 @@ export function UseCases() {
                       alt="report cover"
                       fill
                       // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      sizes="100%"
+                      sizes="600px"
                       className="object-contain transition-transform duration-200 group-hover:scale-105 dark:opacity-80"
                     />
                   ) : (

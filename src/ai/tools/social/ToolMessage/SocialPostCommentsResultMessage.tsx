@@ -32,7 +32,7 @@ export const SocialPostCommentsResultMessage = ({
                 src={comment.user.image}
                 alt="User Avatar"
                 className="object-cover"
-                sizes="100%"
+                sizes="200px" // fill 模式下, 不能写 100%, 否则 nextjs 会按照 100vw 来构建 imageloader 上的 w 参数，这里其实最大 200px 够了
                 fill
               />
             )}

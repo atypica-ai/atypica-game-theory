@@ -1,4 +1,3 @@
-"use client";
 import { useDevice } from "@/hooks/use-device";
 import { cn } from "@/lib/utils";
 import { FileUIPart } from "ai";
@@ -38,7 +37,7 @@ export function FileAttachment({
             src={attachment.url}
             alt={attachment.filename ?? "Image"}
             fill
-            sizes="100%"
+            sizes="100px"
             priority
             className="object-contain"
           />

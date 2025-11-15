@@ -104,7 +104,7 @@ export default function FeaturedStudiesClient() {
                   src={study.analyst.latestReport?.coverUrl}
                   alt="report cover"
                   fill
-                  sizes="100%"
+                  sizes="600px" // fill 模式下, 不能写 100%, 否则 nextjs 会按照 100vw 来构建 imageloader 上的 w 参数，这里其实最大 600px 够了
                   className="object-cover"
                 />
               </div>

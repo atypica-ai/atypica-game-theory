@@ -89,7 +89,7 @@ export function SageChatClient({
                   src={sage.avatar.url}
                   alt={sage.name}
                   fill
-                  sizes="100%"
+                  sizes="100px"
                   className="object-cover"
                 />
               </div>

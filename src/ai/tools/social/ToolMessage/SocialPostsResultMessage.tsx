@@ -35,15 +35,15 @@ export const SocialPostsResultMessage = ({
     >
       {/* 只挑选 10 条展示 */}
       {(notes || posts || []).slice(0, 10).map((post) => (
-        <div key={post.id} className="flex flex-col items-center w-[160px]">
-          <div className="relative w-[160px] h-[160px] rounded-lg overflow-hidden">
+        <div key={post.id} className="flex flex-col items-center w-40">
+          <div className="relative w-40 h-40 rounded-lg overflow-hidden">
             {post.images_list?.[0]?.url && (
               <Image
                 loader={proxiedImageLoader}
                 src={post.images_list[0].url}
                 alt="Note image"
                 fill
-                sizes="100%"
+                sizes="200px"
                 className="object-cover"
               />
             )}
@@ -56,7 +56,7 @@ export const SocialPostsResultMessage = ({
                     loader={proxiedImageLoader}
                     src={post.user.image}
                     alt="User Avatar"
-                    sizes="100%"
+                    sizes="200px" // fill 模式下, 不能写 100%, 否则 nextjs 会按照 100vw 来构建 imageloader 上的 w 参数，这里其实最大 100px 够了
                     fill
                     className="object-cover rounded-full"
                   />

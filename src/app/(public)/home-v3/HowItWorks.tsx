@@ -74,18 +74,18 @@ export function HowItWorks() {
               <div
                 className={cn(
                   "bg-white/50 dark:bg-zinc-950/50 relative",
-                  "w-full h-auto aspect-[4/3] max-md:w-auto max-md:h-40 max-md:aspect-square",
+                  "w-full h-auto aspect-4/3 max-md:w-auto max-md:h-40 max-md:aspect-square",
                 )}
               >
                 <Image
                   src={`/api/imagegen/dev/${step.text2ImagePrompt}`}
                   alt={step.text2ImagePrompt}
                   className="object-cover dark:opacity-90"
-                  sizes="100%"
+                  sizes="600px"
                   fill
                 />
               </div>
-              <div className="p-8 max-md:py-3 max-md:px-4 flex flex-col flex-grow">
+              <div className="p-8 max-md:py-3 max-md:px-4 flex flex-col grow">
                 <div className="flex justify-between items-start mb-6 max-md:mb-2">
                   <span className="text-5xl max-md:text-xl font-bold text-zinc-300 dark:text-zinc-700">
                     {step.step}
@@ -96,7 +96,7 @@ export function HowItWorks() {
                     <step.icon className="size-5 max-md:size-3" />
                   </div>
                 </div>
-                <div className="flex-grow flex flex-col justify-start">
+                <div className="grow flex flex-col justify-start">
                   <h3 className="text-2xl max-md:text-lg font-bold mt-4 max-md:mt-0">
                     {step.id === "personaGeneration" && t("steps.personaGeneration.title")}
                     {step.id === "aiInterviews" && t("steps.aiInterviews.title")}

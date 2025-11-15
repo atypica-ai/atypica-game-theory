@@ -297,22 +297,22 @@ function SelectFromLibraryDialog({
                       <div className="flex items-center gap-3 w-full">
                         {file.mimeType.startsWith("image/") ? (
                           thumbnailHttpUrl ? (
-                            <div className="size-8 flex-shrink-0 relative">
+                            <div className="size-8 shrink-0 relative">
                               <Image
                                 src={thumbnailHttpUrl}
                                 alt="User Avatar"
                                 className="object-cover"
-                                sizes="100%"
+                                sizes="100px"
                                 fill
                               />
                             </div>
                           ) : (
-                            <ImageIcon className="size-8 flex-shrink-0" />
+                            <ImageIcon className="size-8 shrink-0" />
                           )
                         ) : (
-                          <FileText className="size-8 flex-shrink-0" />
+                          <FileText className="size-8 shrink-0" />
                         )}
-                        <div className="flex-grow text-left overflow-hidden">
+                        <div className="grow text-left overflow-hidden">
                           <p className="text-sm font-medium truncate" title={file.name}>
                             {file.name}
                           </p>

@@ -119,7 +119,7 @@ export function FeaturedStudies() {
                   src={study.analyst.latestReport?.coverUrl}
                   alt="report cover"
                   fill
-                  sizes="100%"
+                  sizes="600px"
                   className="object-cover"
                 />
               </div>

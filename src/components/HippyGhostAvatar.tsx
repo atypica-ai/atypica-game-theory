@@ -45,7 +45,7 @@ const HippyGhostAvatar: FC<
         src={url}
         alt="Hippy Ghost Avatar"
         fill
-        sizes="100%"
+        sizes="100px" // fill 模式下, 不能写 100%, 否则 nextjs 会按照 100vw 来构建 imageloader 上的 w 参数，这里其实最大 100px 够了
         className="object-contain scale-150 origin-[50%_30%]"
       />
     </div>

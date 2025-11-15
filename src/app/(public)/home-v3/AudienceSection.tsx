@@ -80,7 +80,7 @@ export function AudienceSection() {
                             : t("audiences.startupFounder.role")
                     }`}
                     className="object-cover"
-                    sizes="100%"
+                    sizes="600px"
                     fill
                   />
                 </div>

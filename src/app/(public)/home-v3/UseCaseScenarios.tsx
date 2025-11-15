@@ -106,7 +106,7 @@ export function UseCaseScenarios() {
                               : t("useCases.creation.title")
                       } use case cover`}
                       className="object-cover transition-transform duration-200 group-hover:scale-105"
-                      sizes="100%"
+                      sizes="600px"
                       fill
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -134,7 +134,7 @@ export function UseCaseScenarios() {
                   </>
                 )}
               </div>
-              <div className="p-6 flex-grow">
+              <div className="p-6 grow">
                 <h3 className="text-xl font-EuclidCircularA font-medium">
                   {useCase.id === "testing" && t("useCases.testing.title")}
                   {useCase.id === "planning" && t("useCases.planning.title")}
