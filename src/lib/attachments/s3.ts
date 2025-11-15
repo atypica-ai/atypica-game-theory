@@ -192,3 +192,68 @@ export async function uploadToS3({
 
   return { getObjectUrl, objectUrl };
 }
+
+/**
+ * Get S3 object content and mimetype directly from objectUrl
+ * @param objectUrl - The S3 object URL
+ * @returns Object containing fileBody and mimeType
+ */
+export async function getS3Object(objectUrl: string): Promise<{
+  fileBody: Buffer;
+  mimeType: string;
+}> {
+  // Parse objectUrl to get origin and key
+  const [origin, key] = (() => {
+    let url = objectUrl;
+    if (url.includes("?")) {
+      url = url.split("?")[0];
+    }
+    const urlObject = new URL(url);
+    let origin = urlObject.origin;
+    let key = urlObject.pathname;
+    if (!origin.endsWith("/")) {
+      origin = origin + "/";
+    }
+    if (key.startsWith("/")) {
+      key = key.substring(1);
+    }
+    return [origin, key];
+  })();
+
+  // Find matching S3 config
+  const s3Config = AWS_S3_CONFIG.find((config) => config.origin === origin);
+  if (!s3Config) {
+    throw new Error(`s3 not configured for origin ${origin}`);
+  }
+
+  // Create S3 client
+  const s3Client = new S3Client({
+    region: s3Config.region,
+    credentials: {
+      accessKeyId: s3Config.accessKeyId,
+      secretAccessKey: s3Config.secretAccessKey,
+    },
+  });
+  const s3Bucket = s3Config.bucketName;
+
+  // Get object from S3
+  const getObjectCommand = new GetObjectCommand({
+    Bucket: s3Bucket,
+    Key: key,
+  });
+
+  const response = await s3Client.send(getObjectCommand);
+
+  if (!response.Body) {
+    throw new Error(`No body in S3 object response for ${objectUrl}`);
+  }
+
+  // Convert stream to buffer
+  const fileBody = await response.Body.transformToByteArray();
+  const mimeType = response.ContentType || "application/octet-stream";
+
+  return {
+    fileBody: Buffer.from(fileBody),
+    mimeType,
+  };
+}
