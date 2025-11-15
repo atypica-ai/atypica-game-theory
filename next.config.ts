@@ -34,13 +34,13 @@ const nextConfig: NextConfig = {
     // loader: "custom",
     // loaderFile: "./lib/imageLoader",
   },
+  // Allow cross-origin requests from development domain
+  allowedDevOrigins: process.env.SERVER_ACTIONS_ALLOWED_ORIGINS
+    ? process.env.SERVER_ACTIONS_ALLOWED_ORIGINS.split(",")
+    : [],
   experimental: {
     // see https://nextjs.org/docs/app/api-reference/functions/forbidden
     authInterrupts: true,
-    // Allow cross-origin requests from development domain
-    allowedDevOrigins: process.env.SERVER_ACTIONS_ALLOWED_ORIGINS
-      ? process.env.SERVER_ACTIONS_ALLOWED_ORIGINS.split(",")
-      : [],
     // 这个暂时不需要，通过 proxy 改写了 host 和 origin
     // serverActions: {
     //   allowedOrigins: process.env.SERVER_ACTIONS_ALLOWED_ORIGINS
