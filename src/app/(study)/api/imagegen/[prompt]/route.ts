@@ -2,7 +2,6 @@ import { imageGenerationObjectUrlToHttpUrl } from "@/app/(study)/artifacts/lib/i
 import { noProxiedImageCdnUrl, proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
-import { getRequestOrigin } from "@/lib/request/headers";
 import { ImageGeneration } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "crypto";
@@ -10,12 +9,15 @@ import { z } from "zod/v3";
 
 async function optimizedImageUrl(imageGeneration: ImageGeneration) {
   const url = await imageGenerationObjectUrlToHttpUrl(imageGeneration);
-  if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(url)) {
+  if (
+    true || // 国内和海外都用 CDN
+    (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(url))
+  ) {
     return proxiedImageCdnUrl({ src: url });
   } else {
     return noProxiedImageCdnUrl({
       src: url,
-      origin: await getRequestOrigin(), // 其实没必要，其实可以直接用 cdn 域名的
+      // origin: await getRequestOrigin(), // 其实没必要，其实可以直接用 cdn 域名的
     });
   }
 }

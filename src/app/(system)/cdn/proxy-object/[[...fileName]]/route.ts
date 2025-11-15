@@ -15,9 +15,14 @@ export async function GET(req: Request) {
   const objectUrl = requestUrl.searchParams.get("objectUrl") as string | null;
   const mimeType = requestUrl.searchParams.get("mimeType") as string | null;
   const parse = requestUrl.searchParams.get("parse") as string | null;
+  const cache = requestUrl.searchParams.get("cache") as string | null;
+
   if (!objectUrl || !mimeType) {
     return NextResponse.json({ error: "objectUrl and mimeType are required" }, { status: 400 });
   }
+
+  const shouldParse = parse === "true";
+  const shouldCache = cache === "true";
 
   const cacheDir = path.join(process.cwd(), ".next/cache/attachments");
   // if (!fs.existsSync(cacheDir)) {
@@ -27,10 +32,10 @@ export async function GET(req: Request) {
   let buffer: Buffer;
   let contentType: string;
   const url = await s3SignedUrl(objectUrl);
-  if (parse === "true") {
+  if (shouldParse) {
     contentType = "text/plain";
     const fileFullPath = path.join(cacheDir, hash, "parse.txt");
-    if (fs.existsSync(fileFullPath)) {
+    if (shouldCache && fs.existsSync(fileFullPath)) {
       buffer = await fs.promises.readFile(fileFullPath);
     } else {
       const response = await proxiedFetch("https://r.jina.ai/", {
@@ -46,13 +51,15 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "Failed to parse file" }, { status: 500 });
       }
       buffer = Buffer.from(await response.arrayBuffer());
-      await fs.promises.writeFile(fileFullPath, buffer);
+      if (shouldCache) {
+        await fs.promises.writeFile(fileFullPath, buffer);
+      }
     }
   } else {
     contentType = mimeType;
     const fileName = objectUrl.split("?")[0].split("/").pop() as string;
     const fileFullPath = path.join(cacheDir, hash, fileName);
-    if (fs.existsSync(fileFullPath)) {
+    if (shouldCache && fs.existsSync(fileFullPath)) {
       buffer = await fs.promises.readFile(fileFullPath);
     } else {
       const response = await proxiedFetch(url);
@@ -60,7 +67,9 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "Failed to fetch file" }, { status: 500 });
       }
       buffer = Buffer.from(await response.arrayBuffer());
-      await fs.promises.writeFile(fileFullPath, buffer);
+      if (shouldCache) {
+        await fs.promises.writeFile(fileFullPath, buffer);
+      }
     }
   }
 
