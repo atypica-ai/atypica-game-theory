@@ -1,4 +1,5 @@
 "use client";
+import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
 import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -212,6 +213,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                       <Image
                         loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
                         src={report.coverUrl}
+                        // src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`}
                         alt={`Cover for ${report.analyst.topic}`}
                         fill
                         className="object-cover"
@@ -299,24 +301,35 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                   )}
 
                   {/* Meta Information */}
-                  <div className="space-y-1 text-sm text-muted-foreground border-t pt-3">
-                    <p>
-                      <span className="text-xs">User:</span> {report.analyst.user?.email || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-xs">Token:</span>{" "}
-                      <span className="font-mono">{report.token}</span>
-                    </p>
-                    <p>
-                      <span className="text-xs">Generated:</span>{" "}
-                      {report.generatedAt
-                        ? formatDate(report.generatedAt, locale)
-                        : "Not generated"}
-                    </p>
-                    <p>
-                      <span className="text-xs">Created:</span>{" "}
-                      {formatDate(report.createdAt, locale)}
-                    </p>
+                  <div className="flex items-start justify-between gap-4 border-t pt-3">
+                    <div className="shrink-0 space-y-1 text-sm text-muted-foreground">
+                      <p>
+                        <span className="text-xs">User:</span> {report.analyst.user?.email || "N/A"}
+                      </p>
+                      <p>
+                        <span className="text-xs">Token:</span>{" "}
+                        <span className="font-mono">{report.token}</span>
+                      </p>
+                      <p>
+                        <span className="text-xs">Generated:</span>{" "}
+                        {report.generatedAt
+                          ? formatDate(report.generatedAt, locale)
+                          : "Not generated"}
+                      </p>
+                      <p>
+                        <span className="text-xs">Created:</span>{" "}
+                        {formatDate(report.createdAt, locale)}
+                      </p>
+                    </div>
+                    <div className="relative h-24 w-24 overflow-hidden rounded-sm">
+                      <Image
+                        // loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
+                        src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`}
+                        alt={`Cover for ${report.analyst.topic}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter className="gap-2 items-center justify-between flex-wrap mt-auto">

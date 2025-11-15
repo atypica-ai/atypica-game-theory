@@ -1,5 +1,4 @@
-import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
+import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
@@ -31,6 +30,7 @@ const getCachedReportData = unstable_cache(
       where: { token: reportToken },
       select: {
         id: true,
+        token: true,
         analyst: {
           select: {
             brief: true,
@@ -80,14 +80,7 @@ export async function generateMetadata({
     suffix: "...",
   }).replace(/[\n\r]/g, " ");
 
-  let image: string | undefined;
-  const result = await reportCoverObjectUrlToHttpUrl(report);
-  if (result) {
-    // 国内和国外都用 CDN，用同一个 CDN
-    image = proxiedImageCdnUrl({
-      src: result.signedCoverObjectUrl,
-    });
-  }
+  const image = `${getObjectCdnOrigin()}/artifacts/report/${reportToken}/cover`;
 
   return generatePageMetadata({ title, description, locale, image });
 }

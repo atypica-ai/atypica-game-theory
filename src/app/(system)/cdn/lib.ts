@@ -30,12 +30,9 @@ export function proxiedObjectCdnUrl({
   //   throw new Error("OBJECT_CDN_ORIGIN environment variable is not set");
   // }
   const fileNameInUrl = objectUrl.split("?")[0].split("/").pop() as string;
-  // const cdnUrl = `${objectCdnOrigin}/cdn/proxy-object/${name ? name : fileNameInUrl}?objectUrl=${encodeURIComponent(objectUrl)}&mimeType=${mimeType}&cache=${cache}&parse=${parse}`;
-  const cdnUrl = new URL(`${objectCdnOrigin}/cdn/proxy-object/${name ? name : fileNameInUrl}`);
-  cdnUrl.searchParams.set("objectUrl", objectUrl);
-  cdnUrl.searchParams.set("mimeType", mimeType);
-  cdnUrl.searchParams.set("cache", "false"); // 不用 cache, 因为 cdn 已经 cache 了
-  cdnUrl.searchParams.set("parse", "false"); // parse = (mimeType === "application/pdf").toString()l
+  const cache = "false"; // 不用 cache, 因为 cdn 已经 cache 了
+  const parse = "false"; // parse = (mimeType === "application/pdf").toString()
+  const cdnUrl = `${objectCdnOrigin}/cdn/proxy-object/${name ? name : fileNameInUrl}?objectUrl=${encodeURIComponent(objectUrl)}&mimeType=${mimeType}&cache=${cache}&parse=${parse}`;
   return cdnUrl.toString();
 }
 
@@ -61,7 +58,7 @@ export function proxiedImageCdnUrl({
     return `${objectCdnOrigin}${proxiedUrl}`;
   } else {
     // 这样可以使用 nextjs 的图像优化方法以及缓存 .next/cache/images，线上不需要
-    return `${objectCdnOrigin}/_next/image?url=${encodeURIComponent(proxiedUrl)}&w=${width}&q=${quality}`;
+    return `/_next/image?url=${encodeURIComponent(proxiedUrl)}&w=${width}&q=${quality}`;
   }
 }
 

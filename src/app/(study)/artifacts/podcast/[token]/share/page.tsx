@@ -1,6 +1,5 @@
 import { fetchPodcastByToken } from "@/app/(study)/artifacts/podcast/actions";
-import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
+import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
@@ -52,14 +51,8 @@ export async function generateMetadata({
 
   let image: string | undefined;
   if (report) {
-    const result = await reportCoverObjectUrlToHttpUrl(report);
-    if (result) {
-      image = proxiedImageCdnUrl({
-        src: result.signedCoverObjectUrl,
-      });
-    }
+    image = `${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`;
   }
-
   return generatePageMetadata({ title, description, locale, image });
 }
 

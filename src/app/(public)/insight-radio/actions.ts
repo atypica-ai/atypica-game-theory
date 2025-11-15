@@ -128,6 +128,7 @@ export const fetchFeaturedPodcasts = unstable_cache(
         };
         report: {
           id: number;
+          token: string;
           extra: AnalystReportExtra;
         } | null;
       }[]
@@ -169,6 +170,7 @@ export const fetchFeaturedPodcasts = unstable_cache(
             reports: {
               select: {
                 id: true,
+                token: true,
                 extra: true,
               },
               orderBy: {
@@ -227,6 +229,7 @@ export const fetchFeaturedPodcasts = unstable_cache(
         studyUserChat: p.analyst.studyUserChat!,
         report: (p.analyst.reports?.[0] || null) as {
           id: number;
+          token: string;
           extra: AnalystReportExtra;
         } | null,
       })),

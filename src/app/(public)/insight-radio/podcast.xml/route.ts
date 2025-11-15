@@ -1,6 +1,5 @@
 import { podcastObjectUrlToHttpUrl } from "@/app/(podcast)/lib/utils";
-import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
+import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
 import { truncateByDisplayWidth } from "@/lib/textUtils";
 import { fetchFeaturedPodcasts } from "../actions";
 
@@ -43,12 +42,7 @@ export async function GET(request: Request) {
       // Get cover image URL from report
       let coverImageUrl: string | undefined;
       if (item.report) {
-        const coverResult = await reportCoverObjectUrlToHttpUrl(item.report);
-        if (coverResult) {
-          coverImageUrl = proxiedImageCdnUrl({
-            src: coverResult.signedCoverObjectUrl,
-          });
-        }
+        coverImageUrl = `${getObjectCdnOrigin()}/artifacts/report/${item.report.token}/cover`;
       }
 
       return {
