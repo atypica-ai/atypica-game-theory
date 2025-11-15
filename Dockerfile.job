@@ -6,8 +6,8 @@ WORKDIR /app
 
 # COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY prisma ./prisma
-RUN npm install -g pnpm@10.6.2
-RUN pnpm i prisma@^6.5.0 @prisma/client@^6.5.0
+RUN npm install -g pnpm@10.15.2
+RUN pnpm i prisma@^6.19.0 @prisma/client@^6.19.0
 
 FROM base AS runner
 WORKDIR /app
