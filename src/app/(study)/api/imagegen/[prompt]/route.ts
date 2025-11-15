@@ -2,6 +2,7 @@ import { imageGenerationObjectUrlToHttpUrl } from "@/app/(study)/artifacts/lib/i
 import { noProxiedImageCdnUrl, proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { ImageGeneration } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "crypto";
@@ -47,7 +48,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
   }
 
   if (existingImage.generatedAt) {
-    return Response.redirect(await optimizedImageUrl(existingImage), 302);
+    const imageUrl = await optimizedImageUrl(existingImage);
+    const fullUrl = new URL(
+      imageUrl,
+      imageUrl.startsWith("http") ? undefined : await getRequestOrigin(),
+    );
+    return Response.redirect(fullUrl, 302);
   }
   if (
     Date.now() - existingImage.createdAt.getTime() >

@@ -11,7 +11,15 @@ import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateChatTitle } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
-import { Analyst, AnalystPodcastExtra, FeaturedStudy, User, UserChat } from "@/prisma/client";
+import {
+  Analyst,
+  AnalystPodcast,
+  AnalystPodcastExtra,
+  AnalystReport,
+  FeaturedStudy,
+  User,
+  UserChat,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { waitUntil } from "@vercel/functions";
@@ -235,14 +243,8 @@ export async function fetchAnalysts(
       user: Pick<User, "email"> | null;
       featuredStudy: FeaturedStudy | null;
       studyUserChat: Pick<UserChat, "token" | "title" | "extra"> | null;
-      reports: Pick<
-        import("@/prisma/client").AnalystReport,
-        "id" | "token" | "createdAt" | "generatedAt"
-      >[];
-      podcasts: Pick<
-        import("@/prisma/client").AnalystPodcast,
-        "id" | "token" | "createdAt" | "generatedAt"
-      >[];
+      reports: Pick<AnalystReport, "id" | "token" | "createdAt" | "generatedAt">[];
+      podcasts: Pick<AnalystPodcast, "id" | "token" | "createdAt" | "generatedAt">[];
     })[]
   >
 > {
