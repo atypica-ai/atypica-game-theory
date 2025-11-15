@@ -27,7 +27,7 @@ export const followUpInterviewTools = ({
           try {
             await processPersonaImport(personaImportId);
           } catch (error) {
-            logger.error("Failed to regenerate personas:", error);
+            logger.error(`Failed to regenerate personas: ${error}`);
           }
         })(),
       );

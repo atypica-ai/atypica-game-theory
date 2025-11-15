@@ -91,7 +91,7 @@ async function getAndProcessImage(objectUrl: string): Promise<Response | null> {
     // Process image to 2000x2000 square jpg
     const processedBuffer = await processImageToSquareJpg(fileBody);
 
-    return new NextResponse(processedBuffer, {
+    return new NextResponse(Uint8Array.from(processedBuffer), {
       headers: {
         "Content-Type": "image/jpeg",
         "Cache-Control": "public, max-age=604800, immutable", // 7 days

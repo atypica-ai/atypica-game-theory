@@ -42,7 +42,7 @@ export function UseCases() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {[...Array(6)].map((_, i) => (
         <div key={i} className="rounded-2xl bg-white dark:bg-zinc-900/50 overflow-hidden shadow-lg">
-          <Skeleton className="w-full aspect-[4/3]" />
+          <Skeleton className="w-full aspect-4/3" />
           <div className="p-6">
             <Skeleton className="h-5 w-1/3 mb-4 rounded-md" />
             <Skeleton className="h-7 w-full rounded-md" />
@@ -97,12 +97,12 @@ export function UseCases() {
                 >
                   <span className="sr-only">View Case Study: {study.studyUserChat.title}</span>
                 </Link>
-                <div className="relative aspect-[16/9] overflow-hidden">
+                <div className="relative aspect-video overflow-hidden">
                   {study.analyst.latestReport?.coverUrl ? (
                     <Image
                       loader={proxiedImageLoader}
                       src={study.analyst.latestReport.coverUrl}
-                      alt={`Cover for ${study.analyst.topic}`}
+                      alt="report cover"
                       fill
                       // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       sizes="100%"
@@ -122,11 +122,11 @@ export function UseCases() {
                     </div>
                   )}
                 </div>
-                <div className="p-6 flex-grow flex flex-col">
+                <div className="p-6 grow flex flex-col">
                   <span className="text-xs capitalize bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 font-medium py-1 px-2.5 rounded-full self-start mb-3">
                     {study.analyst.kind}
                   </span>
-                  <h3 className="text-lg font-bold line-clamp-2 leading-snug flex-grow">
+                  <h3 className="text-lg font-bold line-clamp-2 leading-snug grow">
                     {study.studyUserChat.title}
                   </h3>
                 </div>

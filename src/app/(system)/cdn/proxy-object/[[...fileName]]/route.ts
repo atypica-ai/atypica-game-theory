@@ -83,7 +83,7 @@ export async function GET(req: Request) {
     const chunkSize = end - start + 1;
     const chunk = buffer.subarray(start, end + 1);
 
-    return new Response(chunk, {
+    return new Response(Uint8Array.from(chunk), {
       status: 206, // Partial Content
       headers: {
         "Content-Type": contentType,
@@ -95,7 +95,7 @@ export async function GET(req: Request) {
     });
   }
 
-  return new Response(buffer, {
+  return new Response(Uint8Array.from(buffer), {
     headers: {
       "Content-Type": contentType,
       "Content-Length": buffer.byteLength.toString(),

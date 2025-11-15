@@ -117,7 +117,7 @@ export function FeaturedStudies() {
                 <Image
                   loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
                   src={study.analyst.latestReport?.coverUrl}
-                  alt={`Cover for ${study.analyst.topic}`}
+                  alt="report cover"
                   fill
                   sizes="100%"
                   className="object-cover"

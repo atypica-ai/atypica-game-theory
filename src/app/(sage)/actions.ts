@@ -72,7 +72,7 @@ export async function createSage(
         data: { sage, userChat },
       };
     } catch (error) {
-      rootLogger.error("Failed to create sage:", error);
+      rootLogger.error(`Failed to create sage: ${error}`);
       return {
         success: false,
         message: "Failed to create sage",
@@ -108,7 +108,7 @@ export async function listMySages(): Promise<
         data: sages,
       };
     } catch (error) {
-      rootLogger.error("Failed to list sages:", error);
+      rootLogger.error(`Failed to list sages: ${error}`);
       return {
         success: false,
         message: "Failed to list sages",
@@ -258,7 +258,7 @@ export async function createSupplementaryInterview(sageId: number): Promise<
         data: { interview, userChat },
       };
     } catch (error) {
-      rootLogger.error("Failed to create supplementary interview:", error);
+      rootLogger.error(`Failed to create supplementary interview: ${error}`);
       return {
         success: false,
         message: "Failed to create supplementary interview",
@@ -337,7 +337,7 @@ export async function createOrGetSageChat(sageId: number): Promise<
         data: { sageChat, userChat },
       };
     } catch (error) {
-      rootLogger.error("Failed to create/get sage chat:", error);
+      rootLogger.error(`Failed to create/get sage chat: ${error}`);
       return {
         success: false,
         message: "Failed to create chat",
@@ -412,7 +412,7 @@ export async function createNewSageChat(
         data: { sageChat, userChat },
       };
     } catch (error) {
-      rootLogger.error("Failed to create new sage chat:", error);
+      rootLogger.error(`Failed to create new sage chat: ${error}`);
       return {
         success: false,
         message: "Failed to create chat",

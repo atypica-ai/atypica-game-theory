@@ -1,5 +1,4 @@
 "use client";
-import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
 import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -214,7 +213,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                         loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
                         src={report.coverUrl}
                         // src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`}
-                        alt={`Cover for ${report.analyst.topic}`}
+                        alt="report cover"
                         fill
                         className="object-cover"
                       />
@@ -324,8 +323,10 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                     <div className="relative h-24 w-24 overflow-hidden rounded-sm">
                       <Image
                         // loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
-                        src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`}
-                        alt={`Cover for ${report.analyst.topic}`}
+                        // src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`}
+                        // 用 cdn 域名会让 /_next/image 的后端超时（能成功请求的，就是时间有点久），而且其实也没必要这里用 CDN，拿掉即可
+                        src={`/artifacts/report/${report.token}/cover`}
+                        alt="report cover"
                         fill
                         className="object-cover"
                       />

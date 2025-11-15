@@ -24,7 +24,11 @@ async function determineCallbackUrl(): Promise<string> {
     }
     return "/";
   } catch (error) {
-    rootLogger.warn("Failed to determine callback URL", error);
+    rootLogger.warn({
+      msg: "Failed to determine callback URL",
+      error: (error as Error).message,
+      stack: (error as Error).stack,
+    });
     return "/";
   }
 }

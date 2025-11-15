@@ -59,24 +59,24 @@ export function ReportsList({ data, isLoading }: ReportsListProps) {
             <TableRow key={`${pageView.pagePath}-${index}`}>
               <TableCell className="font-medium">{index + 1}</TableCell>
               <TableCell className="whitespace-normal">
-                <div className="flex items-start space-x-3 max-w-[30rem] xl:max-w-[60rem] overflow-hidden">
+                <div className="flex items-start space-x-3 max-w-120 xl:max-w-240 overflow-hidden">
                   {/* Cover Image - Clickable */}
                   {pageView.report?.coverUrl ? (
                     <Link
                       href={pageView.pagePath}
                       target="_blank"
-                      className="relative w-40 h-24 flex-shrink-0 overflow-hidden rounded border hover:opacity-80 transition-opacity"
+                      className="relative w-40 h-24 shrink-0 overflow-hidden rounded border hover:opacity-80 transition-opacity"
                     >
                       <Image
                         loader={proxiedImageLoader}
                         src={pageView.report.coverUrl}
-                        alt={`Cover for ${pageView.report.analyst.topic}`}
+                        alt="report cover"
                         fill
                         className="object-cover"
                       />
                     </Link>
                   ) : (
-                    <div className="w-40 h-24 flex-shrink-0 rounded border border-dashed border-gray-300 flex items-center justify-center">
+                    <div className="w-40 h-24 shrink-0 rounded border border-dashed border-gray-300 flex items-center justify-center">
                       <span className="text-xs text-gray-400">No Cover</span>
                     </div>
                   )}
