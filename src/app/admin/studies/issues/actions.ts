@@ -7,7 +7,7 @@ import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentRecord, TokensAccount, User, UserChat, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { generateId } from "ai";
+import { createUIMessageStream, generateId } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
@@ -222,16 +222,23 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
           : await getLocale();
 
     // Start the study agent request in the background
-    studyAgentRequest({
+    const params = {
       locale,
       userChat: {
         id: studyUserChat.id,
         extra: studyUserChat.extra as UserChatExtra,
+        analyst: studyUserChat.analyst,
       },
       userId: studyUserChat.userId,
       teamId: studyUserChat.user.teamIdAsMember ?? null,
       reqSignal: null,
       logger: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),
+    };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const stream = createUIMessageStream({
+      async execute({ writer }) {
+        studyAgentRequest({ ...params, streamWriter: writer });
+      },
     });
 
     revalidatePath("/admin/studies/issues");

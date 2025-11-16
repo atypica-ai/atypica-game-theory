@@ -11,10 +11,11 @@ import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import {
   createUIMessageStream,
-  createUIMessageStreamResponse,
   generateId,
   ModelMessage,
   ToolUIPart,
+  UIMessage,
+  UIMessageStreamWriter,
 } from "ai";
 import { Locale } from "next-intl";
 
@@ -74,18 +75,21 @@ export async function shouldDecidePersonaTier({
   locale,
   studyUserChatId,
   userId,
+  streamWriter,
+  streamingMessage,
 }: {
   locale: Locale;
   studyUserChatId: number;
   userId: number;
+  streamWriter: UIMessageStreamWriter;
+  streamingMessage: UIMessage;
 }) {
   const personaImportCount = await prisma.personaImport.count({
     where: { userId },
   });
   if (!personaImportCount) {
-    return;
+    return false;
   }
-  const messageId = generateId();
   const toolCallId = generateId();
   // ToolUIPart<UIToolConfigs> 会根据 type 推断出 input 类型
   const toolPart: ToolUIPart<StudyUITools> = {
@@ -109,14 +113,10 @@ export async function shouldDecidePersonaTier({
           },
     state: "input-available",
   };
+  streamingMessage.parts.push(toolPart);
   await persistentAIMessageToDB({
     userChatId: studyUserChatId,
-    message: {
-      id: messageId,
-      role: "assistant",
-      // content: toolInvocation.args.question,
-      parts: [toolPart],
-    },
+    message: streamingMessage,
   });
   // return createUIMessageStreamResponse({
   //   execute: async (dataStream) => {
@@ -126,8 +126,10 @@ export async function shouldDecidePersonaTier({
   //   },
   // });
   const stream = createUIMessageStream({
+    generateId: () => streamingMessage.id,
     execute({ writer }) {
-      writer.write({ type: "start" });
+      writer.write({ type: "start" }); // 这个是必须的，发送了才能让设置的 messageId 生效
+      writer.write({ type: "start-step" });
       writer.write({ type: "tool-input-start", toolCallId, toolName: ToolName.requestInteraction });
       writer.write({
         type: "tool-input-available",
@@ -135,33 +137,31 @@ export async function shouldDecidePersonaTier({
         toolName: ToolName.requestInteraction,
         input: toolPart.input,
       });
-      writer.write({ type: "finish" });
+      writer.write({ type: "finish-step" });
+      // writer.write({ type: "finish", finishReason: "stop" });
     },
   });
-  return createUIMessageStreamResponse({ stream });
+  // return createUIMessageStreamResponse({ stream });
+  streamWriter.merge(stream);
+  return true;
 }
 
-export async function shouldProcessAttachments({
+export async function waitUntilAttachmentsProcessed({
   analyst,
   locale,
+  streamWriter,
+  streamingMessage,
 }: {
   analyst: Analyst;
   locale: Locale;
-}): Promise<
-  | {
-      processing: false;
-      attachments: (Omit<AttachmentFile, "extra"> & { extra: AttachmentFileExtra })[];
-    }
-  | {
-      processing: true;
-      response: Response;
-    }
-> {
+  streamWriter: UIMessageStreamWriter;
+  streamingMessage: UIMessage;
+}): Promise<(Omit<AttachmentFile, "extra"> & { extra: AttachmentFileExtra })[]> {
   // Check attachments and process if needed
   const analystAttachments = (analyst.attachments ?? []) as ChatMessageAttachment[];
 
   if (!analystAttachments.length) {
-    return { processing: false, attachments: [] };
+    return [];
   }
 
   // Find all attachment files by objectUrl
@@ -187,65 +187,88 @@ export async function shouldProcessAttachments({
   });
 
   if (allFilesReady) {
-    return { processing: false, attachments: attachmentFilesWithExtra };
+    return attachmentFilesWithExtra;
   }
 
-  // Some files need processing - create a stream to show progress
-  const stream = createUIMessageStream({
-    async execute({ writer }) {
-      const messageId = "processing-attachments";
-      writer.write({ type: "start" });
-
-      writer.write({ id: messageId, type: "text-start" });
-      writer.write({
-        id: messageId,
-        type: "text-delta",
-        delta:
-          locale === "zh-CN"
-            ? "正在处理附件，请稍候...\n"
-            : "Processing attachments, please wait...\n",
-      });
-      writer.write({
-        id: messageId,
-        type: "text-delta",
-        delta: attachmentFilesWithExtra.map((file) => `${file.name}\n`).join(""),
-      });
-
-      // Process all files that need processing
-      try {
-        await Promise.all(attachmentFilesWithExtra.map((file) => parseAttachmentText(file.id)));
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
+  const promise = new Promise<void>((resolve, reject) => {
+    const stream = createUIMessageStream({
+      generateId: () => streamingMessage.id, // 固定 id，这很重要，这样就可以把这条消息合并到处理完成将要 streaming 的 assistant message 上了
+      async execute({ writer }) {
+        const partId = "processing-attachments-text-part";
+        writer.write({ type: "start" }); // 这个是必须的，发送了才能让设置的 messageId 生效
+        writer.write({ type: "start-step" });
+        writer.write({ id: partId, type: "text-start" });
         writer.write({
-          id: messageId,
+          id: partId,
           type: "text-delta",
           delta:
             locale === "zh-CN"
-              ? "附件处理完毕，可以继续对话了。"
-              : "Attachment processing completed. You can continue the conversation.",
+              ? "正在处理附件，请稍候...\n"
+              : "Processing attachments, please wait...\n",
         });
-        writer.write({ id: messageId, type: "text-end" });
-      } catch (error) {
-        writer.write({ id: messageId, type: "text-start" });
         writer.write({
-          id: messageId,
+          id: partId,
           type: "text-delta",
-          delta:
-            locale === "zh-CN"
-              ? `附件处理失败：${(error as Error).message}`
-              : `Attachment processing failed: ${(error as Error).message}`,
+          delta: attachmentFilesWithExtra.map((file) => `${file.name}\n`).join(""),
         });
-        writer.write({ id: messageId, type: "text-end" });
-      }
 
-      writer.write({ type: "finish", finishReason: "stop" });
-    },
+        // Process all files that need processing
+        try {
+          await Promise.all(attachmentFilesWithExtra.map((file) => parseAttachmentText(file.id)));
+
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+
+          writer.write({
+            id: partId,
+            type: "text-delta",
+            delta:
+              locale === "zh-CN"
+                ? "附件处理完毕，可以继续对话了。"
+                : "Attachment processing completed. You can continue the conversation.",
+          });
+          writer.write({ id: partId, type: "text-end" });
+          writer.write({ type: "finish-step" });
+          // writer.write({ type: "finish", finishReason: "stop" });
+          resolve();
+        } catch (error) {
+          writer.write({ id: partId, type: "text-start" });
+          writer.write({
+            id: partId,
+            type: "text-delta",
+            delta:
+              locale === "zh-CN"
+                ? `附件处理失败：${(error as Error).message}`
+                : `Attachment processing failed: ${(error as Error).message}`,
+          });
+          writer.write({ id: partId, type: "text-end" });
+          writer.write({ type: "finish-step" });
+          // writer.write({ type: "finish", finishReason: "stop" });
+          reject(error);
+        }
+      },
+    });
+
+    streamWriter.merge(stream);
   });
 
-  const response = createUIMessageStreamResponse({ stream });
-  return {
-    processing: true,
-    response,
-  };
+  // 等待处理完成
+  await promise;
+  // const response = createUIMessageStreamResponse({ stream });
+  // return {
+  //   processing: true,
+  //   response,
+  // };
+
+  // 重新读取一遍，返回带 parsedContent 的文件
+  return (
+    await prisma.attachmentFile.findMany({
+      where: {
+        userId: analyst.userId,
+        objectUrl: { in: analystAttachments.map((a) => a.objectUrl) },
+      },
+    })
+  ).map((file) => ({
+    ...file,
+    extra: file.extra as unknown as AttachmentFileExtra,
+  }));
 }

@@ -8,7 +8,7 @@ import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 import { getUserTokens } from "@/tokens/lib";
-import { generateId } from "ai";
+import { createUIMessageStream, createUIMessageStreamResponse, generateId } from "ai";
 import { getServerSession } from "next-auth/next";
 import { Locale } from "next-intl";
 import { NextResponse } from "next/server";
@@ -112,6 +112,17 @@ export async function POST(req: Request) {
   } else if (userChat.analyst.kind === AnalystKind.productRnD) {
     return await productRnDAgentRequest(params);
   } else {
-    return await studyAgentRequest(params);
+    // return await studyAgentRequest(params);
+    const stream = createUIMessageStream({
+      async execute({ writer }) {
+        await studyAgentRequest({ ...params, streamWriter: writer });
+      },
+      onError: (error) => {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        logger.error(errorMsg);
+        return errorMsg;
+      },
+    });
+    return createUIMessageStreamResponse({ stream });
   }
 }

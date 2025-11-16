@@ -28,7 +28,15 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
-import { smoothStream, stepCountIs, StepResult, streamText, TextStreamPart, ToolChoice } from "ai";
+import {
+  smoothStream,
+  stepCountIs,
+  StepResult,
+  streamText,
+  TextStreamPart,
+  ToolChoice,
+  UIMessageStreamWriter,
+} from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
@@ -38,7 +46,7 @@ import {
   outOfBalance,
   setBedrockCache,
   shouldDecidePersonaTier,
-  shouldProcessAttachments,
+  waitUntilAttachmentsProcessed,
 } from "./utils";
 
 // autopolot 模式默认 15 步，webSearch 2 + saveAnalyst 1 + searchPersonas 1 + scoutTaskChat 2 + buildPersona 2 + interviewChat 2 + saveAnalystStudySummary 1 + generateReport 1
@@ -53,6 +61,7 @@ export async function studyAgentRequest({
   // reqSignal,
   logger,
   locale,
+  streamWriter,
 }: {
   userChat: {
     id: number;
@@ -64,9 +73,8 @@ export async function studyAgentRequest({
   reqSignal: AbortSignal | null;
   logger: Logger;
   locale: Locale;
+  streamWriter: UIMessageStreamWriter;
 }) {
-  // TODO: 使用 attachments 参数，暂时先不做任何处理
-
   // 从 new study interview 过来或者是有参考研究的，不需要再 clarify
   const briefStatus: "CLARIFIED" | "DRAFT" =
     userChatExtra?.briefUserChatId || userChatExtra?.referenceUserChats?.length
@@ -187,16 +195,26 @@ export async function studyAgentRequest({
   //   });
   // }
 
-  const shouldProcessAttachmentsRes = await shouldProcessAttachments({ analyst: analyst, locale });
-  if (shouldProcessAttachmentsRes.processing) {
-    return shouldProcessAttachmentsRes.response;
-  }
-  const attachments = shouldProcessAttachmentsRes.attachments;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const attachments = await waitUntilAttachmentsProcessed({
+    analyst: analyst,
+    locale,
+    streamWriter,
+    streamingMessage: streamingMessage, // 和后面 toUIMessageStream 固定 messageId 同理，要固定 messageId, 不然 waitUntilAttachmentsProcessed 里面的消息在 UI 上会显示 2 条，因为后面 toUIMessageStream 会改变 id
+  });
 
+  // todo remove false
   if (coreMessages.length == 1) {
-    const shouldDecideResponse = await shouldDecidePersonaTier({ locale, userId, studyUserChatId });
-    if (shouldDecideResponse) {
-      return shouldDecideResponse;
+    const shouldDecide = await shouldDecidePersonaTier({
+      locale,
+      userId,
+      studyUserChatId,
+      streamWriter,
+      streamingMessage: streamingMessage,
+    });
+    if (shouldDecide) {
+      // shouldDecidePersonaTier 里面会写入 stream, 这里直接退出就好
+      return;
     }
   }
 
@@ -344,10 +362,15 @@ export async function studyAgentRequest({
     studyAbortController,
   });
 
-  return streamTextResult.toUIMessageStreamResponse({
-    // 注意，这里要使用 streamingMessage 的 id，虽然目前不指定只有 study agent 会遇到问题
-    // 问题是这样，保存数据库用的是 streamingMessage.id，但是 streamText 会给新的 assistant 消息生成一个新的 id，并且在 toDataStreamResponse 里返回给前端
-    // 当前端调用 addToolResult 的时候，会返回来一条新 id 的 assistang 消息，然后调用 persistentAIMessageToDB 插入的时候，会插入一条新的消息
-    generateMessageId: () => streamingMessage.id,
-  });
+  // return streamTextResult.toUIMessageStreamResponse({
+  //   // 注意，这里要使用 streamingMessage 的 id，虽然目前不指定只有 study agent 会遇到问题
+  //   // 问题是这样，保存数据库用的是 streamingMessage.id，但是 streamText 会给新的 assistant 消息生成一个新的 id，并且在 toDataStreamResponse 里返回给前端
+  //   // 当前端调用 addToolResult 的时候，会返回来一条新 id 的 assistang 消息，然后调用 persistentAIMessageToDB 插入的时候，会插入一条新的消息
+  //   generateMessageId: () => streamingMessage.id,
+  // });
+  streamWriter.merge(
+    streamTextResult.toUIMessageStream({
+      generateMessageId: () => streamingMessage.id,
+    }),
+  );
 }
