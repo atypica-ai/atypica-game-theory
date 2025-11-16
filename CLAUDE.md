@@ -47,7 +47,7 @@ atypica.AI is a business research AI agent framework that uses multi-agent colla
 The system uses specialized AI agents that collaborate on research tasks:
 
 1. **Study Agent** (`src/app/(study)/`) - Orchestrates research workflows and guides users
-2. **Scout Agent** (`src/app/(newStudy)/`) - Discovers and categorizes target user groups
+2. **Scout Agent** (`src/app/(newStudy)/`) - Observes social media to understand user groups through qualitative observation, uses reasoningThinking for social psychological analysis
 3. **Interviewer Agent** (`src/app/(interviewProject)/`) - Conducts professional interviews
 4. **Persona Agent** (`src/app/(persona)/`) - Simulates user responses and provides feedback
 
@@ -85,9 +85,9 @@ src/
 
 The system provides specialized AI tools located in `src/ai/tools/`:
 
-- **reasoningThinking** - Deep analysis and reasoning
+- **reasoningThinking** - Deep analysis and reasoning; used by Scout after 5 observations to synthesize social psychological insights
 - **interview** - Automated interview management
-- **scoutTaskChat** - User discovery and persona building
+- **scoutTaskChat** - Social media observation and persona building through qualitative analysis (executes in 3 phases: observation → reasoning → validation)
 - **generateReport** - Research report generation
 
 ### Database Schema
@@ -139,6 +139,15 @@ Built-in health check system available at `/api/health` with:
 Run health checks with: `npx tsx scripts/check-status.ts`
 
 ## Code Conventions
+
+### Git Commit Conventions
+
+**Important**: Only add attribution (co-author, ad) when ALL changes in the commit were written by Claude. If the commit includes user-authored code, use plain commit message without any attribution.
+
+Examples:
+- ✅ "fix: resolve authentication bug" (user's changes)
+- ✅ "refactor: optimize database queries" (Claude's changes, but no ad per user preference)
+- ❌ Never add: "🤖 Generated with Claude Code" or "Co-Authored-By: Claude" unless explicitly requested
 
 ### Styling Conventions
 
