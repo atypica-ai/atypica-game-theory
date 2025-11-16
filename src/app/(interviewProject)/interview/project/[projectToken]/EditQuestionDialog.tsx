@@ -195,7 +195,7 @@ export function EditQuestionDialog({
             ) : (
               <div className="border rounded-lg p-3 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="relative w-16 h-16 rounded overflow-hidden bg-muted flex-shrink-0">
+                  <div className="relative w-16 h-16 rounded overflow-hidden bg-muted shrink-0">
                     <Image
                       src={proxiedObjectCdnUrl({
                         name: image.name,

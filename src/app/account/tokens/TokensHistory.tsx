@@ -38,7 +38,7 @@ export function TokensHistory({ initialSearchParams }: TokensHistoryProps) {
   const t = useTranslations("AccountPage");
   const locale = useLocale();
   const [tokensHistory, setTokensHistory] = useState<
-    (TokensLog & { consumedBy?: string; noCharge?: boolean })[]
+    (TokensLog & { consumedBy?: string; noCharge?: "true" | "false" | null })[]
   >([]);
   const [historyIsLoading, setHistoryIsLoading] = useState(true);
 
@@ -233,7 +233,7 @@ export function TokensHistory({ initialSearchParams }: TokensHistoryProps) {
                       "text-red-500": item.value < 0,
                     })}
                   >
-                    {item.noCharge ? (
+                    {item.noCharge?.toString() === "true" ? (
                       <span className="text-xs mr-2 text-muted-foreground">
                         {t("tokensHistorySection.noCharge")}
                       </span>

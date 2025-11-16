@@ -77,6 +77,9 @@ export async function studyAgentRequest({
   locale: Locale;
   streamWriter: UIMessageStreamWriter;
 }) {
+  // 清除之前的错误信息（如果有的话）
+  await setUserChatError(studyUserChatId, null);
+
   // 从 new study interview 过来或者是有参考研究的，不需要再 clarify
   const briefStatus: "CLARIFIED" | "DRAFT" =
     userChatExtra?.briefUserChatId || userChatExtra?.referenceUserChats?.length
@@ -258,9 +261,6 @@ export async function studyAgentRequest({
     });
   }
   modelMessages = setBedrockCache("claude-3-7-sonnet", modelMessages);
-
-  // 清除之前的错误信息（如果有的话）
-  await setUserChatError(studyUserChatId, null);
 
   let streamStartTime = Date.now();
   const streamTextResult = streamText({

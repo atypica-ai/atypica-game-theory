@@ -265,7 +265,7 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
         <div className="mb-4 flex items-center justify-start gap-4">
           {avatar || <BotIcon className="size-6" />}
           {nickname && (
-            <div className="leading-[32px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
+            <div className="leading-8 text-zinc-800 dark:text-zinc-200 text-sm font-medium">
               {nickname}
             </div>
           )}

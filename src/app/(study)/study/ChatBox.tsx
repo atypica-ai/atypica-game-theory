@@ -417,7 +417,7 @@ export function ChatBox() {
               {error?.message?.toString() || error.toString()}
             </div>
           )}
-          <div className="px-2 py-2 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+          <div className="px-2 py-2 rounded-full shadow bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/90">
             <StatusDisplay status={uiStatus} backgroundToken={backgroundToken} />
           </div>
           {/*<div className="absolute right-0 bottom-0 px-1 py-1 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">

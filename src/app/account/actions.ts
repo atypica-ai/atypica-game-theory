@@ -14,7 +14,7 @@ import { fetchActiveSubscription } from "./lib";
 export async function fetchTokensHistory(
   page: number = 1,
   pageSize: number = 10,
-): Promise<ServerActionResult<(TokensLog & { noCharge: boolean })[]>> {
+): Promise<ServerActionResult<(TokensLog & { noCharge: "true" | "false" | null })[]>> {
   return withAuth(async (user) => {
     const userId = user.id;
     const skip = (page - 1) * pageSize;
@@ -36,7 +36,9 @@ export async function fetchTokensHistory(
         //   createdAt: _min.createdAt!,
         //   updatedAt: _min.updatedAt!,
         // }));
-        const result = await prisma.$queryRaw<Array<TokensLog & { noCharge: boolean }>>`
+        const result = await prisma.$queryRaw<
+          Array<TokensLog & { noCharge: "true" | "false" | null }>
+        >`
         SELECT
           "userId",
           "resourceType",
@@ -116,7 +118,9 @@ export async function fetchTokensHistory(
 export async function fetchTokensHistoryAsTeamOwner(
   page: number = 1,
   pageSize: number = 10,
-): Promise<ServerActionResult<(TokensLog & { consumedBy: string; noCharge: boolean })[]>> {
+): Promise<
+  ServerActionResult<(TokensLog & { consumedBy: string; noCharge: "true" | "false" | null })[]>
+> {
   return withAuth(async (user) => {
     // const userId = user.id;
     const skip = (page - 1) * pageSize;
@@ -146,7 +150,7 @@ export async function fetchTokensHistoryAsTeamOwner(
     const [tokensLogs, totalCount] = await Promise.all([
       (async () => {
         const result = await prisma.$queryRaw<
-          Array<TokensLog & { consumedBy: string; noCharge: boolean }>
+          Array<TokensLog & { consumedBy: string; noCharge: "true" | "false" | null }>
         >`
         SELECT
           "TokensLog"."userId" as "userId",
