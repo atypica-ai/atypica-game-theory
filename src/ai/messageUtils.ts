@@ -377,17 +377,26 @@ export async function convertDBMessagesToAIMessages(
         const parts = ((_parts ?? []) as ChatMessagePart[]).map(convertToV5MessagePart);
         const attachments = (_attachments ?? []) as ChatMessageAttachment[];
         const fileParts = await Promise.all(
-          attachments.map(async ({ name, objectUrl, mimeType, size }) => {
+          attachments.map(async ({ name, objectUrl, mimeType, size }, index) => {
             const url =
               convertObjectUrl === "HttpUrl"
                 ? await s3SignedUrl(objectUrl)
                 : convertObjectUrl === "DataUrl"
                   ? await fileUrlToDataUrl({ objectUrl, mimeType })
                   : "";
+            // 和 bedrock api 交互的时候，现在 filename 用中文字符和.都会有问题，但这个字段其实对模型没用处
+            // dataurl 模式下文件名直接构造一个 uniqueId 就行了
+            // httpurl 模式因为只是给用户看的，依然保留原来可读的文件名
+            const filename =
+              convertObjectUrl === "HttpUrl"
+                ? name
+                : convertObjectUrl === "DataUrl"
+                  ? `attachment-message[${id}]-${index}`
+                  : "";
             return {
               type: "file",
               mediaType: mimeType,
-              filename: name,
+              filename: filename,
               url: url,
               providerMetadata: {
                 extra: { objectUrl, size }, // 不管3721，都放进去，但不要依赖这个值
