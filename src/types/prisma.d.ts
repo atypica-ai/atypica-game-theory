@@ -108,6 +108,13 @@ declare module "@/prisma/client" {
   export type AttachmentFileExtra = Partial<{
     s3SignedUrl: string;
     s3SignedUrlExpiresAt: number; // timestamp millis
+    processing:
+      | {
+          startsAt: number;
+        }
+      | false;
+    compressedText: string;
+    error: string;
   }>;
 
   export type PersonaImportExtra = Partial<{

@@ -1,3 +1,5 @@
+import "server-only";
+
 import { AttachmentFile, AttachmentFileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
