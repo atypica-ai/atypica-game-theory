@@ -8,25 +8,24 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
-import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { scoutSystem } from "@/ai/prompt";
-import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
+import { llm, LLMModelName } from "@/ai/provider";
 import { handleToolCallError } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
+import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
+import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import {
   generateId,
   getToolName,
   isToolUIPart,
   smoothStream,
-  stepCountIs,
   streamText,
   TextStreamPart,
   tool,
-  ToolChoice,
   UIMessage,
   UIMessageStreamWriter,
 } from "ai";
@@ -75,9 +74,6 @@ export const createBackgroundToken = async ({
   return { clearBackgroundToken };
 };
 
-const TOKENS_COMSUME_LIMIT = 150_000; // 限制 15w token 消耗量
-const SCOUT_TOOLS_LIMIT = 15; // 进行 15 次搜索，结束以后保存画像
-const SCOUT_MESSAGES_LIMIT = 20; // 最多 10 轮对话，结束以后保存画像
 type TReduceTokens = {
   model: LLMModelName;
   ratio: number;
@@ -201,193 +197,201 @@ export async function runScoutTaskChatStream({
   scoutUserChatId: number;
   streamWriter?: UIMessageStreamWriter;
 } & AgentToolConfigArgs): Promise<void> {
-  const allTools = { ...scoutChatTools() };
+  const tools = { ...scoutChatTools({ locale, abortSignal, statReport, logger }) };
+  const activeTools = Object.keys(tools) as (keyof typeof tools)[];
   const systemPrompt = scoutSystem({ locale });
-  const tools = allTools;
-  // const tools =
-  //   locale === "zh-CN"
-  //     ? allTools
-  //     : (Object.fromEntries(
-  //         Object.entries(allTools).filter(([key]) => !/^(xhs|dy)/.test(key)),
-  //       ) as typeof allTools);
+
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(scoutUserChatId, {
+    tools,
+  });
+
+  const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
+    scoutUserChatId,
+    5000,
+    logger,
+  ); // 5000 debounce
+
+  const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
   let tokensConsumed = 0;
-  while (true) {
-    const { coreMessages, streamingMessage, toolUseCount } = await prepareMessagesForStreaming(
-      scoutUserChatId,
-      { tools: allTools },
-    );
 
-    if (tokensConsumed > TOKENS_COMSUME_LIMIT) {
-      // 达到了离谱的 token 消耗，无条件退出
-      logger.error(
-        `Token consumption ${tokensConsumed} exceeds limit ${TOKENS_COMSUME_LIMIT}, ending scout`,
-      );
-      break;
-    }
-    const scoutToolsCount = Object.values(toolUseCount).reduce((acc, value) => acc + value, 0);
-    if (scoutToolsCount >= SCOUT_TOOLS_LIMIT) {
-      // 达到了工具使用次数限制，无条件退出
-      logger.info(`Tool usage ${scoutToolsCount} exceeds limit ${SCOUT_TOOLS_LIMIT}, ending scout`);
-      break;
-    }
-    if (coreMessages.length >= SCOUT_MESSAGES_LIMIT) {
-      // 达到了消息数量限制，无条件退出，有时候模型会不调用工具反复输出文本消息，所以这个限制需要加上
-      logger.info(
-        `Message count ${coreMessages.length} exceeds limit ${SCOUT_MESSAGES_LIMIT}, ending scout`,
-      );
-      break;
-    }
-
-    // coreMessages 来判断不靠谱，多个 steps 连续的消息在 coreMessages 会作为一整个数组放进 message.content，和 parts 类似
-    // if (coreMessages.length >= SCOUT_CALLS_LIMIT * 2) {
-    //   // 超出限制以后不再继续，直接结束，这个判断后置，也就是说，超出了以后，再跑最后一轮
-    //   break;
-    // }
-
-    let toolChoice: ToolChoice<typeof allTools> = "auto";
-    let maxSteps = 2; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
-    let reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
-
-    if (coreMessages.length > 2 && Object.keys(toolUseCount).length === 0) {
-      // 两条消息以后，必须开始使用工具，但是为了不一直使用工具，调用2次先停下来，后面好重新判断 toolUseCount
-      toolChoice = "required";
-      maxSteps = 1;
-    }
-
-    const { debouncePersistentMessage, immediatePersistentMessage } =
-      createDebouncePersistentMessage(scoutUserChatId, 5000, logger); // 5000 debounce
-    const streamTextPromise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
-      const response = streamText({
-        model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
-
-        // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
-        providerOptions: defaultProviderOptions,
-
-        system: systemPrompt,
-        temperature: 0.5,
-        messages: coreMessages,
-        tools:
-          reduceTokens && reduceTokens.model.startsWith("gemini")
-            ? {
-                ...tools,
-                // 暂时不使用
-                // google_search: google.tools.googleSearch({
-                //   mode: "MODE_DYNAMIC",
-                //   dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
-                // }),
-              }
-            : tools,
-        toolChoice: toolChoice,
-
-        // 这个要求 tools 里面有 [ToolName.toolCallError]
-        experimental_repairToolCall: handleToolCallError,
-
-        stopWhen: stepCountIs(maxSteps),
-
-        experimental_transform: smoothStream({
-          delayInMs: 30,
-          chunking: /[\u4E00-\u9FFF]|\S+\s+/,
-        }),
-
-        onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
-          appendChunkToStreamingMessage(streamingMessage, chunk);
-          await debouncePersistentMessage(streamingMessage, {
-            immediate: chunk.type !== "text-delta",
-            // 只在 text-delta 类型的时候才 debounce，靠谱点。see https://github.com/bmrlab/atypica-llm-app/issues/40
-            // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
-          });
-        },
-
-        onStepFinish: async (step) => {
-          await immediatePersistentMessage();
-          // 注意，stepFinish 一定要保存，并且强制 immediate:true
-          // 有时候 llm 返回的消息很少，前面 onChunk 的 persistent 还在 debounce 的时候，后面 user 的 continue 消息已经保存了，这就会导致
-          // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
-          // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
-          const toolCalls = step.toolCalls.map((call) => call.toolName);
-          const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
-          logger.info({
-            msg: "runScoutTaskChatStream streamText onStepFinish",
-            toolCalls,
-            usage: extra.usage,
-            cache: extra.cache,
-          });
-          if (statReport) {
-            const reportedBy = "scoutTaskChat tool";
-            const promises = [
-              statReport("steps", toolCalls.length, { reportedBy, scoutUserChatId, toolCalls }),
-              statReport("tokens", tokens, { reportedBy, scoutUserChatId, ...extra }),
-            ];
-            tokensConsumed += tokens;
-            await Promise.all(promises);
-          }
-          // appendStepToStreamingMessage(streamingMessage, step);
-          // if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
-          //   await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
-          // }
-        },
-
-        onFinish: async ({ steps, usage }) => {
-          logger.info({ msg: "runScoutTaskChatStream streamText onFinish", usage });
-          const message = convertStepsToAIMessage(steps);
-          resolve(message);
-        },
-
-        onError: ({ error }) => {
-          if ((error as Error).name === "AbortError") {
-            logger.warn(`runScoutTaskChatStream streamText aborted: ${(error as Error).message}`);
-          } else {
-            logger.error(`runScoutTaskChatStream streamText onError: ${(error as Error).message}`);
-            reject(error);
-          }
-        },
-
-        abortSignal,
-      });
-      if (streamWriter) {
-        streamWriter.merge(
-          response.toUIMessageStream({
-            generateMessageId: () => streamingMessage.id,
-          }),
-        );
-      }
-      // abortSignal 发生了以后，可能会进 consumeStream 的 then 也可能进 catch，搞不明白
-      // 由于 abort 了以后就不会触发 onFinish，如果这里不 resolve/reject 就会导致 promise 一直不退出
-      // 所以对于放进 promise 里的 streamText，除了设置 abortSignal 还需要单独监听 abortSignal 并 reject
-      abortSignal.addEventListener("abort", () => {
-        reject(new Error("runScoutTaskChatStream abortSignal received"));
-      });
-      // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
-      // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
-      response
-        .consumeStream()
-        .then(() => {})
-        .catch((error) => reject(error));
-    });
-
-    try {
-      await streamTextPromise;
-    } catch (error) {
-      if ((error as Error).message?.includes("RESOURCE_EXHAUSTED")) {
-        // 如果遇到了用量限制，不报错，换个模型
-        logger.warn(`Resource exhausted, switching to alternative model without token reduction`);
-        reduceTokens = null;
-      } else {
-        throw error;
-      }
-    }
-
-    // 开始一轮新的搜索，插入一条新消息，下一次循环开始的时候会从数据库里读取新的 messages 记录
-    await persistentAIMessageToDB({
-      userChatId: scoutUserChatId,
-      message: {
-        id: generateId(),
-        role: "user",
-        parts: [{ type: "text", text: CONTINUE_ASSISTANT_STEPS }],
+  const streamTextPromise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
+    const response = streamText({
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
+      // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
+      providerOptions: {
+        openai: {
+          reasoningSummary: "auto",
+          reasoningEffort: "minimal",
+        } satisfies OpenAIResponsesProviderOptions,
+        google: {
+          // Options are nested under 'google' for Vertex provider
+          thinkingConfig: {
+            includeThoughts: true,
+            thinkingBudget: 2048, // Optional
+          },
+        } satisfies GoogleGenerativeAIProviderOptions,
       },
+
+      system: systemPrompt,
+      temperature: 0.5,
+      messages: coreMessages,
+      tools: tools,
+      toolChoice: "required",
+      activeTools: activeTools.filter((toolName) => toolName !== ToolName.toolCallError),
+      experimental_repairToolCall: handleToolCallError, // 这个要求 tools 里面有 [ToolName.toolCallError]
+
+      prepareStep: async ({ messages }) => {
+        const toolUses = messages.reduce((acc, message) => {
+          if (message.role === "assistant" && typeof message.content === "object") {
+            const toolNames = message.content
+              .filter((content) => content.type === "tool-call")
+              .map((content) => content.toolName);
+            return [...acc, ...toolNames];
+          }
+          return acc;
+        }, [] as string[]);
+        // 最多调用 15 次工具，因为还可能调用 reasoningThinking，额外加 2 次，此时，如果 stopWhen 还没触发，会强制输出一段文本，作为总结，然后结束
+        if (toolUses.length >= 15 + 2) {
+          return {
+            model: llm("gemini-2.5-pro"),
+            toolChoice: "none",
+            activeTools: [],
+            messages: [
+              ...messages,
+              {
+                role: "user",
+                content:
+                  locale === "zh-CN"
+                    ? "观察已充分，请描述你理解的这群人。"
+                    : "Observation complete. Describe the people you've come to understand.",
+              },
+            ],
+          };
+        }
+        if (
+          toolUses.length >= 5 &&
+          toolUses.filter((toolName) => toolName === ToolName.reasoningThinking).length < 1
+        ) {
+          logger.info(
+            `ScoutTaskChat requires ReasoningThinking tool with current tool usage count at ${toolUses.length}`,
+          );
+          return {
+            model: llm("gemini-2.5-pro"), // 临时换个模型，因为 gemini 2.5 喜欢一次性批量调用一批工具，这里 reduceTokens 没更新，问题不大
+            toolChoice: "required",
+            activeTools: [ToolName.reasoningThinking],
+          };
+        } else {
+          return {
+            // model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
+            // toolChoice: "required",
+            activeTools: activeTools.filter(
+              (toolName) =>
+                toolName !== ToolName.reasoningThinking && toolName !== ToolName.toolCallError,
+            ),
+          };
+        }
+      },
+
+      // stopWhen: [stepCountIs(maxSteps)],
+      stopWhen: async ({ steps }) => {
+        if (tokensConsumed > 150_000) {
+          // 达到了离谱的 token 消耗，无条件退出
+          logger.error(
+            `Token consumption ${tokensConsumed} exceeds limit ${150_000}, ending scout`,
+          );
+          return true;
+        }
+        // 最大 20 次工具调用
+        return (
+          steps.length >= 20 || steps.reduce((acc, step) => acc + step.toolCalls.length, 0) >= 20
+        );
+      },
+
+      experimental_transform: smoothStream({
+        delayInMs: 30,
+        chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+      }),
+
+      onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof tools> }) => {
+        appendChunkToStreamingMessage(streamingMessage, chunk);
+        await debouncePersistentMessage(streamingMessage, {
+          immediate:
+            chunk.type !== "text-delta" &&
+            chunk.type !== "reasoning-delta" &&
+            chunk.type !== "tool-input-delta",
+          // 只在 text-delta 类型的时候才 debounce，靠谱点。see https://github.com/bmrlab/atypica-llm-app/issues/40
+          // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
+        });
+      },
+
+      onStepFinish: async (step) => {
+        await immediatePersistentMessage();
+        // 注意，stepFinish 一定要保存，并且强制 immediate:true
+        // 有时候 llm 返回的消息很少，前面 onChunk 的 persistent 还在 debounce 的时候，后面 user 的 continue 消息已经保存了，这就会导致
+        // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
+        // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
+        const toolCalls = step.toolCalls.map((call) => call.toolName);
+        const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
+        if (statReport) {
+          const reportedBy = "scoutTaskChat tool";
+          const promises = [
+            statReport("steps", toolCalls.length, { reportedBy, scoutUserChatId, toolCalls }),
+            statReport("tokens", tokens, { reportedBy, scoutUserChatId, ...extra }),
+          ];
+          tokensConsumed += tokens;
+          await Promise.all(promises);
+        }
+        logger.info({
+          msg: "runScoutTaskChatStream streamText onStepFinish",
+          toolCalls,
+          usage: extra.usage,
+          cache: extra.cache,
+          totalTokensConsumed: tokensConsumed,
+        });
+        // appendStepToStreamingMessage(streamingMessage, step);
+        // if (streamingMessage.parts?.length && streamingMessage.content.trim()) {
+        //   await persistentAIMessageToDB(scoutUserChatId, streamingMessage);
+        // }
+      },
+
+      onFinish: async ({ steps, usage }) => {
+        logger.info({ msg: "runScoutTaskChatStream streamText onFinish", usage });
+        const message = convertStepsToAIMessage(steps);
+        resolve(message);
+      },
+
+      onError: ({ error }) => {
+        if ((error as Error).name === "AbortError") {
+          logger.warn(`runScoutTaskChatStream streamText aborted: ${(error as Error).message}`);
+        } else {
+          logger.error(`runScoutTaskChatStream streamText onError: ${(error as Error).message}`);
+          reject(error);
+        }
+      },
+
+      abortSignal,
     });
-  }
-  // while loop end
+    if (streamWriter) {
+      streamWriter.merge(
+        response.toUIMessageStream({
+          generateMessageId: () => streamingMessage.id,
+        }),
+      );
+    }
+    // abortSignal 发生了以后，可能会进 consumeStream 的 then 也可能进 catch，搞不明白
+    // 由于 abort 了以后就不会触发 onFinish，如果这里不 resolve/reject 就会导致 promise 一直不退出
+    // 所以对于放进 promise 里的 streamText，除了设置 abortSignal 还需要单独监听 abortSignal 并 reject
+    abortSignal.addEventListener("abort", () => {
+      reject(new Error("runScoutTaskChatStream abortSignal received"));
+    }); // 这里不要 await 而是用 then，否则会出现一系列嵌套的 await new promise 最终导致 abortController.abort() 操作被取消
+    // 可能是 studychat 先断了，await 结束了，后面的 abort 就失败了
+    response
+      .consumeStream()
+      .then(() => {})
+      .catch((error) => reject(error));
+  });
+
+  await streamTextPromise;
 }
 
 // const LIMIT_SOCIAL_TOOLS_USE = 20; // 最多使用 20 次 social 搜索
