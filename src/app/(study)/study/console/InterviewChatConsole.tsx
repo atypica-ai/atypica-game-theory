@@ -31,7 +31,8 @@ export const InterviewChatConsole = ({
     (persona) => !!persona?.id,
   ) as StudyUITools[ToolName.interviewChat]["input"]["personas"];
 
-  const [analyst, setAnalyst] = useState<Analyst>();
+  const [analyst, setAnalyst] =
+    useState<ExtractServerActionData<typeof fetchAnalystByStudyUserChatToken>>();
   useEffect(() => {
     (async () => {
       try {
@@ -113,7 +114,7 @@ const SingleInterviewChat = ({
   personaId,
   toolInvocation,
 }: {
-  analyst: Analyst;
+  analyst: Pick<Analyst, "id" | "role" | "topic">;
   personaId: number;
   toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.interviewChat>>;
 }) => {

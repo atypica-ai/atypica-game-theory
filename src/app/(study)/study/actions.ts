@@ -5,6 +5,7 @@ import {
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
+import { s3SignedUrl } from "@/lib/attachments/s3";
 import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
@@ -13,6 +14,7 @@ import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import {
   Analyst,
+  AnalystExtra,
   AnalystPodcast,
   AnalystPodcastExtra,
   AnalystReport,
@@ -23,7 +25,7 @@ import {
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
-import { generateId, UIMessage } from "ai";
+import { FileUIPart, generateId, UIMessage } from "ai";
 
 export async function createStudyUserChat(
   {
@@ -244,7 +246,7 @@ export async function fetchAnalystByStudyUserChatToken({
   studyUserChatToken,
 }: {
   studyUserChatToken: string;
-}): Promise<ServerActionResult<Analyst>> {
+}): Promise<ServerActionResult<Omit<Analyst, "extra"> & { extra: AnalystExtra }>> {
   const studyUserChat = await prisma.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
     include: {
@@ -260,7 +262,42 @@ export async function fetchAnalystByStudyUserChatToken({
   }
   return {
     success: true,
-    data: { ...studyUserChat.analyst },
+    data: {
+      ...studyUserChat.analyst,
+      extra: studyUserChat.analyst.extra as AnalystExtra,
+    },
+  };
+}
+
+export async function fetchAttachmentsByStudyUserChatToken({
+  studyUserChatToken,
+}: {
+  studyUserChatToken: string;
+}): Promise<ServerActionResult<FileUIPart[]>> {
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken, kind: "study" },
+    include: {
+      analyst: true,
+    },
+  });
+  if (!studyUserChat?.analyst) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Analyst not found",
+    };
+  }
+  const fileUIParts = await Promise.all(
+    (studyUserChat.analyst.attachments as ChatMessageAttachment[]).map(
+      async ({ name, objectUrl, mimeType }) => {
+        const url = await s3SignedUrl(objectUrl);
+        return { type: "file" as const, mediaType: mimeType, filename: name, url: url };
+      },
+    ),
+  );
+  return {
+    success: true,
+    data: fileUIParts,
   };
 }
 

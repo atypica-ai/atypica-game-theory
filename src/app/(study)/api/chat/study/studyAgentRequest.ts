@@ -29,10 +29,12 @@ import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
 import {
+  ImagePart,
   smoothStream,
   stepCountIs,
   StepResult,
   streamText,
+  TextPart,
   TextStreamPart,
   ToolChoice,
   UIMessageStreamWriter,
@@ -138,12 +140,26 @@ export async function studyAgentRequest({
     { tools: allTools },
   );
 
-  // Insert reference study context as the first user message if available
-  if (referenceStudyContext) {
-    coreMessages.unshift({
-      role: "user",
-      content: referenceStudyContext,
+  const parsedAttachments = await waitUntilAttachmentsProcessed({
+    analyst: analyst,
+    locale,
+    streamWriter,
+    streamingMessage: streamingMessage, // 和后面 toUIMessageStream 固定 messageId 同理，要固定 messageId, 不然 waitUntilAttachmentsProcessed 里面的消息在 UI 上会显示 2 条，因为后面 toUIMessageStream 会改变 id
+  });
+
+  // todo remove false
+  if (coreMessages.length == 1 && coreMessages[0].role == "user") {
+    const shouldDecide = await shouldDecidePersonaTier({
+      locale,
+      userId,
+      studyUserChatId,
+      streamWriter,
+      streamingMessage: streamingMessage,
     });
+    if (shouldDecide) {
+      // shouldDecidePersonaTier 里面会写入 stream, 这里直接退出就好
+      return;
+    }
   }
 
   let tools: Partial<typeof allTools> = allTools;
@@ -195,29 +211,6 @@ export async function studyAgentRequest({
   //   });
   // }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const attachments = await waitUntilAttachmentsProcessed({
-    analyst: analyst,
-    locale,
-    streamWriter,
-    streamingMessage: streamingMessage, // 和后面 toUIMessageStream 固定 messageId 同理，要固定 messageId, 不然 waitUntilAttachmentsProcessed 里面的消息在 UI 上会显示 2 条，因为后面 toUIMessageStream 会改变 id
-  });
-
-  // todo remove false
-  if (coreMessages.length == 1) {
-    const shouldDecide = await shouldDecidePersonaTier({
-      locale,
-      userId,
-      studyUserChatId,
-      streamWriter,
-      streamingMessage: streamingMessage,
-    });
-    if (shouldDecide) {
-      // shouldDecidePersonaTier 里面会写入 stream, 这里直接退出就好
-      return;
-    }
-  }
-
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
   const system = await studySystem({
     locale,
@@ -225,19 +218,58 @@ export async function studyAgentRequest({
     teamId,
     // 为了 prompt cache 生效，需要一个固定的 system prompt，之前放在 system prompt 里面的 tokensStat, toolUseStat 现在去掉了
   });
-  let streamStartTime = Date.now();
-  const cachedCoreMessages = setBedrockCache("claude-3-7-sonnet", coreMessages);
+
+  let modelMessages = coreMessages;
+  // Insert reference study context as the first user message if available
+  if (referenceStudyContext) {
+    modelMessages.unshift({
+      role: "user",
+      content: referenceStudyContext,
+    });
+  }
+  if (parsedAttachments.length) {
+    modelMessages.unshift({
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text:
+            locale === "zh-CN"
+              ? "用户上传的参考资料（请作为研究背景参考，无需直接回复）："
+              : "User-uploaded reference materials (for research context, no direct response needed):",
+        },
+        ...parsedAttachments
+          .map((parsedAttachment) => {
+            if (parsedAttachment.type === "image") {
+              return {
+                type: "image",
+                image: parsedAttachment.dataUrl,
+                mediaType: parsedAttachment.mimeType,
+              } as ImagePart;
+            } else {
+              return {
+                type: "text",
+                text: parsedAttachment.text,
+              } as TextPart;
+            }
+          })
+          .filter(Boolean),
+      ],
+    });
+  }
+  modelMessages = setBedrockCache("claude-3-7-sonnet", modelMessages);
 
   // 清除之前的错误信息（如果有的话）
   await setUserChatError(studyUserChatId, null);
 
+  let streamStartTime = Date.now();
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
     model: llm("claude-3-7-sonnet"),
 
     providerOptions: defaultProviderOptions,
     system: system,
-    messages: cachedCoreMessages,
+    messages: modelMessages,
     tools: tools,
     toolChoice: toolChoice,
     experimental_repairToolCall: handleToolCallError,

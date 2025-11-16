@@ -33,6 +33,7 @@ import {
   fetchUserChatStateByToken,
   userStopBackgroundStudyAction,
 } from "./actions";
+import { AnalystAttachments } from "./components/AnalystAttachments";
 import { CancelButton, StatusDisplay } from "./components/StatusDisplay";
 import { useStudyContext } from "./hooks/StudyContext";
 import { SingleMessage } from "./SingleMessage";
@@ -318,10 +319,7 @@ export function ChatBox() {
     <div className="flex-1 overflow-hidden relative pb-2">
       <div
         ref={messagesContainerRef}
-        className={cn(
-          "h-full w-full flex flex-col items-center gap-4 overflow-y-auto scrollbar-thin",
-          "pt-4 pb-60 px-4",
-        )}
+        className={cn("h-full w-full space-y-4 overflow-y-auto scrollbar-thin", "pt-4 pb-60 px-4")}
       >
         {/* Reference Chats Display */}
         {referenceChatTitles.length > 0 && (
@@ -340,43 +338,49 @@ export function ChatBox() {
             ))}
           </div>
         )}
-        {messages.map((message, index) => (
-          <SingleMessage
-            className={cn({
-              "not-first-of-type:border-t-0 not-first-of-type:pt-0 mt-1":
-                referenceChatTitles.length > 0 && index === 0,
-            })}
-            key={message.id}
-            message={message}
-            nickname={message.role === "assistant" ? "atypica.AI" : undefined}
-            // addToolResult={addToolResult}
-            renderToolUIPart={(toolPart) => (
-              <StudyToolUIPartDisplay toolUIPart={toolPart} addToolResult={addToolResult} />
-            )}
-            avatar={
-              message.role === "assistant" ? (
-                <HippyGhostAvatar seed={studyUserChatToken} />
-              ) : undefined
-            }
-            // TODO: 目前先禁用这个功能
-            // onDelete={
-            //   message.role === "user" && index >= messages.length - 2
-            //     ? async () => {
-            //         // TODO 这里要改一下
-            //         // assistant 可能连续出现 2 条，所以最后一条用户消息的index就不一定是 messages.length - 2
-            //         // 如果删除，那也就不是一条 user 和一条 assistant，而应该是连续的 assistant 都删除
-            //         const result = await deleteMessageFromUserChat(studyUserChatId, message.id);
-            //         if (result.success) {
-            //           setMessages(result.data);
-            //         } else {
-            //           console.log(result.message);
-            //         }
-            //       }
-            //     : undefined
-            // }
-            isLastMessage={index === messages.length - 1}
-          ></SingleMessage>
-        ))}
+
+        {/* Attachments */}
+        <AnalystAttachments />
+
+        <div className="flex flex-col items-center gap-4">
+          {messages.map((message, index) => (
+            <SingleMessage
+              className={cn({
+                "not-first-of-type:border-t-0 not-first-of-type:pt-0 mt-1":
+                  referenceChatTitles.length > 0 && index === 0,
+              })}
+              key={message.id}
+              message={message}
+              nickname={message.role === "assistant" ? "atypica.AI" : undefined}
+              // addToolResult={addToolResult}
+              renderToolUIPart={(toolPart) => (
+                <StudyToolUIPartDisplay toolUIPart={toolPart} addToolResult={addToolResult} />
+              )}
+              avatar={
+                message.role === "assistant" ? (
+                  <HippyGhostAvatar seed={studyUserChatToken} />
+                ) : undefined
+              }
+              // TODO: 目前先禁用这个功能
+              // onDelete={
+              //   message.role === "user" && index >= messages.length - 2
+              //     ? async () => {
+              //         // TODO 这里要改一下
+              //         // assistant 可能连续出现 2 条，所以最后一条用户消息的index就不一定是 messages.length - 2
+              //         // 如果删除，那也就不是一条 user 和一条 assistant，而应该是连续的 assistant 都删除
+              //         const result = await deleteMessageFromUserChat(studyUserChatId, message.id);
+              //         if (result.success) {
+              //           setMessages(result.data);
+              //         } else {
+              //           console.log(result.message);
+              //         }
+              //       }
+              //     : undefined
+              // }
+              isLastMessage={index === messages.length - 1}
+            ></SingleMessage>
+          ))}
+        </div>
 
         {/* Study Next Steps */}
         {studyCompleted && uiStatus === "ready" ? (

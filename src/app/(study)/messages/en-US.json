@@ -38,7 +38,8 @@
       "continueStudy": "Continue",
       "startNewStudy": "Start New Study",
       "confirm": "Confirm",
-      "referenceContext": "Reference Study"
+      "referenceContext": "Reference Study",
+      "attachments": "Attachments"
     },
     "Feedback": {
       "title": "Was this study useful?",

@@ -1,12 +1,8 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { StudyUITools, ToolName } from "@/ai/tools/types";
+import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { parseAttachmentText } from "@/lib/attachments/processing";
-import {
-  Analyst,
-  AttachmentFile,
-  AttachmentFileExtra,
-  ChatMessageAttachment,
-} from "@/prisma/client";
+import { Analyst, AttachmentFileExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import {
@@ -156,7 +152,9 @@ export async function waitUntilAttachmentsProcessed({
   locale: Locale;
   streamWriter: UIMessageStreamWriter;
   streamingMessage: UIMessage;
-}): Promise<(Omit<AttachmentFile, "extra"> & { extra: AttachmentFileExtra })[]> {
+}): Promise<
+  ({ type: "image"; mimeType: string; dataUrl: string } | { type: "text"; text: string })[]
+> {
   // Check attachments and process if needed
   const analystAttachments = (analyst.attachments ?? []) as ChatMessageAttachment[];
 
@@ -187,7 +185,20 @@ export async function waitUntilAttachmentsProcessed({
   });
 
   if (allFilesReady) {
-    return attachmentFilesWithExtra;
+    return await Promise.all(
+      attachmentFilesWithExtra.map(async ({ objectUrl, mimeType, extra }) => {
+        if (mimeType.startsWith("image/")) {
+          return {
+            type: "image",
+            mimeType,
+            dataUrl: await fileUrlToDataUrl({ objectUrl, mimeType }),
+          };
+        } else {
+          // 非 image 的，因为现在只可能是文本类型的文件，比如 pdf，就都取 compressedText
+          return { type: "text", text: extra.compressedText ?? "[EMPTY]" };
+        }
+      }),
+    );
   }
 
   const promise = new Promise<void>((resolve, reject) => {
@@ -260,15 +271,25 @@ export async function waitUntilAttachmentsProcessed({
   // };
 
   // 重新读取一遍，返回带 parsedContent 的文件
-  return (
-    await prisma.attachmentFile.findMany({
-      where: {
-        userId: analyst.userId,
-        objectUrl: { in: analystAttachments.map((a) => a.objectUrl) },
-      },
-    })
-  ).map((file) => ({
-    ...file,
-    extra: file.extra as unknown as AttachmentFileExtra,
-  }));
+  return await Promise.all(
+    (
+      await prisma.attachmentFile.findMany({
+        where: {
+          userId: analyst.userId,
+          objectUrl: { in: analystAttachments.map((a) => a.objectUrl) },
+        },
+      })
+    ).map(async ({ objectUrl, mimeType, extra }) => {
+      if (mimeType.startsWith("image/")) {
+        return {
+          type: "image",
+          mimeType,
+          dataUrl: await fileUrlToDataUrl({ objectUrl, mimeType }),
+        };
+      } else {
+        // 非 image 的，因为现在只可能是文本类型的文件，比如 pdf，就都取 compressedText
+        return { type: "text", text: (extra as AttachmentFileExtra).compressedText ?? "[EMPTY]" };
+      }
+    }),
+  );
 }
