@@ -5,6 +5,7 @@ import {
   insPostCommentsTool,
   insSearchTool,
   insUserPostsTool,
+  reasoningThinkingTool,
   tiktokPostCommentsTool,
   tiktokSearchTool,
   tiktokUserPostsTool,
@@ -16,7 +17,7 @@ import {
   xhsSearchTool,
   xhsUserNotesTool,
 } from "@/ai/tools/tools";
-import { ToolName } from "@/ai/tools/types";
+import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { generateToken } from "@/lib/utils";
 import z from "zod/v3";
 
@@ -59,7 +60,12 @@ export type ScoutTaskChatResult = z.infer<typeof scoutTaskChatOutputSchema>;
 
 // 要给 buildPersona tool 的 prepareMessagesForStreaming 用，在转成 model message 的时候调用 toModelOutput
 // 不能直接 export，不然 build 阶段会报错
-export const scoutChatTools = () => ({
+export const scoutChatTools = ({
+  locale,
+  abortSignal,
+  statReport,
+  logger,
+}: AgentToolConfigArgs) => ({
   [ToolName.dySearch]: dySearchTool,
   [ToolName.dyPostComments]: dyPostCommentsTool,
   [ToolName.dyUserPosts]: dyUserPostsTool,
@@ -75,5 +81,8 @@ export const scoutChatTools = () => ({
   [ToolName.twitterSearch]: twitterSearchTool,
   [ToolName.twitterUserPosts]: twitterUserPostsTool,
   [ToolName.twitterPostComments]: twitterPostCommentsTool,
+  // 用于中间停下来思考一下，会在 prepareStep 里控制
+  [ToolName.reasoningThinking]: reasoningThinkingTool({ locale, abortSignal, statReport, logger }),
+  // 特殊用途，不应该被大模型主动调用
   [ToolName.toolCallError]: toolCallError,
 });

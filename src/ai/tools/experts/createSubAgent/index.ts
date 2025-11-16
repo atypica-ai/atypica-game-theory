@@ -353,7 +353,10 @@ ${mcpPrompts.length > 0 ? `\n## Available Tools and Context\n${mcpPrompts.join("
       onChunk: async ({ chunk }: { chunk: TextStreamPart<ToolSet> }) => {
         appendChunkToStreamingMessage(streamingMessage, chunk);
         await debouncePersistentMessage(streamingMessage, {
-          immediate: chunk.type !== "text-delta",
+          immediate:
+            chunk.type !== "text-delta" &&
+            chunk.type !== "reasoning-delta" &&
+            chunk.type !== "tool-input-delta",
         });
       },
       onStepFinish: async (step) => {

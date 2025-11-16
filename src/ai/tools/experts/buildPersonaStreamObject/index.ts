@@ -104,7 +104,7 @@ export async function runBuildPersonaStreamObject({
   scoutUserChatId: number;
 } & AgentToolConfigArgs) {
   const { coreMessages } = await prepareMessagesForStreaming(scoutUserChatId, {
-    tools: scoutChatTools(),
+    tools: scoutChatTools({ locale, statReport, abortSignal, logger }),
   });
   let messages = coreMessages.filter(
     (message) => !(message.role === "user" && message.content === CONTINUE_ASSISTANT_STEPS),

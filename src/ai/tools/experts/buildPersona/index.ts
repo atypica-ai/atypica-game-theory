@@ -142,7 +142,7 @@ export async function runBuildPersona({
   const { coreMessages: _coreMessages } = await prepareMessagesForStreaming(scoutUserChatId, {
     tools: {
       ...tools,
-      ...scoutChatTools(),
+      ...scoutChatTools({ locale, statReport, abortSignal, logger }),
     },
   });
   const coreMessages = appendBuildPersonaPrologue(_coreMessages, locale);

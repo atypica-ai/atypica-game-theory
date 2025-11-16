@@ -4,17 +4,9 @@ import { cn } from "@/lib/utils";
 import { isToolUIPart } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
-import React, { PropsWithChildren, ReactNode, useMemo } from "react";
+import React, { ReactNode, useMemo } from "react";
 import { FileAttachment } from "./FileAttachment";
 import { ToolInvocationMessage } from "./ToolInvocationMessage";
-
-const PlainText = ({ children }: PropsWithChildren) => {
-  return children ? (
-    <div className="text-sm">
-      <Markdown>{children as string}</Markdown>
-    </div>
-  ) : null;
-};
 
 export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   nickname,
@@ -64,11 +56,25 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
       <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
         {parts.map((part, i) => {
           if (part.type === "text") {
-            return <PlainText key={i}>{part.text}</PlainText>;
+            return (
+              <div key={i} className="text-sm">
+                <Markdown>{part.text}</Markdown>
+              </div>
+            );
           } else if (part.type === "reasoning") {
-            return <PlainText key={i}>{part.text}</PlainText>;
-            // } else if (part.type === "source") {
-            //   return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
+            return (
+              <div
+                key={i}
+                className="border-l-2 border-blue-400/40 bg-blue-50/50 dark:bg-blue-950/20 pl-3 pr-3 py-2 rounded-r-md"
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-blue-500 dark:text-blue-400 text-base">💭</span>
+                  <div className="flex-1 text-xs text-blue-900/80 dark:text-blue-100/80 italic">
+                    <Markdown>{part.text}</Markdown>
+                  </div>
+                </div>
+              </div>
+            );
           } else if (part.type === "dynamic-tool") {
             // 通过 MCP 添加的 Tools 会是 dynamic-tools
             return (
@@ -85,7 +91,11 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
               </React.Fragment>
             );
           } else {
-            return null;
+            return (
+              <div key={i} className="text-xs text-muted-foreground break-all">
+                {JSON.stringify(part)}
+              </div>
+            );
           }
         })}
       </div>

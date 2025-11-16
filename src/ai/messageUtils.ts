@@ -82,8 +82,14 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
   streamingMessage: Omit<UIMessage, "role">,
   step: StepResult<T>,
 ) {
+  //⚠️  step.content 是上一个 step 的内容，不要用
+
   const parts = streamingMessage.parts ?? [];
   // const contents = streamingMessage.content ? [streamingMessage.content] : [];
+
+  if (step.reasoningText) {
+    parts.push({ type: "reasoning", text: step.reasoningText });
+  }
 
   const stepText = step.text.trim() || (step.toolResults.length > 0 ? "[tool-result]" : "[text]"); // 确保 content 一定有内容
   // contents.push(stepText);
@@ -136,6 +142,14 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
     const lastPart = parts[parts.length - 1];
     if (lastPart?.type !== "text") {
       parts.push({ type: "text", text: chunk.text });
+    } else {
+      lastPart.text += chunk.text;
+    }
+  } else if (chunk.type === "reasoning-delta") {
+    const parts = streamingMessage.parts;
+    const lastPart = parts[parts.length - 1];
+    if (lastPart?.type !== "reasoning") {
+      parts.push({ type: "reasoning", text: chunk.text });
     } else {
       lastPart.text += chunk.text;
     }

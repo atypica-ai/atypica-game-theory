@@ -170,7 +170,7 @@ async function runScoutSocialTrendsStream({
   streamWriter?: UIMessageStreamWriter;
 } & AgentToolConfigArgs): Promise<string> {
   const allTools = {
-    ...scoutChatTools(),
+    ...scoutChatTools({ locale, statReport, abortSignal, logger }),
   };
   const systemPrompt = scoutSocialTrendsSystem({ locale });
   const tools =
@@ -262,7 +262,10 @@ async function runScoutSocialTrendsStream({
         onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
           appendChunkToStreamingMessage(streamingMessage, chunk);
           await debouncePersistentMessage(streamingMessage, {
-            immediate: chunk.type !== "text-delta",
+            immediate:
+              chunk.type !== "text-delta" &&
+              chunk.type !== "reasoning-delta" &&
+              chunk.type !== "tool-input-delta",
             // 只在 text-delta 类型的时候才 debounce，靠谱点。see https://github.com/bmrlab/atypica-llm-app/issues/40
             // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
           });
