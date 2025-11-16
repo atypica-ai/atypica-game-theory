@@ -134,7 +134,7 @@ export async function GET(
     const firstImageSrc = extractFirstImageSrc(report.onePageHtml);
 
     if (firstImageSrc) {
-      rootLogger.info({
+      rootLogger.debug({
         msg: `Found image in report HTML`,
         reportToken,
         imageSrc: firstImageSrc,
@@ -154,7 +154,7 @@ export async function GET(
     }
 
     // Step 2: Fallback to report cover image
-    rootLogger.info({
+    rootLogger.debug({
       msg: `No image in HTML, using report cover`,
       reportToken,
     });

@@ -32,8 +32,10 @@ export function proxiedObjectCdnUrl({
   const fileNameInUrl = objectUrl.split("?")[0].split("/").pop() as string;
   const cache = "false"; // 不用 cache, 因为 cdn 已经 cache 了
   const parse = "false"; // parse = (mimeType === "application/pdf").toString()
-  const cdnUrl = `${objectCdnOrigin}/cdn/proxy-object/${name ? name : fileNameInUrl}?objectUrl=${encodeURIComponent(objectUrl)}&mimeType=${mimeType}&cache=${cache}&parse=${parse}`;
-  return cdnUrl.toString();
+  // 对 name 进行 URL 编码,避免特殊字符(如 %)导致的双重编码问题
+  const encodedName = name ? encodeURIComponent(name) : fileNameInUrl;
+  const cdnUrl = `${objectCdnOrigin}/cdn/proxy-object/${encodedName}?objectUrl=${encodeURIComponent(objectUrl)}&mimeType=${mimeType}&cache=${cache}&parse=${parse}`;
+  return cdnUrl;
 }
 
 export function proxiedImageCdnUrl({
