@@ -38,6 +38,7 @@ export function StickyPlayer({
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(50);
   const autoPlayAttemptedRef = useRef(false);
+  const interactionPlayAttemptedRef = useRef(false);
 
   // Load audio URL
   useEffect(() => {
@@ -100,11 +101,13 @@ export function StickyPlayer({
 
   // Try to play on first user interaction if autoplay was blocked
   useEffect(() => {
-    if (!autoPlay || isPlaying) return;
+    if (!autoPlay || isPlaying || interactionPlayAttemptedRef.current) return;
 
     const tryPlayOnInteraction = () => {
       const audio = audioRef.current;
       if (!audio || isPlaying || !audioUrl) return;
+
+      interactionPlayAttemptedRef.current = true;
 
       audio
         .play()
