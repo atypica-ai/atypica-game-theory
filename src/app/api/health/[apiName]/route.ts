@@ -103,15 +103,11 @@ const API_CONFIGS = {
   database: {
     type: "database-service",
     test: async () => {
-      try {
-        await prisma.$queryRaw`SELECT 1`;
-        return {
-          message: "Database connection successful",
-          timestamp: new Date().toISOString(),
-        };
-      } finally {
-        await prisma.$disconnect();
-      }
+      await prisma.$queryRaw`SELECT 1`;
+      return {
+        message: "Database connection successful",
+        timestamp: new Date().toISOString(),
+      };
     },
   },
   claude: {
