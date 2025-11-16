@@ -27,14 +27,19 @@ import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
-import { UserChatExtra } from "@/prisma/client";
+import { Analyst, UserChatExtra } from "@/prisma/client";
 import { smoothStream, stepCountIs, StepResult, streamText, TextStreamPart, ToolChoice } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 import { buildReferenceStudyContext } from "./referenceContext";
-import { outOfBalance, setBedrockCache, shouldDecidePersonaTier } from "./utils";
+import {
+  outOfBalance,
+  setBedrockCache,
+  shouldDecidePersonaTier,
+  shouldProcessAttachments,
+} from "./utils";
 
 // autopolot 模式默认 15 步，webSearch 2 + saveAnalyst 1 + searchPersonas 1 + scoutTaskChat 2 + buildPersona 2 + interviewChat 2 + saveAnalystStudySummary 1 + generateReport 1
 const MAX_STEPS_EACH_ROUND = 15;
@@ -42,7 +47,7 @@ const MAX_STEPS_EACH_ROUND = 15;
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
 export async function studyAgentRequest({
-  userChat: { id: studyUserChatId, extra: userChatExtra },
+  userChat: { id: studyUserChatId, extra: userChatExtra, analyst },
   userId,
   teamId,
   // reqSignal,
@@ -52,6 +57,7 @@ export async function studyAgentRequest({
   userChat: {
     id: number;
     extra: UserChatExtra;
+    analyst: Analyst;
   };
   userId: number;
   teamId: number | null;
@@ -59,6 +65,8 @@ export async function studyAgentRequest({
   logger: Logger;
   locale: Locale;
 }) {
+  // TODO: 使用 attachments 参数，暂时先不做任何处理
+
   // 从 new study interview 过来或者是有参考研究的，不需要再 clarify
   const briefStatus: "CLARIFIED" | "DRAFT" =
     userChatExtra?.briefUserChatId || userChatExtra?.referenceUserChats?.length
@@ -178,6 +186,12 @@ export async function studyAgentRequest({
   //     },
   //   });
   // }
+
+  const shouldProcessAttachmentsRes = await shouldProcessAttachments({ analyst: analyst, locale });
+  if (shouldProcessAttachmentsRes.processing) {
+    return shouldProcessAttachmentsRes.response;
+  }
+  const attachments = shouldProcessAttachmentsRes.attachments;
 
   if (coreMessages.length == 1) {
     const shouldDecideResponse = await shouldDecidePersonaTier({ locale, userId, studyUserChatId });

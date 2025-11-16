@@ -9,6 +9,7 @@ import { AttachmentFile, AttachmentFileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
+import { waitUntil } from "@vercel/functions";
 import { streamText } from "ai";
 import { Logger } from "pino";
 import { s3SignedUrl } from "./s3";
@@ -19,7 +20,7 @@ type AttachmentFileWithTypedExtra = Omit<AttachmentFile, "extra"> & {
 
 const SUPPORTED_MIME_TYPES = ["application/pdf", "text/plain", "text/csv"];
 const THIRTY_MINUTES = 30 * 60 * 1000;
-const CHECK_INTERVAL = 10_000;
+const CHECK_INTERVAL = 30_000; // 30 seconds
 const MAX_COMPRESSED_TOKENS = 20_000;
 
 function convertAttachmentFileExtra(file: AttachmentFile): AttachmentFileWithTypedExtra {
@@ -72,7 +73,15 @@ async function extractFullText(file: AttachmentFileWithTypedExtra): Promise<stri
   throw new Error(`Unsupported mime type: ${mimeType}`);
 }
 
-async function compressText(fullText: string, logger: Logger): Promise<string> {
+async function compressText({
+  fullText,
+  logger,
+  abortSignal,
+}: {
+  fullText: string;
+  logger: Logger;
+  abortSignal: AbortSignal;
+}): Promise<string> {
   const locale = await detectInputLanguage({ text: fullText });
 
   const systemPrompt =
@@ -160,6 +169,7 @@ Output Format: Output the compressed text directly, with no explanations, no pre
         compressedTextLength: compressedText.length,
       });
     },
+    abortSignal,
   });
 
   await response.consumeStream();
@@ -167,16 +177,22 @@ Output Format: Output the compressed text directly, with no explanations, no pre
   return compressedText;
 }
 
-async function startParsing(id: number): Promise<AttachmentFileWithTypedExtra> {
-  const file = await fetchFileWithTypedExtra(id);
+async function startParsing({
+  attachmentFileId,
+  abortSignal,
+}: {
+  attachmentFileId: number;
+  abortSignal: AbortSignal;
+}): Promise<AttachmentFileWithTypedExtra> {
+  const file = await fetchFileWithTypedExtra(attachmentFileId);
   if (!file) throw new Error("File not found");
 
-  const logger = rootLogger.child({ attachmentFileId: id, fileName: file.name });
+  const logger = rootLogger.child({ attachmentFileId, fileName: file.name });
 
   try {
     await mergeExtra({
       tableName: "AttachmentFile",
-      id,
+      id: attachmentFileId,
       extra: { processing: { startsAt: Date.now() } },
     });
 
@@ -184,11 +200,11 @@ async function startParsing(id: number): Promise<AttachmentFileWithTypedExtra> {
     const fullText = await extractFullText(file);
 
     logger.info({ msg: "Starting text compression", fullTextLength: fullText.length });
-    const compressedText = await compressText(fullText, logger);
+    const compressedText = await compressText({ fullText, logger, abortSignal });
 
     await mergeExtra({
       tableName: "AttachmentFile",
-      id,
+      id: attachmentFileId,
       extra: { processing: false, compressedText },
     });
 
@@ -198,7 +214,7 @@ async function startParsing(id: number): Promise<AttachmentFileWithTypedExtra> {
       compressedTextLength: compressedText.length,
     });
 
-    const updatedFile = await fetchFileWithTypedExtra(id);
+    const updatedFile = await fetchFileWithTypedExtra(attachmentFileId);
     if (!updatedFile) throw new Error("File not found after update");
     return updatedFile;
   } catch (error) {
@@ -206,14 +222,14 @@ async function startParsing(id: number): Promise<AttachmentFileWithTypedExtra> {
 
     await mergeExtra({
       tableName: "AttachmentFile",
-      id,
+      id: attachmentFileId,
       extra: {
         processing: false,
         error: error instanceof Error ? error.message : String(error),
       },
     });
 
-    const updatedFile = await fetchFileWithTypedExtra(id);
+    const updatedFile = await fetchFileWithTypedExtra(attachmentFileId);
     if (!updatedFile) throw new Error("File not found after error");
     return updatedFile;
   }
@@ -222,32 +238,41 @@ async function startParsing(id: number): Promise<AttachmentFileWithTypedExtra> {
 export async function parseAttachmentText(
   attachmentFileId: number,
 ): Promise<AttachmentFileWithTypedExtra> {
+  const abortController = new AbortController();
+
+  const file = await fetchFileWithTypedExtra(attachmentFileId);
+  if (!file) throw new Error("File not found");
+  const status = await checkFileStatus(file);
+
+  if (status === "skip") {
+    return file;
+  }
+
+  if (status === "timeout") {
+    // 刚进来就发现已经超时了，直接重新开始
+    await mergeExtra({
+      tableName: "AttachmentFile",
+      id: attachmentFileId,
+      extra: { processing: false, error: null },
+    });
+  }
+  if (status === "ready" || status === "timeout") {
+    waitUntil(startParsing({ attachmentFileId, abortSignal: abortController.signal }));
+  }
+
+  // 此时状态是变成 wait，循环等待
+
   while (true) {
+    await new Promise((resolve) => setTimeout(resolve, CHECK_INTERVAL));
     const file = await fetchFileWithTypedExtra(attachmentFileId);
     if (!file) throw new Error("File not found");
-
     const status = await checkFileStatus(file);
-
-    if (status === "skip") {
+    // 如果再一次超时，不会接继续
+    if (status === "skip" || status === "timeout") {
+      try {
+        abortController.abort();
+      } catch {}
       return file;
     }
-
-    if (status === "ready" || status === "timeout") {
-      if (status === "timeout") {
-        await prisma.attachmentFile.update({
-          where: { id: attachmentFileId },
-          data: {
-            extra: {
-              ...file.extra,
-              processing: false,
-              error: undefined,
-            },
-          },
-        });
-      }
-      return await startParsing(attachmentFileId);
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, CHECK_INTERVAL));
   }
 }

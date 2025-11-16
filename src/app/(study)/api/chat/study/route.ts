@@ -99,6 +99,7 @@ export async function POST(req: Request) {
     userChat: {
       ...userChat,
       extra: userChat.extra as UserChatExtra,
+      analyst: userChat.analyst,
     },
     userId,
     teamId,

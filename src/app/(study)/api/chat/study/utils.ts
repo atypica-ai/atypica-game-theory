@@ -1,5 +1,12 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { StudyUITools, ToolName } from "@/ai/tools/types";
+import { parseAttachmentText } from "@/lib/attachments/processing";
+import {
+  Analyst,
+  AttachmentFile,
+  AttachmentFileExtra,
+  ChatMessageAttachment,
+} from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import {
@@ -132,4 +139,113 @@ export async function shouldDecidePersonaTier({
     },
   });
   return createUIMessageStreamResponse({ stream });
+}
+
+export async function shouldProcessAttachments({
+  analyst,
+  locale,
+}: {
+  analyst: Analyst;
+  locale: Locale;
+}): Promise<
+  | {
+      processing: false;
+      attachments: (Omit<AttachmentFile, "extra"> & { extra: AttachmentFileExtra })[];
+    }
+  | {
+      processing: true;
+      response: Response;
+    }
+> {
+  // Check attachments and process if needed
+  const analystAttachments = (analyst.attachments ?? []) as ChatMessageAttachment[];
+
+  if (!analystAttachments.length) {
+    return { processing: false, attachments: [] };
+  }
+
+  // Find all attachment files by objectUrl
+  const attachmentFiles = await prisma.attachmentFile.findMany({
+    where: {
+      userId: analyst.userId,
+      objectUrl: { in: analystAttachments.map((a) => a.objectUrl) },
+    },
+  });
+
+  const attachmentFilesWithExtra = attachmentFiles.map((file) => ({
+    ...file,
+    extra: file.extra as unknown as AttachmentFileExtra,
+  }));
+
+  // Check if all files are ready (skip status)
+  const SUPPORTED_MIME_TYPES = ["application/pdf", "text/plain", "text/csv"];
+  const allFilesReady = attachmentFilesWithExtra.every((file) => {
+    if (!SUPPORTED_MIME_TYPES.includes(file.mimeType)) return true; // skip
+    if (file.extra.compressedText) return true; // skip
+    if (file.extra.error) return true; // skip
+    return false; // needs processing
+  });
+
+  if (allFilesReady) {
+    return { processing: false, attachments: attachmentFilesWithExtra };
+  }
+
+  // Some files need processing - create a stream to show progress
+  const stream = createUIMessageStream({
+    async execute({ writer }) {
+      const messageId = "processing-attachments";
+      writer.write({ type: "start" });
+
+      writer.write({ id: messageId, type: "text-start" });
+      writer.write({
+        id: messageId,
+        type: "text-delta",
+        delta:
+          locale === "zh-CN"
+            ? "正在处理附件，请稍候...\n"
+            : "Processing attachments, please wait...\n",
+      });
+      writer.write({
+        id: messageId,
+        type: "text-delta",
+        delta: attachmentFilesWithExtra.map((file) => `${file.name}\n`).join(""),
+      });
+
+      // Process all files that need processing
+      try {
+        await Promise.all(attachmentFilesWithExtra.map((file) => parseAttachmentText(file.id)));
+
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        writer.write({
+          id: messageId,
+          type: "text-delta",
+          delta:
+            locale === "zh-CN"
+              ? "附件处理完毕，可以继续对话了。"
+              : "Attachment processing completed. You can continue the conversation.",
+        });
+        writer.write({ id: messageId, type: "text-end" });
+      } catch (error) {
+        writer.write({ id: messageId, type: "text-start" });
+        writer.write({
+          id: messageId,
+          type: "text-delta",
+          delta:
+            locale === "zh-CN"
+              ? `附件处理失败：${(error as Error).message}`
+              : `Attachment processing failed: ${(error as Error).message}`,
+        });
+        writer.write({ id: messageId, type: "text-end" });
+      }
+
+      writer.write({ type: "finish", finishReason: "stop" });
+    },
+  });
+
+  const response = createUIMessageStreamResponse({ stream });
+  return {
+    processing: true,
+    response,
+  };
 }
