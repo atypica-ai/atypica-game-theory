@@ -56,7 +56,7 @@ export async function GET(request: Request) {
 
         imageData = await sharpInstance.toBuffer();
       } catch (sharpError) {
-        rootLogger.error(`Sharp processing error: ${sharpError}`);
+        rootLogger.debug(`Sharp processing error: ${sharpError}`);
         // 如果 sharp 处理失败，返回原图像数据
       }
     }

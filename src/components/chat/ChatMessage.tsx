@@ -50,7 +50,7 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
             : role === "system"
               ? avatar || <CpuIcon className="size-6 text-green-500 dark:text-zinc-200" />
               : null}
-        <div className="leading-[24px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
+        <div className="leading-6 text-zinc-800 dark:text-zinc-200 text-sm font-medium">
           {nickname ?? role}
         </div>
       </div>

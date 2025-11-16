@@ -2,6 +2,7 @@ import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { cn, formatTokensNumber, proxiedImageLoader } from "@/lib/utils";
 import { ToolUIPart } from "ai";
 import Image from "next/image";
+import { fixXHSImageSrc } from "./fix";
 
 export const SocialPostsResultMessage = ({
   toolInvocation,
@@ -40,7 +41,7 @@ export const SocialPostsResultMessage = ({
             {post.images_list?.[0]?.url && (
               <Image
                 loader={proxiedImageLoader}
-                src={post.images_list[0].url}
+                src={fixXHSImageSrc(post.images_list[0].url)}
                 alt="Note image"
                 fill
                 sizes="200px"

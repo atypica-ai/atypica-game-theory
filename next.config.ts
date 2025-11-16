@@ -55,6 +55,11 @@ const nextConfig: NextConfig = {
       { source: "/about", destination: "/_public/about.html" },
     ];
   },
+  logging: {
+    incomingRequests: {
+      ignore: [/^\/cdn\//],
+    },
+  },
 };
 
 const withNextIntl = createNextIntlPlugin();

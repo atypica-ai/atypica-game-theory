@@ -141,14 +141,14 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
       </div>
 
       {chatTitle && (
-        <div className="absolute top-0 left-0 right-0 p-3 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+        <div className="absolute top-0 left-0 right-0 p-3 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/90">
           <h1 className="sm:text-lg font-medium text-center truncate">{chatTitle}</h1>
         </div>
       )}
 
       <div className="absolute bottom-0 left-0 right-0 w-full px-3 max-lg:px-1 pb-3 max-lg:pb-1">
         {!readOnly && (
-          <div className="w-fit mx-auto mb-3 max-lg:mb-1.5 px-4 py-2 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+          <div className="w-fit mx-auto mb-3 max-lg:mb-1.5 px-4 py-2 rounded-full shadow bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/90">
             <StatusDisplay status={status} />
           </div>
         )}
