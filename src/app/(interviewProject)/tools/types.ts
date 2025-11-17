@@ -20,22 +20,6 @@ const optionSchema = z.union([
   }),
 ]);
 
-// Other option configuration schema
-export const otherOptionSchema = z.object({
-  enabled: z.boolean().describe("Whether to enable the 'Other' option"),
-  label: z
-    .string()
-    .min(1, "Label cannot be empty")
-    .max(20, "Label is too long")
-    .describe("The display text for the 'Other' option (e.g., '其他', 'Other', '其他请说明')"),
-  placeholder: z
-    .string()
-    .max(50, "Placeholder is too long")
-    .optional()
-    .describe("Placeholder text for the input field when 'Other' is selected"),
-  required: z.boolean().optional().describe("Whether the input field is required when 'Other' is selected"),
-});
-
 // Question schema with strict validation
 // Users create questions via UI. questionType is optional (defaults to "open" in frontend)
 // but when specified as choice type, options are required
@@ -43,16 +27,11 @@ export const questionSchema = z
   .object({
     text: z.string().min(1, "Question text is required").max(1000, "Question text is too long"),
     image: imageAttachmentSchema.optional(),
-    questionType: z.enum(["open", "single-choice", "multiple-choice", "rating"]).optional(),
+    questionType: z.enum(["open", "single-choice", "multiple-choice"]).optional(),
     options: z
       .array(optionSchema)
       .min(2, "Choice questions must have at least 2 options")
       .max(15, "Choice questions can have at most 15 options")
-      .optional(),
-    dimensions: z
-      .array(z.string().min(1, "Dimension name cannot be empty"))
-      .min(1, "Rating questions must have at least 1 dimension")
-      .max(20, "Rating questions can have at most 20 dimensions")
       .optional(),
     validation: z
       .object({
@@ -60,7 +39,6 @@ export const questionSchema = z
         maxSelections: z.number().int().min(1).optional(),
       })
       .optional(),
-    otherOption: otherOptionSchema.optional(),
   })
   .superRefine((data, ctx) => {
     // If questionType is not specified, treat as "open" question (default behavior)
@@ -77,18 +55,7 @@ export const questionSchema = z
       }
     }
 
-    // Rating questions MUST have dimensions
-    if (type === "rating") {
-      if (!data.dimensions || data.dimensions.length < 1) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Rating questions must have at least 1 dimension",
-          path: ["dimensions"],
-        });
-      }
-    }
-
-    // Open questions should NOT have options or dimensions
+    // Open questions should NOT have options
     if (type === "open") {
       if (data.options && data.options.length > 0) {
         ctx.addIssue({
@@ -97,31 +64,6 @@ export const questionSchema = z
           path: ["options"],
         });
       }
-      if (data.dimensions && data.dimensions.length > 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Open questions should not have dimensions",
-          path: ["dimensions"],
-        });
-      }
-    }
-
-    // Rating questions should NOT have options
-    if (type === "rating" && data.options && data.options.length > 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Rating questions should not have options",
-        path: ["options"],
-      });
-    }
-
-    // Choice questions should NOT have dimensions
-    if ((type === "single-choice" || type === "multiple-choice") && data.dimensions && data.dimensions.length > 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Choice questions should not have dimensions",
-        path: ["dimensions"],
-      });
     }
 
     // Validation rules only for multiple-choice
@@ -251,9 +193,8 @@ export const updateQuestionsOutputSchema = z.object({
 // selectQuestion tool schemas
 export const selectQuestionInputSchema = z.object({
   questionIndex: z
-    .number()
-    .int()
-    .positive()
+    .union([z.number(), z.string().transform((val) => parseInt(val, 10))])
+    .pipe(z.number().int().positive())
     .describe(
       "The 1-based index of the question to select (e.g., 1 for the first question, 2 for the second)",
     ),
@@ -262,19 +203,17 @@ export const selectQuestionInputSchema = z.object({
 export const selectQuestionOutputSchema = z.object({
   questionIndex: z.number(),
   questionText: z.string(),
-  questionType: z.enum(["open", "single-choice", "multiple-choice", "rating"]),
+  questionType: z.enum(["open", "single-choice", "multiple-choice"]),
   options: z.array(z.string()).optional(),
-  dimensions: z.array(z.string()).optional(),
   image: imageAttachmentSchema.optional(),
   formFields: z
     .array(
       z.object({
         id: z.string(),
         label: z.string(),
-        type: z.enum(["text", "choice", "boolean", "rating"]),
+        type: z.enum(["text", "choice", "boolean"]),
         options: z.array(z.string()).optional(),
         multipleChoice: z.boolean().optional(),
-        dimensions: z.array(z.string()).optional(),
       }),
     )
     .optional(),
@@ -288,6 +227,7 @@ export const selectQuestionOutputSchema = z.object({
     .optional(),
   userAnswer: z.union([z.string(), z.array(z.string())]).optional(),
   shouldEndInterview: z.boolean().optional(),
+  plainText: z.string(), // Required for PlainTextToolResult compatibility
 });
 
 export enum InterviewToolName {

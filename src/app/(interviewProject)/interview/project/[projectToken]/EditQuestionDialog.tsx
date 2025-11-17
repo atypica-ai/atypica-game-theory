@@ -27,9 +27,8 @@ import { toast } from "sonner";
 export interface QuestionData {
   text: string;
   image?: ChatMessageAttachment;
-  questionType?: "open" | "single-choice" | "multiple-choice" | "rating";
+  questionType?: "open" | "single-choice" | "multiple-choice";
   options?: Array<string | { text: string; endInterview?: boolean }>;
-  dimensions?: string[];
   validation?: {
     minSelections?: number;
     maxSelections?: number;
@@ -61,14 +60,13 @@ export function EditQuestionDialog({
 
   const [text, setText] = useState("");
   const [image, setImage] = useState<ChatMessageAttachment | undefined>();
-  const [questionType, setQuestionType] = useState<"open" | "single-choice" | "multiple-choice" | "rating">(
+  const [questionType, setQuestionType] = useState<"open" | "single-choice" | "multiple-choice">(
     "open",
   );
   const [options, setOptions] = useState<Array<{ text: string; endInterview: boolean }>>([
     { text: "", endInterview: false },
     { text: "", endInterview: false },
   ]);
-  const [dimensions, setDimensions] = useState<string[]>(["维度1"]);
   const [minSelections, setMinSelections] = useState<number | undefined>();
   const [maxSelections, setMaxSelections] = useState<number | undefined>();
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -102,9 +100,6 @@ export function EditQuestionDialog({
             ],
       );
 
-      // Initialize dimensions for rating questions
-      setDimensions(question.dimensions && question.dimensions.length > 0 ? question.dimensions : ["维度1"]);
-
       setMinSelections(question.validation?.minSelections);
       setMaxSelections(question.validation?.maxSelections);
 
@@ -128,7 +123,6 @@ export function EditQuestionDialog({
         { text: "", endInterview: false },
         { text: "", endInterview: false },
       ]);
-      setDimensions(["维度1"]);
       setMinSelections(undefined);
       setMaxSelections(undefined);
       setOtherOptionEnabled(false);
@@ -247,28 +241,8 @@ export function EditQuestionDialog({
       }
 
       onSave(questionData);
-    } else if (questionType === "rating") {
-      // Validate dimensions for rating questions
-      const validDimensions = dimensions.filter((dim) => dim.trim().length > 0);
-
-      if (validDimensions.length < 1) {
-        toast.error("评分题至少需要 1 个维度");
-        return;
-      }
-
-      if (validDimensions.length > 20) {
-        toast.error("评分题最多 20 个维度");
-        return;
-      }
-
-      onSave({
-        text: text.trim(),
-        image,
-        questionType,
-        dimensions: validDimensions,
-      });
     } else {
-      // Open question - don't save options or dimensions
+      // Open question - don't save options
       onSave({
         text: text.trim(),
         image,
@@ -277,7 +251,7 @@ export function EditQuestionDialog({
     }
 
     onOpenChange(false);
-  }, [text, image, questionType, options, dimensions, minSelections, maxSelections, onSave, onOpenChange, t]);
+  }, [text, image, questionType, options, minSelections, maxSelections, otherOptionEnabled, otherOptionLabel, otherOptionPlaceholder, otherOptionRequired, onSave, onOpenChange, t]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + " B";
@@ -412,7 +386,7 @@ export function EditQuestionDialog({
             <RadioGroup
               value={questionType}
               onValueChange={(value) =>
-                setQuestionType(value as "open" | "single-choice" | "multiple-choice" | "rating")
+                setQuestionType(value as "open" | "single-choice" | "multiple-choice")
               }
             >
               <div className="flex items-center space-x-2">
@@ -433,69 +407,8 @@ export function EditQuestionDialog({
                   {t("multipleChoiceQuestion")}
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="rating" id="type-rating" />
-                <Label htmlFor="type-rating" className="font-normal">
-                  {t("ratingQuestion")}
-                </Label>
-              </div>
             </RadioGroup>
           </div>
-
-          {/* Dimensions - Only show for rating questions */}
-          {questionType === "rating" && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  {t("dimensions")} <span className="text-red-500">*</span>
-                </Label>
-
-                {/* Dimensions List */}
-                <div className="space-y-2">
-                  {dimensions.map((dimension, index) => (
-                    <div key={index} className="flex gap-2 items-start">
-                      <Input
-                        value={dimension}
-                        onChange={(e) => {
-                          const newDimensions = [...dimensions];
-                          newDimensions[index] = e.target.value;
-                          setDimensions(newDimensions);
-                        }}
-                        placeholder={t("dimensionPlaceholder", { number: index + 1 })}
-                        className="flex-1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          setDimensions(dimensions.filter((_, i) => i !== index));
-                        }}
-                        disabled={dimensions.length <= 1}
-                        title={t("deleteDimension")}
-                      >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Add Dimension Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDimensions([...dimensions, `维度${dimensions.length + 1}`])}
-                  disabled={dimensions.length >= 20}
-                  className="w-full"
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  {t("addDimension")}
-                </Button>
-
-                {/* Hint Text */}
-                <p className="text-xs text-muted-foreground">{t("dimensionsHint")}</p>
-              </div>
-            </div>
-          )}
 
           {/* Options - Only show for choice questions */}
           {(questionType === "single-choice" || questionType === "multiple-choice") && (
