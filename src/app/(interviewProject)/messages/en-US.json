@@ -403,6 +403,13 @@
       "imageUploadFailed": "Failed to upload image, please try again",
       "createSuccess": "Project created successfully",
       "createFailed": "Failed to create project"
+    },
+    "interviewComplete": {
+      "title": "Interview Completed",
+      "subtitle": "Thank You for Participating",
+      "thankYouMessage": "Thank you very much for taking the time to participate in this interview. Your responses are invaluable to our research.",
+      "processingMessage": "We are processing your interview transcript...",
+      "completed": "Processing Complete"
     }
   }
 }

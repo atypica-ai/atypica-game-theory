@@ -261,6 +261,16 @@ export const selectQuestionOutputSchema = z.object({
       }),
     )
     .optional(),
+  optionsMetadata: z
+    .array(
+      z.object({
+        text: z.string(),
+        endInterview: z.boolean().optional(),
+      }),
+    )
+    .optional(),
+  userAnswer: z.union([z.string(), z.array(z.string())]).optional(),
+  shouldEndInterview: z.boolean().optional(),
 });
 
 export enum InterviewToolName {

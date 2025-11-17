@@ -89,6 +89,24 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
       "Select a question from the pre-defined question list by its index (1-based). Each question can only be selected once. Returns the question details and a pre-generated form for the user to answer.",
     inputSchema: selectQuestionInputSchema,
     outputSchema: selectQuestionOutputSchema,
+    toModelOutput: (result) => {
+      // Format output for AI to see user's answer and whether to end interview
+      let outputText = `Question ${result.questionIndex}: ${result.questionText}\n`;
+
+      if (result.userAnswer) {
+        const answerText = Array.isArray(result.userAnswer)
+          ? result.userAnswer.join(", ")
+          : result.userAnswer;
+        outputText += `User's answer: ${answerText}\n`;
+      }
+
+      if (result.shouldEndInterview) {
+        outputText +=
+          "\n⚠️ IMPORTANT: The user selected an option that ends the interview. You MUST immediately call the endInterview tool now. Do not ask any more questions.";
+      }
+
+      return { type: "text", value: outputText };
+    },
     execute: async ({ questionIndex }) => {
       // Fetch session data
       const session = await prisma.interviewSession.findUnique({
@@ -131,15 +149,64 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
         WHERE "id" = ${interviewSessionId}
       `;
 
+      // Process options to separate text and metadata
+      let optionsArray: string[] | undefined;
+      let optionsMetadata: Array<{ text: string; endInterview?: boolean }> | undefined;
+
+      if (question.options && question.options.length > 0) {
+        rootLogger.info({
+          msg: "[selectQuestion] Processing options",
+          questionIndex,
+          options: question.options,
+        });
+
+        optionsArray = [];
+        optionsMetadata = [];
+
+        for (const opt of question.options) {
+          let text: string;
+          let endInterview: boolean | undefined;
+
+          if (typeof opt === "string") {
+            text = opt;
+            endInterview = undefined;
+          } else {
+            text = opt.text;
+            endInterview = opt.endInterview;
+          }
+
+          rootLogger.info({
+            msg: "[selectQuestion] Original option text",
+            originalText: text,
+            optType: typeof opt,
+          });
+
+          // Clean display text by removing any [终止访谈] or [END INTERVIEW] markers
+          const cleanText = text
+            .replace(/\s*\[终止访谈\]\s*$/, "")
+            .replace(/\s*\[END INTERVIEW\]\s*$/, "")
+            .trim();
+
+          rootLogger.info({
+            msg: "[selectQuestion] Cleaned option text",
+            cleanedText: cleanText,
+          });
+
+          optionsArray.push(cleanText);
+          optionsMetadata.push({ text: cleanText, endInterview });
+        }
+      }
+
       // Return question details
       return {
         questionIndex,
         questionText: question.text,
         questionType: question.questionType || "open",
-        options: question.options,
+        options: optionsArray,
         dimensions: question.dimensions,
         image: question.image,
         formFields: question.formFields,
+        optionsMetadata,
       };
     },
   }),

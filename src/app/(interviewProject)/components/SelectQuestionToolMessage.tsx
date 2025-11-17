@@ -36,6 +36,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
   const dimensions = result?.dimensions || [];
   const image = result?.image;
   const formFields = result?.formFields || [];
+  const optionsMetadata = result?.optionsMetadata || [];
 
   // Debug: Log to console
   console.log("SelectQuestionToolMessage rendered", {
@@ -77,6 +78,19 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     return false;
   }, [answer, questionType, dimensions]);
 
+  // Check if user selected an option that ends interview
+  const checkIfShouldEndInterview = useCallback(() => {
+    if (questionType !== "single-choice" && questionType !== "multiple-choice") {
+      return false;
+    }
+
+    // Get the selected option(s)
+    const selectedOptions = Array.isArray(answer) ? answer : [answer];
+
+    // Check if any selected option has endInterview flag
+    return optionsMetadata.some((opt) => opt.endInterview && selectedOptions.includes(opt.text));
+  }, [questionType, answer, optionsMetadata]);
+
   // Handle form submission
   const handleSubmit = useCallback(async () => {
     if (!isAnswerValid() || !addToolResult) return;
@@ -99,6 +113,9 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
         answerText = Array.isArray(answer) ? answer.join(", ") : answer;
       }
 
+      // Check if should end interview
+      const shouldEndInterview = checkIfShouldEndInterview();
+
       await addToolResult({
         tool: InterviewToolName.selectQuestion,
         toolCallId: toolInvocation.toolCallId,
@@ -110,6 +127,9 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
           dimensions,
           image,
           formFields,
+          optionsMetadata,
+          userAnswer: answer,
+          shouldEndInterview,
         },
       });
 
@@ -123,15 +143,17 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     isAnswerValid,
     addToolResult,
     answer,
+    questionType,
     t,
     toolInvocation.toolCallId,
     result,
     questionText,
-    questionType,
     options,
     dimensions,
     image,
     formFields,
+    optionsMetadata,
+    checkIfShouldEndInterview,
   ]);
 
   // Render field based on question type

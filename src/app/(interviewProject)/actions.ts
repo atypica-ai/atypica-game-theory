@@ -51,11 +51,20 @@ function generateFormFieldsForQuestion(question: Question, questionIndex: number
   // Single-choice or multiple-choice questions
   if ((questionType === "single-choice" || questionType === "multiple-choice") && options) {
     // Normalize options to strings for display (extract text property if needed)
+    // Also clean any [终止访谈] or [END INTERVIEW] markers that shouldn't be visible to users
     const normalizedOptions = options.map((opt) => {
-      if (typeof opt === "string") {
-        return opt;
-      }
-      return opt.text;
+      let text = typeof opt === "string" ? opt : opt.text;
+
+      // Debug: Log the original text before cleaning
+      console.log("[generateFormFieldsForQuestion] Original option text:", text, typeof opt === "string" ? "(string)" : "(object)", opt);
+
+      // Remove end interview markers from display text
+      text = text.replace(/\s*\[终止访谈\]\s*$/, "").replace(/\s*\[END INTERVIEW\]\s*$/, "").trim();
+
+      // Debug: Log the cleaned text
+      console.log("[generateFormFieldsForQuestion] Cleaned option text:", text);
+
+      return text;
     });
 
     const formFields = [

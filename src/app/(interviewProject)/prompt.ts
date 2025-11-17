@@ -445,7 +445,7 @@ export const interviewAgentSystemPrompt = ({
   questions?: Array<{
     text: string;
     questionType?: "open" | "single-choice" | "multiple-choice" | "rating";
-    options?: string[];
+    options?: Array<string | { text: string; endInterview?: boolean }>;
     dimensions?: string[];
   }>;
   questionTypePreference?: "open-ended" | "multiple-choice" | "mixed";
@@ -477,8 +477,21 @@ ${questions
           : q.questionType === "rating"
             ? "rating"
             : "open";
-    const optionsText = q.options ? `\n   Options: ${q.options.join(", ")}` : "";
-    const dimensionsText = q.dimensions ? `\n   Dimensions: ${q.dimensions.join(", ")}` : "";
+
+    // Process options to show which ones end the interview
+    let optionsText = "";
+    if (q.options && q.options.length > 0) {
+      const optionsList = q.options.map((opt) => {
+        if (typeof opt === "string") {
+          return opt;
+        } else {
+          return opt.endInterview ? `${opt.text} [终止访谈]` : opt.text;
+        }
+      });
+      optionsText = `\n   选项: ${optionsList.join(", ")}`;
+    }
+
+    const dimensionsText = q.dimensions ? `\n   维度: ${q.dimensions.join(", ")}` : "";
     return `${index}. [${type}] ${q.text}${optionsText}${dimensionsText}`;
   })
   .join("\n")}
@@ -490,6 +503,8 @@ ${questions
    - 工具会自动展示选项表单，等待用户选择
    - 用户提交后，你会收到包含问题和答案的 tool output
    - 使用工具时，不要在同一轮对话中输出额外的文字
+   - **重要**：如果选项中标记了 [终止访谈]，表示用户选择该选项后应立即结束访谈
+   - 当用户选择了标记为 [终止访谈] 的选项时，**立即调用 endInterview 工具**，不要继续提问其他问题
 
 2. **评分题（rating）**：
    - **必须**使用 selectQuestion 工具：selectQuestion({ questionIndex: 1 })（使用 1-based 索引）
@@ -587,7 +602,20 @@ ${questions
           : q.questionType === "rating"
             ? "rating"
             : "open";
-    const optionsText = q.options ? `\n   Options: ${q.options.join(", ")}` : "";
+
+    // Process options to show which ones end the interview
+    let optionsText = "";
+    if (q.options && q.options.length > 0) {
+      const optionsList = q.options.map((opt) => {
+        if (typeof opt === "string") {
+          return opt;
+        } else {
+          return opt.endInterview ? `${opt.text} [END INTERVIEW]` : opt.text;
+        }
+      });
+      optionsText = `\n   Options: ${optionsList.join(", ")}`;
+    }
+
     const dimensionsText = q.dimensions ? `\n   Dimensions: ${q.dimensions.join(", ")}` : "";
     return `${index}. [${type}] ${q.text}${optionsText}${dimensionsText}`;
   })
@@ -600,6 +628,8 @@ ${questions
    - The tool will automatically display an options form and wait for the user's selection
    - After the user submits, you will receive tool output containing the question and answer
    - When using the tool, do not output additional text in the same conversation turn
+   - **Important**: If an option is marked with [END INTERVIEW], it means the interview should end immediately after the user selects that option
+   - When the user selects an option marked with [END INTERVIEW], **immediately call the endInterview tool** and do not continue asking other questions
 
 2. **Rating Questions**:
    - Use the selectQuestion tool: selectQuestion({ questionIndex: 1 }) (using 1-based indexing)

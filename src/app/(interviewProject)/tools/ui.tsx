@@ -1,3 +1,4 @@
+import { InterviewCompleteMessage } from "@/app/(interviewProject)/components/InterviewCompleteMessage";
 import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionForm";
 import { SelectQuestionToolMessage } from "@/app/(interviewProject)/components/SelectQuestionToolMessage";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
@@ -35,11 +36,7 @@ export const InterviewToolUIPartDisplay = ({
         />
       );
     case `tool-${InterviewToolName.endInterview}`:
-      return (
-        <div className="font-mono text-xs text-muted-foreground">
-          exec {getToolName(toolUIPart)}
-        </div>
-      );
+      return <InterviewCompleteMessage toolInvocation={toolUIPart} />;
     default:
       return null;
   }
