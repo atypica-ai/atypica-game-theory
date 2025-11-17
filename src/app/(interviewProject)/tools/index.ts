@@ -27,30 +27,6 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     execute: async ({ title, interviewSummary, personalInfo }) => {
       // Check question completion status
-      const session = await prisma.interviewSession.findUnique({
-        where: { id: interviewSessionId },
-        select: { extra: true },
-      });
-
-      const sessionExtra = (session?.extra as InterviewSessionExtra) || {};
-      const questions = sessionExtra.questions || [];
-      const selectedIndexes = sessionExtra.selectedQuestionIndexes || [];
-
-      // Log warning if not all questions were asked
-      if (questions.length > 0 && selectedIndexes.length < questions.length) {
-        const unaskedQuestions = questions
-          .map((q, i) => ({ index: i + 1, text: q.text }))
-          .filter((q) => !selectedIndexes.includes(q.index));
-
-        rootLogger.warn({
-          msg: "Interview ended with unasked questions",
-          interviewSessionId,
-          totalQuestions: questions.length,
-          askedQuestions: selectedIndexes.length,
-          unaskedQuestions: unaskedQuestions.map((q) => `${q.index}. ${q.text}`),
-        });
-      }
-
       const trimmedTitle = (title ?? "").slice(0, 200);
       const extraUpdate = personalInfo && personalInfo.length > 0 ? { personalInfo } : {};
 

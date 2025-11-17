@@ -156,7 +156,6 @@ declare module "@/prisma/client" {
       questionType?: "open" | "single-choice" | "multiple-choice";
       options?: Array<string | { text: string; endInterview?: boolean }>; // 选择题的选项，支持终止访谈标记
     }>; // 问题列表快照（创建 Session 时从 Project 复制）
-    selectedQuestionIndexes: number[]; // 已使用的问题 index（1-based）
   }>;
 
   export type InterviewReportExtra = Partial<{

@@ -60,12 +60,13 @@ function shouldTriggerEndInterview(
   if (!lastUserMessage) return false;
 
   // Extract text content from the message
-  const messageText = typeof lastUserMessage.content === "string"
-    ? lastUserMessage.content
-    : lastUserMessage.content
-        .filter((part): part is { type: "text"; text: string } => part.type === "text")
-        .map((part) => part.text)
-        .join(" ");
+  const messageText =
+    typeof lastUserMessage.content === "string"
+      ? lastUserMessage.content
+      : lastUserMessage.content
+          .filter((part): part is { type: "text"; text: string } => part.type === "text")
+          .map((part) => part.text)
+          .join(" ");
 
   if (!messageText) return false;
 

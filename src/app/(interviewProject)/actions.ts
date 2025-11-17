@@ -24,8 +24,7 @@ import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/au
 import { generateInterviewReportContent } from "./artifacts/generateReport";
 import { generateInterviewShareToken, validateInterviewShareToken } from "./lib";
 import { processInterviewQuestionOptimization } from "./processing";
-import { interviewProjectQuestionsSchema, questionSchema, Question } from "./tools/types";
-
+import { interviewProjectQuestionsSchema, Question, questionSchema } from "./tools/types";
 
 /**
  * Create a snapshot of questions
@@ -785,7 +784,6 @@ export async function createPersonaInterviewSession({
         userChatId: userChat.id,
         extra: {
           questions: questionsSnapshot,
-          selectedQuestionIndexes: [],
         } as InterviewSessionExtra,
       },
     });
@@ -898,7 +896,6 @@ export async function createHumanInterviewSession({
         extra: {
           preferredLanguage,
           questions: questionsSnapshot,
-          selectedQuestionIndexes: [],
         } as InterviewSessionExtra,
       },
     });

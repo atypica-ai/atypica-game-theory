@@ -56,9 +56,7 @@ export const RatingField: FC<RatingFieldProps> = ({
           {isRequired && !isCompleted && <span className="text-red-500 ml-1">*</span>}
         </label>
         {!isCompleted && !isAllDimensionsRated() && (
-          <span className="text-xs text-muted-foreground">
-            {t("ratingHint")}
-          </span>
+          <span className="text-xs text-muted-foreground">{t("ratingHint")}</span>
         )}
       </div>
 
@@ -99,7 +97,7 @@ export const RatingField: FC<RatingFieldProps> = ({
                       key={dimension}
                       className={cn(
                         "border-b last:border-b-0 hover:bg-muted/30 transition-colors",
-                        index % 2 === 0 ? "bg-background" : "bg-muted/10"
+                        index % 2 === 0 ? "bg-background" : "bg-muted/10",
                       )}
                     >
                       <td className="p-4 text-sm font-medium">{dimension}</td>
@@ -124,7 +122,7 @@ export const RatingField: FC<RatingFieldProps> = ({
                                 "w-6 h-6 rounded-full border-2 transition-all",
                                 currentScore === score
                                   ? "border-primary"
-                                  : "border-muted-foreground/40 group-hover:border-primary/60"
+                                  : "border-muted-foreground/40 group-hover:border-primary/60",
                               )}
                             />
                             {currentScore === score && (
@@ -144,4 +142,3 @@ export const RatingField: FC<RatingFieldProps> = ({
     </div>
   );
 };
-

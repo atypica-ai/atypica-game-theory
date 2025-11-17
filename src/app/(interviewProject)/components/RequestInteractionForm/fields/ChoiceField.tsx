@@ -86,15 +86,15 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
 
       {/* Validation hint */}
       {validationHint && !isCompleted && (
-        <div className={cn(
-          "text-xs px-2 py-1 rounded",
-          isSelectionValid ? "text-muted-foreground" : "text-destructive bg-destructive/10"
-        )}>
+        <div
+          className={cn(
+            "text-xs px-2 py-1 rounded",
+            isSelectionValid ? "text-muted-foreground" : "text-destructive bg-destructive/10",
+          )}
+        >
           {validationHint}
           {!isSelectionValid && currentSelections > 0 && (
-            <span className="ml-1">
-              (已选 {currentSelections} 个)
-            </span>
+            <span className="ml-1">(已选 {currentSelections} 个)</span>
           )}
         </div>
       )}

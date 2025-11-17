@@ -12,9 +12,7 @@ interface InterviewCompleteMessageProps {
   };
 }
 
-export const InterviewCompleteMessage: FC<InterviewCompleteMessageProps> = ({
-  toolInvocation,
-}) => {
+export const InterviewCompleteMessage: FC<InterviewCompleteMessageProps> = ({ toolInvocation }) => {
   const t = useTranslations("InterviewProject.interviewComplete");
   const [showAnimation, setShowAnimation] = useState(false);
 
@@ -63,12 +61,8 @@ export const InterviewCompleteMessage: FC<InterviewCompleteMessageProps> = ({
 
           {/* Message */}
           <div className="space-y-4 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-            <p className="text-base text-foreground/80 leading-relaxed">
-              {t("thankYouMessage")}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t("processingMessage")}
-            </p>
+            <p className="text-base text-foreground/80 leading-relaxed">{t("thankYouMessage")}</p>
+            <p className="text-sm text-muted-foreground">{t("processingMessage")}</p>
           </div>
 
           {/* Processing indicator */}

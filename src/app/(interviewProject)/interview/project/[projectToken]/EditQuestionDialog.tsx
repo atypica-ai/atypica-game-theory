@@ -251,7 +251,21 @@ export function EditQuestionDialog({
     }
 
     onOpenChange(false);
-  }, [text, image, questionType, options, minSelections, maxSelections, otherOptionEnabled, otherOptionLabel, otherOptionPlaceholder, otherOptionRequired, onSave, onOpenChange, t]);
+  }, [
+    text,
+    image,
+    questionType,
+    options,
+    minSelections,
+    maxSelections,
+    otherOptionEnabled,
+    otherOptionLabel,
+    otherOptionPlaceholder,
+    otherOptionRequired,
+    onSave,
+    onOpenChange,
+    t,
+  ]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + " B";
@@ -540,7 +554,10 @@ export function EditQuestionDialog({
                     checked={otherOptionEnabled}
                     onCheckedChange={(checked) => setOtherOptionEnabled(!!checked)}
                   />
-                  <Label htmlFor="otherOptionEnabled" className="text-sm font-medium cursor-pointer">
+                  <Label
+                    htmlFor="otherOptionEnabled"
+                    className="text-sm font-medium cursor-pointer"
+                  >
                     {t("enableOtherOption")}
                   </Label>
                 </div>
@@ -563,7 +580,10 @@ export function EditQuestionDialog({
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="otherOptionPlaceholder" className="text-xs text-muted-foreground">
+                      <Label
+                        htmlFor="otherOptionPlaceholder"
+                        className="text-xs text-muted-foreground"
+                      >
                         {t("otherOptionPlaceholder")}
                       </Label>
                       <Input
@@ -574,7 +594,9 @@ export function EditQuestionDialog({
                         maxLength={50}
                         className="h-9"
                       />
-                      <p className="text-xs text-muted-foreground">{t("otherOptionPlaceholderHint")}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("otherOptionPlaceholderHint")}
+                      </p>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -583,7 +605,10 @@ export function EditQuestionDialog({
                         checked={otherOptionRequired}
                         onCheckedChange={(checked) => setOtherOptionRequired(!!checked)}
                       />
-                      <Label htmlFor="otherOptionRequired" className="text-xs text-muted-foreground cursor-pointer">
+                      <Label
+                        htmlFor="otherOptionRequired"
+                        className="text-xs text-muted-foreground cursor-pointer"
+                      >
                         {t("otherOptionRequired")}
                       </Label>
                     </div>
