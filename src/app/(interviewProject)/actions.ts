@@ -1,10 +1,12 @@
 "use server";
+
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import {
+  ChatMessageAttachment,
   InterviewProject,
   InterviewProjectExtra,
   InterviewReportExtra,
@@ -28,24 +30,12 @@ import { interviewProjectQuestionsSchema, questionSchema, Question } from "./too
  * Generate form fields from a question for use in selectQuestion tool
  * This ensures consistent form structure with requestInteractionForm
  */
-function generateFormFieldsForQuestion(question: Question, questionIndex: number) {
-  const { text, questionType = "open", options, dimensions, validation, otherOption } = question;
+function generateFormFieldsForQuestion(question: Question) {
+  const { text, questionType = "open", options, validation } = question;
 
   // Open-ended questions: no form fields, user answers using the chat input
   if (questionType === "open") {
     return undefined;
-  }
-
-  // Rating questions
-  if (questionType === "rating" && dimensions && dimensions.length > 0) {
-    return [
-      {
-        id: `answer`,
-        label: text,
-        type: "rating" as const,
-        dimensions: dimensions,
-      },
-    ];
   }
 
   // Single-choice or multiple-choice questions
@@ -55,14 +45,8 @@ function generateFormFieldsForQuestion(question: Question, questionIndex: number
     const normalizedOptions = options.map((opt) => {
       let text = typeof opt === "string" ? opt : opt.text;
 
-      // Debug: Log the original text before cleaning
-      console.log("[generateFormFieldsForQuestion] Original option text:", text, typeof opt === "string" ? "(string)" : "(object)", opt);
-
       // Remove end interview markers from display text
       text = text.replace(/\s*\[终止访谈\]\s*$/, "").replace(/\s*\[END INTERVIEW\]\s*$/, "").trim();
-
-      // Debug: Log the cleaned text
-      console.log("[generateFormFieldsForQuestion] Cleaned option text:", text);
 
       return text;
     });
@@ -74,16 +58,6 @@ function generateFormFieldsForQuestion(question: Question, questionIndex: number
         type: "choice" as const,
         options: normalizedOptions,
         multipleChoice: questionType === "multiple-choice",
-        // Pass otherOption configuration to the field
-        ...(otherOption && otherOption.enabled
-          ? {
-              otherOption: {
-                label: otherOption.label || "其他",
-                placeholder: otherOption.placeholder || "请说明",
-                required: otherOption.required || false,
-              },
-            }
-          : {}),
       },
     ];
 
@@ -107,7 +81,7 @@ function generateFormFieldsForQuestion(question: Question, questionIndex: number
  * Also extract trigger information for backend processing
  */
 function createQuestionsSnapshot(questions: Question[]) {
-  return questions.map((q, index) => {
+  return questions.map((q) => {
     // Extract options that trigger endInterview
     const triggerOptions: string[] = [];
     if (q.options) {
@@ -120,7 +94,7 @@ function createQuestionsSnapshot(questions: Question[]) {
 
     return {
       ...q,
-      formFields: generateFormFieldsForQuestion(q, index),
+      formFields: generateFormFieldsForQuestion(q),
       // Store trigger options for backend processing
       ...(triggerOptions.length > 0 ? { triggerOptions } : {}),
     };
@@ -1443,6 +1417,175 @@ export async function updateInterviewSessionLanguage({
     return {
       success: false,
       message: "Failed to update language preference",
+      code: "internal_server_error",
+    };
+  }
+}
+
+/**
+ * Get question data for selectQuestion tool
+ * This is called by the client when AI invokes selectQuestion tool
+ */
+export async function getQuestionData({
+  interviewSessionId,
+  questionIndex,
+}: {
+  interviewSessionId: number;
+  questionIndex: number;
+}): Promise<
+  ServerActionResult<{
+    questionIndex: number;
+    questionText: string;
+    questionType: "open" | "single-choice" | "multiple-choice";
+    options?: string[];
+    image?: ChatMessageAttachment;
+    formFields?: Array<{
+      id: string;
+      label: string;
+      type: "text" | "choice" | "boolean";
+      options?: string[];
+      multipleChoice?: boolean;
+    }>;
+    optionsMetadata?: Array<{ text: string; endInterview?: boolean }>;
+  }>
+> {
+  try {
+    // Fetch session data
+    const session = await prisma.interviewSession.findUnique({
+      where: { id: interviewSessionId },
+      select: { extra: true },
+    });
+
+    if (!session) {
+      return {
+        success: false,
+        message: "Interview session not found",
+        code: "not_found",
+      };
+    }
+
+    const sessionExtra = (session.extra as InterviewSessionExtra) || {};
+    const questions = sessionExtra.questions || [];
+
+    // Validate index (convert from 1-based to 0-based)
+    const arrayIndex = questionIndex - 1;
+    if (arrayIndex < 0 || arrayIndex >= questions.length) {
+      return {
+        success: false,
+        message: `Invalid question index ${questionIndex}. Valid range is 1 to ${questions.length}.`,
+        code: "not_found",
+      };
+    }
+
+    // Get the question
+    const question = questions[arrayIndex] as {
+      text: string;
+      image?: ChatMessageAttachment;
+      questionType?: "open" | "single-choice" | "multiple-choice";
+      options?: Array<string | { text: string; endInterview?: boolean }>;
+      formFields?: Array<{
+        id: string;
+        label: string;
+        type: "text" | "choice" | "boolean";
+        options?: string[];
+        multipleChoice?: boolean;
+      }>;
+    };
+
+    // Process options to separate text and metadata
+    let optionsArray: string[] | undefined;
+    let optionsMetadata: Array<{ text: string; endInterview?: boolean }> | undefined;
+
+    if (question.options && question.options.length > 0) {
+      optionsArray = [];
+      optionsMetadata = [];
+
+      for (const opt of question.options) {
+        let text: string;
+        let endInterview: boolean | undefined;
+
+        if (typeof opt === "string") {
+          text = opt;
+          endInterview = undefined;
+        } else {
+          text = opt.text;
+          endInterview = opt.endInterview;
+        }
+
+        // Clean display text by removing any [终止访谈] or [END INTERVIEW] markers
+        const cleanText = text
+          .replace(/\s*\[终止访谈\]\s*$/, "")
+          .replace(/\s*\[END INTERVIEW\]\s*$/, "")
+          .trim();
+
+        optionsArray.push(cleanText);
+        optionsMetadata.push({ text: cleanText, endInterview });
+      }
+    }
+
+    // Generate formFields if not provided
+    const questionTypeValue = (question.questionType || "open") as
+      | "open"
+      | "single-choice"
+      | "multiple-choice";
+    let formFieldsArray:
+      | Array<{
+          id: string;
+          label: string;
+          type: "text" | "choice" | "boolean";
+          options?: string[];
+          multipleChoice?: boolean;
+        }>
+      | undefined;
+
+    if (question.formFields) {
+      // Use predefined formFields if available
+      formFieldsArray = question.formFields;
+    } else {
+      // Generate formFields based on questionType
+      if (questionTypeValue === "open") {
+        formFieldsArray = [
+          {
+            id: "answer",
+            label: question.text,
+            type: "text",
+          },
+        ];
+      } else if (questionTypeValue === "single-choice" || questionTypeValue === "multiple-choice") {
+        formFieldsArray = [
+          {
+            id: "answer",
+            label: question.text,
+            type: "choice",
+            options: optionsArray,
+            multipleChoice: questionTypeValue === "multiple-choice",
+          },
+        ];
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        questionIndex,
+        questionText: question.text,
+        questionType: questionTypeValue,
+        options: optionsArray,
+        image: question.image as ChatMessageAttachment | undefined,
+        formFields: formFieldsArray,
+        optionsMetadata,
+      },
+    };
+  } catch (error) {
+    rootLogger.error({
+      msg: "[getQuestionData] Error getting question data",
+      error,
+      interviewSessionId,
+      questionIndex,
+    });
+    return {
+      success: false,
+      message: "Failed to get question data",
       code: "internal_server_error",
     };
   }

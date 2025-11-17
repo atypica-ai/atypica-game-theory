@@ -2,48 +2,93 @@
 
 import type { TAddInterviewUIToolResult } from "@/app/(interviewProject)/tools/types";
 import { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
+import { getQuestionData } from "@/app/(interviewProject)/actions";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
+import { ChatMessageAttachment } from "@/prisma/client";
 import { ToolUIPart } from "ai";
 import { Check } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BooleanField, ChoiceField, TextField, RatingField } from "./RequestInteractionForm/fields";
+import { BooleanField, ChoiceField, TextField } from "./RequestInteractionForm/fields";
 
 interface SelectQuestionToolMessageProps {
   toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.selectQuestion>>;
   addToolResult?: TAddInterviewUIToolResult;
+  interviewSessionId: number;
 }
 
 export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
   toolInvocation,
   addToolResult,
+  interviewSessionId,
 }) => {
   const t = useTranslations("InterviewProject.requestInteractionForm");
 
   // Form state - single answer field
   const [answer, setAnswer] = useState<string | string[]>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingQuestion, setIsLoadingQuestion] = useState(false);
+  const [questionData, setQuestionData] = useState<{
+    questionIndex: number;
+    questionText: string;
+    questionType: "open" | "single-choice" | "multiple-choice";
+    options?: string[];
+    image?: ChatMessageAttachment;
+    formFields?: Array<{
+      id: string;
+      label: string;
+      type: "text" | "choice" | "boolean";
+      options?: string[];
+      multipleChoice?: boolean;
+    }>;
+    optionsMetadata?: Array<{ text: string; endInterview?: boolean }>;
+  } | null>(null);
 
-  // Extract question details from tool result
-  const result = toolInvocation.output;
+  // Fetch question data when tool is invoked
+  useEffect(() => {
+    const fetchQuestionData = async () => {
+      if (!toolInvocation.input || questionData || !interviewSessionId) return; // Don't fetch if already loaded or no session ID
+
+      const questionIndex =
+        typeof toolInvocation.input.questionIndex === "string"
+          ? parseInt(toolInvocation.input.questionIndex, 10)
+          : toolInvocation.input.questionIndex;
+
+      // Type narrowing for TypeScript
+      if (typeof questionIndex !== "number" || !interviewSessionId) return;
+
+      setIsLoadingQuestion(true);
+      try {
+        const result = await getQuestionData({ interviewSessionId, questionIndex });
+        if (result.success) {
+          setQuestionData(result.data);
+        } else {
+          console.error("Failed to fetch question data:", result.message);
+          toast.error(result.message || "Failed to load question");
+        }
+      } catch (error) {
+        console.error("Error fetching question data:", error);
+        toast.error("Failed to load question");
+      } finally {
+        setIsLoadingQuestion(false);
+      }
+    };
+
+    fetchQuestionData();
+  }, [toolInvocation.input, interviewSessionId, questionData]);
+
+  // Extract question details from fetched data (not from toolInvocation.output anymore)
+  const result = questionData;
   const questionText = result?.questionText || "";
   const questionType = result?.questionType || "open";
-  const options = result?.options || [];
-  const dimensions = result?.dimensions || [];
+  const options = useMemo(() => result?.options || [], [result?.options]);
   const image = result?.image;
-  const formFields = result?.formFields || [];
-  const optionsMetadata = result?.optionsMetadata || [];
-
-  // Debug: Log to console
-  console.log("SelectQuestionToolMessage rendered", {
-    toolInvocation,
-    result,
-    formFields,
-  });
+  const formFields = useMemo(() => result?.formFields || [], [result?.formFields]);
+  const optionsMetadata = useMemo(() => result?.optionsMetadata || [], [result?.optionsMetadata]);
 
   // Check if form has been submitted
   const isCompleted = toolInvocation.state === "output-available";
@@ -59,24 +104,8 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     if (questionType === "multiple-choice") {
       return Array.isArray(answer) && answer.length > 0;
     }
-    if (questionType === "rating") {
-      if (typeof answer !== "string") return false;
-      try {
-        const ratingAnswers = JSON.parse(answer);
-        if (typeof ratingAnswers !== "object" || ratingAnswers === null) return false;
-        // Check if all dimensions have a score
-        return dimensions.every((dim) => 
-          ratingAnswers[dim] !== undefined && 
-          typeof ratingAnswers[dim] === "number" && 
-          ratingAnswers[dim] >= 1 && 
-          ratingAnswers[dim] <= 5
-        );
-      } catch {
-        return false;
-      }
-    }
     return false;
-  }, [answer, questionType, dimensions]);
+  }, [answer, questionType]);
 
   // Check if user selected an option that ends interview
   const checkIfShouldEndInterview = useCallback(() => {
@@ -97,24 +126,17 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
 
     setIsSubmitting(true);
     try {
-      // Format answer text based on question type
-      let answerText: string;
-      if (questionType === "rating" && typeof answer === "string") {
-        try {
-          const ratingAnswers = JSON.parse(answer);
-          // Format as: "维度1: 3分, 维度2: 4分"
-          answerText = Object.entries(ratingAnswers)
-            .map(([dim, score]) => `${dim}: ${score}分`)
-            .join(", ");
-        } catch {
-          answerText = answer;
-        }
-      } else {
-        answerText = Array.isArray(answer) ? answer.join(", ") : answer;
-      }
-
       // Check if should end interview
       const shouldEndInterview = checkIfShouldEndInterview();
+
+      // Format plainText for AI model
+      const answerText = Array.isArray(answer) ? answer.join(", ") : answer;
+      let plainText = `Question ${result?.questionIndex || 0}: ${questionText}\n`;
+      plainText += `User's answer: ${answerText}\n`;
+      if (shouldEndInterview) {
+        plainText +=
+          "\n⚠️ IMPORTANT: The user selected an option that ends the interview. You MUST immediately call the endInterview tool now. Do not ask any more questions.";
+      }
 
       await addToolResult({
         tool: InterviewToolName.selectQuestion,
@@ -124,12 +146,12 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
           questionText,
           questionType,
           options,
-          dimensions,
           image,
           formFields,
           optionsMetadata,
           userAnswer: answer,
           shouldEndInterview,
+          plainText,
         },
       });
 
@@ -149,7 +171,6 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     result,
     questionText,
     options,
-    dimensions,
     image,
     formFields,
     optionsMetadata,
@@ -158,7 +179,9 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
 
   // Render field based on question type
   const renderField = () => {
-    if (formFields.length === 0) return null;
+    if (formFields.length === 0) {
+      return null;
+    }
 
     const field = formFields[0]; // We only have one field for selectQuestion
 
@@ -167,9 +190,10 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
         return (
           <TextField
             field={field}
-            value={typeof answer === "string" ? answer : ""}
-            onChange={(value) => setAnswer(value)}
-            disabled={isCompleted || isSubmitting}
+            fieldValue={typeof answer === "string" ? answer : ""}
+            isCompleted={isCompleted}
+            isRequired={true}
+            onUpdate={(fieldId, value) => setAnswer(value as string)}
           />
         );
 
@@ -177,22 +201,19 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
         return (
           <ChoiceField
             field={field}
-            value={answer}
-            onChange={(value) => setAnswer(value)}
-            onToggle={(option) => {
-              if (field.multipleChoice) {
-                // Multiple choice
-                const currentValues = Array.isArray(answer) ? answer : [];
-                const newValues = currentValues.includes(option)
-                  ? currentValues.filter((v) => v !== option)
-                  : [...currentValues, option];
-                setAnswer(newValues);
-              } else {
-                // Single choice
-                setAnswer(option);
-              }
+            fieldValue={answer}
+            isCompleted={isCompleted}
+            isRequired={true}
+            isBasicInfoForm={false}
+            isSingleChoice={!field.multipleChoice}
+            onSelectSingle={(fieldId, option) => setAnswer(option)}
+            onToggleMultiple={(fieldId, option) => {
+              const currentValues = Array.isArray(answer) ? answer : [];
+              const newValues = currentValues.includes(option)
+                ? currentValues.filter((v) => v !== option)
+                : [...currentValues, option];
+              setAnswer(newValues);
             }}
-            disabled={isCompleted || isSubmitting}
           />
         );
 
@@ -200,21 +221,10 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
         return (
           <BooleanField
             field={field}
-            value={answer === "true"}
-            onChange={(value) => setAnswer(value.toString())}
-            disabled={isCompleted || isSubmitting}
-          />
-        );
-
-      case "rating":
-        return (
-          <RatingField
-            field={field}
-            fieldValue={typeof answer === "string" ? answer : ""}
+            fieldValue={answer === "true"}
             isCompleted={isCompleted}
             isRequired={true}
-            dimensions={dimensions}
-            onUpdate={(fieldId, value) => setAnswer(value as string)}
+            onUpdate={(fieldId, value) => setAnswer(value?.toString() || "")}
           />
         );
 
@@ -222,6 +232,27 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
         return null;
     }
   };
+
+  // Show loading state while fetching question data
+  if (isLoadingQuestion) {
+    return (
+      <div className="my-4 space-y-4 rounded-lg border bg-card p-4 shadow-sm">
+        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+          <LoadingPulse />
+          <span>Loading question...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if no question data loaded
+  if (!questionData) {
+    return (
+      <div className="my-4 space-y-4 rounded-lg border border-destructive bg-card p-4 shadow-sm">
+        <div className="text-center text-destructive">Failed to load question</div>
+      </div>
+    );
+  }
 
   return (
     <div className="my-4 space-y-4 rounded-lg border bg-card p-4 shadow-sm">

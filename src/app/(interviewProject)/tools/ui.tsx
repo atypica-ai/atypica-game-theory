@@ -2,24 +2,17 @@ import { InterviewCompleteMessage } from "@/app/(interviewProject)/components/In
 import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionForm";
 import { SelectQuestionToolMessage } from "@/app/(interviewProject)/components/SelectQuestionToolMessage";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
-import { getToolName } from "ai";
 import { InterviewToolName, TAddInterviewUIToolResult } from "./types";
 
 export const InterviewToolUIPartDisplay = ({
   toolUIPart,
   addToolResult,
+  interviewSessionId,
 }: {
   toolUIPart: TInterviewMessageWithTool["parts"][number];
   addToolResult?: TAddInterviewUIToolResult;
+  interviewSessionId: number;
 }) => {
-  // Debug: Log tool part type
-  console.log("InterviewToolUIPartDisplay", {
-    type: toolUIPart.type,
-    toolCallId: toolUIPart.toolCallId,
-    state: toolUIPart.state,
-    timestamp: new Date().toISOString(),
-  });
-
   switch (toolUIPart.type) {
     case `tool-${InterviewToolName.requestInteractionForm}`:
       return (
@@ -33,6 +26,7 @@ export const InterviewToolUIPartDisplay = ({
         <SelectQuestionToolMessage
           toolInvocation={toolUIPart}
           addToolResult={addToolResult}
+          interviewSessionId={interviewSessionId}
         />
       );
     case `tool-${InterviewToolName.endInterview}`:

@@ -86,129 +86,14 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
   }),
   selectQuestion: tool({
     description:
-      "Select a question from the pre-defined question list by its index (1-based). Each question can only be selected once. Returns the question details and a pre-generated form for the user to answer.",
+      "Select a question from the pre-defined question list by its index (1-based). Returns the question details and a pre-generated form for the user to answer. IMPORTANT: This tool will wait for the user to submit their answer before continuing.",
     inputSchema: selectQuestionInputSchema,
     outputSchema: selectQuestionOutputSchema,
-    toModelOutput: (result) => {
-      // Format output for AI to see user's answer and whether to end interview
-      let outputText = `Question ${result.questionIndex}: ${result.questionText}\n`;
-
-      if (result.userAnswer) {
-        const answerText = Array.isArray(result.userAnswer)
-          ? result.userAnswer.join(", ")
-          : result.userAnswer;
-        outputText += `User's answer: ${answerText}\n`;
-      }
-
-      if (result.shouldEndInterview) {
-        outputText +=
-          "\n⚠️ IMPORTANT: The user selected an option that ends the interview. You MUST immediately call the endInterview tool now. Do not ask any more questions.";
-      }
-
-      return { type: "text", value: outputText };
+    toModelOutput: (result: PlainTextToolResult) => {
+      // Use the plainText field from the result (will be populated by client after user submits)
+      return { type: "text", value: result.plainText };
     },
-    execute: async ({ questionIndex }) => {
-      // Fetch session data
-      const session = await prisma.interviewSession.findUnique({
-        where: { id: interviewSessionId },
-        select: { extra: true },
-      });
-
-      if (!session) {
-        throw new Error(`InterviewSession ${interviewSessionId} not found`);
-      }
-
-      const sessionExtra = (session.extra as InterviewSessionExtra) || {};
-      const questions = sessionExtra.questions || [];
-      const selectedIndexes = sessionExtra.selectedQuestionIndexes || [];
-
-      // Validate index (convert from 1-based to 0-based)
-      const arrayIndex = questionIndex - 1;
-      if (arrayIndex < 0 || arrayIndex >= questions.length) {
-        throw new Error(
-          `Invalid question index ${questionIndex}. Valid range is 1 to ${questions.length}.`,
-        );
-      }
-
-      // Check if already selected
-      if (selectedIndexes.includes(questionIndex)) {
-        throw new Error(
-          `Question ${questionIndex} has already been asked. Please select a different question.`,
-        );
-      }
-
-      // Get the question
-      const question = questions[arrayIndex];
-
-      // Update selectedQuestionIndexes
-      const updatedIndexes = [...selectedIndexes, questionIndex];
-      await prisma.$executeRaw`
-        UPDATE "InterviewSession"
-        SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({ selectedQuestionIndexes: updatedIndexes })}::jsonb,
-            "updatedAt" = NOW()
-        WHERE "id" = ${interviewSessionId}
-      `;
-
-      // Process options to separate text and metadata
-      let optionsArray: string[] | undefined;
-      let optionsMetadata: Array<{ text: string; endInterview?: boolean }> | undefined;
-
-      if (question.options && question.options.length > 0) {
-        rootLogger.info({
-          msg: "[selectQuestion] Processing options",
-          questionIndex,
-          options: question.options,
-        });
-
-        optionsArray = [];
-        optionsMetadata = [];
-
-        for (const opt of question.options) {
-          let text: string;
-          let endInterview: boolean | undefined;
-
-          if (typeof opt === "string") {
-            text = opt;
-            endInterview = undefined;
-          } else {
-            text = opt.text;
-            endInterview = opt.endInterview;
-          }
-
-          rootLogger.info({
-            msg: "[selectQuestion] Original option text",
-            originalText: text,
-            optType: typeof opt,
-          });
-
-          // Clean display text by removing any [终止访谈] or [END INTERVIEW] markers
-          const cleanText = text
-            .replace(/\s*\[终止访谈\]\s*$/, "")
-            .replace(/\s*\[END INTERVIEW\]\s*$/, "")
-            .trim();
-
-          rootLogger.info({
-            msg: "[selectQuestion] Cleaned option text",
-            cleanedText: cleanText,
-          });
-
-          optionsArray.push(cleanText);
-          optionsMetadata.push({ text: cleanText, endInterview });
-        }
-      }
-
-      // Return question details
-      return {
-        questionIndex,
-        questionText: question.text,
-        questionType: question.questionType || "open",
-        options: optionsArray,
-        dimensions: question.dimensions,
-        image: question.image,
-        formFields: question.formFields,
-        optionsMetadata,
-      };
-    },
+    // No execute function - client will provide the result via addToolResult after user submits
   }),
 });
 
