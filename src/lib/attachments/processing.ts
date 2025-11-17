@@ -135,45 +135,55 @@ Output Format: Output the compressed text directly, with no explanations, no pre
           },
         ];
 
-  let compressedText = "";
-  const response = streamText({
-    model: llm("gpt-5-mini"),
-    providerOptions: {
-      openai: {
-        reasoningSummary: "auto",
-        reasoningEffort: "minimal",
-      } satisfies OpenAIResponsesProviderOptions,
-    },
-    system: systemPrompt,
-    messages,
-    maxOutputTokens: MAX_COMPRESSED_TOKENS,
-    maxRetries: 3,
-    onChunk: ({ chunk }) => {
-      if (chunk.type === "text-delta") {
-        compressedText += chunk.text;
-        logger.debug({
-          msg: "compressText onChunk",
+  const promise = new Promise<string>(async (resolve, reject) => {
+    let compressedText = "";
+    const response = streamText({
+      model: llm("gpt-5-mini"),
+      providerOptions: {
+        openai: {
+          reasoningSummary: "auto",
+          reasoningEffort: "minimal",
+        } satisfies OpenAIResponsesProviderOptions,
+      },
+      system: systemPrompt,
+      messages,
+      maxOutputTokens: MAX_COMPRESSED_TOKENS,
+      maxRetries: 3,
+      onChunk: ({ chunk }) => {
+        if (chunk.type === "text-delta") {
+          compressedText += chunk.text;
+          logger.debug({
+            msg: "compressText onChunk",
+            compressedTextLength: compressedText.length,
+          });
+        }
+      },
+      onError: ({ error }) => {
+        logger.error({
+          msg: "compressText onError",
+          error: (error as Error).message,
+        });
+        reject(error);
+      },
+      onFinish: () => {
+        logger.info({
+          msg: "compressText onFinish",
           compressedTextLength: compressedText.length,
         });
-      }
-    },
-    onError: ({ error }) => {
-      logger.error({
-        msg: "compressText onError",
-        error: (error as Error).message,
-      });
-    },
-    onFinish: () => {
-      logger.info({
-        msg: "compressText onFinish",
-        compressedTextLength: compressedText.length,
-      });
-    },
-    abortSignal,
+        resolve(compressedText);
+      },
+      abortSignal,
+    });
+    abortSignal.addEventListener("abort", () => {
+      reject(new Error("compressText abortSignal received"));
+    });
+    await response
+      .consumeStream()
+      .then(() => resolve(compressedText))
+      .catch((error) => reject(error));
   });
 
-  await response.consumeStream();
-
+  const compressedText = await promise;
   return compressedText;
 }
 
@@ -202,11 +212,22 @@ async function startParsing({
     logger.info({ msg: "Starting text compression", fullTextLength: fullText.length });
     const compressedText = await compressText({ fullText, logger, abortSignal });
 
-    await mergeExtra({
-      tableName: "AttachmentFile",
-      id: attachmentFileId,
-      extra: { processing: false, compressedText },
-    });
+    if (compressedText) {
+      await mergeExtra({
+        tableName: "AttachmentFile",
+        id: attachmentFileId,
+        extra: { processing: false, compressedText } satisfies AttachmentFileExtra,
+      });
+    } else {
+      await mergeExtra({
+        tableName: "AttachmentFile",
+        id: attachmentFileId,
+        extra: {
+          processing: false,
+          error: "Text compression completed but returned empty result",
+        } satisfies AttachmentFileExtra,
+      });
+    }
 
     logger.info({
       msg: "Parsing completed",
