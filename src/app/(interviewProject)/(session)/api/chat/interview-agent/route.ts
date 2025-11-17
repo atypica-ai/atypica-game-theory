@@ -15,6 +15,7 @@ import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
+import { InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { generateId, ModelMessage, smoothStream, stepCountIs, streamText } from "ai";
@@ -59,10 +60,12 @@ function shouldTriggerEndInterview(
   if (!lastUserMessage) return false;
 
   // Extract text content from the message
-  const messageText = lastUserMessage.content
-    .filter((part): part is { type: "text"; text: string } => part.type === "text")
-    .map((part) => part.text)
-    .join(" ");
+  const messageText = typeof lastUserMessage.content === "string"
+    ? lastUserMessage.content
+    : lastUserMessage.content
+        .filter((part): part is { type: "text"; text: string } => part.type === "text")
+        .map((part) => part.text)
+        .join(" ");
 
   if (!messageText) return false;
 
@@ -70,20 +73,29 @@ function shouldTriggerEndInterview(
   const questions = sessionExtra.questions || [];
   if (questions.length === 0) return false;
 
-  // Check if any question's trigger options match the user's answer
+  // Check if any question's options with endInterview flag match the user's answer
   for (const question of questions) {
-    const triggerOptions = question.triggerOptions;
-    if (!triggerOptions || triggerOptions.length === 0) continue;
+    if (!question.options) continue;
 
-    // Check if any trigger option is mentioned in the message
-    for (const triggerOption of triggerOptions) {
-      if (messageText.includes(triggerOption)) {
-        rootLogger.info({
-          msg: "endInterview triggered by user answer",
-          triggerOption,
-          messageText,
-        });
-        return true;
+    // Check if any option with endInterview flag is mentioned in the message
+    for (const option of question.options) {
+      // Skip string options
+      if (typeof option === "string") continue;
+
+      // Type assertion for object options
+      const optionObj = option as { text: string; endInterview?: boolean };
+
+      // Check if this option should end the interview
+      if (optionObj.endInterview === true) {
+        const optionText = optionObj.text;
+        if (messageText.includes(optionText)) {
+          rootLogger.info({
+            msg: "endInterview triggered by user answer",
+            optionText,
+            messageText,
+          });
+          return true;
+        }
       }
     }
   }
