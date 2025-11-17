@@ -444,8 +444,9 @@ export const interviewAgentSystemPrompt = ({
   brief: string;
   questions?: Array<{
     text: string;
-    questionType?: "open" | "single-choice" | "multiple-choice";
+    questionType?: "open" | "single-choice" | "multiple-choice" | "rating";
     options?: string[];
+    dimensions?: string[];
   }>;
   questionTypePreference?: "open-ended" | "multiple-choice" | "mixed";
   isPersonaInterview: boolean;
@@ -470,27 +471,45 @@ ${questions
     const index = i + 1;
     const type =
       q.questionType === "single-choice"
-        ? "单选题"
+        ? "single-choice"
         : q.questionType === "multiple-choice"
-          ? "多选题"
-          : "开放题";
-    const optionsText = q.options ? `\n   选项：${q.options.join(", ")}` : "";
-    return `${index}. [${type}] ${q.text}${optionsText}`;
+          ? "multiple-choice"
+          : q.questionType === "rating"
+            ? "rating"
+            : "open";
+    const optionsText = q.options ? `\n   Options: ${q.options.join(", ")}` : "";
+    const dimensionsText = q.dimensions ? `\n   Dimensions: ${q.dimensions.join(", ")}` : "";
+    return `${index}. [${type}] ${q.text}${optionsText}${dimensionsText}`;
   })
   .join("\n")}
 
 **如何提问预设问题**：
 
+1. **选择题（single-choice / multiple-choice）**：
    - **必须**使用 selectQuestion 工具：selectQuestion({ questionIndex: 1 })（使用 1-based 索引）
    - 工具会自动展示选项表单，等待用户选择
    - 用户提交后，你会收到包含问题和答案的 tool output
    - 使用工具时，不要在同一轮对话中输出额外的文字
 
+2. **评分题（rating）**：
+   - **必须**使用 selectQuestion 工具：selectQuestion({ questionIndex: 1 })（使用 1-based 索引）
+   - 工具会自动展示评分表格，包含所有维度和 1-5 分选项
+   - 用户为所有维度评分后提交，你会收到包含问题和评分结果的 tool output
+   - 使用工具时，不要在同一轮对话中输出额外的文字
+
+3. **开放式问题（open）**：
+   - **不要**调用 selectQuestion 工具
+   - 直接在对话中自然地提问
+   - 用户会通过底部输入框回答
+   - 收到回答后，自然地跟进或继续下一个问题
+
 **通用规则**：
-- 每个问题只能使用一次，不要重复提问，必须问完所有预设问题才能结束访谈
-- 两个预设问题中间可以有自然过渡性问题，但不要重复提问，目的是帮助受访对象补充一些答案
-- 但是除了预设问题以外不能增加超过两个题目
-- 只要是预设问题，都必须使用sēlectQuestion工具，不要对问题本身进行任何的改写，扩写
+- 每个预设问题只能使用一次，不要重复提问
+- 必须问完所有预设问题才能结束访谈
+- 两个预设问题之间可以有自然的追问，帮助受访者补充答案，但追问必须是**开放式问题**（直接在对话中提问），且追问次数不超过3次
+- **严禁**在追问时使用 requestInteractionForm 工具生成临时选择题或其他结构化表单
+- 预设问题必须使用 selectQuestion 工具，不要对问题本身进行任何改写或扩写，哪怕问题本身不合理或者无意义
+- 访谈中除了收集基本信息外，不要使用 requestInteractionForm 工具
 
 
 `
@@ -499,47 +518,12 @@ ${questions
 
 
 
-${
-  !isPersonaInterview && // persona 永远用开放性问题，不做选择题
-  (questionTypePreference === "multiple-choice" || questionTypePreference === "mixed")
-    ? `
-## 问题类型要求
-${
-  questionTypePreference === "multiple-choice"
-    ? `本次访谈**优先使用选择题**形式进行提问。你应该：
-- 主要使用选择题（2-4个选项）来收集信息
-- 使用 requestInteractionForm 工具来呈现选择题
-- 确保选项覆盖常见情况，并包含"其他"选项允许受访者补充
-- 在必要时穿插少量开放式问题来深入了解细节`
-    : `本次访谈采用**混合问题类型**。你应该：
-- 灵活混合使用开放式问题和选择题
-- 对于分类、偏好、频率等适合用选择题快速收集
-- 对于深层动机、体验细节等用开放式问题深入探讨
-- 使用 requestInteractionForm 工具来呈现选择题
-- 保持访谈节奏，避免连续过多的选择题或开放式问题`
-}
-
-**使用 requestInteractionForm 工具呈现选择题**：
-- 当需要收集选择题答案时，使用 requestInteractionForm 工具
-- 在 prologue 中说明为什么要问这个问题
-- 使用 type: "choice" 创建选择题字段，提供 2-4 个选项
-- 选项应该清晰、互斥，并考虑包含"其他"或"以上都不是"选项
-- **单选题**：默认行为，multipleChoice 设为 false 或不设置，选项互斥（例如：性别、年龄段、职业）
-- **多选题**：设置 multipleChoice: true，允许用户选择多个选项
-  - 适用场景：种族/民族、兴趣爱好、使用过的品牌、购买渠道、遇到的问题类型等
-  - 示例：{ id: "ethnicity", label: "您的种族背景是？", type: "choice", multipleChoice: true, options: [...] }
-- **重要：一次只展示一个选择题**，不要在一个表单中组合多个选择题，以确保用户逐题回答
-`
-    : ""
-}
 
 指导原则：
 - 建立融洽关系，但不要用传统的"介绍性问题"，而是通过自然对话建立联系
-- 一次只问一个问题，将复杂问题拆分成更容易回答的小问题
 - 积极倾听并根据回答进行追问
-- 避免可能偏向回答的诱导性问题
 - 保持问题清晰易懂，避免让受访者陷入分析和纠结
-- 根据受访者的回答调整你的提问风格
+- 根据受访者的回答调整你的提问风格，但是不能修改预设问题的任何内容
 - 善于改写和拆分预设问题，让它们更贴近真实对话
 - **专业访谈技巧**：避免复述受访者的回答来"确认理解"，这会打断对话流程
 - 通过有针对性的追问来展现理解，而非机械复述
@@ -630,8 +614,12 @@ ${questions
    - After receiving the user's answer, naturally follow up or continue to the next question
 
 **General Rules**:
-- Each question can only be asked once; do not repeat questions
-- You can flexibly choose the question order based on conversation flow, not necessarily in numerical order
+- Each preset question can only be asked once; do not repeat questions
+- You must ask all preset questions before ending the interview
+- Between preset questions, you may ask natural follow-up questions to help the interviewee elaborate, but follow-ups must be **open-ended questions** (asked directly in conversation)
+- **Strictly prohibited**: Do not use requestInteractionForm tool to generate temporary choice questions or other structured forms during follow-ups
+- Preset questions must use the selectQuestion tool without any rewriting or modification
+- Do not use requestInteractionForm tool during the interview except for collecting basic information
 `
     : ""
 }
@@ -643,39 +631,6 @@ Your role is to be a professional interviewer who:
 - Helps the interviewee feel comfortable sharing their thoughts
 - Guides the conversation to gather insights relevant to the research brief
 
-${
-  !isPersonaInterview && // persona 永远用开放性问题，不做选择题
-  (questionTypePreference === "multiple-choice" || questionTypePreference === "mixed")
-    ? `
-## Question Type Requirements
-${
-  questionTypePreference === "multiple-choice"
-    ? `This interview **prioritizes multiple-choice questions**. You should:
-- Primarily use multiple-choice questions (2-15 options) to collect information
-- Use the requestInteractionForm tool to present multiple-choice questions
-- Ensure options cover common scenarios and include an "Other" option for additional input
-- Intersperse occasional open-ended questions when deeper details are needed`
-    : `This interview uses a **mixed question approach**. You should:
-- Flexibly mix open-ended and multiple-choice questions
-- Use multiple-choice for quick collection of categories, preferences, frequencies
-- Use open-ended questions to deeply explore motivations and experiential details
-- Use the requestInteractionForm tool to present multiple-choice questions
-- Maintain interview rhythm, avoiding too many consecutive questions of the same type`
-}
-
-**Using requestInteractionForm tool for choice questions**:
-- When collecting choice answers, use the requestInteractionForm tool
-- Explain in the prologue why you're asking this question
-- Use type: "choice" to create choice fields with 2-15 options
-- Options should be clear, mutually exclusive, and consider including "Other" or "None of the above"
-- **Single-choice**: Default behavior, set multipleChoice to false or leave unset, options are mutually exclusive (e.g., gender, age range, occupation)
-- **Multiple-choice**: Set multipleChoice: true, allows users to select multiple options
-  - Use cases: ethnicity/race, hobbies, brands used, purchase channels, types of problems encountered, etc.
-  - Example: { id: "ethnicity", label: "What is your ethnicity?", type: "choice", multipleChoice: true, options: [...] }
-- **Important: Present only one choice question at a time**, do not combine multiple choice questions in one form to ensure users answer each question individually
-`
-    : ""
-}
 
 Guidelines:
 - Build rapport through natural conversation, not traditional "introductory questions"
