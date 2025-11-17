@@ -10,19 +10,10 @@ import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
-import { fileUrlToDataUrl } from "@/lib/attachments/actions";
-import { Analyst, AnalystReport, AnalystReportExtra, ChatMessageAttachment } from "@/prisma/client";
+import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
-import {
-  FilePart,
-  FinishReason,
-  ModelMessage,
-  stepCountIs,
-  streamText,
-  tool,
-  UserModelMessage,
-} from "ai";
+import { FinishReason, ModelMessage, stepCountIs, streamText, tool, UserModelMessage } from "ai";
 import { generateAndSaveStudyLog } from "./studyLog";
 import {
   generateReportInputSchema,
@@ -255,14 +246,17 @@ export async function generateReport({
       finishReason: FinishReason | "Too many tokens";
       content: string;
     }>(async (resolve, reject) => {
-      const fileParts: FilePart[] = await Promise.all(
-        ((analyst.attachments ?? []) as ChatMessageAttachment[]).map(
-          async ({ name, objectUrl, mimeType }) => {
-            const url = await fileUrlToDataUrl({ objectUrl, mimeType });
-            return { type: "file", filename: name, data: url, mediaType: mimeType };
-          },
-        ),
-      );
+      // study agent 已经使用了压缩信息的附件内容，
+      // report 和 study agent 是同一个模型，如果不使用压缩的内容也会导致 token 太多而报错
+      // 而且，现在其实报告生成不需要附件，可以暂时拿掉
+      // const fileParts: FilePart[] = await Promise.all(
+      //   ((analyst.attachments ?? []) as ChatMessageAttachment[]).map(
+      //     async ({ name, objectUrl, mimeType }) => {
+      //       const url = await fileUrlToDataUrl({ objectUrl, mimeType });
+      //       return { type: "file", filename: name, data: url, mediaType: mimeType };
+      //     },
+      //   ),
+      // );
       const messages: ModelMessage[] = [
         {
           role: "user",
@@ -271,7 +265,7 @@ export async function generateReport({
               type: "text",
               text: reportHTMLPrologue({ locale, analyst, instruction, lastReport }),
             },
-            ...fileParts,
+            // ...fileParts,
           ],
         },
       ];
