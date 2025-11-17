@@ -163,6 +163,18 @@ export const requestInteractionFormInputSchema = z.object({
           .describe(
             "For choice fields: true if multiple options can be selected, false or undefined for single choice",
           ),
+        minSelections: z
+          .number()
+          .int()
+          .min(1)
+          .optional()
+          .describe("For multiple-choice fields: minimum number of options that must be selected"),
+        maxSelections: z
+          .number()
+          .int()
+          .min(1)
+          .optional()
+          .describe("For multiple-choice fields: maximum number of options that can be selected"),
       }),
     )
     .min(1)

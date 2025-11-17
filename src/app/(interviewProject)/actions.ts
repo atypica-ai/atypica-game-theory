@@ -1403,12 +1403,7 @@ export async function getQuestionData({
     }
 
     // Get the question
-    const question = questions[arrayIndex] as {
-      text: string;
-      image?: ChatMessageAttachment;
-      questionType?: "open" | "single-choice" | "multiple-choice";
-      options?: Array<string | { text: string; endInterview?: boolean }>;
-    };
+    const question = questions[arrayIndex] as Question;
 
     // Process options to separate text and metadata
     let optionsArray: string[] | undefined;

@@ -38,8 +38,8 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
   const fieldOptions = field.options || [];
 
   // Validation logic for multiple-choice
-  const minSelections = (field as { minSelections?: number }).minSelections;
-  const maxSelections = (field as { maxSelections?: number }).maxSelections;
+  const minSelections = field.minSelections;
+  const maxSelections = field.maxSelections;
   const currentSelections = Array.isArray(fieldValue) ? fieldValue.length : 0;
 
   // Check if selection is valid
@@ -56,15 +56,12 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     if (isSingleChoice || isCompleted) return null;
 
     if (minSelections && maxSelections) {
-      // @ts-expect-error - Translation key may not be in type definitions
       return t("selectRange", { min: minSelections, max: maxSelections });
     }
     if (minSelections) {
-      // @ts-expect-error - Translation key may not be in type definitions
       return t("selectAtLeast", { count: minSelections });
     }
     if (maxSelections) {
-      // @ts-expect-error - Translation key may not be in type definitions
       return t("selectAtMost", { count: maxSelections });
     }
     return null;

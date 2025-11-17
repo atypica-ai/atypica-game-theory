@@ -97,8 +97,8 @@ export function useFormValidation(
 
           // Check minSelections and maxSelections for multiple-choice
           if (!SINGLE_CHOICE_FIELD_IDS.has(field.id)) {
-            const minSelections = (field as { minSelections?: number }).minSelections;
-            const maxSelections = (field as { maxSelections?: number }).maxSelections;
+            const minSelections = field.minSelections;
+            const maxSelections = field.maxSelections;
 
             if (minSelections && value.length < minSelections) {
               return false;

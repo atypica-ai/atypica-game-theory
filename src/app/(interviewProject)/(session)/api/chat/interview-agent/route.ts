@@ -49,6 +49,15 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
 }
 
 /**
+ * Type guard to check if option is an object with endInterview flag
+ */
+function isOptionObject(
+  option: string | { text: string; endInterview?: boolean },
+): option is { text: string; endInterview?: boolean } {
+  return typeof option !== "string";
+}
+
+/**
  * Check if the last user message contains an answer that triggers endInterview
  */
 function shouldTriggerEndInterview(
@@ -80,15 +89,9 @@ function shouldTriggerEndInterview(
 
     // Check if any option with endInterview flag is mentioned in the message
     for (const option of question.options) {
-      // Skip string options
-      if (typeof option === "string") continue;
-
-      // Type assertion for object options
-      const optionObj = option as { text: string; endInterview?: boolean };
-
-      // Check if this option should end the interview
-      if (optionObj.endInterview === true) {
-        const optionText = optionObj.text;
+      // Use type guard to check if option is an object
+      if (isOptionObject(option) && option.endInterview === true) {
+        const optionText = option.text;
         if (messageText.includes(optionText)) {
           rootLogger.info({
             msg: "endInterview triggered by user answer",
