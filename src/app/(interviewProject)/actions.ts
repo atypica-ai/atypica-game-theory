@@ -479,6 +479,78 @@ export async function deleteInterviewQuestion(
 }
 
 /**
+ * Create a new question for the project
+ */
+export async function createInterviewQuestion(
+  projectId: number,
+  questionData: z.infer<typeof questionSchema>,
+): Promise<ServerActionResult<InterviewProject>> {
+  return withAuth(async (user) => {
+    // Validate input data
+    const validationResult = questionSchema.safeParse(questionData);
+    if (!validationResult.success) {
+      return {
+        success: false,
+        code: "internal_server_error",
+        message: "Invalid question data: " + validationResult.error.message,
+      };
+    }
+
+    const project = await prisma.interviewProject.findUnique({
+      where: { id: projectId, userId: user.id },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview project not found",
+      };
+    }
+
+    // Validate and parse extra field
+    const extraParseResult = interviewProjectQuestionsSchema.safeParse(project.extra || {});
+    if (!extraParseResult.success) {
+      rootLogger.error({
+        msg: "Invalid project extra data structure",
+        projectId,
+        error: extraParseResult.error.message,
+      });
+      return {
+        success: false,
+        code: "internal_server_error",
+        message: "Invalid project data structure",
+      };
+    }
+
+    const extra = extraParseResult.data;
+    const questions = extra.questions || [];
+
+    // Add the new question to the end of the array
+    questions.push(validationResult.data);
+
+    // Update the project with the modified questions array
+    const updatedProject = await prisma.interviewProject.update({
+      where: { id: projectId },
+      data: {
+        extra: {
+          ...extra,
+          questions,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        ...updatedProject,
+        extra: updatedProject.extra as InterviewProjectExtra,
+      },
+    };
+  });
+}
+
+/**
  * Fetch session statistics for a project
  */
 export async function fetchInterviewSessionStatsByProjectToken({

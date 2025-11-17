@@ -251,9 +251,11 @@ export function EditQuestionDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
-            {questionIndex !== undefined ? `${t("title")} #${questionIndex + 1}` : t("title")}
+            {questionIndex !== undefined ? `${t("title")} #${questionIndex + 1}` : t("createTitle")}
           </DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
+          <DialogDescription>
+            {questionIndex !== undefined ? t("description") : t("createDescription")}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4 overflow-y-auto flex-1">

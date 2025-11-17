@@ -1,5 +1,6 @@
 "use client";
 import {
+  createInterviewQuestion,
   createPersonaInterviewSession,
   deleteInterviewQuestion,
   optimizeInterviewQuestions,
@@ -109,6 +110,12 @@ export function ProjectDetails({
     router.refresh();
   }, [router]);
 
+  const handleCreateQuestion = useCallback(() => {
+    setEditingQuestionIndex(undefined);
+    setEditingQuestion(null);
+    setQuestionEditDialogOpen(true);
+  }, []);
+
   const handleEditQuestion = useCallback((index: number, question: QuestionData) => {
     setEditingQuestionIndex(index);
     setEditingQuestion(question);
@@ -117,19 +124,28 @@ export function ProjectDetails({
 
   const handleSaveQuestion = useCallback(
     async (questionData: QuestionData) => {
-      if (editingQuestionIndex === undefined) return;
-
       try {
-        const result = await updateInterviewQuestion(
-          project.id,
-          editingQuestionIndex,
-          questionData,
-        );
-        if (!result.success) {
-          toast.error(result.message || t("questionUpdateFailed"));
-          return;
+        // If editingQuestionIndex is undefined, create new question
+        if (editingQuestionIndex === undefined) {
+          const result = await createInterviewQuestion(project.id, questionData);
+          if (!result.success) {
+            toast.error(result.message || t("questionUpdateFailed"));
+            return;
+          }
+          toast.success(t("questionCreated"));
+        } else {
+          // Otherwise, update existing question
+          const result = await updateInterviewQuestion(
+            project.id,
+            editingQuestionIndex,
+            questionData,
+          );
+          if (!result.success) {
+            toast.error(result.message || t("questionUpdateFailed"));
+            return;
+          }
+          toast.success(t("questionUpdated"));
         }
-        toast.success(t("questionUpdated"));
         router.refresh();
       } catch (error) {
         toast.error((error as Error).message || t("questionUpdateFailed"));
@@ -257,11 +273,20 @@ export function ProjectDetails({
       {/* Question List */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <ListIcon className="h-5 w-5 mr-2" />
-            {t("questionList")}
-          </CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">{t("questionListDescription")}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center">
+                <ListIcon className="h-5 w-5 mr-2" />
+                {t("questionList")}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">{t("questionListDescription")}</p>
+            </div>
+            {!readOnly && project.extra?.questions && project.extra.questions.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleCreateQuestion}>
+                {t("addQuestion")}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {project.extra?.processing ? (
