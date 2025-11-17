@@ -29,11 +29,23 @@ import { interviewProjectQuestionsSchema, questionSchema, Question } from "./too
  * This ensures consistent form structure with requestInteractionForm
  */
 function generateFormFieldsForQuestion(question: Question, questionIndex: number) {
-  const { text, questionType = "open", options, validation } = question;
+  const { text, questionType = "open", options, dimensions, validation } = question;
 
   // Open-ended questions: no form fields, user answers using the chat input
   if (questionType === "open") {
     return undefined;
+  }
+
+  // Rating questions
+  if (questionType === "rating" && dimensions && dimensions.length > 0) {
+    return [
+      {
+        id: `answer`,
+        label: text,
+        type: "rating" as const,
+        dimensions: dimensions,
+      },
+    ];
   }
 
   // Single-choice or multiple-choice questions

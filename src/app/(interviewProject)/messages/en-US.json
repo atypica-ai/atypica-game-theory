@@ -285,7 +285,8 @@
       "ok": "OK",
       "continue": "Continue",
       "back": "Back",
-      "selectAtLeastOne": "Please select at least one option"
+      "selectAtLeastOne": "Please select at least one option",
+      "ratingHint": "Please rate each dimension from 1 to 5"
     },
     "transcriptDialog": {
       "title": "Interview Transcript",
@@ -333,7 +334,13 @@
       "openQuestion": "Open-ended Question",
       "singleChoiceQuestion": "Single Choice",
       "multipleChoiceQuestion": "Multiple Choice",
+      "ratingQuestion": "Rating Question",
       "options": "Options",
+      "dimensions": "Dimensions",
+      "dimensionPlaceholder": "Dimension {number}",
+      "addDimension": "Add Dimension",
+      "deleteDimension": "Delete Dimension",
+      "dimensionsHint": "At least 1 dimension required, maximum 20",
       "optionPlaceholder": "Option {number}",
       "addOption": "Add Option",
       "deleteOption": "Delete Option",

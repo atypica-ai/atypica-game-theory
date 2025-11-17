@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { FC, useCallback, useState } from "react";
 import { toast } from "sonner";
-import { BooleanField, ChoiceField, TextField } from "./RequestInteractionForm/fields";
+import { BooleanField, ChoiceField, TextField, RatingField } from "./RequestInteractionForm/fields";
 
 interface SelectQuestionToolMessageProps {
   toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.selectQuestion>>;
@@ -33,6 +33,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
   const questionText = result?.questionText || "";
   const questionType = result?.questionType || "open";
   const options = result?.options || [];
+  const dimensions = result?.dimensions || [];
   const image = result?.image;
   const formFields = result?.formFields || [];
 
@@ -57,8 +58,24 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     if (questionType === "multiple-choice") {
       return Array.isArray(answer) && answer.length > 0;
     }
+    if (questionType === "rating") {
+      if (typeof answer !== "string") return false;
+      try {
+        const ratingAnswers = JSON.parse(answer);
+        if (typeof ratingAnswers !== "object" || ratingAnswers === null) return false;
+        // Check if all dimensions have a score
+        return dimensions.every((dim) => 
+          ratingAnswers[dim] !== undefined && 
+          typeof ratingAnswers[dim] === "number" && 
+          ratingAnswers[dim] >= 1 && 
+          ratingAnswers[dim] <= 5
+        );
+      } catch {
+        return false;
+      }
+    }
     return false;
-  }, [answer, questionType]);
+  }, [answer, questionType, dimensions]);
 
   // Handle form submission
   const handleSubmit = useCallback(async () => {
@@ -66,7 +83,21 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
 
     setIsSubmitting(true);
     try {
-      const answerText = Array.isArray(answer) ? answer.join(", ") : answer;
+      // Format answer text based on question type
+      let answerText: string;
+      if (questionType === "rating" && typeof answer === "string") {
+        try {
+          const ratingAnswers = JSON.parse(answer);
+          // Format as: "维度1: 3分, 维度2: 4分"
+          answerText = Object.entries(ratingAnswers)
+            .map(([dim, score]) => `${dim}: ${score}分`)
+            .join(", ");
+        } catch {
+          answerText = answer;
+        }
+      } else {
+        answerText = Array.isArray(answer) ? answer.join(", ") : answer;
+      }
 
       await addToolResult({
         tool: InterviewToolName.selectQuestion,
@@ -76,6 +107,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
           questionText,
           questionType,
           options,
+          dimensions,
           image,
           formFields,
         },
@@ -97,6 +129,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     questionText,
     questionType,
     options,
+    dimensions,
     image,
     formFields,
   ]);
@@ -148,6 +181,18 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
             value={answer === "true"}
             onChange={(value) => setAnswer(value.toString())}
             disabled={isCompleted || isSubmitting}
+          />
+        );
+
+      case "rating":
+        return (
+          <RatingField
+            field={field}
+            fieldValue={typeof answer === "string" ? answer : ""}
+            isCompleted={isCompleted}
+            isRequired={true}
+            dimensions={dimensions}
+            onUpdate={(fieldId, value) => setAnswer(value as string)}
           />
         );
 

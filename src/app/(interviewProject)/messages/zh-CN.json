@@ -285,7 +285,8 @@
       "ok": "确定",
       "continue": "继续",
       "back": "返回",
-      "selectAtLeastOne": "请至少选择一个选项"
+      "selectAtLeastOne": "请至少选择一个选项",
+      "ratingHint": "请为每个维度选择 1-5 分"
     },
     "transcriptDialog": {
       "title": "访谈笔录",
@@ -333,7 +334,13 @@
       "openQuestion": "开放式问题",
       "singleChoiceQuestion": "单选题",
       "multipleChoiceQuestion": "多选题",
+      "ratingQuestion": "评分题",
       "options": "选项",
+      "dimensions": "维度",
+      "dimensionPlaceholder": "维度 {number}",
+      "addDimension": "添加维度",
+      "deleteDimension": "删除维度",
+      "dimensionsHint": "至少需要 1 个维度，最多 20 个",
       "optionPlaceholder": "选项 {number}",
       "addOption": "添加选项",
       "deleteOption": "删除选项",

@@ -27,11 +27,16 @@ export const questionSchema = z
   .object({
     text: z.string().min(1, "Question text is required").max(1000, "Question text is too long"),
     image: imageAttachmentSchema.optional(),
-    questionType: z.enum(["open", "single-choice", "multiple-choice"]).optional(),
+    questionType: z.enum(["open", "single-choice", "multiple-choice", "rating"]).optional(),
     options: z
       .array(optionSchema)
       .min(2, "Choice questions must have at least 2 options")
       .max(15, "Choice questions can have at most 15 options")
+      .optional(),
+    dimensions: z
+      .array(z.string().min(1, "Dimension name cannot be empty"))
+      .min(1, "Rating questions must have at least 1 dimension")
+      .max(20, "Rating questions can have at most 20 dimensions")
       .optional(),
     validation: z
       .object({
@@ -55,12 +60,50 @@ export const questionSchema = z
       }
     }
 
-    // Open questions should NOT have options
-    if (type === "open" && data.options && data.options.length > 0) {
+    // Rating questions MUST have dimensions
+    if (type === "rating") {
+      if (!data.dimensions || data.dimensions.length < 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Rating questions must have at least 1 dimension",
+          path: ["dimensions"],
+        });
+      }
+    }
+
+    // Open questions should NOT have options or dimensions
+    if (type === "open") {
+      if (data.options && data.options.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Open questions should not have options",
+          path: ["options"],
+        });
+      }
+      if (data.dimensions && data.dimensions.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Open questions should not have dimensions",
+          path: ["dimensions"],
+        });
+      }
+    }
+
+    // Rating questions should NOT have options
+    if (type === "rating" && data.options && data.options.length > 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Open questions should not have options",
+        message: "Rating questions should not have options",
         path: ["options"],
+      });
+    }
+
+    // Choice questions should NOT have dimensions
+    if ((type === "single-choice" || type === "multiple-choice") && data.dimensions && data.dimensions.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Choice questions should not have dimensions",
+        path: ["dimensions"],
       });
     }
 
@@ -202,17 +245,19 @@ export const selectQuestionInputSchema = z.object({
 export const selectQuestionOutputSchema = z.object({
   questionIndex: z.number(),
   questionText: z.string(),
-  questionType: z.enum(["open", "single-choice", "multiple-choice"]),
+  questionType: z.enum(["open", "single-choice", "multiple-choice", "rating"]),
   options: z.array(z.string()).optional(),
+  dimensions: z.array(z.string()).optional(),
   image: imageAttachmentSchema.optional(),
   formFields: z
     .array(
       z.object({
         id: z.string(),
         label: z.string(),
-        type: z.enum(["text", "choice", "boolean"]),
+        type: z.enum(["text", "choice", "boolean", "rating"]),
         options: z.array(z.string()).optional(),
         multipleChoice: z.boolean().optional(),
+        dimensions: z.array(z.string()).optional(),
       }),
     )
     .optional(),

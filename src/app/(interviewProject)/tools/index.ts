@@ -137,6 +137,7 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
         questionText: question.text,
         questionType: question.questionType || "open",
         options: question.options,
+        dimensions: question.dimensions,
         image: question.image,
         formFields: question.formFields,
       };

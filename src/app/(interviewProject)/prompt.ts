@@ -600,9 +600,12 @@ ${questions
         ? "single-choice"
         : q.questionType === "multiple-choice"
           ? "multiple-choice"
-          : "open";
+          : q.questionType === "rating"
+            ? "rating"
+            : "open";
     const optionsText = q.options ? `\n   Options: ${q.options.join(", ")}` : "";
-    return `${index}. [${type}] ${q.text}${optionsText}`;
+    const dimensionsText = q.dimensions ? `\n   Dimensions: ${q.dimensions.join(", ")}` : "";
+    return `${index}. [${type}] ${q.text}${optionsText}${dimensionsText}`;
   })
   .join("\n")}
 
@@ -614,7 +617,13 @@ ${questions
    - After the user submits, you will receive tool output containing the question and answer
    - When using the tool, do not output additional text in the same conversation turn
 
-2. **Open-ended Questions**:
+2. **Rating Questions**:
+   - Use the selectQuestion tool: selectQuestion({ questionIndex: 1 }) (using 1-based indexing)
+   - The tool will automatically display a rating table with dimensions and 1-5 score options
+   - After the user submits ratings for all dimensions, you will receive tool output containing the question and answers
+   - When using the tool, do not output additional text in the same conversation turn
+
+3. **Open-ended Questions**:
    - **Do NOT call the selectQuestion tool**
    - Simply ask the question directly in the conversation
    - The user will answer using the bottom input field
