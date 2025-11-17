@@ -34,6 +34,12 @@ export interface QuestionData {
     minSelections?: number;
     maxSelections?: number;
   };
+  otherOption?: {
+    enabled: boolean;
+    label: string;
+    placeholder?: string;
+    required?: boolean;
+  };
 }
 
 interface EditQuestionDialogProps {
@@ -67,6 +73,12 @@ export function EditQuestionDialog({
   const [maxSelections, setMaxSelections] = useState<number | undefined>();
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // Other option configuration
+  const [otherOptionEnabled, setOtherOptionEnabled] = useState(false);
+  const [otherOptionLabel, setOtherOptionLabel] = useState("其他");
+  const [otherOptionPlaceholder, setOtherOptionPlaceholder] = useState("请说明");
+  const [otherOptionRequired, setOtherOptionRequired] = useState(false);
+
   // Initialize form when question changes
   useEffect(() => {
     if (question) {
@@ -95,6 +107,19 @@ export function EditQuestionDialog({
 
       setMinSelections(question.validation?.minSelections);
       setMaxSelections(question.validation?.maxSelections);
+
+      // Initialize other option configuration
+      if (question.otherOption) {
+        setOtherOptionEnabled(question.otherOption.enabled);
+        setOtherOptionLabel(question.otherOption.label || "其他");
+        setOtherOptionPlaceholder(question.otherOption.placeholder || "请说明");
+        setOtherOptionRequired(question.otherOption.required || false);
+      } else {
+        setOtherOptionEnabled(false);
+        setOtherOptionLabel("其他");
+        setOtherOptionPlaceholder("请说明");
+        setOtherOptionRequired(false);
+      }
     } else {
       setText("");
       setImage(undefined);
@@ -106,6 +131,10 @@ export function EditQuestionDialog({
       setDimensions(["维度1"]);
       setMinSelections(undefined);
       setMaxSelections(undefined);
+      setOtherOptionEnabled(false);
+      setOtherOptionLabel("其他");
+      setOtherOptionPlaceholder("请说明");
+      setOtherOptionRequired(false);
     }
   }, [question]);
 
@@ -204,6 +233,16 @@ export function EditQuestionDialog({
         questionData.validation = {
           minSelections,
           maxSelections,
+        };
+      }
+
+      // Add other option configuration if enabled
+      if (otherOptionEnabled) {
+        questionData.otherOption = {
+          enabled: true,
+          label: otherOptionLabel.trim() || "其他",
+          placeholder: otherOptionPlaceholder?.trim(),
+          required: otherOptionRequired,
         };
       }
 
@@ -579,6 +618,65 @@ export function EditQuestionDialog({
                   </p>
                 </div>
               )}
+
+              {/* Other Option Configuration */}
+              <div className="space-y-3 pt-3 border-t">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="otherOptionEnabled"
+                    checked={otherOptionEnabled}
+                    onCheckedChange={(checked) => setOtherOptionEnabled(!!checked)}
+                  />
+                  <Label htmlFor="otherOptionEnabled" className="text-sm font-medium cursor-pointer">
+                    {t("enableOtherOption")}
+                  </Label>
+                </div>
+
+                {otherOptionEnabled && (
+                  <div className="space-y-3 pl-6">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="otherOptionLabel" className="text-xs text-muted-foreground">
+                        {t("otherOptionLabel")}
+                      </Label>
+                      <Input
+                        id="otherOptionLabel"
+                        value={otherOptionLabel}
+                        onChange={(e) => setOtherOptionLabel(e.target.value)}
+                        placeholder="其他"
+                        maxLength={20}
+                        className="h-9"
+                      />
+                      <p className="text-xs text-muted-foreground">{t("otherOptionLabelHint")}</p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="otherOptionPlaceholder" className="text-xs text-muted-foreground">
+                        {t("otherOptionPlaceholder")}
+                      </Label>
+                      <Input
+                        id="otherOptionPlaceholder"
+                        value={otherOptionPlaceholder}
+                        onChange={(e) => setOtherOptionPlaceholder(e.target.value)}
+                        placeholder="请说明"
+                        maxLength={50}
+                        className="h-9"
+                      />
+                      <p className="text-xs text-muted-foreground">{t("otherOptionPlaceholderHint")}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="otherOptionRequired"
+                        checked={otherOptionRequired}
+                        onCheckedChange={(checked) => setOtherOptionRequired(!!checked)}
+                      />
+                      <Label htmlFor="otherOptionRequired" className="text-xs text-muted-foreground cursor-pointer">
+                        {t("otherOptionRequired")}
+                      </Label>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

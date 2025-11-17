@@ -20,6 +20,22 @@ const optionSchema = z.union([
   }),
 ]);
 
+// Other option configuration schema
+export const otherOptionSchema = z.object({
+  enabled: z.boolean().describe("Whether to enable the 'Other' option"),
+  label: z
+    .string()
+    .min(1, "Label cannot be empty")
+    .max(20, "Label is too long")
+    .describe("The display text for the 'Other' option (e.g., '其他', 'Other', '其他请说明')"),
+  placeholder: z
+    .string()
+    .max(50, "Placeholder is too long")
+    .optional()
+    .describe("Placeholder text for the input field when 'Other' is selected"),
+  required: z.boolean().optional().describe("Whether the input field is required when 'Other' is selected"),
+});
+
 // Question schema with strict validation
 // Users create questions via UI. questionType is optional (defaults to "open" in frontend)
 // but when specified as choice type, options are required
@@ -44,6 +60,7 @@ export const questionSchema = z
         maxSelections: z.number().int().min(1).optional(),
       })
       .optional(),
+    otherOption: otherOptionSchema.optional(),
   })
   .superRefine((data, ctx) => {
     // If questionType is not specified, treat as "open" question (default behavior)

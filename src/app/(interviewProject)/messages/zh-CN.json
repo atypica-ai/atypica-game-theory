@@ -357,7 +357,13 @@
       "invalidImageType": "不支持的图片格式，请上传 JPG, PNG, WebP 或 GIF 格式的图片",
       "imageTooLarge": "图片大小超过限制（最大 10MB）",
       "imageUploaded": "图片上传成功",
-      "imageUploadFailed": "图片上传失败，请重试"
+      "imageUploadFailed": "图片上传失败，请重试",
+      "enableOtherOption": "启用\"其他\"选项",
+      "otherOptionLabel": "标签文字",
+      "otherOptionLabelHint": "显示给用户的选项文字，例如\"其他\"、\"其他请说明\"等",
+      "otherOptionPlaceholder": "输入提示",
+      "otherOptionPlaceholderHint": "用户选择此选项后输入框的提示文字",
+      "otherOptionRequired": "必须填写说明"
     },
     "createProject": {
       "title": "创建访谈项目",

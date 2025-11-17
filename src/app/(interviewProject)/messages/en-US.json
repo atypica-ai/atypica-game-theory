@@ -357,7 +357,13 @@
       "invalidImageType": "Unsupported image format. Please upload JPG, PNG, WebP or GIF",
       "imageTooLarge": "Image size exceeds limit (max 10MB)",
       "imageUploaded": "Image uploaded successfully",
-      "imageUploadFailed": "Failed to upload image, please try again"
+      "imageUploadFailed": "Failed to upload image, please try again",
+      "enableOtherOption": "Enable 'Other' option",
+      "otherOptionLabel": "Label Text",
+      "otherOptionLabelHint": "The text displayed to users, e.g., 'Other', 'Other (please specify)', etc.",
+      "otherOptionPlaceholder": "Input Placeholder",
+      "otherOptionPlaceholderHint": "Placeholder text for the input field when this option is selected",
+      "otherOptionRequired": "Input required"
     },
     "createProject": {
       "title": "Create Interview Project",

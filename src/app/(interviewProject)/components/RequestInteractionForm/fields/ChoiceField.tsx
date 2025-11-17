@@ -20,7 +20,16 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
 }) => {
   const t = useTranslations("InterviewProject.requestInteractionForm");
 
-  const OTHER_OPTION_KEY = "其他";
+  // Get otherOption configuration from field, or use defaults
+  const otherOptionConfig = (field as any).otherOption;
+  // For backward compatibility: if otherOption is not explicitly configured, enable it by default
+  // If configured, respect the enabled flag
+  const otherOptionEnabled =
+    otherOptionConfig === undefined ? true : otherOptionConfig.enabled !== false;
+  const OTHER_OPTION_KEY = otherOptionConfig?.label || "其他";
+  const otherOptionPlaceholder = otherOptionConfig?.placeholder || t("otherInputPlaceholder");
+  const otherOptionRequired = otherOptionConfig?.required || false;
+
   const [otherInputValue, setOtherInputValue] = useState("");
   const [isOtherOptionSelected, setIsOtherOptionSelected] = useState(false);
 
@@ -40,8 +49,10 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     return MULTIPLE_CHOICE_STYLE === "A" ? "grid-cols-1" : "grid-cols-2";
   })();
 
-  // Add "其他" option to the list
-  const optionsWithOther = [...(field.options || []), OTHER_OPTION_KEY];
+  // Add "其他" option to the list only if enabled
+  const optionsWithOther = otherOptionEnabled
+    ? [...(field.options || []), OTHER_OPTION_KEY]
+    : (field.options || []);
 
   // Handle "其他" option selection
   const handleOtherOptionClick = () => {
@@ -211,11 +222,12 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
               {isOther && isOtherOptionSelected && !isCompleted && (
                 <Input
                   type="text"
-                  placeholder={t("otherInputPlaceholder")}
+                  placeholder={otherOptionPlaceholder}
                   value={otherInputValue}
                   onChange={(e) => handleOtherInputChange(e.target.value)}
                   className="w-full"
                   autoFocus
+                  required={otherOptionRequired}
                 />
               )}
             </div>

@@ -29,7 +29,7 @@ import { interviewProjectQuestionsSchema, questionSchema, Question } from "./too
  * This ensures consistent form structure with requestInteractionForm
  */
 function generateFormFieldsForQuestion(question: Question, questionIndex: number) {
-  const { text, questionType = "open", options, dimensions, validation } = question;
+  const { text, questionType = "open", options, dimensions, validation, otherOption } = question;
 
   // Open-ended questions: no form fields, user answers using the chat input
   if (questionType === "open") {
@@ -74,6 +74,16 @@ function generateFormFieldsForQuestion(question: Question, questionIndex: number
         type: "choice" as const,
         options: normalizedOptions,
         multipleChoice: questionType === "multiple-choice",
+        // Pass otherOption configuration to the field
+        ...(otherOption && otherOption.enabled
+          ? {
+              otherOption: {
+                label: otherOption.label || "其他",
+                placeholder: otherOption.placeholder || "请说明",
+                required: otherOption.required || false,
+              },
+            }
+          : {}),
       },
     ];
 
