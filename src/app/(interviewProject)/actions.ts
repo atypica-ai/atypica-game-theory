@@ -26,79 +26,17 @@ import { generateInterviewShareToken, validateInterviewShareToken } from "./lib"
 import { processInterviewQuestionOptimization } from "./processing";
 import { interviewProjectQuestionsSchema, questionSchema, Question } from "./tools/types";
 
-/**
- * Generate form fields from a question for use in selectQuestion tool
- * This ensures consistent form structure with requestInteractionForm
- */
-function generateFormFieldsForQuestion(question: Question) {
-  const { text, questionType = "open", options, validation } = question;
-
-  // Open-ended questions: no form fields, user answers using the chat input
-  if (questionType === "open") {
-    return undefined;
-  }
-
-  // Single-choice or multiple-choice questions
-  if ((questionType === "single-choice" || questionType === "multiple-choice") && options) {
-    // Normalize options to strings for display (extract text property if needed)
-    // Also clean any [终止访谈] or [END INTERVIEW] markers that shouldn't be visible to users
-    const normalizedOptions = options.map((opt) => {
-      let text = typeof opt === "string" ? opt : opt.text;
-
-      // Remove end interview markers from display text
-      text = text.replace(/\s*\[终止访谈\]\s*$/, "").replace(/\s*\[END INTERVIEW\]\s*$/, "").trim();
-
-      return text;
-    });
-
-    const formFields = [
-      {
-        id: `answer`,
-        label: text,
-        type: "choice" as const,
-        options: normalizedOptions,
-        multipleChoice: questionType === "multiple-choice",
-      },
-    ];
-
-    // Add validation if present
-    if (validation) {
-      formFields[0] = {
-        ...formFields[0],
-        ...validation,
-      };
-    }
-
-    return formFields;
-  }
-
-  // Fallback: treat as open-ended (no form fields)
-  return undefined;
-}
 
 /**
- * Create a snapshot of questions with pre-generated form fields
- * Also extract trigger information for backend processing
+ * Create a snapshot of questions
  */
 function createQuestionsSnapshot(questions: Question[]) {
-  return questions.map((q) => {
-    // Extract options that trigger endInterview
-    const triggerOptions: string[] = [];
-    if (q.options) {
-      q.options.forEach((opt) => {
-        if (typeof opt === "object" && opt.endInterview) {
-          triggerOptions.push(opt.text);
-        }
-      });
-    }
-
-    return {
-      ...q,
-      formFields: generateFormFieldsForQuestion(q),
-      // Store trigger options for backend processing
-      ...(triggerOptions.length > 0 ? { triggerOptions } : {}),
-    };
-  });
+  return questions.map((q) => ({
+    text: q.text,
+    image: q.image,
+    questionType: q.questionType,
+    options: q.options,
+  }));
 }
 
 /**
@@ -1483,13 +1421,6 @@ export async function getQuestionData({
       image?: ChatMessageAttachment;
       questionType?: "open" | "single-choice" | "multiple-choice";
       options?: Array<string | { text: string; endInterview?: boolean }>;
-      formFields?: Array<{
-        id: string;
-        label: string;
-        type: "text" | "choice" | "boolean";
-        options?: string[];
-        multipleChoice?: boolean;
-      }>;
     };
 
     // Process options to separate text and metadata
@@ -1523,7 +1454,7 @@ export async function getQuestionData({
       }
     }
 
-    // Generate formFields if not provided
+    // Generate formFields based on questionType
     const questionTypeValue = (question.questionType || "open") as
       | "open"
       | "single-choice"
@@ -1538,30 +1469,24 @@ export async function getQuestionData({
         }>
       | undefined;
 
-    if (question.formFields) {
-      // Use predefined formFields if available
-      formFieldsArray = question.formFields;
-    } else {
-      // Generate formFields based on questionType
-      if (questionTypeValue === "open") {
-        formFieldsArray = [
-          {
-            id: "answer",
-            label: question.text,
-            type: "text",
-          },
-        ];
-      } else if (questionTypeValue === "single-choice" || questionTypeValue === "multiple-choice") {
-        formFieldsArray = [
-          {
-            id: "answer",
-            label: question.text,
-            type: "choice",
-            options: optionsArray,
-            multipleChoice: questionTypeValue === "multiple-choice",
-          },
-        ];
-      }
+    if (questionTypeValue === "open") {
+      formFieldsArray = [
+        {
+          id: "answer",
+          label: question.text,
+          type: "text",
+        },
+      ];
+    } else if (questionTypeValue === "single-choice" || questionTypeValue === "multiple-choice") {
+      formFieldsArray = [
+        {
+          id: "answer",
+          label: question.text,
+          type: "choice",
+          options: optionsArray,
+          multipleChoice: questionTypeValue === "multiple-choice",
+        },
+      ];
     }
 
     return {

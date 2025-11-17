@@ -138,7 +138,7 @@ declare module "@/prisma/client" {
       text: string;
       image?: ChatMessageAttachment; // 使用标准的 attachment 结构
       questionType?: "open" | "single-choice" | "multiple-choice";
-      options?: string[]; // 选择题的选项（2-4个）
+      options?: Array<string | { text: string; endInterview?: boolean }>; // 选择题的选项，支持终止访谈标记
     }>; // 问题列表
     permanentShareToken: string; // 永久链接令牌，用于验证永久链接
   }>;
@@ -154,15 +154,7 @@ declare module "@/prisma/client" {
       text: string;
       image?: ChatMessageAttachment; // 问题图片
       questionType?: "open" | "single-choice" | "multiple-choice";
-      options?: string[]; // 选择题的选项
-      formFields?: Array<{
-        // 预生成的表单字段，格式与 requestInteractionForm 一致
-        id: string;
-        label: string;
-        type: "text" | "choice" | "boolean";
-        options?: string[];
-        multipleChoice?: boolean;
-      }>;
+      options?: Array<string | { text: string; endInterview?: boolean }>; // 选择题的选项，支持终止访谈标记
     }>; // 问题列表快照（创建 Session 时从 Project 复制）
     selectedQuestionIndexes: number[]; // 已使用的问题 index（1-based）
   }>;
