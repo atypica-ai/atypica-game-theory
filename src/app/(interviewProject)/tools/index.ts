@@ -1,8 +1,6 @@
 import "server-only";
 
 import { PlainTextToolResult } from "@/ai/tools/types";
-import { rootLogger } from "@/lib/logging";
-import { InterviewSessionExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import {

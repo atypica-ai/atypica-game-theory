@@ -6,8 +6,6 @@ import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 
-export const dynamic = "force-dynamic";
-
 /**
  * Extract the first img tag src from HTML
  */
@@ -83,7 +81,10 @@ async function processImageToSquareJpg(imageBuffer: Buffer): Promise<Buffer> {
 /**
  * Get image from S3 and process it
  */
-async function getAndProcessImage(objectUrl: string): Promise<Response | null> {
+async function getAndProcessImage(
+  objectUrl: string,
+  reportUpdatedAt?: Date,
+): Promise<Response | null> {
   try {
     // Get image from S3
     const { fileBody } = await getS3Object(objectUrl);
@@ -91,10 +92,16 @@ async function getAndProcessImage(objectUrl: string): Promise<Response | null> {
     // Process image to 2000x2000 square jpg
     const processedBuffer = await processImageToSquareJpg(fileBody);
 
+    // Generate ETag based on objectUrl and report update time
+    const etag = createHash("md5")
+      .update(`${objectUrl}-${reportUpdatedAt?.getTime() || 0}`)
+      .digest("hex");
+
     return new NextResponse(Uint8Array.from(processedBuffer), {
       headers: {
         "Content-Type": "image/jpeg",
-        "Cache-Control": "public, max-age=604800, immutable", // 7 days
+        "Cache-Control": "public, max-age=31536000, immutable", // 1 year
+        ETag: `"${etag}"`,
       },
     });
   } catch (error) {
@@ -121,6 +128,7 @@ export async function GET(
         id: true,
         onePageHtml: true,
         extra: true,
+        updatedAt: true,
       },
     });
 
@@ -146,7 +154,7 @@ export async function GET(
       }
 
       if (objectUrl) {
-        const imageResponse = await getAndProcessImage(objectUrl);
+        const imageResponse = await getAndProcessImage(objectUrl, report.updatedAt);
         if (imageResponse) {
           return imageResponse;
         }
@@ -164,7 +172,7 @@ export async function GET(
       return new NextResponse("No cover image available", { status: 404 });
     }
 
-    const imageResponse = await getAndProcessImage(extra.coverObjectUrl);
+    const imageResponse = await getAndProcessImage(extra.coverObjectUrl, report.updatedAt);
     if (imageResponse) {
       return imageResponse;
     }
