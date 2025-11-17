@@ -2,6 +2,8 @@ import "server-only";
 
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { HttpsProxyAgent } from "hpagent";
 import { getDeployRegion } from "../request/deployRegion";
 import { S3UploadCredentials } from "./types";
 
@@ -227,13 +229,29 @@ export async function getS3Object(objectUrl: string): Promise<{
   }
 
   // Create S3 client
-  const s3Client = new S3Client({
-    region: s3Config.region,
-    credentials: {
-      accessKeyId: s3Config.accessKeyId,
-      secretAccessKey: s3Config.secretAccessKey,
-    },
-  });
+  let s3Client: S3Client;
+  if (process.env.FETCH_HTTPS_PROXY) {
+    const httpsProxyAgent = new HttpsProxyAgent({ proxy: process.env.FETCH_HTTPS_PROXY });
+    s3Client = new S3Client({
+      region: s3Config.region,
+      credentials: {
+        accessKeyId: s3Config.accessKeyId,
+        secretAccessKey: s3Config.secretAccessKey,
+      },
+      requestHandler: new NodeHttpHandler({
+        httpsAgent: httpsProxyAgent,
+      }),
+    });
+  } else {
+    s3Client = new S3Client({
+      region: s3Config.region,
+      credentials: {
+        accessKeyId: s3Config.accessKeyId,
+        secretAccessKey: s3Config.secretAccessKey,
+      },
+    });
+  }
+
   const s3Bucket = s3Config.bucketName;
 
   // Get object from S3
