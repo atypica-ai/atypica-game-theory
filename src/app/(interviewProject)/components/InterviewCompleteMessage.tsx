@@ -1,17 +1,15 @@
 "use client";
 
-import type { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
+import type { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { CheckCircle2, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC, useEffect, useState } from "react";
-import { ToolUIPart } from "ai";
 
 interface InterviewCompleteMessageProps {
-  toolInvocation: ToolUIPart<{
+  toolInvocation: TInterviewMessageWithTool["parts"][number] & {
     type: `tool-${InterviewToolName.endInterview}`;
-    state: "input-available" | "input-streaming" | "output-available" | "output-error";
-  }>;
+  };
 }
 
 export const InterviewCompleteMessage: FC<InterviewCompleteMessageProps> = ({

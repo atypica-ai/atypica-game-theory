@@ -94,8 +94,8 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
           }
 
           // Check minSelections and maxSelections for multiple-choice
-          const minSelections = currentField.minSelections;
-          const maxSelections = currentField.maxSelections;
+          const minSelections = (currentField as { minSelections?: number }).minSelections;
+          const maxSelections = (currentField as { maxSelections?: number }).maxSelections;
 
           if (minSelections && fieldValue.length < minSelections) {
             return false;

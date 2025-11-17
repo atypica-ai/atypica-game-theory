@@ -43,6 +43,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export function InterviewSessionChatClient({
+  interviewSessionId,
   project,
   intervieweeUser,
   userChatToken,
@@ -305,12 +306,16 @@ export function InterviewSessionChatClient({
 
   return (
     <FitToViewport>
-      <FocusedInterviewChat
+      <FocusedInterviewChat<TInterviewMessageWithTool>
         locale={locale}
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         renderToolUIPart={(toolUIPart) => (
-          <InterviewToolUIPartDisplay toolUIPart={toolUIPart} addToolResult={addToolResult} />
+          <InterviewToolUIPartDisplay
+            toolUIPart={toolUIPart}
+            addToolResult={addToolResult}
+            interviewSessionId={interviewSessionId}
+          />
         )}
         showTimer={false} // Interviews don't need timer pressure
         topRightButton={

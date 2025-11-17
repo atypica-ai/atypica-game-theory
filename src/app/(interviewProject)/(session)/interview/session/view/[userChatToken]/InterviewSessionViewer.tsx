@@ -252,7 +252,7 @@ export function InterviewSessionViewer({
 
       {/* Chat content */}
       <div className="flex-1 overflow-hidden">
-        <UserChatSession
+        <UserChatSession<TInterviewMessageWithTool>
           nickname={{
             assistant: t("interviewer"),
             user: interviewSession.intervieweePersona
@@ -279,7 +279,12 @@ export function InterviewSessionViewer({
           readOnly={true}
           useChatHelpers={useChatHelpers}
           useChatRef={useChatRef}
-          renderToolUIPart={(toolUIPart) => <InterviewToolUIPartDisplay toolUIPart={toolUIPart} />}
+          renderToolUIPart={(toolUIPart) => (
+            <InterviewToolUIPartDisplay
+              toolUIPart={toolUIPart}
+              interviewSessionId={interviewSession.id}
+            />
+          )}
           acceptAttachments={false}
           persistMessages={false}
         />

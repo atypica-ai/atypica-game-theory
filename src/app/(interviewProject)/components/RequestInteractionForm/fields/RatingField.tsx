@@ -1,4 +1,3 @@
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
