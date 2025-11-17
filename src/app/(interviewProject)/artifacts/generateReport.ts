@@ -4,9 +4,9 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { ChatMessage } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { stepCountIs, streamText, UserModelMessage } from "ai";
+import { extractInterviewTranscript } from "../lib";
 import { interviewReportPrologue, interviewReportSystemPrompt } from "../prompt";
 
 /**
@@ -32,10 +32,9 @@ export async function generateInterviewReportContent({
     userId: number;
     brief: string;
     sessions: {
+      id: number;
       title: string;
-      userChat: {
-        messages: Pick<ChatMessage, "role" | "content">[];
-      };
+      userChatId: number;
     }[];
   };
   report: {
@@ -95,13 +94,34 @@ export async function generateInterviewReportContent({
   });
 
   // Prepare conversation data
-  const conversations = project.sessions.map(({ title: sessionTitle, userChat }) => {
-    const messages = userChat.messages.map((msg) => ({
-      role: msg.role as "user" | "assistant",
-      content: msg.content,
-    }));
-    return { sessionTitle, messages };
-  });
+  const conversations = await Promise.all(
+    project.sessions.map(async ({ title: sessionTitle, userChatId }) => {
+      const transcript = await extractInterviewTranscript(userChatId);
+
+      // Convert transcript messages to simple format for AI
+      const messages: Array<{ role: "user" | "assistant"; content: string }> = [];
+
+      for (const msg of transcript.messages) {
+        if (msg.type === "message") {
+          messages.push({
+            role: msg.role,
+            content: msg.textContent,
+          });
+        } else if (msg.type === "form") {
+          // Convert form data to readable text
+          const formText = msg.formData.fields
+            .map((field) => `${field.label}: ${field.value}`)
+            .join("\n");
+          messages.push({
+            role: "user",
+            content: formText,
+          });
+        }
+      }
+
+      return { sessionTitle, messages };
+    }),
+  );
 
   let onePageHtml = "";
   const response = streamText({

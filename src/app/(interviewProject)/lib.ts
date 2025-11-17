@@ -236,6 +236,26 @@ export async function extractInterviewTranscript(userChatId: number): Promise<In
             personalInfo = part.input.personalInfo;
           }
         }
+        // Add selectQuestion interactions to messages
+        if (part.type === `tool-${InterviewToolName.selectQuestion}`) {
+          if (part.output?.questionText && part.output?.userAnswer !== undefined) {
+            const answerValue = Array.isArray(part.output.userAnswer)
+              ? part.output.userAnswer.join(", ")
+              : part.output.userAnswer;
+
+            transcriptMessages.push({
+              type: "form",
+              formData: {
+                fields: [
+                  {
+                    label: part.output.questionText,
+                    value: answerValue,
+                  },
+                ],
+              },
+            });
+          }
+        }
         // Add form interactions to messages
         if (part.type === `tool-${InterviewToolName.requestInteractionForm}`) {
           if (part.output?.formResponses && part.input?.fields) {

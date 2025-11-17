@@ -1237,25 +1237,9 @@ export async function generateInterviewReport(
       select: {
         id: true,
         title: true,
-        userChat: {
-          select: {
-            messages: {
-              select: {
-                role: true,
-                content: true,
-              },
-              orderBy: { createdAt: "asc" },
-            },
-          },
-        },
+        userChatId: true,
       },
     });
-
-    // Filter sessions to ensure userChat is not null
-    const filteredSessions = sessions.filter(
-      (session): session is typeof session & { userChat: NonNullable<typeof session.userChat> } =>
-        session.userChat !== null,
-    );
 
     // Generate a unique token for this report
     const reportToken = generateToken();
@@ -1266,7 +1250,7 @@ export async function generateInterviewReport(
         projectId,
         onePageHtml: "",
         extra: {
-          sessions: filteredSessions.map((s) => ({
+          sessions: sessions.map((s) => ({
             id: s.id,
             title: s.title || "",
           })),
@@ -1285,7 +1269,13 @@ export async function generateInterviewReport(
           id: project.id,
           userId: project.userId,
           brief: project.brief,
-          sessions: filteredSessions,
+          sessions: sessions
+            .filter((s): s is typeof s & { userChatId: number } => s.userChatId !== null)
+            .map((s) => ({
+              id: s.id,
+              title: s.title || "",
+              userChatId: s.userChatId,
+            })),
         },
       }),
     );
