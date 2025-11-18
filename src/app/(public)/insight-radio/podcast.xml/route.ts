@@ -70,6 +70,10 @@ export async function GET(request: Request) {
       : "In an age of information overload, atypica.AI makes research reports something you can not only read, but listen to. We turn traditional market research into an insightful audio journey you can enjoy anytime and anywhere. Each episode brings fresh ideas and perspectives to help you hear the consumers, and understand the market. 💡 And if you'd like, you can also create your own research reports and podcasts with atypica.AI. We can't wait to hear your voice too.";
   const author = "atypica.AI";
   const email = "hi@atypica.ai";
+  const logoSrc =
+    locale === "zh-CN"
+      ? "https://bmrlab-prod.s3.cn-north-1.amazonaws.com.cn/atypica/public/atypica-insight-podcast-logo-20251118.png"
+      : "https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/public/atypica-insight-podcast-logo-20251118.png";
 
   // Generate RSS XML
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
@@ -91,7 +95,7 @@ export async function GET(request: Request) {
       <itunes:name>${author}</itunes:name>
       <itunes:email>${email}</itunes:email>
     </itunes:owner>
-    <itunes:image href="https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/public/atypica-insight-radio-podcast-cover.png"/>
+    <itunes:image href="${logoSrc}"/>
     <itunes:category text="Business">
       <itunes:category text="Management"/>
     </itunes:category>
