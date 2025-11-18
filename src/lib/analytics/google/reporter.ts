@@ -9,7 +9,9 @@ export interface PageViewsReport {
   hostName?: string;
 }
 
-export type PageType = "study" | "report";
+export type PageType = "study" | "report" | "podcast";
+
+export type RegionFilter = "all" | "mainland" | "global";
 
 export interface PageTypeFilter {
   type: PageType;
@@ -32,6 +34,11 @@ export class GoogleAnalyticsReporter {
       type: "report",
       pathPattern: /^\/artifacts\/report\/[^\/]+\/share\/?$/,
       description: "Report share pages",
+    },
+    podcast: {
+      type: "podcast",
+      pathPattern: /^\/artifacts\/podcast\/[^\/]+\/share\/?$/,
+      description: "Podcast share pages",
     },
   };
 
@@ -59,20 +66,28 @@ export class GoogleAnalyticsReporter {
 
   /**
    * 通用的 share 页面查询方法，支持多种页面类型
-   * @param pageTypes 要查询的页面类型数组，例如 ['study', 'report']
+   * @param pageTypes 要查询的页面类型数组，例如 ['study', 'report', 'podcast']
    * @param startDate 开始日期，格式 'YYYY-MM-DD'
    * @param endDate 结束日期，格式 'YYYY-MM-DD'
+   * @param limit 限制返回结果数量
+   * @param regionFilter 地域过滤：'all' 全部，'mainland' 中国大陆+香港+台湾，'global' 排除中国大陆+香港+台湾
    */
   async getSharePagesViews(
     pageTypes: PageType[] = ["study", "report"],
     startDate: string = "30daysAgo",
     endDate: string = "today",
     limit: number = 100,
+    regionFilter: RegionFilter = "all",
   ): Promise<PageViewsReport[]> {
     try {
       // 构建 GA4 过滤器，使用 CONTAINS 匹配然后在代码中精确过滤
       const filterConditions = pageTypes.map((type) => {
-        const basePattern = type === "study" ? "/study/" : "/artifacts/report/";
+        const basePattern =
+          type === "study"
+            ? "/study/"
+            : type === "report"
+              ? "/artifacts/report/"
+              : "/artifacts/podcast/";
         return {
           filter: {
             fieldName: "pagePath",
@@ -85,12 +100,103 @@ export class GoogleAnalyticsReporter {
       });
 
       // 使用 OR 条件组合多个过滤器
-      const dimensionFilter =
+      const pathFilter =
         filterConditions.length === 1
           ? filterConditions[0]
           : {
               orGroup: {
                 expressions: filterConditions,
+              },
+            };
+
+      // 构建地域过滤器
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let regionFilterExpression: any;
+      if (regionFilter === "mainland") {
+        // 中国大陆 + 香港 + 台湾
+        regionFilterExpression = {
+          orGroup: {
+            expressions: [
+              {
+                filter: {
+                  fieldName: "country",
+                  stringFilter: {
+                    matchType: "CONTAINS" as const,
+                    value: "China",
+                  },
+                },
+              },
+              {
+                filter: {
+                  fieldName: "country",
+                  stringFilter: {
+                    matchType: "CONTAINS" as const,
+                    value: "Hong Kong",
+                  },
+                },
+              },
+              {
+                filter: {
+                  fieldName: "country",
+                  stringFilter: {
+                    matchType: "CONTAINS" as const,
+                    value: "Taiwan",
+                  },
+                },
+              },
+            ],
+          },
+        };
+      } else if (regionFilter === "global") {
+        // 排除中国大陆 + 香港 + 台湾
+        regionFilterExpression = {
+          andGroup: {
+            expressions: [
+              {
+                notExpression: {
+                  filter: {
+                    fieldName: "country",
+                    stringFilter: {
+                      matchType: "CONTAINS" as const,
+                      value: "China",
+                    },
+                  },
+                },
+              },
+              {
+                notExpression: {
+                  filter: {
+                    fieldName: "country",
+                    stringFilter: {
+                      matchType: "CONTAINS" as const,
+                      value: "Hong Kong",
+                    },
+                  },
+                },
+              },
+              {
+                notExpression: {
+                  filter: {
+                    fieldName: "country",
+                    stringFilter: {
+                      matchType: "CONTAINS" as const,
+                      value: "Taiwan",
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        };
+      }
+
+      // 合并路径过滤和地域过滤
+      const dimensionFilter =
+        regionFilter === "all" || !regionFilterExpression
+          ? pathFilter
+          : {
+              andGroup: {
+                expressions: [pathFilter, regionFilterExpression],
               },
             };
 
@@ -298,9 +404,87 @@ export class GoogleAnalyticsReporter {
     startDate: string = "30daysAgo",
     endDate: string = "today",
     limit: number = 100,
+    regionFilter: RegionFilter = "all",
   ): Promise<PageViewsReport[]> {
     // 使用新的通用方法，仅查询 report 类型
-    return this.getSharePagesViews(["report"], startDate, endDate, limit);
+    return this.getSharePagesViews(["report"], startDate, endDate, limit, regionFilter);
+  }
+
+  /**
+   * 获取特定 podcast token 对应的 share 页面浏览数据
+   * @param podcastToken podcast token
+   * @param startDate 开始日期，格式 'YYYY-MM-DD'
+   * @param endDate 结束日期，格式 'YYYY-MM-DD'
+   */
+  async getPodcastSharePageViews(
+    podcastToken: string,
+    startDate: string = "30daysAgo",
+    endDate: string = "today",
+  ): Promise<PageViewsReport | null> {
+    try {
+      const targetPath = `/artifacts/podcast/${podcastToken}/share`;
+
+      const [response] = await this.client.runReport({
+        property: `properties/${this.propertyId}`,
+        dateRanges: [
+          {
+            startDate,
+            endDate,
+          },
+        ],
+        dimensions: [{ name: "pagePath" }, { name: "pageTitle" }, { name: "hostName" }],
+        metrics: [
+          { name: "screenPageViews" }, // 页面浏览量
+          { name: "sessions" }, // 会话数
+          { name: "activeUsers" }, // 活跃用户数
+        ],
+        // 精确匹配特定的 podcast share 页面
+        dimensionFilter: {
+          filter: {
+            fieldName: "pagePath",
+            stringFilter: {
+              matchType: "EXACT",
+              value: targetPath,
+            },
+          },
+        },
+      });
+
+      if (response.rows && response.rows.length > 0) {
+        const row = response.rows[0];
+        const pagePath = row.dimensionValues![0].value!;
+        const pageViews = parseInt(row.metricValues![0].value!);
+        const sessions = parseInt(row.metricValues![1].value!);
+        const users = parseInt(row.metricValues![2].value!);
+
+        return {
+          pagePath,
+          pageViews,
+          sessions,
+          users,
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error("获取 podcast share 页面数据时出错:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 获取所有 podcast share 页面浏览数据
+   * @param startDate 开始日期，格式 'YYYY-MM-DD'
+   * @param endDate 结束日期，格式 'YYYY-MM-DD'
+   */
+  async getPodcastSharePagesViews(
+    startDate: string = "30daysAgo",
+    endDate: string = "today",
+    limit: number = 100,
+    regionFilter: RegionFilter = "all",
+  ): Promise<PageViewsReport[]> {
+    // 使用新的通用方法，仅查询 podcast 类型
+    return this.getSharePagesViews(["podcast"], startDate, endDate, limit, regionFilter);
   }
 
   /**

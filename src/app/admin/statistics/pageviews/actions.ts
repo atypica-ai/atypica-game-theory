@@ -2,9 +2,13 @@
 import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { GoogleAnalyticsReporter, PageViewsReport } from "@/lib/analytics/google/reporter";
+import {
+  GoogleAnalyticsReporter,
+  PageViewsReport,
+  RegionFilter,
+} from "@/lib/analytics/google/reporter";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystReport, User, UserChat } from "@/prisma/client";
+import { Analyst, AnalystPodcast, AnalystReport, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
 export interface PageViewWithReport extends PageViewsReport {
@@ -26,9 +30,18 @@ export interface PageViewWithStudy extends PageViewsReport {
   };
 }
 
+export interface PageViewWithPodcast extends PageViewsReport {
+  podcast?: Pick<AnalystPodcast, "id" | "token" | "script" | "extra" | "createdAt"> & {
+    analyst: Analyst & {
+      user: Pick<User, "email"> | null;
+    };
+  };
+}
+
 export async function fetchTopPageViewsAction(
   days: number = 30,
   limit: number = 20,
+  regionFilter: RegionFilter = "all",
 ): Promise<ServerActionResult<PageViewWithReport[]>> {
   await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
 
@@ -49,6 +62,7 @@ export async function fetchTopPageViewsAction(
       startDateStr,
       endDateStr,
       limit,
+      regionFilter,
     );
 
     // Deduplicate by pagePath, keeping the record with highest users count
@@ -147,6 +161,7 @@ export async function fetchTopPageViewsAction(
 export async function fetchTopStudyPageViewsAction(
   days: number = 30,
   limit: number = 20,
+  regionFilter: RegionFilter = "all",
 ): Promise<ServerActionResult<PageViewWithStudy[]>> {
   await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
 
@@ -167,6 +182,7 @@ export async function fetchTopStudyPageViewsAction(
       startDateStr,
       endDateStr,
       limit,
+      regionFilter,
     );
 
     // Deduplicate by pagePath, keeping the record with highest users count
@@ -235,6 +251,108 @@ export async function fetchTopStudyPageViewsAction(
     return {
       success: false,
       message: error instanceof Error ? error.message : "Failed to fetch study page views",
+    };
+  }
+}
+
+export async function fetchTopPodcastPageViewsAction(
+  days: number = 30,
+  limit: number = 20,
+  regionFilter: RegionFilter = "all",
+): Promise<ServerActionResult<PageViewWithPodcast[]>> {
+  await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
+
+  try {
+    const reporter = new GoogleAnalyticsReporter();
+
+    // Calculate date range
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - days);
+
+    const startDateStr = startDate.toISOString().split("T")[0];
+    const endDateStr = endDate.toISOString().split("T")[0];
+
+    // Get podcast pageviews from Google Analytics with limit
+    const podcastViews = await reporter.getSharePagesViews(
+      ["podcast"],
+      startDateStr,
+      endDateStr,
+      limit,
+      regionFilter,
+    );
+
+    // Deduplicate by pagePath, keeping the record with highest users count
+    const deduplicatedPodcasts = new Map<string, PageViewsReport>();
+    podcastViews.forEach((podcast) => {
+      const existing = deduplicatedPodcasts.get(podcast.pagePath);
+      if (!existing || podcast.users > existing.users) {
+        deduplicatedPodcasts.set(podcast.pagePath, podcast);
+      }
+    });
+
+    // Convert back to array and sort by users (descending)
+    const topPodcasts = Array.from(deduplicatedPodcasts.values())
+      .sort((a, b) => b.users - a.users)
+      .slice(0, limit);
+
+    // Extract podcast tokens from the page paths
+    const podcastTokens = topPodcasts
+      .map((podcast) => {
+        const match = podcast.pagePath.match(/\/artifacts\/podcast\/([^\/]+)\/share/);
+        return match ? match[1] : null;
+      })
+      .filter(Boolean) as string[];
+
+    // Fetch podcast details from database
+    const podcastDetails = await prisma.analystPodcast.findMany({
+      where: {
+        token: {
+          in: podcastTokens,
+        },
+      },
+      select: {
+        id: true,
+        token: true,
+        script: true,
+        extra: true,
+        createdAt: true,
+        analyst: {
+          include: {
+            user: {
+              select: {
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Create a map for quick lookup
+    const podcastMap = new Map(podcastDetails.map((podcast) => [podcast.token, podcast]));
+
+    // Combine pageview data with podcast details
+    const result: PageViewWithPodcast[] = topPodcasts.map((pageView) => {
+      const match = pageView.pagePath.match(/\/artifacts\/podcast\/([^\/]+)\/share/);
+      const token = match ? match[1] : null;
+      const podcast = token ? podcastMap.get(token) : undefined;
+
+      return {
+        ...pageView,
+        podcast,
+      };
+    });
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error("Error fetching top podcast page views:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to fetch podcast page views",
     };
   }
 }

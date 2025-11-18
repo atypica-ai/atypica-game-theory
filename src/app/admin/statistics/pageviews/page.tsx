@@ -16,12 +16,17 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { RegionFilter } from "@/lib/analytics/google/reporter";
+
 import {
   fetchTopPageViewsAction,
+  fetchTopPodcastPageViewsAction,
   fetchTopStudyPageViewsAction,
+  PageViewWithPodcast,
   PageViewWithReport,
   PageViewWithStudy,
 } from "./actions";
+import { PodcastsList } from "./PodcastsList";
 import { ReportsList } from "./ReportsList";
 import { StudiesList } from "./StudiesList";
 
@@ -37,9 +42,11 @@ export default function PageViewsPage() {
   const { status } = useSession();
   const router = useRouter();
 
-  const [viewType, setViewType] = useState<"reports" | "studies">("reports");
+  const [viewType, setViewType] = useState<"reports" | "studies" | "podcasts">("reports");
+  const [regionFilter, setRegionFilter] = useState<RegionFilter>("all");
   const [topPageViews, setTopPageViews] = useState<PageViewWithReport[]>([]);
   const [topStudyViews, setTopStudyViews] = useState<PageViewWithStudy[]>([]);
+  const [topPodcastViews, setTopPodcastViews] = useState<PageViewWithPodcast[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(30);
@@ -47,7 +54,12 @@ export default function PageViewsPage() {
   const [limit, setLimit] = useState(20);
 
   const fetchData = useCallback(
-    async (filterDays?: number, filterLimit?: number, type?: "reports" | "studies") => {
+    async (
+      filterDays?: number,
+      filterLimit?: number,
+      type?: "reports" | "studies" | "podcasts",
+      region?: RegionFilter,
+    ) => {
       setIsLoading(true);
       setError(null);
 
@@ -55,9 +67,10 @@ export default function PageViewsPage() {
         const actualDays = filterDays ?? (customDays ? parseInt(customDays) : days);
         const actualLimit = filterLimit ?? limit;
         const fetchType = type ?? viewType;
+        const actualRegion = region ?? regionFilter;
 
         if (fetchType === "reports") {
-          const topResult = await fetchTopPageViewsAction(actualDays, actualLimit);
+          const topResult = await fetchTopPageViewsAction(actualDays, actualLimit, actualRegion);
 
           if (!topResult.success) {
             setError(topResult.message ?? "Failed to fetch top page views");
@@ -65,8 +78,12 @@ export default function PageViewsPage() {
           }
 
           setTopPageViews(topResult.data);
-        } else {
-          const studyResult = await fetchTopStudyPageViewsAction(actualDays, actualLimit);
+        } else if (fetchType === "studies") {
+          const studyResult = await fetchTopStudyPageViewsAction(
+            actualDays,
+            actualLimit,
+            actualRegion,
+          );
 
           if (!studyResult.success) {
             setError(studyResult.message ?? "Failed to fetch top study views");
@@ -74,6 +91,19 @@ export default function PageViewsPage() {
           }
 
           setTopStudyViews(studyResult.data);
+        } else {
+          const podcastResult = await fetchTopPodcastPageViewsAction(
+            actualDays,
+            actualLimit,
+            actualRegion,
+          );
+
+          if (!podcastResult.success) {
+            setError(podcastResult.message ?? "Failed to fetch top podcast views");
+            return;
+          }
+
+          setTopPodcastViews(podcastResult.data);
         }
       } catch (err) {
         setError((err as Error).message);
@@ -81,7 +111,7 @@ export default function PageViewsPage() {
         setIsLoading(false);
       }
     },
-    [days, customDays, limit, viewType],
+    [days, customDays, limit, viewType, regionFilter],
   );
 
   useEffect(() => {
@@ -112,7 +142,7 @@ export default function PageViewsPage() {
         <Button
           onClick={() => {
             const actualDays = customDays ? parseInt(customDays) : days;
-            fetchData(actualDays, limit, viewType);
+            fetchData(actualDays, limit, viewType, regionFilter);
           }}
           disabled={isLoading}
           className="flex items-center gap-2"
@@ -135,7 +165,7 @@ export default function PageViewsPage() {
             <Label>View Type</Label>
             <RadioGroup
               value={viewType}
-              onValueChange={(value: "reports" | "studies") => setViewType(value)}
+              onValueChange={(value: "reports" | "studies" | "podcasts") => setViewType(value)}
               className="flex gap-6"
             >
               <div className="flex items-center space-x-2">
@@ -145,6 +175,33 @@ export default function PageViewsPage() {
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="studies" id="studies" />
                 <Label htmlFor="studies">Studies</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="podcasts" id="podcasts" />
+                <Label htmlFor="podcasts">Podcasts</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Region Filter Selection */}
+          <div className="space-y-2">
+            <Label>Region Filter</Label>
+            <RadioGroup
+              value={regionFilter}
+              onValueChange={(value: RegionFilter) => setRegionFilter(value)}
+              className="flex gap-6"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="all" id="region-all" />
+                <Label htmlFor="region-all">All Regions</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="mainland" id="region-mainland" />
+                <Label htmlFor="region-mainland">Mainland (CN+HK+TW)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="global" id="region-global" />
+                <Label htmlFor="region-global">Global (Exclude CN+HK+TW)</Label>
               </div>
             </RadioGroup>
           </div>
@@ -209,7 +266,7 @@ export default function PageViewsPage() {
             <Button
               onClick={() => {
                 const actualDays = customDays ? parseInt(customDays) : days;
-                fetchData(actualDays, limit, viewType);
+                fetchData(actualDays, limit, viewType, regionFilter);
               }}
               disabled={isLoading}
             >
@@ -223,15 +280,23 @@ export default function PageViewsPage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Top {viewType === "reports" ? "Reports" : "Studies"} by Users ({actualDays} day
+            Top{" "}
+            {viewType === "reports"
+              ? "Reports"
+              : viewType === "studies"
+                ? "Studies"
+                : "Podcasts"}{" "}
+            by Users ({actualDays} day
             {actualDays !== 1 ? "s" : ""}) - Showing {limit} results
           </CardTitle>
         </CardHeader>
         <CardContent>
           {viewType === "reports" ? (
             <ReportsList data={topPageViews} isLoading={isLoading} />
-          ) : (
+          ) : viewType === "studies" ? (
             <StudiesList data={topStudyViews} isLoading={isLoading} />
+          ) : (
+            <PodcastsList data={topPodcastViews} isLoading={isLoading} />
           )}
         </CardContent>
       </Card>
