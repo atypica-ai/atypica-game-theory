@@ -15,9 +15,10 @@ import { fetchUsersBySource, UsersBySource as UsersBySourceType } from "./action
 
 interface UsersBySourceProps {
   dateRange: DateRange | undefined;
+  timezone: string;
 }
 
-export function UsersBySource({ dateRange }: UsersBySourceProps) {
+export function UsersBySource({ dateRange, timezone }: UsersBySourceProps) {
   const [data, setData] = useState<UsersBySourceType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +31,7 @@ export function UsersBySource({ dateRange }: UsersBySourceProps) {
       setError(null);
 
       try {
-        const result = await fetchUsersBySource(dateRange.from, dateRange.to);
+        const result = await fetchUsersBySource(dateRange.from, dateRange.to, timezone);
 
         if (!result.success) {
           setError(result.message ?? "Failed to fetch users by source");
@@ -46,7 +47,7 @@ export function UsersBySource({ dateRange }: UsersBySourceProps) {
     };
 
     loadData();
-  }, [dateRange]);
+  }, [dateRange, timezone]);
 
   if (isLoading) {
     return (

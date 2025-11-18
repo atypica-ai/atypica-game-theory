@@ -50,12 +50,17 @@ export default function StatisticsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSelectingRange, setIsSelectingRange] = useState(false);
 
+  // Get user's timezone
+  const timezone = useMemo(() => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }, []);
+
   const fetchData = useCallback(async () => {
     if (!dateRange?.from || !dateRange?.to) return;
     setIsLoading(true);
     setError(null);
 
-    const result = await fetchDailyStatistics(dateRange.from, dateRange.to);
+    const result = await fetchDailyStatistics(dateRange.from, dateRange.to, timezone);
 
     if (result.success) {
       setStats(result.data);
@@ -63,7 +68,7 @@ export default function StatisticsPage() {
       setError(result.message ?? "An unknown error occurred.");
     }
     setIsLoading(false);
-  }, [dateRange]);
+  }, [dateRange, timezone]);
 
   // Fetch data on component mount and when the date range changes
   useEffect(() => {
@@ -437,8 +442,8 @@ export default function StatisticsPage() {
 
       {/* User Statistics - Independent Queries */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <UsersByCountry dateRange={dateRange} />
-        <UsersBySource dateRange={dateRange} />
+        <UsersByCountry dateRange={dateRange} timezone={timezone} />
+        <UsersBySource dateRange={dateRange} timezone={timezone} />
       </div>
     </div>
   );

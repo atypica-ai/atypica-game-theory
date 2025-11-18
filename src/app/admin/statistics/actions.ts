@@ -39,6 +39,7 @@ export type DailyStatistics = {
 export async function fetchDailyStatistics(
   startDate: Date,
   endDate: Date,
+  timezone: string = "UTC",
 ): Promise<ServerActionResult<DailyStatistics[]>> {
   // Use a broad permission for this overview page
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
@@ -49,16 +50,27 @@ export async function fetchDailyStatistics(
       message: "Start date cannot be after end date.",
     };
   }
-  // To include the whole end day
-  endDate.setHours(23, 59, 59, 999);
+  // To include the whole end day - create new Date objects to avoid mutation
+  const adjustedStartDate = new Date(startDate);
+  adjustedStartDate.setHours(0, 0, 0, 0);
+  const adjustedEndDate = new Date(endDate);
+  adjustedEndDate.setHours(23, 59, 59, 999);
 
   try {
     // 1. Initialize a map to hold statistics for each day in the range
-    const statsMap = new Map<string, DailyStatistics>();
-    const currentDate = new Date(startDate);
+    // Helper function to format date without timezone conversion
+    const formatDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
 
-    while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split("T")[0];
+    const statsMap = new Map<string, DailyStatistics>();
+    const currentDate = new Date(adjustedStartDate);
+
+    while (currentDate <= adjustedEndDate) {
+      const dateStr = formatDate(currentDate);
       statsMap.set(dateStr, {
         date: dateStr,
         users: { total: 0 },
@@ -86,38 +98,39 @@ export async function fetchDailyStatistics(
     // 2. Fetch data using parallel raw SQL queries
 
     // Daily new user registrations
+    // Use AT TIME ZONE to convert to user's timezone before truncating
     const userQuery = prisma.$queryRaw<[{ date: Date; total: bigint }]>`
-      SELECT DATE_TRUNC('day', "createdAt")::date as date, COUNT(id) as total
+      SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
       FROM "User"
-      WHERE "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
+      WHERE "createdAt" >= ${adjustedStartDate} AND "createdAt" <= ${adjustedEndDate}
       GROUP BY date;
     `;
 
     // Daily successful payments
     const paymentQuery = prisma.$queryRaw<[{ date: Date; total: bigint }]>`
-      SELECT DATE_TRUNC('day', "createdAt")::date as date, COUNT(id) as total
+      SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
       FROM "PaymentRecord"
       WHERE "status" = 'succeeded'
-        AND "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
+        AND "createdAt" >= ${adjustedStartDate} AND "createdAt" <= ${adjustedEndDate}
       GROUP BY date;
     `;
 
     // Daily total studies
     const totalStudiesQuery = prisma.$queryRaw<[{ date: Date; total: bigint }]>`
-      SELECT DATE_TRUNC('day', "createdAt")::date as date, COUNT(id) as total
+      SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
       FROM "UserChat"
       WHERE kind = 'study'
-        AND "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
+        AND "createdAt" >= ${adjustedStartDate} AND "createdAt" <= ${adjustedEndDate}
       GROUP BY date;
     `;
 
     // Daily studies broken down by kind
     const studiesByKindQuery = prisma.$queryRaw<[{ date: Date; kind: AnalystKind; total: bigint }]>`
-      SELECT DATE_TRUNC('day', uc."createdAt")::date as date, a.kind, COUNT(uc.id) as total
+      SELECT DATE(uc."createdAt" AT TIME ZONE ${timezone})::date as date, a.kind, COUNT(uc.id) as total
       FROM "UserChat" uc
       JOIN "Analyst" a ON a."studyUserChatId" = uc.id
       WHERE uc.kind = 'study'
-        AND uc."createdAt" >= ${startDate} AND uc."createdAt" <= ${endDate}
+        AND uc."createdAt" >= ${adjustedStartDate} AND uc."createdAt" <= ${adjustedEndDate}
         AND a.kind IS NOT NULL
       GROUP BY date, a.kind;
     `;
@@ -127,12 +140,12 @@ export async function fetchDailyStatistics(
       [{ date: Date; feedback_rating: string; total: bigint }]
     >`
       SELECT
-        DATE_TRUNC('day', "createdAt")::date as date,
+        DATE("createdAt" AT TIME ZONE ${timezone})::date as date,
         "extra"->'feedback'->>'rating' as feedback_rating,
         COUNT(id) as total
       FROM "UserChat"
       WHERE kind = 'study'
-        AND "createdAt" >= ${startDate} AND "createdAt" <= ${endDate}
+        AND "createdAt" >= ${adjustedStartDate} AND "createdAt" <= ${adjustedEndDate}
         AND "extra"->'feedback'->>'rating' IS NOT NULL
       GROUP BY date, feedback_rating;
     `;
@@ -154,29 +167,29 @@ export async function fetchDailyStatistics(
     // 3. Process and merge query results into the stats map
 
     userResults.forEach((row) => {
-      const dayStats = statsMap.get(row.date.toISOString().split("T")[0]);
+      const dayStats = statsMap.get(formatDate(row.date));
       if (dayStats) dayStats.users.total = Number(row.total);
     });
 
     paymentResults.forEach((row) => {
-      const dayStats = statsMap.get(row.date.toISOString().split("T")[0]);
+      const dayStats = statsMap.get(formatDate(row.date));
       if (dayStats) dayStats.payments.total = Number(row.total);
     });
 
     totalStudiesResults.forEach((row) => {
-      const dayStats = statsMap.get(row.date.toISOString().split("T")[0]);
+      const dayStats = statsMap.get(formatDate(row.date));
       if (dayStats) dayStats.studies.total = Number(row.total);
     });
 
     studiesByKindResults.forEach((row) => {
-      const dayStats = statsMap.get(row.date.toISOString().split("T")[0]);
+      const dayStats = statsMap.get(formatDate(row.date));
       if (dayStats && row.kind) {
         dayStats.studies.byKind[row.kind] = Number(row.total);
       }
     });
 
     studiesByFeedbackResults.forEach((row) => {
-      const dayStats = statsMap.get(row.date.toISOString().split("T")[0]);
+      const dayStats = statsMap.get(formatDate(row.date));
       if (dayStats) {
         if (row.feedback_rating === "useful") {
           dayStats.studies.byFeedback.useful = Number(row.total);
@@ -227,6 +240,7 @@ export type UsersByCountry = {
 export async function fetchUsersByCountry(
   startDate: Date,
   endDate: Date,
+  timezone: string = "UTC",
 ): Promise<ServerActionResult<UsersByCountry[]>> {
   await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
 
@@ -236,7 +250,11 @@ export async function fetchUsersByCountry(
       message: "Start date cannot be after end date.",
     };
   }
-  endDate.setHours(23, 59, 59, 999);
+  // Create new Date objects to avoid mutation
+  const adjustedStartDate = new Date(startDate);
+  adjustedStartDate.setHours(0, 0, 0, 0);
+  const adjustedEndDate = new Date(endDate);
+  adjustedEndDate.setHours(23, 59, 59, 999);
 
   try {
     // Use SQL aggregation to group by country
@@ -251,8 +269,8 @@ export async function fetchUsersByCountry(
         COUNT(*)::bigint as count
       FROM "UserProfile" up
       JOIN "User" u ON u.id = up."userId"
-      WHERE u."createdAt" >= ${startDate}
-        AND u."createdAt" <= ${endDate}
+      WHERE u."createdAt" >= ${adjustedStartDate}
+        AND u."createdAt" <= ${adjustedEndDate}
       GROUP BY country
       ORDER BY count DESC
       LIMIT 20
@@ -292,6 +310,7 @@ export type UsersBySource = {
 export async function fetchUsersBySource(
   startDate: Date,
   endDate: Date,
+  timezone: string = "UTC",
 ): Promise<ServerActionResult<UsersBySource[]>> {
   await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
 
@@ -301,7 +320,11 @@ export async function fetchUsersBySource(
       message: "Start date cannot be after end date.",
     };
   }
-  endDate.setHours(23, 59, 59, 999);
+  // Create new Date objects to avoid mutation
+  const adjustedStartDate = new Date(startDate);
+  adjustedStartDate.setHours(0, 0, 0, 0);
+  const adjustedEndDate = new Date(endDate);
+  adjustedEndDate.setHours(23, 59, 59, 999);
 
   try {
     // Use SQL aggregation with CASE WHEN to determine source priority
@@ -324,8 +347,8 @@ export async function fetchUsersBySource(
         COUNT(*)::bigint as count
       FROM "UserProfile" up
       JOIN "User" u ON u.id = up."userId"
-      WHERE u."createdAt" >= ${startDate}
-        AND u."createdAt" <= ${endDate}
+      WHERE u."createdAt" >= ${adjustedStartDate}
+        AND u."createdAt" <= ${adjustedEndDate}
       GROUP BY source
       ORDER BY count DESC
       LIMIT 20
