@@ -2,6 +2,7 @@
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
+import { UserProfileExtra, UserLastLogin } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 
@@ -204,6 +205,143 @@ export async function fetchDailyStatistics(
     };
   } catch (error) {
     console.error("Failed to fetch daily statistics:", error);
+    return {
+      success: false,
+      message: (error as Error).message,
+    };
+  }
+}
+
+/**
+ * User statistics by country
+ */
+export type UsersByCountry = {
+  country: string;
+  count: number;
+};
+
+/**
+ * Fetches user count grouped by country from UserProfile.lastLogin data
+ * Filters users by registration date (createdAt)
+ */
+export async function fetchUsersByCountry(
+  startDate: Date,
+  endDate: Date,
+): Promise<ServerActionResult<UsersByCountry[]>> {
+  await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
+
+  if (startDate > endDate) {
+    return {
+      success: false,
+      message: "Start date cannot be after end date.",
+    };
+  }
+  endDate.setHours(23, 59, 59, 999);
+
+  try {
+    // Use SQL aggregation to group by country
+    const results = await prisma.$queryRaw<
+      Array<{ country: string | null; count: bigint }>
+    >`
+      SELECT
+        COALESCE(
+          up."lastLogin"::jsonb->'geo'->>'country',
+          'Unknown'
+        ) as country,
+        COUNT(*)::bigint as count
+      FROM "UserProfile" up
+      JOIN "User" u ON u.id = up."userId"
+      WHERE u."createdAt" >= ${startDate}
+        AND u."createdAt" <= ${endDate}
+      GROUP BY country
+      ORDER BY count DESC
+      LIMIT 20
+    `;
+
+    const data = results.map((row) => ({
+      country: row.country || "Unknown",
+      count: Number(row.count),
+    }));
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error("Failed to fetch users by country:", error);
+    return {
+      success: false,
+      message: (error as Error).message,
+    };
+  }
+}
+
+/**
+ * User statistics by acquisition source
+ */
+export type UsersBySource = {
+  source: string;
+  count: number;
+};
+
+/**
+ * Fetches user count grouped by acquisition source from UserProfile.extra
+ * Priority: utm_medium/utm_source > utm_source > referer hostname
+ * Filters users by registration date (createdAt)
+ */
+export async function fetchUsersBySource(
+  startDate: Date,
+  endDate: Date,
+): Promise<ServerActionResult<UsersBySource[]>> {
+  await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
+
+  if (startDate > endDate) {
+    return {
+      success: false,
+      message: "Start date cannot be after end date.",
+    };
+  }
+  endDate.setHours(23, 59, 59, 999);
+
+  try {
+    // Use SQL aggregation with CASE WHEN to determine source priority
+    const results = await prisma.$queryRaw<Array<{ source: string | null; count: bigint }>>`
+      SELECT
+        CASE
+          WHEN up.extra::jsonb->'acquisition'->'utm'->>'utm_medium' IS NOT NULL
+               AND up.extra::jsonb->'acquisition'->'utm'->>'utm_source' IS NOT NULL
+            THEN CONCAT(
+              up.extra::jsonb->'acquisition'->'utm'->>'utm_source',
+              '/',
+              up.extra::jsonb->'acquisition'->'utm'->>'utm_medium'
+            )
+          WHEN up.extra::jsonb->'acquisition'->'utm'->>'utm_source' IS NOT NULL
+            THEN up.extra::jsonb->'acquisition'->'utm'->>'utm_source'
+          WHEN up.extra::jsonb->'acquisition'->'referer'->>'hostname' IS NOT NULL
+            THEN up.extra::jsonb->'acquisition'->'referer'->>'hostname'
+          ELSE 'Direct'
+        END as source,
+        COUNT(*)::bigint as count
+      FROM "UserProfile" up
+      JOIN "User" u ON u.id = up."userId"
+      WHERE u."createdAt" >= ${startDate}
+        AND u."createdAt" <= ${endDate}
+      GROUP BY source
+      ORDER BY count DESC
+      LIMIT 20
+    `;
+
+    const data = results.map((row) => ({
+      source: row.source || "Direct",
+      count: Number(row.count),
+    }));
+
+    return {
+      success: true,
+      data,
+    };
+  } catch (error) {
+    console.error("Failed to fetch users by source:", error);
     return {
       success: false,
       message: (error as Error).message,

@@ -31,6 +31,8 @@ import {
   YAxis,
 } from "recharts";
 import { DailyStatistics, fetchDailyStatistics } from "./actions";
+import { UsersByCountry } from "./UsersByCountry";
+import { UsersBySource } from "./UsersBySource";
 
 // Set the initial date range to the last 14 days
 const initialDateRange: DateRange = {
@@ -158,6 +160,26 @@ export default function StatisticsPage() {
             <PopoverContent className="w-auto p-0" align="end">
               <div className="flex items-start">
                 <div className="flex flex-col gap-1 border-r p-2">
+                  <Button
+                    onClick={() => {
+                      const today = new Date();
+                      setDateRange({ from: today, to: today });
+                    }}
+                    variant="ghost"
+                    className="justify-start text-left font-normal"
+                  >
+                    Today
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const yesterday = addDays(new Date(), -1);
+                      setDateRange({ from: yesterday, to: yesterday });
+                    }}
+                    variant="ghost"
+                    className="justify-start text-left font-normal"
+                  >
+                    Yesterday
+                  </Button>
                   <Button
                     onClick={() => setDateRange({ from: addDays(new Date(), -7), to: new Date() })}
                     variant="ghost"
@@ -369,14 +391,14 @@ export default function StatisticsPage() {
       </div>
 
       {/* Daily Data Table */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Daily Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto rounded-lg border">
+          <div className="overflow-auto max-h-[600px] rounded-lg border">
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead className="text-center">New Users</TableHead>
@@ -412,6 +434,12 @@ export default function StatisticsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* User Statistics - Independent Queries */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <UsersByCountry dateRange={dateRange} />
+        <UsersBySource dateRange={dateRange} />
+      </div>
     </div>
   );
 }
