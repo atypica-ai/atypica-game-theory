@@ -47,87 +47,61 @@ export default function PageViewsPage() {
   const [topPageViews, setTopPageViews] = useState<PageViewWithReport[]>([]);
   const [topStudyViews, setTopStudyViews] = useState<PageViewWithStudy[]>([]);
   const [topPodcastViews, setTopPodcastViews] = useState<PageViewWithPodcast[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(30);
   const [customDays, setCustomDays] = useState("");
   const [limit, setLimit] = useState(20);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  const fetchData = useCallback(
-    async (
-      filterDays?: number,
-      filterLimit?: number,
-      type?: "reports" | "studies" | "podcasts",
-      region?: RegionFilter,
-    ) => {
-      setIsLoading(true);
-      setError(null);
+  const handleApplyFilters = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    setHasSearched(true);
 
-      try {
-        const actualDays = filterDays ?? (customDays ? parseInt(customDays) : days);
-        const actualLimit = filterLimit ?? limit;
-        const fetchType = type ?? viewType;
-        const actualRegion = region ?? regionFilter;
+    try {
+      const actualDays = customDays ? parseInt(customDays) : days;
 
-        if (fetchType === "reports") {
-          const topResult = await fetchTopPageViewsAction(actualDays, actualLimit, actualRegion);
+      if (viewType === "reports") {
+        const topResult = await fetchTopPageViewsAction(actualDays, limit, regionFilter);
 
-          if (!topResult.success) {
-            setError(topResult.message ?? "Failed to fetch top page views");
-            return;
-          }
-
-          setTopPageViews(topResult.data);
-        } else if (fetchType === "studies") {
-          const studyResult = await fetchTopStudyPageViewsAction(
-            actualDays,
-            actualLimit,
-            actualRegion,
-          );
-
-          if (!studyResult.success) {
-            setError(studyResult.message ?? "Failed to fetch top study views");
-            return;
-          }
-
-          setTopStudyViews(studyResult.data);
-        } else {
-          const podcastResult = await fetchTopPodcastPageViewsAction(
-            actualDays,
-            actualLimit,
-            actualRegion,
-          );
-
-          if (!podcastResult.success) {
-            setError(podcastResult.message ?? "Failed to fetch top podcast views");
-            return;
-          }
-
-          setTopPodcastViews(podcastResult.data);
+        if (!topResult.success) {
+          setError(topResult.message ?? "Failed to fetch top page views");
+          return;
         }
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setIsLoading(false);
+
+        setTopPageViews(topResult.data);
+      } else if (viewType === "studies") {
+        const studyResult = await fetchTopStudyPageViewsAction(actualDays, limit, regionFilter);
+
+        if (!studyResult.success) {
+          setError(studyResult.message ?? "Failed to fetch top study views");
+          return;
+        }
+
+        setTopStudyViews(studyResult.data);
+      } else {
+        const podcastResult = await fetchTopPodcastPageViewsAction(actualDays, limit, regionFilter);
+
+        if (!podcastResult.success) {
+          setError(podcastResult.message ?? "Failed to fetch top podcast views");
+          return;
+        }
+
+        setTopPodcastViews(podcastResult.data);
       }
-    },
-    [days, customDays, limit, viewType, regionFilter],
-  );
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [days, customDays, limit, viewType, regionFilter]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin?callbackUrl=/admin/statistics/pageviews");
-    } else if (status === "authenticated") {
-      fetchData();
     }
-  }, [status, router, fetchData]);
-
-  // Fetch data when viewType changes
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchData();
-    }
-  }, [viewType, status, fetchData]);
+  }, [status, router]);
 
   if (status === "loading") {
     return <div>Loading...</div>;
@@ -140,15 +114,12 @@ export default function PageViewsPage() {
       <div className="flex flex-wrap justify-between items-center gap-4">
         <h1 className="text-2xl font-bold">Page Views Analytics</h1>
         <Button
-          onClick={() => {
-            const actualDays = customDays ? parseInt(customDays) : days;
-            fetchData(actualDays, limit, viewType, regionFilter);
-          }}
+          onClick={handleApplyFilters}
           disabled={isLoading}
           className="flex items-center gap-2"
         >
           <RefreshCwIcon className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-          {isLoading ? "Loading..." : "Refresh"}
+          {isLoading ? "Loading..." : "Search"}
         </Button>
       </div>
 
@@ -263,13 +234,7 @@ export default function PageViewsPage() {
               </Select>
             </div>
 
-            <Button
-              onClick={() => {
-                const actualDays = customDays ? parseInt(customDays) : days;
-                fetchData(actualDays, limit, viewType, regionFilter);
-              }}
-              disabled={isLoading}
-            >
+            <Button onClick={handleApplyFilters} disabled={isLoading}>
               Apply Filters
             </Button>
           </div>
@@ -291,7 +256,13 @@ export default function PageViewsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {viewType === "reports" ? (
+          {!hasSearched && !isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                Select filters and click &quot;Apply Filters&quot; to view analytics data
+              </p>
+            </div>
+          ) : viewType === "reports" ? (
             <ReportsList data={topPageViews} isLoading={isLoading} />
           ) : viewType === "studies" ? (
             <StudiesList data={topStudyViews} isLoading={isLoading} />
