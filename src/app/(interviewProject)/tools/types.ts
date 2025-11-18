@@ -31,7 +31,7 @@ export const questionSchema = z
     options: z
       .array(optionSchema)
       .min(2, "Choice questions must have at least 2 options")
-      .max(15, "Choice questions can have at most 15 options")
+      .max(30, "Choice questions can have at most 30 options")
       .optional(),
     validation: z
       .object({
