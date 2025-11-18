@@ -44,6 +44,12 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
       type: "text" | "choice" | "boolean";
       options?: string[];
       multipleChoice?: boolean;
+      otherOption?: {
+        enabled: boolean;
+        label: string;
+        placeholder?: string;
+        required?: boolean;
+      };
     }>;
     optionsMetadata?: Array<{ text: string; endInterview?: boolean }>;
   } | null>(null);

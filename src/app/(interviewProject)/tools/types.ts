@@ -39,6 +39,14 @@ export const questionSchema = z
         maxSelections: z.number().int().min(1).optional(),
       })
       .optional(),
+    otherOption: z
+      .object({
+        enabled: z.boolean(),
+        label: z.string(),
+        placeholder: z.string().optional(),
+        required: z.boolean().optional(),
+      })
+      .optional(),
   })
   .superRefine((data, ctx) => {
     // If questionType is not specified, treat as "open" question (default behavior)

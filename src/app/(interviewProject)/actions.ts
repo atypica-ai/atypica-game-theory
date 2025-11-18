@@ -35,6 +35,8 @@ function createQuestionsSnapshot(questions: Question[]) {
     image: q.image,
     questionType: q.questionType,
     options: q.options,
+    validation: q.validation,
+    otherOption: q.otherOption,
   }));
 }
 
@@ -1370,6 +1372,12 @@ export async function getQuestionData({
       type: "text" | "choice" | "boolean";
       options?: string[];
       multipleChoice?: boolean;
+      otherOption?: {
+        enabled: boolean;
+        label: string;
+        placeholder?: string;
+        required?: boolean;
+      };
     }>;
     optionsMetadata?: Array<{ text: string; endInterview?: boolean }>;
   }>
@@ -1448,6 +1456,12 @@ export async function getQuestionData({
           type: "text" | "choice" | "boolean";
           options?: string[];
           multipleChoice?: boolean;
+          otherOption?: {
+            enabled: boolean;
+            label: string;
+            placeholder?: string;
+            required?: boolean;
+          };
         }>
       | undefined;
 
@@ -1467,6 +1481,7 @@ export async function getQuestionData({
           type: "choice",
           options: optionsArray,
           multipleChoice: questionTypeValue === "multiple-choice",
+          otherOption: question.otherOption,
         },
       ];
     }

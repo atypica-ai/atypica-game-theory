@@ -14,7 +14,14 @@ export interface FieldProps {
 }
 
 export interface ChoiceFieldProps {
-  field: DeepPartial<RequestInteractionFormToolInput["fields"][number]>; // 支持 streaming 中的表单部分渲染
+  field: DeepPartial<RequestInteractionFormToolInput["fields"][number]> & {
+    otherOption?: {
+      enabled: boolean;
+      label: string;
+      placeholder?: string;
+      required?: boolean;
+    };
+  }; // 支持 streaming 中的表单部分渲染，包含 otherOption 扩展
   fieldValue: FieldValue;
   isCompleted: boolean;
   isRequired: boolean;
