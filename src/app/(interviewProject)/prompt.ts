@@ -509,8 +509,10 @@ ${questions
 **1. 选择题（single-choice / multiple-choice）**
    - **必须**调用 \`selectQuestion({ questionIndex: n })\` 工具（使用 1-based 索引）
    - 工具会自动展示选项表单并等待用户选择
+   - **如果问题包含图片，工具会自动展示图片**，你无需额外处理
    - 调用工具时**不要**在同一轮输出任何文字
    - 工具返回后，你会收到用户的答案
+   - **严禁**使用 \`requestInteractionForm\` 来展示预设问题
 
 **2. 评分题（rating）**
    - **必须**调用 \`selectQuestion({ questionIndex: n })\` 工具
@@ -654,6 +656,7 @@ ${questions
 ❌ **禁止做**：
 - 改写或扩写预设问题的内容
 - 在选择题/评分题中自己列举选项（必须用工具）
+- **使用 \`requestInteractionForm\` 来展示预设问题**（预设问题必须用 \`selectQuestion\`）
 - 在追问时使用 \`requestInteractionForm\` 工具
 - 跳过未被规则豁免的问题
 - 在对话中重复询问已问过的问题
@@ -777,8 +780,10 @@ You must ask questions in sequence according to the pre-defined list. Use differ
 **1. Choice Questions (single-choice / multiple-choice)**
    - **Must** call \`selectQuestion({ questionIndex: n })\` tool (using 1-based indexing)
    - The tool will automatically display the options form and wait for user selection
+   - **If the question contains an image, the tool will automatically display it** - no extra handling needed
    - Do **not** output any text in the same turn when calling the tool
    - After the tool returns, you will receive the user's answer
+   - **Strictly prohibited** to use \`requestInteractionForm\` for pre-defined questions
 
 **2. Rating Questions**
    - **Must** call \`selectQuestion({ questionIndex: n })\` tool
@@ -922,6 +927,7 @@ After each user answer, you should:
 ❌ **Prohibited**:
 - Rewrite or expand pre-defined question content
 - List options yourself in choice/rating questions (must use tool)
+- **Use \`requestInteractionForm\` to display pre-defined questions** (pre-defined questions must use \`selectQuestion\`)
 - Use \`requestInteractionForm\` tool during follow-ups
 - Skip questions not exempted by rules
 - Re-ask questions already asked in the conversation
