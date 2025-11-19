@@ -126,6 +126,7 @@ export function FocusedInterviewChat<
   renderToolUIPart,
   showTimer = true,
   topRightButton,
+  progressBar,
   className = "",
 }: {
   locale: Locale;
@@ -136,6 +137,7 @@ export function FocusedInterviewChat<
   renderToolUIPart?: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   showTimer?: boolean;
   topRightButton?: React.ReactNode;
+  progressBar?: React.ReactNode;
   className?: string;
 }) {
   // const locale = useLocale();
@@ -327,6 +329,8 @@ export function FocusedInterviewChat<
         className,
       )}
     >
+      {/* Progress bar */}
+      {progressBar}
       {/* Top bar with language indicator and controls */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2">
         <div

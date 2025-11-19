@@ -173,7 +173,8 @@
       "detailsDescription": "关于此访谈项目的信息",
       "interviewComplete": "访谈完成",
       "thankYou": "感谢您参与此次访谈会话。您的回答已被记录并将用于研究目的。",
-      "summaryAnalysis": "访谈摘要和分析将很快提供给研究人员。"
+      "summaryAnalysis": "访谈摘要和分析将很快提供给研究人员。",
+      "progress": "{completed}/{total} 个问题"
     },
     "reportShare": {
       "title": "访谈报告",

@@ -173,7 +173,8 @@
       "detailsDescription": "Information about this interview project",
       "interviewComplete": "Interview Complete",
       "thankYou": "Thank you for participating in this interview session. Your responses have been recorded and will be used for research purposes.",
-      "summaryAnalysis": "The interview summary and analysis will be available to the researcher shortly."
+      "summaryAnalysis": "The interview summary and analysis will be available to the researcher shortly.",
+      "progress": "{completed}/{total} questions"
     },
     "reportShare": {
       "title": "Interview Report",

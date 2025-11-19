@@ -48,7 +48,7 @@ export function InterviewSessionChatClient({
   intervieweeUser,
   userChatToken,
   initialMessages = [],
-  extra: { preferredLanguage },
+  extra: { preferredLanguage, questions = [] },
 }: ExtractServerActionData<typeof fetchInterviewSessionChat> & {
   userChatToken: string;
   initialMessages?: TInterviewMessageWithTool[];
@@ -171,6 +171,31 @@ export function InterviewSessionChatClient({
   );
 
   const { messages } = useChatHelpers;
+
+  // Calculate progress: count completed selectQuestion tool calls
+  const progress = useMemo(() => {
+    const totalQuestions = questions.length;
+    if (totalQuestions === 0) {
+      return { completed: 0, total: 0, percentage: 0 };
+    }
+
+    const completedQuestions = messages.reduce((count, message) => {
+      return (
+        count +
+        (message.parts?.filter(
+          (part) =>
+            part.type === `tool-${InterviewToolName.selectQuestion}` &&
+            part.state === "output-available",
+        )?.length || 0)
+      );
+    }, 0);
+
+    return {
+      completed: completedQuestions,
+      total: totalQuestions,
+      percentage: (completedQuestions / totalQuestions) * 100,
+    };
+  }, [messages, questions.length]);
 
   // Determine planning state based on messages content
   const interviewState = useMemo(() => {
@@ -304,6 +329,20 @@ export function InterviewSessionChatClient({
     );
   }
 
+  // Progress bar component
+  const ProgressBar = () => {
+    if (progress.total === 0) return null;
+
+    return (
+      <div className="absolute top-0 left-0 right-0 h-1 bg-zinc-200 dark:bg-zinc-800">
+        <div
+          className="h-full bg-primary transition-all duration-500 ease-out"
+          style={{ width: `${progress.percentage}%` }}
+        />
+      </div>
+    );
+  };
+
   return (
     <FitToViewport>
       <FocusedInterviewChat<TInterviewMessageWithTool>
@@ -330,6 +369,7 @@ export function InterviewSessionChatClient({
             <ProjectInfoButton />
           </>
         }
+        progressBar={<ProgressBar />}
         className="h-full"
       />
 
