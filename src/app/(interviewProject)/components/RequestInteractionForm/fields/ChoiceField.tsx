@@ -124,6 +124,7 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
               data-selected={isSelected}
               onClick={isCompleted ? undefined : () => handleOptionClick(option)}
               className={cn(
+                "whitespace-normal min-h-9 h-auto",
                 "flex items-center justify-between w-full",
                 "data-[selected=true]:bg-primary dark:data-[selected=true]:bg-primary",
                 "data-[selected=true]:text-primary-foreground dark:data-[selected=true]:text-primary-foreground",
@@ -132,7 +133,7 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
                 isCompleted && "pointer-events-none cursor-default",
               )}
             >
-              <span className="truncate">{option}</span>
+              <span className="line-clamp-2 text-left">{option}</span>
               {isSelected && <Check className="size-4" />}
             </Button>
           );

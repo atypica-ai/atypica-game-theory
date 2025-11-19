@@ -61,8 +61,10 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
       // Type narrowing for TypeScript
       if (typeof questionIndex !== "number" || !interviewSessionId) return;
 
-      // Start loading first, then reset data (prevents flash of error state)
+      // Reset states when switching questions
       setIsLoadingQuestion(true);
+      setIsSubmitting(false);
+      setAnswer("");
 
       try {
         const result = await getQuestionData({ interviewSessionId, questionIndex });
