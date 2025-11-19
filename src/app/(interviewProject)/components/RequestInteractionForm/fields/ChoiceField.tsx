@@ -17,20 +17,23 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
   isSingleChoice,
   onSelectSingle,
   onToggleMultiple,
+  optionsMetadata,
 }) => {
   const t = useTranslations("InterviewProject.requestInteractionForm");
 
-  // Get otherOption configuration from field, or use defaults
-  const otherOptionConfig = field.otherOption;
-  // If otherOption is not explicitly configured, default to disabled
-  // If configured, respect the enabled flag
-  const otherOptionEnabled = otherOptionConfig?.enabled === true;
-  const OTHER_OPTION_KEY = otherOptionConfig?.label || "其他";
-  const otherOptionPlaceholder = otherOptionConfig?.placeholder || t("otherInputPlaceholder");
-  const otherOptionRequired = otherOptionConfig?.required || false;
+  // Track which option is selected that needs input, and its input value
+  const [selectedNeedsInputOption, setSelectedNeedsInputOption] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState("");
 
-  const [otherInputValue, setOtherInputValue] = useState("");
-  const [isOtherOptionSelected, setIsOtherOptionSelected] = useState(false);
+  // Helper to check if an option needs input based on optionsMetadata
+  const optionNeedsInput = (optionText: string): boolean => {
+    if (!optionsMetadata) return false;
+    const meta = optionsMetadata.find((m) => m.text === optionText);
+    return meta?.needsInput === true;
+  };
+
+  // Get placeholder text for input (use default)
+  const inputPlaceholder = t("otherInputPlaceholder");
 
   // Determine grid layout
   const gridLayout = (() => {
@@ -48,10 +51,8 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     return MULTIPLE_CHOICE_STYLE === "A" ? "grid-cols-1" : "grid-cols-2";
   })();
 
-  // Add "其他" option to the list only if enabled
-  const optionsWithOther = otherOptionEnabled
-    ? [...(field.options || []), OTHER_OPTION_KEY]
-    : field.options || [];
+  // Use options directly from field (no longer adding extra "other" option)
+  const options = field.options || [];
 
   // Validation logic for multiple-choice
   const minSelections = field.minSelections;
@@ -83,55 +84,69 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     return null;
   })();
 
-  // Handle "其他" option selection
-  const handleOtherOptionClick = () => {
+  // Handle option click - check if it needs input
+  const handleOptionClick = (option: string) => {
     if (isCompleted || !field.id) return;
 
-    // Toggle the "其他" option selection state
-    const newState = !isOtherOptionSelected;
-    setIsOtherOptionSelected(newState);
+    const needsInput = optionNeedsInput(option);
 
-    if (newState) {
-      // Select "其他"
-      if (isSingleChoice) {
-        onSelectSingle(field.id, OTHER_OPTION_KEY);
+    if (isSingleChoice) {
+      if (needsInput) {
+        // Select the option and show input field
+        setSelectedNeedsInputOption(option);
+        setInputValue("");
+        onSelectSingle(field.id, option);
       } else {
-        onToggleMultiple(field.id, OTHER_OPTION_KEY);
+        // Regular option - clear any input state
+        setSelectedNeedsInputOption(null);
+        setInputValue("");
+        onSelectSingle(field.id, option);
       }
-      setOtherInputValue(""); // Reset input value
     } else {
-      // Deselect "其他"
-      if (isSingleChoice) {
-        onSelectSingle(field.id, ""); // Clear selection
+      // Multiple choice
+      if (needsInput) {
+        // Toggle the needsInput option
+        if (selectedNeedsInputOption === option) {
+          // Deselect
+          setSelectedNeedsInputOption(null);
+          setInputValue("");
+          onToggleMultiple(field.id, option);
+        } else {
+          // Select
+          setSelectedNeedsInputOption(option);
+          setInputValue("");
+          onToggleMultiple(field.id, option);
+        }
       } else {
-        onToggleMultiple(field.id, OTHER_OPTION_KEY); // Remove from selection
+        // Regular option
+        onToggleMultiple(field.id, option);
       }
-      setOtherInputValue("");
     }
   };
 
-  // Handle "其他" input change and update field value
-  const handleOtherInputChange = (value: string) => {
-    setOtherInputValue(value);
-    if (!field.id) return;
+  // Handle input change for needsInput option
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+    if (!field.id || !selectedNeedsInputOption) return;
 
-    // Keep the "其他" option selected state
-    if (!isOtherOptionSelected) {
-      setIsOtherOptionSelected(true);
-    }
-
-    const otherValue = value.trim() ? `其他：${value}` : OTHER_OPTION_KEY;
+    // Format: "选项文本：用户输入"
+    const formattedValue = value.trim()
+      ? `${selectedNeedsInputOption}：${value}`
+      : selectedNeedsInputOption;
 
     if (isSingleChoice) {
-      onSelectSingle(field.id, otherValue);
+      onSelectSingle(field.id, formattedValue);
     } else {
-      // For multiple choice, we need to update the value properly
-      // Remove old "其他" entries and add the new one
-      if (Array.isArray(fieldValue)) {
-        // This is a bit tricky - we need to toggle it off then on with new value
-        // For now, just update with the new value directly
-        onSelectSingle(field.id, otherValue);
-      }
+      // For multiple choice, update the array
+      const currentValues = Array.isArray(fieldValue) ? fieldValue : [];
+      // Remove old values for this option
+      const filteredValues = currentValues.filter(
+        (v) =>
+          v !== selectedNeedsInputOption && !v.startsWith(`${selectedNeedsInputOption}：`),
+      );
+      // Add the new formatted value
+      const newValues = [...filteredValues, formattedValue];
+      onSelectSingle(field.id, newValues);
     }
   };
 
@@ -165,15 +180,18 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
       )}
 
       <div className={cn("grid gap-2", gridLayout)}>
-        {optionsWithOther.map((option, index) => {
-          const isOther = option === OTHER_OPTION_KEY;
+        {options.map((option, index) => {
+          if (!option) return null;
+          const needsInput = optionNeedsInput(option);
           const isSelected = isSingleChoice
-            ? isOther
-              ? isOtherOptionSelected
+            ? needsInput
+              ? selectedNeedsInputOption === option ||
+                (typeof fieldValue === "string" && fieldValue.startsWith(`${option}：`))
               : fieldValue === option
             : Array.isArray(fieldValue) && option
-              ? isOther
-                ? isOtherOptionSelected
+              ? needsInput
+                ? selectedNeedsInputOption === option ||
+                  fieldValue.some((v) => v === option || v.startsWith(`${option}：`))
                 : fieldValue.includes(option)
               : fieldValue === option;
 
@@ -182,28 +200,7 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
               <Button
                 variant="outline"
                 data-selected={isSelected}
-                onClick={
-                  isCompleted
-                    ? undefined
-                    : () => {
-                        if (!field.id || !option) return;
-                        if (isOther) {
-                          handleOtherOptionClick();
-                        } else {
-                          // Deselect "其他" if selecting another option in single choice
-                          if (isSingleChoice && isOtherOptionSelected) {
-                            setIsOtherOptionSelected(false);
-                            setOtherInputValue("");
-                          }
-
-                          if (isSingleChoice) {
-                            onSelectSingle(field.id, option);
-                          } else {
-                            onToggleMultiple(field.id, option);
-                          }
-                        }
-                      }
-                }
+                onClick={isCompleted ? undefined : () => handleOptionClick(option)}
                 className={cn(
                   "flex items-center justify-between w-full",
                   "data-[selected=true]:bg-primary dark:data-[selected=true]:bg-primary",
@@ -216,16 +213,15 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
                 {isSelected && <Check className="size-4" />}
               </Button>
 
-              {/* Show input field when "其他" is selected */}
-              {isOther && isOtherOptionSelected && !isCompleted && (
+              {/* Show input field when this option needs input and is selected */}
+              {needsInput && selectedNeedsInputOption === option && !isCompleted && (
                 <Input
                   type="text"
-                  placeholder={otherOptionPlaceholder}
-                  value={otherInputValue}
-                  onChange={(e) => handleOtherInputChange(e.target.value)}
+                  placeholder={inputPlaceholder}
+                  value={inputValue}
+                  onChange={(e) => handleInputChange(e.target.value)}
                   className="w-full"
                   autoFocus
-                  required={otherOptionRequired}
                 />
               )}
             </div>

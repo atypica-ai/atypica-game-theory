@@ -514,6 +514,15 @@ ${questions
    - 工具返回后，你会收到用户的答案
    - **严禁**使用 \`requestInteractionForm\` 来展示预设问题
 
+**问题提示（hint）处理**：
+   - 每个问题可能包含 \`hint\` 字段，用自然语言描述特殊处理行为
+   - 当你读取问题时，需要解析 hint 并在返回的 \`optionsMetadata\` 中设置相应标记：
+     - 如果 hint 指明某选项需要用户输入（如"其他"选项），在该选项上设置 \`needsInput: true\`
+     - 如果 hint 指明某选项需要终止访谈，在该选项上设置 \`endInterview: true\`
+   - **示例**：
+     - hint: "选择'其他，请注明'时需要用户输入具体内容"
+     - 对应 optionsMetadata: \`[{ text: "选项A" }, { text: "其他，请注明", needsInput: true }]\`
+
 **2. 评分题（rating）**
    - **必须**调用 \`selectQuestion({ questionIndex: n })\` 工具
    - 工具会自动展示评分表格（维度 × 1-5 分）
@@ -784,6 +793,15 @@ You must ask questions in sequence according to the pre-defined list. Use differ
    - Do **not** output any text in the same turn when calling the tool
    - After the tool returns, you will receive the user's answer
    - **Strictly prohibited** to use \`requestInteractionForm\` for pre-defined questions
+
+**Question Hint Processing**:
+   - Each question may contain a \`hint\` field with natural language instructions for special handling
+   - When reading a question, parse the hint and set corresponding markers in the returned \`optionsMetadata\`:
+     - If hint indicates an option needs user input (e.g., "Other" option), set \`needsInput: true\` on that option
+     - If hint indicates an option should end the interview, set \`endInterview: true\` on that option
+   - **Example**:
+     - hint: "Show input field when 'Other, please specify' is selected"
+     - Corresponding optionsMetadata: \`[{ text: "Option A" }, { text: "Other, please specify", needsInput: true }]\`
 
 **2. Rating Questions**
    - **Must** call \`selectQuestion({ questionIndex: n })\` tool

@@ -330,7 +330,10 @@
       "otherOptionLabelHint": "The text displayed to users, e.g., 'Other', 'Other (please specify)', etc.",
       "otherOptionPlaceholder": "Input Placeholder",
       "otherOptionPlaceholderHint": "Placeholder text for the input field when this option is selected",
-      "otherOptionRequired": "Input required"
+      "otherOptionRequired": "Input required",
+      "hint": "AI Hint",
+      "hintPlaceholder": "e.g., Show input field when 'Other' is selected; End interview when 'Not interested' is selected",
+      "hintDescription": "Describe special behaviors for AI in natural language, such as showing input fields, skipping questions, or ending interviews"
     },
     "createProject": {
       "title": "Create Interview Project",

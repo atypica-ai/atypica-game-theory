@@ -11,15 +11,6 @@ const imageAttachmentSchema = z.object({
     .max(10 * 1024 * 1024), // 10MB max
 });
 
-// Option schema - can be string or object with metadata
-const optionSchema = z.union([
-  z.string().min(1, "Option cannot be empty"),
-  z.object({
-    text: z.string().min(1, "Option text cannot be empty"),
-    endInterview: z.boolean().optional(),
-  }),
-]);
-
 // Question schema with strict validation
 // Users create questions via UI. questionType is optional (defaults to "open" in frontend)
 // but when specified as choice type, options are required
@@ -28,24 +19,17 @@ export const questionSchema = z
     text: z.string().min(1, "Question text is required").max(1000, "Question text is too long"),
     image: imageAttachmentSchema.optional(),
     questionType: z.enum(["open", "single-choice", "multiple-choice"]).optional(),
+    hint: z
+      .string()
+      .max(500, "Hint text is too long")
+      .optional()
+      .describe(
+        "Natural language instructions for AI to handle special behaviors, e.g., 'If user selects 其他 option, show input field for details'",
+      ),
     options: z
-      .array(optionSchema)
+      .array(z.string().min(1, "Option cannot be empty"))
       .min(2, "Choice questions must have at least 2 options")
       .max(30, "Choice questions can have at most 30 options")
-      .optional(),
-    validation: z
-      .object({
-        minSelections: z.number().int().min(1).optional(),
-        maxSelections: z.number().int().min(1).optional(),
-      })
-      .optional(),
-    otherOption: z
-      .object({
-        enabled: z.boolean(),
-        label: z.string(),
-        placeholder: z.string().optional(),
-        required: z.boolean().optional(),
-      })
       .optional(),
   })
   .superRefine((data, ctx) => {
@@ -70,37 +54,6 @@ export const questionSchema = z
           code: z.ZodIssueCode.custom,
           message: "Open questions should not have options",
           path: ["options"],
-        });
-      }
-    }
-
-    // Validation rules only for multiple-choice
-    if (data.validation && type !== "multiple-choice") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Validation rules are only applicable to multiple-choice questions",
-        path: ["validation"],
-      });
-    }
-
-    // Validate minSelections <= maxSelections
-    if (data.validation?.minSelections && data.validation?.maxSelections) {
-      if (data.validation.minSelections > data.validation.maxSelections) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Minimum selections cannot be greater than maximum selections",
-          path: ["validation", "minSelections"],
-        });
-      }
-    }
-
-    // Validate maxSelections <= options length
-    if (data.validation?.maxSelections && data.options) {
-      if (data.validation.maxSelections > data.options.length) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Maximum selections cannot exceed the number of options",
-          path: ["validation", "maxSelections"],
         });
       }
     }
@@ -234,6 +187,14 @@ export const selectQuestionOutputSchema = z.object({
         type: z.enum(["text", "choice", "boolean"]),
         options: z.array(z.string()).optional(),
         multipleChoice: z.boolean().optional(),
+        otherOption: z
+          .object({
+            enabled: z.boolean(),
+            label: z.string(),
+            placeholder: z.string().optional(),
+            required: z.boolean().optional(),
+          })
+          .optional(),
       }),
     )
     .optional(),
@@ -242,6 +203,7 @@ export const selectQuestionOutputSchema = z.object({
       z.object({
         text: z.string(),
         endInterview: z.boolean().optional(),
+        needsInput: z.boolean().optional(),
       }),
     )
     .optional(),

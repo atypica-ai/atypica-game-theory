@@ -2,7 +2,6 @@
 
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -28,17 +27,8 @@ export interface QuestionData {
   text: string;
   image?: ChatMessageAttachment;
   questionType?: "open" | "single-choice" | "multiple-choice";
-  options?: Array<string | { text: string; endInterview?: boolean }>;
-  validation?: {
-    minSelections?: number;
-    maxSelections?: number;
-  };
-  otherOption?: {
-    enabled: boolean;
-    label: string;
-    placeholder?: string;
-    required?: boolean;
-  };
+  hint?: string;
+  options?: string[];
 }
 
 interface EditQuestionDialogProps {
@@ -59,76 +49,33 @@ export function EditQuestionDialog({
   const t = useTranslations("InterviewProject.editQuestion");
 
   const [text, setText] = useState("");
+  const [hint, setHint] = useState("");
   const [image, setImage] = useState<ChatMessageAttachment | undefined>();
   const [questionType, setQuestionType] = useState<"open" | "single-choice" | "multiple-choice">(
     "open",
   );
-  const [options, setOptions] = useState<Array<{ text: string; endInterview: boolean }>>([
-    { text: "", endInterview: false },
-    { text: "", endInterview: false },
-  ]);
-  const [minSelections, setMinSelections] = useState<number | undefined>();
-  const [maxSelections, setMaxSelections] = useState<number | undefined>();
+  const [options, setOptions] = useState<string[]>(["", ""]);
   const [uploadingImage, setUploadingImage] = useState(false);
-
-  // Other option configuration
-  const [otherOptionEnabled, setOtherOptionEnabled] = useState(false);
-  const [otherOptionLabel, setOtherOptionLabel] = useState("其他");
-  const [otherOptionPlaceholder, setOtherOptionPlaceholder] = useState("请说明");
-  const [otherOptionRequired, setOtherOptionRequired] = useState(false);
 
   // Initialize form when question changes
   useEffect(() => {
     if (question) {
       setText(question.text);
+      setHint(question.hint || "");
       setImage(question.image);
       setQuestionType(question.questionType || "open");
 
-      // Convert options to internal format
-      const normalizedOptions = (question.options || []).map((opt) => {
-        if (typeof opt === "string") {
-          return { text: opt, endInterview: false };
-        }
-        return { text: opt.text, endInterview: opt.endInterview || false };
-      });
-      setOptions(
-        normalizedOptions.length >= 2
-          ? normalizedOptions
-          : [
-              { text: "", endInterview: false },
-              { text: "", endInterview: false },
-            ],
+      // Convert options to simple string array
+      const normalizedOptions = (question.options || []).map((opt) =>
+        typeof opt === "string" ? opt : opt,
       );
-
-      setMinSelections(question.validation?.minSelections);
-      setMaxSelections(question.validation?.maxSelections);
-
-      // Initialize other option configuration
-      if (question.otherOption) {
-        setOtherOptionEnabled(question.otherOption.enabled);
-        setOtherOptionLabel(question.otherOption.label || "其他");
-        setOtherOptionPlaceholder(question.otherOption.placeholder || "请说明");
-        setOtherOptionRequired(question.otherOption.required || false);
-      } else {
-        setOtherOptionEnabled(false);
-        setOtherOptionLabel("其他");
-        setOtherOptionPlaceholder("请说明");
-        setOtherOptionRequired(false);
-      }
+      setOptions(normalizedOptions.length >= 2 ? normalizedOptions : ["", ""]);
     } else {
       setText("");
+      setHint("");
       setImage(undefined);
       setQuestionType("open");
-      setOptions([
-        { text: "", endInterview: false },
-        { text: "", endInterview: false },
-      ]);
-      setMinSelections(undefined);
-      setMaxSelections(undefined);
-      setOtherOptionEnabled(false);
-      setOtherOptionLabel("其他");
-      setOtherOptionPlaceholder("请说明");
-      setOtherOptionRequired(false);
+      setOptions(["", ""]);
     }
   }, [question]);
 
@@ -181,7 +128,7 @@ export function EditQuestionDialog({
 
     // Validate options for choice questions
     if (questionType === "single-choice" || questionType === "multiple-choice") {
-      const validOptions = options.filter((opt) => opt.text.trim().length > 0);
+      const validOptions = options.filter((opt) => opt.trim().length > 0);
 
       if (validOptions.length < 2) {
         toast.error(t("atLeastTwoOptions"));
@@ -193,52 +140,13 @@ export function EditQuestionDialog({
         return;
       }
 
-      // Validate min/max selections for multiple-choice
-      if (questionType === "multiple-choice") {
-        if (minSelections !== undefined && maxSelections !== undefined) {
-          if (minSelections > maxSelections) {
-            toast.error("最少选择数量不能大于最多选择数量");
-            return;
-          }
-        }
-        if (maxSelections !== undefined && maxSelections > validOptions.length) {
-          toast.error("最多选择数量不能超过选项总数");
-          return;
-        }
-      }
-
-      // Convert options to save format
-      const optionsToSave = validOptions.map((opt) => {
-        if (opt.endInterview) {
-          return { text: opt.text, endInterview: true };
-        }
-        return opt.text; // Save as string if no special metadata
-      });
-
       const questionData: QuestionData = {
         text: text.trim(),
         image,
         questionType,
-        options: optionsToSave,
+        hint: hint.trim() || undefined,
+        options: validOptions,
       };
-
-      // Add validation for multiple-choice if specified
-      if (questionType === "multiple-choice" && (minSelections || maxSelections)) {
-        questionData.validation = {
-          minSelections,
-          maxSelections,
-        };
-      }
-
-      // Add other option configuration if enabled
-      if (otherOptionEnabled) {
-        questionData.otherOption = {
-          enabled: true,
-          label: otherOptionLabel.trim() || "其他",
-          placeholder: otherOptionPlaceholder?.trim(),
-          required: otherOptionRequired,
-        };
-      }
 
       onSave(questionData);
     } else {
@@ -247,25 +155,12 @@ export function EditQuestionDialog({
         text: text.trim(),
         image,
         questionType,
+        hint: hint.trim() || undefined,
       });
     }
 
     onOpenChange(false);
-  }, [
-    text,
-    image,
-    questionType,
-    options,
-    minSelections,
-    maxSelections,
-    otherOptionEnabled,
-    otherOptionLabel,
-    otherOptionPlaceholder,
-    otherOptionRequired,
-    onSave,
-    onOpenChange,
-    t,
-  ]);
+  }, [text, hint, image, questionType, options, onSave, onOpenChange, t]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + " B";
@@ -298,6 +193,22 @@ export function EditQuestionDialog({
               placeholder={t("questionTextPlaceholder")}
               className="min-h-24"
             />
+          </div>
+
+          {/* AI Hint */}
+          <div className="space-y-2">
+            <Label htmlFor="questionHint" className="text-sm font-medium">
+              {t("hint")} ({t("optional")})
+            </Label>
+            <Textarea
+              id="questionHint"
+              value={hint}
+              onChange={(e) => setHint(e.target.value)}
+              placeholder={t("hintPlaceholder")}
+              className="min-h-16"
+              maxLength={500}
+            />
+            <p className="text-xs text-muted-foreground">{t("hintDescription")}</p>
           </div>
 
           {/* Image Upload */}
@@ -435,35 +346,17 @@ export function EditQuestionDialog({
                 {/* Options List */}
                 <div className="space-y-2">
                   {options.map((option, index) => (
-                    <div key={index} className="flex gap-2 items-start">
+                    <div key={index} className="flex gap-2 items-center">
                       <Input
-                        value={option.text}
+                        value={option}
                         onChange={(e) => {
                           const newOptions = [...options];
-                          newOptions[index] = { ...newOptions[index], text: e.target.value };
+                          newOptions[index] = e.target.value;
                           setOptions(newOptions);
                         }}
                         placeholder={t("optionPlaceholder", { number: index + 1 })}
                         className="flex-1"
                       />
-                      <div className="flex items-center gap-1 pt-2">
-                        <Checkbox
-                          id={`endInterview-${index}`}
-                          checked={option.endInterview}
-                          onCheckedChange={(checked) => {
-                            const newOptions = [...options];
-                            newOptions[index] = { ...newOptions[index], endInterview: !!checked };
-                            setOptions(newOptions);
-                          }}
-                        />
-                        <Label
-                          htmlFor={`endInterview-${index}`}
-                          className="text-xs text-muted-foreground whitespace-nowrap cursor-pointer"
-                          title="选择此选项后将结束访谈"
-                        >
-                          终止
-                        </Label>
-                      </div>
                       <Button
                         variant="outline"
                         size="icon"
@@ -483,7 +376,7 @@ export function EditQuestionDialog({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setOptions([...options, { text: "", endInterview: false }])}
+                  onClick={() => setOptions([...options, ""])}
                   disabled={options.length >= 15}
                   className="w-full"
                 >
@@ -495,126 +388,6 @@ export function EditQuestionDialog({
                 <p className="text-xs text-muted-foreground">{t("optionsHint")}</p>
               </div>
 
-              {/* Validation Settings - Only for multiple-choice */}
-              {questionType === "multiple-choice" && (
-                <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
-                  <Label className="text-sm font-medium">多选题设置</Label>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="minSelections" className="text-xs text-muted-foreground">
-                        最少选择
-                      </Label>
-                      <Input
-                        id="minSelections"
-                        type="number"
-                        min={1}
-                        max={options.length}
-                        value={minSelections ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setMinSelections(value ? parseInt(value) : undefined);
-                        }}
-                        placeholder="不限制"
-                        className="h-9"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="maxSelections" className="text-xs text-muted-foreground">
-                        最多选择
-                      </Label>
-                      <Input
-                        id="maxSelections"
-                        type="number"
-                        min={1}
-                        max={options.length}
-                        value={maxSelections ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setMaxSelections(value ? parseInt(value) : undefined);
-                        }}
-                        placeholder="不限制"
-                        className="h-9"
-                      />
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground">
-                    设置用户可选择的选项数量范围（留空表示不限制）
-                  </p>
-                </div>
-              )}
-
-              {/* Other Option Configuration */}
-              <div className="space-y-3 pt-3 border-t">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="otherOptionEnabled"
-                    checked={otherOptionEnabled}
-                    onCheckedChange={(checked) => setOtherOptionEnabled(!!checked)}
-                  />
-                  <Label
-                    htmlFor="otherOptionEnabled"
-                    className="text-sm font-medium cursor-pointer"
-                  >
-                    {t("enableOtherOption")}
-                  </Label>
-                </div>
-
-                {otherOptionEnabled && (
-                  <div className="space-y-3 pl-6">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="otherOptionLabel" className="text-xs text-muted-foreground">
-                        {t("otherOptionLabel")}
-                      </Label>
-                      <Input
-                        id="otherOptionLabel"
-                        value={otherOptionLabel}
-                        onChange={(e) => setOtherOptionLabel(e.target.value)}
-                        placeholder="其他"
-                        maxLength={20}
-                        className="h-9"
-                      />
-                      <p className="text-xs text-muted-foreground">{t("otherOptionLabelHint")}</p>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="otherOptionPlaceholder"
-                        className="text-xs text-muted-foreground"
-                      >
-                        {t("otherOptionPlaceholder")}
-                      </Label>
-                      <Input
-                        id="otherOptionPlaceholder"
-                        value={otherOptionPlaceholder}
-                        onChange={(e) => setOtherOptionPlaceholder(e.target.value)}
-                        placeholder="请说明"
-                        maxLength={50}
-                        className="h-9"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        {t("otherOptionPlaceholderHint")}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="otherOptionRequired"
-                        checked={otherOptionRequired}
-                        onCheckedChange={(checked) => setOtherOptionRequired(!!checked)}
-                      />
-                      <Label
-                        htmlFor="otherOptionRequired"
-                        className="text-xs text-muted-foreground cursor-pointer"
-                      >
-                        {t("otherOptionRequired")}
-                      </Label>
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </div>

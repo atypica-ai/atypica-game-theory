@@ -331,7 +331,17 @@ export function ProjectDetails({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleEditQuestion(index, question)}
+                        onClick={() =>
+                          handleEditQuestion(index, {
+                            text: question.text,
+                            image: question.image,
+                            questionType: question.questionType,
+                            hint: question.hint,
+                            options: question.options?.map((opt) =>
+                              typeof opt === "string" ? opt : opt.text,
+                            ),
+                          })
+                        }
                         className="h-8 px-2"
                       >
                         <EditIcon className="h-3 w-3 mr-1" />

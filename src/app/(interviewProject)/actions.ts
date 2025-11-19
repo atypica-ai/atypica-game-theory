@@ -27,16 +27,18 @@ import { processInterviewQuestionOptimization } from "./processing";
 import { interviewProjectQuestionsSchema, Question, questionSchema } from "./tools/types";
 
 /**
- * Create a snapshot of questions
+ * Create a snapshot of questions (converts old format to new format)
  */
-function createQuestionsSnapshot(questions: Question[]) {
+function createQuestionsSnapshot(
+  questions: NonNullable<InterviewProjectExtra["questions"]>,
+): Question[] {
   return questions.map((q) => ({
     text: q.text,
     image: q.image,
     questionType: q.questionType,
-    options: q.options,
-    validation: q.validation,
-    otherOption: q.otherOption,
+    hint: q.hint,
+    // Convert old format (string | {text, endInterview}) to new format (string)
+    options: q.options?.map((opt) => (typeof opt === "string" ? opt : opt.text)),
   }));
 }
 
@@ -1415,13 +1417,23 @@ export async function getQuestionData({
 
     // Process options to separate text and metadata
     let optionsArray: string[] | undefined;
-    let optionsMetadata: Array<{ text: string; endInterview?: boolean }> | undefined;
+    let optionsMetadata:
+      | Array<{ text: string; endInterview?: boolean; needsInput?: boolean }>
+      | undefined;
 
     if (question.options && question.options.length > 0) {
       optionsArray = [];
       optionsMetadata = [];
 
-      for (const opt of question.options) {
+      // Parse hint to determine which options need input
+      const hint = question.hint || "";
+      const needsInputKeywords = ["输入", "填写", "说明", "specify", "input", "fill"];
+
+      // Cast options to union type for backward compatibility with old format
+      const options = question.options as Array<
+        string | { text: string; endInterview?: boolean }
+      >;
+      for (const opt of options) {
         let text: string;
         let endInterview: boolean | undefined;
 
@@ -1439,8 +1451,22 @@ export async function getQuestionData({
           .replace(/\s*\[END INTERVIEW\]\s*$/, "")
           .trim();
 
+        // Check if this option needs input based on hint
+        let needsInput: boolean | undefined;
+        if (hint) {
+          // Check if hint mentions this option and contains input-related keywords
+          const hintLower = hint.toLowerCase();
+          const textLower = cleanText.toLowerCase();
+          if (
+            hintLower.includes(textLower) &&
+            needsInputKeywords.some((keyword) => hintLower.includes(keyword))
+          ) {
+            needsInput = true;
+          }
+        }
+
         optionsArray.push(cleanText);
-        optionsMetadata.push({ text: cleanText, endInterview });
+        optionsMetadata.push({ text: cleanText, endInterview, needsInput });
       }
     }
 
@@ -1456,12 +1482,6 @@ export async function getQuestionData({
           type: "text" | "choice" | "boolean";
           options?: string[];
           multipleChoice?: boolean;
-          otherOption?: {
-            enabled: boolean;
-            label: string;
-            placeholder?: string;
-            required?: boolean;
-          };
         }>
       | undefined;
 
@@ -1481,7 +1501,6 @@ export async function getQuestionData({
           type: "choice",
           options: optionsArray,
           multipleChoice: questionTypeValue === "multiple-choice",
-          otherOption: question.otherOption,
         },
       ];
     }

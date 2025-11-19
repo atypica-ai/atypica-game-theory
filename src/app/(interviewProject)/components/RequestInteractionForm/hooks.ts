@@ -29,10 +29,10 @@ export function useFormState() {
     });
   }, []);
 
-  const selectSingleChoice = useCallback((fieldId: string, option: string) => {
+  const selectSingleChoice = useCallback((fieldId: string, value: string | string[]) => {
     setFormResponses((prev) => ({
       ...prev,
-      [fieldId]: option,
+      [fieldId]: value,
     }));
   }, []);
 

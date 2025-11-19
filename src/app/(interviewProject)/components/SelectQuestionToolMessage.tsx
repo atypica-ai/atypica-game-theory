@@ -51,7 +51,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
         required?: boolean;
       };
     }>;
-    optionsMetadata?: Array<{ text: string; endInterview?: boolean }>;
+    optionsMetadata?: Array<{ text: string; endInterview?: boolean; needsInput?: boolean }>;
   } | null>(null);
 
   // Fetch question data when tool is invoked
@@ -212,7 +212,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
             isRequired={true}
             isBasicInfoForm={false}
             isSingleChoice={!field.multipleChoice}
-            onSelectSingle={(fieldId, option) => setAnswer(option)}
+            onSelectSingle={(fieldId, value) => setAnswer(value)}
             onToggleMultiple={(fieldId, option) => {
               const currentValues = Array.isArray(answer) ? answer : [];
               const newValues = currentValues.includes(option)
@@ -220,6 +220,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
                 : [...currentValues, option];
               setAnswer(newValues);
             }}
+            optionsMetadata={optionsMetadata}
           />
         );
 

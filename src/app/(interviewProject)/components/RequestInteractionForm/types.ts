@@ -14,21 +14,15 @@ export interface FieldProps {
 }
 
 export interface ChoiceFieldProps {
-  field: DeepPartial<RequestInteractionFormToolInput["fields"][number]> & {
-    otherOption?: {
-      enabled: boolean;
-      label: string;
-      placeholder?: string;
-      required?: boolean;
-    };
-  }; // 支持 streaming 中的表单部分渲染，包含 otherOption 扩展
+  field: DeepPartial<RequestInteractionFormToolInput["fields"][number]>; // 支持 streaming 中的表单部分渲染
   fieldValue: FieldValue;
   isCompleted: boolean;
   isRequired: boolean;
   isBasicInfoForm: boolean;
   isSingleChoice: boolean;
-  onSelectSingle: (fieldId: string, option: string) => void;
+  onSelectSingle: (fieldId: string, option: string | string[]) => void;
   onToggleMultiple: (fieldId: string, option: string) => void;
   onSubmit?: () => void;
   choiceFieldsCount?: number;
+  optionsMetadata?: Array<{ text: string; endInterview?: boolean; needsInput?: boolean }>;
 }
