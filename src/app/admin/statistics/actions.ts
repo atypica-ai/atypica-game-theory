@@ -49,26 +49,30 @@ export async function fetchDailyStatistics(
       message: "Start date cannot be after end date.",
     };
   }
-  // To include the whole end day - create new Date objects to avoid mutation
-  const adjustedStartDate = new Date(startDate);
-  adjustedStartDate.setHours(0, 0, 0, 0);
-  const adjustedEndDate = new Date(endDate);
-  adjustedEndDate.setHours(23, 59, 59, 999);
+
+  // Helper function to format date without timezone conversion
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Get date strings in user's local timezone
+  const startDateStr = formatDate(startDate);
+  const endDateStr = formatDate(endDate);
+
+  // Construct timestamp strings with user timezone
+  // These will be interpreted as timestamps in the user's timezone, then converted to UTC
+  const startTimestampInUserTZ = `${startDateStr} 00:00:00`;
+  const endTimestampInUserTZ = `${endDateStr} 23:59:59.999`;
 
   try {
     // 1. Initialize a map to hold statistics for each day in the range
-    // Helper function to format date without timezone conversion
-    const formatDate = (date: Date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    };
-
     const statsMap = new Map<string, DailyStatistics>();
-    const currentDate = new Date(adjustedStartDate);
+    const currentDate = new Date(startDate);
 
-    while (currentDate <= adjustedEndDate) {
+    while (currentDate <= endDate) {
       const dateStr = formatDate(currentDate);
       statsMap.set(dateStr, {
         date: dateStr,
@@ -95,13 +99,14 @@ export async function fetchDailyStatistics(
     }
 
     // 2. Fetch data using parallel raw SQL queries
+    // Use AT TIME ZONE to convert user timezone timestamps to UTC for comparison
 
     // Daily new user registrations
-    // Use AT TIME ZONE to convert to user's timezone before truncating
     const userQuery = prisma.$queryRaw<[{ date: Date; total: bigint }]>`
       SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
       FROM "User"
-      WHERE "createdAt" >= ${adjustedStartDate} AND "createdAt" <= ${adjustedEndDate}
+      WHERE "createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
+        AND "createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
       GROUP BY date;
     `;
 
@@ -110,7 +115,8 @@ export async function fetchDailyStatistics(
       SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
       FROM "PaymentRecord"
       WHERE "status" = 'succeeded'
-        AND "createdAt" >= ${adjustedStartDate} AND "createdAt" <= ${adjustedEndDate}
+        AND "createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
+        AND "createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
       GROUP BY date;
     `;
 
@@ -119,7 +125,8 @@ export async function fetchDailyStatistics(
       SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
       FROM "UserChat"
       WHERE kind = 'study'
-        AND "createdAt" >= ${adjustedStartDate} AND "createdAt" <= ${adjustedEndDate}
+        AND "createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
+        AND "createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
       GROUP BY date;
     `;
 
@@ -129,7 +136,8 @@ export async function fetchDailyStatistics(
       FROM "UserChat" uc
       JOIN "Analyst" a ON a."studyUserChatId" = uc.id
       WHERE uc.kind = 'study'
-        AND uc."createdAt" >= ${adjustedStartDate} AND uc."createdAt" <= ${adjustedEndDate}
+        AND uc."createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
+        AND uc."createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
         AND a.kind IS NOT NULL
       GROUP BY date, a.kind;
     `;
@@ -144,7 +152,8 @@ export async function fetchDailyStatistics(
         COUNT(id) as total
       FROM "UserChat"
       WHERE kind = 'study'
-        AND "createdAt" >= ${adjustedStartDate} AND "createdAt" <= ${adjustedEndDate}
+        AND "createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
+        AND "createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
         AND "extra"->'feedback'->>'rating' IS NOT NULL
       GROUP BY date, feedback_rating;
     `;
@@ -239,6 +248,7 @@ export type UsersByCountry = {
 export async function fetchUsersByCountry(
   startDate: Date,
   endDate: Date,
+  timezone: string = "UTC",
 ): Promise<ServerActionResult<UsersByCountry[]>> {
   await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
 
@@ -248,11 +258,22 @@ export async function fetchUsersByCountry(
       message: "Start date cannot be after end date.",
     };
   }
-  // Create new Date objects to avoid mutation
-  const adjustedStartDate = new Date(startDate);
-  adjustedStartDate.setHours(0, 0, 0, 0);
-  const adjustedEndDate = new Date(endDate);
-  adjustedEndDate.setHours(23, 59, 59, 999);
+
+  // Helper function to format date
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Get date strings in user's local timezone
+  const startDateStr = formatDate(startDate);
+  const endDateStr = formatDate(endDate);
+
+  // Construct timestamp strings with user timezone
+  const startTimestampInUserTZ = `${startDateStr} 00:00:00`;
+  const endTimestampInUserTZ = `${endDateStr} 23:59:59.999`;
 
   try {
     // Use SQL aggregation to group by country
@@ -267,8 +288,8 @@ export async function fetchUsersByCountry(
         COUNT(*)::bigint as count
       FROM "UserProfile" up
       JOIN "User" u ON u.id = up."userId"
-      WHERE u."createdAt" >= ${adjustedStartDate}
-        AND u."createdAt" <= ${adjustedEndDate}
+      WHERE u."createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
+        AND u."createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
       GROUP BY country
       ORDER BY count DESC
       LIMIT 20
@@ -308,6 +329,7 @@ export type UsersBySource = {
 export async function fetchUsersBySource(
   startDate: Date,
   endDate: Date,
+  timezone: string = "UTC",
 ): Promise<ServerActionResult<UsersBySource[]>> {
   await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
 
@@ -317,11 +339,22 @@ export async function fetchUsersBySource(
       message: "Start date cannot be after end date.",
     };
   }
-  // Create new Date objects to avoid mutation
-  const adjustedStartDate = new Date(startDate);
-  adjustedStartDate.setHours(0, 0, 0, 0);
-  const adjustedEndDate = new Date(endDate);
-  adjustedEndDate.setHours(23, 59, 59, 999);
+
+  // Helper function to format date
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Get date strings in user's local timezone
+  const startDateStr = formatDate(startDate);
+  const endDateStr = formatDate(endDate);
+
+  // Construct timestamp strings with user timezone
+  const startTimestampInUserTZ = `${startDateStr} 00:00:00`;
+  const endTimestampInUserTZ = `${endDateStr} 23:59:59.999`;
 
   try {
     // Use SQL aggregation with CASE WHEN to determine source priority
@@ -344,8 +377,8 @@ export async function fetchUsersBySource(
         COUNT(*)::bigint as count
       FROM "UserProfile" up
       JOIN "User" u ON u.id = up."userId"
-      WHERE u."createdAt" >= ${adjustedStartDate}
-        AND u."createdAt" <= ${adjustedEndDate}
+      WHERE u."createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
+        AND u."createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
       GROUP BY source
       ORDER BY count DESC
       LIMIT 20

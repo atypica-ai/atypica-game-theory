@@ -72,8 +72,8 @@ export async function GET(request: Request) {
   const email = "hi@atypica.ai";
   const logoSrc =
     locale === "zh-CN"
-      ? "https://bmrlab-prod.s3.cn-north-1.amazonaws.com.cn/atypica/public/atypica-insight-podcast-logo-20251118.png"
-      : "https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/public/atypica-insight-podcast-logo-20251118.png";
+      ? "https://bmrlab-prod.s3.cn-north-1.amazonaws.com.cn/atypica/public/atypica-insight-podcast-logo-20251118.jpg"
+      : "https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/public/atypica-insight-podcast-logo-20251118.jpg";
 
   // Generate RSS XML
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
