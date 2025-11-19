@@ -172,11 +172,36 @@ export function InterviewSessionChatClient({
 
   const { messages } = useChatHelpers;
 
+  // Determine planning state based on messages content
+  const interviewState = useMemo(() => {
+    // Check if any message has endInterview tool result
+    const hasEndInterviewResult = messages.some((message) =>
+      message.parts?.some(
+        (part) =>
+          part.type === `tool-${InterviewToolName.endInterview}` &&
+          part.state === "output-available",
+      ),
+    );
+    if (hasEndInterviewResult) {
+      return "summary";
+    }
+    return "active";
+  }, [messages]);
+
   // Calculate progress: count completed selectQuestion tool calls
   const progress = useMemo(() => {
     const totalQuestions = questions.length;
     if (totalQuestions === 0) {
       return { completed: 0, total: 0, percentage: 0 };
+    }
+
+    // If interview is completed, show 100% progress
+    if (interviewState === "summary") {
+      return {
+        completed: totalQuestions,
+        total: totalQuestions,
+        percentage: 100,
+      };
     }
 
     const completedQuestions = messages.reduce((count, message) => {
@@ -195,23 +220,7 @@ export function InterviewSessionChatClient({
       total: totalQuestions,
       percentage: (completedQuestions / totalQuestions) * 100,
     };
-  }, [messages, questions.length]);
-
-  // Determine planning state based on messages content
-  const interviewState = useMemo(() => {
-    // Check if any message has endInterview tool result
-    const hasEndInterviewResult = messages.some((message) =>
-      message.parts?.some(
-        (part) =>
-          part.type === `tool-${InterviewToolName.endInterview}` &&
-          part.state === "output-available",
-      ),
-    );
-    if (hasEndInterviewResult) {
-      return "summary";
-    }
-    return "active";
-  }, [messages]);
+  }, [messages, questions.length, interviewState]);
 
   // Automatically start the conversation when the component mounts.
   const requestSentRef = useRef(false);
