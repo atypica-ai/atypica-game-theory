@@ -1,6 +1,5 @@
 import "server-only";
 
-import { upsertUserProfile } from "@/app/(auth)/lib";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import {
@@ -192,7 +191,10 @@ async function _trackUserServerSide({
         });
       }
       if (!userProfile) {
-        userProfile = await upsertUserProfile({ userId: user.id });
+        userProfile = await prisma.userProfile.findUniqueOrThrow({
+          where: { userId },
+          select: { id: true, onboarding: true, extra: true },
+        });
       }
       // 提取 acquisition 数据
       const profileExtra = userProfile.extra as UserProfileExtra;

@@ -12,7 +12,7 @@ async function main() {
 
   // Import after env is loaded
   const { prisma } = await import("@/prisma/prisma");
-  const { upsertUserProfile } = await import("@/app/(auth)/lib");
+  const { DEPRECATED_upsertUserProfile } = await import("@/app/(auth)/lib");
 
   let totalProcessed = 0;
   let batchNumber = 1;
@@ -45,7 +45,7 @@ async function main() {
 
     const results = await Promise.allSettled(
       usersWithoutProfile.map(async (user) => {
-        await upsertUserProfile({ userId: user.id });
+        await DEPRECATED_upsertUserProfile({ userId: user.id });
         return user;
       }),
     );

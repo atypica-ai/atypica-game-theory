@@ -1,5 +1,4 @@
 "use server";
-import { upsertUserProfile } from "@/app/(auth)/lib";
 import { trackUserServerSide } from "@/lib/analytics/server";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -10,8 +9,6 @@ export async function saveOnboardingData(
   data: UserOnboardingData,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async ({ id: userId }) => {
-    await upsertUserProfile({ userId });
-
     const { user, ...userProfile } = await prisma.userProfile.update({
       where: { userId },
       data: {

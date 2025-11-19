@@ -1,6 +1,5 @@
 "use server";
 import authOptions from "@/app/(auth)/authOptions";
-import { upsertUserProfile } from "@/app/(auth)/lib";
 import { UserProfileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
@@ -20,11 +19,14 @@ export async function trackUserAction() {
   }
   waitUntil(
     (async (userId: number) => {
-      const userProfile = await upsertUserProfile({ userId });
-      const user = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        // include: { profile: true },
-      });
+      const [user, userProfile] = await Promise.all([
+        prisma.user.findUniqueOrThrow({
+          where: { id: userId },
+          // include: { profile: true },
+        }),
+        prisma.userProfile.findUniqueOrThrow({ where: { userId } }),
+      ]);
+
       const lastTrack = (userProfile.extra as UserProfileExtra)?.lastTrack;
       // 12个小时只上报一次，其他时候在对应行为发生以后主动触发
       if (!lastTrack || lastTrack < Date.now() - 1000 * 60 * 60 * 12) {

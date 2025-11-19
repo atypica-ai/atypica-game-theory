@@ -40,7 +40,6 @@ export function recordLastLogin({
   waitUntil(
     (async () => {
       try {
-        await upsertUserProfile({ userId });
         const clientInfo = await authClientInfo();
         await prisma.userProfile.update({
           where: { userId },
@@ -66,7 +65,10 @@ export function recordAcquisition({ userId }: { userId: number }) {
   waitUntil(
     (async () => {
       try {
-        const userProfile = await upsertUserProfile({ userId });
+        const userProfile = await prisma.userProfile.findUniqueOrThrow({
+          where: { userId },
+          select: { id: true },
+        });
         // 获取 acquisition 数据
         const [utmParams, refererParams] = await Promise.all([
           getUtmFromCookieStore(),
@@ -111,7 +113,7 @@ export function recordAcquisition({ userId }: { userId: number }) {
  * 迁移阶段，在更新 lastLogin, onboarding, extra 的时候，需要先调用 upsertUserProfile
  * 一段时间已有，当所有用户都在创建的时候有了 profile，这部分可以删除
  */
-export async function upsertUserProfile({ userId }: { userId: number }) {
+export async function DEPRECATED_upsertUserProfile({ userId }: { userId: number }) {
   const profile = await prisma.$transaction(async (tx) => {
     let profile = await tx.userProfile.findUnique({
       where: { userId },
