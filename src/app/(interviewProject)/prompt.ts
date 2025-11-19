@@ -730,14 +730,11 @@ ${
 ## 真人访谈特殊要求
 **在开始正式访谈前，必须先收集基本信息**：
 - 在接收到 [READY] 消息后，**立即使用 requestInteractionForm 工具收集基本信息**，不要输出任何文字
-- **必须收集的字段（固定5个，不要添加或删除）**：
+- **必须收集的字段（固定2个，不要添加或删除）**：
   1. 姓名（text类型，id: "name"）
   2. 性别（choice类型，id: "gender"，选项：["女性", "男性", "其他", "不愿透露"]）
-  3. 职业（text类型，id: "occupation"）
-  4. 所在地（text类型，id: "location"）
-  5. 年龄段（choice类型，id: "ageRange"，选项：["18-25", "26-35", "36-45", "46+"]）
 - **重要**：prologue 使用"请先填写以下基本信息，以便我们更好地进行访谈"
-- **不要添加任何其他字段**，严格按照上述5个字段
+- **不要添加任何其他字段**，严格按照上述2个字段
 - 收集完基本信息后，用温暖友好的语气问候受访者，称呼其姓名，并自然地开始访谈对话`
 }
 `
@@ -1023,14 +1020,11 @@ ${
 ## Real Person Interview Special Requirements
 **Before starting the formal interview, you must first collect basic information**:
 - After receiving the [READY] message, **immediately use the requestInteractionForm tool to collect basic information**, without outputting any text
-- **Required fields (exactly 5, do not add or remove)**:
+- **Required fields (exactly 2, do not add or remove)**:
   1. Name (text type, id: "name")
   2. Gender (choice type, id: "gender", options: ["Female", "Male", "Other", "Prefer not to say"])
-  3. Occupation (text type, id: "occupation")
-  4. Location (text type, id: "location")
-  5. Age Range (choice type, id: "ageRange", options: ["18-25", "26-35", "36-45", "46+"])
 - **Important**: Use "Please fill in the following basic information to help us conduct the interview better" for prologue
-- **Do not add any other fields**, strictly follow the above 5 fields
+- **Do not add any other fields**, strictly follow the above 2 fields
 - After collecting basic information, warmly greet the interviewee, address them by name, and naturally begin the interview conversation`
 }
 `;
