@@ -292,7 +292,6 @@ export async function fetchUsersByCountry(
         AND u."createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
       GROUP BY country
       ORDER BY count DESC
-      LIMIT 20
     `;
 
     const data = results.map((row) => ({
@@ -381,7 +380,6 @@ export async function fetchUsersBySource(
         AND u."createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
       GROUP BY source
       ORDER BY count DESC
-      LIMIT 20
     `;
 
     const data = results.map((row) => ({
