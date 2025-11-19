@@ -253,8 +253,6 @@
       "submitForm": "Submit Form",
       "formSubmitted": "Form submitted",
       "submit": "Submit",
-      "submitting": "Submitting...",
-      "submitSuccess": "Submitted successfully",
       "submitError": "Failed to submit, please try again",
       "otherInputPlaceholder": "Please specify",
       "ok": "OK",

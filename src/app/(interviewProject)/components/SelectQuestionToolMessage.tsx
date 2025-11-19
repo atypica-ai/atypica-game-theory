@@ -51,7 +51,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
   // Fetch question data when tool is invoked
   useEffect(() => {
     const fetchQuestionData = async () => {
-      if (!toolInvocation.input || questionData || !interviewSessionId) return; // Don't fetch if already loaded or no session ID
+      if (!toolInvocation.input || !interviewSessionId) return;
 
       const questionIndex =
         typeof toolInvocation.input.questionIndex === "string"
@@ -61,17 +61,17 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
       // Type narrowing for TypeScript
       if (typeof questionIndex !== "number" || !interviewSessionId) return;
 
+      // Start loading first, then reset data (prevents flash of error state)
       setIsLoadingQuestion(true);
+
       try {
         const result = await getQuestionData({ interviewSessionId, questionIndex });
-        if (result.success) {
-          setQuestionData(result.data);
-        } else {
-          console.error("Failed to fetch question data:", result.message);
-          toast.error(result.message || "Failed to load question");
+        if (!result.success) {
+          throw result;
         }
+        setQuestionData(result.data);
       } catch (error) {
-        console.error("Error fetching question data:", error);
+        console.error("Failed to load question:", error);
         toast.error("Failed to load question");
       } finally {
         setIsLoadingQuestion(false);
@@ -79,7 +79,8 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     };
 
     fetchQuestionData();
-  }, [toolInvocation.input, interviewSessionId, questionData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toolInvocation.input?.questionIndex, interviewSessionId]);
 
   // Extract question details from fetched data (not from toolInvocation.output anymore)
   const result = questionData;
@@ -172,11 +173,8 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
           plainText,
         },
       });
-
-      toast.success(t("submitSuccess"));
     } catch (error) {
       console.error("Failed to submit answer:", error);
-      toast.error(t("submitError"));
       setIsSubmitting(false);
     }
   }, [
@@ -184,7 +182,6 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     addToolResult,
     answer,
     questionType,
-    t,
     toolInvocation.toolCallId,
     result,
     questionText,
@@ -203,12 +200,18 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
 
     const field = formFields[0]; // We only have one field for selectQuestion
 
+    // In completed state, use userAnswer from output; otherwise use local state
+    const fieldValue =
+      isCompleted && toolInvocation.state === "output-available"
+        ? toolInvocation.output.userAnswer
+        : answer;
+
     switch (field.type) {
       case "text":
         return (
           <TextField
             field={field}
-            fieldValue={typeof answer === "string" ? answer : ""}
+            fieldValue={typeof fieldValue === "string" ? fieldValue : ""}
             isCompleted={isCompleted}
             isRequired={true}
             onUpdate={(fieldId, value) => setAnswer(value as string)}
@@ -219,7 +222,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
         return (
           <ChoiceField
             field={field}
-            fieldValue={answer}
+            fieldValue={fieldValue}
             isCompleted={isCompleted}
             isRequired={true}
             isBasicInfoForm={false}
@@ -240,7 +243,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
         return (
           <BooleanField
             field={field}
-            fieldValue={answer === "true"}
+            fieldValue={typeof fieldValue === "boolean" ? fieldValue : fieldValue === "true"}
             isCompleted={isCompleted}
             isRequired={true}
             onUpdate={(fieldId, value) => setAnswer(value?.toString() || "")}
@@ -254,27 +257,16 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
 
   // Show loading state while fetching question data
   if (isLoadingQuestion) {
-    return (
-      <div className="my-4 space-y-4 rounded-lg border bg-card p-4 shadow-sm">
-        <div className="flex items-center justify-center gap-2 text-muted-foreground">
-          <LoadingPulse />
-          <span>Loading question...</span>
-        </div>
-      </div>
-    );
+    return <LoadingPulse />;
   }
 
-  // Show error if no question data loaded
+  // Return nothing if still initializing (data not loaded yet but no error)
   if (!questionData) {
-    return (
-      <div className="my-4 space-y-4 rounded-lg border border-destructive bg-card p-4 shadow-sm">
-        <div className="text-center text-destructive">Failed to load question</div>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="my-4 space-y-4 rounded-lg border bg-card p-4 shadow-sm">
+    <div className="w-md max-w-full mx-auto my-4 space-y-4 rounded-lg border p-4">
       {/* Question Image */}
       {image && (
         <div className="relative aspect-video w-full overflow-hidden rounded-md">
@@ -314,14 +306,6 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
               </>
             )}
           </Button>
-        )}
-
-        {/* Completed State */}
-        {isCompleted && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Check className="h-4 w-4 text-green-600" />
-            <span>已完成</span>
-          </div>
         )}
       </div>
     </div>

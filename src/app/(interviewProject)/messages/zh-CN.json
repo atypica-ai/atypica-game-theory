@@ -254,8 +254,6 @@
       "formSubmitted": "表单已提交",
       "submit": "提交",
       "submitting": "提交中...",
-      "submitSuccess": "提交成功",
-      "submitError": "提交失败，请重试",
       "otherInputPlaceholder": "请输入其他内容",
       "ok": "确定",
       "continue": "继续",

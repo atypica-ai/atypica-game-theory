@@ -96,11 +96,9 @@ const LastAssistantMessagePart = <
     return (
       <>
         {lastPart2?.type === "text" && !isSystemMessage(lastPart2.text) && (
-          <TypewriterText
-            className="text-center text-sm text-muted-foreground font-normal mb-6"
-            id={`${lastAssistantMessage.id}-${lastPart1.toolCallId}`}
-            text={lastPart2.text}
-          />
+          <div className="text-center text-sm text-muted-foreground font-normal mb-6">
+            {lastPart2.text}
+          </div>
         )}
         {renderToolUIPart ? (
           renderToolUIPart(lastPart1)
@@ -248,7 +246,9 @@ export function FocusedInterviewChat<
       status === "streaming" ||
       status === "submitted" ||
       isProcessingTranscript ||
-      (lastPart && isToolOrDynamicToolUIPart(lastPart))
+      (lastPart &&
+        isToolOrDynamicToolUIPart(lastPart) &&
+        (lastPart.state === "input-available" || lastPart.state == "input-streaming"))
     );
   }, [status, isProcessingTranscript, lastAssistantMessage]);
 

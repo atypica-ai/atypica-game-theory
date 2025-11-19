@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
@@ -19,30 +20,30 @@ export const BooleanField: FC<FieldProps> = ({
         {field.label}
         {isRequired && !isCompleted && <span className="text-red-500 ml-1">*</span>}
       </label>
-      {isCompleted ? (
-        <div className="p-3 rounded-lg border text-sm">
-          {fieldValue === true ? t("yes") : fieldValue === false ? t("no") : t("notFilled")}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            variant={fieldValue === true ? "default" : "outline"}
-            onClick={() => field.id && onUpdate(field.id, true)}
-            className="flex items-center justify-between"
-          >
-            {t("yes")}
-            {fieldValue === true && <Check className="h-4 w-4" />}
-          </Button>
-          <Button
-            variant={fieldValue === false ? "default" : "outline"}
-            onClick={() => field.id && onUpdate(field.id, false)}
-            className="flex items-center justify-between"
-          >
-            {t("no")}
-            {fieldValue === false && <Check className="h-4 w-4" />}
-          </Button>
-        </div>
-      )}
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          variant={fieldValue === true ? "default" : "outline"}
+          onClick={isCompleted ? undefined : () => field.id && onUpdate(field.id, true)}
+          className={cn(
+            "flex items-center justify-between",
+            isCompleted && "pointer-events-none cursor-default"
+          )}
+        >
+          {t("yes")}
+          {fieldValue === true && <Check className="h-4 w-4" />}
+        </Button>
+        <Button
+          variant={fieldValue === false ? "default" : "outline"}
+          onClick={isCompleted ? undefined : () => field.id && onUpdate(field.id, false)}
+          className={cn(
+            "flex items-center justify-between",
+            isCompleted && "pointer-events-none cursor-default"
+          )}
+        >
+          {t("no")}
+          {fieldValue === false && <Check className="h-4 w-4" />}
+        </Button>
+      </div>
     </div>
   );
 };

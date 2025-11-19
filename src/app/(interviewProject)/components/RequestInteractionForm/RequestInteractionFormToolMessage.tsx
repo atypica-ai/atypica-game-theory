@@ -10,7 +10,7 @@ import { DeepPartial, ToolUIPart } from "ai";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback } from "react";
 import { toast } from "sonner";
 import { REQUIRED_FIELD_IDS, SINGLE_CHOICE_FIELD_IDS } from "./config";
 import { BooleanField, ChoiceField, TextField } from "./fields";
@@ -45,9 +45,6 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
 }) => {
   const t = useTranslations("InterviewProject.requestInteractionForm");
 
-  // Track current field index for step-by-step display
-  const [currentFieldIndex, setCurrentFieldIndex] = useState(0);
-
   // Form state management
   const {
     formResponses,
@@ -60,72 +57,6 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
   // Form validation and type detection
   const isFormValid = useFormValidation(toolInvocation, formResponses);
   const isBasicInfoForm = useFormType(toolInvocation);
-  // const choiceFieldsCount = useChoiceFieldsCount(isBasicInfoForm, toolInvocation);
-
-  // Check if current field is valid
-  const isCurrentFieldValid = useCallback(() => {
-    const fields = toolInvocation.input?.fields;
-    if (!fields || currentFieldIndex >= fields.length) return false;
-
-    const currentField = fields[currentFieldIndex];
-    if (!currentField?.id) return false;
-
-    const isRequired = REQUIRED_FIELD_IDS.has(currentField.id);
-    const fieldValue = formResponses[currentField.id];
-
-    // If field is required, check if it has a value
-    if (isRequired) {
-      if (currentField.type === "choice") {
-        // For choice fields, check if at least one option is selected
-        if (typeof fieldValue === "string") {
-          return fieldValue.length > 0;
-        }
-        if (Array.isArray(fieldValue)) {
-          if (fieldValue.length === 0) {
-            return false;
-          }
-
-          // Check minSelections and maxSelections for multiple-choice
-          const minSelections = currentField.minSelections;
-          const maxSelections = currentField.maxSelections;
-
-          if (minSelections && fieldValue.length < minSelections) {
-            return false;
-          }
-          if (maxSelections && fieldValue.length > maxSelections) {
-            return false;
-          }
-
-          return true;
-        }
-        return false;
-      }
-      return fieldValue !== undefined && fieldValue !== "";
-    }
-
-    // Optional fields are always valid
-    return true;
-  }, [toolInvocation.input?.fields, currentFieldIndex, formResponses]);
-
-  // Handle continue to next field
-  const handleContinue = useCallback(() => {
-    if (!isCurrentFieldValid()) {
-      toast.error(t("requiredFieldsError"));
-      return;
-    }
-
-    const fields = toolInvocation.input?.fields;
-    if (fields && currentFieldIndex < fields.length - 1) {
-      setCurrentFieldIndex(currentFieldIndex + 1);
-    }
-  }, [isCurrentFieldValid, currentFieldIndex, toolInvocation.input?.fields, t]);
-
-  // Handle go back to previous field
-  const handleBack = useCallback(() => {
-    if (currentFieldIndex > 0) {
-      setCurrentFieldIndex(currentFieldIndex - 1);
-    }
-  }, [currentFieldIndex]);
 
   const submitForm = useCallback(() => {
     if (toolInvocation.state === "input-available" && addToolResult) {
@@ -224,32 +155,44 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
   };
 
   const fields = toolInvocation.input?.fields;
-  const totalFields = fields?.length ?? 0;
-  const isLastField = currentFieldIndex === totalFields - 1;
-  const currentField = fields?.[currentFieldIndex];
 
   return (
-    <div className="w-full max-w-sm mx-auto">
-      {/*
-      <div className="mb-6">
-        <div className="text-lg sm:text-xl font-bold leading-tight text-center">
-          {toolInvocation.input?.prologue}
-        </div>
-      </div>
-      */}
-
+    <div className="w-md max-w-full mx-auto">
       <div className="space-y-6">
-        {(toolInvocation.state === "input-available" ||
-          toolInvocation.state === "input-streaming") &&
-        currentField ? (
-          <div className="space-y-6">
-            {/* Show field progress indicator */}
-            {totalFields > 1 && (
-              <div className="text-sm text-center text-muted-foreground mb-4">
-                {currentFieldIndex + 1} / {totalFields}
-              </div>
-            )}
+        {toolInvocation.state === "input-available" ||
+        toolInvocation.state === "input-streaming" ? (
+          !fields || fields.length === 0 ? (
+            <div className="flex items-center justify-center">
+              <LoadingPulse />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Display image if provided */}
+              {toolInvocation.input?.image &&
+                toolInvocation.input.image.objectUrl &&
+                toolInvocation.input.image.name &&
+                toolInvocation.input.image.mimeType && (
+                  <div className="rounded-lg overflow-hidden border">
+                    <Image
+                      src={proxiedObjectCdnUrl({
+                        name: toolInvocation.input.image.name,
+                        objectUrl: toolInvocation.input.image.objectUrl,
+                        mimeType: toolInvocation.input.image.mimeType,
+                      })}
+                      alt={toolInvocation.input.image.name}
+                      width={400}
+                      height={300}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                )}
 
+              {/* Render all fields */}
+              {fields.map((field) => renderField(field))}
+            </div>
+          )
+        ) : isFormCompleted ? (
+          <div className="space-y-6">
             {/* Display image if provided */}
             {toolInvocation.input?.image &&
               toolInvocation.input.image.objectUrl &&
@@ -270,8 +213,8 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
                 </div>
               )}
 
-            {/* Render only current field */}
-            {renderField(currentField)}
+            {/* Render all fields in read-only mode */}
+            {fields?.map((field) => renderField(field))}
           </div>
         ) : (
           <div className="flex items-center justify-center">
@@ -279,42 +222,20 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
           </div>
         )}
 
-        {/* Show Continue button for non-last fields */}
-        {!isFormCompleted && !isLastField && currentField && (
-          <div className="flex justify-between pt-4 border-t">
-            {currentFieldIndex > 0 && (
-              <Button variant="outline" onClick={handleBack} className="min-w-24">
-                {t("back")}
-              </Button>
-            )}
-            <Button
-              onClick={handleContinue}
-              disabled={!isCurrentFieldValid()}
-              className="min-w-24 ml-auto"
-            >
-              {t("continue")}
-            </Button>
-          </div>
-        )}
-
-        {/* Show Submit button for last field or single field forms */}
-        {!isFormCompleted && isLastField && currentField && (
-          <div className="flex justify-between pt-4 border-t">
-            {currentFieldIndex > 0 && (
-              <Button variant="outline" onClick={handleBack} className="min-w-24">
-                {t("back")}
-              </Button>
-            )}
+        {/* Submit button */}
+        {!isFormCompleted && toolInvocation.state === "input-available" && (
+          <div className="pt-4 border-t">
             <Button
               onClick={submitForm}
-              disabled={!isCurrentFieldValid() || !isFormValid}
-              className="min-w-24 ml-auto"
+              disabled={!isFormValid}
+              className="w-full"
             >
               {t("submitForm")}
             </Button>
           </div>
         )}
 
+        {/* Completed indicator */}
         {isFormCompleted && (
           <div className="flex items-center justify-center pt-4 border-t">
             <div className="flex items-center space-x-2 text-primary">

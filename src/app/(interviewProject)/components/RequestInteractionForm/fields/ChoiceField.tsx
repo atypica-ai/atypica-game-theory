@@ -70,7 +70,7 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
 
   // Handle option click
   const handleOptionClick = (option: string) => {
-    if (isCompleted || !field.id) return;
+    if (!field.id) return;
 
     if (isSingleChoice) {
       onSelectSingle(field.id, option);
@@ -129,9 +129,10 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
                 "data-[selected=true]:text-primary-foreground dark:data-[selected=true]:text-primary-foreground",
                 "bg-transparent dark:bg-transparent data-[selected=true]:border-transparent",
                 "data-[selected=true]:hover:bg-primary/90 dark:data-[selected=true]:hover:bg-primary/90",
+                isCompleted && "pointer-events-none cursor-default",
               )}
             >
-              {option}
+              <span className="truncate">{option}</span>
               {isSelected && <Check className="size-4" />}
             </Button>
           );
