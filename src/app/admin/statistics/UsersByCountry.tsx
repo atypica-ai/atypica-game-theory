@@ -15,10 +15,9 @@ import { fetchUsersByCountry, UsersByCountry as UsersByCountryType } from "./act
 
 interface UsersByCountryProps {
   dateRange: DateRange | undefined;
-  timezone: string;
 }
 
-export function UsersByCountry({ dateRange, timezone }: UsersByCountryProps) {
+export function UsersByCountry({ dateRange }: UsersByCountryProps) {
   const [data, setData] = useState<UsersByCountryType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +30,7 @@ export function UsersByCountry({ dateRange, timezone }: UsersByCountryProps) {
       setError(null);
 
       try {
-        const result = await fetchUsersByCountry(dateRange.from, dateRange.to, timezone);
+        const result = await fetchUsersByCountry(dateRange.from, dateRange.to);
 
         if (!result.success) {
           setError(result.message ?? "Failed to fetch users by country");
@@ -47,7 +46,7 @@ export function UsersByCountry({ dateRange, timezone }: UsersByCountryProps) {
     };
 
     loadData();
-  }, [dateRange, timezone]);
+  }, [dateRange]);
 
   if (isLoading) {
     return (

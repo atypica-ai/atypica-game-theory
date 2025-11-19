@@ -2,7 +2,6 @@
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
-import { UserProfileExtra, UserLastLogin } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnalystKind } from "@/prisma/types";
 
@@ -240,7 +239,6 @@ export type UsersByCountry = {
 export async function fetchUsersByCountry(
   startDate: Date,
   endDate: Date,
-  timezone: string = "UTC",
 ): Promise<ServerActionResult<UsersByCountry[]>> {
   await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
 
@@ -310,7 +308,6 @@ export type UsersBySource = {
 export async function fetchUsersBySource(
   startDate: Date,
   endDate: Date,
-  timezone: string = "UTC",
 ): Promise<ServerActionResult<UsersBySource[]>> {
   await checkAdminAuth([AdminPermission.VIEW_STATISTICS]);
 

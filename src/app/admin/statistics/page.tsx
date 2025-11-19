@@ -3,15 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { AnalystKind } from "@/prisma/types";
 import { addDays, format } from "date-fns";
@@ -20,17 +11,11 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { DailyStatistics, fetchDailyStatistics } from "./actions";
+import { DailyBreakdown } from "./DailyBreakdown";
+import { DailyTrends } from "./DailyTrends";
+import { StudiesByFeedback } from "./StudiesByFeedback";
+import { StudiesByKind } from "./StudiesByKind";
 import { UsersByCountry } from "./UsersByCountry";
 import { UsersBySource } from "./UsersBySource";
 
@@ -298,152 +283,26 @@ export default function StatisticsPage() {
         </CardContent>
       </Card>
 
-      {/* Trend Chart */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Daily Trends</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <Tabs defaultValue="users">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="payments">Payments</TabsTrigger>
-              <TabsTrigger value="studies">Studies</TabsTrigger>
-            </TabsList>
-            <TabsContent value="users">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip wrapperClassName="!border-border !bg-background !text-foreground" />
-                  <Legend />
-                  <Bar dataKey="Users" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </TabsContent>
-            <TabsContent value="payments">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip wrapperClassName="!border-border !bg-background !text-foreground" />
-                  <Legend />
-                  <Bar dataKey="Payments" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
-            </TabsContent>
-            <TabsContent value="studies">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip wrapperClassName="!border-border !bg-background !text-foreground" />
-                  <Legend />
-                  <Bar dataKey="Studies" fill="#ffc658" />
-                </BarChart>
-              </ResponsiveContainer>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* Study Breakdowns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Studies by Kind</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {Object.entries(totalStats.studiesByKind).map(([kind, count]) => (
-                <li
-                  key={kind}
-                  className="flex justify-between items-center text-sm p-2 rounded bg-muted/50"
-                >
-                  <span className="font-medium capitalize">{kind}</span>
-                  <span className="font-bold">{count.toLocaleString()}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Studies by Feedback</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li className="flex justify-between items-center text-sm p-2 rounded bg-green-100 dark:bg-green-900/30">
-                <span className="font-medium">👍 Useful</span>
-                <span className="font-bold">{totalStats.feedback.useful.toLocaleString()}</span>
-              </li>
-              <li className="flex justify-between items-center text-sm p-2 rounded bg-red-100 dark:bg-red-900/30">
-                <span className="font-medium">👎 Not Useful</span>
-                <span className="font-bold">{totalStats.feedback.not_useful.toLocaleString()}</span>
-              </li>
-              <li className="flex justify-between items-center text-sm p-2 rounded bg-gray-100 dark:bg-gray-700/30">
-                <span className="font-medium">💬 No Feedback</span>
-                <span className="font-bold">
-                  {totalStats.feedback.no_feedback.toLocaleString()}
-                </span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+      {/* Row 2: Daily Trends + Studies by Feedback (2:1 ratio) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+          <DailyTrends chartData={chartData} />
+        </div>
+        <div className="lg:col-span-1">
+          <StudiesByFeedback feedback={totalStats.feedback} />
+        </div>
       </div>
 
-      {/* Daily Data Table */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Daily Breakdown</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-auto max-h-[600px] rounded-lg border">
-            <Table>
-              <TableHeader className="sticky top-0 bg-background z-10">
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-center">New Users</TableHead>
-                  <TableHead className="text-center">Payments</TableHead>
-                  <TableHead className="text-center">Studies</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      Loading statistics...
-                    </TableCell>
-                  </TableRow>
-                ) : stats.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      No data available for this period.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  stats.map((day) => (
-                    <TableRow key={day.date}>
-                      <TableCell className="font-medium">{day.date}</TableCell>
-                      <TableCell className="text-center">{day.users.total}</TableCell>
-                      <TableCell className="text-center">{day.payments.total}</TableCell>
-                      <TableCell className="text-center">{day.studies.total}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Row 3: Users by Country + Users by Source */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <UsersByCountry dateRange={dateRange} />
+        <UsersBySource dateRange={dateRange} />
+      </div>
 
-      {/* User Statistics - Independent Queries */}
+      {/* Row 4: Daily Breakdown + Studies by Kind */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <UsersByCountry dateRange={dateRange} timezone={timezone} />
-        <UsersBySource dateRange={dateRange} timezone={timezone} />
+        <DailyBreakdown stats={stats} isLoading={isLoading} />
+        <StudiesByKind studiesByKind={totalStats.studiesByKind} />
       </div>
     </div>
   );
