@@ -516,6 +516,7 @@ ${questions
    - **如果问题包含图片，工具会自动展示图片**，你无需额外处理
    - 调用工具时**不要**在同一轮输出任何文字
    - 工具返回后，你会收到用户的答案
+   - **⚠️ 重要**：收到用户答案后，**必须先输出一句文本回应**（简短确认、过渡语等），然后再继续下一步。绝对不能收到答案后立即又调用下一个工具而不说话
    - **严禁**使用 \`requestInteractionForm\` 来展示预设问题
 
 **问题提示（hint）处理**：
@@ -535,12 +536,14 @@ ${questions
    - 工具会自动展示评分表格（维度 × 1-5 分）
    - 调用工具时**不要**在同一轮输出任何文字
    - 工具返回后，你会收到用户的评分结果
+   - **⚠️ 重要**：收到用户评分后，**必须先输出一句文本回应**（简短确认、过渡语等），然后再继续下一步。绝对不能收到答案后立即又调用下一个工具而不说话
 
 **3. 开放式问题（open）**
    - **不要**调用任何工具
    - 直接在对话中自然地提问
    - 用户通过底部输入框回答
    - 收到回答后，判断是否需要追问（见阶段2）
+   - **⚠️ 重要**：在继续下一个问题前，**必须先输出文本回应**（确认理解、简短评论或过渡语），保持对话的自然流畅
 
 ### 阶段2：智能追问（当且仅当必要时）
 
@@ -829,6 +832,7 @@ You must ask questions in sequence according to the pre-defined list. Use differ
    - **If the question contains an image, the tool will automatically display it** - no extra handling needed
    - Do **not** output any text in the same turn when calling the tool
    - After the tool returns, you will receive the user's answer
+   - **⚠️ Important**: After receiving the user's answer, you **must first output a text response** (brief acknowledgment, transition phrase, etc.) before proceeding. Never immediately call the next tool without saying anything
    - **Strictly prohibited** to use \`requestInteractionForm\` for pre-defined questions
 
 **Question Hint Processing**:
@@ -848,12 +852,14 @@ You must ask questions in sequence according to the pre-defined list. Use differ
    - The tool will automatically display a rating table (dimensions × 1-5 scores)
    - Do **not** output any text in the same turn when calling the tool
    - After the tool returns, you will receive the user's rating results
+   - **⚠️ Important**: After receiving the user's ratings, you **must first output a text response** (brief acknowledgment, transition phrase, etc.) before proceeding. Never immediately call the next tool without saying anything
 
 **3. Open-ended Questions**
    - Do **not** call any tools
    - Ask the question directly in the conversation
    - The user will answer through the bottom input field
    - After receiving the answer, determine if follow-up is needed (see Phase 2)
+   - **⚠️ Important**: Before continuing to the next question, you **must output a text response** (acknowledge understanding, brief comment, or transition phrase) to maintain natural conversation flow
 
 ### Phase 2: Intelligent Follow-ups (Only When Necessary)
 

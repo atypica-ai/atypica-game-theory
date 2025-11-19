@@ -17,6 +17,7 @@ export const InterviewToolUIPartDisplay = ({
     case `tool-${InterviewToolName.requestInteractionForm}`:
       return (
         <RequestInteractionFormToolMessage
+          key={toolUIPart.toolCallId}
           toolInvocation={toolUIPart}
           addToolResult={addToolResult}
         />
@@ -24,13 +25,14 @@ export const InterviewToolUIPartDisplay = ({
     case `tool-${InterviewToolName.selectQuestion}`:
       return (
         <SelectQuestionToolMessage
+          key={toolUIPart.toolCallId}
           toolInvocation={toolUIPart}
           addToolResult={addToolResult}
           interviewSessionId={interviewSessionId}
         />
       );
     case `tool-${InterviewToolName.endInterview}`:
-      return <InterviewCompleteMessage toolInvocation={toolUIPart} />;
+      return <InterviewCompleteMessage key={toolUIPart.toolCallId} toolInvocation={toolUIPart} />;
     default:
       return null;
   }

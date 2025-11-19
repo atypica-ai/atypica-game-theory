@@ -21,9 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +35,7 @@ import { rootLogger } from "@/lib/logging";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { Info, Shield, UsersIcon } from "lucide-react";
+import { Info, Shield } from "lucide-react";
 import { Locale, useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -69,7 +67,6 @@ export function InterviewSessionChatClient({
 
   const t = useTranslations("InterviewProject.sessionChat");
   const tDetails = useTranslations("InterviewProject.projectDetails");
-  const tSessionViewer = useTranslations("InterviewProject.sessionViewer");
   const tLanguage = useTranslations("InterviewProject.languageSwitcher");
 
   // Handle language change initiation
@@ -195,8 +192,13 @@ export function InterviewSessionChatClient({
       return { completed: 0, total: 0, percentage: 0 };
     }
 
-    // If interview is completed, show 100% progress
-    if (interviewState === "summary") {
+    // Check if endInterview tool has been called (any state)
+    const hasEndInterviewCall = messages.some((message) =>
+      message.parts?.some((part) => part.type === `tool-${InterviewToolName.endInterview}`),
+    );
+
+    // If interview is ending or completed, show 100% progress
+    if (hasEndInterviewCall) {
       return {
         completed: totalQuestions,
         total: totalQuestions,
@@ -220,7 +222,7 @@ export function InterviewSessionChatClient({
       total: totalQuestions,
       percentage: (completedQuestions / totalQuestions) * 100,
     };
-  }, [messages, questions.length, interviewState]);
+  }, [messages, questions.length]);
 
   // Automatically start the conversation when the component mounts.
   const requestSentRef = useRef(false);
@@ -253,23 +255,6 @@ export function InterviewSessionChatClient({
           <DialogDescription>{t("detailsDescription")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{tDetails("projectBrief")}</CardTitle>
-                <Badge variant="default" className="text-xs">
-                  <UsersIcon className="h-3 w-3 mr-1" />
-                  {tSessionViewer("humanInterview")}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                {project.brief}
-              </p>
-            </CardContent>
-          </Card>
-
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <h4 className="font-medium text-sm">{tDetails("researcher")}</h4>
