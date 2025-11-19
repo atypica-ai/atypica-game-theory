@@ -11,6 +11,18 @@ const imageAttachmentSchema = z.object({
     .max(10 * 1024 * 1024), // 10MB max
 });
 
+// Option schema - supports both old format (object) and new format (string)
+// Old format: { text: string, endInterview?: boolean }
+// New format: string
+// Always transforms to string array for output
+const optionSchema = z.union([
+  z.string().min(1, "Option cannot be empty"),
+  z.object({
+    text: z.string().min(1, "Option text cannot be empty"),
+    endInterview: z.boolean().optional(),
+  }),
+]);
+
 // Question schema with strict validation
 // Users create questions via UI. questionType is optional (defaults to "open" in frontend)
 // but when specified as choice type, options are required
@@ -27,10 +39,13 @@ export const questionSchema = z
         "Natural language instructions for AI to handle special behaviors, e.g., 'If user selects 其他 option, show input field for details'",
       ),
     options: z
-      .array(z.string().min(1, "Option cannot be empty"))
+      .array(optionSchema)
       .min(2, "Choice questions must have at least 2 options")
       .max(30, "Choice questions can have at most 30 options")
-      .optional(),
+      .optional()
+      .transform((opts) =>
+        opts?.map((opt) => (typeof opt === "string" ? opt : opt.text)),
+      ),
   })
   .superRefine((data, ctx) => {
     // If questionType is not specified, treat as "open" question (default behavior)
@@ -171,6 +186,18 @@ export const selectQuestionInputSchema = z.object({
     .describe(
       "The 1-based index of the question to select (e.g., 1 for the first question, 2 for the second)",
     ),
+  optionsMetadata: z
+    .array(
+      z.object({
+        text: z.string().describe("The option text"),
+        endInterview: z.boolean().optional().describe("If true, end interview when this option is selected"),
+        needsInput: z.boolean().optional().describe("If true, show input field when this option is selected"),
+      }),
+    )
+    .optional()
+    .describe(
+      "Metadata for each option. Set based on the question's hint field. Required for choice questions with hints.",
+    ),
 });
 
 export const selectQuestionOutputSchema = z.object({
@@ -187,14 +214,6 @@ export const selectQuestionOutputSchema = z.object({
         type: z.enum(["text", "choice", "boolean"]),
         options: z.array(z.string()).optional(),
         multipleChoice: z.boolean().optional(),
-        otherOption: z
-          .object({
-            enabled: z.boolean(),
-            label: z.string(),
-            placeholder: z.string().optional(),
-            required: z.boolean().optional(),
-          })
-          .optional(),
       }),
     )
     .optional(),

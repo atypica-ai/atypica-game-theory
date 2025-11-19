@@ -448,6 +448,7 @@ export const interviewAgentSystemPrompt = ({
     questionType?: "open" | "single-choice" | "multiple-choice" | "rating";
     options?: Array<string | { text: string; endInterview?: boolean }>;
     dimensions?: string[];
+    hint?: string;
   }>;
   questionTypePreference?: "open-ended" | "multiple-choice" | "mixed";
   isPersonaInterview: boolean;
@@ -481,20 +482,23 @@ ${questions
             ? "rating"
             : "open";
 
-    // Process options to show which ones end the interview
+    // Process options
     let optionsText = "";
     if (q.options && q.options.length > 0) {
       const optionsList = q.options.map((opt) => {
         if (typeof opt === "string") {
           return opt;
         } else {
-          return opt.endInterview ? `${opt.text} [终止访谈]` : opt.text;
+          return opt.text;
         }
       });
       optionsText = `\n   选项: ${optionsList.join(", ")}`;
     }
 
-    return `${index}. [${type}] ${q.text}${optionsText}`;
+    // Include hint if present
+    const hintText = q.hint ? `\n   提示: ${q.hint}` : "";
+
+    return `${index}. [${type}] ${q.text}${optionsText}${hintText}`;
   })
   .join("\n")}
 
@@ -516,12 +520,18 @@ ${questions
 
 **问题提示（hint）处理**：
    - 每个问题可能包含 \`hint\` 字段，用自然语言描述特殊处理行为
-   - 当你读取问题时，需要解析 hint 并在返回的 \`optionsMetadata\` 中设置相应标记：
-     - 如果 hint 指明某选项需要用户输入（如"其他"选项），在该选项上设置 \`needsInput: true\`
-     - 如果 hint 指明某选项需要终止访谈，在该选项上设置 \`endInterview: true\`
+   - **你必须理解 hint 的含义**，并在调用 selectQuestion 工具时，根据 hint 设置正确的 \`optionsMetadata\`
+   - 支持的 optionsMetadata 标记：
+     - \`needsInput: true\` - 用户选择该选项后需要弹出输入框填写详细内容
+     - \`endInterview: true\` - 用户选择该选项后立即终止访谈
    - **示例**：
      - hint: "选择'其他，请注明'时需要用户输入具体内容"
-     - 对应 optionsMetadata: \`[{ text: "选项A" }, { text: "其他，请注明", needsInput: true }]\`
+       → optionsMetadata: \`[{ text: "选项A" }, { text: "其他，请注明", needsInput: true }]\`
+     - hint: "选择'不符合条件'则终止访谈"
+       → optionsMetadata: \`[{ text: "符合" }, { text: "不符合条件", endInterview: true }]\`
+     - hint: "选择'其他'需要输入，选择'没有购买经历'则终止"
+       → optionsMetadata: \`[{ text: "线上" }, { text: "其他", needsInput: true }, { text: "没有购买经历", endInterview: true }]\`
+   - 如果问题没有 hint，则所有选项的 optionsMetadata 只需包含 \`text\` 字段
 
 **2. 评分题（rating）**
    - **必须**调用 \`selectQuestion({ questionIndex: n })\` 工具
@@ -761,20 +771,23 @@ ${questions
             ? "rating"
             : "open";
 
-    // Process options to show which ones end the interview
+    // Process options
     let optionsText = "";
     if (q.options && q.options.length > 0) {
       const optionsList = q.options.map((opt) => {
         if (typeof opt === "string") {
           return opt;
         } else {
-          return opt.endInterview ? `${opt.text} [END INTERVIEW]` : opt.text;
+          return opt.text;
         }
       });
       optionsText = `\n   Options: ${optionsList.join(", ")}`;
     }
 
-    return `${index}. [${type}] ${q.text}${optionsText}`;
+    // Include hint if present
+    const hintText = q.hint ? `\n   Hint: ${q.hint}` : "";
+
+    return `${index}. [${type}] ${q.text}${optionsText}${hintText}`;
   })
   .join("\n")}
 
@@ -796,12 +809,18 @@ You must ask questions in sequence according to the pre-defined list. Use differ
 
 **Question Hint Processing**:
    - Each question may contain a \`hint\` field with natural language instructions for special handling
-   - When reading a question, parse the hint and set corresponding markers in the returned \`optionsMetadata\`:
-     - If hint indicates an option needs user input (e.g., "Other" option), set \`needsInput: true\` on that option
-     - If hint indicates an option should end the interview, set \`endInterview: true\` on that option
-   - **Example**:
+   - **You must understand the hint's meaning** and set the correct \`optionsMetadata\` when calling the selectQuestion tool
+   - Supported optionsMetadata markers:
+     - \`needsInput: true\` - Show an input field for the user to fill in details after selecting this option
+     - \`endInterview: true\` - End the interview immediately after the user selects this option
+   - **Examples**:
      - hint: "Show input field when 'Other, please specify' is selected"
-     - Corresponding optionsMetadata: \`[{ text: "Option A" }, { text: "Other, please specify", needsInput: true }]\`
+       → optionsMetadata: \`[{ text: "Option A" }, { text: "Other, please specify", needsInput: true }]\`
+     - hint: "End interview if 'Not qualified' is selected"
+       → optionsMetadata: \`[{ text: "Qualified" }, { text: "Not qualified", endInterview: true }]\`
+     - hint: "Need input for 'Other', end interview for 'No purchase history'"
+       → optionsMetadata: \`[{ text: "Online" }, { text: "Other", needsInput: true }, { text: "No purchase history", endInterview: true }]\`
+   - If a question has no hint, all options in optionsMetadata only need the \`text\` field
 
 **2. Rating Questions**
    - **Must** call \`selectQuestion({ questionIndex: n })\` tool

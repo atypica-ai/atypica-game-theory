@@ -1425,48 +1425,12 @@ export async function getQuestionData({
       optionsArray = [];
       optionsMetadata = [];
 
-      // Parse hint to determine which options need input
-      const hint = question.hint || "";
-      const needsInputKeywords = ["输入", "填写", "说明", "specify", "input", "fill"];
-
-      // Cast options to union type for backward compatibility with old format
-      const options = question.options as Array<
-        string | { text: string; endInterview?: boolean }
-      >;
-      for (const opt of options) {
-        let text: string;
-        let endInterview: boolean | undefined;
-
-        if (typeof opt === "string") {
-          text = opt;
-          endInterview = undefined;
-        } else {
-          text = opt.text;
-          endInterview = opt.endInterview;
-        }
-
-        // Clean display text by removing any [终止访谈] or [END INTERVIEW] markers
-        const cleanText = text
-          .replace(/\s*\[终止访谈\]\s*$/, "")
-          .replace(/\s*\[END INTERVIEW\]\s*$/, "")
-          .trim();
-
-        // Check if this option needs input based on hint
-        let needsInput: boolean | undefined;
-        if (hint) {
-          // Check if hint mentions this option and contains input-related keywords
-          const hintLower = hint.toLowerCase();
-          const textLower = cleanText.toLowerCase();
-          if (
-            hintLower.includes(textLower) &&
-            needsInputKeywords.some((keyword) => hintLower.includes(keyword))
-          ) {
-            needsInput = true;
-          }
-        }
-
-        optionsArray.push(cleanText);
-        optionsMetadata.push({ text: cleanText, endInterview, needsInput });
+      // Options are now always strings after schema transform
+      for (const opt of question.options) {
+        const text = typeof opt === "string" ? opt : opt;
+        optionsArray.push(text);
+        // Only include text in metadata - AI will set needsInput/endInterview based on hint
+        optionsMetadata.push({ text });
       }
     }
 

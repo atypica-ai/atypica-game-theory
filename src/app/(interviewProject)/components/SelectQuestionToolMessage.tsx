@@ -44,12 +44,6 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
       type: "text" | "choice" | "boolean";
       options?: string[];
       multipleChoice?: boolean;
-      otherOption?: {
-        enabled: boolean;
-        label: string;
-        placeholder?: string;
-        required?: boolean;
-      };
     }>;
     optionsMetadata?: Array<{ text: string; endInterview?: boolean; needsInput?: boolean }>;
   } | null>(null);
@@ -94,7 +88,26 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
   const options = useMemo(() => result?.options || [], [result?.options]);
   const image = result?.image;
   const formFields = useMemo(() => result?.formFields || [], [result?.formFields]);
-  const optionsMetadata = useMemo(() => result?.optionsMetadata || [], [result?.optionsMetadata]);
+
+  // Use AI-provided optionsMetadata if available, otherwise fall back to server data
+  const aiProvidedMetadata = toolInvocation.input?.optionsMetadata;
+  const optionsMetadata = useMemo(() => {
+    // Filter and normalize AI-provided metadata
+    if (aiProvidedMetadata && Array.isArray(aiProvidedMetadata)) {
+      const normalized: Array<{ text: string; endInterview?: boolean; needsInput?: boolean }> = [];
+      for (const item of aiProvidedMetadata) {
+        if (item && item.text) {
+          normalized.push({
+            text: item.text,
+            endInterview: item.endInterview,
+            needsInput: item.needsInput,
+          });
+        }
+      }
+      return normalized;
+    }
+    return result?.optionsMetadata || [];
+  }, [aiProvidedMetadata, result?.optionsMetadata]);
 
   // Check if form has been submitted
   const isCompleted = toolInvocation.state === "output-available";
