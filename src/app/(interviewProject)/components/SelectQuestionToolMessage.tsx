@@ -45,7 +45,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
       options?: string[];
       multipleChoice?: boolean;
     }>;
-    optionsMetadata?: Array<{ text: string; endInterview?: boolean; needsInput?: boolean }>;
+    optionsMetadata?: Array<{ text: string; endInterview?: boolean }>;
   } | null>(null);
 
   // Fetch question data when tool is invoked
@@ -94,13 +94,12 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
   const optionsMetadata = useMemo(() => {
     // Filter and normalize AI-provided metadata
     if (aiProvidedMetadata && Array.isArray(aiProvidedMetadata)) {
-      const normalized: Array<{ text: string; endInterview?: boolean; needsInput?: boolean }> = [];
+      const normalized: Array<{ text: string; endInterview?: boolean }> = [];
       for (const item of aiProvidedMetadata) {
         if (item && item.text) {
           normalized.push({
             text: item.text,
             endInterview: item.endInterview,
-            needsInput: item.needsInput,
           });
         }
       }

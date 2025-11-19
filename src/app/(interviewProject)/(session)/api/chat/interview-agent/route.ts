@@ -18,7 +18,7 @@ import { detectInputLanguage } from "@/lib/textUtils";
 import { InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { generateId, ModelMessage, smoothStream, stepCountIs, streamText } from "ai";
+import { generateId, ModelMessage, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { after, NextResponse } from "next/server";
 
@@ -194,7 +194,7 @@ export async function POST(req: Request) {
   const questions = sessionExtra.questions || project.extra?.questions;
 
   // Debug: Log questions to verify data
-  chatLogger.info({
+  chatLogger.debug({
     msg: "Interview questions data",
     hasSessionQuestions: !!sessionExtra.questions,
     hasProjectQuestions: !!project.extra?.questions,
@@ -267,10 +267,10 @@ export async function POST(req: Request) {
 
     stopWhen: stepCountIs(1),
 
-    experimental_transform: smoothStream({
-      delayInMs: 30,
-      chunking: /[\u4E00-\u9FFF]|\S+\s+/,
-    }),
+    // experimental_transform: smoothStream({
+    //   delayInMs: 30,
+    //   chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+    // }),
 
     abortSignal: mergedAbortSignal,
 

@@ -1,10 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FC, useState } from "react";
+import { FC } from "react";
 import { MULTIPLE_CHOICE_STYLE } from "../config";
 import type { ChoiceFieldProps } from "../types";
 
@@ -17,23 +16,8 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
   isSingleChoice,
   onSelectSingle,
   onToggleMultiple,
-  optionsMetadata,
 }) => {
   const t = useTranslations("InterviewProject.requestInteractionForm");
-
-  // Track which option is selected that needs input, and its input value
-  const [selectedNeedsInputOption, setSelectedNeedsInputOption] = useState<string | null>(null);
-  const [inputValue, setInputValue] = useState("");
-
-  // Helper to check if an option needs input based on optionsMetadata
-  const optionNeedsInput = (optionText: string): boolean => {
-    if (!optionsMetadata) return false;
-    const meta = optionsMetadata.find((m) => m.text === optionText);
-    return meta?.needsInput === true;
-  };
-
-  // Get placeholder text for input (use default)
-  const inputPlaceholder = t("otherInputPlaceholder");
 
   // Determine grid layout
   const gridLayout = (() => {
@@ -84,69 +68,14 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
     return null;
   })();
 
-  // Handle option click - check if it needs input
+  // Handle option click
   const handleOptionClick = (option: string) => {
     if (isCompleted || !field.id) return;
 
-    const needsInput = optionNeedsInput(option);
-
     if (isSingleChoice) {
-      if (needsInput) {
-        // Select the option and show input field
-        setSelectedNeedsInputOption(option);
-        setInputValue("");
-        onSelectSingle(field.id, option);
-      } else {
-        // Regular option - clear any input state
-        setSelectedNeedsInputOption(null);
-        setInputValue("");
-        onSelectSingle(field.id, option);
-      }
+      onSelectSingle(field.id, option);
     } else {
-      // Multiple choice
-      if (needsInput) {
-        // Toggle the needsInput option
-        if (selectedNeedsInputOption === option) {
-          // Deselect
-          setSelectedNeedsInputOption(null);
-          setInputValue("");
-          onToggleMultiple(field.id, option);
-        } else {
-          // Select
-          setSelectedNeedsInputOption(option);
-          setInputValue("");
-          onToggleMultiple(field.id, option);
-        }
-      } else {
-        // Regular option
-        onToggleMultiple(field.id, option);
-      }
-    }
-  };
-
-  // Handle input change for needsInput option
-  const handleInputChange = (value: string) => {
-    setInputValue(value);
-    if (!field.id || !selectedNeedsInputOption) return;
-
-    // Format: "选项文本：用户输入"
-    const formattedValue = value.trim()
-      ? `${selectedNeedsInputOption}：${value}`
-      : selectedNeedsInputOption;
-
-    if (isSingleChoice) {
-      onSelectSingle(field.id, formattedValue);
-    } else {
-      // For multiple choice, update the array
-      const currentValues = Array.isArray(fieldValue) ? fieldValue : [];
-      // Remove old values for this option
-      const filteredValues = currentValues.filter(
-        (v) =>
-          v !== selectedNeedsInputOption && !v.startsWith(`${selectedNeedsInputOption}：`),
-      );
-      // Add the new formatted value
-      const newValues = [...filteredValues, formattedValue];
-      onSelectSingle(field.id, newValues);
+      onToggleMultiple(field.id, option);
     }
   };
 
@@ -182,49 +111,29 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
       <div className={cn("grid gap-2", gridLayout)}>
         {options.map((option, index) => {
           if (!option) return null;
-          const needsInput = optionNeedsInput(option);
           const isSelected = isSingleChoice
-            ? needsInput
-              ? selectedNeedsInputOption === option ||
-                (typeof fieldValue === "string" && fieldValue.startsWith(`${option}：`))
-              : fieldValue === option
+            ? fieldValue === option
             : Array.isArray(fieldValue) && option
-              ? needsInput
-                ? selectedNeedsInputOption === option ||
-                  fieldValue.some((v) => v === option || v.startsWith(`${option}：`))
-                : fieldValue.includes(option)
+              ? fieldValue.includes(option)
               : fieldValue === option;
 
           return (
-            <div key={index} className="space-y-2">
-              <Button
-                variant="outline"
-                data-selected={isSelected}
-                onClick={isCompleted ? undefined : () => handleOptionClick(option)}
-                className={cn(
-                  "flex items-center justify-between w-full",
-                  "data-[selected=true]:bg-primary dark:data-[selected=true]:bg-primary",
-                  "data-[selected=true]:text-primary-foreground dark:data-[selected=true]:text-primary-foreground",
-                  "bg-transparent dark:bg-transparent data-[selected=true]:border-transparent",
-                  "data-[selected=true]:hover:bg-primary/90 dark:data-[selected=true]:hover:bg-primary/90",
-                )}
-              >
-                {option}
-                {isSelected && <Check className="size-4" />}
-              </Button>
-
-              {/* Show input field when this option needs input and is selected */}
-              {needsInput && selectedNeedsInputOption === option && !isCompleted && (
-                <Input
-                  type="text"
-                  placeholder={inputPlaceholder}
-                  value={inputValue}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  className="w-full"
-                  autoFocus
-                />
+            <Button
+              key={index}
+              variant="outline"
+              data-selected={isSelected}
+              onClick={isCompleted ? undefined : () => handleOptionClick(option)}
+              className={cn(
+                "flex items-center justify-between w-full",
+                "data-[selected=true]:bg-primary dark:data-[selected=true]:bg-primary",
+                "data-[selected=true]:text-primary-foreground dark:data-[selected=true]:text-primary-foreground",
+                "bg-transparent dark:bg-transparent data-[selected=true]:border-transparent",
+                "data-[selected=true]:hover:bg-primary/90 dark:data-[selected=true]:hover:bg-primary/90",
               )}
-            </div>
+            >
+              {option}
+              {isSelected && <Check className="size-4" />}
+            </Button>
           );
         })}
       </div>

@@ -522,15 +522,12 @@ ${questions
    - 每个问题可能包含 \`hint\` 字段，用自然语言描述特殊处理行为
    - **你必须理解 hint 的含义**，并在调用 selectQuestion 工具时，根据 hint 设置正确的 \`optionsMetadata\`
    - 支持的 optionsMetadata 标记：
-     - \`needsInput: true\` - 用户选择该选项后需要弹出输入框填写详细内容
      - \`endInterview: true\` - 用户选择该选项后立即终止访谈
    - **示例**：
-     - hint: "选择'其他，请注明'时需要用户输入具体内容"
-       → optionsMetadata: \`[{ text: "选项A" }, { text: "其他，请注明", needsInput: true }]\`
      - hint: "选择'不符合条件'则终止访谈"
        → optionsMetadata: \`[{ text: "符合" }, { text: "不符合条件", endInterview: true }]\`
-     - hint: "选择'其他'需要输入，选择'没有购买经历'则终止"
-       → optionsMetadata: \`[{ text: "线上" }, { text: "其他", needsInput: true }, { text: "没有购买经历", endInterview: true }]\`
+     - hint: "选择'没有购买经历'则终止访谈"
+       → optionsMetadata: \`[{ text: "线上" }, { text: "线下" }, { text: "没有购买经历", endInterview: true }]\`
    - 如果问题没有 hint，则所有选项的 optionsMetadata 只需包含 \`text\` 字段
 
 **2. 评分题（rating）**
@@ -669,8 +666,7 @@ ${questions
 2. 严格按照预设问题顺序提问（除非跳转规则要求跳过）
 3. 每个问题只问一次，不要重复
 4. 选择题/评分题必须使用 \`selectQuestion\` 工具
-5. "其他"选项必须追问具体内容
-6. 遵守选项的 [终止访谈] 标记
+5. 遵守选项的 [终止访谈] 标记
 
 ❌ **禁止做**：
 - 改写或扩写预设问题的内容
@@ -811,15 +807,12 @@ You must ask questions in sequence according to the pre-defined list. Use differ
    - Each question may contain a \`hint\` field with natural language instructions for special handling
    - **You must understand the hint's meaning** and set the correct \`optionsMetadata\` when calling the selectQuestion tool
    - Supported optionsMetadata markers:
-     - \`needsInput: true\` - Show an input field for the user to fill in details after selecting this option
      - \`endInterview: true\` - End the interview immediately after the user selects this option
    - **Examples**:
-     - hint: "Show input field when 'Other, please specify' is selected"
-       → optionsMetadata: \`[{ text: "Option A" }, { text: "Other, please specify", needsInput: true }]\`
      - hint: "End interview if 'Not qualified' is selected"
        → optionsMetadata: \`[{ text: "Qualified" }, { text: "Not qualified", endInterview: true }]\`
-     - hint: "Need input for 'Other', end interview for 'No purchase history'"
-       → optionsMetadata: \`[{ text: "Online" }, { text: "Other", needsInput: true }, { text: "No purchase history", endInterview: true }]\`
+     - hint: "End interview for 'No purchase history'"
+       → optionsMetadata: \`[{ text: "Online" }, { text: "Offline" }, { text: "No purchase history", endInterview: true }]\`
    - If a question has no hint, all options in optionsMetadata only need the \`text\` field
 
 **2. Rating Questions**

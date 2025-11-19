@@ -1374,12 +1374,6 @@ export async function getQuestionData({
       type: "text" | "choice" | "boolean";
       options?: string[];
       multipleChoice?: boolean;
-      otherOption?: {
-        enabled: boolean;
-        label: string;
-        placeholder?: string;
-        required?: boolean;
-      };
     }>;
     optionsMetadata?: Array<{ text: string; endInterview?: boolean }>;
   }>
@@ -1418,7 +1412,7 @@ export async function getQuestionData({
     // Process options to separate text and metadata
     let optionsArray: string[] | undefined;
     let optionsMetadata:
-      | Array<{ text: string; endInterview?: boolean; needsInput?: boolean }>
+      | Array<{ text: string; endInterview?: boolean }>
       | undefined;
 
     if (question.options && question.options.length > 0) {
@@ -1429,7 +1423,7 @@ export async function getQuestionData({
       for (const opt of question.options) {
         const text = typeof opt === "string" ? opt : opt;
         optionsArray.push(text);
-        // Only include text in metadata - AI will set needsInput/endInterview based on hint
+        // Only include text in metadata - AI will set endInterview based on hint
         optionsMetadata.push({ text });
       }
     }

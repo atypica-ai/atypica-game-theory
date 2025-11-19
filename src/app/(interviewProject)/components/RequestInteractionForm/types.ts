@@ -24,5 +24,5 @@ export interface ChoiceFieldProps {
   onToggleMultiple: (fieldId: string, option: string) => void;
   onSubmit?: () => void;
   choiceFieldsCount?: number;
-  optionsMetadata?: Array<{ text: string; endInterview?: boolean; needsInput?: boolean }>;
+  optionsMetadata?: Array<{ text: string; endInterview?: boolean }>;
 }

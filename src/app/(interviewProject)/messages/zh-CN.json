@@ -325,12 +325,6 @@
       "imageTooLarge": "图片大小超过限制（最大 10MB）",
       "imageUploaded": "图片上传成功",
       "imageUploadFailed": "图片上传失败，请重试",
-      "enableOtherOption": "启用\"其他\"选项",
-      "otherOptionLabel": "标签文字",
-      "otherOptionLabelHint": "显示给用户的选项文字，例如\"其他\"、\"其他请说明\"等",
-      "otherOptionPlaceholder": "输入提示",
-      "otherOptionPlaceholderHint": "用户选择此选项后输入框的提示文字",
-      "otherOptionRequired": "必须填写说明",
       "hint": "AI 提示",
       "hintPlaceholder": "例如：选择\"其他\"选项时需要用户输入具体内容；选择\"不感兴趣\"时终止访谈",
       "hintDescription": "用自然语言描述 AI 处理此问题的特殊行为，如弹出输入框、跳题、终止访谈等"

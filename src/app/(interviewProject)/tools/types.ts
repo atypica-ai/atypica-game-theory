@@ -191,7 +191,6 @@ export const selectQuestionInputSchema = z.object({
       z.object({
         text: z.string().describe("The option text"),
         endInterview: z.boolean().optional().describe("If true, end interview when this option is selected"),
-        needsInput: z.boolean().optional().describe("If true, show input field when this option is selected"),
       }),
     )
     .optional()
@@ -222,7 +221,6 @@ export const selectQuestionOutputSchema = z.object({
       z.object({
         text: z.string(),
         endInterview: z.boolean().optional(),
-        needsInput: z.boolean().optional(),
       }),
     )
     .optional(),

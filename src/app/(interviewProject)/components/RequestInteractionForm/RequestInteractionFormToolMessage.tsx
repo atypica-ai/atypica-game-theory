@@ -78,18 +78,10 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
       if (currentField.type === "choice") {
         // For choice fields, check if at least one option is selected
         if (typeof fieldValue === "string") {
-          // If value is exactly "其他" without any text, it's invalid
-          if (fieldValue === "其他") {
-            return false;
-          }
           return fieldValue.length > 0;
         }
         if (Array.isArray(fieldValue)) {
-          // Check if array has values and if "其他" is selected, it must have text input
           if (fieldValue.length === 0) {
-            return false;
-          }
-          if (fieldValue.includes("其他") && !fieldValue.some((v) => v.startsWith("其他："))) {
             return false;
           }
 
