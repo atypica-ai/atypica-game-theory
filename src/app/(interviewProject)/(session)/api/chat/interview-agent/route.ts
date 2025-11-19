@@ -28,6 +28,7 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
     ">=1": false,
     ">=8": false,
     ">=16": false,
+    ">=32": false,
   };
   const cachedCoreMessages = coreMessages.map((message, index) => {
     const providerOptions = { bedrock: { cachePoint: { type: "default" } } };
@@ -41,6 +42,10 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
     }
     if (message.role === "assistant" && index >= 16 && !checkpoints[">=16"]) {
       checkpoints[">=16"] = true;
+      return { ...message, providerOptions };
+    }
+    if (message.role === "assistant" && index >= 32 && !checkpoints[">=32"]) {
+      checkpoints[">=32"] = true;
       return { ...message, providerOptions };
     }
     return { ...message };
