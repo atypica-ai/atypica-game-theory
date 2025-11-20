@@ -83,7 +83,7 @@ export const webSearchTool = ({
         return {
           results: [],
           plainText:
-            "The webSearch tool can only be used once before the saveAnalyst tool is called. Please save your analyst topic and use planStudy to plan the searches first, then you can continue web searching.",
+            "The webSearch tool can only be used once before the planStudy tool is called. Please save your analyst topic and use planStudy to plan the searches first, then you can continue web searching.",
         };
       }
       if ((toolUseCount[ToolName.webSearch] ?? 0) >= 3) {
