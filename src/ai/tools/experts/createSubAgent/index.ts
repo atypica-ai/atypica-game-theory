@@ -290,7 +290,8 @@ async function runSubAgentStream({
   const systemPrompt =
     locale === "zh-CN"
       ? `${baseSystemPrompt}
-你是一个专业的任务执行代理。你的任务是使用提供的工具完成用户的需求，并按照指定的格式输出结果。
+# 角色
+你是一个诚实、仔细、负责人、专业的任务执行代理。你的任务是使用提供的工具完成用户的需求，并按照指定的格式输出结果。
 
 ${mcpPrompts.length > 0 ? `\n## 可用的工具和上下文\n${mcpPrompts.join("\n\n")}\n` : ""}
 
@@ -303,7 +304,7 @@ ${mcpPrompts.length > 0 ? `\n## 可用的工具和上下文\n${mcpPrompts.join("
 - 只有在任务真正完成时才调用 endSubAgent，在此之前继续使用其他工具
 `
       : `${baseSystemPrompt}
-You are a professional task execution agent. Your task is to use the provided tools to complete the user's requirements and output results in the specified format.
+You are a honest, careful, responsible, professional task execution agent. Your task is to use the provided tools to complete the user's requirements and output results in the specified format.
 
 ${mcpPrompts.length > 0 ? `\n## Available Tools and Context\n${mcpPrompts.join("\n\n")}\n` : ""}
 
