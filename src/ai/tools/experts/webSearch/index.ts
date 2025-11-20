@@ -77,13 +77,13 @@ export const webSearchTool = ({
         );
       // Before saveAnalyst is called, webSearch can only be used once
       if (
-        (toolUseCount[ToolName.saveAnalyst] ?? 0) < 1 &&
+        (toolUseCount[ToolName.planStudy] ?? 0) < 1 &&
         (toolUseCount[ToolName.webSearch] ?? 0) >= 1
       ) {
         return {
           results: [],
           plainText:
-            "The webSearch tool can only be used once before the saveAnalyst tool is called. Please save your analyst topic first, then you can continue web searching.",
+            "The webSearch tool can only be used once before the saveAnalyst tool is called. Please save your analyst topic and use planStudy to plan the searches first, then you can continue web searching.",
         };
       }
       if ((toolUseCount[ToolName.webSearch] ?? 0) >= 3) {
