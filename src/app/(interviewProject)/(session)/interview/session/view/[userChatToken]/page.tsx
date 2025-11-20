@@ -38,10 +38,14 @@ async function SessionPage({ params }: { params: Promise<{ userChatToken: string
       )
     : [];
 
+  // Get questions from session extra (created when session starts), fallback to project extra
+  const questions = interviewSession.extra.questions || interviewSession.project.extra.questions || [];
+
   return (
     <InterviewSessionViewer
       interviewSession={interviewSession}
       initialMessages={initialMessages as TInterviewMessageWithTool[]}
+      questions={questions}
     />
   );
 }

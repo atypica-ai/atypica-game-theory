@@ -4,7 +4,7 @@ import {
   restartPersonaInterviewSession,
 } from "@/app/(interviewProject)/actions";
 import { InterviewToolUIPartDisplay } from "@/app/(interviewProject)/tools/ui";
-import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
+import { QuestionData, TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
@@ -32,10 +32,12 @@ type InterviewSessionDetails = ExtractServerActionData<typeof fetchInterviewSess
 export function InterviewSessionViewer({
   interviewSession,
   initialMessages = [],
+  questions = [],
   className,
 }: {
   interviewSession: InterviewSessionDetails;
   initialMessages?: TInterviewMessageWithTool[];
+  questions?: QuestionData[];
   className?: string;
 }) {
   const t = useTranslations("InterviewProject.sessionViewer");
@@ -280,10 +282,7 @@ export function InterviewSessionViewer({
           useChatHelpers={useChatHelpers}
           useChatRef={useChatRef}
           renderToolUIPart={(toolUIPart) => (
-            <InterviewToolUIPartDisplay
-              toolUIPart={toolUIPart}
-              interviewSessionId={interviewSession.id}
-            />
+            <InterviewToolUIPartDisplay toolUIPart={toolUIPart} questions={questions} />
           )}
           acceptAttachments={false}
           persistMessages={false}

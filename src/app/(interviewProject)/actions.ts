@@ -990,9 +990,12 @@ export async function fetchInterviewSessionDetails({
     Pick<InterviewSession, "id" | "projectId" | "title" | "userChatId"> & {
       project: Pick<InterviewProject, "id" | "brief"> & {
         user: Pick<User, "id" | "name" | "email">;
+        extra: InterviewProjectExtra;
       };
       intervieweeUser: Pick<User, "id" | "name" | "email"> | null;
       intervieweePersona: Pick<Persona, "id" | "name"> | null;
+      extra: InterviewSessionExtra;
+      userChat: { id: number; token: string } | null;
     }
   >
 > {
@@ -1007,6 +1010,7 @@ export async function fetchInterviewSessionDetails({
         projectId: true,
         title: true,
         userChatId: true,
+        extra: true,
         userChat: {
           select: {
             id: true,
@@ -1017,6 +1021,7 @@ export async function fetchInterviewSessionDetails({
           select: {
             id: true,
             brief: true,
+            extra: true,
             user: {
               select: { id: true, name: true, email: true },
             },
@@ -1043,7 +1048,14 @@ export async function fetchInterviewSessionDetails({
 
     return {
       success: true,
-      data: session,
+      data: {
+        ...session,
+        extra: session.extra as InterviewSessionExtra,
+        project: {
+          ...session.project,
+          extra: session.project.extra as InterviewProjectExtra,
+        },
+      },
     };
   });
 }
@@ -1338,3 +1350,4 @@ export async function updateInterviewSessionLanguage({
     };
   }
 }
+

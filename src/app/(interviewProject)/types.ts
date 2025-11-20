@@ -1,3 +1,4 @@
+import { ChatMessageAttachment } from "@/prisma/client";
 import { UIDataTypes, UIMessage } from "ai";
 import { TInterviewUITools } from "./tools/types";
 
@@ -10,3 +11,12 @@ export interface InterviewSharePayload {
 }
 
 export type TInterviewMessageWithTool = UIMessage<unknown, UIDataTypes, TInterviewUITools>;
+
+// Question data structure used in interview sessions
+export interface QuestionData {
+  text: string;
+  questionType?: "open" | "single-choice" | "multiple-choice";
+  options?: Array<string | { text: string; endInterview?: boolean }>;
+  image?: ChatMessageAttachment;
+  hint?: string;
+}
