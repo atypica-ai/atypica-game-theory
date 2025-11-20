@@ -10,10 +10,9 @@ import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { getToolOrDynamicToolName, isToolOrDynamicToolUIPart, isToolUIPart } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckIcon, Ear, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
+import { CheckIcon, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TypewriterText } from "./TypewriterText";
 
 const DEFAULT_TIME_LEFT = 300; // seconds
 
@@ -55,8 +54,13 @@ const LastAssistantMessagePart = <
 }) => {
   const t = useTranslations("Components.FocusedInterviewChat");
 
-  const lastPart2 = lastAssistantMessage.parts?.at(-2);
-  const lastPart1 = lastAssistantMessage.parts?.at(-1);
+  let lastPart2 = lastAssistantMessage.parts?.at(-2);
+  let lastPart1 = lastAssistantMessage.parts?.at(-1);
+
+  if (lastPart1 && isToolOrDynamicToolUIPart(lastPart1) && lastPart1.state === "input-streaming") {
+    lastPart1 = lastPart2;
+    lastPart2 = undefined;
+  }
 
   if (!lastPart1) {
     return null;
@@ -64,11 +68,12 @@ const LastAssistantMessagePart = <
 
   if (lastPart1.type === "text" && lastPart1.text.trim()) {
     return (
-      <TypewriterText
-        className="text-center text-base sm:text-lg"
-        id={lastAssistantMessage.id}
-        text={lastPart1.text}
-      />
+      // <TypewriterText
+      //   className="text-center text-base sm:text-lg"
+      //   id={lastAssistantMessage.id}
+      //   text={lastPart1.text}
+      // />
+      <div className="text-center text-base sm:text-lg">{lastPart1.text}</div>
     );
   }
 
@@ -76,11 +81,9 @@ const LastAssistantMessagePart = <
     return (
       <>
         {lastPart2?.type === "text" && !isSystemMessage(lastPart2.text) && (
-          <TypewriterText
-            className="text-center text-sm text-muted-foreground font-normal mb-6"
-            id={`${lastAssistantMessage.id}-${lastPart1.toolCallId}`}
-            text={lastPart2.text}
-          />
+          <div className="text-center text-sm text-muted-foreground font-normal mb-6">
+            {lastPart2.text}
+          </div>
         )}
         <div className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono">
           {t("toolCalling")} {lastPart1.toolName}
@@ -331,32 +334,34 @@ export function FocusedInterviewChat<
     >
       {/* Progress bar */}
       {progressBar}
-      {/* Top bar with language indicator and controls */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2">
-        <div
-          className={cn(
-            "text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded",
-            "bg-background/30 backdrop-blur-md",
-          )}
-        >
-          {locale === "zh-CN" ? "中文" : "English"}
-        </div>
-      </div>
-      {/* Top right button */}
-      {topRightButton && <div className="absolute top-4 right-4 z-10">{topRightButton}</div>}
-      {/* Stop button when streaming */}
-      {status === "streaming" && (
-        <div className={`absolute top-4 z-10 ${topRightButton ? "right-16" : "right-4"}`}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-            onClick={handleStop}
+      <div className="h-10 relative">
+        {/* Top bar with language indicator and controls */}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2">
+          <div
+            className={cn(
+              "text-xs text-zinc-500 dark:text-zinc-400 font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded",
+              "bg-background/30 backdrop-blur-md",
+            )}
           >
-            <XIcon className="h-5 w-5" />
-          </Button>
+            {locale === "zh-CN" ? "中文" : "English"}
+          </div>
         </div>
-      )}
+        {/* Top right button */}
+        {topRightButton && <div className="absolute top-2 right-4 z-10">{topRightButton}</div>}
+        {/* Stop button when streaming */}
+        {status === "streaming" && (
+          <div className={`absolute top-2 z-10 ${topRightButton ? "right-16" : "right-4"}`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+              onClick={handleStop}
+            >
+              <XIcon className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
+      </div>
       {/* Main content area */}
       <div
         className={cn(
@@ -364,59 +369,37 @@ export function FocusedInterviewChat<
           // "min-h-96",
         )}
       >
-        <AnimatePresence mode="wait">
-          {status === "submitted" || isProcessingTranscript ? (
-            <motion.div
-              key="thinking"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="min-h-full flex flex-col items-center justify-center gap-4 text-zinc-600 dark:text-zinc-400"
-            >
-              <div className="flex items-center gap-2">
-                <Ear className="w-4 h-4 text-primary" />
-                <span>{isProcessingTranscript ? t("processing") : t("thinking")}</span>
-              </div>
-              {lastUserMessage && (
-                <p className="text-sm text-zinc-500 dark:text-zinc-500 italic max-w-md">
-                  &quot;{lastUserMessage.content}&quot;
-                </p>
-              )}
-            </motion.div>
-          ) : !lastAssistantMessage ? (
-            <div className="min-h-full flex items-center justify-center text-base sm:text-lg">
-              {t("gettingReady")}
-            </div>
-          ) : !lastAssistantMessage.parts.length ? (
-            <div className="min-h-full flex items-center justify-center">
-              <LoadingPulse className="text-muted-foreground text-xl" />
-            </div>
-          ) : (
-            <motion.div
-              key={`message-${lastAssistantMessage.id}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: "circOut" }}
+        <div className="min-h-full flex flex-col items-center justify-center relative">
+          {lastAssistantMessage?.parts?.length ? (
+            <div
               className={cn(
                 "font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed",
                 "min-h-full flex flex-col items-center justify-center max-w-4xl w-full mx-auto",
               )}
             >
               <LastAssistantMessagePart
+                key={`message-${lastAssistantMessage.id}`}
                 lastAssistantMessage={lastAssistantMessage}
                 renderToolUIPart={renderToolUIPart}
               />
-              {
-                // 先不显示了，这个会导致文本上下跳一下，从显示到不显示
-                // status === "streaming" ? (
-                //   <LoadingPulse className="mt-4 text-muted-foreground" />
-                // ) : null
-              }
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          ) : null}
+        </div>
       </div>
+      {status === "submitted" || status === "streaming" || isProcessingTranscript || true ? (
+        <div className="space-y-4 text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center justify-center gap-2 text-sm">
+            {/*<EarIcon className="w-4 h-4 text-primary" />*/}
+            <span>{isProcessingTranscript ? t("processing") : t("thinking")}</span>
+            <LoadingPulse />
+          </div>
+          {lastUserMessage && (
+            <p className="text-sm text-zinc-500 dark:text-zinc-500 italic max-w-md text-center">
+              &quot;{lastUserMessage.content}&quot;
+            </p>
+          )}
+        </div>
+      ) : null}
       {/* Bottom input area - fixed to bottom */}
       <div className="shrink-0 w-full max-w-3xl mx-auto px-4 pt-4 sm:px-8 relative space-y-3">
         {/* Timer progress indicator */}

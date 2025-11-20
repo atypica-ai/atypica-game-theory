@@ -225,13 +225,12 @@
       "continue": "Continue"
     },
     "FocusedInterviewChat": {
-      "thinking": "Thinking...",
-      "gettingReady": "Getting ready to start...",
+      "thinking": "Thinking",
       "shareThoughts": "Share your thoughts...",
       "toolCalling": "executing",
       "timeRemaining": "{time} left",
       "listening": "Listening...",
-      "processing": "One moment..."
+      "processing": "One moment"
     },
     "VoiceInputModal": {
       "listening": "AI is listening",
