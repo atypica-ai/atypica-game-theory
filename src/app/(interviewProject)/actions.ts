@@ -99,10 +99,6 @@ const createInterviewProjectSchema = z.object({
     .min(10, "Brief must be at least 10 characters")
     .max(5000, "Brief must be less than 5000 characters"),
   presetQuestions: z.string().optional(),
-  questionTypePreference: z
-    .enum(["open-ended", "multiple-choice", "mixed"])
-    .optional()
-    .default("open-ended"),
 });
 
 export type CreateInterviewProjectInput = z.infer<typeof createInterviewProjectSchema>;
@@ -110,8 +106,7 @@ export type CreateInterviewProjectInput = z.infer<typeof createInterviewProjectS
 export async function createInterviewProject(
   input: CreateInterviewProjectInput,
 ): Promise<ServerActionResult<InterviewProject>> {
-  const { brief, presetQuestions, questionTypePreference } =
-    createInterviewProjectSchema.parse(input);
+  const { brief, presetQuestions } = createInterviewProjectSchema.parse(input);
   const token = generateToken();
   return withAuth(async (user) => {
     const userId = user.id;
@@ -131,7 +126,6 @@ export async function createInterviewProject(
         userId,
         token,
         extra: {
-          questionTypePreference,
           questions,
         },
       },
@@ -167,7 +161,6 @@ const updateInterviewProjectSchema = z.object({
     .string()
     .min(10, "Brief must be at least 10 characters")
     .max(5000, "Brief must be less than 5000 characters"),
-  questionTypePreference: z.enum(["open-ended", "multiple-choice", "mixed"]).optional(),
 });
 
 export type UpdateInterviewProjectInput = z.infer<typeof updateInterviewProjectSchema>;
@@ -176,7 +169,7 @@ export async function updateInterviewProject(
   projectId: number,
   input: UpdateInterviewProjectInput,
 ): Promise<ServerActionResult<InterviewProject>> {
-  const { brief, questionTypePreference } = updateInterviewProjectSchema.parse(input);
+  const { brief } = updateInterviewProjectSchema.parse(input);
   return withAuth(async (user) => {
     const project = await prisma.interviewProject.findUnique({
       where: { id: projectId, userId: user.id },
@@ -190,15 +183,11 @@ export async function updateInterviewProject(
       };
     }
 
-    // Use rawSQL to update brief and questionTypePreference atomically
-    const extraUpdate = questionTypePreference ? { questionTypePreference } : {};
-    await prisma.$executeRaw`
-      UPDATE "InterviewProject"
-      SET "brief" = ${brief},
-          "extra" = COALESCE("extra", '{}') || ${JSON.stringify(extraUpdate)}::jsonb,
-          "updatedAt" = NOW()
-      WHERE "id" = ${projectId}
-    `;
+    // Update brief only
+    await prisma.interviewProject.update({
+      where: { id: projectId },
+      data: { brief },
+    });
 
     const updatedProject = await prisma.interviewProject.findUniqueOrThrow({
       where: { id: projectId },

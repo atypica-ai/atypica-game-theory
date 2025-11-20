@@ -4,7 +4,6 @@ import { createInterviewProject } from "@/app/(interviewProject)/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -12,16 +11,12 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-type QuestionTypePreference = "open-ended" | "multiple-choice" | "mixed";
-
 export function CreateInterviewProjectClient() {
   const router = useRouter();
   const t = useTranslations("InterviewProject.createProject");
 
   const [brief, setBrief] = useState("");
   const [presetQuestions, setPresetQuestions] = useState("");
-  const [questionTypePreference, setQuestionTypePreference] =
-    useState<QuestionTypePreference>("open-ended");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Submit form
@@ -38,7 +33,6 @@ export function CreateInterviewProjectClient() {
       const result = await createInterviewProject({
         brief: brief.trim(),
         presetQuestions: presetQuestions.trim(),
-        questionTypePreference,
       });
 
       if (!result.success) {
@@ -54,7 +48,7 @@ export function CreateInterviewProjectClient() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [brief, presetQuestions, questionTypePreference, router, t]);
+  }, [brief, presetQuestions, router, t]);
 
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin">
@@ -117,43 +111,6 @@ export function CreateInterviewProjectClient() {
                 className="min-h-64"
               />
               <div className="text-xs text-muted-foreground mt-2">{t("presetQuestionsHint")}</div>
-            </CardContent>
-          </Card>
-
-          {/* Question Type Preference */}
-          <Card>
-            <CardHeader>
-              <Label className="text-base font-semibold">{t("questionTypePreference")}</Label>
-              <p className="text-sm text-muted-foreground mt-1">
-                {t("questionTypePreferenceDescription")}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup
-                value={questionTypePreference}
-                onValueChange={(value) =>
-                  setQuestionTypePreference(value as QuestionTypePreference)
-                }
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="open-ended" id="type-open" />
-                  <Label htmlFor="type-open" className="font-normal">
-                    {t("openQuestions")}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="multiple-choice" id="type-choice" />
-                  <Label htmlFor="type-choice" className="font-normal">
-                    {t("choiceQuestions")}
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="mixed" id="type-mixed" />
-                  <Label htmlFor="type-mixed" className="font-normal">
-                    {t("mixedQuestions")}
-                  </Label>
-                </div>
-              </RadioGroup>
             </CardContent>
           </Card>
 

@@ -1,7 +1,4 @@
-import {
-  updateInterviewProject,
-  UpdateInterviewProjectInput,
-} from "@/app/(interviewProject)/actions";
+import { updateInterviewProject } from "@/app/(interviewProject)/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
@@ -26,7 +22,6 @@ interface EditProjectDialogProps {
   onProjectUpdated: () => void;
   projectId: number;
   initialBrief: string;
-  initialQuestionTypePreference?: "open-ended" | "multiple-choice" | "mixed";
 }
 
 export function EditProjectDialog({
@@ -35,13 +30,9 @@ export function EditProjectDialog({
   onProjectUpdated,
   projectId,
   initialBrief,
-  initialQuestionTypePreference,
 }: EditProjectDialogProps) {
   const t = useTranslations("InterviewProject.createProjectDialog");
   const [brief, setBrief] = useState(initialBrief);
-  const [questionTypePreference, setQuestionTypePreference] = useState<
-    UpdateInterviewProjectInput["questionTypePreference"]
-  >(initialQuestionTypePreference || "open-ended");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -49,10 +40,9 @@ export function EditProjectDialog({
   useEffect(() => {
     if (open) {
       setBrief(initialBrief);
-      setQuestionTypePreference(initialQuestionTypePreference || "open-ended");
       setErrors([]);
     }
-  }, [open, initialBrief, initialQuestionTypePreference]);
+  }, [open, initialBrief]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +53,6 @@ export function EditProjectDialog({
     try {
       const result = await updateInterviewProject(projectId, {
         brief: brief.trim(),
-        questionTypePreference,
       });
       if (!result.success) {
         toast.error(result.message || t("error"));
@@ -111,44 +100,6 @@ export function EditProjectDialog({
                 className="h-40 resize-none"
                 disabled={loading}
               />
-            </div>
-            <div className="mt-6 space-y-2">
-              <div>
-                <Label>{t("questionTypePreference")}</Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t("questionTypePreferenceDescription")}
-                </p>
-              </div>
-              <RadioGroup
-                value={questionTypePreference}
-                onValueChange={(value) =>
-                  setQuestionTypePreference(
-                    value as UpdateInterviewProjectInput["questionTypePreference"],
-                  )
-                }
-                disabled={loading}
-                className="flex items-center justify-start gap-2"
-              >
-                {[
-                  { value: "open-ended", labelKey: "questionTypeOpenEnded" as const },
-                  { value: "multiple-choice", labelKey: "questionTypeMultipleChoice" as const },
-                  { value: "mixed", labelKey: "questionTypeMixed" as const },
-                ].map(({ value, labelKey }) => (
-                  <div key={value} className="flex items-center gap-2 p-1">
-                    <RadioGroupItem
-                      className="size-3"
-                      value={value}
-                      id={`questionTypePreference/${value}`}
-                    />
-                    <Label
-                      htmlFor={`questionTypePreference/${value}`}
-                      className="flex-1 cursor-pointer font-medium text-sm tracking-tight"
-                    >
-                      {t(labelKey)}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
             </div>
             <div className="flex justify-between items-center text-xs">
               <div className="space-y-1">
