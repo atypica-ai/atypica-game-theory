@@ -15,10 +15,9 @@ import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
-import { generateId, ModelMessage, stepCountIs, streamText } from "ai";
+import { generateId, ModelMessage, smoothStream, stepCountIs, streamText } from "ai";
 import { Locale } from "next-intl";
 import { after, NextResponse } from "next/server";
 
@@ -53,64 +52,6 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
   return cachedCoreMessages;
 }
 
-/**
- * Type guard to check if option is an object with endInterview flag
- */
-function isOptionObject(
-  option: string | { text: string; endInterview?: boolean },
-): option is { text: string; endInterview?: boolean } {
-  return typeof option !== "string";
-}
-
-/**
- * Check if the last user message contains an answer that triggers endInterview
- */
-function shouldTriggerEndInterview(
-  messages: ModelMessage[],
-  sessionExtra: InterviewSessionExtra,
-): boolean {
-  // Get the last user message
-  const lastUserMessage = messages.findLast((m) => m.role === "user");
-  if (!lastUserMessage) return false;
-
-  // Extract text content from the message
-  const messageText =
-    typeof lastUserMessage.content === "string"
-      ? lastUserMessage.content
-      : lastUserMessage.content
-          .filter((part): part is { type: "text"; text: string } => part.type === "text")
-          .map((part) => part.text)
-          .join(" ");
-
-  if (!messageText) return false;
-
-  // Get questions from session
-  const questions = sessionExtra.questions || [];
-  if (questions.length === 0) return false;
-
-  // Check if any question's options with endInterview flag match the user's answer
-  for (const question of questions) {
-    if (!question.options) continue;
-
-    // Check if any option with endInterview flag is mentioned in the message
-    for (const option of question.options) {
-      // Use type guard to check if option is an object
-      if (isOptionObject(option) && option.endInterview === true) {
-        const optionText = option.text;
-        if (messageText.includes(optionText)) {
-          rootLogger.info({
-            msg: "endInterview triggered by user answer",
-            optionText,
-            messageText,
-          });
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
-}
 
 /**
  * ⚠️ fetchInterviewSessionChat 会检查权限，所以这里无需另外检查权限
@@ -210,7 +151,6 @@ export async function POST(req: Request) {
   const systemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
     questions,
-    questionTypePreference: project.extra?.questionTypePreference,
     isPersonaInterview: false,
     locale,
   });
@@ -225,11 +165,10 @@ export async function POST(req: Request) {
     requestInteractionForm,
     selectQuestion,
   };
-  const { coreMessages: _coreMessages, streamingMessage } = await prepareMessagesForStreaming(
-    userChatId,
-    { tools },
-  );
-  const coreMessages = setBedrockCache("claude-4-sonnet", _coreMessages);
+  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
+    tools,
+  });
+  const modelMessages = setBedrockCache("claude-sonnet-4", coreMessages);
 
   const streamTextResult = streamText({
     model: llm("claude-sonnet-4"),
@@ -237,32 +176,23 @@ export async function POST(req: Request) {
     providerOptions: defaultProviderOptions,
 
     system: systemPrompt,
-    messages: coreMessages,
+    messages: modelMessages,
 
     prepareStep: async ({ messages }) => {
-      // Check if answer triggers endInterview
-      if (shouldTriggerEndInterview(messages, sessionExtra)) {
-        chatLogger.info("Forcing endInterview due to trigger option selected");
-        return {
-          toolChoice: { type: "tool", toolName: InterviewToolName.endInterview },
-          activeTools: [InterviewToolName.endInterview],
-        };
-      }
-
-      // TODO
       const assistantCount = messages.filter(({ role }) => role === "assistant").length;
-      if (assistantCount < 80) {
+      if (assistantCount < 1) {
         return {
           toolChoice: "auto",
           activeTools: [InterviewToolName.requestInteractionForm],
         };
-      } else if (assistantCount < 150) {
+      } else if (assistantCount < 100) {
         return {
           toolChoice: "auto",
+          activeTools: [InterviewToolName.selectQuestion, InterviewToolName.endInterview],
         };
       } else {
         return {
-          toolChoice: { type: "tool", toolName: InterviewToolName.endInterview },
+          toolChoice: "required",
           activeTools: [InterviewToolName.endInterview],
         };
       }
@@ -272,10 +202,10 @@ export async function POST(req: Request) {
 
     stopWhen: stepCountIs(1),
 
-    // experimental_transform: smoothStream({
-    //   delayInMs: 30,
-    //   chunking: /[\u4E00-\u9FFF]|\S+\s+/,
-    // }),
+    experimental_transform: smoothStream({
+      delayInMs: 30,
+      chunking: /[\u4E00-\u9FFF]|\S+\s+/,
+    }),
 
     abortSignal: mergedAbortSignal,
 

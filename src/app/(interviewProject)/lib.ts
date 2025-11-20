@@ -238,17 +238,17 @@ export async function extractInterviewTranscript(userChatId: number): Promise<In
         }
         // Add selectQuestion interactions to messages
         if (part.type === `tool-${InterviewToolName.selectQuestion}`) {
-          if (part.output?.questionText && part.output?.userAnswer !== undefined) {
-            const answerValue = Array.isArray(part.output.userAnswer)
-              ? part.output.userAnswer.join(", ")
-              : part.output.userAnswer;
-
+          if (part.output?.question && part.output?.answer !== undefined) {
+            // Format answer: string for open, join array for choices
+            const answerValue = Array.isArray(part.output.answer)
+              ? part.output.answer.join(", ")
+              : part.output.answer;
             transcriptMessages.push({
               type: "form",
               formData: {
                 fields: [
                   {
-                    label: part.output.questionText,
+                    label: part.output.question.text,
                     value: answerValue,
                   },
                 ],

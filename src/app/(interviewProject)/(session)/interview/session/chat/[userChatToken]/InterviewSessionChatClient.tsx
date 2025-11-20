@@ -41,7 +41,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export function InterviewSessionChatClient({
-  interviewSessionId,
   project,
   intervieweeUser,
   userChatToken,
@@ -150,7 +149,7 @@ export function InterviewSessionChatClient({
         return { body };
       },
     }),
-    experimental_throttle: 1000,
+    // experimental_throttle: 1000,
   });
 
   const useChatRef = useRef({
@@ -217,10 +216,15 @@ export function InterviewSessionChatClient({
       );
     }, 0);
 
+    let percentage = (completedQuestions / totalQuestions) * 100;
+    if (percentage > 75) {
+      percentage = 95;
+    }
+
     return {
       completed: completedQuestions,
       total: totalQuestions,
-      percentage: (completedQuestions / totalQuestions) * 100,
+      percentage,
     };
   }, [messages, questions.length]);
 
@@ -236,6 +240,20 @@ export function InterviewSessionChatClient({
       useChatRef.current.regenerate();
     }
   }, [initialMessages]);
+
+  useEffect(() => {
+    if (useChatHelpers.messages.at(-1)?.role === "assistant" && useChatHelpers.status === "ready") {
+      const lastPart = useChatHelpers.messages.at(-1)?.parts?.at(-1);
+      if (
+        lastPart &&
+        ((lastPart.type === `tool-${InterviewToolName.selectQuestion}` &&
+          lastPart.state === "output-available") ||
+          lastPart.type === "step-start")
+      ) {
+        useChatRef.current.sendMessage({ text: "[CONTINUE]" });
+      }
+    }
+  }, [useChatHelpers.messages.at(-1)?.id, useChatHelpers.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Project info dialog content
   const ProjectInfoButton = () => (
@@ -347,7 +365,7 @@ export function InterviewSessionChatClient({
           <InterviewToolUIPartDisplay
             toolUIPart={toolUIPart}
             addToolResult={addToolResult}
-            interviewSessionId={interviewSessionId}
+            questions={questions}
           />
         )}
         showTimer={false} // Interviews don't need timer pressure

@@ -7,7 +7,6 @@ import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { DeepPartial, ToolUIPart } from "ai";
-import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { FC, useCallback } from "react";
@@ -225,23 +224,9 @@ export const RequestInteractionFormToolMessage: FC<RequestInteractionFormToolMes
         {/* Submit button */}
         {!isFormCompleted && toolInvocation.state === "input-available" && (
           <div className="pt-4 border-t">
-            <Button
-              onClick={submitForm}
-              disabled={!isFormValid}
-              className="w-full"
-            >
+            <Button onClick={submitForm} disabled={!isFormValid} className="w-full">
               {t("submitForm")}
             </Button>
-          </div>
-        )}
-
-        {/* Completed indicator */}
-        {isFormCompleted && (
-          <div className="flex items-center justify-center pt-4 border-t">
-            <div className="flex items-center space-x-2 text-primary">
-              <Check className="h-5 w-5" />
-              <span className="text-sm font-medium">{t("formSubmitted")}</span>
-            </div>
           </div>
         )}
       </div>
