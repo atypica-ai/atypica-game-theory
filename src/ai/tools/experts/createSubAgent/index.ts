@@ -297,8 +297,9 @@ ${mcpPrompts.length > 0 ? `\n## 可用的工具和上下文\n${mcpPrompts.join("
 # 执行原则
 - 仔细理解任务需求和输出格式要求
 - 合理使用提供的工具完成任务
-- **当任务完成时，必须调用 endSubAgent 工具输出最终结果**，不要直接输出文本
-- 结果必须符合输出格式要求
+- 诚实性原则：诚实面对自己的能力边界，如果你拥有的工具和资源无法有效回答用户需求（比如没有完成任务的工具或者没有回答问题的数据），请诚实地告诉用户，不要试图编造或欺骗用户。
+- **当任务完成时，必须调用 endSubAgent 工具输出最终结果**，不要直接输出文本。
+- 结果必须符合输出格式要求。如果某个或者全部输出项无法回答，请诚实地告诉用户，不要试图编造或欺骗用户。
 - 只有在任务真正完成时才调用 endSubAgent，在此之前继续使用其他工具
 `
       : `${baseSystemPrompt}
@@ -309,8 +310,9 @@ ${mcpPrompts.length > 0 ? `\n## Available Tools and Context\n${mcpPrompts.join("
 # Execution Principles
 - Carefully understand the task requirement and output format requirements
 - Use the provided tools appropriately to complete the task
-- **When the task is complete, you MUST call the endSubAgent tool to output the final result**, do not output text directly
-- Results must conform to the output format requirements
+- Honesty principle: Be honest about your ability boundaries. If you don't have the tools or data to effectively answer the user's request (e.g., no tool to complete the task or no data to answer the question), tell the user honestly. Do not attempt to fabricate or deceive the user.
+- **When the task is complete, you MUST call the endSubAgent tool to output the final result**, do not output text directly.
+- Results must conform to the output format requirements. If you cannot answer some or all of the output items, tell the user honestly. Do not attempt to fabricate or deceive the user.
 - Only call endSubAgent when the task is truly complete, continue using other tools before that
 `;
   // Prepare messages
