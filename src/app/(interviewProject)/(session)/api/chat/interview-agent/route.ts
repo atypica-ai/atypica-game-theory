@@ -60,6 +60,35 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
   return cachedCoreMessages;
 }
 
+function calculateQuestionProgress(messages: ModelMessage[], totalQuestions: number) {
+  const completed = new Set<number>();
+
+  for (const message of messages) {
+    if (message.role !== "assistant" || !message.content) continue;
+
+    const parts = Array.isArray(message.content) ? message.content : [message.content];
+    for (const part of parts) {
+      if (
+        typeof part === "object" &&
+        part.type === "tool-call" &&
+        part.toolName === InterviewToolName.selectQuestion &&
+        typeof part.input === "object" &&
+        part.input &&
+        "questionIndex" in part.input
+      ) {
+        completed.add(part.input.questionIndex as number);
+      }
+    }
+  }
+
+  const completedIndices = Array.from(completed).sort((a, b) => a - b);
+  const remainingIndices = Array.from({ length: totalQuestions }, (_, i) => i + 1).filter(
+    (i) => !completed.has(i),
+  );
+
+  return { completedIndices, remainingIndices };
+}
+
 /**
  * ⚠️ fetchInterviewSessionChat 会检查权限，所以这里无需另外检查权限
  */
@@ -195,11 +224,31 @@ export async function POST(req: Request) {
     messages: modelMessages,
 
     prepareStep: async ({ messages }) => {
-      const hintText = hint
-        ? `[HINT] ${hint}`
-        : locale === "zh-CN"
-          ? "[HINT] 继续访谈，逐步深入，确保覆盖所有预设问题"
-          : "[HINT] Continue the interview, explore deeply, ensure all questions are covered";
+      const totalQuestions = questions?.length || 0;
+      const { completedIndices, remainingIndices } = calculateQuestionProgress(
+        messages,
+        totalQuestions,
+      );
+
+      chatLogger.info({
+        msg: "Question progress",
+        completedQuestionIndices: completedIndices,
+        remainingQuestionIndices: remainingIndices,
+        totalQuestions,
+      });
+
+      const progressInfo =
+        totalQuestions > 0 && completedIndices.length > 0
+          ? locale === "zh-CN"
+            ? `\n已完成问题: ${completedIndices.join(", ")}`
+            : `\nCompleted questions: ${completedIndices.join(", ")}`
+          : "";
+
+      const hintText =
+        locale === "zh-CN"
+          ? `[HINT] ${hint ? `${hint}\n` : ""}按顺序继续访谈，逐步深入，直到完成最后一个问题。${progressInfo}`
+          : `[HINT] ${hint ? `${hint}\n` : ""}Continue the interview in sequential order, explore deeply, until completing the last question.${progressInfo}`;
+
       const modelMessages = [
         ...messages,
         { role: "user", content: hintText } satisfies UserModelMessage,
