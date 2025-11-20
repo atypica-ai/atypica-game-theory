@@ -101,6 +101,9 @@ async function migrateSelectQuestionTools(execute: boolean = false) {
     where: {
       userChatId: { not: null },
     },
+    orderBy: {
+      id: "desc",
+    },
   });
 
   console.log(`📊 Found ${sessionIds.length} interview sessions\n`);
@@ -141,7 +144,7 @@ async function migrateSelectQuestionTools(execute: boolean = false) {
     const messageIds = await prisma.chatMessage.findMany({
       where: {
         userChatId: session.userChatId,
-        role: "assistant"
+        role: "assistant",
       },
       select: { id: true },
       orderBy: { id: "asc" },
@@ -191,9 +194,7 @@ async function migrateSelectQuestionTools(execute: boolean = false) {
               // Get questionIndex from input (唯一真相来源)
               const inputIndex = part.input?.questionIndex;
               if (!inputIndex || typeof inputIndex !== "number") {
-                console.log(
-                  `  ⚠️  Message ${messageId}: questionIndex not found in input`,
-                );
+                console.log(`  ⚠️  Message ${messageId}: questionIndex not found in input`);
                 skippedMessages++;
                 continue;
               }
@@ -223,9 +224,7 @@ async function migrateSelectQuestionTools(execute: boolean = false) {
               let answer: string | string[];
 
               if (userAnswer === undefined || userAnswer === null) {
-                console.log(
-                  `  ⚠️  Message ${messageId}: userAnswer is empty`,
-                );
+                console.log(`  ⚠️  Message ${messageId}: userAnswer is empty`);
                 answer = questionType === "open" ? "" : [];
               } else if (questionType === "open") {
                 // Open questions: answer should be string
@@ -233,9 +232,7 @@ async function migrateSelectQuestionTools(execute: boolean = false) {
                   answer = userAnswer;
                 } else if (Array.isArray(userAnswer)) {
                   // Shouldn't happen, but join if it does
-                  console.log(
-                    `  ⚠️  Message ${messageId}: open question has array answer`,
-                  );
+                  console.log(`  ⚠️  Message ${messageId}: open question has array answer`);
                   answer = userAnswer.join(", ");
                 } else {
                   answer = String(userAnswer);
@@ -280,10 +277,7 @@ async function migrateSelectQuestionTools(execute: boolean = false) {
               console.log(`  ✅ Message ${messageId}: Successfully migrated`);
             }
           } catch (error) {
-            console.error(
-              `  ❌ Message ${messageId}: Migration error:`,
-              error,
-            );
+            console.error(`  ❌ Message ${messageId}: Migration error:`, error);
             skippedMessages++;
           }
         }

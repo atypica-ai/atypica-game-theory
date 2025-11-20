@@ -327,7 +327,7 @@ export function FocusedInterviewChat<
   return (
     <div
       className={cn(
-        "w-full h-full flex flex-col relative bg-zinc-50 dark:bg-zinc-900 pb-8",
+        "w-full h-full flex flex-col items-stretch relative bg-zinc-50 dark:bg-zinc-900 pb-8",
         "flex-1 overflow-hidden",
         className,
       )}
@@ -386,7 +386,7 @@ export function FocusedInterviewChat<
           ) : null}
         </div>
       </div>
-      {status === "submitted" || status === "streaming" || isProcessingTranscript || true ? (
+      {status === "submitted" || status === "streaming" || isProcessingTranscript ? (
         <div className="space-y-4 text-zinc-600 dark:text-zinc-400">
           <div className="flex items-center justify-center gap-2 text-sm">
             {/*<EarIcon className="w-4 h-4 text-primary" />*/}
@@ -394,7 +394,7 @@ export function FocusedInterviewChat<
             <LoadingPulse />
           </div>
           {lastUserMessage && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-500 italic max-w-md text-center">
+            <p className="text-sm text-zinc-500 dark:text-zinc-500 italic max-w-md mx-auto text-center">
               &quot;{lastUserMessage.content}&quot;
             </p>
           )}
