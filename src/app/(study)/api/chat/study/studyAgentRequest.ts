@@ -50,6 +50,8 @@ import {
   shouldDecidePersonaTier,
   waitUntilAttachmentsProcessed,
 } from "./utils";
+import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
+import { TeamConfigName } from "@/app/team/teamConfig/types";
 
 // autopolot 模式默认 15 步，webSearch 2 + saveAnalyst 1 + searchPersonas 1 + scoutTaskChat 2 + buildPersona 2 + interviewChat 2 + saveAnalystStudySummary 1 + generateReport 1
 const MAX_STEPS_EACH_ROUND = 15;
@@ -109,6 +111,7 @@ export async function studyAgentRequest({
   const manager = getMcpClientManager();
   const clients = teamId ? await manager.getClientsForTeam(teamId) : []; // Personal users have no MCP clients
   logger.info({ msg: "Loaded mcp clients", clients, teamId });
+  const teamStudySystemPrompt = teamId ? await getTeamConfigWithDefault<Record<string, string>>(teamId, TeamConfigName.studySystemPrompt, { "zh-CN": "", "en-US": "" }) : null;
   const agentToolArgs: AgentToolConfigArgs = {
     locale,
     abortSignal: toolAbortController.signal,
@@ -126,7 +129,11 @@ export async function studyAgentRequest({
     [ToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.planStudy]: planStudyTool({ studyUserChatId, ...agentToolArgs }),
+    [ToolName.planStudy]: planStudyTool({
+      studyUserChatId,
+      teamStudySystemPrompt,
+      ...agentToolArgs,
+    }),
     ...(clients.length > 0
       ? {
           [ToolName.createSubAgent]: createSubAgentTool({
@@ -215,10 +222,10 @@ export async function studyAgentRequest({
   // }
 
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
-  const system = await studySystem({
+  const system = studySystem({
     locale,
     briefStatus,
-    teamId,
+    teamStudySystemPrompt,
     // 为了 prompt cache 生效，需要一个固定的 system prompt，之前放在 system prompt 里面的 tokensStat, toolUseStat 现在去掉了
   });
 

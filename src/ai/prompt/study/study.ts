@@ -2,30 +2,17 @@ import "server-only";
 
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
-import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
-import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { Locale } from "next-intl";
 
-export const studySystem = async ({
+export const studySystem = ({
   locale,
   briefStatus = "DRAFT",
-  teamId,
+  teamStudySystemPrompt,
 }: {
   locale: Locale;
   briefStatus?: "CLARIFIED" | "DRAFT";
-  teamId?: number | null;
+  teamStudySystemPrompt?: Record<string, string> | null;
 }) => {
-  // Get team-specific system prompt if available, otherwise use default
-  const teamSystemPrompt = await getTeamConfigWithDefault<Record<string, string>>(
-    teamId ?? null,
-    TeamConfigName.studySystemPrompt,
-    {
-      "zh-CN": "",
-      "en-US": "",
-    },
-  );
-
-  // Default prompt
   const basePrompt =
     locale === "zh-CN"
       ? `${promptSystemConfig({ locale })}
@@ -42,10 +29,10 @@ export const studySystem = async ({
 你能够捕捉到通过数据分析处理的不够好的人类决策机制，为个人和商业决策问题提供深度洞察。
 
 ${
-  teamSystemPrompt[locale]
+  teamStudySystemPrompt?.[locale]
     ? `
    <额外信息补充>
-   ${teamSystemPrompt[locale]}
+   ${teamStudySystemPrompt[locale]}
    </额外信息补充>
    `
     : ``
@@ -294,10 +281,10 @@ You are atypica.AI, a business study intelligence agent. Just as physics models 
 You can capture human decision-making mechanisms that are not well-handled by data analysis, providing deep insights for personal and business decision problems.
 
 ${
-  teamSystemPrompt[locale]
+  teamStudySystemPrompt?.[locale]
     ? `
    <Additional Info>
-   ${teamSystemPrompt[locale]}
+   ${teamStudySystemPrompt[locale]}
    </Additional Info>
    `
     : ``

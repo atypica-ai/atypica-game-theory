@@ -1,17 +1,13 @@
 import { Locale } from "next-intl";
-import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
-import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { promptSystemConfig } from "../systemConfig";
 
-export const planStudySystem = async ({ locale, teamId }: { locale: Locale; teamId?: number | null }) => {
-  const teamSystemPrompt = await getTeamConfigWithDefault<Record<string, string>>(
-    teamId ?? null,
-    TeamConfigName.studySystemPrompt,
-    {
-      "zh-CN": "",
-      "en-US": "",
-    },
-  );
+export const planStudySystem = ({
+  locale,
+  teamStudySystemPrompt,
+}: {
+  locale: Locale;
+  teamStudySystemPrompt?: Record<string, string> | null;
+}) => {
   const basePrompt = locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
 <角色>
@@ -19,9 +15,9 @@ export const planStudySystem = async ({ locale, teamId }: { locale: Locale; team
 你非常了解商业化问题的各种分类（eg. 市场细分/产品定位/等），也极其了解在不同问题下应该如何有效使用各种商业化分析框架（eg. JTBD/KANO/STP/等）。
 </角色>
 
-${teamSystemPrompt[locale] ? `
+${teamStudySystemPrompt?.[locale] ? `
 <额外信息补充>
-${teamSystemPrompt[locale]}
+${teamStudySystemPrompt[locale]}
 </额外信息补充>
 ` : ""}
 
@@ -99,9 +95,9 @@ ${teamSystemPrompt[locale]}
 You are a professional business consultant who previously worked at business consulting firms and served as an MBA professor.
 You have extensive knowledge of various business problem categories (e.g., market segmentation/product positioning/etc.) and are extremely familiar with how to effectively use various business analysis frameworks (e.g., JTBD/KANO/STP/etc.) for different problems.
 </Role>
-${teamSystemPrompt[locale] ? `
+${teamStudySystemPrompt?.[locale] ? `
 <Additional Info>
-${teamSystemPrompt[locale]}
+${teamStudySystemPrompt[locale]}
 </Additional Info>
 ` : ""}
 <Task>

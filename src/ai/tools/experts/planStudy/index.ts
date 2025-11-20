@@ -16,12 +16,13 @@ async function planStudy({
   abortSignal,
   statReport,
   logger,
+  teamStudySystemPrompt,
 }: {
   background: string;
   question: string;
+  teamStudySystemPrompt?: Record<string, string> | null;
 } & AgentToolConfigArgs): Promise<PlanStudyResult> {
   return new Promise(async (resolve, reject) => {
-    const systemPrompt = planStudySystem({ locale });
     const response = streamText({
       model: llm("gemini-2.5-pro"),
       providerOptions: defaultProviderOptions,
@@ -31,7 +32,7 @@ async function planStudy({
           dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
         }),
       },
-      system: systemPrompt,
+      system: planStudySystem({ locale, teamStudySystemPrompt }),
       messages: [
         {
           role: "user",
@@ -74,9 +75,11 @@ async function planStudy({
 
 export const planStudyTool = ({
   studyUserChatId,
+  teamStudySystemPrompt,
   ...toolCallConfigArgs
 }: {
   studyUserChatId: number;
+  teamStudySystemPrompt?: Record<string, string> | null;
 } & AgentToolConfigArgs) =>
   tool({
     description:
@@ -90,6 +93,7 @@ export const planStudyTool = ({
       const result = await planStudy({
         background,
         question,
+        teamStudySystemPrompt,
         ...toolCallConfigArgs,
       });
       const { analyst } = await prisma.userChat.findUniqueOrThrow({
