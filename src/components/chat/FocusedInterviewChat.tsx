@@ -387,7 +387,7 @@ export function FocusedInterviewChat<
         </div>
       </div>
       {status === "submitted" || status === "streaming" || isProcessingTranscript ? (
-        <div className="space-y-4 text-zinc-600 dark:text-zinc-400">
+        <div className="space-y-4 text-zinc-600 dark:text-zinc-400 pt-2">
           <div className="flex items-center justify-center gap-2 text-sm">
             {/*<EarIcon className="w-4 h-4 text-primary" />*/}
             <span>{isProcessingTranscript ? t("processing") : t("thinking")}</span>

@@ -23,22 +23,24 @@ import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/au
 import { generateInterviewReportContent } from "./artifacts/generateReport";
 import { generateInterviewShareToken, validateInterviewShareToken } from "./lib";
 import { processInterviewQuestionOptimization } from "./processing";
-import { interviewProjectQuestionsSchema, Question, questionSchema } from "./tools/types";
+import { interviewProjectQuestionsSchema, QuestionData, questionSchema } from "./tools/types";
 
 /**
  * Create a snapshot of questions (converts old format to new format)
  */
 function createQuestionsSnapshot(
   questions: NonNullable<InterviewProjectExtra["questions"]>,
-): Question[] {
-  return questions.map((q) => ({
-    text: q.text,
-    image: q.image,
-    questionType: q.questionType,
-    hint: q.hint,
-    // Convert old format (string | {text, endInterview}) to new format (string)
-    options: q.options?.map((opt) => (typeof opt === "string" ? opt : opt.text)),
-  }));
+): QuestionData[] {
+  return questions.map((q) => q);
+  // return questions.map((q) => ({
+  //   text: q.text,
+  //   image: q.image,
+  //   questionType: q.questionType,
+  //   hint: q.hint,
+  //   // Convert old format (string | {text, endInterview}) to new format (string)
+  //   // options: q.options?.map((opt) => (typeof opt === "string" ? opt : opt.text)),
+  //   options: q.options,
+  // }));
 }
 
 /**
@@ -1350,4 +1352,3 @@ export async function updateInterviewSessionLanguage({
     };
   }
 }
-

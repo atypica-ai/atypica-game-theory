@@ -33,7 +33,10 @@ async function ProjectPage({ params }: { params: Promise<{ projectToken: string 
   }
 
   const interviewProject = await prisma.interviewProject.findUnique({
-    where: { token: projectToken },
+    where: {
+      token: projectToken,
+      userId: session.user.id, // ensure user owns the project
+    },
     select: {
       id: true,
       token: true,

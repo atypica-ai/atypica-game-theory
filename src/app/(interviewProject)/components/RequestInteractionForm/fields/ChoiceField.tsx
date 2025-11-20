@@ -114,7 +114,7 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
           const isSelected = isSingleChoice
             ? fieldValue === option
             : Array.isArray(fieldValue) && option
-              ? fieldValue.includes(option)
+              ? fieldValue.includes(typeof option === "string" ? option : (option.text ?? ""))
               : fieldValue === option;
 
           return (
@@ -122,7 +122,12 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
               key={index}
               variant="outline"
               data-selected={isSelected}
-              onClick={isCompleted ? undefined : () => handleOptionClick(option)}
+              onClick={
+                isCompleted
+                  ? undefined
+                  : () =>
+                      handleOptionClick(typeof option === "string" ? option : (option.text ?? ""))
+              }
               className={cn(
                 "whitespace-normal min-h-9 h-auto",
                 "flex items-center justify-between w-full",
@@ -133,7 +138,9 @@ export const ChoiceField: FC<ChoiceFieldProps> = ({
                 isCompleted && "pointer-events-none cursor-default",
               )}
             >
-              <span className="line-clamp-2 text-left">{option}</span>
+              <span className="line-clamp-2 text-left">
+                {typeof option === "string" ? option : (option.text ?? "")}
+              </span>
               {isSelected && <Check className="size-4" />}
             </Button>
           );

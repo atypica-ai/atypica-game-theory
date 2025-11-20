@@ -1,8 +1,7 @@
 "use client";
 
-import type { TAddInterviewUIToolResult } from "@/app/(interviewProject)/tools/types";
+import type { QuestionData, TAddInterviewUIToolResult } from "@/app/(interviewProject)/tools/types";
 import { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
-import { QuestionData } from "@/app/(interviewProject)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
@@ -30,32 +29,28 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
   const [answer, setAnswer] = useState<string | string[]>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get question index from tool input (input is 1-based, convert to 0-based for array access)
+  // Get question index from tool input 1 based
   const questionIndex = useMemo(() => {
     const idx = toolInvocation.input?.questionIndex;
     const parsedIdx = typeof idx === "string" ? parseInt(idx, 10) : (idx ?? 1);
-    return parsedIdx - 1; // Convert 1-based to 0-based
+    return parsedIdx;
   }, [toolInvocation.input?.questionIndex]);
 
   // Get question data from questions array (client-side, from sessionExtra)
   const questionData = useMemo(() => {
-    const question = questions[questionIndex];
+    const question = questions[questionIndex - 1]; // questionIndex is 1 based
     if (!question) return null;
 
     const questionType = question.questionType || "open";
 
     // Process options to separate text and metadata
     const optionsArray: string[] = [];
-    const optionsMetadata: Array<{ text: string; endInterview?: boolean }> = [];
-
     if (question.options && question.options.length > 0) {
       question.options.forEach((opt) => {
         if (typeof opt === "string") {
           optionsArray.push(opt);
-          optionsMetadata.push({ text: opt });
         } else {
           optionsArray.push(opt.text);
-          optionsMetadata.push({ text: opt.text, endInterview: opt.endInterview });
         }
       });
     }
@@ -66,7 +61,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
       questionType,
       options: optionsArray,
       image: question.image,
-      optionsMetadata,
+      hint: question.hint,
     };
   }, [questions, questionIndex]);
 
@@ -74,10 +69,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
   const questionType = questionData?.questionType || "open";
   const image = questionData?.image;
   const options = questionData?.options || [];
-  const optionsMetadata = useMemo(
-    () => questionData?.optionsMetadata || [],
-    [questionData?.optionsMetadata],
-  );
+  const questionHint = questionData?.hint || "";
 
   // Check if form has been submitted
   const isCompleted = toolInvocation.state === "output-available";
@@ -96,44 +88,14 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     return false;
   }, [answer, questionType]);
 
-  // Check if user selected an option that ends interview
-  const checkIfShouldEndInterview = useCallback(() => {
-    if (questionType !== "single-choice" && questionType !== "multiple-choice") {
-      return false;
-    }
-
-    // Get the selected option(s)
-    const selectedOptions = Array.isArray(answer) ? answer : [answer];
-
-    // Check if any selected option has endInterview flag
-    return optionsMetadata.some((opt) => opt.endInterview && selectedOptions.includes(opt.text));
-  }, [questionType, answer, optionsMetadata]);
-
   // Handle form submission
   const handleSubmit = useCallback(async () => {
     if (!isAnswerValid() || !addToolResult) return;
 
     setIsSubmitting(true);
     try {
-      // Check if should end interview
-      const shouldEndInterview = checkIfShouldEndInterview();
-
-      // Format answer as plain text
       const answerText = Array.isArray(answer) ? answer.join(", ") : answer;
-
-      // Format plainText for AI model
-      let plainText = `[Question ${questionIndex + 1}] ${questionText}\n`;
-      plainText += `[User's Answer] ${answerText}\n\n`;
-
-      if (shouldEndInterview) {
-        plainText += `🛑 STOP IMMEDIATELY!\n`;
-        plainText += `The user selected an option that triggers interview termination.\n`;
-        plainText += `You MUST call endInterview tool RIGHT NOW. Do NOT proceed to the next question.`;
-      } else {
-        plainText += `✅ Answer recorded successfully.\n`;
-        plainText += `▶️ NEXT ACTION: Proceed to the next question immediately. Continue the interview flow.`;
-      }
-
+      const plainText = `[Question ${questionIndex}] ${questionText}\n[User's Answer] ${answerText}\n`;
       await addToolResult({
         tool: InterviewToolName.selectQuestion,
         toolCallId: toolInvocation.toolCallId,
@@ -141,6 +103,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
           question: {
             text: questionText,
             type: questionType,
+            hint: questionHint,
           },
           answer: answer, // Keep original type: string for open, string[] for choices
           plainText,
@@ -148,6 +111,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
       });
     } catch (error) {
       console.error("Failed to submit answer:", error);
+    } finally {
       setIsSubmitting(false);
     }
   }, [
@@ -158,7 +122,7 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
     questionIndex,
     questionText,
     questionType,
-    checkIfShouldEndInterview,
+    questionHint,
   ]);
 
   // Render field based on question type (dynamically generated)
@@ -213,7 +177,6 @@ export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({
               : [...currentValues, option];
             setAnswer(newValues);
           }}
-          optionsMetadata={optionsMetadata}
         />
       );
     }

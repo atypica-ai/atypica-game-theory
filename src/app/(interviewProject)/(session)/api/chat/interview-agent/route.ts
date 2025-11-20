@@ -11,13 +11,21 @@ import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
+import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
-import { prisma } from "@/prisma/prisma";
-import { generateId, ModelMessage, smoothStream, stepCountIs, streamText } from "ai";
+import { InterviewSessionExtra } from "@/prisma/client";
+import { mergeExtra } from "@/prisma/utils";
+import {
+  generateId,
+  ModelMessage,
+  smoothStream,
+  stepCountIs,
+  streamText,
+  UserModelMessage,
+} from "ai";
 import { Locale } from "next-intl";
 import { after, NextResponse } from "next/server";
 
@@ -52,7 +60,6 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
   return cachedCoreMessages;
 }
 
-
 /**
  * ⚠️ fetchInterviewSessionChat 会检查权限，所以这里无需另外检查权限
  */
@@ -76,15 +83,13 @@ export async function POST(req: Request) {
 
   // Check and set interview session status if needed
   if (!sessionExtra.ongoing || !sessionExtra.startsAt) {
-    await prisma.interviewSession.update({
-      where: { id: interviewSessionId },
-      data: {
-        extra: {
-          ...sessionExtra,
-          ongoing: true,
-          startsAt: Date.now(),
-        } as InputJsonValue,
-      },
+    await mergeExtra({
+      tableName: "InterviewSession",
+      id: interviewSessionId,
+      extra: {
+        ongoing: true,
+        startsAt: Date.now(),
+      } satisfies InterviewSessionExtra,
     });
   }
 
@@ -139,6 +144,17 @@ export async function POST(req: Request) {
   // Use questions from session snapshot (with fallback to project for backward compatibility)
   const questions = sessionExtra.questions || project.extra?.questions;
 
+  let hint = "";
+  if (newMessage.role === "assistant") {
+    const lastPart = (newMessage as TInterviewMessageWithTool).parts.at(-1);
+    if (
+      lastPart?.type === `tool-${InterviewToolName.selectQuestion}` &&
+      lastPart.state === "output-available"
+    ) {
+      hint = lastPart.output.question.hint ?? "";
+    }
+  }
+
   // Debug: Log questions to verify data
   chatLogger.debug({
     msg: "Interview questions data",
@@ -171,7 +187,7 @@ export async function POST(req: Request) {
   const modelMessages = setBedrockCache("claude-sonnet-4", coreMessages);
 
   const streamTextResult = streamText({
-    model: llm("claude-sonnet-4"),
+    model: llm("claude-sonnet-4-5"),
 
     providerOptions: defaultProviderOptions,
 
@@ -179,21 +195,33 @@ export async function POST(req: Request) {
     messages: modelMessages,
 
     prepareStep: async ({ messages }) => {
+      const hintText = hint
+        ? `[HINT] ${hint}`
+        : locale === "zh-CN"
+          ? "[HINT] 继续访谈，逐步深入，确保覆盖所有预设问题"
+          : "[HINT] Continue the interview, explore deeply, ensure all questions are covered";
+      const modelMessages = [
+        ...messages,
+        { role: "user", content: hintText } satisfies UserModelMessage,
+      ];
       const assistantCount = messages.filter(({ role }) => role === "assistant").length;
       if (assistantCount < 1) {
         return {
           toolChoice: "auto",
           activeTools: [InterviewToolName.requestInteractionForm],
+          messages: modelMessages,
         };
       } else if (assistantCount < 100) {
         return {
           toolChoice: "auto",
           activeTools: [InterviewToolName.selectQuestion, InterviewToolName.endInterview],
+          messages: modelMessages,
         };
       } else {
         return {
           toolChoice: "required",
           activeTools: [InterviewToolName.endInterview],
+          messages: modelMessages,
         };
       }
     },

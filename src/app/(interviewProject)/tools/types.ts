@@ -16,10 +16,10 @@ const imageAttachmentSchema = z.object({
 // New format: string
 // Always transforms to string array for output
 const optionSchema = z.union([
-  z.string().min(1, "Option cannot be empty"),
+  z.string().min(1, "Option text cannot be empty"),
   z.object({
     text: z.string().min(1, "Option text cannot be empty"),
-    endInterview: z.boolean().optional(),
+    // endInterview: z.boolean().optional(),  // 改用 hint, 不再需要这个选项了
   }),
 ]);
 
@@ -42,8 +42,8 @@ export const questionSchema = z
       .array(optionSchema)
       .min(2, "Choice questions must have at least 2 options")
       .max(30, "Choice questions can have at most 30 options")
-      .optional()
-      .transform((opts) => opts?.map((opt) => (typeof opt === "string" ? opt : opt.text))),
+      .optional(),
+    // .transform((opts) => opts?.map((opt) => (typeof opt === "string" ? opt : opt.text))),
   })
   .superRefine((data, ctx) => {
     // If questionType is not specified, treat as "open" question (default behavior)
@@ -72,7 +72,7 @@ export const questionSchema = z
     }
   });
 
-export type Question = z.infer<typeof questionSchema>;
+export type QuestionData = z.infer<typeof questionSchema>;
 
 // InterviewProjectExtra schema
 export const interviewProjectQuestionsSchema = z.object({
@@ -127,7 +127,7 @@ export const requestInteractionFormInputSchema = z.object({
         type: z.enum(["text", "choice", "boolean"]).describe("Type of input field"),
         placeholder: z.string().optional().describe("Placeholder text for text fields"),
         options: z
-          .array(z.string())
+          .array(optionSchema)
           .optional()
           .describe("Available options for choice fields (2-15 options)"),
         multipleChoice: z
@@ -189,6 +189,7 @@ export const selectQuestionOutputSchema = z.object({
   question: z.object({
     text: z.string().describe("Question text"),
     type: z.enum(["open", "single-choice", "multiple-choice"]).describe("Question type"),
+    hint: z.string().describe("Question hint").optional(),
   }),
   answer: z
     .union([z.string(), z.array(z.string())])
