@@ -12,7 +12,7 @@ export const createSubAgentInputSchema = z.object({
   taskRequirement: z
     .string()
     .describe(
-      "The task requirement that the sub-agent needs to complete. This task should be specific and detailed, forbid multi-task combination",
+      "The task requirement that the sub-agent needs to complete. This task should be specific and detailed, forbid multi-task combination or multiple goals.",
     ),
   outputFormat: z
     .string()

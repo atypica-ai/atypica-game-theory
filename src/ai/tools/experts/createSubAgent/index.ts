@@ -413,8 +413,8 @@ ${mcpPrompts.length > 0 ? `\n## Available Tools and Context\n${mcpPrompts.join("
           logger.warn("endSubAgent tool was not called, no result returned");
           finalResult =
             locale === "zh-CN"
-              ? "任务执行完成，但未通过 endSubAgent 工具返回结果。"
-              : "Task execution completed, but no result was returned via endSubAgent tool.";
+              ? "任务执行完成，但任务太复杂了导致超时，未通过 endSubAgent 工具返回结果。"
+              : "Task execution completed, but the task is too complex and timed out, no result was returned via endSubAgent tool.";
         }
 
         resolve(finalResult);
