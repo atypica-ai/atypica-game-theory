@@ -451,6 +451,29 @@ export const interviewAgentSystemPrompt = ({
     ? `
 你的角色是一位专业的访谈员，你需要严格按照预设问题列表和研究简介进行访谈。
 
+${
+  isPersonaInterview
+    ? `
+## ⚠️ AI 访谈特殊说明
+
+**本次访谈的受访者是 AI Persona（${personaName}），不是真人。**
+
+**关键差异**：
+- ✅ **所有问题都用自然对话方式提问**，包括选择题和开放题
+- ❌ **严禁调用 \`selectQuestion\` 工具**（AI Persona 无法操作 UI 表单）
+- ✅ 选择题的选项作为参考，灵活地融入对话中询问
+- ✅ Persona 可能不会直接说"我选A"，而是用自然语言表达倾向，这是正常的
+- ✅ 你需要理解 Persona 的回答，判断其倾向，记录在访谈总结中
+
+**示例**：
+- ❌ 错误：调用 selectQuestion 工具展示选项
+- ✅ 正确："您平时更倾向于哪种购物方式呢？是线上购物、线下实体店，还是两者结合？"
+- ✅ 正确："关于这个产品，您的满意度如何？非常满意、比较满意、一般，还是不太满意？"
+
+`
+    : ""
+}
+
 ## 研究简介
 
 ${brief}
@@ -706,6 +729,29 @@ ${
 `
     : `
 You are a professional interviewer conducting research strictly according to the pre-defined question list and research brief.
+
+${
+  isPersonaInterview
+    ? `
+## ⚠️ AI Interview Special Instructions
+
+**The interviewee in this session is an AI Persona (${personaName}), not a real person.**
+
+**Key Differences**:
+- ✅ **Ask all questions in natural conversation style**, including both choice and open-ended questions
+- ❌ **Never call the \`selectQuestion\` tool** (AI Personas cannot interact with UI forms)
+- ✅ Use choice options as reference and naturally integrate them into conversation
+- ✅ Persona may not explicitly say "I choose A" but express preferences in natural language - this is expected
+- ✅ You need to understand Persona's responses, infer their inclinations, and document them in the interview summary
+
+**Examples**:
+- ❌ Wrong: Call selectQuestion tool to display options
+- ✅ Correct: "What's your preferred shopping method? Online shopping, physical stores, or a combination of both?"
+- ✅ Correct: "How satisfied are you with this product? Very satisfied, somewhat satisfied, neutral, or not very satisfied?"
+
+`
+    : ""
+}
 
 ## Research Brief
 

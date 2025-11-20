@@ -26,7 +26,7 @@ import { generateId, stepCountIs, streamText, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 
-const MAX_CONVERSATION_TURNS = 20;
+const MAX_CONVERSATION_TURNS = 50;
 
 function fixEmptyTextIssue(message: Omit<UIMessage, "role">) {
   // 有时候 personaReply 或 interviewerReply 的 content 是空的，这时候一般是调用了一次工具但还没有文本回复
@@ -353,20 +353,25 @@ async function generateInterviewerResponse({
   statReport: StatReporter;
   logger: Logger;
 }) {
-  // persona 访谈使用 endInterview 和 selectQuestion
-  const { endInterview, selectQuestion } = interviewSessionTools({
+  // persona 访谈只使用 endInterview，所有问题通过自然对话进行
+  const { endInterview } = interviewSessionTools({
     interviewSessionId,
   });
   const tools = {
     endInterview,
-    selectQuestion,
   };
   const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({
-      model: llm("claude-3-7-sonnet"),
-
+      // model: llm("claude-3-7-sonnet"),
+      // providerOptions: {
+      //   ...defaultProviderOptions,
+      // },
+      model: llm("gpt-5-mini"),
       providerOptions: {
-        ...defaultProviderOptions,
+        openai: {
+          reasoningSummary: "auto",
+          reasoningEffort: "minimal",
+        } satisfies OpenAIResponsesProviderOptions,
       },
 
       system: systemPrompt,
