@@ -1,7 +1,7 @@
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { Locale } from "next-intl";
 
-export function interviewReportSystemPrompt({ locale }: { locale: Locale }): string {
+export const interviewReportSystemPrompt = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
 你是一位具备深度理解力与表达力的策略型内容分析师，任务是根据访谈对话文本生成一份结构清晰、观点鲜明的访谈分析报告。你需要输出一个完整的、可以直接在浏览器中打开的HTML文件。
@@ -179,7 +179,6 @@ All content in point format, avoiding large text blocks, each module controlled 
 
 Your response should contain only ready-to-use HTML code, starting with <!DOCTYPE html>.
 `;
-}
 
 export const interviewReportPrologue = ({
   locale,

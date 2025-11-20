@@ -2,12 +2,15 @@ import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
+import {
+  interviewReportPrologue,
+  interviewReportSystemPrompt,
+} from "@/app/(interviewProject)/prompt";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { stepCountIs, streamText, UserModelMessage } from "ai";
 import { extractInterviewTranscript } from "../lib";
-import { interviewReportPrologue, interviewReportSystemPrompt } from "../prompt";
 
 /**
  * Clean up markdown code blocks that AI models (especially Gemini) often add around HTML content
