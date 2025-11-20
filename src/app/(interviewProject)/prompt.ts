@@ -436,8 +436,6 @@ Please directly output complete HTML code, starting with <!DOCTYPE html>, withou
 export const interviewAgentSystemPrompt = ({
   brief,
   questions,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  questionTypePreference,
   isPersonaInterview,
   personaName,
   locale,
@@ -450,7 +448,6 @@ export const interviewAgentSystemPrompt = ({
     dimensions?: string[];
     hint?: string;
   }>;
-  questionTypePreference?: "open-ended" | "multiple-choice" | "mixed";
   isPersonaInterview: boolean;
   personaName?: string;
   locale?: Locale;
@@ -520,16 +517,10 @@ ${questions
    - **严禁**使用 \`requestInteractionForm\` 来展示预设问题
 
 **问题提示（hint）处理**：
-   - 每个问题可能包含 \`hint\` 字段，用自然语言描述特殊处理行为
-   - **你必须理解 hint 的含义**，并在调用 selectQuestion 工具时，根据 hint 设置正确的 \`optionsMetadata\`
-   - 支持的 optionsMetadata 标记：
-     - \`endInterview: true\` - 用户选择该选项后立即终止访谈
-   - **示例**：
-     - hint: "选择'不符合条件'则终止访谈"
-       → optionsMetadata: \`[{ text: "符合" }, { text: "不符合条件", endInterview: true }]\`
-     - hint: "选择'没有购买经历'则终止访谈"
-       → optionsMetadata: \`[{ text: "线上" }, { text: "线下" }, { text: "没有购买经历", endInterview: true }]\`
-   - 如果问题没有 hint，则所有选项的 optionsMetadata 只需包含 \`text\` 字段
+   - 问题的选项可能包含特殊标记（例如终止访谈）
+   - 这些标记已经预设在问题数据中，\`selectQuestion\` 工具会自动处理
+   - 当用户选择带有终止标记的选项时，工具会返回 \`shouldEndInterview: true\`
+   - 看到此标记后，你必须**立即**调用 \`endInterview\` 工具结束访谈
 
 **2. 评分题（rating）**
    - **必须**调用 \`selectQuestion({ questionIndex: n })\` 工具
@@ -836,16 +827,10 @@ You must ask questions in sequence according to the pre-defined list. Use differ
    - **Strictly prohibited** to use \`requestInteractionForm\` for pre-defined questions
 
 **Question Hint Processing**:
-   - Each question may contain a \`hint\` field with natural language instructions for special handling
-   - **You must understand the hint's meaning** and set the correct \`optionsMetadata\` when calling the selectQuestion tool
-   - Supported optionsMetadata markers:
-     - \`endInterview: true\` - End the interview immediately after the user selects this option
-   - **Examples**:
-     - hint: "End interview if 'Not qualified' is selected"
-       → optionsMetadata: \`[{ text: "Qualified" }, { text: "Not qualified", endInterview: true }]\`
-     - hint: "End interview for 'No purchase history'"
-       → optionsMetadata: \`[{ text: "Online" }, { text: "Offline" }, { text: "No purchase history", endInterview: true }]\`
-   - If a question has no hint, all options in optionsMetadata only need the \`text\` field
+   - Question options may contain special markers (e.g., end interview)
+   - These markers are pre-configured in the question data, and the \`selectQuestion\` tool will handle them automatically
+   - When the user selects an option with an end interview marker, the tool returns \`shouldEndInterview: true\`
+   - Upon seeing this marker, you must **immediately** call the \`endInterview\` tool to end the interview
 
 **2. Rating Questions**
    - **Must** call \`selectQuestion({ questionIndex: n })\` tool

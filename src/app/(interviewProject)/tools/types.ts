@@ -43,9 +43,7 @@ export const questionSchema = z
       .min(2, "Choice questions must have at least 2 options")
       .max(30, "Choice questions can have at most 30 options")
       .optional()
-      .transform((opts) =>
-        opts?.map((opt) => (typeof opt === "string" ? opt : opt.text)),
-      ),
+      .transform((opts) => opts?.map((opt) => (typeof opt === "string" ? opt : opt.text))),
   })
   .superRefine((data, ctx) => {
     // If questionType is not specified, treat as "open" question (default behavior)
@@ -79,7 +77,6 @@ export type Question = z.infer<typeof questionSchema>;
 // InterviewProjectExtra schema
 export const interviewProjectQuestionsSchema = z.object({
   questions: z.array(questionSchema).optional(),
-  questionTypePreference: z.enum(["open-ended", "multiple-choice", "mixed"]).optional(),
 });
 
 // endInterview tool schemas
@@ -186,47 +183,19 @@ export const selectQuestionInputSchema = z.object({
     .describe(
       "The 1-based index of the question to select (e.g., 1 for the first question, 2 for the second)",
     ),
-  optionsMetadata: z
-    .array(
-      z.object({
-        text: z.string().describe("The option text"),
-        endInterview: z.boolean().optional().describe("If true, end interview when this option is selected"),
-      }),
-    )
-    .optional()
-    .describe(
-      "Metadata for each option. Set based on the question's hint field. Required for choice questions with hints.",
-    ),
 });
 
 export const selectQuestionOutputSchema = z.object({
-  questionIndex: z.number(),
-  questionText: z.string(),
-  questionType: z.enum(["open", "single-choice", "multiple-choice"]),
-  options: z.array(z.string()).optional(),
-  image: imageAttachmentSchema.optional(),
-  formFields: z
-    .array(
-      z.object({
-        id: z.string(),
-        label: z.string(),
-        type: z.enum(["text", "choice", "boolean"]),
-        options: z.array(z.string()).optional(),
-        multipleChoice: z.boolean().optional(),
-      }),
-    )
-    .optional(),
-  optionsMetadata: z
-    .array(
-      z.object({
-        text: z.string(),
-        endInterview: z.boolean().optional(),
-      }),
-    )
-    .optional(),
-  userAnswer: z.union([z.string(), z.array(z.string())]).optional(),
-  shouldEndInterview: z.boolean().optional(),
-  plainText: z.string(), // Required for PlainTextToolResult compatibility
+  question: z.object({
+    text: z.string().describe("Question text"),
+    type: z.enum(["open", "single-choice", "multiple-choice"]).describe("Question type"),
+  }),
+  answer: z
+    .union([z.string(), z.array(z.string())])
+    .describe(
+      "User's answer. For open questions: string. For choice questions (single/multiple): string array",
+    ),
+  plainText: z.string(), // Required for PlainTextToolResult compatibility - contains flow instructions for AI
 });
 
 export enum InterviewToolName {
