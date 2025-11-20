@@ -22,11 +22,12 @@ import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
+import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateId, stepCountIs, streamText, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 
-const MAX_CONVERSATION_TURNS = 50;
+const MAX_CONVERSATION_TURNS = 100;
 
 function fixEmptyTextIssue(message: Omit<UIMessage, "role">) {
   // 有时候 personaReply 或 interviewerReply 的 content 是空的，这时候一般是调用了一次工具但还没有文本回复
@@ -369,8 +370,8 @@ async function generateInterviewerResponse({
       model: llm("gpt-5-mini"),
       providerOptions: {
         openai: {
-          reasoningSummary: "auto",
-          reasoningEffort: "minimal",
+          reasoningSummary: "auto", // 'auto' | 'detailed'
+          reasoningEffort: "high", // 'minimal' | 'low' | 'medium' | 'high'
         } satisfies OpenAIResponsesProviderOptions,
       },
 
