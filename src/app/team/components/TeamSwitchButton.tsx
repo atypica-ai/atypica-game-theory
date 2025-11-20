@@ -18,7 +18,7 @@ import { CheckIcon, ChevronsUpDownIcon, UserIcon, UsersIcon } from "lucide-react
 import { signIn, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type Identities = ExtractServerActionData<typeof getUserSwitchableIdentitiesAction>;
@@ -56,36 +56,40 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
     loadIdentities();
   }, [open, t]);
 
-  const handleSwitchUser = async (targetUserId: number) => {
-    setIsSwitching(targetUserId);
-    try {
-      const tokenResult = await generateUserSwitchTokenAction(targetUserId);
-      if (!tokenResult.success) {
-        toast.error(tokenResult.message);
-        return;
-      }
+  const handleSwitchUser = useCallback(
+    async (targetUserId: number) => {
+      setIsSwitching(targetUserId);
+      try {
+        const tokenResult = await generateUserSwitchTokenAction(targetUserId);
+        if (!tokenResult.success) {
+          toast.error(tokenResult.message);
+          return;
+        }
 
-      const result = await signIn("team-switch", {
-        targetUserId: targetUserId.toString(),
-        switchToken: tokenResult.data,
-        redirect: false,
-      });
+        const result = await signIn("team-switch", {
+          targetUserId: targetUserId.toString(),
+          switchToken: tokenResult.data,
+          redirect: false,
+        });
 
-      if (result?.error) {
-        toast.error(result.error || t("toast.switchFailed"));
-      } else {
-        toast.success(t("toast.switchSuccess"));
-        setOpen(false);
-        router.push("/");
-        window.location.reload(); // To ensure session and permissions are fully updated
+        if (result?.error) {
+          toast.error(result.error || t("toast.switchFailed"));
+        } else {
+          toast.success(t("toast.switchSuccess"));
+          setOpen(false);
+          router.push("/account");
+          // window.location.reload(); // To ensure session and permissions are fully updated
+          window.location.href = "/account"; // 不能停留在当前页，不然当前页面如果是详情页，可能 404
+        }
+      } catch (error) {
+        console.error("Failed to switch user:", error);
+        toast.error(t("toast.networkError"));
+      } finally {
+        setIsSwitching(null);
       }
-    } catch (error) {
-      console.error("Failed to switch user:", error);
-      toast.error(t("toast.networkError"));
-    } finally {
-      setIsSwitching(null);
-    }
-  };
+    },
+    [t, setOpen, router],
+  );
 
   const currentUserId = session?.user?.id;
 

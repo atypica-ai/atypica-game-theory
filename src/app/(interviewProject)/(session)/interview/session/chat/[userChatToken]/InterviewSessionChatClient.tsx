@@ -238,12 +238,9 @@ export function InterviewSessionChatClient({
       useChatRef.current.sendMessage({ text: "[READY]" });
     } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
       useChatRef.current.regenerate();
-    }
-  }, [initialMessages]);
-
-  useEffect(() => {
-    if (useChatHelpers.messages.at(-1)?.role === "assistant" && useChatHelpers.status === "ready") {
-      const lastPart = useChatHelpers.messages.at(-1)?.parts?.at(-1);
+    } else if (initialMessages[initialMessages.length - 1]?.role === "assistant") {
+      // 这里只有首次加载才执行
+      const lastPart = initialMessages[initialMessages.length - 1]?.parts?.at(-1);
       if (
         lastPart &&
         ((lastPart.type === `tool-${InterviewToolName.selectQuestion}` &&
@@ -253,7 +250,24 @@ export function InterviewSessionChatClient({
         useChatRef.current.sendMessage({ text: "[CONTINUE]" });
       }
     }
-  }, [useChatHelpers.messages.at(-1)?.id, useChatHelpers.status]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialMessages]);
+
+  // const continueRequestSentRef = useRef<Record<string, boolean>>({});
+  // useEffect(() => {
+  //   if (useChatHelpers.messages.at(-1)?.role === "assistant" && useChatHelpers.status === "ready") {
+  //     const lastPart = useChatHelpers.messages.at(-1)?.parts?.at(-1);
+  //     if (
+  //       lastPart &&
+  //       lastPart.type === `tool-${InterviewToolName.selectQuestion}` &&
+  //       lastPart.state === "output-available"
+  //       // || lastPart.type === "step-start"
+  //     ) {
+  //       if (continueRequestSentRef.current[lastPart.toolCallId]) return;
+  //       continueRequestSentRef.current[lastPart.toolCallId] = true;
+  //       useChatRef.current.sendMessage({ text: "[CONTINUE]" });
+  //     }
+  //   }
+  // }, [useChatHelpers.messages.at(-1)?.id, useChatHelpers.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Project info dialog content
   const ProjectInfoButton = () => (
