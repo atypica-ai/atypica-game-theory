@@ -229,6 +229,10 @@ export function ProjectDetails({
           }
           toast.success(t("questionUpdated"));
         }
+        // Clear dialog state before refresh to prevent flash
+        setQuestionEditDialogOpen(false);
+        setEditingQuestion(null);
+        setEditingQuestionIndex(undefined);
         router.refresh();
       } catch (error) {
         toast.error((error as Error).message || t("questionUpdateFailed"));
