@@ -25,6 +25,8 @@ import {
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
+import { TeamConfigName, TeamConfigValue } from "@/app/team/teamConfig/types";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
@@ -50,8 +52,6 @@ import {
   shouldDecidePersonaTier,
   waitUntilAttachmentsProcessed,
 } from "./utils";
-import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
-import { TeamConfigName } from "@/app/team/teamConfig/types";
 
 // autopolot 模式默认 15 步，webSearch 2 + saveAnalyst 1 + searchPersonas 1 + scoutTaskChat 2 + buildPersona 2 + interviewChat 2 + saveAnalystStudySummary 1 + generateReport 1
 const MAX_STEPS_EACH_ROUND = 15;
@@ -111,7 +111,13 @@ export async function studyAgentRequest({
   const manager = getMcpClientManager();
   const clients = teamId ? await manager.getClientsForTeam(teamId) : []; // Personal users have no MCP clients
   logger.info({ msg: "Loaded mcp clients", clients, teamId });
-  const teamStudySystemPrompt = teamId ? await getTeamConfigWithDefault<Record<string, string>>(teamId, TeamConfigName.studySystemPrompt, { "zh-CN": "", "en-US": "" }) : null;
+  const teamStudySystemPrompt = teamId
+    ? await getTeamConfigWithDefault<Record<string, string>>(
+        teamId,
+        TeamConfigName.studySystemPrompt,
+        { "zh-CN": "", "en-US": "" } satisfies TeamConfigValue["studySystemPrompt"],
+      )
+    : null;
   const agentToolArgs: AgentToolConfigArgs = {
     locale,
     abortSignal: toolAbortController.signal,

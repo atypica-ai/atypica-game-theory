@@ -257,7 +257,7 @@ export const studySystem = async ({
   const teamSystemPrompt = await getTeamConfigWithDefault<Record<string, string>>(
     teamId ?? null,
     TeamConfigName.studySystemPrompt,
-    { "zh-CN": "", "en-US": "" }
+    { "zh-CN": "", "en-US": "" } satisfies TeamConfigValue["studySystemPrompt"],
   );
 
   // 构建提示词

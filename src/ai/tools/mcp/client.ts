@@ -35,7 +35,7 @@ export type MCPTransportConfig = {
   prompt?: string;
 };
 
-type MCPConfigs = Record<string, MCPTransportConfig>;
+export type MCPConfigs = Record<string, MCPTransportConfig>;
 
 /**
  * MCP tools type - tools returned from MCP client
