@@ -5,13 +5,13 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { cn } from "@/lib/utils";
 import {
   BrainCircuitIcon,
-  BuildingIcon,
   ChevronRightIcon,
   CodeIcon,
   HeadphonesIcon,
   LightbulbIcon,
   LucideIcon,
   MessageSquareIcon,
+  ShieldCheckIcon,
   SparklesIcon,
   UsersIcon,
 } from "lucide-react";
@@ -37,8 +37,8 @@ export function EnterpriseEN() {
       <section className="py-20 md:py-32">
         <div className="container mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <BuildingIcon className="size-4" />
-            Enterprise Solution
+            <ShieldCheckIcon className="size-4" />
+            Enterprise Ready • SOC2 Compliant
           </div>
           <h1
             className={cn(
@@ -57,9 +57,13 @@ export function EnterpriseEN() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button size="lg" className="rounded-full h-12" onClick={sayHelloToSales}>
+            <Button
+              size="lg"
+              className="rounded-full h-12 has-[>svg]:px-6"
+              onClick={sayHelloToSales}
+            >
               Contact Sales
-              <ChevronRightIcon className="h-4 w-4" />
+              <ChevronRightIcon className="size-4" />
             </Button>
             <Button
               size="lg"
@@ -212,7 +216,7 @@ export function EnterpriseEN() {
             </p>
           </div>
 
-          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
             <EnterpriseFeatureCard
               icon={SparklesIcon}
               title="Report Templates"
@@ -233,6 +237,73 @@ export function EnterpriseEN() {
               description="Integrate AI Research into your systems and workflows for automated processes"
               color="yellow"
             />
+
+            <EnterpriseFeatureCard
+              icon={ShieldCheckIcon}
+              title="Security & Compliance"
+              description="SOC 2 certified with enterprise-grade security and data protection"
+              color="green"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Security Section */}
+      <section className="py-20 md:py-32 bg-zinc-900 text-white overflow-hidden relative">
+        <div className="absolute inset-0 bg-[url('/_public/grid.svg')] opacity-10" />
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20">
+            <div className="flex-1 space-y-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-400 text-sm font-medium border border-green-500/20">
+                <ShieldCheckIcon className="size-4" />
+                Enterprise Ready
+              </div>
+              <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight">
+                Enterprise-Grade Security <br />
+                <span className="text-zinc-400">SOC2 Certified</span>
+              </h2>
+              <p className="text-lg text-zinc-400 max-w-xl">
+                We prioritize your data security and privacy. Our platform is built on
+                enterprise-grade infrastructure with rigorous compliance standards.
+              </p>
+
+              <div className="mt-12 p-6 md:p-8 rounded-2xl bg-zinc-900/50 border border-zinc-800 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+                <div className="flex items-start md:items-center gap-6">
+                  <div className="shrink-0 p-4 rounded-xl bg-green-500/10 text-green-400 shadow-[0_0_20px_-5px_rgba(74,222,128,0.3)]">
+                    <ShieldCheckIcon className="size-8 md:size-10" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-1">SOC2 Certified</h3>
+                    <p className="text-zinc-400 text-sm md:text-base max-w-md">
+                      Our platform is audited and certified to meet strict industry standards for
+                      security and compliance.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="shrink-0 w-full lg:w-auto flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-12 pl-4 lg:pl-0 lg:pr-4 border-l-2 border-zinc-800 lg:border-l-0 lg:border-l-transparent">
+                  <div className="flex flex-col items-start lg:items-end">
+                    <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium mb-1">
+                      Status
+                    </span>
+                    <div className="flex items-center gap-2 text-green-400 bg-green-500/10 px-3 py-1 rounded-full text-sm font-medium">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </span>
+                      Active & Monitored
+                    </div>
+                  </div>
+                  <div className="hidden lg:block h-10 w-px bg-zinc-800"></div>
+                  <div className="flex flex-col items-start lg:items-end">
+                    <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium mb-1">
+                      Auditor
+                    </span>
+                    <span className="text-white font-medium">AICPA Accredited</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -339,9 +410,13 @@ export function EnterpriseEN() {
               Contact our sales team to learn how atypica.AI Enterprise can help your organization
               understand users at scale
             </p>
-            <Button size="lg" className="rounded-full h-12" onClick={sayHelloToSales}>
+            <Button
+              size="lg"
+              className="rounded-full h-12 has-[>svg]:px-6"
+              onClick={sayHelloToSales}
+            >
               Contact Sales
-              <ChevronRightIcon className="h-4 w-4" />
+              <ChevronRightIcon className="size-4" />
             </Button>
           </div>
         </div>
@@ -397,12 +472,13 @@ function EnterpriseFeatureCard({
   icon: LucideIcon;
   title: string;
   description: string;
-  color: "purple" | "blue" | "yellow";
+  color: "purple" | "blue" | "yellow" | "green";
 }) {
   const colorClasses = {
     purple: "bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400",
     blue: "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
     yellow: "bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400",
+    green: "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400",
   };
 
   return (

@@ -19,7 +19,9 @@ export function TeamPlanCard({ productPrices, userType }: TeamPlanCardProps) {
     <Card className="flex flex-col not-dark:border-muted/40">
       <CardHeader>
         <CardTitle className="text-2xl">{t("teamTitle")}</CardTitle>
-        <CardDescription className="h-12">{t("teamSubtitle")}</CardDescription>
+        <div className="h-12">
+          <CardDescription className="h-6">{t("teamSubtitle")}</CardDescription>
+        </div>
         <div className="mt-4 h-30">
           <div>
             {locale === "zh-CN" ? (
@@ -53,7 +55,7 @@ export function TeamPlanCard({ productPrices, userType }: TeamPlanCardProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow space-y-4">
+      <CardContent className="grow space-y-4">
         <TeamCreateButton>
           <Button className="w-full mb-6" disabled={userType !== "Personal"}>
             {t("createTeam")}

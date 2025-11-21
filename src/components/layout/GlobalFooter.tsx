@@ -99,12 +99,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
               >
                 {t("about")}
               </Link>
-              {/*<Link
+              <Link
                 href="/pricing"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("pricing")}
-              </Link>*/}
+              </Link>
               <Link
                 href="/persona-simulation"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
@@ -116,12 +116,6 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("insightRadio")}
-              </Link>
-              <Link
-                href="/deck/about"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("overview")}
               </Link>
               <Link
                 href="/changelog"
@@ -152,7 +146,7 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 href="/enterprise"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t("forEnterprise")}
+                {t("enterpriseReady")}
               </Link>
               <Link
                 href="https://blog.atypica.ai/"
@@ -166,6 +160,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("joinUs")}
+              </Link>
+              <Link
+                href="/deck/about"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("overview")}
               </Link>
               <Link
                 href="/deck/pitch"

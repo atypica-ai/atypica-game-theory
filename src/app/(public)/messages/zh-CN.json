@@ -151,6 +151,7 @@
     "enterpriseSubtitle": "适用于规模化运营的企业",
     "enterpriseMonthlyTokens": "每月5000万Token（有效期30天，企业共享）",
     "enterpriseUnlimitedSeats": "不限席位",
+    "soc2Compliant": "SOC2 合规",
     "getStarted": "免费开始使用",
     "chooseBasic": "购买Token",
     "upgradeToPro": "升级到Pro版",
@@ -238,6 +239,7 @@
       "startStudyButton": "开始您的研究",
       "trustIndicator": "受到各大机构用户信赖",
       "loadingVideo": "视频加载中...",
+      "soc2Compliant": "SOC2 合规",
       "insightRadio": {
         "title": "最新 Insight 播客",
         "viewAll": "查看全部",

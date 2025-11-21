@@ -1,6 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckIcon, CoinsIcon, HeadphonesIcon, LucideIcon, SparklesIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  CoinsIcon,
+  HeadphonesIcon,
+  LucideIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -16,7 +24,17 @@ export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) 
     <Card className="flex flex-col not-dark:border-muted/40">
       <CardHeader>
         <CardTitle className="text-2xl">{t("enterpriseTitle")}</CardTitle>
-        <CardDescription className="h-12">{t("enterpriseSubtitle")}</CardDescription>
+        <div className="h-12">
+          <CardDescription className="h-6">{t("enterpriseSubtitle")}</CardDescription>
+          <Link
+            href="/enterprise"
+            className="group w-fit flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ShieldCheckIcon className="size-3.5 text-green-500" />
+            {t("soc2Compliant")}
+            <ArrowRightIcon className="size-3 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        </div>
         <div className="mt-4 h-30">
           <div>
             <span className="text-3xl font-bold">{locale === "zh-CN" ? "¥15000" : "$2000"}</span>
@@ -29,7 +47,7 @@ export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) 
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow space-y-4">
+      <CardContent className="grow space-y-4">
         <Button className="w-full mb-2" onClick={onContactSales}>
           {t("contactSales")}
         </Button>

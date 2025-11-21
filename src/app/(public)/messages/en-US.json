@@ -151,6 +151,7 @@
     "enterpriseSubtitle": "For businesses operating at scale",
     "enterpriseMonthlyTokens": "50M tokens per month (30-day validity, shared across enterprise)",
     "enterpriseUnlimitedSeats": "Unlimited seats",
+    "soc2Compliant": "SOC2 Compliant",
     "getStarted": "Get Started Free",
     "chooseBasic": "Buy Tokens",
     "upgradeToPro": "Upgrade to Pro",
@@ -238,6 +239,7 @@
       "startStudyButton": "Start Your Study",
       "trustIndicator": "Trusted by individuals from leading organizations",
       "loadingVideo": "Loading Video...",
+      "soc2Compliant": "SOC2 Compliant",
       "insightRadio": {
         "title": "Latest Insight Radio",
         "viewAll": "View All",
