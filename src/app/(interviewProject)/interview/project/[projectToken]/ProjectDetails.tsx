@@ -30,11 +30,12 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { EditQuestionDialog, QuestionData } from "./EditQuestionDialog";
-import { InterviewReportsSection } from "./InterviewReportsSection";
-import { InterviewSessionsSection } from "./InterviewSessionsSection";
-import { InviteDialog } from "./InviteDialog";
-import { ProjectStatsSection } from "./ProjectStatsSection";
-import { ShareInterviewProjectButton } from "./ShareInterviewProjectButton";
+import { InterviewReportsSection } from "./components/InterviewReportsSection";
+import { InterviewSessionsSection } from "./components/InterviewSessionsSection";
+import { InviteDialog } from "./components/InviteDialog";
+import { ProjectStatsSection } from "./components/ProjectStatsSection";
+import { ShareInterviewProjectButton } from "./components/ShareInterviewProjectButton";
+import { SortableQuestionItem } from "./components/SortableQuestionItem";
 
 export function ProjectDetails({
   project,
