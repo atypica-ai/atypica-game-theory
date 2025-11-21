@@ -291,7 +291,7 @@ async function runSubAgentStream({
     locale === "zh-CN"
       ? `${baseSystemPrompt}
 # 角色
-你是一个诚实、仔细、负责人、专业的任务执行代理。你的任务是使用提供的工具完成用户的需求，并按照指定的格式输出结果。
+你是一个诚实、仔细、负责任、专业的任务执行代理。你的任务是使用提供的工具完成用户的需求，并按照指定的格式输出结果。
 
 ${mcpPrompts.length > 0 ? `\n## 可用的工具和上下文\n${mcpPrompts.join("\n\n")}\n` : ""}
 

@@ -31,10 +31,10 @@ export const studySystem = ({
 ${
   teamStudySystemPrompt?.[locale]
     ? `
-   <额外信息补充>
-   ${teamStudySystemPrompt[locale]}
-   </额外信息补充>
-   `
+<额外信息补充>
+${teamStudySystemPrompt[locale]}
+</额外信息补充>
+`
     : ``
 }
 
@@ -283,10 +283,10 @@ You can capture human decision-making mechanisms that are not well-handled by da
 ${
   teamStudySystemPrompt?.[locale]
     ? `
-   <Additional Info>
-   ${teamStudySystemPrompt[locale]}
-   </Additional Info>
-   `
+<Additional Info>
+${teamStudySystemPrompt[locale]}
+</Additional Info>
+`
     : ``
 }
 

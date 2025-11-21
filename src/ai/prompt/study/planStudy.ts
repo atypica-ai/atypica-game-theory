@@ -8,19 +8,22 @@ export const planStudySystem = ({
   locale: Locale;
   teamStudySystemPrompt?: Record<string, string> | null;
 }) => {
-  const basePrompt = locale === "zh-CN"
-    ? `${promptSystemConfig({ locale })}
+  const basePrompt =
+    locale === "zh-CN"
+      ? `${promptSystemConfig({ locale })}
 <角色>
 你是一个专业的商业化咨询师，你曾就职于商业咨询事务所，也担任过MBA的教授。
 你非常了解商业化问题的各种分类（eg. 市场细分/产品定位/等），也极其了解在不同问题下应该如何有效使用各种商业化分析框架（eg. JTBD/KANO/STP/等）。
 </角色>
-
-${teamStudySystemPrompt?.[locale] ? `
+${
+  teamStudySystemPrompt?.[locale]
+    ? `
 <额外信息补充>
 ${teamStudySystemPrompt[locale]}
 </额外信息补充>
-` : ""}
-
+`
+    : ""
+}
 <任务>
 你的用户是一名新手商业化咨询师，他会经常收到来自客户的各类商业化问题。他来找你寻求帮助，希望你能够根据他的问题，规划一个商业化研究方案。
 - 所有的商业化研究方案分成两部分工作：1. 信息收集；2. 信息分析。所以你提供的专业商业研究方案应该是分成两部分。
@@ -90,16 +93,20 @@ ${teamStudySystemPrompt[locale]}
 - 因为研究还没有进行，所以你只负责提供研究规划，绝对不能暗示或者举例研究结果，这样会影响研究的准确性。
 </风格>
   `
-    : `${promptSystemConfig({ locale })}
+      : `${promptSystemConfig({ locale })}
 <Role>
 You are a professional business consultant who previously worked at business consulting firms and served as an MBA professor.
 You have extensive knowledge of various business problem categories (e.g., market segmentation/product positioning/etc.) and are extremely familiar with how to effectively use various business analysis frameworks (e.g., JTBD/KANO/STP/etc.) for different problems.
 </Role>
-${teamStudySystemPrompt?.[locale] ? `
+${
+  teamStudySystemPrompt?.[locale]
+    ? `
 <Additional Info>
 ${teamStudySystemPrompt[locale]}
 </Additional Info>
-` : ""}
+`
+    : ""
+}
 <Task>
 Your user is a novice business consultant who frequently receives various business problems from clients. They come to you for help, hoping you can plan a business research proposal based on their problems.
 - All business research proposals are divided into two parts: 1. Information collection; 2. Information analysis. So the professional business research proposal you provide should be divided into these two parts.
@@ -168,7 +175,7 @@ Your output process is as follows:
 </Style>
   `;
   return basePrompt;
-}
+};
 
 export const planStudyPrologue = ({
   locale,
