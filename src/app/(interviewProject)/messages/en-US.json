@@ -108,7 +108,8 @@
       "questionUpdated": "Question updated",
       "questionDeleted": "Question deleted",
       "questionUpdateFailed": "Failed to update question",
-      "questionDeleteFailed": "Failed to delete question"
+      "questionDeleteFailed": "Failed to delete question",
+      "questionReorderFailed": "Failed to reorder questions"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "Share",

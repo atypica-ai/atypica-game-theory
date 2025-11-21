@@ -108,7 +108,8 @@
       "questionUpdated": "问题已更新",
       "questionDeleted": "问题已删除",
       "questionUpdateFailed": "更新问题失败",
-      "questionDeleteFailed": "删除问题失败"
+      "questionDeleteFailed": "删除问题失败",
+      "questionReorderFailed": "问题排序失败"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "分享",

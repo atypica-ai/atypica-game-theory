@@ -403,6 +403,88 @@ export async function deleteInterviewQuestion(
 }
 
 /**
+ * Reorder interview questions
+ */
+export async function reorderInterviewQuestions(
+  projectId: number,
+  newOrder: number[],
+): Promise<ServerActionResult<InterviewProject>> {
+  return withAuth(async (user) => {
+    const project = await prisma.interviewProject.findUnique({
+      where: { id: projectId, userId: user.id },
+    });
+
+    if (!project) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview project not found",
+      };
+    }
+
+    // Validate and parse extra field
+    const extraParseResult = interviewProjectQuestionsSchema.safeParse(project.extra || {});
+    if (!extraParseResult.success) {
+      rootLogger.error({
+        msg: "Invalid project extra data structure",
+        projectId,
+        error: extraParseResult.error.message,
+      });
+      return {
+        success: false,
+        code: "internal_server_error",
+        message: "Invalid project data structure",
+      };
+    }
+
+    const extra = extraParseResult.data;
+    const questions = extra.questions || [];
+
+    // Validate newOrder array
+    if (newOrder.length !== questions.length) {
+      return {
+        success: false,
+        code: "internal_server_error",
+        message: "Invalid reorder data: length mismatch",
+      };
+    }
+
+    // Check if all indices are valid
+    const sortedIndices = [...newOrder].sort((a, b) => a - b);
+    const isValidOrder = sortedIndices.every((idx, i) => idx === i);
+    if (!isValidOrder) {
+      return {
+        success: false,
+        code: "internal_server_error",
+        message: "Invalid reorder data: invalid indices",
+      };
+    }
+
+    // Reorder questions based on newOrder array
+    const reorderedQuestions = newOrder.map((oldIndex) => questions[oldIndex]);
+
+    // Update the project with the reordered questions
+    const updatedProject = await prisma.interviewProject.update({
+      where: { id: projectId },
+      data: {
+        extra: {
+          ...extra,
+          questions: reorderedQuestions,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        ...updatedProject,
+        extra: updatedProject.extra as InterviewProjectExtra,
+      },
+    };
+  });
+}
+
+/**
  * Create a new question for the project
  */
 export async function createInterviewQuestion(

@@ -161,12 +161,12 @@ export function InterviewSessionsSection({
                 >
                   <div className="max-sm:space-y-3 sm:flex sm:items-center sm:gap-3">
                     {session.intervieweePersona ? (
-                      <Badge variant="secondary" className="text-xs w-20 flex-shrink-0">
+                      <Badge variant="secondary" className="text-xs w-20 shrink-0">
                         <BotIcon className="h-3 w-3 mr-1" />
                         AI
                       </Badge>
                     ) : session.intervieweeUser ? (
-                      <Badge variant="default" className="text-xs w-20 flex-shrink-0">
+                      <Badge variant="default" className="text-xs w-20 shrink-0">
                         <UsersIcon className="h-3 w-3 mr-1" />
                         Human
                       </Badge>

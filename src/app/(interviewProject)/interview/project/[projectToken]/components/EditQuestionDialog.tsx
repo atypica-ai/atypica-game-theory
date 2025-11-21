@@ -1,5 +1,6 @@
 "use client";
 
+import { QuestionData } from "@/app/(interviewProject)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,14 +23,6 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-
-export interface QuestionData {
-  text: string;
-  image?: ChatMessageAttachment;
-  questionType?: "open" | "single-choice" | "multiple-choice";
-  hint?: string;
-  options?: string[];
-}
 
 interface EditQuestionDialogProps {
   open: boolean;
@@ -54,7 +47,10 @@ export function EditQuestionDialog({
   const [questionType, setQuestionType] = useState<"open" | "single-choice" | "multiple-choice">(
     "open",
   );
-  const [options, setOptions] = useState<string[]>(["", ""]);
+  const [options, setOptions] = useState<NonNullable<NonNullable<QuestionData>["options"]>>([
+    "",
+    "",
+  ]);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Initialize form when question changes
@@ -128,7 +124,9 @@ export function EditQuestionDialog({
 
     // Validate options for choice questions
     if (questionType === "single-choice" || questionType === "multiple-choice") {
-      const validOptions = options.filter((opt) => opt.trim().length > 0);
+      const validOptions = options.filter(
+        (opt) => (typeof opt === "string" ? opt : opt.text).trim().length > 0,
+      );
 
       if (validOptions.length < 2) {
         toast.error(t("atLeastTwoOptions"));
@@ -348,7 +346,7 @@ export function EditQuestionDialog({
                   {options.map((option, index) => (
                     <div key={index} className="flex gap-2 items-center">
                       <Input
-                        value={option}
+                        value={typeof option === "string" ? option : option.text}
                         onChange={(e) => {
                           const newOptions = [...options];
                           newOptions[index] = e.target.value;

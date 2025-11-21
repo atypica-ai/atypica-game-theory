@@ -4,15 +4,31 @@ import {
   createPersonaInterviewSession,
   deleteInterviewQuestion,
   optimizeInterviewQuestions,
+  reorderInterviewQuestions,
   updateInterviewQuestion,
 } from "@/app/(interviewProject)/actions";
 import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { QuestionData } from "@/app/(interviewProject)/types";
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import { InterviewProjectExtra } from "@/prisma/client";
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import {
   BotIcon,
   ChevronDownIcon,
@@ -22,14 +38,13 @@ import {
   Loader2Icon,
   MessageSquareIcon,
   SparklesIcon,
-  TrashIcon,
   User2Icon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { EditQuestionDialog, QuestionData } from "./EditQuestionDialog";
+import { EditQuestionDialog } from "./components/EditQuestionDialog";
 import { InterviewReportsSection } from "./components/InterviewReportsSection";
 import { InterviewSessionsSection } from "./components/InterviewSessionsSection";
 import { InviteDialog } from "./components/InviteDialog";
@@ -59,9 +74,34 @@ export function ProjectDetails({
   const [briefExpanded, setBriefExpanded] = useState(false);
   const [, setCreatingPersonaSessions] = useState(false);
   const [optimizing, setOptimizing] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<QuestionData | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<NonNullable<QuestionData> | null>(null);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | undefined>();
   const [questionEditDialogOpen, setQuestionEditDialogOpen] = useState(false);
+
+  // Use stable IDs for drag and drop
+  // Map each question to a stable ID based on its initial position
+  const [questionItems, setQuestionItems] = useState<
+    Array<{ id: string; data: QuestionData; originalIndex: number }>
+  >([]);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  // Sync question items with project data
+  useEffect(() => {
+    const questions = project.extra?.questions || [];
+    const items = questions.map((q, index) => ({
+      id: `question-${index}-${q.text.slice(0, 20)}`, // Stable ID based on initial index and text
+      data: q,
+      originalIndex: index,
+    }));
+    setQuestionItems(items);
+  }, [project.extra?.questions]);
 
   // Polling mechanism - refresh every 10 seconds during processing
   useEffect(() => {
@@ -71,6 +111,48 @@ export function ProjectDetails({
     }, 10000); // Poll every 10 seconds
     return () => clearInterval(interval);
   }, [project.extra?.processing, router]);
+
+  // Handle drag end
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      if (!over || active.id === over.id) {
+        return;
+      }
+
+      const oldIndex = questionItems.findIndex((item) => item.id === active.id);
+      const newIndex = questionItems.findIndex((item) => item.id === over.id);
+
+      if (oldIndex === -1 || newIndex === -1) {
+        return;
+      }
+
+      // Optimistically update UI
+      const newItems = arrayMove(questionItems, oldIndex, newIndex);
+      setQuestionItems(newItems);
+
+      // Create index mapping for server (based on original index)
+      const newOrder = newItems.map((item) => item.originalIndex);
+
+      try {
+        const result = await reorderInterviewQuestions(project.id, newOrder);
+        if (!result.success) {
+          // Revert on error
+          setQuestionItems(questionItems);
+          toast.error(result.message || t("questionReorderFailed"));
+          return;
+        }
+        // Don't call router.refresh() to avoid visual jump
+        // The state is already updated optimistically
+      } catch (error) {
+        // Revert on error
+        setQuestionItems(questionItems);
+        toast.error((error as Error).message || t("questionReorderFailed"));
+      }
+    },
+    [questionItems, project.id, t],
+  );
 
   const onSelectPersonas = useCallback(
     async (selectedTokens: string[]) => {
@@ -303,57 +385,40 @@ export function ProjectDetails({
             </div>
           ) : (
             // Questions list
-            <div className="space-y-2">
-              {project.extra.questions.map((question, index) => (
-                <div
-                  key={index}
-                  className="flex items-start justify-between gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
-                >
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className="bg-primary/20 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-xs font-medium text-primary">{index + 1}</span>
-                    </div>
-                    <p className="text-sm leading-relaxed break-words">{question.text}</p>
-                  </div>
-                  {!readOnly && (
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          handleEditQuestion(index, {
-                            text: question.text,
-                            image: question.image,
-                            questionType: question.questionType,
-                            hint: question.hint,
-                            options: question.options?.map((opt) =>
-                              typeof opt === "string" ? opt : opt.text,
-                            ),
-                          })
-                        }
-                        className="h-8 px-2"
-                      >
-                        <EditIcon className="h-3 w-3 mr-1" />
-                        {t("edit")}
-                      </Button>
-                      <ConfirmDialog
-                        title={`${t("delete")}?`}
-                        description={question.text}
-                        onConfirm={() => handleDeleteQuestion(index)}
-                      >
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                        >
-                          <TrashIcon className="h-3 w-3" />
-                        </Button>
-                      </ConfirmDialog>
-                    </div>
-                  )}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={questionItems.map((item) => item.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2">
+                  {questionItems.map((item, displayIndex) => (
+                    <SortableQuestionItem
+                      key={item.id}
+                      question={item.data}
+                      index={displayIndex}
+                      sortableId={item.id}
+                      onEdit={() =>
+                        handleEditQuestion(item.originalIndex, {
+                          text: item.data.text,
+                          image: item.data.image,
+                          questionType: item.data.questionType,
+                          hint: item.data.hint,
+                          options: item.data.options?.map((opt) =>
+                            typeof opt === "string" ? opt : opt.text,
+                          ),
+                        })
+                      }
+                      onDelete={() => handleDeleteQuestion(item.originalIndex)}
+                      readOnly={readOnly}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
           )}
         </CardContent>
       </Card>
