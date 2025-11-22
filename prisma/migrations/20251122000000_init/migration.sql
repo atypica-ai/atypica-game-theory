@@ -564,7 +564,8 @@ CREATE UNIQUE INDEX "AdminUser_userId_key" ON "AdminUser"("userId");
 CREATE UNIQUE INDEX "Persona_token_key" ON "Persona"("token");
 
 -- CreateIndex
-CREATE INDEX "Persona_embedding_idx" ON "Persona"("embedding");
+-- CREATE INDEX "Persona_embedding_idx" ON "Persona"("embedding");
+CREATE INDEX "Persona_embedding_idx" ON "Persona" USING hnsw ("embedding" halfvec_cosine_ops) WITH (m = 16, ef_construction = 64);
 
 -- CreateIndex
 CREATE INDEX "Persona_tier_locale_idx" ON "Persona"("tier", "locale");
@@ -835,4 +836,3 @@ ALTER TABLE "SageKnowledgeGap" ADD CONSTRAINT "SageKnowledgeGap_sageId_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "SageMemoryDocument" ADD CONSTRAINT "SageMemoryDocument_sageId_fkey" FOREIGN KEY ("sageId") REFERENCES "Sage"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
