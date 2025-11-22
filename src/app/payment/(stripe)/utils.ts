@@ -3,8 +3,8 @@ import "server-only";
 import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { PaymentMethod } from "@/app/payment/data";
 import { PaymentRecord, PaymentStatus, Product } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+import { InputJsonValue } from "@prisma/client/runtime/client";
 import Stripe from "stripe";
 
 export async function requirePersonalUser(userId: number) {

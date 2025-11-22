@@ -6,8 +6,8 @@ import {
 } from "@/app/payment/(stripe)/success";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
 import { rootLogger } from "@/lib/logging";
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+import { InputJsonValue } from "@prisma/client/runtime/client";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 

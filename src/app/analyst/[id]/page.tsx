@@ -4,7 +4,7 @@ import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";
-import { AnalystKind } from "@/prisma/types";
+import { AnalystKind } from "@/prisma/client";
 import { getLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { fetchAnalystById } from "../actions";

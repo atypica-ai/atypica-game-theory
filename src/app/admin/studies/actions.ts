@@ -13,6 +13,7 @@ import { generateChatTitle } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import {
   Analyst,
+  AnalystKind,
   AnalystPodcast,
   AnalystPodcastExtra,
   AnalystReport,
@@ -21,7 +22,6 @@ import {
   UserChat,
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { AnalystKind } from "@/prisma/types";
 import { waitUntil } from "@vercel/functions";
 import { UIMessage } from "ai";
 import { Locale } from "next-intl";

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { proxiedImageLoader } from "@/lib/utils";
-import { AnalystKind } from "@/prisma/types";
+import { AnalystKind } from "@/prisma/client";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";

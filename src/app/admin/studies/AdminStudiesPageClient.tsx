@@ -29,8 +29,7 @@ import { Switch } from "@/components/ui/switch";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { Analyst, UserChatExtra } from "@/prisma/client";
-import { AnalystKind } from "@/prisma/types";
+import { Analyst, AnalystKind, UserChatExtra } from "@/prisma/client";
 import {
   ChevronDown,
   ChevronUp,

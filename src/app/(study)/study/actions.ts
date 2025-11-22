@@ -15,6 +15,7 @@ import { createUserChat } from "@/lib/userChat/lib";
 import {
   Analyst,
   AnalystExtra,
+  AnalystKind,
   AnalystPodcast,
   AnalystPodcastExtra,
   AnalystReport,
@@ -24,7 +25,6 @@ import {
   UserChatExtra,
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { AnalystKind } from "@/prisma/types";
 import { FileUIPart, generateId, UIMessage } from "ai";
 
 export async function createStudyUserChat(

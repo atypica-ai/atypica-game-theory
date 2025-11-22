@@ -2,8 +2,8 @@
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
+import { AnalystKind } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { AnalystKind } from "@/prisma/types";
 
 /**
  * Defines the structure for daily statistics
@@ -277,9 +277,7 @@ export async function fetchUsersByCountry(
 
   try {
     // Use SQL aggregation to group by country
-    const results = await prisma.$queryRaw<
-      Array<{ country: string | null; count: bigint }>
-    >`
+    const results = await prisma.$queryRaw<Array<{ country: string | null; count: bigint }>>`
       SELECT
         COALESCE(
           up."lastLogin"::jsonb->'geo'->>'country',

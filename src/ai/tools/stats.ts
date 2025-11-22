@@ -1,7 +1,7 @@
-import { InputJsonValue } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
 import { consumeUserTokens } from "@/tokens/lib";
 import { TokensLogResourceType } from "@/tokens/types";
+import { InputJsonValue } from "@prisma/client/runtime/client";
 import { Logger } from "pino";
 import { StatReporter } from "./types";
 

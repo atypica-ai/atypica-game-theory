@@ -4,8 +4,8 @@ import { ToolName } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/client";
-import { InputJsonValue, ITXClientDenyList } from "@/prisma/client/runtime/library";
 import { prisma } from "@/prisma/prisma";
+import { InputJsonValue, ITXClientDenyList } from "@prisma/client/runtime/client";
 import {
   convertToModelMessages,
   DynamicToolUIPart,
