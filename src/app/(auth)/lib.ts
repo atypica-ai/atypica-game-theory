@@ -4,7 +4,7 @@ import { trackUserServerSide } from "@/lib/analytics/server";
 import { getRefererFromCookieStore, getUtmFromCookieStore } from "@/lib/analytics/utm";
 import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
-import { DeprecatedUserExtra, Team, User, UserLastLogin } from "@/prisma/client";
+import { Team, User, UserLastLogin } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
@@ -113,39 +113,41 @@ export function recordAcquisition({ userId }: { userId: number }) {
  * 迁移阶段，在更新 lastLogin, onboarding, extra 的时候，需要先调用 upsertUserProfile
  * 一段时间已有，当所有用户都在创建的时候有了 profile，这部分可以删除
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function DEPRECATED_upsertUserProfile({ userId }: { userId: number }) {
-  const profile = await prisma.$transaction(async (tx) => {
-    let profile = await tx.userProfile.findUnique({
-      where: { userId },
-    });
-    if (profile) {
-      return profile;
-    }
-    const {
-      lastLogin,
-      extra: { onboarding, ...extra },
-    } = await tx.user
-      .findUniqueOrThrow({
-        where: { id: userId },
-        select: { id: true, lastLogin: true, extra: true },
-      })
-      .then(({ extra, ...user }) => ({ ...user, extra: extra as DeprecatedUserExtra }));
-    profile = await tx.userProfile.create({
-      data: {
-        userId,
-        lastLogin: lastLogin ?? {},
-        onboarding: onboarding ?? {},
-        extra: extra ?? {},
-      },
-    });
-    // 清空 user 上的 lastLogin, onboarding, extra
-    await tx.user.update({
-      where: { id: userId },
-      data: { lastLogin: {}, extra: {} },
-    });
-    return profile;
-  });
-  return profile;
+  throw new Error("Deprecated");
+  // const profile = await prisma.$transaction(async (tx) => {
+  //   let profile = await tx.userProfile.findUnique({
+  //     where: { userId },
+  //   });
+  //   if (profile) {
+  //     return profile;
+  //   }
+  //   const {
+  //     lastLogin,
+  //     extra: { onboarding, ...extra },
+  //   } = await tx.user
+  //     .findUniqueOrThrow({
+  //       where: { id: userId },
+  //       select: { id: true, lastLogin: true, extra: true },
+  //     })
+  //     .then(({ extra, ...user }) => ({ ...user, extra: extra as DeprecatedUserExtra }));
+  //   profile = await tx.userProfile.create({
+  //     data: {
+  //       userId,
+  //       lastLogin: lastLogin ?? {},
+  //       onboarding: onboarding ?? {},
+  //       extra: extra ?? {},
+  //     },
+  //   });
+  //   // 清空 user 上的 lastLogin, onboarding, extra
+  //   await tx.user.update({
+  //     where: { id: userId },
+  //     data: { lastLogin: {}, extra: {} },
+  //   });
+  //   return profile;
+  // });
+  // return profile;
 }
 
 export async function createPersonalUser({

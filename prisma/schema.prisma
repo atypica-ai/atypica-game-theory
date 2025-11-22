@@ -62,10 +62,6 @@ model User {
   password      String
   emailVerified DateTime? @db.Timestamptz(6)
 
-  // deprecated fields
-  lastLogin Json @default("{}")
-  extra     Json @default("{}")
-
   // teams owned by the user
   teamsAsOwner      Team[] @relation("TeamOwner")
   // If this is a team user, points to the team, required for team user, null for personal user
@@ -355,6 +351,7 @@ enum PaymentStatus {
   pending
   succeeded
   failed
+  refunded
 }
 
 enum Currency {
