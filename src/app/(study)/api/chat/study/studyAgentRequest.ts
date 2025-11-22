@@ -26,7 +26,7 @@ import {
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
-import { TeamConfigName, TeamConfigValue } from "@/app/team/teamConfig/types";
+import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
