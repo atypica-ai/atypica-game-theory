@@ -5,8 +5,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-COPY prisma ./prisma
-COPY prisma.config.ts .
+# COPY prisma.config.ts .
+# COPY prisma ./prisma
 RUN npm install -g npm@^11.6.2
 RUN npm install -g pnpm@^10
 RUN pnpm i \
@@ -21,10 +21,11 @@ RUN pnpm i \
 FROM base AS runner
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY prisma ./prisma
-COPY prisma.config.ts .
 RUN npm install -g npm@11.6.2
 # 运行 version 触发下载一下 prisma 的依赖 bin
 RUN npx prisma version
+# 放在最后，以更好的利用缓存，因为 npx prisma version 会下载一个 bin，这个 layer 比较大
+COPY prisma.config.ts .
+COPY prisma ./prisma
 
 ENV NODE_ENV=production
