@@ -2,7 +2,8 @@ import "server-only";
 
 // import { readReplicas } from "@prisma/extension-read-replicas";
 // import { withAccelerate } from "@prisma/extension-accelerate";
-import { Prisma, PrismaClient } from "./client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Prisma, PrismaClient } from "./generated/client";
 
 // export const prisma = new PrismaClient();
 
@@ -12,7 +13,13 @@ const log: Prisma.LogLevel[] =
     : ["info", "warn", "error"];
 
 function newPrismaClient() {
-  return new PrismaClient({ log });
+  const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL,
+  });
+  return new PrismaClient({
+    adapter,
+    log,
+  });
   // return new PrismaClient({ log }).$extends(withAccelerate());
   // const databaseUrl = process.env.DATABASE_URL
   //   ? process.env.DATABASE_URL
