@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
   {
     // checkUserTokenBalance
     const { balance } = await getUserTokens({ userId });
-    if (balance <= 0) {
+    if (balance != "Unlimited" && balance <= 0) {
       const message =
         locale === "zh-CN"
           ? "您的余额不足，请充值后再继续。"

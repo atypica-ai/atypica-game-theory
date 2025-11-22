@@ -5,7 +5,7 @@ import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { Currency } from "@/prisma/client";
+import { Currency, SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import {
   createPaymentRecord,
@@ -181,6 +181,12 @@ export async function createPaymentStripeSession({
   const { activeSubscription } = await fetchActiveSubscription({ userId });
   if (!activeSubscription) {
     throw new Error("Recharge is only available to users with a valid subscription");
+  }
+  if (
+    activeSubscription.plan === SubscriptionPlan.super ||
+    activeSubscription.plan === SubscriptionPlan.superteam
+  ) {
+    throw new Error("Recharge is not available to users with a super or superteam subscription");
   }
 
   const orderNo = generateOrderNo();

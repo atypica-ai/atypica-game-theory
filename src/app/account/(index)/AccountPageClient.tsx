@@ -20,7 +20,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import { Subscription } from "@/prisma/client";
-import { CalendarIcon, CircleDollarSignIcon, CreditCardIcon, Loader2Icon } from "lucide-react";
+import {
+  CalendarIcon,
+  CircleDollarSignIcon,
+  CreditCardIcon,
+  InfinityIcon,
+  InfoIcon,
+  Loader2Icon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -45,6 +52,7 @@ export function AccountPageClient({
 ) & {
   stripeSubscriptionId: string | null;
   userTokens: {
+    balance: "Unlimited" | number;
     permanentBalance: number;
     monthlyBalance: number;
     monthlyResetAt: Date | null;
@@ -291,22 +299,33 @@ export function AccountPageClient({
                   <div className="flex justify-between items-center">
                     <div className="text-sm font-medium">{t("tokensSection.totalBalance")}</div>
                     <div className="text-xl font-bold">
-                      {(
-                        (userTokens?.permanentBalance || 0) + (userTokens?.monthlyBalance || 0)
-                      ).toLocaleString()}
+                      {userTokens?.balance === "Unlimited" ? (
+                        <InfinityIcon className="size-6" />
+                      ) : (
+                        (
+                          (userTokens?.permanentBalance || 0) + (userTokens?.monthlyBalance || 0)
+                        ).toLocaleString()
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button
-                className="w-full mt-4"
-                onClick={() => setIsAddTokensOpen(true)}
-                disabled={!activeSubscription} // 只有订阅的用户才能 add tokens
-              >
-                {t("tokensSection.purchase")}
-              </Button>
+              {userTokens?.balance === "Unlimited" ? (
+                <div className="text-xs flex items-center gap-2 text-muted-foreground">
+                  <InfoIcon className="size-3" />
+                  {t("tokensSection.unlimitedBalanceTip")}
+                </div>
+              ) : (
+                <Button
+                  className="w-full mt-4"
+                  onClick={() => setIsAddTokensOpen(true)}
+                  disabled={!activeSubscription} // 只有订阅的用户才能 add tokens
+                >
+                  {t("tokensSection.purchase")}
+                </Button>
+              )}
             </CardFooter>
           </Card>
         </div>

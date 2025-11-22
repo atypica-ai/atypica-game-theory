@@ -132,24 +132,30 @@ export async function getUserTokens({ userId }: { userId: number }) {
   });
   if (user.teamIdAsMember) {
     const teamId = user.teamIdAsMember;
-    const { permanentBalance, monthlyBalance, monthlyResetAt } =
+    const { permanentBalance, monthlyBalance, monthlyResetAt, extra } =
       await prisma.tokensAccount.findUniqueOrThrow({
         where: { teamId },
       });
+    const balance = (extra as TokensAccountExtra).unlimitedTokens
+      ? ("Unlimited" as const)
+      : permanentBalance + monthlyBalance;
     return {
-      balance: permanentBalance + monthlyBalance,
+      balance,
       permanentBalance,
       monthlyBalance,
       monthlyResetAt,
       source: "team" as const,
     };
   } else {
-    const { permanentBalance, monthlyBalance, monthlyResetAt } =
+    const { permanentBalance, monthlyBalance, monthlyResetAt, extra } =
       await prisma.tokensAccount.findUniqueOrThrow({
         where: { userId },
       });
+    const balance = (extra as TokensAccountExtra).unlimitedTokens
+      ? ("Unlimited" as const)
+      : permanentBalance + monthlyBalance;
     return {
-      balance: permanentBalance + monthlyBalance,
+      balance,
       permanentBalance,
       monthlyBalance,
       monthlyResetAt,

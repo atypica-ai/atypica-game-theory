@@ -17,7 +17,7 @@ import { Locale } from "next-intl";
 
 export async function outOfBalance({ userId }: { userId: number }) {
   const { balance } = await getUserTokens({ userId });
-  return balance <= 0;
+  return balance !== "Unlimited" && balance <= 0;
 }
 
 /**

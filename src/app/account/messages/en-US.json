@@ -33,6 +33,7 @@
       "monthlyBalance": "Monthly Balance",
       "monthlyResetAt": "Monthly Reset",
       "totalBalance": "Total Balance",
+      "unlimitedBalanceTip": "Your current package is unlimited tokens, usage will not deduct balance",
       "purchase": "Purchase Tokens"
     },
     "tokensHistorySection": {

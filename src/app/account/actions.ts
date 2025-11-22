@@ -277,7 +277,9 @@ export async function fetchPaymentRecords(
   });
 }
 
-export async function getUserTokensBalanceAction(): Promise<ServerActionResult<number>> {
+export async function getUserTokensBalanceAction(): Promise<
+  ServerActionResult<number | "Unlimited">
+> {
   return withAuth(async ({ id: userId }) => {
     const { balance } = await getUserTokens({ userId });
     return {

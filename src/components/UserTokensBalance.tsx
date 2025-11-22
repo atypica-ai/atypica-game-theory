@@ -2,7 +2,7 @@
 import { getUserTokensBalanceAction } from "@/app/account/actions";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { formatTokensNumber } from "@/lib/utils";
-import { CoinsIcon, LoaderIcon } from "lucide-react";
+import { CoinsIcon, InfinityIcon, LoaderIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -10,13 +10,15 @@ import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
+type BalanceType = number | "Unlimited";
+
 export const UserTokensBalanceStore = create<{
-  balance: number | null;
-  setBalance: (balance: number) => void;
-  getBalance: () => number | null;
+  balance: BalanceType | null;
+  setBalance: (balance: BalanceType) => void;
+  getBalance: () => BalanceType | null;
 }>((set, get) => ({
   balance: null,
-  setBalance: (balance: number) => {
+  setBalance: (balance: BalanceType) => {
     set({ balance });
   },
   getBalance: () => {
@@ -72,7 +74,13 @@ export default function UserTokensBalance() {
           {balance === null ? (
             <LoaderIcon className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
           ) : (
-            <div className="text-xs font-medium cursor-default">{formatTokensNumber(balance)}</div>
+            <div className="text-xs font-medium cursor-default">
+              {balance === "Unlimited" ? (
+                <InfinityIcon className="size-4" />
+              ) : (
+                formatTokensNumber(balance)
+              )}
+            </div>
           )}
         </div>
       </PopoverTrigger>
@@ -86,7 +94,11 @@ export default function UserTokensBalance() {
         </div>
         <div className="flex flex-col gap-2">
           <div className="text-xs">
-            {balance !== null ? t("balance", { balance: balance.toLocaleString() }) : "loading..."}
+            {balance !== null
+              ? balance === "Unlimited"
+                ? t("unlimited")
+                : t("balance", { balance: balance.toLocaleString() })
+              : "loading..."}
           </div>
           <div className="text-xs text-primary hover:underline cursor-pointer flex items-center gap-1.5 font-medium">
             <CoinsIcon className="h-3 w-3" />

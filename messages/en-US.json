@@ -109,6 +109,7 @@
     },
     "UserTokensBalance": {
       "balance": "{balance} available tokens",
+      "unlimited": "Unlimited tokens",
       "viewHistory": "View token history"
     },
     "GlobalHeader": {

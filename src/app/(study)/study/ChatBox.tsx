@@ -296,7 +296,9 @@ export function ChatBox() {
           ? "streaming"
           : useChatStatus === "submitted"
             ? "submitted"
-            : userTokensBalance !== null && userTokensBalance <= 0
+            : userTokensBalance !== null &&
+                userTokensBalance !== "Unlimited" &&
+                userTokensBalance <= 0
               ? "outOfQuota"
               : waitForUser
                 ? "waitForUser"

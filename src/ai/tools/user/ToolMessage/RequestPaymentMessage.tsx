@@ -35,7 +35,7 @@ export const RequestPaymentMessage = <
         throw new Error(result.message);
       }
       const balance = result.data;
-      if (balance > 0) {
+      if (balance === "Unlimited" || balance > 0) {
         clearTimeout(timeoutId);
         // 一旦检测到成功了，就可以停下，刷新页面后再次请求 chat 接口会进入 study 流程
         // 没必要再 addToolResult，而且这里有个问题，会不知道什么原因 addToolResult 提交到了刷新页面以后的 study chat 里，这里可能是延迟提交的

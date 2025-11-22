@@ -33,6 +33,7 @@
       "monthlyBalance": "每月余额",
       "monthlyResetAt": "每月重置时间",
       "totalBalance": "总余额",
+      "unlimitedBalanceTip": "你的当前套餐是无限Token，使用过程中不会扣减余额",
       "purchase": "购买Token"
     },
     "tokensHistorySection": {
