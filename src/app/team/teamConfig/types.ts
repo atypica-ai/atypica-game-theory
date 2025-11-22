@@ -4,6 +4,7 @@ import { Locale } from "next-intl";
 export enum TeamConfigName {
   mcp = "mcp",
   studySystemPrompt = "studySystemPrompt",
+  apiKey = "apiKey",
 }
 
 /**
@@ -13,4 +14,9 @@ export type TeamConfigValue = {
   studySystemPrompt: Record<Locale, string>;
   // mcp: Record<string, MCPTransportConfig>;
   mcp: MCPConfigs;
+  apiKey: {
+    key: string;
+    createdAt: string;
+    createdBy: number;
+  };
 };

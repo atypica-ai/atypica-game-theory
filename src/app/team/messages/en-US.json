@@ -72,6 +72,40 @@
         "networkError": "Network error, please try again"
       }
     },
+    "ApiKeyCard": {
+      "title": "API Key",
+      "description": "Programmatic access to your team's data.",
+      "viewDocsLink": "View API docs",
+      "loading": "Loading...",
+      "noKeyDescription": "No API key generated yet. Generate one to access the Team API.",
+      "generateButton": "Generate API Key",
+      "generatingButton": "Generating...",
+      "apiKeyLabel": "API Key",
+      "createdAt": "Created: {date}",
+      "regenerateButton": "Regenerate",
+      "regenerateDialog": {
+        "title": "Regenerate API Key",
+        "description": "Are you sure you want to regenerate this API key? The current key will be invalidated immediately. All applications using the old key will lose access.",
+        "cancelButton": "Cancel",
+        "confirmButton": "Regenerate",
+        "regeneratingButton": "Regenerating..."
+      },
+      "revokeDialog": {
+        "title": "Revoke API Key",
+        "description": "Are you sure you want to revoke this API key? This action cannot be undone. All applications using this key will lose access immediately.",
+        "cancelButton": "Cancel",
+        "confirmButton": "Revoke",
+        "revokingButton": "Revoking..."
+      },
+      "toast": {
+        "generateSuccess": "API key generated successfully",
+        "copySuccess": "API key copied to clipboard",
+        "revokeSuccess": "API key revoked successfully",
+        "loadError": "Failed to load API key",
+        "generateError": "Failed to generate API key",
+        "revokeError": "Failed to revoke API key"
+      }
+    },
     "SwitchDialog": {
       "title": "Switch Identity",
       "description": "Select the identity to switch to.",
@@ -128,6 +162,15 @@
       },
       "getTeam": {
         "failed": "Failed to get team information"
+      },
+      "generateApiKey": {
+        "failed": "Failed to generate API key"
+      },
+      "getApiKey": {
+        "failed": "Failed to get API key"
+      },
+      "revokeApiKey": {
+        "failed": "Failed to revoke API key"
       }
     }
   }

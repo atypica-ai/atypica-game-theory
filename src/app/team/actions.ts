@@ -6,8 +6,10 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Subscription, Team, TeamExtra, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { randomBytes } from "crypto";
 import { getTranslations } from "next-intl/server";
 import { createTeam } from "./lib";
+import { TeamConfigName } from "./teamConfig/types";
 import { generateUserSwitchToken } from "./userSwitchToken";
 
 // 验证团队所有权的工具函数
@@ -561,4 +563,151 @@ function verifyUserSwitchPermission(currentUser: User, targetUser: User): boolea
   }
 
   return false;
+}
+
+// ===== API Key Management =====
+
+// Generate API Key for team
+export async function generateTeamApiKeyAction(
+  teamId: number,
+): Promise<ServerActionResult<{ key: string; createdAt: string }>> {
+  const t = await getTranslations("Team.Actions");
+  return withAuth(async ({ id: userId }) => {
+    try {
+      // Check team ownership
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
+      }
+
+      // Generate secure random API key
+      const apiKey = `atypica_${randomBytes(32).toString("hex")}`;
+
+      // Store in TeamConfig
+      await prisma.teamConfig.upsert({
+        where: {
+          teamId_key: {
+            teamId,
+            key: TeamConfigName.apiKey,
+          },
+        },
+        create: {
+          teamId,
+          key: TeamConfigName.apiKey,
+          value: {
+            key: apiKey,
+            createdAt: new Date().toISOString(),
+            createdBy: userId,
+          },
+        },
+        update: {
+          value: {
+            key: apiKey,
+            createdAt: new Date().toISOString(),
+            createdBy: userId,
+          },
+        },
+      });
+
+      return {
+        success: true,
+        data: {
+          key: apiKey,
+          createdAt: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      rootLogger.error({ msg: "Failed to generate API key", error });
+      return {
+        success: false,
+        message: t("generateApiKey.failed"),
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+// Get team API key
+export async function getTeamApiKeyAction(teamId: number): Promise<
+  ServerActionResult<{
+    key: string;
+    createdAt: string;
+    createdBy: number;
+  } | null>
+> {
+  const t = await getTranslations("Team.Actions");
+  return withAuth(async ({ id: userId }) => {
+    try {
+      // Check team ownership
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
+      }
+
+      const config = await prisma.teamConfig.findUnique({
+        where: {
+          teamId_key: {
+            teamId,
+            key: TeamConfigName.apiKey,
+          },
+        },
+      });
+
+      if (!config) {
+        return {
+          success: true,
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        data: config.value as { key: string; createdAt: string; createdBy: number },
+      };
+    } catch (error) {
+      rootLogger.error({ msg: "Failed to get API key", error });
+      return {
+        success: false,
+        message: t("getApiKey.failed"),
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+// Revoke team API key
+export async function revokeTeamApiKeyAction(
+  teamId: number,
+): Promise<ServerActionResult<null>> {
+  const t = await getTranslations("Team.Actions");
+  return withAuth(async ({ id: userId }) => {
+    try {
+      // Check team ownership
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
+      }
+
+      await prisma.teamConfig.delete({
+        where: {
+          teamId_key: {
+            teamId,
+            key: TeamConfigName.apiKey,
+          },
+        },
+      });
+
+      return {
+        success: true,
+        data: null,
+      };
+    } catch (error) {
+      rootLogger.error({ msg: "Failed to revoke API key", error });
+      return {
+        success: false,
+        message: t("revokeApiKey.failed"),
+        code: "internal_server_error",
+      };
+    }
+  });
 }

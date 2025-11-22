@@ -6,6 +6,7 @@ import {
   getTeamSubscriptionAction,
   removeTeamMemberAction,
 } from "@/app/team/actions";
+import { TeamApiKeyCard } from "./TeamApiKeyCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -145,60 +146,72 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 团队信息 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("infoTitle")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <div className="text-muted-foreground">{t("totalSeats")}</div>
-                <div className="font-medium">{team.seats}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">{t("usedSeats")}</div>
-                <div className="font-medium">{activeMembersCount}</div>
-              </div>
-              <div className="col-span-2">
-                <div className="text-muted-foreground">{t("createdAt")}</div>
-                <div className="font-medium">{new Date(team.createdAt).toLocaleDateString()}</div>
-              </div>
-            </div>
-
-            {/* Subscription Status */}
-            {teamSubscription && (
-              <div className="pt-4 border-t">
-                <div className="text-sm text-muted-foreground mb-2">{t("subscriptionStatus")}</div>
-                <div className="text-sm flex justify-between">
-                  <span>{t("subscriptionEnd")}</span>
-                  <span className="font-medium">{formatDate(teamSubscription.endsAt, locale)}</span>
+        {/* Left Column */}
+        <div className="space-y-6">
+          {/* 团队信息 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("infoTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-muted-foreground">{t("totalSeats")}</div>
+                  <div className="font-medium">{team.seats}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">{t("usedSeats")}</div>
+                  <div className="font-medium">{activeMembersCount}</div>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-muted-foreground">{t("createdAt")}</div>
+                  <div className="font-medium">
+                    {new Date(team.createdAt).toLocaleDateString()}
+                  </div>
                 </div>
               </div>
-            )}
 
-            {!teamSubscription && (
-              <div className="pt-4 border-t space-y-2">
-                <Button
-                  onClick={() => setSubscriptionDialogPlan(SubscriptionPlan.team)}
-                  className="w-full"
-                  variant="outline"
-                >
-                  <CreditCardIcon className="w-4 h-4" />
-                  {t("purchaseTeam")}
-                </Button>
-                <Button
-                  onClick={() => setSubscriptionDialogPlan(SubscriptionPlan.superteam)}
-                  className="w-full"
-                  variant="outline"
-                >
-                  <CreditCardIcon className="w-4 h-4" />
-                  {t("purchaseSuperTeam")}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              {/* Subscription Status */}
+              {teamSubscription && (
+                <div className="pt-4 border-t">
+                  <div className="text-sm text-muted-foreground mb-2">
+                    {t("subscriptionStatus")}
+                  </div>
+                  <div className="text-sm flex justify-between">
+                    <span>{t("subscriptionEnd")}</span>
+                    <span className="font-medium">
+                      {formatDate(teamSubscription.endsAt, locale)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {!teamSubscription && (
+                <div className="pt-4 border-t space-y-2">
+                  <Button
+                    onClick={() => setSubscriptionDialogPlan(SubscriptionPlan.team)}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <CreditCardIcon className="w-4 h-4" />
+                    {t("purchaseTeam")}
+                  </Button>
+                  <Button
+                    onClick={() => setSubscriptionDialogPlan(SubscriptionPlan.superteam)}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <CreditCardIcon className="w-4 h-4" />
+                    {t("purchaseSuperTeam")}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* API Key Card */}
+          <TeamApiKeyCard team={team} />
+        </div>
 
         {/* 添加成员和成员列表 */}
         <div className="lg:col-span-2 space-y-6">

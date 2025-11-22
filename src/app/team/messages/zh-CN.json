@@ -72,6 +72,40 @@
         "networkError": "网络错误，请重试"
       }
     },
+    "ApiKeyCard": {
+      "title": "API Key",
+      "description": "通过编程方式访问团队数据。",
+      "viewDocsLink": "查看 API 文档",
+      "loading": "加载中...",
+      "noKeyDescription": "尚未生成 API Key。生成一个以访问团队 API。",
+      "generateButton": "生成 API Key",
+      "generatingButton": "生成中...",
+      "apiKeyLabel": "API Key",
+      "createdAt": "创建时间：{date}",
+      "regenerateButton": "重新生成",
+      "regenerateDialog": {
+        "title": "重新生成 API Key",
+        "description": "确定要重新生成此 API Key 吗？当前 Key 将立即失效。所有使用旧 Key 的应用将失去访问权限。",
+        "cancelButton": "取消",
+        "confirmButton": "重新生成",
+        "regeneratingButton": "重新生成中..."
+      },
+      "revokeDialog": {
+        "title": "撤销 API Key",
+        "description": "确定要撤销此 API Key 吗？此操作不可撤销。所有使用此 Key 的应用将立即失去访问权限。",
+        "cancelButton": "取消",
+        "confirmButton": "撤销",
+        "revokingButton": "撤销中..."
+      },
+      "toast": {
+        "generateSuccess": "API Key 生成成功",
+        "copySuccess": "API Key 已复制到剪贴板",
+        "revokeSuccess": "API Key 已撤销",
+        "loadError": "加载 API Key 失败",
+        "generateError": "生成 API Key 失败",
+        "revokeError": "撤销 API Key 失败"
+      }
+    },
     "SwitchDialog": {
       "title": "切换身份",
       "description": "选择要切换到的身份。",
@@ -128,6 +162,15 @@
       },
       "getTeam": {
         "failed": "获取团队信息失败"
+      },
+      "generateApiKey": {
+        "failed": "生成 API Key 失败"
+      },
+      "getApiKey": {
+        "failed": "获取 API Key 失败"
+      },
+      "revokeApiKey": {
+        "failed": "撤销 API Key 失败"
       }
     }
   }
