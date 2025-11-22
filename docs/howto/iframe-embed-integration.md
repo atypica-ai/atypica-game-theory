@@ -1,5 +1,13 @@
 # iframe 嵌入交互文档
 
+## 相关文件
+
+- `src/app/(system)/embed/Embed.tsx` - 核心组件，处理 postMessage 通信
+- `src/app/(open)/docs/embed/page.tsx` - 在线文档页面（`/docs/embed`）
+- `docs/howto/iframe-embed-integration.md` - 本文档
+- `public/embed/test.html` - 测试页面
+- `src/app/api/team/members/[userId]/impersonation/route.ts` - 生成 impersonation token API
+
 ## 概述
 
 本文档说明如何将 Atypica LLM 应用嵌入到第三方产品中，并通过 postMessage API 进行双向通信。
