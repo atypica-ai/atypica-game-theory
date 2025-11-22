@@ -27,7 +27,7 @@ export function FreePlanCard({ activeSubscription }: FreePlanCardProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow space-y-4">
+      <CardContent className="grow space-y-4">
         {activeSubscription ? (
           <Button className="w-full mb-6" disabled>
             {t("getStarted")}

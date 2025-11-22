@@ -47,7 +47,7 @@ export function MaxPlanCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow space-y-4">
+      <CardContent className="grow space-y-4">
         {userType !== "Personal" ? (
           <Button className="w-full mb-6 text-xs" disabled>
             {t("switchToPersonalUserToContinue")}

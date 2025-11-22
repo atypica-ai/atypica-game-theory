@@ -58,7 +58,7 @@ export function SuperTeamPlanCard({ productPrices, userType }: SuperTeamPlanCard
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow space-y-4">
+      <CardContent className="grow space-y-4">
         <TeamCreateButton>
           <Button className="w-full mb-6" disabled={userType !== "Personal"}>
             {t("createTeam")}

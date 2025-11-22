@@ -114,7 +114,7 @@ export function EnterpriseEN() {
 
           <div className="max-w-6xl mx-auto space-y-6">
             {/* AI Research - Featured */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-8 md:p-12">
+            <div className="bg-linear-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-8 md:p-12">
               <div className="flex flex-col md:flex-row gap-8">
                 <div className="shrink-0">
                   <div className="p-4 rounded-xl bg-white/20">
@@ -402,7 +402,7 @@ export function EnterpriseEN() {
       {/* CTA Section */}
       <section className="py-20 md:py-32">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-12 md:p-16">
+          <div className="max-w-4xl mx-auto text-center bg-linear-to-br from-primary/10 to-primary/5 rounded-3xl p-12 md:p-16">
             <h2 className="font-EuclidCircularA font-medium text-3xl md:text-5xl mb-6">
               Ready to Transform Your Research?
             </h2>
