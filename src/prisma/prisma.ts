@@ -1,3 +1,4 @@
+import "dotenv/config";
 import "server-only";
 
 // import { readReplicas } from "@prisma/extension-read-replicas";
