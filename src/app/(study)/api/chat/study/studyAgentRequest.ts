@@ -112,10 +112,10 @@ export async function studyAgentRequest({
   const clients = teamId ? await manager.getClientsForTeam(teamId) : []; // Personal users have no MCP clients
   logger.info({ msg: "Loaded mcp clients", clients, teamId });
   const teamStudySystemPrompt = teamId
-    ? await getTeamConfigWithDefault<Record<string, string>>(
+    ? await getTeamConfigWithDefault(
         teamId,
         TeamConfigName.studySystemPrompt,
-        { "zh-CN": "", "en-US": "" } satisfies TeamConfigValue["studySystemPrompt"],
+        { "zh-CN": "", "en-US": "" },
       )
     : null;
   const agentToolArgs: AgentToolConfigArgs = {

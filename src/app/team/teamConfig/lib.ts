@@ -2,8 +2,9 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
+import { InputJsonValue } from "@prisma/client/runtime/client";
 import { unstable_cache } from "next/cache";
-import { TeamConfigName } from "./types";
+import { TeamConfigName, TeamConfigValue } from "./types";
 
 const logger = rootLogger.child({ module: "teamConfig" });
 
@@ -12,12 +13,12 @@ const logger = rootLogger.child({ module: "teamConfig" });
  * Returns null if not found
  * Cached for 1 hour, cache key includes teamId and key automatically
  */
-export async function getTeamConfig<T = unknown>(
+export async function getTeamConfig<K extends TeamConfigName>(
   teamId: number,
-  key: TeamConfigName,
-): Promise<T | null> {
+  key: K,
+): Promise<TeamConfigValue[K] | null> {
   const getCached = unstable_cache(
-    async (teamId: number, key: TeamConfigName) => {
+    async (teamId: number, key: K) => {
       try {
         const config = await prisma.teamConfig.findUnique({
           where: {
@@ -32,7 +33,7 @@ export async function getTeamConfig<T = unknown>(
           return null;
         }
 
-        return config.value as T;
+        return config.value as TeamConfigValue[K];
       } catch (error) {
         logger.error({
           error: (error as Error).message,
@@ -57,26 +58,26 @@ export async function getTeamConfig<T = unknown>(
  * Get team configuration value with default fallback
  * Returns the default value if team config is not found
  */
-export async function getTeamConfigWithDefault<T = unknown>(
+export async function getTeamConfigWithDefault<K extends TeamConfigName>(
   teamId: number | null | undefined,
-  key: TeamConfigName,
-  defaultValue: T,
-): Promise<T> {
+  key: K,
+  defaultValue: TeamConfigValue[K],
+): Promise<TeamConfigValue[K]> {
   if (!teamId) {
     return defaultValue;
   }
 
-  const config = await getTeamConfig<T>(teamId, key);
-  return config ?? defaultValue;
+  const config = await getTeamConfig(teamId, key);
+  return (config ?? defaultValue) as TeamConfigValue[K];
 }
 
 /**
  * Set or update team configuration
  */
-export async function setTeamConfig<T = unknown>(
+export async function setTeamConfig<K extends TeamConfigName>(
   teamId: number,
-  key: TeamConfigName,
-  value: T,
+  key: K,
+  value: TeamConfigValue[K],
 ): Promise<void> {
   try {
     await prisma.teamConfig.upsert({
@@ -87,12 +88,12 @@ export async function setTeamConfig<T = unknown>(
         },
       },
       update: {
-        value: value as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        value: value as unknown as InputJsonValue,
       },
       create: {
         teamId,
         key,
-        value: value as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        value: value as unknown as InputJsonValue,
       },
     });
 

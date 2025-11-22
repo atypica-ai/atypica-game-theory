@@ -492,7 +492,7 @@ export class MCPClientManager {
   private async _loadTeamClients(teamId: number): Promise<void> {
     try {
       // Get team's MCP config using cached helper function
-      const mcpConfig = await getTeamConfig<MCPConfigs>(teamId, TeamConfigName.mcp);
+      const mcpConfig = await getTeamConfig(teamId, TeamConfigName.mcp);
 
       if (!mcpConfig || Object.keys(mcpConfig).length === 0) {
         rootLogger.debug({ teamId }, "No MCP config found for team");

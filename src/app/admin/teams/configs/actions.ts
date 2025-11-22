@@ -131,7 +131,8 @@ export async function upsertTeamConfig(
   }
 
   try {
-    await setTeamConfig(teamId, key, value);
+    // TODO: 需要校验类型，这里是唯一一个地方允许 any 的，因为是 admin 后台
+    await setTeamConfig(teamId, key, value as any); // eslint-disable-line @typescript-eslint/no-explicit-any
     revalidatePath("/admin/teams/configs");
 
     // Revalidate cache for this team config

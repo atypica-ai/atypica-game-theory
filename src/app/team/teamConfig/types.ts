@@ -12,15 +12,15 @@ export enum TeamConfigName {
  * @todo 需要实现一下 zod schema，并在 upsertTeamConfig 方法里校验
  */
 export type TeamConfigValue = {
-  studySystemPrompt: Record<Locale, string>;
+  [TeamConfigName.studySystemPrompt]: Record<Locale, string>;
   // mcp: Record<string, MCPTransportConfig>;
-  mcp: MCPConfigs;
-  apiKey: {
+  [TeamConfigName.mcp]: MCPConfigs;
+  [TeamConfigName.apiKey]: {
     key: string;
     createdAt: string;
     createdBy: number;
   };
-  emailDomainWhitelist: {
+  [TeamConfigName.emailDomainWhitelist]: {
     domains: Array<{
       domain: string;
       verificationToken: string;
