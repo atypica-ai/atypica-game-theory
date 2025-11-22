@@ -10,7 +10,8 @@ import { randomBytes } from "crypto";
 import { promises as dns } from "dns";
 import { getTranslations } from "next-intl/server";
 import { createTeam } from "./lib";
-import { TeamConfigName } from "./teamConfig/types";
+import { deleteTeamConfig, getTeamConfig, setTeamConfig } from "./teamConfig/lib";
+import { TeamConfigName, TeamConfigValue } from "./teamConfig/types";
 import { generateUserSwitchToken } from "./userSwitchToken";
 
 // 验证团队所有权的工具函数
@@ -583,38 +584,20 @@ export async function generateTeamApiKeyAction(
 
       // Generate secure random API key
       const apiKey = `atypica_${randomBytes(32).toString("hex")}`;
+      const createdAt = new Date().toISOString();
 
       // Store in TeamConfig
-      await prisma.teamConfig.upsert({
-        where: {
-          teamId_key: {
-            teamId,
-            key: TeamConfigName.apiKey,
-          },
-        },
-        create: {
-          teamId,
-          key: TeamConfigName.apiKey,
-          value: {
-            key: apiKey,
-            createdAt: new Date().toISOString(),
-            createdBy: userId,
-          },
-        },
-        update: {
-          value: {
-            key: apiKey,
-            createdAt: new Date().toISOString(),
-            createdBy: userId,
-          },
-        },
+      await setTeamConfig(teamId, TeamConfigName.apiKey, {
+        key: apiKey,
+        createdAt,
+        createdBy: userId,
       });
 
       return {
         success: true,
         data: {
           key: apiKey,
-          createdAt: new Date().toISOString(),
+          createdAt,
         },
       };
     } catch (error) {
@@ -629,13 +612,9 @@ export async function generateTeamApiKeyAction(
 }
 
 // Get team API key
-export async function getTeamApiKeyAction(teamId: number): Promise<
-  ServerActionResult<{
-    key: string;
-    createdAt: string;
-    createdBy: number;
-  } | null>
-> {
+export async function getTeamApiKeyAction(
+  teamId: number,
+): Promise<ServerActionResult<TeamConfigValue[TeamConfigName.apiKey] | null>> {
   const t = await getTranslations("Team.Actions");
   return withAuth(async ({ id: userId }) => {
     try {
@@ -645,25 +624,11 @@ export async function getTeamApiKeyAction(teamId: number): Promise<
         return ownershipCheck;
       }
 
-      const config = await prisma.teamConfig.findUnique({
-        where: {
-          teamId_key: {
-            teamId,
-            key: TeamConfigName.apiKey,
-          },
-        },
-      });
-
-      if (!config) {
-        return {
-          success: true,
-          data: null,
-        };
-      }
+      const config = await getTeamConfig(teamId, TeamConfigName.apiKey);
 
       return {
         success: true,
-        data: config.value as { key: string; createdAt: string; createdBy: number },
+        data: config,
       };
     } catch (error) {
       rootLogger.error({ msg: "Failed to get API key", error });
@@ -677,9 +642,7 @@ export async function getTeamApiKeyAction(teamId: number): Promise<
 }
 
 // Revoke team API key
-export async function revokeTeamApiKeyAction(
-  teamId: number,
-): Promise<ServerActionResult<null>> {
+export async function revokeTeamApiKeyAction(teamId: number): Promise<ServerActionResult<null>> {
   const t = await getTranslations("Team.Actions");
   return withAuth(async ({ id: userId }) => {
     try {
@@ -689,14 +652,7 @@ export async function revokeTeamApiKeyAction(
         return ownershipCheck;
       }
 
-      await prisma.teamConfig.delete({
-        where: {
-          teamId_key: {
-            teamId,
-            key: TeamConfigName.apiKey,
-          },
-        },
-      });
+      await deleteTeamConfig(teamId, TeamConfigName.apiKey);
 
       return {
         success: true,
@@ -716,18 +672,9 @@ export async function revokeTeamApiKeyAction(
 // Email Domain Whitelist Management
 
 // Get domain whitelist
-export async function getDomainWhitelistAction(teamId: number): Promise<
-  ServerActionResult<{
-    domains: Array<{
-      domain: string;
-      verificationToken: string;
-      status: "pending" | "verified";
-      verifiedAt?: string;
-      addedBy: number;
-      addedAt: string;
-    }>;
-  }>
-> {
+export async function getDomainWhitelistAction(
+  teamId: number,
+): Promise<ServerActionResult<TeamConfigValue[TeamConfigName.emailDomainWhitelist]>> {
   const t = await getTranslations("Team.Actions");
   return withAuth(async ({ id: userId }) => {
     try {
@@ -737,34 +684,11 @@ export async function getDomainWhitelistAction(teamId: number): Promise<
         return ownershipCheck;
       }
 
-      const config = await prisma.teamConfig.findUnique({
-        where: {
-          teamId_key: {
-            teamId,
-            key: TeamConfigName.emailDomainWhitelist,
-          },
-        },
-      });
-
-      if (!config) {
-        return {
-          success: true,
-          data: { domains: [] },
-        };
-      }
+      const config = await getTeamConfig(teamId, TeamConfigName.emailDomainWhitelist);
 
       return {
         success: true,
-        data: config.value as {
-          domains: Array<{
-            domain: string;
-            verificationToken: string;
-            status: "pending" | "verified";
-            verifiedAt?: string;
-            addedBy: number;
-            addedAt: string;
-          }>;
-        },
+        data: config ?? { domains: [] },
       };
     } catch (error) {
       rootLogger.error({ msg: "Failed to get domain whitelist", error });
@@ -782,13 +706,7 @@ export async function addDomainAction(
   teamId: number,
   domain: string,
 ): Promise<
-  ServerActionResult<{
-    domain: string;
-    verificationToken: string;
-    status: "pending";
-    addedBy: number;
-    addedAt: string;
-  }>
+  ServerActionResult<TeamConfigValue[TeamConfigName.emailDomainWhitelist]["domains"][number]>
 > {
   const t = await getTranslations("Team.Actions");
   return withAuth(async ({ id: userId }) => {
@@ -813,17 +731,8 @@ export async function addDomainAction(
       const verificationToken = randomBytes(16).toString("hex");
 
       // Get existing config
-      const existingConfig = await prisma.teamConfig.findUnique({
-        where: {
-          teamId_key: {
-            teamId,
-            key: TeamConfigName.emailDomainWhitelist,
-          },
-        },
-      });
-
-      const existingDomains =
-        (existingConfig?.value as { domains: Array<{ domain: string }> })?.domains || [];
+      const existingConfig = await getTeamConfig(teamId, TeamConfigName.emailDomainWhitelist);
+      const existingDomains = existingConfig?.domains || [];
 
       // Check if domain already exists
       if (existingDomains.some((d) => d.domain === domain)) {
@@ -842,26 +751,9 @@ export async function addDomainAction(
         addedAt: new Date().toISOString(),
       };
 
-      // Upsert config
-      await prisma.teamConfig.upsert({
-        where: {
-          teamId_key: {
-            teamId,
-            key: TeamConfigName.emailDomainWhitelist,
-          },
-        },
-        create: {
-          teamId,
-          key: TeamConfigName.emailDomainWhitelist,
-          value: {
-            domains: [newDomain],
-          },
-        },
-        update: {
-          value: {
-            domains: [...existingDomains, newDomain],
-          },
-        },
+      // Update config
+      await setTeamConfig(teamId, TeamConfigName.emailDomainWhitelist, {
+        domains: [...existingDomains, newDomain],
       });
 
       return {
@@ -894,33 +786,15 @@ export async function verifyDomainAction(
       }
 
       // Get config
-      const config = await prisma.teamConfig.findUnique({
-        where: {
-          teamId_key: {
-            teamId,
-            key: TeamConfigName.emailDomainWhitelist,
-          },
-        },
-      });
+      const whitelist = await getTeamConfig(teamId, TeamConfigName.emailDomainWhitelist);
 
-      if (!config) {
+      if (!whitelist) {
         return {
           success: false,
           message: t("verifyDomain.notFound"),
           code: "internal_server_error",
         };
       }
-
-      const whitelist = config.value as {
-        domains: Array<{
-          domain: string;
-          verificationToken: string;
-          status: "pending" | "verified";
-          verifiedAt?: string;
-          addedBy: number;
-          addedAt: string;
-        }>;
-      };
 
       const domainEntry = whitelist.domains.find((d) => d.domain === domain);
       if (!domainEntry) {
@@ -953,18 +827,8 @@ export async function verifyDomainAction(
           d.domain === domain ? { ...d, status: "verified" as const, verifiedAt } : d,
         );
 
-        await prisma.teamConfig.update({
-          where: {
-            teamId_key: {
-              teamId,
-              key: TeamConfigName.emailDomainWhitelist,
-            },
-          },
-          data: {
-            value: {
-              domains: updatedDomains,
-            },
-          },
+        await setTeamConfig(teamId, TeamConfigName.emailDomainWhitelist, {
+          domains: updatedDomains,
         });
 
         return {
@@ -1005,33 +869,15 @@ export async function removeDomainAction(
       }
 
       // Get config
-      const config = await prisma.teamConfig.findUnique({
-        where: {
-          teamId_key: {
-            teamId,
-            key: TeamConfigName.emailDomainWhitelist,
-          },
-        },
-      });
+      const whitelist = await getTeamConfig(teamId, TeamConfigName.emailDomainWhitelist);
 
-      if (!config) {
+      if (!whitelist) {
         return {
           success: false,
           message: t("removeDomain.notFound"),
           code: "internal_server_error",
         };
       }
-
-      const whitelist = config.value as {
-        domains: Array<{
-          domain: string;
-          verificationToken: string;
-          status: "pending" | "verified";
-          verifiedAt?: string;
-          addedBy: number;
-          addedAt: string;
-        }>;
-      };
 
       // Filter out the domain
       const updatedDomains = whitelist.domains.filter((d) => d.domain !== domain);
@@ -1046,27 +892,10 @@ export async function removeDomainAction(
 
       // Update or delete config
       if (updatedDomains.length === 0) {
-        await prisma.teamConfig.delete({
-          where: {
-            teamId_key: {
-              teamId,
-              key: TeamConfigName.emailDomainWhitelist,
-            },
-          },
-        });
+        await deleteTeamConfig(teamId, TeamConfigName.emailDomainWhitelist);
       } else {
-        await prisma.teamConfig.update({
-          where: {
-            teamId_key: {
-              teamId,
-              key: TeamConfigName.emailDomainWhitelist,
-            },
-          },
-          data: {
-            value: {
-              domains: updatedDomains,
-            },
-          },
+        await setTeamConfig(teamId, TeamConfigName.emailDomainWhitelist, {
+          domains: updatedDomains,
         });
       }
 

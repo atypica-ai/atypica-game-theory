@@ -12,6 +12,8 @@ const logger = rootLogger.child({ module: "teamConfig" });
  * Get team configuration value by key
  * Returns null if not found
  * Cached for 1 hour, cache key includes teamId and key automatically
+ *
+ * @todo 这个其实是不靠谱的，如果有多个实例，在一个实例里调用了更新方法，另一个实例里缓存还在，所以，短一点，10分钟
  */
 export async function getTeamConfig<K extends TeamConfigName>(
   teamId: number,
@@ -47,7 +49,8 @@ export async function getTeamConfig<K extends TeamConfigName>(
     ["team-config"], // Base key, parameters will be added automatically
     {
       tags: [`team-config-${teamId}`, `team-config-${teamId}-${key}`],
-      revalidate: 3600, // 1 hour cache
+      // revalidate: 3600, // 1 hour cache
+      revalidate: 600, // 10 minutes cache
     },
   );
 
