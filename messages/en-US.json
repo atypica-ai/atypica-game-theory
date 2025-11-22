@@ -159,6 +159,10 @@
       "cancel": "Cancel",
       "confirm": "Confirm"
     },
+    "ConfirmDialog": {
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
     "ExpandableText": {
       "showMore": "Show More",
       "showLess": "Show Less"

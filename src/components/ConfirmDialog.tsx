@@ -9,15 +9,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { VariantProps } from "class-variance-authority";
+import { useTranslations } from "next-intl";
 import { ReactNode } from "react";
-
-interface ConfirmDialogProps {
-  title: string;
-  description?: string;
-  children: ReactNode;
-  onConfirm: () => void;
-  onCancel?: () => void;
-}
+import { buttonVariants } from "./ui/button";
 
 export function ConfirmDialog({
   title,
@@ -25,7 +20,19 @@ export function ConfirmDialog({
   children,
   onConfirm,
   onCancel,
-}: ConfirmDialogProps) {
+  cancelLabel,
+  confirmLabel,
+  variant,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+  onConfirm: () => void;
+  onCancel?: () => void;
+  cancelLabel?: string;
+  confirmLabel?: string;
+} & VariantProps<typeof buttonVariants>) {
+  const t = useTranslations("Components.ConfirmDialog");
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
@@ -35,8 +42,10 @@ export function ConfirmDialog({
           {description ? <AlertDialogDescription>{description}</AlertDialogDescription> : null}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Confirm</AlertDialogAction>
+          <AlertDialogCancel onClick={onCancel}>{cancelLabel || t("cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} variant={variant}>
+            {confirmLabel || t("confirm")}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
