@@ -154,10 +154,12 @@ export async function createPersonalUser({
   email,
   password,
   emailVerified,
+  grantSignupTokens = true,
 }: {
   email: string;
   password?: string;
   emailVerified?: Date;
+  grantSignupTokens?: boolean;
 }) {
   email = email.toLowerCase();
   const name = email.split("@")[0];
@@ -189,23 +191,25 @@ export async function createPersonalUser({
     return user;
   });
 
-  // 注册赠送 1_000_000 tokens
-  const signupAmount = 1_000_000;
-  await prisma.$transaction(async (tx) => {
-    await tx.tokensLog.create({
-      data: {
-        userId: user.id,
-        verb: "signup",
-        value: signupAmount,
-      },
+  // 根据参数决定是否注册赠送 tokens
+  if (grantSignupTokens) {
+    const signupAmount = 1_000_000;
+    await prisma.$transaction(async (tx) => {
+      await tx.tokensLog.create({
+        data: {
+          userId: user.id,
+          verb: "signup",
+          value: signupAmount,
+        },
+      });
+      await tx.tokensAccount.update({
+        where: { userId: user.id },
+        data: {
+          permanentBalance: { increment: signupAmount },
+        },
+      });
     });
-    await tx.tokensAccount.update({
-      where: { userId: user.id },
-      data: {
-        permanentBalance: { increment: signupAmount },
-      },
-    });
-  });
+  }
 
   recordLastLogin({ userId: user.id, provider: "email-password" });
   recordAcquisition({ userId: user.id });
