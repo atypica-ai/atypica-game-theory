@@ -5,6 +5,7 @@ export enum TeamConfigName {
   mcp = "mcp",
   studySystemPrompt = "studySystemPrompt",
   apiKey = "apiKey",
+  emailDomainWhitelist = "emailDomainWhitelist",
 }
 
 /**
@@ -18,5 +19,15 @@ export type TeamConfigValue = {
     key: string;
     createdAt: string;
     createdBy: number;
+  };
+  emailDomainWhitelist: {
+    domains: Array<{
+      domain: string;
+      verificationToken: string;
+      status: "pending" | "verified";
+      verifiedAt?: string;
+      addedBy: number;
+      addedAt: string;
+    }>;
   };
 };

@@ -6,7 +6,6 @@ import {
   getTeamSubscriptionAction,
   removeTeamMemberAction,
 } from "@/app/team/actions";
-import { TeamApiKeyCard } from "./TeamApiKeyCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -208,9 +207,6 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
               )}
             </CardContent>
           </Card>
-
-          {/* API Key Card */}
-          <TeamApiKeyCard team={team} />
         </div>
 
         {/* 添加成员和成员列表 */}

@@ -7,6 +7,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { Subscription, Team, TeamExtra, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { randomBytes } from "crypto";
+import { promises as dns } from "dns";
 import { getTranslations } from "next-intl/server";
 import { createTeam } from "./lib";
 import { TeamConfigName } from "./teamConfig/types";
@@ -706,6 +707,378 @@ export async function revokeTeamApiKeyAction(
       return {
         success: false,
         message: t("revokeApiKey.failed"),
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+// Email Domain Whitelist Management
+
+// Get domain whitelist
+export async function getDomainWhitelistAction(teamId: number): Promise<
+  ServerActionResult<{
+    domains: Array<{
+      domain: string;
+      verificationToken: string;
+      status: "pending" | "verified";
+      verifiedAt?: string;
+      addedBy: number;
+      addedAt: string;
+    }>;
+  }>
+> {
+  const t = await getTranslations("Team.Actions");
+  return withAuth(async ({ id: userId }) => {
+    try {
+      // Check team ownership
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
+      }
+
+      const config = await prisma.teamConfig.findUnique({
+        where: {
+          teamId_key: {
+            teamId,
+            key: TeamConfigName.emailDomainWhitelist,
+          },
+        },
+      });
+
+      if (!config) {
+        return {
+          success: true,
+          data: { domains: [] },
+        };
+      }
+
+      return {
+        success: true,
+        data: config.value as {
+          domains: Array<{
+            domain: string;
+            verificationToken: string;
+            status: "pending" | "verified";
+            verifiedAt?: string;
+            addedBy: number;
+            addedAt: string;
+          }>;
+        },
+      };
+    } catch (error) {
+      rootLogger.error({ msg: "Failed to get domain whitelist", error });
+      return {
+        success: false,
+        message: t("getDomainWhitelist.failed"),
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+// Add domain to whitelist
+export async function addDomainAction(
+  teamId: number,
+  domain: string,
+): Promise<
+  ServerActionResult<{
+    domain: string;
+    verificationToken: string;
+    status: "pending";
+    addedBy: number;
+    addedAt: string;
+  }>
+> {
+  const t = await getTranslations("Team.Actions");
+  return withAuth(async ({ id: userId }) => {
+    try {
+      // Check team ownership
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
+      }
+
+      // Validate domain format
+      const domainRegex = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}$/i;
+      if (!domainRegex.test(domain)) {
+        return {
+          success: false,
+          message: t("addDomain.invalidFormat"),
+          code: "internal_server_error",
+        };
+      }
+
+      // Generate verification token
+      const verificationToken = randomBytes(16).toString("hex");
+
+      // Get existing config
+      const existingConfig = await prisma.teamConfig.findUnique({
+        where: {
+          teamId_key: {
+            teamId,
+            key: TeamConfigName.emailDomainWhitelist,
+          },
+        },
+      });
+
+      const existingDomains =
+        (existingConfig?.value as { domains: Array<{ domain: string }> })?.domains || [];
+
+      // Check if domain already exists
+      if (existingDomains.some((d) => d.domain === domain)) {
+        return {
+          success: false,
+          message: t("addDomain.alreadyExists"),
+          code: "internal_server_error",
+        };
+      }
+
+      const newDomain = {
+        domain,
+        verificationToken,
+        status: "pending" as const,
+        addedBy: userId,
+        addedAt: new Date().toISOString(),
+      };
+
+      // Upsert config
+      await prisma.teamConfig.upsert({
+        where: {
+          teamId_key: {
+            teamId,
+            key: TeamConfigName.emailDomainWhitelist,
+          },
+        },
+        create: {
+          teamId,
+          key: TeamConfigName.emailDomainWhitelist,
+          value: {
+            domains: [newDomain],
+          },
+        },
+        update: {
+          value: {
+            domains: [...existingDomains, newDomain],
+          },
+        },
+      });
+
+      return {
+        success: true,
+        data: newDomain,
+      };
+    } catch (error) {
+      rootLogger.error({ msg: "Failed to add domain", error });
+      return {
+        success: false,
+        message: t("addDomain.failed"),
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+// Verify domain DNS TXT record
+export async function verifyDomainAction(
+  teamId: number,
+  domain: string,
+): Promise<ServerActionResult<{ verifiedAt: string }>> {
+  const t = await getTranslations("Team.Actions");
+  return withAuth(async ({ id: userId }) => {
+    try {
+      // Check team ownership
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
+      }
+
+      // Get config
+      const config = await prisma.teamConfig.findUnique({
+        where: {
+          teamId_key: {
+            teamId,
+            key: TeamConfigName.emailDomainWhitelist,
+          },
+        },
+      });
+
+      if (!config) {
+        return {
+          success: false,
+          message: t("verifyDomain.notFound"),
+          code: "internal_server_error",
+        };
+      }
+
+      const whitelist = config.value as {
+        domains: Array<{
+          domain: string;
+          verificationToken: string;
+          status: "pending" | "verified";
+          verifiedAt?: string;
+          addedBy: number;
+          addedAt: string;
+        }>;
+      };
+
+      const domainEntry = whitelist.domains.find((d) => d.domain === domain);
+      if (!domainEntry) {
+        return {
+          success: false,
+          message: t("verifyDomain.notFound"),
+          code: "internal_server_error",
+        };
+      }
+
+      // Query DNS TXT records
+      try {
+        const txtRecords = await dns.resolveTxt(domain);
+        const expectedRecord = `atypica-verification=${domainEntry.verificationToken}`;
+
+        // Check if the expected record exists
+        const isVerified = txtRecords.some((record) => record.join("") === expectedRecord);
+
+        if (!isVerified) {
+          return {
+            success: false,
+            message: t("verifyDomain.recordNotFound"),
+            code: "internal_server_error",
+          };
+        }
+
+        // Update domain status to verified
+        const verifiedAt = new Date().toISOString();
+        const updatedDomains = whitelist.domains.map((d) =>
+          d.domain === domain ? { ...d, status: "verified" as const, verifiedAt } : d,
+        );
+
+        await prisma.teamConfig.update({
+          where: {
+            teamId_key: {
+              teamId,
+              key: TeamConfigName.emailDomainWhitelist,
+            },
+          },
+          data: {
+            value: {
+              domains: updatedDomains,
+            },
+          },
+        });
+
+        return {
+          success: true,
+          data: { verifiedAt },
+        };
+      } catch (dnsError) {
+        rootLogger.error({ msg: "DNS query failed", error: dnsError });
+        return {
+          success: false,
+          message: t("verifyDomain.dnsQueryFailed"),
+          code: "internal_server_error",
+        };
+      }
+    } catch (error) {
+      rootLogger.error({ msg: "Failed to verify domain", error });
+      return {
+        success: false,
+        message: t("verifyDomain.failed"),
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+// Remove domain from whitelist
+export async function removeDomainAction(
+  teamId: number,
+  domain: string,
+): Promise<ServerActionResult<null>> {
+  const t = await getTranslations("Team.Actions");
+  return withAuth(async ({ id: userId }) => {
+    try {
+      // Check team ownership
+      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      if (!ownershipCheck.success) {
+        return ownershipCheck;
+      }
+
+      // Get config
+      const config = await prisma.teamConfig.findUnique({
+        where: {
+          teamId_key: {
+            teamId,
+            key: TeamConfigName.emailDomainWhitelist,
+          },
+        },
+      });
+
+      if (!config) {
+        return {
+          success: false,
+          message: t("removeDomain.notFound"),
+          code: "internal_server_error",
+        };
+      }
+
+      const whitelist = config.value as {
+        domains: Array<{
+          domain: string;
+          verificationToken: string;
+          status: "pending" | "verified";
+          verifiedAt?: string;
+          addedBy: number;
+          addedAt: string;
+        }>;
+      };
+
+      // Filter out the domain
+      const updatedDomains = whitelist.domains.filter((d) => d.domain !== domain);
+
+      if (updatedDomains.length === whitelist.domains.length) {
+        return {
+          success: false,
+          message: t("removeDomain.notFound"),
+          code: "internal_server_error",
+        };
+      }
+
+      // Update or delete config
+      if (updatedDomains.length === 0) {
+        await prisma.teamConfig.delete({
+          where: {
+            teamId_key: {
+              teamId,
+              key: TeamConfigName.emailDomainWhitelist,
+            },
+          },
+        });
+      } else {
+        await prisma.teamConfig.update({
+          where: {
+            teamId_key: {
+              teamId,
+              key: TeamConfigName.emailDomainWhitelist,
+            },
+          },
+          data: {
+            value: {
+              domains: updatedDomains,
+            },
+          },
+        });
+      }
+
+      return {
+        success: true,
+        data: null,
+      };
+    } catch (error) {
+      rootLogger.error({ msg: "Failed to remove domain", error });
+      return {
+        success: false,
+        message: t("removeDomain.failed"),
         code: "internal_server_error",
       };
     }

@@ -83,7 +83,9 @@
       "profile": "Profile",
       "tokens": "Tokens History",
       "paymentHistory": "Payment History",
-      "teamManagement": "Team Management"
+      "teamManagement": "Team Management",
+      "teamInfo": "Team Info",
+      "teamApi": "API"
     },
     "profile": {
       "title": "Profile Settings",

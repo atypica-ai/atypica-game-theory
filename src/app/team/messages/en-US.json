@@ -4,6 +4,15 @@
       "title": "Team Management - Atypica",
       "description": "Team management and collaboration"
     },
+    "Sidebar": {
+      "title": "Team",
+      "teamInfo": "Team Info",
+      "api": "API"
+    },
+    "ApiPage": {
+      "title": "API Configuration - Atypica",
+      "description": "Manage API keys and domain verification"
+    },
     "CreatePage": {
       "title": "Create Team",
       "description": "Create a new team to collaborate with your members.",
@@ -171,6 +180,60 @@
       },
       "revokeApiKey": {
         "failed": "Failed to revoke API key"
+      },
+      "getDomainWhitelist": {
+        "failed": "Failed to get domain whitelist"
+      },
+      "addDomain": {
+        "invalidFormat": "Invalid domain format",
+        "alreadyExists": "Domain already exists",
+        "failed": "Failed to add domain"
+      },
+      "verifyDomain": {
+        "notFound": "Domain not found",
+        "recordNotFound": "DNS TXT record not found. Please ensure you've added the verification record.",
+        "dnsQueryFailed": "Failed to query DNS records. Please try again later.",
+        "failed": "Failed to verify domain"
+      },
+      "removeDomain": {
+        "notFound": "Domain not found",
+        "failed": "Failed to remove domain"
+      }
+    },
+    "DomainVerificationCard": {
+      "title": "Email Domain Verification",
+      "description": "Verify domain ownership to allow API user creation for specific email domains.",
+      "loading": "Loading...",
+      "addDomainLabel": "Add Domain",
+      "domainPlaceholder": "example.com",
+      "addButton": "Add",
+      "addingButton": "Adding...",
+      "domainsListLabel": "Verified Domains",
+      "noDomains": "No domains added yet",
+      "statusVerified": "Verified",
+      "statusPending": "Pending",
+      "verificationInstructions": "Add the following DNS TXT record to verify domain ownership:",
+      "recordType": "Type",
+      "recordHost": "Host",
+      "recordHostHint": "or root domain",
+      "recordValue": "Value",
+      "verifyButton": "Verify Domain",
+      "verifyingButton": "Verifying...",
+      "verifiedAt": "Verified: {date}",
+      "removeDialog": {
+        "title": "Remove Domain",
+        "description": "Are you sure you want to remove {domain}? Users with this domain will no longer be able to be created via API."
+      },
+      "toast": {
+        "loadError": "Failed to load domains",
+        "enterDomain": "Please enter a domain",
+        "addSuccess": "Domain added successfully",
+        "addError": "Failed to add domain",
+        "verifySuccess": "Domain verified successfully",
+        "verifyError": "Failed to verify domain",
+        "removeSuccess": "Domain removed successfully",
+        "removeError": "Failed to remove domain",
+        "copiedVerificationRecord": "Verification record copied to clipboard"
       }
     }
   }

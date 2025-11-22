@@ -10,9 +10,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import * as Collapsible from "@radix-ui/react-collapsible";
 import {
   ArrowLeftRightIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
   CreditCardIcon,
+  InfoIcon,
+  KeyIcon,
   MenuIcon,
   SettingsIcon,
   User2Icon,
@@ -29,6 +34,7 @@ interface SidebarItem {
   label: string;
   href: string;
   icon: React.ReactNode;
+  children?: SidebarItem[];
 }
 
 export default function AccountSidebar() {
@@ -44,6 +50,45 @@ export default function AccountSidebar() {
     userType: string;
     displayName: string;
   } | null>(null);
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  // Load expanded state from localStorage and auto-expand based on pathname
+  useEffect(() => {
+    const saved = localStorage.getItem("account-sidebar-expanded");
+    let expanded = new Set<string>();
+
+    if (saved) {
+      try {
+        expanded = new Set(JSON.parse(saved));
+      } catch {
+        // Ignore parsing errors
+      }
+    }
+
+    // Auto-expand team menu if current path is under /team
+    if (pathname.startsWith("/team")) {
+      expanded.add("/team");
+    }
+
+    setExpandedItems(expanded);
+  }, [pathname]);
+
+  // Save expanded state to localStorage
+  useEffect(() => {
+    localStorage.setItem("account-sidebar-expanded", JSON.stringify([...expandedItems]));
+  }, [expandedItems]);
+
+  const toggleExpanded = (href: string) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(href)) {
+        next.delete(href);
+      } else {
+        next.add(href);
+      }
+      return next;
+    });
+  };
 
   // 加载用户团队状态和用户信息
   useEffect(() => {
@@ -103,6 +148,18 @@ export default function AccountSidebar() {
         label: t("teamManagement"),
         href: "/team",
         icon: <UsersIcon className="mr-2 h-4 w-4" />,
+        children: [
+          {
+            label: t("teamInfo"),
+            href: "/team",
+            icon: <InfoIcon className="mr-2 h-4 w-4" />,
+          },
+          {
+            label: t("teamApi"),
+            href: "/team/api",
+            icon: <KeyIcon className="mr-2 h-4 w-4" />,
+          },
+        ],
       });
     }
 
@@ -130,14 +187,35 @@ export default function AccountSidebar() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="min-w-36">
-              {sidebarItems.map((item) => (
-                <DropdownMenuItem asChild key={item.href}>
-                  <Link href={item.href}>
-                    {item.icon}
-                    {item.label}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
+              {sidebarItems.map((item) => {
+                if (item.children) {
+                  // Flatten children in mobile dropdown
+                  return [
+                    <DropdownMenuItem asChild key={item.href} className="font-medium">
+                      <Link href={item.href}>
+                        {item.icon}
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>,
+                    ...item.children.map((child) => (
+                      <DropdownMenuItem asChild key={child.href} className="pl-8">
+                        <Link href={child.href}>
+                          {child.icon}
+                          {child.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    )),
+                  ];
+                }
+                return (
+                  <DropdownMenuItem asChild key={item.href}>
+                    <Link href={item.href}>
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -145,20 +223,65 @@ export default function AccountSidebar() {
       {isSM && (
         <nav className="p-4">
           <ul className="space-y-2">
-            {sidebarItems.map((item) => (
-              <li key={item.href}>
-                <Button
-                  asChild
-                  variant={pathname === item.href ? "secondary" : "ghost"}
-                  className="w-full justify-start"
-                >
-                  <Link href={item.href}>
-                    {item.icon}
-                    {item.label}
-                  </Link>
-                </Button>
-              </li>
-            ))}
+            {sidebarItems.map((item) => {
+              if (item.children) {
+                const isExpanded = expandedItems.has(item.href);
+                const isActive = pathname.startsWith(item.href);
+                return (
+                  <li key={item.href}>
+                    <Collapsible.Root open={isExpanded} onOpenChange={() => toggleExpanded(item.href)}>
+                      <Collapsible.Trigger asChild>
+                        <Button
+                          variant={isActive ? "secondary" : "ghost"}
+                          className="w-full justify-start"
+                        >
+                          {item.icon}
+                          {item.label}
+                          {isExpanded ? (
+                            <ChevronDownIcon className="ml-auto h-4 w-4" />
+                          ) : (
+                            <ChevronRightIcon className="ml-auto h-4 w-4" />
+                          )}
+                        </Button>
+                      </Collapsible.Trigger>
+                      <Collapsible.Content>
+                        <ul className="ml-6 mt-2 space-y-2">
+                          {item.children.map((child) => (
+                            <li key={child.href}>
+                              <Button
+                                asChild
+                                variant={pathname === child.href ? "secondary" : "ghost"}
+                                className="w-full justify-start"
+                                size="sm"
+                              >
+                                <Link href={child.href}>
+                                  {child.icon}
+                                  {child.label}
+                                </Link>
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      </Collapsible.Content>
+                    </Collapsible.Root>
+                  </li>
+                );
+              }
+              return (
+                <li key={item.href}>
+                  <Button
+                    asChild
+                    variant={pathname === item.href ? "secondary" : "ghost"}
+                    className="w-full justify-start"
+                  >
+                    <Link href={item.href}>
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  </Button>
+                </li>
+              );
+            })}
             {teamStatus?.canSwitchIdentity && (
               <li>
                 <TeamSwitchButton>

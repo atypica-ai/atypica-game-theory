@@ -4,6 +4,15 @@
       "title": "团队管理 - Atypica",
       "description": "团队管理和协作"
     },
+    "Sidebar": {
+      "title": "团队",
+      "teamInfo": "团队信息",
+      "api": "API"
+    },
+    "ApiPage": {
+      "title": "API 配置 - Atypica",
+      "description": "管理 API 密钥和域名验证"
+    },
     "CreatePage": {
       "title": "创建团队",
       "description": "创建一个新团队以与您的成员协作。",
@@ -171,6 +180,60 @@
       },
       "revokeApiKey": {
         "failed": "撤销 API Key 失败"
+      },
+      "getDomainWhitelist": {
+        "failed": "获取域名白名单失败"
+      },
+      "addDomain": {
+        "invalidFormat": "域名格式无效",
+        "alreadyExists": "域名已存在",
+        "failed": "添加域名失败"
+      },
+      "verifyDomain": {
+        "notFound": "域名不存在",
+        "recordNotFound": "未找到 DNS TXT 记录。请确保您已添加验证记录。",
+        "dnsQueryFailed": "查询 DNS 记录失败。请稍后重试。",
+        "failed": "验证域名失败"
+      },
+      "removeDomain": {
+        "notFound": "域名不存在",
+        "failed": "删除域名失败"
+      }
+    },
+    "DomainVerificationCard": {
+      "title": "邮箱域名验证",
+      "description": "验证域名所有权，允许通过 API 为特定邮箱域名创建用户。",
+      "loading": "加载中...",
+      "addDomainLabel": "添加域名",
+      "domainPlaceholder": "example.com",
+      "addButton": "添加",
+      "addingButton": "添加中...",
+      "domainsListLabel": "已验证域名",
+      "noDomains": "暂无域名",
+      "statusVerified": "已验证",
+      "statusPending": "待验证",
+      "verificationInstructions": "添加以下 DNS TXT 记录以验证域名所有权：",
+      "recordType": "类型",
+      "recordHost": "主机记录",
+      "recordHostHint": "或根域名",
+      "recordValue": "记录值",
+      "verifyButton": "验证域名",
+      "verifyingButton": "验证中...",
+      "verifiedAt": "验证时间：{date}",
+      "removeDialog": {
+        "title": "删除域名",
+        "description": "确定要删除 {domain} 吗？此域名的用户将无法通过 API 创建。"
+      },
+      "toast": {
+        "loadError": "加载域名失败",
+        "enterDomain": "请输入域名",
+        "addSuccess": "域名添加成功",
+        "addError": "添加域名失败",
+        "verifySuccess": "域名验证成功",
+        "verifyError": "域名验证失败",
+        "removeSuccess": "域名删除成功",
+        "removeError": "删除域名失败",
+        "copiedVerificationRecord": "验证记录已复制到剪贴板"
       }
     }
   }
