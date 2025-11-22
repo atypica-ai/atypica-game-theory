@@ -85,7 +85,7 @@
       "paymentHistory": "Payment History",
       "teamManagement": "Team Management",
       "teamInfo": "Team Info",
-      "teamApi": "API"
+      "teamApiKeys": "API Keys"
     },
     "profile": {
       "title": "Profile Settings",

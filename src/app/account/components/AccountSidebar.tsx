@@ -155,8 +155,8 @@ export default function AccountSidebar() {
             icon: <InfoIcon className="mr-2 h-4 w-4" />,
           },
           {
-            label: t("teamApi"),
-            href: "/team/api",
+            label: t("teamApiKeys"),
+            href: "/team/api-keys",
             icon: <KeyIcon className="mr-2 h-4 w-4" />,
           },
         ],
@@ -229,7 +229,10 @@ export default function AccountSidebar() {
                 const isActive = pathname.startsWith(item.href);
                 return (
                   <li key={item.href}>
-                    <Collapsible.Root open={isExpanded} onOpenChange={() => toggleExpanded(item.href)}>
+                    <Collapsible.Root
+                      open={isExpanded}
+                      onOpenChange={() => toggleExpanded(item.href)}
+                    >
                       <Collapsible.Trigger asChild>
                         <Button
                           variant={isActive ? "secondary" : "ghost"}

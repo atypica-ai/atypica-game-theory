@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TeamApiPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/team/api");
+    redirect("/auth/signin?callbackUrl=/team/api-keys");
   }
 
   const user = await prisma.user.findUniqueOrThrow({
