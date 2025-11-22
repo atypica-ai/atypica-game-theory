@@ -2,13 +2,14 @@ import authOptions from "@/app/(auth)/authOptions";
 import { listMySages } from "@/app/(sage)/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
+import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { SagesListClient } from "./SagesListClient";
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Sage.list");
   const locale = await getLocale();
   return generatePageMetadata({

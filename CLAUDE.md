@@ -399,13 +399,15 @@ logger.info({ msg: "User action performed", action: "login" });
 // src/app/(feature)/page.tsx
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
+import { generatePageMetadata } from "@/lib/request/metadata";
+import { Metadata } from "next";
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("metadata");
-  return {
+  return generatePageMetadata({
     title: t("title"),
     description: t("description"),
-  };
+  });
 }
 
 export default async function Page() {

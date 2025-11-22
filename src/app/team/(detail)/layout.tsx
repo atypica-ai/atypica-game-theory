@@ -1,8 +1,9 @@
 import AccountLayout from "@/app/account/layout";
+import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { ReactNode } from "react";
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Team");
 
   return {
