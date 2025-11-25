@@ -352,7 +352,7 @@ export function ProjectDetails({
             <div>
               <CardTitle className="flex items-center">
                 <ListIcon className="h-5 w-5 mr-2" />
-                {t("questionList")}
+                {t("questionList")} ({project.extra?.questions?.length || 0})
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">{t("questionListDescription")}</p>
             </div>
@@ -363,7 +363,7 @@ export function ProjectDetails({
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="max-h-[500px] overflow-y-auto scrollbar-thin">
           {project.extra?.processing ? (
             // Generating state
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">

@@ -83,15 +83,6 @@
       "cancel": "Cancel",
       "confirm": "Confirm",
       "loading": "Loading...",
-      "totalSessions": "Total Sessions",
-      "humanInterviews": "Human Interviews",
-      "aiInterviews": "AI Persona Interviews",
-      "sessionsDescription": "Interview sessions conducted",
-      "interviewSessions": "Interview Sessions",
-      "noInterviews": "No interviews yet",
-      "noInterviewsDescription": "Share the project link or interview an AI Persona to get started",
-      "completed": "Completed",
-      "inProgress": "In Progress",
       "optimizing": "Optimizing",
       "createInterviewFailed": "Failed to create interview session",
       "editProject": "Edit",
@@ -216,13 +207,25 @@
       "copySuccess": "Link copied to clipboard"
     },
     "statistics": {
+      "totalSessions": "Total Sessions",
+      "humanInterviews": "Human Interviews",
+      "aiInterviews": "AI Persona Interviews",
+      "completed": "Completed",
+      "inProgress": "In Progress",
       "failedToLoadStats": "Failed to load statistics",
       "retry": "Retry"
     },
     "sessions": {
       "loadingError": "Error Loading Sessions",
       "retryButton": "Retry",
-      "loadingSessions": "Loading sessions..."
+      "loadingSessions": "Loading sessions...",
+      "sessionsDescription": "Interview sessions conducted",
+      "interviewSessions": "Interview Sessions",
+      "noInterviews": "No interviews yet",
+      "noInterviewsDescription": "Share the project link or interview an AI Persona to get started",
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "chatRounds": "{rounds} Rounds"
     },
     "requestInteractionForm": {
       "basicInfoPrologue": "Please fill in the following basic information to help us conduct the interview better",

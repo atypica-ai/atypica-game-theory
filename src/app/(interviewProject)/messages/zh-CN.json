@@ -83,15 +83,6 @@
       "cancel": "取消",
       "confirm": "确认",
       "loading": "加载中...",
-      "totalSessions": "总会话数",
-      "humanInterviews": "真人访谈",
-      "aiInterviews": "AI 人设访谈",
-      "sessionsDescription": "已进行的访谈会话",
-      "interviewSessions": "访谈会话",
-      "noInterviews": "暂无访谈",
-      "noInterviewsDescription": "分享项目链接或与 AI 人设进行访谈以开始",
-      "completed": "已完成",
-      "inProgress": "进行中",
       "optimizing": "优化中",
       "createInterviewFailed": "创建访谈会话失败",
       "editProject": "编辑",
@@ -216,13 +207,25 @@
       "copySuccess": "链接已复制到剪贴板"
     },
     "statistics": {
+      "totalSessions": "总会话数",
+      "humanInterviews": "真人访谈",
+      "aiInterviews": "AI 人设访谈",
+      "completed": "已完成",
+      "inProgress": "进行中",
       "failedToLoadStats": "加载统计数据失败",
       "retry": "重试"
     },
     "sessions": {
       "loadingError": "加载会话时出错",
       "retryButton": "重试",
-      "loadingSessions": "加载会话中..."
+      "loadingSessions": "加载会话中...",
+      "sessionsDescription": "已进行的访谈会话",
+      "interviewSessions": "访谈会话",
+      "noInterviews": "暂无访谈",
+      "noInterviewsDescription": "分享项目链接或与 AI 人设进行访谈以开始",
+      "completed": "已完成",
+      "inProgress": "进行中",
+      "chatRounds": "{rounds} 轮会话"
     },
     "requestInteractionForm": {
       "basicInfoPrologue": "请先填写以下基本信息，以便我们更好地进行访谈",

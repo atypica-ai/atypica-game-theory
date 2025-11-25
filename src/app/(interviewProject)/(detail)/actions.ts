@@ -1,5 +1,7 @@
 "use server";
 
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { processInterviewQuestionOptimization } from "@/app/(interviewProject)/processing";
 import {
   interviewProjectQuestionsSchema,
@@ -13,11 +15,15 @@ import {
   InterviewProjectExtra,
   InterviewReportExtra,
   InterviewSessionExtra,
+  UserChat,
 } from "@/prisma/client";
+import { InterviewSessionWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { isToolOrDynamicToolUIPart } from "ai";
 import { notFound } from "next/navigation";
 import z from "zod";
+import { TInterviewMessageWithTool } from "../types";
 
 /**
  * Create a new question for the project
@@ -388,6 +394,9 @@ export async function fetchInterviewSessionsByProjectToken({
       title: string | null;
       createdAt: Date;
       extra: InterviewSessionExtra;
+      stats: {
+        rounds: number;
+      };
       userChat: {
         id: number;
         token: string;
@@ -421,7 +430,12 @@ export async function fetchInterviewSessionsByProjectToken({
     }
 
     const skip = (page - 1) * pageSize;
-    const whereCondition = { projectId: project.id };
+    const whereCondition = {
+      projectId: project.id,
+      userChatId: {
+        not: null,
+      },
+    } satisfies InterviewSessionWhereInput;
 
     const [sessions, totalCount] = await Promise.all([
       prisma.interviewSession.findMany({
@@ -437,7 +451,13 @@ export async function fetchInterviewSessionsByProjectToken({
             select: { id: true, name: true },
           },
           userChat: {
-            select: { id: true, token: true },
+            select: {
+              id: true,
+              token: true,
+              messages: {
+                orderBy: { id: "asc" },
+              },
+            },
           },
           createdAt: true,
         },
@@ -450,10 +470,36 @@ export async function fetchInterviewSessionsByProjectToken({
 
     return {
       success: true,
-      data: sessions.map(({ extra, ...session }) => ({
-        extra: extra as InterviewSessionExtra,
-        ...session,
-      })),
+      data: sessions.map(({ extra, userChat: userChatOrNull, ...session }) => {
+        let messages: TInterviewMessageWithTool[];
+        let userChat: Pick<UserChat, "id" | "token"> | null;
+        if (userChatOrNull) {
+          userChat = { id: userChatOrNull.id, token: userChatOrNull.token };
+          messages = userChatOrNull.messages.map(
+            convertDBMessageToAIMessage,
+          ) as TInterviewMessageWithTool[];
+        } else {
+          messages = [];
+          userChat = null;
+        }
+        const rounds = messages.reduce((acc, message) => {
+          let parts = 0;
+          if (message.role === "assistant") {
+            parts = message.parts.filter(
+              (part) =>
+                (part.type === "text" && !isSystemMessage(part.text)) ||
+                isToolOrDynamicToolUIPart(part),
+            ).length;
+          }
+          return acc + parts;
+        }, 0);
+        return {
+          stats: { rounds },
+          userChat,
+          extra: extra as InterviewSessionExtra,
+          ...session,
+        };
+      }),
       pagination: {
         page,
         pageSize,

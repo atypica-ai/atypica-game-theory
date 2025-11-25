@@ -38,9 +38,8 @@ export function InterviewSessionsSection({
   readOnly?: boolean;
 }) {
   const locale = useLocale();
-  const t = useTranslations("InterviewProject.projectDetails");
-  const tSessions = useTranslations("InterviewProject.sessions");
-  const [sessions, setSessions] = useState<InterviewSessionItem[]>([]);
+  const t = useTranslations("InterviewProject.sessions");
+  const [sessions, set] = useState<InterviewSessionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,10 +64,11 @@ export function InterviewSessionsSection({
       const result = await fetchInterviewSessionsByProjectToken({
         projectToken,
         page: currentPage,
-        pageSize: 10,
+        // pageSize: 10,
+        pageSize: 5,
       });
       if (!result.success) throw result;
-      setSessions(result.data);
+      set(result.data);
       if (result.pagination) {
         setPagination(result.pagination);
       }
@@ -85,7 +85,7 @@ export function InterviewSessionsSection({
     setError(null);
     try {
       await deleteInterviewSessionAction(sessionId);
-      setSessions((prev) => prev.filter((session) => session.id !== sessionId));
+      set((prev) => prev.filter((session) => session.id !== sessionId));
     } catch (error) {
       setError((error as Error).message);
       console.log("Error deleting session:", error);
@@ -128,17 +128,15 @@ export function InterviewSessionsSection({
         {loading ? (
           <div className="py-8 flex flex-col items-center gap-4">
             <Loader2Icon className="size-8 animate-spin" />
-            <p className="text-muted-foreground text-xs">{tSessions("loadingSessions")}</p>
+            <p className="text-muted-foreground text-xs">{t("loadingSessions")}</p>
           </div>
         ) : error ? (
           <div className="text-center py-8">
             <MessageSquareIcon className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-destructive mb-2">
-              {tSessions("loadingError")}
-            </h3>
+            <h3 className="text-lg font-medium text-destructive mb-2">{t("loadingError")}</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
             <Button onClick={loadSessions} variant="outline" size="sm">
-              {tSessions("retryButton")}
+              {t("retryButton")}
             </Button>
           </div>
         ) : sessions.length === 0 ? (
@@ -197,6 +195,9 @@ export function InterviewSessionsSection({
                           )}
                         >
                           {isCompleted ? t("completed") : t("inProgress")}
+                        </div>
+                        <div className="text-xs text-muted-foreground ml-2">
+                          {t("chatRounds", { rounds: session.stats.rounds })}
                         </div>
                       </div>
                     </div>

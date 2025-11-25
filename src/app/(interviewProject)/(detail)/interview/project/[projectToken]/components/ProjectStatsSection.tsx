@@ -16,8 +16,7 @@ export function ProjectStatsSection({
   projectToken: string;
   readOnly?: boolean;
 }) {
-  const t = useTranslations("InterviewProject.projectDetails");
-  const tStats = useTranslations("InterviewProject.statistics");
+  const t = useTranslations("InterviewProject.statistics");
   const [stats, setStats] = useState<ExtractServerActionData<
     typeof fetchInterviewSessionStatsByProjectToken
   > | null>(null);
@@ -68,9 +67,9 @@ export function ProjectStatsSection({
         <Card className="md:col-span-3">
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-destructive mb-2">{tStats("failedToLoadStats")}</p>
+              <p className="text-destructive mb-2">{t("failedToLoadStats")}</p>
               <Button onClick={loadStats} variant="outline" size="sm">
-                {tStats("retry")}
+                {t("retry")}
               </Button>
             </div>
           </CardContent>
