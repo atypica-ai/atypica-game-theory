@@ -182,7 +182,7 @@ export function InterviewSessionChatClient({
     return "active";
   }, [messages]);
 
-  // Calculate progress: count completed selectQuestion tool calls
+  // Calculate progress: based on maximum question index (1-based) that has been asked
   const progress = useMemo(() => {
     const totalQuestions = questions.length;
     if (totalQuestions === 0) {
@@ -203,26 +203,29 @@ export function InterviewSessionChatClient({
       };
     }
 
-    const completedQuestions = messages.reduce((count, message) => {
-      return (
-        count +
-        (message.parts?.filter(
-          (part) =>
-            part.type === `tool-${InterviewToolName.selectQuestion}` &&
-            part.state === "output-available",
-        )?.length || 0)
-      );
-    }, 0);
+    // Find the maximum question index that has been selected
+    let maxQuestionIndex = 0;
+    messages.forEach((message) => {
+      message.parts?.forEach((part) => {
+        if (
+          part.type === `tool-${InterviewToolName.selectQuestion}` &&
+          part.state === "output-available"
+        ) {
+          const questionIndex = part.input?.questionIndex;
+          if (typeof questionIndex === "number" && questionIndex > maxQuestionIndex) {
+            maxQuestionIndex = questionIndex;
+          }
+        }
+      });
+    });
 
-    let percentage = (completedQuestions / totalQuestions) * 100;
-    if (percentage > 75) {
-      percentage = 95;
-    }
+    // Calculate percentage based on max index reached (1-based)
+    const percentage = maxQuestionIndex > 0 ? (maxQuestionIndex / totalQuestions) * 100 : 0;
 
     return {
-      completed: completedQuestions,
+      completed: maxQuestionIndex,
       total: totalQuestions,
-      percentage,
+      percentage: Math.min(percentage, 100), // Cap at 100%
     };
   }, [messages, questions.length]);
 
