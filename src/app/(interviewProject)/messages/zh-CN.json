@@ -127,7 +127,15 @@
       "restartChatConfirm": "确认重启",
       "restarting": "重启中...",
       "restartError": "重启对话失败",
-      "autoConversationNote": "AI 人设对话将自动重新开始。"
+      "autoConversationNote": "AI 人设对话将自动重新开始。",
+      "endInterview": "结束访谈",
+      "endInterviewTitle": "结束真人访谈",
+      "endInterviewDescription": "这将手动结束访谈会话并触发 AI 总结访谈内容。参与者将看到访谈完成提示。",
+      "endInterviewCancel": "取消",
+      "endInterviewConfirm": "确认结束",
+      "ending": "结束中...",
+      "endInterviewSuccess": "正在生成访谈总结，请稍候...",
+      "endInterviewError": "结束访谈失败"
     },
     "shareInvite": {
       "title": "您被邀请参加访谈",

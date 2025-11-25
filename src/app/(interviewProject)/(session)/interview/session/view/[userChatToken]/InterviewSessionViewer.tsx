@@ -1,6 +1,7 @@
 "use client";
 import {
   fetchInterviewSessionDetails,
+  manuallyEndHumanInterviewSession,
   restartPersonaInterviewSession,
 } from "@/app/(interviewProject)/(session)/actions";
 import { InterviewToolUIPartDisplay } from "@/app/(interviewProject)/tools/ui";
@@ -22,7 +23,7 @@ import {
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { BotIcon, InfoIcon, RefreshCwIcon, ShieldIcon, UsersIcon } from "lucide-react";
+import { BotIcon, InfoIcon, RefreshCwIcon, ShieldIcon, StopCircleIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ export function InterviewSessionViewer({
 
   const [isPending, startTransition] = useTransition();
   const [isRestartDialogOpen, setIsRestartDialogOpen] = useState(false);
+  const [isEndDialogOpen, setIsEndDialogOpen] = useState(false);
 
   // Use a dummy useChat for readonly viewing (no API calls)
   const useChatHelpers = useChat({
@@ -75,6 +77,23 @@ export function InterviewSessionViewer({
       }
     });
   }, [interviewSession.projectId, interviewSession.id, useChatHelpers, t]);
+
+  const handleEndInterview = useCallback(async () => {
+    startTransition(async () => {
+      try {
+        const result = await manuallyEndHumanInterviewSession({
+          projectId: interviewSession.projectId,
+          sessionId: interviewSession.id,
+        });
+        if (!result.success) throw result;
+        setIsEndDialogOpen(false);
+        toast.success(t("endInterviewSuccess"));
+      } catch (error) {
+        toast.error((error as Error).message || t("endInterviewError"));
+        console.log("Error ending interview:", error);
+      }
+    });
+  }, [interviewSession.projectId, interviewSession.id, t]);
 
   const getSessionDisplayName = (session: InterviewSessionDetails) => {
     if (session.intervieweePersona) {
@@ -212,6 +231,37 @@ export function InterviewSessionViewer({
     </Dialog>
   );
 
+  const EndInterviewButton = () => (
+    <Dialog open={isEndDialogOpen} onOpenChange={setIsEndDialogOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" disabled={isPending}>
+          <StopCircleIcon className={cn("h-4 w-4 mr-2")} />
+          {t("endInterview")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("endInterviewTitle")}</DialogTitle>
+          <DialogDescription>
+            {t("endInterviewDescription")}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button variant="outline" onClick={() => setIsEndDialogOpen(false)}>
+            {t("endInterviewCancel")}
+          </Button>
+          <Button
+            onClick={handleEndInterview}
+            disabled={isPending}
+            className="bg-orange-600 hover:bg-orange-700"
+          >
+            {isPending ? t("ending") : t("endInterviewConfirm")}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <FitToViewport
       className={cn(
@@ -248,6 +298,7 @@ export function InterviewSessionViewer({
         </div>
         <div className="flex items-center space-x-2">
           {interviewSession.intervieweePersona && <ChatRestartButton />}
+          {interviewSession.intervieweeUser && <EndInterviewButton />}
           <ProjectInfoButton />
         </div>
       </div>

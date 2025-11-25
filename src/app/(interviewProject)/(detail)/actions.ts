@@ -1,5 +1,7 @@
 "use server";
 
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { processInterviewQuestionOptimization } from "@/app/(interviewProject)/processing";
 import {
   interviewProjectQuestionsSchema,
@@ -18,8 +20,10 @@ import {
 import { InterviewSessionWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { isToolOrDynamicToolUIPart } from "ai";
 import { notFound } from "next/navigation";
 import z from "zod";
+import { TInterviewMessageWithTool } from "../types";
 
 /**
  * Create a new question for the project
@@ -473,9 +477,9 @@ export async function fetchInterviewSessionsByProjectToken({
       title: string | null;
       createdAt: Date;
       extra: InterviewSessionExtra;
-      // stats: {
-      //   rounds: number;
-      // };
+      stats: {
+        rounds: number;
+      };
       userChat: {
         id: number;
         token: string;
@@ -595,9 +599,7 @@ export async function fetchInterviewSessionsByProjectToken({
                 select: {
                   id: true,
                   token: true,
-                  // messages: {
-                  //   orderBy: { id: "asc" },
-                  // },
+                  messages: filter === "incomplete" ? { orderBy: { id: "asc" } } : false,
                 },
               },
               createdAt: true,
@@ -612,30 +614,32 @@ export async function fetchInterviewSessionsByProjectToken({
     return {
       success: true,
       data: orderedSessions.map(({ extra, userChat: userChatOrNull, ...session }) => {
-        // let messages: TInterviewMessageWithTool[];
+        let messages: TInterviewMessageWithTool[];
         let userChat: Pick<UserChat, "id" | "token"> | null;
         if (userChatOrNull) {
           userChat = { id: userChatOrNull.id, token: userChatOrNull.token };
-          // messages = userChatOrNull.messages.map(
-          //   convertDBMessageToAIMessage,
-          // ) as TInterviewMessageWithTool[];
+          messages = !userChatOrNull.messages
+            ? []
+            : (userChatOrNull.messages.map(
+                convertDBMessageToAIMessage,
+              ) as TInterviewMessageWithTool[]);
         } else {
-          // messages = [];
+          messages = [];
           userChat = null;
         }
-        // const rounds = messages.reduce((acc, message) => {
-        //   let parts = 0;
-        //   if (message.role === "assistant") {
-        //     parts = message.parts.filter(
-        //       (part) =>
-        //         (part.type === "text" && !isSystemMessage(part.text)) ||
-        //         isToolOrDynamicToolUIPart(part),
-        //     ).length;
-        //   }
-        //   return acc + parts;
-        // }, 0);
+        const rounds = messages.reduce((acc, message) => {
+          let parts = 0;
+          if (message.role === "assistant") {
+            parts = message.parts.filter(
+              (part) =>
+                (part.type === "text" && !isSystemMessage(part.text)) ||
+                isToolOrDynamicToolUIPart(part),
+            ).length;
+          }
+          return acc + parts;
+        }, 0);
         return {
-          // stats: { rounds },
+          stats: { rounds },
           userChat,
           extra: extra as InterviewSessionExtra,
           ...session,

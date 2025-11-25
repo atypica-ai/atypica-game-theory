@@ -1,3 +1,4 @@
+import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
@@ -56,11 +57,11 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
       <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
         {parts.map((part, i) => {
           if (part.type === "text") {
-            return (
+            return !isSystemMessage(part.text) ? (
               <div key={i} className="text-sm">
                 <Markdown>{part.text}</Markdown>
               </div>
-            );
+            ) : null;
           } else if (part.type === "reasoning") {
             return (
               <div

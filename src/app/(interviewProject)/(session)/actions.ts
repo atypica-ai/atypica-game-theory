@@ -1,5 +1,8 @@
 "use server";
 
+import { persistentAIMessageToDB } from "@/ai/messageUtils";
+import { ClientMessagePayload } from "@/ai/messageUtilsClient";
+import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
@@ -14,8 +17,10 @@ import {
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
+import { generateId } from "ai";
 import { Locale } from "next-intl";
 import { runAutoPersonaInterview } from "./api/chat/interview-agent/auto-persona";
+import { runHumanInterview } from "./api/chat/interview-agent/human";
 
 /**
  * Restart persona interview session
@@ -77,6 +82,100 @@ export async function restartPersonaInterviewSession({
       data: {
         chatToken: userChat.token,
       },
+    };
+  });
+}
+
+/**
+ * Manually end human interview session
+ */
+export async function manuallyEndHumanInterviewSession({
+  projectId,
+  sessionId: interviewSessionId,
+}: {
+  projectId: number;
+  sessionId: number;
+}): Promise<ServerActionResult<void>> {
+  return withAuth(async ({ id: userId }) => {
+    // Verify session ownership
+    const session = await prisma.interviewSession.findUnique({
+      where: {
+        project: { userId },
+        projectId: projectId,
+        id: interviewSessionId,
+      },
+      include: {
+        userChat: { select: { id: true, token: true } },
+        project: { select: { id: true, userId: true, brief: true, extra: true } },
+      },
+    });
+
+    if (!session?.intervieweeUserId || !session?.userChat) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview session not found, or either interviewee user or user chat not found",
+      };
+    }
+
+    const {
+      project,
+      userChat: { id: userChatId, token: userChatToken },
+    } = session;
+    const sessionExtra = session.extra as InterviewSessionExtra;
+
+    const chatLogger = rootLogger.child({
+      userChatId,
+      userChatToken,
+      interviewSessionId,
+    });
+
+    const { statReport } = initInterviewProjectStatReporter({
+      userId, // ⚠️ 这里是 project owner 的 userId，不是正在被访谈的 userId
+      interviewProjectId: project.id,
+      sessionUserChatId: userChatId,
+      logger: chatLogger,
+    });
+
+    const newMessage: ClientMessagePayload["message"] = {
+      role: "user",
+      parts: [{ type: "text", text: "[CONTINUE]" }],
+    };
+    const systemHint = "Please call endInterview tool immediately.";
+
+    // Save the latest user message to database
+    await persistentAIMessageToDB({
+      userChatId,
+      message: {
+        ...newMessage,
+        id: generateId(),
+      },
+    });
+
+    const abortSignal = new AbortController().signal;
+
+    waitUntil(
+      runHumanInterview({
+        statReport,
+        logger: chatLogger,
+        abortSignal,
+        newMessage,
+        systemHint,
+        interviewSession: {
+          interviewSessionId,
+          extra: sessionExtra,
+          userChatId,
+          project: {
+            brief: project.brief,
+            extra: project.extra as InterviewProjectExtra,
+          },
+        },
+      }),
+    );
+
+    return {
+      success: true,
+      data: undefined,
     };
   });
 }

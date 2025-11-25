@@ -212,11 +212,11 @@ export function InterviewSessionsSection({
                         >
                           {isCompleted ? t("completed") : t("inProgress")}
                         </div>
-                        {/*
-                        <div className="text-xs text-muted-foreground ml-2">
-                          {t("chatRounds", { rounds: session.stats.rounds })}
-                        </div>
-                        */}
+                        {session.stats.rounds && (
+                          <div className="text-xs text-muted-foreground ml-2">
+                            {t("chatRounds", { rounds: session.stats.rounds })}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

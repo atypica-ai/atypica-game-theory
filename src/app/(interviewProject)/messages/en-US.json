@@ -127,7 +127,15 @@
       "restartChatConfirm": "Confirm Restart",
       "restarting": "Restarting...",
       "restartError": "Failed to restart chat",
-      "autoConversationNote": "The AI Persona conversation will automatically begin again."
+      "autoConversationNote": "The AI Persona conversation will automatically begin again.",
+      "endInterview": "End Interview",
+      "endInterviewTitle": "End Human Interview",
+      "endInterviewDescription": "This will manually end the interview session and trigger the AI to summarize the interview. The participant will see the interview completion message.",
+      "endInterviewCancel": "Cancel",
+      "endInterviewConfirm": "Confirm End",
+      "ending": "Ending...",
+      "endInterviewSuccess": "Processing interview summary, please wait...",
+      "endInterviewError": "Failed to end interview"
     },
     "shareInvite": {
       "title": "You're Invited to an Interview",

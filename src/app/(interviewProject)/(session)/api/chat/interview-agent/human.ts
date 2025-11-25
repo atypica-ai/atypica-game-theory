@@ -7,14 +7,13 @@ import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
-import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { VALID_LOCALES } from "@/i18n/routing";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
+import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import {
   ModelMessage,
   smoothStream,
@@ -92,14 +91,24 @@ export async function runHumanInterview({
   abortSignal,
   newMessage,
   interviewSession,
+  systemHint,
   streamWriter,
 }: {
   statReport: StatReporter;
   logger: Logger;
   abortSignal: AbortSignal;
   newMessage: ClientMessagePayload["message"];
-  interviewSession: ExtractServerActionData<typeof fetchInterviewSessionChat>;
-  streamWriter: UIMessageStreamWriter;
+  interviewSession: {
+    interviewSessionId: number;
+    extra: InterviewSessionExtra;
+    userChatId: number;
+    project: {
+      brief: string;
+      extra: InterviewProjectExtra;
+    };
+  };
+  systemHint?: string; // 下一步做什么的提醒，默认是用 question 上的 hint 加上不断提问直到最后一句的提醒
+  streamWriter?: UIMessageStreamWriter;
 }) {
   const { interviewSessionId, project, userChatId, extra: sessionExtra } = interviewSession;
 
@@ -132,14 +141,14 @@ export async function runHumanInterview({
   // Use questions from session snapshot (with fallback to project for backward compatibility)
   const questions = sessionExtra.questions || project.extra?.questions;
 
-  let hint = "";
+  let hintFromSelectedQuestion = "";
   if (newMessage.role === "assistant") {
     const lastPart = (newMessage as TInterviewMessageWithTool).parts.at(-1);
     if (
       lastPart?.type === `tool-${InterviewToolName.selectQuestion}` &&
       lastPart.state === "output-available"
     ) {
-      hint = lastPart.output.question.hint ?? "";
+      hintFromSelectedQuestion = lastPart.output.question.hint ?? "";
     }
   }
 
@@ -202,16 +211,18 @@ export async function runHumanInterview({
               ? `\n已完成问题: ${completedIndices.join(", ")}`
               : `\nCompleted questions: ${completedIndices.join(", ")}`
             : "";
+        systemHint = systemHint
+          ? systemHint
+          : locale === "zh-CN"
+            ? `按顺序继续访谈，逐步深入，直到完成最后一个问题。${progressInfo}`
+            : `Continue the interview in sequential order, explore deeply, until completing the last question.${progressInfo}`;
 
-        const hintText =
-          locale === "zh-CN"
-            ? `[HINT] ${hint ? `${hint}\n` : ""}按顺序继续访谈，逐步深入，直到完成最后一个问题。${progressInfo}`
-            : `[HINT] ${hint ? `${hint}\n` : ""}Continue the interview in sequential order, explore deeply, until completing the last question.${progressInfo}`;
-
+        const hintText = `[HINT] ${hintFromSelectedQuestion ? `${hintFromSelectedQuestion}\n` : ""}${systemHint}`;
         const modelMessages = [
           ...messages,
           { role: "user", content: hintText } satisfies UserModelMessage,
         ];
+
         const assistantCount = messages.filter(({ role }) => role === "assistant").length;
         if (assistantCount < 1) {
           return {
@@ -286,11 +297,13 @@ export async function runHumanInterview({
       abortSignal: abortSignal,
     });
 
-    streamWriter.merge(
-      streamTextResponse.toUIMessageStream({
-        generateMessageId: () => streamingMessage.id,
-      }),
-    );
+    if (streamWriter) {
+      streamWriter.merge(
+        streamTextResponse.toUIMessageStream({
+          generateMessageId: () => streamingMessage.id,
+        }),
+      );
+    }
 
     abortSignal.addEventListener("abort", () => {
       reject(new Error("runHumanInterview abortSignal received"));
