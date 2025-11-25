@@ -7,6 +7,7 @@ import { createAzure } from "@ai-sdk/azure";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
+import { createVertexAnthropic } from "@ai-sdk/google-vertex/anthropic";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createXai } from "@ai-sdk/xai";
 
@@ -82,6 +83,18 @@ const vertex = createVertex({
   fetch: proxiedFetch,
 });
 
+const vertexClaude = createVertexAnthropic({
+  location: process.env.GOOGLE_VERTEX_CLAUDE_LOCATION,
+  project: process.env.GOOGLE_VERTEX_CLAUDE_PROJECT,
+  googleAuthOptions: {
+    credentials: {
+      client_email: process.env.GOOGLE_VERTEX_CLAUDE_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_VERTEX_CLAUDE_PRIVATE_KEY,
+    },
+  },
+  fetch: proxiedFetch,
+});
+
 const xai = createXai({
   apiKey: process.env.XAI_API_KEY,
   fetch: proxiedFetch,
@@ -133,6 +146,7 @@ export type LLMModelName =
   | "claude-3-7-sonnet"
   | "claude-sonnet-4"
   | "claude-sonnet-4-5"
+  | "claude-haiku-4-5"
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
   | "grok-4"
@@ -173,6 +187,7 @@ export function llm(modelName: LLMModelName) {
         } else {
           return openai(modelName);
         }
+      case "claude-haiku-4-5":
       case "gemini-2.5-flash":
       case "gemini-2.5-pro":
         if (process.env.GOOGLE_VERTEX_PRIVATE_KEY) {
@@ -232,6 +247,8 @@ export function llm(modelName: LLMModelName) {
     //   return google("gemini-2.5-flash-preview-04-17");
     // case "gemini-2.5-pro":
     //   return google("gemini-2.5-pro-preview-03-25");
+    case "claude-haiku-4-5":
+      return vertexClaude("claude-haiku-4-5");
     case "gemini-2.5-flash":
       return vertex("gemini-2.5-flash");
     case "gemini-2.5-pro":
