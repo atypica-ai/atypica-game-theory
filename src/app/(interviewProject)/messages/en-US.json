@@ -225,7 +225,10 @@
       "noInterviewsDescription": "Share the project link or interview an AI Persona to get started",
       "completed": "Completed",
       "inProgress": "In Progress",
-      "chatRounds": "{rounds} Rounds"
+      "chatRounds": "{rounds} Rounds",
+      "filterAll": "All",
+      "filterCompleted": "Completed",
+      "filterIncomplete": "In Progress"
     },
     "requestInteractionForm": {
       "basicInfoPrologue": "Please fill in the following basic information to help us conduct the interview better",

@@ -29,8 +29,8 @@ export const interviewSessionTools = ({ interviewSessionId }: { interviewSession
       const extraUpdate = personalInfo && personalInfo.length > 0 ? { personalInfo } : {};
 
       await Promise.all([
-        // 故意等10s，这样前端可以感觉到工具正在被执行。
-        new Promise((resolve) => setTimeout(resolve, 10_000)),
+        // 故意等1s，这样前端可以感觉到工具正在被执行。
+        new Promise((resolve) => setTimeout(resolve, 1_000)),
         // Use raw SQL to update title and extra fields atomically
         // Remove 'ongoing' field and optionally add 'personalInfo'
         prisma.$executeRaw`

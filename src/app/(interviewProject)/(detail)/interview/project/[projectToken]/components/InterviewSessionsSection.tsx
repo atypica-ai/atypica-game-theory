@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import {
@@ -56,6 +57,7 @@ export function InterviewSessionsSection({
     open: false,
     userChatToken: null,
   });
+  const [filter, setFilter] = useState<"all" | "completed" | "incomplete">("all");
 
   const loadSessions = useCallback(async () => {
     setLoading(true);
@@ -64,8 +66,8 @@ export function InterviewSessionsSection({
       const result = await fetchInterviewSessionsByProjectToken({
         projectToken,
         page: currentPage,
-        // pageSize: 10,
-        pageSize: 5,
+        pageSize: 10,
+        filter,
       });
       if (!result.success) throw result;
       set(result.data);
@@ -98,6 +100,11 @@ export function InterviewSessionsSection({
     loadSessions();
   }, [loadSessions]);
 
+  useEffect(() => {
+    // Reset to page 1 when filter changes
+    setCurrentPage(1);
+  }, [filter]);
+
   const getSessionDisplayName = (session: InterviewSessionItem) => {
     if (session.intervieweePersona) {
       return session.intervieweePersona.name;
@@ -120,9 +127,18 @@ export function InterviewSessionsSection({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t("interviewSessions")}</CardTitle>
-        <CardDescription>{t("sessionsDescription")}</CardDescription>
+      <CardHeader className="flex items-start justify-between">
+        <div>
+          <CardTitle>{t("interviewSessions")}</CardTitle>
+          <CardDescription>{t("sessionsDescription")}</CardDescription>
+        </div>
+        <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
+          <TabsList>
+            <TabsTrigger value="all">{t("filterAll")}</TabsTrigger>
+            <TabsTrigger value="completed">{t("filterCompleted")}</TabsTrigger>
+            <TabsTrigger value="incomplete">{t("filterIncomplete")}</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -196,9 +212,11 @@ export function InterviewSessionsSection({
                         >
                           {isCompleted ? t("completed") : t("inProgress")}
                         </div>
+                        {/*
                         <div className="text-xs text-muted-foreground ml-2">
                           {t("chatRounds", { rounds: session.stats.rounds })}
                         </div>
+                        */}
                       </div>
                     </div>
                   </div>

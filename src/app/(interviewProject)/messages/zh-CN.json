@@ -225,7 +225,10 @@
       "noInterviewsDescription": "分享项目链接或与 AI 人设进行访谈以开始",
       "completed": "已完成",
       "inProgress": "进行中",
-      "chatRounds": "{rounds} 轮会话"
+      "chatRounds": "{rounds} 轮会话",
+      "filterAll": "全部",
+      "filterCompleted": "已完成",
+      "filterIncomplete": "进行中"
     },
     "requestInteractionForm": {
       "basicInfoPrologue": "请先填写以下基本信息，以便我们更好地进行访谈",

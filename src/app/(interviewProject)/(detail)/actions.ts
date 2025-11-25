@@ -1,7 +1,5 @@
 "use server";
 
-import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
-import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { processInterviewQuestionOptimization } from "@/app/(interviewProject)/processing";
 import {
   interviewProjectQuestionsSchema,
@@ -20,10 +18,8 @@ import {
 import { InterviewSessionWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { isToolOrDynamicToolUIPart } from "ai";
 import { notFound } from "next/navigation";
 import z from "zod";
-import { TInterviewMessageWithTool } from "../types";
 
 /**
  * Create a new question for the project
@@ -464,10 +460,12 @@ export async function fetchInterviewSessionsByProjectToken({
   projectToken,
   page = 1,
   pageSize = 10,
+  filter = "all",
 }: {
   projectToken: string;
   page?: number;
   pageSize?: number;
+  filter?: "all" | "completed" | "incomplete";
 }): Promise<
   ServerActionResult<
     Array<{
@@ -475,9 +473,9 @@ export async function fetchInterviewSessionsByProjectToken({
       title: string | null;
       createdAt: Date;
       extra: InterviewSessionExtra;
-      stats: {
-        rounds: number;
-      };
+      // stats: {
+      //   rounds: number;
+      // };
       userChat: {
         id: number;
         token: string;
@@ -511,71 +509,133 @@ export async function fetchInterviewSessionsByProjectToken({
     }
 
     const skip = (page - 1) * pageSize;
-    const whereCondition = {
-      projectId: project.id,
-      userChatId: {
-        not: null,
-      },
-    } satisfies InterviewSessionWhereInput;
 
-    const [sessions, totalCount] = await Promise.all([
-      prisma.interviewSession.findMany({
-        where: whereCondition,
-        select: {
-          id: true,
-          title: true,
-          extra: true,
-          intervieweeUser: {
-            select: { id: true, name: true, email: true },
-          },
-          intervieweePersona: {
-            select: { id: true, name: true },
-          },
-          userChat: {
+    // Use raw SQL to filter by extra.ongoing JSONB field with pagination
+    let sessionIds: number[];
+    let totalCount: number;
+
+    if (filter === "completed") {
+      // Get completed sessions (where extra.ongoing is false or null) - paginated
+      const [countAndIds] = await Promise.all([
+        prisma.$queryRaw<Array<{ id: number; total_count: bigint }>>`
+          SELECT
+            id,
+            COUNT(*) OVER() as total_count
+          FROM "InterviewSession"
+          WHERE "projectId" = ${project.id}
+            AND "userChatId" IS NOT NULL
+            AND (extra->>'ongoing')::boolean = false
+          ORDER BY "id" DESC
+          LIMIT ${pageSize}
+          OFFSET ${skip}
+        `,
+      ]);
+
+      sessionIds = countAndIds.map((r) => r.id);
+      totalCount = countAndIds.length > 0 ? Number(countAndIds[0].total_count) : 0;
+    } else if (filter === "incomplete") {
+      // Get incomplete sessions (where extra.ongoing is true) - paginated
+      const [countAndIds] = await Promise.all([
+        prisma.$queryRaw<Array<{ id: number; total_count: bigint }>>`
+          SELECT
+            id,
+            COUNT(*) OVER() as total_count
+          FROM "InterviewSession"
+          WHERE "projectId" = ${project.id}
+            AND "userChatId" IS NOT NULL
+            AND (extra->>'ongoing')::boolean = true
+          ORDER BY "id" DESC
+          LIMIT ${pageSize}
+          OFFSET ${skip}
+        `,
+      ]);
+
+      sessionIds = countAndIds.map((r) => r.id);
+      totalCount = countAndIds.length > 0 ? Number(countAndIds[0].total_count) : 0;
+    } else {
+      // Get all sessions
+      const whereCondition = {
+        projectId: project.id,
+        userChatId: {
+          not: null,
+        },
+      } satisfies InterviewSessionWhereInput;
+
+      const [sessions, count] = await Promise.all([
+        prisma.interviewSession.findMany({
+          where: whereCondition,
+          select: { id: true },
+          orderBy: { id: "desc" },
+          skip,
+          take: pageSize,
+        }),
+        prisma.interviewSession.count({ where: whereCondition }),
+      ]);
+
+      sessionIds = sessions.map((r) => r.id);
+      totalCount = count;
+    }
+
+    // Fetch full session data for the filtered IDs, maintaining order
+    const sessions =
+      sessionIds.length > 0
+        ? await prisma.interviewSession.findMany({
+            where: { id: { in: sessionIds } },
             select: {
               id: true,
-              token: true,
-              messages: {
-                orderBy: { id: "asc" },
+              title: true,
+              extra: true,
+              intervieweeUser: {
+                select: { id: true, name: true, email: true },
               },
+              intervieweePersona: {
+                select: { id: true, name: true },
+              },
+              userChat: {
+                select: {
+                  id: true,
+                  token: true,
+                  // messages: {
+                  //   orderBy: { id: "asc" },
+                  // },
+                },
+              },
+              createdAt: true,
             },
-          },
-          createdAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: pageSize,
-      }),
-      prisma.interviewSession.count({ where: whereCondition }),
-    ]);
+          })
+        : [];
+
+    // Restore original order from sessionIds
+    const sessionMap = new Map(sessions.map((s) => [s.id, s]));
+    const orderedSessions = sessionIds.map((id) => sessionMap.get(id)!).filter(Boolean);
 
     return {
       success: true,
-      data: sessions.map(({ extra, userChat: userChatOrNull, ...session }) => {
-        let messages: TInterviewMessageWithTool[];
+      data: orderedSessions.map(({ extra, userChat: userChatOrNull, ...session }) => {
+        // let messages: TInterviewMessageWithTool[];
         let userChat: Pick<UserChat, "id" | "token"> | null;
         if (userChatOrNull) {
           userChat = { id: userChatOrNull.id, token: userChatOrNull.token };
-          messages = userChatOrNull.messages.map(
-            convertDBMessageToAIMessage,
-          ) as TInterviewMessageWithTool[];
+          // messages = userChatOrNull.messages.map(
+          //   convertDBMessageToAIMessage,
+          // ) as TInterviewMessageWithTool[];
         } else {
-          messages = [];
+          // messages = [];
           userChat = null;
         }
-        const rounds = messages.reduce((acc, message) => {
-          let parts = 0;
-          if (message.role === "assistant") {
-            parts = message.parts.filter(
-              (part) =>
-                (part.type === "text" && !isSystemMessage(part.text)) ||
-                isToolOrDynamicToolUIPart(part),
-            ).length;
-          }
-          return acc + parts;
-        }, 0);
+        // const rounds = messages.reduce((acc, message) => {
+        //   let parts = 0;
+        //   if (message.role === "assistant") {
+        //     parts = message.parts.filter(
+        //       (part) =>
+        //         (part.type === "text" && !isSystemMessage(part.text)) ||
+        //         isToolOrDynamicToolUIPart(part),
+        //     ).length;
+        //   }
+        //   return acc + parts;
+        // }, 0);
         return {
-          stats: { rounds },
+          // stats: { rounds },
           userChat,
           extra: extra as InterviewSessionExtra,
           ...session,
