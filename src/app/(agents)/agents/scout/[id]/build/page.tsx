@@ -1,6 +1,6 @@
-import { TStudyMessageWithTool } from "@/ai/tools/types";
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import { AgentChatPage } from "@/app/(agents)/agents/AgentChatPage";
+import { TSimpleAgentMessageWithTool } from "@/app/(agents)/tools/types";
 import authOptions from "@/app/(auth)/authOptions";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
@@ -30,7 +30,7 @@ async function BuildPersonaPage({
     <AgentChatPage
       userChatToken={userChat.token}
       chatTitle={userChat.title}
-      initialMessages={userChat.messages as TStudyMessageWithTool[]}
+      initialMessages={userChat.messages as TSimpleAgentMessageWithTool[]}
       useChatAPI="/api/chat/scout/build"
     />
   );

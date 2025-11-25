@@ -16,11 +16,7 @@ import {
 } from "@/ai/tools/social/ToolMessage";
 import { SaveAnalystToolResultMessage } from "@/ai/tools/system/ToolMessage";
 import { TAddStudyUIToolResult, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
-import {
-  RequestInteractionMessage,
-  RequestPaymentMessage,
-  ThanksMessage,
-} from "@/ai/tools/user/ToolMessage";
+import { RequestInteractionMessage, RequestPaymentMessage } from "@/ai/tools/user/ToolMessage";
 
 /**
  * 因为 v5 sdk 的 UIMessage 类型改复杂，这里没法精确定义和 UIMessage 的 TOOLS 对应的 ToolUIPart 类型，但是可以定义 UIMessagePart 的泛型类型
@@ -45,8 +41,6 @@ export const StudyToolUIPartDisplay = ({
       );
     case `tool-${ToolName.requestPayment}`:
       return <RequestPaymentMessage toolInvocation={toolUIPart} addToolResult={addToolResult} />;
-    case `tool-${ToolName.thanks}`:
-      return <ThanksMessage toolInvocation={toolUIPart} />;
   }
 
   if (toolUIPart.state !== "output-available") {

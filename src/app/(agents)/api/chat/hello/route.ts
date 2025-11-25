@@ -5,9 +5,8 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { thanksTool } from "@/ai/tools/tools";
-import { ToolName } from "@/ai/tools/types";
 import { helloSystem } from "@/app/(agents)/prompt";
+import { thanksTool } from "@/app/(agents)/tools";
 import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
@@ -54,8 +53,9 @@ export async function POST(req: Request) {
   });
 
   const tools = {
-    [ToolName.thanks]: thanksTool,
+    thanks: thanksTool,
   };
+
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
     tools,
   });

@@ -35,6 +35,5 @@ export { saveInterviewConclusionTool } from "./system/saveInterviewConclusion";
 export { savePersonaTool } from "./system/savePersona";
 export { requestInteractionTool } from "./user/interaction";
 export { requestPaymentTool } from "./user/payment";
-export { thanksTool } from "./user/thanks";
 
 export { handleToolCallError, toolCallError } from "./error";

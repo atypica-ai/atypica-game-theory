@@ -272,7 +272,9 @@ export function ChatBox() {
       if (
         isToolUIPart(lastPart) &&
         lastPart.state !== "output-available" &&
-        [ToolName.thanks, ToolName.requestInteraction].includes(getToolName(lastPart) as ToolName)
+        [ToolName.requestPayment, ToolName.requestInteraction].includes(
+          getToolName(lastPart) as ToolName,
+        )
       ) {
         waitForUser = true;
       }

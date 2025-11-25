@@ -1,5 +1,5 @@
-import { TStudyMessageWithTool } from "@/ai/tools/types";
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
+import { TSimpleAgentMessageWithTool } from "@/app/(agents)/tools/types";
 import authOptions from "@/app/(auth)/authOptions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
@@ -33,7 +33,7 @@ async function HelloAgentPage({
         user: <HippyGhostAvatar className="size-8" seed={sessionUser.id} />,
         assistant: <HippyGhostAvatar className="size-8" seed={userChat.id} />,
       }}
-      initialMessages={userChat.messages as TStudyMessageWithTool[]}
+      initialMessages={userChat.messages as TSimpleAgentMessageWithTool[]}
       useChatAPI="/api/chat/hello"
     />
   );

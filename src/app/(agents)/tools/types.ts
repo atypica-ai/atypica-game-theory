@@ -1,3 +1,4 @@
+import { UIDataTypes, UIMessage } from "ai";
 import z from "zod/v3";
 
 export const thanksInputSchema = z.object({
@@ -5,7 +6,9 @@ export const thanksInputSchema = z.object({
   company: z.string().describe("Company or organization name"),
   title: z.string().describe("Professional job title or role"),
   contact: z.string().describe("Contact information (email or phone number for follow-up)"),
-  trialScenario: z.string().describe("Business problems or research scenarios they want to solve with atypica"),
+  trialScenario: z
+    .string()
+    .describe("Business problems or research scenarios they want to solve with atypica"),
   source: z.string().describe("How they heard about atypica"),
   expectedUsers: z.string().describe("Expected number of users"),
   department: z.string().describe("Department that will be using atypica"),
@@ -18,3 +21,12 @@ export const thanksOutputSchema = z.object({
 });
 
 export type ThanksToolResult = z.infer<typeof thanksOutputSchema>;
+
+export type SimpleAgentTools = {
+  thanks: {
+    input: ThanksToolInput;
+    output: ThanksToolResult;
+  };
+};
+
+export type TSimpleAgentMessageWithTool = UIMessage<unknown, UIDataTypes, SimpleAgentTools>;

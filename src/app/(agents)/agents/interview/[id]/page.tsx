@@ -1,6 +1,6 @@
-import { TStudyMessageWithTool } from "@/ai/tools/types";
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import { AgentChatPage } from "@/app/(agents)/agents/AgentChatPage";
+import { TSimpleAgentMessageWithTool } from "@/app/(agents)/tools/types";
 import { checkTezignAuth } from "@/app/admin/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
@@ -48,7 +48,7 @@ async function InterviewAgentPage({ userChatId }: { userChatId: number }) {
         user: <HippyGhostAvatar className="size-8" seed={interview.analyst.id} />,
         assistant: <HippyGhostAvatar className="size-8" seed={interview.persona.id} />,
       }}
-      initialMessages={userChat.messages as TStudyMessageWithTool[]}
+      initialMessages={userChat.messages as TSimpleAgentMessageWithTool[]}
       readOnly={true}
     />
   );

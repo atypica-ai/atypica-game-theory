@@ -1,14 +1,15 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
-import { StudyUITools, TMessageWithPlainTextTool } from "@/ai/tools/types";
-import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
+import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useMemo, useRef } from "react";
+import { SimpleAgentTools } from "../tools/types";
+import { SimpleAgentToolUIPartDisplay } from "../tools/ui";
 
-export function AgentChatPage<UI_MESSAGE extends TMessageWithPlainTextTool<StudyUITools>>({
+export function AgentChatPage<UI_MESSAGE extends TMessageWithPlainTextTool<SimpleAgentTools>>({
   userChatToken,
   chatTitle,
   nickname,
@@ -29,7 +30,7 @@ export function AgentChatPage<UI_MESSAGE extends TMessageWithPlainTextTool<Study
 }) {
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
 
-  const useChatHelpers = useChat<TMessageWithPlainTextTool<StudyUITools>>({
+  const useChatHelpers = useChat<UI_MESSAGE>({
     // id: chatId,
     experimental_throttle: 300,
     messages: initialMessages,
@@ -65,14 +66,14 @@ export function AgentChatPage<UI_MESSAGE extends TMessageWithPlainTextTool<Study
 
   return (
     <FitToViewport className="flex-1 overflow-hidden flex flex-col items-stretch justify-start container mx-auto">
-      <UserChatSession<TMessageWithPlainTextTool<StudyUITools>>
+      <UserChatSession<UI_MESSAGE>
         chatTitle={chatTitle}
         nickname={nickname}
         avatar={avatar}
         readOnly={readOnly}
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
-        renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
+        renderToolUIPart={(toolPart) => <SimpleAgentToolUIPartDisplay toolUIPart={toolPart} />}
         persistMessages={persistMessages}
         acceptAttachments={false}
       />

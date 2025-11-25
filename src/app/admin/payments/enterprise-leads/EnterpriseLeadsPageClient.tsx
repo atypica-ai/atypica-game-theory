@@ -1,5 +1,4 @@
 "use client";
-import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { PaginationInfo } from "@/app/admin/types";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
@@ -75,7 +74,7 @@ export function EnterpriseLeadsPageClient({
     }
   };
 
-  const renderFullConversation = (messages: TStudyMessageWithTool[]) => {
+  const renderFullConversation = (messages: EnterpriseLead["messages"]) => {
     return (
       <div className="space-y-2 max-h-96 overflow-y-auto border rounded-md p-3 mt-2 bg-muted/30">
         {messages.map((message) => (
@@ -90,7 +89,7 @@ export function EnterpriseLeadsPageClient({
     );
   };
 
-  const extractContactInfo = (messages: TStudyMessageWithTool[]) => {
+  const extractContactInfo = (messages: EnterpriseLead["messages"]) => {
     let contactInfo:
       | Partial<{
           name: string;
@@ -108,7 +107,7 @@ export function EnterpriseLeadsPageClient({
     for (const message of messages) {
       if (message.parts) {
         for (const part of message.parts) {
-          if (part.type === `tool-${ToolName.thanks}` && "toolCallId" in part && part.input) {
+          if (part.type === "tool-thanks" && "toolCallId" in part && part.input) {
             contactInfo = part.input;
           }
         }
@@ -175,7 +174,9 @@ export function EnterpriseLeadsPageClient({
                           <span className="text-primary">🏛️ 部门: {contactInfo.department}</span>
                         )}
                         {contactInfo.expectedUsers && (
-                          <span className="text-primary">👥 预计使用人数: {contactInfo.expectedUsers}</span>
+                          <span className="text-primary">
+                            👥 预计使用人数: {contactInfo.expectedUsers}
+                          </span>
                         )}
                         {contactInfo.source && (
                           <span className="text-primary break-all">
