@@ -25,7 +25,7 @@ import {
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 
-function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
+function setClaudeCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
   const checkpoints = {
     ">=1": false,
@@ -34,7 +34,10 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
     ">=32": false,
   };
   const cachedCoreMessages = coreMessages.map((message, index) => {
-    const providerOptions = { bedrock: { cachePoint: { type: "default" } } };
+    const providerOptions = {
+      bedrock: { cachePoint: { type: "default" } },
+      anthropic: { cacheControl: { type: "ephemeral" } },
+    };
     if (message.role === "assistant" && index >= 1 && !checkpoints[">=1"]) {
       checkpoints[">=1"] = true;
       return { ...message, providerOptions };
@@ -180,11 +183,11 @@ export async function runHumanInterview({
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
     tools,
   });
-  const modelMessages = setBedrockCache("claude-sonnet-4", coreMessages);
+  const modelMessages = setClaudeCache("claude-haiku-4-5", coreMessages);
 
   const streamTextPromise = new Promise<void>((resolve, reject) => {
     const streamTextResponse = streamText({
-      model: llm("claude-sonnet-4-5"),
+      model: llm("claude-haiku-4-5"),
 
       providerOptions: defaultProviderOptions,
 
