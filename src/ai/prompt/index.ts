@@ -1,7 +1,6 @@
 import "server-only";
 
 export * from "./buildPersona";
-export * from "./hello";
 export * from "./interview";
 export * from "./personaAgent";
 export * from "./reasoning";

@@ -4,10 +4,10 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { helloSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { thanksTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
+import { helloSystem } from "@/app/(agents)/prompt";
 import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";

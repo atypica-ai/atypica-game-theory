@@ -1,5 +1,5 @@
+import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { Locale } from "next-intl";
-import { promptSystemConfig } from "./systemConfig";
 
 export const helloSystem = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"

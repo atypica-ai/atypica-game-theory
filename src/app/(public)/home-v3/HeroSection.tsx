@@ -115,12 +115,12 @@ export function HeroSection() {
                   </svg>
                 ))}
               </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-500 text-left flex flex-wrap items-center gap-x-2">
+              <div className="text-xs text-zinc-500 dark:text-zinc-500 text-left flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span>{t("trustIndicator")}</span>
                 <span className="hidden sm:inline text-zinc-300 dark:text-zinc-700">•</span>
                 <Link
                   href="/enterprise"
-                  className="flex items-center gap-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors whitespace-nowrap"
+                  className="flex items-center gap-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors whitespace-nowrap scale-80 origin-top-left"
                 >
                   <ShieldCheckIcon className="size-3 text-green-500/80" />
                   {t("soc2Compliant")}
