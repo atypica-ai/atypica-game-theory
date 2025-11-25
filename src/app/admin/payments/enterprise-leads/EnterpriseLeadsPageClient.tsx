@@ -97,6 +97,10 @@ export function EnterpriseLeadsPageClient({
           company: string;
           title: string;
           contact: string;
+          trialScenario: string;
+          source: string;
+          expectedUsers: string;
+          department: string;
         }>
       | undefined;
 
@@ -149,8 +153,8 @@ export function EnterpriseLeadsPageClient({
                   {/* Contact Information */}
                   {contactInfo ? (
                     <div className="mb-3 p-2 bg-accent/20 rounded-md border">
-                      <h3 className="text-sm font-medium text-accent-foreground">联系方式:</h3>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm">
+                      <h3 className="text-sm font-medium text-accent-foreground mb-2">联系方式:</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm">
                         {contactInfo.name && (
                           <span className="text-primary">👤 姓名: {contactInfo.name}</span>
                         )}
@@ -165,6 +169,22 @@ export function EnterpriseLeadsPageClient({
                         {contactInfo.contact && (
                           <span className="text-primary break-all">
                             📞 联系方式: {contactInfo.contact}
+                          </span>
+                        )}
+                        {contactInfo.department && (
+                          <span className="text-primary">🏛️ 部门: {contactInfo.department}</span>
+                        )}
+                        {contactInfo.expectedUsers && (
+                          <span className="text-primary">👥 预计使用人数: {contactInfo.expectedUsers}</span>
+                        )}
+                        {contactInfo.source && (
+                          <span className="text-primary break-all">
+                            🔍 了解渠道: {contactInfo.source}
+                          </span>
+                        )}
+                        {contactInfo.trialScenario && (
+                          <span className="text-primary col-span-1 md:col-span-2 break-all">
+                            💡 试用场景: {contactInfo.trialScenario}
                           </span>
                         )}
                       </div>

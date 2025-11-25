@@ -25,9 +25,10 @@ export async function fetchEnterpriseLeads(
 
   const leads = await prisma.userChat.findMany({
     where: {
-      title: {
-        contains: "企业用户",
-      },
+      OR: [
+        { title: { contains: "想了解一下企业版" } },
+        { title: { contains: "learn about the enterprise plan" } },
+      ],
       kind: "misc",
     },
     include: {

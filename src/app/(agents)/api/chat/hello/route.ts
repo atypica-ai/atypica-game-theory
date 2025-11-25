@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   });
 
   const streamTextResult = streamText({
-    model: llm("claude-3-7-sonnet"),
+    model: llm("claude-haiku-4-5"),
     providerOptions: defaultProviderOptions,
     system: helloSystem({ locale }),
     messages: coreMessages,
