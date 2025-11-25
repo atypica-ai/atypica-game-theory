@@ -1,5 +1,5 @@
 "use client";
-import { fetchInterviewSessionStatsByProjectToken } from "@/app/(interviewProject)/actions";
+import { fetchInterviewSessionStatsByProjectToken } from "@/app/(interviewProject)/(detail)/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
