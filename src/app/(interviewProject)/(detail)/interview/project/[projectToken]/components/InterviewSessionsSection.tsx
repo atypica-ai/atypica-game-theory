@@ -80,7 +80,7 @@ export function InterviewSessionsSection({
     } finally {
       setLoading(false);
     }
-  }, [projectToken, currentPage]);
+  }, [projectToken, currentPage, filter]);
 
   const deleteInterviewSession = useCallback(async (sessionId: number) => {
     setLoading(true);

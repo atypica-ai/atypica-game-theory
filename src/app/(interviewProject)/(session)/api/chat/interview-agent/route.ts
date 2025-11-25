@@ -1,93 +1,14 @@
-import {
-  appendStepToStreamingMessage,
-  persistentAIMessageToDB,
-  prepareMessagesForStreaming,
-} from "@/ai/messageUtils";
+import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
-import { calculateStepTokensUsage } from "@/ai/usage";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
-import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
-import { interviewSessionTools } from "@/app/(interviewProject)/tools";
-import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
-import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
-import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
-import { detectInputLanguage } from "@/lib/textUtils";
 import { InterviewSessionExtra } from "@/prisma/client";
 import { mergeExtra } from "@/prisma/utils";
-import {
-  generateId,
-  ModelMessage,
-  smoothStream,
-  stepCountIs,
-  streamText,
-  UserModelMessage,
-} from "ai";
-import { Locale } from "next-intl";
-import { after, NextResponse } from "next/server";
-
-function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
-  if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
-  const checkpoints = {
-    ">=1": false,
-    ">=8": false,
-    ">=16": false,
-    ">=32": false,
-  };
-  const cachedCoreMessages = coreMessages.map((message, index) => {
-    const providerOptions = { bedrock: { cachePoint: { type: "default" } } };
-    if (message.role === "assistant" && index >= 1 && !checkpoints[">=1"]) {
-      checkpoints[">=1"] = true;
-      return { ...message, providerOptions };
-    }
-    if (message.role === "assistant" && index >= 8 && !checkpoints[">=8"]) {
-      checkpoints[">=8"] = true;
-      return { ...message, providerOptions };
-    }
-    if (message.role === "assistant" && index >= 16 && !checkpoints[">=16"]) {
-      checkpoints[">=16"] = true;
-      return { ...message, providerOptions };
-    }
-    if (message.role === "assistant" && index >= 32 && !checkpoints[">=32"]) {
-      checkpoints[">=32"] = true;
-      return { ...message, providerOptions };
-    }
-    return { ...message };
-  });
-  return cachedCoreMessages;
-}
-
-function calculateQuestionProgress(messages: ModelMessage[], totalQuestions: number) {
-  const completed = new Set<number>();
-
-  for (const message of messages) {
-    if (message.role !== "assistant" || !message.content) continue;
-
-    const parts = Array.isArray(message.content) ? message.content : [message.content];
-    for (const part of parts) {
-      if (
-        typeof part === "object" &&
-        part.type === "tool-call" &&
-        part.toolName === InterviewToolName.selectQuestion &&
-        typeof part.input === "object" &&
-        part.input &&
-        "questionIndex" in part.input
-      ) {
-        completed.add(part.input.questionIndex as number);
-      }
-    }
-  }
-
-  const completedIndices = Array.from(completed).sort((a, b) => a - b);
-  const remainingIndices = Array.from({ length: totalQuestions }, (_, i) => i + 1).filter(
-    (i) => !completed.has(i),
-  );
-
-  return { completedIndices, remainingIndices };
-}
+import { createUIMessageStream, createUIMessageStreamResponse, generateId } from "ai";
+import { NextResponse } from "next/server";
+import { runHumanInterview } from "./human";
 
 /**
  * ⚠️ fetchInterviewSessionChat 会检查权限，所以这里无需另外检查权限
@@ -144,197 +65,25 @@ export async function POST(req: Request) {
     },
   });
 
-  // 动态检测用户输入的语言
-  // Special handling for [READY] message: use preferredLanguage directly
-  const userMessageText = newMessage.parts
-    .filter((part) => part.type === "text")
-    .map((part) => (part.type === "text" ? part.text : ""))
-    .join("")
-    .trim();
-
-  const locale =
-    userMessageText === "[READY]"
-      ? // For [READY], always use preferredLanguage (don't detect from the text)
-        sessionExtra.preferredLanguage &&
-        VALID_LOCALES.includes(sessionExtra.preferredLanguage as Locale)
-        ? (sessionExtra.preferredLanguage as Locale)
-        : "en-US"
-      : // For normal messages, detect language
-        await detectInputLanguage({
-          text: newMessage.parts.map((part) => (part.type === "text" ? part.text : "")).join(""),
-          fallbackLocale:
-            sessionExtra.preferredLanguage &&
-            VALID_LOCALES.includes(sessionExtra.preferredLanguage as Locale)
-              ? (sessionExtra.preferredLanguage as Locale)
-              : undefined,
-        });
-
-  // Generate system prompt based on interview context
-  // Use questions from session snapshot (with fallback to project for backward compatibility)
-  const questions = sessionExtra.questions || project.extra?.questions;
-
-  let hint = "";
-  if (newMessage.role === "assistant") {
-    const lastPart = (newMessage as TInterviewMessageWithTool).parts.at(-1);
-    if (
-      lastPart?.type === `tool-${InterviewToolName.selectQuestion}` &&
-      lastPart.state === "output-available"
-    ) {
-      hint = lastPart.output.question.hint ?? "";
-    }
-  }
-
-  // Debug: Log questions to verify data
-  chatLogger.debug({
-    msg: "Interview questions data",
-    hasSessionQuestions: !!sessionExtra.questions,
-    hasProjectQuestions: !!project.extra?.questions,
-    questionsCount: questions?.length || 0,
-    firstQuestion: questions?.[0],
-  });
-
-  const systemPrompt = interviewAgentSystemPrompt({
-    brief: project.brief,
-    questions,
-    isPersonaInterview: false,
-    locale,
-  });
-
   const mergedAbortSignal = AbortSignal.any([req.signal]);
-  const { endInterview, requestInteractionForm, selectQuestion } = interviewSessionTools({
-    interviewSessionId,
-  });
 
-  const tools = {
-    endInterview,
-    requestInteractionForm,
-    selectQuestion,
-  };
-  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
-    tools,
-  });
-  const modelMessages = setBedrockCache("claude-sonnet-4", coreMessages);
-
-  const streamTextResult = streamText({
-    model: llm("claude-sonnet-4-5"),
-
-    providerOptions: defaultProviderOptions,
-
-    system: systemPrompt,
-    messages: modelMessages,
-
-    prepareStep: async ({ messages }) => {
-      const totalQuestions = questions?.length || 0;
-      const { completedIndices, remainingIndices } = calculateQuestionProgress(
-        messages,
-        totalQuestions,
-      );
-
-      chatLogger.info({
-        msg: "Question progress",
-        completedQuestionIndices: completedIndices,
-        remainingQuestionIndices: remainingIndices,
-        totalQuestions,
+  const stream = createUIMessageStream({
+    async execute({ writer }) {
+      await runHumanInterview({
+        statReport,
+        logger: chatLogger,
+        abortSignal: mergedAbortSignal,
+        newMessage,
+        interviewSession,
+        streamWriter: writer,
       });
-
-      const progressInfo =
-        totalQuestions > 0 && completedIndices.length > 0
-          ? locale === "zh-CN"
-            ? `\n已完成问题: ${completedIndices.join(", ")}`
-            : `\nCompleted questions: ${completedIndices.join(", ")}`
-          : "";
-
-      const hintText =
-        locale === "zh-CN"
-          ? `[HINT] ${hint ? `${hint}\n` : ""}按顺序继续访谈，逐步深入，直到完成最后一个问题。${progressInfo}`
-          : `[HINT] ${hint ? `${hint}\n` : ""}Continue the interview in sequential order, explore deeply, until completing the last question.${progressInfo}`;
-
-      const modelMessages = [
-        ...messages,
-        { role: "user", content: hintText } satisfies UserModelMessage,
-      ];
-      const assistantCount = messages.filter(({ role }) => role === "assistant").length;
-      if (assistantCount < 1) {
-        return {
-          toolChoice: "auto",
-          activeTools: [InterviewToolName.requestInteractionForm],
-          messages: modelMessages,
-        };
-      } else if (assistantCount < 100) {
-        return {
-          toolChoice: "auto",
-          activeTools: [InterviewToolName.selectQuestion, InterviewToolName.endInterview],
-          messages: modelMessages,
-        };
-      } else {
-        return {
-          toolChoice: "required",
-          activeTools: [InterviewToolName.endInterview],
-          messages: modelMessages,
-        };
-      }
     },
-
-    tools: tools,
-
-    stopWhen: stepCountIs(1),
-
-    experimental_transform: smoothStream({
-      delayInMs: 30,
-      chunking: /[\u4E00-\u9FFF]|\S+\s+/,
-    }),
-
-    abortSignal: mergedAbortSignal,
-
-    onStepFinish: async (step) => {
-      appendStepToStreamingMessage(streamingMessage, step);
-      if (streamingMessage.parts?.length) {
-        await persistentAIMessageToDB({
-          userChatId,
-          message: streamingMessage,
-        });
-      }
-      // 👆 persist message to db
-      const { toolCalls } = step;
-      const { tokens, extra } = calculateStepTokensUsage(step);
-      chatLogger.info({
-        msg: "human interview session streamText onStepFinish",
-        usage: extra.usage,
-        cache: extra.cache,
-        toolCalls: toolCalls.map((call) => call.toolName),
-      });
-      if (statReport) {
-        await statReport("tokens", tokens, {
-          reportedBy: "human interview session",
-          interviewSessionId,
-          ...extra,
-        });
-      }
-    },
-
-    onFinish: async () => {
-      chatLogger.info("human interview session streamText onFinish");
-    },
-
-    onError: ({ error }) => {
-      chatLogger.error(`human interview session streamText onError: ${(error as Error).message}`);
+    onError: (error) => {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      chatLogger.error(errorMsg);
+      return errorMsg;
     },
   });
 
-  after(
-    new Promise((resolve, reject) => {
-      streamTextResult
-        .consumeStream()
-        .then(() => {
-          resolve(null);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    }),
-  );
-
-  return streamTextResult.toUIMessageStreamResponse({
-    generateMessageId: () => streamingMessage.id,
-  });
+  return createUIMessageStreamResponse({ stream });
 }

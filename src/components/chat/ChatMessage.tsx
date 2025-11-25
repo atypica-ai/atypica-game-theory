@@ -90,6 +90,8 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
                 {renderToolUIPart(part)}
               </React.Fragment>
             );
+          } else if (part.type === "step-start") {
+            return null;
           } else {
             return (
               <div key={i} className="text-xs text-muted-foreground break-all">
