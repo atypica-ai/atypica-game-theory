@@ -15,10 +15,12 @@ import {
   SparklesIcon,
   UsersIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback } from "react";
 import { createHelloUserChatAction } from "../pricing/actions";
 
 export function EnterpriseZH() {
+  const t = useTranslations("EnterprisePage");
   const sayHelloToSales = useCallback(async () => {
     const result = await createHelloUserChatAction({
       role: "user",
@@ -310,14 +312,19 @@ export function EnterpriseZH() {
 
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
             {/* Customer Success */}
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
-                  <HeadphonesIcon className="size-6" />
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border-2 border-amber-500/20">
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400">
+                    <HeadphonesIcon className="size-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold">客户成功服务</h3>
+                    <p className="text-sm text-muted-foreground">技术支持、培训和维护</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-semibold">客户成功服务</h3>
-                  <p className="text-sm text-muted-foreground">技术支持、培训和维护</p>
+                <div className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold border border-amber-500/20 w-fit">
+                  {t("paidValueAddedService")}
                 </div>
               </div>
 
@@ -342,14 +349,19 @@ export function EnterpriseZH() {
             </div>
 
             {/* Advanced Services */}
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400">
-                  <SparklesIcon className="size-6" />
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 border-2 border-amber-500/20">
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400">
+                    <SparklesIcon className="size-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold">企业高级服务</h3>
+                    <p className="text-sm text-muted-foreground">为您的组织定制解决方案</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-semibold">企业高级服务</h3>
-                  <p className="text-sm text-muted-foreground">为您的组织定制解决方案</p>
+                <div className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold border border-amber-500/20 w-fit">
+                  {t("paidValueAddedService")}
                 </div>
               </div>
 
@@ -445,8 +457,8 @@ function EnterpriseFeatureCard({
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8">
-      <div className={cn("p-3 rounded-xl w-fit mb-4", colorClasses[color])}>
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 text-center">
+      <div className={cn("p-3 rounded-xl w-fit mx-auto mb-4", colorClasses[color])}>
         <Icon className="size-6" />
       </div>
       <h3 className="text-xl font-semibold mb-2">{title}</h3>

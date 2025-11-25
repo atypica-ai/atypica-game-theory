@@ -71,10 +71,12 @@ export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) 
         <ServiceItem
           icon={HeadphonesIcon}
           text={t("features.enterprise.customerSuccessServices")}
+          badge={t("paidValueAddedService")}
         />
         <ServiceItem
           icon={SparklesIcon}
           text={t("features.enterprise.enterpriseAdvancedServices")}
+          badge={t("paidValueAddedService")}
         />
       </CardContent>
     </Card>
@@ -90,11 +92,26 @@ function FeatureItem({ text }: { text: string }) {
   );
 }
 
-function ServiceItem({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
+function ServiceItem({
+  icon: Icon,
+  text,
+  badge,
+}: {
+  icon: LucideIcon;
+  text: string;
+  badge?: string;
+}) {
   return (
     <div className="flex items-start text-sm">
-      <Icon className="size-4 text-primary mr-2 mt-0.5" />
-      <span className="flex-1">{text}</span>
+      <Icon className="size-4 text-primary mr-2 mt-0.5 shrink-0" />
+      <div className="flex-1 flex flex-col gap-1">
+        <span>{text}</span>
+        {badge && (
+          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-semibold border border-amber-500/20 w-fit">
+            {badge}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

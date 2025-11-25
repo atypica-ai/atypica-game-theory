@@ -229,7 +229,8 @@
       },
       "knowledgeBase": "为AI访谈设置团队共享的背景知识",
       "preReleaseAccess": "预发布功能抢先试用"
-    }
+    },
+    "paidValueAddedService": "付费增值服务"
   },
   "HomePageV3": {
     "HeroSection": {
@@ -403,6 +404,10 @@
         }
       }
     }
+  },
+  "EnterprisePage": {
+    "paidValueAddedService": "付费增值服务",
+    "contactForPricing": "联系销售"
   },
   "FeaturedPodcastsPage": {
     "title": "AI 播客",

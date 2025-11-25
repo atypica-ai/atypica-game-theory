@@ -229,7 +229,8 @@
       },
       "knowledgeBase": "Set team-wide context to ground AI interviews",
       "preReleaseAccess": "Early access to pre-release features"
-    }
+    },
+    "paidValueAddedService": "Paid Add-on Service"
   },
   "HomePageV3": {
     "HeroSection": {
@@ -403,6 +404,10 @@
         }
       }
     }
+  },
+  "EnterprisePage": {
+    "paidValueAddedService": "Paid Add-on Service",
+    "contactForPricing": "Contact Sales"
   },
   "FeaturedPodcastsPage": {
     "title": "AI Podcasts",
