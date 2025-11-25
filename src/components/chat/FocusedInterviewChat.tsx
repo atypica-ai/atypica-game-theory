@@ -54,13 +54,14 @@ const LastAssistantMessagePart = <
 }) => {
   const t = useTranslations("Components.FocusedInterviewChat");
 
-  let lastPart2 = lastAssistantMessage.parts?.at(-2);
-  let lastPart1 = lastAssistantMessage.parts?.at(-1);
+  const lastPart2 = lastAssistantMessage.parts?.at(-2);
+  const lastPart1 = lastAssistantMessage.parts?.at(-1);
 
-  if (lastPart1 && isToolOrDynamicToolUIPart(lastPart1) && lastPart1.state === "input-streaming") {
-    lastPart1 = lastPart2;
-    lastPart2 = undefined;
-  }
+  // 还是别这么处理，有些工具是要在 input-streaming 的时候就开始显示的，如果要确保 input-available，可以在 renderToolUIPart 中处理
+  // if (lastPart1 && isToolOrDynamicToolUIPart(lastPart1) && lastPart1.state === "input-streaming") {
+  //   lastPart1 = lastPart2;
+  //   lastPart2 = undefined;
+  // }
 
   if (!lastPart1) {
     return null;

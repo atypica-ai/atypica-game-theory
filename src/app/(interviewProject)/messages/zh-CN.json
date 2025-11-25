@@ -340,12 +340,9 @@
       "createSuccess": "项目创建成功",
       "createFailed": "项目创建失败"
     },
-    "interviewComplete": {
-      "title": "访谈已完成",
-      "subtitle": "感谢您的参与",
-      "thankYouMessage": "非常感谢您抽出宝贵时间参与本次访谈。您的回答对我们的研究非常有价值。",
-      "processingMessage": "我们正在处理您的访谈记录...",
-      "completed": "处理完成"
+    "endInterview": {
+      "processing": "正在结束访谈，请不要关闭窗口，谢谢配合",
+      "completed": "访谈已结束"
     }
   }
 }
