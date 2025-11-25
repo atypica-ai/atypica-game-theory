@@ -3,7 +3,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { AnalyticsBrowser } from "@segment/analytics-next";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { cn } from "../utils";
 import { trackUserAction } from "./actions";
 import { calcIntercomUserHash, segmentAnalyticsWriteKey } from "./config";
@@ -53,7 +53,11 @@ export function SegmentAnalytics() {
   const pathname = usePathname();
   const { status, data: session } = useSession();
   const [isSegmentLoaded, setIsSegmentLoaded] = useState(false);
-  const isMediaSm = useMediaQuery("sm");
+  const gteLG = useMediaQuery("lg");
+  const showDefaultLauncher = useMemo(() => {
+    // 不在 study 页面，或者屏幕足够宽，就显示默认 intercom launcher
+    return gteLG || !/^\/study\/\w+\/?/.test(pathname);
+  }, [gteLG, pathname]);
 
   useEffect(() => {
     const segmentPostLoad = (analyticsInstance: AnalyticsBrowser) => {
@@ -100,14 +104,14 @@ export function SegmentAnalytics() {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).intercomSettings = {
-      hide_default_launcher: !isMediaSm,
+      hide_default_launcher: !showDefaultLauncher,
     };
     if (typeof window.Intercom !== "undefined") {
       window.Intercom("update", {
-        hide_default_launcher: !isMediaSm,
+        hide_default_launcher: !showDefaultLauncher,
       });
     }
-  }, [isMediaSm]);
+  }, [showDefaultLauncher]);
 
   const showIntercom = useCallback(() => {
     if (typeof window.Intercom !== "undefined") {
@@ -115,13 +119,13 @@ export function SegmentAnalytics() {
     }
   }, []);
 
-  return (
+  return isSegmentLoaded ? (
     <>
       <div
         className={cn(
-          "sm:hidden",
+          showDefaultLauncher ? "hidden" : "flex",
+          "items-center justify-center rounded-full size-10",
           "fixed right-3 bottom-44",
-          "rounded-full size-10 flex items-center justify-center",
           "bg-black text-white",
         )}
         onClick={() => showIntercom()}
@@ -134,5 +138,5 @@ export function SegmentAnalytics() {
         </svg>
       </div>
     </>
-  );
+  ) : null;
 }
