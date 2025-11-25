@@ -2,7 +2,7 @@
 import {
   fetchInterviewSessionDetails,
   restartPersonaInterviewSession,
-} from "@/app/(interviewProject)/actions";
+} from "@/app/(interviewProject)/(session)/actions";
 import { InterviewToolUIPartDisplay } from "@/app/(interviewProject)/tools/ui";
 import { QuestionData, TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
@@ -216,7 +216,7 @@ export function InterviewSessionViewer({
     <FitToViewport
       className={cn(
         "overflow-hidden flex flex-col items-stretch justify-start",
-        "container max-w-[60rem] mx-auto",
+        "container max-w-240 mx-auto",
         className,
       )}
     >

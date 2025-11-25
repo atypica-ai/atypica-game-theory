@@ -1,8 +1,6 @@
 "use client";
-import {
-  fetchInterviewReportsByProjectToken,
-  generateInterviewReport,
-} from "@/app/(interviewProject)/actions";
+import { fetchInterviewReportsByProjectToken } from "@/app/(interviewProject)/(detail)/actions";
+import { generateInterviewReport } from "@/app/(interviewProject)/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";

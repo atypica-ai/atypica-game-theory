@@ -1,12 +1,13 @@
 "use client";
 import {
   createInterviewQuestion,
-  createPersonaInterviewSession,
   deleteInterviewQuestion,
   optimizeInterviewQuestions,
   reorderInterviewQuestions,
   updateInterviewQuestion,
-} from "@/app/(interviewProject)/actions";
+} from "@/app/(interviewProject)/(detail)/actions";
+import { InviteDialog } from "@/app/(interviewProject)/(detail)/interview/invite/InviteDialog";
+import { createPersonaInterviewSession } from "@/app/(interviewProject)/actions";
 import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
 import { QuestionData } from "@/app/(interviewProject)/types";
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
@@ -47,7 +48,6 @@ import { toast } from "sonner";
 import { EditQuestionDialog } from "./components/EditQuestionDialog";
 import { InterviewReportsSection } from "./components/InterviewReportsSection";
 import { InterviewSessionsSection } from "./components/InterviewSessionsSection";
-import { InviteDialog } from "./components/InviteDialog";
 import { ProjectStatsSection } from "./components/ProjectStatsSection";
 import { ShareInterviewProjectButton } from "./components/ShareInterviewProjectButton";
 import { SortableQuestionItem } from "./components/SortableQuestionItem";

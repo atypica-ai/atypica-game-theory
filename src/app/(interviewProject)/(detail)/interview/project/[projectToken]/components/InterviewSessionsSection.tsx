@@ -2,7 +2,7 @@
 import {
   deleteInterviewSessionAction,
   fetchInterviewSessionsByProjectToken,
-} from "@/app/(interviewProject)/actions";
+} from "@/app/(interviewProject)/(detail)/actions";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

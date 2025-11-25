@@ -1,9 +1,4 @@
 import {
-  disablePermanentInviteLinkAction,
-  generateInterviewShareTokenAction,
-  generatePermanentInterviewShareTokenAction,
-} from "@/app/(interviewProject)/actions";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -38,6 +33,11 @@ import { AlertCircle, Copy } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  disablePermanentInviteLinkAction,
+  generateInterviewShareTokenAction,
+  generatePermanentInterviewShareTokenAction,
+} from "./actions";
 
 export function InviteDialog({
   open,

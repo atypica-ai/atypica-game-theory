@@ -1,5 +1,5 @@
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
-import { fetchInterviewSessionDetails } from "@/app/(interviewProject)/actions";
+import { fetchInterviewSessionDetails } from "@/app/(interviewProject)/(session)/actions";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
@@ -39,7 +39,8 @@ async function SessionPage({ params }: { params: Promise<{ userChatToken: string
     : [];
 
   // Get questions from session extra (created when session starts), fallback to project extra
-  const questions = interviewSession.extra.questions || interviewSession.project.extra.questions || [];
+  const questions =
+    interviewSession.extra.questions || interviewSession.project.extra.questions || [];
 
   return (
     <InterviewSessionViewer

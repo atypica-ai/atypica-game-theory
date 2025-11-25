@@ -1,9 +1,7 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
-import {
-  fetchInterviewSessionChat,
-  updateInterviewSessionLanguage,
-} from "@/app/(interviewProject)/actions";
+import { updateInterviewSessionLanguage } from "@/app/(interviewProject)/(session)/actions";
+import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { LanguageSwitcher } from "@/app/(interviewProject)/components/LanguageSwitcher";
 import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
 import { InterviewToolUIPartDisplay } from "@/app/(interviewProject)/tools/ui";
