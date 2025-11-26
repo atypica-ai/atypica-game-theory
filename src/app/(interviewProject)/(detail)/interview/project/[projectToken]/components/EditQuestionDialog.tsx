@@ -60,12 +60,11 @@ export function EditQuestionDialog({
       setHint(question.hint || "");
       setImage(question.image);
       setQuestionType(question.questionType || "open");
-
       // Convert options to simple string array
       const normalizedOptions = (question.options || []).map((opt) =>
         typeof opt === "string" ? opt : opt,
       );
-      setOptions(normalizedOptions.length >= 2 ? normalizedOptions : ["", ""]);
+      setOptions(normalizedOptions);
     } else {
       setText("");
       setHint("");

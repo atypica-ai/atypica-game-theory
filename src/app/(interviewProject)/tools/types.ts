@@ -41,7 +41,7 @@ export const questionSchema = z
     options: z
       .array(optionSchema)
       .min(2, "Choice questions must have at least 2 options")
-      .max(30, "Choice questions can have at most 30 options")
+      .max(50, "Choice questions can have at most 50 options")
       .optional(),
     // .transform((opts) => opts?.map((opt) => (typeof opt === "string" ? opt : opt.text))),
   })

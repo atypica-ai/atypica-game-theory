@@ -263,7 +263,6 @@ export async function updateInterviewQuestion(
     if (!validationResult.success) {
       return {
         success: false,
-        code: "internal_server_error",
         message: "Invalid question data: " + validationResult.error.message,
       };
     }
@@ -290,7 +289,6 @@ export async function updateInterviewQuestion(
       });
       return {
         success: false,
-        code: "internal_server_error",
         message: "Invalid project data structure",
       };
     }
@@ -301,7 +299,6 @@ export async function updateInterviewQuestion(
     if (questionIndex < 0 || questionIndex >= questions.length) {
       return {
         success: false,
-        code: "not_found",
         message: "Question index out of range",
       };
     }
