@@ -183,11 +183,12 @@ export async function runHumanInterview({
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
     tools,
   });
-  const modelMessages = setClaudeCache("claude-haiku-4-5", coreMessages);
+  const modelMessages = setClaudeCache("claude-sonnet-4-5", coreMessages);
 
   const streamTextPromise = new Promise<void>((resolve, reject) => {
     const streamTextResponse = streamText({
-      model: llm("claude-haiku-4-5"),
+      // model: llm("claude-haiku-4-5"),
+      model: llm("claude-sonnet-4-5"),
 
       providerOptions: defaultProviderOptions,
 
