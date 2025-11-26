@@ -1,139 +1,17 @@
 import "server-only";
 
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import {
-  getDeepResearchServer,
-  runWithRequestContext,
-} from "@/app/(deepresearch)/server";
+import { getDeepResearchServer } from "@/app/(deepresearch)/server";
 import { rootLogger } from "@/lib/logging";
 import { NextRequest } from "next/server";
-import { IncomingMessage, ServerResponse } from "http";
-import { Readable } from "stream";
 import { isJSONRPCRequest, RequestId } from "@modelcontextprotocol/sdk/types.js";
+import {
+  createIncomingMessage,
+  createStreamableServerResponse,
+} from "@/lib/mcp/adapters";
+import { runWithMCPRequestContext } from "@/lib/mcp/context";
+import { createStreamableHTTPTransport } from "@/lib/mcp/transport";
 
 const logger = rootLogger.child({ module: "deepresearch-mcp-api" });
-
-/**
- * Converts Next.js Request to Node.js IncomingMessage-like object
- * This is needed because StreamableHTTPServerTransport expects Node.js HTTP objects
- */
-async function createIncomingMessage(req: NextRequest): Promise<IncomingMessage> {
-  const incomingMessage = new Readable({
-    read() {},
-  }) as unknown as IncomingMessage;
-
-  // Copy headers
-  const headers: Record<string, string | string[]> = {};
-  req.headers.forEach((value, key) => {
-    headers[key] = value;
-  });
-  incomingMessage.headers = headers;
-  incomingMessage.url = req.url;
-  incomingMessage.method = req.method;
-
-  return incomingMessage;
-}
-
-/**
- * Creates a ServerResponse-like object that can stream SSE or return JSON
- * This bridges Next.js Response with Node.js ServerResponse for StreamableHTTPServerTransport
- */
-function createStreamableServerResponse(): {
-  res: ServerResponse;
-  getStreamingResponse: () => ReadableStream;
-  getHeaders: () => Record<string, string>;
-  getStatusCode: () => number;
-} {
-  let statusCode = 200;
-  const headers: Record<string, string> = {};
-  const encoder = new TextEncoder();
-  let controller: ReadableStreamDefaultController | null = null;
-  let headersSent = false;
-
-  // Create a ReadableStream that will be populated by ServerResponse writes
-  const stream = new ReadableStream({
-    start(ctrl) {
-      controller = ctrl;
-    },
-    cancel() {
-      controller = null;
-    },
-  });
-
-  const res = {
-    statusCode,
-    headersSent: false,
-    
-    setHeader(name: string, value: string) {
-      if (!headersSent) {
-        headers[name.toLowerCase()] = value;
-      }
-    },
-    
-    getHeader(name: string) {
-      return headers[name.toLowerCase()];
-    },
-    
-    writeHead(code: number, headersArg?: Record<string, string>) {
-      statusCode = code;
-      if (headersArg) {
-        Object.entries(headersArg).forEach(([key, value]) => {
-          headers[key.toLowerCase()] = value;
-        });
-      }
-      headersSent = true;
-      return res;
-    },
-    
-    flushHeaders() {
-      headersSent = true;
-      return res;
-    },
-    
-    write(chunk: Uint8Array | string): boolean {
-      if (!controller) return false;
-      
-      try {
-        const data = typeof chunk === "string" ? encoder.encode(chunk) : chunk;
-        controller.enqueue(data);
-        return true;
-      } catch (error) {
-        logger.error({ error }, "Error writing chunk to stream");
-        return false;
-      }
-    },
-    
-    end(chunk?: Uint8Array | string) {
-      if (chunk) {
-        res.write(chunk);
-      }
-      if (controller) {
-        controller.close();
-        controller = null;
-      }
-    },
-    
-    on(event: string, handler: (...args: any[]) => void) {
-      // Minimal event emitter implementation
-      return res;
-    },
-    
-    once(event: string, handler: (...args: any[]) => void) {
-      return res;
-    },
-    
-    emit(event: string, ...args: any[]) {
-      return false;
-    },
-  } as unknown as ServerResponse;
-
-  return {
-    res,
-    getStreamingResponse: () => stream,
-    getHeaders: () => headers,
-    getStatusCode: () => statusCode,
-  };
-}
 
 /**
  * MCP Server API Route Handler with Streaming Support
@@ -147,7 +25,7 @@ function createStreamableServerResponse(): {
  * Streaming Flow:
  * 1. Client sends JSON-RPC request via POST
  * 2. Transport opens SSE stream (Content-Type: text/event-stream)
- * 3. Tool execution streams chunks via notifications/tools/stream
+ * 3. Tool execution streams chunks via notifications/message
  * 4. Final result sent as JSON-RPC response
  * 5. SSE stream closes
  * 
@@ -163,9 +41,9 @@ export async function POST(req: NextRequest) {
     const wantsSSE = acceptHeader.includes("text/event-stream");
     
     // Create a new transport for each request (stateless design)
-    const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined, // Stateless mode - no session management
-      enableJsonResponse: !wantsSSE, // Use JSON response if client doesn't want SSE
+    const transport = createStreamableHTTPTransport({
+      wantsSSE,
+      sessionIdGenerator: undefined, // Stateless mode
     });
 
     // Clean up transport when request closes
@@ -221,7 +99,7 @@ export async function POST(req: NextRequest) {
 
     // Handle the MCP request within the request context
     // This ensures tool handlers can access the transport via AsyncLocalStorage
-    const handlePromise = runWithRequestContext(context, async () => {
+    const handlePromise = runWithMCPRequestContext(context, async () => {
       await transport.handleRequest(incomingMessage, res, body);
     });
 
@@ -297,9 +175,9 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   try {
-    const transport = new StreamableHTTPServerTransport({
+    const transport = createStreamableHTTPTransport({
+      wantsSSE: true, // Always use SSE for GET
       sessionIdGenerator: undefined,
-      enableJsonResponse: false, // Always use SSE for GET
     });
 
     req.signal.addEventListener("abort", () => {

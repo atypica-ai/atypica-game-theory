@@ -4,18 +4,10 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
 import { stepCountIs, streamText } from "ai";
 import { xai } from "@ai-sdk/xai";
-import { DeepResearchInput, DeepResearchOutput } from "./types";
+import { DeepResearchInput, DeepResearchOutput } from "../types";
+import { StreamChunkCallback } from "@/lib/mcp/types";
 
 const MAX_STEPS = 20;
-/**
- * Callback type for streaming chunks to the MCP client
- */
-export type StreamChunkCallback = (chunk: {
-  type: "text-delta" | "reasoning-delta" | "source" | "finish";
-  text?: string;
-  source?: { id: string; url: string; title?: string };
-  usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
-}) => Promise<void>;
 
 /**
  * Executes deep research using Grok model with web search and X search tools

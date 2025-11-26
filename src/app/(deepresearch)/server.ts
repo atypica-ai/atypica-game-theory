@@ -1,51 +1,23 @@
 import "server-only";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { executeDeepResearch } from "./tool";
+import { executeDeepResearch } from "@/app/(deepresearch)/tools/deepResearch";
 import {
   DeepResearchInput,
   deepResearchInputSchema,
   deepResearchOutputSchema,
 } from "./types";
-import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
-import { AsyncLocalStorage } from "node:async_hooks";
-import { RequestId } from "@modelcontextprotocol/sdk/types.js";
+import {
+  getMCPRequestContext,
+  runWithMCPRequestContext,
+} from "@/lib/mcp/context";
+import { createStreamingCallback } from "@/lib/mcp/streaming";
 import { rootLogger } from "@/lib/logging";
 
 const logger = rootLogger.child({ module: "deepresearch-mcp-server" });
 
-/**
- * Request context for storing transport and request ID per request
- * This allows tool handlers to access the transport to send streaming notifications
- */
-interface RequestContext {
-  transport: Transport;
-  requestId?: RequestId;
-}
-
-/**
- * AsyncLocalStorage to store request context per async execution
- * This ensures each request has its own transport reference
- */
-const requestContextStorage = new AsyncLocalStorage<RequestContext>();
-
-/**
- * Gets the current request context (transport and request ID)
- * Returns undefined if called outside of a request context
- */
-export function getRequestContext(): RequestContext | undefined {
-  return requestContextStorage.getStore();
-}
-
-/**
- * Runs a function within a request context
- * This should be called from the route handler before handling the request
- */
-export async function runWithRequestContext<T>(
-  context: RequestContext,
-  fn: () => Promise<T>,
-): Promise<T> {
-  return requestContextStorage.run(context, fn);
-}
+// Note: These are now available from @/lib/mcp/context
+// Keeping exports for backward compatibility during migration
+export { getMCPRequestContext as getRequestContext, runWithMCPRequestContext as runWithRequestContext };
 
 /**
  * Creates and configures the deepresearch MCP server
@@ -70,7 +42,7 @@ export function createDeepResearchServer(): McpServer {
     async (args: DeepResearchInput, extra) => {
       try {
         // Get the request context (transport and request ID) from AsyncLocalStorage
-        const context = getRequestContext();
+        const context = getMCPRequestContext();
         
         if (!context) {
           logger.warn("No request context available - streaming disabled");
@@ -98,43 +70,18 @@ export function createDeepResearchServer(): McpServer {
           "Executing deep research with streaming",
         );
 
+        // Create streaming callback using shared utility
+        const onStreamChunk = createStreamingCallback(
+          transport,
+          "atypica_deep_research",
+          requestId,
+        );
+
         // Execute with streaming callback that sends MCP notifications
         const result = await executeDeepResearch({
           query: args.query,
           abortSignal: extra.signal,
-          onStreamChunk: async (chunk) => {
-            try {
-              // Send streaming chunk as MCP notification
-              // Use relatedRequestId to associate with the tool call request
-              await transport.send(
-                {
-                  jsonrpc: "2.0",
-                  method: "notifications/message",
-                  params: {
-                    level: "info",
-                    data: {
-                      toolName: "atypica_deep_research",
-                      chunkType: chunk.type,
-                      ...(chunk.text && { text: chunk.text }),
-                      ...(chunk.source && { source: chunk.source }),
-                      ...(chunk.usage && { usage: chunk.usage }),
-                    },
-                  },
-                },
-                {
-                  // Associate this notification with the tool call request
-                  // This ensures it's sent on the correct SSE stream
-                  relatedRequestId: requestId,
-                },
-              );
-            } catch (notificationError) {
-              logger.warn(
-                { error: (notificationError as Error).message },
-                "Failed to send streaming notification",
-              );
-              // Don't throw - continue streaming even if one notification fails
-            }
-          },
+          onStreamChunk,
         });
 
         // Return final complete result

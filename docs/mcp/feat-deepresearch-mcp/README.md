@@ -24,7 +24,7 @@ The server implements **real-time streaming** by linking AI SDK's `streamText` o
        ▼
 ┌─────────────────────────────────────┐
 │  Next.js API Route                  │
-│  /api/mcp                            │
+│  /mcp/server/deepresearch              │
 │  - Creates StreamableHTTPTransport  │
 │  - Returns SSE stream immediately   │
 └──────┬──────────────────────────────┘
@@ -87,16 +87,26 @@ The server implements **real-time streaming** by linking AI SDK's `streamText` o
 
 ### File Structure
 ```
-src/app/(deepresearch)/
-  mcp/
-    server/
-      deepresearch/
-        server.ts    # MCP server setup and tool registration
-        tool.ts      # Tool execution logic with streaming
-        types.ts     # TypeScript types and Zod schemas
-  api/
-    mcp/
-      route.ts      # Next.js API route handler with SSE support
+src/
+  lib/
+    mcp/                    # Shared MCP infrastructure (reusable across all MCP servers)
+      index.ts             # Public exports
+      types.ts             # Shared types (MCPRequestContext, StreamChunkCallback)
+      context.ts           # Request context management (AsyncLocalStorage)
+      adapters.ts          # Next.js Request/Response adapters
+      streaming.ts         # Streaming notification helpers
+      transport.ts         # Transport setup utilities
+  app/
+    (deepresearch)/
+      mcp/
+        server/
+          deepresearch/
+            server.ts      # MCP server setup and tool registration
+            tool.ts        # Tool execution logic with streaming
+            types.ts       # DeepResearch-specific types and Zod schemas
+            README.md      # This file
+            STREAMING.md   # Streaming implementation details
+            route.ts         # Next.js API route handler with SSE support
 ```
 
 ## Features
@@ -252,14 +262,14 @@ npm install -g @modelcontextprotocol/inspector
 pnpm dev
 
 # Connect inspector to your MCP server
-mcp-inspector http://localhost:3000/api/mcp
+mcp-inspector http://localhost:3000/mcp/server/deepresearch
 ```
 
 ### Using curl with SSE
 
 ```bash
 # Send request and watch SSE stream
-curl -X POST http://localhost:3000/api/mcp \
+curl -X POST http://localhost:3000/mcp/server/deepresearch \
   -H "Content-Type: application/json" \
   -H "Accept: text/event-stream, application/json" \
   -d '{
