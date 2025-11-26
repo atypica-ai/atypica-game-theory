@@ -7,7 +7,7 @@ import { xai } from "@ai-sdk/xai";
 import { DeepResearchInput, DeepResearchOutput } from "../types";
 import { StreamChunkCallback } from "@/lib/mcp/types";
 
-const MAX_STEPS = 20;
+const MAX_STEPS = 10;
 
 /**
  * Executes deep research using Grok model with web search and X search tools
@@ -29,12 +29,6 @@ export async function executeDeepResearch({
 
   try {
     logger.info("Starting deep research with streaming");
-    
-    // Create XAI instance with debug logging
-    // const xaiClient = createXai({
-    //   apiKey: process.env.XAI_API_KEY,
-    //   fetch: proxiedFetch,
-    // });
     
     // Build tools object with error handling
     const allTools: Record<string, any> = {
@@ -60,48 +54,34 @@ export async function executeDeepResearch({
       ],
       abortSignal,
       stopWhen: stepCountIs(MAX_STEPS),
+      prepareStep: async ({ stepNumber, messages }) => {
+        if (stepNumber === MAX_STEPS-1) {
+          return {
+            toolChoice: "none", // shut down all tools at last step
+            activeTools: [],
+            messages: [
+              ...messages,
+              {
+                role: "user",
+                content: "You have reached the last allowed step. Please conclude the research.",
+              },
+            ],
+          };
+        }
+      // When nothing is returned, the default settings from the main config are used.
+      },
     });
-
-    // Stream text chunks in real-time if callback provided
-    let accumulatedText = "";
-    let accumulatedReasoning = "";
 
     if (onStreamChunk) {
       // Use fullStream to get all event types (text, reasoning, sources, etc.)
       for await (const chunk of response.fullStream) {
-        if (chunk.type === "text-delta") {
-          // Text delta chunk
-          accumulatedText += chunk.text;
-          await onStreamChunk({
-            type: "text-delta",
-            text: chunk.text,
-          });
-        } else if (chunk.type === "reasoning-delta") {
-          // Reasoning delta chunk
-          accumulatedReasoning += chunk.text;
-          await onStreamChunk({
-            type: "reasoning-delta",
-            text: chunk.text,
-          });
-        } else if (chunk.type === "source") {
-          // Source chunk - only handle URL sources
-          if (chunk.sourceType === "url") {
-            await onStreamChunk({
-              type: "source",
-              source: {
-                id: chunk.id,
-                url: chunk.url,
-                title: chunk.title,
-              },
-            });
-          }
-        }
-        // Other chunk types (tool-call, tool-result, etc.) are logged but not streamed
+        await onStreamChunk(chunk);
       }
     } else {
       // No streaming callback - just drain the stream
       for await (const _chunk of response.textStream) {
         // Consume stream
+        logger.info("onStreamChunk not provided, draining stream");
       }
     }
 
@@ -114,18 +94,6 @@ export async function executeDeepResearch({
 
     // Combine reasoning text if available
     const finalResult = reasoningText ? `${reasoningText}\n\n${resultText}` : resultText;
-
-    // Send finish notification with usage stats
-    if (onStreamChunk) {
-      await onStreamChunk({
-        type: "finish",
-        usage: {
-          inputTokens: usage.inputTokens ?? 0,
-          outputTokens: usage.outputTokens ?? 0,
-          totalTokens: usage.totalTokens ?? 0,
-        },
-      });
-    }
 
     logger.info(
       {
@@ -155,16 +123,6 @@ export async function executeDeepResearch({
       errorDetails.responseBody = apiError.responseBody;
       errorDetails.requestBodyValues = apiError.requestBodyValues;
       errorDetails.isRetryable = apiError.isRetryable;
-      
-      // Log the tools that were sent (if available)
-      if (apiError.requestBodyValues?.tools) {
-        errorDetails.toolsInRequest = Array.isArray(apiError.requestBodyValues.tools)
-          ? apiError.requestBodyValues.tools.length
-          : Object.keys(apiError.requestBodyValues.tools || {}).length;
-        errorDetails.toolNamesInRequest = Array.isArray(apiError.requestBodyValues.tools)
-          ? apiError.requestBodyValues.tools.map((t: any) => t?.function?.name || t?.type)
-          : Object.keys(apiError.requestBodyValues.tools || {});
-      }
       
       // Check if tool_choice was set
       if (apiError.requestBodyValues?.tool_choice) {

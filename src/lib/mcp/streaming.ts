@@ -32,10 +32,7 @@ export function createStreamingCallback(
             level: "info",
             data: {
               toolName,
-              chunkType: chunk.type,
-              ...(chunk.text && { text: chunk.text }),
-              ...(chunk.source && { source: chunk.source }),
-              ...(chunk.usage && { usage: chunk.usage }),
+              chunk,
             },
           },
         },

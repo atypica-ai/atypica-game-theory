@@ -2,6 +2,7 @@ import "server-only";
 
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { RequestId } from "@modelcontextprotocol/sdk/types.js";
+import { TextStreamPart, ToolSet } from "ai";
 
 /**
  * Request context for storing transport and request ID per request
@@ -13,12 +14,8 @@ export interface MCPRequestContext {
 }
 
 /**
- * Callback type for streaming chunks to the MCP client
+ * Callback type for streaming chunks to the MCP client.
+ * We forward the exact chunk emitted by ai-sdk to stay future-proof.
  */
-export type StreamChunkCallback = (chunk: {
-  type: "text-delta" | "reasoning-delta" | "source" | "finish";
-  text?: string;
-  source?: { id: string; url: string; title?: string };
-  usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
-}) => Promise<void>;
+export type StreamChunkCallback = (chunk: TextStreamPart<ToolSet>) => Promise<void>;
 
