@@ -1,11 +1,15 @@
 import "server-only";
 
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { getDeepResearchServer } from "@/app/(deepresearch)/mcp/server/deepresearch/server";
+import {
+  getDeepResearchServer,
+  runWithRequestContext,
+} from "@/app/(deepresearch)/mcp/server/deepresearch/server";
 import { rootLogger } from "@/lib/logging";
 import { NextRequest } from "next/server";
 import { IncomingMessage, ServerResponse } from "http";
 import { Readable } from "stream";
+import { isJSONRPCRequest, RequestId } from "@modelcontextprotocol/sdk/types.js";
 
 const logger = rootLogger.child({ module: "deepresearch-mcp-api" });
 
@@ -177,16 +181,49 @@ export async function POST(req: NextRequest) {
     // Connect server to transport
     await server.connect(transport);
 
-    // Parse request body
+    // Parse request body to extract request ID
     const body = await req.json().catch(() => ({}));
+    
+    // Extract request ID from JSON-RPC request(s)
+    // We need this to associate streaming notifications with the correct request
+    let requestId: RequestId | undefined;
+    if (Array.isArray(body)) {
+      // Batch request - find the first tools/call request
+      const toolCallRequest = body.find(
+        (msg) => isJSONRPCRequest(msg) && msg.method === "tools/call",
+      );
+      requestId = toolCallRequest?.id;
+      logger.debug(
+        { batchSize: body.length, foundRequestId: !!requestId },
+        "Processing batch request",
+      );
+    } else if (isJSONRPCRequest(body)) {
+      // Single request - extract ID if it's a tools/call
+      if (body.method === "tools/call") {
+        requestId = body.id;
+      }
+      logger.debug(
+        { method: body.method, requestId, isToolCall: body.method === "tools/call" },
+        "Processing single request",
+      );
+    }
+
+    // Set up request context with transport and request ID
+    // This allows tool handlers to access the transport for streaming via AsyncLocalStorage
+    const context = {
+      transport,
+      requestId,
+    };
 
     // Create adapter objects for streaming
     const incomingMessage = await createIncomingMessage(req);
     const { res, getStreamingResponse, getHeaders, getStatusCode } = createStreamableServerResponse();
 
-    // Handle the MCP request (this will trigger tool execution and streaming)
-    // This is async and will populate the ServerResponse stream
-    const handlePromise = transport.handleRequest(incomingMessage, res, body);
+    // Handle the MCP request within the request context
+    // This ensures tool handlers can access the transport via AsyncLocalStorage
+    const handlePromise = runWithRequestContext(context, async () => {
+      await transport.handleRequest(incomingMessage, res, body);
+    });
 
     // If SSE streaming is enabled, return the stream immediately
     if (wantsSSE) {

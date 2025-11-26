@@ -7,6 +7,45 @@ import {
   deepResearchOutputSchema,
 } from "./types";
 import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { RequestId } from "@modelcontextprotocol/sdk/types.js";
+import { rootLogger } from "@/lib/logging";
+
+const logger = rootLogger.child({ module: "deepresearch-mcp-server" });
+
+/**
+ * Request context for storing transport and request ID per request
+ * This allows tool handlers to access the transport to send streaming notifications
+ */
+interface RequestContext {
+  transport: Transport;
+  requestId?: RequestId;
+}
+
+/**
+ * AsyncLocalStorage to store request context per async execution
+ * This ensures each request has its own transport reference
+ */
+const requestContextStorage = new AsyncLocalStorage<RequestContext>();
+
+/**
+ * Gets the current request context (transport and request ID)
+ * Returns undefined if called outside of a request context
+ */
+export function getRequestContext(): RequestContext | undefined {
+  return requestContextStorage.getStore();
+}
+
+/**
+ * Runs a function within a request context
+ * This should be called from the route handler before handling the request
+ */
+export async function runWithRequestContext<T>(
+  context: RequestContext,
+  fn: () => Promise<T>,
+): Promise<T> {
+  return requestContextStorage.run(context, fn);
+}
 
 /**
  * Creates and configures the deepresearch MCP server
@@ -30,30 +69,72 @@ export function createDeepResearchServer(): McpServer {
     },
     async (args: DeepResearchInput, extra) => {
       try {
-        // Get the transport from the server to send streaming notifications
-        const transport = (server as any)._transport as Transport | undefined;
+        // Get the request context (transport and request ID) from AsyncLocalStorage
+        const context = getRequestContext();
         
+        if (!context) {
+          logger.warn("No request context available - streaming disabled");
+          // Fallback: execute without streaming
+          const result = await executeDeepResearch({
+            query: args.query,
+            abortSignal: extra.signal,
+            onStreamChunk: undefined,
+          });
+          return {
+            content: [
+              {
+                type: "text",
+                text: result.result,
+              },
+            ],
+            structuredContent: result,
+          };
+        }
+
+        const { transport, requestId } = context;
+        
+        logger.debug(
+          { requestId, hasTransport: !!transport },
+          "Executing deep research with streaming",
+        );
+
         // Execute with streaming callback that sends MCP notifications
         const result = await executeDeepResearch({
           query: args.query,
           abortSignal: extra.signal,
-          onStreamChunk: transport
-            ? async (chunk) => {
-                // Send streaming chunk as MCP notification
-                // Using custom notification method for streaming
-                await transport.send({
+          onStreamChunk: async (chunk) => {
+            try {
+              // Send streaming chunk as MCP notification
+              // Use relatedRequestId to associate with the tool call request
+              await transport.send(
+                {
                   jsonrpc: "2.0",
-                  method: "notifications/tools/stream",
+                  method: "notifications/message",
                   params: {
-                    toolName: "atypica_deep_research",
-                    chunkType: chunk.type,
-                    ...(chunk.text && { text: chunk.text }),
-                    ...(chunk.source && { source: chunk.source }),
-                    ...(chunk.usage && { usage: chunk.usage }),
+                    level: "info",
+                    data: {
+                      toolName: "atypica_deep_research",
+                      chunkType: chunk.type,
+                      ...(chunk.text && { text: chunk.text }),
+                      ...(chunk.source && { source: chunk.source }),
+                      ...(chunk.usage && { usage: chunk.usage }),
+                    },
                   },
-                });
-              }
-            : undefined,
+                },
+                {
+                  // Associate this notification with the tool call request
+                  // This ensures it's sent on the correct SSE stream
+                  relatedRequestId: requestId,
+                },
+              );
+            } catch (notificationError) {
+              logger.warn(
+                { error: (notificationError as Error).message },
+                "Failed to send streaming notification",
+              );
+              // Don't throw - continue streaming even if one notification fails
+            }
+          },
         });
 
         // Return final complete result
@@ -68,6 +149,7 @@ export function createDeepResearchServer(): McpServer {
         };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error({ error: errorMessage }, "Deep research tool execution failed");
         return {
           content: [
             {
