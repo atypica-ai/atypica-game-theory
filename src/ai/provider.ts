@@ -150,7 +150,6 @@ export type LLMModelName =
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
   | "grok-4"
-  | "grok-4-1-fast-non-reasoning"
   | "grok-3"
   | "grok-3-mini"
   | "deepseek-v3"
@@ -197,7 +196,6 @@ export function llm(modelName: LLMModelName) {
           return openai(modelName);
         }
       case "grok-4":
-      case "grok-4-1-fast-non-reasoning":
       case "grok-3":
       case "grok-3-mini":
         if (process.env.XAI_API_KEY) {
@@ -256,13 +254,11 @@ export function llm(modelName: LLMModelName) {
     case "gemini-2.5-pro":
       return vertex("gemini-2.5-pro");
     case "grok-4":
-      return xai("grok-3-mini");
-    case "grok-4-1-fast-non-reasoning":
-      return xai("grok-4-1-fast-non-reasoning");
+      return xai.responses("grok-4-1-fast-non-reasoning");
     case "grok-3":
-      return xai("grok-3-mini");
+      return xai.responses("grok-3-mini");
     case "grok-3-mini":
-      return xai("grok-3-mini");
+      return xai.responses("grok-3-mini");
     case "deepseek-v3":
       return deepseek("Pro/deepseek-ai/DeepSeek-V3");
     case "deepseek-r1":
