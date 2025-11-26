@@ -2,10 +2,11 @@ import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
+import { stepCountIs, streamText } from "ai";
 import { xai } from "@ai-sdk/xai";
-import { streamText } from "ai";
 import { DeepResearchInput, DeepResearchOutput } from "./types";
 
+const MAX_STEPS = 20;
 /**
  * Callback type for streaming chunks to the MCP client
  */
@@ -36,22 +37,29 @@ export async function executeDeepResearch({
 
   try {
     logger.info("Starting deep research with streaming");
-
-    // Use grok-4-1-fast-non-reasoning model when available (fallback handled in provider)
-    const model = llm("grok-4-1-fast-non-reasoning");
-
+    
+    // Create XAI instance with debug logging
+    // const xaiClient = createXai({
+    //   apiKey: process.env.XAI_API_KEY,
+    //   fetch: proxiedFetch,
+    // });
+    
+    // Build tools object with error handling
+    const allTools: Record<string, any> = {
+      x_search : xai.tools.xSearch({
+        enableImageUnderstanding: true,
+        enableVideoUnderstanding: true,
+      }),
+      web_search : xai.tools.webSearch({
+        enableImageUnderstanding: true,
+      }),
+    };
+    
     const response = streamText({
-      model,
+      model: llm("grok-4"),
       providerOptions: defaultProviderOptions,
-      tools: {
-        web_search: xai.tools.webSearch({
-          enableImageUnderstanding: true,
-        }),
-        x_search: xai.tools.xSearch({
-          enableImageUnderstanding: true,
-          enableVideoUnderstanding: true,
-        }),
-      },
+      tools: allTools,
+      toolChoice: "auto",
       messages: [
         {
           role: "user",
@@ -59,6 +67,7 @@ export async function executeDeepResearch({
         },
       ],
       abortSignal,
+      stopWhen: stepCountIs(MAX_STEPS),
     });
 
     // Stream text chunks in real-time if callback provided
@@ -140,7 +149,38 @@ export async function executeDeepResearch({
       result: finalResult,
     };
   } catch (error) {
-    logger.error({ error: (error as Error).message }, "Deep research failed");
+    // Enhanced error logging for AI SDK errors
+    const errorDetails: Record<string, any> = {
+      errorMessage: (error as Error).message,
+      errorName: (error as Error).name,
+    };
+    
+    // Check if it's an AI SDK API call error with additional details
+    if (error && typeof error === "object" && "statusCode" in error) {
+      const apiError = error as any;
+      errorDetails.statusCode = apiError.statusCode;
+      errorDetails.url = apiError.url;
+      errorDetails.responseBody = apiError.responseBody;
+      errorDetails.requestBodyValues = apiError.requestBodyValues;
+      errorDetails.isRetryable = apiError.isRetryable;
+      
+      // Log the tools that were sent (if available)
+      if (apiError.requestBodyValues?.tools) {
+        errorDetails.toolsInRequest = Array.isArray(apiError.requestBodyValues.tools)
+          ? apiError.requestBodyValues.tools.length
+          : Object.keys(apiError.requestBodyValues.tools || {}).length;
+        errorDetails.toolNamesInRequest = Array.isArray(apiError.requestBodyValues.tools)
+          ? apiError.requestBodyValues.tools.map((t: any) => t?.function?.name || t?.type)
+          : Object.keys(apiError.requestBodyValues.tools || {});
+      }
+      
+      // Check if tool_choice was set
+      if (apiError.requestBodyValues?.tool_choice) {
+        errorDetails.toolChoiceInRequest = apiError.requestBodyValues.tool_choice;
+      }
+    }
+    
+    logger.error(errorDetails, "Deep research failed with detailed error information");
     throw error;
   }
 }
