@@ -1,10 +1,12 @@
 import "server-only";
 
 import { trackUserServerSide } from "@/lib/analytics/server";
+import { getToltFromCookieStore } from "@/lib/analytics/tolt";
+import { trackToltSignup } from "@/lib/analytics/tolt/lib";
 import { getRefererFromCookieStore, getUtmFromCookieStore } from "@/lib/analytics/utm";
 import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
-import { Team, User, UserLastLogin } from "@/prisma/client";
+import { Team, User, UserLastLogin, UserProfileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
@@ -58,7 +60,8 @@ export function recordLastLogin({
 }
 
 /**
- * 保存用户的 acquisition 信息（UTM 和 Referer）到 UserProfile
+ * 保存用户的 acquisition 信息（UTM、Referer 和 Tolt）到 UserProfile
+ * 如果有 Tolt referral，在保存后触发 Tolt API 追踪
  */
 export function recordAcquisition({ userId }: { userId: number }) {
   // 后台运行，不要 await
@@ -70,33 +73,32 @@ export function recordAcquisition({ userId }: { userId: number }) {
           select: { id: true },
         });
         // 获取 acquisition 数据
-        const [utmParams, refererParams] = await Promise.all([
+        const [utmParams, refererParams, toltParams] = await Promise.all([
           getUtmFromCookieStore(),
           getRefererFromCookieStore(),
+          getToltFromCookieStore(),
         ]);
         // 如果有 acquisition 数据，更新到数据库
-        if (utmParams || refererParams) {
-          // const extra = {
-          //   ...(userProfile.extra as UserProfileExtra),
-          //   acquisition: {
-          //     ...(utmParams ? { utm: utmParams } : {}),
-          //     ...(refererParams ? { referer: refererParams } : {}),
-          //   },
-          // };
-          // await prisma.userProfile.update({
-          //   where: { userId },
-          //   data: { extra },
-          // });
+        if (utmParams || refererParams || toltParams) {
           await mergeExtra({
             tableName: "UserProfile",
             extra: {
               acquisition: {
                 ...(utmParams ? { utm: utmParams } : {}),
                 ...(refererParams ? { referer: refererParams } : {}),
-              },
+              } satisfies UserProfileExtra["acquisition"],
+              ...(toltParams
+                ? {
+                    tolt: toltParams satisfies UserProfileExtra["tolt"],
+                  }
+                : {}),
             },
             id: userProfile.id,
           });
+        }
+        // 如果有 Tolt referral，调用 Tolt API 追踪注册
+        if (toltParams) {
+          await trackToltSignup({ userId });
         }
       } catch (error) {
         authLogger.error(`Error recording acquisition: ${(error as Error).message}`);
@@ -212,7 +214,7 @@ export async function createPersonalUser({
   }
 
   recordLastLogin({ userId: user.id, provider: "email-password" });
-  recordAcquisition({ userId: user.id });
+  recordAcquisition({ userId: user.id }); // 保存 UTM、Referer 和 Tolt，如有 Tolt 会自动调用 API 追踪
   // ⚠️ 因为要等到 acquisition 信息完整以后才能 track, trackUserServerSide 在 recordAcquisition 里进行
   // trackUserServerSide({});
 

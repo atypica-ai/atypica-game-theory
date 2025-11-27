@@ -47,13 +47,20 @@ export type UserProfileExtra = Partial<{
       utm_campaign?: string;
       utm_term?: string;
       utm_content?: string;
-      capturedAt: string;
+      capturedAt?: string;
     };
     referer?: {
       referer: string;
       hostname: string;
-      capturedAt: string;
+      capturedAt?: string;
     };
+  };
+  tolt?: {
+    via: string; // referral code from ?via=xxx
+    capturedAt?: string;
+    customerId?: string; // Tolt customer ID (set after signup tracking)
+    partnerId?: string; // Tolt partner ID
+    clickId?: string; // Tolt click ID
   };
 }>;
 
