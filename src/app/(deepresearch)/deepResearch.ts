@@ -1,14 +1,10 @@
 import "server-only";
 
-import { defaultProviderOptions, llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
-import { stepCountIs, streamText } from "ai";
-import { xai } from "@ai-sdk/xai";
-import { DeepResearchInput, DeepResearchOutput } from "../types";
+import { DeepResearchInput, DeepResearchOutput } from "./types";
 import { StreamChunkCallback } from "@/lib/mcp/types";
-
-const MAX_STEPS = 10;
-
+import { ExpertName } from "./experts/types";
+import { resolveExpert } from "./experts";
 /**
  * Executes deep research using Grok model with web search and X search tools
  * Streams the response in real-time via callback and returns final result
@@ -19,6 +15,7 @@ const MAX_STEPS = 10;
  */
 export async function executeDeepResearch({
   query,
+  expert,
   abortSignal,
   onStreamChunk,
 }: DeepResearchInput & {
@@ -28,49 +25,14 @@ export async function executeDeepResearch({
   const logger = rootLogger.child({ tool: "deepresearch", query: query.substring(0, 100) });
 
   try {
-    logger.info("Starting deep research with streaming");
+    const { name: resolvedExpert, executor } = resolveExpert(expert);
+
+    logger.info(
+      { expert: resolvedExpert },
+      "Starting deep research with streaming",
+    );
     
-    // Build tools object with error handling
-    const allTools: Record<string, any> = {
-      x_search : xai.tools.xSearch({
-        enableImageUnderstanding: true,
-        enableVideoUnderstanding: true,
-      }),
-      web_search : xai.tools.webSearch({
-        enableImageUnderstanding: true,
-      }),
-    };
-    
-    const response = streamText({
-      model: llm("grok-4"),
-      providerOptions: defaultProviderOptions,
-      tools: allTools,
-      toolChoice: "auto",
-      messages: [
-        {
-          role: "user",
-          content: query,
-        },
-      ],
-      abortSignal,
-      stopWhen: stepCountIs(MAX_STEPS),
-      prepareStep: async ({ stepNumber, messages }) => {
-        if (stepNumber === MAX_STEPS-1) {
-          return {
-            toolChoice: "none", // shut down all tools at last step
-            activeTools: [],
-            messages: [
-              ...messages,
-              {
-                role: "user",
-                content: "You have reached the last allowed step. Please conclude the research.",
-              },
-            ],
-          };
-        }
-      // When nothing is returned, the default settings from the main config are used.
-      },
-    });
+    const response = await executor({ query, abortSignal });
 
     if (onStreamChunk) {
       // Use fullStream to get all event types (text, reasoning, sources, etc.)

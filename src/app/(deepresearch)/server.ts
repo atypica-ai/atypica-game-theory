@@ -1,8 +1,7 @@
 import "server-only";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { executeDeepResearch } from "@/app/(deepresearch)/tools/deepResearch";
+import { executeDeepResearch } from "@/app/(deepresearch)/deepResearch";
 import {
-  DeepResearchInput,
   deepResearchInputSchema,
   deepResearchOutputSchema,
 } from "./types";
@@ -12,6 +11,7 @@ import {
 } from "@/lib/mcp/context";
 import { createStreamingCallback } from "@/lib/mcp/streaming";
 import { rootLogger } from "@/lib/logging";
+import { ExpertName } from "./experts/types";
 
 const logger = rootLogger.child({ module: "deepresearch-mcp-server" });
 
@@ -39,7 +39,7 @@ export function createDeepResearchServer(): McpServer {
       inputSchema: deepResearchInputSchema,
       outputSchema: deepResearchOutputSchema,
     },
-    async (args: DeepResearchInput, extra) => {
+    async (args, extra) => {
       try {
         // Get the request context (transport and request ID) from AsyncLocalStorage
         const context = getMCPRequestContext();
@@ -49,6 +49,7 @@ export function createDeepResearchServer(): McpServer {
           // Fallback: execute without streaming
           const result = await executeDeepResearch({
             query: args.query,
+            expert: args.expert ?? ExpertName.Auto,
             abortSignal: extra.signal,
             onStreamChunk: undefined,
           });
@@ -80,6 +81,7 @@ export function createDeepResearchServer(): McpServer {
         // Execute with streaming callback that sends MCP notifications
         const result = await executeDeepResearch({
           query: args.query,
+          expert: args.expert ?? ExpertName.Auto,
           abortSignal: extra.signal,
           onStreamChunk,
         });
