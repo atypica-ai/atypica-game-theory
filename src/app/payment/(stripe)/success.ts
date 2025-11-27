@@ -4,10 +4,19 @@ import { ProductName } from "@/app/payment/data";
 import { resetTeamMonthlyTokens, resetUserMonthlyTokens } from "@/app/payment/monthlyTokens";
 import { recharge1MTokens } from "@/app/payment/permanentTokens";
 import { trackUserServerSide } from "@/lib/analytics/server";
+import { trackToltPayment } from "@/lib/analytics/tolt/lib";
 import { PaymentRecord, SubscriptionExtra, SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import Stripe from "stripe";
 import { retrieveStripeSubscriptionDetails } from "./utils";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function tryGetChargeFromInvoice(invoiceData: any): string {
+  // Track Tolt payment
+  const chargeId = typeof invoiceData.charge === "string" ? invoiceData.charge : invoiceData.id;
+  return chargeId as string;
+}
 
 export async function handleTeamSubscriptionPaymentSuccess({
   paymentRecord,
@@ -65,7 +74,19 @@ export async function handleTeamSubscriptionPaymentSuccess({
   // Reset team monthly tokens
   await resetTeamMonthlyTokens({ teamId });
 
-  // team user 暂时不 track
+  // Track Tolt payment, team user 暂时不 track
+  // const chargeId = tryGetChargeFromInvoice(invoiceData);
+  // waitUntil(
+  //   trackToltPayment({
+  //     userId,
+  //     paymentRecordId: paymentRecord.id,
+  //     amount: paymentRecord.amount,
+  //     productName,
+  //     chargeId,
+  //   }),
+  // );
+
+  // team user 暂时不 track analytics
 }
 
 export async function handleUserSubscriptionPaymentSuccess({
@@ -139,6 +160,19 @@ export async function handleUserSubscriptionPaymentSuccess({
     // reset monthly tokens (will set unlimitedTokens flag in extra)
     await resetUserMonthlyTokens({ userId });
   }
+
+  // Track Tolt payment
+  const chargeId = tryGetChargeFromInvoice(invoiceData);
+  waitUntil(
+    trackToltPayment({
+      userId,
+      paymentRecordId: paymentRecord.id,
+      amount: paymentRecord.amount,
+      productName,
+      chargeId,
+    }),
+  );
+
   // track user
   trackUserServerSide({
     userId,
@@ -149,9 +183,11 @@ export async function handleUserSubscriptionPaymentSuccess({
 export async function handleRechargePaymentSuccess({
   paymentRecord,
   productName,
+  invoiceData,
 }: {
   paymentRecord: PaymentRecord;
   productName: ProductName;
+  invoiceData: Stripe.Invoice;
 }) {
   const userId = paymentRecord.userId;
   if (productName === ProductName.TOKENS1M) {
@@ -160,6 +196,19 @@ export async function handleRechargePaymentSuccess({
   } else {
     throw new Error(`Invalid product name ${productName} received in handleRechargePaymentSuccess`);
   }
+
+  // Track Tolt payment
+  const chargeId = tryGetChargeFromInvoice(invoiceData);
+  waitUntil(
+    trackToltPayment({
+      userId,
+      paymentRecordId: paymentRecord.id,
+      amount: paymentRecord.amount,
+      productName,
+      chargeId,
+    }),
+  );
+
   // track user
   trackUserServerSide({
     userId,

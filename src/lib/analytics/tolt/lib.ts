@@ -1,5 +1,6 @@
 import "server-only";
 
+import { ProductName } from "@/app/payment/data";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { UserProfileExtra } from "@/prisma/client";
@@ -313,7 +314,7 @@ export async function trackToltPayment({
   userId: number;
   paymentRecordId: number;
   amount: number;
-  productName: string;
+  productName: ProductName;
   chargeId: string;
 }): Promise<void> {
   try {
@@ -332,11 +333,11 @@ export async function trackToltPayment({
 
     // Determine billing type based on product name
     const subscriptionProducts = [
-      "PRO1MONTH",
-      "MAX1MONTH",
-      "SUPER1MONTH",
-      "TEAMSEAT1MONTH",
-      "SUPERTEAMSEAT1MONTH",
+      ProductName.PRO1MONTH,
+      ProductName.MAX1MONTH,
+      ProductName.SUPER1MONTH,
+      ProductName.TEAMSEAT1MONTH,
+      ProductName.SUPERTEAMSEAT1MONTH,
     ];
     const isSubscription = subscriptionProducts.includes(productName);
 

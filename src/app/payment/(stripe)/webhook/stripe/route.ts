@@ -176,6 +176,7 @@ export async function POST(req: Request) {
           await handleRechargePaymentSuccess({
             paymentRecord,
             productName: metadata.productName,
+            invoiceData,
           });
         }
         return NextResponse.json({ received: true }, { status: 200 });
