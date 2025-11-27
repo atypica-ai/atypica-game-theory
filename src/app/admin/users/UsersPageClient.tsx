@@ -444,7 +444,7 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                   })(user.profile?.onboarding)}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {((acquisition) => {
+                  {(({ acquisition, tolt }) => {
                     if (!acquisition) return null;
                     return (
                       <>
@@ -484,9 +484,15 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                             {acquisition.utm.utm_content || "-"}
                           </div>
                         )}
+                        {tolt && (
+                          <div>
+                            <span className="text-zinc-500">Via: </span>
+                            {tolt?.via || "-"}
+                          </div>
+                        )}
                       </>
                     );
-                  })(user.profile?.extra?.acquisition)}
+                  })(user.profile?.extra ?? {})}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-sm space-y-2">
                   <div>

@@ -3,7 +3,7 @@ import "server-only";
 import { ProductName } from "@/app/payment/data";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
-import { UserProfileExtra } from "@/prisma/client";
+import { PaymentRecord, UserProfileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 
@@ -44,7 +44,12 @@ async function requestToltApi({
     throw new Error(`Tolt API request failed: HTTP ${response.status} - ${errorText}`);
   }
 
-  return response.json();
+  const result = await response.json();
+  if (!result || !result.success || !result.data) {
+    throw new Error(`Tolt API response is not successful`);
+  }
+
+  return result as { data: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 // ============================================================================
@@ -77,11 +82,12 @@ async function createToltClick({
         device,
       },
     });
-
+    if (!Array.isArray(result.data)) {
+      throw new Error("Invalid response from Tolt API");
+    }
     return {
-      success: true,
-      partnerId: result.data?.partner_id,
-      clickId: result.data?.click_id,
+      partnerId: result.data[0].partner_id as string,
+      clickId: result.data[0].click_id as string,
     };
   } catch (error) {
     toltLogger.error({
@@ -90,7 +96,7 @@ async function createToltClick({
       param,
       value,
     });
-    return { success: false, error: (error as Error).message };
+    throw error;
   }
 }
 
@@ -122,11 +128,11 @@ async function createToltCustomer({
         lead_at: new Date().toISOString(),
       },
     });
-
+    if (!Array.isArray(result.data)) {
+      throw new Error("Invalid response from Tolt API");
+    }
     return {
-      success: true,
-      toltCustomerId: result.data[0].id,
-      data: result.data[0],
+      toltCustomerId: result.data[0].id as string,
     };
   } catch (error) {
     toltLogger.error({
@@ -135,7 +141,7 @@ async function createToltCustomer({
       email,
       partnerId,
     });
-    return { success: false, error: (error as Error).message };
+    throw error;
   }
 }
 
@@ -175,11 +181,11 @@ async function createToltTransaction({
         created_at: new Date().toISOString(),
       },
     });
-
+    if (!Array.isArray(result.data)) {
+      throw new Error("Invalid response from Tolt API");
+    }
     return {
-      success: true,
-      transactionId: result.data[0].id,
-      data: result.data[0],
+      transactionId: result.data[0].id as string,
     };
   } catch (error) {
     toltLogger.error({
@@ -187,7 +193,7 @@ async function createToltTransaction({
       error: (error as Error).message,
       customerId,
     });
-    return { success: false, error: (error as Error).message };
+    throw error;
   }
 }
 
@@ -244,15 +250,6 @@ export async function trackToltSignup({ userId }: { userId: number }): Promise<v
       // device: "desktop",
     });
 
-    if (!clickResult.success || !clickResult.partnerId) {
-      toltLogger.warn({
-        msg: "Failed to create Tolt click",
-        error: clickResult.error,
-        via: toltData.via,
-      });
-      return;
-    }
-
     // 2. Create customer in Tolt
     const customerResult = await createToltCustomer({
       email: user.email,
@@ -261,26 +258,17 @@ export async function trackToltSignup({ userId }: { userId: number }): Promise<v
       clickId: clickResult.clickId,
     });
 
-    if (!customerResult.success) {
-      toltLogger.warn({
-        msg: "Failed to create Tolt customer",
-        error: customerResult.error,
-        userId,
-        email: user.email,
-      });
-      return;
-    }
-
     // 3. Update UserProfile.extra with Tolt tracking data (only customerId, partnerId, clickId)
     // via and capturedAt are already saved by recordAcquisition
     await mergeExtra({
       tableName: "UserProfile",
       extra: {
         tolt: {
+          ...toltData,
           customerId: customerResult.toltCustomerId,
           partnerId: clickResult.partnerId,
           clickId: clickResult.clickId,
-        },
+        } satisfies UserProfileExtra["tolt"],
       },
       id: user.profile.id,
     });
@@ -306,14 +294,12 @@ export async function trackToltSignup({ userId }: { userId: number }): Promise<v
  */
 export async function trackToltPayment({
   userId,
-  paymentRecordId,
-  amount,
+  paymentRecord,
   productName,
   chargeId,
 }: {
   userId: number;
-  paymentRecordId: number;
-  amount: number;
+  paymentRecord: PaymentRecord;
   productName: ProductName;
   chargeId: string;
 }): Promise<void> {
@@ -340,11 +326,16 @@ export async function trackToltPayment({
       ProductName.SUPERTEAMSEAT1MONTH,
     ];
     const isSubscription = subscriptionProducts.includes(productName);
+    // Tolt 只支持 USD，这里大概的转换一下汇率，atypica 价格差不多是通过 6.5 换算的
+    // Convert to cents
+    const amount = Math.round(
+      100 * (paymentRecord.currency === "CNY" ? paymentRecord.amount / 6.5 : paymentRecord.amount),
+    );
 
     // Create transaction in Tolt
     const result = await createToltTransaction({
       customerId: toltCustomerId,
-      amount: Math.round(amount * 100), // Convert to cents
+      amount,
       billingType: isSubscription ? "subscription" : "one_time",
       chargeId,
       productName,
@@ -352,25 +343,17 @@ export async function trackToltPayment({
       interval: isSubscription ? "month" : undefined,
     });
 
-    if (result.success) {
-      toltLogger.info({
-        msg: "Successfully tracked Tolt payment",
-        paymentRecordId,
-        toltTransactionId: result.transactionId,
-      });
-    } else {
-      toltLogger.warn({
-        msg: "Failed to track Tolt payment",
-        error: result.error,
-        paymentRecordId,
-      });
-    }
+    toltLogger.info({
+      msg: "Successfully tracked Tolt payment",
+      paymentRecordId: paymentRecord.id,
+      toltTransactionId: result.transactionId,
+    });
   } catch (error) {
     // Don't block payment processing if Tolt tracking fails
     toltLogger.error({
       msg: "Error tracking Tolt payment",
       error: (error as Error).message,
-      paymentRecordId,
+      paymentRecordId: paymentRecord.id,
     });
   }
 }

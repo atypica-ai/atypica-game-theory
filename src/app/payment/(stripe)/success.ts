@@ -76,15 +76,7 @@ export async function handleTeamSubscriptionPaymentSuccess({
 
   // Track Tolt payment, team user 暂时不 track
   // const chargeId = tryGetChargeFromInvoice(invoiceData);
-  // waitUntil(
-  //   trackToltPayment({
-  //     userId,
-  //     paymentRecordId: paymentRecord.id,
-  //     amount: paymentRecord.amount,
-  //     productName,
-  //     chargeId,
-  //   }),
-  // );
+  // waitUntil(trackToltPayment({ userId, paymentRecord, productName, chargeId }));
 
   // team user 暂时不 track analytics
 }
@@ -163,15 +155,7 @@ export async function handleUserSubscriptionPaymentSuccess({
 
   // Track Tolt payment
   const chargeId = tryGetChargeFromInvoice(invoiceData);
-  waitUntil(
-    trackToltPayment({
-      userId,
-      paymentRecordId: paymentRecord.id,
-      amount: paymentRecord.amount,
-      productName,
-      chargeId,
-    }),
-  );
+  waitUntil(trackToltPayment({ userId, paymentRecord, productName, chargeId }));
 
   // track user
   trackUserServerSide({
@@ -199,15 +183,7 @@ export async function handleRechargePaymentSuccess({
 
   // Track Tolt payment
   const chargeId = tryGetChargeFromInvoice(invoiceData);
-  waitUntil(
-    trackToltPayment({
-      userId,
-      paymentRecordId: paymentRecord.id,
-      amount: paymentRecord.amount,
-      productName,
-      chargeId,
-    }),
-  );
+  waitUntil(trackToltPayment({ userId, paymentRecord, productName, chargeId }));
 
   // track user
   trackUserServerSide({
