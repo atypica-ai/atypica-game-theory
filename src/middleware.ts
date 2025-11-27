@@ -5,6 +5,11 @@ import {
   UTM_COOKIE_MAX_AGE,
   UTM_COOKIE_NAME,
 } from "@/lib/analytics/utm";
+import {
+  extractToltFromSearchParams,
+  TOLT_COOKIE_MAX_AGE,
+  TOLT_COOKIE_NAME,
+} from "@/lib/analytics/tolt";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
 import { Locale } from "next-intl";
@@ -80,6 +85,22 @@ function handleAcquisitionTracking(req: NextRequest, response: NextResponse) {
           sameSite: "lax",
         });
       }
+    }
+  }
+
+  // 3. 检查 Tolt referral 参数 (?via=xxx)
+  const toltParams = extractToltFromSearchParams(req.nextUrl.searchParams);
+  if (toltParams) {
+    // 如果有 Tolt 参数，保存到 cookie（只在没有现有 Tolt cookie 时保存）
+    const existingToltCookie = req.cookies.get(TOLT_COOKIE_NAME);
+    if (!existingToltCookie) {
+      response.cookies.set(TOLT_COOKIE_NAME, JSON.stringify(toltParams), {
+        maxAge: TOLT_COOKIE_MAX_AGE,
+        path: "/",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+      });
     }
   }
 

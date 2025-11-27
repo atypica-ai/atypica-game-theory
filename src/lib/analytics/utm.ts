@@ -22,11 +22,12 @@ export const UTM_COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days in seconds
 // 需要过滤的内部域名列表（不记录为 referral）
 const INTERNAL_DOMAINS = [
   "atypica.ai",
-  "musedam.cc",
+  "atypica.cc",
   "musedam.ai",
+  "musedam.cc",
   "museai.cc",
   "tezign.com",
-  "localhost",
+  "accounts.google.com",
 ];
 
 /**
