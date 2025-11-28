@@ -15,9 +15,10 @@ interface AdminLayoutProps {
 export default async function AdminLayout({ children }: AdminLayoutProps) {
   const session = await getServerSession(authOptions);
 
-  const user = session?.user?.email
+  // 这里要用 id 判断不能用 email，因为 session 上的 team user 是有 email 的，但其实 team user 没有 admin 权限
+  const user = session?.user?.id
     ? await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { id: session.user.id },
         include: { adminUser: true },
       })
     : null;
