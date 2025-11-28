@@ -3,6 +3,7 @@ import { fetchActiveSubscription } from "@/app/account/lib";
 import { fetchProductPricesAction } from "@/app/payment/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
+import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -29,15 +30,24 @@ async function PricingPage() {
   const session = await getServerSession(authOptions);
   if (session?.user) {
     const userId = session.user.id;
-    const { activeSubscription, stripeSubscriptionId, userType } = await fetchActiveSubscription({
-      userId,
-    });
+
+    const [{ activeSubscription, stripeSubscriptionId, userType }, team] = await Promise.all([
+      fetchActiveSubscription({ userId }),
+      session.userType === "TeamMember" && session.team?.id
+        ? prisma.team.findUnique({
+            where: { id: session.team.id },
+            select: { id: true, name: true, seats: true },
+          })
+        : Promise.resolve(null),
+    ]);
+
     return (
       <PricingPageClient
         productPrices={productPrices}
         activeSubscription={activeSubscription}
         stripeSubscriptionId={stripeSubscriptionId}
         userType={userType}
+        team={team}
       />
     );
   } else {
@@ -47,6 +57,7 @@ async function PricingPage() {
         activeSubscription={null}
         stripeSubscriptionId={null}
         userType="Personal"
+        team={null}
       />
     );
   }

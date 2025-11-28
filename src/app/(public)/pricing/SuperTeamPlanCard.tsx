@@ -2,16 +2,18 @@ import { TProductPrices } from "@/app/payment/actions";
 import { TeamCreateButton } from "@/app/team/components/TeamCreateButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserType } from "@/prisma/client";
+import { Subscription, UserType } from "@/prisma/client";
 import { CheckIcon, Infinity } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 interface SuperTeamPlanCardProps {
   productPrices: TProductPrices;
   userType: UserType;
+  activeSubscription: Subscription | null;
+  onPurchase?: () => void;
 }
 
-export function SuperTeamPlanCard({ productPrices, userType }: SuperTeamPlanCardProps) {
+export function SuperTeamPlanCard({ productPrices, userType, activeSubscription, onPurchase }: SuperTeamPlanCardProps) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
 
@@ -59,11 +61,25 @@ export function SuperTeamPlanCard({ productPrices, userType }: SuperTeamPlanCard
         </div>
       </CardHeader>
       <CardContent className="grow space-y-4">
-        <TeamCreateButton>
-          <Button className="w-full mb-6" disabled={userType !== "Personal"}>
-            {t("createTeam")}
-          </Button>
-        </TeamCreateButton>
+        {userType === "TeamMember" && onPurchase ? (
+          activeSubscription?.plan === "team" || activeSubscription?.plan === "superteam" ? (
+            <Button className="w-full mb-6" disabled variant="secondary">
+              {activeSubscription.plan === "team"
+                ? t("purchasedTeam")
+                : t("purchasedSuperTeam")}
+            </Button>
+          ) : (
+            <Button className="w-full mb-6" onClick={onPurchase}>
+              {t("purchaseSuperTeam")}
+            </Button>
+          )
+        ) : (
+          <TeamCreateButton>
+            <Button className="w-full mb-6" disabled={userType !== "Personal"}>
+              {t("createTeam")}
+            </Button>
+          </TeamCreateButton>
+        )}
         <FeatureItem text={t("features.allMaxFeatures")} />
         <FeatureItem text={t("features.interviews.unlimited")} />
         <FeatureItem text={t("features.personas.humanPersonaImports")} />

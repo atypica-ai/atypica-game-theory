@@ -2,16 +2,18 @@ import { TProductPrices } from "@/app/payment/actions";
 import { TeamCreateButton } from "@/app/team/components/TeamCreateButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserType } from "@/prisma/client";
+import { Subscription, UserType } from "@/prisma/client";
 import { CheckIcon, CoinsIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 interface TeamPlanCardProps {
   productPrices: TProductPrices;
   userType: UserType;
+  activeSubscription: Subscription | null;
+  onPurchase?: () => void;
 }
 
-export function TeamPlanCard({ productPrices, userType }: TeamPlanCardProps) {
+export function TeamPlanCard({ productPrices, userType, activeSubscription, onPurchase }: TeamPlanCardProps) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
 
@@ -56,11 +58,25 @@ export function TeamPlanCard({ productPrices, userType }: TeamPlanCardProps) {
         </div>
       </CardHeader>
       <CardContent className="grow space-y-4">
-        <TeamCreateButton>
-          <Button className="w-full mb-6" disabled={userType !== "Personal"}>
-            {t("createTeam")}
-          </Button>
-        </TeamCreateButton>
+        {userType === "TeamMember" && onPurchase ? (
+          activeSubscription?.plan === "team" || activeSubscription?.plan === "superteam" ? (
+            <Button className="w-full mb-6" disabled variant="secondary">
+              {activeSubscription.plan === "team"
+                ? t("purchasedTeam")
+                : t("purchasedSuperTeam")}
+            </Button>
+          ) : (
+            <Button className="w-full mb-6" onClick={onPurchase}>
+              {t("purchaseTeam")}
+            </Button>
+          )
+        ) : (
+          <TeamCreateButton>
+            <Button className="w-full mb-6" disabled={userType !== "Personal"}>
+              {t("createTeam")}
+            </Button>
+          </TeamCreateButton>
+        )}
         <div className="text-sm text-muted-foreground bg-muted/50 rounded p-3 mb-2">
           {t("additionalTokenPurchaseInfo")}
         </div>

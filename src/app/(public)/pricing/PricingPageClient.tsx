@@ -2,9 +2,10 @@
 import { TProductPrices } from "@/app/payment/actions";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
 import { SubscriptionDialog } from "@/app/payment/components/SubscriptionDialog";
+import { TeamSubscriptionDialog } from "@/app/payment/components/TeamSubscriptionDialog";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Subscription, SubscriptionPlan, UserType } from "@/prisma/client";
+import { Subscription, SubscriptionPlan, Team, UserType } from "@/prisma/client";
 import { InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -21,16 +22,21 @@ export default function PricingPageClient({
   productPrices,
   activeSubscription,
   userType,
+  team,
 }: {
   productPrices: TProductPrices;
   activeSubscription: Subscription | null;
   stripeSubscriptionId: string | null;
   userType: UserType;
+  team: Pick<Team, "id" | "name" | "seats"> | null;
 }) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
   const [isTokensDialogOpen, setIsTokensDialogOpen] = useState(false);
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState<{
+    plan: SubscriptionPlan;
+  } | null>(null);
+  const [isTeamSubscriptionDialogOpen, setIsTeamSubscriptionDialogOpen] = useState<{
     plan: SubscriptionPlan;
   } | null>(null);
   const [activeTab, setActiveTab] = useState<string | null>(null);
@@ -114,13 +120,25 @@ export default function PricingPageClient({
               userType={userType}
               onUpgrade={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.super })}
             />
-            <SuperTeamPlanCard productPrices={productPrices} userType={userType} />
+            <SuperTeamPlanCard
+              productPrices={productPrices}
+              userType={userType}
+              activeSubscription={activeSubscription}
+              onPurchase={
+                team ? () => setIsTeamSubscriptionDialogOpen({ plan: SubscriptionPlan.superteam }) : undefined
+              }
+            />
           </div>
         </TabsContent>
 
         <TabsContent value="organization">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            <TeamPlanCard productPrices={productPrices} userType={userType} />
+            <TeamPlanCard
+              productPrices={productPrices}
+              userType={userType}
+              activeSubscription={activeSubscription}
+              onPurchase={team ? () => setIsTeamSubscriptionDialogOpen({ plan: SubscriptionPlan.team }) : undefined}
+            />
             <EnterprisePlanCard onContactSales={sayHelloToSales} />
           </div>
         </TabsContent>
@@ -140,6 +158,16 @@ export default function PricingPageClient({
         }}
         activeSubscription={activeSubscription}
       />
+      {team && isTeamSubscriptionDialogOpen && (
+        <TeamSubscriptionDialog
+          plan={isTeamSubscriptionDialogOpen.plan}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setIsTeamSubscriptionDialogOpen(null);
+          }}
+          team={team}
+        />
+      )}
     </div>
   ) : (
     <div className="flex items-center justify-center p-20">

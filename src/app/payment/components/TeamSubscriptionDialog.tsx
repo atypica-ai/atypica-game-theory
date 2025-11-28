@@ -30,7 +30,7 @@ interface TeamSubscriptionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
-  team: Team;
+  team: Pick<Team, "id" | "name" | "seats">;
 }
 
 export const TeamSubscriptionDialog = ({
@@ -208,7 +208,7 @@ export const TeamSubscriptionDialog = ({
           {/* Important notice */}
           <div className="p-3 border rounded-lg bg-blue-50 border-blue-200">
             <div className="flex items-start gap-2">
-              <InfoIcon className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <InfoIcon className="size-4 text-blue-600 mt-0.5 shrink-0" />
               <div className="text-blue-800">
                 <div className="text-sm font-medium mb-1">{t("notice.title")}</div>
                 <div className="text-xs text-blue-700">{t("notice.description")}</div>
