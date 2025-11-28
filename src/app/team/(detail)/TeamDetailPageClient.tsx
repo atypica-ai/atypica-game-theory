@@ -1,12 +1,6 @@
 "use client";
 import { TeamSubscriptionDialog } from "@/app/payment/components/TeamSubscriptionDialog";
 import {
-  addTeamMemberAction,
-  getTeamMembersAction,
-  getTeamSubscriptionAction,
-  removeTeamMemberAction,
-} from "@/app/team/actions";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -35,6 +29,12 @@ import { CreditCardIcon, TrashIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  addTeamMemberAction,
+  getTeamMembersAction,
+  getTeamSubscriptionAction,
+  removeTeamMemberAction,
+} from "./actions";
 
 export function TeamDetailPageClient({ team }: { team: Team }) {
   const t = useTranslations("Team.ManageDetailPage");
@@ -164,9 +164,7 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
                 </div>
                 <div className="col-span-2">
                   <div className="text-muted-foreground">{t("createdAt")}</div>
-                  <div className="font-medium">
-                    {new Date(team.createdAt).toLocaleDateString()}
-                  </div>
+                  <div className="font-medium">{new Date(team.createdAt).toLocaleDateString()}</div>
                 </div>
               </div>
 

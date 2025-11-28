@@ -1,9 +1,4 @@
 "use client";
-import {
-  generateTeamApiKeyAction,
-  getTeamApiKeyAction,
-  revokeTeamApiKeyAction,
-} from "@/app/team/actions";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +9,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { generateTeamApiKeyAction, getTeamApiKeyAction, revokeTeamApiKeyAction } from "../actions";
 
 export function TeamApiKeyCard({ team }: { team: Team }) {
   const t = useTranslations("Team.ApiKeyCard");
