@@ -1,5 +1,4 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { Forbidden } from "@/components/Forbidden";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession, Session } from "next-auth";
@@ -16,15 +15,10 @@ async function TeamDetailPage({ sessionUser }: { sessionUser: NonNullable<Sessio
     const team = await prisma.team.findUniqueOrThrow({
       where: { id: user.teamIdAsMember },
     });
-    if (team.ownerUserId === user.personalUserId) {
-      // 团队成员是 owner，直接进入团队管理界面
-      return <TeamDetailPageClient team={team} />;
-    }
+    const isOwner = team.ownerUserId === user.personalUserId;
 
-    // 团队成员不是 owner，无权限访问
-    // forbidden(); // Cannot use forbidden() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
-    // Instead, return a Forbidden component directly
-    return <Forbidden />;
+    // 所有团队成员都可以访问团队页面，但只有 owner 可以进行操作
+    return <TeamDetailPageClient team={team} isOwner={isOwner} />;
   }
 
   // 不是团队用户，切换到个人页面

@@ -4,7 +4,7 @@ import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
-import { forbidden, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { TeamApiKeyCard } from "./TeamApiKeyCard";
 import TeamDomainVerificationCard from "./TeamDomainVerificationCard";
 
@@ -36,9 +36,7 @@ export default async function TeamApiPage() {
     where: { id: user.teamIdAsMember },
   });
 
-  if (team.ownerUserId !== user.personalUserId) {
-    forbidden();
-  }
+  const isOwner = team.ownerUserId === user.personalUserId;
 
   return (
     <div className="container max-w-3xl p-6 space-y-6">
@@ -50,8 +48,8 @@ export default async function TeamApiPage() {
       </div>
 
       <div className="space-y-6">
-        <TeamApiKeyCard team={team} />
-        <TeamDomainVerificationCard team={team} />
+        <TeamApiKeyCard team={team} isOwner={isOwner} />
+        <TeamDomainVerificationCard team={team} isOwner={isOwner} />
       </div>
     </div>
   );

@@ -58,7 +58,7 @@ import {
   removeTeamMemberAction,
 } from "./actions";
 
-export function TeamDetailPageClient({ team }: { team: Team }) {
+export function TeamDetailPageClient({ team, isOwner }: { team: Team; isOwner: boolean }) {
   const t = useTranslations("Team.ManageDetailPage");
   const tActions = useTranslations("Team.Actions");
   const locale = useLocale();
@@ -78,8 +78,8 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
   const loadTeamData = useCallback(async () => {
     try {
       const [membersResult, subscriptionResult] = await Promise.all([
-        getTeamMembersAction(team.id),
-        getTeamSubscriptionAction(team.id),
+        getTeamMembersAction(),
+        getTeamSubscriptionAction(),
       ]);
       if (!membersResult.success) throw membersResult;
       setMembers(membersResult.data);
@@ -91,7 +91,7 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
     } finally {
       setIsLoading(false);
     }
-  }, [team.id]);
+  }, []);
 
   // Add member
   const handleAddMember = useCallback(
@@ -174,6 +174,7 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* 所有成员都可以购买团队订阅 */}
           {!teamSubscription && (
             <Button variant="outline" asChild>
               <Link href="/pricing#organization">
@@ -248,7 +249,8 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
           </CardTitle>
           <Dialog open={isAddMemberDialogOpen} onOpenChange={setIsAddMemberDialogOpen}>
             <DialogTrigger asChild>
-              <Button disabled={isSeatsFull}>
+              {/* 非 owner 或席位已满时禁用添加成员按钮 */}
+              <Button disabled={!isOwner || isSeatsFull}>
                 <PlusIcon className="size-4" />
                 {t("addMemberTitle")}
               </Button>
@@ -337,14 +339,15 @@ export function TeamDetailPageClient({ team }: { team: Team }) {
                       </TableCell>
                       <TableCell>{new Date(member.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        {!isDeleted && !isOwner && (
+                        {/* 非 owner、已删除的成员、或者是 owner 本人时禁用移除按钮 */}
+                        {!isDeleted && member.personalUserId !== team.ownerUserId && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className="text-muted-foreground hover:text-destructive"
-                                disabled={removingMemberId === member.id}
+                                disabled={!isOwner || removingMemberId === member.id}
                               >
                                 <TrashIcon className="w-4 h-4" />
                               </Button>

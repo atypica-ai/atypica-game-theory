@@ -132,7 +132,7 @@ export async function addTeamMemberAction(data: {
 }
 
 // 获取团队成员列表
-export async function getTeamMembersAction(teamId: number): Promise<
+export async function getTeamMembersAction(): Promise<
   ServerActionResult<
     Array<
       User & {
@@ -142,20 +142,27 @@ export async function getTeamMembersAction(teamId: number): Promise<
   >
 > {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async ({ id: userId }) => {
+  return withAuth(async (user, userType, team) => {
     try {
-      // 检查团队是否存在且用户是否为团队拥有者
-      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
-      if (!ownershipCheck.success) {
-        return ownershipCheck;
+      // 所有团队成员都可以查看成员列表，不需要是 owner
+      if (userType !== "TeamMember" || !team) {
+        return {
+          success: false,
+          message: "User is not a member of any team",
+        };
       }
 
+      // 原来的 owner 权限检查（已废弃）
+      // const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      // if (!ownershipCheck.success) {
+      //   return ownershipCheck;
+      // }
       // const team = ownershipCheck.team;
 
       // 获取团队成员（包括被删除的成员）
       const members = await prisma.user.findMany({
         where: {
-          teamIdAsMember: teamId,
+          teamIdAsMember: team.id,
         },
       });
 
@@ -259,21 +266,28 @@ export async function removeTeamMemberAction(data: {
 }
 
 // 获取团队订阅信息
-export async function getTeamSubscriptionAction(
-  teamId: number,
-): Promise<ServerActionResult<Subscription | null>> {
+export async function getTeamSubscriptionAction(): Promise<ServerActionResult<Subscription | null>> {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async ({ id: userId }) => {
+  return withAuth(async (user, userType, team) => {
     try {
-      // 检查团队是否存在且用户是否为团队拥有者
-      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
-      if (!ownershipCheck.success) {
-        return ownershipCheck;
+      // 所有团队成员都可以查看订阅信息，不需要是 owner
+      // 检查用户是否是该团队的成员
+      if (userType !== "TeamMember" || !team) {
+        return {
+          success: false,
+          message: "User is not a member of any team",
+        };
       }
+
+      // 原来的 owner 权限检查（已废弃）
+      // const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      // if (!ownershipCheck.success) {
+      //   return ownershipCheck;
+      // }
 
       const { activeSubscription } = await fetchActiveSubscription({
         // userId, // 这里用 userId 和 teamId 都可以，但是 teamId 快一点
-        teamId,
+        teamId: team.id,
       });
 
       return {
@@ -336,19 +350,37 @@ export async function generateTeamApiKeyAction(
 }
 
 // Get team API key
-export async function getTeamApiKeyAction(
-  teamId: number,
-): Promise<ServerActionResult<TeamConfigValue[TeamConfigName.apiKey] | null>> {
+export async function getTeamApiKeyAction(): Promise<
+  ServerActionResult<TeamConfigValue[TeamConfigName.apiKey] | null>
+> {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async ({ id: userId }) => {
+  return withAuth(async (user, userType, team) => {
     try {
-      // Check team ownership
-      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
-      if (!ownershipCheck.success) {
-        return ownershipCheck;
+      // 所有团队成员都可以查看 API key（会返回 masked 版本给非 owner），不需要是 owner
+      // 检查用户是否是该团队的成员
+      if (userType !== "TeamMember" || !team) {
+        return {
+          success: false,
+          message: "User is not a member of this team",
+        };
       }
 
-      const config = await getTeamConfig(teamId, TeamConfigName.apiKey);
+      // 检查是否是 owner
+      const ownershipCheck = await verifyTeamOwnership(team.id, user.id);
+
+      // 非 owner 返回一个 masked 的 API key
+      if (!ownershipCheck.success) {
+        return {
+          success: true,
+          data: {
+            key: "atypica_" + "•".repeat(64), // 返回 masked 的 key
+            createdAt: new Date().toISOString(),
+            createdBy: 0, // 非 owner 不需要知道是谁创建的
+          },
+        };
+      }
+
+      const config = await getTeamConfig(team.id, TeamConfigName.apiKey);
 
       return {
         success: true,
@@ -396,19 +428,28 @@ export async function revokeTeamApiKeyAction(teamId: number): Promise<ServerActi
 // Email Domain Whitelist Management
 
 // Get domain whitelist
-export async function getDomainWhitelistAction(
-  teamId: number,
-): Promise<ServerActionResult<TeamConfigValue[TeamConfigName.emailDomainWhitelist]>> {
+export async function getDomainWhitelistAction(): Promise<
+  ServerActionResult<TeamConfigValue[TeamConfigName.emailDomainWhitelist]>
+> {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async ({ id: userId }) => {
+  return withAuth(async (user, userType, team) => {
     try {
-      // Check team ownership
-      const ownershipCheck = await verifyTeamOwnership(teamId, userId);
-      if (!ownershipCheck.success) {
-        return ownershipCheck;
+      // 所有团队成员都可以查看域名白名单，不需要是 owner
+      // 检查用户是否是该团队的成员
+      if (userType !== "TeamMember" || !team) {
+        return {
+          success: false,
+          message: "User is not a member of this team",
+        };
       }
 
-      const config = await getTeamConfig(teamId, TeamConfigName.emailDomainWhitelist);
+      // 原来的 owner 权限检查（已废弃）
+      // const ownershipCheck = await verifyTeamOwnership(teamId, userId);
+      // if (!ownershipCheck.success) {
+      //   return ownershipCheck;
+      // }
+
+      const config = await getTeamConfig(team.id, TeamConfigName.emailDomainWhitelist);
 
       return {
         success: true,

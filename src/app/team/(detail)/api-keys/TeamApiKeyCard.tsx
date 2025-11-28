@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { generateTeamApiKeyAction, getTeamApiKeyAction, revokeTeamApiKeyAction } from "../actions";
 
-export function TeamApiKeyCard({ team }: { team: Team }) {
+export function TeamApiKeyCard({ team, isOwner }: { team: Team; isOwner: boolean }) {
   const t = useTranslations("Team.ApiKeyCard");
   const [apiKey, setApiKey] = useState<{
     key: string;
@@ -27,7 +27,7 @@ export function TeamApiKeyCard({ team }: { team: Team }) {
   const loadApiKey = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await getTeamApiKeyAction(team.id);
+      const result = await getTeamApiKeyAction();
       if (!result.success) throw result;
       setApiKey(result.data);
     } catch (error) {
@@ -36,7 +36,7 @@ export function TeamApiKeyCard({ team }: { team: Team }) {
     } finally {
       setIsLoading(false);
     }
-  }, [team.id, t]);
+  }, [t]);
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
@@ -120,7 +120,7 @@ export function TeamApiKeyCard({ team }: { team: Team }) {
         {!apiKey ? (
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">{t("noKeyDescription")}</p>
-            <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
+            <Button onClick={handleGenerate} disabled={!isOwner || isGenerating} className="w-full">
               {isGenerating ? t("generatingButton") : t("generateButton")}
             </Button>
           </div>
@@ -137,16 +137,19 @@ export function TeamApiKeyCard({ team }: { team: Team }) {
                     readOnly
                     className="font-mono text-xs pr-10"
                   />
+                  {/* 非 owner 不能显示/隐藏 API key */}
                   <Button
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3"
                     onClick={() => setShowKey(!showKey)}
+                    disabled={!isOwner}
                   >
                     {showKey ? <EyeOffIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
                   </Button>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleCopy} className="px-3">
+                {/* 非 owner 不能复制 API key */}
+                <Button variant="outline" size="sm" onClick={handleCopy} className="px-3" disabled={!isOwner}>
                   {copied ? (
                     <CheckIcon className="w-4 h-4 text-green-500" />
                   ) : (
@@ -161,7 +164,7 @@ export function TeamApiKeyCard({ team }: { team: Team }) {
               {t("createdAt", { date: new Date(apiKey.createdAt).toLocaleString() })}
             </div>
 
-            {/* Actions */}
+            {/* Actions - 非 owner 不能重新生成或撤销 */}
             <div className="flex gap-2 pt-2 border-t">
               <ConfirmDialog
                 title={t("regenerateDialog.title")}
@@ -174,7 +177,7 @@ export function TeamApiKeyCard({ team }: { team: Team }) {
                 }
                 onConfirm={handleGenerate}
               >
-                <Button disabled={isGenerating} variant="outline" className="flex-1">
+                <Button disabled={!isOwner || isGenerating} variant="outline" className="flex-1">
                   {isGenerating ? t("generatingButton") : t("regenerateButton")}
                 </Button>
               </ConfirmDialog>
@@ -191,7 +194,7 @@ export function TeamApiKeyCard({ team }: { team: Team }) {
                 <Button
                   variant="outline"
                   className="text-destructive hover:text-destructive"
-                  disabled={isRevoking}
+                  disabled={!isOwner || isRevoking}
                 >
                   <TrashIcon className="w-4 h-4" />
                 </Button>

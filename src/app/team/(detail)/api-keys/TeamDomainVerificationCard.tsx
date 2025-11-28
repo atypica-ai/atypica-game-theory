@@ -31,7 +31,7 @@ interface DomainEntry {
   addedAt: string;
 }
 
-export default function TeamDomainVerificationCard({ team }: { team: Team }) {
+export default function TeamDomainVerificationCard({ team, isOwner }: { team: Team; isOwner: boolean }) {
   const t = useTranslations("Team.DomainVerificationCard");
   const [domains, setDomains] = useState<DomainEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +43,7 @@ export default function TeamDomainVerificationCard({ team }: { team: Team }) {
   const loadDomains = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await getDomainWhitelistAction(team.id);
+      const result = await getDomainWhitelistAction();
       if (!result.success) throw result;
       setDomains(result.data.domains);
     } catch (error) {
@@ -52,7 +52,7 @@ export default function TeamDomainVerificationCard({ team }: { team: Team }) {
     } finally {
       setIsLoading(false);
     }
-  }, [team.id, t]);
+  }, [t]);
 
   const handleAddDomain = useCallback(async () => {
     if (!newDomain.trim()) {
@@ -176,13 +176,15 @@ export default function TeamDomainVerificationCard({ team }: { team: Team }) {
               value={newDomain}
               onChange={(e) => setNewDomain(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === "Enter" && isOwner) {
                   handleAddDomain();
                 }
               }}
               className="flex-1"
+              disabled={!isOwner}
             />
-            <Button onClick={handleAddDomain} disabled={isAdding || !newDomain.trim()}>
+            {/* 非 owner 不能添加域名 */}
+            <Button onClick={handleAddDomain} disabled={!isOwner || isAdding || !newDomain.trim()}>
               <PlusIcon className="size-4" />
               {isAdding ? t("addingButton") : t("addButton")}
             </Button>
@@ -215,6 +217,7 @@ export default function TeamDomainVerificationCard({ team }: { team: Team }) {
                         </span>
                       )}
                     </div>
+                    {/* 非 owner 不能删除域名 */}
                     <ConfirmDialog
                       title={t("removeDialog.title")}
                       description={t("removeDialog.description", { domain: domainEntry.domain })}
@@ -225,7 +228,7 @@ export default function TeamDomainVerificationCard({ team }: { team: Team }) {
                         variant="ghost"
                         size="sm"
                         className="text-destructive hover:text-destructive"
-                        disabled={removingDomain === domainEntry.domain}
+                        disabled={!isOwner || removingDomain === domainEntry.domain}
                       >
                         <TrashIcon className="w-4 h-4" />
                       </Button>
@@ -267,9 +270,10 @@ export default function TeamDomainVerificationCard({ team }: { team: Team }) {
                           </Button>
                         </div>
                       </div>
+                      {/* 非 owner 不能验证域名 */}
                       <Button
                         onClick={() => handleVerifyDomain(domainEntry.domain)}
-                        disabled={verifyingDomain === domainEntry.domain}
+                        disabled={!isOwner || verifyingDomain === domainEntry.domain}
                         size="sm"
                         className="w-full"
                       >

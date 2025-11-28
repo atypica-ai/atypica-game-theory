@@ -129,7 +129,8 @@ export default function AccountSidebar() {
       },
     ];
 
-    if (teamStatus?.teamRole === "owner") {
+    // 所有团队成员都可以访问团队页面（包括 owner 和普通成员）
+    if (teamStatus?.teamRole) {
       sidebarItems.push({
         label: t("teamManagement"),
         href: "/team",
