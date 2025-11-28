@@ -340,8 +340,8 @@ async function addTeamSubscription(args: string[]) {
 
     // Parse seats
     const seats = parseInt(seatsStr, 10);
-    if (isNaN(seats) || seats < 1) {
-      console.error(`Error: Invalid seats "${seatsStr}". Must be a positive integer`);
+    if (isNaN(seats) || seats < 0) {
+      console.error(`Error: Invalid seats "${seatsStr}". Must be a non negative integer`);
       process.exit(1);
     }
 

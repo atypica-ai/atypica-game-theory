@@ -96,7 +96,7 @@ export async function fetchUserInterviewProjects(): Promise<
 const createInterviewProjectSchema = z.object({
   brief: z
     .string()
-    .min(10, "Brief must be at least 10 characters")
+    // .min(10, "Brief must be at least 10 characters")  // 可以为空
     .max(5000, "Brief must be less than 5000 characters"),
   presetQuestions: z.string().optional(),
 });

@@ -327,7 +327,7 @@ async function buildPersonaAgentPrompt(
 
   await new Promise((resolve, reject) => {
     const response = streamText({
-      model: llm("claude-3-7-sonnet"),
+      model: llm("claude-sonnet-4"),
       providerOptions: defaultProviderOptions,
 
       system: personaGenerationPrompt({

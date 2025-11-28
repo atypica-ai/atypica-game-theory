@@ -230,8 +230,8 @@ export async function manuallyAddTeamSubscription({
   }
 
   // Validate seats parameter
-  if (seats < 1 || !Number.isInteger(seats)) {
-    throw new Error(`Invalid seats parameter: ${seats}. Must be a positive integer.`);
+  if (seats < 0 || !Number.isInteger(seats)) {
+    throw new Error(`Invalid seats parameter: ${seats}. Must be a non negative integer.`);
   }
 
   // Check if team exists
