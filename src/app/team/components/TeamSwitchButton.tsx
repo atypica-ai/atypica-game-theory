@@ -15,7 +15,7 @@ import { CheckIcon, ChevronsUpDownIcon, UserIcon, UsersIcon } from "lucide-react
 import { signIn, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
@@ -30,13 +30,14 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
   const { identities, isLoading, error } = useTeamSwitchableIdentities(open);
 
   // Show error toast if loading identities fails
+  // Only close dialog if there's an actual error after opening
   useEffect(() => {
-    if (error) {
+    if (open && error) {
       console.log("Failed to load identities:", error);
       toast.error(error.message);
       setOpen(false);
     }
-  }, [error]);
+  }, [open, error]);
 
   const handleSwitchUser = useCallback(
     async (targetUserId: number) => {
@@ -78,7 +79,7 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
         {children || (
           <Button variant="outline">
             <ChevronsUpDownIcon className="w-4 h-4 mr-2" />

@@ -30,11 +30,17 @@ import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import HippyGhostAvatar from "./HippyGhostAvatar";
 import { Button } from "./ui/button";
 
-export default function UserMenu() {
+/**
+ * UserMenu is wrapped with React.memo to prevent re-renders when GlobalHeader doesn't change.
+ * This ensures TeamSwitchButton's Dialog state is preserved across parent re-renders.
+ *
+ * ⚠️ memo 是浅比较组件的 props，副作用是如果参数不是 primitives or stable references，不会触发更新，但是这里没问题，因为没有参数
+ */
+const UserMenu = React.memo(function UserMenu() {
   const { status: sessionStatus, data: session } = useSession();
   const [menuType, setMenuType] = useState<"user" | "anonymous" | null>(null);
   const t = useTranslations("Components.GlobalHeader");
@@ -244,4 +250,6 @@ export default function UserMenu() {
       </DropdownMenu>
     );
   }
-}
+});
+
+export default UserMenu;

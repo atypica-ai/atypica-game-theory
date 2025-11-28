@@ -13,9 +13,20 @@ import { cn } from "@/lib/utils";
 import { MenuIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useState } from "react";
 
-export default function GlobalHeader({
+/**
+ * GlobalHeader is wrapped with React.memo to prevent unnecessary re-renders
+ * when parent components update due to unrelated state changes.
+ *
+ * This is critical for pages with frequent updates (e.g., ChatReplay with progressive messages),
+ * where the entire page tree re-renders but GlobalHeader's props remain unchanged.
+ * Without memo, all header components (UserMenu, UserTokensBalance, TeamSwitchButton)
+ * would unmount and remount on every parent update, losing their internal state (like Dialog open state).
+ *
+ * ⚠️ memo 是浅比较组件的 props，副作用是如果参数不是 primitives or stable references，不会触发更新，但是这里没问题，string + ReactNode 是可以触发更新的
+ */
+const GlobalHeader = React.memo(function GlobalHeader({
   className,
   children,
 }: {
@@ -73,7 +84,7 @@ export default function GlobalHeader({
       <MaintenanceNotification />
     </>
   );
-}
+});
 
 const MenuLink = ({
   className,
@@ -143,3 +154,5 @@ const GlobalHeaderMenusMobile = () => {
     </DropdownMenu>
   );
 };
+
+export default GlobalHeader;
