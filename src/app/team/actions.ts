@@ -5,8 +5,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getTranslations } from "next-intl/server";
-import { createTeam } from "./lib";
-import { generateUserSwitchToken } from "./userSwitchToken";
+import { createTeam, generateUserSwitchToken } from "./lib";
 
 // 创建团队
 export async function createTeamAction({ name: teamName }: { name: string }): Promise<
