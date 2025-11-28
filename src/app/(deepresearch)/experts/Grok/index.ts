@@ -6,7 +6,7 @@ import { defaultProviderOptions } from "@/ai/provider";
 import { stepCountIs } from "ai";
 const MAX_STEPS = 10;
 
-export const grokExpert = async ({ query, abortSignal }: { query: string, abortSignal?: AbortSignal }) => {
+export const grokExpert = async ({ query, abortSignal, userId }: { query: string, abortSignal?: AbortSignal, userId?: number }) => {
     // Build tools object with error handling
     const allTools: Record<string, any> = {
         x_search : xai.tools.xSearch({

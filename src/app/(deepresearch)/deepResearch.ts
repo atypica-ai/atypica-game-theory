@@ -76,7 +76,7 @@ export async function executeDeepResearch({
       "Starting deep research with streaming",
     );
     
-    const response = await executor({ query, abortSignal });
+    const response = await executor({ query, abortSignal, userId });
 
     if (onStreamChunk) {
       // Use fullStream to get all event types (text, reasoning, sources, etc.)

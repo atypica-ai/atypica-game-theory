@@ -1,11 +1,14 @@
 import { grokExpert } from "./Grok";
+import { trendExplorerExpert } from "./TrendExplorer";
 import { ExpertName } from "./types";
 
 type ConcreteExpert = Exclude<ExpertName, ExpertName.Auto>;
-type ExpertExecutor = typeof grokExpert;
+// Expert executor can accept different signatures, so we use a more flexible type
+type ExpertExecutor = (args: { query: string; abortSignal?: AbortSignal; userId: number }) => Promise<any>;
 
 const expertExecutors: Record<ConcreteExpert, ExpertExecutor> = {
   [ExpertName.Grok]: grokExpert,
+  [ExpertName.TrendExplorer]: trendExplorerExpert,
 };
 
 const DEFAULT_EXPERT: ConcreteExpert = ExpertName.Grok;
