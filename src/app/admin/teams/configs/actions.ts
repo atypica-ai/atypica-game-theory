@@ -52,7 +52,11 @@ export async function fetchTeamConfigs(teamId: number): Promise<
 /**
  * Fetch all teams with their configs
  */
-export async function fetchTeamsWithConfigs(): Promise<
+export async function fetchTeamsWithConfigs(
+  page: number = 1,
+  pageSize: number = 10,
+  searchQuery?: string,
+): Promise<
   ServerActionResult<
     Array<{
       id: number;
@@ -67,24 +71,38 @@ export async function fetchTeamsWithConfigs(): Promise<
   >
 > {
   await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+  const skip = (page - 1) * pageSize;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {};
+
+  if (searchQuery) {
+    where.name = { contains: searchQuery, mode: "insensitive" };
+  }
 
   try {
-    const teams = await prisma.team.findMany({
-      select: {
-        id: true,
-        name: true,
-        teamConfigs: {
-          select: {
-            key: true,
-            value: true,
-            createdAt: true,
-            updatedAt: true,
+    const [teams, totalCount] = await Promise.all([
+      prisma.team.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          teamConfigs: {
+            select: {
+              key: true,
+              value: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+            orderBy: { key: "asc" },
           },
-          orderBy: { key: "asc" },
         },
-      },
-      orderBy: { id: "asc" },
-    });
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.team.count({ where }),
+    ]);
 
     return {
       success: true,
@@ -93,6 +111,12 @@ export async function fetchTeamsWithConfigs(): Promise<
         name: team.name,
         configs: team.teamConfigs,
       })),
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
     };
   } catch (error) {
     return {

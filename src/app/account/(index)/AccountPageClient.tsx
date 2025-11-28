@@ -35,6 +35,10 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import Stripe from "stripe";
 
+/**
+ * ⚠️ 现在这个页面，所有成员都可以管理订阅（去 stripe 的页面）或者取消订阅
+ * 这个要改成，当前订阅的 paymentRecord 如果是自己，才可以管理订阅
+ */
 export function AccountPageClient({
   userTokens,
   activeSubscription,
