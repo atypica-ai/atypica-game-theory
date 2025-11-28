@@ -12,39 +12,39 @@ import {
 import { StatReporter } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
 
-export const appendAnalystStudySummary = async ({
-  studyUserChatId,
-  content,
-}: {
-  studyUserChatId: number;
-  content: string;
-}) => {
-  const { analyst } = await prisma.userChat.findUniqueOrThrow({
-      where: { id: studyUserChatId, kind: "study" },
-      select: {
-        analyst: {
-          select: {
-            id: true,
-            kind: true,
-            studySummary: true,
-          },
-        },
-      },
-    });
-    if (!analyst) {
-      throw new Error("Something went wrong, analyst does not exist on studyUserChat");
-    }
-    const analystId = analyst.id;
-    await prisma.analyst.update({
-      where: { id: analystId },
-      data: {
-        studySummary:
-          analyst.studySummary +
-          content,
-      },
-    });
-    console.log("appendAnalystStudySummary success");
-};
+// export const appendAnalystStudySummary = async ({
+//   studyUserChatId,
+//   content,
+// }: {
+//   studyUserChatId: number;
+//   content: string;
+// }) => {
+//   const { analyst } = await prisma.userChat.findUniqueOrThrow({
+//       where: { id: studyUserChatId, kind: "study" },
+//       select: {
+//         analyst: {
+//           select: {
+//             id: true,
+//             kind: true,
+//             studySummary: true,
+//           },
+//         },
+//       },
+//     });
+//     if (!analyst) {
+//       throw new Error("Something went wrong, analyst does not exist on studyUserChat");
+//     }
+//     const analystId = analyst.id;
+//     await prisma.analyst.update({
+//       where: { id: analystId },
+//       data: {
+//         studySummary:
+//           analyst.studySummary +
+//           content,
+//       },
+//     });
+//     console.log("appendAnalystStudySummary success");
+// };
 
 async function webSearchPerplexitySonarPro({ query, statReport }: { query: string, statReport: StatReporter }): Promise<WebSearchPerplexitySonarProToolResult> {
   try {
@@ -84,12 +84,9 @@ async function webSearchPerplexitySonarPro({ query, statReport }: { query: strin
 }
 
 export const webSearchPerplexitySonarProTool = ({
-  studyUserChatId,
   statReport,
   ...toolCallConfigArgs
-}: {
-  studyUserChatId: number;
-} & Omit<AgentToolConfigArgs, "logger" | "abortSignal">) =>
+}: Omit<AgentToolConfigArgs, "logger" | "abortSignal">) =>
   tool({
     description:
       "Search the internet for current information, which provides real-time web search with detailed citations and up-to-date information.",
@@ -134,11 +131,6 @@ export const webSearchPerplexitySonarProTool = ({
 
       const result = await webSearchPerplexitySonarPro({ query, statReport });
       console.log("webSearchPerplexitySonarPro result", result);
-      await appendAnalystStudySummary({
-        studyUserChatId,
-        content: (toolCallConfigArgs.locale === "zh-CN" ? `\n<websearch result>\n# 联网搜索“${query}”的结果如下：\n${result.answer}\n</websearch result>\n` 
-          : `\n<websearch result>\n# Result for searching '${query}': \n${result.answer}\n</websearch result>\n`)
-      });
       return result;
     },
   });
