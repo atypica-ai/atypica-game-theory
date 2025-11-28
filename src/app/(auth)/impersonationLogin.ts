@@ -62,13 +62,20 @@ export function verifyImpersonationLoginToken(token: string): ImpersonationLogin
  * @param userId - The user ID to generate URL for
  * @param siteOrigin - The site origin URL (e.g., "https://example.com")
  * @param expiryHours - How many hours the token should be valid (default: 24)
+ * @param callbackUrl - Optional URL to redirect to after successful login (default: "/")
  * @returns The complete impersonation login URL
  */
 export function generateImpersonationLoginUrl(
   userId: number,
   siteOrigin: string,
   expiryHours: number = 24,
+  callbackUrl?: string,
 ): string {
   const token = generateImpersonationLoginToken(userId, expiryHours);
-  return `${siteOrigin}/auth/impersonation-login?token=${encodeURIComponent(token)}`;
+  const url = new URL(`${siteOrigin}/auth/impersonation-login`);
+  url.searchParams.set("token", token);
+  if (callbackUrl) {
+    url.searchParams.set("callbackUrl", callbackUrl);
+  }
+  return url.toString();
 }

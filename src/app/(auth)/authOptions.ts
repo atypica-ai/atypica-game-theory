@@ -121,29 +121,57 @@ const authOptions: NextAuthOptions = {
         if (!payload) {
           throw new Error("INVALID_TOKEN");
         }
-        let user: User | null;
+        let targetUser: User | null;
         try {
-          user = await prisma.user.findUnique({ where: { id: payload.userId } });
+          targetUser = await prisma.user.findUnique({ where: { id: payload.userId } });
         } catch (error) {
           authLogger.error(`Error fetching user: ${(error as Error).message}`);
           throw new Error("SERVER_ERROR");
         }
-        if (!user) {
+        if (!targetUser) {
           throw new Error("USER_NOT_FOUND");
         }
-        if (user.teamIdAsMember) {
-          throw new Error("TEAM_MEMBER_NOT_ALLOWED");
+
+        // 验证目标用户是否有效
+        const isPersonalUser = targetUser.email && !targetUser.teamIdAsMember;
+        const isTeamUser = targetUser.personalUserId && targetUser.teamIdAsMember;
+        const userType: UserType = targetUser.teamIdAsMember ? "TeamMember" : "Personal";
+
+        if (!isPersonalUser && !isTeamUser) {
+          throw new Error("INVALID_TARGET_USER");
         }
-        if (!user.emailVerified) {
+
+        // 如果是团队用户，需要验证对应的个人用户email已验证
+        if (isTeamUser && targetUser.personalUserId) {
+          const personalUser = await prisma.user.findUnique({
+            where: { id: targetUser.personalUserId },
+          });
+          if (!personalUser?.emailVerified) {
+            throw new Error("EMAIL_NOT_VERIFIED");
+          }
+        }
+
+        // 如果是个人用户，直接验证email已验证
+        if (isPersonalUser && !targetUser.emailVerified) {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
+
+        // 获取显示用的email
+        let displayEmail = targetUser.email;
+        if (!displayEmail && targetUser.personalUserId) {
+          const personalUser = await prisma.user.findUnique({
+            where: { id: targetUser.personalUserId },
+          });
+          displayEmail = personalUser?.email || null;
+        }
+
         // 不要 recordLastLogin，因为可能是 admin 登录的
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email!,
-          userType: "Personal",
-          teamIdAsMember: null,
+          id: targetUser.id,
+          name: targetUser.name,
+          email: displayEmail!,
+          userType,
+          teamIdAsMember: targetUser.teamIdAsMember,
         };
       },
     }),

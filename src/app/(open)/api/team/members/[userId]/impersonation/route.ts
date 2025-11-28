@@ -4,6 +4,9 @@ import { getRequestOrigin } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { withApiKey } from "@/app/(open)/lib/withApiKey";
+import { verifyDomainWhitelist } from "@/app/(open)/api/team/members/utils";
+
+const logger = rootLogger.child({ api: "/api/team/members/[userId]/impersonation" });
 
 /**
  * POST /api/team/members/:userId/impersonation
@@ -27,21 +30,28 @@ export async function POST(
       );
     }
 
-    // Parse request body for expiry hours (optional)
+    // Parse request body for expiry hours and callback URL (both optional)
     let expiryHours = 24; // default
+    let callbackUrl: string | undefined;
     try {
       const body = await request.json();
       if (body.expiryHours && typeof body.expiryHours === "number") {
         expiryHours = body.expiryHours;
       }
+      if (body.callbackUrl && typeof body.callbackUrl === "string") {
+        callbackUrl = body.callbackUrl;
+      }
     } catch {
-      // If body parsing fails, use default
+      // If body parsing fails, use defaults
     }
 
     return await withApiKey(async ({ team }) => {
       // Verify the member belongs to this team
       const member = await prisma.user.findUnique({
         where: { id: userIdNumber },
+        include: {
+          personalUser: true,
+        },
       });
 
       if (!member || member.teamIdAsMember !== team.id) {
@@ -54,7 +64,7 @@ export async function POST(
         );
       }
 
-      if (!member.personalUserId) {
+      if (!member.personalUserId || !member.personalUser) {
         return NextResponse.json(
           {
             success: false,
@@ -64,35 +74,40 @@ export async function POST(
         );
       }
 
-      // Get personal user
-      const personalUser = await prisma.user.findUnique({
-        where: { id: member.personalUserId },
-      });
-
-      if (!personalUser || !personalUser.emailVerified) {
+      if (!member.personalUser.email || !member.personalUser.emailVerified) {
         return NextResponse.json(
           {
             success: false,
-            error: "Personal user not found or email not verified",
+            error: "Member email not found or not verified",
           },
           { status: 400 },
         );
       }
 
-      // Generate impersonation URL for the personal user
-      const siteOrigin = await getRequestOrigin();
-      const loginUrl = generateImpersonationLoginUrl(
-        personalUser.id,
-        siteOrigin,
-        expiryHours,
-      );
+      // Verify email domain is in team's whitelist
+      const domainCheck = await verifyDomainWhitelist(team.id, member.personalUser.email);
+      if (!domainCheck.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: domainCheck.message || "Email domain is not verified in team whitelist",
+          },
+          { status: 403 },
+        );
+      }
 
-      rootLogger.info({
+      // Generate impersonation URL for the team user
+      const siteOrigin = await getRequestOrigin();
+      const loginUrl = generateImpersonationLoginUrl(member.id, siteOrigin, expiryHours, callbackUrl);
+
+      logger.info({
         msg: "Generated impersonation URL",
         teamId: team.id,
-        userId: member.id,
-        personalUserId: personalUser.id,
+        teamUserId: member.id,
+        personalUserId: member.personalUserId,
+        email: member.personalUser.email,
         expiryHours,
+        callbackUrl,
       });
 
       return NextResponse.json({
@@ -101,11 +116,16 @@ export async function POST(
           loginUrl,
           expiryHours,
           expiresAt: new Date(Date.now() + expiryHours * 60 * 60 * 1000).toISOString(),
+          callbackUrl,
         },
       });
     });
   } catch (error) {
-    rootLogger.error({ msg: "Failed to generate impersonation URL", error });
+    logger.error({
+      msg: "Failed to generate impersonation URL",
+      error: (error as Error).message,
+      stack: (error as Error).stack,
+    });
 
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
     const statusCode = errorMessage.includes("Unauthorized") ? 401 : 500;

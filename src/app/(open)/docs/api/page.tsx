@@ -269,8 +269,17 @@ export default async function ApiDocsPage() {
               </div>
 
               <p className="text-sm text-muted-foreground mb-4">
-                Generate impersonation login URL for a member.
+                Generate impersonation login URL for a team member. The member&apos;s email domain
+                must be verified in your team&apos;s domain whitelist.
               </p>
+
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-md p-4 mb-4">
+                <p className="text-sm text-foreground">
+                  <strong>Security Note:</strong> This endpoint requires the member&apos;s email
+                  domain to be in your team&apos;s verified domain whitelist. This prevents
+                  impersonation of users from unauthorized domains.
+                </p>
+              </div>
 
               <div className="mb-4">
                 <h3 className="text-sm text-muted-foreground uppercase mb-2 font-medium">
@@ -296,9 +305,20 @@ export default async function ApiDocsPage() {
                 <div className="bg-muted/50 border border-border rounded p-4 overflow-x-auto">
                   <pre className="font-mono text-xs">
                     {`{
-  "expiryHours": 24
+  "expiryHours": 24,
+  "callbackUrl": "/newstudy"
 }`}
                   </pre>
+                </div>
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs text-muted-foreground">
+                    • <span className="font-mono">expiryHours</span> (number, optional): Token
+                    validity in hours. Default: 24
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    • <span className="font-mono">callbackUrl</span> (string, optional): URL to
+                    redirect after login. Default: &quot;/&quot;
+                  </p>
                 </div>
               </div>
 
@@ -311,7 +331,7 @@ export default async function ApiDocsPage() {
                     {`curl -X POST ${baseURL}/team/members/42/impersonation \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"expiryHours": 24}'`}
+  -d '{"expiryHours": 24, "callbackUrl": "/newstudy"}'`}
                   </pre>
                 </div>
               </div>
@@ -325,9 +345,10 @@ export default async function ApiDocsPage() {
                     {`{
   "success": true,
   "data": {
-    "loginUrl": "${baseAppURL}/auth/impersonation-login?token=...",
+    "loginUrl": "${baseAppURL}/auth/impersonation-login?token=...&callbackUrl=%2Fnewstudy",
     "expiryHours": 24,
-    "expiresAt": "2024-01-02T00:00:00.000Z"
+    "expiresAt": "2024-01-02T00:00:00.000Z",
+    "callbackUrl": "/newstudy"
   }
 }`}
                   </pre>
@@ -349,6 +370,20 @@ export default async function ApiDocsPage() {
                       {`{
   "success": false,
   "error": "Unauthorized: API Key is required"
+}`}
+                    </pre>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-2">
+                    403 Forbidden (Domain Not Verified)
+                  </h3>
+                  <div className="bg-muted/50 border border-border rounded p-4 overflow-x-auto">
+                    <pre className="font-mono text-xs">
+                      {`{
+  "success": false,
+  "error": "Domain example.com is not in the team's whitelist"
 }`}
                     </pre>
                   </div>

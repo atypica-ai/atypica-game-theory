@@ -190,7 +190,7 @@ export function PersonaImportView({
       <div className="container mx-auto px-3 sm:px-8 xl:px-32 py-8 max-w-6xl space-y-8">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground mb-4 shadow-sm">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-linear-to-br from-primary to-primary/80 text-primary-foreground mb-4 shadow-sm">
             <BrainIcon className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
@@ -244,7 +244,7 @@ export function PersonaImportView({
           {/* Persona Summary - only show if summary exists */}
           {personas.length > 0 && !isProcessing && (
             <section id="persona-summary" className="scroll-mt-24 relative">
-              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-linear-to-r from-transparent via-border to-transparent"></div>
               <PersonaSummary
                 personas={
                   // TODO: 后面等 token nullable 属性去掉以后，可以去掉这个判断
@@ -263,7 +263,7 @@ export function PersonaImportView({
           {/* Analysis Result - only show if analysis exists */}
           {analysis && !isProcessing && (
             <section id="analysis-result" className="scroll-mt-24 relative">
-              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-linear-to-r from-transparent via-border to-transparent"></div>
               <AnalysisResult analysis={analysis} />
             </section>
           )}
@@ -271,7 +271,7 @@ export function PersonaImportView({
           {/* Supplementary Questions - only show if exists */}
           {supplementaryQuestions && !isProcessing && (
             <section id="supplementary-questions" className="scroll-mt-24 relative">
-              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-linear-to-r from-transparent via-border to-transparent"></div>
               <SupplementaryQuestions
                 supplementaryQuestions={supplementaryQuestions}
                 fileName={fileName}
@@ -283,7 +283,7 @@ export function PersonaImportView({
           {/* Follow Up Chat */}
           {!isProcessing && (
             <section id="follow-up-chat" className="scroll-mt-24 relative">
-              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 w-20 h-px bg-linear-to-r from-transparent via-border to-transparent"></div>
               <FollowUpChatList personaImportId={personaImport.id} />
             </section>
           )}

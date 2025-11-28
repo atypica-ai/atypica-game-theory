@@ -4,7 +4,7 @@ import { rootLogger } from "@/lib/logging";
 import { TeamExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { generateRandomPassword, verifyDomainWhitelist } from "./utils";
+import { generateRandomPassword, verifyDomainWhitelist } from "@/app/(open)/api/team/members/utils";
 
 const logger = rootLogger.child({ api: "/api/team/members/create" });
 
