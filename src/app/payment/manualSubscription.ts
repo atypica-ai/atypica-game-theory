@@ -91,7 +91,7 @@ export async function manuallyAddSubscription({
   months,
 }: {
   userId: number;
-  plan: "pro" | "max";
+  plan: "pro" | "max" | "super";
   startsAt: Date;
   months: number;
 }): Promise<void> {
@@ -101,7 +101,12 @@ export async function manuallyAddSubscription({
   }
 
   // Validate plan parameter
-  const subscriptionPlan = plan === "pro" ? SubscriptionPlan.pro : SubscriptionPlan.max;
+  const subscriptionPlan =
+    plan === "super"
+      ? SubscriptionPlan.super
+      : plan === "max"
+        ? SubscriptionPlan.max
+        : SubscriptionPlan.pro;
 
   // Check if user exists and is a personal user
   const user = await prisma.user.findUnique({
@@ -216,11 +221,13 @@ export async function manuallyAddSubscription({
 export async function manuallyAddTeamSubscription({
   teamId,
   seats,
+  plan,
   startsAt,
   months,
 }: {
   teamId: number;
   seats: number;
+  plan: "team" | "superteam";
   startsAt: Date;
   months: number;
 }): Promise<void> {
@@ -233,6 +240,9 @@ export async function manuallyAddTeamSubscription({
   if (seats < 0 || !Number.isInteger(seats)) {
     throw new Error(`Invalid seats parameter: ${seats}. Must be a non negative integer.`);
   }
+
+  const subscriptionPlan =
+    plan === "superteam" ? SubscriptionPlan.superteam : SubscriptionPlan.team;
 
   // Check if team exists
   const team = await prisma.team.findUnique({
@@ -290,7 +300,7 @@ export async function manuallyAddTeamSubscription({
         // If userId were to be set, it should be a team user (with teamIdAsMember),
         // NOT a personal user (team.ownerUserId).
         teamId,
-        plan: SubscriptionPlan.team,
+        plan: subscriptionPlan,
         startsAt: period.startsAt,
         endsAt: period.endsAt,
         extra: { seats } satisfies SubscriptionExtra,

@@ -248,8 +248,8 @@ async function addSubscription(args: string[]) {
     const { email, plan, start: startDateStr, months: monthsStr } = params;
 
     // Validate plan
-    if (plan !== "pro" && plan !== "max") {
-      console.error(`Error: Invalid plan "${plan}". Must be "pro" or "max"`);
+    if (plan !== "pro" && plan !== "max" && plan !== "super") {
+      console.error(`Error: Invalid plan "${plan}". Must be "pro", "max", or "super"`);
       process.exit(1);
     }
 
@@ -286,7 +286,7 @@ async function addSubscription(args: string[]) {
     // Add subscription (manuallyAddSubscription will check for overlapping subscriptions)
     await manuallyAddSubscription({
       userId: user.id,
-      plan: plan as "pro" | "max",
+      plan: plan as "pro" | "max" | "super",
       startsAt: startDate,
       months,
     });
@@ -329,7 +329,13 @@ async function addTeamSubscription(args: string[]) {
       process.exit(1);
     }
 
-    const { teamId: teamIdStr, seats: seatsStr, start: startDateStr, months: monthsStr } = params;
+    const {
+      teamId: teamIdStr,
+      plan,
+      seats: seatsStr,
+      start: startDateStr,
+      months: monthsStr,
+    } = params;
 
     // Parse teamId
     const teamId = parseInt(teamIdStr, 10);
@@ -342,6 +348,11 @@ async function addTeamSubscription(args: string[]) {
     const seats = parseInt(seatsStr, 10);
     if (isNaN(seats) || seats < 0) {
       console.error(`Error: Invalid seats "${seatsStr}". Must be a non negative integer`);
+      process.exit(1);
+    }
+
+    if (plan !== "team" && plan !== "superteam") {
+      console.error(`Error: Invalid plan "${plan}". Must be "team" or "superteam"`);
       process.exit(1);
     }
 
@@ -374,6 +385,7 @@ async function addTeamSubscription(args: string[]) {
     await manuallyAddTeamSubscription({
       teamId,
       seats,
+      plan: plan as "team" | "superteam",
       startsAt: startDate,
       months,
     });
@@ -401,10 +413,10 @@ async function main() {
     console.error("  pnpm tsx scripts/admintool.ts create-team <owner-email> <team-name>");
     console.error("  pnpm tsx scripts/admintool.ts list-teams <owner-email>");
     console.error(
-      "  pnpm tsx scripts/admintool.ts add-subscription --email <email> --plan <pro|max> --start <YYYY-MM-DD> --months <number>",
+      "  pnpm tsx scripts/admintool.ts add-subscription --email <email> --plan <pro|max|super> --start <YYYY-MM-DD> --months <number>",
     );
     console.error(
-      "  pnpm tsx scripts/admintool.ts add-team-subscription --teamId <id> --seats <number> --start <YYYY-MM-DD> --months <number>",
+      "  pnpm tsx scripts/admintool.ts add-team-subscription --teamId <id> --plan <team|superteam> --seats <number> --start <YYYY-MM-DD> --months <number>",
     );
     process.exit(1);
   }

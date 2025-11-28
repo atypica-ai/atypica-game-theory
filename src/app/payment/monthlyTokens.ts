@@ -245,7 +245,7 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
   if (activeSubscription.plan === SubscriptionPlan.team) {
     // Get seats from subscription.extra
     const subscriptionExtra = activeSubscription.extra as SubscriptionExtra;
-    if (!subscriptionExtra.seats) {
+    if (typeof subscriptionExtra.seats !== "number") {
       throw new Error(`Seats not found in subscription ${activeSubscription.id} extra`);
     }
     seats = subscriptionExtra.seats;
@@ -253,7 +253,7 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
   } else if (activeSubscription.plan === SubscriptionPlan.superteam) {
     // Get seats from subscription.extra
     const subscriptionExtra = activeSubscription.extra as SubscriptionExtra;
-    if (!subscriptionExtra.seats) {
+    if (typeof subscriptionExtra.seats !== "number") {
       throw new Error(`Seats not found in subscription ${activeSubscription.id} extra`);
     }
     seats = subscriptionExtra.seats;
