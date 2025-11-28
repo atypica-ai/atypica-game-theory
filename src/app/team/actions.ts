@@ -206,6 +206,7 @@ export async function getUserTeamStatusAction(): Promise<
   ServerActionResult<{
     teamRole: "owner" | "member" | "removed" | null;
     canSwitchIdentity: boolean;
+    teamName: string | null;
   }>
 > {
   const t = await getTranslations("Team.Actions");
@@ -217,6 +218,7 @@ export async function getUserTeamStatusAction(): Promise<
 
       let teamRole: "owner" | "member" | "removed" | null = null;
       let canSwitchIdentity = false;
+      let teamName: string | null = null;
 
       // 检查是否为个人用户
       if (!currentUser.teamIdAsMember) {
@@ -229,11 +231,13 @@ export async function getUserTeamStatusAction(): Promise<
         });
         canSwitchIdentity = teamUsersCount > 0;
         teamRole = null;
+        teamName = null;
       } else {
         if (!currentUser.personalUserId) {
           // 用户被移除团队，无效，无法切换回个人用户
           teamRole = "removed";
           canSwitchIdentity = false;
+          teamName = null;
         } else {
           // 有效的团队用户，总是可以切换回个人用户或其他团队
           canSwitchIdentity = true;
@@ -242,6 +246,7 @@ export async function getUserTeamStatusAction(): Promise<
             where: { id: currentUser.teamIdAsMember },
           });
           teamRole = teamAsMember?.ownerUserId === currentUser.personalUserId ? "owner" : "member";
+          teamName = teamAsMember?.name || null;
         }
       }
 
@@ -250,6 +255,7 @@ export async function getUserTeamStatusAction(): Promise<
         data: {
           teamRole,
           canSwitchIdentity,
+          teamName,
         },
       };
     } catch (error) {

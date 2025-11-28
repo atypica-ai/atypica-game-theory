@@ -47,7 +47,6 @@ export default function AccountSidebar() {
   const { teamStatus } = useTeamStatus();
 
   const [userInfo, setUserInfo] = useState<{
-    userType: string;
     displayName: string;
   } | null>(null);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -99,14 +98,8 @@ export default function AccountSidebar() {
 
     if (session?.user) {
       // 更新用户信息
-      const userType =
-        session.userType === "TeamMember"
-          ? t("teamUser")
-          : session.userType === "Personal"
-            ? t("personalUser")
-            : "-";
       const displayName = session.user.email || session.user.name || "";
-      setUserInfo({ userType, displayName });
+      setUserInfo({ displayName });
     } else {
       setUserInfo(null);
     }
@@ -162,13 +155,35 @@ export default function AccountSidebar() {
   return (
     <aside className="w-full sm:w-48 lg:w-64 max-sm:border-t sm:border-r">
       <div className="flex h-16 items-center border-b px-6 justify-between">
-        <div className="space-x-2 truncate">
+        <div className="flex flex-col min-w-0 flex-1 justify-center">
           {userInfo && (
             <>
-              <span className="text-xs px-1 py-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
-                {userInfo.userType}
-              </span>
-              <span className="text-xs">{userInfo.displayName}</span>
+              {session?.userType === "TeamMember" && teamStatus?.teamName ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold truncate leading-none">
+                      {teamStatus.teamName}
+                    </span>
+                    {teamStatus.teamRole === "owner" && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-primary/20 bg-primary/5 text-primary font-medium shrink-0 leading-none">
+                        {t("owner")}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground truncate leading-tight">
+                    {userInfo.displayName}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm font-semibold truncate leading-none">
+                    {userInfo.displayName}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate leading-tight">
+                    {session?.userType === "Personal" ? t("personalUser") : "-"}
+                  </span>
+                </>
+              )}
             </>
           )}
         </div>

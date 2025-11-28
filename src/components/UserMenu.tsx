@@ -19,7 +19,6 @@ import {
   HistoryIcon,
   LogInIcon,
   LogOutIcon,
-  MailIcon,
   MicIcon,
   MoonIcon,
   SunIcon,
@@ -109,18 +108,33 @@ export default function UserMenu() {
   const Account = () =>
     menuType === "user" ? (
       <>
-        <DropdownMenuItem>
-          <MailIcon className="h-4 w-4 mr-2" />
-          <span className="text-xs px-1 rounded-xs bg-zinc-200 dark:bg-zinc-700">
-            {session?.userType === "TeamMember"
-              ? t("teamUser")
-              : session?.userType === "Personal"
-                ? t("personalUser")
-                : "-"}
-          </span>
-          <span className="text-xs tracking-tight">
-            {session?.user?.name || session?.user?.email}
-          </span>
+        <DropdownMenuItem className="flex-col items-start gap-1 py-2 max-w-64">
+          {session?.userType === "TeamMember" && teamStatus?.teamName ? (
+            <>
+              <div className="flex items-center gap-2 w-full">
+                <span className="text-sm font-semibold truncate w-full leading-tight">
+                  {teamStatus.teamName}
+                </span>
+                {teamStatus.teamRole === "owner" && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-primary/20 bg-primary/5 text-primary font-medium shrink-0 leading-none">
+                    {t("owner")}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground truncate w-full leading-tight">
+                {session?.user?.email || session?.user?.name}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-sm font-semibold truncate w-full leading-tight">
+                {session?.user?.email || session?.user?.name}
+              </span>
+              <span className="text-xs text-muted-foreground truncate w-full leading-tight">
+                {session?.userType === "Personal" ? t("personalUser") : "-"}
+              </span>
+            </>
+          )}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

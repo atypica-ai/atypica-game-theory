@@ -76,8 +76,8 @@
       "loadMore": "Load More"
     },
     "sidebar": {
-      "teamUser": "Team",
       "personalUser": "Personal",
+      "owner": "Owner",
       "accountIndex": "Account",
       "switchIdentity": "Switch Team",
       "profile": "Profile",

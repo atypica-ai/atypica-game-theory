@@ -76,8 +76,8 @@
       "loadMore": "加载更多"
     },
     "sidebar": {
-      "teamUser": "团队",
       "personalUser": "个人",
+      "owner": "所有者",
       "accountIndex": "账户首页",
       "switchIdentity": "切换团队",
       "profile": "个人资料",
