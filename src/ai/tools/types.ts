@@ -78,6 +78,7 @@ export enum ToolName {
   requestPayment = "requestPayment",
 
   webSearch = "webSearch",
+  webSearchPerplexitySonarPro = "webSearchPerplexitySonarPro",
 
   xhsNoteComments = "xhsNoteComments",
   xhsSearch = "xhsSearch",
