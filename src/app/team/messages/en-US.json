@@ -116,22 +116,18 @@
       }
     },
     "SwitchDialog": {
-      "title": "Switch Identity",
-      "description": "Select the identity to switch to.",
-      "loading": "Loading identities...",
-      "loadError": "Could not load identity information. Please try again.",
-      "personalAccountTitle": "Personal Account",
-      "teamIdentitiesTitle": "Team Identities",
-      "currentBadge": "Current",
-      "switchingButton": "Switching...",
-      "currentButton": "Current",
-      "switchButton": "Switch",
-      "noIdentities": "No other identities available to switch to.",
+      "title": "Switch Account",
+      "description": "Select account to switch to.",
+      "loading": "Loading...",
+      "loadError": "Failed to load.",
+      "personalAccountTitle": "Personal",
+      "teamIdentitiesTitle": "Teams",
+      "noIdentities": "No other accounts available.",
       "toast": {
-        "targetUserNotFound": "Target identity not found",
-        "switchSuccess": "Identity switched successfully!",
-        "switchFailed": "Failed to switch identity.",
-        "networkError": "Network error, please try again."
+        "targetUserNotFound": "Account not found",
+        "switchSuccess": "Switched successfully",
+        "switchFailed": "Switch failed",
+        "networkError": "Network error"
       }
     },
     "Actions": {

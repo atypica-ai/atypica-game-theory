@@ -4,7 +4,6 @@ import {
   generateUserSwitchTokenAction,
   getUserSwitchableIdentitiesAction,
 } from "@/app/team/actions";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { cn } from "@/lib/utils";
 import { CheckIcon, ChevronsUpDownIcon, UserIcon, UsersIcon } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -58,6 +58,7 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
 
   const handleSwitchUser = useCallback(
     async (targetUserId: number) => {
+      if (isSwitching !== null) return;
       setIsSwitching(targetUserId);
       try {
         const tokenResult = await generateUserSwitchTokenAction(targetUserId);
@@ -88,7 +89,7 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
         setIsSwitching(null);
       }
     },
-    [t, setOpen, router],
+    [t, setOpen, router, isSwitching],
   );
 
   const currentUserId = session?.user?.id;
@@ -103,41 +104,60 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
+      <DialogContent className="sm:max-w-[425px] p-0 gap-0 overflow-hidden bg-background border-border shadow-lg">
+        <DialogHeader className="p-6 pb-2">
+          <DialogTitle className="text-lg font-medium tracking-tight">{t("title")}</DialogTitle>
         </DialogHeader>
-        <div className="py-4 space-y-4">
+
+        <div className="p-2">
           {isLoading ? (
-            <div className="text-center text-muted-foreground">{t("loading")}</div>
+            <div className="p-8 text-center text-muted-foreground text-sm animate-pulse">
+              {t("loading")}
+            </div>
           ) : !identities || (!identities.personalUser && identities.teamUsers.length === 0) ? (
-            <div className="text-center text-muted-foreground">{t("noIdentities")}</div>
+            <div className="p-8 text-center text-muted-foreground text-sm">{t("noIdentities")}</div>
           ) : (
-            <>
+            <div className="space-y-1">
               {/* Personal Account */}
               {identities.personalUser && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-semibold flex items-center">
-                    <UserIcon className="w-4 h-4 mr-2" />
+                <div className="px-2 py-1">
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">
                     {t("personalAccountTitle")}
-                  </h3>
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="font-medium">{identities.personalUser.name}</div>
-                    {currentUserId === identities.personalUser.id ? (
-                      <Badge variant="secondary">
-                        <CheckIcon className="w-3 h-3 mr-1" />
-                        {t("currentBadge")}
-                      </Badge>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => handleSwitchUser(identities.personalUser!.id)}
-                        disabled={isSwitching !== null}
+                  </div>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      if (currentUserId !== identities.personalUser!.id) {
+                        handleSwitchUser(identities.personalUser!.id);
+                      }
+                    }}
+                    className={cn(
+                      "group flex items-center justify-between p-2 rounded-md transition-all duration-200",
+                      currentUserId === identities.personalUser.id
+                        ? "bg-secondary/50 cursor-default"
+                        : "hover:bg-accent cursor-pointer active:scale-[0.98]",
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          "flex items-center justify-center w-8 h-8 rounded-full",
+                          currentUserId === identities.personalUser.id
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground group-hover:bg-background group-hover:shadow-sm",
+                        )}
                       >
-                        {isSwitching === identities.personalUser.id
-                          ? t("switchingButton")
-                          : t("switchButton")}
-                      </Button>
+                        <UserIcon className="w-4 h-4" />
+                      </div>
+                      <div className="font-medium text-sm">{identities.personalUser.name}</div>
+                    </div>
+
+                    {currentUserId === identities.personalUser.id && (
+                      <CheckIcon className="w-4 h-4 text-primary" />
+                    )}
+                    {isSwitching === identities.personalUser.id && (
+                      <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                     )}
                   </div>
                 </div>
@@ -145,39 +165,58 @@ export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
 
               {/* Team Accounts */}
               {identities.teamUsers.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="text-sm font-semibold flex items-center">
-                    <UsersIcon className="w-4 h-4 mr-2" />
+                <div className="px-2 py-1">
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mt-2">
                     {t("teamIdentitiesTitle")}
-                  </h3>
-                  <div className="space-y-2">
+                  </div>
+                  <div className="space-y-0.5">
                     {identities.teamUsers.map((teamUser) => (
                       <div
                         key={teamUser.id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          if (currentUserId !== teamUser.id) {
+                            handleSwitchUser(teamUser.id);
+                          }
+                        }}
+                        className={cn(
+                          "group flex items-center justify-between p-2 rounded-md transition-all duration-200",
+                          currentUserId === teamUser.id
+                            ? "bg-secondary/50 cursor-default"
+                            : "hover:bg-accent cursor-pointer active:scale-[0.98]",
+                        )}
                       >
-                        <div className="font-medium">{teamUser.teamAsMember.name}</div>
-                        {currentUserId === teamUser.id ? (
-                          <Badge variant="secondary">
-                            <CheckIcon className="w-3 h-3 mr-1" />
-                            {t("currentBadge")}
-                          </Badge>
-                        ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => handleSwitchUser(teamUser.id)}
-                            disabled={isSwitching !== null}
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={cn(
+                              "flex items-center justify-center w-8 h-8 rounded-full",
+                              currentUserId === teamUser.id
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted text-muted-foreground group-hover:bg-background group-hover:shadow-sm",
+                            )}
                           >
-                            {isSwitching === teamUser.id ? t("switchingButton") : t("switchButton")}
-                          </Button>
+                            <UsersIcon className="w-4 h-4" />
+                          </div>
+                          <div className="font-medium text-sm">{teamUser.teamAsMember.name}</div>
+                        </div>
+
+                        {currentUserId === teamUser.id && (
+                          <CheckIcon className="w-4 h-4 text-primary" />
+                        )}
+                        {isSwitching === teamUser.id && (
+                          <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                         )}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
+        </div>
+        <div className="p-4 bg-muted/30 border-t text-xs text-center text-muted-foreground">
+          {/* Optional footer or just padding */}
         </div>
       </DialogContent>
     </Dialog>

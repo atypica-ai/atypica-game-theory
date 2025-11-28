@@ -116,22 +116,18 @@
       }
     },
     "SwitchDialog": {
-      "title": "切换身份",
-      "description": "选择要切换到的身份。",
-      "loading": "正在加载身份信息...",
-      "loadError": "无法加载身份信息，请重试。",
-      "personalAccountTitle": "个人账户",
-      "teamIdentitiesTitle": "团队身份",
-      "currentBadge": "当前",
-      "switchingButton": "切换中...",
-      "currentButton": "当前",
-      "switchButton": "切换",
-      "noIdentities": "没有其他可切换的身份。",
+      "title": "切换账户",
+      "description": "选择要切换的账户",
+      "loading": "加载中...",
+      "loadError": "加载失败",
+      "personalAccountTitle": "个人",
+      "teamIdentitiesTitle": "团队",
+      "noIdentities": "无其他账户",
       "toast": {
-        "targetUserNotFound": "目标身份未找到",
-        "switchSuccess": "身份切换成功！",
-        "switchFailed": "切换身份失败。",
-        "networkError": "网络错误，请重试。"
+        "targetUserNotFound": "账户未找到",
+        "switchSuccess": "切换成功",
+        "switchFailed": "切换失败",
+        "networkError": "网络错误"
       }
     },
     "Actions": {
