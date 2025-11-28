@@ -157,7 +157,10 @@
       "welcomeSubtitleLine2": "Please be specific and honest in your responses - there are no right or wrong answers.",
       "microphoneLabel": "Microphone",
       "privacyAgreementLabel": "I agree to the privacy policy and consent to participate in this research",
-      "privacyCheckboxRequired": "You must agree to the privacy policy to continue"
+      "privacyCheckboxRequired": "You must agree to the privacy policy to continue",
+      "errorTitle": "Interview Link Invalid",
+      "errorDescription": "This interview link has expired or the interview project no longer exists. Please contact the interview organizer for assistance.",
+      "returnHome": "Return to Homepage"
     },
     "sessionChat": {
       "interviewDetails": "Interview Session Chat",

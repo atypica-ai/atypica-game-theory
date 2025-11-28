@@ -157,7 +157,10 @@
       "welcomeSubtitleLine2": "请在回答中保持具体和诚实 - 没有对错之分。",
       "microphoneLabel": "麦克风",
       "privacyAgreementLabel": "我同意隐私政策并同意参与本次研究",
-      "privacyCheckboxRequired": "您必须同意隐私政策才能继续"
+      "privacyCheckboxRequired": "您必须同意隐私政策才能继续",
+      "errorTitle": "访谈链接已失效",
+      "errorDescription": "该访谈链接已过期或访谈项目不存在。请联系访谈发起人获取帮助。",
+      "returnHome": "返回主页"
     },
     "sessionChat": {
       "interviewDetails": "访谈会话聊天",
