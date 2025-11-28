@@ -1,9 +1,7 @@
 "use client";
 
-import {
-  generateUserSwitchTokenAction,
-  getUserSwitchableIdentitiesAction,
-} from "@/app/team/actions";
+import { generateUserSwitchTokenAction } from "@/app/team/actions";
+import { useTeamSwitchableIdentities } from "@/app/team/hooks";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +10,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { CheckIcon, ChevronsUpDownIcon, UserIcon, UsersIcon } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
@@ -21,40 +18,25 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-type Identities = ExtractServerActionData<typeof getUserSwitchableIdentitiesAction>;
-
 export function TeamSwitchButton({ children }: { children?: React.ReactNode }) {
   const { data: session } = useSession();
   const t = useTranslations("Team.SwitchDialog");
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSwitching, setIsSwitching] = useState<number | null>(null);
-  const [identities, setIdentities] = useState<Identities | null>(null);
 
+  // Use SWR hook for switchable identities - only fetch when dialog is open
+  const { identities, isLoading, error } = useTeamSwitchableIdentities(open);
+
+  // Show error toast if loading identities fails
   useEffect(() => {
-    if (!open) {
-      setIsLoading(true); // Reset loading state when dialog is closed
-      return;
+    if (error) {
+      console.log("Failed to load identities:", error);
+      toast.error(error.message);
+      setOpen(false);
     }
-
-    async function loadIdentities() {
-      try {
-        const result = await getUserSwitchableIdentitiesAction();
-        if (!result.success) throw result;
-        setIdentities(result.data);
-      } catch (error) {
-        console.log("Failed to load identities:", error);
-        toast.error((error as Error).message);
-        setOpen(false);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadIdentities();
-  }, [open, t]);
+  }, [error]);
 
   const handleSwitchUser = useCallback(
     async (targetUserId: number) => {

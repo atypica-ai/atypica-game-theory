@@ -1,6 +1,6 @@
 "use client";
-import { getUserTeamStatusAction } from "@/app/team/actions";
 import { TeamSwitchButton } from "@/app/team/components/TeamSwitchButton";
+import { useTeamStatus, useTeamSwitchableIdentities } from "@/app/team/hooks";
 import { Avatar } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -9,7 +9,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import Cookies from "js-cookie";
 import {
@@ -46,9 +45,14 @@ export default function UserMenu() {
 
   const searchParams = useSearchParams();
   const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
-  const [teamStatus, setTeamStatus] = useState<ExtractServerActionData<
-    typeof getUserTeamStatusAction
-  > | null>(null);
+
+  // Use SWR hook for team status - automatic caching and deduplication
+  const { teamStatus } = useTeamStatus();
+
+  // Preload switchable identities when user can switch
+  // This ensures the data is ready when TeamSwitchButton dialog opens
+  const shouldPreload = teamStatus?.canSwitchIdentity ?? false;
+  useTeamSwitchableIdentities(shouldPreload);
 
   useEffect(() => {
     // Get path and search parameters without the origin
@@ -56,17 +60,12 @@ export default function UserMenu() {
     setSigninCallbackUrl(searchParams.get("callbackUrl") || pathWithParams || "/");
   }, [searchParams]);
 
-  // 加载用户团队状态
+  // Update menu type based on session status
   useEffect(() => {
     if (sessionStatus === "loading") {
       setMenuType(null);
     } else if (session?.user) {
       setMenuType("user");
-      getUserTeamStatusAction().then((result) => {
-        if (result.success) {
-          setTeamStatus(result.data);
-        }
-      });
     } else {
       setMenuType("anonymous");
     }

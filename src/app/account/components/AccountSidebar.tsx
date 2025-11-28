@@ -1,6 +1,6 @@
 "use client";
-import { getUserTeamStatusAction } from "@/app/team/actions";
 import { TeamSwitchButton } from "@/app/team/components/TeamSwitchButton";
+import { useTeamStatus } from "@/app/team/hooks";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import * as Collapsible from "@radix-ui/react-collapsible";
 import {
   ArrowLeftRightIcon,
@@ -43,9 +42,10 @@ export default function AccountSidebar() {
   const isSM = useMediaQuery("sm");
 
   const { status: sessionStatus, data: session } = useSession();
-  const [teamStatus, setTeamStatus] = useState<ExtractServerActionData<
-    typeof getUserTeamStatusAction
-  > | null>(null);
+
+  // Use SWR hook for team status - automatic caching and deduplication
+  const { teamStatus } = useTeamStatus();
+
   const [userInfo, setUserInfo] = useState<{
     userType: string;
     displayName: string;
@@ -90,7 +90,7 @@ export default function AccountSidebar() {
     });
   };
 
-  // 加载用户团队状态和用户信息
+  // 加载用户信息
   useEffect(() => {
     if (sessionStatus === "loading") {
       setUserInfo(null);
@@ -107,13 +107,6 @@ export default function AccountSidebar() {
             : "-";
       const displayName = session.user.email || session.user.name || "";
       setUserInfo({ userType, displayName });
-
-      // 加载团队状态
-      getUserTeamStatusAction().then((result) => {
-        if (result.success) {
-          setTeamStatus(result.data);
-        }
-      });
     } else {
       setUserInfo(null);
     }
