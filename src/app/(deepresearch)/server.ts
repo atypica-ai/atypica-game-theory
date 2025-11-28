@@ -46,28 +46,19 @@ export function createDeepResearchServer(): McpServer {
         
         if (!context) {
           logger.warn("No request context available - streaming disabled");
-          // Fallback: execute without streaming
-          const result = await executeDeepResearch({
-            query: args.query,
-            expert: args.expert ?? ExpertName.Auto,
-            abortSignal: extra.signal,
-            onStreamChunk: undefined,
-          });
-          return {
-            content: [
-              {
-                type: "text",
-                text: result.result,
-              },
-            ],
-            structuredContent: result,
-          };
+          // Fallback: execute without streaming (but still requires userId)
+          // This should not happen in normal operation, but we need userId for UserChat creation
+          throw new Error("Missing request context - userId required for deep research");
         }
 
-        const { transport, requestId } = context;
-        
+        const { transport, requestId, userId } = context;
+
+        if (!userId) {
+          throw new Error("Missing userId in deep research request context");
+        }
+
         logger.debug(
-          { requestId, hasTransport: !!transport },
+          { requestId, hasTransport: !!transport, userId },
           "Executing deep research with streaming",
         );
 
@@ -79,8 +70,10 @@ export function createDeepResearchServer(): McpServer {
         );
 
         // Execute with streaming callback that sends MCP notifications
+        // UserChat creation and message persistence are handled inside executeDeepResearch
         const result = await executeDeepResearch({
           query: args.query,
+          userId,
           expert: args.expert ?? ExpertName.Auto,
           abortSignal: extra.signal,
           onStreamChunk,

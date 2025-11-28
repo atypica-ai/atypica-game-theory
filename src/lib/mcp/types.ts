@@ -11,6 +11,7 @@ import { TextStreamPart, ToolSet } from "ai";
 export interface MCPRequestContext {
   transport: Transport;
   requestId?: RequestId;
+  userId?: number;
 }
 
 /**

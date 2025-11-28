@@ -13,6 +13,18 @@ import { isJSONRPCRequest, RequestId } from "@modelcontextprotocol/sdk/types.js"
 
 const logger = rootLogger.child({ module: "deepresearch-mcp-api" });
 
+function parseUserId(req: NextRequest): number {
+  const userIdParam = req.nextUrl.searchParams.get("userId");
+  if (!userIdParam) {
+    throw new Error("Missing userId in request URL");
+  }
+  const userId = Number(userIdParam);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    throw new Error("Invalid userId in request URL");
+  }
+  return userId;
+}
+
 /**
  * Converts Next.js Request to Node.js IncomingMessage-like object
  * This is needed because StreamableHTTPServerTransport expects Node.js HTTP objects
@@ -158,6 +170,9 @@ function createStreamableServerResponse(): {
  */
 export async function POST(req: NextRequest) {
   try {
+    const userId = parseUserId(req);
+    console.log("userId");
+    console.log(userId);
     // Determine if client wants streaming (SSE) or JSON response
     const acceptHeader = req.headers.get("accept") || "";
     const wantsSSE = acceptHeader.includes("text/event-stream");
@@ -208,11 +223,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Set up request context with transport and request ID
+    // Set up request context with transport, request ID, and userId
     // This allows tool handlers to access the transport for streaming via AsyncLocalStorage
     const context = {
       transport,
       requestId,
+      userId,
     };
 
     // Create adapter objects for streaming
@@ -276,17 +292,22 @@ export async function POST(req: NextRequest) {
     );
 
     // Return JSON-RPC error response
+    const statusCode = error instanceof Error && error.message.includes("userId") ? 400 : 500;
+    const message =
+      error instanceof Error && error.message.includes("userId")
+        ? error.message
+        : "Internal server error";
     return Response.json(
       {
         jsonrpc: "2.0",
         error: {
-          code: -32603,
-          message: "Internal server error",
+          code: statusCode === 400 ? -32602 : -32603,
+          message,
           data: (error as Error).message,
         },
         id: null,
       },
-      { status: 500 },
+      { status: statusCode },
     );
   }
 }
@@ -297,6 +318,8 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   try {
+    const userId = parseUserId(req);
+
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: false, // Always use SSE for GET
@@ -328,16 +351,21 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     logger.error({ error }, "Error setting up GET SSE stream");
+    const statusCode = error instanceof Error && error.message.includes("userId") ? 400 : 500;
+    const message =
+      error instanceof Error && error.message.includes("userId")
+        ? error.message
+        : "Internal server error";
     return Response.json(
       {
         jsonrpc: "2.0",
         error: {
-          code: -32603,
-          message: "Internal server error",
+          code: statusCode === 400 ? -32602 : -32603,
+          message,
         },
         id: null,
       },
-      { status: 500 },
+      { status: statusCode },
     );
   }
 }
@@ -347,13 +375,28 @@ export async function GET(req: NextRequest) {
  * In stateless mode, this is a no-op but we implement it for protocol compliance
  */
 export async function DELETE(req: NextRequest) {
-  return Response.json(
-    {
-      jsonrpc: "2.0",
-      result: { message: "Session terminated (stateless mode)" },
-      id: null,
-    },
-    { status: 200 },
-  );
+  try {
+    parseUserId(req);
+    return Response.json(
+      {
+        jsonrpc: "2.0",
+        result: { message: "Session terminated (stateless mode)" },
+        id: null,
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    return Response.json(
+      {
+        jsonrpc: "2.0",
+        error: {
+          code: -32602,
+          message: (error as Error).message,
+        },
+        id: null,
+      },
+      { status: 400 },
+    );
+  }
 }
 
