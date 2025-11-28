@@ -3,8 +3,8 @@ import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import { TSimpleAgentMessageWithTool } from "@/app/(agents)/tools/types";
 import { checkTezignAuth } from "@/app/admin/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
-import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 // export const dynamic = "force-dynamic";
@@ -14,7 +14,9 @@ async function ScoutAgentPage({ userChatId }: { userChatId: number }) {
   // server action 已确保所有权
   const result = await fetchUserChatByIdAction(userChatId, "scout");
   if (!result.success) {
-    notFound();
+    // notFound(); // Cannot use notFound() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
+    // Instead, return a NotFound component directly
+    return <NotFound />;
   }
   const userChat = result.data;
   return (

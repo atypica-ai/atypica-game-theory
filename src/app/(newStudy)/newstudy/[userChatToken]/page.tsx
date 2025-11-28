@@ -1,11 +1,12 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
 import { TNewStudyMessageWithTool } from "@/app/(newStudy)/types";
+import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
 import { Session } from "next-auth";
 import { getServerSession } from "next-auth/next";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { NewStudyChatClient } from "./NewStudyChatClient";
 
@@ -28,7 +29,9 @@ async function NewStudyPlanningPage({
   });
 
   if (!userChat) {
-    notFound();
+    // notFound(); // Cannot use notFound() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
+    // Instead, return a NotFound component directly
+    return <NotFound />;
   }
 
   const dbMessages = await prisma.chatMessage.findMany({

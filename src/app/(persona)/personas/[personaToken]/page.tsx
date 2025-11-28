@@ -1,11 +1,13 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchPersonaWithDetails } from "@/app/(persona)/actions";
+import { Forbidden } from "@/components/Forbidden";
+import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getServerSession, Session } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
-import { forbidden, notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PersonaDetailClient } from "./PersonaDetailClient";
 
@@ -42,16 +44,22 @@ async function PersonaDetailPage({
   const result = await fetchPersonaWithDetails(personaToken);
   if (!result.success) {
     // Gracefully handle not_found, unauthorized, forbidden without leaking info
-    notFound();
+    // notFound(); // Cannot use notFound() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
+    // Instead, return a NotFound component directly
+    return <NotFound />;
   }
 
   const { persona, personaImport } = result.data;
   // 其实有了 personaToken 以后，数据是任何人可见的，但是这个页面只针对 personaImport 的 owner，其他情况都应该用 share 页面访问
   if (!personaImport) {
-    notFound();
+    // notFound(); // Cannot use notFound() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
+    // Instead, return a NotFound component directly
+    return <NotFound />;
   }
   if (personaImport.userId !== sessionUser.id) {
-    forbidden();
+    // forbidden(); // Cannot use forbidden() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
+    // Instead, return a Forbidden component directly
+    return <Forbidden />;
   }
 
   return (

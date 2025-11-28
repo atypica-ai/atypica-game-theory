@@ -1,9 +1,10 @@
 import { fetchUserChatByIdAction } from "@/app/(agents)/agents/actions";
 import authOptions from "@/app/(auth)/authOptions";
 import { checkTezignAuth } from "@/app/admin/actions";
+import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { getServerSession } from "next-auth/next";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { BuildPersonaStreamObjectClient } from "./BuildPersonaStreamObjectClient";
 
@@ -20,7 +21,9 @@ async function BuildPersonaStreamObjectPage({
   // 其实这个 server action 已经确保了用户所有权了
   const result = await fetchUserChatByIdAction(userChatId, "scout");
   if (!result.success) {
-    notFound();
+    // notFound(); // Cannot use notFound() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
+    // Instead, return a NotFound component directly
+    return <NotFound />;
   }
   // const userChat = result.data;
   // if (userChat.userId !== sessionUserId) {

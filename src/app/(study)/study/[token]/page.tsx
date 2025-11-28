@@ -1,10 +1,12 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { StudyPageClient } from "@/app/(study)/study/StudyPageClient";
+import { Forbidden } from "@/components/Forbidden";
+import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
-import { forbidden, notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Metadata } from "next/types";
 import { Suspense } from "react";
 import { fetchUserChatByToken } from "../actions";
@@ -42,13 +44,17 @@ async function StudyPage({
 }) {
   const result = await fetchUserChatByToken(studyUserChatToken, "study");
   if (!result.success) {
-    notFound();
+    // notFound(); // Cannot use notFound() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
+    // Instead, return a NotFound component directly
+    return <NotFound />;
     // throwServerActionError(result);
   }
   const studyUserChat = result.data;
 
   if (studyUserChat.userId !== sessionUserId) {
-    forbidden();
+    // forbidden(); // Cannot use forbidden() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
+    // Instead, return a Forbidden component directly
+    return <Forbidden />;
   }
 
   return <StudyPageClient studyUserChat={studyUserChat} replay={false} />;
