@@ -4,7 +4,9 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
+import authOptions from "../(auth)/authOptions";
 import { createTeam, generateUserSwitchToken } from "./lib";
 
 // 创建团队
@@ -78,30 +80,65 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
   }>
 > {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async (user) => {
-    try {
-      const fullUser = await prisma.user.findUniqueOrThrow({
-        where: { id: user.id },
-        select: {
-          id: true,
-          name: true,
-          teamIdAsMember: true,
-          personalUserId: true,
-        },
-      });
+  const session = await getServerSession(authOptions);
+  if (!session?.user || !session?.userType) {
+    return {
+      success: true,
+      data: {
+        personalUser: null,
+        teamUsers: [],
+      },
+    };
+  }
+  const user = session.user;
+  try {
+    const fullUser = await prisma.user.findUniqueOrThrow({
+      where: { id: user.id },
+      select: {
+        id: true,
+        name: true,
+        teamIdAsMember: true,
+        personalUserId: true,
+      },
+    });
 
-      let personalUser: Pick<User, "id" | "name"> | null = null;
-      let teamUsers: Array<
-        Pick<User, "id" | "name"> & { teamAsMember: Pick<Team, "id" | "name"> }
-      > = [];
+    let personalUser: Pick<User, "id" | "name"> | null = null;
+    let teamUsers: Array<Pick<User, "id" | "name"> & { teamAsMember: Pick<Team, "id" | "name"> }> =
+      [];
 
-      if (!fullUser.teamIdAsMember) {
-        // 个人用户，返回个人用户和其团队用户
-        personalUser = fullUser;
+    if (!fullUser.teamIdAsMember) {
+      // 个人用户，返回个人用户和其团队用户
+      personalUser = fullUser;
+      teamUsers = (
+        await prisma.user.findMany({
+          where: {
+            personalUserId: fullUser.id,
+            teamIdAsMember: { not: null },
+          },
+          select: {
+            id: true,
+            name: true,
+            teamAsMember: { select: { id: true, name: true } },
+          },
+        })
+      ).map(({ teamAsMember, ...rest }) => ({ teamAsMember: teamAsMember!, ...rest }));
+    } else {
+      // 团队用户，返回对应的个人用户和其他团队用户
+      if (!fullUser.personalUserId) {
+        // 用户从团队中被移除
+        personalUser = null;
+        teamUsers = [];
+      } else {
+        personalUser = await prisma.user.findUnique({
+          where: {
+            id: fullUser.personalUserId,
+          },
+          select: { id: true, name: true },
+        });
         teamUsers = (
           await prisma.user.findMany({
             where: {
-              personalUserId: fullUser.id,
+              personalUserId: fullUser.personalUserId,
               teamIdAsMember: { not: null },
             },
             select: {
@@ -111,51 +148,24 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
             },
           })
         ).map(({ teamAsMember, ...rest }) => ({ teamAsMember: teamAsMember!, ...rest }));
-      } else {
-        // 团队用户，返回对应的个人用户和其他团队用户
-        if (!fullUser.personalUserId) {
-          // 用户从团队中被移除
-          personalUser = null;
-          teamUsers = [];
-        } else {
-          personalUser = await prisma.user.findUnique({
-            where: {
-              id: fullUser.personalUserId,
-            },
-            select: { id: true, name: true },
-          });
-          teamUsers = (
-            await prisma.user.findMany({
-              where: {
-                personalUserId: fullUser.personalUserId,
-                teamIdAsMember: { not: null },
-              },
-              select: {
-                id: true,
-                name: true,
-                teamAsMember: { select: { id: true, name: true } },
-              },
-            })
-          ).map(({ teamAsMember, ...rest }) => ({ teamAsMember: teamAsMember!, ...rest }));
-        }
       }
-
-      return {
-        success: true,
-        data: {
-          personalUser,
-          teamUsers,
-        },
-      };
-    } catch (error) {
-      rootLogger.error(`获取可切换身份失败: ${(error as Error).message}`);
-      return {
-        success: false,
-        message: t("getSwitchableIdentities.failed"),
-        code: "internal_server_error",
-      };
     }
-  });
+
+    return {
+      success: true,
+      data: {
+        personalUser,
+        teamUsers,
+      },
+    };
+  } catch (error) {
+    rootLogger.error(`获取可切换身份失败: ${(error as Error).message}`);
+    return {
+      success: false,
+      message: t("getSwitchableIdentities.failed"),
+      code: "internal_server_error",
+    };
+  }
 }
 
 // 生成安全的用户切换token
@@ -210,63 +220,74 @@ export async function getUserTeamStatusAction(): Promise<
   }>
 > {
   const t = await getTranslations("Team.Actions");
-  return withAuth(async (user) => {
-    try {
-      const currentUser = await prisma.user.findUniqueOrThrow({
-        where: { id: user.id },
+  // 这里不能用 withAuth，而是要直接取，因为网页每次打开都会请求这个方法，如果用 withAuth 会导致所有人默认都需要登录
+  const session = await getServerSession(authOptions);
+  if (!session?.user || !session?.userType) {
+    return {
+      success: true,
+      data: {
+        teamRole: null,
+        canSwitchIdentity: false,
+        teamName: null,
+      },
+    };
+  }
+  const user = session.user;
+  try {
+    const currentUser = await prisma.user.findUniqueOrThrow({
+      where: { id: user.id },
+    });
+
+    let teamRole: "owner" | "member" | "removed" | null = null;
+    let canSwitchIdentity = false;
+    let teamName: string | null = null;
+
+    // 检查是否为个人用户
+    if (!currentUser.teamIdAsMember) {
+      // 检查是否有活跃的团队用户可以切换
+      const teamUsersCount = await prisma.user.count({
+        where: {
+          personalUserId: user.id,
+          teamIdAsMember: { not: null },
+        },
       });
-
-      let teamRole: "owner" | "member" | "removed" | null = null;
-      let canSwitchIdentity = false;
-      let teamName: string | null = null;
-
-      // 检查是否为个人用户
-      if (!currentUser.teamIdAsMember) {
-        // 检查是否有活跃的团队用户可以切换
-        const teamUsersCount = await prisma.user.count({
-          where: {
-            personalUserId: user.id,
-            teamIdAsMember: { not: null },
-          },
-        });
-        canSwitchIdentity = teamUsersCount > 0;
-        teamRole = null;
+      canSwitchIdentity = teamUsersCount > 0;
+      teamRole = null;
+      teamName = null;
+    } else {
+      if (!currentUser.personalUserId) {
+        // 用户被移除团队，无效，无法切换回个人用户
+        teamRole = "removed";
+        canSwitchIdentity = false;
         teamName = null;
       } else {
-        if (!currentUser.personalUserId) {
-          // 用户被移除团队，无效，无法切换回个人用户
-          teamRole = "removed";
-          canSwitchIdentity = false;
-          teamName = null;
-        } else {
-          // 有效的团队用户，总是可以切换回个人用户或其他团队
-          canSwitchIdentity = true;
-          // 检查所在团队的 owner 是否是当前团队用户，team owner 等于当前 team user 关联的 personal user
-          const teamAsMember = await prisma.team.findUnique({
-            where: { id: currentUser.teamIdAsMember },
-          });
-          teamRole = teamAsMember?.ownerUserId === currentUser.personalUserId ? "owner" : "member";
-          teamName = teamAsMember?.name || null;
-        }
+        // 有效的团队用户，总是可以切换回个人用户或其他团队
+        canSwitchIdentity = true;
+        // 检查所在团队的 owner 是否是当前团队用户，team owner 等于当前 team user 关联的 personal user
+        const teamAsMember = await prisma.team.findUnique({
+          where: { id: currentUser.teamIdAsMember },
+        });
+        teamRole = teamAsMember?.ownerUserId === currentUser.personalUserId ? "owner" : "member";
+        teamName = teamAsMember?.name || null;
       }
-
-      return {
-        success: true,
-        data: {
-          teamRole,
-          canSwitchIdentity,
-          teamName,
-        },
-      };
-    } catch (error) {
-      rootLogger.error(`Failed to get team status: ${(error as Error).message}`);
-      return {
-        success: false,
-        message: t("getTeamStatus.failed"),
-        code: "internal_server_error",
-      };
     }
-  });
+
+    return {
+      success: true,
+      data: {
+        teamRole,
+        canSwitchIdentity,
+        teamName,
+      },
+    };
+  } catch (error) {
+    rootLogger.error(`Failed to get team status: ${(error as Error).message}`);
+    return {
+      success: false,
+      message: t("getTeamStatus.failed"),
+      code: "internal_server_error",
+    };
+  }
 }
 
 function verifyUserSwitchPermission(currentUser: User, targetUser: User): boolean {
