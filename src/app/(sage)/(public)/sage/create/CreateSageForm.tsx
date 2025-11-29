@@ -1,5 +1,5 @@
 "use client";
-import { createSage } from "@/app/(sage)/actions";
+import { createSage } from "@/app/(sage)/(public)/actions";
 import { SageSourceContent, SageSourceType } from "@/app/(sage)/types";
 import { FileUploadButton, type FileUploadInfo } from "@/components/chat/FileUploadButton";
 import { FitToViewport } from "@/components/layout/FitToViewport";

@@ -1,6 +1,6 @@
 "use client";
 
-import { createSupplementaryInterview } from "@/app/(sage)/actions";
+import { createSupplementaryInterview } from "@/app/(sage)/(detail)/actions";
 import type {
   SageExtra,
   SageKnowledgeGapExtra,

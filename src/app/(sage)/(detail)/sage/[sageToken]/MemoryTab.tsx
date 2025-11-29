@@ -1,6 +1,6 @@
 "use client";
 
-import { analyzeSageKnowledge, extractSageKnowledge } from "@/app/(sage)/actions";
+import { analyzeSageKnowledge, extractSageKnowledge } from "@/app/(sage)/(detail)/actions";
 import type { SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";

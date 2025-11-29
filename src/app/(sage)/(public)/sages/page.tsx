@@ -1,5 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { listMySages } from "@/app/(sage)/actions";
+import { listMySages } from "@/app/(sage)/(public)/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";

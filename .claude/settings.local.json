@@ -12,6 +12,7 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
+      "Bash(wc:*)",
       "Bash(head:*)",
       "Bash(gh api:*)",
       "Bash(gh pr diff:*)",

@@ -1,6 +1,6 @@
 "use client";
 
-import { processSageSources } from "@/app/(sage)/actions";
+import { processSageSources } from "@/app/(sage)/(detail)/actions";
 import type { SageExtra, SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";

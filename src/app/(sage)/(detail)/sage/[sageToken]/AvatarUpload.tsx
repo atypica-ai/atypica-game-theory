@@ -1,6 +1,6 @@
 "use client";
 
-import { updateSageAvatar } from "@/app/(sage)/actions";
+import { updateSageAvatar } from "@/app/(sage)/(detail)/actions";
 import type { SageAvatar } from "@/app/(sage)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";

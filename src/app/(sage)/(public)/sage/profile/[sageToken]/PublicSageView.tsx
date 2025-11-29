@@ -1,6 +1,6 @@
 "use client";
 
-import { createNewSageChat } from "@/app/(sage)/actions";
+import { createNewSageChat } from "@/app/(sage)/(chat)/actions";
 import type { SageExtra } from "@/app/(sage)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
