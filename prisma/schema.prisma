@@ -680,7 +680,15 @@ model SageMemoryDocument {
   sageId      Int
   sage        Sage   @relation(fields: [sageId], references: [id], onDelete: Cascade)
   version     Int
+
+  // Legacy field (will be deprecated after migration)
   content     String @db.Text
+
+  // Layered Memory fields
+  core        String @default("") @db.Text
+  working     Json   @default("[]")
+  episodic    Json   @default("[]")
+
   changeNotes String @db.Text
   extra       Json   @default("{}")
 

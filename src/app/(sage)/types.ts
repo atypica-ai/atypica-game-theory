@@ -51,7 +51,12 @@ export enum SageKnowledgeGapSeverity {
   NICE_TO_HAVE = "nice-to-have",
 }
 
-export type SageKnowledgeGapExtra = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type SageKnowledgeGapExtra = Partial<{
+  // AI-based gap resolution analysis
+  resolutionConfidence: number; // 0-1, confidence that gap is resolved
+  resolutionEvidence: string[]; // Evidence quotes from interview
+  missingAspects: string[]; // If partially resolved, what aspects are still missing
+}>;
 
 export type SageKnowledgeGapSource = Partial<
   | {
@@ -75,14 +80,31 @@ export type SageKnowledgeGapResolvedBy = Partial<
 >;
 
 /**
- * SageInterview
+ * Layered Memory
  */
 
-export enum SageInterviewStatus {
-  DRAFT = "draft",
-  ONGOING = "ongoing",
-  COMPLETED = "completed",
-}
+export type WorkingMemoryItem = {
+  id: string; // 唯一标识
+  content: string; // 知识内容（Markdown）
+  source: "interview" | "conversation";
+  sourceId: string; // 来源 ID（interviewId 或 userChatToken）
+  relatedGapIds?: number[]; // 解决的 Gap IDs
+  status: "pending" | "integrated" | "discarded"; // 状态
+};
+
+// Episodic Memory - 只存 chatId，其他信息可以从 UserChat 表查询
+export type EpisodicMemoryReference = string;
+
+export type SageMemoryDocumentExtra = Partial<{
+  source: {
+    type: "initial" | "interview" | "manual";
+    userChatToken?: string;
+  };
+}>;
+
+/**
+ * SageInterview
+ */
 
 export type SageInterviewExtra = Partial<{
   error: string; // 错误信息
@@ -105,26 +127,11 @@ export type SageInterviewExtra = Partial<{
  * SageChat
  */
 
-export type SageChatExtra = {
-  error: string; // 错误信息
-  ongoing: boolean; // 是否正在进行中
-  startsAt: number; // 开始时间戳（首次消息时设置）
-};
-
-/**
- * SageMemoryDocumentExtra
- */
-
-export type SageMemoryDocumentExtra = Partial<{
-  source:
-    | {
-        type: "initial" | "manual";
-      }
-    | {
-        type: "interview";
-        userChatToken: string; // SageInterview's chat token
-      };
-}>;
+// export type SageChatExtra = {
+//   error: string; // 错误信息
+//   ongoing: boolean; // 是否正在进行中
+//   startsAt: number; // 开始时间戳（首次消息时设置）
+// };
 
 // ===== Zod Schemas for Input Validation =====
 
@@ -154,13 +161,3 @@ export const createSageInputSchema = z.object({
   locale: z.enum(VALID_LOCALES),
   sources: z.array(sageSourceContentSchema).min(1).max(10),
 });
-
-export type CreateSageInput = z.infer<typeof createSageInputSchema>;
-
-export type ExtractedMemory = {
-  content: string;
-  category: string;
-  tags: string[];
-  importance: "high" | "medium" | "low";
-  keyTakeaway: string;
-};
