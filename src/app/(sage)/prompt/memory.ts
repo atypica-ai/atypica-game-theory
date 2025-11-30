@@ -3,11 +3,11 @@ import { Locale } from "next-intl";
 
 // ===== Sage Profile Generation System Prompt =====
 
-export const sageProfileGenerationSystem = ({
+export const buildSageProfileSystemPrompt = ({
   sage,
   locale,
 }: {
-  sage: { name: string; domain: string; userId: number };
+  sage: { name: string; domain: string };
   locale: Locale;
 }) =>
   locale === "zh-CN"
@@ -108,15 +108,13 @@ Output JSON object directly with three fields: categories, bio, recommendedQuest
 
 // ===== Memory Document Builder System Prompt =====
 
-export const sageMemoryDocumentBuilderSystem = ({
+export const buildSageCoreMemorySystemPrompt = ({
   sage,
   locale,
 }: {
   sage: {
     name: string;
     domain: string;
-    expertise: string[];
-    locale: string;
   };
   locale: Locale;
 }) =>
@@ -131,8 +129,6 @@ export const sageMemoryDocumentBuilderSystem = ({
 <专家信息>
 名称: ${sage.name}
 领域: ${sage.domain}
-专长: ${sage.expertise.join(", ")}
-语言: ${sage.locale}
 </专家信息>
 
 <记忆文档结构>
@@ -203,8 +199,6 @@ The Memory Document is the expert's "brain," similar to Claude Code's CLAUDE.md.
 <Expert Information>
 Name: ${sage.name}
 Domain: ${sage.domain}
-Expertise: ${sage.expertise.join(", ")}
-Language: ${sage.locale}
 </Expert Information>
 
 <Memory Document Structure>

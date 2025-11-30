@@ -1,7 +1,8 @@
 "use server";
+import { StatReporter } from "@/ai/tools/types";
 import { generateInterviewPlan } from "@/app/(sage)/processing/followup";
 import { analyzeKnowledgeOnly } from "@/app/(sage)/processing/gaps";
-import { extractKnowledgeOnly } from "@/app/(sage)/processing/memory";
+import { extractKnowledgeFromSources } from "@/app/(sage)/processing/memory";
 import { processSageSources } from "@/app/(sage)/processing/sources";
 import type { SageExtra, SageInterviewExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
@@ -214,7 +215,8 @@ export async function reProcessSageSourcesAndExtractKnoledge(
       })
       .then(({ extra, ...sage }) => ({ ...sage, extra: extra as SageExtra }));
 
-    if (sage.extra.processing) {
+    // 超过 30 分钟可以重新开始
+    if (sage.extra.processing && Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) {
       return {
         success: false,
         message: "Sage is processing",
@@ -222,6 +224,14 @@ export async function reProcessSageSourcesAndExtractKnoledge(
     }
 
     const locale = await getLocale();
+    const logger = rootLogger.child({ sageId });
+    const statReport: StatReporter = (async (dimension, value, extra) => {
+      rootLogger.info({
+        msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+        extra,
+        note: "extractKnowledgeOnly is currently free - tokens not deducted",
+      });
+    }) as StatReporter;
 
     waitUntil(
       (async () => {
@@ -232,9 +242,9 @@ export async function reProcessSageSourcesAndExtractKnoledge(
         });
         try {
           // 1. process sources
-          await processSageSources(sageId);
+          await processSageSources({ sageId, logger, statReport });
           // 2. extract knowledge
-          await extractKnowledgeOnly({ sageId, locale });
+          await extractKnowledgeFromSources({ sageId, locale, logger, statReport });
           // 3. complete
           await mergeExtra({
             tableName: "Sage",

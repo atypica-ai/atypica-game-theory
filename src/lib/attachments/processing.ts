@@ -73,7 +73,7 @@ async function extractFullText(file: AttachmentFileWithTypedExtra): Promise<stri
   throw new Error(`Unsupported mime type: ${mimeType}`);
 }
 
-async function compressText({
+export async function compressText({
   fullText,
   logger,
   abortSignal,

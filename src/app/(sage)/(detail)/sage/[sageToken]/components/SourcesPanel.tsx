@@ -42,7 +42,9 @@ export function SourcesPanel({
   const failedSources = sources.filter((s) => !!s.extra.error);
   // const hasProcessingSources = processingSources.length > 0;
   const isProcessing = useMemo(
-    () => Boolean(sage.extra.processing) || isRequesting,
+    () =>
+      (sage.extra.processing && Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) ||
+      isRequesting,
     [sage.extra.processing, isRequesting],
   );
 

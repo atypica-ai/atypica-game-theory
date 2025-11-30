@@ -9,9 +9,10 @@ import {
   createOrUpdateMemoryDocument,
 } from "@/app/(sage)/lib";
 import {
-  sageMemoryDocumentBuilderSystem,
-  sageProfileGenerationSystem,
+  buildSageCoreMemorySystemPrompt,
+  buildSageProfileSystemPrompt,
 } from "@/app/(sage)/prompt/memory";
+import type { SageKnowledgeGapSeverity, SageSourceContent } from "@/app/(sage)/types";
 import {
   SageExtra,
   SageInterviewExtra,
@@ -20,149 +21,101 @@ import {
   WorkingMemoryItem,
 } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
-import { Sage } from "@/prisma/client";
+import { Sage, SageSource } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
-import { generateObject, streamText } from "ai";
+import { generateObject, streamText, UserModelMessage } from "ai";
 import type { Locale } from "next-intl";
 import { Logger } from "pino";
 import z from "zod";
-import type { SageKnowledgeGapSeverity } from "../types";
 
 /**
  * Extract knowledge and build memory document from completed sources
+ * Step 1: buildSageProfile
+ * Step 2: buildSageCoreMemory
+ * Will create a new version of the memory document
  */
-export async function extractKnowledgeOnly({
+export async function extractKnowledgeFromSources({
   sageId,
   locale,
+  logger,
+  statReport,
 }: {
   sageId: number;
   locale: Locale;
+  logger: Logger;
+  statReport: StatReporter;
 }): Promise<void> {
-  const logger = rootLogger.child({ sageId });
-  const statReport: StatReporter = (async (dimension, value, extra) => {
-    rootLogger.info({
-      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
-      extra,
-      note: "extractKnowledgeOnly is currently free - tokens not deducted",
-    });
-  }) as StatReporter;
-
-  try {
-    const sage = await prisma.sage
-      .findUniqueOrThrow({
-        where: { id: sageId },
+  const [sage, completedSources] = await Promise.all([
+    prisma.sage.findUniqueOrThrow({
+      where: { id: sageId },
+      select: { id: true, name: true, domain: true },
+    }),
+    prisma.sageSource
+      .findMany({
+        where: { sageId, extractedText: { not: "" } },
+        orderBy: { id: "asc" },
       })
-      .then(({ expertise, extra, ...sage }) => ({
-        ...sage,
-        expertise: expertise as string[],
-        extra: extra as SageExtra,
-      }));
+      .then((sources) =>
+        sources.map(({ content, ...source }) => ({
+          ...source,
+          content: content as SageSourceContent,
+        })),
+      ),
+  ]);
 
-    // Get all completed sources
-    const completedSources = await prisma.sageSource.findMany({
-      where: {
-        sageId,
-        extractedText: {
-          not: "",
-        },
-      },
-      orderBy: { id: "asc" },
-    });
+  if (completedSources.length === 0) {
+    throw new Error("No sources were successfully processed");
+  }
+  logger.info({
+    msg: "Extracting knowledge from sage sources",
+    sourcesCount: completedSources.length,
+  });
+  const sageSources = completedSources;
 
-    if (completedSources.length === 0) {
-      throw new Error("No sources were successfully processed");
-    }
-
-    logger.info({
-      msg: "Extracting knowledge from sage sources",
-      sourcesCount: completedSources.length,
-    });
-
-    const allExtractedTexts = completedSources
-      .map((s) => s.extractedText)
-      .filter((text): text is string => !!text);
-    const rawContent = allExtractedTexts.join("\n\n---\n\n");
-
-    // Step 1 & 2: Generate profile and build memory document in parallel
-    const [, memoryDocument] = await Promise.all([
-      generateSageProfile({
-        sage,
-        rawContent,
-        locale,
-        statReport,
-        logger,
-      }).then(async (result) => {
+  // Step 1 & 2: Generate profile and build memory document in parallel
+  const [, coreMemory] = await Promise.all([
+    extractKnowledge_1_buildSageProfile({ sage, sageSources, locale, statReport, logger }).then(
+      async ({ categories: expertise, bio, recommendedQuestions }) => {
         // Update sage immediately after profile generation
         await prisma.sage.update({
           where: { id: sageId },
-          data: {
-            expertise: result.categories,
-            bio: result.bio,
-          },
+          data: { expertise, bio },
         });
-
         // Update SageExtra with recommended questions
         await mergeExtra({
           tableName: "Sage",
           id: sageId,
-          extra: {
-            recommendedQuestions: result.recommendedQuestions,
-          } satisfies SageExtra,
+          extra: { recommendedQuestions } satisfies SageExtra,
         });
+      },
+    ),
+    extractKnowledge_2_buildSageCoreMemory({ sage, sageSources, locale, statReport, logger }),
+  ]);
 
-        return result;
-      }),
-      buildMemoryDocument({
-        sage,
-        rawContent,
-        locale,
-        statReport,
-        logger,
-      }),
-    ]);
+  // Save Memory Document as first version
+  await createOrUpdateMemoryDocument({
+    sageId,
+    operation: "extract_from_sources",
+    coreMemory: coreMemory,
+    changeNotes: "Extract knowledge from sources",
+  });
 
-    // Save Memory Document as first version
-    await createOrUpdateMemoryDocument({
-      sageId,
-      operation: "initial_creation",
-      coreMemory: memoryDocument,
-      changeNotes: "Initial memory document from sources",
-    });
-
-    logger.info({ msg: "Knowledge extraction completed successfully" });
-  } catch (error) {
-    logger.error({
-      msg: "Knowledge extraction failed",
-      error: (error as Error).message,
-    });
-    throw error;
-  }
+  logger.info({ msg: "Knowledge extraction completed successfully" });
 }
-
-const sageProfileSchema = z.object({
-  categories: z
-    .array(z.string())
-    .describe("Suggested topic categories for organizing the knowledge (3-10 categories)"),
-  bio: z.string().describe("2-3 sentence professional bio for the expert"),
-  recommendedQuestions: z
-    .array(z.string())
-    .length(4)
-    .describe("Exactly 4 recommended questions for users to ask the expert"),
-});
 
 /**
  * Generate sage profile including categories, bio, and recommended questions
  */
-async function generateSageProfile({
+async function extractKnowledge_1_buildSageProfile({
   sage,
-  rawContent,
+  sageSources,
   locale,
   statReport,
   logger,
 }: {
-  sage: Pick<Sage, "name" | "domain" | "userId">;
-  rawContent: string;
+  sage: Pick<Sage, "id" | "name" | "domain">;
+  sageSources: (Pick<SageSource, "id" | "extractedText"> & { content: SageSourceContent })[];
   locale: Locale;
   statReport: StatReporter;
   logger: Logger;
@@ -171,10 +124,26 @@ async function generateSageProfile({
   bio: string;
   recommendedQuestions: string[];
 }> {
+  const allExtractedTexts = sageSources
+    .map((s) => s.extractedText)
+    .filter((text): text is string => !!text);
+  const rawContent = allExtractedTexts.join("\n\n---\n\n");
+
+  const sageProfileSchema = z.object({
+    categories: z
+      .array(z.string())
+      .describe("Suggested topic categories for organizing the knowledge (3-10 categories)"),
+    bio: z.string().describe("2-3 sentence professional bio for the expert"),
+    recommendedQuestions: z
+      .array(z.string())
+      .length(4)
+      .describe("Exactly 4 recommended questions for users to ask the expert"),
+  });
+
   const result = await generateObject({
     model: llm("gemini-2.5-flash"),
     schema: sageProfileSchema,
-    system: sageProfileGenerationSystem({ sage, locale }),
+    system: buildSageProfileSystemPrompt({ sage, locale }),
     prompt: rawContent,
     maxRetries: 3,
   });
@@ -182,12 +151,12 @@ async function generateSageProfile({
   if (result.usage.totalTokens) {
     const totalTokens = result.usage.totalTokens;
     await statReport("tokens", totalTokens, {
-      reportedBy: "generate sage profile",
+      reportedBy: "build sage profile",
     });
   }
 
   logger.info({
-    msg: "Generated sage profile",
+    msg: "buildSageProfile completed",
     categoriesCount: result.object.categories.length,
     recommendedQuestionsCount: result.object.recommendedQuestions.length,
   });
@@ -196,149 +165,89 @@ async function generateSageProfile({
 }
 
 /**
- * Build Memory Document from raw content (two-step process with streaming)
- * Step 1: Clean and extract content with Gemini (large context)
- * Step 2: Build structured document with Claude
+ * Build Sage CoreMemory from sources
+ * Source text is already compressed, build with Claude
  */
-export async function buildMemoryDocument({
+export async function extractKnowledge_2_buildSageCoreMemory({
   sage,
-  rawContent,
+  sageSources,
   locale,
   statReport,
   logger,
 }: {
-  sage: Pick<Sage, "name" | "domain" | "userId" | "locale"> & { expertise: string[] };
-  rawContent: string;
+  sage: Pick<Sage, "id" | "name" | "domain">;
+  sageSources: (Pick<SageSource, "id" | "extractedText"> & { content: SageSourceContent })[];
   locale: Locale;
   statReport: StatReporter;
   logger: Logger;
 }): Promise<string> {
-  // Step 1: Clean and extract content with Gemini
-  logger.info({ msg: "Step 1: Cleaning content with Gemini" });
+  const allExtractedTexts = sageSources
+    .map((s) => s.extractedText)
+    .filter((text): text is string => !!text);
+  const rawContent = allExtractedTexts.join("\n\n---\n\n");
 
-  const cleaningPrompt =
-    locale === "zh-CN"
-      ? `请清洗和整理以下原始内容，提取关键信息：
-
-${rawContent}
-
-要求：
-- 移除无关内容和噪音
-- 保留所有有价值的知识点
-- 整理成清晰的文本格式
-- 保持原有的逻辑结构
-
-只输出清洗后的内容，不要添加额外说明。`
-      : `Clean and organize the following raw content, extract key information:
-
-${rawContent}
-
-Requirements:
-- Remove irrelevant content and noise
-- Retain all valuable knowledge points
-- Organize into clear text format
-- Maintain original logical structure
-
-Output only the cleaned content without additional explanations.`;
-
-  let extractedContent = "";
-  const cleaningResponse = streamText({
-    model: llm("gemini-2.5-flash"),
-    prompt: cleaningPrompt,
-    maxRetries: 3,
-    onChunk: ({ chunk }) => {
-      if (chunk.type === "text-delta") {
-        extractedContent += chunk.text;
-        logger.debug({
-          msg: "buildMemoryDocument onChunk",
-          stage: "cleaning",
-          extractedContentLength: extractedContent.length,
-        });
-      }
+  const messages: UserModelMessage[] = [
+    {
+      role: "user",
+      content:
+        locale === "zh-CN"
+          ? "请根据以下内容，生成完整的、结构化的记忆文档。"
+          : "Build a a complete, structured memory document based on the following content",
     },
-    onError: ({ error }) => {
-      logger.error({
-        msg: "buildMemoryDocument onError",
-        stage: "cleaning",
-        error: (error as Error).message,
-      });
+    {
+      role: "user",
+      content: rawContent,
     },
-    onFinish: async () => {
-      //这一步成本很低，不统计 usage
-      // await statReport("tokens", 0, {
-      //   reportedBy: "build memory document",
-      // });
-      logger.info({
-        msg: "buildMemoryDocument onFinish",
-        stage: "cleaning",
-        extractedContentLength: extractedContent.length,
-      });
-    },
-  });
+  ];
 
-  await cleaningResponse.consumeStream();
-
-  // Step 2: Build structured Memory Document with Claude
-  logger.info({ msg: "Step 2: Building Memory Document with Claude" });
-
-  const buildingPrompt =
-    locale === "zh-CN"
-      ? `请根据以下清洗后的内容，构建结构化的记忆文档：
-
-${extractedContent}
-
-生成完整的、结构化的记忆文档。`
-      : `Build a structured Memory Document based on the following cleaned content:
-
-${extractedContent}
-
-Generate a complete, structured Memory Document.`;
-
-  let memoryDocument = "";
-  const buildingResponse = streamText({
-    model: llm("claude-sonnet-4-5"),
-    system: sageMemoryDocumentBuilderSystem({ sage, locale }),
-    prompt: buildingPrompt,
-    maxRetries: 3,
-    onChunk: ({ chunk }) => {
-      if (chunk.type === "text-delta") {
-        memoryDocument += chunk.text;
-        logger.debug({
-          msg: "buildMemoryDocument",
+  const promise = new Promise<string>(async (resolve, reject) => {
+    let coreMemory = "";
+    const buildingResponse = streamText({
+      model: llm("claude-haiku-4-5"),
+      system: buildSageCoreMemorySystemPrompt({ sage, locale }),
+      messages,
+      maxRetries: 3,
+      onChunk: ({ chunk }) => {
+        if (chunk.type === "text-delta") {
+          coreMemory += chunk.text;
+          logger.debug({
+            msg: "buildSageCoreMemory",
+            stage: "building",
+            length: coreMemory.length,
+          });
+        }
+      },
+      onError: ({ error }) => {
+        logger.error({
+          msg: "buildSageCoreMemory onError",
           stage: "building",
-          memoryDocumentLength: memoryDocument.length,
+          error: (error as Error).message,
         });
-      }
-    },
-    onError: ({ error }) => {
-      logger.error({
-        msg: "buildMemoryDocument onError",
-        stage: "building",
-        error: (error as Error).message,
-      });
-    },
-    onFinish: async ({ usage }) => {
-      if (usage.totalTokens) {
-        await statReport("tokens", usage.totalTokens, {
-          reportedBy: "build memory document",
+        reject(error);
+      },
+      onFinish: async ({ usage }) => {
+        if (usage.totalTokens) {
+          await statReport("tokens", usage.totalTokens, {
+            reportedBy: "build core memory",
+          });
+        }
+        logger.info({
+          msg: "buildSageCoreMemory onFinish",
+          stage: "building",
+          length: coreMemory.length,
         });
-      }
-      logger.info({
-        msg: "buildMemoryDocument onFinish",
-        stage: "building",
-        memoryDocumentLength: memoryDocument.length,
-      });
-    },
+        resolve(coreMemory);
+      },
+    });
+
+    await buildingResponse
+      .consumeStream()
+      .then(() => {})
+      .catch((error) => reject(error));
   });
 
-  await buildingResponse.consumeStream();
-
-  logger.info({
-    msg: "Memory Document built",
-    documentLength: memoryDocument.length,
-  });
-
-  return memoryDocument;
+  const coreMemory = await promise;
+  return coreMemory;
 }
 
 /**

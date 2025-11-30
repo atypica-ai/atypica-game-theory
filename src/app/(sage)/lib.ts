@@ -2,7 +2,7 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
-import type { EpisodicMemoryReference, SageMemoryDocumentExtra, WorkingMemoryItem } from "./types";
+import type { EpisodicMemoryReference, WorkingMemoryItem } from "./types";
 
 /**
  * Create or update sage memory document with layered memory support
@@ -20,7 +20,7 @@ export async function createOrUpdateMemoryDocument({
     | "add_working"
     | "integrate_working"
     | "add_episodic"
-    | "initial_creation"
+    | "extract_from_sources"
     | "manual_edit_core";
   coreMemory?: string;
   workingMemory?: WorkingMemoryItem[];
@@ -36,7 +36,7 @@ export async function createOrUpdateMemoryDocument({
   // Determine if should create new version
   const shouldUpdateVersion =
     operation === "integrate_working" ||
-    operation === "initial_creation" ||
+    operation === "extract_from_sources" ||
     operation === "manual_edit_core";
 
   if (!latestDoc) {
@@ -45,14 +45,11 @@ export async function createOrUpdateMemoryDocument({
       data: {
         sageId,
         version: 1,
-        content: coreMemory || "",
+        content: "", // DEPRECATED, always empty for new created memory document
         core: coreMemory || "",
         working: workingMemory || [],
         episodic: episodicMemory || [],
         changeNotes,
-        extra: {
-          source: { type: "initial" },
-        } satisfies SageMemoryDocumentExtra,
       },
     });
 
@@ -72,14 +69,11 @@ export async function createOrUpdateMemoryDocument({
       data: {
         sageId,
         version: newVersion,
-        content: coreMemory || latestDoc.core,
+        content: "", // DEPRECATED, always empty for new created memory document
         core: coreMemory || latestDoc.core,
         working: workingMemory || [], // Clear working memory after integration
         episodic: episodicMemory || (latestDoc.episodic as unknown as EpisodicMemoryReference[]),
         changeNotes,
-        extra: {
-          source: { type: "manual" },
-        } satisfies SageMemoryDocumentExtra,
       },
     });
 

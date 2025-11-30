@@ -92,12 +92,8 @@ export type WorkingMemoryItem = {
 // Episodic Memory - 只存 chatId，其他信息可以从 UserChat 表查询
 export type EpisodicMemoryReference = string;
 
-export type SageMemoryDocumentExtra = Partial<{
-  source: {
-    type: "initial" | "interview" | "manual";
-    userChatToken?: string;
-  };
-}>;
+// 没有用到
+export type SageMemoryDocumentExtra = {};
 
 /**
  * SageInterview
