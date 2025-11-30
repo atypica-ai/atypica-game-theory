@@ -3,13 +3,14 @@ import { generateInterviewPlan } from "@/app/(sage)/processing/followup";
 import { analyzeKnowledgeOnly } from "@/app/(sage)/processing/gaps";
 import { extractKnowledgeOnly } from "@/app/(sage)/processing/memory";
 import { processSageSources } from "@/app/(sage)/processing/sources";
-import type { SageInterviewExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
+import type { SageExtra, SageInterviewExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import type { SageInterview, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
@@ -196,49 +197,60 @@ export async function createSupplementaryInterview(sageId: number): Promise<
 // ===== Source Processing =====
 
 /**
- * Process all pending sources for a sage
+ * re-Process all sources and extract knowledge
+ * 因为 source 支持删除，所以就算所有 sources 都被 parse 了，这个过程还是可以重新运行
  */
-export async function processSageSourcesAction(sageId: number): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    const sage = await prisma.sage.findUniqueOrThrow({
-      where: {
-        id: sageId,
-        userId: user.id,
-      },
-      select: {
-        userId: true,
-        token: true,
-      },
-    });
-
-    // Trigger background processing of sources only
-    waitUntil(processSageSources(sageId));
-
-    revalidatePath(`/sage/${sage.token}`);
-    return { success: true, data: undefined };
-  });
-}
-
-/**
- * Extract knowledge and build memory document from completed sources
- */
-export async function extractSageKnowledgeAction(
+export async function reProcessSageSourcesAndExtractKnoledge(
   sageId: number,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    // Check ownership and get token for revalidation
-    const sage = await prisma.sage.findUniqueOrThrow({
-      where: { id: sageId, userId: user.id },
-      select: {
-        userId: true,
-        token: true,
-      },
-    });
+    const sage = await prisma.sage
+      .findUniqueOrThrow({
+        where: {
+          id: sageId,
+          userId: user.id,
+        },
+        select: { id: true, token: true, extra: true },
+      })
+      .then(({ extra, ...sage }) => ({ ...sage, extra: extra as SageExtra }));
+
+    if (sage.extra.processing) {
+      return {
+        success: false,
+        message: "Sage is processing",
+      };
+    }
 
     const locale = await getLocale();
 
-    // Trigger background knowledge extraction
-    waitUntil(extractKnowledgeOnly({ sageId, locale }));
+    waitUntil(
+      (async () => {
+        await mergeExtra({
+          tableName: "Sage",
+          id: sage.id,
+          extra: { processing: { startsAt: Date.now() }, error: null } satisfies SageExtra,
+        });
+        try {
+          // 1. process sources
+          await processSageSources(sageId);
+          // 2. extract knowledge
+          await extractKnowledgeOnly({ sageId, locale });
+          // 3. complete
+          await mergeExtra({
+            tableName: "Sage",
+            id: sage.id,
+            extra: { processing: false } satisfies SageExtra,
+          });
+        } catch (error) {
+          await mergeExtra({
+            tableName: "Sage",
+            id: sage.id,
+            extra: { processing: false, error: (error as Error).message } satisfies SageExtra,
+          });
+          // throw error;  // do not throw error
+        }
+      })(),
+    );
 
     revalidatePath(`/sage/${sage.token}`);
     return { success: true, data: undefined };

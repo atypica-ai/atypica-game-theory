@@ -1,7 +1,8 @@
 "use client";
-import { processSageSourcesAction } from "@/app/(sage)/(detail)/actions";
+import { reProcessSageSourcesAndExtractKnoledge } from "@/app/(sage)/(detail)/actions";
 import type { SageExtra, SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -12,11 +13,11 @@ import {
   ClockIcon,
   ExternalLinkIcon,
   Loader2Icon,
-  PlayIcon,
+  SparklesIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export function SourcesPanel({
@@ -31,32 +32,34 @@ export function SourcesPanel({
 }) {
   const t = useTranslations("Sage.SourcesPanel");
   const router = useRouter();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isRequesting, setIsRequesting] = useState(false);
 
-  const pendingSources = sources.filter(
-    (s) => !s.extractedText && !s.extra.processing && !s.extra.error,
-  );
-  const processingSources = sources.filter((s) => s.extra.processing);
+  // const pendingSources = sources.filter(
+  //   (s) => !s.extractedText && !s.extra.processing && !s.extra.error,
+  // );
+  // const processingSources = sources.filter((s) => s.extra.processing);
   const completedSources = sources.filter((s) => !!s.extractedText);
   const failedSources = sources.filter((s) => !!s.extra.error);
-
-  const hasProcessing = processingSources.length > 0;
-  const hasPending = pendingSources.length > 0;
+  // const hasProcessingSources = processingSources.length > 0;
+  const isProcessing = useMemo(
+    () => Boolean(sage.extra.processing) || isRequesting,
+    [sage.extra.processing, isRequesting],
+  );
 
   // Auto-refresh when processing
   useEffect(() => {
-    if (hasProcessing) {
+    if (isProcessing) {
       const interval = setInterval(() => {
         router.refresh();
       }, 3000);
       return () => clearInterval(interval);
     }
-  }, [hasProcessing, router]);
+  }, [isProcessing, router]);
 
   const handleProcessSources = useCallback(async () => {
-    setIsProcessing(true);
+    setIsRequesting(true);
     try {
-      const result = await processSageSourcesAction(sage.id);
+      const result = await reProcessSageSourcesAndExtractKnoledge(sage.id);
       if (!result.success) throw result;
       toast.success(t("processingStarted"));
       setTimeout(() => router.refresh(), 1000);
@@ -64,7 +67,7 @@ export function SourcesPanel({
       console.log("Error processing sources:", error);
       toast.error(t("processingFailed"));
     } finally {
-      setIsProcessing(false);
+      setIsRequesting(false);
     }
   }, [sage.id, router, t]);
 
@@ -75,24 +78,26 @@ export function SourcesPanel({
         <div>
           <h2 className="text-xl font-semibold">{t("knowledgeSources")}</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {completedSources.length}/{sources.length} {t("completed")}
+            {completedSources.length}/{sources.length} {t("parsed")}
           </p>
         </div>
-        {hasPending || hasProcessing ? (
-          <Button onClick={handleProcessSources} disabled={isProcessing || hasProcessing}>
-            {hasProcessing ? (
-              <>
-                <Loader2Icon className="size-4 animate-spin" />
-                {t("processingButton")}
-              </>
-            ) : (
-              <>
-                <PlayIcon className="size-4" />
-                {t("processSourcesButton")} ({pendingSources.length})
-              </>
-            )}
+        {isProcessing ? (
+          <Button disabled={true}>
+            <Loader2Icon className="size-4 animate-spin" />
+            {t("processingButton")}
           </Button>
-        ) : null}
+        ) : (
+          <ConfirmDialog
+            title={t("reProcessAndExtract")}
+            description={t("reProcessAndExtractDesc")}
+            onConfirm={() => handleProcessSources()}
+          >
+            <Button>
+              <SparklesIcon className="size-4" />
+              {t("reProcessAndExtract")}
+            </Button>
+          </ConfirmDialog>
+        )}
       </div>
 
       <Separator />

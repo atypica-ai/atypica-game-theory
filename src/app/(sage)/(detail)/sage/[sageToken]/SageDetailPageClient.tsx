@@ -1,10 +1,10 @@
 "use client";
-import { analyzeSageKnowledge, extractSageKnowledgeAction } from "@/app/(sage)/(detail)/actions";
+import { analyzeSageKnowledge } from "@/app/(sage)/(detail)/actions";
 import type { SageAvatar, SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Sage } from "@/prisma/client";
-import { ExternalLinkIcon, Loader2Icon, ScanSearchIcon, SparklesIcon } from "lucide-react";
+import { ExternalLinkIcon, Loader2Icon, ScanSearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,23 +23,7 @@ export function SageDetailPageClient({
 }) {
   const t = useTranslations("Sage.detail");
   const router = useRouter();
-  const [isExtracting, setIsExtracting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  const handleExtractKnowledge = useCallback(async () => {
-    setIsExtracting(true);
-    try {
-      const result = await extractSageKnowledgeAction(sage.id);
-      if (!result.success) throw result;
-      toast.success(t("extractionStarted"));
-      setTimeout(() => router.refresh(), 1000);
-    } catch (error) {
-      console.log("Error extracting knowledge:", error);
-      toast.error(t("extractionFailed"));
-    } finally {
-      setIsExtracting(false);
-    }
-  }, [sage.id, router, t]);
 
   const handleAnalyze = useCallback(async () => {
     setIsAnalyzing(true);
@@ -66,19 +50,6 @@ export function SageDetailPageClient({
           <p className="text-sm text-muted-foreground mt-0.5">{sage.domain}</p>
         </div>
         <div className="ml-auto"></div>
-        <Button
-          onClick={handleExtractKnowledge}
-          disabled={isExtracting}
-          variant="default"
-          size="sm"
-        >
-          {isExtracting ? (
-            <Loader2Icon className="size-4 animate-spin" />
-          ) : (
-            <SparklesIcon className="size-4" />
-          )}
-          {t("extractKnowledgeButton")}
-        </Button>
         <Button onClick={handleAnalyze} disabled={isAnalyzing} variant="outline" size="sm">
           {isAnalyzing ? (
             <Loader2Icon className="size-4 animate-spin" />

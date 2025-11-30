@@ -13,15 +13,12 @@ export type SageAvatar = Partial<{
 }>;
 
 export type SageExtra = Partial<{
-  error: string; // Error message if processing failed
+  error: string | null; // Error message if processing failed
   recommendedQuestions: string[]; // Recommended questions for users to ask the sage
-  // 暂时没用
+  // processing 表示正在提取 knowledge，其他处理中的状态不需要记录，这个状态很关键，提取中的时候不能做别的事情
   processing:
     | {
         startsAt: number; // timestamp, typeof Date.now()
-        sources: boolean;
-        memoryDocument: boolean;
-        knowledgeGaps: boolean;
       }
     | false;
 }>;
@@ -37,7 +34,7 @@ export enum SageSourceType {
 }
 
 export type SageSourceExtra = Partial<{
-  error: string;
+  error: string | null;
   processing: boolean;
 }>;
 

@@ -69,7 +69,7 @@ async function processSingleSource(
       mergeExtra({
         tableName: "SageSource",
         id: source.id,
-        extra: { processing: true } satisfies SageSourceExtra,
+        extra: { processing: true, error: null } satisfies SageSourceExtra,
       }),
     );
 
