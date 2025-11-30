@@ -94,6 +94,8 @@ type WorkingMemoryItem = {
 
 ### SageKnowledgeGap (知识空白)
 
+**定义**: Gap 是用户与专家对话中，专家无法充分回答的知识缺失。
+
 ```typescript
 {
   sageId: number
@@ -104,8 +106,8 @@ type WorkingMemoryItem = {
 
   // 来源追踪
   source: {
-    type: "analysis" | "conversation" | "system_suggestion"
-    userChatToken?: string     // conversation 类型专用
+    type: "conversation" | "system_suggestion"
+    userChatToken: string      // 对话 token
     quote?: string             // 用户提问引用
   }
 
@@ -192,10 +194,6 @@ type WorkingMemoryItem = {
     - working: []
     - episodic: []
     - changeNotes: "Extract knowledge from sources"
-  ↓
-手动触发: 分析知识空白
-  - 创建 SageKnowledgeGap 记录
-  - source: { type: "analysis" }
 ```
 
 ### 2. 对话中发现知识空白
@@ -277,22 +275,16 @@ AI 生成回答
 
 ---
 
-## 知识空白的三个来源
+## 知识空白来源
 
-### 来源 1: 初始分析
+### 来源 1: 对话中发现 (唯一核心来源)
 
-- 用户点击 "Analyze" 按钮
-- AI 分析 core memory,识别薄弱领域
-- source: `{ type: "analysis" }`
-
-### 来源 2: 对话中发现 (核心创新)
-
-- 每次对话后异步分析
-- AI 检测回答质量和知识缺失
+- **定义**: Gap 是用户与专家对话中，专家无法充分回答的知识缺失
+- 每次对话后异步分析，AI 检测回答质量和知识薄弱点
 - source: `{ type: "conversation", userChatToken, quote }`
-- UI 显示用户提问引用,可点击跳转
+- UI 显示用户提问引用，可点击跳转到原对话
 
-### 来源 3: 系统建议 (预留)
+### 来源 2: 系统建议 (预留)
 
 - 系统定期分析或人工添加
 - source: `{ type: "system_suggestion" }`
@@ -431,7 +423,6 @@ after(
 
 - **生成专家档案** (buildSageProfile): `gemini-2.5-flash`
 - **构建核心记忆** (buildSageCoreMemory): `claude-haiku-4-5` (优化成本)
-- **分析知识空白**: `gpt-4o`
 - **生成访谈计划**: `claude-sonnet-4`
 
 ### 对话系统
@@ -513,9 +504,9 @@ src/app/(sage)/
 
 ### Gaps Tab
 
-- Pending Gaps (显示来源、引用、严重程度)
+- Pending Gaps (显示对话来源、用户提问引用、严重程度)
 - Resolved Gaps (显示解决方式、置信度、证据)
-- 操作: Create Supplementary Interview
+- 操作: Create Supplementary Interview (基于 pending gaps 生成访谈计划)
 
 ### Interviews Tab
 

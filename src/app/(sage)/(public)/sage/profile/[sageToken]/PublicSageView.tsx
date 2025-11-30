@@ -29,8 +29,7 @@ export function PublicSageView({
   isOwner: boolean;
   isAuthenticated: boolean;
 }) {
-  const t = useTranslations("Sage.detail");
-  const tPublic = useTranslations("Sage.public");
+  const t = useTranslations("Sage.public");
   const router = useRouter();
   const { data: session } = useSession();
   const [isCreatingChat, setIsCreatingChat] = useState(false);
@@ -66,7 +65,7 @@ export function PublicSageView({
           {/* Header with Avatar and Name */}
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="relative size-24 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
+              <div className="relative size-24 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0">
                 {sage.avatar.url ? (
                   <Image
                     loader={proxiedImageLoader}
@@ -76,7 +75,7 @@ export function PublicSageView({
                     className="object-cover"
                   />
                 ) : (
-                  <HippyGhostAvatar className="size-24" seed={sage.id} />
+                  <HippyGhostAvatar className="size-24 scale-75" seed={sage.id} />
                 )}
               </div>
               <div>
@@ -90,8 +89,8 @@ export function PublicSageView({
             {isOwner && (
               <Button variant="ghost" size="sm" className="gap-1.5" asChild>
                 <Link href={`/sage/${sage.token}`}>
-                  <Edit2Icon className="size-4" />
-                  {tPublic("manage")}
+                  <Edit2Icon className="size-3" />
+                  {t("editSage")}
                 </Link>
               </Button>
             )}
@@ -114,13 +113,13 @@ export function PublicSageView({
           {/* Introduction Section */}
           <div className="mb-8">
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
-              {tPublic("introduction")}
+              {t("introduction")}
             </h2>
             {sage.bio ? (
               <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">{sage.bio}</p>
             ) : (
               <p className="text-sm text-zinc-500 dark:text-zinc-500 italic">
-                {tPublic("noIntroduction")}
+                {t("noIntroduction")}
               </p>
             )}
           </div>
@@ -129,7 +128,7 @@ export function PublicSageView({
           {recommendedQuestions.length > 0 && (
             <div className="mb-8">
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
-                {tPublic("chatWithMeAbout")}
+                {t("chatWithMeAbout")}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {recommendedQuestions.slice(0, 4).map((question, index) => (
@@ -157,7 +156,7 @@ export function PublicSageView({
           {/* Ask Me Anything CTA */}
           <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800">
             <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
-              {tPublic("askMeAnything")}
+              {t("askMeAnything")}
             </h2>
             <Button
               onClick={() => handleStartChat()}
@@ -166,7 +165,7 @@ export function PublicSageView({
               className="w-full h-14 text-base rounded-xl"
             >
               <MessageCircleIcon className="size-5" />
-              {isAuthenticated ? t("chatWithSage") : tPublic("signInToChat")}
+              {isAuthenticated ? t("chatWithSage") : t("signInToChat")}
             </Button>
             {session?.user && (
               <div className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400 mt-3">

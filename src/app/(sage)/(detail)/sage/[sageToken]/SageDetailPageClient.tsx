@@ -1,15 +1,8 @@
 "use client";
-import { analyzeSageKnowledge } from "@/app/(sage)/(detail)/actions";
 import type { SageAvatar, SageExtra } from "@/app/(sage)/types";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Sage } from "@/prisma/client";
-import { ExternalLinkIcon, Loader2Icon, ScanSearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
 import { AvatarUpload } from "./components/AvatarUpload";
 
 export function SageDetailPageClient({
@@ -22,23 +15,6 @@ export function SageDetailPageClient({
   };
 }) {
   const t = useTranslations("Sage.detail");
-  const router = useRouter();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  const handleAnalyze = useCallback(async () => {
-    setIsAnalyzing(true);
-    try {
-      const result = await analyzeSageKnowledge(sage.id);
-      if (!result.success) throw result;
-      toast.success(t("analysisStarted"));
-      setTimeout(() => router.refresh(), 1000);
-    } catch (error) {
-      console.log("Error analyzing:", error);
-      toast.error(t("analysisFailed"));
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, [sage.id, t, router]);
 
   return (
     <div className="p-6 space-y-6">
@@ -49,21 +25,6 @@ export function SageDetailPageClient({
           <h1 className="text-xl font-semibold">{sage.name}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{sage.domain}</p>
         </div>
-        <div className="ml-auto"></div>
-        <Button onClick={handleAnalyze} disabled={isAnalyzing} variant="outline" size="sm">
-          {isAnalyzing ? (
-            <Loader2Icon className="size-4 animate-spin" />
-          ) : (
-            <ScanSearchIcon className="size-4" />
-          )}
-          {t("analyzeGapsButton")}
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href={`/sage/profile/${sage.token}`} target="_blank">
-            <ExternalLinkIcon className="size-4" />
-            {t("viewPublicProfile")}
-          </Link>
-        </Button>
       </div>
 
       <Separator />

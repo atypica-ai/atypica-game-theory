@@ -97,7 +97,7 @@ export function AvatarUpload({
       {currentAvatar.url ? (
         <Image src={currentAvatar.url} alt={sageName} fill className="object-cover" />
       ) : (
-        <HippyGhostAvatar className="size-20" seed={sageId} />
+        <HippyGhostAvatar className="size-20 scale-75" seed={sageId} />
       )}
       {isUploading ? (
         <div className="absolute top-0 left-0 w-full h-full bg-black/80 text-white flex items-center justify-center">

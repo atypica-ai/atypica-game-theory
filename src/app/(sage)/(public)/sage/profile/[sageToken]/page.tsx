@@ -31,7 +31,7 @@ async function PublicSagePage({
       memoryDocuments: {
         orderBy: { version: "desc" },
         take: 1,
-        select: { content: true },
+        select: { core: true, working: true, episodic: true },
       },
     },
   });
@@ -47,7 +47,7 @@ async function PublicSagePage({
     avatar: sageData.avatar as SageAvatar,
   };
 
-  const memoryDocument = sageData.memoryDocuments[0]?.content ?? null;
+  const memoryDocument = sageData.memoryDocuments[0]?.core ?? null;
 
   const isOwner = !!(session?.user && sage.userId === session.user.id);
 

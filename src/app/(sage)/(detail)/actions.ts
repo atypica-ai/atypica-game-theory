@@ -1,7 +1,6 @@
 "use server";
 import { StatReporter } from "@/ai/tools/types";
 import { generateInterviewPlan } from "@/app/(sage)/processing/followup";
-import { analyzeKnowledgeOnly } from "@/app/(sage)/processing/gaps";
 import { extractKnowledgeFromSources } from "@/app/(sage)/processing/memory";
 import { processSageSources } from "@/app/(sage)/processing/sources";
 import type { SageExtra, SageInterviewExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
@@ -15,63 +14,6 @@ import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
-
-// ===== Knowledge Analysis =====
-
-/**
- * Analyze sage knowledge completeness
- */
-export async function analyzeSageKnowledge(sageId: number): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    // Check ownership and get token for revalidation
-    const sage = await prisma.sage.findUnique({
-      where: { id: sageId },
-      select: {
-        userId: true,
-        token: true,
-      },
-    });
-
-    if (!sage) {
-      return {
-        success: false,
-        message: "Sage not found",
-        code: "not_found",
-      };
-    }
-
-    if (sage.userId !== user.id) {
-      return {
-        success: false,
-        message: "Unauthorized",
-        code: "unauthorized",
-      };
-    }
-
-    // Check if memory document exists
-    const memoryDoc = await prisma.sageMemoryDocument.findFirst({
-      where: { sageId },
-      select: { id: true },
-    });
-
-    if (!memoryDoc) {
-      return {
-        success: false,
-        message: "Memory document not ready",
-        code: "forbidden",
-      };
-    }
-
-    const locale = await getLocale();
-
-    // Trigger background analysis only
-    waitUntil(analyzeKnowledgeOnly({ sageId, locale }));
-
-    revalidatePath(`/sage/${sage.token}`);
-
-    return { success: true, data: undefined };
-  });
-}
 
 // ===== Supplementary Interview =====
 

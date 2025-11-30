@@ -8,6 +8,7 @@ import {
   addWorkingMemory,
   createOrUpdateMemoryDocument,
 } from "@/app/(sage)/lib";
+import { chatGapDiscoverySystem } from "@/app/(sage)/prompt/gaps";
 import {
   buildSageCoreMemorySystemPrompt,
   buildSageProfileSystemPrompt,
@@ -768,32 +769,10 @@ async function discoverNewGaps({
       .describe("New knowledge gaps discovered from the conversation"),
   });
 
-  const systemPrompt =
-    locale === "zh-CN"
-      ? `你是知识缺口发现专家。分析对话内容，识别专家知识库中的缺口。
-
-<识别标准>
-1. **Critical**: 用户明确询问但专家无法充分回答的核心问题
-2. **Important**: 对话中涉及但专家回答不够深入的领域
-3. **Nice-to-have**: 相关但不紧急的知识补充
-
-<注意>
-- 只识别真正的知识缺口，不要过度解读
-- 如果专家回答得很好，就不要创建 gap
-- 关注用户的实际需求和疑问
-</注意>`
-      : `You are a knowledge gap discovery expert. Analyze the conversation to identify gaps in the expert's knowledge base.
-
-<Criteria>
-1. **Critical**: Core questions user asked but expert couldn't answer sufficiently
-2. **Important**: Areas touched on but expert's answer lacked depth
-3. **Nice-to-have**: Related but non-urgent knowledge supplements
-
-<Note>
-- Only identify real knowledge gaps, don't over-interpret
-- If expert answered well, don't create a gap
-- Focus on user's actual needs and questions
-</note>`;
+  const systemPrompt = chatGapDiscoverySystem({
+    sage: { name: "Expert", domain: sageDomain },
+    locale,
+  });
 
   const userPrompt =
     locale === "zh-CN"

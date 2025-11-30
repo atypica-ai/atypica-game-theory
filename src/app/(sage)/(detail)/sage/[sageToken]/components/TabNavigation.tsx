@@ -1,7 +1,13 @@
 "use client";
-
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AlertTriangleIcon, BookOpenIcon, MessageSquareIcon, MicIcon } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  BookOpenIcon,
+  ExternalLinkIcon,
+  MessageSquareIcon,
+  MicIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,7 +18,7 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
 
   const tabs = [
     {
-      name: t("basicInformation"),
+      name: t("sageProfile"),
       href: `/sage/${sageToken}`,
       icon: BookOpenIcon,
       exact: true,
@@ -48,12 +54,16 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
   };
 
   return (
-    <div className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <div
+      className={cn(
+        "border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60",
+        "flex items-center justify-between pr-4",
+      )}
+    >
       <nav className="flex space-x-1 px-4" aria-label="Tabs">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = isActive(tab);
-
           return (
             <Link
               key={tab.name}
@@ -71,6 +81,12 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
           );
         })}
       </nav>
+      <Button variant="default" size="sm" asChild>
+        <Link href={`/sage/profile/${sageToken}`} target="_blank">
+          <ExternalLinkIcon className="size-4" />
+          {t("viewPublicProfile")}
+        </Link>
+      </Button>
     </div>
   );
 }
