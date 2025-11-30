@@ -1,4 +1,3 @@
-"use client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -20,7 +19,7 @@ import { AttachmentFile } from "@/prisma/client";
 import { FileText, ImageIcon, Library, Loader2, PaperclipIcon, Search, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { JSX, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export type FileUploadInfo = {
@@ -31,14 +30,26 @@ export type FileUploadInfo = {
   size: number; // bytes
 };
 
-interface FileUploadButtonProps {
+export type FileUploadButtonStatus = "uploading" | "ready";
+
+export function FileUploadButton(props: {
   onFileUploadedAction: (fileInfo: FileUploadInfo) => void;
   disabled?: boolean;
   existingFiles?: FileUploadInfo[];
   showLimitsCheck?: boolean;
   children?: React.ReactNode;
+  onStatusChange?: (status: FileUploadButtonStatus) => void;
+}): JSX.Element;
+
+export function FileUploadButton(props: {
+  onFileUploadedAction: (fileInfo: FileUploadInfo) => void;
+  disabled?: boolean;
+  existingFiles?: FileUploadInfo[];
+  showLimitsCheck?: boolean;
+  buttonText?: string;
   className?: string;
-}
+  onStatusChange?: (status: FileUploadButtonStatus) => void;
+}): JSX.Element;
 
 export function FileUploadButton({
   onFileUploadedAction,
@@ -46,8 +57,19 @@ export function FileUploadButton({
   existingFiles = [],
   showLimitsCheck = true,
   children,
+  buttonText,
   className,
-}: FileUploadButtonProps) {
+  onStatusChange,
+}: {
+  onFileUploadedAction: (fileInfo: FileUploadInfo) => void;
+  disabled?: boolean;
+  existingFiles?: FileUploadInfo[];
+  showLimitsCheck?: boolean;
+  children?: React.ReactNode;
+  buttonText?: string;
+  className?: string;
+  onStatusChange?: (status: FileUploadButtonStatus) => void;
+}) {
   const [isUploading, setIsUploading] = useState(false);
   const [isLibraryOpen, setLibraryOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,6 +103,7 @@ export function FileUploadButton({
     }
 
     setIsUploading(true);
+    onStatusChange?.("uploading");
 
     try {
       const { objectUrl, getObjectUrl } = await clientUploadFileToS3(file);
@@ -97,6 +120,7 @@ export function FileUploadButton({
       toast.error(error instanceof Error ? error.message : t("failedToUploadFile"));
     } finally {
       setIsUploading(false);
+      onStatusChange?.("ready");
       // Clear the input value to allow uploading the same file again
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -112,21 +136,23 @@ export function FileUploadButton({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className={cn("h-8 text-xs", className)}
-            disabled={disabled || isUploading}
-          >
-            {isUploading ? (
-              <Loader2 className="size-3 animate-spin" />
-            ) : (
-              <PaperclipIcon className="size-3" />
-            )}
-            {children}
-          </Button>
+        <DropdownMenuTrigger asChild disabled={disabled || isUploading}>
+          {children ?? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className={cn("h-8 text-xs", className)}
+              disabled={disabled || isUploading}
+            >
+              {isUploading ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : (
+                <PaperclipIcon className="size-3" />
+              )}
+              {buttonText ? <span>{buttonText}</span> : null}
+            </Button>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onSelect={() => fileInputRef.current?.click()}>
@@ -240,7 +266,6 @@ function SelectFromLibraryDialog({
           mimeType: file.mimeType,
           size: file.size,
         });
-        toast.success(t("fileSelectedSuccessfully"));
       } else {
         toast.error(result.message);
       }
@@ -262,12 +287,12 @@ function SelectFromLibraryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className="px-0">
+        <DialogHeader className="px-6">
           <DialogTitle>{t("selectFromLibrary")}</DialogTitle>
         </DialogHeader>
-        <div className="mt-4 flex flex-col overflow-hidden gap-4">
-          <div className="relative w-full">
+        <div className="flex flex-col overflow-hidden gap-4">
+          <div className="relative mx-6">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
               type="search"
@@ -282,10 +307,10 @@ function SelectFromLibraryDialog({
               <Loader2 className="size-8 animate-spin text-muted-foreground" />
             </div>
           ) : filteredFiles.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">{t("noFilesFound")}</p>
+            <p className="p-8 text-center text-sm text-muted-foreground">{t("noFilesFound")}</p>
           ) : (
-            <div className="max-h-60 overflow-y-auto">
-              <ul className="flex flex-col gap-2 pr-2">
+            <div className="max-h-60 overflow-y-auto px-6">
+              <ul className="flex flex-col gap-2">
                 {filteredFiles.map(({ file, thumbnailHttpUrl }) => (
                   <li key={file.id}>
                     <Button

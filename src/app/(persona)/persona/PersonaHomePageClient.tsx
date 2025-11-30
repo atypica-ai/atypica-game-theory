@@ -223,9 +223,8 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                       showLimitsCheck={true}
                       disabled={isCreating}
                       className="w-full h-12 text-sm"
-                    >
-                      {t("uploadPDFFile")}
-                    </FileUploadButton>
+                      buttonText={t("uploadPDFFile")}
+                    />
                     <Button size="lg" variant="outline" asChild className="w-full h-12">
                       <Link href="/personas" prefetch={true}>
                         {t("viewMyPersonas")}
@@ -461,9 +460,8 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
                     showLimitsCheck={true}
                     disabled={isCreating}
                     className="w-full h-12 text-sm"
-                  >
-                    {t("uploadFirstInterview")}
-                  </FileUploadButton>
+                    buttonText={t("uploadFirstInterview")}
+                  />
                 ) : (
                   <Button
                     onClick={handleStartAnalysis}
