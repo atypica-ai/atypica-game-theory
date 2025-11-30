@@ -6,68 +6,43 @@ import {
   SageKnowledgeGapSeverity,
   SageKnowledgeGapSource,
 } from "@/app/(sage)/types";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import type { Metadata } from "next";
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
-import { forbidden, notFound } from "next/navigation";
-import { GapsTab } from "./GapsTab";
+import { forbidden } from "next/navigation";
+import { Suspense } from "react";
+import { SageGapsPageClient } from "./SageGapsPageClient";
 
-export const dynamic = "force-dynamic";
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ sageToken: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const t = await getTranslations("Sage.detail.metadata");
-  const { sageToken } = await params;
-
-  // Get sage name for metadata
-  const sage = await prisma.sage.findUnique({
-    where: { token: sageToken },
-    select: { name: true },
-  });
-
-  if (!sage) {
-    return {};
-  }
-
   return generatePageMetadata({
-    title: `${sage.name} - ${t("gapsTitle")}`,
+    title: t("gapsTitle"),
     description: t("gapsDescription"),
     locale,
   });
 }
 
-export default async function SageGapsPage({ params }: { params: Promise<{ sageToken: string }> }) {
-  const token = (await params).sageToken;
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    forbidden();
-  }
-
-  // Get sage (GapsTab needs full sage object)
-  const sageData = await prisma.sage.findUnique({
-    where: { token },
-  });
-
-  if (!sageData) {
-    notFound();
-  }
-
-  // Check ownership
-  if (sageData.userId !== session.user.id) {
-    forbidden();
-  }
-
-  const sage = {
-    ...sageData,
-    extra: sageData.extra as SageExtra,
-  };
+async function SageGapsPage({
+  sageToken,
+  sessionUser,
+}: {
+  sageToken: string;
+  sessionUser: NonNullable<Session["user"]>;
+}) {
+  const sage = await prisma.sage
+    .findUniqueOrThrow({
+      where: { token: sageToken, userId: sessionUser.id },
+      select: {
+        id: true,
+        userId: true,
+        extra: true,
+      },
+    })
+    .then(({ extra, ...sage }) => ({ ...sage, extra: extra as SageExtra }));
 
   // Fetch knowledge gaps for this sage
   const gaps = (
@@ -83,5 +58,22 @@ export default async function SageGapsPage({ params }: { params: Promise<{ sageT
     resolvedBy: resolvedBy as SageKnowledgeGapResolvedBy,
   }));
 
-  return <GapsTab sage={sage} gaps={gaps} />;
+  return <SageGapsPageClient sage={sage} gaps={gaps} />;
+}
+
+export default async function SageGapsPageWithLoading({
+  params,
+}: {
+  params: Promise<{ sageToken: string }>;
+}) {
+  const token = (await params).sageToken;
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    forbidden(); // layout 里已经处理过了，这里其实不会出现
+  }
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <SageGapsPage sageToken={token} sessionUser={session.user} />
+    </Suspense>
+  );
 }

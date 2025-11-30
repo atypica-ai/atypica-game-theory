@@ -1,4 +1,9 @@
 "use server";
+import { generateInterviewPlan } from "@/app/(sage)/processing/followup";
+import { analyzeKnowledgeOnly } from "@/app/(sage)/processing/gaps";
+import { extractKnowledgeOnly } from "@/app/(sage)/processing/memory";
+import { processSourcesOnly } from "@/app/(sage)/processing/sources";
+import type { SageInterviewExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
@@ -8,11 +13,6 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
-import { generateInterviewPlan } from "../processing/followup";
-import { analyzeKnowledgeOnly } from "../processing/gaps";
-import { extractKnowledgeOnly } from "../processing/memory";
-import { processSourcesOnly } from "../processing/sources";
-import type { SageInterviewExtra, SageKnowledgeGapSeverity } from "../types";
 
 // ===== Knowledge Analysis =====
 

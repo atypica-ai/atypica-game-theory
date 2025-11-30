@@ -1,12 +1,15 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { SageAvatar, SageExtra } from "@/app/(sage)/types";
+import { NotFound } from "@/components/NotFound";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import type { Metadata } from "next";
-import { getServerSession } from "next-auth";
-import { getLocale, getTranslations } from "next-intl/server";
-import { forbidden, notFound } from "next/navigation";
-import { MemoryTab } from "./MemoryTab";
+import { getServerSession, Session } from "next-auth";
+import { getLocale } from "next-intl/server";
+import { forbidden } from "next/navigation";
+import { Suspense } from "react";
+import { SageDetailPageClient } from "./SageDetailPageClient";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +19,12 @@ export async function generateMetadata({
   params: Promise<{ sageToken: string }>;
 }): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("Sage.detail.metadata");
   const { sageToken } = await params;
 
   // Only need name for metadata
   const sage = await prisma.sage.findUnique({
     where: { token: sageToken },
-    select: { name: true },
+    select: { name: true, domain: true },
   });
 
   if (!sage) {
@@ -30,43 +32,39 @@ export async function generateMetadata({
   }
 
   return generatePageMetadata({
-    title: `${sage.name} - ${t("memoryTitle")}`,
-    description: t("memoryDescription"),
+    title: sage.name,
+    description: sage.domain,
     locale,
   });
 }
 
-export default async function SageMemoryPage({
-  params,
+async function SageDetailPage({
+  sageToken,
+  sessionUser,
 }: {
-  params: Promise<{ sageToken: string }>;
+  sageToken: string;
+  sessionUser: NonNullable<Session["user"]>;
 }) {
-  const token = (await params).sageToken;
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    forbidden();
-  }
-
-  // Get sage with memory document
   const sageData = await prisma.sage.findUnique({
-    where: { token },
-    include: {
-      memoryDocuments: {
-        orderBy: { version: "desc" },
-        take: 1,
-        select: { content: true },
-      },
+    where: {
+      token: sageToken,
+      userId: sessionUser.id,
+    },
+    select: {
+      id: true,
+      token: true,
+      name: true,
+      locale: true,
+      bio: true,
+      domain: true,
+      expertise: true,
+      avatar: true,
+      extra: true,
     },
   });
 
   if (!sageData) {
-    notFound();
-  }
-
-  // Check ownership
-  if (sageData.userId !== session.user.id) {
-    forbidden();
+    return NotFound();
   }
 
   const sage = {
@@ -76,7 +74,22 @@ export default async function SageMemoryPage({
     avatar: sageData.avatar as SageAvatar,
   };
 
-  const memoryDocument = sageData.memoryDocuments[0]?.content ?? null;
+  return <SageDetailPageClient sage={sage} />;
+}
 
-  return <MemoryTab sage={sage} memoryDocument={memoryDocument} />;
+export default async function SageDetailPageeWithLoading({
+  params,
+}: {
+  params: Promise<{ sageToken: string }>;
+}) {
+  const token = (await params).sageToken;
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    forbidden(); // layout 里已经处理过了，这里其实不会出现
+  }
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <SageDetailPage sageToken={token} sessionUser={session.user} />
+    </Suspense>
+  );
 }

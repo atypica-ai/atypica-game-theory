@@ -3,9 +3,8 @@
 import { updateSageAvatar } from "@/app/(sage)/(detail)/actions";
 import type { SageAvatar } from "@/app/(sage)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Button } from "@/components/ui/button";
 import { getS3UploadCredentials } from "@/lib/attachments/actions";
-import { ImageIcon, Loader2Icon, UploadIcon } from "lucide-react";
+import { Loader2Icon, UploadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -94,45 +93,31 @@ export function AvatarUpload({
   );
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="relative size-20 rounded-full overflow-hidden bg-muted">
-        {currentAvatar.url ? (
-          <Image src={currentAvatar.url} alt={sageName} fill className="object-cover" />
-        ) : (
-          <HippyGhostAvatar className="size-20" seed={sageId} />
-        )}
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="hidden"
-        />
-        <Button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-          variant="outline"
-          size="sm"
+    <div className="relative group size-20 rounded-full overflow-hidden bg-muted">
+      {currentAvatar.url ? (
+        <Image src={currentAvatar.url} alt={sageName} fill className="object-cover" />
+      ) : (
+        <HippyGhostAvatar className="size-20" seed={sageId} />
+      )}
+      {isUploading ? (
+        <div className="absolute top-0 left-0 w-full h-full bg-black/80 text-white flex items-center justify-center">
+          <Loader2Icon className="size-5 animate-spin" />
+        </div>
+      ) : (
+        <div
+          className="absolute top-0 left-0 w-full h-full bg-black/80 text-white cursor-pointer hidden group-hover:flex items-center justify-center"
+          onClick={() => !isUploading && fileInputRef.current?.click()}
         >
-          {isUploading ? (
-            <>
-              <Loader2Icon className="size-4 animate-spin" />
-              {t("uploading")}
-            </>
-          ) : (
-            <>
-              <UploadIcon className="size-4" />
-              {t("uploadAvatar")}
-            </>
-          )}
-        </Button>
-        <p className="text-xs text-muted-foreground">
-          <ImageIcon className="size-3 inline" /> {t("fileSizeHint")}
-        </p>
-      </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <UploadIcon className="size-5" />
+        </div>
+      )}
     </div>
   );
 }

@@ -5,8 +5,8 @@ import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { forbidden, notFound } from "next/navigation";
 import { ReactNode } from "react";
-import { SourcesPanel } from "./SourcesPanel";
-import { TabNavigation } from "./TabNavigation";
+import { SourcesPanel } from "./components/SourcesPanel";
+import { TabNavigation } from "./components/TabNavigation";
 
 export default async function SageDetailLayout({
   children,

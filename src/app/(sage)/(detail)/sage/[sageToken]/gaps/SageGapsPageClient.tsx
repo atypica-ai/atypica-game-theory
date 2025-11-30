@@ -24,11 +24,11 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-export function GapsTab({
+export function SageGapsPageClient({
   sage,
   gaps,
 }: {
-  sage: Omit<Sage, "extra"> & { extra: SageExtra };
+  sage: Pick<Sage, "id"> & { extra: SageExtra };
   gaps: (Omit<SageKnowledgeGap, "severity" | "extra" | "source" | "resolvedBy"> & {
     severity: SageKnowledgeGapSeverity;
     extra: SageKnowledgeGapExtra;
@@ -135,7 +135,7 @@ export function GapsTab({
                         </div>
                       </div>
                       <Link href={`/sage/chat/view/${gap.source.userChatToken}`} target="_blank">
-                        <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0" />
+                        <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors shrink-0" />
                       </Link>
                     </div>
                   )}
@@ -174,7 +174,7 @@ export function GapsTab({
             {resolvedGaps.map((gap) => (
               <div key={gap.id} className="border-l-2 border-green-500/20 pl-3 py-2 opacity-60">
                 <div className="flex items-start gap-2">
-                  <CheckCircle2Icon className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <CheckCircle2Icon className="h-4 w-4 text-green-600 shrink-0" />
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="text-sm font-medium line-through">{gap.area}</div>
                     <div className="text-xs px-1.5 py-0.5 rounded bg-muted inline-block">

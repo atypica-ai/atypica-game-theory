@@ -6,10 +6,8 @@
       "description": "Upload documents, paste text, or add website links to build your expert's knowledge base",
       "addAtLeastOneSource": "Please add at least one knowledge source",
       "enterText": "Please enter text content",
-      "textAdded": "Text added",
       "enterWebsiteUrl": "Please enter website URL",
       "invalidUrl": "Please enter a valid URL",
-      "websiteAdded": "Website added",
       "cancel": "Cancel",
       "next": "Next",
       "back": "Back",
@@ -30,16 +28,13 @@
       "addButton": "Add",
       "addWebsiteTitle": "Add website",
       "uploadSources": "Upload sources",
-      "chooseFilesToUpload": "Choose files to upload",
-      "supportedFileTypes": "Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3), .docx",
+      "supportedFileTypes": "Supported file types: PDF, .txt, Markdown",
+      "unsupportedFileType": "The file type is not supported",
       "websiteButton": "Website",
       "addWebsiteUrl": "Add website URL",
       "pasteTextButton": "Paste text",
       "pasteTextDirectly": "Paste text content directly",
-      "sourceLimit": "Source limit",
-      "comingSoonTitle": "Coming Soon",
-      "comingSoonDescription": "This feature is currently in beta and only available to selected users. Stay tuned for the official launch!",
-      "backToHome": "← Back to Home"
+      "sourceLimit": "Source limit"
     },
     "homepage": {
       "title": "Build AI Expert Agents",
@@ -130,7 +125,6 @@
       "extractKnowledgeButton": "Extract Knowledge",
       "analyzeGapsButton": "Analyze Gaps",
       "viewPublicProfile": "View Public Profile",
-      "avatar": "Avatar",
       "basicInformation": "Basic Information",
       "bio": "Bio",
       "expertise": "Expertise",
@@ -178,10 +172,7 @@
         "selectImageFile": "Please select an image file",
         "imageSizeLimit": "Image size must be less than 5MB",
         "avatarUpdated": "Avatar updated successfully",
-        "uploadFailed": "Failed to upload avatar",
-        "uploading": "Uploading...",
-        "uploadAvatar": "Upload Avatar",
-        "fileSizeHint": "Max 5MB, JPG/PNG/WebP"
+        "uploadFailed": "Failed to upload avatar"
       }
     },
     "chat": {},

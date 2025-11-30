@@ -1,79 +1,48 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { SageAvatar, SageExtra } from "@/app/(sage)/types";
+import { SageExtra } from "@/app/(sage)/types";
+import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import type { Metadata } from "next";
-import { getServerSession } from "next-auth";
+import { getServerSession, Session } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
-import { forbidden, notFound } from "next/navigation";
-import { ChatsTab } from "./ChatsTab";
+import { forbidden } from "next/navigation";
+import { Suspense } from "react";
+import { SageChatsPageClient } from "./SageChatsPageClient";
 
-export const dynamic = "force-dynamic";
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ sageToken: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const t = await getTranslations("Sage.detail.metadata");
-  const { sageToken } = await params;
-
-  // Only need name for metadata
-  const sage = await prisma.sage.findUnique({
-    where: { token: sageToken },
-    select: { name: true },
-  });
-
-  if (!sage) {
-    return {};
-  }
-
   return generatePageMetadata({
-    title: `${sage.name} - ${t("chatsTitle")}`,
+    title: t("chatsTitle"),
     description: t("chatsDescription"),
     locale,
   });
 }
 
-export default async function SageChatsPage({
-  params,
+async function SageChatsPage({
+  sageToken,
+  sessionUser,
 }: {
-  params: Promise<{ sageToken: string }>;
+  sageToken: string;
+  sessionUser: NonNullable<Session["user"]>;
 }) {
-  const token = (await params).sageToken;
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user) {
-    forbidden();
-  }
-
-  // Get sage with all fields for ChatsTab
-  const sageData = await prisma.sage.findUnique({
-    where: { token },
-  });
-
-  if (!sageData) {
-    notFound();
-  }
-
-  // Check ownership
-  if (sageData.userId !== session.user.id) {
-    forbidden();
-  }
-
-  const sage = {
-    ...sageData,
-    expertise: sageData.expertise as string[],
-    extra: sageData.extra as SageExtra,
-    avatar: sageData.avatar as SageAvatar,
-  };
+  const sage = await prisma.sage
+    .findUniqueOrThrow({
+      where: { token: sageToken, userId: sessionUser.id },
+      select: {
+        id: true,
+        userId: true,
+        extra: true,
+      },
+    })
+    .then(({ extra, ...sage }) => ({ ...sage, extra: extra as SageExtra }));
 
   // Fetch all chats associated with this sage through SageChat table
   const sageChats = await prisma.sageChat.findMany({
     where: {
       sageId: sage.id,
-      userId: session.user.id,
+      userId: sessionUser.id,
     },
     include: {
       userChat: {
@@ -90,5 +59,22 @@ export default async function SageChatsPage({
 
   const chats = sageChats.map((sc) => sc.userChat);
 
-  return <ChatsTab sage={sage} chats={chats} />;
+  return <SageChatsPageClient sage={sage} chats={chats} />;
+}
+
+export default async function SageChatsPageWithLoading({
+  params,
+}: {
+  params: Promise<{ sageToken: string }>;
+}) {
+  const token = (await params).sageToken;
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    forbidden(); // layout 里已经处理过了，这里其实不会出现
+  }
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <SageChatsPage sageToken={token} sessionUser={session.user} />
+    </Suspense>
+  );
 }

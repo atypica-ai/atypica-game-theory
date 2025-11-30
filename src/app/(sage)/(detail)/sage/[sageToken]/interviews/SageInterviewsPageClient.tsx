@@ -13,7 +13,7 @@ type InterviewWithUserChat = SageInterview & {
   userChat: UserChat & { messages: ChatMessage[] };
 };
 
-export function InterviewsTab({ interviews }: { interviews: InterviewWithUserChat[] }) {
+export function SageInterviewsPageClient({ interviews }: { interviews: InterviewWithUserChat[] }) {
   const t = useTranslations("Sage.detail");
 
   return (

@@ -1,7 +1,11 @@
 "use client";
 import { createSage } from "@/app/(sage)/(public)/actions";
 import { SageSourceContent, SageSourceType } from "@/app/(sage)/types";
-import { FileUploadButton, type FileUploadInfo } from "@/components/chat/FileUploadButton";
+import {
+  FileUploadButton,
+  type FileUploadButtonStatus,
+  type FileUploadInfo,
+} from "@/components/chat/FileUploadButton";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -24,6 +28,7 @@ export function CreateSageForm() {
 
   const [sources, setSources] = useState<SageSourceContent[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<FileUploadButtonStatus>("ready");
 
   // Modal states
   const [showTextModal, setShowTextModal] = useState(false);
@@ -38,6 +43,10 @@ export function CreateSageForm() {
 
   // Handle file upload
   const handleFileUploaded = (file: FileUploadInfo) => {
+    if (!["application/pdf", "text/plain", "text/markdown"].includes(file.mimeType)) {
+      toast.error(t("unsupportedFileType"));
+      return;
+    }
     const fileSource: SageSourceContent = {
       type: SageSourceType.FILE,
       objectUrl: file.objectUrl,
@@ -63,7 +72,6 @@ export function CreateSageForm() {
     ]);
     setTextContent("");
     setShowTextModal(false);
-    toast.success(t("textAdded"));
   };
 
   // Handle website source
@@ -91,7 +99,6 @@ export function CreateSageForm() {
 
     setWebsiteUrl("");
     setShowWebsiteModal(false);
-    toast.success(t("websiteAdded"));
   };
 
   // Remove source
@@ -203,7 +210,7 @@ export function CreateSageForm() {
 
   return (
     <FitToViewport className="flex flex-col items-center justify-start p-4">
-      <div className="w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-8">
+      <div className="w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-lg my-8 sm:border border-zinc-200 dark:border-zinc-800 sm:p-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">{t("title")}</h1>
@@ -211,30 +218,30 @@ export function CreateSageForm() {
         </div>
 
         {/* Upload Area */}
-        <div className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg p-12 mb-6 text-center bg-zinc-50 dark:bg-zinc-800/50">
-          <div className="flex justify-center mb-4">
-            <div className="size-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+        <FileUploadButton
+          onFileUploadedAction={handleFileUploaded}
+          onStatusChange={setUploadStatus}
+          disabled={sources.length >= 10}
+          showLimitsCheck={true}
+        >
+          <div
+            className={cn(
+              "border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-800/50",
+              "flex flex-col items-center justify-center p-12 mb-6",
+              sources.length >= 10 || uploadStatus !== "ready"
+                ? "cursor-not-allowed"
+                : "cursor-pointer",
+            )}
+          >
+            <div className="flex items-center justify-center mb-4 size-16 rounded-full bg-green-100 dark:bg-green-900/30">
               <UploadIcon className="size-8 text-green-600 dark:text-green-400" />
             </div>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
+              {t("uploadSources")}
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-500">{t("supportedFileTypes")}</p>
           </div>
-
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-            {t("uploadSources")}
-          </h3>
-
-          <div className="text-sm text-zinc-600 dark:text-zinc-400 mb-1">
-            <FileUploadButton
-              onFileUploadedAction={handleFileUploaded}
-              disabled={sources.length >= 10}
-              showLimitsCheck={true}
-              className="text-green-600 hover:underline"
-            >
-              {t("chooseFilesToUpload")}
-            </FileUploadButton>
-          </div>
-
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">{t("supportedFileTypes")}</p>
-        </div>
+        </FileUploadButton>
 
         {/* Source Type Buttons */}
         <div className="grid grid-cols-2 gap-4 mb-6">
@@ -269,11 +276,11 @@ export function CreateSageForm() {
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {source.type === "file" ? (
-                    <FileTextIcon className="size-4 text-zinc-500 flex-shrink-0" />
+                    <FileTextIcon className="size-4 text-zinc-500 shrink-0" />
                   ) : source.type === "url" ? (
-                    <GlobeIcon className="size-4 text-zinc-500 flex-shrink-0" />
+                    <GlobeIcon className="size-4 text-zinc-500 shrink-0" />
                   ) : (
-                    <FileTextIcon className="size-4 text-zinc-500 flex-shrink-0" />
+                    <FileTextIcon className="size-4 text-zinc-500 shrink-0" />
                   )}
                   <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
                     {getSourceDisplayName(source, index)}

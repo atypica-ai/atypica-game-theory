@@ -1,6 +1,5 @@
 "use client";
-
-import type { SageExtra } from "@/app/(sage)/types";
+import { SageExtra } from "@/app/(sage)/types";
 import { Separator } from "@/components/ui/separator";
 import type { ChatMessage, Sage, UserChat } from "@/prisma/client";
 import { formatDistanceToNow } from "date-fns";
@@ -8,10 +7,14 @@ import { ExternalLinkIcon, MessageSquareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
-type SageWithExtra = Omit<Sage, "extra"> & { extra: SageExtra };
 type ChatWithLastMessage = UserChat & { messages: ChatMessage[] };
 
-export function ChatsTab({ chats }: { sage: SageWithExtra; chats: ChatWithLastMessage[] }) {
+export function SageChatsPageClient({
+  chats,
+}: {
+  sage: Pick<Sage, "id"> & { extra: SageExtra };
+  chats: ChatWithLastMessage[];
+}) {
   const t = useTranslations("Sage.detail");
 
   return (
@@ -62,7 +65,7 @@ export function ChatsTab({ chats }: { sage: SageWithExtra; chats: ChatWithLastMe
                       </p>
                     )}
                   </div>
-                  <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
                 </div>
               </Link>
             );

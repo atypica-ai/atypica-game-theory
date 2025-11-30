@@ -1,4 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { EpisodicMemoryReference, WorkingMemoryItem } from "@/app/(sage)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
@@ -6,56 +7,59 @@ import type { Metadata } from "next";
 import { getServerSession, Session } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { forbidden } from "next/navigation";
-import { Suspense } from "react";
-import { SageInterviewsPageClient } from "./SageInterviewsPageClient";
+import { JSX, Suspense } from "react";
+import { SageMemoryPageClient } from "./SageMemoryPageClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const t = await getTranslations("Sage.detail.metadata");
   return generatePageMetadata({
-    title: t("interviewsTitle"),
-    description: t("interviewsDescription"),
+    title: t("memoryTitle"),
+    description: t("memoryDescription"),
     locale,
   });
 }
 
-async function SageInterviewsPage({
+async function SageMemoryPage({
   sageToken,
   sessionUser,
 }: {
   sageToken: string;
   sessionUser: NonNullable<Session["user"]>;
-}) {
-  const sage = await prisma.sage.findUniqueOrThrow({
-    where: { token: sageToken, userId: sessionUser.id },
-    select: {
-      id: true,
-      userId: true,
-    },
-  });
-
-  // Fetch all interviews associated with this sage
-  const sageInterviews = await prisma.sageInterview.findMany({
+}): Promise<JSX.Element> {
+  const sageMemoryDocument = await prisma.sageMemoryDocument.findFirst({
     where: {
-      sageId: sage.id,
-    },
-    include: {
-      userChat: {
-        include: {
-          messages: {
-            take: 1,
-            orderBy: { id: "desc" },
-          },
-        },
+      sage: {
+        token: sageToken,
+        userId: sessionUser.id, // ensure user owns the sage
       },
     },
-    orderBy: { updatedAt: "desc" },
+    select: {
+      content: true,
+      core: true,
+      working: true,
+      episodic: true,
+    },
+    orderBy: { version: "desc" },
+    take: 1,
   });
 
-  return <SageInterviewsPageClient interviews={sageInterviews} />;
+  return (
+    <SageMemoryPageClient
+      sageMemoryDocument={
+        sageMemoryDocument
+          ? {
+              core: sageMemoryDocument.core,
+              working: sageMemoryDocument.working as WorkingMemoryItem[],
+              episodic: sageMemoryDocument.episodic as EpisodicMemoryReference[],
+            }
+          : null
+      }
+    />
+  );
 }
 
-export default async function SageInterviewsPageWithLoading({
+export default async function SageMemoryPageWithLoading({
   params,
 }: {
   params: Promise<{ sageToken: string }>;
@@ -67,7 +71,7 @@ export default async function SageInterviewsPageWithLoading({
   }
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <SageInterviewsPage sageToken={token} sessionUser={session.user} />
+      <SageMemoryPage sageToken={token} sessionUser={session.user} />
     </Suspense>
   );
 }

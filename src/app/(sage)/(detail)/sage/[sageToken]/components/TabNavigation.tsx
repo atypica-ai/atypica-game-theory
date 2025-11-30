@@ -12,8 +12,14 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
 
   const tabs = [
     {
-      name: t("memory"),
+      name: t("basicInformation"),
       href: `/sage/${sageToken}`,
+      icon: BookOpenIcon,
+      exact: true,
+    },
+    {
+      name: t("memory"),
+      href: `/sage/${sageToken}/memory`,
       icon: BookOpenIcon,
       exact: true,
     },
@@ -42,7 +48,7 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
   };
 
   return (
-    <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <nav className="flex space-x-1 px-4" aria-label="Tabs">
         {tabs.map((tab) => {
           const Icon = tab.icon;

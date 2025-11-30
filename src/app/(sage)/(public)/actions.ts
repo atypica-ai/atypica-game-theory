@@ -17,55 +17,53 @@ export async function createSage(
   input: z.infer<typeof createSageInputSchema>,
 ): Promise<ServerActionResult<{ sage: Sage; userChat: UserChat }>> {
   return withAuth(async (user) => {
-    try {
-      const validated = createSageInputSchema.parse(input);
-      const sage = await prisma.sage.create({
-        data: {
-          token: generateToken(),
-          userId: user.id,
-          name: validated.name,
-          domain: validated.domain,
-          locale: validated.locale,
-          expertise: [],
-          bio: "",
-          extra: {},
-          // Create sources
-          sources: {
-            create: validated.sources.map((source) => ({
-              content: source,
-              title: "",
-              extractedText: "",
-            })),
-          },
-        },
-      });
-
-      rootLogger.info({
-        msg: "Created sage with sources",
-        sageId: sage.id,
-        userId: user.id,
-        sourcesCount: validated.sources.length,
-      });
-
-      // Create a UserChat for management/viewing
-      const userChat = await createUserChat({
-        userId: user.id,
-        kind: "misc",
-        title: `Sage: ${validated.name}`,
-      });
-
-      return {
-        success: true,
-        data: { sage, userChat },
-      };
-    } catch (error) {
-      rootLogger.error(`Failed to create sage: ${error}`);
+    const parseResult = createSageInputSchema.safeParse(input);
+    if (!parseResult.success) {
       return {
         success: false,
-        message: "Failed to create sage",
-        code: "internal_server_error",
+        message: "Malformed input",
       };
     }
+    const validated = parseResult.data;
+    const sage = await prisma.sage.create({
+      data: {
+        token: generateToken(),
+        userId: user.id,
+        name: validated.name,
+        domain: validated.domain,
+        locale: validated.locale,
+        expertise: [],
+        bio: "",
+        extra: {},
+        // Create sources
+        sources: {
+          create: validated.sources.map((source) => ({
+            content: source,
+            title: "",
+            extractedText: "",
+          })),
+        },
+      },
+    });
+
+    rootLogger.info({
+      msg: "Created sage with sources",
+      sageId: sage.id,
+      userId: user.id,
+      sourcesCount: validated.sources.length,
+    });
+
+    // Create a UserChat for management/viewing
+    const userChat = await createUserChat({
+      userId: user.id,
+      kind: "misc",
+      title: `Sage: ${validated.name}`,
+    });
+
+    return {
+      success: true,
+      data: { sage, userChat },
+    };
   });
 }
 
