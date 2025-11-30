@@ -14,9 +14,7 @@ import type { SageInterviewExtra } from "./types";
  * End sage interview - triggered by manual user action
  * Performs gap resolution, adds working memory (if gaps resolved), and adds episodic memory
  */
-export async function endSageInterviewAction(
-  interviewId: number,
-): Promise<
+export async function endSageInterviewAction(interviewId: number): Promise<
   ServerActionResult<{
     resolvedGapsCount: number;
     workingMemoryAdded: boolean;
@@ -115,9 +113,7 @@ export async function endSageInterviewAction(
  * End sage chat - triggered by manual user action
  * Performs gap discovery and adds episodic memory
  */
-export async function endSageChatAction(
-  chatId: number,
-): Promise<
+export async function endSageChatAction(chatId: number): Promise<
   ServerActionResult<{
     newGapsCount: number;
     episodicMemoryAdded: boolean;

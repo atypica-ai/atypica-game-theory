@@ -8,7 +8,6 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import type { SageInterview } from "@/prisma/client";
-import { toast } from "sonner";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { CheckCircle, MessageCircle } from "lucide-react";
@@ -16,6 +15,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 export function SageInterviewClient({
   userChatToken,

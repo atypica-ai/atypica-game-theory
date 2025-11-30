@@ -1,11 +1,11 @@
 "use client";
 
 import type { SageInterviewExtra } from "@/app/(sage)/types";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import type { ChatMessage, SageInterview, UserChat } from "@/prisma/client";
 import { formatDistanceToNow } from "date-fns";
-import { ExternalLinkIcon, ClipboardListIcon } from "lucide-react";
+import { ClipboardListIcon, ExternalLinkIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
@@ -13,11 +13,7 @@ type InterviewWithUserChat = SageInterview & {
   userChat: UserChat & { messages: ChatMessage[] };
 };
 
-export function InterviewsTab({
-  interviews,
-}: {
-  interviews: InterviewWithUserChat[];
-}) {
+export function InterviewsTab({ interviews }: { interviews: InterviewWithUserChat[] }) {
   const t = useTranslations("Sage.detail");
 
   return (
@@ -83,7 +79,7 @@ export function InterviewsTab({
                       </p>
                     )}
                   </div>
-                  <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                  <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
                 </div>
               </Link>
             );

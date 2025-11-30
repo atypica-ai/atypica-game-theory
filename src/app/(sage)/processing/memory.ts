@@ -9,16 +9,16 @@ import {
   createOrUpdateMemoryDocument,
 } from "@/app/(sage)/lib";
 import {
+  sageMemoryDocumentBuilderSystem,
+  sageProfileGenerationSystem,
+} from "@/app/(sage)/prompt/memory";
+import {
+  SageExtra,
   SageInterviewExtra,
   SageKnowledgeGapExtra,
   SageKnowledgeGapResolvedBy,
   WorkingMemoryItem,
 } from "@/app/(sage)/types";
-import {
-  sageMemoryDocumentBuilderSystem,
-  sageProfileGenerationSystem,
-} from "@/app/(sage)/prompt/memory";
-import { SageExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { Sage } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -380,9 +380,7 @@ async function analyzeGapResolution({
       .array(
         z.object({
           gapId: z.number().describe("The ID of the knowledge gap"),
-          resolved: z
-            .boolean()
-            .describe("Whether this gap is resolved by the interview content"),
+          resolved: z.boolean().describe("Whether this gap is resolved by the interview content"),
           confidence: z
             .number()
             .min(0)
@@ -441,10 +439,14 @@ ${interviewTranscript}
 
 # 待分析的知识缺口
 
-${pendingGaps.map((gap) => `## 缺口 #${gap.id}: ${gap.area}
+${pendingGaps
+  .map(
+    (gap) => `## 缺口 #${gap.id}: ${gap.area}
 描述: ${gap.description}
 严重性: ${gap.severity}
-影响: ${gap.impact}`).join("\n\n")}
+影响: ${gap.impact}`,
+  )
+  .join("\n\n")}
 
 请分析以上访谈内容是否解决了这些知识缺口。`
       : `# Interview Content
@@ -453,10 +455,14 @@ ${interviewTranscript}
 
 # Knowledge Gaps to Analyze
 
-${pendingGaps.map((gap) => `## Gap #${gap.id}: ${gap.area}
+${pendingGaps
+  .map(
+    (gap) => `## Gap #${gap.id}: ${gap.area}
 Description: ${gap.description}
 Severity: ${gap.severity}
-Impact: ${gap.impact}`).join("\n\n")}
+Impact: ${gap.impact}`,
+  )
+  .join("\n\n")}
 
 Please analyze whether the interview content resolves these knowledge gaps.`;
 

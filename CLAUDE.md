@@ -145,6 +145,7 @@ Run health checks with: `npx tsx scripts/check-status.ts`
 **Important**: Only add attribution (co-author, ad) when ALL changes in the commit were written by Claude. If the commit includes user-authored code, use plain commit message without any attribution.
 
 Examples:
+
 - ✅ "fix: resolve authentication bug" (user's changes)
 - ✅ "refactor: optimize database queries" (Claude's changes, but no ad per user preference)
 - ❌ Never add: "🤖 Generated with Claude Code" or "Co-Authored-By: Claude" unless explicitly requested
