@@ -18,7 +18,7 @@ import { SageGapsPageClient } from "./SageGapsPageClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("Sage.detail.metadata");
+  const t = await getTranslations("Sage.PageMetadata");
   return generatePageMetadata({
     title: t("gapsTitle"),
     description: t("gapsDescription"),

@@ -11,7 +11,7 @@ import { SageInterviewsPageClient } from "./SageInterviewsPageClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("Sage.detail.metadata");
+  const t = await getTranslations("Sage.PageMetadata");
   return generatePageMetadata({
     title: t("interviewsTitle"),
     description: t("interviewsDescription"),

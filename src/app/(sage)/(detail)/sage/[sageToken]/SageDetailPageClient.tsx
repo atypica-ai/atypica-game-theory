@@ -1,5 +1,5 @@
 "use client";
-import { analyzeSageKnowledge, extractSageKnowledge } from "@/app/(sage)/(detail)/actions";
+import { analyzeSageKnowledge, extractSageKnowledgeAction } from "@/app/(sage)/(detail)/actions";
 import type { SageAvatar, SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -29,7 +29,7 @@ export function SageDetailPageClient({
   const handleExtractKnowledge = useCallback(async () => {
     setIsExtracting(true);
     try {
-      const result = await extractSageKnowledge(sage.id);
+      const result = await extractSageKnowledgeAction(sage.id);
       if (!result.success) throw result;
       toast.success(t("extractionStarted"));
       setTimeout(() => router.refresh(), 1000);

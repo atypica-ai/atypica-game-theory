@@ -12,7 +12,7 @@ import { waitUntil } from "@vercel/functions";
  * Process all pending sources for a sage
  * Just extracts text from files/urls/text sources
  */
-export async function processSourcesOnly(sageId: number): Promise<void> {
+export async function processSageSources(sageId: number): Promise<void> {
   const logger = rootLogger.child({ sageId });
 
   // Get all sources without extracted text

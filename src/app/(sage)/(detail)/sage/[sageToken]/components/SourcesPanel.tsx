@@ -1,6 +1,5 @@
 "use client";
-
-import { processSageSources } from "@/app/(sage)/(detail)/actions";
+import { processSageSourcesAction } from "@/app/(sage)/(detail)/actions";
 import type { SageExtra, SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,7 @@ export function SourcesPanel({
     extra: SageSourceExtra;
   })[];
 }) {
-  const t = useTranslations("Sage.detail");
+  const t = useTranslations("Sage.SourcesPanel");
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -57,7 +56,7 @@ export function SourcesPanel({
   const handleProcessSources = useCallback(async () => {
     setIsProcessing(true);
     try {
-      const result = await processSageSources(sage.id);
+      const result = await processSageSourcesAction(sage.id);
       if (!result.success) throw result;
       toast.success(t("processingStarted"));
       setTimeout(() => router.refresh(), 1000);
@@ -72,34 +71,29 @@ export function SourcesPanel({
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-xl font-semibold">{t("knowledgeSources")}</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {completedSources.length}/{sources.length} {t("completed")}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">{t("knowledgeSources")}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {completedSources.length}/{sources.length} {t("completed")}
+          </p>
+        </div>
+        {hasPending || hasProcessing ? (
+          <Button onClick={handleProcessSources} disabled={isProcessing || hasProcessing}>
+            {hasProcessing ? (
+              <>
+                <Loader2Icon className="size-4 animate-spin" />
+                {t("processingButton")}
+              </>
+            ) : (
+              <>
+                <PlayIcon className="size-4" />
+                {t("processSourcesButton")} ({pendingSources.length})
+              </>
+            )}
+          </Button>
+        ) : null}
       </div>
-
-      {/* Process Button */}
-      {(hasPending || hasProcessing) && (
-        <Button
-          onClick={handleProcessSources}
-          disabled={isProcessing || hasProcessing}
-          className="w-full"
-          size="lg"
-        >
-          {hasProcessing ? (
-            <>
-              <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              {t("processingButton")}
-            </>
-          ) : (
-            <>
-              <PlayIcon className="mr-2 h-4 w-4" />
-              {t("processSourcesButton")} ({pendingSources.length})
-            </>
-          )}
-        </Button>
-      )}
 
       <Separator />
 
@@ -127,7 +121,7 @@ function SourceItem({
     extra: SageSourceExtra;
   };
 }) {
-  const t = useTranslations("Sage.detail");
+  const t = useTranslations("Sage.SourcesPanel");
 
   const getStatusIcon = () => {
     const status = source.extractedText

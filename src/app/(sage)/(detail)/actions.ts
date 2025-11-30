@@ -2,7 +2,7 @@
 import { generateInterviewPlan } from "@/app/(sage)/processing/followup";
 import { analyzeKnowledgeOnly } from "@/app/(sage)/processing/gaps";
 import { extractKnowledgeOnly } from "@/app/(sage)/processing/memory";
-import { processSourcesOnly } from "@/app/(sage)/processing/sources";
+import { processSageSources } from "@/app/(sage)/processing/sources";
 import type { SageInterviewExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
@@ -198,38 +198,23 @@ export async function createSupplementaryInterview(sageId: number): Promise<
 /**
  * Process all pending sources for a sage
  */
-export async function processSageSources(sageId: number): Promise<ServerActionResult<void>> {
+export async function processSageSourcesAction(sageId: number): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    // Check ownership and get token for revalidation
-    const sage = await prisma.sage.findUnique({
-      where: { id: sageId },
+    const sage = await prisma.sage.findUniqueOrThrow({
+      where: {
+        id: sageId,
+        userId: user.id,
+      },
       select: {
         userId: true,
         token: true,
       },
     });
 
-    if (!sage) {
-      return {
-        success: false,
-        message: "Sage not found",
-        code: "not_found",
-      };
-    }
-
-    if (sage.userId !== user.id) {
-      return {
-        success: false,
-        message: "Not authorized",
-        code: "forbidden",
-      };
-    }
-
     // Trigger background processing of sources only
-    waitUntil(processSourcesOnly(sageId));
+    waitUntil(processSageSources(sageId));
 
     revalidatePath(`/sage/${sage.token}`);
-
     return { success: true, data: undefined };
   });
 }
@@ -237,32 +222,18 @@ export async function processSageSources(sageId: number): Promise<ServerActionRe
 /**
  * Extract knowledge and build memory document from completed sources
  */
-export async function extractSageKnowledge(sageId: number): Promise<ServerActionResult<void>> {
+export async function extractSageKnowledgeAction(
+  sageId: number,
+): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
     // Check ownership and get token for revalidation
-    const sage = await prisma.sage.findUnique({
-      where: { id: sageId },
+    const sage = await prisma.sage.findUniqueOrThrow({
+      where: { id: sageId, userId: user.id },
       select: {
         userId: true,
         token: true,
       },
     });
-
-    if (!sage) {
-      return {
-        success: false,
-        message: "Sage not found",
-        code: "not_found",
-      };
-    }
-
-    if (sage.userId !== user.id) {
-      return {
-        success: false,
-        message: "Not authorized",
-        code: "forbidden",
-      };
-    }
 
     const locale = await getLocale();
 
@@ -270,7 +241,6 @@ export async function extractSageKnowledge(sageId: number): Promise<ServerAction
     waitUntil(extractKnowledgeOnly({ sageId, locale }));
 
     revalidatePath(`/sage/${sage.token}`);
-
     return { success: true, data: undefined };
   });
 }
