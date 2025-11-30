@@ -1,7 +1,6 @@
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
-import { getSageByToken } from "@/app/(sage)/lib";
-import { TSageMessageWithTool } from "@/app/(sage)/types";
+import { SageAvatar, SageExtra, TSageMessageWithTool } from "@/app/(sage)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
 import { UIMessage } from "ai";
@@ -35,12 +34,30 @@ async function SageChatPage({
     notFound();
   }
 
-  const result = await getSageByToken(userChat.sageChat.sage.token);
-  if (!result) {
+  // Get sage with user info
+  const sageData = await prisma.sage.findUnique({
+    where: { token: userChat.sageChat.sage.token },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  if (!sageData) {
     notFound();
   }
 
-  const { sage } = result;
+  const sage = {
+    ...sageData,
+    expertise: sageData.expertise as string[],
+    extra: sageData.extra as SageExtra,
+    avatar: sageData.avatar as SageAvatar,
+  };
 
   // Fetch existing chat messages
   const dbMessages = await prisma.chatMessage.findMany({
@@ -55,6 +72,7 @@ async function SageChatPage({
     <SageChatClient
       userChatToken={userChatToken}
       sage={sage}
+      sageChatId={userChat.sageChat.id}
       initialMessages={messages as TSageMessageWithTool[]}
     />
   );

@@ -1,6 +1,6 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { getSageByToken } from "@/app/(sage)/lib";
 import {
+  SageExtra,
   SageKnowledgeGapExtra,
   SageKnowledgeGapResolvedBy,
   SageKnowledgeGapSeverity,
@@ -24,11 +24,17 @@ export async function generateMetadata({
   const locale = await getLocale();
   const t = await getTranslations("Sage.detail.metadata");
   const { sageToken } = await params;
-  const result = await getSageByToken(sageToken);
-  if (!result) {
+
+  // Get sage name for metadata
+  const sage = await prisma.sage.findUnique({
+    where: { token: sageToken },
+    select: { name: true },
+  });
+
+  if (!sage) {
     return {};
   }
-  const { sage } = result;
+
   return generatePageMetadata({
     title: `${sage.name} - ${t("gapsTitle")}`,
     description: t("gapsDescription"),
@@ -44,18 +50,24 @@ export default async function SageGapsPage({ params }: { params: Promise<{ sageT
     forbidden();
   }
 
-  const result = await getSageByToken(token);
+  // Get sage (GapsTab needs full sage object)
+  const sageData = await prisma.sage.findUnique({
+    where: { token },
+  });
 
-  if (!result) {
+  if (!sageData) {
     notFound();
   }
 
-  const { sage } = result;
-
   // Check ownership
-  if (sage.userId !== session.user.id) {
+  if (sageData.userId !== session.user.id) {
     forbidden();
   }
+
+  const sage = {
+    ...sageData,
+    extra: sageData.extra as SageExtra,
+  };
 
   // Fetch knowledge gaps for this sage
   const gaps = (

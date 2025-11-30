@@ -1,17 +1,21 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
+import { endSageInterviewAction } from "@/app/(sage)/actions";
 import { SageToolUIPartDisplay } from "@/app/(sage)/tools/ui";
 import { SageInterviewExtra, TSageMessageWithTool } from "@/app/(sage)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
+import { Button } from "@/components/ui/button";
 import type { SageInterview } from "@/prisma/client";
+import { toast } from "sonner";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { MessageCircle } from "lucide-react";
+import { CheckCircle, MessageCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export function SageInterviewClient({
   userChatToken,
@@ -33,10 +37,37 @@ export function SageInterviewClient({
   initialMessages?: TSageMessageWithTool[];
 }) {
   const t = useTranslations("Sage.interview");
+  const tDetail = useTranslations("Sage.detail");
   const { data: session } = useSession();
+  const router = useRouter();
   const requestSentRef = useRef(false);
+  const [isEndingInterview, setIsEndingInterview] = useState(false);
 
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
+
+  const handleEndInterview = async () => {
+    if (!interview.extra.ongoing) {
+      toast.error(tDetail("interviewAlreadyCompleted"));
+      return;
+    }
+
+    setIsEndingInterview(true);
+    try {
+      const result = await endSageInterviewAction(interview.id);
+      if (result.success) {
+        toast.success(
+          `${tDetail("interviewEnded")} - ${tDetail("resolvedGapsCount")}: ${result.data.resolvedGapsCount}`,
+        );
+        router.refresh();
+      } else {
+        toast.error(`${tDetail("endInterviewFailed")}: ${result.message}`);
+      }
+    } catch (error) {
+      toast.error(`${tDetail("endInterviewFailed")}: ${(error as Error).message}`);
+    } finally {
+      setIsEndingInterview(false);
+    }
+  };
 
   // Chat hooks
   const useChatHelpers = useChat({
@@ -93,7 +124,7 @@ export function SageInterviewClient({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-3 text-sm">
               <span
                 className={
                   interview.extra.ongoing
@@ -103,6 +134,18 @@ export function SageInterviewClient({
               >
                 {interview.extra.ongoing ? t("ongoing") : t("completed")}
               </span>
+              {interview.extra.ongoing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEndInterview}
+                  disabled={isEndingInterview}
+                  className="h-7 text-xs"
+                >
+                  <CheckCircle className="size-3 mr-1.5" />
+                  {isEndingInterview ? tDetail("ending") : tDetail("endInterview")}
+                </Button>
+              )}
             </div>
           </div>
 

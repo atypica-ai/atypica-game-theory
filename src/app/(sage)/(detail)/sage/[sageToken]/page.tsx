@@ -1,6 +1,7 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { getSageByToken } from "@/app/(sage)/lib";
+import { SageAvatar, SageExtra } from "@/app/(sage)/types";
 import { generatePageMetadata } from "@/lib/request/metadata";
+import { prisma } from "@/prisma/prisma";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -17,11 +18,17 @@ export async function generateMetadata({
   const locale = await getLocale();
   const t = await getTranslations("Sage.detail.metadata");
   const { sageToken } = await params;
-  const result = await getSageByToken(sageToken);
-  if (!result) {
+
+  // Only need name for metadata
+  const sage = await prisma.sage.findUnique({
+    where: { token: sageToken },
+    select: { name: true },
+  });
+
+  if (!sage) {
     return {};
   }
-  const { sage } = result;
+
   return generatePageMetadata({
     title: `${sage.name} - ${t("memoryTitle")}`,
     description: t("memoryDescription"),
@@ -41,18 +48,35 @@ export default async function SageMemoryPage({
     forbidden();
   }
 
-  const result = await getSageByToken(token);
+  // Get sage with memory document
+  const sageData = await prisma.sage.findUnique({
+    where: { token },
+    include: {
+      memoryDocuments: {
+        orderBy: { version: "desc" },
+        take: 1,
+        select: { content: true },
+      },
+    },
+  });
 
-  if (!result) {
+  if (!sageData) {
     notFound();
   }
 
-  const { sage, memoryDocument } = result;
-
   // Check ownership
-  if (sage.userId !== session.user.id) {
+  if (sageData.userId !== session.user.id) {
     forbidden();
   }
+
+  const sage = {
+    ...sageData,
+    expertise: sageData.expertise as string[],
+    extra: sageData.extra as SageExtra,
+    avatar: sageData.avatar as SageAvatar,
+  };
+
+  const memoryDocument = sageData.memoryDocuments[0]?.content ?? null;
 
   return <MemoryTab sage={sage} memoryDocument={memoryDocument} />;
 }

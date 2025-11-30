@@ -2,7 +2,6 @@ import "server-only";
 
 import { llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
-import { createSageKnowledgeGaps } from "@/app/(sage)/lib";
 import {
   conversationGapAnalysisSystem,
   sageKnowledgeGapsOnlySystem,
@@ -79,8 +78,8 @@ export async function analyzeKnowledgeOnly({
       where: { sageId },
     });
     if (existingGaps === 0 && knowledgeGaps.length > 0) {
-      await createSageKnowledgeGaps(
-        knowledgeGaps.map((gap) => ({
+      await prisma.sageKnowledgeGap.createMany({
+        data: knowledgeGaps.map((gap) => ({
           sageId,
           area: gap.area,
           description: gap.description,
@@ -88,7 +87,12 @@ export async function analyzeKnowledgeOnly({
           impact: gap.impact,
           source: { type: "analysis" } satisfies SageKnowledgeGapSource,
         })),
-      );
+      });
+
+      logger.info({
+        msg: "Created knowledge gaps from analysis",
+        gapsCount: knowledgeGaps.length,
+      });
     }
 
     logger.info({ msg: "Knowledge gaps analysis completed successfully" });

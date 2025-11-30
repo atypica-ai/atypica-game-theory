@@ -1,12 +1,11 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { SageAvatar, SageExtra } from "@/app/(sage)/types";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { forbidden, notFound } from "next/navigation";
-import { ChatsTab } from "./ChatsTab";
+import { InterviewsTab } from "./InterviewsTab";
 
 export const dynamic = "force-dynamic";
 
@@ -30,13 +29,13 @@ export async function generateMetadata({
   }
 
   return generatePageMetadata({
-    title: `${sage.name} - ${t("chatsTitle")}`,
-    description: t("chatsDescription"),
+    title: `${sage.name} - ${t("interviewsTitle")}`,
+    description: t("interviewsDescription"),
     locale,
   });
 }
 
-export default async function SageChatsPage({
+export default async function SageInterviewsPage({
   params,
 }: {
   params: Promise<{ sageToken: string }>;
@@ -48,32 +47,28 @@ export default async function SageChatsPage({
     forbidden();
   }
 
-  // Get sage with all fields for ChatsTab
-  const sageData = await prisma.sage.findUnique({
+  // Only need basic sage info for ownership check
+  const sage = await prisma.sage.findUnique({
     where: { token },
+    select: {
+      id: true,
+      userId: true,
+    },
   });
 
-  if (!sageData) {
+  if (!sage) {
     notFound();
   }
 
   // Check ownership
-  if (sageData.userId !== session.user.id) {
+  if (sage.userId !== session.user.id) {
     forbidden();
   }
 
-  const sage = {
-    ...sageData,
-    expertise: sageData.expertise as string[],
-    extra: sageData.extra as SageExtra,
-    avatar: sageData.avatar as SageAvatar,
-  };
-
-  // Fetch all chats associated with this sage through SageChat table
-  const sageChats = await prisma.sageChat.findMany({
+  // Fetch all interviews associated with this sage
+  const sageInterviews = await prisma.sageInterview.findMany({
     where: {
       sageId: sage.id,
-      userId: session.user.id,
     },
     include: {
       userChat: {
@@ -88,7 +83,5 @@ export default async function SageChatsPage({
     orderBy: { updatedAt: "desc" },
   });
 
-  const chats = sageChats.map((sc) => sc.userChat);
-
-  return <ChatsTab sage={sage} chats={chats} />;
+  return <InterviewsTab interviews={sageInterviews} />;
 }

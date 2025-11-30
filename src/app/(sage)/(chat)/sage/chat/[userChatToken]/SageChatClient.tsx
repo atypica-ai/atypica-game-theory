@@ -1,20 +1,27 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
+import { endSageChatAction } from "@/app/(sage)/actions";
 import { SageToolUIPartDisplay } from "@/app/(sage)/tools/ui";
 import { SageAvatar, SageExtra, TSageMessageWithTool } from "@/app/(sage)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
+import { Button } from "@/components/ui/button";
 import type { Sage, User } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { CheckCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 export function SageChatClient({
   userChatToken,
   sage,
+  sageChatId,
   initialMessages = [],
 }: {
   userChatToken: string;
@@ -24,11 +31,34 @@ export function SageChatClient({
     avatar: SageAvatar;
     user: Pick<User, "id" | "name" | "email">;
   };
+  sageChatId: number;
   initialMessages?: TSageMessageWithTool[];
 }) {
   const { data: session } = useSession();
+  const tDetail = useTranslations("Sage.detail");
+  const router = useRouter();
   const requestSentRef = useRef(false);
+  const [isEndingChat, setIsEndingChat] = useState(false);
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
+
+  const handleEndChat = async () => {
+    setIsEndingChat(true);
+    try {
+      const result = await endSageChatAction(sageChatId);
+      if (result.success) {
+        toast.success(
+          `${tDetail("chatEnded")} - ${tDetail("newGapsCount")}: ${result.data.newGapsCount}`,
+        );
+        router.refresh();
+      } else {
+        toast.error(`${tDetail("endChatFailed")}: ${result.message}`);
+      }
+    } catch (error) {
+      toast.error(`${tDetail("endChatFailed")}: ${(error as Error).message}`);
+    } finally {
+      setIsEndingChat(false);
+    }
+  };
 
   // Chat hooks
   const useChatHelpers = useChat({
@@ -72,10 +102,22 @@ export function SageChatClient({
     <FitToViewport className="flex flex-col overflow-hidden">
       {/* Chat Header */}
       <div className="w-full mt-2 px-3 py-3 max-w-4xl mx-auto">
-        <h1 className="font-medium text-sm text-center">{sage.name}</h1>
-        {sage.domain && (
-          <p className="text-xs text-muted-foreground text-center mt-1">{sage.domain}</p>
-        )}
+        <div className="flex items-center justify-between">
+          <div className="flex-1 text-center">
+            <h1 className="font-medium text-sm">{sage.name}</h1>
+            {sage.domain && <p className="text-xs text-muted-foreground mt-1">{sage.domain}</p>}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleEndChat}
+            disabled={isEndingChat}
+            className="h-7 text-xs ml-2"
+          >
+            <CheckCircle className="size-3 mr-1.5" />
+            {isEndingChat ? tDetail("ending") : tDetail("endChat")}
+          </Button>
+        </div>
       </div>
 
       {/* Centered Chat Area */}

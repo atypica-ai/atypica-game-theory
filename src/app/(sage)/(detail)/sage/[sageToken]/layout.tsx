@@ -1,6 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { getSageByToken } from "@/app/(sage)/lib";
-import { SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
+import { SageAvatar, SageExtra, SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
@@ -23,18 +22,27 @@ export default async function SageDetailLayout({
     forbidden();
   }
 
-  const result = await getSageByToken(token);
+  // Get sage with all fields needed for SourcesPanel
+  const sageData = await prisma.sage.findUnique({
+    where: { token },
+  });
 
-  if (!result) {
+  if (!sageData) {
     notFound();
   }
 
-  const { sage } = result;
-
   // Check ownership
-  if (sage.userId !== session.user.id) {
+  if (sageData.userId !== session.user.id) {
     forbidden();
   }
+
+  // Cast types for extra fields
+  const sage = {
+    ...sageData,
+    extra: sageData.extra as SageExtra,
+    expertise: sageData.expertise as string[],
+    avatar: sageData.avatar as SageAvatar,
+  };
 
   // Fetch sage's sources
   const sources = (

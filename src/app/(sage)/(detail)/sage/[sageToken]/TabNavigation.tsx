@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { AlertTriangleIcon, BookOpenIcon, MessageSquareIcon } from "lucide-react";
+import { AlertTriangleIcon, BookOpenIcon, MessageSquareIcon, MicIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,6 +21,11 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
       name: t("chats"),
       href: `/sage/${sageToken}/chats`,
       icon: MessageSquareIcon,
+    },
+    {
+      name: t("interviews"),
+      href: `/sage/${sageToken}/interviews`,
+      icon: MicIcon,
     },
     {
       name: t("gaps"),
