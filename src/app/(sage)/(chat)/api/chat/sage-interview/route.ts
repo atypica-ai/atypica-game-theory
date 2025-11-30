@@ -9,7 +9,6 @@ import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { sageInterviewConversationSystem } from "@/app/(sage)/prompt/chat";
-import { sageInterviewTools } from "@/app/(sage)/tools";
 import type { SageExtra, SageInterviewExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -121,11 +120,9 @@ export async function POST(req: Request) {
     throw new Error("Interview plan not prepared");
   }
 
-  // Setup tools
-  const tools = sageInterviewTools({ interviewId: interview.id });
-
+  // Interview tools removed - users now manually trigger "End Interview" button
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id, {
-    tools,
+    tools: {},
   });
 
   const mergedAbortSignal = AbortSignal.any([req.signal]);
@@ -143,8 +140,6 @@ export async function POST(req: Request) {
       locale,
     }),
     messages: coreMessages,
-
-    tools,
 
     experimental_transform: smoothStream({
       delayInMs: 30,

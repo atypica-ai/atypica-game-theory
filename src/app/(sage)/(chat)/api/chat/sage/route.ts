@@ -9,7 +9,7 @@ import { reasoningThinkingTool } from "@/ai/tools/tools";
 import { StatReporter, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
-import { createSageKnowledgeGaps, getSageByToken } from "@/app/(sage)/lib";
+import { SageAvatar, SageExtra } from "@/app/(sage)/types";
 import { analyzeConversationForGaps } from "@/app/(sage)/processing/gaps";
 import { sageChatSystem } from "@/app/(sage)/prompt/chat";
 import { SageKnowledgeGapSource } from "@/app/(sage)/types";
@@ -59,12 +59,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Chat session not found" }, { status: 404 });
   }
 
-  const result = await getSageByToken(userChat.sageChat.sage.token);
-  if (!result) {
+  // Get sage with memory document
+  const sageData = await prisma.sage.findUnique({
+    where: { token: userChat.sageChat.sage.token },
+    include: {
+      memoryDocuments: {
+        orderBy: { version: "desc" },
+        take: 1,
+        select: { content: true },
+      },
+    },
+  });
+
+  if (!sageData) {
     return NextResponse.json({ error: "Sage not found" }, { status: 404 });
   }
 
-  const { sage, memoryDocument } = result;
+  const sage = {
+    ...sageData,
+    expertise: sageData.expertise as string[],
+    extra: sageData.extra as SageExtra,
+    avatar: sageData.avatar as SageAvatar,
+  };
+
+  const memoryDocument = sageData.memoryDocuments[0]?.content ?? null;
 
   // Check if Memory Document is ready
   if (!memoryDocument) {
@@ -220,8 +238,8 @@ export async function POST(req: Request) {
 
               if (gaps.length > 0) {
                 // Create knowledge gap records with conversation source
-                await createSageKnowledgeGaps(
-                  gaps.map((gap) => ({
+                await prisma.sageKnowledgeGap.createMany({
+                  data: gaps.map((gap) => ({
                     sageId: sage.id,
                     area: gap.area,
                     description: gap.description,
@@ -233,7 +251,7 @@ export async function POST(req: Request) {
                       quote: `${truncateForTitle(userMessage, { maxDisplayWidth: 100, suffix: "..." })}`,
                     } satisfies SageKnowledgeGapSource,
                   })),
-                );
+                });
                 chatLogger.info({
                   msg: "Detected knowledge gaps from conversation",
                   gapsCount: gaps.length,
