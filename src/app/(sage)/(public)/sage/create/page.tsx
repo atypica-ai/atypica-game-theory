@@ -6,7 +6,7 @@ import { getServerSession, Session } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { CreateSageForm } from "./CreateSageForm";
+import { CreateSagePageClient } from "./CreateSagePageClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Sage.create");
@@ -22,7 +22,7 @@ async function SageCreatePage({
 }: {
   sessionUser: NonNullable<Session["user"]>;
 }) {
-  return <CreateSageForm />;
+  return <CreateSagePageClient />;
 }
 
 export default async function SageCreatePageWithLoading() {

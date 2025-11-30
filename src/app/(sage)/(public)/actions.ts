@@ -1,4 +1,6 @@
 "use server";
+import { reProcessSageSourcesAndExtractKnoledge } from "@/app/(sage)/(detail)/actions";
+import { createSageInputSchema, type SageSourceContent } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
@@ -6,8 +8,8 @@ import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import type { Sage, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { after } from "node:test";
 import z from "zod";
-import { createSageInputSchema } from "../types";
 
 /**
  * Create a new sage with initial content
@@ -60,6 +62,8 @@ export async function createSage(
       title: `Sage: ${validated.name}`,
     });
 
+    after(() => reProcessSageSourcesAndExtractKnoledge(sage.id));
+
     return {
       success: true,
       data: { sage, userChat },
@@ -100,5 +104,117 @@ export async function listMySages(): Promise<
         code: "internal_server_error",
       };
     }
+  });
+}
+
+/**
+ * Add sources to an existing sage
+ * Max 30 sources per sage
+ */
+export async function addSageSources(
+  sageId: number,
+  sources: SageSourceContent[],
+): Promise<ServerActionResult<{ addedCount: number }>> {
+  return withAuth(async (user) => {
+    if (sources.length === 0) {
+      return {
+        success: false,
+        message: "No sources provided",
+      };
+    }
+
+    // Check ownership and current source count
+    const sage = await prisma.sage.findUniqueOrThrow({
+      where: { id: sageId, userId: user.id },
+      include: {
+        _count: {
+          select: { sources: true },
+        },
+      },
+    });
+
+    const currentCount = sage._count.sources;
+    const maxSources = 30;
+
+    if (currentCount >= maxSources) {
+      return {
+        success: false,
+        message: "Maximum sources limit reached (30)",
+      };
+    }
+
+    if (currentCount + sources.length > maxSources) {
+      return {
+        success: false,
+        message: `Can only add ${maxSources - currentCount} more sources`,
+      };
+    }
+
+    // Add sources
+    await prisma.sageSource.createMany({
+      data: sources.map((source) => ({
+        sageId: sageId,
+        content: source,
+        title: "",
+        extractedText: "",
+      })),
+    });
+
+    rootLogger.info({
+      msg: "Added sources to sage",
+      sageId,
+      userId: user.id,
+      addedCount: sources.length,
+      totalCount: currentCount + sources.length,
+    });
+
+    return {
+      success: true,
+      data: { addedCount: sources.length },
+    };
+  });
+}
+
+/**
+ * Delete sources from a sage
+ * Support batch deletion by accepting array of IDs
+ */
+export async function deleteSageSources(
+  sageId: number,
+  sourceIds: number[],
+): Promise<ServerActionResult<{ deletedCount: number }>> {
+  return withAuth(async (user) => {
+    if (sourceIds.length === 0) {
+      return {
+        success: false,
+        message: "No source IDs provided",
+      };
+    }
+
+    // Check ownership
+    await prisma.sage.findUniqueOrThrow({
+      where: { id: sageId, userId: user.id },
+    });
+
+    // Delete sources
+    const result = await prisma.sageSource.deleteMany({
+      where: {
+        id: { in: sourceIds },
+        sageId: sageId,
+      },
+    });
+
+    rootLogger.info({
+      msg: "Deleted sources from sage",
+      sageId,
+      userId: user.id,
+      requestedCount: sourceIds.length,
+      deletedCount: result.count,
+    });
+
+    return {
+      success: true,
+      data: { deletedCount: result.count },
+    };
   });
 }

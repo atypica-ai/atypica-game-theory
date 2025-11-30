@@ -93,7 +93,9 @@ export type WorkingMemoryItem = {
 export type EpisodicMemoryReference = string;
 
 // 没有用到
-export type SageMemoryDocumentExtra = {};
+// export type SageMemoryDocumentExtra = {
+//   ???
+// };
 
 /**
  * SageInterview
