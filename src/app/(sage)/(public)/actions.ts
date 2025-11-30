@@ -6,17 +6,15 @@ import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import type { Sage, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import type { CreateSageInput } from "../types";
+import z from "zod";
 import { createSageInputSchema } from "../types";
-
-// ===== Sage Creation and Management =====
 
 /**
  * Create a new sage with initial content
  * No automatic processing - user must trigger manually
  */
 export async function createSage(
-  input: CreateSageInput,
+  input: z.infer<typeof createSageInputSchema>,
 ): Promise<ServerActionResult<{ sage: Sage; userChat: UserChat }>> {
   return withAuth(async (user) => {
     try {

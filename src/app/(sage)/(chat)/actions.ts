@@ -6,7 +6,6 @@ import { createUserChat } from "@/lib/userChat/lib";
 import type { SageChat, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateId } from "ai";
-import { getSageById } from "../lib";
 
 // ===== Sage Chat =====
 
@@ -22,17 +21,22 @@ export async function createOrGetSageChat(sageId: number): Promise<
   return withAuth(async (user) => {
     try {
       // Check if sage exists and is accessible
-      const result = await getSageById(sageId);
+      const sage = await prisma.sage.findUnique({
+        where: { id: sageId },
+        select: {
+          id: true,
+          name: true,
+          userId: true,
+        },
+      });
 
-      if (!result) {
+      if (!sage) {
         return {
           success: false,
           message: "Sage not found",
           code: "not_found",
         };
       }
-
-      const { sage } = result;
 
       // Check if chat already exists
       const existingChat = await prisma.sageChat.findFirst({
@@ -102,17 +106,22 @@ export async function createNewSageChat(
   return withAuth(async (user) => {
     try {
       // Check if sage exists and is accessible
-      const result = await getSageById(sageId);
+      const sage = await prisma.sage.findUnique({
+        where: { id: sageId },
+        select: {
+          id: true,
+          name: true,
+          userId: true,
+        },
+      });
 
-      if (!result) {
+      if (!sage) {
         return {
           success: false,
           message: "Sage not found",
           code: "not_found",
         };
       }
-
-      const { sage } = result;
 
       // Always create new chat
       const userChat = await createUserChat({
