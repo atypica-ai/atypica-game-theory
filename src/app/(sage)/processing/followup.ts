@@ -1,66 +1,155 @@
+import "server-only";
+
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
+import { addWorkingMemory } from "@/app/(sage)/lib";
 import {
-  makeSageInterviewPlanSystemPrompt,
-  sageInterviewPlanSchema,
-} from "@/app/(sage)/prompt/chat";
-import { SageKnowledgeGapSeverity } from "@/app/(sage)/types";
-import { SageKnowledgeGap } from "@/prisma/client";
-import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
+  resolveGapsSchema,
+  resolveGapsSystemPrompt,
+  resolveGapsUserPrologue,
+} from "@/app/(sage)/prompt/followup";
+import type { SageKnowledgeGapSeverity } from "@/app/(sage)/types";
+import { SageKnowledgeGapExtra, WorkingMemoryItem } from "@/app/(sage)/types";
+import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { generateObject } from "ai";
-import { Locale } from "next-intl";
+import type { Locale } from "next-intl";
 import { Logger } from "pino";
 
 /**
- * Generate interview plan for supplementary interview
+ * Analyze which knowledge gaps are resolved by interview content using AI
  */
-export async function makeSageInterviewPlan({
-  sage,
-  pendingGaps,
+export async function resolveGaps({
+  sageId,
+  sageInterviewId,
+  userChat,
   locale,
-  // logger,
+  logger,
   statReport,
   abortSignal,
 }: {
-  sage: { name: string; domain: string; expertise: string[] };
-  pendingGaps: Array<
-    Pick<SageKnowledgeGap, "area" | "description" | "impact"> & {
-      severity: SageKnowledgeGapSeverity;
-    }
-  >;
+  sageId: number;
+  sageInterviewId: number;
+  userChat: {
+    id: number;
+    token: string;
+  };
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
   abortSignal: AbortSignal;
-}): Promise<{
-  purpose: string;
-  focusAreas: string[];
-  questions: Array<{ question: string; purpose: string; followUps: string[] }>;
-}> {
+}): Promise<number[]> {
+  const [pendingGaps, messages] = await Promise.all([
+    prisma.sageKnowledgeGap
+      .findMany({
+        where: { sageId, resolvedAt: null },
+        orderBy: [{ severity: "asc" }, { id: "desc" }],
+      })
+      .then((gaps) =>
+        gaps.map(({ severity, extra, ...gap }) => ({
+          ...gap,
+          severity: severity as SageKnowledgeGapSeverity,
+          extra: extra as SageKnowledgeGapExtra,
+        })),
+      ),
+    prisma.chatMessage.findMany({
+      where: { id: userChat.id },
+      orderBy: [{ id: "asc" }],
+    }),
+  ]);
+
+  // Format interview transcript
+  const interviewTranscript = messages
+    .map(convertDBMessageToAIMessage)
+    .map(
+      (msg) =>
+        `${msg.role === "user" ? "Interviewee" : "Interviewer"}: ${msg.parts.map((part) => (part.type === "text" ? part.text : "")).join(" ")}`,
+    )
+    .join("\n");
+
+  const systemPrompt = resolveGapsSystemPrompt({ locale });
+  const userPrompt = resolveGapsUserPrologue({ pendingGaps, interviewTranscript, locale });
+
   const result = await generateObject({
-    // model: llm("claude-haiku-4-5"),
-    model: llm("gpt-5-mini"),
-    providerOptions: {
-      openai: {
-        reasoningSummary: "auto", // 'auto' | 'detailed'
-        reasoningEffort: "minimal", // 'minimal' | 'low' | 'medium' | 'high'
-      } satisfies OpenAIResponsesProviderOptions,
-    },
-    schema: sageInterviewPlanSchema,
-    system: makeSageInterviewPlanSystemPrompt({ sage, pendingGaps, locale }),
-    prompt:
-      locale === "zh-CN"
-        ? "请生成补充访谈计划。"
-        : "Please generate the supplementary interview plan.",
+    model: llm("claude-sonnet-4-5"),
+    schema: resolveGapsSchema,
+    system: systemPrompt,
+    prompt: userPrompt,
     maxRetries: 3,
     abortSignal,
+  }).catch((error) => {
+    logger.error(`Failed to analyze gap resolution: ${(error as Error).message}`);
+    throw error;
   });
 
   if (result.usage.totalTokens) {
     await statReport("tokens", result.usage.totalTokens, {
-      reportedBy: "make sage interview plan",
+      reportedBy: "analyze gap resolution",
     });
   }
 
-  return result.object;
+  logger.info({
+    msg: "Analyzed gap resolution",
+    totalGaps: pendingGaps.length,
+    resolvedCount: result.object.resolvedGapIds.length,
+  });
+
+  const resolvedGapIds = result.object.resolvedGapIds;
+  const workingMemoryContent = result.object.workingMemory;
+
+  // Only add Working Memory if gaps were resolved and content is not empty
+  if (resolvedGapIds.length > 0 && workingMemoryContent.trim()) {
+    const workingItem: WorkingMemoryItem = {
+      id: `interview-${sageInterviewId}-${Date.now()}`,
+      content: workingMemoryContent,
+      sourceChat: {
+        id: userChat.id,
+        token: userChat.token,
+      },
+      relatedGapIds: resolvedGapIds,
+      status: "pending",
+    };
+
+    await addWorkingMemory({
+      sageId,
+      workingItem,
+    });
+
+    logger.info({
+      msg: "Added working memory from interview",
+      length: workingMemoryContent.length,
+    });
+
+    // Mark gaps as resolved
+    await prisma.sageKnowledgeGap.updateMany({
+      where: {
+        sageId, // 需要过滤 sageId，以免出现无效的 gapId
+        id: { in: resolvedGapIds },
+      },
+      data: {
+        resolvedAt: new Date(),
+      },
+    });
+
+    await Promise.all(
+      resolvedGapIds.map(async (gapId) => {
+        const gap = pendingGaps.find((g) => g.id === gapId);
+        if (gap) {
+          await mergeExtra({
+            tableName: "SageKnowledgeGap",
+            id: gap.id,
+            extra: {
+              resolvedChat: {
+                id: userChat.id,
+                token: userChat.token,
+              },
+            },
+          });
+        }
+      }),
+    );
+  }
+
+  return resolvedGapIds;
 }

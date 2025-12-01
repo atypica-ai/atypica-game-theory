@@ -52,13 +52,16 @@ Sources → Core Memory → User Chat → Gaps → Interview → Working Memory 
    - 来源对话链接（点击可跳转查看上下文）
 
 ### Step 5: 通过访谈解决 Gaps
-1. 在 Gaps Tab 点击「**创建补充访谈**」
-2. 系统基于所有 pending gaps 生成访谈计划
-3. 进入访谈对话，AI 向你提问，你回答
-4. 点击「**结束访谈**」按钮
-5. 系统自动：
-   - 提取访谈中的新知识 → 创建 **Working Memory**
+1. 在 Gaps Tab 点击「**创建补充访谈**」（即时创建，无需等待）
+2. 进入访谈对话，AI 会：
+   - 首先调用 `fetchPendingGaps` 工具获取当前所有待填补的知识空白
+   - 实时规划访谈策略（确定重点领域、按优先级排序、设计核心问题）
+   - 向你介绍本次访谈将讨论的主要领域
+   - 从最高优先级的 gap 开始提问，你回答
+3. 点击「**结束访谈**」按钮
+4. 系统自动：
    - 判断哪些 Gaps 已解决 → 标记为 resolved
+   - 如果有 gap 被解决，提取访谈中的新知识 → 创建 **Working Memory**
    - 已解决的 Gaps 移到 Resolved 列表
 
 ### Step 6: 整合 Working Memory
@@ -281,22 +284,24 @@ UI 展示:
   - 显示分析的对话数量和发现的 gap 数量
 ```
 
-### 3. 补充访谈流程
+### 3. 补充访谈流程（动态工具驱动）
 
 ```
 用户点击 "创建补充访谈"
   ↓
-查询所有 pending gaps → AI 生成访谈计划
+即时创建 SageInterview + UserChat (无 AI 调用，秒开)
   ↓
-创建 SageInterview + UserChat
-  ↓
-进行访谈对话 (AI 按计划提问)
+进入访谈对话，AI 动态执行：
+  1. 调用 fetchPendingGaps 工具 → 获取最新 pending gaps
+  2. 实时规划访谈策略 (目的、重点领域、核心问题)
+  3. 向用户介绍本次访谈范围
+  4. 按优先级提问 (critical > important > nice-to-have)
   ↓
 用户手动点击 "结束访谈" 按钮
   ↓
-后台异步处理:
-  1. 提取访谈新知识 → 创建 WorkingMemoryItem
-  2. AI 分析 gap 解决情况 → 更新 gap 状态
+同步处理（阻塞返回）:
+  1. AI 分析 gap 解决情况 → 更新 gap 状态
+  2. 如果有 gap 被解决，提取访谈新知识 → 创建 WorkingMemoryItem
   3. 不递增版本号 (只是添加 working memory)
   ↓
 更新 SageMemoryDocument:
@@ -307,6 +312,12 @@ UI 展示:
   - resolvedAt: now()
   - extra.resolvedChat: { id, token }
 ```
+
+**动态工具驱动的优势**：
+- ✅ 即时创建访谈，无需等待计划生成
+- ✅ 始终使用最新的 gaps（不会使用过时的计划）
+- ✅ AI 在对话上下文中看到完整 gaps，理解更准确
+- ✅ 代码更简洁，减少预生成逻辑
 
 ### 4. 整合 Working Memory 到 Core
 
@@ -780,8 +791,8 @@ src/app/(sage)/
 ### Gaps Tab
 
 - Pending Gaps (显示对话来源、用户提问引用、严重程度)
-- Resolved Gaps (显示解决方式、置信度、证据)
-- 操作: Create Supplementary Interview (基于 pending gaps 生成访谈计划)
+- Resolved Gaps (显示解决方式、解决来源访谈链接)
+- 操作: Create Supplementary Interview (即时创建，AI 动态获取 gaps 并规划访谈)
 
 ### Interviews Tab
 

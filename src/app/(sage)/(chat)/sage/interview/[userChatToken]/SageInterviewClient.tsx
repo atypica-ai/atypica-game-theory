@@ -55,9 +55,7 @@ export function SageInterviewClient({
     try {
       const result = await endSageInterviewAction(interview.id);
       if (result.success) {
-        toast.success(
-          `${tDetail("interviewEnded")} - ${tDetail("resolvedGapsCount")}: ${result.data.resolvedGapsCount}`,
-        );
+        toast.success(tDetail("interviewEnded"));
         router.refresh();
       } else {
         toast.error(`${tDetail("endInterviewFailed")}: ${result.message}`);
