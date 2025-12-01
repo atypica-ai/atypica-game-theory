@@ -4,7 +4,7 @@ import { llm } from "@/ai/provider";
 import grokSystemPrompt from "./prompt";
 import { defaultProviderOptions } from "@/ai/provider";
 import { stepCountIs } from "ai";
-const MAX_STEPS = 10;
+const MAX_STEPS = 8;
 
 export const grokExpert = async ({ query, abortSignal, userId }: { query: string, abortSignal?: AbortSignal, userId?: number }) => {
     // Build tools object with error handling

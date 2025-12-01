@@ -3,13 +3,13 @@ import "server-only";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import {
   getDeepResearchServer,
-  runWithRequestContext,
 } from "@/app/(deepresearch)/server";
 import { rootLogger } from "@/lib/logging";
 import { NextRequest } from "next/server";
 import { IncomingMessage, ServerResponse } from "http";
 import { Readable } from "stream";
 import { isJSONRPCRequest, RequestId } from "@modelcontextprotocol/sdk/types.js";
+import { runWithMCPRequestContext } from "@/lib/mcp/context";
 
 const logger = rootLogger.child({ module: "deepresearch-mcp-api" });
 
@@ -237,7 +237,7 @@ export async function POST(req: NextRequest) {
 
     // Handle the MCP request within the request context
     // This ensures tool handlers can access the transport via AsyncLocalStorage
-    const handlePromise = runWithRequestContext(context, async () => {
+    const handlePromise = runWithMCPRequestContext(context, async () => {
       await transport.handleRequest(incomingMessage, res, body);
     });
 
@@ -399,4 +399,3 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
-

@@ -53,7 +53,7 @@ export const trendExplorerExpert = async ({
   };
 
   const response = streamText({
-    model: llm("gemini-2.5-pro"), // Using Gemini 2.5 Flash model for trend analysis
+    model: llm("gemini-2.5-pro"), // Using Gemini 2.5 Pro model for trend analysis
     system: trendExplorerSystemPrompt,
     providerOptions: defaultProviderOptions,
     tools: allTools,

@@ -1,17 +1,14 @@
 import "server-only";
 
-import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
-import { RequestId } from "@modelcontextprotocol/sdk/types.js";
 import { TextStreamPart, ToolSet } from "ai";
 
 /**
- * Request context for storing transport and request ID per request
- * This allows tool handlers to access the transport to send streaming notifications
+ * Request context for storing user-specific data per request.
+ * The SDK provides transport, requestId, and progressToken through the extra parameter
+ * in tool handlers, so we only need to store userId here.
  */
 export interface MCPRequestContext {
-  transport: Transport;
-  requestId?: RequestId;
-  userId?: number;
+  userId: number;
 }
 
 /**

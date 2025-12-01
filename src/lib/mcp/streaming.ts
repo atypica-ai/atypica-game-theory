@@ -1,51 +1,64 @@
 import "server-only";
 
-import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
-import { RequestId } from "@modelcontextprotocol/sdk/types.js";
+import { ProgressNotification } from "@modelcontextprotocol/sdk/types.js";
 import { rootLogger } from "@/lib/logging";
 import { StreamChunkCallback } from "./types";
+import { ProgressToken } from "@modelcontextprotocol/sdk/types.js";
 
 const logger = rootLogger.child({ module: "mcp-streaming" });
 
 /**
- * Creates a streaming callback that sends MCP notifications for tool execution
+ * Creates a streaming callback that sends MCP progress notifications for tool execution
  * 
- * @param transport - The MCP transport to send notifications through
- * @param toolName - Name of the tool being executed
- * @param requestId - Optional request ID to associate notifications with the tool call
+ * @param sendNotification - The MCP sendNotification function from RequestHandlerExtra
+ * @param progressToken - The progress token from _meta.progressToken (if client requested progress)
+ * @param toolName - Name of the tool being executed (for logging)
  * @returns A callback function that can be passed to streaming tool execution
  */
 export function createStreamingCallback(
-  transport: Transport,
+  sendNotification: (notification: ProgressNotification) => Promise<void>,
+  progressToken: ProgressToken | undefined,
   toolName: string,
-  requestId?: RequestId,
 ): StreamChunkCallback {
   return async (chunk) => {
+    // Only send progress notifications if client requested them (progressToken exists)
+    if (!progressToken) {
+      return;
+    }
+
     try {
-      // Send streaming chunk as MCP notification
-      // Use relatedRequestId to associate with the tool call request
-      await transport.send(
-        {
-          jsonrpc: "2.0",
-          method: "notifications/message",
+      // Extract text content from chunk for progress message
+      let progressMessage: string | undefined;
+      
+      if (chunk.type != "error") {
+        progressMessage = JSON.stringify(chunk);
+      } else {
+        // chunk = {
+        //   "type": "error",
+        //   "error": {
+        //       "name": "AI_TypeValidationError",
+        //       "cause":[..],
+        //       "value":{..}
+        //   }
+        // }
+        progressMessage = JSON.stringify((chunk.error as Record<string, any>).value);
+      }
+
+      // Only send notification if we have a meaningful message
+      if (progressMessage) {
+        await sendNotification({
+          method: "notifications/progress",
           params: {
-            level: "info",
-            data: {
-              toolName,
-              chunk,
-            },
+            progressToken,
+            progress: 0, // Progress is incremental, client tracks state
+            message: progressMessage,
           },
-        },
-        {
-          // Associate this notification with the tool call request
-          // This ensures it's sent on the correct SSE stream
-          relatedRequestId: requestId,
-        },
-      );
+        });
+      }
     } catch (notificationError) {
       logger.warn(
         { error: (notificationError as Error).message },
-        "Failed to send streaming notification",
+        "Failed to send streaming progress notification",
       );
       // Don't throw - continue streaming even if one notification fails
     }

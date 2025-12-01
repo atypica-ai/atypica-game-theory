@@ -5,19 +5,12 @@ import {
   deepResearchInputSchema,
   deepResearchOutputSchema,
 } from "./types";
-import {
-  getMCPRequestContext,
-  runWithMCPRequestContext,
-} from "@/lib/mcp/context";
 import { createStreamingCallback } from "@/lib/mcp/streaming";
 import { rootLogger } from "@/lib/logging";
 import { ExpertName } from "./experts/types";
+import { getMCPRequestContext } from "@/lib/mcp/context";
 
 const logger = rootLogger.child({ module: "deepresearch-mcp-server" });
-
-// Note: These are now available from @/lib/mcp/context
-// Keeping exports for backward compatibility during migration
-export { getMCPRequestContext as getRequestContext, runWithMCPRequestContext as runWithRequestContext };
 
 /**
  * Creates and configures the deepresearch MCP server
@@ -41,35 +34,35 @@ export function createDeepResearchServer(): McpServer {
     },
     async (args, extra) => {
       try {
-        // Get the request context (transport and request ID) from AsyncLocalStorage
+        // Get userId from request context (still needed for UserChat creation)
+        // The SDK provides transport, requestId, and progressToken through extra parameter
         const context = getMCPRequestContext();
         
-        if (!context) {
-          logger.warn("No request context available - streaming disabled");
-          // Fallback: execute without streaming (but still requires userId)
-          // This should not happen in normal operation, but we need userId for UserChat creation
-          throw new Error("Missing request context - userId required for deep research");
-        }
-
-        const { transport, requestId, userId } = context;
-
-        if (!userId) {
+        if (!context?.userId) {
           throw new Error("Missing userId in deep research request context");
         }
 
+        const userId = context.userId;
+        const progressToken = extra._meta?.progressToken;
+
         logger.debug(
-          { requestId, hasTransport: !!transport, userId },
+          { 
+            requestId: extra.requestId, 
+            hasProgressToken: !!progressToken,
+            userId 
+          },
           "Executing deep research with streaming",
         );
 
-        // Create streaming callback using shared utility
+        // Create streaming callback using SDK's sendNotification and progressToken
+        // This uses the SDK's built-in progress notification mechanism
         const onStreamChunk = createStreamingCallback(
-          transport,
+          extra.sendNotification,
+          progressToken,
           "atypica_deep_research",
-          requestId,
         );
 
-        // Execute with streaming callback that sends MCP notifications
+        // Execute with streaming callback that sends MCP progress notifications
         // UserChat creation and message persistence are handled inside executeDeepResearch
         const result = await executeDeepResearch({
           query: args.query,
