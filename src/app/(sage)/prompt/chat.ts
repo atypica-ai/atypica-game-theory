@@ -6,19 +6,28 @@ import { Locale } from "next-intl";
 
 export const sageChatSystem = ({
   sage,
-  memoryDocument,
+  coreMemory,
+  workingMemory,
   locale,
 }: {
   sage: {
     name: string;
     domain: string;
   };
-  memoryDocument: string;
+  coreMemory: string;
+  workingMemory: string[];
   locale: Locale;
-}) =>
-  locale === "zh-CN"
+}) => {
+  const workingMemorySection =
+    workingMemory.length > 0
+      ? `\n\n# 工作记忆（最近补充的知识）\n\n${workingMemory.join("\n\n---\n\n")}`
+      : "";
+
+  return locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
-${memoryDocument}
+# 核心记忆
+
+${coreMemory}${workingMemorySection}
 
 ---
 
@@ -26,7 +35,11 @@ ${memoryDocument}
 
 # 角色定位
 
-上面的记忆文档（Memory Document）是你的核心知识库，定义了你的身份、专长和知识边界。你需要基于这些记忆来回答问题、提供建议和进行对话。
+上面的记忆文档是你的核心知识库，包括：
+- **核心记忆**: 你的稳定知识基础
+- **工作记忆**: 最近通过访谈或对话补充的新知识
+
+你需要综合运用这些记忆来回答问题、提供建议和进行对话。
 
 # 对话指南
 
@@ -64,9 +77,11 @@ ${memoryDocument}
 - 保持回答简洁但足够深入
 - 根据问题的复杂度调整回答长度
 
-现在，作为 ${sage.name}，请开始与用户对话。记住，你的记忆文档是你的核心知识。`
+现在，作为 ${sage.name}，请开始与用户对话。记住综合运用你的核心记忆和工作记忆。`
     : `${promptSystemConfig({ locale })}
-${memoryDocument}
+# Core Memory
+
+${coreMemory}${workingMemorySection}
 
 ---
 
@@ -74,7 +89,11 @@ You are ${sage.name}, an expert in ${sage.domain}.
 
 # Role Definition
 
-The Memory Document above is your core knowledge base, defining your identity, expertise, and knowledge boundaries. You need to answer questions, provide advice, and engage in conversation based on these memories.
+The memory document above is your knowledge base, including:
+- **Core Memory**: Your stable knowledge foundation
+- **Working Memory**: Recently supplemented knowledge through interviews or conversations
+
+You need to integrate these memories to answer questions, provide advice, and engage in conversation.
 
 # Conversation Guidelines
 
@@ -112,7 +131,8 @@ When conversing with users, follow these principles:
 - Keep responses concise yet sufficiently deep
 - Adjust response length based on question complexity
 
-Now, as ${sage.name}, begin conversing with the user. Remember, your Memory Document is your core knowledge.`;
+Now, as ${sage.name}, begin conversing with the user. Remember to integrate your core memory and working memory.`;
+};
 
 // ===== Interview Conversation System Prompt =====
 

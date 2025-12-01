@@ -5,7 +5,11 @@ import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
-import { endSageChat, endSageInterview } from "./processing/memory";
+import {
+  analyzeSageChatsForGaps,
+  endSageChat,
+  endSageInterview,
+} from "./processing/gaps";
 import type { SageInterviewExtra } from "./types";
 
 // ===== Sage Interview =====
@@ -111,11 +115,10 @@ export async function endSageInterviewAction(interviewId: number): Promise<
 
 /**
  * End sage chat - triggered by manual user action
- * Performs gap discovery and adds episodic memory
+ * Only adds episodic memory (gap discovery is done separately via batch analysis)
  */
 export async function endSageChatAction(chatId: number): Promise<
   ServerActionResult<{
-    newGapsCount: number;
     episodicMemoryAdded: boolean;
   }>
 > {
@@ -129,7 +132,6 @@ export async function endSageChatAction(chatId: number): Promise<
             select: {
               id: true,
               userId: true,
-              locale: true,
             },
           },
         },
@@ -156,7 +158,6 @@ export async function endSageChatAction(chatId: number): Promise<
       const result = await endSageChat({
         sageId: chat.sageId,
         chatId,
-        locale: chat.sage.locale as "zh-CN" | "en-US",
       });
 
       rootLogger.info({
@@ -164,7 +165,6 @@ export async function endSageChatAction(chatId: number): Promise<
         chatId,
         sageId: chat.sageId,
         userId: user.id,
-        newGapsCount: result.newGapsCount,
       });
 
       return {
@@ -180,6 +180,85 @@ export async function endSageChatAction(chatId: number): Promise<
       return {
         success: false,
         message: "Failed to end chat",
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
+/**
+ * Batch analyze recent sage chats for knowledge gaps
+ * Triggered manually by expert in Sage Chats management page
+ */
+export async function analyzeSageChatsForGapsAction({
+  sageId,
+  limit = 20,
+}: {
+  sageId: number;
+  limit?: number;
+}): Promise<
+  ServerActionResult<{
+    analyzedChatsCount: number;
+    newGapsCount: number;
+  }>
+> {
+  return withAuth(async (user) => {
+    try {
+      // Get sage and verify ownership
+      const sage = await prisma.sage.findUnique({
+        where: { id: sageId },
+        select: {
+          id: true,
+          userId: true,
+          locale: true,
+        },
+      });
+
+      if (!sage) {
+        return {
+          success: false,
+          message: "Sage not found",
+          code: "not_found",
+        };
+      }
+
+      // Check ownership
+      if (sage.userId !== user.id) {
+        return {
+          success: false,
+          message: "Unauthorized",
+          code: "forbidden",
+        };
+      }
+
+      // Batch analyze chats
+      const result = await analyzeSageChatsForGaps({
+        sageId,
+        limit,
+        locale: sage.locale as "zh-CN" | "en-US",
+      });
+
+      rootLogger.info({
+        msg: "Batch analyzed sage chats for gaps",
+        sageId,
+        userId: user.id,
+        analyzedChatsCount: result.analyzedChatsCount,
+        newGapsCount: result.newGapsCount,
+      });
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      rootLogger.error({
+        msg: "Failed to analyze sage chats for gaps",
+        error: (error as Error).message,
+        sageId,
+      });
+      return {
+        success: false,
+        message: "Failed to analyze chats",
         code: "internal_server_error",
       };
     }

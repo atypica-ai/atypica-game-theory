@@ -9,16 +9,15 @@ import { reasoningThinkingTool } from "@/ai/tools/tools";
 import { StatReporter, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
-import { analyzeConversationForGaps } from "@/app/(sage)/processing/gaps";
 import { sageChatSystem } from "@/app/(sage)/prompt/chat";
-import { SageAvatar, SageExtra, SageKnowledgeGapSource } from "@/app/(sage)/types";
+import { SageAvatar, SageExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
-import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -65,7 +64,7 @@ export async function POST(req: Request) {
       memoryDocuments: {
         orderBy: { version: "desc" },
         take: 1,
-        select: { content: true },
+        select: { core: true, working: true, episodic: true },
       },
     },
   });
@@ -81,10 +80,10 @@ export async function POST(req: Request) {
     avatar: sageData.avatar as SageAvatar,
   };
 
-  const memoryDocument = sageData.memoryDocuments[0]?.content ?? null;
+  const latestMemoryDoc = sageData.memoryDocuments[0];
 
   // Check if Memory Document is ready
-  if (!memoryDocument) {
+  if (!latestMemoryDoc || !latestMemoryDoc.core) {
     return NextResponse.json(
       { error: "Sage is still being processed. Please try again later." },
       { status: 503 },
@@ -158,7 +157,10 @@ export async function POST(req: Request) {
         name: sage.name,
         domain: sage.domain,
       },
-      memoryDocument,
+      coreMemory: latestMemoryDoc.core,
+      workingMemory: Array.isArray(latestMemoryDoc.working)
+        ? (latestMemoryDoc.working as Array<{ content: string }>).map((item) => item.content)
+        : [],
       locale,
     }),
     messages: coreMessages,
@@ -201,76 +203,7 @@ export async function POST(req: Request) {
     },
   });
 
-  after(
-    new Promise((resolve, reject) => {
-      streamTextResult
-        .consumeStream()
-        .then(async () => {
-          // Analyze conversation for knowledge gaps
-          try {
-            const userMessage = newMessage.parts
-              .filter((part) => part.type === "text")
-              .map((part) => part.text)
-              .join("\n");
-
-            const aiMessage =
-              streamingMessage.parts
-                ?.filter((part) => part.type === "text")
-                .map((part) => part.text)
-                .join("\n") || "";
-
-            if (userMessage && aiMessage) {
-              const gaps = await analyzeConversationForGaps({
-                userMessage,
-                aiResponse: aiMessage,
-                sage: { name: sage.name, domain: sage.domain },
-                locale,
-                statReport: (async (dimension, value, extra) => {
-                  rootLogger.info({
-                    msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
-                    extra,
-                    note: "analyzeConversationForGaps is currently free - tokens not deducted",
-                  });
-                }) as StatReporter,
-                logger: chatLogger,
-              });
-
-              if (gaps.length > 0) {
-                // Create knowledge gap records with conversation source
-                await prisma.sageKnowledgeGap.createMany({
-                  data: gaps.map((gap) => ({
-                    sageId: sage.id,
-                    area: gap.area,
-                    description: gap.description,
-                    severity: gap.severity,
-                    impact: gap.impact,
-                    source: {
-                      type: "conversation",
-                      userChatToken: userChat.token,
-                      quote: `${truncateForTitle(userMessage, { maxDisplayWidth: 100, suffix: "..." })}`,
-                    } satisfies SageKnowledgeGapSource,
-                  })),
-                });
-                chatLogger.info({
-                  msg: "Detected knowledge gaps from conversation",
-                  gapsCount: gaps.length,
-                });
-              }
-            }
-          } catch (error) {
-            chatLogger.error({
-              msg: "Failed to analyze conversation for gaps",
-              error: (error as Error).message,
-            });
-          }
-
-          resolve(null);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    }),
-  );
+  // No after() processing needed - gaps are analyzed manually by the expert in batch
 
   return streamTextResult.toUIMessageStreamResponse({
     generateMessageId: () => streamingMessage.id,

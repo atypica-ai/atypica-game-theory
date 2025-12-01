@@ -49,53 +49,33 @@ export enum SageKnowledgeGapSeverity {
 }
 
 export type SageKnowledgeGapExtra = Partial<{
-  // AI-based gap resolution analysis
-  resolutionConfidence: number; // 0-1, confidence that gap is resolved
-  resolutionEvidence: string[]; // Evidence quotes from interview
-  missingAspects: string[]; // If partially resolved, what aspects are still missing
+  // 来源信息（只用于 UI 展示，方便跳转）
+  sourceChat?: {
+    id: number; // UserChat.id (对应 SageChat 的 UserChat)
+    token: string; // UserChat.token
+  };
+
+  // 解决信息（只用于 UI 展示，方便跳转）
+  resolvedChat?: {
+    id: number; // UserChat.id (对应 SageInterview 的 UserChat)
+    token: string; // UserChat.token
+  };
 }>;
 
-export type SageKnowledgeGapSource = Partial<
-  | {
-      type: "analysis" | "system_suggestion";
-    }
-  | {
-      type: "conversation";
-      userChatToken: string; // SageChat's chat token
-      quote: string;
-    }
->;
-
-export type SageKnowledgeGapResolvedBy = Partial<
-  | {
-      type: "interview";
-      userChatToken: string; // SageInterview's chat token
-    }
-  | {
-      type: "manual";
-    }
->;
-
 /**
- * Layered Memory
+ * Two-Layer Memory Architecture
  */
 
 export type WorkingMemoryItem = {
   id: string; // 唯一标识
   content: string; // 知识内容（Markdown）
-  source: "interview" | "conversation";
-  sourceId: string; // 来源 ID（interviewId 或 userChatToken）
-  relatedGapIds?: number[]; // 解决的 Gap IDs
+  sourceChat: {
+    id: number; // UserChat.id (对应 SageInterview 的 UserChat)
+    token: string; // UserChat.token
+  };
+  relatedGapIds: number[]; // 解决的 Gap IDs
   status: "pending" | "integrated" | "discarded"; // 状态
 };
-
-// Episodic Memory - 只存 chatId，其他信息可以从 UserChat 表查询
-export type EpisodicMemoryReference = string;
-
-// 没有用到
-// export type SageMemoryDocumentExtra = {
-//   ???
-// };
 
 /**
  * SageInterview

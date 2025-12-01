@@ -144,6 +144,14 @@
       "interviewsTitle": "Expert Interview History",
       "interviewsDescription": "View supplementary interview sessions with expert"
     },
+    "ChatsPage": {
+      "analyzeRecentChats": "Analyze Recent Chats",
+      "analyzeRecentChatsDesc": "Batch analyze recent {limit} conversations to identify knowledge gaps",
+      "analyzing": "Analyzing...",
+      "analyzeSuccess": "Analysis completed: analyzed {analyzed} conversations, discovered {gaps} knowledge gaps",
+      "analyzeNoGaps": "Analysis completed: analyzed {analyzed} conversations, no new knowledge gaps found",
+      "analyzeFailed": "Analysis failed, please try again"
+    },
     "SourcesPanel": {
       "knowledgeSources": "Knowledge Sources",
       "sources": "sources",

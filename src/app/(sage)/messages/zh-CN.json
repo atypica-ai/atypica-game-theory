@@ -144,6 +144,14 @@
       "interviewsTitle": "专家访谈记录",
       "interviewsDescription": "查看补充访谈会话"
     },
+    "ChatsPage": {
+      "analyzeRecentChats": "分析最近对话",
+      "analyzeRecentChatsDesc": "批量分析最近 {limit} 个对话，识别知识空白",
+      "analyzing": "分析中...",
+      "analyzeSuccess": "分析完成：已分析 {analyzed} 个对话，发现 {gaps} 个知识空白",
+      "analyzeNoGaps": "分析完成：已分析 {analyzed} 个对话，未发现新的知识空白",
+      "analyzeFailed": "分析失败，请重试"
+    },
     "SourcesPanel": {
       "knowledgeSources": "知识源",
       "sources": "个知识源",

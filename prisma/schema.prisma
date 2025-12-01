@@ -666,9 +666,10 @@ model SageKnowledgeGap {
   description String    @db.Text
   severity    String    @db.VarChar(32)
   impact      String    @db.Text
-  source      Json      @default("{}")
-  resolvedBy  Json      @default("{}")
   resolvedAt  DateTime? @db.Timestamptz(6)
+  // extra 包含:
+  // - sourceChat: { id: number, token: string } - 来源对话(UserChat.id+token,用于UI跳转)
+  // - resolvedChat: { id: number, token: string } - 解决访谈(UserChat.id+token,用于UI跳转)
   extra       Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -681,13 +682,12 @@ model SageMemoryDocument {
   sage        Sage   @relation(fields: [sageId], references: [id], onDelete: Cascade)
   version     Int
 
-  // Legacy field (will be deprecated after migration)
+  // Legacy field (DEPRECATED - 新版本固定为空字符串)
   content     String @db.Text
 
-  // Layered Memory fields
-  core        String @default("") @db.Text
-  working     Json   @default("[]")
-  episodic    Json   @default("[]")
+  // Two-Layer Memory fields
+  core        String @default("") @db.Text // 核心记忆 (Markdown)
+  working     Json   @default("[]") // 工作记忆 (来自访谈的待整合知识)
 
   changeNotes String @db.Text
   extra       Json   @default("{}")
