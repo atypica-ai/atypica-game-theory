@@ -10,6 +10,7 @@ export async function mergeExtra({
     | "Sage"
     | "SageSource"
     | "SageInterview"
+    | "SageChat"
     | "UserProfile"
     | "AnalystReport"
     | "AnalystPodcast"

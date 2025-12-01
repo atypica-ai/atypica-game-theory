@@ -102,11 +102,12 @@ export type SageInterviewExtra = Partial<{
  * SageChat
  */
 
-// export type SageChatExtra = {
-//   error: string; // 错误信息
-//   ongoing: boolean; // 是否正在进行中
-//   startsAt: number; // 开始时间戳（首次消息时设置）
-// };
+export type SageChatExtra = Partial<{
+  // error: string; // 错误信息
+  // ongoing: boolean; // 是否正在进行中
+  // startsAt: number; // 开始时间戳（首次消息时设置）
+  gapDiscovered: boolean;
+}>;
 
 // ===== Zod Schemas for Input Validation =====
 

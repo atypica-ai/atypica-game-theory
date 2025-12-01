@@ -4,7 +4,7 @@ import { Locale } from "next-intl";
 
 // ===== Sage Chat System Prompt =====
 
-export const sageChatSystem = ({
+export const sageChatSystemPrompt = ({
   sage,
   coreMemory,
   workingMemory,
@@ -18,16 +18,13 @@ export const sageChatSystem = ({
   workingMemory: string[];
   locale: Locale;
 }) => {
-  const workingMemorySection =
-    workingMemory.length > 0
-      ? `\n\n# 工作记忆（最近补充的知识）\n\n${workingMemory.join("\n\n---\n\n")}`
-      : "";
-
   return locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
 # 核心记忆
+${coreMemory}
 
-${coreMemory}${workingMemorySection}
+# 工作记忆（最近补充的知识）
+${workingMemory.length > 0 ? workingMemory.join("\n") : "暂无"}
 
 ---
 
@@ -80,8 +77,10 @@ ${coreMemory}${workingMemorySection}
 现在，作为 ${sage.name}，请开始与用户对话。记住综合运用你的核心记忆和工作记忆。`
     : `${promptSystemConfig({ locale })}
 # Core Memory
+${coreMemory}
 
-${coreMemory}${workingMemorySection}
+# Working Memory (Recently supplemented knowledge)
+${workingMemory.length > 0 ? workingMemory.join("\n") : "None at the moment"}
 
 ---
 

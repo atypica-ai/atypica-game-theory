@@ -359,6 +359,217 @@ AI 生成回答
 
 ## 关键技术实现
 
+### 0. 异步后台任务模式 (Async Background Job Pattern) ⭐⭐
+
+**核心设计**: Sage 系统中所有耗时操作（知识提取、Gap 分析等）都采用统一的异步后台处理模式
+
+#### 架构图
+
+```
+Server Action (权限层)
+  ├─ withAuth() 验证用户权限
+  ├─ 防重入检查 (30min 超时)
+  ├─ 准备依赖 (locale, logger, statReport, abortSignal)
+  └─ waitUntil(后台任务)
+      ├─ 标记开始: processing: { startsAt }
+      ├─ 执行核心业务逻辑 (纯函数)
+      ├─ 标记完成: processing: false
+      └─ 错误处理: 存储到 extra.error
+
+  ├─ revalidatePath() 失效缓存
+  └─ 立即返回成功
+```
+
+#### 标准实现模板
+
+```typescript
+export async function xxxAction(params): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    // 1. 查询数据并检查权限
+    const sage = await prisma.sage.findUniqueOrThrow({
+      where: { id: sageId, userId: user.id },
+      select: { id: true, token: true, extra: true },
+    });
+
+    // 2. 防重入检查 (30分钟超时)
+    if (sage.extra.processing && Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) {
+      return {
+        success: false,
+        message: "Sage is processing",
+      };
+    }
+
+    // 3. 准备依赖
+    const locale = await getLocale();
+    const logger = rootLogger.child({ sageId });
+    const statReport: StatReporter = (async (dimension, value, extra) => {
+      rootLogger.info({
+        msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+        extra,
+        note: "xxx is currently free - tokens not deducted",
+      });
+    }) as StatReporter;
+    const abortSignal = new AbortController().signal;
+
+    // 4. 后台异步处理
+    waitUntil(
+      (async () => {
+        // 标记开始
+        await mergeExtra({
+          tableName: "Sage",
+          id: sage.id,
+          extra: { processing: { startsAt: Date.now() }, error: null },
+        });
+
+        try {
+          // 执行核心业务逻辑 (纯函数)
+          await coreBusinessLogic({
+            sageId,
+            locale,
+            logger,
+            statReport,
+            abortSignal,
+          });
+
+          // 标记完成
+          await mergeExtra({
+            tableName: "Sage",
+            id: sage.id,
+            extra: { processing: false },
+          });
+        } catch (error) {
+          // 错误存储到 extra.error，不抛出
+          await mergeExtra({
+            tableName: "Sage",
+            id: sage.id,
+            extra: { processing: false, error: (error as Error).message },
+          });
+          // do not throw error
+        }
+      })(),
+    );
+
+    // 5. 立即失效缓存并返回
+    revalidatePath(`/sage/${sage.token}`);
+    return { success: true, data: undefined };
+  });
+}
+```
+
+#### 核心设计原则
+
+**1. 关注点分离**
+- **Server Action**: 权限验证、状态管理、缓存控制
+- **核心业务函数**: 纯逻辑，可独立测试
+- **依赖注入**: logger、statReport、abortSignal
+
+**2. 用户体验优先**
+- 立即返回成功响应，不让用户等待
+- 通过 `processing` 状态实现进度追踪
+- 前端轮询或 WebSocket 更新 UI
+
+**3. 防重入机制**
+```typescript
+if (sage.extra.processing && Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) {
+  return { success: false, message: "Sage is processing" };
+}
+```
+- 防止并发执行导致的数据竞争
+- 30 分钟超时允许从失败中恢复
+- 简单但有效的分布式锁
+
+**4. 优雅的错误处理**
+```typescript
+catch (error) {
+  await mergeExtra({
+    processing: false,
+    error: (error as Error).message
+  });
+  // do not throw error
+}
+```
+- 错误存储到 `extra.error` 供前端展示
+- 不抛出错误，避免影响 `waitUntil`
+- 确保 `processing: false` 允许重试
+
+**5. 结构化日志**
+```typescript
+const logger = rootLogger.child({ sageId });
+logger.info({ msg: "Operation started", details: "..." });
+```
+- 使用 child logger 自动附加上下文
+- 所有日志包含 `msg` 字段（Pino 最佳实践）
+
+**6. Token 追踪接口**
+```typescript
+const statReport: StatReporter = (async (dimension, value, extra) => {
+  rootLogger.info({
+    msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+    extra,
+    note: "xxx is currently free - tokens not deducted",
+  });
+}) as StatReporter;
+```
+- 即使当前免费，也保留完整的统计接口
+- 方便未来切换到计费模式
+- `[LIMITED FREE]` 标签明确说明当前状态
+
+#### 应用场景
+
+在 Sage 系统中，以下操作都使用此模式：
+
+1. **reProcessSageSourcesAndExtractKnowledge** (src/app/(sage)/(detail)/actions.ts:145)
+   - 重新处理所有知识源
+   - 提取并构建核心记忆
+
+2. **discoverKnowledgeGapsFromSageChatsAction** (src/app/(sage)/(detail)/actions.ts:216)
+   - 批量分析最近对话
+   - 识别知识空白
+
+#### 前端配合
+
+**处理状态展示**:
+```typescript
+const isProcessing = useMemo(
+  () =>
+    (sage.extra.processing &&
+     Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) ||
+    isRequesting,
+  [sage.extra.processing, isRequesting],
+);
+
+// 自动刷新
+useEffect(() => {
+  if (isProcessing) {
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 10000); // 每10秒刷新
+    return () => clearInterval(interval);
+  }
+}, [isProcessing, router]);
+```
+
+**错误展示**:
+```typescript
+{sage.extra.error && (
+  <Alert variant="destructive">
+    <AlertDescription>{sage.extra.error}</AlertDescription>
+  </Alert>
+)}
+```
+
+#### 优势总结
+
+- ✅ **用户体验**: 立即响应，不阻塞 UI
+- ✅ **可观测性**: 完整的日志、状态追踪、错误记录
+- ✅ **容错设计**: 错误不影响系统，可以重试
+- ✅ **防并发**: 简单有效的防重入机制
+- ✅ **关注点分离**: 权限、状态、业务逻辑清晰解耦
+- ✅ **未来友好**: 预留接口（token 统计）、注释说明设计意图
+- ✅ **可测试性**: 核心逻辑独立，便于单元测试
+
+---
+
 ### 1. 统一的文本压缩策略 ⭐
 
 **核心改进**: Sage 知识源处理现在使用与 AI Study 附件处理相同的文本压缩算法

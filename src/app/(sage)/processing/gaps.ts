@@ -8,7 +8,7 @@ import {
   discoverKnowledgeGapsFromSageChatsSystemPrompt,
   knowledgeGapDiscoverySchema,
 } from "@/app/(sage)/prompt/gaps";
-import type { SageKnowledgeGapSeverity } from "@/app/(sage)/types";
+import type { SageChatExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
 import { SageInterviewExtra, SageKnowledgeGapExtra, WorkingMemoryItem } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
@@ -352,27 +352,49 @@ export async function discoverKnowledgeGapsFromSageChats({
     select: { id: true, name: true, domain: true },
   });
 
+  // First, get sageChats where extra.relatedGapIds is empty, ordered by id desc, limit 20
+  const chatsWithoutGapAnalysis = await prisma.$queryRaw<Array<{ id: number }>>`
+    SELECT id
+    FROM "SageChat"
+    WHERE "sageId" = ${sageId} AND "extra"::jsonb -> 'gapDiscovered' IS NULL
+    ORDER BY id DESC
+    LIMIT 20
+  `;
+  if (chatsWithoutGapAnalysis.length === 0) {
+    logger.info({ msg: "No chats without gap analysis found" });
+    return;
+  }
+  const chatIds = chatsWithoutGapAnalysis.map((chat) => chat.id);
+  logger.info({ msg: "Found chats without gap analysis", count: chatIds.length, chatIds });
+
+  // Override the recentSageChats query to use these specific chat IDs
+
   // Get recent chats with messages
-  const recentChats = await prisma.sageChat.findMany({
-    where: { sageId },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-    select: {
-      id: true,
-      userChat: {
-        select: {
-          id: true,
-          token: true,
-          messages: {
-            orderBy: { id: "asc" },
+  const recentSageChats = await prisma.sageChat
+    .findMany({
+      where: {
+        sageId,
+        id: { in: chatIds },
+      },
+      select: {
+        id: true,
+        userChat: {
+          select: {
+            id: true,
+            token: true,
+            messages: {
+              orderBy: { id: "asc" },
+            },
           },
         },
+        extra: true,
       },
-      extra: true,
-    },
-  });
+    })
+    .then((chats) =>
+      chats.map(({ extra, ...sageChat }) => ({ ...sageChat, extra: extra as SageChatExtra })),
+    );
 
-  if (recentChats.length === 0) {
+  if (recentSageChats.length === 0) {
     logger.info({ msg: "No chats found for analysis" });
     return;
   }
@@ -387,7 +409,7 @@ export async function discoverKnowledgeGapsFromSageChats({
    * (TRANSCRIPT)
    * ...
    */
-  const chatsContext = recentChats
+  const chatsContext = recentSageChats
     .map((chat, index) => {
       const transcript = chat.userChat.messages
         .map(convertDBMessageToAIMessage)
@@ -447,15 +469,12 @@ export async function discoverKnowledgeGapsFromSageChats({
 
   const discoveredGaps = result.object.gaps;
   if (discoveredGaps.length > 0) {
-    const chatTokenToUserChat = new Map(
-      recentChats.map((chat) => [
-        chat.userChat.id,
-        { id: chat.userChat.id, token: chat.userChat.token },
-      ]),
+    const chatIdToSageChat = new Map(
+      recentSageChats.map((sageChat) => [sageChat.userChat.id, sageChat]),
     );
     await prisma.sageKnowledgeGap.createMany({
       data: discoveredGaps.map((gap) => {
-        const sourceChat = chatTokenToUserChat.get(gap.chatId);
+        const sourceSageChat = chatIdToSageChat.get(gap.chatId);
         return {
           sageId,
           area: gap.area,
@@ -463,16 +482,32 @@ export async function discoverKnowledgeGapsFromSageChats({
           severity: gap.severity,
           impact: gap.impact,
           extra: {
-            sourceChat: sourceChat ? { id: sourceChat.id, token: sourceChat.token } : undefined,
+            sourceChat: sourceSageChat
+              ? { id: sourceSageChat.userChat.id, token: sourceSageChat.userChat.token }
+              : undefined,
           } satisfies SageKnowledgeGapExtra,
         };
       }),
     });
   }
 
+  // 所有找出来的 chat 都标记，不只是有对应 gap 的标记，每个 chat 只会被处理一次
+  await Promise.all(
+    recentSageChats.map(async (sageChat) => {
+      await mergeExtra({
+        tableName: "SageChat",
+        id: sageChat.id,
+        extra: { gapDiscovered: true } satisfies SageChatExtra,
+      });
+    }),
+  ).catch((error) => {
+    logger.error(`Error marking chats as having gaps: ${(error as Error).message}`);
+    // throw error;
+  });
+
   logger.info({
     msg: "Batch chat analysis completed",
-    chats: recentChats.length,
+    chats: recentSageChats.length,
     newGaps: discoveredGaps.length,
   });
 }

@@ -9,7 +9,7 @@ import { reasoningThinkingTool } from "@/ai/tools/tools";
 import { StatReporter, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
-import { sageChatSystem } from "@/app/(sage)/prompt/chat";
+import { sageChatSystemPrompt } from "@/app/(sage)/prompt/chat";
 import { SageAvatar, SageExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -130,7 +130,6 @@ export async function POST(req: Request) {
   const mergedAbortSignal = AbortSignal.any([req.signal]);
 
   const tools = {
-    // TODO: 这个回头再实现，暂时不搞这么复杂
     google_search: google.tools.googleSearch({
       mode: "MODE_DYNAMIC",
       dynamicThreshold: 0.3,
@@ -152,7 +151,7 @@ export async function POST(req: Request) {
     model: llm("gemini-2.5-flash"),
     providerOptions: defaultProviderOptions,
 
-    system: sageChatSystem({
+    system: sageChatSystemPrompt({
       sage: {
         name: sage.name,
         domain: sage.domain,
