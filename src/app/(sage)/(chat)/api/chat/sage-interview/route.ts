@@ -9,17 +9,41 @@ import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { sageInterviewConversationSystem } from "@/app/(sage)/prompt/chat";
-import type { SageExtra, SageInterviewExtra } from "@/app/(sage)/types";
+import {
+  type SageExtra,
+  type SageInterviewExtra,
+  SageKnowledgeGapSeverity,
+} from "@/app/(sage)/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { Sage, SageInterview } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { generateId, smoothStream, streamText } from "ai";
+import { generateId, smoothStream, streamText, tool } from "ai";
 import { getServerSession } from "next-auth";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { after, NextResponse } from "next/server";
+import z from "zod";
+
+// Tool schemas
+const fetchPendingGapsOutputSchema = z.object({
+  gaps: z.array(
+    z.object({
+      id: z.number(),
+      area: z.string(),
+      description: z.string(),
+      severity: z.enum([
+        SageKnowledgeGapSeverity.CRITICAL,
+        SageKnowledgeGapSeverity.IMPORTANT,
+        SageKnowledgeGapSeverity.NICE_TO_HAVE,
+      ]),
+      impact: z.string(),
+    }),
+  ),
+  totalCount: z.number(),
+  plainText: z.string(), // Required for PlainTextToolResult
+});
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -126,16 +150,59 @@ export async function POST(req: Request) {
       : await getLocale(),
   });
 
-  // Get interview plan from extra
-  const interviewPlan = sageInterview.extra.interviewPlan;
+  // Define tools for interview
+  const tools = {
+    fetchPendingGaps: tool({
+      description:
+        "Fetch pending knowledge gaps to understand what knowledge needs to be filled in this interview. Use this tool at the beginning of the interview to see what gaps need to be addressed.",
+      inputSchema: z.object({}),
+      outputSchema: fetchPendingGapsOutputSchema,
+      toModelOutput: (result) => {
+        return { type: "text", value: result.plainText };
+      },
+      execute: async () => {
+        const gaps = await prisma.sageKnowledgeGap.findMany({
+          where: {
+            sageId: sage.id,
+            resolvedAt: null,
+          },
+          select: {
+            id: true,
+            area: true,
+            description: true,
+            severity: true,
+            impact: true,
+          },
+          orderBy: [{ severity: "desc" }, { id: "asc" }],
+        });
 
-  if (!interviewPlan) {
-    throw new Error("Interview plan not prepared");
-  }
+        const gapsText =
+          gaps.length > 0
+            ? gaps
+                .map(
+                  (gap, idx) =>
+                    `${idx + 1}. [${gap.severity.toUpperCase()}] ${gap.area}\n   Description: ${gap.description}\n   Impact: ${gap.impact}`,
+                )
+                .join("\n\n")
+            : "No pending knowledge gaps found.";
 
-  // Interview tools removed - users now manually trigger "End Interview" button
+        return {
+          gaps: gaps.map((gap) => ({
+            id: gap.id,
+            area: gap.area,
+            description: gap.description,
+            severity: gap.severity as SageKnowledgeGapSeverity,
+            impact: gap.impact,
+          })),
+          totalCount: gaps.length,
+          plainText: `Found ${gaps.length} pending knowledge gap(s) that need to be filled:\n\n${gapsText}`,
+        };
+      },
+    }),
+  };
+
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id, {
-    tools: {},
+    tools,
   });
 
   const mergedAbortSignal = AbortSignal.any([req.signal]);
@@ -148,11 +215,12 @@ export async function POST(req: Request) {
       sage: {
         name: sage.name,
         domain: sage.domain,
+        expertise: sage.expertise,
       },
-      interviewPlan,
       locale,
     }),
     messages: coreMessages,
+    tools,
 
     experimental_transform: smoothStream({
       delayInMs: 30,

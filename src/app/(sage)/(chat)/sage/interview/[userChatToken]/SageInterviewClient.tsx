@@ -119,9 +119,7 @@ export function SageInterviewClient({
                 <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {t("title")}: {sage.name}
                 </h2>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                  {interview.extra.interviewPlan?.purpose || t("purpose")}
-                </p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400">{t("purpose")}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 text-sm">
@@ -148,20 +146,6 @@ export function SageInterviewClient({
               )}
             </div>
           </div>
-
-          {/* Focus Areas */}
-          {interview.extra.interviewPlan?.focusAreas?.length && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {interview.extra.interviewPlan.focusAreas.map((area, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded"
-                >
-                  {area}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 

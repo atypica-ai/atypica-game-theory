@@ -85,17 +85,6 @@ export type SageInterviewExtra = Partial<{
   error: string; // 错误信息
   ongoing: boolean; // 是否正在进行中
   startsAt: number; // 开始时间戳（首次消息时设置）timestamp, typeof Date.now()
-  interviewPlan: {
-    purpose: string;
-    focusAreas: string[];
-    questions: Array<{
-      question: string;
-      purpose: string;
-      followUps: string[];
-    }>;
-  };
-  completedAt: number; // timestamp, typeof Date.now()
-  summary: string;
 }>;
 
 /**
