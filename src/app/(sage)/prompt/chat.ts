@@ -1,6 +1,7 @@
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { SageKnowledgeGapSeverity } from "@/app/(sage)/types";
 import { Locale } from "next-intl";
+import z from "zod";
 
 // ===== Sage Chat System Prompt =====
 
@@ -317,18 +318,17 @@ Now, begin the interview. Please introduce the purpose of this interview to the 
 
 // ===== Interview Plan Generation System Prompt =====
 
-export const interviewPlanSystem = ({
+export const makeSageInterviewPlanSystemPrompt = ({
   sage,
-  knowledgeGaps,
+  pendingGaps,
   locale,
 }: {
   sage: { name: string; domain: string; expertise: string[] };
-  knowledgeGaps: Array<{
+  pendingGaps: Array<{
     area: string;
     severity: SageKnowledgeGapSeverity;
     description: string;
     impact: string;
-    suggestedQuestions: string[];
   }>;
   locale: Locale;
 }) =>
@@ -342,7 +342,7 @@ export const interviewPlanSystem = ({
 </专家信息>
 
 <知识空白>
-${knowledgeGaps.map((gap, i) => `${i + 1}. ${gap.area} (${gap.severity})\n   ${gap.description}\n   影响: ${gap.impact}`).join("\n\n")}
+${pendingGaps.map((gap, i) => `${i + 1}. ${gap.area} (${gap.severity})\n   ${gap.description}\n   影响: ${gap.impact}`).join("\n\n")}
 </知识空白>
 
 <任务>
@@ -361,7 +361,7 @@ Existing Expertise: ${sage.expertise.join(", ")}
 </Expert Information>
 
 <Knowledge Gaps>
-${knowledgeGaps.map((gap, i) => `${i + 1}. ${gap.area} (${gap.severity})\n   ${gap.description}\n   Impact: ${gap.impact}`).join("\n\n")}
+${pendingGaps.map((gap, i) => `${i + 1}. ${gap.area} (${gap.severity})\n   ${gap.description}\n   Impact: ${gap.impact}`).join("\n\n")}
 </Knowledge Gaps>
 
 <Task>
@@ -371,3 +371,15 @@ Design a supplementary interview plan to help fill the above knowledge gaps. The
 3. Design 3-5 core questions, each with 2-3 follow-up questions
 4. Questions should be open-ended, specific, and able to elicit deep knowledge
 </Task>`;
+
+export const sageInterviewPlanSchema = z.object({
+  purpose: z.string().describe("Purpose of this supplementary interview"),
+  focusAreas: z.array(z.string()).describe("Key focus areas for the interview"),
+  questions: z.array(
+    z.object({
+      question: z.string().describe("Interview question"),
+      purpose: z.string().describe("Purpose of asking this question"),
+      followUps: z.array(z.string()).describe("Potential follow-up questions (2-3 questions)"),
+    }),
+  ),
+});

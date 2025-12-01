@@ -1,5 +1,5 @@
 "use client";
-import { discoverKnowledgeGapsFromSageChatsAction } from "@/app/(sage)/(detail)/actions";
+import { discoverKnowledgeGapsAction } from "@/app/(sage)/actions";
 import { SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -44,7 +44,7 @@ export function SageChatsPageClient({
   const handleAnalyze = useCallback(async () => {
     setIsRequesting(true);
     try {
-      const result = await discoverKnowledgeGapsFromSageChatsAction({ sageId: sage.id });
+      const result = await discoverKnowledgeGapsAction({ sageId: sage.id });
       if (!result.success) throw result;
       toast.success(t("analyzeSubmitted"));
       setTimeout(() => router.refresh(), 1000);

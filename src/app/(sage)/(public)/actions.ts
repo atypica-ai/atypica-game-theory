@@ -1,5 +1,5 @@
 "use server";
-import { reProcessSageSourcesAndExtractKnoledge } from "@/app/(sage)/(detail)/actions";
+import { extractSageKnowledgeAction } from "@/app/(sage)/actions";
 import { createSageInputSchema, type SageSourceContent } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
@@ -62,7 +62,7 @@ export async function createSage(
       title: `Sage: ${validated.name}`,
     });
 
-    after(() => reProcessSageSourcesAndExtractKnoledge(sage.id));
+    after(() => extractSageKnowledgeAction(sage.id));
 
     return {
       success: true,

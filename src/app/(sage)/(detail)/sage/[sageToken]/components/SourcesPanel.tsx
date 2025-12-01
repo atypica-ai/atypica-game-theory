@@ -1,6 +1,6 @@
 "use client";
-import { reProcessSageSourcesAndExtractKnoledge } from "@/app/(sage)/(detail)/actions";
 import { addSageSources, deleteSageSources } from "@/app/(sage)/(public)/actions";
+import { extractSageKnowledgeAction } from "@/app/(sage)/actions";
 import { AddSourcesContent } from "@/app/(sage)/components/AddSourcesContent";
 import type { SageExtra, SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
@@ -73,7 +73,7 @@ export function SourcesPanel({
   const handleProcessSources = useCallback(async () => {
     setIsRequesting(true);
     try {
-      const result = await reProcessSageSourcesAndExtractKnoledge(sage.id);
+      const result = await extractSageKnowledgeAction(sage.id);
       if (!result.success) throw result;
       toast.success(t("processingStarted"));
       setTimeout(() => router.refresh(), 1000);

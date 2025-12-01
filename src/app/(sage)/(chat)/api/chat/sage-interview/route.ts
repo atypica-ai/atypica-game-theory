@@ -10,12 +10,15 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { sageInterviewConversationSystem } from "@/app/(sage)/prompt/chat";
 import type { SageExtra, SageInterviewExtra } from "@/app/(sage)/types";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { Sage, SageInterview } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateId, smoothStream, streamText } from "ai";
 import { getServerSession } from "next-auth";
+import { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { after, NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -39,11 +42,27 @@ export async function POST(req: Request) {
 
   // Get UserChat and interview
   const userChat = await prisma.userChat.findUnique({
-    where: { token: userChatToken },
-    include: {
+    where: {
+      token: userChatToken,
+      userId: session.user.id, // 校验一下，只有专家本人可以
+    },
+    select: {
+      id: true,
+      token: true,
       sageInterview: {
-        include: {
-          sage: true,
+        select: {
+          id: true,
+          extra: true,
+          sage: {
+            select: {
+              id: true,
+              name: true,
+              domain: true,
+              expertise: true,
+              locale: true,
+              extra: true,
+            },
+          },
         },
       },
     },
@@ -53,33 +72,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Interview session not found" }, { status: 404 });
   }
 
-  const { sage, ...interview } = userChat.sageInterview as Omit<
-    SageInterview & {
-      sage: Omit<Sage, "expertise" | "extra"> & {
-        expertise: string[];
-        extra: SageExtra;
-      };
-    },
-    "extra"
-  > & {
+  const { sage, ...sageInterview } = userChat.sageInterview as Pick<SageInterview, "id"> & {
     extra: SageInterviewExtra;
+  } & {
+    sage: Pick<Sage, "id" | "name" | "domain" | "locale"> & {
+      expertise: string[];
+      extra: SageExtra;
+    };
   };
 
-  // Check ownership
-  if (sage.userId !== session.user.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-  }
-
   // Check if interview is completed
-  if (!interview.extra.ongoing) {
+  if (!sageInterview.extra.ongoing) {
     return NextResponse.json({ error: "Interview has been completed" }, { status: 400 });
   }
 
-  const chatLogger = rootLogger.child({
+  const logger = rootLogger.child({
     userChatId: userChat.id,
     userChatToken: userChat.token,
     sageId: sage.id,
-    interviewId: interview.id,
+    interviewId: sageInterview.id,
     intent: "SageInterview",
   });
 
@@ -87,7 +98,7 @@ export async function POST(req: Request) {
   // const { statReport } = initGenericUserChatStatReporter({
   //   userId: sage.userId,
   //   userChatId: userChat.id,
-  //   logger: chatLogger,
+  //   logger: logger,
   // });
   const statReport: StatReporter = (async (dimension, value, extra) => {
     rootLogger.info({
@@ -110,11 +121,13 @@ export async function POST(req: Request) {
   // Detect user input language, fallback to sage's locale
   const locale = await detectInputLanguage({
     text: newMessage.parts.map((part) => (part.type === "text" ? part.text : "")).join(""),
-    fallbackLocale: sage.locale as "zh-CN" | "en-US",
+    fallbackLocale: VALID_LOCALES.includes(sage.locale as Locale)
+      ? (sage.locale as Locale)
+      : await getLocale(),
   });
 
   // Get interview plan from extra
-  const interviewPlan = interview.extra.interviewPlan;
+  const interviewPlan = sageInterview.extra.interviewPlan;
 
   if (!interviewPlan) {
     throw new Error("Interview plan not prepared");
@@ -128,7 +141,7 @@ export async function POST(req: Request) {
   const mergedAbortSignal = AbortSignal.any([req.signal]);
 
   const streamTextResult = streamText({
-    model: llm("claude-sonnet-4"),
+    model: llm("claude-sonnet-4-5"),
     providerOptions: defaultProviderOptions,
 
     system: sageInterviewConversationSystem({
@@ -146,8 +159,6 @@ export async function POST(req: Request) {
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
 
-    abortSignal: mergedAbortSignal,
-
     onStepFinish: async (step) => {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length) {
@@ -157,7 +168,7 @@ export async function POST(req: Request) {
         });
       }
       const { tokens, extra } = calculateStepTokensUsage(step);
-      chatLogger.info({
+      logger.info({
         msg: "sage interview streamText onStepFinish",
         usage: extra.usage,
         cache: extra.cache,
@@ -172,22 +183,13 @@ export async function POST(req: Request) {
     },
 
     onError: ({ error }) => {
-      chatLogger.error(`sage interview streamText onError: ${(error as Error).message}`);
+      logger.error(`sage interview streamText onError: ${(error as Error).message}`);
     },
+
+    abortSignal: mergedAbortSignal,
   });
 
-  after(
-    new Promise((resolve, reject) => {
-      streamTextResult
-        .consumeStream()
-        .then(() => {
-          resolve(null);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    }),
-  );
+  after(streamTextResult.consumeStream());
 
   return streamTextResult.toUIMessageStreamResponse({
     generateMessageId: () => streamingMessage.id,

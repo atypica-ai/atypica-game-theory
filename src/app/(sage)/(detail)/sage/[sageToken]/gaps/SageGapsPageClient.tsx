@@ -1,6 +1,6 @@
 "use client";
 
-import { createSupplementaryInterview } from "@/app/(sage)/(detail)/actions";
+import { createSageInterviewAction } from "@/app/(sage)/actions";
 import type {
   SageExtra,
   SageKnowledgeGapExtra,
@@ -14,6 +14,7 @@ import {
   CheckCircle2Icon,
   ExternalLinkIcon,
   InfoIcon,
+  Loader2Icon,
   PlusIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -42,7 +43,7 @@ export function SageGapsPageClient({
   const handleCreateInterview = useCallback(async () => {
     setIsCreating(true);
     try {
-      const result = await createSupplementaryInterview(sage.id);
+      const result = await createSageInterviewAction(sage.id);
       if (!result.success) throw result;
       const { userChat } = result.data;
       toast.success(t("interviewCreated"));
@@ -93,7 +94,11 @@ export function SageGapsPageClient({
         </div>
         {pendingGaps.length > 0 && (
           <Button onClick={handleCreateInterview} disabled={isCreating} size="sm">
-            <PlusIcon className="h-4 w-4" />
+            {isCreating ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <PlusIcon className="size-4" />
+            )}
             {t("createSupplementaryInterview")}
           </Button>
         )}
@@ -125,7 +130,9 @@ export function SageGapsPageClient({
                   {gap.extra.sourceChat && (
                     <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/40">
                       <div className="flex-1">
-                        <div className="text-xs text-muted-foreground mb-1">💬 From conversation</div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          💬 From conversation
+                        </div>
                       </div>
                       <Link href={`/sage/chat/view/${gap.extra.sourceChat.token}`} target="_blank">
                         <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors shrink-0" />
