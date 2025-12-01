@@ -1,4 +1,6 @@
+import { SageKnowledgeGapSeverity } from "@/app/(sage)/types";
 import { Locale } from "next-intl";
+import z from "zod";
 
 // ===== Single-Turn Conversation Gap Analysis =====
 // Used for real-time analysis after each user-expert exchange
@@ -62,10 +64,7 @@ If knowledge gap detected, set hasGap=true and list gaps.
 If answer quality is normal, set hasGap=false.
 </Output>`;
 
-// ===== Full Conversation Gap Discovery =====
-// Used when ending a chat to discover gaps from entire conversation
-
-export const chatGapDiscoverySystem = ({
+export const discoverKnowledgeGapsFromSageChatsSystemPrompt = ({
   sage,
   locale,
 }: {
@@ -137,3 +136,27 @@ Domain: ${sage.domain}
 
 <Output>
 Return list of discovered knowledge gaps. If conversation quality is good with no obvious gaps, return empty array.`;
+
+export const knowledgeGapDiscoverySchema = z.object({
+  gaps: z
+    .array(
+      z.object({
+        chatId: z.number().describe("The userChat ID where this gap was identified"),
+        area: z.string().describe("Knowledge area that is missing"),
+        description: z.string().describe("Detailed description of what knowledge is needed"),
+        severity: z
+          .enum([
+            SageKnowledgeGapSeverity.CRITICAL,
+            SageKnowledgeGapSeverity.IMPORTANT,
+            SageKnowledgeGapSeverity.NICE_TO_HAVE,
+          ])
+          .describe("How critical this gap is"),
+        impact: z.string().describe("Why this gap was identified and its impact"),
+        userQuestion: z
+          .string()
+          .optional()
+          .describe("The user question that revealed this gap (if any)"),
+      }),
+    )
+    .describe("All knowledge gaps discovered from all conversations"),
+});

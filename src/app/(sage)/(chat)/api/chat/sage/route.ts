@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       memoryDocuments: {
         orderBy: { version: "desc" },
         take: 1,
-        select: { core: true, working: true, episodic: true },
+        select: { core: true, working: true },
       },
     },
   });

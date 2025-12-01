@@ -1,4 +1,4 @@
-import { EpisodicMemoryReference, WorkingMemoryItem } from "@/app/(sage)/types";
+import { WorkingMemoryItem } from "@/app/(sage)/types";
 import { useTranslations } from "next-intl";
 
 export function SageMemoryPageClient({
@@ -7,7 +7,6 @@ export function SageMemoryPageClient({
   sageMemoryDocument: {
     core: string;
     working: WorkingMemoryItem[];
-    episodic: EpisodicMemoryReference[];
   } | null;
 }) {
   const t = useTranslations("Sage.detail");

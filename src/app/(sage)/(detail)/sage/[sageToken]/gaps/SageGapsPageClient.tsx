@@ -4,9 +4,7 @@ import { createSupplementaryInterview } from "@/app/(sage)/(detail)/actions";
 import type {
   SageExtra,
   SageKnowledgeGapExtra,
-  SageKnowledgeGapResolvedBy,
   SageKnowledgeGapSeverity,
-  SageKnowledgeGapSource,
 } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -29,11 +27,9 @@ export function SageGapsPageClient({
   gaps,
 }: {
   sage: Pick<Sage, "id"> & { extra: SageExtra };
-  gaps: (Omit<SageKnowledgeGap, "severity" | "extra" | "source" | "resolvedBy"> & {
+  gaps: (Omit<SageKnowledgeGap, "severity" | "extra"> & {
     severity: SageKnowledgeGapSeverity;
     extra: SageKnowledgeGapExtra;
-    source: SageKnowledgeGapSource;
-    resolvedBy: SageKnowledgeGapResolvedBy;
   })[];
 }) {
   const t = useTranslations("Sage.detail");
@@ -125,16 +121,13 @@ export function SageGapsPageClient({
                   key={gap.id}
                   className={`border-l-2 pl-3 py-2.5 space-y-3 ${getSeverityColor(gap.severity)}`}
                 >
-                  {/* User Question Quote - if from conversation */}
-                  {gap.source.type === "conversation" && gap.source.quote && (
+                  {/* Source Chat Link - if available */}
+                  {gap.extra.sourceChat && (
                     <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/40">
                       <div className="flex-1">
-                        <div className="text-xs text-muted-foreground mb-1">💬 User asked:</div>
-                        <div className="text-sm italic text-foreground/90">
-                          &ldquo;{gap.source.quote}&rdquo;
-                        </div>
+                        <div className="text-xs text-muted-foreground mb-1">💬 From conversation</div>
                       </div>
-                      <Link href={`/sage/chat/view/${gap.source.userChatToken}`} target="_blank">
+                      <Link href={`/sage/chat/view/${gap.extra.sourceChat.token}`} target="_blank">
                         <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors shrink-0" />
                       </Link>
                     </div>
@@ -148,9 +141,6 @@ export function SageGapsPageClient({
                       <div className="flex gap-1.5">
                         <span className="text-xs px-1.5 py-0.5 rounded bg-muted">
                           {gap.severity}
-                        </span>
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-muted">
-                          {gap.source.type}
                         </span>
                       </div>
                       <div className="text-xs text-foreground/80">{gap.description}</div>
@@ -173,15 +163,22 @@ export function SageGapsPageClient({
           <div className="space-y-2">
             {resolvedGaps.map((gap) => (
               <div key={gap.id} className="border-l-2 border-green-500/20 pl-3 py-2 opacity-60">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2Icon className="h-4 w-4 text-green-600 shrink-0" />
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="text-sm font-medium line-through">{gap.area}</div>
-                    <div className="text-xs px-1.5 py-0.5 rounded bg-muted inline-block">
-                      {gap.resolvedBy.type || "resolved"}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2 flex-1">
+                    <CheckCircle2Icon className="h-4 w-4 text-green-600 shrink-0" />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="text-sm font-medium line-through">{gap.area}</div>
+                      <div className="text-xs px-1.5 py-0.5 rounded bg-muted inline-block">
+                        resolved
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">{gap.description}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">{gap.description}</div>
                   </div>
+                  {gap.extra.resolvedChat && (
+                    <Link href={`/sage/interview/${gap.extra.resolvedChat.token}`} target="_blank">
+                      <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors shrink-0" />
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

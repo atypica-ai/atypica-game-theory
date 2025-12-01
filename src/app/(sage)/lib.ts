@@ -2,7 +2,7 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
-import type { EpisodicMemoryReference, WorkingMemoryItem } from "./types";
+import type { WorkingMemoryItem } from "./types";
 
 /**
  * Create or update sage memory document with layered memory support
@@ -12,19 +12,16 @@ export async function createOrUpdateMemoryDocument({
   operation,
   coreMemory,
   workingMemory,
-  episodicMemory,
   changeNotes,
 }: {
   sageId: number;
   operation:
     | "add_working"
     | "integrate_working"
-    | "add_episodic"
     | "extract_from_sources"
     | "manual_edit_core";
   coreMemory?: string;
   workingMemory?: WorkingMemoryItem[];
-  episodicMemory?: EpisodicMemoryReference[];
   changeNotes: string;
 }) {
   // Get latest version
@@ -48,7 +45,6 @@ export async function createOrUpdateMemoryDocument({
         content: "", // DEPRECATED, always empty for new created memory document
         core: coreMemory || "",
         working: workingMemory || [],
-        episodic: episodicMemory || [],
         changeNotes,
       },
     });
@@ -72,7 +68,6 @@ export async function createOrUpdateMemoryDocument({
         content: "", // DEPRECATED, always empty for new created memory document
         core: coreMemory || latestDoc.core,
         working: workingMemory || [], // Clear working memory after integration
-        episodic: episodicMemory || (latestDoc.episodic as unknown as EpisodicMemoryReference[]),
         changeNotes,
       },
     });
@@ -91,7 +86,6 @@ export async function createOrUpdateMemoryDocument({
       where: { id: latestDoc.id },
       data: {
         working: workingMemory,
-        episodic: episodicMemory,
         changeNotes: `${latestDoc.changeNotes}\n\n[Update] ${changeNotes}`,
         updatedAt: new Date(),
       },
@@ -134,37 +128,7 @@ export async function addWorkingMemory({
     sageId,
     operation: "add_working",
     workingMemory: updatedWorking,
-    changeNotes: `Added working memory from ${workingItem.source} ${workingItem.sourceId}`,
-  });
-}
-
-/**
- * Add episodic memory reference
- */
-export async function addEpisodicMemory({ sageId, chatId }: { sageId: number; chatId: string }) {
-  const latestDoc = await prisma.sageMemoryDocument.findFirst({
-    where: { sageId },
-    orderBy: { version: "desc" },
-  });
-
-  if (!latestDoc) {
-    throw new Error("No memory document found for sage");
-  }
-
-  const currentEpisodic = latestDoc.episodic as unknown as EpisodicMemoryReference[];
-
-  // Avoid duplicates
-  if (currentEpisodic.includes(chatId)) {
-    return latestDoc;
-  }
-
-  const updatedEpisodic = [...currentEpisodic, chatId];
-
-  return await createOrUpdateMemoryDocument({
-    sageId,
-    operation: "add_episodic",
-    episodicMemory: updatedEpisodic,
-    changeNotes: `Added episodic memory from chat ${chatId}`,
+    changeNotes: `Added working memory from interview ${workingItem.sourceChat.token}`,
   });
 }
 
@@ -194,7 +158,6 @@ export async function integrateWorkingMemoryToCore({
   const { core, working } = {
     core: latestDoc.core,
     working: latestDoc.working as WorkingMemoryItem[],
-    // episodic: latestDoc.episodic as EpisodicMemoryReference[],
   };
   const pendingItems = working.filter((item) => item.status === "pending");
 

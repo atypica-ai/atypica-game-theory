@@ -28,11 +28,13 @@ export async function extractKnowledgeFromSources({
   locale,
   logger,
   statReport,
+  abortSignal,
 }: {
   sageId: number;
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
+  abortSignal: AbortSignal;
 }): Promise<void> {
   const [sage, completedSources] = await Promise.all([
     prisma.sage.findUniqueOrThrow({
@@ -63,22 +65,34 @@ export async function extractKnowledgeFromSources({
 
   // Step 1 & 2: Generate profile and build memory document in parallel
   const [, coreMemory] = await Promise.all([
-    extractKnowledge_1_buildSageProfile({ sage, sageSources, locale, statReport, logger }).then(
-      async ({ categories: expertise, bio, recommendedQuestions }) => {
-        // Update sage immediately after profile generation
-        await prisma.sage.update({
-          where: { id: sageId },
-          data: { expertise, bio },
-        });
-        // Update SageExtra with recommended questions
-        await mergeExtra({
-          tableName: "Sage",
-          id: sageId,
-          extra: { recommendedQuestions } satisfies SageExtra,
-        });
-      },
-    ),
-    extractKnowledge_2_buildSageCoreMemory({ sage, sageSources, locale, statReport, logger }),
+    extractKnowledge_1_buildSageProfile({
+      sage,
+      sageSources,
+      locale,
+      statReport,
+      logger,
+      abortSignal,
+    }).then(async ({ categories: expertise, bio, recommendedQuestions }) => {
+      // Update sage immediately after profile generation
+      await prisma.sage.update({
+        where: { id: sageId },
+        data: { expertise, bio },
+      });
+      // Update SageExtra with recommended questions
+      await mergeExtra({
+        tableName: "Sage",
+        id: sageId,
+        extra: { recommendedQuestions } satisfies SageExtra,
+      });
+    }),
+    extractKnowledge_2_buildSageCoreMemory({
+      sage,
+      sageSources,
+      locale,
+      statReport,
+      logger,
+      abortSignal,
+    }),
   ]);
 
   // Save Memory Document as first version
@@ -101,12 +115,14 @@ async function extractKnowledge_1_buildSageProfile({
   locale,
   statReport,
   logger,
+  abortSignal,
 }: {
   sage: Pick<Sage, "id" | "name" | "domain">;
   sageSources: (Pick<SageSource, "id" | "extractedText"> & { content: SageSourceContent })[];
   locale: Locale;
   statReport: StatReporter;
   logger: Logger;
+  abortSignal: AbortSignal;
 }): Promise<{
   categories: string[];
   bio: string;
@@ -134,6 +150,7 @@ async function extractKnowledge_1_buildSageProfile({
     system: buildSageProfileSystemPrompt({ sage, locale }),
     prompt: rawContent,
     maxRetries: 3,
+    abortSignal,
   });
 
   if (result.usage.totalTokens) {
@@ -162,12 +179,14 @@ export async function extractKnowledge_2_buildSageCoreMemory({
   locale,
   statReport,
   logger,
+  abortSignal,
 }: {
   sage: Pick<Sage, "id" | "name" | "domain">;
   sageSources: (Pick<SageSource, "id" | "extractedText"> & { content: SageSourceContent })[];
   locale: Locale;
   statReport: StatReporter;
   logger: Logger;
+  abortSignal: AbortSignal;
 }): Promise<string> {
   const allExtractedTexts = sageSources
     .map((s) => s.extractedText)
@@ -226,6 +245,7 @@ export async function extractKnowledge_2_buildSageCoreMemory({
         });
         resolve(coreMemory);
       },
+      abortSignal,
     });
 
     await buildingResponse

@@ -18,10 +18,12 @@ export async function processSageSources({
   sageId,
   logger,
   statReport,
+  abortSignal,
 }: {
   sageId: number;
   logger: Logger;
   statReport: StatReporter;
+  abortSignal: AbortSignal;
 }): Promise<void> {
   // Get all sources without extracted text
   const pendingSources = (
@@ -55,6 +57,7 @@ export async function processSageSources({
         source,
         logger: logger.child({ sourceId: source.id }),
         statReport,
+        abortSignal,
       });
     } catch (error) {
       logger.error({ msg: "Failed to process source", sourceId: source.id, error });
@@ -74,6 +77,7 @@ async function processSingleSource({
   source,
   logger,
   statReport,
+  abortSignal,
 }: {
   source: Pick<SageSource, "id"> & {
     content: SageSourceContent;
@@ -81,6 +85,7 @@ async function processSingleSource({
   };
   logger: Logger;
   statReport: StatReporter;
+  abortSignal: AbortSignal;
 }): Promise<string> {
   try {
     waitUntil(
@@ -128,7 +133,7 @@ async function processSingleSource({
     const compressedText = await compressText({
       fullText,
       logger,
-      abortSignal: new AbortController().signal,
+      abortSignal,
     });
 
     // Update source with extracted text and title

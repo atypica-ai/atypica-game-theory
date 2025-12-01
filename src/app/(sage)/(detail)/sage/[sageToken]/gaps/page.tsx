@@ -2,9 +2,7 @@ import authOptions from "@/app/(auth)/authOptions";
 import {
   SageExtra,
   SageKnowledgeGapExtra,
-  SageKnowledgeGapResolvedBy,
   SageKnowledgeGapSeverity,
-  SageKnowledgeGapSource,
 } from "@/app/(sage)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
@@ -50,12 +48,10 @@ async function SageGapsPage({
       where: { sageId: sage.id },
       orderBy: [{ resolvedAt: "desc" }, { severity: "asc" }, { createdAt: "desc" }],
     })
-  ).map(({ severity, extra, source, resolvedBy, ...gap }) => ({
+  ).map(({ severity, extra, ...gap }) => ({
     ...gap,
     severity: severity as SageKnowledgeGapSeverity,
     extra: extra as SageKnowledgeGapExtra,
-    source: source as SageKnowledgeGapSource,
-    resolvedBy: resolvedBy as SageKnowledgeGapResolvedBy,
   }));
 
   return <SageGapsPageClient sage={sage} gaps={gaps} />;

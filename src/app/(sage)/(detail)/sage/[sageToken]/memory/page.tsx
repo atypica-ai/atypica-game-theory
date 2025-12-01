@@ -1,5 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { EpisodicMemoryReference, WorkingMemoryItem } from "@/app/(sage)/types";
+import { WorkingMemoryItem } from "@/app/(sage)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
@@ -38,7 +38,6 @@ async function SageMemoryPage({
       content: true,
       core: true,
       working: true,
-      episodic: true,
     },
     orderBy: { version: "desc" },
     take: 1,
@@ -51,7 +50,6 @@ async function SageMemoryPage({
           ? {
               core: sageMemoryDocument.core,
               working: sageMemoryDocument.working as WorkingMemoryItem[],
-              episodic: sageMemoryDocument.episodic as EpisodicMemoryReference[],
             }
           : null
       }

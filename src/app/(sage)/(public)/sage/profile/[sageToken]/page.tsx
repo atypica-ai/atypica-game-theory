@@ -31,7 +31,7 @@ async function PublicSagePage({
       memoryDocuments: {
         orderBy: { version: "desc" },
         take: 1,
-        select: { core: true, working: true, episodic: true },
+        select: { core: true, working: true },
       },
     },
   });
