@@ -23,9 +23,9 @@ export function SageChatsPageClient({
 }) {
   const t = useTranslations("Sage.ChatsPage");
   const router = useRouter();
-  const { sage, status: sageStatus } = useSageContext();
+  const { sage, processingStatus } = useSageContext();
   const [isRequesting, setIsRequesting] = useState(false);
-  const isProcessing = sageStatus === "processing" || isRequesting;
+  const isProcessing = processingStatus === "processing" || isRequesting;
 
   const handleAnalyze = useCallback(async () => {
     setIsRequesting(true);
@@ -43,18 +43,15 @@ export function SageChatsPageClient({
   }, [sage.id, router, t]);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
+    <div className="p-6 space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">{t("userChatHistory")}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {chats.length} {t("totalChats")}
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("description")}</p>
         </div>
         {chats.length > 0 && (
           <Button onClick={handleAnalyze} disabled={isProcessing} size="sm" variant="outline">
-            <SearchIcon className="h-4 w-4" />
+            <SearchIcon className="size-4" />
             {isProcessing ? t("analyzing") : t("analyzeRecentChats")}
           </Button>
         )}
@@ -64,42 +61,42 @@ export function SageChatsPageClient({
 
       {/* Chats List */}
       {chats.length === 0 ? (
-        <div className="py-12 text-center">
+        <div className="rounded-xl border border-dashed p-8 text-center">
           <MessageSquareIcon className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
           <p className="text-sm text-muted-foreground">{t("noChatsYet")}</p>
           <p className="text-xs text-muted-foreground mt-1">{t("startChatWithSage")}</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid gap-2">
           {chats.map((chat) => {
             const lastMessage = chat.messages[0];
             const lastMessagePreview = lastMessage
-              ? lastMessage.content.substring(0, 80) +
-                (lastMessage.content.length > 80 ? "..." : "")
+              ? lastMessage.content.substring(0, 120) +
+                (lastMessage.content.length > 120 ? "..." : "")
               : t("noMessages");
 
             return (
               <Link
                 key={chat.id}
                 href={`/sage/chat/view/${chat.token}`}
-                className="block py-2 px-3 rounded hover:bg-accent/50 transition-colors"
+                className="group flex flex-col gap-2 rounded-lg border p-4 hover:bg-muted/50 transition-all"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">
-                      {chat.user.name ? `💬 ${chat.user.name}` : chat.title || t("untitledChat")}
-                    </div>
-                    <div className="text-xs text-muted-foreground/70 mt-0.5">
-                      {formatDistanceToNow(new Date(chat.updatedAt), { addSuffix: true })}
-                    </div>
-                    {lastMessage && (
-                      <p className="text-xs text-muted-foreground/60 line-clamp-1 mt-1">
-                        {lastMessagePreview}
-                      </p>
-                    )}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-semibold text-sm">
+                    {chat.user.name ? `${chat.user.name}` : chat.title || t("untitledChat")}
                   </div>
-                  <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>
+                      {formatDistanceToNow(new Date(chat.updatedAt), { addSuffix: true })}
+                    </span>
+                    <ExternalLinkIcon className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 </div>
+                {lastMessage && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 font-mono">
+                    {lastMessagePreview}
+                  </p>
+                )}
               </Link>
             );
           })}

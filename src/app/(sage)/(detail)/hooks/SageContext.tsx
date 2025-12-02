@@ -1,35 +1,24 @@
 "use client";
-import { getSageByTokenAction } from "@/app/(sage)/(detail)/actions";
-import { SageExtra } from "@/app/(sage)/types";
+import { getSageByTokenAction, fetchSageStatsAction } from "@/app/(sage)/(detail)/actions";
+import type { SageProcessingStatus, SageStats } from "@/app/(sage)/(detail)/types";
+import { getSageProcessingStatus } from "@/app/(sage)/(detail)/helpers";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import type { Sage } from "@/prisma/client";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import useSWR from "swr";
 
-export type SageStatus = "ready" | "processing" | "timeout" | "error";
+// Re-export for convenience
+export { getSageProcessingStatus };
+export type { SageProcessingStatus, SageStats };
 
 // Sage type with typed fields
 export type SageWithTypedFields = ExtractServerActionData<typeof getSageByTokenAction>;
 
-// Helper function to determine sage status
-export function sageProcessingStatus(sage: Pick<Sage, "id"> & { extra: SageExtra }): SageStatus {
-  if (sage.extra.error) {
-    return "error";
-  } else if (sage.extra.processing) {
-    if (Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) {
-      return "processing";
-    } else {
-      return "timeout";
-    }
-  } else {
-    return "ready";
-  }
-}
-
 // Context type
 interface SageContextValue {
   sage: SageWithTypedFields;
-  status: SageStatus;
-  updateSage: (newSage: SageWithTypedFields) => void;
+  processingStatus: SageProcessingStatus;
+  stats: SageStats;
+  isRefreshing: boolean;
 }
 
 // Create context
@@ -38,24 +27,79 @@ const SageContext = createContext<SageContextValue | null>(null);
 // Provider component
 export function SageStatusProvider({
   initialSage,
+  initialStats,
   children,
 }: {
   initialSage: SageWithTypedFields;
+  initialStats: SageStats;
   children: ReactNode;
 }) {
   const [sage, setSage] = useState<SageWithTypedFields>(initialSage);
-  const status = sageProcessingStatus(sage);
+  const [stats, setStats] = useState<SageStats>(initialStats);
+  const processingStatus = getSageProcessingStatus(sage);
 
+  // Auto-refresh sage data and stats when processing
+  const shouldPoll = processingStatus === "processing";
+
+  const { data: freshSage, isValidating: isSageRefreshing } = useSWR(
+    shouldPoll ? `sage-${initialSage.token}` : null,
+    async () => {
+      const result = await getSageByTokenAction(initialSage.token);
+      if (!result.success) throw new Error(result.message);
+      return result.data;
+    },
+    {
+      refreshInterval: 5000,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 2000,
+    },
+  );
+
+  const { data: freshStats, isValidating: isStatsRefreshing } = useSWR(
+    shouldPoll ? `sage-stats-${initialSage.token}` : null,
+    async () => {
+      const result = await fetchSageStatsAction(initialSage.token);
+      if (!result.success) throw new Error(result.message);
+      return result.data;
+    },
+    {
+      refreshInterval: 5000,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 2000,
+    },
+  );
+
+  // Update sage when fresh data arrives
+  useEffect(() => {
+    if (freshSage) {
+      setSage(freshSage);
+    }
+  }, [freshSage]);
+
+  // Update stats when fresh data arrives
+  useEffect(() => {
+    if (freshStats) {
+      setStats(freshStats);
+    }
+  }, [freshStats]);
+
+  // Sync with initial props
   useEffect(() => {
     setSage(initialSage);
   }, [initialSage]);
 
-  const updateSage = (newSage: SageWithTypedFields) => {
-    setSage(newSage);
-  };
+  useEffect(() => {
+    setStats(initialStats);
+  }, [initialStats]);
+
+  const isRefreshing = isSageRefreshing || isStatsRefreshing;
 
   return (
-    <SageContext.Provider value={{ sage, status, updateSage }}>{children}</SageContext.Provider>
+    <SageContext.Provider value={{ sage, processingStatus, stats, isRefreshing }}>
+      {children}
+    </SageContext.Provider>
   );
 }
 

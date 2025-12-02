@@ -9,17 +9,17 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 export function SageStatusBar() {
-  const { status, sage } = useSageContext();
+  const { processingStatus, sage } = useSageContext();
   const t = useTranslations("Sage.StatusBar");
   const [isDismissed, setIsDismissed] = useState(false);
 
   // Don't show anything if status is ready or user dismissed it
-  if (status === "ready" || isDismissed) {
+  if (processingStatus === "ready" || isDismissed) {
     return null;
   }
 
   const getStatusConfig = () => {
-    switch (status) {
+    switch (processingStatus) {
       case "processing":
         return {
           icon: <Loader2Icon className="size-4 animate-spin" />,

@@ -36,7 +36,7 @@ import { toast } from "sonner";
 export function SourcesPanel() {
   const t = useTranslations("Sage.SourcesPanel");
   const router = useRouter();
-  const { sage, status: sageStatus } = useSageContext();
+  const { sage, processingStatus } = useSageContext();
 
   const [sources, setSources] = useState<
     ExtractServerActionData<typeof fetchSageSourcesByTokenAction>
@@ -56,14 +56,14 @@ export function SourcesPanel() {
     fetchSageSources();
   }, [fetchSageSources]);
 
-  const prevSageStatusRef = useRef(sageStatus);
+  const prevProcessingStatusRef = useRef(processingStatus);
   // 处理结束以后，刷新一下 sources
   useEffect(() => {
-    if (prevSageStatusRef.current !== "ready" && sageStatus === "ready") {
+    if (prevProcessingStatusRef.current !== "ready" && processingStatus === "ready") {
       fetchSageSources();
     }
-    prevSageStatusRef.current = sageStatus;
-  }, [sageStatus, fetchSageSources]);
+    prevProcessingStatusRef.current = processingStatus;
+  }, [processingStatus, fetchSageSources]);
 
   const [isRequesting, setIsRequesting] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -72,8 +72,8 @@ export function SourcesPanel() {
 
   const completedSources = sources.filter((s) => !!s.extractedTextDigest);
   const failedSources = sources.filter((s) => !!s.extra.error);
-  const isProcessing = sageStatus === "processing" || isRequesting;
-  const canModifySources = sageStatus !== "processing" && !isRequesting;
+  const isProcessing = processingStatus === "processing" || isRequesting;
+  const canModifySources = processingStatus !== "processing" && !isRequesting;
   const maxSources = 30;
 
   const handleProcessSources = useCallback(async () => {
@@ -131,31 +131,34 @@ export function SourcesPanel() {
 
   return (
     <>
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h2 className="text-xl font-semibold">{t("knowledgeSources")}</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {sources.length}/{maxSources} {t("sources")} • {completedSources.length}/
-              {sources.length} {t("parsed")}
-            </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("knowledgeSources")}
+            </h2>
+            <div className="text-xs text-muted-foreground font-medium">
+              {completedSources.length} / {sources.length} {t("parsed")}
+            </div>
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex gap-2 w-full">
             {canModifySources && (
               <Button
                 variant="outline"
                 size="sm"
+                className="flex-1 h-8 text-xs"
                 onClick={() => setShowAddDialog(true)}
                 disabled={sources.length >= maxSources}
               >
-                <PlusIcon className="size-4" />
+                <PlusIcon className="size-3.5" />
                 {t("addSources")}
               </Button>
             )}
             {isProcessing ? (
-              <Button disabled={true} size="sm">
-                <Loader2Icon className="size-4 animate-spin" />
+              <Button disabled={true} size="sm" className="flex-1 h-8 text-xs">
+                <Loader2Icon className="size-3.5 animate-spin" />
                 {t("processingButton")}
               </Button>
             ) : (
@@ -164,8 +167,8 @@ export function SourcesPanel() {
                 description={t("reProcessAndExtractDesc")}
                 onConfirm={() => handleProcessSources()}
               >
-                <Button size="sm">
-                  <SparklesIcon className="size-4" />
+                <Button size="sm" className="flex-1 h-8 text-xs" variant="secondary">
+                  <SparklesIcon className="size-3.5" />
                   {t("reProcessAndExtract")}
                 </Button>
               </ConfirmDialog>

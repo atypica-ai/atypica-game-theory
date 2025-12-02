@@ -16,70 +16,68 @@ export function SageInterviewsPageClient({ interviews }: { interviews: Interview
   const t = useTranslations("Sage.InterviewsPage");
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold">{t("interviewHistory")}</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {interviews.length} {t("totalInterviews")}
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
       <Separator />
 
       {/* Interviews List */}
       {interviews.length === 0 ? (
-        <div className="py-12 text-center">
+        <div className="rounded-xl border border-dashed p-8 text-center">
           <ClipboardListIcon className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
           <p className="text-sm text-muted-foreground">{t("noInterviewsYet")}</p>
           <p className="text-xs text-muted-foreground mt-1">{t("startInterviewWithSage")}</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid gap-2">
           {interviews.map((interview) => {
             const extra = interview.extra as SageInterviewExtra;
             const isOngoing = extra.ongoing ?? false;
             const lastMessage = interview.userChat.messages[0];
             const lastMessagePreview = lastMessage
-              ? lastMessage.content.substring(0, 80) +
-                (lastMessage.content.length > 80 ? "..." : "")
+              ? lastMessage.content.substring(0, 120) +
+                (lastMessage.content.length > 120 ? "..." : "")
               : t("noMessages");
 
             return (
               <Link
                 key={interview.id}
                 href={`/sage/interview/${interview.userChat.token}`}
-                className="block py-2 px-3 rounded hover:bg-accent/50 transition-colors"
+                className="group flex flex-col gap-2 rounded-lg border p-4 hover:bg-muted/50 transition-all"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <div className="text-sm font-medium truncate">
-                        {interview.userChat.title || t("untitledInterview")}
-                      </div>
-                      {isOngoing ? (
-                        <Badge variant="default" className="text-xs">
-                          {t("ongoing")}
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="text-xs">
-                          {t("completed")}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground/70 mt-0.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-semibold text-sm truncate">
+                      {interview.userChat.title || t("untitledInterview")}
+                    </span>
+                    {isOngoing ? (
+                      <Badge variant="default" className="text-[10px] h-5 px-1.5 font-medium">
+                        {t("ongoing")}
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-medium">
+                        {t("completed")}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+                    <span>
                       {formatDistanceToNow(new Date(interview.userChat.updatedAt), {
                         addSuffix: true,
                       })}
-                    </div>
-                    {lastMessage && (
-                      <p className="text-xs text-muted-foreground/60 line-clamp-1 mt-1">
-                        {lastMessagePreview}
-                      </p>
-                    )}
+                    </span>
+                    <ExternalLinkIcon className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <ExternalLinkIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
                 </div>
+                {lastMessage && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 font-mono">
+                    {lastMessagePreview}
+                  </p>
+                )}
               </Link>
             );
           })}
