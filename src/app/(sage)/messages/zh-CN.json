@@ -9,7 +9,9 @@
       "chatsTitle": "用户聊天记录",
       "chatsDescription": "查看用户与专家的对话历史",
       "interviewsTitle": "专家访谈记录",
-      "interviewsDescription": "查看补充访谈会话"
+      "interviewsDescription": "查看补充访谈会话",
+      "sourcesTitle": "知识源",
+      "sourcesDescription": "管理专家的知识源和文档"
     },
     "CreatePage": {
       "title": "创建您的专家智能体",
@@ -100,7 +102,9 @@
     },
     "SageIdentityCard": {
       "editProfile": "编辑资料",
-      "locale": "语言"
+      "locale": "语言",
+      "expand": "展开资料",
+      "collapse": "收起资料"
     },
     "EditProfileDialog": {
       "editProfileTitle": "编辑专家资料",
@@ -189,6 +193,7 @@
     },
     "TabNavigation": {
       "sageProfile": "概览",
+      "sources": "知识源",
       "memory": "记忆",
       "analysis": "分析结果",
       "chats": "用户对话",
@@ -204,6 +209,10 @@
       "shareInstructions": "任何人通过此链接都可以查看专家的公开主页并与其对话",
       "closeButton": "关闭",
       "openButton": "打开主页"
+    },
+    "SourcesPage": {
+      "title": "知识源",
+      "description": "管理构成专家知识库的文档和资料"
     },
     "SourcesPanel": {
       "knowledgeSources": "知识源",

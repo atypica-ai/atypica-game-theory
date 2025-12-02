@@ -4,7 +4,7 @@ import { SageStatsOverview } from "./components/SageStatsOverview";
 
 export function SageDetailPageClient() {
   return (
-    <div className="p-6 space-y-8">
+    <div className="space-y-6">
       <SageStatsOverview />
       <SageActivityFeed />
     </div>

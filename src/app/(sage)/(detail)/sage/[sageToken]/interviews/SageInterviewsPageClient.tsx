@@ -33,7 +33,7 @@ export function SageInterviewsPageClient({ interviews }: { interviews: Interview
           <p className="text-xs text-muted-foreground mt-1">{t("startInterviewWithSage")}</p>
         </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="space-y-2">
           {interviews.map((interview) => {
             const extra = interview.extra as SageInterviewExtra;
             const isOngoing = extra.ongoing ?? false;

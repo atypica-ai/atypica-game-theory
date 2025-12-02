@@ -4,6 +4,7 @@ import { updateSageAvatar } from "@/app/(sage)/(detail)/actions";
 import type { SageAvatar } from "@/app/(sage)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { getS3UploadCredentials } from "@/lib/attachments/actions";
+import { cn } from "@/lib/utils";
 import { Loader2Icon, UploadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -15,10 +16,12 @@ export function AvatarUpload({
   sageId,
   sageName,
   currentAvatar,
+  className,
 }: {
   sageId: number;
   sageName: string;
   currentAvatar: SageAvatar;
+  className?: string;
 }) {
   const t = useTranslations("Sage.AvatarUpload");
   const router = useRouter();
@@ -93,11 +96,11 @@ export function AvatarUpload({
   );
 
   return (
-    <div className="relative group size-20 rounded-full overflow-hidden bg-muted">
+    <div className={cn("relative group size-20 rounded-full overflow-hidden bg-muted", className)}>
       {currentAvatar.url ? (
         <Image src={currentAvatar.url} alt={sageName} fill className="object-cover" />
       ) : (
-        <HippyGhostAvatar className="size-20 scale-75" seed={sageId} />
+        <HippyGhostAvatar className="size-full scale-75" seed={sageId} />
       )}
       {isUploading ? (
         <div className="absolute top-0 left-0 w-full h-full bg-black/80 text-white flex items-center justify-center">

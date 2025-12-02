@@ -2,7 +2,14 @@
 import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { AlertTriangleIcon, BookOpenIcon, MessageSquareIcon, MicIcon } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  BookOpenIcon,
+  FileTextIcon,
+  MessageSquareIcon,
+  MicIcon,
+  UserIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,8 +23,17 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
     {
       name: t("sageProfile"),
       href: `/sage/${sageToken}`,
-      icon: BookOpenIcon,
+      icon: UserIcon,
       exact: true,
+      mobileOnly: false,
+    },
+    {
+      name: t("sources"),
+      href: `/sage/${sageToken}/sources`,
+      icon: FileTextIcon,
+      exact: true,
+      count: stats.sourcesTotal,
+      mobileOnly: true, // Only show on mobile (lg:hidden)
     },
     {
       name: t("memory"),
@@ -25,18 +41,21 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
       icon: BookOpenIcon,
       exact: true,
       count: stats.memoryVersion,
+      mobileOnly: false,
     },
     {
       name: t("chats"),
       href: `/sage/${sageToken}/chats`,
       icon: MessageSquareIcon,
       count: stats.chatsCount,
+      mobileOnly: false,
     },
     {
       name: t("interviews"),
       href: `/sage/${sageToken}/interviews`,
       icon: MicIcon,
       count: stats.interviewsCount,
+      mobileOnly: false,
     },
     {
       name: t("gaps"),
@@ -44,6 +63,7 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
       icon: AlertTriangleIcon,
       count: stats.gapsCount,
       highlight: true,
+      mobileOnly: false,
     },
   ];
 
@@ -56,23 +76,25 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
 
   return (
     <div className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <nav className="flex space-x-1 px-4" aria-label="Tabs">
+      <nav className="flex overflow-x-auto scrollbar-thin space-x-1 px-2 sm:px-4" aria-label="Tabs">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = isActive(tab);
+
           return (
             <Link
               key={tab.name}
               href={tab.href}
               className={cn(
-                "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors",
+                { "lg:hidden": tab.mobileOnly },
+                "flex items-center gap-2 px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap",
                 active
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted",
               )}
             >
-              <Icon className="h-4 w-4" />
-              <span>{tab.name}</span>
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{tab.name}</span>
               {typeof tab.count === "number" && (
                 <Badge
                   variant={
@@ -83,7 +105,7 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
                         : "secondary"
                   }
                   className={cn(
-                    "ml-1 h-5 px-1.5 text-xs font-medium",
+                    "h-5 px-1.5 text-xs font-medium",
                     active ? "" : "bg-muted text-muted-foreground",
                   )}
                 >

@@ -9,7 +9,9 @@
       "chatsTitle": "User Chat History",
       "chatsDescription": "View conversation history between users and expert",
       "interviewsTitle": "Expert Interview History",
-      "interviewsDescription": "View supplementary interview sessions with expert"
+      "interviewsDescription": "View supplementary interview sessions with expert",
+      "sourcesTitle": "Knowledge Sources",
+      "sourcesDescription": "Manage expert's knowledge sources and documents"
     },
     "CreatePage": {
       "title": "Create Your Expert Agent",
@@ -100,7 +102,9 @@
     },
     "SageIdentityCard": {
       "editProfile": "Edit Profile",
-      "locale": "Locale"
+      "locale": "Locale",
+      "expand": "Expand profile",
+      "collapse": "Collapse profile"
     },
     "EditProfileDialog": {
       "editProfileTitle": "Edit Sage Profile",
@@ -189,6 +193,7 @@
     },
     "TabNavigation": {
       "sageProfile": "Overview",
+      "sources": "Sources",
       "memory": "Memory",
       "analysis": "Analysis",
       "chats": "User Chats",
@@ -204,6 +209,10 @@
       "shareInstructions": "Anyone with this link can view the expert's public profile and chat with them",
       "closeButton": "Close",
       "openButton": "Open Profile"
+    },
+    "SourcesPage": {
+      "title": "Knowledge Sources",
+      "description": "Manage documents and materials that form the expert's knowledge base"
     },
     "SourcesPanel": {
       "knowledgeSources": "Knowledge Sources",

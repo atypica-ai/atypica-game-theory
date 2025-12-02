@@ -82,7 +82,7 @@ export function SageActivityFeed() {
   const displayActivities = activities.slice(0, 10); // Limit to 10 recent items
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="my-6 mx-4 sm:mx-6 h-full flex flex-col">
       <div className="flex flex-col space-y-1.5 p-3">
         <h3 className="font-semibold leading-none tracking-tight flex items-center gap-2">
           <ClockIcon className="size-4 text-muted-foreground" />

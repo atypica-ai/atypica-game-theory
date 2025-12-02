@@ -90,7 +90,7 @@ export function SageGapsPageClient({
   return (
     <div className="p-6 space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground mt-1">{t("description")}</p>

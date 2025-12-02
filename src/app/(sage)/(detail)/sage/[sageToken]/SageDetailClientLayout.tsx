@@ -26,22 +26,32 @@ export function SageDetailClientLayout({
     <SageStatusProvider initialSage={sage} initialStats={stats}>
       <FitToViewport className="flex flex-col overflow-hidden">
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Panel - Identity & Sources */}
-          <div className="w-1/3 min-w-[320px] max-w-[480px] border-r border-border flex flex-col">
+          {/* Desktop: Left Panel - Identity & Sources */}
+          <div className="hidden lg:flex w-1/3 min-w-[320px] max-w-[480px] border-r border-border flex-col">
             <div className="shrink-0">
-              <SageIdentityCard sage={sage} />
+              <SageIdentityCard sage={sage} variant="sidebar" />
             </div>
             <Separator />
             <div className="flex-1 overflow-y-auto">
               <SourcesPanel />
             </div>
           </div>
-          {/* Right Panel - Tab Content */}
+
+          {/* Mobile & Tablet: Content with Collapsible Header */}
           <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Mobile: Collapsible Identity Card */}
+            <div className="lg:hidden">
+              <SageIdentityCard sage={sage} variant="collapsible" />
+            </div>
+
+            {/* Tab Navigation */}
             <TabNavigation sageToken={sage.token} />
+
+            {/* Tab Content */}
             <div className="flex-1 overflow-y-auto">{children}</div>
           </div>
         </div>
+
         {/* Status Bar at Bottom */}
         <SageStatusBar />
       </FitToViewport>

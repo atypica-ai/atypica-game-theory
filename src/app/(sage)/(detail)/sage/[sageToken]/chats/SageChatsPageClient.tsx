@@ -44,7 +44,7 @@ export function SageChatsPageClient({
 
   return (
     <div className="p-6 space-y-8">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground mt-1">{t("description")}</p>
@@ -67,7 +67,7 @@ export function SageChatsPageClient({
           <p className="text-xs text-muted-foreground mt-1">{t("startChatWithSage")}</p>
         </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="space-y-2">
           {chats.map((chat) => {
             const lastMessage = chat.messages[0];
             const lastMessagePreview = lastMessage

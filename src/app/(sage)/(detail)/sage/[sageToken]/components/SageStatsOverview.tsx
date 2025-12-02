@@ -7,7 +7,6 @@ import { AddSourcesContent } from "@/app/(sage)/components/AddSourcesContent";
 import type { SageSourceContent } from "@/app/(sage)/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -123,161 +122,171 @@ export function SageStatsOverview() {
 
   return (
     <>
-      <Card className="p-6">
-        <div className="flex flex-col space-y-4">
-          {/* Global Status Indicator */}
-          {isProcessing && (
-            <div className="flex items-center gap-2 text-xs font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-full self-start">
-              <Loader2Icon className="size-3 animate-spin" />
-              {t("processingPipeline")}
-            </div>
-          )}
+      <div
+        className={cn(
+          "p-6 mt-4 sm:m-6",
+          "overflow-x-scroll sm:overflow-hidden",
+          "sm:border sm:rounded-xl sm:shadow-xs sm:bg-card",
+        )}
+      >
+        {/* Global Status Indicator */}
+        {isProcessing && (
+          <div className="mb-4 flex items-center gap-2 text-xs font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-full self-start">
+            <Loader2Icon className="size-3 animate-spin" />
+            {t("processingPipeline")}
+          </div>
+        )}
 
-          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
-            {/* 1. Sources */}
-            <StageCard
-              icon={<FileTextIcon className="size-5" />}
-              status={sourcesStatus}
-              label={t("sources")}
-              count={stats.sourcesTotal}
-              description={
-                stats.sourcesTotal > stats.sourcesExtracted
-                  ? t("sourcesWaiting", { count: stats.sourcesTotal - stats.sourcesExtracted })
-                  : t("sourcesParsed", { count: stats.sourcesExtracted })
-              }
+        <div
+          className={cn(
+            "gap-6",
+            "max-sm:w-fit max-sm:flex max-sm:flex-row max-sm:flex-nowrap",
+            "sm:grid sm:grid-cols-3 xl:grid-cols-5",
+          )}
+        >
+          {/* 1. Sources */}
+          <StageCard
+            icon={<FileTextIcon className="size-5" />}
+            status={sourcesStatus}
+            label={t("sources")}
+            count={stats.sourcesTotal}
+            description={
+              stats.sourcesTotal > stats.sourcesExtracted
+                ? t("sourcesWaiting", { count: stats.sourcesTotal - stats.sourcesExtracted })
+                : t("sourcesParsed", { count: stats.sourcesExtracted })
+            }
+          >
+            <ConfirmDialog
+              title={t("confirmExtractTitle")}
+              description={t("confirmExtractDesc")}
+              onConfirm={handleExtract}
             >
-              <ConfirmDialog
-                title={t("confirmExtractTitle")}
-                description={t("confirmExtractDesc")}
-                onConfirm={handleExtract}
-              >
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="w-full h-7 text-xs"
-                  disabled={isProcessing}
-                >
-                  <SparklesIcon className="size-3" />
-                  {t("extract")}
-                </Button>
-              </ConfirmDialog>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 className="w-full h-7 text-xs"
-                onClick={() => setShowAddDialog(true)}
                 disabled={isProcessing}
               >
-                <PlusIcon className="size-3" />
-                {t("addSource")}
+                <SparklesIcon className="size-3" />
+                {t("extract")}
               </Button>
-            </StageCard>
+            </ConfirmDialog>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-7 text-xs"
+              onClick={() => setShowAddDialog(true)}
+              disabled={isProcessing}
+            >
+              <PlusIcon className="size-3" />
+              {t("addSource")}
+            </Button>
+          </StageCard>
 
-            {/* 2. Memory */}
-            <StageCard
-              icon={<DatabaseIcon className="size-5" />}
-              status={memoryStatus}
-              label={t("memory")}
-              count={stats.memoryVersion}
-              description={
-                processingStatus === "processing"
-                  ? t("integrating")
-                  : stats.workingMemoryPendingCount > 0
-                    ? t("itemsPending", { count: stats.workingMemoryPendingCount })
-                    : t("synced")
-              }
+          {/* 2. Memory */}
+          <StageCard
+            icon={<DatabaseIcon className="size-5" />}
+            status={memoryStatus}
+            label={t("memory")}
+            count={stats.memoryVersion}
+            description={
+              processingStatus === "processing"
+                ? t("integrating")
+                : stats.workingMemoryPendingCount > 0
+                  ? t("itemsPending", { count: stats.workingMemoryPendingCount })
+                  : t("synced")
+            }
+          >
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full h-7 text-xs"
+              onClick={() => router.push(`/sage/${sage.token}/memory`)}
+            >
+              <EyeIcon className="size-3" />
+              {t("viewMemory")}
+            </Button>
+          </StageCard>
+
+          {/* 3. Knowledge Gaps */}
+          <StageCard
+            icon={<TriangleAlertIcon className="size-5" />}
+            status={gapsStatus}
+            label={t("knowledgeGaps")}
+            count={stats.gapsCount}
+            description={t("itemsPending", { count: stats.gapsCount })}
+          >
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full h-7 text-xs"
+              onClick={() => router.push(`/sage/${sage.token}/gaps`)}
+            >
+              <EyeIcon className="size-3" />
+              {t("viewGaps")}
+            </Button>
+            <ConfirmDialog
+              title={t("confirmAnalyzeTitle")}
+              description={t("confirmAnalyzeDesc")}
+              onConfirm={handleAnalyze}
             >
               <Button
-                variant="secondary"
-                size="sm"
-                className="w-full h-7 text-xs"
-                onClick={() => router.push(`/sage/${sage.token}/memory`)}
-              >
-                <EyeIcon className="size-3" />
-                {t("viewMemory")}
-              </Button>
-            </StageCard>
-
-            {/* 3. Knowledge Gaps */}
-            <StageCard
-              icon={<TriangleAlertIcon className="size-5" />}
-              status={gapsStatus}
-              label={t("knowledgeGaps")}
-              count={stats.gapsCount}
-              description={t("itemsPending", { count: stats.gapsCount })}
-            >
-              <Button
-                variant="secondary"
-                size="sm"
-                className="w-full h-7 text-xs"
-                onClick={() => router.push(`/sage/${sage.token}/gaps`)}
-              >
-                <EyeIcon className="size-3" />
-                {t("viewGaps")}
-              </Button>
-              <ConfirmDialog
-                title={t("confirmAnalyzeTitle")}
-                description={t("confirmAnalyzeDesc")}
-                onConfirm={handleAnalyze}
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full h-7 text-xs"
-                  disabled={isProcessing}
-                >
-                  <SparklesIcon className="size-3" />
-                  {t("analyzeChats")}
-                </Button>
-              </ConfirmDialog>
-            </StageCard>
-
-            {/* 4. User Chats */}
-            <StageCard
-              icon={<MessageSquareIcon className="size-5" />}
-              status="ready"
-              label={t("userChats")}
-              count={stats.chatsCount}
-              description={t("chatsDescription", { count: stats.chatsCount })}
-            >
-              <Button
-                variant="secondary"
-                size="sm"
-                className="w-full h-7 text-xs"
-                onClick={() => router.push(`/sage/${sage.token}/chats`)}
-              >
-                <EyeIcon className="size-3" />
-                {t("viewChats")}
-              </Button>
-              <SageShareButton
-                sageToken={sage.token}
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs"
-              />
-            </StageCard>
-
-            {/* 5. Interviews */}
-            <StageCard
-              icon={<MicIcon className="size-5" />}
-              status="ready"
-              label={t("interviews")}
-              count={stats.interviewsCount}
-              description={t("interviewsDescription", { count: stats.interviewsCount })}
-            >
-              <Button
-                variant="secondary"
-                size="sm"
                 className="w-full h-7 text-xs"
-                onClick={() => router.push(`/sage/${sage.token}/interviews`)}
+                disabled={isProcessing}
               >
-                <EyeIcon className="size-3" />
-                {t("viewInterviews")}
+                <SparklesIcon className="size-3" />
+                {t("analyzeChats")}
               </Button>
-            </StageCard>
-          </div>
+            </ConfirmDialog>
+          </StageCard>
+
+          {/* 4. User Chats */}
+          <StageCard
+            icon={<MessageSquareIcon className="size-5" />}
+            status="ready"
+            label={t("userChats")}
+            count={stats.chatsCount}
+            description={t("chatsDescription", { count: stats.chatsCount })}
+          >
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full h-7 text-xs"
+              onClick={() => router.push(`/sage/${sage.token}/chats`)}
+            >
+              <EyeIcon className="size-3" />
+              {t("viewChats")}
+            </Button>
+            <SageShareButton
+              sageToken={sage.token}
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+            />
+          </StageCard>
+
+          {/* 5. Interviews */}
+          <StageCard
+            icon={<MicIcon className="size-5" />}
+            status="ready"
+            label={t("interviews")}
+            count={stats.interviewsCount}
+            description={t("interviewsDescription", { count: stats.interviewsCount })}
+          >
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full h-7 text-xs"
+              onClick={() => router.push(`/sage/${sage.token}/interviews`)}
+            >
+              <EyeIcon className="size-3" />
+              {t("viewInterviews")}
+            </Button>
+          </StageCard>
         </div>
-      </Card>
+      </div>
 
       <Dialog open={showAddDialog} onOpenChange={handleCloseDialog}>
         <DialogContent className="max-w-2xl sm:max-w-2xl overflow-hidden">
@@ -343,7 +352,7 @@ function StageCard({
         </div>
         <div>
           <div className="font-medium text-sm flex items-center gap-2 justify-center">
-            {label}
+            <span className="whitespace-nowrap">{label}</span>
             {count !== undefined && (
               <span className="bg-muted text-muted-foreground text-[10px] px-1.5 py-0.5 rounded-full">
                 {count}
