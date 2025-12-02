@@ -94,25 +94,44 @@
       "chatWithMeAbout": "chat with me about ...",
       "askMeAnything": "Ask me anything"
     },
-    "DetailPage": {
-      "sageProfile": "Profile",
-      "bio": "Bio",
-      "expertise": "Expertise",
+    "SageDetailPage": {
+      "dashboard": "Overview",
+      "overviewDescription": "Overview of {name}'s knowledge base and activity"
+    },
+    "SageIdentityCard": {
+      "editProfile": "Edit Profile",
+      "locale": "Locale"
+    },
+    "EditProfileDialog": {
+      "editProfileTitle": "Edit Sage Profile",
+      "name": "Name",
+      "domain": "Domain",
+      "bioLabel": "Bio",
+      "expertiseLabel": "Expertise",
+      "addExpertise": "Add expertise",
       "locale": "Locale",
-      "viewPublicProfile": "View Public Profile"
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "profileUpdated": "Profile updated successfully",
+      "updateFailed": "Failed to update profile"
     },
     "MemoryPage": {
+      "title": "Memory",
+      "description": "Manage core knowledge base and integrate new insights from interviews",
       "memoryDocument": "Knowledge Memory",
       "coreMemory": "Core Memory",
       "workingMemory": "Pending Integration",
       "noWorkingMemory": "No pending knowledge",
       "noWorkingMemoryDescription": "New knowledge from interviews will appear here first. You can integrate them into core memory anytime.",
       "viewSourceInterview": "View Source Interview",
-      "integrateWorkingMemory": "Integrate New Knowledge",
+      "integrateWorkingMemory": "Integrate New Knowledge (Coming soon)",
       "characters": "characters",
       "noMemoryDocumentYet": "No core memory yet. Click 'Extract/Update Knowledge' on the left to get started."
     },
     "GapsPage": {
+      "title": "Knowledge Gaps",
+      "description": "Knowledge gaps discovered from user conversations, ready to be filled through interviews",
       "knowledgeGaps": "Knowledge to Supplement",
       "impact": "Impact",
       "pending": "Pending",
@@ -130,6 +149,8 @@
       "newGapsCount": "Knowledge gaps discovered"
     },
     "ChatsPage": {
+      "title": "User Chats",
+      "description": "Conversations between users and the expert. Issues encountered are identified as knowledge gaps",
       "userChatHistory": "User Conversations",
       "totalChats": "conversations",
       "noChatsYet": "No conversations yet",
@@ -143,6 +164,8 @@
       "analyzeFailed": "Analysis failed. Please ensure there are enough conversation records."
     },
     "InterviewsPage": {
+      "title": "Interviews",
+      "description": "Interview sessions conducted to fill knowledge gaps and improve the expert system",
       "interviewHistory": "Interview History",
       "totalInterviews": "total interviews",
       "noInterviewsYet": "No interviews yet",
@@ -165,13 +188,22 @@
       "interviewAlreadyCompleted": "This interview has already been completed"
     },
     "TabNavigation": {
-      "sageProfile": "Profile",
-      "memory": "Knowledge Memory",
+      "sageProfile": "Overview",
+      "memory": "Memory",
       "analysis": "Analysis",
-      "chats": "Conversations",
+      "chats": "User Chats",
       "interviews": "Interviews",
-      "gaps": "To Supplement",
-      "viewPublicProfile": "View Public Profile"
+      "gaps": "Knowledge Gaps"
+    },
+    "SageShareButton": {
+      "title": "Share Expert Profile",
+      "description": "Share this expert's public profile page with others",
+      "shareButton": "Share",
+      "copyButton": "Copy",
+      "copySuccess": "Link copied to clipboard",
+      "shareInstructions": "Anyone with this link can view the expert's public profile and chat with them",
+      "closeButton": "Close",
+      "openButton": "Open Profile"
     },
     "SourcesPanel": {
       "knowledgeSources": "Knowledge Sources",
@@ -233,6 +265,60 @@
       "errorDesc": "Please retry later or contact us for assistance",
       "timeout": "Memory update timed out",
       "timeoutDesc": "Processing took too long. Please retry or contact us"
+    },
+    "SageStats": {
+      "processingPipeline": "Processing...",
+      "sources": "Sources",
+      "memory": "Memory",
+      "knowledgeGaps": "Knowledge Gaps",
+      "userChats": "User Chats",
+      "interviews": "Interviews",
+      "addSource": "Add Source",
+      "extract": "Extract/Update",
+      "viewMemory": "View Memory",
+      "analyzeChats": "Analyze Chats",
+      "viewGaps": "View Details",
+      "viewChats": "View Chats",
+      "viewInterviews": "View Interviews",
+      "chatsDescription": "{count} chats",
+      "interviewsDescription": "{count} ongoing",
+      "sourcesWaiting": "{count} waiting",
+      "sourcesParsed": "{count} parsed",
+      "itemsPending": "{count} pending",
+      "integrating": "Integrating",
+      "synced": "Synced",
+      "confirmExtractTitle": "Extract Knowledge?",
+      "confirmExtractDesc": "AI will re-analyze all sources and update the expert's core memory. This may take a few minutes.",
+      "confirmAnalyzeTitle": "Analyze Conversations?",
+      "confirmAnalyzeDesc": "AI will analyze recent conversations to identify areas where the expert's answers were insufficient and discover knowledge gaps.",
+      "processingStarted": "Extracting knowledge, this may take a few minutes",
+      "processingFailed": "Processing failed, please check source format or try again later",
+      "sourcesAdded": "Added {count} sources, click Extract to start building",
+      "addSourcesFailed": "Failed to add sources",
+      "addSourcesDialogTitle": "Add Knowledge Sources",
+      "cancel": "Cancel",
+      "confirmAdd": "Add Sources",
+      "adding": "Adding..."
+    },
+    "ActivityFeed": {
+      "activityFeed": "Activity Feed",
+      "recentActivity": "Recent operations and events",
+      "sourceProcessed": "Source Processed",
+      "sourceAdded": "New Source Added",
+      "documentProcessed": "Document \"{title}\" processed",
+      "documentAdded": "Document \"{title}\" added",
+      "gapResolved": "Knowledge Gap Resolved",
+      "gapResolvedDesc": "Filled knowledge in \"{area}\"",
+      "gapsDiscovered": "Knowledge Gaps Discovered",
+      "gapsDiscoveredDesc": "Found {count} knowledge gaps to fill",
+      "knowledgeExtracted": "Knowledge Extraction Completed",
+      "knowledgeExtractedDesc": "Version {version}: {notes}",
+      "interviewCompleted": "Interview Completed",
+      "interviewCompletedDesc": "New knowledge acquired through interview",
+      "viewInterview": "View Interview",
+      "viewGaps": "View Gaps",
+      "viewMemory": "View Memory",
+      "viewSources": "View Sources"
     }
   }
 }
