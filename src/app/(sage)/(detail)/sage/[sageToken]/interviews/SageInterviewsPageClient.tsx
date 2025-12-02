@@ -1,5 +1,4 @@
 "use client";
-
 import type { SageInterviewExtra } from "@/app/(sage)/types";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";

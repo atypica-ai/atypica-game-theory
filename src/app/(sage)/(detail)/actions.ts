@@ -1,10 +1,10 @@
 "use server";
-import type { SageInterviewExtra } from "@/app/(sage)/types";
+import type { SageAvatar, SageExtra, SageInterviewExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
-import type { SageInterview, UserChat } from "@/prisma/client";
+import type { Sage, SageInterview, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -107,5 +107,43 @@ export async function updateSageAvatar(
     revalidatePath(`/sage/profile/${sage.token}`);
 
     return { success: true, data: undefined };
+  });
+}
+
+/**
+ * Get complete sage data by token for layout
+ * Includes auth check and type conversion
+ */
+export async function getSageByTokenAction(sageToken: string): Promise<
+  ServerActionResult<
+    Omit<Sage, "extra" | "expertise" | "avatar"> & {
+      extra: SageExtra;
+      expertise: string[];
+      avatar: SageAvatar;
+    }
+  >
+> {
+  return withAuth(async (user) => {
+    const sage = await prisma.sage.findUnique({
+      where: { token: sageToken, userId: user.id },
+    });
+
+    if (!sage) {
+      return {
+        success: false,
+        message: "Sage not found",
+        code: "not_found",
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        ...sage,
+        extra: sage.extra as SageExtra,
+        expertise: sage.expertise as string[],
+        avatar: sage.avatar as SageAvatar,
+      },
+    };
   });
 }

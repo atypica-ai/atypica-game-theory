@@ -1,8 +1,9 @@
 "use client";
+import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
 import { addSageSources, deleteSageSources } from "@/app/(sage)/(public)/actions";
 import { extractSageKnowledgeAction } from "@/app/(sage)/actions";
 import { AddSourcesContent } from "@/app/(sage)/components/AddSourcesContent";
-import type { SageExtra, SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
+import type { SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import type { Sage, SageSource } from "@/prisma/client";
+import type { SageSource } from "@/prisma/client";
 import {
   CheckCircle2Icon,
   CircleXIcon,
@@ -28,14 +29,12 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 export function SourcesPanel({
-  sage,
   sources,
 }: {
-  sage: Omit<Sage, "extra"> & { extra: SageExtra };
   sources: (Omit<SageSource, "content" | "extra"> & {
     content: SageSourceContent;
     extra: SageSourceExtra;
@@ -43,6 +42,7 @@ export function SourcesPanel({
 }) {
   const t = useTranslations("Sage.SourcesPanel");
   const router = useRouter();
+  const { sage, status: sageStatus } = useSageContext();
   const [isRequesting, setIsRequesting] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newSources, setNewSources] = useState<SageSourceContent[]>([]);
@@ -50,25 +50,9 @@ export function SourcesPanel({
 
   const completedSources = sources.filter((s) => !!s.extractedText);
   const failedSources = sources.filter((s) => !!s.extra.error);
-  const isProcessing = useMemo(
-    () =>
-      (sage.extra.processing && Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) ||
-      isRequesting,
-    [sage.extra.processing, isRequesting],
-  );
-
-  const canModifySources = !isProcessing;
+  const isProcessing = sageStatus === "processing" || isRequesting;
+  const canModifySources = sageStatus !== "processing" && !isRequesting;
   const maxSources = 30;
-
-  // Auto-refresh when processing
-  useEffect(() => {
-    if (isProcessing) {
-      const interval = setInterval(() => {
-        router.refresh();
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [isProcessing, router]);
 
   const handleProcessSources = useCallback(async () => {
     setIsRequesting(true);

@@ -1,45 +1,25 @@
 "use client";
+import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
 import { discoverKnowledgeGapsAction } from "@/app/(sage)/actions";
-import { SageExtra } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { ChatMessage, Sage, UserChat } from "@/prisma/client";
+import type { ChatMessage, UserChat } from "@/prisma/client";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLinkIcon, MessageSquareIcon, SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 type ChatWithLastMessage = UserChat & { messages: ChatMessage[] };
 
-export function SageChatsPageClient({
-  sage,
-  chats,
-}: {
-  sage: Pick<Sage, "id"> & { extra: SageExtra };
-  chats: ChatWithLastMessage[];
-}) {
+export function SageChatsPageClient({ chats }: { chats: ChatWithLastMessage[] }) {
   const t = useTranslations("Sage.ChatsPage");
   const router = useRouter();
+  const { sage, status: sageStatus } = useSageContext();
   const [isRequesting, setIsRequesting] = useState(false);
-  const isProcessing = useMemo(
-    () =>
-      (sage.extra.processing && Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) ||
-      isRequesting,
-    [sage.extra.processing, isRequesting],
-  );
-
-  // Auto-refresh when processing
-  useEffect(() => {
-    if (isProcessing) {
-      const interval = setInterval(() => {
-        router.refresh();
-      }, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [isProcessing, router]);
+  const isProcessing = sageStatus === "processing" || isRequesting;
 
   const handleAnalyze = useCallback(async () => {
     setIsRequesting(true);

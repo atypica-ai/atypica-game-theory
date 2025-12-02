@@ -1,14 +1,10 @@
 "use client";
-
 import { createSageInterviewAction } from "@/app/(sage)/(detail)/actions";
-import type {
-  SageExtra,
-  SageKnowledgeGapExtra,
-  SageKnowledgeGapSeverity,
-} from "@/app/(sage)/types";
+import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
+import type { SageKnowledgeGapExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { Sage, SageKnowledgeGap } from "@/prisma/client";
+import type { SageKnowledgeGap } from "@/prisma/client";
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
@@ -24,10 +20,8 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 export function SageGapsPageClient({
-  sage,
   gaps,
 }: {
-  sage: Pick<Sage, "id"> & { extra: SageExtra };
   gaps: (Omit<SageKnowledgeGap, "severity" | "extra"> & {
     severity: SageKnowledgeGapSeverity;
     extra: SageKnowledgeGapExtra;
@@ -35,6 +29,7 @@ export function SageGapsPageClient({
 }) {
   const t = useTranslations("Sage.GapsPage");
   const router = useRouter();
+  const { sage, status: sageStatus } = useSageContext();
   const [isCreating, setIsCreating] = useState(false);
 
   const pendingGaps = gaps.filter((g) => !g.resolvedAt);
@@ -93,7 +88,11 @@ export function SageGapsPageClient({
           </p>
         </div>
         {pendingGaps.length > 0 && (
-          <Button onClick={handleCreateInterview} disabled={isCreating} size="sm">
+          <Button
+            onClick={handleCreateInterview}
+            disabled={sageStatus === "processing" || isCreating}
+            size="sm"
+          >
             {isCreating ? (
               <Loader2Icon className="size-4 animate-spin" />
             ) : (

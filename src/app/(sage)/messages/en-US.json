@@ -226,6 +226,14 @@
       "imageSizeLimit": "Image size must be less than 5MB",
       "avatarUpdated": "Avatar updated successfully",
       "uploadFailed": "Failed to upload avatar"
+    },
+    "StatusBar": {
+      "processing": "Updating Expert Memory...",
+      "processingDesc": "You can still chat with the expert. Other functions temporarily unavailable",
+      "error": "Memory update encountered an error",
+      "errorDesc": "Please retry later or contact us for assistance",
+      "timeout": "Memory update timed out",
+      "timeoutDesc": "Processing took too long. Please retry or contact us"
     }
   }
 }

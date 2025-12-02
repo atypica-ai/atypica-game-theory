@@ -1,12 +1,9 @@
-import authOptions from "@/app/(auth)/authOptions";
-import { SageAvatar, SageExtra, SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
-import { FitToViewport } from "@/components/layout/FitToViewport";
+import { getSageByTokenAction } from "@/app/(sage)/(detail)/actions";
+import { SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { prisma } from "@/prisma/prisma";
-import { getServerSession } from "next-auth";
-import { forbidden, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ReactNode } from "react";
-import { SourcesPanel } from "./components/SourcesPanel";
-import { TabNavigation } from "./components/TabNavigation";
+import { SageDetailClientLayout } from "./SageDetailClientLayout";
 
 export default async function SageDetailLayout({
   children,
@@ -16,33 +13,15 @@ export default async function SageDetailLayout({
   params: Promise<{ sageToken: string }>;
 }) {
   const token = (await params).sageToken;
-  const session = await getServerSession(authOptions);
 
-  if (!session?.user) {
-    forbidden();
-  }
+  // Get sage using server action (includes auth check and type conversion)
+  const sageResult = await getSageByTokenAction(token);
 
-  // Get sage with all fields needed for SourcesPanel
-  const sageData = await prisma.sage.findUnique({
-    where: { token },
-  });
-
-  if (!sageData) {
+  if (!sageResult.success) {
     notFound();
   }
 
-  // Check ownership
-  if (sageData.userId !== session.user.id) {
-    forbidden();
-  }
-
-  // Cast types for extra fields
-  const sage = {
-    ...sageData,
-    extra: sageData.extra as SageExtra,
-    expertise: sageData.expertise as string[],
-    avatar: sageData.avatar as SageAvatar,
-  };
+  const sage = sageResult.data;
 
   // Fetch sage's sources
   const sources = (
@@ -57,17 +36,8 @@ export default async function SageDetailLayout({
   }));
 
   return (
-    <FitToViewport className="flex overflow-hidden">
-      {/* Left Panel - Sources */}
-      <div className="w-1/3 border-r border-border overflow-y-auto">
-        <SourcesPanel sage={sage} sources={sources} />
-      </div>
-
-      {/* Right Panel - Tab Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TabNavigation sageToken={sage.token} />
-        <div className="flex-1 overflow-y-auto">{children}</div>
-      </div>
-    </FitToViewport>
+    <SageDetailClientLayout sage={sage} sources={sources}>
+      {children}
+    </SageDetailClientLayout>
   );
 }

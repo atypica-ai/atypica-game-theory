@@ -1,20 +1,12 @@
 "use client";
-import type { SageAvatar, SageExtra } from "@/app/(sage)/types";
+import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
 import { Separator } from "@/components/ui/separator";
-import type { Sage } from "@/prisma/client";
 import { useTranslations } from "next-intl";
 import { AvatarUpload } from "./components/AvatarUpload";
 
-export function SageDetailPageClient({
-  sage,
-}: {
-  sage: Pick<Sage, "id" | "token" | "name" | "locale" | "bio" | "domain"> & {
-    expertise: string[];
-    extra: SageExtra;
-    avatar: SageAvatar;
-  };
-}) {
+export function SageDetailPageClient() {
   const t = useTranslations("Sage.DetailPage");
+  const { sage } = useSageContext();
 
   return (
     <div className="p-6 space-y-6">

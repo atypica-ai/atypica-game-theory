@@ -1,3 +1,5 @@
+"use client";
+import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
 import { WorkingMemoryItem } from "@/app/(sage)/types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,6 +17,7 @@ export function SageMemoryPageClient({
   } | null;
 }) {
   const t = useTranslations("Sage.MemoryPage");
+  const { status: sageStatus } = useSageContext();
 
   const pendingWorkingMemory = sageMemoryDocument?.working.filter(
     (item) => item.status === "pending",
@@ -48,7 +51,7 @@ export function SageMemoryPageClient({
         <div className="flex items-baseline justify-between">
           <h2 className="text-base font-semibold text-foreground">{t("workingMemory")}</h2>
           {pendingWorkingMemory && pendingWorkingMemory.length > 0 && (
-            <Button variant="default" size="sm" disabled>
+            <Button variant="default" size="sm" disabled={sageStatus === "processing"}>
               {t("integrateWorkingMemory")}
             </Button>
           )}
