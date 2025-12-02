@@ -30,7 +30,6 @@ export async function createOrUpdateMemoryDocument({
       data: {
         sageId,
         version: 1,
-        content: "", // DEPRECATED, always empty for new created memory document
         core: coreMemory,
         working: [], // default value
         changeNotes,
@@ -45,7 +44,6 @@ export async function createOrUpdateMemoryDocument({
       data: {
         sageId,
         version: newVersion,
-        content: "", // DEPRECATED, always empty for new created memory document
         core: coreMemory || latestDoc.core,
         working: latestDoc.working ?? [], // copy working memory when updating core
         changeNotes,

@@ -1,4 +1,5 @@
 "use server";
+import { SageChatExtra } from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
@@ -10,139 +11,83 @@ import { generateId } from "ai";
 // ===== Sage Chat =====
 
 /**
- * Create or get sage chat session
- */
-export async function createOrGetSageChat(sageId: number): Promise<
-  ServerActionResult<{
-    sageChat: SageChat;
-    userChat: UserChat;
-  }>
-> {
-  return withAuth(async (user) => {
-    try {
-      // Check if sage exists and is accessible
-      const sage = await prisma.sage.findUnique({
-        where: { id: sageId },
-        select: {
-          id: true,
-          name: true,
-          userId: true,
-        },
-      });
-
-      if (!sage) {
-        return {
-          success: false,
-          message: "Sage not found",
-          code: "not_found",
-        };
-      }
-
-      // Check if chat already exists
-      const existingChat = await prisma.sageChat.findFirst({
-        where: {
-          sageId,
-          userId: user.id,
-        },
-        include: {
-          userChat: true,
-        },
-      });
-
-      if (existingChat) {
-        return {
-          success: true,
-          data: {
-            sageChat: existingChat,
-            userChat: existingChat.userChat,
-          },
-        };
-      }
-
-      // Create new chat
-      const userChat = await createUserChat({
-        userId: user.id,
-        kind: "sageSession",
-        title: `Chat with ${sage.name}`,
-      });
-
-      const sageChat = await prisma.sageChat.create({
-        data: {
-          sageId,
-          userChatId: userChat.id,
-          userId: user.id,
-        },
-      });
-
-      rootLogger.info(`Created sage chat ${sageChat.id} for user ${user.id} with sage ${sageId}`);
-
-      return {
-        success: true,
-        data: { sageChat, userChat },
-      };
-    } catch (error) {
-      rootLogger.error(`Failed to create/get sage chat: ${error}`);
-      return {
-        success: false,
-        message: "Failed to create chat",
-        code: "internal_server_error",
-      };
-    }
-  });
-}
-
-/**
  * Create a new sage chat session (always creates a new one, doesn't reuse existing)
  */
-export async function createNewSageChat(
-  sageId: number,
-  initialUserMessage?: string,
-): Promise<
+export async function createOrGetSageChat({
+  sageToken,
+  initialUserMessage,
+}: {
+  sageToken: string;
+  initialUserMessage?: string;
+}): Promise<
   ServerActionResult<{
-    sageChat: SageChat;
-    userChat: UserChat;
+    userChat: Pick<UserChat, "id" | "token">;
   }>
 > {
   return withAuth(async (user) => {
-    try {
-      // Check if sage exists and is accessible
-      const sage = await prisma.sage.findUnique({
-        where: { id: sageId },
-        select: {
-          id: true,
-          name: true,
-          userId: true,
-        },
-      });
+    // Check if sage exists and is accessible
+    const sage = await prisma.sage.findUnique({
+      where: { token: sageToken },
+      select: {
+        id: true,
+        name: true,
+        userId: true,
+      },
+    });
 
-      if (!sage) {
-        return {
-          success: false,
-          message: "Sage not found",
-          code: "not_found",
-        };
-      }
+    if (!sage) {
+      return {
+        success: false,
+        message: "Sage not found",
+        code: "not_found",
+      };
+    }
 
-      // Always create new chat
-      const userChat = await createUserChat({
+    let sageChat: Pick<SageChat, "id" | "extra"> & {
+      userChat: Pick<UserChat, "id" | "token">;
+    };
+
+    const latestSageChat = await prisma.sageChat.findFirst({
+      where: {
+        sageId: sage.id,
         userId: user.id,
-        kind: "sageSession",
-        title: `Chat with ${sage.name}`,
-      });
+      },
+      orderBy: {
+        id: "desc",
+      },
+      select: {
+        id: true,
+        userChat: { select: { id: true, token: true } },
+        extra: true,
+      },
+    });
 
-      const sageChat = await prisma.sageChat.create({
-        data: {
-          sageId,
-          userChatId: userChat.id,
+    if (latestSageChat && !(latestSageChat.extra as SageChatExtra).gapDiscovered) {
+      // 没有发现过 gap 的 sageChat，可以直接使用
+      sageChat = latestSageChat;
+    } else {
+      const { userChat, newSageChat } = await prisma.$transaction(async (tx) => {
+        const userChat = await createUserChat({
           userId: user.id,
-        },
+          kind: "sageSession",
+          title: `Chat with ${sage.name}`,
+          tx,
+        });
+        const newSageChat = await tx.sageChat.create({
+          data: {
+            sageId: sage.id,
+            userChatId: userChat.id,
+            userId: user.id,
+          },
+        });
+        return { newSageChat, userChat };
       });
-
+      sageChat = { ...newSageChat, userChat };
       // Create initial user message if provided
       if (initialUserMessage) {
         await prisma.chatMessage.create({
           data: {
-            userChatId: userChat.id,
+            userChatId: sageChat.userChat.id,
             role: "user",
             messageId: generateId(),
             content: initialUserMessage,
@@ -150,23 +95,18 @@ export async function createNewSageChat(
           },
         });
       }
-
-      rootLogger.info({
-        msg: `Created new sage chat ${sageChat.id} for user ${user.id} with sage ${sageId}`,
-        hasInitialMessage: !!initialUserMessage,
-      });
-
-      return {
-        success: true,
-        data: { sageChat, userChat },
-      };
-    } catch (error) {
-      rootLogger.error(`Failed to create new sage chat: ${error}`);
-      return {
-        success: false,
-        message: "Failed to create chat",
-        code: "internal_server_error",
-      };
     }
+
+    rootLogger.info({
+      msg: `Created new sage chat ${sageChat.id} for user ${user.id} with sage ${sage.id}`,
+      hasInitialMessage: !!initialUserMessage,
+    });
+
+    return {
+      success: true,
+      data: {
+        userChat: sageChat.userChat,
+      },
+    };
   });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { createNewSageChat } from "@/app/(sage)/(chat)/actions";
+import { createOrGetSageChat } from "@/app/(sage)/(chat)/actions";
 import type { SageExtra } from "@/app/(sage)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
@@ -34,18 +34,16 @@ export function PublicSageView({
   const { data: session } = useSession();
   const [isCreatingChat, setIsCreatingChat] = useState(false);
 
-  const handleStartChat = async (initialMessage?: string) => {
+  const handleStartChat = async (initialUserMessage?: string) => {
     if (!isAuthenticated) {
       router.push(`/auth/signin?callbackUrl=/sage/profile/${sage.token}`);
       return;
     }
-
     setIsCreatingChat(true);
     try {
-      const result = await createNewSageChat(sage.id, initialMessage);
+      const result = await createOrGetSageChat({ sageToken: sage.token, initialUserMessage });
       if (!result.success) throw result;
       const { userChat } = result.data;
-
       // Navigate to chat page
       router.push(`/sage/chat/${userChat.token}`);
     } catch (error) {

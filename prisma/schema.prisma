@@ -677,17 +677,13 @@ model SageKnowledgeGap {
 }
 
 model SageMemoryDocument {
-  id          Int    @id @default(autoincrement())
-  sageId      Int
-  sage        Sage   @relation(fields: [sageId], references: [id], onDelete: Cascade)
-  version     Int
+  id      Int  @id @default(autoincrement())
+  sageId  Int
+  sage    Sage @relation(fields: [sageId], references: [id], onDelete: Cascade)
+  version Int
 
-  // Legacy field (DEPRECATED - 新版本固定为空字符串)
-  content     String @db.Text
-
-  // Two-Layer Memory fields
-  core        String @default("") @db.Text // 核心记忆 (Markdown)
-  working     Json   @default("[]") // 工作记忆 (来自访谈的待整合知识)
+  core    String @default("") @db.Text // 核心记忆 (Markdown)
+  working Json   @default("[]") // 工作记忆 (来自访谈的待整合知识)
 
   changeNotes String @db.Text
   extra       Json   @default("{}")

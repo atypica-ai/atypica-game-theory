@@ -35,7 +35,6 @@ async function SageMemoryPage({
       },
     },
     select: {
-      content: true,
       core: true,
       working: true,
     },
