@@ -279,7 +279,6 @@
       "timeoutDesc": "处理时间过长，请重试或联系我们"
     },
     "SageStats": {
-      "processingPipeline": "正在处理中...",
       "sources": "知识源",
       "memory": "记忆",
       "knowledgeGaps": "待补充知识",

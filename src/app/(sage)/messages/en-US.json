@@ -279,7 +279,6 @@
       "timeoutDesc": "Processing took too long. Please retry or contact us"
     },
     "SageStats": {
-      "processingPipeline": "Processing...",
       "sources": "Sources",
       "memory": "Memory",
       "knowledgeGaps": "Knowledge Gaps",

@@ -92,14 +92,6 @@ export function SageStatsOverview() {
           "sm:border sm:rounded-xl sm:shadow-xs sm:bg-card",
         )}
       >
-        {/* Global Status Indicator */}
-        {isProcessing && (
-          <div className="mb-4 flex items-center gap-2 text-xs font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-full self-start">
-            <Loader2Icon className="size-3 animate-spin" />
-            {t("processingPipeline")}
-          </div>
-        )}
-
         <div
           className={cn(
             "gap-6",
