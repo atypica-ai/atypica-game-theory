@@ -11,17 +11,11 @@ export async function createOrUpdateMemoryDocument({
   sageId,
   operation,
   coreMemory,
-  workingMemory,
   changeNotes,
 }: {
   sageId: number;
-  operation:
-    | "add_working"
-    | "integrate_working"
-    | "extract_from_sources"
-    | "manual_edit_core";
-  coreMemory?: string;
-  workingMemory?: WorkingMemoryItem[];
+  operation: "extract_from_sources" | "manual_edit_core";
+  coreMemory: string;
   changeNotes: string;
 }) {
   // Get latest version
@@ -30,12 +24,6 @@ export async function createOrUpdateMemoryDocument({
     orderBy: { version: "desc" },
   });
 
-  // Determine if should create new version
-  const shouldUpdateVersion =
-    operation === "integrate_working" ||
-    operation === "extract_from_sources" ||
-    operation === "manual_edit_core";
-
   if (!latestDoc) {
     // First creation, version 1
     const doc = await prisma.sageMemoryDocument.create({
@@ -43,22 +31,14 @@ export async function createOrUpdateMemoryDocument({
         sageId,
         version: 1,
         content: "", // DEPRECATED, always empty for new created memory document
-        core: coreMemory || "",
-        working: workingMemory || [],
+        core: coreMemory,
+        working: [], // default value
         changeNotes,
       },
     });
-
-    rootLogger.info({
-      msg: "Created initial sage memory document",
-      sageId,
-      version: 1,
-    });
-
+    rootLogger.info({ msg: "Created initial sage memory document", sageId, version: 1 });
     return doc;
-  }
-
-  if (shouldUpdateVersion) {
+  } else {
     // Create new version
     const newVersion = latestDoc.version + 1;
     const doc = await prisma.sageMemoryDocument.create({
@@ -67,7 +47,7 @@ export async function createOrUpdateMemoryDocument({
         version: newVersion,
         content: "", // DEPRECATED, always empty for new created memory document
         core: coreMemory || latestDoc.core,
-        working: workingMemory || [], // Clear working memory after integration
+        working: latestDoc.working ?? [], // copy working memory when updating core
         changeNotes,
       },
     });
@@ -76,25 +56,6 @@ export async function createOrUpdateMemoryDocument({
       msg: "Created new sage memory document version",
       sageId,
       version: newVersion,
-      operation,
-    });
-
-    return doc;
-  } else {
-    // Update current version (don't increment version number)
-    const doc = await prisma.sageMemoryDocument.update({
-      where: { id: latestDoc.id },
-      data: {
-        working: workingMemory,
-        changeNotes: `${latestDoc.changeNotes}\n\n[Update] ${changeNotes}`,
-        updatedAt: new Date(),
-      },
-    });
-
-    rootLogger.info({
-      msg: "Updated sage memory document without version change",
-      sageId,
-      version: latestDoc.version,
       operation,
     });
 
@@ -121,79 +82,91 @@ export async function addWorkingMemory({
     throw new Error("No memory document found for sage");
   }
 
-  const currentWorking = latestDoc.working as unknown as WorkingMemoryItem[];
-  const updatedWorking = [...currentWorking, workingItem];
+  const currentWorking = latestDoc.working as WorkingMemoryItem[];
+  const updatedWorking = [...currentWorking, workingItem] satisfies WorkingMemoryItem[];
 
-  return await createOrUpdateMemoryDocument({
-    sageId,
-    operation: "add_working",
-    workingMemory: updatedWorking,
-    changeNotes: `Added working memory from interview ${workingItem.sourceChat.token}`,
+  await prisma.sageMemoryDocument.update({
+    where: { id: latestDoc.id },
+    data: {
+      working: updatedWorking,
+      changeNotes: `${latestDoc.changeNotes}\n\n[Update] Added working memory from interview ${workingItem.sourceChat.token}`,
+    },
   });
+
+  // return await createOrUpdateMemoryDocument({
+  //   sageId,
+  //   operation: "add_working",
+  //   workingMemory: updatedWorking,
+  //   changeNotes: `Added working memory from interview ${workingItem.sourceChat.token}`,
+  // });
 }
 
 /**
  * Integrate working memory items into core memory
  * This will use AI to merge pending working memory items into the core document
  */
-export async function integrateWorkingMemoryToCore({
-  sageId,
-}: {
-  sageId: number;
-  locale?: string; // TODO: Will be used for AI integration in next phase
-}): Promise<{
+export async function integrateWorkingMemoryToCore(
+  {
+    // sageId,
+  }: {
+    sageId: number;
+    locale?: string; // TODO: Will be used for AI integration in next phase
+  },
+): Promise<{
   success: boolean;
   integratedCount: number;
   newVersion: number;
 }> {
-  const latestDoc = await prisma.sageMemoryDocument.findFirst({
-    where: { sageId },
-    orderBy: { version: "desc" },
-  });
+  throw new Error("Not implemented");
 
-  if (!latestDoc) {
-    throw new Error("No memory document found for sage");
-  }
+  // const latestDoc = await prisma.sageMemoryDocument.findFirst({
+  //   where: { sageId },
+  //   orderBy: { version: "desc" },
+  // });
 
-  const { core, working } = {
-    core: latestDoc.core,
-    working: latestDoc.working as WorkingMemoryItem[],
-  };
-  const pendingItems = working.filter((item) => item.status === "pending");
+  // if (!latestDoc) {
+  //   throw new Error("No memory document found for sage");
+  // }
 
-  if (pendingItems.length === 0) {
-    return {
-      success: false,
-      integratedCount: 0,
-      newVersion: latestDoc.version,
-    };
-  }
+  // const { core, working } = {
+  //   core: latestDoc.core,
+  //   working: latestDoc.working as WorkingMemoryItem[],
+  // };
+  // const pendingItems = working.filter((item) => item.status === "pending");
 
-  // Use AI to integrate - will be implemented in next step
-  // For now, just mark items as integrated and create new version
-  const updatedWorking = working.map((item) => ({
-    ...item,
-    status: item.status === "pending" ? ("integrated" as const) : item.status,
-  }));
+  // if (pendingItems.length === 0) {
+  //   return {
+  //     success: false,
+  //     integratedCount: 0,
+  //     newVersion: latestDoc.version,
+  //   };
+  // }
 
-  const doc = await createOrUpdateMemoryDocument({
-    sageId,
-    operation: "integrate_working",
-    coreMemory: core, // Will be updated by AI integration in next step
-    workingMemory: updatedWorking,
-    changeNotes: `Integrated ${pendingItems.length} working memory items`,
-  });
+  // // Use AI to integrate - will be implemented in next step
+  // // For now, just mark items as integrated and create new version
+  // const updatedWorking = working.map((item) => ({
+  //   ...item,
+  //   status: item.status === "pending" ? ("integrated" as const) : item.status,
+  // }));
 
-  rootLogger.info({
-    msg: "Integrated working memory to core",
-    sageId,
-    integratedCount: pendingItems.length,
-    newVersion: doc.version,
-  });
+  // const doc = await createOrUpdateMemoryDocument({
+  //   sageId,
+  //   operation: "integrate_working",
+  //   coreMemory: core, // Will be updated by AI integration in next step
+  //   workingMemory: updatedWorking,
+  //   changeNotes: `Integrated ${pendingItems.length} working memory items`,
+  // });
 
-  return {
-    success: true,
-    integratedCount: pendingItems.length,
-    newVersion: doc.version,
-  };
+  // rootLogger.info({
+  //   msg: "Integrated working memory to core",
+  //   sageId,
+  //   integratedCount: pendingItems.length,
+  //   newVersion: doc.version,
+  // });
+
+  // return {
+  //   success: true,
+  //   integratedCount: pendingItems.length,
+  //   newVersion: doc.version,
+  // };
 }

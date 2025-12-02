@@ -137,11 +137,13 @@ model SageMemoryDocument {
 
 - **唯一来源**: Sage Interview (系统访谈)
 - **作用**: 临时存储访谈中补充的新知识,等待整合到 Core Memory
+- **生成方式**: AI 从访谈对话中提取并浓缩的结构化知识 (非原始对话记录)
+- **内容特点**: 聚焦已解决的 gaps,包含关键洞察、实践经验和示例,500-1000 字
 
 ```typescript
 type WorkingMemoryItem = {
   id: string;
-  content: string;          // 知识内容 (Markdown)
+  content: string;          // AI 生成的浓缩知识内容 (结构化 Markdown)
   sourceChat: {             // 来源访谈信息
     id: number;             // UserChat.id (对应 SageInterview 的 UserChat)
     token: string;          // UserChat.token
@@ -223,19 +225,17 @@ type WorkingMemoryItem = {
   sageId: number
   userChatToken: string        // 关联 UserChat
   purpose: string
-  focusAreas: string[]         // 基于 pending gaps 生成
+  focusAreas: string[]         // 访谈聚焦领域
   extra: {
-    interviewPlan: {           // AI 生成的访谈计划
-      purpose: string
-      questions: Array<{
-        question: string
-        purpose: string
-        followUps: string[]
-      }>
-    }
+    ongoing: boolean           // 访谈是否进行中
   }
 }
 ```
+
+**设计变更**: 移除了预生成的 `interviewPlan`,改用动态工具驱动流程:
+- ✅ AI 在对话开始时调用 `fetchPendingGaps` 工具获取最新 gaps
+- ✅ AI 在对话上下文中实时规划访谈策略
+- ✅ 始终使用最新的 gaps,避免过时的计划
 
 ---
 
@@ -292,32 +292,38 @@ UI 展示:
 即时创建 SageInterview + UserChat (无 AI 调用，秒开)
   ↓
 进入访谈对话，AI 动态执行：
-  1. 调用 fetchPendingGaps 工具 → 获取最新 pending gaps
+  1. 强制调用 fetchPendingGaps 工具 → 获取最新 pending gaps
   2. 实时规划访谈策略 (目的、重点领域、核心问题)
   3. 向用户介绍本次访谈范围
   4. 按优先级提问 (critical > important > nice-to-have)
+  5. 重点讨论完成后，提醒专家点击「结束访谈」按钮
   ↓
 用户手动点击 "结束访谈" 按钮
   ↓
-同步处理（阻塞返回）:
-  1. AI 分析 gap 解决情况 → 更新 gap 状态
-  2. 如果有 gap 被解决，提取访谈新知识 → 创建 WorkingMemoryItem
-  3. 不递增版本号 (只是添加 working memory)
+异步后台处理 (Async Background Job Pattern):
+  1. AI 分析访谈内容，判断哪些 gaps 已解决
+  2. AI 从访谈中提取并生成浓缩的 Working Memory 内容
+     - 结构化 Markdown 格式
+     - 包含关键洞察、实践经验、示例
+     - 500-1000 字，聚焦已解决的 gaps
+  3. 更新 SageMemoryDocument (不递增版本号)
+     - core: 不变
+     - working: [..., newWorkingMemoryItem]
+  4. 更新 SageKnowledgeGap
+     - resolvedAt: now()
+     - extra.resolvedChat: { id, token }
   ↓
-更新 SageMemoryDocument:
-  - core: 不变
-  - working: [..., newWorkingMemoryItem]
-  ↓
-更新 SageKnowledgeGap:
-  - resolvedAt: now()
-  - extra.resolvedChat: { id, token }
+前端自动跳转到 Gaps 页面
 ```
 
 **动态工具驱动的优势**：
 - ✅ 即时创建访谈，无需等待计划生成
 - ✅ 始终使用最新的 gaps（不会使用过时的计划）
 - ✅ AI 在对话上下文中看到完整 gaps，理解更准确
-- ✅ 代码更简洁，减少预生成逻辑
+- ✅ 使用 `prepareStep` 强制第一步调用 `fetchPendingGaps`
+- ✅ AI 生成浓缩的结构化知识，而非原始对话记录
+- ✅ 移除严格的 8 轮对话限制，更自然的对话流程
+- ✅ 异步处理避免阻塞用户，提升体验
 
 ### 4. 整合 Working Memory 到 Core
 
@@ -709,18 +715,20 @@ export async function analyzeSageChatsForGaps({
 
 - **生成专家档案** (buildSageProfile): `gemini-2.5-flash`
 - **构建核心记忆** (buildSageCoreMemory): `claude-haiku-4-5` (优化成本)
-- **生成访谈计划**: `claude-sonnet-4`
 
 ### 对话系统
 
 - **专家对话**: `claude-sonnet-4-5`
-- **补充访谈**: `claude-sonnet-4-5`
+- **补充访谈**: `claude-haiku-4-5` (带 thinking mode，成本优化)
+  - 启用 thinking mode 避免输出 `<thinking>` 区块
+  - `budgetTokens: 3000` 用于复杂推理
+  - `stepCountIs(3)` 限制多步推理次数
 
 ### 辅助分析
 
 - **批量对话 Gap 分析**: `gpt-4o` (批量分析，准确性优先)
-- **Gap 解决判断**: `claude-sonnet-4-5`
-- **访谈知识提取**: `claude-sonnet-4-5`
+- **Gap 解决判断和知识提取**: `claude-sonnet-4-5` (访谈结束后处理)
+  - 同时完成两个任务：分析 gap 解决情况 + 生成 Working Memory 内容
 
 ---
 
