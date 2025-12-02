@@ -38,8 +38,7 @@ export function SageInterviewClient({
   };
   initialMessages?: TSageMessageWithTool[];
 }) {
-  const t = useTranslations("Sage.interview");
-  const tDetail = useTranslations("Sage.detail");
+  const t = useTranslations("Sage.InterviewPage");
   const { data: session } = useSession();
   const router = useRouter();
   const requestSentRef = useRef(false);
@@ -49,7 +48,7 @@ export function SageInterviewClient({
 
   const handleEndInterview = useCallback(async () => {
     if (!interview.extra.ongoing) {
-      toast.error(tDetail("interviewAlreadyCompleted"));
+      toast.error(t("interviewAlreadyCompleted"));
       return;
     }
 
@@ -57,14 +56,14 @@ export function SageInterviewClient({
     try {
       const result = await endSageInterviewAction(interview.id);
       if (!result.success) throw result;
-      toast.success(tDetail("interviewEnded"));
+      toast.success(t("interviewEnded"));
       router.push(`/sage/${sage.token}/gaps`);
     } catch (error) {
-      toast.error(`${tDetail("endInterviewFailed")}: ${(error as Error).message}`);
+      toast.error(`${t("endInterviewFailed")}: ${(error as Error).message}`);
     } finally {
       setIsEndingInterview(false);
     }
-  }, [interview.id, tDetail, router]);
+  }, [interview.id, t, router]);
 
   // Chat hooks
   const useChatHelpers = useChat({
@@ -125,7 +124,7 @@ export function SageInterviewClient({
                   {t("ongoing")}
                 </span>
                 <ConfirmDialog
-                  title={tDetail("endInterview")}
+                  title={t("endInterview")}
                   onConfirm={() => handleEndInterview()}
                 >
                   <Button
@@ -135,7 +134,7 @@ export function SageInterviewClient({
                     className="h-7 text-xs"
                   >
                     <CheckCircle className="size-3" />
-                    {isEndingInterview ? tDetail("ending") : tDetail("endInterview")}
+                    {isEndingInterview ? t("ending") : t("endInterview")}
                   </Button>
                 </ConfirmDialog>
               </div>

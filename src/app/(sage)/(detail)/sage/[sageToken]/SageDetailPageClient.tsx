@@ -14,7 +14,7 @@ export function SageDetailPageClient({
     avatar: SageAvatar;
   };
 }) {
-  const t = useTranslations("Sage.detail");
+  const t = useTranslations("Sage.DetailPage");
 
   return (
     <div className="p-6 space-y-6">

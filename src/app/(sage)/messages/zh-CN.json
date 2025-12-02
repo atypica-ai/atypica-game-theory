@@ -1,7 +1,17 @@
 {
   "Sage": {
     "platformName": "专家智能体平台",
-    "create": {
+    "PageMetadata": {
+      "memoryTitle": "专家记忆",
+      "memoryDescription": "查看和管理专家的知识记忆文档",
+      "gapsTitle": "知识空白",
+      "gapsDescription": "查看和填补专家的知识空白",
+      "chatsTitle": "用户聊天记录",
+      "chatsDescription": "查看用户与专家的对话历史",
+      "interviewsTitle": "专家访谈记录",
+      "interviewsDescription": "查看补充访谈会话"
+    },
+    "CreatePage": {
       "title": "添加知识源",
       "description": "上传文档、粘贴文本或添加网站链接，让专家智能体基于这些信息构建知识体系",
       "addAtLeastOneSource": "请至少添加一个知识源",
@@ -21,11 +31,22 @@
       "createSuccess": "专家创建成功",
       "createFailed": "创建失败，请重试"
     },
-    "homepage": {
+    "ListPage": {
+      "title": "我的专家智能体",
+      "subtitle": "管理和使用您创建的专家智能体",
+      "createNew": "创建新专家",
+      "noSages": "还没有专家智能体",
+      "noSagesDescription": "创建您的第一个专家智能体，开始专业咨询",
+      "createFirstSage": "创建第一个专家",
+      "chats": "次咨询",
+      "interviews": "次访谈"
+    },
+    "HomePage": {
       "title": "构建AI专家智能体",
       "subtitle": "导入专业知识文档，AI 自动分析完整性并生成专家记忆文档，打造您的专属领域专家。",
       "viewMySages": "查看我的专家",
       "startCreation": "开始创建",
+      "platformName": "专家智能体平台",
       "importKnowledge": "知识导入",
       "importDescription": "上传文档并通过 AI 提取结构化知识",
       "multipleFormats": "支持 PDF、文本等多种格式",
@@ -63,22 +84,24 @@
       "analysisDimensions": "知识分析维度",
       "dimensionsDescription": "我们从 7 个关键维度评估专家的知识完整性"
     },
-    "list": {
-      "title": "我的专家智能体",
-      "subtitle": "管理和使用您创建的专家智能体",
-      "createNew": "创建新专家",
-      "noSages": "还没有专家智能体",
-      "noSagesDescription": "创建您的第一个专家智能体，开始专业咨询",
-      "createFirstSage": "创建第一个专家",
-      "chats": "次咨询",
-      "interviews": "次访谈"
+    "PublicProfilePage": {
+      "editSage": "编辑",
+      "chatWithSage": "咨询专家",
+      "signInToChat": "登录后咨询",
+      "createChatFailed": "创建对话失败",
+      "introduction": "个人简介",
+      "noIntroduction": "暂无简介。",
+      "chatWithMeAbout": "和我聊聊这些话题 ...",
+      "askMeAnything": "问我任何问题"
     },
-    "detail": {
-      "memory": "专家记忆",
-      "analysis": "分析结果",
-      "chats": "用户聊天记录",
-      "interviews": "访谈记录",
-      "gaps": "知识空白",
+    "DetailPage": {
+      "sageProfile": "专家信息",
+      "bio": "简介",
+      "expertise": "专长",
+      "locale": "语言",
+      "viewPublicProfile": "查看公开主页"
+    },
+    "MemoryPage": {
       "memoryDocument": "记忆文档",
       "coreMemory": "核心记忆",
       "workingMemory": "工作记忆",
@@ -86,61 +109,25 @@
       "noWorkingMemoryDescription": "访谈补充的知识会出现在这里，等待整合到核心记忆",
       "viewSourceInterview": "查看来源访谈",
       "integrateWorkingMemory": "整合到核心记忆",
-      "completed": "已完成",
-      "failed": "失败",
-      "cancel": "取消",
       "characters": "字符",
-      "viewPublicProfile": "查看公开主页",
-      "sageProfile": "专家信息",
-      "bio": "简介",
-      "expertise": "专长",
-      "locale": "语言",
-      "noMemoryDocumentYet": "暂无记忆文档。请先从知识源中提取知识。",
-      "createSupplementaryInterview": "创建补充访谈",
-      "interviewCreated": "访谈创建成功",
-      "createInterviewFailed": "创建访谈失败",
-      "processing": "正在处理",
-      "user": "用户",
+      "noMemoryDocumentYet": "暂无记忆文档。请先从知识源中提取知识。"
+    },
+    "GapsPage": {
       "knowledgeGaps": "知识空白",
       "impact": "影响",
       "pending": "待处理",
       "resolved": "已解决",
-      "noMessages": "没有消息",
-      "interviewHistory": "访谈记录",
-      "totalInterviews": "总访谈数",
-      "noInterviewsYet": "还没有访谈记录",
-      "startInterviewWithSage": "创建补充访谈以填补知识空白",
-      "untitledInterview": "未命名访谈",
-      "ongoing": "进行中",
-      "endInterview": "结束访谈",
-      "ending": "结束中...",
-      "interviewEnded": "访谈已成功结束",
-      "endInterviewFailed": "结束访谈失败",
-      "interviewAlreadyCompleted": "访谈已经完成",
-      "resolvedGapsCount": "已解决的知识空白",
-      "newGapsCount": "发现新的知识空白",
       "noKnowledgeGaps": "没有知识空白",
       "noKnowledgeGapsDescription": "知识全面且结构良好。",
       "pendingGaps": "待处理空白",
       "resolvedGaps": "已解决空白",
       "description": "描述",
       "source": "来源",
-      "avatarUpload": {
-        "selectImageFile": "请选择图片文件",
-        "imageSizeLimit": "图片大小不能超过 5MB",
-        "avatarUpdated": "头像更新成功",
-        "uploadFailed": "上传头像失败"
-      }
-    },
-    "PageMetadata": {
-      "memoryTitle": "专家记忆",
-      "memoryDescription": "查看和管理专家的知识记忆文档",
-      "gapsTitle": "知识空白",
-      "gapsDescription": "查看和填补专家的知识空白",
-      "chatsTitle": "用户聊天记录",
-      "chatsDescription": "查看用户与专家的对话历史",
-      "interviewsTitle": "专家访谈记录",
-      "interviewsDescription": "查看补充访谈会话"
+      "createSupplementaryInterview": "创建补充访谈",
+      "interviewCreated": "访谈创建成功",
+      "createInterviewFailed": "创建访谈失败",
+      "resolvedGapsCount": "已解决的知识空白",
+      "newGapsCount": "发现新的知识空白"
     },
     "ChatsPage": {
       "userChatHistory": "用户聊天记录",
@@ -154,6 +141,37 @@
       "analyzing": "分析中...",
       "analyzeSubmitted": "分析对话提交成功",
       "analyzeFailed": "分析失败，请重试"
+    },
+    "InterviewsPage": {
+      "interviewHistory": "访谈记录",
+      "totalInterviews": "总访谈数",
+      "noInterviewsYet": "还没有访谈记录",
+      "startInterviewWithSage": "创建补充访谈以填补知识空白",
+      "untitledInterview": "未命名访谈",
+      "completed": "已完成",
+      "ongoing": "进行中",
+      "user": "用户",
+      "noMessages": "没有消息"
+    },
+    "InterviewPage": {
+      "title": "补充访谈",
+      "purpose": "填补知识空白",
+      "completed": "已完成",
+      "ongoing": "进行中",
+      "endInterview": "结束访谈",
+      "ending": "结束中...",
+      "interviewEnded": "访谈已成功结束",
+      "endInterviewFailed": "结束访谈失败",
+      "interviewAlreadyCompleted": "访谈已经完成"
+    },
+    "TabNavigation": {
+      "sageProfile": "专家信息",
+      "memory": "专家记忆",
+      "analysis": "分析结果",
+      "chats": "用户聊天记录",
+      "interviews": "访谈记录",
+      "gaps": "知识空白",
+      "viewPublicProfile": "查看公开主页"
     },
     "SourcesPanel": {
       "knowledgeSources": "知识源",
@@ -181,7 +199,8 @@
       "addSourcesDialogTitle": "添加知识源",
       "cancel": "取消",
       "confirmAdd": "添加知识源",
-      "adding": "添加中..."
+      "adding": "添加中...",
+      "processing": "正在处理"
     },
     "AddSourcesContent": {
       "uploadFiles": "上传文件",
@@ -202,22 +221,11 @@
       "cancel": "取消",
       "addWebsiteTitle": "添加网站网址"
     },
-    "chat": {},
-    "interview": {
-      "title": "补充访谈",
-      "purpose": "填补知识空白",
-      "completed": "已完成",
-      "ongoing": "进行中"
-    },
-    "public": {
-      "editSage": "编辑",
-      "chatWithSage": "咨询专家",
-      "signInToChat": "登录后咨询",
-      "createChatFailed": "创建对话失败",
-      "introduction": "个人简介",
-      "noIntroduction": "暂无简介。",
-      "chatWithMeAbout": "和我聊聊这些话题 ...",
-      "askMeAnything": "问我任何问题"
+    "AvatarUpload": {
+      "selectImageFile": "请选择图片文件",
+      "imageSizeLimit": "图片大小不能超过 5MB",
+      "avatarUpdated": "头像更新成功",
+      "uploadFailed": "上传头像失败"
     }
   }
 }

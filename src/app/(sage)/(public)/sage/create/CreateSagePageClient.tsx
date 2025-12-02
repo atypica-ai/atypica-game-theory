@@ -13,7 +13,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 export function CreateSagePageClient() {
-  const t = useTranslations("Sage.create");
+  const t = useTranslations("Sage.CreatePage");
   const router = useRouter();
   const locale = useLocale();
 

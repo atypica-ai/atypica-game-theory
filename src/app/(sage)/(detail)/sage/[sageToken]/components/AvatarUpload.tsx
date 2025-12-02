@@ -20,7 +20,7 @@ export function AvatarUpload({
   sageName: string;
   currentAvatar: SageAvatar;
 }) {
-  const t = useTranslations("Sage.detail.avatarUpload");
+  const t = useTranslations("Sage.AvatarUpload");
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);

@@ -14,7 +14,7 @@ type InterviewWithUserChat = SageInterview & {
 };
 
 export function SageInterviewsPageClient({ interviews }: { interviews: InterviewWithUserChat[] }) {
-  const t = useTranslations("Sage.detail");
+  const t = useTranslations("Sage.InterviewsPage");
 
   return (
     <div className="p-6 space-y-6">

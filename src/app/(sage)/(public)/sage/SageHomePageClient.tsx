@@ -18,8 +18,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 export default function SageHomePageClient() {
-  const t = useTranslations("Sage.homepage");
-  const tRoot = useTranslations("Sage");
+  const t = useTranslations("Sage.HomePage");
 
   const features = [
     {
@@ -120,7 +119,7 @@ export default function SageHomePageClient() {
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="space-y-4">
             <h1 className="font-mono text-sm font-medium tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">
-              {tRoot("platformName")}
+              {t("platformName")}
             </h1>
             <h2 className="font-sans text-4xl md:text-7xl font-normal tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight">
               {t("title")}

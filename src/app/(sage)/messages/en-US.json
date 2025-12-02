@@ -1,7 +1,17 @@
 {
   "Sage": {
     "platformName": "Expert Agent Platform",
-    "create": {
+    "PageMetadata": {
+      "memoryTitle": "Memory",
+      "memoryDescription": "View and manage expert's knowledge memory document",
+      "gapsTitle": "Knowledge Gaps",
+      "gapsDescription": "View and fill expert's knowledge gaps",
+      "chatsTitle": "User Chat History",
+      "chatsDescription": "View conversation history between users and expert",
+      "interviewsTitle": "Expert Interview History",
+      "interviewsDescription": "View supplementary interview sessions with expert"
+    },
+    "CreatePage": {
       "title": "Add Knowledge Sources",
       "description": "Upload documents, paste text, or add website links to build your expert's knowledge base",
       "addAtLeastOneSource": "Please add at least one knowledge source",
@@ -21,11 +31,22 @@
       "createSuccess": "Expert created successfully",
       "createFailed": "Creation failed, please try again"
     },
-    "homepage": {
+    "ListPage": {
+      "title": "My Expert Agents",
+      "subtitle": "Manage and use your created expert agents",
+      "createNew": "Create New Expert",
+      "noSages": "No expert agents yet",
+      "noSagesDescription": "Create your first expert agent to start professional consultation",
+      "createFirstSage": "Create First Expert",
+      "chats": "consultations",
+      "interviews": "interviews"
+    },
+    "HomePage": {
       "title": "Build AI Expert Agents",
       "subtitle": "Import professional knowledge documents, AI automatically analyzes completeness and generates expert memory documents to create your domain expert.",
       "viewMySages": "View My Experts",
       "startCreation": "Start Creation",
+      "platformName": "Expert Agent Platform",
       "importKnowledge": "Knowledge Import",
       "importDescription": "Upload documents and extract structured knowledge via AI",
       "multipleFormats": "Support PDF, text and multiple formats",
@@ -63,22 +84,24 @@
       "analysisDimensions": "Knowledge Analysis Dimensions",
       "dimensionsDescription": "We assess expert knowledge completeness across 7 key dimensions"
     },
-    "list": {
-      "title": "My Expert Agents",
-      "subtitle": "Manage and use your created expert agents",
-      "createNew": "Create New Expert",
-      "noSages": "No expert agents yet",
-      "noSagesDescription": "Create your first expert agent to start professional consultation",
-      "createFirstSage": "Create First Expert",
-      "chats": "consultations",
-      "interviews": "interviews"
+    "PublicProfilePage": {
+      "editSage": "Edit",
+      "chatWithSage": "Consult Expert",
+      "signInToChat": "Sign in to Chat",
+      "createChatFailed": "Failed to create chat",
+      "introduction": "Introduction",
+      "noIntroduction": "No introduction available yet.",
+      "chatWithMeAbout": "chat with me about ...",
+      "askMeAnything": "Ask me anything"
     },
-    "detail": {
-      "memory": "Memory",
-      "analysis": "Analysis",
-      "chats": "Chats",
-      "interviews": "Interviews",
-      "gaps": "Gaps",
+    "DetailPage": {
+      "sageProfile": "Profile",
+      "bio": "Bio",
+      "expertise": "Expertise",
+      "locale": "Locale",
+      "viewPublicProfile": "View Public Profile"
+    },
+    "MemoryPage": {
       "memoryDocument": "Memory Document",
       "coreMemory": "Core Memory",
       "workingMemory": "Working Memory",
@@ -86,61 +109,25 @@
       "noWorkingMemoryDescription": "Knowledge from interviews will appear here, waiting to be integrated into core memory",
       "viewSourceInterview": "View Source Interview",
       "integrateWorkingMemory": "Integrate into Core Memory",
-      "completed": "Completed",
-      "failed": "Failed",
-      "cancel": "Cancel",
       "characters": "characters",
-      "viewPublicProfile": "View Public Profile",
-      "sageProfile": "Profile",
-      "bio": "Bio",
-      "expertise": "Expertise",
-      "locale": "Locale",
-      "noMemoryDocumentYet": "No memory document yet. Extract knowledge from sources first.",
-      "createSupplementaryInterview": "Create Supplementary Interview",
-      "interviewCreated": "Interview created successfully",
-      "createInterviewFailed": "Failed to create interview",
-      "processing": "Processing",
-      "user": "User",
+      "noMemoryDocumentYet": "No memory document yet. Extract knowledge from sources first."
+    },
+    "GapsPage": {
       "knowledgeGaps": "Knowledge Gaps",
       "impact": "Impact",
       "pending": "pending",
       "resolved": "resolved",
-      "noMessages": "No messages",
-      "interviewHistory": "Interview History",
-      "totalInterviews": "total interviews",
-      "noInterviewsYet": "No interviews yet",
-      "startInterviewWithSage": "Create a supplementary interview to fill knowledge gaps",
-      "untitledInterview": "Untitled Interview",
-      "ongoing": "Ongoing",
-      "endInterview": "End Interview",
-      "ending": "Ending...",
-      "interviewEnded": "Interview ended successfully",
-      "endInterviewFailed": "Failed to end interview",
-      "interviewAlreadyCompleted": "Interview has already been completed",
-      "resolvedGapsCount": "Resolved gaps",
-      "newGapsCount": "New gaps discovered",
       "noKnowledgeGaps": "No Knowledge Gaps",
       "noKnowledgeGapsDescription": "Knowledge is comprehensive and well-structured.",
       "pendingGaps": "Pending Gaps",
       "resolvedGaps": "Resolved Gaps",
       "description": "Description",
       "source": "Source",
-      "avatarUpload": {
-        "selectImageFile": "Please select an image file",
-        "imageSizeLimit": "Image size must be less than 5MB",
-        "avatarUpdated": "Avatar updated successfully",
-        "uploadFailed": "Failed to upload avatar"
-      }
-    },
-    "PageMetadata": {
-      "memoryTitle": "Memory",
-      "memoryDescription": "View and manage expert's knowledge memory document",
-      "gapsTitle": "Knowledge Gaps",
-      "gapsDescription": "View and fill expert's knowledge gaps",
-      "chatsTitle": "User Chat History",
-      "chatsDescription": "View conversation history between users and expert",
-      "interviewsTitle": "Expert Interview History",
-      "interviewsDescription": "View supplementary interview sessions with expert"
+      "createSupplementaryInterview": "Create Supplementary Interview",
+      "interviewCreated": "Interview created successfully",
+      "createInterviewFailed": "Failed to create interview",
+      "resolvedGapsCount": "Resolved gaps",
+      "newGapsCount": "New gaps discovered"
     },
     "ChatsPage": {
       "userChatHistory": "User Chat History",
@@ -154,6 +141,37 @@
       "analyzing": "Analyzing...",
       "analyzeSubmitted": "Analysis request submitted",
       "analyzeFailed": "Analysis failed, please try again"
+    },
+    "InterviewsPage": {
+      "interviewHistory": "Interview History",
+      "totalInterviews": "total interviews",
+      "noInterviewsYet": "No interviews yet",
+      "startInterviewWithSage": "Create a supplementary interview to fill knowledge gaps",
+      "untitledInterview": "Untitled Interview",
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "user": "User",
+      "noMessages": "No messages"
+    },
+    "InterviewPage": {
+      "title": "Supplementary Interview",
+      "purpose": "Fill knowledge gaps",
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "endInterview": "End Interview",
+      "ending": "Ending...",
+      "interviewEnded": "Interview ended successfully",
+      "endInterviewFailed": "Failed to end interview",
+      "interviewAlreadyCompleted": "Interview has already been completed"
+    },
+    "TabNavigation": {
+      "sageProfile": "Profile",
+      "memory": "Memory",
+      "analysis": "Analysis",
+      "chats": "Chats",
+      "interviews": "Interviews",
+      "gaps": "Gaps",
+      "viewPublicProfile": "View Public Profile"
     },
     "SourcesPanel": {
       "knowledgeSources": "Knowledge Sources",
@@ -181,7 +199,8 @@
       "addSourcesDialogTitle": "Add Knowledge Sources",
       "cancel": "Cancel",
       "confirmAdd": "Add Sources",
-      "adding": "Adding..."
+      "adding": "Adding...",
+      "processing": "Processing"
     },
     "AddSourcesContent": {
       "uploadFiles": "Upload Files",
@@ -202,22 +221,11 @@
       "cancel": "Cancel",
       "addWebsiteTitle": "Add Website URL"
     },
-    "chat": {},
-    "interview": {
-      "title": "Supplementary Interview",
-      "purpose": "Fill knowledge gaps",
-      "completed": "Completed",
-      "ongoing": "Ongoing"
-    },
-    "public": {
-      "editSage": "Edit",
-      "chatWithSage": "Consult Expert",
-      "signInToChat": "Sign in to Chat",
-      "createChatFailed": "Failed to create chat",
-      "introduction": "Introduction",
-      "noIntroduction": "No introduction available yet.",
-      "chatWithMeAbout": "chat with me about ...",
-      "askMeAnything": "Ask me anything"
+    "AvatarUpload": {
+      "selectImageFile": "Please select an image file",
+      "imageSizeLimit": "Image size must be less than 5MB",
+      "avatarUpdated": "Avatar updated successfully",
+      "uploadFailed": "Failed to upload avatar"
     }
   }
 }

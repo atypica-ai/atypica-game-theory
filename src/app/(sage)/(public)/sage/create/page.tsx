@@ -9,7 +9,7 @@ import { Suspense } from "react";
 import { CreateSagePageClient } from "./CreateSagePageClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Sage.create");
+  const t = await getTranslations("Sage.CreatePage");
   const locale = await getLocale();
   return generatePageMetadata({
     title: t("title"),

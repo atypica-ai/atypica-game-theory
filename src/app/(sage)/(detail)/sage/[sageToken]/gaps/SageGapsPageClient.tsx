@@ -33,7 +33,7 @@ export function SageGapsPageClient({
     extra: SageKnowledgeGapExtra;
   })[];
 }) {
-  const t = useTranslations("Sage.detail");
+  const t = useTranslations("Sage.GapsPage");
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
 

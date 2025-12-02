@@ -29,7 +29,7 @@ export function PublicSageView({
   isOwner: boolean;
   isAuthenticated: boolean;
 }) {
-  const t = useTranslations("Sage.public");
+  const t = useTranslations("Sage.PublicProfilePage");
   const router = useRouter();
   const { data: session } = useSession();
   const [isCreatingChat, setIsCreatingChat] = useState(false);

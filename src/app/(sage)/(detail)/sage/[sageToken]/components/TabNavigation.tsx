@@ -13,7 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function TabNavigation({ sageToken }: { sageToken: string }) {
-  const t = useTranslations("Sage.detail");
+  const t = useTranslations("Sage.TabNavigation");
   const pathname = usePathname();
 
   const tabs = [

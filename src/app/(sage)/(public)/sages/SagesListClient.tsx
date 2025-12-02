@@ -10,7 +10,7 @@ export function SagesListClient({
 }: {
   sages: Array<Sage & { _count: { chats: number; interviews: number } }>;
 }) {
-  const t = useTranslations("Sage.list");
+  const t = useTranslations("Sage.ListPage");
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">

@@ -14,7 +14,7 @@ export function SageMemoryPageClient({
     working: WorkingMemoryItem[];
   } | null;
 }) {
-  const t = useTranslations("Sage.detail");
+  const t = useTranslations("Sage.MemoryPage");
 
   const pendingWorkingMemory = sageMemoryDocument?.working.filter(
     (item) => item.status === "pending",

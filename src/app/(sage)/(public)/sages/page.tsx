@@ -10,7 +10,7 @@ import { Suspense } from "react";
 import { SagesListClient } from "./SagesListClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Sage.list");
+  const t = await getTranslations("Sage.ListPage");
   const locale = await getLocale();
   return generatePageMetadata({
     title: t("title"),
