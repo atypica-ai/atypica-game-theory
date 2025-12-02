@@ -258,7 +258,7 @@ function SourceItem({
     } else if (source.content.type === "file") {
       return source.content.name || "";
     } else if (source.content.type === "text") {
-      return `${source.content.text.length} ${t("characters")}`;
+      return `${source.content.text}`;
     }
     return "";
   };

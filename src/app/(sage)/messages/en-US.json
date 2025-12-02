@@ -223,7 +223,6 @@
       "parsed": "Parsed",
       "failed": "Failed",
       "untitledSource": "Untitled Source",
-      "characters": "characters",
       "processingStarted": "Extracting knowledge, this may take a few minutes",
       "processingFailed": "Processing failed. Please check source format or try again later",
       "processingButton": "Processing...",

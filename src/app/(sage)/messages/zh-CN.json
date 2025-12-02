@@ -223,7 +223,6 @@
       "parsed": "已解析",
       "failed": "失败",
       "untitledSource": "未命名来源",
-      "characters": "字符",
       "processingStarted": "正在提取知识，这可能需要几分钟",
       "processingFailed": "处理失败，请检查知识源格式或稍后重试",
       "processingButton": "处理中...",
