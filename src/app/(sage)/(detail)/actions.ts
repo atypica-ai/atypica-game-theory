@@ -1,4 +1,8 @@
 "use server";
+
+import type { SageActivity, SageStats } from "./types";
+import { fetchSageActivities } from "./lib/activities";
+import { fetchSageStats } from "./lib/stats";
 import type {
   SageAvatar,
   SageExtra,
@@ -12,6 +16,7 @@ import type { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import type { Sage, SageInterview, SageSource, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -194,5 +199,116 @@ export async function fetchSageSourcesByTokenAction(sageToken: string): Promise<
       success: true,
       data: sources,
     };
+  });
+}
+
+/**
+ * Fetch sage statistics
+ */
+export async function fetchSageStatsAction(
+  sageToken: string,
+): Promise<ServerActionResult<SageStats>> {
+  return withAuth(async (user) => {
+    const sage = await prisma.sage.findUnique({
+      where: { token: sageToken, userId: user.id },
+      select: { id: true },
+    });
+
+    if (!sage) {
+      return {
+        success: false,
+        message: "Sage not found",
+        code: "not_found",
+      };
+    }
+
+    const stats = await fetchSageStats(sage.id);
+
+    return {
+      success: true,
+      data: stats,
+    };
+  });
+}
+
+/**
+ * Fetch activity feed for sage
+ */
+export async function fetchSageActivitiesAction(
+  sageToken: string,
+): Promise<ServerActionResult<SageActivity[]>> {
+  return withAuth(async (user) => {
+    const sage = await prisma.sage.findUnique({
+      where: { token: sageToken, userId: user.id },
+      select: { id: true },
+    });
+
+    if (!sage) {
+      return {
+        success: false,
+        message: "Sage not found",
+        code: "not_found",
+      };
+    }
+
+    const locale = await getLocale();
+    const activities = await fetchSageActivities({
+      sageId: sage.id,
+      sageToken,
+      limit: 20,
+      locale,
+    });
+
+    return {
+      success: true,
+      data: activities,
+    };
+  });
+}
+
+/**
+ * Update sage profile information
+ */
+export async function updateSageProfileAction(
+  sageId: number,
+  data: {
+    name?: string;
+    domain?: string;
+    bio?: string;
+    expertise?: string[];
+    locale?: "zh-CN" | "en-US";
+  },
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    const sage = await prisma.sage.findUnique({
+      where: { id: sageId },
+      select: { userId: true, token: true },
+    });
+
+    if (!sage) {
+      return {
+        success: false,
+        message: "Sage not found",
+        code: "not_found",
+      };
+    }
+
+    if (sage.userId !== user.id) {
+      return {
+        success: false,
+        message: "Not authorized",
+        code: "forbidden",
+      };
+    }
+
+    await prisma.sage.update({
+      where: { id: sageId },
+      data,
+    });
+
+    revalidatePath(`/sage/${sage.token}`);
+    revalidatePath(`/sage/profile/${sage.token}`);
+
+    return { success: true, data: undefined };
   });
 }
