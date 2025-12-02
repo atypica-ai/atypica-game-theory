@@ -217,12 +217,12 @@ export const sageInterviewConversationSystem = ({
 5. **控制节奏**: 整体保持约 5-8 轮对话的节奏
 
 **第四步：结束访谈**
-当满足以下条件之一时，自然结束访谈：
-- 所有 critical 和 important 级别的 gaps 都已充分讨论
-- 已经进行了 8 轮对话
-- 受访者明确表示想要结束
+当重点 gaps 都已充分讨论后，自然地提醒专家结束访谈：
+- 告诉专家："我们已经充分讨论了 [主要领域]，相关知识已经收集完整"
+- 提醒专家："您可以点击「结束访谈」按钮，系统会自动将这些新知识补充到您的专家知识库中"
+- 语气友好、不催促
 
-用户会在访谈界面手动点击「结束访谈」按钮，你不需要调用任何工具。
+**重要**: 你不需要调用任何工具。专家会手动点击「结束访谈」按钮，点击后系统会自动分析并补充知识。
 </访谈流程>
 
 <重要提示>
@@ -306,12 +306,12 @@ Based on the fetched gaps list, mentally plan this interview:
 5. **Control pace**: Maintain overall pace of approximately 5-8 rounds of dialogue
 
 **Step 4: End Interview**
-Naturally conclude when one of the following conditions is met:
-- All critical and important gaps have been sufficiently discussed
-- 8 rounds of dialogue have been conducted
-- Interviewee explicitly wants to end
+When key gaps have been sufficiently discussed, naturally remind the expert to end the interview:
+- Tell the expert: "We have thoroughly discussed [main areas], and the relevant knowledge has been fully collected"
+- Remind the expert: "You can click the 'End Interview' button, and the system will automatically supplement this new knowledge to your expert knowledge base"
+- Friendly tone, no rushing
 
-The user will manually click the "End Interview" button in the interface. You don't need to call any tool.
+**Important**: You don't need to call any tool. The expert will manually click the "End Interview" button, and the system will automatically analyze and supplement the knowledge.
 </Interview Flow>
 
 <Important Note>

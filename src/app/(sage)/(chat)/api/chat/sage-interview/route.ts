@@ -4,7 +4,7 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { defaultProviderOptions, llm } from "@/ai/provider";
+import { llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
@@ -19,7 +19,8 @@ import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { Sage, SageInterview } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { generateId, smoothStream, streamText, tool } from "ai";
+import { type AnthropicProviderOptions } from "@ai-sdk/anthropic";
+import { generateId, smoothStream, stepCountIs, streamText, tool } from "ai";
 import { getServerSession } from "next-auth";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -150,9 +151,10 @@ export async function POST(req: Request) {
       : await getLocale(),
   });
 
+  const FETCH_PENDING_GAPS = "fetchPendingGaps";
   // Define tools for interview
   const tools = {
-    fetchPendingGaps: tool({
+    [FETCH_PENDING_GAPS]: tool({
       description:
         "Fetch pending knowledge gaps to understand what knowledge needs to be filled in this interview. Use this tool at the beginning of the interview to see what gaps need to be addressed.",
       inputSchema: z.object({}),
@@ -208,8 +210,45 @@ export async function POST(req: Request) {
   const mergedAbortSignal = AbortSignal.any([req.signal]);
 
   const streamTextResult = streamText({
-    model: llm("claude-sonnet-4-5"),
-    providerOptions: defaultProviderOptions,
+    model: llm("claude-haiku-4-5"),
+    // providerOptions: defaultProviderOptions,
+    providerOptions: {
+      anthropic: {
+        thinking: {
+          type: "enabled", // 如果不设置或者 disable，在复杂的情况下 haiku 会输出 <thinking> 区块
+          budgetTokens: 3000,
+        },
+      } satisfies AnthropicProviderOptions,
+    },
+
+    stopWhen: stepCountIs(3),
+    prepareStep: async ({ messages }) => {
+      let pendingGapsFetched = false;
+      for (const message of messages) {
+        if (message.role === "tool") {
+          for (const part of message.content) {
+            if (part.toolName === FETCH_PENDING_GAPS) {
+              pendingGapsFetched = true;
+            }
+          }
+        }
+      }
+      if (!pendingGapsFetched) {
+        // claude-haiku-4-5 有个限制，Thinking may not be enabled when tool_choice forces tool use.
+        // 所以这里不能用 required 要用 auto
+        return {
+          activeTools: [FETCH_PENDING_GAPS],
+          toolChoice: "auto",
+        };
+      } else {
+        return {
+          activeTools: [],
+          toolChoice: "none",
+        };
+      }
+    },
+
+    tools,
 
     system: sageInterviewConversationSystem({
       sage: {
@@ -220,7 +259,6 @@ export async function POST(req: Request) {
       locale,
     }),
     messages: coreMessages,
-    tools,
 
     experimental_transform: smoothStream({
       delayInMs: 30,

@@ -4,6 +4,7 @@ import { endSageInterviewAction } from "@/app/(sage)/actions";
 import { SageToolUIPartDisplay } from "@/app/(sage)/tools/ui";
 import { SageInterviewExtra, TSageMessageWithTool } from "@/app/(sage)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { CheckCircle, MessageCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export function SageInterviewClient({
@@ -26,6 +27,7 @@ export function SageInterviewClient({
   userChatToken: string;
   sage: {
     id: number;
+    token: string;
     name: string;
     domain: string;
     expertise: string[];
@@ -45,7 +47,7 @@ export function SageInterviewClient({
 
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChatToken }), [userChatToken]);
 
-  const handleEndInterview = async () => {
+  const handleEndInterview = useCallback(async () => {
     if (!interview.extra.ongoing) {
       toast.error(tDetail("interviewAlreadyCompleted"));
       return;
@@ -54,18 +56,15 @@ export function SageInterviewClient({
     setIsEndingInterview(true);
     try {
       const result = await endSageInterviewAction(interview.id);
-      if (result.success) {
-        toast.success(tDetail("interviewEnded"));
-        router.refresh();
-      } else {
-        toast.error(`${tDetail("endInterviewFailed")}: ${result.message}`);
-      }
+      if (!result.success) throw result;
+      toast.success(tDetail("interviewEnded"));
+      router.push(`/sage/${sage.token}/gaps`);
     } catch (error) {
       toast.error(`${tDetail("endInterviewFailed")}: ${(error as Error).message}`);
     } finally {
       setIsEndingInterview(false);
     }
-  };
+  }, [interview.id, tDetail, router]);
 
   // Chat hooks
   const useChatHelpers = useChat({
@@ -120,29 +119,33 @@ export function SageInterviewClient({
                 <p className="text-xs text-zinc-600 dark:text-zinc-400">{t("purpose")}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <span
-                className={
-                  interview.extra.ongoing
-                    ? "px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                    : "px-2 py-1 text-xs font-medium rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                }
-              >
-                {interview.extra.ongoing ? t("ongoing") : t("completed")}
-              </span>
-              {interview.extra.ongoing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleEndInterview}
-                  disabled={isEndingInterview}
-                  className="h-7 text-xs"
+            {interview.extra.ongoing ? (
+              <div className="flex items-center gap-3 text-sm">
+                <span className="px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                  {t("ongoing")}
+                </span>
+                <ConfirmDialog
+                  title={tDetail("endInterview")}
+                  onConfirm={() => handleEndInterview()}
                 >
-                  <CheckCircle className="size-3 mr-1.5" />
-                  {isEndingInterview ? tDetail("ending") : tDetail("endInterview")}
-                </Button>
-              )}
-            </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isEndingInterview}
+                    className="h-7 text-xs"
+                  >
+                    <CheckCircle className="size-3" />
+                    {isEndingInterview ? tDetail("ending") : tDetail("endInterview")}
+                  </Button>
+                </ConfirmDialog>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 text-sm">
+                <span className="px-2 py-1 text-xs font-medium rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                  {t("completed")}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -161,6 +164,7 @@ export function SageInterviewClient({
           useChatRef={useChatRef}
           renderToolUIPart={(toolPart) => <SageToolUIPartDisplay toolUIPart={toolPart} />}
           acceptAttachments={false}
+          readOnly={!interview.extra.ongoing}
         />
       </div>
     </FitToViewport>

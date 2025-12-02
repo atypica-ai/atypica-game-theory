@@ -54,7 +54,7 @@ export async function resolveGaps({
         })),
       ),
     prisma.chatMessage.findMany({
-      where: { id: userChat.id },
+      where: { userChatId: userChat.id },
       orderBy: [{ id: "asc" }],
     }),
   ]);

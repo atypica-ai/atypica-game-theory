@@ -51,7 +51,7 @@ export async function discoverKnowledgeGapsFromSageChats({
   const chatsWithoutGapAnalysis = await prisma.$queryRaw<Array<{ id: number }>>`
     SELECT id
     FROM "SageChat"
-    WHERE "sageId" = ${sageId} AND "extra"::jsonb -> 'gapDiscovered' IS NULL
+    WHERE "sageId" = ${sageId} AND ("extra"::jsonb -> 'gapDiscovered' IS NULL OR "extra"::jsonb -> 'gapDiscovered' != 'true')
     ORDER BY id DESC
     LIMIT 20
   `;
