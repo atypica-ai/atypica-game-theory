@@ -39,7 +39,10 @@ export async function resolveGaps({
   logger: Logger;
   statReport: StatReporter;
   abortSignal: AbortSignal;
-}): Promise<number[]> {
+}): Promise<{
+  resolvedGapIds: number[];
+  workingMemoryContent: string;
+}> {
   const [pendingGaps, messages] = await Promise.all([
     prisma.sageKnowledgeGap
       .findMany({
@@ -151,5 +154,8 @@ export async function resolveGaps({
     );
   }
 
-  return resolvedGapIds;
+  return {
+    resolvedGapIds,
+    workingMemoryContent,
+  };
 }

@@ -7,6 +7,8 @@ import { Separator } from "@/components/ui/separator";
 import { ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 export function SageMemoryPageClient({
   sageMemoryDocument,
@@ -18,6 +20,16 @@ export function SageMemoryPageClient({
 }) {
   const t = useTranslations("Sage.MemoryPage");
   const { status: sageStatus } = useSageContext();
+  const router = useRouter();
+  const prevSageStatusRef = useRef(sageStatus);
+
+  // 处理结束以后，刷新一下 memory document
+  useEffect(() => {
+    if (prevSageStatusRef.current !== "ready" && sageStatus === "ready") {
+      router.refresh();
+    }
+    prevSageStatusRef.current = sageStatus;
+  }, [sageStatus, router]);
 
   const pendingWorkingMemory = sageMemoryDocument?.working.filter(
     (item) => item.status === "pending",

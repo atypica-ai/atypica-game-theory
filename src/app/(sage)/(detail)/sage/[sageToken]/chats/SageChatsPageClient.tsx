@@ -3,7 +3,7 @@ import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
 import { discoverKnowledgeGapsAction } from "@/app/(sage)/actions";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { ChatMessage, UserChat } from "@/prisma/client";
+import { ChatMessage, UserChat } from "@/prisma/client";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLinkIcon, MessageSquareIcon, SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -12,9 +12,15 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-type ChatWithLastMessage = UserChat & { messages: ChatMessage[] };
-
-export function SageChatsPageClient({ chats }: { chats: ChatWithLastMessage[] }) {
+export function SageChatsPageClient({
+  chats,
+}: {
+  chats: (Pick<UserChat, "id" | "token" | "title" | "updatedAt"> & {
+    user: { name: string };
+  } & {
+    messages: ChatMessage[];
+  })[];
+}) {
   const t = useTranslations("Sage.ChatsPage");
   const router = useRouter();
   const { sage, status: sageStatus } = useSageContext();
@@ -81,7 +87,7 @@ export function SageChatsPageClient({ chats }: { chats: ChatWithLastMessage[] })
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">
-                      {chat.title || t("untitledChat")}
+                      {chat.user.name ? `💬 ${chat.user.name}` : chat.title || t("untitledChat")}
                     </div>
                     <div className="text-xs text-muted-foreground/70 mt-0.5">
                       {formatDistanceToNow(new Date(chat.updatedAt), { addSuffix: true })}

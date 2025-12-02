@@ -17,6 +17,23 @@ import { revalidatePath } from "next/cache";
 import { resolveGaps } from "./processing/followup";
 
 /**
+ * Clean text for chat title by extracting main content and removing markdown formatting
+ */
+function cleanTextForTitle(text: string): string {
+  return text
+    .replace(/^#{1,6}\s+/gm, "") // Remove markdown headers (# ## ###)
+    .replace(/(\*\*|__)(.*?)\1/g, "$2") // Remove markdown bold (**text** or __text__)
+    .replace(/(\*|_)(.*?)\1/g, "$2") // Remove markdown italic (*text* or _text_)
+    .replace(/^\s*[-*+]\s+/gm, "") // Remove bullet points and list markers (- * +)
+    .replace(/^\s*\d+\.\s+/gm, "") // Remove numbered lists (1. 2. etc.)
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // Remove markdown links [text](url) -> text
+    .replace(/[^\p{L}\p{N}\s.,，。！？:：]/gu, "") // Remove remaining special characters except basic punctuation
+    .replace(/\s+/g, " ") // Replace multiple consecutive spaces/newlines with single space
+    .trim() // Trim whitespace
+    .substring(0, 100); // Limit length to prevent overly long titles
+}
+
+/**
  * End sage interview - triggered by manual user action
  * Performs gap resolution and adds working memory (if gaps resolved)
  */
@@ -80,7 +97,7 @@ export async function endSageInterviewAction(
           extra: { processing: { startsAt: Date.now() }, error: null } satisfies SageExtra,
         });
         try {
-          await resolveGaps({
+          const { workingMemoryContent } = await resolveGaps({
             sageId: sage.id,
             sageInterviewId,
             userChat: {
@@ -92,16 +109,20 @@ export async function endSageInterviewAction(
             statReport,
             abortSignal,
           });
-          await mergeExtra({
-            tableName: "Sage",
-            id: sage.id,
-            extra: { processing: false } satisfies SageExtra,
-          });
-          await mergeExtra({
-            tableName: "SageInterview",
-            id: sageInterviewId,
-            extra: { ongoing: false } satisfies SageInterviewExtra,
-          });
+          const userChatTitle = cleanTextForTitle(workingMemoryContent);
+          await Promise.all([
+            mergeExtra({
+              tableName: "Sage",
+              id: sage.id,
+              extra: { processing: false } satisfies SageExtra,
+            }),
+            mergeExtra({
+              tableName: "SageInterview",
+              id: sageInterviewId,
+              extra: { ongoing: false } satisfies SageInterviewExtra,
+            }),
+            prisma.userChat.update({ where: { id: userChat.id }, data: { title: userChatTitle } }),
+          ]);
         } catch (error) {
           await mergeExtra({
             tableName: "Sage",

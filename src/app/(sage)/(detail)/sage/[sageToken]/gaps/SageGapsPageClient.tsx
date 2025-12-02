@@ -16,7 +16,7 @@ import {
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export function SageGapsPageClient({
@@ -30,6 +30,16 @@ export function SageGapsPageClient({
   const t = useTranslations("Sage.GapsPage");
   const router = useRouter();
   const { sage, status: sageStatus } = useSageContext();
+
+  const prevSageStatusRef = useRef(sageStatus);
+  // 处理结束以后，刷新一下 gaps
+  useEffect(() => {
+    if (prevSageStatusRef.current !== "ready" && sageStatus === "ready") {
+      router.refresh();
+    }
+    prevSageStatusRef.current = sageStatus;
+  }, [sageStatus, router]);
+
   const [isCreating, setIsCreating] = useState(false);
 
   const pendingGaps = gaps.filter((g) => !g.resolvedAt);

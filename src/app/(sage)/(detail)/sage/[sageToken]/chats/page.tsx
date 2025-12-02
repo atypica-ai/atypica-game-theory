@@ -1,9 +1,11 @@
+import authOptions from "@/app/(auth)/authOptions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
 import type { Metadata } from "next";
+import { getServerSession, Session } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
+import { forbidden, notFound } from "next/navigation";
 import { Suspense } from "react";
 import { SageChatsPageClient } from "./SageChatsPageClient";
 
@@ -17,10 +19,16 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-async function SageChatsPage({ sageToken }: { sageToken: string }) {
+async function SageChatsPage({
+  sageToken,
+  sessionUser,
+}: {
+  sageToken: string;
+  sessionUser: NonNullable<Session["user"]>;
+}) {
   // Get sage id from token (sage full data is available in Client Components via Context)
   const sage = await prisma.sage.findUnique({
-    where: { token: sageToken },
+    where: { token: sageToken, userId: sessionUser.id },
     select: { id: true },
   });
 
@@ -33,9 +41,18 @@ async function SageChatsPage({ sageToken }: { sageToken: string }) {
     where: {
       sageId: sage.id,
     },
-    include: {
+    select: {
       userChat: {
-        include: {
+        select: {
+          id: true,
+          token: true,
+          title: true,
+          updatedAt: true,
+          user: {
+            select: {
+              name: true,
+            },
+          },
           messages: {
             take: 1,
             orderBy: { id: "desc" },
@@ -57,9 +74,13 @@ export default async function SageChatsPageWithLoading({
   params: Promise<{ sageToken: string }>;
 }) {
   const token = (await params).sageToken;
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    forbidden(); // layout 里已经处理过了，这里其实不会出现
+  }
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <SageChatsPage sageToken={token} />
+      <SageChatsPage sageToken={token} sessionUser={session.user} />
     </Suspense>
   );
 }

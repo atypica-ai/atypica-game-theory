@@ -51,7 +51,6 @@ export function SageInterviewClient({
       toast.error(t("interviewAlreadyCompleted"));
       return;
     }
-
     setIsEndingInterview(true);
     try {
       const result = await endSageInterviewAction(interview.id);
@@ -63,7 +62,7 @@ export function SageInterviewClient({
     } finally {
       setIsEndingInterview(false);
     }
-  }, [interview.id, t, router]);
+  }, [interview.id, t, router, interview.extra.ongoing, sage.token]);
 
   // Chat hooks
   const useChatHelpers = useChat({
@@ -123,10 +122,7 @@ export function SageInterviewClient({
                 <span className="px-2 py-1 text-xs font-medium rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
                   {t("ongoing")}
                 </span>
-                <ConfirmDialog
-                  title={t("endInterview")}
-                  onConfirm={() => handleEndInterview()}
-                >
+                <ConfirmDialog title={t("endInterview")} onConfirm={() => handleEndInterview()}>
                   <Button
                     variant="outline"
                     size="sm"

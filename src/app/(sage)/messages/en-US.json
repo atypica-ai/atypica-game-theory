@@ -187,8 +187,6 @@
       "reProcessAndExtractDesc": "AI will re-analyze all sources and update expert's core memory",
       "sourcesFailedCount": "source(s) failed to process",
       "addSources": "Add Sources",
-      "noSources": "No sources yet",
-      "addFirstSource": "Add First Source",
       "sourcesAdded": "Added {count} source(s). Click 'Extract/Update Knowledge' to start building",
       "addSourcesFailed": "Failed to add sources",
       "sourceDeleted": "Source deleted",
@@ -200,7 +198,8 @@
       "cancel": "Cancel",
       "confirmAdd": "Add Sources",
       "adding": "Adding...",
-      "processing": "Processing"
+      "processing": "Processing",
+      "fetchSourcesFailed": "Failed to fetch sources"
     },
     "AddSourcesContent": {
       "uploadFiles": "Upload Documents",

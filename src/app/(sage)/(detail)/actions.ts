@@ -1,10 +1,16 @@
 "use server";
-import type { SageAvatar, SageExtra, SageInterviewExtra } from "@/app/(sage)/types";
+import type {
+  SageAvatar,
+  SageExtra,
+  SageInterviewExtra,
+  SageSourceContent,
+  SageSourceExtra,
+} from "@/app/(sage)/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
-import type { Sage, SageInterview, UserChat } from "@/prisma/client";
+import type { Sage, SageInterview, SageSource, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -144,6 +150,49 @@ export async function getSageByTokenAction(sageToken: string): Promise<
         expertise: sage.expertise as string[],
         avatar: sage.avatar as SageAvatar,
       },
+    };
+  });
+}
+
+export async function fetchSageSourcesByTokenAction(sageToken: string): Promise<
+  ServerActionResult<
+    Array<
+      Pick<SageSource, "id" | "title"> & {
+        extractedTextDigest: string;
+        content: SageSourceContent;
+        extra: SageSourceExtra;
+      }
+    >
+  >
+> {
+  return withAuth(async (user) => {
+    const sources = (
+      await prisma.sageSource.findMany({
+        where: {
+          sage: {
+            token: sageToken,
+            userId: user.id, // ensure user owns the sage
+          },
+        },
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          extractedText: true,
+          extra: true,
+        },
+        orderBy: { id: "desc" },
+      })
+    ).map(({ content, extra, extractedText, ...source }) => ({
+      ...source,
+      extractedTextDigest: extractedText.slice(0, 100),
+      content: content as SageSourceContent,
+      extra: extra as SageSourceExtra,
+    }));
+
+    return {
+      success: true,
+      data: sources,
     };
   });
 }

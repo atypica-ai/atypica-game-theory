@@ -1,9 +1,7 @@
 "use client";
 
 import { SageStatusProvider, SageWithTypedFields } from "@/app/(sage)/(detail)/hooks/SageContext";
-import type { SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
 import { FitToViewport } from "@/components/layout/FitToViewport";
-import type { SageSource } from "@/prisma/client";
 import { ReactNode } from "react";
 import { SageStatusBar } from "./components/SageStatusBar";
 import { SageStatusRefresher } from "./components/SageStatusRefresher";
@@ -12,14 +10,9 @@ import { TabNavigation } from "./components/TabNavigation";
 
 export function SageDetailClientLayout({
   sage,
-  sources,
   children,
 }: {
   sage: SageWithTypedFields;
-  sources: (Omit<SageSource, "content" | "extra"> & {
-    content: SageSourceContent;
-    extra: SageSourceExtra;
-  })[];
   children: ReactNode;
 }) {
   return (
@@ -29,9 +22,8 @@ export function SageDetailClientLayout({
         <div className="flex-1 flex overflow-hidden">
           {/* Left Panel - Sources */}
           <div className="w-1/3 border-r border-border overflow-y-auto">
-            <SourcesPanel sources={sources} />
+            <SourcesPanel />
           </div>
-
           {/* Right Panel - Tab Content */}
           <div className="flex-1 flex flex-col overflow-hidden">
             <TabNavigation sageToken={sage.token} />

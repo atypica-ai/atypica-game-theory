@@ -187,8 +187,6 @@
       "reProcessAndExtractDesc": "AI 将重新分析所有知识源，更新专家的核心记忆",
       "sourcesFailedCount": "个知识源处理失败",
       "addSources": "添加知识源",
-      "noSources": "还没有知识源",
-      "addFirstSource": "添加第一个知识源",
       "sourcesAdded": "已添加 {count} 个知识源，点击「提取/更新知识」开始构建",
       "addSourcesFailed": "添加知识源失败",
       "sourceDeleted": "知识源已删除",
@@ -200,7 +198,8 @@
       "cancel": "取消",
       "confirmAdd": "添加知识源",
       "adding": "添加中...",
-      "processing": "处理中"
+      "processing": "处理中",
+      "fetchSourcesFailed": "获取知识源失败"
     },
     "AddSourcesContent": {
       "uploadFiles": "上传文档",

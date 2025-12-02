@@ -1,9 +1,10 @@
 "use client";
+import { fetchSageSourcesByTokenAction } from "@/app/(sage)/(detail)/actions";
 import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
 import { addSageSources, deleteSageSources } from "@/app/(sage)/(public)/actions";
 import { extractSageKnowledgeAction } from "@/app/(sage)/actions";
 import { AddSourcesContent } from "@/app/(sage)/components/AddSourcesContent";
-import type { SageSourceContent, SageSourceExtra } from "@/app/(sage)/types";
+import type { SageSourceContent } from "@/app/(sage)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import type { SageSource } from "@/prisma/client";
 import {
   CheckCircle2Icon,
   CircleXIcon,
@@ -29,26 +30,47 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-export function SourcesPanel({
-  sources,
-}: {
-  sources: (Omit<SageSource, "content" | "extra"> & {
-    content: SageSourceContent;
-    extra: SageSourceExtra;
-  })[];
-}) {
+export function SourcesPanel() {
   const t = useTranslations("Sage.SourcesPanel");
   const router = useRouter();
   const { sage, status: sageStatus } = useSageContext();
+
+  const [sources, setSources] = useState<
+    ExtractServerActionData<typeof fetchSageSourcesByTokenAction>
+  >([]);
+
+  const fetchSageSources = useCallback(async () => {
+    try {
+      const result = await fetchSageSourcesByTokenAction(sage.token);
+      if (!result.success) throw result;
+      setSources(result.data);
+    } catch {
+      toast.error(t("fetchSourcesFailed"));
+    }
+  }, [sage.token, t]);
+
+  useEffect(() => {
+    fetchSageSources();
+  }, [fetchSageSources]);
+
+  const prevSageStatusRef = useRef(sageStatus);
+  // 处理结束以后，刷新一下 sources
+  useEffect(() => {
+    if (prevSageStatusRef.current !== "ready" && sageStatus === "ready") {
+      fetchSageSources();
+    }
+    prevSageStatusRef.current = sageStatus;
+  }, [sageStatus, fetchSageSources]);
+
   const [isRequesting, setIsRequesting] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newSources, setNewSources] = useState<SageSourceContent[]>([]);
   const [isAdding, setIsAdding] = useState(false);
 
-  const completedSources = sources.filter((s) => !!s.extractedText);
+  const completedSources = sources.filter((s) => !!s.extractedTextDigest);
   const failedSources = sources.filter((s) => !!s.extra.error);
   const isProcessing = sageStatus === "processing" || isRequesting;
   const canModifySources = sageStatus !== "processing" && !isRequesting;
@@ -153,26 +175,15 @@ export function SourcesPanel({
 
         <Separator />
 
-        {/* Sources List */}
-        {sources.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <p className="text-sm">{t("noSources")}</p>
-            <Button variant="outline" className="mt-4" onClick={() => setShowAddDialog(true)}>
-              <PlusIcon className="size-4" />
-              {t("addFirstSource")}
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {sources.map((source) => (
-              <SourceItem
-                key={source.id}
-                source={source}
-                onDelete={canModifySources ? handleDeleteSource : undefined}
-              />
-            ))}
-          </div>
-        )}
+        <div className="space-y-1">
+          {sources.map((source) => (
+            <SourceItem
+              key={source.id}
+              source={source}
+              onDelete={canModifySources ? handleDeleteSource : undefined}
+            />
+          ))}
+        </div>
 
         {failedSources.length > 0 && (
           <div className="text-sm text-muted-foreground">
@@ -213,16 +224,13 @@ function SourceItem({
   source,
   onDelete,
 }: {
-  source: Omit<SageSource, "content" | "extra"> & {
-    content: SageSourceContent;
-    extra: SageSourceExtra;
-  };
+  source: ExtractServerActionData<typeof fetchSageSourcesByTokenAction>[number];
   onDelete?: (sourceId: number) => void;
 }) {
   const t = useTranslations("Sage.SourcesPanel");
 
   const getStatusIcon = () => {
-    const status = source.extractedText
+    const status = source.extractedTextDigest
       ? "completed"
       : source.extra.processing
         ? "processing"
@@ -247,7 +255,7 @@ function SourceItem({
     } else if (source.content.type === "file") {
       return source.content.name || "";
     } else if (source.content.type === "text") {
-      return source.extractedText ? `${source.extractedText.length} ${t("characters")}` : "";
+      return `${source.content.text.length} ${t("characters")}`;
     }
     return "";
   };
