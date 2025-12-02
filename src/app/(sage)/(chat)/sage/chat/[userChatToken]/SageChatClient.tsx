@@ -48,7 +48,7 @@ export function SageChatClient({
         return { body };
       },
     }),
-    experimental_throttle: 300,
+    // experimental_throttle: 300,
   });
 
   const useChatRef = useRef({

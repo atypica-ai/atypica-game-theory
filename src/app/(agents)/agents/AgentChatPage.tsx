@@ -32,7 +32,7 @@ export function AgentChatPage<UI_MESSAGE extends TMessageWithPlainTextTool<Simpl
 
   const useChatHelpers = useChat<UI_MESSAGE>({
     // id: chatId,
-    experimental_throttle: 300,
+    // experimental_throttle: 300,
     messages: initialMessages,
     transport: new DefaultChatTransport({
       api: useChatAPI,

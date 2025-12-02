@@ -91,7 +91,8 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
                 {renderToolUIPart(part)}
               </React.Fragment>
             );
-          } else if (part.type === "step-start") {
+          } else if (part.type === "step-start" || part.type === "file") {
+            // file 在上面显示了，这里直接跳过
             return null;
           } else {
             return (

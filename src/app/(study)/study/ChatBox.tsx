@@ -104,7 +104,7 @@ export function ChatBox() {
     // 下面这行设置了以后可以实现：addToolResult 调用以后，立即调用 sendMessage，但是它个有问题，在工具调用出错以后，会进入死循环，所以改成人工 sendMessage
     // sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     messages: initialMessages,
-    experimental_throttle: 300,
+    // experimental_throttle: 300,
     // maxSteps: 15,  // 后端 chat api 设置了 maxSteps 并且会控制，这里不能再设置，会覆盖后端的配置！
     // body: { ...extraRequestPayload }, v5 现在放在 sendMessage 里直接提交
     onError(error) {
