@@ -3,7 +3,7 @@ import { getSageByTokenAction, fetchSageStatsAction } from "@/app/(sage)/(detail
 import type { SageProcessingStatus, SageStats } from "@/app/(sage)/(detail)/types";
 import { getSageProcessingStatus } from "@/app/(sage)/(detail)/helpers";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext } from "react";
 import useSWR from "swr";
 
 // Re-export for convenience
@@ -34,65 +34,45 @@ export function SageStatusProvider({
   initialStats: SageStats;
   children: ReactNode;
 }) {
-  const [sage, setSage] = useState<SageWithTypedFields>(initialSage);
-  const [stats, setStats] = useState<SageStats>(initialStats);
-  const processingStatus = getSageProcessingStatus(sage);
+  // Get initial processing status to determine polling behavior
+  const initialProcessingStatus = getSageProcessingStatus(initialSage);
+  const shouldPoll = initialProcessingStatus === "processing";
 
-  // Auto-refresh sage data and stats when processing
-  const shouldPoll = processingStatus === "processing";
-
-  const { data: freshSage, isValidating: isSageRefreshing } = useSWR(
-    shouldPoll ? `sage-${initialSage.token}` : null,
+  // Use SWR to manage sage data with automatic refresh when processing
+  const { data: sage = initialSage, isValidating: isSageRefreshing } = useSWR(
+    `sage-${initialSage.token}`,
     async () => {
       const result = await getSageByTokenAction(initialSage.token);
       if (!result.success) throw new Error(result.message);
       return result.data;
     },
     {
-      refreshInterval: 5000,
+      refreshInterval: shouldPoll ? 5000 : 0,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       dedupingInterval: 2000,
+      fallbackData: initialSage,
     },
   );
 
-  const { data: freshStats, isValidating: isStatsRefreshing } = useSWR(
-    shouldPoll ? `sage-stats-${initialSage.token}` : null,
+  // Use SWR to manage stats data with automatic refresh when processing
+  const { data: stats = initialStats, isValidating: isStatsRefreshing } = useSWR(
+    `sage-stats-${initialSage.token}`,
     async () => {
       const result = await fetchSageStatsAction(initialSage.token);
       if (!result.success) throw new Error(result.message);
       return result.data;
     },
     {
-      refreshInterval: 5000,
+      refreshInterval: shouldPoll ? 5000 : 0,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       dedupingInterval: 2000,
+      fallbackData: initialStats,
     },
   );
 
-  // Update sage when fresh data arrives
-  useEffect(() => {
-    if (freshSage) {
-      setSage(freshSage);
-    }
-  }, [freshSage]);
-
-  // Update stats when fresh data arrives
-  useEffect(() => {
-    if (freshStats) {
-      setStats(freshStats);
-    }
-  }, [freshStats]);
-
-  // Sync with initial props
-  useEffect(() => {
-    setSage(initialSage);
-  }, [initialSage]);
-
-  useEffect(() => {
-    setStats(initialStats);
-  }, [initialStats]);
+  const processingStatus = getSageProcessingStatus(sage);
 
   const isRefreshing = isSageRefreshing || isStatsRefreshing;
 
