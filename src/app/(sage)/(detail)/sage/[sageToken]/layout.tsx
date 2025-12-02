@@ -1,4 +1,5 @@
 import { getSageByTokenAction } from "@/app/(sage)/(detail)/actions";
+import { fetchSageStats } from "@/app/(sage)/(detail)/lib/stats";
 import { notFound } from "next/navigation";
 import { ReactNode } from "react";
 import { SageDetailClientLayout } from "./SageDetailClientLayout";
@@ -21,5 +22,12 @@ export default async function SageDetailLayout({
 
   const sage = sageResult.data;
 
-  return <SageDetailClientLayout sage={sage}>{children}</SageDetailClientLayout>;
+  // Fetch statistics for dashboard
+  const stats = await fetchSageStats(sage.id);
+
+  return (
+    <SageDetailClientLayout sage={sage} stats={stats}>
+      {children}
+    </SageDetailClientLayout>
+  );
 }

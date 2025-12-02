@@ -1,54 +1,12 @@
 "use client";
-import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
-import { Separator } from "@/components/ui/separator";
-import { useTranslations } from "next-intl";
-import { AvatarUpload } from "./components/AvatarUpload";
+import { SageActivityFeed } from "./components/SageActivityFeed";
+import { SageStatsOverview } from "./components/SageStatsOverview";
 
 export function SageDetailPageClient() {
-  const t = useTranslations("Sage.DetailPage");
-  const { sage } = useSageContext();
-
   return (
-    <div className="p-6 space-y-6">
-      {/* Header with Actions */}
-      <div className="flex items-center justify-start gap-2">
-        <AvatarUpload sageId={sage.id} sageName={sage.name} currentAvatar={sage.avatar} />
-        <div className="ml-4">
-          <h1 className="text-xl font-semibold">{sage.name}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{sage.domain}</p>
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Basic Info */}
-      <div className="space-y-3">
-        <div className="space-y-2 text-sm">
-          {sage.bio && (
-            <div>
-              <div className="text-xs text-muted-foreground">{t("bio")}</div>
-              <p className="text-sm mt-1">{sage.bio}</p>
-            </div>
-          )}
-          <div>
-            <div className="text-xs text-muted-foreground">{t("expertise")}</div>
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              {(Array.isArray(sage.expertise) ? sage.expertise : []).map((exp, idx) => (
-                <span
-                  key={idx}
-                  className="px-2 py-0.5 bg-secondary text-secondary-foreground rounded text-xs"
-                >
-                  {String(exp)}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <span className="text-xs text-muted-foreground">{t("locale")}:</span>{" "}
-            <span>{sage.locale}</span>
-          </div>
-        </div>
-      </div>
+    <div className="p-6 space-y-8">
+      <SageStatsOverview />
+      <SageActivityFeed />
     </div>
   );
 }

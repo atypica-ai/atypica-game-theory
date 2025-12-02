@@ -1,13 +1,8 @@
 "use client";
-import { Button } from "@/components/ui/button";
+import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import {
-  AlertTriangleIcon,
-  BookOpenIcon,
-  ExternalLinkIcon,
-  MessageSquareIcon,
-  MicIcon,
-} from "lucide-react";
+import { AlertTriangleIcon, BookOpenIcon, MessageSquareIcon, MicIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,6 +10,7 @@ import { usePathname } from "next/navigation";
 export function TabNavigation({ sageToken }: { sageToken: string }) {
   const t = useTranslations("Sage.TabNavigation");
   const pathname = usePathname();
+  const { stats } = useSageContext();
 
   const tabs = [
     {
@@ -28,21 +24,26 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
       href: `/sage/${sageToken}/memory`,
       icon: BookOpenIcon,
       exact: true,
+      count: stats.memoryVersion,
     },
     {
       name: t("chats"),
       href: `/sage/${sageToken}/chats`,
       icon: MessageSquareIcon,
+      count: stats.chatsCount,
     },
     {
       name: t("interviews"),
       href: `/sage/${sageToken}/interviews`,
       icon: MicIcon,
+      count: stats.interviewsCount,
     },
     {
       name: t("gaps"),
       href: `/sage/${sageToken}/gaps`,
       icon: AlertTriangleIcon,
+      count: stats.gapsCount,
+      highlight: true,
     },
   ];
 
@@ -54,12 +55,7 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
   };
 
   return (
-    <div
-      className={cn(
-        "border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60",
-        "flex items-center justify-between pr-4",
-      )}
-    >
+    <div className="border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <nav className="flex space-x-1 px-4" aria-label="Tabs">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -76,17 +72,28 @@ export function TabNavigation({ sageToken }: { sageToken: string }) {
               )}
             >
               <Icon className="h-4 w-4" />
-              {tab.name}
+              <span>{tab.name}</span>
+              {typeof tab.count === "number" && (
+                <Badge
+                  variant={
+                    tab.highlight && tab.count > 0
+                      ? "destructive"
+                      : active
+                        ? "default"
+                        : "secondary"
+                  }
+                  className={cn(
+                    "ml-1 h-5 px-1.5 text-xs font-medium",
+                    active ? "" : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {tab.count}
+                </Badge>
+              )}
             </Link>
           );
         })}
       </nav>
-      <Button variant="default" size="sm" asChild>
-        <Link href={`/sage/profile/${sageToken}`} target="_blank">
-          <ExternalLinkIcon className="size-4" />
-          {t("viewPublicProfile")}
-        </Link>
-      </Button>
     </div>
   );
 }

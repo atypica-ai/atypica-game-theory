@@ -1,28 +1,40 @@
 "use client";
 
-import { SageStatusProvider, SageWithTypedFields } from "@/app/(sage)/(detail)/hooks/SageContext";
+import {
+  SageStatusProvider,
+  SageWithTypedFields,
+  type SageStats,
+} from "@/app/(sage)/(detail)/hooks/SageContext";
 import { FitToViewport } from "@/components/layout/FitToViewport";
+import { Separator } from "@/components/ui/separator";
 import { ReactNode } from "react";
+import { SageIdentityCard } from "./components/SageIdentityCard";
 import { SageStatusBar } from "./components/SageStatusBar";
-import { SageStatusRefresher } from "./components/SageStatusRefresher";
 import { SourcesPanel } from "./components/SourcesPanel";
 import { TabNavigation } from "./components/TabNavigation";
 
 export function SageDetailClientLayout({
   sage,
+  stats,
   children,
 }: {
   sage: SageWithTypedFields;
+  stats: SageStats;
   children: ReactNode;
 }) {
   return (
-    <SageStatusProvider initialSage={sage}>
-      <SageStatusRefresher />
+    <SageStatusProvider initialSage={sage} initialStats={stats}>
       <FitToViewport className="flex flex-col overflow-hidden">
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Panel - Sources */}
-          <div className="w-1/3 border-r border-border overflow-y-auto">
-            <SourcesPanel />
+          {/* Left Panel - Identity & Sources */}
+          <div className="w-1/3 min-w-[320px] max-w-[480px] border-r border-border flex flex-col">
+            <div className="shrink-0">
+              <SageIdentityCard sage={sage} />
+            </div>
+            <Separator />
+            <div className="flex-1 overflow-y-auto">
+              <SourcesPanel />
+            </div>
           </div>
           {/* Right Panel - Tab Content */}
           <div className="flex-1 flex flex-col overflow-hidden">
