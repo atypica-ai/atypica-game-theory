@@ -1,32 +1,22 @@
 "use client";
-
+import { createSageInterviewAction } from "@/app/(sage)/(detail)/actions";
 import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
-import { addSageSources } from "@/app/(sage)/(public)/actions";
-import { discoverKnowledgeGapsAction, extractSageKnowledgeAction } from "@/app/(sage)/actions";
-import { AddSourcesContent } from "@/app/(sage)/components/AddSourcesContent";
-import type { SageSourceContent } from "@/app/(sage)/types";
+import { discoverKnowledgeGapsAction } from "@/app/(sage)/actions";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 import {
   DatabaseIcon,
-  EyeIcon,
   FileTextIcon,
   Loader2Icon,
   MessageSquareIcon,
   MicIcon,
-  PlusIcon,
   SparklesIcon,
   TriangleAlertIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -35,69 +25,42 @@ import { SageShareButton } from "./SageShareButton";
 export function SageStatsOverview() {
   const t = useTranslations("Sage.SageStats");
   const router = useRouter();
+  const isSM = useMediaQuery("sm");
   const { sage, processingStatus, stats } = useSageContext();
   const [isRequesting, setIsRequesting] = useState(false);
 
-  // Add Sources Dialog state
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [newSources, setNewSources] = useState<SageSourceContent[]>([]);
-  const [isAdding, setIsAdding] = useState(false);
-
   const isProcessing = processingStatus === "processing" || isRequesting;
-  const maxSources = 30;
-
-  const handleExtract = useCallback(async () => {
-    setIsRequesting(true);
-    try {
-      const result = await extractSageKnowledgeAction(sage.id);
-      if (!result.success) throw result;
-      toast.success(t("processingStarted"));
-      setTimeout(() => router.refresh(), 1000);
-    } catch (error) {
-      console.error("Error extracting knowledge:", error);
-      toast.error(t("processingFailed"));
-    } finally {
-      setIsRequesting(false);
-    }
-  }, [sage.id, router, t]);
 
   const handleAnalyze = useCallback(async () => {
     setIsRequesting(true);
     try {
       const result = await discoverKnowledgeGapsAction({ sageId: sage.id });
       if (!result.success) throw result;
-      toast.success("Analysis started");
+      toast.success(t("analyzeStarted"));
       setTimeout(() => router.refresh(), 1000);
     } catch (error) {
       console.error("Failed to analyze chats:", error);
-      toast.error("Analysis failed");
+      toast.error(t("analyzeFailed"));
     } finally {
       setIsRequesting(false);
     }
-  }, [sage.id, router]);
+  }, [sage.id, router, t]);
 
-  const handleConfirmAdd = useCallback(async () => {
-    setIsAdding(true);
+  const handleStartInterview = useCallback(async () => {
+    setIsRequesting(true);
     try {
-      const result = await addSageSources(sage.id, newSources);
+      const result = await createSageInterviewAction(sage.id);
       if (!result.success) throw result;
-      toast.success(t("sourcesAdded", { count: result.data.addedCount }));
-      setNewSources([]);
-      setShowAddDialog(false);
-      router.refresh();
+      const { userChat } = result.data;
+      toast.success(t("interviewCreated"));
+      router.push(`/sage/interview/${userChat.token}`);
     } catch (error) {
-      console.error("Error adding sources:", error);
-      toast.error(t("addSourcesFailed"));
+      console.error("Failed to create interview:", error);
+      toast.error(t("createInterviewFailed"));
     } finally {
-      setIsAdding(false);
+      setIsRequesting(false);
     }
-  }, [sage.id, newSources, router, t]);
-
-  const handleCloseDialog = useCallback(() => {
-    if (isAdding) return;
-    setNewSources([]);
-    setShowAddDialog(false);
-  }, [isAdding]);
+  }, [sage.id, router, t]);
 
   // Derive status for sources
   const sourcesStatus =
@@ -144,46 +107,7 @@ export function SageStatsOverview() {
             "sm:grid sm:grid-cols-3 xl:grid-cols-5",
           )}
         >
-          {/* 1. Sources */}
-          <StageCard
-            icon={<FileTextIcon className="size-5" />}
-            status={sourcesStatus}
-            label={t("sources")}
-            count={stats.sourcesTotal}
-            description={
-              stats.sourcesTotal > stats.sourcesExtracted
-                ? t("sourcesWaiting", { count: stats.sourcesTotal - stats.sourcesExtracted })
-                : t("sourcesParsed", { count: stats.sourcesExtracted })
-            }
-          >
-            <ConfirmDialog
-              title={t("confirmExtractTitle")}
-              description={t("confirmExtractDesc")}
-              onConfirm={handleExtract}
-            >
-              <Button
-                variant="secondary"
-                size="sm"
-                className="w-full h-7 text-xs"
-                disabled={isProcessing}
-              >
-                <SparklesIcon className="size-3" />
-                {t("extract")}
-              </Button>
-            </ConfirmDialog>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full h-7 text-xs"
-              onClick={() => setShowAddDialog(true)}
-              disabled={isProcessing}
-            >
-              <PlusIcon className="size-3" />
-              {t("addSource")}
-            </Button>
-          </StageCard>
-
-          {/* 2. Memory */}
+          {/* 1. Memory */}
           <StageCard
             icon={<DatabaseIcon className="size-5" />}
             status={memoryStatus}
@@ -196,17 +120,29 @@ export function SageStatsOverview() {
                   ? t("itemsPending", { count: stats.workingMemoryPendingCount })
                   : t("synced")
             }
+            href={`/sage/${sage.token}/memory`}
           >
-            <Button
-              variant="secondary"
+            <SageShareButton
+              sageToken={sage.token}
+              variant="outline"
               size="sm"
-              className="w-full h-7 text-xs"
-              onClick={() => router.push(`/sage/${sage.token}/memory`)}
-            >
-              <EyeIcon className="size-3" />
-              {t("viewMemory")}
-            </Button>
+              className="h-7 text-xs"
+            />
           </StageCard>
+
+          {/* 2. Sources */}
+          <StageCard
+            icon={<FileTextIcon className="size-5" />}
+            status={sourcesStatus}
+            label={t("sources")}
+            count={stats.sourcesTotal}
+            description={
+              stats.sourcesTotal > stats.sourcesExtracted
+                ? t("sourcesWaiting", { count: stats.sourcesTotal - stats.sourcesExtracted })
+                : t("sourcesParsed", { count: stats.sourcesExtracted })
+            }
+            href={isSM ? undefined : `/sage/${sage.token}/sources`}
+          />
 
           {/* 3. Knowledge Gaps */}
           <StageCard
@@ -215,29 +151,21 @@ export function SageStatsOverview() {
             label={t("knowledgeGaps")}
             count={stats.gapsCount}
             description={t("itemsPending", { count: stats.gapsCount })}
+            href={`/sage/${sage.token}/gaps`}
           >
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full h-7 text-xs"
-              onClick={() => router.push(`/sage/${sage.token}/gaps`)}
-            >
-              <EyeIcon className="size-3" />
-              {t("viewGaps")}
-            </Button>
             <ConfirmDialog
-              title={t("confirmAnalyzeTitle")}
-              description={t("confirmAnalyzeDesc")}
-              onConfirm={handleAnalyze}
+              title={t("confirmStartInterviewTitle")}
+              description={t("confirmStartInterviewDesc")}
+              onConfirm={handleStartInterview}
             >
               <Button
                 variant="outline"
                 size="sm"
                 className="w-full h-7 text-xs"
-                disabled={isProcessing}
+                disabled={isProcessing || stats.gapsCount === 0}
               >
-                <SparklesIcon className="size-3" />
-                {t("analyzeChats")}
+                <MicIcon className="size-3" />
+                {t("startInterview")}
               </Button>
             </ConfirmDialog>
           </StageCard>
@@ -249,22 +177,23 @@ export function SageStatsOverview() {
             label={t("userChats")}
             count={stats.chatsCount}
             description={t("chatsDescription", { count: stats.chatsCount })}
+            href={`/sage/${sage.token}/chats`}
           >
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full h-7 text-xs"
-              onClick={() => router.push(`/sage/${sage.token}/chats`)}
+            <ConfirmDialog
+              title={t("confirmAnalyzeTitle")}
+              description={t("confirmAnalyzeDesc")}
+              onConfirm={handleAnalyze}
             >
-              <EyeIcon className="size-3" />
-              {t("viewChats")}
-            </Button>
-            <SageShareButton
-              sageToken={sage.token}
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs"
-            />
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full h-7 text-xs"
+                disabled={isProcessing || stats.chatsCount === 0}
+              >
+                <SparklesIcon className="size-3" />
+                {t("analyzeChats")}
+              </Button>
+            </ConfirmDialog>
           </StageCard>
 
           {/* 5. Interviews */}
@@ -274,43 +203,10 @@ export function SageStatsOverview() {
             label={t("interviews")}
             count={stats.interviewsCount}
             description={t("interviewsDescription", { count: stats.interviewsCount })}
-          >
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full h-7 text-xs"
-              onClick={() => router.push(`/sage/${sage.token}/interviews`)}
-            >
-              <EyeIcon className="size-3" />
-              {t("viewInterviews")}
-            </Button>
-          </StageCard>
+            href={`/sage/${sage.token}/interviews`}
+          />
         </div>
       </div>
-
-      <Dialog open={showAddDialog} onOpenChange={handleCloseDialog}>
-        <DialogContent className="max-w-2xl sm:max-w-2xl overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>{t("addSourcesDialogTitle")}</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[50vh] overflow-y-auto scrollbar-thin -mx-6 px-6">
-            <AddSourcesContent
-              sources={newSources}
-              onSourcesChange={setNewSources}
-              currentSourceCount={stats.sourcesTotal || 0}
-              maxSources={maxSources}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog} disabled={isAdding}>
-              {t("cancel")}
-            </Button>
-            <Button onClick={handleConfirmAdd} disabled={newSources.length === 0 || isAdding}>
-              {isAdding ? t("adding") : t("confirmAdd")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
@@ -322,6 +218,7 @@ function StageCard({
   label,
   count,
   description,
+  href,
   children,
 }: {
   icon: React.ReactNode;
@@ -329,6 +226,7 @@ function StageCard({
   label: string;
   count?: number;
   description?: string;
+  href?: string;
   children?: React.ReactNode;
 }) {
   const statusColors = {
@@ -338,29 +236,42 @@ function StageCard({
     completed: "border-green-500 text-green-600 bg-green-50 dark:bg-green-900/10",
   };
 
+  const Wrapper = ({ children, className }: { children: React.ReactNode; className?: string }) =>
+    href ? (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    ) : (
+      <div className={className}>{children}</div>
+    );
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 min-w-30">
       {/* Icon and Info */}
       <div className="flex flex-col items-center text-center gap-2">
-        <div
-          className={cn(
-            "size-12 rounded-full border-2 flex items-center justify-center transition-colors",
-            statusColors[status],
-          )}
-        >
-          {status === "processing" ? <Loader2Icon className="size-5 animate-spin" /> : icon}
-        </div>
-        <div>
-          <div className="font-medium text-sm flex items-center gap-2 justify-center">
-            <span className="whitespace-nowrap">{label}</span>
+        <Wrapper className="contents">
+          <div
+            className={cn(
+              "size-12 rounded-full border-2 flex items-center justify-center transition-colors",
+              statusColors[status],
+            )}
+          >
+            {status === "processing" ? <Loader2Icon className="size-5 animate-spin" /> : icon}
+          </div>
+          <div className="font-medium flex items-center gap-2 justify-center">
+            <span className="whitespace-nowrap text-xs sm:text-sm">{label}</span>
             {count !== undefined && (
               <span className="bg-muted text-muted-foreground text-[10px] px-1.5 py-0.5 rounded-full">
                 {count}
               </span>
             )}
           </div>
-          {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
-        </div>
+        </Wrapper>
+        {description && (
+          <div className="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
+            {description}
+          </div>
+        )}
       </div>
 
       {/* Actions */}

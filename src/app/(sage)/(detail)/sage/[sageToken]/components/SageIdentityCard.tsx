@@ -40,9 +40,7 @@ export function SageIdentityCard({ sage, variant = "sidebar" }: SageIdentityCard
         <div
           className={cn(
             "flex items-center gap-3",
-            isCollapsible
-              ? "px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors"
-              : "p-6 pb-4",
+            isCollapsible ? "px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors" : "p-4",
           )}
           onClick={isCollapsible ? () => setIsExpanded(!isExpanded) : undefined}
         >
@@ -52,7 +50,7 @@ export function SageIdentityCard({ sage, variant = "sidebar" }: SageIdentityCard
               sageId={sage.id}
               sageName={sage.name}
               currentAvatar={sage.avatar}
-              className={isCollapsible ? "size-12" : "size-18"}
+              className={isCollapsible ? "size-14" : "size-18"}
             />
           </div>
 
@@ -85,7 +83,12 @@ export function SageIdentityCard({ sage, variant = "sidebar" }: SageIdentityCard
               aria-label={isExpanded ? t("collapse") : t("expand")}
             />
           ) : (
-            <SageShareButton sageToken={sage.token} variant="ghost" size="sm" />
+            <SageShareButton
+              sageToken={sage.token}
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs"
+            />
           )}
         </div>
 
@@ -100,7 +103,7 @@ export function SageIdentityCard({ sage, variant = "sidebar" }: SageIdentityCard
               : "block",
           )}
         >
-          <div className={cn("space-y-3", isCollapsible ? "px-4 pt-2 pb-4" : "px-6")}>
+          <div className={cn("space-y-3 pb-4 px-4", isCollapsible ? "pt-2" : "")}>
             {/* Bio */}
             {sage.bio && (
               <div className="text-sm text-muted-foreground text-pretty">{sage.bio}</div>
@@ -131,7 +134,7 @@ export function SageIdentityCard({ sage, variant = "sidebar" }: SageIdentityCard
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1"
+                className="flex-1 h-7 text-xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowEditDialog(true);
@@ -141,7 +144,12 @@ export function SageIdentityCard({ sage, variant = "sidebar" }: SageIdentityCard
                 {t("editProfile")}
               </Button>
               {isCollapsible && (
-                <SageShareButton sageToken={sage.token} variant="outline" size="sm" />
+                <SageShareButton
+                  sageToken={sage.token}
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                />
               )}
             </div>
           </div>

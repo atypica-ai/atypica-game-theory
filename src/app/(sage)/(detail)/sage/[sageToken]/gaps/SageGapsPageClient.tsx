@@ -2,6 +2,7 @@
 import { createSageInterviewAction } from "@/app/(sage)/(detail)/actions";
 import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
 import type { SageKnowledgeGapExtra, SageKnowledgeGapSeverity } from "@/app/(sage)/types";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { SageKnowledgeGap } from "@/prisma/client";
@@ -96,18 +97,20 @@ export function SageGapsPageClient({
           <p className="text-muted-foreground mt-1">{t("description")}</p>
         </div>
         {pendingGaps.length > 0 && (
-          <Button
-            onClick={handleCreateInterview}
-            disabled={processingStatus === "processing" || isCreating}
-            size="sm"
+          <ConfirmDialog
+            title={t("confirmStartInterviewTitle")}
+            description={t("confirmStartInterviewDesc")}
+            onConfirm={handleCreateInterview}
           >
-            {isCreating ? (
-              <Loader2Icon className="size-4 animate-spin" />
-            ) : (
-              <PlusIcon className="size-4" />
-            )}
-            {t("createSupplementaryInterview")}
-          </Button>
+            <Button disabled={processingStatus === "processing" || isCreating} size="sm">
+              {isCreating ? (
+                <Loader2Icon className="size-4 animate-spin" />
+              ) : (
+                <PlusIcon className="size-4" />
+              )}
+              {t("createSupplementaryInterview")}
+            </Button>
+          </ConfirmDialog>
         )}
       </div>
 

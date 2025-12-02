@@ -49,7 +49,7 @@ export function SageShareButton({
     >
       <AlertDialogTrigger asChild>
         {children || (
-          <Button variant={variant} size={size} className={cn("", className)}>
+          <Button variant={variant} size={size} className={cn(className)}>
             <Share2Icon className="size-3" />
             {t("shareButton")}
           </Button>

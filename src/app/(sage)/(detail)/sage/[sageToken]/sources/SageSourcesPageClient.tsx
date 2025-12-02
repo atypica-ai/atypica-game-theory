@@ -1,5 +1,4 @@
 "use client";
-
 import { SourcesPanel } from "../components/SourcesPanel";
 
 /**
@@ -8,7 +7,7 @@ import { SourcesPanel } from "../components/SourcesPanel";
  */
 export function SageSourcesPageClient() {
   return (
-    <div className="lg:hidden">
+    <div>
       <SourcesPanel />
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 import { useSageContext } from "@/app/(sage)/(detail)/hooks/SageContext";
 import { discoverKnowledgeGapsAction } from "@/app/(sage)/actions";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ChatMessage, UserChat } from "@/prisma/client";
@@ -50,10 +51,16 @@ export function SageChatsPageClient({
           <p className="text-muted-foreground mt-1">{t("description")}</p>
         </div>
         {chats.length > 0 && (
-          <Button onClick={handleAnalyze} disabled={isProcessing} size="sm" variant="outline">
-            <SearchIcon className="size-4" />
-            {isProcessing ? t("analyzing") : t("analyzeRecentChats")}
-          </Button>
+          <ConfirmDialog
+            title={t("confirmAnalyzeTitle")}
+            description={t("confirmAnalyzeDesc")}
+            onConfirm={handleAnalyze}
+          >
+            <Button disabled={isProcessing} size="sm" variant="outline">
+              <SearchIcon className="size-4" />
+              {isProcessing ? t("analyzing") : t("analyzeRecentChats")}
+            </Button>
+          </ConfirmDialog>
         )}
       </div>
 
