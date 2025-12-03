@@ -90,7 +90,7 @@
       "editSage": "Edit",
       "chatWithSage": "Consult Expert",
       "signInToChat": "Sign in to Chat",
-      "createChatFailed": "Failed to create chat",
+      "createChatFailed": "Chat creation failed",
       "introduction": "Introduction",
       "noIntroduction": "No introduction available yet.",
       "chatWithMeAbout": "chat with me about ...",
@@ -118,7 +118,7 @@
       "cancel": "Cancel",
       "saving": "Saving...",
       "profileUpdated": "Profile updated successfully",
-      "updateFailed": "Failed to update profile"
+      "updateFailed": "Profile update failed"
     },
     "MemoryPage": {
       "title": "Memory",
@@ -136,7 +136,7 @@
     "GapsPage": {
       "title": "Knowledge Gaps",
       "description": "Knowledge gaps discovered from user conversations, ready to be filled through interviews",
-      "knowledgeGaps": "Knowledge to Supplement",
+      "knowledgeGaps": "Knowledge Gaps",
       "impact": "Impact",
       "pending": "Pending",
       "resolved": "Completed",
@@ -145,7 +145,7 @@
       "pendingGaps": "Pending",
       "resolvedGaps": "Completed",
       "source": "Source",
-      "createSupplementaryInterview": "Start Interview",
+      "createSupplementaryInterview": "Start Supplementary Interview",
       "confirmStartInterviewTitle": "Start Supplementary Interview?",
       "confirmStartInterviewDesc": "Create an interview session to fill identified knowledge gaps. The interview will focus on areas where the expert needs more information.",
       "interviewCreated": "Interview created! Let's start the conversation.",
@@ -191,7 +191,7 @@
       "endInterview": "Complete Interview",
       "ending": "Organizing knowledge...",
       "interviewEnded": "Interview complete! New knowledge added to Pending Integration",
-      "endInterviewFailed": "Failed to end. Please try again later",
+      "endInterviewFailed": "Interview completion failed. Please try again later",
       "interviewAlreadyCompleted": "This interview has already been completed"
     },
     "TabNavigation": {
@@ -233,7 +233,7 @@
       "sourcesAdded": "Added {count} source(s). Click 'Extract/Update Knowledge' to start building",
       "addSourcesFailed": "Failed to add sources",
       "sourceDeleted": "Source deleted",
-      "deleteSourceFailed": "Failed to delete source",
+      "deleteSourceFailed": "Source deletion failed",
       "deleteSource": "Delete source",
       "confirmDeleteTitle": "Delete Source?",
       "confirmDeleteDesc": "This source will no longer be used to build expert knowledge, but previously extracted content will remain",
@@ -242,7 +242,7 @@
       "confirmAdd": "Add Sources",
       "adding": "Adding...",
       "processing": "Processing",
-      "fetchSourcesFailed": "Failed to fetch sources"
+      "fetchSourcesFailed": "Source fetching failed"
     },
     "AddSourcesContent": {
       "uploadFiles": "Upload Documents",
@@ -267,7 +267,7 @@
       "selectImageFile": "Please select an image file",
       "imageSizeLimit": "Image size must be less than 5MB",
       "avatarUpdated": "Avatar updated successfully",
-      "uploadFailed": "Failed to upload avatar"
+      "uploadFailed": "Avatar upload failed"
     },
     "StatusBar": {
       "processing": "Updating Expert Memory...",
@@ -338,22 +338,22 @@
       "confirmStartInterviewDesc": "Create an interview session to fill identified knowledge gaps.",
       "analyzeChatsTitle": "Analyze User Conversations",
       "analyzeChatsDesc": "You have user conversations. Analyze them to find where the expert struggled.",
-      "analyzeChatsButton": "Analyze Chats",
-      "confirmAnalyzeTitle": "Analyze Chats?",
+      "analyzeChatsButton": "Analyze Conversations",
+      "confirmAnalyzeTitle": "Analyze Conversations?",
       "confirmAnalyzeDesc": "AI will analyze recent conversations to identify knowledge gaps.",
       "shareTitle": "Ready to Share",
       "shareDesc": "Your expert is ready! Share it with users to start gathering feedback.",
       "shareButton": "Share Expert",
       "addSourcesDialogTitle": "Add Knowledge Sources",
       "cancel": "Cancel",
-      "confirmAdd": "Confirm Add",
+      "confirmAdd": "Add Sources",
       "adding": "Adding...",
       "sourcesAddedSuccess": "Sources added successfully",
-      "addSourcesFailed": "Failed to add sources",
+      "addSourcesFailed": "Source addition failed",
       "analysisStarted": "Analysis started",
-      "analyzeChatsFailed": "Failed to analyze chats",
-      "interviewCreated": "Interview created",
-      "createInterviewFailed": "Failed to create interview"
+      "analyzeChatsFailed": "Conversation analysis failed",
+      "interviewCreated": "Interview created! Let's start the conversation.",
+      "createInterviewFailed": "Interview creation failed"
     }
   }
 }
