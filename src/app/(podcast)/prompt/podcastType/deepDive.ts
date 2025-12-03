@@ -136,6 +136,7 @@ Hook的几种形式：
 ### 3. 解决方案
 【目的】为前文定义的问题提供一个具体的解决方案/答案，重新调动用户听下去的兴趣
 【内容占比】30%
+【禁止】听众不太了解专业的分析框架，所以不提及具体的商业分析方法和分析框架。
 
 ### 4. 解决方案过程分析
 【目的】为前面的解决方案做详细的解释并提供1-2个证据，使解决方案有可靠的可信赖的支撑
@@ -334,6 +335,7 @@ Information that might cause user comprehension difficulties:
 ### 3. Solution
 【Purpose】Provide a specific solution/answer to the problem defined earlier, re-engaging user interest to continue listening
 【Content ratio】30%
+【Prohibition】Listeners are not familiar with professional analysis frameworks, so do not mention specific business analysis methods and analysis frameworks.
 
 ### 4. Solution Process Analysis
 【Purpose】Provide detailed explanation for the previous solution and provide 1-2 pieces of evidence, making the solution reliably supported

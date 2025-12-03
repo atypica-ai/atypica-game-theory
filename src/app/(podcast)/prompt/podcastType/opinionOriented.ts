@@ -159,7 +159,7 @@ Hook的几种形式：
 - 先快速总结自己的观点，给听众一个heads up和expectation，让他们有兴趣听下去
 - 然后有结构的，跟随着逻辑链路，逐渐展开整个研究过程和子观点。每个子观点的结构如下：
     1. 观点总结
-    2. 研究方法、证据和例子
+    2. 论证观点的逻辑、证据和例子
     3. （可选）不强制地让用户有小的Takeaway
 【特点】
 - 保证逻辑性强
@@ -167,6 +167,7 @@ Hook的几种形式：
 - 可靠可信的数据和证据支撑
 - 为什么这个结论是正确的/必然的
 - 反驳可能的质疑
+【禁止】听众不太了解专业的分析框架，所以不提及具体的商业分析框架。
 
 ### 4. 行动号召
 【目的】推动听众根据观点采取行动
@@ -370,6 +371,7 @@ Hook forms:
 - Reliable and credible data and evidence support
 - Why this conclusion is correct/inevitable
 - Refute possible objections
+【Prohibition】Listeners are not familiar with professional analysis frameworks, so do not mention specific business analysis frameworks.
 
 ### 4. Call to Action
 【Purpose】Motivate listeners to take action based on viewpoints
