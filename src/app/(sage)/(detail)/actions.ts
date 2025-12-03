@@ -1,8 +1,5 @@
 "use server";
 
-import type { SageActivity, SageStats } from "./types";
-import { fetchSageActivities } from "./lib/activities";
-import { fetchSageStats } from "./lib/stats";
 import type {
   SageAvatar,
   SageExtra,
@@ -18,6 +15,9 @@ import type { Sage, SageInterview, SageSource, UserChat } from "@/prisma/client"
 import { prisma } from "@/prisma/prisma";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
+import { fetchSageActivities } from "./lib/activities";
+import { fetchSageStats } from "./lib/stats";
+import type { SageActivity, SageStats } from "./types";
 
 /**
  * Create a supplementary interview to fill knowledge gaps

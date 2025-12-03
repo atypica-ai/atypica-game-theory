@@ -27,17 +27,20 @@ Sources → Core Memory → User Chat → Gaps → Interview → Working Memory 
 ## 作为 Sage 创建者的完整使用流程
 
 ### Step 1: 创建 Sage 并构建初始知识
+
 1. 进入 Sage 创建页面，输入名称和领域
 2. 上传知识源（文档/文本/URL）
 3. 系统提取知识并生成 Core Memory
 4. Sage 可以开始对外提供咨询服务
 
 ### Step 2: 用户与 Sage 对话
+
 - 用户在公开页面与 Sage 进行对话
 - **对话过程中什么都不会发生**，只是纯粹的聊天
 - 系统不会实时分析，不会产生任何 gaps
 
 ### Step 3: 主动分析对话发现 Gaps
+
 1. 你进入 Sage 详情页的 **Chats Tab**
 2. 查看所有用户与 Sage 的对话列表
 3. 点击「**分析最近对话**」按钮
@@ -45,6 +48,7 @@ Sources → Core Memory → User Chat → Gaps → Interview → Working Memory 
 5. AI 识别 Sage 回答不充分的地方，创建 Knowledge Gaps
 
 ### Step 4: 查看和管理 Gaps
+
 1. 切换到 **Gaps Tab**
 2. 查看 **Pending Gaps**（待处理）和 **Resolved Gaps**（已解决）
 3. 每个 Gap 显示：
@@ -52,6 +56,7 @@ Sources → Core Memory → User Chat → Gaps → Interview → Working Memory 
    - 来源对话链接（点击可跳转查看上下文）
 
 ### Step 5: 通过访谈解决 Gaps
+
 1. 在 Gaps Tab 点击「**创建补充访谈**」（即时创建，无需等待）
 2. 进入访谈对话，AI 会：
    - 首先调用 `fetchPendingGaps` 工具获取当前所有待填补的知识空白
@@ -65,6 +70,7 @@ Sources → Core Memory → User Chat → Gaps → Interview → Working Memory 
    - 已解决的 Gaps 移到 Resolved 列表
 
 ### Step 6: 整合 Working Memory
+
 1. 切换到 **Memory Tab**
 2. 查看 Working Memory 列表（访谈补充的知识）
 3. 点击「**整合到核心记忆**」按钮
@@ -72,10 +78,12 @@ Sources → Core Memory → User Chat → Gaps → Interview → Working Memory 
 5. 创建新版本，Working Memory 清空
 
 ### Step 7: 持续改进
+
 - 重复 Step 2-6，不断完善 Sage 的知识体系
 - 每次对话都让 Sage 变得更专业
 
 **关键设计理念**:
+
 - ✅ **你完全控制**: 何时分析对话、何时创建访谈、何时整合知识
 - ✅ **可追溯**: 每个 Gap 可追溯到来源对话，每个解决方案可追溯到访谈
 - ✅ **对话时专注聊天**: 用户对话时不做任何后台分析，避免干扰
@@ -143,12 +151,13 @@ model SageMemoryDocument {
 ```typescript
 type WorkingMemoryItem = {
   id: string;
-  content: string;          // AI 生成的浓缩知识内容 (结构化 Markdown)
-  sourceChat: {             // 来源访谈信息
-    id: number;             // UserChat.id (对应 SageInterview 的 UserChat)
-    token: string;          // UserChat.token
+  content: string; // AI 生成的浓缩知识内容 (结构化 Markdown)
+  sourceChat: {
+    // 来源访谈信息
+    id: number; // UserChat.id (对应 SageInterview 的 UserChat)
+    token: string; // UserChat.token
   };
-  relatedGapIds: number[];  // 本次访谈解决的 Gap IDs
+  relatedGapIds: number[]; // 本次访谈解决的 Gap IDs
   status: "pending" | "integrated" | "discarded";
 };
 ```
@@ -195,6 +204,7 @@ type WorkingMemoryItem = {
 ```
 
 **简化说明**:
+
 - ❌ 移除顶层 `source` 和 `resolvedBy` 字段
 - ✅ 所有追溯信息放在 `extra` 中，只用于 UI 展示和查看
 - ✅ `sourceChat` 记录来源对话（方便点击跳转）
@@ -233,6 +243,7 @@ type WorkingMemoryItem = {
 ```
 
 **设计变更**: 移除了预生成的 `interviewPlan`,改用动态工具驱动流程:
+
 - ✅ AI 在对话开始时调用 `fetchPendingGaps` 工具获取最新 gaps
 - ✅ AI 在对话上下文中实时规划访谈策略
 - ✅ 始终使用最新的 gaps,避免过时的计划
@@ -317,6 +328,7 @@ UI 展示:
 ```
 
 **动态工具驱动的优势**：
+
 - ✅ 即时创建访谈，无需等待计划生成
 - ✅ 始终使用最新的 gaps（不会使用过时的计划）
 - ✅ AI 在对话上下文中看到完整 gaps，理解更准确
@@ -366,6 +378,7 @@ AI 生成回答
 - **来源追溯**: 记录到 `extra.sourceChat: { id, token }` 用于 UI 跳转
 
 **设计理念**:
+
 - ✅ **对话时专注聊天**: 用户与 Sage 对话时，只管聊天，不做任何后台分析
 - ✅ **专家主动控制**: 专家决定何时分析，清晰可控
 - ✅ **批量高效**: 一次性分析多个对话，效率更高，成本可控
@@ -476,26 +489,31 @@ export async function xxxAction(params): Promise<ServerActionResult<void>> {
 #### 核心设计原则
 
 **1. 关注点分离**
+
 - **Server Action**: 权限验证、状态管理、缓存控制
 - **核心业务函数**: 纯逻辑，可独立测试
 - **依赖注入**: logger、statReport、abortSignal
 
 **2. 用户体验优先**
+
 - 立即返回成功响应，不让用户等待
 - 通过 `processing` 状态实现进度追踪
 - 前端轮询或 WebSocket 更新 UI
 
 **3. 防重入机制**
+
 ```typescript
 if (sage.extra.processing && Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) {
   return { success: false, message: "Sage is processing" };
 }
 ```
+
 - 防止并发执行导致的数据竞争
 - 30 分钟超时允许从失败中恢复
 - 简单但有效的分布式锁
 
 **4. 优雅的错误处理**
+
 ```typescript
 catch (error) {
   await mergeExtra({
@@ -505,19 +523,23 @@ catch (error) {
   // do not throw error
 }
 ```
+
 - 错误存储到 `extra.error` 供前端展示
 - 不抛出错误，避免影响 `waitUntil`
 - 确保 `processing: false` 允许重试
 
 **5. 结构化日志**
+
 ```typescript
 const logger = rootLogger.child({ sageId });
 logger.info({ msg: "Operation started", details: "..." });
 ```
+
 - 使用 child logger 自动附加上下文
 - 所有日志包含 `msg` 字段（Pino 最佳实践）
 
 **6. Token 追踪接口**
+
 ```typescript
 const statReport: StatReporter = (async (dimension, value, extra) => {
   rootLogger.info({
@@ -527,6 +549,7 @@ const statReport: StatReporter = (async (dimension, value, extra) => {
   });
 }) as StatReporter;
 ```
+
 - 即使当前免费，也保留完整的统计接口
 - 方便未来切换到计费模式
 - `[LIMITED FREE]` 标签明确说明当前状态
@@ -546,11 +569,11 @@ const statReport: StatReporter = (async (dimension, value, extra) => {
 #### 前端配合
 
 **处理状态展示**:
+
 ```typescript
 const isProcessing = useMemo(
   () =>
-    (sage.extra.processing &&
-     Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) ||
+    (sage.extra.processing && Date.now() - sage.extra.processing.startsAt < 30 * 60 * 1000) ||
     isRequesting,
   [sage.extra.processing, isRequesting],
 );
@@ -567,6 +590,7 @@ useEffect(() => {
 ```
 
 **错误展示**:
+
 ```typescript
 {sage.extra.error && (
   <Alert variant="destructive">
@@ -593,11 +617,7 @@ useEffect(() => {
 
 ```typescript
 // src/lib/attachments/processing.ts
-export async function compressText({
-  fullText,
-  logger,
-  abortSignal,
-}): Promise<string>
+export async function compressText({ fullText, logger, abortSignal }): Promise<string>;
 
 // 在两个场景中复用:
 // 1. AI Study 附件处理
@@ -605,12 +625,14 @@ export async function compressText({
 ```
 
 **优势**:
+
 - ✅ **成本优化**: 大幅减少存储和 AI 处理的 token 消耗
 - ✅ **一致性**: 两个系统使用相同的压缩质量和策略
 - ✅ **可维护性**: 压缩算法优化会同时惠及两个系统
 - ✅ **质量保证**: 压缩算法经过 AI Study 验证,保留关键信息
 
 **流程**:
+
 ```
 Source (PDF/URL/Text) → Extract Full Text → Compress → Store
                                               ↑
@@ -623,11 +645,11 @@ Source (PDF/URL/Text) → Extract Full Text → Compress → Store
 
 ```typescript
 await analyzeGapResolution({
-  gaps,                      // pending gaps
-  interviewTranscript,       // 访谈内容
-  originalMemory,           // 访谈前的 core memory
-  updatedMemory,            // 更新后的 core memory
-})
+  gaps, // pending gaps
+  interviewTranscript, // 访谈内容
+  originalMemory, // 访谈前的 core memory
+  updatedMemory, // 更新后的 core memory
+});
 
 // 返回已解决的 gapId 列表
 // 简化设计: 不返回 confidence/evidence 等细节
@@ -669,7 +691,7 @@ await updateMemoryDocumentFromInterview({
 export async function analyzeSageChatsForGaps({
   sageId,
   limit = 20,
-  locale
+  locale,
 }: {
   sageId: number;
   limit?: number;
@@ -683,26 +705,26 @@ export async function analyzeSageChatsForGaps({
     where: { sageId },
     orderBy: { createdAt: "desc" },
     take: limit,
-    include: { userChat: { include: { messages: true } } }
+    include: { userChat: { include: { messages: true } } },
   });
 
   // 2. 批量分析所有对话
   const allNewGaps = await discoverNewGapsFromChats({
     chats: recentChats,
     sageDomain: sage.domain,
-    locale
+    locale,
   });
 
   // 3. 创建 gaps
   if (allNewGaps.length > 0) {
     await prisma.sageKnowledgeGap.createMany({
-      data: allNewGaps
+      data: allNewGaps,
     });
   }
 
   return {
     analyzedChatsCount: recentChats.length,
-    newGapsCount: allNewGaps.length
+    newGapsCount: allNewGaps.length,
   };
 }
 ```

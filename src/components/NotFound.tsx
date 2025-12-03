@@ -14,9 +14,7 @@ export function NotFound() {
           <FileQuestionIcon className="size-12 text-muted-foreground" />
         </div>
 
-        <h1 className="text-4xl font-medium tracking-tight mb-4">
-          {t("title")}
-        </h1>
+        <h1 className="text-4xl font-medium tracking-tight mb-4">{t("title")}</h1>
 
         <p className="text-muted-foreground mb-8">{t("description")}</p>
 

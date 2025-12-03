@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 
 type DocSection = {
   title: string;
@@ -69,9 +69,7 @@ export function DocsSidebar() {
                   href={section.href}
                   className={cn(
                     "block py-1 hover:text-primary transition-colors",
-                    pathname === section.href
-                      ? "text-primary font-semibold"
-                      : "text-foreground",
+                    pathname === section.href ? "text-primary font-semibold" : "text-foreground",
                   )}
                 >
                   {section.title}

@@ -1,8 +1,8 @@
 import "server-only";
 
-import type { SageActivity } from "../types";
 import type { SageInterviewExtra, SageKnowledgeGapExtra } from "@/app/(sage)/types";
 import { prisma } from "@/prisma/prisma";
+import type { SageActivity } from "../types";
 
 /**
  * Fetch recent activity timeline from existing database records (server-only)

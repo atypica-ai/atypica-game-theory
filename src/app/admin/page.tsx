@@ -44,7 +44,9 @@ export default function AdminDashboard() {
             <StarIcon className="h-5 w-5 mr-2" />
             <h2 className="text-xl font-semibold">Featured Studies</h2>
           </div>
-          <p className="text-sm text-muted-foreground">Manage featured studies that appear on the homepage</p>
+          <p className="text-sm text-muted-foreground">
+            Manage featured studies that appear on the homepage
+          </p>
         </Link>
 
         <Link

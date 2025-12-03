@@ -246,11 +246,7 @@ export default function PageViewsPage() {
         <CardHeader>
           <CardTitle>
             Top{" "}
-            {viewType === "reports"
-              ? "Reports"
-              : viewType === "studies"
-                ? "Studies"
-                : "Podcasts"}{" "}
+            {viewType === "reports" ? "Reports" : viewType === "studies" ? "Studies" : "Podcasts"}{" "}
             by Users ({actualDays} day
             {actualDays !== 1 ? "s" : ""}) - Showing {limit} results
           </CardTitle>

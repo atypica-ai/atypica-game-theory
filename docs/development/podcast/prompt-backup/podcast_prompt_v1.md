@@ -160,13 +160,11 @@ Create a well-structured, well-paced podcast script based on the provided busine
 ### Content Structure
 
 1. **Opening (2-3 minutes)**
-
    - Welcome and show introduction
    - Episode topic overview
    - Attention-grabbing opening
 
 2. **Main Content (15-20 minutes)**
-
    - Research background and motivation
    - Core findings and insights
    - Data support and case analysis

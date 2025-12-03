@@ -31,7 +31,13 @@ interface DomainEntry {
   addedAt: string;
 }
 
-export default function TeamDomainVerificationCard({ team, isOwner }: { team: Team; isOwner: boolean }) {
+export default function TeamDomainVerificationCard({
+  team,
+  isOwner,
+}: {
+  team: Team;
+  isOwner: boolean;
+}) {
   const t = useTranslations("Team.DomainVerificationCard");
   const [domains, setDomains] = useState<DomainEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -187,22 +187,18 @@ iframe.contentWindow.postMessage(
 ### 流程说明
 
 1. **设置自动登录 iframe**
-
    - 使用自动登录 URL 设置 iframe：`https://atypica.musedam.cc/auth/impersonation-login?token=xxxxxx`
    - 用户会自动登录到指定账号
 
 2. **监听页面变化**
-
    - 监听 `type: "href"` 消息，获取当前页面的 URL
    - 每次页面切换都会收到此消息
 
 3. **触发新建研究**
-
    - 当收到 `href` 为首页的消息时，立即发送 `createStudyUserChat` 动作
    - iframe 内会自动创建研究并跳转到新的研究页面
 
 4. **等待跳转完成**
-
    - 继续监听 `type: "href"` 消息
    - 当收到 `/study/xxx` 格式的 URL 时，说明已跳转到研究页面
 

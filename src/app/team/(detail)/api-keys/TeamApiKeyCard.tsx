@@ -149,7 +149,13 @@ export function TeamApiKeyCard({ team, isOwner }: { team: Team; isOwner: boolean
                   </Button>
                 </div>
                 {/* 非 owner 不能复制 API key */}
-                <Button variant="outline" size="sm" onClick={handleCopy} className="px-3" disabled={!isOwner}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopy}
+                  className="px-3"
+                  disabled={!isOwner}
+                >
                   {copied ? (
                     <CheckIcon className="w-4 h-4 text-green-500" />
                   ) : (

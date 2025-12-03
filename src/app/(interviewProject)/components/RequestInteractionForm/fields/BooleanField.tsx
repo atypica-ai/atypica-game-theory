@@ -26,7 +26,7 @@ export const BooleanField: FC<FieldProps> = ({
           onClick={isCompleted ? undefined : () => field.id && onUpdate(field.id, true)}
           className={cn(
             "flex items-center justify-between",
-            isCompleted && "pointer-events-none cursor-default"
+            isCompleted && "pointer-events-none cursor-default",
           )}
         >
           {t("yes")}
@@ -37,7 +37,7 @@ export const BooleanField: FC<FieldProps> = ({
           onClick={isCompleted ? undefined : () => field.id && onUpdate(field.id, false)}
           className={cn(
             "flex items-center justify-between",
-            isCompleted && "pointer-events-none cursor-default"
+            isCompleted && "pointer-events-none cursor-default",
           )}
         >
           {t("no")}

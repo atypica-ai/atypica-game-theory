@@ -13,7 +13,12 @@ interface SuperTeamPlanCardProps {
   onPurchase?: () => void;
 }
 
-export function SuperTeamPlanCard({ productPrices, userType, activeSubscription, onPurchase }: SuperTeamPlanCardProps) {
+export function SuperTeamPlanCard({
+  productPrices,
+  userType,
+  activeSubscription,
+  onPurchase,
+}: SuperTeamPlanCardProps) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
 
@@ -64,9 +69,7 @@ export function SuperTeamPlanCard({ productPrices, userType, activeSubscription,
         {userType === "TeamMember" && onPurchase ? (
           activeSubscription?.plan === "team" || activeSubscription?.plan === "superteam" ? (
             <Button className="w-full mb-6" disabled variant="secondary">
-              {activeSubscription.plan === "team"
-                ? t("purchasedTeam")
-                : t("purchasedSuperTeam")}
+              {activeSubscription.plan === "team" ? t("purchasedTeam") : t("purchasedSuperTeam")}
             </Button>
           ) : (
             <Button className="w-full mb-6" onClick={onPurchase}>

@@ -13,7 +13,12 @@ interface TeamPlanCardProps {
   onPurchase?: () => void;
 }
 
-export function TeamPlanCard({ productPrices, userType, activeSubscription, onPurchase }: TeamPlanCardProps) {
+export function TeamPlanCard({
+  productPrices,
+  userType,
+  activeSubscription,
+  onPurchase,
+}: TeamPlanCardProps) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
 
@@ -61,9 +66,7 @@ export function TeamPlanCard({ productPrices, userType, activeSubscription, onPu
         {userType === "TeamMember" && onPurchase ? (
           activeSubscription?.plan === "team" || activeSubscription?.plan === "superteam" ? (
             <Button className="w-full mb-6" disabled variant="secondary">
-              {activeSubscription.plan === "team"
-                ? t("purchasedTeam")
-                : t("purchasedSuperTeam")}
+              {activeSubscription.plan === "team" ? t("purchasedTeam") : t("purchasedSuperTeam")}
             </Button>
           ) : (
             <Button className="w-full mb-6" onClick={onPurchase}>

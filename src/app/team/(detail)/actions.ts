@@ -1,4 +1,6 @@
 "use server";
+import { createTeamMemberUser } from "@/app/(auth)/lib";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -9,8 +11,6 @@ import { promises as dns } from "dns";
 import { getTranslations } from "next-intl/server";
 import { deleteTeamConfig, getTeamConfig, setTeamConfig } from "../teamConfig/lib";
 import { TeamConfigName, TeamConfigValue } from "../teamConfig/types";
-import { createTeamMemberUser } from "@/app/(auth)/lib";
-import { fetchActiveSubscription } from "@/app/account/lib";
 
 /**
  * 验证团队所有权的工具函数
@@ -266,7 +266,9 @@ export async function removeTeamMemberAction(data: {
 }
 
 // 获取团队订阅信息
-export async function getTeamSubscriptionAction(): Promise<ServerActionResult<Subscription | null>> {
+export async function getTeamSubscriptionAction(): Promise<
+  ServerActionResult<Subscription | null>
+> {
   const t = await getTranslations("Team.Actions");
   return withAuth(async (user, userType, team) => {
     try {

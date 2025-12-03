@@ -100,17 +100,14 @@ Share页面合计                                     80         69         60
 ### 常见错误
 
 1. **"请在环境变量中设置 GA4_PROPERTY_ID"**
-
    - 检查 `.env` 文件中的 `GA4_PROPERTY_ID` 是否正确设置
 
 2. **"Authentication error"**
-
    - 检查 `GOOGLE_APPLICATION_CREDENTIALS` 路径是否正确
    - 确认服务账号 JSON 文件存在且可读
    - 验证服务账号是否在 GA4 中有访问权限
 
 3. **"Property not found"**
-
    - 检查 GA4 Property ID 是否正确
    - 确认使用的是 GA4 (不是 Universal Analytics)
 

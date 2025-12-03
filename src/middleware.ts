@@ -1,15 +1,15 @@
 import {
+  extractToltFromSearchParams,
+  TOLT_COOKIE_MAX_AGE,
+  TOLT_COOKIE_NAME,
+} from "@/lib/analytics/tolt";
+import {
   extractRefererFromHeader,
   extractUtmFromSearchParams,
   REFERER_COOKIE_NAME,
   UTM_COOKIE_MAX_AGE,
   UTM_COOKIE_NAME,
 } from "@/lib/analytics/utm";
-import {
-  extractToltFromSearchParams,
-  TOLT_COOKIE_MAX_AGE,
-  TOLT_COOKIE_NAME,
-} from "@/lib/analytics/tolt";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
 import { Locale } from "next-intl";

@@ -1,7 +1,7 @@
 import "server-only";
 
-import type { SageStats } from "../types";
 import { prisma } from "@/prisma/prisma";
+import type { SageStats } from "../types";
 
 /**
  * Fetch complete sage statistics (server-only)

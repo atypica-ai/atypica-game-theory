@@ -38,8 +38,8 @@ model TeamConfig {
 
 ```typescript
 export enum TeamConfigName {
-  mcp = "mcp",                           // MCP 服务器配置
-  studySystemPrompt = "studySystemPrompt" // 自定义系统提示词
+  mcp = "mcp", // MCP 服务器配置
+  studySystemPrompt = "studySystemPrompt", // 自定义系统提示词
 }
 ```
 
@@ -73,6 +73,7 @@ export enum TeamConfigName {
 - `deleteTeamConfig(teamId, key)`：删除配置
 
 缓存策略：
+
 - 缓存时间：1 小时
 - 缓存标签：`team-config-${teamId}`、`team-config-${teamId}-${key}`
 - 配置更新时自动刷新缓存
@@ -88,16 +89,17 @@ export enum TeamConfigName {
 ```typescript
 class MCPClient {
   // 懒加载和缓存
-  async getTools(): Promise<MCPTools>
-  async getMetadata(): Promise<MCPMetadata>
-  async getPromptContents(): Promise<string>
+  async getTools(): Promise<MCPTools>;
+  async getMetadata(): Promise<MCPMetadata>;
+  async getPromptContents(): Promise<string>;
 
   // 获取提示词详情
-  async getPromptDetail(promptName: string): Promise<MCPPromptDetail>
+  async getPromptDetail(promptName: string): Promise<MCPPromptDetail>;
 }
 ```
 
 特性：
+
 - **懒加载**：工具和元数据按需加载
 - **缓存**：加载后缓存在内存中，避免重复 API 调用
 - **错误处理**：优雅的错误处理和日志记录
@@ -109,23 +111,24 @@ class MCPClient {
 ```typescript
 class MCPClientManager {
   // 获取团队的 MCP 客户端列表
-  async getClientsForTeam(teamId: number): Promise<MCPClient[]>
+  async getClientsForTeam(teamId: number): Promise<MCPClient[]>;
 
   // 获取团队的所有工具
-  async getToolsForTeam(teamId: number): Promise<MCPTools>
+  async getToolsForTeam(teamId: number): Promise<MCPTools>;
 
   // 获取团队的所有元数据
-  async getMetadataForTeam(teamId: number): Promise<MCPMetadata[]>
+  async getMetadataForTeam(teamId: number): Promise<MCPMetadata[]>;
 
   // 获取选中 MCP 的提示词内容
-  async getPromptContentsForMcps(teamId: number, mcpNames: string[]): Promise<string>
+  async getPromptContentsForMcps(teamId: number, mcpNames: string[]): Promise<string>;
 
   // 重载团队的 MCP 客户端（配置变更后）
-  async reloadTeam(teamId: number): Promise<void>
+  async reloadTeam(teamId: number): Promise<void>;
 }
 ```
 
 特性：
+
 - **团队隔离**：每个团队的 MCP 客户端独立管理
 - **动态重载**：配置变更后可以重载客户端
 - **跨团队访问**：管理员可以访问任意团队的 MCP 元数据
@@ -134,19 +137,21 @@ class MCPClientManager {
 
 ```typescript
 // 获取团队的所有 MCP 工具（用于主代理）
-export async function getAllMcpToolsForTeam(teamId: number | null): Promise<MCPTools>
+export async function getAllMcpToolsForTeam(teamId: number | null): Promise<MCPTools>;
 
 // 获取团队的 MCP 客户端列表（用于子代理）
-export async function getMcpClientsForTeam(teamId: number | null): Promise<MCPClient[]>
+export async function getMcpClientsForTeam(teamId: number | null): Promise<MCPClient[]>;
 
 // 获取团队的 MCP 元数据（用于管理员界面和工具选择）
-export async function getAllMcpMetadataForTeam(teamId: number | null): Promise<MCPMetadata[]>
+export async function getAllMcpMetadataForTeam(teamId: number | null): Promise<MCPMetadata[]>;
 
 // 重载团队的 MCP 客户端（配置变更后调用）
-export async function reloadTeamMcpClients(teamId: number): Promise<void>
+export async function reloadTeamMcpClients(teamId: number): Promise<void>;
 
 // 跨团队访问（仅管理员）
-export async function getAllMcpMetadataAcrossTeams(teamIds: number[]): Promise<Record<number, MCPMetadata[]>>
+export async function getAllMcpMetadataAcrossTeams(
+  teamIds: number[],
+): Promise<Record<number, MCPMetadata[]>>;
 ```
 
 ### 3. 通用子代理工具（createSubAgent）
@@ -169,6 +174,7 @@ async function selectMcpTools({
 ```
 
 系统提示词：
+
 ```
 You are a tool selection assistant. Your task is to analyze the user's task requirement
 and select the most appropriate MCP servers from the available options.
@@ -197,6 +203,7 @@ async function runSubAgentStream({
 ```
 
 特性：
+
 - **动态系统提示词**：使用选中 MCP 服务器的提示词内容
 - **endSubAgent 工具**：允许子代理输出最终结果
 - **步数限制**：最多 20 步，避免无限循环
@@ -247,7 +254,7 @@ export const createSubAgentTool = ({
 export const studySystem = async ({
   locale,
   briefStatus,
-  teamId
+  teamId,
 }: {
   locale: Locale;
   briefStatus?: "CLARIFIED" | "DRAFT";
@@ -264,11 +271,15 @@ export const studySystem = async ({
   return `
     ${basePrompt}
 
-    ${teamSystemPrompt[locale] ? `
+    ${
+      teamSystemPrompt[locale]
+        ? `
       <额外信息补充>
       ${teamSystemPrompt[locale]}
       </额外信息补充>
-    ` : ''}
+    `
+        : ""
+    }
 
     <信息收集>
     - 根据工具的使用规则，使用更恰当的工具完成不同种类的任务
@@ -276,7 +287,7 @@ export const studySystem = async ({
     - 如果没有比联网搜索更恰当的其他工具，则使用 webSearch 工具
     </信息收集>
   `;
-}
+};
 ```
 
 ### 5. 管理员配置界面
@@ -297,33 +308,34 @@ export const studySystem = async ({
 
 ```typescript
 // 获取所有团队及其配置
-export async function fetchTeamsWithConfigs(): Promise<ServerActionResult<TeamWithConfigs[]>>
+export async function fetchTeamsWithConfigs(): Promise<ServerActionResult<TeamWithConfigs[]>>;
 
 // 设置或更新团队配置
 export async function upsertTeamConfig(
   teamId: number,
   key: TeamConfigName,
-  value: unknown
-): Promise<ServerActionResult<void>>
+  value: unknown,
+): Promise<ServerActionResult<void>>;
 
 // 删除团队配置
 export async function removeTeamConfig(
   teamId: number,
-  key: TeamConfigName
-): Promise<ServerActionResult<void>>
+  key: TeamConfigName,
+): Promise<ServerActionResult<void>>;
 
 // 获取团队的 MCP 元数据（用于预览）
 export async function fetchTeamMcpMetadata(
-  teamId: number
-): Promise<ServerActionResult<MCPMetadata[]>>
+  teamId: number,
+): Promise<ServerActionResult<MCPMetadata[]>>;
 
 // 跨团队获取 MCP 元数据（仅管理员）
 export async function fetchMcpMetadataAcrossTeams(
-  teamIds: number[]
-): Promise<ServerActionResult<Record<number, MCPMetadata[]>>>
+  teamIds: number[],
+): Promise<ServerActionResult<Record<number, MCPMetadata[]>>>;
 ```
 
 配置更新流程：
+
 1. 用户在管理界面编辑配置
 2. 调用 `upsertTeamConfig()` 保存到数据库
 3. 刷新 Next.js 缓存（`revalidateTag`）
@@ -337,11 +349,13 @@ export async function fetchMcpMetadataAcrossTeams(
 **位置**：`src/app/(study)/study/console/CreateSubAgentConsole.tsx`
 
 显示内容：
+
 - 工具选择阶段：选中的 MCP 服务器列表
 - 任务执行阶段：实时显示执行步骤和工具调用
 - 最终结果：子代理的输出
 
 特性：
+
 - 实时轮询更新（1 秒间隔）
 - 使用 `StreamSteps` 组件显示消息流
 - 支持重放模式（20 秒等待时间）
@@ -351,6 +365,7 @@ export async function fetchMcpMetadataAcrossTeams(
 **位置**：`src/ai/tools/experts/ToolMessage/CreateSubAgentResultMessage.tsx`
 
 显示子代理的最终执行结果，包括：
+
 - 任务结果文本
 - 子代理会话 ID（用于调试）
 - 子代理会话 Token（用于查看完整对话）
@@ -535,50 +550,50 @@ Main Agent continues
 
 ### 核心功能
 
-| 功能                 | 文件                                      | 关键函数/类                              |
-| -------------------- | ----------------------------------------- | ---------------------------------------- |
-| 数据库模型           | `prisma/schema.prisma`                    | `TeamConfig` model                       |
-| 配置管理             | `src/app/team/teamConfig/lib.ts`          | `getTeamConfig()`, `setTeamConfig()`     |
-| MCP 客户端类         | `src/ai/tools/mcp/client.ts`              | `MCPClient`, `MCPClientManager`          |
-| 获取团队 MCP 工具    | `src/ai/tools/mcp/client.ts`              | `getAllMcpToolsForTeam()`                |
-| 获取团队 MCP 客户端  | `src/ai/tools/mcp/client.ts`              | `getMcpClientsForTeam()`                 |
-| 获取团队 MCP 元数据  | `src/ai/tools/mcp/client.ts`              | `getAllMcpMetadataForTeam()`             |
-| 重载 MCP 客户端      | `src/ai/tools/mcp/client.ts`              | `reloadTeamMcpClients()`                 |
+| 功能                | 文件                             | 关键函数/类                          |
+| ------------------- | -------------------------------- | ------------------------------------ |
+| 数据库模型          | `prisma/schema.prisma`           | `TeamConfig` model                   |
+| 配置管理            | `src/app/team/teamConfig/lib.ts` | `getTeamConfig()`, `setTeamConfig()` |
+| MCP 客户端类        | `src/ai/tools/mcp/client.ts`     | `MCPClient`, `MCPClientManager`      |
+| 获取团队 MCP 工具   | `src/ai/tools/mcp/client.ts`     | `getAllMcpToolsForTeam()`            |
+| 获取团队 MCP 客户端 | `src/ai/tools/mcp/client.ts`     | `getMcpClientsForTeam()`             |
+| 获取团队 MCP 元数据 | `src/ai/tools/mcp/client.ts`     | `getAllMcpMetadataForTeam()`         |
+| 重载 MCP 客户端     | `src/ai/tools/mcp/client.ts`     | `reloadTeamMcpClients()`             |
 
 ### createSubAgent 工具
 
-| 功能         | 文件                                         | 关键函数                       |
-| ------------ | -------------------------------------------- | ------------------------------ |
-| 工具定义     | `src/ai/tools/experts/createSubAgent/index.ts` | `createSubAgentTool()`         |
-| 工具选择     | `src/ai/tools/experts/createSubAgent/index.ts` | `selectMcpTools()`             |
-| 任务执行     | `src/ai/tools/experts/createSubAgent/index.ts` | `runSubAgentStream()`          |
-| 输入输出模式 | `src/ai/tools/experts/createSubAgent/types.ts` | Schema 定义                    |
+| 功能         | 文件                                           | 关键函数               |
+| ------------ | ---------------------------------------------- | ---------------------- |
+| 工具定义     | `src/ai/tools/experts/createSubAgent/index.ts` | `createSubAgentTool()` |
+| 工具选择     | `src/ai/tools/experts/createSubAgent/index.ts` | `selectMcpTools()`     |
+| 任务执行     | `src/ai/tools/experts/createSubAgent/index.ts` | `runSubAgentStream()`  |
+| 输入输出模式 | `src/ai/tools/experts/createSubAgent/types.ts` | Schema 定义            |
 
 ### 管理员界面
 
-| 功能           | 文件                                        | 关键函数                          |
-| -------------- | ------------------------------------------- | --------------------------------- |
-| 配置页面       | `src/app/admin/team-configs/page.tsx`       | -                                 |
-| 页面组件       | `src/app/admin/team-configs/TeamConfigsPageClient.tsx` | -                  |
-| Server Actions | `src/app/admin/team-configs/actions.ts`     | `upsertTeamConfig()`, `fetchTeamsWithConfigs()` |
+| 功能           | 文件                                                   | 关键函数                                        |
+| -------------- | ------------------------------------------------------ | ----------------------------------------------- |
+| 配置页面       | `src/app/admin/team-configs/page.tsx`                  | -                                               |
+| 页面组件       | `src/app/admin/team-configs/TeamConfigsPageClient.tsx` | -                                               |
+| Server Actions | `src/app/admin/team-configs/actions.ts`                | `upsertTeamConfig()`, `fetchTeamsWithConfigs()` |
 
 ### 前端可视化
 
-| 功能         | 文件                                                             | 关键组件                         |
-| ------------ | ---------------------------------------------------------------- | -------------------------------- |
-| 控制台       | `src/app/(study)/study/console/CreateSubAgentConsole.tsx`        | `CreateSubAgentConsole`          |
-| 控制台路由   | `src/app/(study)/study/ToolConsole.tsx`                          | 路由逻辑                         |
-| 结果消息     | `src/ai/tools/experts/ToolMessage/CreateSubAgentResultMessage.tsx` | `CreateSubAgentResultMessage`    |
-| 结果渲染     | `src/ai/tools/ui.tsx`                                            | 渲染逻辑                         |
-| 渐进式消息   | `src/app/(study)/study/hooks/useProgressiveMessages.ts`          | 重放模式配置                     |
+| 功能       | 文件                                                               | 关键组件                      |
+| ---------- | ------------------------------------------------------------------ | ----------------------------- |
+| 控制台     | `src/app/(study)/study/console/CreateSubAgentConsole.tsx`          | `CreateSubAgentConsole`       |
+| 控制台路由 | `src/app/(study)/study/ToolConsole.tsx`                            | 路由逻辑                      |
+| 结果消息   | `src/ai/tools/experts/ToolMessage/CreateSubAgentResultMessage.tsx` | `CreateSubAgentResultMessage` |
+| 结果渲染   | `src/ai/tools/ui.tsx`                                              | 渲染逻辑                      |
+| 渐进式消息 | `src/app/(study)/study/hooks/useProgressiveMessages.ts`            | 重放模式配置                  |
 
 ### 集成点
 
-| 功能             | 文件                                                  | 说明                                      |
-| ---------------- | ----------------------------------------------------- | ----------------------------------------- |
-| 主代理集成       | `src/app/(study)/api/chat/study/studyAgentRequest.ts` | 加载 MCP 工具和客户端，构建工具集       |
-| 系统提示词定制   | `src/ai/prompt/study/study.ts`                        | 集成团队自定义提示词                     |
-| 工具注册         | `src/ai/tools/tools.ts`                               | 将 `createSubAgent` 添加到工具列表       |
+| 功能           | 文件                                                  | 说明                               |
+| -------------- | ----------------------------------------------------- | ---------------------------------- |
+| 主代理集成     | `src/app/(study)/api/chat/study/studyAgentRequest.ts` | 加载 MCP 工具和客户端，构建工具集  |
+| 系统提示词定制 | `src/ai/prompt/study/study.ts`                        | 集成团队自定义提示词               |
+| 工具注册       | `src/ai/tools/tools.ts`                               | 将 `createSubAgent` 添加到工具列表 |
 
 ## 使用指南
 

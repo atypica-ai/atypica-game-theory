@@ -1,10 +1,10 @@
 import { generateImpersonationLoginUrl } from "@/app/(auth)/impersonationLogin";
+import { verifyDomainWhitelist } from "@/app/(open)/api/team/members/utils";
+import { withApiKey } from "@/app/(open)/lib/withApiKey";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { withApiKey } from "@/app/(open)/lib/withApiKey";
-import { verifyDomainWhitelist } from "@/app/(open)/api/team/members/utils";
 
 const logger = rootLogger.child({ api: "/api/team/members/[userId]/impersonation" });
 
@@ -98,7 +98,12 @@ export async function POST(
 
       // Generate impersonation URL for the team user
       const siteOrigin = await getRequestOrigin();
-      const loginUrl = generateImpersonationLoginUrl(member.id, siteOrigin, expiryHours, callbackUrl);
+      const loginUrl = generateImpersonationLoginUrl(
+        member.id,
+        siteOrigin,
+        expiryHours,
+        callbackUrl,
+      );
 
       logger.info({
         msg: "Generated impersonation URL",

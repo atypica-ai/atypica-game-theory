@@ -1,4 +1,5 @@
 "use client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -10,11 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
-import { useState, FormEvent } from "react";
-import { generatePodcastAudioFromScriptAction } from "./actions";
+import { CheckCircle2, ExternalLink, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
+import { FormEvent, useState } from "react";
+import { generatePodcastAudioFromScriptAction } from "./actions";
 
 interface GenerationResult {
   podcastId: number;
@@ -50,9 +50,7 @@ export function PodcastTestPageClient() {
       if (response.success && response.data) {
         setResult(response.data);
       } else {
-        setError(
-          response.success === false ? response.message : "Failed to generate audio",
-        );
+        setError(response.success === false ? response.message : "Failed to generate audio");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
@@ -83,8 +81,8 @@ export function PodcastTestPageClient() {
           <CardHeader>
             <CardTitle>Script Input</CardTitle>
             <CardDescription>
-              Enter the podcast script. Use markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】 to indicate
-              different speakers.
+              Enter the podcast script. Use markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】 to
+              indicate different speakers.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -183,4 +181,3 @@ export function PodcastTestPageClient() {
     </div>
   );
 }
-

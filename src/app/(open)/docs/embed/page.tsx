@@ -37,8 +37,8 @@ export default async function EmbedDocsPage() {
                 <div>
                   <h3 className="text-base font-semibold mb-3">1. Embed the iframe</h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Use the impersonation login URL to automatically authenticate users. You can obtain
-                    the login URL from the{" "}
+                    Use the impersonation login URL to automatically authenticate users. You can
+                    obtain the login URL from the{" "}
                     <Link href="/docs/api#impersonation" className="text-primary hover:underline">
                       Impersonation API endpoint
                     </Link>
@@ -144,9 +144,7 @@ iframe.contentWindow.postMessage(
 
             {/* Authentication */}
             <section id="authentication" className="mb-16 scroll-mt-8">
-              <h2 className="text-xl font-bold mb-4 pb-3 border-b border-border">
-                Authentication
-              </h2>
+              <h2 className="text-xl font-bold mb-4 pb-3 border-b border-border">Authentication</h2>
 
               <div className="space-y-6">
                 <div>
@@ -484,8 +482,8 @@ iframe.contentWindow.postMessage(
                 <div>
                   <h3 className="text-base font-semibold mb-2">No response to messages</h3>
                   <p className="text-sm text-muted-foreground">
-                    Ensure the iframe is fully loaded before sending messages. Use a delay or
-                    listen for the load event.
+                    Ensure the iframe is fully loaded before sending messages. Use a delay or listen
+                    for the load event.
                   </p>
                   <div className="bg-muted/50 border border-border rounded p-4 overflow-x-auto mt-2">
                     <pre className="font-mono text-xs">
@@ -500,8 +498,8 @@ iframe.contentWindow.postMessage(
                 <div>
                   <h3 className="text-base font-semibold mb-2">Cross-origin issues</h3>
                   <p className="text-sm text-muted-foreground">
-                    Always use the postMessage API for cross-origin communication. Do not attempt
-                    to directly access iframe content.
+                    Always use the postMessage API for cross-origin communication. Do not attempt to
+                    directly access iframe content.
                   </p>
                 </div>
 
@@ -512,9 +510,10 @@ iframe.contentWindow.postMessage(
                     <code className="bg-muted px-1 py-0.5 rounded text-xs">
                       fetchAnalystReportsOfStudyUserChat
                     </code>{" "}
-                    only works on <code className="bg-muted px-1 py-0.5 rounded text-xs">/study/[token]</code>{" "}
-                    pages. Check the URL using the <code className="bg-muted px-1 py-0.5 rounded text-xs">href</code>{" "}
-                    message type.
+                    only works on{" "}
+                    <code className="bg-muted px-1 py-0.5 rounded text-xs">/study/[token]</code>{" "}
+                    pages. Check the URL using the{" "}
+                    <code className="bg-muted px-1 py-0.5 rounded text-xs">href</code> message type.
                   </p>
                 </div>
               </div>

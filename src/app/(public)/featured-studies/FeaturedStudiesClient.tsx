@@ -1,5 +1,4 @@
 "use client";
-import { fetchPublicFeaturedStudies } from "./actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +11,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { fetchPublicFeaturedStudies } from "./actions";
 
 type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
 

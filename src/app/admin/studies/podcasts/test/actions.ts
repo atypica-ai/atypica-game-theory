@@ -5,12 +5,12 @@ import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { generateToken } from "@/lib/utils";
 import { createUserChat } from "@/lib/userChat/lib";
+import { generateToken } from "@/lib/utils";
 import { AnalystPodcastExtra } from "@/prisma/client";
-import { Locale } from "next-intl";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
+import { Locale } from "next-intl";
 
 /**
  * Generate podcast audio from script input (testing only)
@@ -196,11 +196,11 @@ export async function generatePodcastAudioFromScriptAction({
       extra: {
         processing: {
           startsAt:
-            (typeof podcast.extra.processing === "object" &&
-              podcast.extra.processing !== null &&
-              "startsAt" in podcast.extra.processing
+            typeof podcast.extra.processing === "object" &&
+            podcast.extra.processing !== null &&
+            "startsAt" in podcast.extra.processing
               ? podcast.extra.processing.startsAt
-              : Date.now()),
+              : Date.now(),
           scriptGeneration: true,
           audioGeneration: true,
         },
@@ -239,4 +239,3 @@ export async function generatePodcastAudioFromScriptAction({
     };
   }
 }
-

@@ -125,7 +125,9 @@ export default function PricingPageClient({
               userType={userType}
               activeSubscription={activeSubscription}
               onPurchase={
-                team ? () => setIsTeamSubscriptionDialogOpen({ plan: SubscriptionPlan.superteam }) : undefined
+                team
+                  ? () => setIsTeamSubscriptionDialogOpen({ plan: SubscriptionPlan.superteam })
+                  : undefined
               }
             />
           </div>
@@ -137,7 +139,11 @@ export default function PricingPageClient({
               productPrices={productPrices}
               userType={userType}
               activeSubscription={activeSubscription}
-              onPurchase={team ? () => setIsTeamSubscriptionDialogOpen({ plan: SubscriptionPlan.team }) : undefined}
+              onPurchase={
+                team
+                  ? () => setIsTeamSubscriptionDialogOpen({ plan: SubscriptionPlan.team })
+                  : undefined
+              }
             />
             <EnterprisePlanCard onContactSales={sayHelloToSales} />
           </div>

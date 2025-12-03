@@ -23,7 +23,14 @@ import {
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { BotIcon, InfoIcon, RefreshCwIcon, ShieldIcon, StopCircleIcon, UsersIcon } from "lucide-react";
+import {
+  BotIcon,
+  InfoIcon,
+  RefreshCwIcon,
+  ShieldIcon,
+  StopCircleIcon,
+  UsersIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -242,9 +249,7 @@ export function InterviewSessionViewer({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("endInterviewTitle")}</DialogTitle>
-          <DialogDescription>
-            {t("endInterviewDescription")}
-          </DialogDescription>
+          <DialogDescription>{t("endInterviewDescription")}</DialogDescription>
         </DialogHeader>
         <div className="flex justify-end space-x-2 pt-4">
           <Button variant="outline" onClick={() => setIsEndDialogOpen(false)}>
