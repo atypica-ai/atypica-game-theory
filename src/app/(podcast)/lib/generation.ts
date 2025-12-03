@@ -348,16 +348,8 @@ async function generatePodcastScript({
 
   const { finishReason } = await streamTextPromise;
 
-  // Add advertisement at the end of the script
-  const prologue =
-    locale === "zh-CN"
-      ? "每份洞察都值得被听见，欢迎来到 “Atypica AI”。"
-      : 'Welcome to "Atypica AI", every insight deserves an audience.';
-  const epilogue =
-    locale === "zh-CN"
-      ? "想了解更多有趣的研究，请关注 “Atypica AI”。"
-      : 'Want to learn more about interesting research? Checkout "Atypica AI".';
-  script = prologue + "\n\n" + script + "\n\n" + epilogue;
+  // Note: Prologue and epilogue are now handled as pre-recorded audio chunks
+  // in the audio generation pipeline, not as text in the script.
   // Save final script immediately
   await throttleSaveScript(podcast.id, script, { immediate: true });
 

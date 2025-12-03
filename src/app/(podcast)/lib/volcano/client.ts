@@ -16,7 +16,7 @@ import {
   VolcanoHeaders,
   WaitForEvent,
 } from "./protocols";
-import { SilenceBuffer } from "./silenceCache";
+import { AudioCache } from "./audioCache";
 
 const VOLCANO_ENDPOINT = "wss://openspeech.bytedance.com/api/v3/sami/podcasttts";
 
@@ -385,6 +385,26 @@ export class VolcanoTTSClient {
           let totalRounds = 0;
           const audioChunks: Uint8Array[] = [];
 
+          // Load Audio Cache Early
+          const SILENCE = await AudioCache.get("silence");
+          const prologueAudio = await AudioCache.getPrologue(locale);
+          const epilogueAudio = await AudioCache.getEpilogue(locale);
+
+          // Add prologue audio at the beginning
+          try {
+            audioChunks.push(prologueAudio);
+            audioChunks.push(SILENCE)
+            this.logger?.info({
+              msg: "Prologue audio added",
+              locale,
+            });
+          } catch (error) {
+            this.logger?.warn({
+              msg: "Failed to load prologue audio, continuing without it",
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+
           while (true) {
             const msg = await ReceiveMessage(ws);
 
@@ -419,8 +439,8 @@ export class VolcanoTTSClient {
                   });
 
                   // Insert silence before this round (but not before the first round)
+                  // Note: audioChunks.length > 0 check ensures we don't add silence before prologue
                   if (audioChunks.length > 0) {
-                    const SILENCE = await SilenceBuffer.get();
                     audioChunks.push(SILENCE);
                     this.logger?.info({
                       msg: "Silence inserted before round",
@@ -464,6 +484,21 @@ export class VolcanoTTSClient {
               // Clean up connection
               await FinishConnection(ws);
               await WaitForEvent(ws, MsgType.FullServerResponse, EventType.ConnectionFinished);
+
+              // Add epilogue audio at the end
+              try {
+                audioChunks.push(SILENCE)
+                audioChunks.push(epilogueAudio);
+                this.logger?.info({
+                  msg: "Epilogue audio added",
+                  locale,
+                });
+              } catch (error) {
+                this.logger?.warn({
+                  msg: "Failed to load epilogue audio, continuing without it",
+                  error: error instanceof Error ? error.message : String(error),
+                });
+              }
 
               // Validate we received audio data
               if (audioChunks.length === 0) {
