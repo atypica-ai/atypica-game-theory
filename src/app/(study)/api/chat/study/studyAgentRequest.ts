@@ -112,11 +112,10 @@ export async function studyAgentRequest({
   const clients = teamId ? await manager.getClientsForTeam(teamId) : []; // Personal users have no MCP clients
   logger.info({ msg: "Loaded mcp clients", clients, teamId });
   const teamStudySystemPrompt = teamId
-    ? await getTeamConfigWithDefault(
-        teamId,
-        TeamConfigName.studySystemPrompt,
-        { "zh-CN": "", "en-US": "" },
-      )
+    ? await getTeamConfigWithDefault(teamId, TeamConfigName.studySystemPrompt, {
+        "zh-CN": "",
+        "en-US": "",
+      })
     : null;
   const agentToolArgs: AgentToolConfigArgs = {
     locale,
@@ -178,23 +177,24 @@ export async function studyAgentRequest({
     }
   }
 
-  let tools: Partial<typeof allTools> = allTools;
+  const tools: Partial<typeof allTools> = allTools;
   const toolChoice: ToolChoice<typeof allTools> = "auto";
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
 
   if ((toolUseCount[ToolName.generateReport] ?? 0) >= 1) {
-    // ⚠️ 一旦报告生成，后面就不允许构建人设和搜索等其他操作了，但是可以继续和报告进行问答，也可以重新生成报告
-    tools = Object.fromEntries(
-      Object.entries(allTools).filter(([key]) =>
-        [
-          // ToolName.requestInteraction,
-          ToolName.generateReport,
-          ToolName.reasoningThinking,
-          ToolName.toolCallError,
-        ].includes(key as ToolName),
-      ),
-    ) as typeof allTools;
+    // 一旦报告生成，后面就不允许构建人设和搜索等其他操作了，但是可以继续和报告进行问答，也可以重新生成报告
+    // tools = Object.fromEntries(
+    //   Object.entries(allTools).filter(([key]) =>
+    //     [
+    //       // ToolName.requestInteraction,
+    //       ToolName.generateReport,
+    //       ToolName.reasoningThinking,
+    //       ToolName.toolCallError,
+    //     ].includes(key as ToolName),
+    //   ),
+    // ) as typeof allTools;
+    // 👀 上面这部分目前放进 prepareStep 里用 activeTools 来控制了，但是，maxSteps 还是在这里控制
     maxSteps = 2;
   }
 
@@ -235,7 +235,7 @@ export async function studyAgentRequest({
     // 为了 prompt cache 生效，需要一个固定的 system prompt，之前放在 system prompt 里面的 tokensStat, toolUseStat 现在去掉了
   });
 
-  let modelMessages = coreMessages;
+  const modelMessages = coreMessages;
   // Insert reference study context as the first user message if available
   if (referenceStudyContext) {
     modelMessages.unshift({
@@ -273,13 +273,11 @@ export async function studyAgentRequest({
       ],
     });
   }
-  modelMessages = setBedrockCache("claude-3-7-sonnet", modelMessages);
 
   let streamStartTime = Date.now();
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
     model: llm("claude-3-7-sonnet"),
-
     providerOptions: defaultProviderOptions,
     system: system,
     messages: modelMessages,
@@ -288,6 +286,48 @@ export async function studyAgentRequest({
     experimental_repairToolCall: handleToolCallError,
     stopWhen: stepCountIs(maxSteps),
     maxOutputTokens: maxTokens,
+
+    prepareStep: async ({ messages: modelMessages }) => {
+      // Object.fromEntries(
+      //   Object.entries(allTools).filter(([key]) =>
+      //     [
+      //       // ToolName.requestInteraction,
+      //       ToolName.generateReport,
+      //       ToolName.reasoningThinking,
+      //       ToolName.toolCallError,
+      //     ].includes(key as ToolName),
+      //   ),
+      // ) as typeof allTools;
+      let reportGenerated = false;
+      for (const message of modelMessages) {
+        if (message.role === "tool") {
+          for (const part of message.content) {
+            if (part.toolName === ToolName.generateReport) {
+              reportGenerated = true;
+              break;
+            }
+          }
+        }
+        if (reportGenerated) break;
+      }
+      const activeTools = reportGenerated
+        ? [
+            // ToolName.requestInteraction,
+            ToolName.generateReport as const,
+            ToolName.reasoningThinking as const,
+            ToolName.toolCallError as const,
+          ]
+        : undefined;
+      /**
+       * ⚠️ 由于整个过程是一气呵成的，cache 必须在这里面设置，之前调用 streamText 前设置好的 cache 其实大部分没生效
+       * 因为比如 messages 长度到 8 的时候，streamText 还在自动跑，始终没有结束
+       */
+      const messages = setBedrockCache("claude-3-7-sonnet", [...modelMessages]);
+      return {
+        messages,
+        activeTools,
+      };
+    },
 
     // https://sdk.vercel.ai/docs/ai-sdk-ui/smooth-stream-chinese
     experimental_transform: smoothStream({

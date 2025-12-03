@@ -82,11 +82,15 @@ export function NewStudyInputBox({
   useEffect(() => {
     if (sessionStatus === "loading") {
       setShowStudyTypeSelector(false);
-    } else if (session?.user?.email?.endsWith("@tezign.com")) {
-      setShowStudyTypeSelector(true);
     } else {
-      setShowStudyTypeSelector(false);
+      // 🎉 这个 commit 里的修改，对 prompt cache 做了优化，现在可以对所有人开放了!
+      setShowStudyTypeSelector(true);
     }
+    // // } else if (session?.user?.email?.endsWith("@tezign.com")) {
+    // //   setShowStudyTypeSelector(true);
+    // } else {
+    //   setShowStudyTypeSelector(false);
+    // }
   }, [sessionStatus, session?.user?.email]);
 
   // Load reference chat titles
