@@ -134,7 +134,7 @@ export function SageIdentityCard({ sage, variant = "sidebar" }: SageIdentityCard
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 h-7 text-xs"
+                className="flex-1 h-8 text-xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowEditDialog(true);

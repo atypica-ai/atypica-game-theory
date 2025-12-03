@@ -20,7 +20,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { SageShareButton } from "./SageShareButton";
 
 export function SageStatsOverview() {
   const t = useTranslations("Sage.SageStats");
@@ -99,30 +98,7 @@ export function SageStatsOverview() {
             "sm:grid sm:grid-cols-3 xl:grid-cols-5",
           )}
         >
-          {/* 1. Memory */}
-          <StageCard
-            icon={<DatabaseIcon className="size-5" />}
-            status={memoryStatus}
-            label={t("memory")}
-            count={stats.memoryVersion}
-            description={
-              processingStatus === "processing"
-                ? t("integrating")
-                : stats.workingMemoryPendingCount > 0
-                  ? t("itemsPending", { count: stats.workingMemoryPendingCount })
-                  : t("synced")
-            }
-            href={`/sage/${sage.token}/memory`}
-          >
-            <SageShareButton
-              sageToken={sage.token}
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs"
-            />
-          </StageCard>
-
-          {/* 2. Sources */}
+          {/* 1. Sources */}
           <StageCard
             icon={<FileTextIcon className="size-5" />}
             status={sourcesStatus}
@@ -136,33 +112,23 @@ export function SageStatsOverview() {
             href={isSM ? undefined : `/sage/${sage.token}/sources`}
           />
 
-          {/* 3. Knowledge Gaps */}
+          {/* 2. Memory */}
           <StageCard
-            icon={<TriangleAlertIcon className="size-5" />}
-            status={gapsStatus}
-            label={t("knowledgeGaps")}
-            count={stats.gapsCount}
-            description={t("itemsPending", { count: stats.gapsCount })}
-            href={`/sage/${sage.token}/gaps`}
-          >
-            <ConfirmDialog
-              title={t("confirmStartInterviewTitle")}
-              description={t("confirmStartInterviewDesc")}
-              onConfirm={handleStartInterview}
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full h-7 text-xs"
-                disabled={isProcessing || stats.gapsCount === 0}
-              >
-                <MicIcon className="size-3" />
-                {t("startInterview")}
-              </Button>
-            </ConfirmDialog>
-          </StageCard>
+            icon={<DatabaseIcon className="size-5" />}
+            status={memoryStatus}
+            label={t("memory")}
+            count={stats.memoryVersion}
+            description={
+              processingStatus === "processing"
+                ? t("integrating")
+                : stats.workingMemoryPendingCount > 0
+                  ? t("itemsPending", { count: stats.workingMemoryPendingCount })
+                  : t("synced")
+            }
+            href={`/sage/${sage.token}/memory`}
+          />
 
-          {/* 4. User Chats */}
+          {/* 3. User Chats */}
           <StageCard
             icon={<MessageSquareIcon className="size-5" />}
             status="ready"
@@ -184,6 +150,32 @@ export function SageStatsOverview() {
               >
                 <SparklesIcon className="size-3" />
                 {t("analyzeChats")}
+              </Button>
+            </ConfirmDialog>
+          </StageCard>
+
+          {/* 4. Knowledge Gaps */}
+          <StageCard
+            icon={<TriangleAlertIcon className="size-5" />}
+            status={gapsStatus}
+            label={t("knowledgeGaps")}
+            count={stats.gapsCount}
+            description={t("itemsPending", { count: stats.gapsCount })}
+            href={`/sage/${sage.token}/gaps`}
+          >
+            <ConfirmDialog
+              title={t("confirmStartInterviewTitle")}
+              description={t("confirmStartInterviewDesc")}
+              onConfirm={handleStartInterview}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full h-7 text-xs"
+                disabled={isProcessing || stats.gapsCount === 0}
+              >
+                <MicIcon className="size-3" />
+                {t("startInterview")}
               </Button>
             </ConfirmDialog>
           </StageCard>
