@@ -44,8 +44,7 @@ export interface PodcastGenerationResult {
 const DEFAULT_SPEAKERS = {
   "zh-CN": ["zh_male_dayixiansheng_v2_saturn_bigtts", "zh_female_mizaitongxue_v2_saturn_bigtts"],
   "en-US": [
-    "zh_male_dayixiansheng_v2_saturn_bigtts", // Using Chinese speakers for now
-    "zh_female_mizaitongxue_v2_saturn_bigtts",
+    "zh_male_liufei_v2_saturn_bigtts","zh_male_xiaolei_v2_saturn_bigtts"
   ],
 };
 
@@ -339,6 +338,7 @@ export class VolcanoTTSClient {
           }
 
           // Prepare session parameters
+          const usedSpeakers = [...new Set(nlpTexts.map((nlpText) => nlpText.speaker))];
           const sessionId = uuidv4();
           const reqParams: PodcastRequestParams = {
             input_id: podcastToken,
@@ -357,8 +357,7 @@ export class VolcanoTTSClient {
             speaker_info: {
               random_order: false,
               speakers:
-                DEFAULT_SPEAKERS[locale as keyof typeof DEFAULT_SPEAKERS] ||
-                DEFAULT_SPEAKERS["zh-CN"],
+                usedSpeakers,
             },
           };
 
