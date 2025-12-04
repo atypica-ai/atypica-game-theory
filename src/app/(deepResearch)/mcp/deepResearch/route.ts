@@ -11,25 +11,102 @@ import { isJSONRPCRequest, RequestId } from "@modelcontextprotocol/sdk/types.js"
 import { NextRequest } from "next/server";
 import { getDeepResearchMcpServer } from "../mcpServer";
 
-const logger = rootLogger.child({ module: "deepresearch-mcp-api" });
+const logger = rootLogger.child({ api: "deep-research-mcp" });
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, Mcp-Protocol-Version",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Accept, Authorization, Mcp-Protocol-Version, x-user-id, x-internal-secret",
   "Access-Control-Max-Age": "86400",
 };
 
-function parseUserId(req: NextRequest): number {
-  const userIdParam = req.nextUrl.searchParams.get("userId");
-  if (!userIdParam) {
-    throw new Error("Missing userId in request URL");
+type AuthResult = { success: true; userId: number } | { success: false; errorResponse: Response };
+
+/**
+ * Authenticate and extract userId from request
+ *
+ * Currently supports internal authentication via x-internal-secret + x-user-id headers.
+ * Future: Will support user API key authentication via Authorization header.
+ *
+ * @returns AuthResult with userId if success, or ready-to-return error Response if failed
+ */
+async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
+  // Method 1: Internal authentication (current implementation)
+  const internalSecret = req.headers.get("x-internal-secret");
+  const userIdHeader = req.headers.get("x-user-id");
+
+  if (internalSecret && userIdHeader) {
+    // Validate internal secret
+    if (internalSecret !== process.env.INTERNAL_API_SECRET) {
+      logger.warn({ msg: "Invalid x-internal-secret" });
+      return {
+        success: false,
+        errorResponse: Response.json(
+          {
+            jsonrpc: "2.0",
+            error: { code: -32001, message: "Unauthorized: invalid x-internal-secret" },
+            id: null,
+          },
+          { status: 401, headers: CORS_HEADERS },
+        ),
+      };
+    }
+
+    // Parse and validate user ID
+    const userId = Number(userIdHeader);
+    if (!Number.isInteger(userId) || userId <= 0) {
+      logger.warn({ msg: "Invalid x-user-id header", userIdHeader });
+      return {
+        success: false,
+        errorResponse: Response.json(
+          {
+            jsonrpc: "2.0",
+            error: { code: -32602, message: "Invalid x-user-id header" },
+            id: null,
+          },
+          { status: 400, headers: CORS_HEADERS },
+        ),
+      };
+    }
+
+    return { success: true, userId };
   }
-  const userId = Number(userIdParam);
-  if (!Number.isInteger(userId) || userId <= 0) {
-    throw new Error("Invalid userId in request URL");
-  }
-  return userId;
+
+  // Method 2: User API key authentication (future implementation)
+  // const authorization = req.headers.get("authorization");
+  // if (authorization?.startsWith("Bearer ")) {
+  //   const apiKey = authorization.slice(7);
+  //   const result = await validateApiKeyAndGetUserId(apiKey);
+  //   if (result.success) {
+  //     return { success: true, userId: result.userId };
+  //   }
+  //   return {
+  //     success: false,
+  //     errorResponse: Response.json(
+  //       { jsonrpc: "2.0", error: { code: -32001, message: "Invalid API key" }, id: null },
+  //       { status: 401, headers: CORS_HEADERS }
+  //     ),
+  //   };
+  // }
+
+  // No valid authentication method found
+  logger.warn({ msg: "Missing authentication headers" });
+  return {
+    success: false,
+    errorResponse: Response.json(
+      {
+        jsonrpc: "2.0",
+        error: {
+          code: -32001,
+          message:
+            "Unauthorized: missing authentication headers (x-internal-secret + x-user-id required)",
+        },
+        id: null,
+      },
+      { status: 401, headers: CORS_HEADERS },
+    ),
+  };
 }
 
 /**
@@ -64,8 +141,14 @@ export async function OPTIONS() {
  * - DELETE: Session termination (no-op in stateless mode)
  */
 export async function POST(req: NextRequest) {
+  // Authenticate first
+  const authResult = await authenticateAndGetUserId(req);
+  if (!authResult.success) {
+    return authResult.errorResponse;
+  }
+  const { userId } = authResult;
+
   try {
-    const userId = parseUserId(req);
     // Determine if client wants streaming (SSE) or JSON response
     const acceptHeader = req.headers.get("accept") || "";
     let wantsSSE = acceptHeader.includes("text/event-stream");
@@ -86,7 +169,7 @@ export async function POST(req: NextRequest) {
     // Clean up transport when request closes
     req.signal.addEventListener("abort", () => {
       transport.close().catch((err) => {
-        logger.error({ error: (err as Error).message }, "Error closing transport on abort");
+        logger.error({ msg: "Error closing transport on abort", error: (err as Error).message });
       });
     });
 
@@ -108,19 +191,22 @@ export async function POST(req: NextRequest) {
         (msg) => isJSONRPCRequest(msg) && msg.method === "tools/call",
       );
       requestId = toolCallRequest?.id;
-      logger.debug(
-        { batchSize: body.length, foundRequestId: !!requestId },
-        "Processing batch request",
-      );
+      logger.debug({
+        msg: "Processing batch request",
+        batchSize: body.length,
+        foundRequestId: !!requestId,
+      });
     } else if (isJSONRPCRequest(body)) {
       // Single request - extract ID if it's a tools/call
       if (body.method === "tools/call") {
         requestId = body.id;
       }
-      logger.debug(
-        { method: body.method, requestId, isToolCall: body.method === "tools/call" },
-        "Processing single request",
-      );
+      logger.debug({
+        msg: "Processing single request",
+        method: body.method,
+        requestId,
+        isToolCall: body.method === "tools/call",
+      });
     }
 
     // Create adapter objects for streaming
@@ -179,34 +265,15 @@ export async function POST(req: NextRequest) {
       });
     }
   } catch (error) {
-    logger.error(
-      {
-        error: (error as Error).message,
-        stack: (error as Error).stack,
-      },
-      "Error handling MCP request",
-    );
-
-    // Return JSON-RPC error response
-    const statusCode = error instanceof Error && error.message.includes("userId") ? 400 : 500;
-    const message =
-      error instanceof Error && error.message.includes("userId")
-        ? error.message
-        : "Internal server error";
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
+    logger.error({
+      msg: "Error handling MCP request",
+      error: errorMessage,
+      stack: (error as Error).stack,
+    });
     return Response.json(
-      {
-        jsonrpc: "2.0",
-        error: {
-          code: statusCode === 400 ? -32602 : -32603,
-          message,
-          data: (error as Error).message,
-        },
-        id: null,
-      },
-      {
-        status: statusCode,
-        headers: CORS_HEADERS,
-      },
+      { jsonrpc: "2.0", error: { code: -32603, message: errorMessage }, id: null },
+      { status: 500, headers: CORS_HEADERS },
     );
   }
 }
@@ -216,10 +283,14 @@ export async function POST(req: NextRequest) {
  * This allows the server to push notifications without a request-response cycle
  */
 export async function GET(req: NextRequest) {
-  try {
-    // GET 的时候不需要 userId，只是请求 tool 的信息
-    // const userId = parseUserId(req);
+  // Authenticate first
+  const authResult = await authenticateAndGetUserId(req);
+  if (!authResult.success) {
+    return authResult.errorResponse;
+  }
 
+  try {
+    // GET doesn't need userId, just validates authentication
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: false, // Always use SSE for GET
@@ -227,7 +298,7 @@ export async function GET(req: NextRequest) {
 
     req.signal.addEventListener("abort", () => {
       transport.close().catch((err) => {
-        logger.error({ error: (err as Error).message }, "Error closing transport on abort");
+        logger.error({ msg: "Error closing transport on abort", error: (err as Error).message });
       });
     });
 
@@ -239,7 +310,7 @@ export async function GET(req: NextRequest) {
 
     // Handle GET request for SSE stream
     transport.handleRequest(incomingMessage, res).catch((err) => {
-      logger.error({ error: err }, "Error handling GET SSE stream");
+      logger.error({ msg: "Error handling GET SSE stream", error: err });
     });
 
     return new Response(getStreamingResponse(), {
@@ -251,25 +322,11 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    logger.error({ error }, "Error setting up GET SSE stream");
-    const statusCode = error instanceof Error && error.message.includes("userId") ? 400 : 500;
-    const message =
-      error instanceof Error && error.message.includes("userId")
-        ? error.message
-        : "Internal server error";
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
+    logger.error({ msg: "Error setting up GET SSE stream", error: errorMessage });
     return Response.json(
-      {
-        jsonrpc: "2.0",
-        error: {
-          code: statusCode === 400 ? -32602 : -32603,
-          message,
-        },
-        id: null,
-      },
-      {
-        status: statusCode,
-        headers: CORS_HEADERS,
-      },
+      { jsonrpc: "2.0", error: { code: -32603, message: errorMessage }, id: null },
+      { status: 500, headers: CORS_HEADERS },
     );
   }
 }
@@ -279,33 +336,20 @@ export async function GET(req: NextRequest) {
  * In stateless mode, this is a no-op but we implement it for protocol compliance
  */
 export async function DELETE(req: NextRequest) {
+  // Authenticate first
+  const authResult = await authenticateAndGetUserId(req);
+  if (!authResult.success) {
+    return authResult.errorResponse;
+  }
   try {
-    parseUserId(req);
     return Response.json(
-      {
-        jsonrpc: "2.0",
-        result: { message: "Session terminated (stateless mode)" },
-        id: null,
-      },
-      {
-        status: 200,
-        headers: CORS_HEADERS,
-      },
+      { jsonrpc: "2.0", result: { message: "Session terminated (stateless mode)" }, id: null },
+      { status: 200, headers: CORS_HEADERS },
     );
   } catch (error) {
     return Response.json(
-      {
-        jsonrpc: "2.0",
-        error: {
-          code: -32602,
-          message: (error as Error).message,
-        },
-        id: null,
-      },
-      {
-        status: 400,
-        headers: CORS_HEADERS,
-      },
+      { jsonrpc: "2.0", error: { code: -32602, message: (error as Error).message }, id: null },
+      { status: 400, headers: CORS_HEADERS },
     );
   }
 }
