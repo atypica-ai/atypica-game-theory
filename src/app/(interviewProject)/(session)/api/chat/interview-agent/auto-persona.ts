@@ -10,7 +10,7 @@ import { personaAgentSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { StatReporter } from "@/ai/tools/types";
-import { calculateStepTokensUsage } from "@/ai/usage";
+import { calculateStepTokensUsage, TReduceTokens } from "@/ai/usage";
 import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
@@ -20,6 +20,7 @@ import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { InputJsonValue } from "@prisma/client/runtime/client";
@@ -288,9 +289,11 @@ async function generatePersonaResponse({
   statReport: StatReporter;
   logger: Logger;
 }) {
+  const modelName = "gemini-2.5-flash";
+  const reduceTokens: TReduceTokens = { model: modelName, ratio: 10 };
   const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({
-      model: llm("gemini-2.5-flash"),
+      model: llm(modelName),
       providerOptions: defaultProviderOptions,
       tools: {
         google_search: google.tools.googleSearch({
@@ -306,7 +309,7 @@ async function generatePersonaResponse({
       stopWhen: stepCountIs(1),
 
       onStepFinish: async (step) => {
-        const { tokens, extra } = calculateStepTokensUsage(step);
+        const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
         logger.info({
           msg: "generatePersonaResponse streamText onStepFinish",
           toolCalls: step.toolCalls.map((call) => call.toolName),
@@ -361,14 +364,21 @@ async function generateInterviewerResponse({
   const tools = {
     endInterview,
   };
+  // const modelName = "claude-3-7-sonnet";
+  // const modelName = "gpt-5-mini";
+  const modelName = "claude-haiku-4-5";
+  const reduceTokens: TReduceTokens = { model: modelName, ratio: 3 };
   const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({
-      // model: llm("claude-3-7-sonnet"),
-      // providerOptions: {
-      //   ...defaultProviderOptions,
-      // },
-      model: llm("gpt-5-mini"),
+      model: llm(modelName),
       providerOptions: {
+        ...defaultProviderOptions,
+        anthropic: {
+          thinking: {
+            type: "disabled",
+            budgetTokens: 3000,
+          },
+        } satisfies AnthropicProviderOptions,
         openai: {
           reasoningSummary: "auto", // 'auto' | 'detailed'
           reasoningEffort: "high", // 'minimal' | 'low' | 'medium' | 'high'
@@ -389,7 +399,7 @@ async function generateInterviewerResponse({
       stopWhen: stepCountIs(1),
 
       onStepFinish: async (step) => {
-        const { tokens, extra } = calculateStepTokensUsage(step);
+        const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
         logger.info({
           msg: "generateInterviewerResponse streamText onStepFinish",
           toolCalls: step.toolCalls.map((call) => call.toolName),
