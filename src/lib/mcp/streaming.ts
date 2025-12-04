@@ -17,7 +17,7 @@ const logger = rootLogger.child({ module: "mcp-streaming" });
 export function createStreamingCallback(
   sendNotification: (notification: ProgressNotification) => Promise<void>,
   progressToken: ProgressToken | undefined,
-  toolName: string,
+  toolName: string, // eslint-disable-line @typescript-eslint/no-unused-vars
 ): StreamChunkCallback {
   return async (chunk) => {
     // Only send progress notifications if client requested them (progressToken exists)
@@ -40,7 +40,7 @@ export function createStreamingCallback(
         //       "value":{..}
         //   }
         // }
-        progressMessage = JSON.stringify((chunk.error as Record<string, any>).value);
+        progressMessage = JSON.stringify((chunk.error as Record<string, unknown>).value);
       }
 
       // Only send notification if we have a meaningful message

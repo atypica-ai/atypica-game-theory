@@ -1,20 +1,21 @@
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { xai } from "@ai-sdk/xai";
-import { stepCountIs, streamText } from "ai";
+import { stepCountIs, streamText, ToolSet } from "ai";
+import { ExpertExecutor, ExpertStreamTextResult } from "../types";
 import grokSystemPrompt from "./prompt";
 const MAX_STEPS = 8;
 
-export const grokExpert = async ({
+export const grokExpert: ExpertExecutor = async ({
   query,
+  // userId,
+  // locale,
+  logger,
+  // statReport,  // TODO: consume tokens with statReport
   abortSignal,
-  userId,
-}: {
-  query: string;
-  abortSignal?: AbortSignal;
-  userId?: number;
-}) => {
+  forwardStreamChunk,
+}): Promise<ExpertStreamTextResult> => {
   // Build tools object with error handling
-  const allTools: Record<string, any> = {
+  const allTools: ToolSet = {
     x_search: xai.tools.xSearch({
       enableImageUnderstanding: true,
       enableVideoUnderstanding: true,
@@ -22,38 +23,59 @@ export const grokExpert = async ({
     web_search: xai.tools.webSearch({
       enableImageUnderstanding: true,
     }),
-  };
+  } as ToolSet; // ⚠️ 强制转换一下格式，这两个 tool 只是 API 返回结果，实际不会调用，所以是没有 input 类型定义的
 
-  const response = streamText({
-    model: llm("grok-4"),
-    system: grokSystemPrompt,
-    providerOptions: defaultProviderOptions,
-    tools: allTools,
-    toolChoice: "auto",
-    messages: [
-      {
-        role: "user",
-        content: query,
+  const promise = new Promise<ExpertStreamTextResult>((resolve, reject) => {
+    const response = streamText({
+      model: llm("grok-4"),
+      system: grokSystemPrompt,
+      providerOptions: defaultProviderOptions,
+      tools: allTools,
+      toolChoice: "auto",
+      messages: [
+        {
+          role: "user",
+          content: query,
+        },
+      ],
+      abortSignal,
+      stopWhen: stepCountIs(MAX_STEPS),
+      prepareStep: async ({ stepNumber, messages }) => {
+        if (stepNumber === MAX_STEPS - 1) {
+          return {
+            toolChoice: "none", // shut down all tools at last step
+            activeTools: [],
+            messages: [
+              ...messages,
+              {
+                role: "user",
+                content: "You have reached the last allowed step. Please conclude the research.",
+              },
+            ],
+          };
+        }
+        // When nothing is returned, the default settings from the main config are used.
       },
-    ],
-    abortSignal,
-    stopWhen: stepCountIs(MAX_STEPS),
-    prepareStep: async ({ stepNumber, messages }) => {
-      if (stepNumber === MAX_STEPS - 1) {
-        return {
-          toolChoice: "none", // shut down all tools at last step
-          activeTools: [],
-          messages: [
-            ...messages,
-            {
-              role: "user",
-              content: "You have reached the last allowed step. Please conclude the research.",
-            },
-          ],
-        };
-      }
-      // When nothing is returned, the default settings from the main config are used.
-    },
+      onChunk: async ({ chunk }) => {
+        if (forwardStreamChunk) {
+          forwardStreamChunk(chunk);
+        }
+      },
+      onError: async ({ error }) => {
+        logger.error(`grokExpert streamText onError: ${(error as Error).message}`);
+        reject(error);
+      },
+      onFinish: async ({ text, usage, sources }) => {
+        logger.info("grokExpert streamText onFinish");
+        resolve({ text, usage, sources });
+      },
+    });
+
+    response
+      .consumeStream()
+      .then(() => {})
+      .catch((error) => reject(error));
   });
-  return response;
+
+  return await promise;
 };

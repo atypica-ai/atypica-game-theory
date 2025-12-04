@@ -123,16 +123,19 @@ function createStreamableServerResponse(): {
       }
     },
 
-    on(event: string, handler: (...args: any[]) => void) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    on(event: string, handler: () => void) {
       // Minimal event emitter implementation
       return res;
     },
 
-    once(event: string, handler: (...args: any[]) => void) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    once(event: string, handler: () => void) {
       return res;
     },
 
-    emit(event: string, ...args: any[]) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    emit(event: string) {
       return false;
     },
   } as unknown as ServerResponse;
@@ -317,7 +320,8 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   try {
-    const userId = parseUserId(req);
+    // GET 的时候不需要 userId，只是请求 tool 的信息
+    // const userId = parseUserId(req);
 
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,

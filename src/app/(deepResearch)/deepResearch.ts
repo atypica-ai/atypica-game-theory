@@ -1,12 +1,15 @@
 import "server-only";
 
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
+import { StatReporter } from "@/ai/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { StreamChunkCallback } from "@/lib/mcp/types";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
-import { generateId } from "ai";
+import { waitUntil } from "@vercel/functions";
+import { generateId, TextStreamPart, ToolSet } from "ai";
+import { getLocale } from "next-intl/server";
 import { resolveExpert } from "./experts";
 import { DeepResearchInput, DeepResearchOutput } from "./types";
 
@@ -28,10 +31,17 @@ export async function executeDeepResearch({
   onStreamChunk,
 }: DeepResearchInput & {
   userId: number;
-  abortSignal?: AbortSignal;
+  abortSignal: AbortSignal;
   onStreamChunk?: StreamChunkCallback;
 }): Promise<DeepResearchOutput> {
+  const locale = await getLocale();
   const logger = rootLogger.child({ tool: "deepresearch", query: query.substring(0, 100), userId });
+  const statReport: StatReporter = async (dimension, value, extra) => {
+    logger.info({
+      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+      extra,
+    });
+  };
 
   // Create UserChat for this research session
   const userChat = await createUserChat({
@@ -70,30 +80,35 @@ export async function executeDeepResearch({
 
     const { name: resolvedExpert, executor } = resolveExpert(expert);
 
-    toolLogger.info({ expert: resolvedExpert }, "Starting deep research with streaming");
+    toolLogger.info({ expert: resolvedExpert, msg: "Starting deep research with streaming" });
 
-    const response = await executor({ query, abortSignal, userId });
+    const {
+      text: resultText,
+      usage,
+      sources,
+    } = await executor({
+      query,
+      userId,
+      locale,
+      logger: toolLogger,
+      statReport,
+      abortSignal,
+      forwardStreamChunk: onStreamChunk
+        ? (chunk: TextStreamPart<ToolSet>) => {
+            waitUntil(
+              Promise.race([
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 30 * 1000)),
+                onStreamChunk(chunk).catch((error) => {
+                  logger.error(
+                    `${resolvedExpert} streamText onStreamChunk error: ${error.message}`,
+                  );
+                }),
+              ]),
+            );
+          }
+        : undefined,
+    });
 
-    if (onStreamChunk) {
-      // Use fullStream to get all event types (text, reasoning, sources, etc.)
-      for await (const chunk of response.fullStream) {
-        await onStreamChunk(chunk);
-      }
-    } else {
-      // No streaming callback - just drain the stream
-      for await (const _chunk of response.textStream) {
-        // Consume stream
-        toolLogger.info("onStreamChunk not provided, draining stream");
-      }
-    }
-
-    // Get final result with all metadata
-    const result = await response;
-    const resultText = await result.text;
-    const usage = await result.usage;
-    const sources = await result.sources;
-
-    // Combine reasoning text if available
     const finalResult = resultText;
 
     toolLogger.info(
@@ -149,20 +164,19 @@ export async function executeDeepResearch({
     }
 
     // Enhanced error logging for AI SDK errors
-    const errorDetails: Record<string, any> = {
+    const errorDetails: Record<string, string> = {
       errorMessage: (error as Error).message,
       errorName: (error as Error).name,
     };
 
     // Check if it's an AI SDK API call error with additional details
     if (error && typeof error === "object" && "statusCode" in error) {
-      const apiError = error as any;
+      const apiError = error as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       errorDetails.statusCode = apiError.statusCode;
       errorDetails.url = apiError.url;
       errorDetails.responseBody = apiError.responseBody;
       errorDetails.requestBodyValues = apiError.requestBodyValues;
       errorDetails.isRetryable = apiError.isRetryable;
-
       // Check if tool_choice was set
       if (apiError.requestBodyValues?.tool_choice) {
         errorDetails.toolChoiceInRequest = apiError.requestBodyValues.tool_choice;

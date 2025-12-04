@@ -1,12 +1,12 @@
 import "server-only";
 
-import { executeDeepResearch } from "@/app/(deepresearch)/deepResearch";
-import { ExpertName } from "@/app/(deepresearch)/experts/types";
+import { executeDeepResearch } from "@/app/(deepResearch)/deepResearch";
+import { ExpertName } from "@/app/(deepResearch)/experts/types";
 import {
   DeepResearchInput,
   deepResearchInputSchema,
   deepResearchOutputSchema,
-} from "@/app/(deepresearch)/types";
+} from "@/app/(deepResearch)/types";
 import { rootLogger } from "@/lib/logging";
 import { getMCPRequestContext } from "@/lib/mcp/context";
 import { createStreamingCallback } from "@/lib/mcp/streaming";
@@ -29,6 +29,8 @@ export function createDeepResearchMcpServer(): McpServer {
     name: "deepresearch",
     version: "1.0.0",
   });
+
+  const deepResearchToolName = "atypica_deep_research";
 
   const deepResearchToolConfig = {
     title: "Atypica DeepResearch Tool",
@@ -68,7 +70,7 @@ export function createDeepResearchMcpServer(): McpServer {
       const onStreamChunk = createStreamingCallback(
         extra.sendNotification,
         progressToken,
-        "atypica_deep_research",
+        deepResearchToolName,
       );
 
       // Execute with streaming callback that sends MCP progress notifications
@@ -108,7 +110,7 @@ export function createDeepResearchMcpServer(): McpServer {
 
   // server.registerTool;
   // Register the Atypica DeepResearch Tool with streaming support
-  server.registerTool("atypica_deep_research", deepResearchToolConfig, deepResearchToolCallback);
+  server.registerTool(deepResearchToolName, deepResearchToolConfig, deepResearchToolCallback);
 
   return server;
 }
