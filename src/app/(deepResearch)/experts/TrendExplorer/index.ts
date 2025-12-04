@@ -14,26 +14,22 @@ export const trendExplorerExpert: ExpertExecutor = async ({
   userId,
   locale,
   logger,
-  // statReport,  // TODO: consume tokens with statReport
+  statReport,
   abortSignal,
   forwardStreamChunk,
 }) => {
   // Create web search tool with perplexity provider for DeepResearch context
   const webSearchTool = createWebSearchTool({
     provider: "perplexity",
-    statReport: async () => {
-      // No-op stat reporter for DeepResearch context
-    },
+    statReport,
   });
 
   // Use the actual scoutSocialTrendsTool with proper configuration
   const socialTrendsTool = scoutSocialTrendsTool({
     userId,
     locale,
-    abortSignal: abortSignal ?? AbortSignal.timeout(0), // Provide a default if undefined
-    statReport: async () => {
-      // No-op stat reporter for DeepResearch context
-    },
+    abortSignal,
+    statReport,
     logger,
   });
 

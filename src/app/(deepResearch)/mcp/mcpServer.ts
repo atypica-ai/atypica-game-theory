@@ -25,7 +25,7 @@ const logger = rootLogger.child({ module: "deepresearch-mcp-server" });
  */
 export function createDeepResearchMcpServer(): McpServer {
   const server = new McpServer({
-    name: "deepresearch",
+    name: "atypica-deep-research-mcp",
     version: "1.0.0",
   });
 

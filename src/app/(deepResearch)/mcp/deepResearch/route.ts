@@ -68,7 +68,14 @@ export async function POST(req: NextRequest) {
     const userId = parseUserId(req);
     // Determine if client wants streaming (SSE) or JSON response
     const acceptHeader = req.headers.get("accept") || "";
-    const wantsSSE = acceptHeader.includes("text/event-stream");
+    let wantsSSE = acceptHeader.includes("text/event-stream");
+    /**
+     * @todo 这个做法不好，但是现在有些客户端无法读取，可能是当前版本的 MCP 没兼容旧的格式
+     * 那些客户端也没法强制修改 accept header, 所以只能加一个 search 参数，在安装的时候指定禁用 sse
+     */
+    if (req.nextUrl.searchParams.get("sse") === "0") {
+      wantsSSE = false;
+    }
 
     // Create a new transport for each request (stateless design)
     const transport = new StreamableHTTPServerTransport({
