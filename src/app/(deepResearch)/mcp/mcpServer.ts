@@ -1,5 +1,6 @@
 import "server-only";
 
+import { StatReporter } from "@/ai/tools/types";
 import { executeDeepResearch } from "@/app/(deepResearch)/deepResearch";
 import { ExpertName } from "@/app/(deepResearch)/experts/types";
 import {
@@ -9,6 +10,7 @@ import {
 } from "@/app/(deepResearch)/types";
 import { rootLogger } from "@/lib/logging";
 import { createMcpStreamingCallback, getMcpRequestContext } from "@/lib/mcp";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
@@ -16,8 +18,7 @@ import {
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-
-const logger = rootLogger.child({ module: "deepresearch-mcp-server" });
+import { getLocale } from "next-intl/server";
 
 /**
  * Creates and configures the deepresearch MCP server
@@ -55,12 +56,32 @@ export function createDeepResearchMcpServer(): McpServer {
       const userId = context.userId;
       const progressToken = extra._meta?.progressToken;
 
+      const locale = await detectInputLanguage({
+        text: args.query,
+        fallbackLocale: await getLocale(),
+      });
+      const logger = rootLogger.child({
+        mcp: "atypica-deep-research-mcp",
+        tool: deepResearchToolName,
+        query: args.query.substring(0, 20),
+        userId,
+      });
+      const abortSignal = extra.signal;
+      /**
+       * 在 deepResearch 内部因为不同专家 token 计算方式不同，应该各自自己计算，不需要返回 usage 来统一计算
+       * 但是，计算的 token 要根据不同的 context 记录到不同的对象上
+       * 如果是外部直接调用，应该单独记录在用户上，如果是 study agent 调用，则记录在 study chat 上
+       * 这也是 StatReporter 对象设计的初衷：使用 atypica token 统一计价，各自计算，调用者决定 token 消耗的归属
+       */
+      const statReport: StatReporter = async (dimension, value, extra) => {
+        logger.info({
+          msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
+          extra,
+        });
+      };
+
       logger.debug(
-        {
-          requestId: extra.requestId,
-          hasProgressToken: !!progressToken,
-          userId,
-        },
+        { requestId: extra.requestId, hasProgressToken: !!progressToken, userId },
         "Executing deep research with streaming",
       );
 
@@ -78,7 +99,10 @@ export function createDeepResearchMcpServer(): McpServer {
         query: args.query,
         userId,
         expert: args.expert ?? ExpertName.Auto,
-        abortSignal: extra.signal,
+        locale,
+        logger,
+        statReport,
+        abortSignal,
         onStreamChunk,
       });
 
@@ -94,7 +118,7 @@ export function createDeepResearchMcpServer(): McpServer {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error({ error: errorMessage }, "Deep research tool execution failed");
+      rootLogger.error({ error: errorMessage }, "Deep research tool execution failed");
       return {
         content: [
           {

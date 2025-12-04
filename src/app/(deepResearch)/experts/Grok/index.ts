@@ -1,4 +1,5 @@
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import { calculateStepTokensUsage, TReduceTokens } from "@/ai/usage";
 import { xai } from "@ai-sdk/xai";
 import { stepCountIs, streamText, ToolSet, TypeValidationError } from "ai";
 import { ExpertExecutor, ExpertStreamTextResult } from "../types";
@@ -10,7 +11,7 @@ export const grokExpert: ExpertExecutor = async ({
   // userId,
   // locale,
   logger,
-  // statReport,  // TODO: consume tokens with statReport
+  statReport,
   abortSignal,
   forwardStreamChunk,
 }): Promise<ExpertStreamTextResult> => {
@@ -24,7 +25,10 @@ export const grokExpert: ExpertExecutor = async ({
       enableImageUnderstanding: true,
     }),
   } as ToolSet; // ⚠️ 强制转换一下格式，这两个 tool 只是 API 返回结果，实际不会调用，所以是没有 input 类型定义的
-
+  const reduceTokens: TReduceTokens = {
+    model: "grok-4-1-fast-non-reasoning",
+    ratio: 2,
+  };
   const promise = new Promise<ExpertStreamTextResult>((resolve, reject) => {
     const response = streamText({
       model: llm("grok-4-1-fast-non-reasoning"),
@@ -71,8 +75,17 @@ export const grokExpert: ExpertExecutor = async ({
         logger.error(`grokExpert streamText onError: ${(error as Error).message}`);
         reject(error);
       },
-      onFinish: async ({ text, usage, sources }) => {
+      onFinish: async ({ text, usage, providerMetadata, sources }) => {
         logger.info("grokExpert streamText onFinish");
+        const { tokens, extra } = calculateStepTokensUsage(
+          { usage, providerMetadata },
+          { reduceTokens },
+        );
+        await statReport("tokens", tokens, {
+          reportedBy: "deepResearch tool",
+          expert: "Grok",
+          ...extra,
+        });
         resolve({ text, usage, sources });
       },
     });

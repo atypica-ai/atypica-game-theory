@@ -3,6 +3,7 @@ import "server-only";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { scoutSocialTrendsTool } from "@/ai/tools/experts/scoutSocialTrends";
 import { webSearchTool as createWebSearchTool } from "@/ai/tools/experts/webSearch";
+import { calculateStepTokensUsage, TReduceTokens } from "@/ai/usage";
 import { stepCountIs, streamText, ToolSet } from "ai";
 import { ExpertExecutor, ExpertStreamTextResult } from "../types";
 import trendExplorerSystemPrompt from "./prompt";
@@ -38,7 +39,10 @@ export const trendExplorerExpert: ExpertExecutor = async ({
     webSearch: webSearchTool,
     scoutSocialTrends: socialTrendsTool,
   };
-
+  const reduceTokens: TReduceTokens = {
+    model: "gemini-2.5-pro",
+    ratio: 2,
+  };
   const promise = new Promise<ExpertStreamTextResult>((resolve, reject) => {
     const response = streamText({
       model: llm("gemini-2.5-pro"), // Using Gemini 2.5 Pro model for trend analysis
@@ -80,8 +84,17 @@ export const trendExplorerExpert: ExpertExecutor = async ({
         logger.error(`trendExplorerExpert streamText onError: ${(error as Error).message}`);
         reject(error);
       },
-      onFinish: async ({ text, usage, sources }) => {
+      onFinish: async ({ text, usage, providerMetadata, sources }) => {
         logger.info("trendExplorerExpert streamText onFinish");
+        const { tokens, extra } = calculateStepTokensUsage(
+          { usage, providerMetadata },
+          { reduceTokens },
+        );
+        await statReport("tokens", tokens, {
+          reportedBy: "deepResearch tool",
+          expert: "TrendExplorer",
+          ...extra,
+        });
         resolve({ text, usage, sources });
       },
     });

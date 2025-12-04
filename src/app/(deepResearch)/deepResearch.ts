@@ -2,14 +2,14 @@ import "server-only";
 
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { StatReporter } from "@/ai/tools/types";
-import { rootLogger } from "@/lib/logging";
 import { StreamChunkCallback } from "@/lib/mcp/types";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId, TextStreamPart, ToolSet } from "ai";
-import { getLocale } from "next-intl/server";
+import { Locale } from "next-intl";
+import { Logger } from "pino";
 import { resolveExpert } from "./experts";
 import { DeepResearchInput, DeepResearchOutput } from "./types";
 
@@ -27,22 +27,19 @@ export async function executeDeepResearch({
   query,
   userId,
   expert,
+  locale,
+  logger,
+  statReport,
   abortSignal,
   onStreamChunk,
 }: DeepResearchInput & {
   userId: number;
+  locale: Locale;
+  logger: Logger;
+  statReport: StatReporter;
   abortSignal: AbortSignal;
   onStreamChunk?: StreamChunkCallback;
 }): Promise<DeepResearchOutput> {
-  const locale = await getLocale();
-  const logger = rootLogger.child({ tool: "deepresearch", query: query.substring(0, 100), userId });
-  const statReport: StatReporter = async (dimension, value, extra) => {
-    logger.info({
-      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
-      extra,
-    });
-  };
-
   // Create UserChat for this research session
   const userChat = await createUserChat({
     userId,
