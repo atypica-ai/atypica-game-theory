@@ -1,9 +1,9 @@
 import "server-only";
 
-import { NextRequest } from "next/server";
-import { IncomingMessage, ServerResponse } from "http";
-import { Readable } from "stream";
 import { rootLogger } from "@/lib/logging";
+import { IncomingMessage, ServerResponse } from "http";
+import { NextRequest } from "next/server";
+import { Readable } from "stream";
 
 const logger = rootLogger.child({ module: "mcp-adapters" });
 
@@ -11,9 +11,7 @@ const logger = rootLogger.child({ module: "mcp-adapters" });
  * Converts Next.js Request to Node.js IncomingMessage-like object
  * This is needed because StreamableHTTPServerTransport expects Node.js HTTP objects
  */
-export async function createIncomingMessage(
-  req: NextRequest,
-): Promise<IncomingMessage> {
+export async function createIncomingMessage(req: NextRequest): Promise<IncomingMessage> {
   const incomingMessage = new Readable({
     read() {},
   }) as unknown as IncomingMessage;
@@ -130,4 +128,3 @@ export function createStreamableServerResponse(): {
     getStatusCode: () => statusCode,
   };
 }
-

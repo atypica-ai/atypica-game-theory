@@ -1,15 +1,14 @@
 import "server-only";
 
-import { ProgressNotification } from "@modelcontextprotocol/sdk/types.js";
 import { rootLogger } from "@/lib/logging";
+import { ProgressNotification, ProgressToken } from "@modelcontextprotocol/sdk/types.js";
 import { StreamChunkCallback } from "./types";
-import { ProgressToken } from "@modelcontextprotocol/sdk/types.js";
 
 const logger = rootLogger.child({ module: "mcp-streaming" });
 
 /**
  * Creates a streaming callback that sends MCP progress notifications for tool execution
- * 
+ *
  * @param sendNotification - The MCP sendNotification function from RequestHandlerExtra
  * @param progressToken - The progress token from _meta.progressToken (if client requested progress)
  * @param toolName - Name of the tool being executed (for logging)
@@ -29,7 +28,7 @@ export function createStreamingCallback(
     try {
       // Extract text content from chunk for progress message
       let progressMessage: string | undefined;
-      
+
       if (chunk.type != "error") {
         progressMessage = JSON.stringify(chunk);
       } else {
@@ -64,4 +63,3 @@ export function createStreamingCallback(
     }
   };
 }
-

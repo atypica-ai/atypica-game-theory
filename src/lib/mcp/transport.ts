@@ -20,7 +20,7 @@ export interface CreateTransportOptions {
 
 /**
  * Creates a new StreamableHTTPServerTransport for handling MCP requests
- * 
+ *
  * @param options - Configuration options
  * @returns A configured StreamableHTTPServerTransport instance
  */
@@ -34,4 +34,3 @@ export function createStreamableHTTPTransport(
     enableJsonResponse: !wantsSSE, // Use JSON response if client doesn't want SSE
   });
 }
-

@@ -16,4 +16,3 @@ export interface MCPRequestContext {
  * We forward the exact chunk emitted by ai-sdk to stay future-proof.
  */
 export type StreamChunkCallback = (chunk: TextStreamPart<ToolSet>) => Promise<void>;
-
