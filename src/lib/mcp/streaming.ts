@@ -14,7 +14,7 @@ const logger = rootLogger.child({ module: "mcp-streaming" });
  * @param toolName - Name of the tool being executed (for logging)
  * @returns A callback function that can be passed to streaming tool execution
  */
-export function createStreamingCallback(
+export function createMcpStreamingCallback(
   sendNotification: (notification: ProgressNotification) => Promise<void>,
   progressToken: ProgressToken | undefined,
   toolName: string, // eslint-disable-line @typescript-eslint/no-unused-vars

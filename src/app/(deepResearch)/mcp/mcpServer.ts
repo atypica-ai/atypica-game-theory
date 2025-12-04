@@ -8,8 +8,7 @@ import {
   deepResearchOutputSchema,
 } from "@/app/(deepResearch)/types";
 import { rootLogger } from "@/lib/logging";
-import { getMCPRequestContext } from "@/lib/mcp/context";
-import { createStreamingCallback } from "@/lib/mcp/streaming";
+import { createMcpStreamingCallback, getMcpRequestContext } from "@/lib/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
@@ -47,7 +46,7 @@ export function createDeepResearchMcpServer(): McpServer {
     try {
       // Get userId from request context (still needed for UserChat creation)
       // The SDK provides transport, requestId, and progressToken through extra parameter
-      const context = getMCPRequestContext();
+      const context = getMcpRequestContext();
 
       if (!context?.userId) {
         throw new Error("Missing userId in deep research request context");
@@ -67,7 +66,7 @@ export function createDeepResearchMcpServer(): McpServer {
 
       // Create streaming callback using SDK's sendNotification and progressToken
       // This uses the SDK's built-in progress notification mechanism
-      const onStreamChunk = createStreamingCallback(
+      const onStreamChunk = createMcpStreamingCallback(
         extra.sendNotification,
         progressToken,
         deepResearchToolName,

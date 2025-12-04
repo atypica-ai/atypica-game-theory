@@ -1,7 +1,7 @@
 import "server-only";
 
 import { AsyncLocalStorage } from "node:async_hooks";
-import { MCPRequestContext } from "./types";
+import { McpRequestContext } from "./types";
 
 /**
  * AsyncLocalStorage to store request context per async execution.
@@ -10,13 +10,13 @@ import { MCPRequestContext } from "./types";
  * the `extra` parameter in tool handlers. We only use AsyncLocalStorage to
  * store userId, which is application-specific and not provided by the SDK.
  */
-const requestContextStorage = new AsyncLocalStorage<MCPRequestContext>();
+const requestContextStorage = new AsyncLocalStorage<McpRequestContext>();
 
 /**
  * Gets the current request context (userId).
  * Returns undefined if called outside of a request context.
  */
-export function getMCPRequestContext(): MCPRequestContext | undefined {
+export function getMcpRequestContext(): McpRequestContext | undefined {
   return requestContextStorage.getStore();
 }
 
@@ -27,8 +27,8 @@ export function getMCPRequestContext(): MCPRequestContext | undefined {
  * @param context - The request context containing userId
  * @param fn - The function to run within the context
  */
-export async function runWithMCPRequestContext<T>(
-  context: MCPRequestContext,
+export async function runWithMcpRequestContext<T>(
+  context: McpRequestContext,
   fn: () => Promise<T>,
 ): Promise<T> {
   return requestContextStorage.run(context, fn);

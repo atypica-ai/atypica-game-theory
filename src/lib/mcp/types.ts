@@ -7,7 +7,7 @@ import { TextStreamPart, ToolSet } from "ai";
  * The SDK provides transport, requestId, and progressToken through the extra parameter
  * in tool handlers, so we only need to store userId here.
  */
-export interface MCPRequestContext {
+export interface McpRequestContext {
   userId: number;
 }
 
