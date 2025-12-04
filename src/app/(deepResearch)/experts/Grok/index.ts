@@ -1,6 +1,6 @@
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { xai } from "@ai-sdk/xai";
-import { stepCountIs, streamText, ToolSet } from "ai";
+import { stepCountIs, streamText, ToolSet, TypeValidationError } from "ai";
 import { ExpertExecutor, ExpertStreamTextResult } from "../types";
 import grokSystemPrompt from "./prompt";
 const MAX_STEPS = 8;
@@ -62,6 +62,12 @@ export const grokExpert: ExpertExecutor = async ({
         }
       },
       onError: async ({ error }) => {
+        if (error instanceof TypeValidationError) {
+          // see https://github.com/vercel/ai/pull/10523
+          // ignore this error and continue streamText
+          logger.debug(`xAI TypeValidationError ignored: ${(error as Error).message}`);
+          return;
+        }
         logger.error(`grokExpert streamText onError: ${(error as Error).message}`);
         reject(error);
       },
