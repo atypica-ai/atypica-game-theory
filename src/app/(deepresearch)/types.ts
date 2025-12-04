@@ -1,8 +1,14 @@
-import { z } from "zod/v3";
+import { z } from "zod";
 import { ExpertName } from "./experts/types";
+
 export const deepResearchInputSchema = z.object({
   query: z.string().describe("The deep research query to investigate"),
-  expert: z.nativeEnum(ExpertName).default(ExpertName.Auto).describe("The expert to use for the deep research. Default is 'auto'."),
+  expert: z
+    // .enum([ExpertName.Auto, ExpertName.Grok, ExpertName.TrendExplorer])
+    .enum(Object.values(ExpertName)) // only in zod v4
+    // .nativeEnum(ExpertName) // only in zod v3
+    .default(ExpertName.Auto)
+    .describe("The expert to use for the deep research. Default is 'auto'."),
 });
 
 export const deepResearchOutputSchema = z.object({
