@@ -27,7 +27,7 @@ export const grokExpert: ExpertExecutor = async ({
 
   const promise = new Promise<ExpertStreamTextResult>((resolve, reject) => {
     const response = streamText({
-      model: llm("grok-4"),
+      model: llm("grok-4-1-fast-non-reasoning"),
       system: grokSystemPrompt,
       providerOptions: defaultProviderOptions,
       tools: allTools,

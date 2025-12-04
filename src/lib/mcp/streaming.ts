@@ -55,7 +55,7 @@ export function createStreamingCallback(
         });
       }
     } catch (notificationError) {
-      logger.warn(
+      logger.debug(
         { error: (notificationError as Error).message },
         "Failed to send streaming progress notification",
       );

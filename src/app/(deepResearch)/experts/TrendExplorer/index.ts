@@ -60,7 +60,6 @@ export const trendExplorerExpert: ExpertExecutor = async ({
       stopWhen: stepCountIs(MAX_STEPS),
       prepareStep: async ({ stepNumber, messages }) => {
         if (stepNumber === MAX_STEPS - 1) {
-          console.log("reached the last allowed step");
           return {
             toolChoice: "none", // shut down all tools at last step
             activeTools: [],

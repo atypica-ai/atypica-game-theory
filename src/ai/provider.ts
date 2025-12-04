@@ -9,12 +9,12 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { createVertexAnthropic } from "@ai-sdk/google-vertex/anthropic";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { createXai } from "@ai-sdk/xai";
 import { createPerplexity } from "@ai-sdk/perplexity";
+import { createXai } from "@ai-sdk/xai";
 
 const perplexity = createPerplexity({
   apiKey: process.env.PERPLEXITY_API_KEY,
-  fetch: proxiedFetch 
+  fetch: proxiedFetch,
 });
 
 const openAICompatible = createOpenAICompatible({
@@ -155,9 +155,9 @@ export type LLMModelName =
   | "claude-haiku-4-5"
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
-  | "grok-4"
-  | "grok-3"
-  | "grok-3-mini"
+  | "grok-4-1"
+  | "grok-4-1-fast-non-reasoning"
+  | "grok-4-1-fast-reasoning"
   | "deepseek-v3"
   | "deepseek-r1"
   | "qwen3-235b-a22b"
@@ -202,9 +202,9 @@ export function llm(modelName: LLMModelName) {
         } else {
           return openai(modelName);
         }
-      case "grok-4":
-      case "grok-3":
-      case "grok-3-mini":
+      case "grok-4-1":
+      case "grok-4-1-fast-non-reasoning":
+      case "grok-4-1-fast-reasoning":
         if (process.env.XAI_API_KEY) {
           break;
         } else {
@@ -260,12 +260,12 @@ export function llm(modelName: LLMModelName) {
       return vertex("gemini-2.5-flash");
     case "gemini-2.5-pro":
       return vertex("gemini-2.5-pro");
-    case "grok-4":
+    case "grok-4-1":
+      return xai.responses("grok-4-1");
+    case "grok-4-1-fast-non-reasoning":
       return xai.responses("grok-4-1-fast-non-reasoning");
-    case "grok-3":
-      return xai.responses("grok-3-mini");
-    case "grok-3-mini":
-      return xai.responses("grok-3-mini");
+    case "grok-4-1-fast-reasoning":
+      return xai.responses("grok-4-1-fast-reasoning");
     case "deepseek-v3":
       return deepseek("Pro/deepseek-ai/DeepSeek-V3");
     case "deepseek-r1":
