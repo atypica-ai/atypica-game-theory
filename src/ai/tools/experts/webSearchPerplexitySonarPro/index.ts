@@ -48,7 +48,7 @@ import { prisma } from "@/prisma/prisma";
 
 async function webSearchPerplexitySonarPro({ query, statReport }: { query: string, statReport: StatReporter }): Promise<WebSearchPerplexitySonarProToolResult> {
   try {
-    console.log("webSearchPerplexitySonarPro started: "+query);
+    
     const { text, sources, usage } = await generateText({
       model: llm("sonar-pro"),
       prompt: query,
