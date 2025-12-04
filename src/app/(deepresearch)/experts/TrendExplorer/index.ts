@@ -8,7 +8,6 @@ import { stepCountIs } from "ai";
 import { tool } from "ai";
 import { webSearchPerplexitySonarProTool } from "@/ai/tools/experts/webSearchPerplexitySonarPro";
 import { scoutSocialTrendsTool } from "@/ai/tools/experts/scoutSocialTrends";
-import { generateText } from "ai";
 import { rootLogger } from "@/lib/logging";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { getLocale } from "next-intl/server";
