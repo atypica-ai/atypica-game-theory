@@ -71,8 +71,9 @@ const API_CONFIGS = {
       // Import webSearch function dynamically
       const { webSearchTool } = await import("@/ai/tools/experts/webSearch");
 
-      // Create a minimal test tool instance
+      // Create a minimal test tool instance with tavily provider
       const testTool = webSearchTool({
+        provider: "tavily",
         studyUserChatId: 0,
         statReport: async () => {},
       });

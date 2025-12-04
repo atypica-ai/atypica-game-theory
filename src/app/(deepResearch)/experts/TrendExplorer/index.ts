@@ -2,7 +2,7 @@ import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { scoutSocialTrendsTool } from "@/ai/tools/experts/scoutSocialTrends";
-import { webSearchPerplexitySonarProTool } from "@/ai/tools/experts/webSearchPerplexitySonarPro";
+import { webSearchTool as createWebSearchTool } from "@/ai/tools/experts/webSearch";
 import { rootLogger } from "@/lib/logging";
 import { stepCountIs, streamText } from "ai";
 import { getLocale } from "next-intl/server";
@@ -22,9 +22,9 @@ export const trendExplorerExpert = async ({
   const logger = rootLogger.child({ expert: "trendExplorer", userId });
   const locale = await getLocale();
 
-  // Create simplified web search tool for DeepResearch context
-  const webSearchTool = webSearchPerplexitySonarProTool({
-    locale: locale as "en-US" | "zh-CN",
+  // Create web search tool with perplexity provider for DeepResearch context
+  const webSearchTool = createWebSearchTool({
+    provider: "perplexity",
     statReport: async () => {
       // No-op stat reporter for DeepResearch context
     },
@@ -33,7 +33,7 @@ export const trendExplorerExpert = async ({
   // Use the actual scoutSocialTrendsTool with proper configuration
   const socialTrendsTool = scoutSocialTrendsTool({
     userId,
-    locale: locale as "en-US" | "zh-CN",
+    locale,
     abortSignal: abortSignal ?? AbortSignal.timeout(0), // Provide a default if undefined
     statReport: async () => {
       // No-op stat reporter for DeepResearch context

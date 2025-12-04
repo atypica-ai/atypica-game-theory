@@ -125,7 +125,7 @@ export async function studyAgentRequest({
   };
   const allTools = {
     [ToolName.requestInteraction]: requestInteractionTool,
-    [ToolName.webSearch]: webSearchTool({ studyUserChatId, ...agentToolArgs }),
+    [ToolName.webSearch]: webSearchTool({ provider: "tavily", studyUserChatId, ...agentToolArgs }),
     [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId }),
     [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
     [ToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),

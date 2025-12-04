@@ -1,61 +1,25 @@
 import "server-only";
 
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
-import { tavily, TavilyClient } from "@tavily/core";
 import { tool } from "ai";
-import { webSearchInputSchema, webSearchOutputSchema, type WebSearchToolResult } from "./types";
+import { webSearchPerplexity } from "./perplexity";
+import { webSearchTavily } from "./tavily";
+import { webSearchInputSchema, webSearchOutputSchema } from "./types";
 
-const globalForTavily = global as unknown as {
-  tavily: TavilyClient | undefined;
-};
-
-export const tavilyClient = () => {
-  if (!process.env.TAVILY_API_KEY) {
-    throw new Error("Tavily API key not found");
-  }
-  const proxyUrl = process.env.FETCH_HTTPS_PROXY;
-  const proxies = proxyUrl ? { http: proxyUrl, https: proxyUrl } : undefined;
-  if (!globalForTavily.tavily) {
-    globalForTavily.tavily = tavily({
-      apiKey: process.env.TAVILY_API_KEY,
-      proxies,
-    });
-  }
-  return globalForTavily.tavily;
-};
-
-async function webSearch({ query }: { query: string }): Promise<WebSearchToolResult> {
-  try {
-    const client = tavilyClient();
-    const response = await client.search(query, {
-      searchDepth: "advanced",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      includeAnswer: "advanced" as any,
-      includeImages: false,
-      includeRawContent: false,
-      maxResults: 10,
-    });
-    const answer = response.answer || "No answer found for this query.";
-    return {
-      answer: response.answer,
-      results: response.results,
-      plainText: answer,
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-    throw new Error(`Web search failed: ${errorMessage}`);
-  }
-}
+export { tavilyClient } from "./tavily";
 
 export const webSearchTool = ({
-  // studyUserChatId,
+  provider = "tavily",
   statReport,
 }: {
-  studyUserChatId: number;
+  studyUserChatId?: number;
+  provider?: "tavily" | "perplexity";
 } & Omit<AgentToolConfigArgs, "logger" | "locale" | "abortSignal">) =>
   tool({
     description:
-      "Search the internet for current information, facts, or data that might be relevant to the study topic",
+      provider === "perplexity"
+        ? "Search the internet for current information, which provides real-time web search with detailed citations and up-to-date information."
+        : "Search the internet for current information, facts, or data that might be relevant to the study topic",
     inputSchema: webSearchInputSchema,
     outputSchema: webSearchOutputSchema,
     toModelOutput: (result: PlainTextToolResult) => {
@@ -75,7 +39,8 @@ export const webSearchTool = ({
           },
           {} as Partial<Record<ToolName, number>>,
         );
-      // Before saveAnalyst is called, webSearch can only be used once
+
+      // Before planStudy is called, webSearch can only be used once
       if (
         (toolUseCount[ToolName.planStudy] ?? 0) < 1 &&
         (toolUseCount[ToolName.webSearch] ?? 0) >= 1
@@ -94,11 +59,11 @@ export const webSearchTool = ({
         };
       }
 
-      const result = await webSearch({ query });
-      // 每次查询固定消耗 3000 tokens
-      await statReport("tokens", 3000, {
-        reportedBy: "webSearch tool",
-      });
-      return result;
+      // Execute search based on provider
+      if (provider === "perplexity") {
+        return await webSearchPerplexity({ query, statReport });
+      } else {
+        return await webSearchTavily({ query, statReport });
+      }
     },
   });
