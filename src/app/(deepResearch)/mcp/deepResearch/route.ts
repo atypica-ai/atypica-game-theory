@@ -11,6 +11,13 @@ import { getDeepResearchMcpServer } from "../mcpServer";
 
 const logger = rootLogger.child({ module: "deepresearch-mcp-api" });
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization, Mcp-Protocol-Version",
+  "Access-Control-Max-Age": "86400",
+};
+
 function parseUserId(req: NextRequest): number {
   const userIdParam = req.nextUrl.searchParams.get("userId");
   if (!userIdParam) {
@@ -149,6 +156,16 @@ function createStreamableServerResponse(): {
 }
 
 /**
+ * Handle OPTIONS requests for CORS preflight
+ */
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+/**
  * MCP Server API Route Handler with Streaming Support
  *
  * Architecture:
@@ -172,8 +189,6 @@ function createStreamableServerResponse(): {
 export async function POST(req: NextRequest) {
   try {
     const userId = parseUserId(req);
-    console.log("userId");
-    console.log(userId);
     // Determine if client wants streaming (SSE) or JSON response
     const acceptHeader = req.headers.get("accept") || "";
     const wantsSSE = acceptHeader.includes("text/event-stream");
@@ -250,6 +265,7 @@ export async function POST(req: NextRequest) {
       return new Response(getStreamingResponse(), {
         status: getStatusCode(),
         headers: {
+          ...CORS_HEADERS,
           ...getHeaders(),
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache, no-transform",
@@ -281,7 +297,10 @@ export async function POST(req: NextRequest) {
 
       return new Response(combined, {
         status: getStatusCode(),
-        headers: getHeaders(),
+        headers: {
+          ...CORS_HEADERS,
+          ...getHeaders(),
+        },
       });
     }
   } catch (error) {
@@ -309,7 +328,10 @@ export async function POST(req: NextRequest) {
         },
         id: null,
       },
-      { status: statusCode },
+      {
+        status: statusCode,
+        headers: CORS_HEADERS,
+      },
     );
   }
 }
@@ -347,6 +369,7 @@ export async function GET(req: NextRequest) {
 
     return new Response(getStreamingResponse(), {
       headers: {
+        ...CORS_HEADERS,
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
@@ -368,7 +391,10 @@ export async function GET(req: NextRequest) {
         },
         id: null,
       },
-      { status: statusCode },
+      {
+        status: statusCode,
+        headers: CORS_HEADERS,
+      },
     );
   }
 }
@@ -386,7 +412,10 @@ export async function DELETE(req: NextRequest) {
         result: { message: "Session terminated (stateless mode)" },
         id: null,
       },
-      { status: 200 },
+      {
+        status: 200,
+        headers: CORS_HEADERS,
+      },
     );
   } catch (error) {
     return Response.json(
@@ -398,7 +427,10 @@ export async function DELETE(req: NextRequest) {
         },
         id: null,
       },
-      { status: 400 },
+      {
+        status: 400,
+        headers: CORS_HEADERS,
+      },
     );
   }
 }
