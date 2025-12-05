@@ -104,9 +104,9 @@ export default async function RootLayout({
               {children}
               <Toaster richColors={true} />
               <Embed />
+              <Analytics />
             </NextIntlClientProvider>
           </ThemeProvider>
-          <Analytics />
         </AuthProvider>
       </body>
     </html>
