@@ -13,7 +13,6 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { deleteUserApiKeyAction, generateUserApiKeyAction, listUserApiKeysAction } from "./actions";

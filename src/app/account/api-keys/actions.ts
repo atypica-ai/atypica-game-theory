@@ -36,37 +36,13 @@ export async function listUserApiKeysAction(): Promise<ServerActionResult<ApiKey
  */
 export async function generateUserApiKeyAction(): Promise<ServerActionResult<ApiKeyData>> {
   const t = await getTranslations("AccountPage.ApiKeyActions");
-  return withAuth(async (user, userType) => {
+  return withAuth(async (user) => {
     try {
-      // Get email based on user type
-      let email: string;
-      if (userType === "Personal") {
-        // Personal user must have email
-        if (!user.email) {
-          return {
-            success: false,
-            message: "Personal user email is required",
-            code: "internal_server_error",
-          };
-        }
-        email = user.email;
-      } else {
-        // Team member user - get email from personalUser
-        if (!user.personalUser?.email) {
-          return {
-            success: false,
-            message: "Team member email is required",
-            code: "internal_server_error",
-          };
-        }
-        email = user.personalUser.email;
-      }
-
+      const email = user.email; // session 上的 user 永远有 email 的
       const apiKeyData = await generateApiKey({
         userId: user.id,
         createdByEmail: email,
       });
-
       return {
         success: true,
         data: apiKeyData,

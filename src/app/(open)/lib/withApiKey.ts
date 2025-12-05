@@ -57,8 +57,7 @@ export async function withPersonalApiKey<T>(
 
   // Log API usage
   const headersList = await headers();
-  const userEmail =
-    owner.user.email || (owner.user.personalUser ? owner.user.personalUser.email : null);
+  const userEmail = owner.user.teamIdAsMember ? owner.user.personalUser.email : owner.user.email;
 
   rootLogger.info({
     msg: "Personal API key authenticated",
