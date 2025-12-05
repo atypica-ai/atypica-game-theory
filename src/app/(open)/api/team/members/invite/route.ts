@@ -14,7 +14,20 @@ const logger = rootLogger.child({ api: "/api/team/members/invite" });
  */
 export async function POST(request: NextRequest) {
   try {
-    return await withApiKey(async ({ team }) => {
+    return await withApiKey(async (owner) => {
+      // This API is team-only
+      if (owner.type !== "team") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "This API endpoint is only available for team API keys",
+          },
+          { status: 403 },
+        );
+      }
+
+      const { team } = owner;
+
       // 1. 解析请求体
       const body = await request.json();
       const { email } = body;

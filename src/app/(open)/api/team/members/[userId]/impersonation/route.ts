@@ -45,7 +45,20 @@ export async function POST(
       // If body parsing fails, use defaults
     }
 
-    return await withApiKey(async ({ team }) => {
+    return await withApiKey(async (owner) => {
+      // This API is team-only
+      if (owner.type !== "team") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "This API endpoint is only available for team API keys",
+          },
+          { status: 403 },
+        );
+      }
+
+      const { team } = owner;
+
       // Verify the member belongs to this team
       const member = await prisma.user.findUnique({
         where: { id: userIdNumber },
