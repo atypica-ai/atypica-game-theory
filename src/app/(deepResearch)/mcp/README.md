@@ -14,21 +14,26 @@ DELETE /mcp/deepResearch
 
 ### 认证方式
 
-**当前支持的认证方式（内部使用）：**
+支持两种认证方式：
 
-通过 header 进行认证：
-```bash
-x-internal-secret: <your-internal-secret>
-x-user-id: <user-id>
-```
+**1. API Key 认证（推荐给外部客户端使用）**
 
-**即将支持的认证方式（用户 API Key）：**
+通过 Authorization header 传递 API key：
 
 ```bash
-Authorization: Bearer atypica_<your-api-key>
+Authorization: Bearer atypica_xxxxx
 ```
 
-API Key 将关联到团队（Team），自动获取对应的用户上下文。
+只支持个人用户 API keys（Personal users 和 Team member users）。
+
+**2. 内部认证（仅供内部服务使用）**
+
+通过自定义 headers：
+
+```bash
+x-internal-secret: <INTERNAL_API_SECRET>
+x-user-id: <userId>
+```
 
 ### 可选参数
 
@@ -115,7 +120,7 @@ export async function POST(req: NextRequest) {
   }
   const { userId } = authResult;
 
-  // 2. 检查客户端是否需要 SSE
+  // 2. 解析请求配置
   const acceptHeader = req.headers.get("accept") || "";
   let wantsSSE = acceptHeader.includes("text/event-stream");
   // 支持通过 ?sse=0 参数禁用 SSE
@@ -196,10 +201,11 @@ export async function POST(req: NextRequest) {
 
 ## 认证实现细节
 
-### 当前实现：内部认证
+### 方法 1：内部认证
 
 ```typescript
 async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
+  // Method 1: Internal authentication
   const internalSecret = req.headers.get("x-internal-secret");
   const userIdHeader = req.headers.get("x-user-id");
 
@@ -210,7 +216,7 @@ async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
         success: false,
         errorResponse: Response.json(
           { jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized" }, id: null },
-          { status: 401 }
+          { status: 401, headers: CORS_HEADERS }
         ),
       };
     }
@@ -221,7 +227,7 @@ async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
         success: false,
         errorResponse: Response.json(
           { jsonrpc: "2.0", error: { code: -32602, message: "Invalid user ID" }, id: null },
-          { status: 400 }
+          { status: 400, headers: CORS_HEADERS }
         ),
       };
     }
@@ -229,39 +235,49 @@ async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
     return { success: true, userId };
   }
 
-  // 未来：API Key 认证
-  // const authorization = req.headers.get("authorization");
-  // if (authorization?.startsWith("Bearer ")) {
-  //   const apiKey = authorization.slice(7);
-  //   // 验证 API key 并获取关联的 team/user
-  // }
-
-  return {
-    success: false,
-    errorResponse: Response.json(
-      { jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized" }, id: null },
-      { status: 401 }
-    ),
-  };
+  // ... Method 2 implementation
 }
 ```
 
-### 即将实现：API Key 认证
+### 方法 2：API Key 认证
 
 使用 `@/lib/apiKey` 工具进行 API Key 认证：
 
 ```typescript
-import { withApiKey } from "@/app/(open)/lib/withApiKey";
+import { findOwnerByApiKey } from "@/lib/apiKey/lib";
 
-// 在 route handler 中使用
-const result = await withApiKey(async ({ team }) => {
-  // 此处可以访问 team 对象
-  const userId = team.ownerId; // 或其他逻辑获取 userId
-  return { userId };
-});
+// Method 2: User API key authentication
+const authorization = req.headers.get("authorization");
+if (authorization?.startsWith("Bearer ")) {
+  const apiKey = authorization.slice(7);
+
+  // Validate API key format
+  if (!apiKey.startsWith("atypica_")) {
+    return { success: false, errorResponse: /* ... */ };
+  }
+
+  // Find owner by API key
+  const owner = await findOwnerByApiKey(apiKey);
+
+  if (!owner) {
+    return { success: false, errorResponse: /* ... */ };
+  }
+
+  // Only personal users can use MCP API
+  if (owner.type !== "user") {
+    return { success: false, errorResponse: /* ... */ };
+  }
+
+  return { success: true, userId: owner.user.id };
+}
 ```
 
-API Key 格式：`atypica_<random-string>`，关联到团队（Team），通过团队获取用户上下文。
+**注意**：MCP 不使用 `withPersonalApiKey` 中间件的原因：
+- 需要支持两种不同的认证方式
+- 需要返回 JSON-RPC 格式的错误响应
+- 内部认证完全绕过 API key 验证
+
+API Key 格式：`atypica_<64位十六进制字符>`，只支持个人用户 API keys（Personal users 和 Team member users）。
 
 ## 本项目实现
 

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { findOwnerByApiKey } from "@/lib/apiKey/lib";
 import { rootLogger } from "@/lib/logging";
 import {
   createMcpIncomingMessage,
@@ -26,13 +27,19 @@ type AuthResult = { success: true; userId: number } | { success: false; errorRes
 /**
  * Authenticate and extract userId from request
  *
- * Currently supports internal authentication via x-internal-secret + x-user-id headers.
- * Future: Will support user API key authentication via Authorization header.
+ * Supports two authentication methods:
+ * 1. Internal authentication via x-internal-secret + x-user-id headers
+ * 2. User API key authentication via Authorization: Bearer <api_key> header
+ *
+ * Note: We don't use withPersonalApiKey middleware here because:
+ * - MCP needs to support two different authentication methods
+ * - We need to return JSON-RPC formatted error responses
+ * - Internal authentication bypasses API key validation entirely
  *
  * @returns AuthResult with userId if success, or ready-to-return error Response if failed
  */
 async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
-  // Method 1: Internal authentication (current implementation)
+  // Method 1: Internal authentication
   const internalSecret = req.headers.get("x-internal-secret");
   const userIdHeader = req.headers.get("x-user-id");
 
@@ -73,22 +80,72 @@ async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
     return { success: true, userId };
   }
 
-  // Method 2: User API key authentication (future implementation)
-  // const authorization = req.headers.get("authorization");
-  // if (authorization?.startsWith("Bearer ")) {
-  //   const apiKey = authorization.slice(7);
-  //   const result = await validateApiKeyAndGetUserId(apiKey);
-  //   if (result.success) {
-  //     return { success: true, userId: result.userId };
-  //   }
-  //   return {
-  //     success: false,
-  //     errorResponse: Response.json(
-  //       { jsonrpc: "2.0", error: { code: -32001, message: "Invalid API key" }, id: null },
-  //       { status: 401, headers: CORS_HEADERS }
-  //     ),
-  //   };
-  // }
+  // Method 2: User API key authentication
+  const authorization = req.headers.get("authorization");
+  if (authorization?.startsWith("Bearer ")) {
+    const apiKey = authorization.slice(7);
+
+    // Validate API key format
+    if (!apiKey.startsWith("atypica_")) {
+      logger.warn({ msg: "Invalid API key format", apiKey: apiKey.substring(0, 20) });
+      return {
+        success: false,
+        errorResponse: Response.json(
+          {
+            jsonrpc: "2.0",
+            error: { code: -32001, message: "Unauthorized: Invalid API key format" },
+            id: null,
+          },
+          { status: 401, headers: CORS_HEADERS },
+        ),
+      };
+    }
+
+    // Find owner by API key
+    const owner = await findOwnerByApiKey(apiKey);
+
+    if (!owner) {
+      logger.warn({ msg: "API key not found", apiKey: apiKey.substring(0, 20) });
+      return {
+        success: false,
+        errorResponse: Response.json(
+          {
+            jsonrpc: "2.0",
+            error: { code: -32001, message: "Unauthorized: Invalid API key" },
+            id: null,
+          },
+          { status: 401, headers: CORS_HEADERS },
+        ),
+      };
+    }
+
+    // Only personal users can use MCP API
+    if (owner.type !== "user") {
+      logger.warn({ msg: "Team API key used for MCP", teamId: owner.team.id });
+      return {
+        success: false,
+        errorResponse: Response.json(
+          {
+            jsonrpc: "2.0",
+            error: {
+              code: -32001,
+              message: "Unauthorized: MCP API only supports personal user API keys",
+            },
+            id: null,
+          },
+          { status: 403, headers: CORS_HEADERS },
+        ),
+      };
+    }
+
+    logger.info({
+      msg: "MCP API authenticated via API key",
+      userId: owner.user.id,
+      userEmail: owner.user.email,
+    });
+
+    return { success: true, userId: owner.user.id };
+  }
 
   // No valid authentication method found
   logger.warn({ msg: "Missing authentication headers" });
@@ -100,7 +157,7 @@ async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
         error: {
           code: -32001,
           message:
-            "Unauthorized: missing authentication headers (x-internal-secret + x-user-id required)",
+            "Unauthorized: missing authentication. Use either x-internal-secret + x-user-id headers or Authorization: Bearer <api_key>",
         },
         id: null,
       },
