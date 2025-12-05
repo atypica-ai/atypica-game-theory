@@ -258,6 +258,10 @@ export type TeamExtra = Partial<{
   unlimitedSeats: boolean;
 }>;
 
+export type ApiKeyExtra = Partial<{
+  createdByEmail: string; // Email of the creator
+}>;
+
 // Removed
 // export type ProductExtra = Partial<{
 //   stripePriceId: string;

@@ -4,7 +4,6 @@ import { Locale } from "next-intl";
 export enum TeamConfigName {
   mcp = "mcp",
   studySystemPrompt = "studySystemPrompt",
-  apiKey = "apiKey",
   emailDomainWhitelist = "emailDomainWhitelist",
 }
 
@@ -15,11 +14,6 @@ export type TeamConfigValue = {
   [TeamConfigName.studySystemPrompt]: Record<Locale, string>;
   // mcp: Record<string, MCPTransportConfig>;
   [TeamConfigName.mcp]: MCPConfigs;
-  [TeamConfigName.apiKey]: {
-    key: string;
-    createdAt: string;
-    createdBy: number;
-  };
   [TeamConfigName.emailDomainWhitelist]: {
     domains: Array<{
       domain: string;

@@ -1,0 +1,27 @@
+import type { Team, User } from "@/prisma/client";
+
+/**
+ * API Key owner type
+ * Either a personal user or a team
+ */
+export type ApiKeyOwner =
+  | {
+      type: "user";
+      user: Pick<User, "id" | "name"> & {
+        email: string;
+        password?: never;
+        teamIdAsMember?: null;
+        personalUserId?: null;
+      };
+    }
+  | { type: "team"; team: Pick<Team, "id" | "name"> };
+
+/**
+ * API Key data returned to client
+ */
+export interface ApiKeyData {
+  id: number;
+  key: string;
+  createdAt: Date;
+  createdByEmail: string;
+}

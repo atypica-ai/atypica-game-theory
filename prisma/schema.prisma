@@ -24,6 +24,20 @@ datasource db {
   // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+model ApiKey {
+  id     Int    @id @default(autoincrement())
+  key    String @unique @db.VarChar(128) // atypica_{64 hex chars}
+  // userId and teamId are mutually exclusive (but each user/team can have multiple keys)
+  userId Int?
+  user   User?  @relation("UserApiKey", fields: [userId], references: [id], onDelete: Cascade)
+  teamId Int?
+  team   Team?  @relation("TeamApiKey", fields: [teamId], references: [id], onDelete: Cascade)
+  extra  Json   @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
 model TeamConfig {
   id     Int    @id @default(autoincrement())
   teamId Int
@@ -53,6 +67,7 @@ model Team {
   tokensLogs    TokensLog[]
   subscriptions Subscription[]
   teamConfigs   TeamConfig[]   @relation("TeamConfig")
+  apiKeys       ApiKey[]       @relation("TeamApiKey")
 }
 
 model User {
@@ -93,6 +108,7 @@ model User {
   // relations
   userPersonaChatRelations       UserPersonaChatRelation[]
   interviewSessionsAsInterviewee InterviewSession[]
+  apiKeys                        ApiKey[]                  @relation("UserApiKey")
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
