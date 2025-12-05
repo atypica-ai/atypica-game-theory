@@ -8,11 +8,21 @@ export type ApiKeyOwner =
   | {
       type: "user";
       user: Pick<User, "id" | "name"> & {
-        email: string;
         password?: never;
-        teamIdAsMember?: null;
-        personalUserId?: null;
-      };
+      } & (
+          | {
+              email: null;
+              teamIdAsMember: number;
+              teamAsMember: Pick<Team, "id" | "name">;
+              personalUserId: number;
+              personalUser: Pick<User, "id" | "name"> & { email: string };
+            }
+          | {
+              email: string;
+              teamIdAsMember?: null;
+              personalUserId?: null;
+            }
+        );
     }
   | {
       type: "team";

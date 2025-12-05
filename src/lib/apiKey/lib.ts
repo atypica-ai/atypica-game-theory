@@ -163,7 +163,12 @@ const findOwnerByApiKeyCached = unstable_cache(
       const result = await prisma.apiKey.findUnique({
         where: { key: apiKey },
         include: {
-          user: true,
+          user: {
+            include: {
+              teamAsMember: true,
+              personalUser: true,
+            },
+          },
           team: true,
         },
       });
@@ -174,11 +179,41 @@ const findOwnerByApiKeyCached = unstable_cache(
 
       // Return user or team based on what's present
       if (result.user) {
-        const { id, name, email, teamIdAsMember, personalUserId } = result.user;
-        if (!email || personalUserId !== null || teamIdAsMember !== null) {
-          throw new Error("Invalid user");
+        const { id, name, email, teamIdAsMember, teamAsMember, personalUserId, personalUser } =
+          result.user;
+        if (teamIdAsMember === null) {
+          if (email === null || personalUserId !== null) {
+            throw new Error(`Invalid personal user: email=${email} user=${personalUserId}`);
+          }
+          return { type: "user", user: { id, name, email, teamIdAsMember, personalUserId } };
+        } else {
+          if (
+            email !== null ||
+            teamAsMember === null ||
+            personalUserId === null ||
+            personalUser === null ||
+            personalUser.email === null
+          ) {
+            throw new Error(
+              `Invalid team member user: email=${email} user=${personalUserId} team=${teamAsMember}`,
+            );
+          }
+          return {
+            type: "user",
+            user: {
+              id,
+              name,
+              email,
+              teamIdAsMember,
+              teamAsMember,
+              personalUserId,
+              personalUser: {
+                ...personalUser,
+                email: personalUser.email,
+              },
+            },
+          };
         }
-        return { type: "user", user: { id, name, email } };
       }
 
       if (result.team) {
