@@ -88,7 +88,7 @@
       }
     },
     "ApiKeyCard": {
-      "title": "API Key",
+      "title": "Team API Keys",
       "description": "Programmatic access to your team's data.",
       "viewDocsLink": "View API docs",
       "loading": "Loading...",

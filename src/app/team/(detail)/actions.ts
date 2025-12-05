@@ -445,7 +445,7 @@ export async function generateTeamApiKeyAction(
   });
 }
 
-// Delete team API key
+// Delete team API key with ownership verification
 export async function deleteTeamApiKeyAction(
   teamId: number,
   apiKeyId: number,
@@ -459,8 +459,8 @@ export async function deleteTeamApiKeyAction(
         return ownershipCheck;
       }
 
-      // Use new apiKey lib
-      await deleteApiKey(apiKeyId);
+      // Delete with teamId verification - ensures only this team's keys can be deleted
+      await deleteApiKey(apiKeyId, { teamId });
 
       return {
         success: true,

@@ -2,6 +2,7 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { ApiKeyExtra, TeamExtra } from "@/prisma/client";
+import { ApiKeyWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { randomBytes } from "crypto";
 import { unstable_cache } from "next/cache";
@@ -120,33 +121,53 @@ export async function generateApiKey(params: {
   }
 }
 
+export async function deleteApiKey(id: number, params: { userId: number }): Promise<void>;
+export async function deleteApiKey(id: number, params: { teamId: number }): Promise<void>;
+
 /**
- * Delete API key by ID
+ * Delete API key by ID with ownership verification
  * @param id - API key ID
+ * @param params - userId or teamId to verify ownership
  */
-export async function deleteApiKey(id: number): Promise<void> {
+export async function deleteApiKey(
+  id: number,
+  params: { userId?: number; teamId?: number },
+): Promise<void> {
+  const { userId, teamId } = params;
+  if ((!userId && !teamId) || (userId && teamId)) {
+    throw new Error("Exactly one of userId or teamId must be provided");
+  }
+
+  let where: ApiKeyWhereInput;
+  if (userId) {
+    where = { id, userId };
+  } else if (teamId) {
+    where = { id, teamId };
+  } else {
+    throw new Error("Exactly one of userId or teamId must be provided");
+  }
+
   try {
-    const apiKey = await prisma.apiKey.findUnique({ where: { id } });
+    // Delete with ownership verification
+    const result = await prisma.apiKey.deleteMany({ where });
 
-    if (!apiKey) {
-      throw new Error(`API key with id ${id} not found`);
+    if (result.count === 0) {
+      throw new Error(`API key with id ${id} not found or access denied`);
     }
-
-    await prisma.apiKey.delete({
-      where: { id },
-    });
 
     logger.info({
       msg: "API key deleted",
       apiKeyId: id,
-      userId: apiKey.userId,
-      teamId: apiKey.teamId,
+      userId,
+      teamId,
     });
   } catch (error) {
     logger.error({
       msg: "Failed to delete API key",
       error: (error as Error).message,
       apiKeyId: id,
+      userId,
+      teamId,
     });
     throw error;
   }

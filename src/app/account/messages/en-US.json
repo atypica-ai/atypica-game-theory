@@ -136,7 +136,6 @@
     "ApiKeyCard": {
       "title": "API Keys",
       "description": "Programmatic access to your personal data.",
-      "viewDocsLink": "View API docs",
       "loading": "Loading...",
       "noKeyDescription": "No API keys generated yet. Generate one to access the API.",
       "generateButton": "Generate API Key",

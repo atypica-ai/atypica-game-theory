@@ -22,11 +22,6 @@ export default async function UserApiKeyPage() {
     redirect("/auth/signin?callbackUrl=/account/api-keys");
   }
 
-  // Only personal users can access this page
-  if (session.userType !== "Personal") {
-    redirect("/account");
-  }
-
   return (
     <div className="container max-w-3xl p-6 space-y-6">
       <div>

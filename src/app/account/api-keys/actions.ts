@@ -12,17 +12,8 @@ import { getTranslations } from "next-intl/server";
  */
 export async function listUserApiKeysAction(): Promise<ServerActionResult<ApiKeyData[]>> {
   const t = await getTranslations("AccountPage.ApiKeyActions");
-  return withAuth(async (user, userType) => {
+  return withAuth(async (user) => {
     try {
-      // Only personal users can access personal API keys
-      if (userType !== "Personal") {
-        return {
-          success: false,
-          message: "Only personal users can access personal API keys",
-          code: "forbidden",
-        };
-      }
-
       const apiKeys = await listApiKeys({ userId: user.id });
 
       return {
@@ -41,32 +32,39 @@ export async function listUserApiKeysAction(): Promise<ServerActionResult<ApiKey
 }
 
 /**
- * Generate API Key for personal user
+ * Generate API Key for user (personal user or team member)
  */
 export async function generateUserApiKeyAction(): Promise<ServerActionResult<ApiKeyData>> {
   const t = await getTranslations("AccountPage.ApiKeyActions");
   return withAuth(async (user, userType) => {
     try {
-      // Only personal users can generate personal API keys
-      if (userType !== "Personal") {
-        return {
-          success: false,
-          message: "Only personal users can generate personal API keys",
-          code: "forbidden",
-        };
-      }
-
-      if (!user.email) {
-        return {
-          success: false,
-          message: "User email is required",
-          code: "internal_server_error",
-        };
+      // Get email based on user type
+      let email: string;
+      if (userType === "Personal") {
+        // Personal user must have email
+        if (!user.email) {
+          return {
+            success: false,
+            message: "Personal user email is required",
+            code: "internal_server_error",
+          };
+        }
+        email = user.email;
+      } else {
+        // Team member user - get email from personalUser
+        if (!user.personalUser?.email) {
+          return {
+            success: false,
+            message: "Team member email is required",
+            code: "internal_server_error",
+          };
+        }
+        email = user.personalUser.email;
       }
 
       const apiKeyData = await generateApiKey({
         userId: user.id,
-        createdByEmail: user.email,
+        createdByEmail: email,
       });
 
       return {
@@ -85,22 +83,14 @@ export async function generateUserApiKeyAction(): Promise<ServerActionResult<Api
 }
 
 /**
- * Delete user API key by ID
+ * Delete user API key by ID with ownership verification
  */
 export async function deleteUserApiKeyAction(apiKeyId: number): Promise<ServerActionResult<null>> {
   const t = await getTranslations("AccountPage.ApiKeyActions");
-  return withAuth(async (user, userType) => {
+  return withAuth(async (user) => {
     try {
-      // Only personal users can delete personal API keys
-      if (userType !== "Personal") {
-        return {
-          success: false,
-          message: "Only personal users can delete personal API keys",
-          code: "forbidden",
-        };
-      }
-
-      await deleteApiKey(apiKeyId);
+      // Delete with userId verification - ensures user can only delete their own keys
+      await deleteApiKey(apiKeyId, { userId: user.id });
 
       return {
         success: true,

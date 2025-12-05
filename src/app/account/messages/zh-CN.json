@@ -136,7 +136,6 @@
     "ApiKeyCard": {
       "title": "API Keys",
       "description": "通过程序访问您的个人数据。",
-      "viewDocsLink": "查看 API 文档",
       "loading": "加载中...",
       "noKeyDescription": "还没有生成 API Key。生成一个来访问 API。",
       "generateButton": "生成 API Key",

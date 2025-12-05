@@ -142,12 +142,7 @@ export function UserApiKeyCard() {
               <KeyIcon className="w-5 h-5" />
               {t("title")}
             </CardTitle>
-            <CardDescription className="mt-1.5">
-              {t("description")}{" "}
-              <Link href="/docs/api" className="text-primary hover:underline" target="_blank">
-                {t("viewDocsLink")}
-              </Link>
-            </CardDescription>
+            <CardDescription className="mt-1.5">{t("description")}</CardDescription>
           </div>
           <Button onClick={handleGenerate} disabled={isGenerating} size="sm">
             <PlusIcon className="size-4" />

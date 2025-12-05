@@ -88,7 +88,7 @@
       }
     },
     "ApiKeyCard": {
-      "title": "API Key",
+      "title": "团队 API Keys",
       "description": "通过编程方式访问团队数据。",
       "viewDocsLink": "查看 API 文档",
       "loading": "加载中...",
