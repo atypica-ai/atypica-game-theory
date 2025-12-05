@@ -1,6 +1,7 @@
 "use server";
 import { createTeamMemberUser } from "@/app/(auth)/lib";
 import { fetchActiveSubscription } from "@/app/account/lib";
+import { deleteApiKey, generateApiKey, listApiKeys } from "@/lib/apiKey/lib";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -20,10 +21,37 @@ import { TeamConfigName, TeamConfigValue } from "../teamConfig/types";
 async function verifyTeamOwnership(
   teamId: number,
   userId: number,
-): Promise<{ success: false; message: string } | { success: true; team: Team; user: User }> {
+): Promise<
+  | { success: false; message: string }
+  | {
+      success: true;
+      team: Pick<Team, "id" | "name" | "ownerUserId" | "seats"> & { extra: TeamExtra };
+      user: Pick<User, "id" | "name" | "personalUserId" | "teamIdAsMember"> & {
+        personalUser: { id: number; email: string };
+      };
+    }
+> {
   const [team, user] = await Promise.all([
-    prisma.team.findUnique({ where: { id: teamId } }),
-    prisma.user.findUnique({ where: { id: userId } }),
+    prisma.team.findUnique({
+      where: { id: teamId },
+      select: {
+        id: true,
+        name: true,
+        ownerUserId: true,
+        seats: true,
+        extra: true,
+      },
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        personalUserId: true,
+        personalUser: { select: { id: true, email: true } },
+        teamIdAsMember: true,
+      },
+    }),
   ]);
   if (!team) {
     return { success: false, message: "Team not found" };
@@ -34,7 +62,26 @@ async function verifyTeamOwnership(
   if (team.ownerUserId !== user.personalUserId) {
     return { success: false, message: "User is not the owner of this team" };
   }
-  return { success: true, team, user };
+  if (!user.personalUser || !user.personalUser.email) {
+    return {
+      success: false,
+      message: "User is linked to a personal user or personal user email is missing",
+    };
+  }
+  return {
+    success: true,
+    team: {
+      ...team,
+      extra: team.extra as TeamExtra,
+    },
+    user: {
+      ...user,
+      personalUser: {
+        ...user.personalUser,
+        email: user.personalUser.email,
+      },
+    },
+  };
 }
 
 // 添加团队成员
@@ -309,10 +356,63 @@ export async function getTeamSubscriptionAction(): Promise<
 
 // ===== API Key Management =====
 
+// List team API keys
+export async function listTeamApiKeysAction(): Promise<
+  ServerActionResult<Array<{ id: number; key: string; createdAt: Date; createdByEmail: string }>>
+> {
+  const t = await getTranslations("Team.Actions");
+  return withAuth(async (user, userType, team) => {
+    try {
+      // 所有团队成员都可以查看 API keys（会返回 masked 版本给非 owner）
+      if (userType !== "TeamMember" || !team) {
+        return {
+          success: false,
+          message: "User is not a member of this team",
+        };
+      }
+
+      // 检查是否是 owner
+      const ownershipCheck = await verifyTeamOwnership(team.id, user.id);
+
+      // Use new apiKey lib
+      const apiKeys = await listApiKeys({ teamId: team.id });
+
+      // 非 owner 返回 masked 的 API keys
+      if (!ownershipCheck.success) {
+        const maskedKeys = apiKeys.map((key) => ({
+          id: key.id,
+          key: "atypica_" + "•".repeat(64), // 返回 masked 的 key
+          createdAt: key.createdAt,
+          createdByEmail: "", // 非 owner 不需要知道是谁创建的
+        }));
+
+        return {
+          success: true,
+          data: maskedKeys,
+        };
+      }
+
+      return {
+        success: true,
+        data: apiKeys,
+      };
+    } catch (error) {
+      rootLogger.error({ msg: "Failed to list team API keys", error });
+      return {
+        success: false,
+        message: t("listApiKeys.failed"),
+        code: "internal_server_error",
+      };
+    }
+  });
+}
+
 // Generate API Key for team
 export async function generateTeamApiKeyAction(
   teamId: number,
-): Promise<ServerActionResult<{ key: string; createdAt: string }>> {
+): Promise<
+  ServerActionResult<{ id: number; key: string; createdAt: Date; createdByEmail: string }>
+> {
   const t = await getTranslations("Team.Actions");
   return withAuth(async ({ id: userId }) => {
     try {
@@ -322,23 +422,17 @@ export async function generateTeamApiKeyAction(
         return ownershipCheck;
       }
 
-      // Generate secure random API key
-      const apiKey = `atypica_${randomBytes(32).toString("hex")}`;
-      const createdAt = new Date().toISOString();
+      const { user } = ownershipCheck;
 
-      // Store in TeamConfig
-      await setTeamConfig(teamId, TeamConfigName.apiKey, {
-        key: apiKey,
-        createdAt,
-        createdBy: userId,
+      // Use new apiKey lib
+      const apiKeyData = await generateApiKey({
+        teamId,
+        createdByEmail: user.personalUser.email,
       });
 
       return {
         success: true,
-        data: {
-          key: apiKey,
-          createdAt,
-        },
+        data: apiKeyData,
       };
     } catch (error) {
       rootLogger.error({ msg: "Failed to generate API key", error });
@@ -351,56 +445,11 @@ export async function generateTeamApiKeyAction(
   });
 }
 
-// Get team API key
-export async function getTeamApiKeyAction(): Promise<
-  ServerActionResult<TeamConfigValue[TeamConfigName.apiKey] | null>
-> {
-  const t = await getTranslations("Team.Actions");
-  return withAuth(async (user, userType, team) => {
-    try {
-      // 所有团队成员都可以查看 API key（会返回 masked 版本给非 owner），不需要是 owner
-      // 检查用户是否是该团队的成员
-      if (userType !== "TeamMember" || !team) {
-        return {
-          success: false,
-          message: "User is not a member of this team",
-        };
-      }
-
-      // 检查是否是 owner
-      const ownershipCheck = await verifyTeamOwnership(team.id, user.id);
-
-      // 非 owner 返回一个 masked 的 API key
-      if (!ownershipCheck.success) {
-        return {
-          success: true,
-          data: {
-            key: "atypica_" + "•".repeat(64), // 返回 masked 的 key
-            createdAt: new Date().toISOString(),
-            createdBy: 0, // 非 owner 不需要知道是谁创建的
-          },
-        };
-      }
-
-      const config = await getTeamConfig(team.id, TeamConfigName.apiKey);
-
-      return {
-        success: true,
-        data: config,
-      };
-    } catch (error) {
-      rootLogger.error({ msg: "Failed to get API key", error });
-      return {
-        success: false,
-        message: t("getApiKey.failed"),
-        code: "internal_server_error",
-      };
-    }
-  });
-}
-
-// Revoke team API key
-export async function revokeTeamApiKeyAction(teamId: number): Promise<ServerActionResult<null>> {
+// Delete team API key
+export async function deleteTeamApiKeyAction(
+  teamId: number,
+  apiKeyId: number,
+): Promise<ServerActionResult<null>> {
   const t = await getTranslations("Team.Actions");
   return withAuth(async ({ id: userId }) => {
     try {
@@ -410,17 +459,18 @@ export async function revokeTeamApiKeyAction(teamId: number): Promise<ServerActi
         return ownershipCheck;
       }
 
-      await deleteTeamConfig(teamId, TeamConfigName.apiKey);
+      // Use new apiKey lib
+      await deleteApiKey(apiKeyId);
 
       return {
         success: true,
         data: null,
       };
     } catch (error) {
-      rootLogger.error({ msg: "Failed to revoke API key", error });
+      rootLogger.error({ msg: "Failed to delete API key", error });
       return {
         success: false,
-        message: t("revokeApiKey.failed"),
+        message: t("deleteApiKey.failed"),
         code: "internal_server_error",
       };
     }

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { rootLogger } from "@/lib/logging";
-import { ApiKeyExtra } from "@/prisma/client";
+import { ApiKeyExtra, TeamExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { randomBytes } from "crypto";
 import { unstable_cache } from "next/cache";
@@ -182,8 +182,8 @@ const findOwnerByApiKeyCached = unstable_cache(
       }
 
       if (result.team) {
-        const { id, name } = result.team;
-        return { type: "team", team: { id, name } };
+        const { id, name, seats, extra } = result.team;
+        return { type: "team", team: { id, name, seats, extra: extra as TeamExtra } };
       }
 
       return null;

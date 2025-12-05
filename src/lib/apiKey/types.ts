@@ -1,4 +1,4 @@
-import type { Team, User } from "@/prisma/client";
+import type { Team, TeamExtra, User } from "@/prisma/client";
 
 /**
  * API Key owner type
@@ -14,7 +14,12 @@ export type ApiKeyOwner =
         personalUserId?: null;
       };
     }
-  | { type: "team"; team: Pick<Team, "id" | "name"> };
+  | {
+      type: "team";
+      team: Pick<Team, "id" | "name" | "seats"> & {
+        extra: TeamExtra;
+      };
+    };
 
 /**
  * API Key data returned to client

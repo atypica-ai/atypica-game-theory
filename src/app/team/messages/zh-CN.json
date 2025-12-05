@@ -200,6 +200,15 @@
       "removeDomain": {
         "notFound": "域名不存在",
         "failed": "删除域名失败"
+      },
+      "listApiKeys": {
+        "failed": "获取 API Keys 失败"
+      },
+      "generateApiKey": {
+        "failed": "生成 API Key 失败"
+      },
+      "deleteApiKey": {
+        "failed": "删除 API Key 失败"
       }
     },
     "DomainVerificationCard": {
