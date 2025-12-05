@@ -1,23 +1,25 @@
-import { FitToViewport } from "@/components/layout/FitToViewport";
 import GlobalFooter from "@/components/layout/GlobalFooter";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { cn } from "@/lib/utils";
-import React, { ReactElement, ReactNode } from "react";
+import { isValidElement, ReactNode } from "react";
 
-type DefaultLayoutProps = {
+/**
+ * DefaultLayout Props
+ *
+ * When fitToViewport is true, child pages should wrap their content in <FitToViewport>
+ * This is documented but not strictly enforced at the type level due to Next.js lazy loading.
+ */
+export type DefaultLayoutProps = {
   header?: boolean;
+  children: ReactNode;
 } & (
   | {
       fitToViewport: true;
       footer?: false; // footer cannot be used with fitToViewport
-      // This type hint guides developers but is not enforced at runtime for Next.js pages
-      // due to lazy loading.
-      children: ReactElement<React.ComponentProps<typeof FitToViewport>>;
     }
   | {
       fitToViewport?: false;
       footer?: boolean;
-      children: ReactNode;
     }
 );
 
@@ -33,10 +35,33 @@ export async function DefaultLayout({
     throw new Error("The `footer` prop cannot be used when `fitToViewport` is true.");
   }
 
-  // The previous runtime check for `children.type === FitToViewport` has been removed.
-  // It is unreliable in a Next.js environment because page components passed as
-  // `children` are often lazy-loaded and their type is not directly inspectable.
-  // We now rely on TypeScript's static analysis to guide correct usage.
+  // Development-only runtime validation for fitToViewport usage
+  if (process.env.NODE_ENV === "development" && fitToViewport) {
+    // Check if children is a valid React element
+    if (isValidElement(children)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const childType = (children as any).type;
+
+      // Try to get the component name or displayName
+      const componentName =
+        typeof childType === "function"
+          ? childType.displayName || childType.name
+          : typeof childType === "string"
+            ? childType
+            : "Unknown";
+
+      // Warn if the child is not FitToViewport
+      // Note: This check may not work reliably with Next.js lazy-loaded pages,
+      // but it will catch cases where we can inspect the component type
+      if (componentName !== "FitToViewport" && !componentName.includes("FitToViewport")) {
+        console.warn(
+          `⚠️ [DefaultLayout] When fitToViewport is true, children should be wrapped in <FitToViewport>. ` +
+            `Current child component: ${componentName}. ` +
+            `This may not be enforced due to Next.js lazy loading, but please follow the convention.`,
+        );
+      }
+    }
+  }
 
   return fitToViewport ? (
     <div className="h-dvh flex flex-col items-stretch justify-start overflow-hidden">

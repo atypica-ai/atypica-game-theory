@@ -1,12 +1,19 @@
 import { DefaultLayout } from "@/components/layout/DefaultLayout";
-import { FitToViewport } from "@/components/layout/FitToViewport";
-import { ReactElement } from "react";
+import { ReactNode } from "react";
 
-export default async function AgentsPageLayout({
-  children,
-}: {
-  children: ReactElement<React.ComponentProps<typeof FitToViewport>>;
-}) {
+/**
+ * Agents Layout
+ *
+ * This layout expects all child pages to wrap their content in <FitToViewport>
+ *
+ * @example
+ * ```tsx
+ * export default function Page() {
+ *   return <FitToViewport>{content}</FitToViewport>
+ * }
+ * ```
+ */
+export default async function AgentsPageLayout({ children }: { children: ReactNode }) {
   return (
     <DefaultLayout header={true} fitToViewport={true}>
       {children}
