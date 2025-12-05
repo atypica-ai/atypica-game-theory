@@ -223,7 +223,11 @@ export function TeamDetailPageClient({ team, isOwner }: { team: Team; isOwner: b
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {teamSubscription ? t("subscriptionPlanPro") : t("subscriptionPlanFree")}
+              {teamSubscription?.plan === "superteam"
+                ? t("subscriptionPlanSuperTeam")
+                : teamSubscription?.plan === "team"
+                  ? t("subscriptionPlanTeam")
+                  : t("subscriptionPlanFree")}
             </div>
             {teamSubscription ? (
               <p className="text-xs text-muted-foreground">
