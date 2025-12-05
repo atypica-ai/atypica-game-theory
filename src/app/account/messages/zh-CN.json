@@ -85,7 +85,8 @@
       "paymentHistory": "支付历史",
       "teamManagement": "团队管理",
       "teamInfo": "团队信息",
-      "teamApiKeys": "API Keys"
+      "teamApiKeys": "API Keys",
+      "apiKeys": "API Keys"
     },
     "profile": {
       "title": "个人资料设置",
@@ -116,6 +117,49 @@
       "passwordUpdateSuccess": "密码更新成功",
       "passwordUpdateError": "密码更新失败",
       "passwordMismatch": "密码不匹配"
+    },
+    "ApiKeyPage": {
+      "title": "API Keys",
+      "description": "管理您的个人 API Keys，用于程序化访问"
+    },
+    "ApiKeyActions": {
+      "list": {
+        "failed": "加载 API Keys 失败"
+      },
+      "generate": {
+        "failed": "生成 API Key 失败"
+      },
+      "delete": {
+        "failed": "删除 API Key 失败"
+      }
+    },
+    "ApiKeyCard": {
+      "title": "API Keys",
+      "description": "通过程序访问您的个人数据。",
+      "viewDocsLink": "查看 API 文档",
+      "loading": "加载中...",
+      "noKeyDescription": "还没有生成 API Key。生成一个来访问 API。",
+      "generateButton": "生成 API Key",
+      "generatingButton": "生成中...",
+      "apiKeyLabel": "API Key",
+      "createdAt": "创建时间：{date}",
+      "createdBy": "创建者：{email}",
+      "deleteButton": "删除",
+      "deleteDialog": {
+        "title": "删除 API Key",
+        "description": "确定要删除这个 API Key 吗？此操作不可撤销。所有使用此 Key 的应用将立即失去访问权限。",
+        "cancelButton": "取消",
+        "confirmButton": "删除",
+        "deletingButton": "删除中..."
+      },
+      "toast": {
+        "generateSuccess": "API Key 生成成功",
+        "copySuccess": "API Key 已复制到剪贴板",
+        "revokeSuccess": "API Key 删除成功",
+        "loadError": "加载 API Keys 失败",
+        "generateError": "生成 API Key 失败",
+        "revokeError": "删除 API Key 失败"
+      }
     }
   }
 }

@@ -129,6 +129,15 @@ export default function AccountSidebar() {
       },
     ];
 
+    // Add API Keys menu for personal users only
+    if (session?.userType === "Personal") {
+      sidebarItems.push({
+        label: t("apiKeys"),
+        href: "/account/api-keys",
+        icon: <KeyIcon className="mr-2 h-4 w-4" />,
+      });
+    }
+
     // 所有团队成员都可以访问团队页面（包括 owner 和普通成员）
     if (teamStatus?.teamRole) {
       sidebarItems.push({
@@ -151,7 +160,7 @@ export default function AccountSidebar() {
     }
 
     return sidebarItems;
-  }, [teamStatus, t]);
+  }, [teamStatus, t, session?.userType]);
 
   return (
     <aside className="w-full sm:w-48 lg:w-64 max-sm:border-t sm:border-r">

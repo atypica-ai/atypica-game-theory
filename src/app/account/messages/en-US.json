@@ -85,7 +85,8 @@
       "paymentHistory": "Payment History",
       "teamManagement": "Team Management",
       "teamInfo": "Team Info",
-      "teamApiKeys": "API Keys"
+      "teamApiKeys": "API Keys",
+      "apiKeys": "API Keys"
     },
     "profile": {
       "title": "Profile Settings",
@@ -116,6 +117,49 @@
       "passwordUpdateSuccess": "Password updated successfully",
       "passwordUpdateError": "Failed to update password",
       "passwordMismatch": "Passwords do not match"
+    },
+    "ApiKeyPage": {
+      "title": "API Keys",
+      "description": "Manage your personal API keys for programmatic access"
+    },
+    "ApiKeyActions": {
+      "list": {
+        "failed": "Failed to load API keys"
+      },
+      "generate": {
+        "failed": "Failed to generate API key"
+      },
+      "delete": {
+        "failed": "Failed to delete API key"
+      }
+    },
+    "ApiKeyCard": {
+      "title": "API Keys",
+      "description": "Programmatic access to your personal data.",
+      "viewDocsLink": "View API docs",
+      "loading": "Loading...",
+      "noKeyDescription": "No API keys generated yet. Generate one to access the API.",
+      "generateButton": "Generate API Key",
+      "generatingButton": "Generating...",
+      "apiKeyLabel": "API Key",
+      "createdAt": "Created: {date}",
+      "createdBy": "Created by: {email}",
+      "deleteButton": "Delete",
+      "deleteDialog": {
+        "title": "Delete API Key",
+        "description": "Are you sure you want to delete this API key? This action cannot be undone. All applications using this key will lose access immediately.",
+        "cancelButton": "Cancel",
+        "confirmButton": "Delete",
+        "deletingButton": "Deleting..."
+      },
+      "toast": {
+        "generateSuccess": "API key generated successfully",
+        "copySuccess": "API key copied to clipboard",
+        "revokeSuccess": "API key deleted successfully",
+        "loadError": "Failed to load API keys",
+        "generateError": "Failed to generate API key",
+        "revokeError": "Failed to delete API key"
+      }
     }
   }
 }
