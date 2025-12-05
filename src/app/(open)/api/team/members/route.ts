@@ -1,4 +1,4 @@
-import { withApiKey } from "@/app/(open)/lib/withApiKey";
+import { withTeamApiKey } from "@/app/(open)/lib/withApiKey";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { NextResponse } from "next/server";
@@ -9,19 +9,7 @@ import { NextResponse } from "next/server";
  */
 export async function GET() {
   try {
-    return await withApiKey(async (owner) => {
-      // This API is team-only
-      if (owner.type !== "team") {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "This API endpoint is only available for team API keys",
-          },
-          { status: 403 },
-        );
-      }
-
-      const { team } = owner;
+    return await withTeamApiKey(async (team) => {
 
       // Fetch all team members (only active members with personalUserId)
       const members = await prisma.user.findMany({

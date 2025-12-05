@@ -1,6 +1,6 @@
 import { createPersonalUser, createTeamMemberUser } from "@/app/(auth)/lib";
 import { generateRandomPassword, verifyDomainWhitelist } from "@/app/(open)/api/team/members/utils";
-import { withApiKey } from "@/app/(open)/lib/withApiKey";
+import { withTeamApiKey } from "@/app/(open)/lib/withApiKey";
 import { rootLogger } from "@/lib/logging";
 import { TeamExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -14,19 +14,7 @@ const logger = rootLogger.child({ api: "/api/team/members/create" });
  */
 export async function POST(request: NextRequest) {
   try {
-    return await withApiKey(async (owner) => {
-      // This API is team-only
-      if (owner.type !== "team") {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "This API endpoint is only available for team API keys",
-          },
-          { status: 403 },
-        );
-      }
-
-      const { team } = owner;
+    return await withTeamApiKey(async (team) => {
 
       // 1. 解析请求体
       const body = await request.json();

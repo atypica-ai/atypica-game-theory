@@ -1,6 +1,6 @@
 import { generateImpersonationLoginUrl } from "@/app/(auth)/impersonationLogin";
 import { verifyDomainWhitelist } from "@/app/(open)/api/team/members/utils";
-import { withApiKey } from "@/app/(open)/lib/withApiKey";
+import { withTeamApiKey } from "@/app/(open)/lib/withApiKey";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
@@ -45,19 +45,7 @@ export async function POST(
       // If body parsing fails, use defaults
     }
 
-    return await withApiKey(async (owner) => {
-      // This API is team-only
-      if (owner.type !== "team") {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "This API endpoint is only available for team API keys",
-          },
-          { status: 403 },
-        );
-      }
-
-      const { team } = owner;
+    return await withTeamApiKey(async (team) => {
 
       // Verify the member belongs to this team
       const member = await prisma.user.findUnique({
