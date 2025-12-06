@@ -123,7 +123,13 @@ export async function GET(request: Request) {
         const fileSize = item.podcast.extra?.metadata?.size; // in bytes
         // Format description (add link, don't truncate if using showNotes)
         const formattedDescription = showNotes
-          ? formatShowNotes(description, episodeUrl, locale)
+          ? formatShowNotes({
+              showNotes: description,
+              studyUrl: `${baseUrl}/study/${item.studyUserChat.token}/share?replay=1&utm_source=podcast&utm_medium=feed`,
+              studyTitle: item.studyUserChat.title,
+              locale,
+              baseUrl,
+            })
           : formatSummary(description, episodeUrl, locale);
         // Use report cover image URL (if available)
         const coverImageUrl = item.coverImageUrl;
@@ -213,16 +219,27 @@ function formatSummary(text: string, episodeUrl: string, locale: string): string
 /**
  * Format show notes without truncation (show notes are pre-formatted)
  */
-function formatShowNotes(showNotes: string, episodeUrl: string, locale: string): string {
+function formatShowNotes({
+  showNotes,
+  studyUrl,
+  studyTitle,
+  locale,
+  baseUrl,
+}: {
+  showNotes: string;
+  studyUrl: string;
+  studyTitle: string;
+  locale: string;
+  baseUrl: string;
+}): string {
   // Apply formatting (line breaks)
   const formatted = formatDescriptionWithBreaks(showNotes);
 
-  // Add promotional text
-  const linkText =
-    locale === "zh-CN"
-      ? "查看完整研究，探索更深入的洞察"
-      : "View the full research and explore deeper insights";
-  return `${formatted}<br><br>🔗 <a href="${episodeUrl}">${linkText}</a>`;
+  if (locale === "zh-CN") {
+    return `📌 本期概览<br>${formatted}<br><br>📃 本期深度研究在这里获取：<br><a href="${studyUrl}">${studyTitle ?? "深度研究"}</a><br><br>关于 Atypica<br>Atypica 是一个面向全球市场、技术与消费者机制研究的智能体内容品牌，用跨学科方法拆解那些被忽视却决定未来走向的结构性变量、商业逻辑与模式变化。<br><br>💻 技术支持<br>智能体支持：<a href="${baseUrl}?utm_source=podcast&utm_medium=feed">atypica.AI</a><br>模型支持：Creative Reasoning<br><br>开启你感兴趣的研究话题，它们会成为未来某一期深度播客内容的种子<br><a href="${baseUrl}/insight-radio?utm_source=podcast&utm_medium=feed">查看所有深度研究</a>`;
+  } else {
+    return `📌 Overview<br>${formatted}<br><br>📃 Access the full research here：<br><a href="${studyUrl}">${studyTitle ?? "Deep Research"}</a><br><br>About Atypica<br>Atypica is an AI-powered content brand focused on global markets, technology, and consumer mechanisms. We use interdisciplinary methods to dissect overlooked structural variables, business logic, and pattern shifts that shape the future.<br><br>💻 Technical Support<br>Agent Support: <a href="${baseUrl}?utm_source=podcast&utm_medium=feed">atypica.AI</a><br>Model Support: Creative Reasoning<br><br>Start a research topic you're interested in, and it may become a future in-depth podcast episode<br><a href="${baseUrl}/insight-radio?utm_source=podcast&utm_medium=feed">View all research</a>`;
+  }
 }
 
 /**
