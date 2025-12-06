@@ -11,8 +11,8 @@
     "lint": "next lint --max-warnings 0",
     "lint:fix": "next lint --max-warnings 0 --fix",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "admintool": "tsx scripts/admintool.ts",
-    "analytics": "tsx scripts/analytics-report.ts"
+    "admintool": "tsx scripts/admin/admintool.ts",
+    "analytics": "tsx scripts/admin/analytics-report.ts"
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^3.0.67",

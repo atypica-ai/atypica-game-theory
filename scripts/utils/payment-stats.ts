@@ -13,7 +13,7 @@ import { loadEnvConfig } from "@next/env";
 import Stripe from "stripe";
 import "./mock-server-only";
 
-const dateBefore = new Date("2025-11-01T00:00:00+08:00"); // 注意，导出的 excel 文件里，days 的公式也需要改一下时间为本月 1 号
+const dateBefore = new Date("2025-12-01T00:00:00+08:00"); // 注意，导出的 excel 文件里，days 的公式也需要改一下时间为本月 1 号
 const pad12 = (n: number) => n.toLocaleString().padStart(12, " ");
 const fdate = (d: Date) =>
   new Intl.DateTimeFormat("zh-CN", {

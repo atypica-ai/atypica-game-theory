@@ -16,7 +16,9 @@
       "Bash(head:*)",
       "Bash(gh api:*)",
       "Bash(gh pr diff:*)",
-      "Bash(gh pr view:*)"
+      "Bash(gh pr view:*)",
+      "Bash(tree:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
