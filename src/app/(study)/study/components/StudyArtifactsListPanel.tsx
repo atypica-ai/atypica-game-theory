@@ -2,15 +2,35 @@ import { ToolName } from "@/ai/tools/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { truncateForTitle } from "@/lib/textUtils";
 import { formatDistanceToNow } from "@/lib/utils";
-import { FileType2Icon, Loader2Icon, MicIcon, PlayIcon, SparklesIcon } from "lucide-react";
+import { FileType2Icon, Loader2Icon, MicIcon, PlayIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useStudyContext } from "../hooks/StudyContext";
 import { AnalystReportShareButton } from "./AnalystReportShareButton";
+
+// Custom Artifacts Icon
+const ArtifactsIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+  </svg>
+);
 
 // Badge component with auto-refresh logic for total artifact count
 function ArtifactsCountBadge() {
@@ -50,13 +70,7 @@ function ArtifactsCountBadge() {
 /**
  * 和 ReportsListPanel 和 PodcastsListPanel 不同的是，这个组件使用 StudyContext 来存出数据
  */
-export default function StudyArtifactsListPanel({
-  children,
-  download = false,
-}: {
-  children?: React.ReactNode;
-  download?: boolean;
-}) {
+export default function StudyArtifactsListPanel({ download = false }: { download?: boolean }) {
   const tReports = useTranslations("StudyPage.ReportsListPanel");
   const tPodcasts = useTranslations("StudyPage.PodcastsListPanel");
   const tArtifacts = useTranslations("StudyPage.ArtifactsListPanel");
@@ -99,24 +113,18 @@ export default function StudyArtifactsListPanel({
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <PopoverTrigger asChild>
-              {children || (
-                <div className="p-1 cursor-pointer rounded flex items-center gap-2 relative">
-                  <SparklesIcon className="shrink-0 size-5" />
-                  <span className="text-xs max-sm:hidden whitespace-nowrap">
-                    {tArtifacts("title")}
-                  </span>
-                  <ArtifactsCountBadge />
-                </div>
-              )}
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent>{tArtifacts("title")}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 gap-1.5 relative hover:bg-transparent hover:text-primary"
+        >
+          <ArtifactsIcon className="shrink-0 size-4" />
+          <span className="text-xs max-sm:hidden whitespace-nowrap">{tArtifacts("title")}</span>
+          <ArtifactsCountBadge />
+        </Button>
+      </PopoverTrigger>
+
       <PopoverContent className="w-80 p-0 dark:bg-zinc-800" align="center">
         {/*
         <div className="flex items-center gap-2 p-3 border-b border-border/50">
@@ -124,7 +132,7 @@ export default function StudyArtifactsListPanel({
           <div className="text-sm font-medium">{tArtifacts("title")}</div>
         </div>
         */}
-        <div className="max-h-[20rem] overflow-y-auto scrollbar-thin">
+        <div className="max-h-80 overflow-y-auto scrollbar-thin">
           {/* Podcasts Section */}
           <div className="border-b border-border/50">
             <div className="px-3 py-2 flex items-center gap-2 bg-muted/30">

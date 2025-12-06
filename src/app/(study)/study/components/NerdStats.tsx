@@ -4,8 +4,28 @@ import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn, formatDuration } from "@/lib/utils";
-import { ActivityIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+
+// Custom Stats Icon
+const StatsIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M3 3v18h18" />
+    <path d="M18 17V9" />
+    <path d="M13 17v-4" />
+    <path d="M8 17v-7" />
+  </svg>
+);
 
 type Stat = {
   dimension: string;
@@ -53,18 +73,19 @@ export function NerdStats() {
             variant="ghost"
             size="sm"
             className={cn(
-              "h-6 px-2 text-xs hover:bg-transparent hover:text-primary font-mono",
-              "gap-2 text-muted-foreground max-sm:text-foreground max-sm:px-1 max-sm:has-[>svg]:px-1 max-sm:gap-0",
+              "h-7 px-2 gap-1.5 hover:bg-transparent hover:text-primary",
+              "text-xs",
+              // "text-muted-foreground max-sm:text-foreground",
             )}
             onMouseEnter={() => setIsOpen(true)}
             onMouseLeave={() => setIsOpen(false)}
           >
-            <ActivityIcon className="size-4" />
+            <StatsIcon className="size-4" />
             <span className="max-sm:hidden">Nerd Stats</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-[22rem] sm:w-[40rem] p-0 border-none bg-transparent shadow-none"
+          className="w-88 sm:w-160 p-0 border-none bg-transparent shadow-none"
           align="center"
           sideOffset={0}
           onMouseEnter={() => setIsOpen(true)}
@@ -72,7 +93,14 @@ export function NerdStats() {
         >
           <div className="space-y-2">
             {isLoading ? (
-              <div className="text-sm text-muted-foreground">Loading stats...</div>
+              <div
+                className={cn(
+                  "text-sm text-muted-foreground flex items-center justify-center h-32",
+                  "bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-3xl border border-input overflow-hidden",
+                )}
+              >
+                Loading stats...
+              </div>
             ) : (
               <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl sm:rounded-3xl border border-input overflow-hidden">
                 {/* Header */}

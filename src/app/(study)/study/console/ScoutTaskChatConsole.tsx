@@ -76,10 +76,10 @@ export const ScoutTaskChatConsole = ({
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
       if (window.document.hidden) {
-        timeoutId = setTimeout(poll, 2000);
+        timeoutId = setTimeout(poll, 30000);
         return;
       }
-      timeoutId = setTimeout(poll, 1000); // 要放在前面，不然下面 return () 的时候如果 refreshScoutUserChat 还没完成就不会 clearTimeout 了
+      timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 refreshScoutUserChat 还没完成就不会 clearTimeout 了
       await refreshScoutUserChat();
     };
     poll();

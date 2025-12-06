@@ -11,10 +11,30 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { UserChat } from "@/prisma/client";
-import { ClipboardCopyIcon, ShareIcon } from "lucide-react";
+import { ClipboardCopyIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+
+// Custom Share Icon
+const ShareIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+    <polyline points="16 6 12 2 8 6" />
+    <line x1="12" y1="2" x2="12" y2="15" />
+  </svg>
+);
 
 export function ShareReplayButton({
   studyUserChat,
@@ -39,8 +59,12 @@ export function ShareReplayButton({
       }}
     >
       <AlertDialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-xs rounded-full shadow-none">
-          <ShareIcon className="size-3" />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 gap-1.5 hover:bg-transparent hover:text-primary text-xs"
+        >
+          <ShareIcon className="size-4" />
           <span className="max-sm:hidden">{t("shareReplay")}</span>
         </Button>
       </AlertDialogTrigger>

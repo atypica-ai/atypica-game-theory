@@ -5,9 +5,9 @@ import {
 } from "@/ai/messageUtilsClient";
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
-import { useTokensBalance } from "@/app/account/hooks";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
+import { useTokensBalance } from "@/app/account/hooks";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -235,7 +235,7 @@ export function ChatBox() {
         return;
       }
       if (!isDocumentVisible) {
-        timeoutId = setTimeout(poll, 10000);
+        timeoutId = setTimeout(poll, 30000);
         return;
       }
       timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 refreshStudyUserChat 还没完成就不会 clearTimeout 了

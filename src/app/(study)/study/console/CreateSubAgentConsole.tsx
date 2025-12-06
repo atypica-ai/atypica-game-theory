@@ -72,10 +72,10 @@ export const CreateSubAgentConsole = ({
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
       if (window.document.hidden) {
-        timeoutId = setTimeout(poll, 2000);
+        timeoutId = setTimeout(poll, 30000);
         return;
       }
-      timeoutId = setTimeout(poll, 1000); // Poll every second when visible
+      timeoutId = setTimeout(poll, 5000); // Poll every second when visible
       await refreshSubAgentChat();
     };
     poll();
