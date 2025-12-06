@@ -8,6 +8,7 @@
 scripts/
 ├── admin/              # 运维管理工具
 ├── utils/              # 实用工具
+├── dumps/              # 数据导入导出工具
 ├── archive/            # 历史归档
 ├── mock-server-only.ts # 服务端环境模拟（基础设施）
 └── README.md           # 本文档
@@ -232,6 +233,84 @@ pnpm tsx scripts/utils/rescore-personas.ts
 
 ---
 
+## 数据导入导出工具 (dumps/)
+
+### export-interview-project.ts - 导出访谈项目
+
+导出完整的访谈项目数据为 JSON 文件，包含项目信息、会话、对话和消息。
+
+**使用方法：**
+
+```bash
+# 导出访谈项目
+pnpm tsx scripts/dumps/export-interview-project.ts <project-token>
+```
+
+**示例：**
+
+```bash
+pnpm tsx scripts/dumps/export-interview-project.ts abc123def456
+```
+
+**导出内容：**
+- InterviewProject 基本信息（token, brief, extra, 时间戳）
+- InterviewSession 会话列表（userId/personaId 用 `[PLACEHOLDER]` 标记）
+- UserChat 对话数据（每个会话的聊天记录）
+- ChatMessage 所有消息（包含 role, content, parts, attachments）
+
+**不导出内容：**
+- InterviewReport（可重新生成）
+- ChatStatistics（统计数据）
+- TokensLog（token 日志）
+- 数据库自增 ID（导入时重新生成）
+- 实际的 userId/personaId 值（用占位符标记类型）
+
+**输出位置：** `scripts/dumps/exports/interview-project-{token}-{timestamp}.json`
+
+---
+
+### import-interview-project.ts - 导入访谈项目
+
+从 JSON 文件导入访谈项目到指定用户账户。
+
+**使用方法：**
+
+```bash
+# 导入访谈项目
+pnpm tsx scripts/dumps/import-interview-project.ts <user-id> <json-file-path>
+```
+
+**示例：**
+
+```bash
+pnpm tsx scripts/dumps/import-interview-project.ts 123 scripts/dumps/exports/interview-project-abc123-2025-12-06.json
+```
+
+**功能特性：**
+- 自动生成新的项目 token（避免冲突）
+- 保留原始 token 到 `extra.originalToken`
+- project brief 加上 `[IMPORTED]` 前缀方便识别
+- 生成新的 UserChat token 和 ChatMessage messageId
+- InterviewProject 使用当前时间戳，其他保持原始时间戳
+- 根据 `[PLACEHOLDER]` 标记还原字段类型：
+  - 原来有 userId → 设为当前导入用户
+  - 原来有 personaId → 设为占位角色（id=1）
+- 自动创建占位角色（persona id=1）如不存在
+- 使用 Prisma 事务确保原子性
+
+**导入效果：**
+- 创建完整的项目副本
+- 所有数据归属于指定用户
+- 保留原始数据结构和内容
+- 附件引用保持不变（仅保存 JSON）
+
+**注意事项：**
+- 确保目标用户 ID 存在
+- 会根据导出时的标记保持原始的字段类型
+- 附件文件不会被复制，只保留引用
+
+---
+
 ## 历史归档 (archive/)
 
 ### archive/legacy/
@@ -280,6 +359,7 @@ import "./mock-server-only";
 1. 确定脚本分类：
    - 运维管理 → `admin/`
    - 实用工具 → `utils/`
+   - 数据导入导出 → `dumps/`
 
 2. 创建脚本文件：
 ```typescript
