@@ -1,5 +1,5 @@
 "use server";
-import { generatePodcastMetadataTitle } from "@/app/(podcast)/lib/generation";
+import { generatePodcastMetadata } from "@/app/(podcast)/lib/generation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
@@ -124,10 +124,10 @@ export async function updatePodcastTitleAction(
   }
 }
 
-// Generate podcast title using AI
-export async function generatePodcastTitleAction(
+// Generate podcast metadata (title and show notes) using AI
+export async function generatePodcastMetadataAction(
   podcastId: number,
-): Promise<ServerActionResult<string>> {
+): Promise<ServerActionResult<{ title: string; showNotes: string }>> {
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const podcast = await prisma.analystPodcast.findUnique({
@@ -166,7 +166,7 @@ export async function generatePodcastTitleAction(
     const statReport = async () => {};
     const abortSignal = new AbortController().signal;
 
-    const title = await generatePodcastMetadataTitle({
+    const { title, showNotes } = await generatePodcastMetadata({
       script: podcast.script,
       locale,
       abortSignal,
@@ -174,15 +174,28 @@ export async function generatePodcastTitleAction(
       logger,
     });
 
+    // Update both title and showNotes in database
+    await mergeExtra({
+      tableName: "AnalystPodcast",
+      id: podcastId,
+      extra: {
+        metadata: {
+          ...(podcast.extra as AnalystPodcastExtra).metadata,
+          title,
+          showNotes,
+        },
+      } satisfies Partial<AnalystPodcastExtra>,
+    });
+
     return {
       success: true,
-      data: title,
+      data: { title, showNotes },
     };
   } catch (error) {
-    console.error("Failed to generate podcast title:", error);
+    console.error("Failed to generate podcast metadata:", error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to generate podcast title",
+      message: error instanceof Error ? error.message : "Failed to generate podcast metadata",
       code: "internal_server_error",
     };
   }

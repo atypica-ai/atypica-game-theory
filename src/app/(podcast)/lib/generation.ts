@@ -3,6 +3,7 @@ import "server-only";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
+import { podcastMetadataSchema, podcastMetadataSystem } from "@/app/(podcast)/prompt/metadata";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { fileUrlToDataUrl } from "@/lib/attachments/actions";
 import { uploadToS3 } from "@/lib/attachments/s3";
@@ -17,7 +18,14 @@ import {
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
-import { FilePart, FinishReason, generateText, ModelMessage, stepCountIs, streamText } from "ai";
+import {
+  FilePart,
+  FinishReason,
+  generateObject,
+  ModelMessage,
+  stepCountIs,
+  streamText,
+} from "ai";
 import { parseBuffer } from "music-metadata";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -108,9 +116,9 @@ export async function generatePodcast({
       .findUniqueOrThrow({ where: { id: podcast.id } })
       .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
-    // Step 3: Generate audio, title, and show notes in parallel
+    // Step 3: Generate audio and metadata in parallel
     logger.info("Starting audio and metadata generation in parallel");
-    const [{ objectUrl, mimeType, duration, fileSize }, title, showNotes] = await Promise.all([
+    const [{ objectUrl, mimeType, duration, fileSize }, { title, showNotes }] = await Promise.all([
       generatePodcastAudio({
         podcastId: podcast.id,
         podcastToken: podcast.token,
@@ -120,14 +128,7 @@ export async function generatePodcast({
         statReport: statReport,
         logger: logger,
       }),
-      generatePodcastMetadataTitle({
-        script: script,
-        locale: locale,
-        abortSignal: abortSignal,
-        statReport: statReport,
-        logger: logger,
-      }),
-      generatePodcastShowNotes({
+      generatePodcastMetadata({
         script: script,
         locale: locale,
         abortSignal: abortSignal,
@@ -361,8 +362,8 @@ async function generatePodcastScript({
   return script;
 }
 
-// Generate podcast title from script
-export async function generatePodcastMetadataTitle({
+// Generate podcast metadata (title and show notes) in a single call
+export async function generatePodcastMetadata({
   script,
   locale,
   abortSignal,
@@ -374,15 +375,10 @@ export async function generatePodcastMetadataTitle({
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
-}): Promise<string> {
-  logger.info({ msg: "Starting podcast title generation" });
+}): Promise<{ title: string; showNotes: string }> {
+  logger.info({ msg: "Starting podcast metadata generation (title + show notes)" });
 
-  const systemPrompt =
-    locale === "zh-CN"
-      ? "根据播客脚本生成一个吸引眼球的标题。要求简洁（60字以内）、吸引人、抓住核心观点。直接返回标题文本，不要加引号。"
-      : "Generate a catchy title based on the podcast script. Keep it concise (under 60 chars), engaging, and capture the key insight. Return the title text only, no quotes.";
-
-  const { text, usage } = await generateText({
+  const result = await generateObject({
     model: llm("gpt-5-mini"),
     providerOptions: {
       openai: {
@@ -390,142 +386,36 @@ export async function generatePodcastMetadataTitle({
         reasoningEffort: "minimal",
       } satisfies OpenAIResponsesProviderOptions,
     },
-    system: systemPrompt,
+    system: podcastMetadataSystem(locale),
     prompt: script,
+    schema: podcastMetadataSchema,
+    schemaName: "PodcastMetadata",
+    schemaDescription: "Generate both title and show notes for the podcast",
     abortSignal: abortSignal,
+    maxRetries: 2,
   });
 
-  const title = text.trim();
+  const { title, showNotes } = result.object;
 
   // Track token usage
   const totalTokens =
-    (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || (usage.totalTokens ?? 0);
+    (result.usage.outputTokens ?? 0) * 3 + (result.usage.inputTokens ?? 0) ||
+    (result.usage.totalTokens ?? 0);
   if (totalTokens > 0) {
     await statReport("tokens", totalTokens, {
-      reportedBy: "generatePodcastMetadataTitle",
-      part: "title",
-      usage,
+      reportedBy: "generatePodcastMetadata",
+      part: "metadata",
+      usage: result.usage,
     });
   }
 
-  logger.info({ msg: "Podcast title generation completed", title });
-  return title;
-}
-
-export async function generatePodcastShowNotes({
-  script,
-  locale,
-  abortSignal,
-  statReport,
-  logger,
-}: {
-  script: string;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  logger: Logger;
-}): Promise<string> {
-  logger.info({ msg: "Starting podcast show notes generation" });
-
-  const systemPrompt =
-    locale === "zh-CN"
-      ? `根据播客脚本，从普通听众的角度，撰写节目说明（Show Notes）。目的是1. 让听众快速了解播客内容，抓住听众的兴趣；2. 让播客更容易被搜索到。
-包括以下内容：
-1. 简短的Hook（2-3句话）：
-- 【目的】一个好的Hook是成功抓住听众的关键。提前简单的抛出Takeaway可以调动用户听下去的兴趣。通过高吸引力的方式，提出本次研究解决的问题是什么。
-- 这个内容对用户应该有很强的吸引力
-- 建立"这与我有关"的连接
-- 创造"必须听完"的紧迫感
-- 避免模糊的形容词（"有意思"、"疯狂"等）
-- Hook的几种形式例子：
-  - 反常识冲击型：用离谱的现象来调动听众的八卦魂或者强烈好奇心
-  - 利益相关型：用贴近生活和工作的利益相关信息，让听众觉得可以获得有益的takeaway
-  - 其他的请带入用户角度创造
-
-2. 听众的takeaway（3-5个要点）：
-- 【目的】抓住听众的兴趣；让播客更容易被搜索到
-- 要求包括所有脚本中提及的热点
-
-格式要求：
-格式如以下例子
-"""
-在北京房价动辄千万的当下，一位90后单亲妈妈做了个"离谱"的决定：不买学区房，直接带女儿住进东二环的五星级酒店上学。周一入住，周五退房，孩子上学像度假。这个看似烧钱的选择，竟然比买房省了几百万？当传统的"学区房信仰"开始松动，她的计算逻辑是否颠覆了我们对教育投资的认知？
-
-🎯 **你将收获的关键洞察**
-- 💰 颠覆性的教育成本计算：从机会成本到隐性福利，解码住酒店vs买学区房的真实账本，重新审视"房子=教育"的传统逻辑
-- 🏠 "学区房神话"的理性祛魅：生育率下降、政策调整背景下，为什么顶级学区房不再"稳赚不赔"？普通家长如何避免踩坑？
-..
-"""
-- 清晰的段落结构
-- 搭配少量Emoji
-- 突出关键信息
-- 350字以内
-
-直接返回节目说明内容，不要加额外解释。`
-      : `Based on the podcast script, write show notes from the perspective of ordinary listeners. The purpose is to: 1. Help listeners quickly understand the podcast content and capture their interest; 2. Make the podcast more discoverable through search.
-
-Include the following content:
-
-1. Short Hook (2-3 sentences):
-- **Purpose**: A good hook is key to successfully capturing listeners. Briefly presenting takeaways upfront can stimulate users' interest to keep listening. Present what problem this research solves in a highly attractive way.
-- This content should be highly attractive to users
-- Establish a "this relates to me" connection
-- Create "must listen to the end" urgency
-- Avoid vague adjectives ("interesting," "crazy," etc.)
-- Examples of hooks:
-  - Counter-intuitive impact type: Use outrageous phenomena to trigger listeners' curiosity or strong inquisitiveness
-  - Stakeholder interest type: Use life and work-related information to make listeners feel they can gain beneficial takeaways
-  - Others: Create from the user's perspective
-
-2. Listener takeaways (3-5 key points):
-- **Purpose**: Capture listeners' interest; make the podcast more searchable
-- Must include all hot topics mentioned in the script
-
-Format requirements:
-Format as the following example:
-"""
-In today's Beijing where housing prices easily reach tens of millions, a 90s single mother made an "outrageous" decision: instead of buying a school district house, she moved directly into a five-star hotel in the East Second Ring Road with her daughter for schooling. Check in Monday, check out Friday - going to school like going on vacation. This seemingly money-burning choice actually saved millions compared to buying a house? As traditional "school district housing faith" begins to waver, does her calculation logic overturn our understanding of education investment?
-
-🎯 **Key Insights You'll Gain**
-- 💰 Disruptive education cost calculation: From opportunity costs to hidden benefits, decode the real ledger of hotel living vs. buying school district housing, re-examine the traditional logic of "house = education"
-- 🏠 Rational demystification of "school district housing myth": Against the backdrop of declining birth rates and policy adjustments, why are top school district properties no longer "guaranteed profit"? How can ordinary parents avoid pitfalls?
-..
-"""
-- Clear paragraph structure
-- Use minimal emojis
-- Highlight key information
-- Within 350 words
-
-Return the show notes content directly without additional explanations.`;
-
-  const { text, usage } = await generateText({
-    model: llm("gpt-5-mini"),
-    providerOptions: {
-      openai: {
-        reasoningSummary: "auto",
-        reasoningEffort: "minimal",
-      } satisfies OpenAIResponsesProviderOptions,
-    },
-    system: systemPrompt,
-    prompt: script,
-    abortSignal: abortSignal,
+  logger.info({
+    msg: "Podcast metadata generation completed",
+    title,
+    showNotesLength: showNotes.length,
   });
 
-  const showNotes = text.trim();
-
-  // Track token usage
-  const totalTokens =
-    (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || (usage.totalTokens ?? 0);
-  if (totalTokens > 0) {
-    await statReport("tokens", totalTokens, {
-      reportedBy: "generatePodcastShowNotes",
-      part: "showNotes",
-      usage,
-    });
-  }
-
-  logger.info({ msg: "Podcast show notes generation completed", length: showNotes.length });
-  return showNotes;
+  return { title, showNotes };
 }
 
 // Pure podcast audio generation function (no auth, renamed from backgroundGeneratePodcastAudioImpl)
