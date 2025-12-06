@@ -1,7 +1,8 @@
 "use server";
 import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/interviewChat";
 
-import { generateCover, generateReport } from "@/ai/tools/experts/report";
+import { generateReport } from "@/ai/tools/experts/report";
+import { generateReportCoverSvg } from "@/ai/tools/experts/report/coverSvg";
 import { StatReporter } from "@/ai/tools/types";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { VALID_LOCALES } from "@/i18n/routing";
@@ -228,7 +229,7 @@ export async function backgroundGenerateReport({
           extra: report.extra as AnalystReportExtra,
           analyst,
         });
-        await generateCover({
+        await generateReportCoverSvg({
           analyst,
           report,
           instruction,
