@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
+import { GoogleAnalyticsReporter } from "@/lib/analytics/google/reporter.js";
 import { loadEnvConfig } from "@next/env";
-import { GoogleAnalyticsReporter } from "../src/lib/analytics/google/reporter.js";
 
 // 计算字符串的显示宽度（中文字符占2个宽度）
 function getDisplayWidth(str: string): number {

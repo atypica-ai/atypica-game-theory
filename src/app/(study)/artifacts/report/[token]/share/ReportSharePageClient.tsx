@@ -1,7 +1,6 @@
 "use client";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
-import UserMenu from "@/components/UserMenu";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Loader2Icon, Play, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -20,18 +19,16 @@ function SharePageHeader({
   return (
     <GlobalHeader className="h-12">
       <div className="flex items-center gap-2 sm:gap-4">
-        <Button variant="outline" size="sm" className="h-8 gap-1" asChild>
+        <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
           <Link href={studyReplayUrl}>
             <Play size={14} />
             <span className="max-sm:text-xs max-sm:tracking-tighter">{t("viewReplay")}</span>
           </Link>
         </Button>
-        <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
+        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={copyShareLink}>
           <Share2 size={14} />
           <span className="hidden sm:inline">{t("copyLink")}</span>
         </Button>
-        {/*<UserTokensBalance />*/}
-        <UserMenu />
       </div>
     </GlobalHeader>
   );

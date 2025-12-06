@@ -107,12 +107,13 @@
       "productRnDStudy": "产品研发",
       "needHelpToClarify": "需要灵感或梳理思路？"
     },
-    "UserTokensBalance": {
-      "balance": "{balance}个Token可用",
-      "unlimited": "无限Token",
-      "viewHistory": "查看Token历史"
-    },
     "GlobalHeader": {
+      "navigation": "导航",
+      "myContent": "我的内容",
+      "settings": "设置",
+      "unlimited": "无限",
+      "buyTokens": "购买Token",
+      "loginPrompt": "登录以使用 atypica.AI 全部功能",
       "login": "登录",
       "logout": "退出登录",
       "viewAccount": "查看账户",

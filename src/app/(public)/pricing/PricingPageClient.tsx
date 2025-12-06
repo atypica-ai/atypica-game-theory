@@ -80,15 +80,15 @@ export default function PricingPageClient({
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="max-w-7xl mx-auto">
-        <TabsList className="mx-auto mb-8 h-12">
-          <TabsTrigger value="individual" className="cursor-pointer px-8">
-            {t("tabs.individual")}
+        <TabsList className="mx-auto mb-8 h-12 w-full max-w-2xl">
+          <TabsTrigger value="individual" className="flex-none w-[30%] cursor-pointer px-0">
+            <span className="truncate">{t("tabs.individual")}</span>
           </TabsTrigger>
-          <TabsTrigger value="organization" className="cursor-pointer px-4 tracking-tighter">
-            {t("tabs.teamEnterprise")}
+          <TabsTrigger value="organization" className="flex-1 cursor-pointer px-0 tracking-tighter">
+            <span className="truncate">{t("tabs.teamEnterprise")}</span>
           </TabsTrigger>
-          <TabsTrigger value="unlimited" className="cursor-pointer px-8">
-            {t("tabs.unlimited")}
+          <TabsTrigger value="unlimited" className="flex-none w-[30%] cursor-pointer px-0">
+            <span className="truncate">{t("tabs.unlimited")}</span>
           </TabsTrigger>
         </TabsList>
 

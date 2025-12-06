@@ -2,6 +2,7 @@
 import { TeamSwitchButton } from "@/app/team/components/TeamSwitchButton";
 import { useTeamStatus } from "@/app/team/hooks";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import * as Collapsible from "@radix-ui/react-collapsible";
 import {
   ArrowLeftRightIcon,
   ChevronDownIcon,
@@ -247,11 +247,8 @@ export default function AccountSidebar() {
                 const isActive = pathname.startsWith(item.href);
                 return (
                   <li key={item.href}>
-                    <Collapsible.Root
-                      open={isExpanded}
-                      onOpenChange={() => toggleExpanded(item.href)}
-                    >
-                      <Collapsible.Trigger asChild>
+                    <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(item.href)}>
+                      <CollapsibleTrigger asChild>
                         <Button
                           variant={isActive ? "secondary" : "ghost"}
                           className="w-full justify-start"
@@ -264,8 +261,8 @@ export default function AccountSidebar() {
                             <ChevronRightIcon className="ml-auto h-4 w-4" />
                           )}
                         </Button>
-                      </Collapsible.Trigger>
-                      <Collapsible.Content>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
                         <ul className="ml-6 mt-2 space-y-2">
                           {item.children.map((child) => (
                             <li key={child.href}>
@@ -283,8 +280,8 @@ export default function AccountSidebar() {
                             </li>
                           ))}
                         </ul>
-                      </Collapsible.Content>
-                    </Collapsible.Root>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </li>
                 );
               }

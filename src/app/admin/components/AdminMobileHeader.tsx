@@ -1,6 +1,6 @@
 "use client";
+import { LegacyUserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/button";
-import UserMenu from "@/components/UserMenu";
 import { Menu } from "lucide-react";
 
 export default function AdminMobileHeader() {
@@ -21,7 +21,7 @@ export default function AdminMobileHeader() {
     <header className="md:hidden border-b px-4 py-3 flex items-center justify-between sticky top-0 bg-background z-10">
       <h1 className="text-lg font-bold">Admin Panel</h1>
       <div className="flex items-center gap-2">
-        <UserMenu />
+        <LegacyUserMenu />
         <Button
           variant="outline"
           size="icon"

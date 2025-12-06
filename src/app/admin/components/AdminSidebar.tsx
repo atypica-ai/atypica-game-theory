@@ -1,8 +1,8 @@
 "use client";
+import { LegacyUserMenu } from "@/components/layout/UserMenu";
 import { Button } from "@/components/ui/button";
-import UserMenu from "@/components/UserMenu";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AdminRole } from "@/prisma/client";
-import * as Collapsible from "@radix-ui/react-collapsible";
 import {
   AlertTriangleIcon,
   BarChartIcon,
@@ -247,11 +247,11 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
         id="admin-sidebar"
         className="w-full md:w-64 border-r bg-background -translate-x-full md:translate-x-0 fixed md:relative top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out shadow-lg md:shadow-none flex flex-col"
       >
-        <div className="flex h-16 items-center border-b px-6 justify-between flex-shrink-0">
+        <div className="flex h-16 items-center border-b px-6 justify-between shrink-0">
           <h1 className="text-lg font-bold">Admin Panel</h1>
           <div className="flex items-center gap-2">
             <div className="hidden md:block">
-              <UserMenu />
+              <LegacyUserMenu />
             </div>
             <Button
               variant="ghost"
@@ -296,8 +296,8 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
                   </div>
                 ) : (
                   // Collapsible groups
-                  <Collapsible.Root open={!collapsedGroups.has(group.label)}>
-                    <Collapsible.Trigger asChild>
+                  <Collapsible open={!collapsedGroups.has(group.label)}>
+                    <CollapsibleTrigger asChild>
                       <Button
                         variant="ghost"
                         className="w-full justify-between px-2 py-1 h-auto text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground"
@@ -310,8 +310,8 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
                           <ChevronDownIcon className="h-3 w-3" />
                         )}
                       </Button>
-                    </Collapsible.Trigger>
-                    <Collapsible.Content className="mt-2">
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-2">
                       <ul className="space-y-1">
                         {group.items.map((item) => (
                           <li key={item.href}>
@@ -331,8 +331,8 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
                           </li>
                         ))}
                       </ul>
-                    </Collapsible.Content>
-                  </Collapsible.Root>
+                    </CollapsibleContent>
+                  </Collapsible>
                 )}
               </div>
             ))}

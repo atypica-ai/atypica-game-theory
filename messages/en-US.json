@@ -107,12 +107,13 @@
       "productRnDStudy": "Product R&D",
       "needHelpToClarify": "Need help to clarify your thoughts?"
     },
-    "UserTokensBalance": {
-      "balance": "{balance} available tokens",
-      "unlimited": "Unlimited tokens",
-      "viewHistory": "View token history"
-    },
     "GlobalHeader": {
+      "navigation": "Navigation",
+      "myContent": "My Content",
+      "settings": "Settings",
+      "unlimited": "Unlimited",
+      "buyTokens": "Buy Tokens",
+      "loginPrompt": "Sign in to access all atypica.AI features",
       "login": "Login",
       "logout": "Logout",
       "viewAccount": "View Account",

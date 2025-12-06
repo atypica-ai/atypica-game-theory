@@ -1,19 +1,66 @@
 "use client";
+import { useTokensBalance } from "@/app/account/hooks";
+import { TeamSwitchButton } from "@/app/team/components/TeamSwitchButton";
+import { useTeamStatus, useTeamSwitchableIdentities } from "@/app/team/hooks";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { MaintenanceNotification } from "@/components/MaintenanceNotification";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { Separator } from "@/components/ui/separator";
+import { cn, formatTokensNumber } from "@/lib/utils";
+import Cookies from "js-cookie";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import UserMenu from "@/components/UserMenu";
-import UserTokensBalance from "@/components/UserTokensBalance";
-import { cn } from "@/lib/utils";
-import { MenuIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+  ArrowLeftRightIcon,
+  CoinsIcon,
+  CreditCardIcon,
+  GlobeIcon,
+  HeadphonesIcon,
+  HistoryIcon,
+  HomeIcon,
+  InfinityIcon,
+  LoaderIcon,
+  LogInIcon,
+  LogOutIcon,
+  MicIcon,
+  MoonIcon,
+  SunIcon,
+  UserIcon,
+  Users2Icon,
+} from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useLocale, useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
+
+const MenuBarsIcon: React.FC<{
+  className?: string;
+}> = ({ className }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* Top bar - longest */}
+      <line x1="3" y1="6" x2="21" y2="6" />
+      {/* Middle bar - medium */}
+      <line x1="3" y1="12" x2="17" y2="12" />
+      {/* Bottom bar - shortest */}
+      <line x1="3" y1="18" x2="13" y2="18" />
+    </svg>
+  );
+};
 
 /**
  * GlobalHeader is wrapped with React.memo to prevent unnecessary re-renders
@@ -21,7 +68,7 @@ import React, { useState } from "react";
  *
  * This is critical for pages with frequent updates (e.g., ChatReplay with progressive messages),
  * where the entire page tree re-renders but GlobalHeader's props remain unchanged.
- * Without memo, all header components (UserMenu, UserTokensBalance, TeamSwitchButton)
+ * Without memo, all header components (GlobalHeaderDrawer, TeamSwitchButton)
  * would unmount and remount on every parent update, losing their internal state (like Dialog open state).
  *
  * ⚠️ memo 是浅比较组件的 props，副作用是如果参数不是 primitives or stable references，不会触发更新，但是这里没问题，string + ReactNode 是可以触发更新的
@@ -29,9 +76,11 @@ import React, { useState } from "react";
 const GlobalHeader = React.memo(function GlobalHeader({
   className,
   children,
+  drawerDirection = "right",
 }: {
   className?: string;
   children?: React.ReactNode;
+  drawerDirection?: "left" | "right";
 }) {
   return (
     <>
@@ -42,9 +91,6 @@ const GlobalHeader = React.memo(function GlobalHeader({
         )}
       >
         <div className="flex items-center gap-2 sm:gap-6">
-          <div className="md:hidden mt-1">
-            <GlobalHeaderMenusMobile />
-          </div>
           <Link
             prefetch={true}
             href="/"
@@ -54,31 +100,16 @@ const GlobalHeader = React.memo(function GlobalHeader({
             <div className="font-EuclidCircularA font-medium tracking-tight text-xl leading-none">
               atypica.AI
             </div>
-            {/* <Image
-            src="/_public/atypica.svg"
-            alt="atypica Logo"
-            fill
-            priority
-            className="object-contain hidden dark:block"
-          /> */}
           </Link>
         </div>
-        {children ? (
-          children
-        ) : (
-          <>
-            <div className="flex items-center gap-2 sm:gap-4">
-              {/* additional menus */}
-              <UserTokensBalance />
-              <UserMenu />
-              {/*<div className="md:hidden">
-                <GlobalHeaderMenusMobile />
-              </div>*/}
-            </div>
-            <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-              <GlobalHeaderMenusDesktop />
-            </div>
-          </>
+        <div className="flex items-center gap-2 sm:gap-4">
+          {children}
+          <GlobalHeaderDrawer direction={drawerDirection} />
+        </div>
+        {!children && (
+          <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <GlobalHeaderMenusDesktop />
+          </div>
         )}
       </header>
       <MaintenanceNotification />
@@ -114,45 +145,294 @@ const GlobalHeaderMenusDesktop = () => {
   );
 };
 
-const GlobalHeaderMenusMobile = () => {
+const GlobalHeaderDrawer = React.memo(function GlobalHeaderDrawer({
+  direction = "right",
+}: {
+  direction?: "left" | "right";
+}) {
+  const { status: sessionStatus, data: session } = useSession();
+  const [open, setOpen] = useState(false);
   const t = useTranslations("Components.GlobalHeader");
-  const [isOpen, setIsOpen] = useState(false);
+  const { setTheme } = useTheme();
+  const router = useRouter();
+  const locale = useLocale();
+  const searchParams = useSearchParams();
+  const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
+
+  // Team status
+  const { teamStatus } = useTeamStatus();
+  const shouldPreload = teamStatus?.canSwitchIdentity ?? false;
+  useTeamSwitchableIdentities(shouldPreload);
+
+  // Token balance - using SWR hook
+  const { balance } = useTokensBalance();
+
+  useEffect(() => {
+    const pathWithParams = window.location.href.replace(window.location.origin, "");
+    setSigninCallbackUrl(searchParams.get("callbackUrl") || pathWithParams || "/");
+  }, [searchParams]);
+
+  const toggleLocale = useCallback(() => {
+    const newLocale = locale === "zh-CN" ? "en-US" : "zh-CN";
+    Cookies.set("locale", newLocale, { expires: 365 });
+    router.refresh();
+  }, [locale, router]);
+
+  const isAuthenticated = sessionStatus === "authenticated" && session?.user;
+
+  const DrawerLink = ({
+    href,
+    icon: Icon,
+    children,
+    onClick,
+  }: {
+    href?: string;
+    icon: React.ComponentType<{ className?: string }>;
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => {
+    const content = (
+      <>
+        <Icon className="h-4 w-4 mr-3" />
+        <span className="text-sm">{children}</span>
+      </>
+    );
+
+    if (href) {
+      return (
+        <Link
+          href={href}
+          prefetch={true}
+          className="flex items-center py-2 px-3 md:py-2.5 md:px-4 hover:bg-accent rounded-md transition-colors"
+          onClick={() => setOpen(false)}
+        >
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        className="w-full flex items-center py-2 px-3 md:py-2.5 md:px-4 hover:bg-accent rounded-md transition-colors text-left"
+        onClick={() => {
+          onClick?.();
+          setOpen(false);
+        }}
+      >
+        {content}
+      </button>
+    );
+  };
+
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
+    <Drawer direction={direction} open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
         <Button
           variant="ghost"
-          aria-label="Toggle menu"
-          className="h-9 p-0 has-[>svg]:px-0 hover:bg-transparent"
+          size="icon"
+          aria-label="Open menu"
+          className="size-9 bg-transparent hover:bg-transparent dark:hover:bg-transparent"
         >
-          <MenuIcon className="size-5" />
+          <MenuBarsIcon className="size-6" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="center" className="min-w-36">
-        <DropdownMenuItem asChild>
-          <MenuLink href="/">{t("home")}</MenuLink>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <MenuLink href="/featured-studies">{t("useCases")}</MenuLink>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <MenuLink href="/newstudy">{t("marketResearch")}</MenuLink>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <MenuLink href="/persona">{t("personaImport")}</MenuLink>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <MenuLink href="/interview">{t("interviewProject")}</MenuLink>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <MenuLink href="/pricing">{t("pricing")}</MenuLink>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <MenuLink href="/insight-radio">{t("insightRadio")}</MenuLink>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </DrawerTrigger>
+      <DialogHeader className="hidden">
+        <DialogTitle></DialogTitle>
+      </DialogHeader>
+      <DrawerContent
+        className={cn("w-[320px] h-full", direction === "right" ? "mr-0 ml-auto" : "ml-0 mr-auto")}
+      >
+        <div className="flex-1 overflow-y-auto px-3 py-3 md:px-4 md:py-4">
+          {sessionStatus === "loading" ? (
+            // Loading state - placeholder
+            <div className="h-32 flex items-center justify-center">
+              <LoaderIcon className="h-6 w-6 text-muted-foreground animate-spin" />
+            </div>
+          ) : isAuthenticated ? (
+            <>
+              {/* User Info Section */}
+              <div className={cn("flex items-start gap-3 p-3 md:p-4", "bg-accent/50 rounded-lg")}>
+                <Avatar className="size-10 rounded-none shrink-0">
+                  <HippyGhostAvatar seed={session?.user?.id} className="size-10" />
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  {session?.userType === "TeamMember" && teamStatus?.teamName ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold truncate">
+                          {teamStatus.teamName}
+                        </span>
+                        {teamStatus.teamRole === "owner" && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-primary/20 bg-primary/5 text-primary font-medium shrink-0">
+                            {t("owner")}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate mt-1">
+                        {session?.user?.email || session?.user?.name}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-sm font-semibold truncate">
+                        {session?.user?.email || session?.user?.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {session?.userType === "Personal" ? t("personalUser") : "-"}
+                      </div>
+                    </>
+                  )}
+                  {/* Switch Team */}
+                  {teamStatus?.canSwitchIdentity && (
+                    <div className="mt-2">
+                      <TeamSwitchButton>
+                        <button className="text-xs hover:underline flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+                          <ArrowLeftRightIcon className="h-3 w-3" />
+                          <span>{t("switchIdentity")}</span>
+                        </button>
+                      </TeamSwitchButton>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Separator className="my-3" />
+
+              {/* Token Balance Section */}
+              <div className="flex items-center justify-between pl-3 md:pl-4">
+                <Link
+                  href="/account/tokens"
+                  className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                >
+                  <CoinsIcon className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                  {balance === null ? (
+                    <LoaderIcon className="h-3.5 w-3.5 text-muted-foreground animate-spin" />
+                  ) : (
+                    <div className="text-xs font-medium">
+                      {balance === "Unlimited" ? (
+                        <span className="flex items-center gap-1">
+                          <InfinityIcon className="size-3.5" />
+                          <span>{t("unlimited")}</span>
+                        </span>
+                      ) : (
+                        formatTokensNumber(balance)
+                      )}
+                    </div>
+                  )}
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5 shrink-0"
+                >
+                  <span>{t("buyTokens")}</span>
+                  <span>›</span>
+                </Link>
+              </div>
+            </>
+          ) : (
+            // Unauthenticated state - login prompt
+            <div className="flex flex-col items-center justify-center py-6 px-2">
+              <div className="text-sm text-muted-foreground mb-4 text-center">
+                {t("loginPrompt")}
+              </div>
+              <Link
+                href={`/auth/signin?callbackUrl=${encodeURIComponent(signinCallbackUrl)}`}
+                className="w-full"
+              >
+                <Button variant="default" className="w-full">
+                  <LogInIcon className="h-4 w-4 mr-2" />
+                  {t("login")}
+                </Button>
+              </Link>
+            </div>
+          )}
+          <Separator className="my-3" />
+
+          {/* User Content Section - Authenticated Only */}
+          {isAuthenticated && (
+            <>
+              <div className="text-xs font-semibold text-muted-foreground px-3 mb-1.5 md:px-4 md:mb-2">
+                {t("myContent")}
+              </div>
+              <div className="md:space-y-1 mb-3">
+                <DrawerLink href="/account" icon={UserIcon}>
+                  {t("viewAccount")}
+                </DrawerLink>
+                <DrawerLink href="/studies" icon={HistoryIcon}>
+                  {t("myStudies")}
+                </DrawerLink>
+                <DrawerLink href="/podcasts" icon={HeadphonesIcon}>
+                  {t("myPodcasts")}
+                </DrawerLink>
+                <DrawerLink href="/personas" icon={Users2Icon}>
+                  {t("myPersonas")}
+                </DrawerLink>
+                <DrawerLink href="/interview/projects" icon={MicIcon}>
+                  {t("myInterviews")}
+                </DrawerLink>
+              </div>
+              <Separator className="my-3" />
+            </>
+          )}
+
+          {/* Navigation Menu - Mobile Only */}
+          <div className="md:hidden mb-3">
+            <div className="text-xs font-semibold text-muted-foreground px-3 mb-1.5 md:px-4 md:mb-2">
+              {t("navigation")}
+            </div>
+            <div className="md:space-y-1">
+              <DrawerLink href="/" icon={HomeIcon}>
+                {t("home")}
+              </DrawerLink>
+              <DrawerLink href="/featured-studies" icon={HistoryIcon}>
+                {t("useCases")}
+              </DrawerLink>
+              <DrawerLink href="/newstudy" icon={HistoryIcon}>
+                {t("marketResearch")}
+              </DrawerLink>
+              <DrawerLink href="/persona" icon={Users2Icon}>
+                {t("personaImport")}
+              </DrawerLink>
+              <DrawerLink href="/interview" icon={MicIcon}>
+                {t("interviewProject")}
+              </DrawerLink>
+              <DrawerLink href="/pricing" icon={CreditCardIcon}>
+                {t("pricing")}
+              </DrawerLink>
+              <DrawerLink href="/insight-radio" icon={HeadphonesIcon}>
+                {t("insightRadio")}
+              </DrawerLink>
+            </div>
+            <Separator className="my-3" />
+          </div>
+
+          {/* Settings Section */}
+          <div className="text-xs font-semibold text-muted-foreground px-3 mb-1.5 md:px-4 md:mb-2">
+            {t("settings")}
+          </div>
+          <div className="md:space-y-1">
+            <DrawerLink icon={GlobeIcon} onClick={toggleLocale}>
+              {locale === "zh-CN" ? "English" : "中文"}
+            </DrawerLink>
+            <DrawerLink icon={SunIcon} onClick={() => setTheme("light")}>
+              {t("lightTheme")}
+            </DrawerLink>
+            <DrawerLink icon={MoonIcon} onClick={() => setTheme("dark")}>
+              {t("darkTheme")}
+            </DrawerLink>
+            {isAuthenticated && (
+              <>
+                <Separator className="my-2" />
+                <DrawerLink icon={LogOutIcon} onClick={() => signOut({ callbackUrl: "/" })}>
+                  {t("logout")}
+                </DrawerLink>
+              </>
+            )}
+          </div>
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
-};
+});
 
 export default GlobalHeader;

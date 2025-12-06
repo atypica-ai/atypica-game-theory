@@ -5,12 +5,12 @@ import {
 } from "@/ai/messageUtilsClient";
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
+import { useTokensBalance } from "@/app/account/hooks";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { UserTokensBalanceStore } from "@/components/UserTokensBalance";
 import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
@@ -224,7 +224,7 @@ export function ChatBox() {
     }
   }, [studyUserChatToken, backgroundToken]);
 
-  const { balance: userTokensBalance } = UserTokensBalanceStore();
+  const { balance: userTokensBalance } = useTokensBalance();
 
   const { isDocumentVisible } = useDocumentVisibility();
   useEffect(() => {

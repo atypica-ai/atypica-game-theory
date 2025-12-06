@@ -2,7 +2,6 @@
 import { getPodcastAudioSignedUrl } from "@/app/(podcast)/actions";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
-import UserMenu from "@/components/UserMenu";
 import { Analyst } from "@/prisma/client";
 import { DownloadIcon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -23,18 +22,16 @@ function SharePageHeader({
   return (
     <GlobalHeader className="h-12">
       <div className="flex items-center gap-2 sm:gap-4">
-        <Button variant="outline" size="sm" className="h-8 gap-1" onClick={copyShareLink}>
+        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={copyShareLink}>
           <Share2 size={14} />
           <span className="hidden sm:inline">{t("copyLink")}</span>
         </Button>
         {onDownload && (
-          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={onDownload}>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onDownload}>
             <DownloadIcon size={14} />
             <span className="hidden sm:inline">{t("download")}</span>
           </Button>
         )}
-        {/*<UserTokensBalance />*/}
-        <UserMenu />
       </div>
     </GlobalHeader>
   );
@@ -103,13 +100,13 @@ export default function PodcastSharePageClient({
               target="_blank"
               className="block w-full max-w-lg mx-auto"
             >
-              <div className="w-full aspect-[2/1] bg-muted rounded-lg overflow-hidden [&>svg]:w-full [&>svg]:h-full transition-all hover:border hover:border-primary/50 hover:shadow-sm cursor-pointer">
+              <div className="w-full aspect-2/1 bg-muted rounded-lg overflow-hidden [&>svg]:w-full [&>svg]:h-full transition-all hover:border hover:border-primary/50 hover:shadow-sm cursor-pointer">
                 <div dangerouslySetInnerHTML={{ __html: coverSvg }} />
               </div>
             </Link>
           )}
           {coverSvg && !reportToken && (
-            <div className="w-full max-w-lg mx-auto aspect-[2/1] bg-muted rounded-lg overflow-hidden [&>svg]:w-full [&>svg]:h-full">
+            <div className="w-full max-w-lg mx-auto aspect-2/1 bg-muted rounded-lg overflow-hidden [&>svg]:w-full [&>svg]:h-full">
               <div dangerouslySetInnerHTML={{ __html: coverSvg }} />
             </div>
           )}
