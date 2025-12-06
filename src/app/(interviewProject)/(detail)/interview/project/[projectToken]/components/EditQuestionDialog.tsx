@@ -1,6 +1,5 @@
 "use client";
 
-import { QuestionData } from "@/app/(interviewProject)/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { clientUploadFileToS3 } from "@/lib/attachments/client";
 import { cn } from "@/lib/utils";
-import { ChatMessageAttachment } from "@/prisma/client";
+import { ChatMessageAttachment, InterviewProjectQuestion } from "@/prisma/client";
 import { ImageIcon, Loader2Icon, PlusIcon, UploadIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -27,8 +26,8 @@ import { toast } from "sonner";
 interface EditQuestionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  question: QuestionData | null;
-  onSave: (question: QuestionData) => void;
+  question: InterviewProjectQuestion | null;
+  onSave: (question: InterviewProjectQuestion) => void;
   questionIndex?: number;
 }
 
@@ -47,7 +46,7 @@ export function EditQuestionDialog({
   const [questionType, setQuestionType] = useState<"open" | "single-choice" | "multiple-choice">(
     "open",
   );
-  const [options, setOptions] = useState<NonNullable<NonNullable<QuestionData>["options"]>>([
+  const [options, setOptions] = useState<NonNullable<InterviewProjectQuestion["options"]>>([
     "",
     "",
   ]);
@@ -137,7 +136,7 @@ export function EditQuestionDialog({
         return;
       }
 
-      const questionData: QuestionData = {
+      const questionData: InterviewProjectQuestion = {
         text: text.trim(),
         image,
         questionType,

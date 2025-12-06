@@ -5,6 +5,7 @@ import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
+import { TeamWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { revalidatePath } from "next/cache";
@@ -25,8 +26,7 @@ export async function fetchTeams(
   await checkAdminAuth([AdminPermission.MANAGE_USERS]);
   const skip = (page - 1) * pageSize;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {};
+  const where: TeamWhereInput = {};
 
   if (searchQuery) {
     where.name = { contains: searchQuery, mode: "insensitive" };

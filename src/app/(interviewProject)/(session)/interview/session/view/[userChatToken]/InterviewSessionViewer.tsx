@@ -5,7 +5,7 @@ import {
   restartPersonaInterviewSession,
 } from "@/app/(interviewProject)/(session)/actions";
 import { InterviewToolUIPartDisplay } from "@/app/(interviewProject)/tools/ui";
-import { QuestionData, TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
+import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { UserChatSession } from "@/components/chat/UserChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
+import { InterviewProjectQuestion } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import {
   BotIcon,
@@ -45,7 +46,7 @@ export function InterviewSessionViewer({
 }: {
   interviewSession: InterviewSessionDetails;
   initialMessages?: TInterviewMessageWithTool[];
-  questions?: QuestionData[];
+  questions?: InterviewProjectQuestion[];
   className?: string;
 }) {
   const t = useTranslations("InterviewProject.sessionViewer");

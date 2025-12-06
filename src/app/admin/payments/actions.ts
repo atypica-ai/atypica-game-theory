@@ -3,6 +3,7 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentLine, PaymentRecord, User } from "@/prisma/client";
+import { PaymentRecordWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 
 // Get payment records for display
@@ -23,8 +24,7 @@ export async function getPaymentRecords(
   const skip = (page - 1) * pageSize;
 
   // Build the where condition based on search query and status filter
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {};
+  const where: PaymentRecordWhereInput = {};
 
   // Add search query filters if provided
   if (searchQuery) {

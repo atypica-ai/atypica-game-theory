@@ -1,7 +1,8 @@
 import { EndInterviewMessage } from "@/app/(interviewProject)/components/EndInterviewMessage";
 import { RequestInteractionFormToolMessage } from "@/app/(interviewProject)/components/RequestInteractionForm";
 import { SelectQuestionToolMessage } from "@/app/(interviewProject)/components/SelectQuestionToolMessage";
-import { QuestionData, TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
+import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
+import { InterviewProjectQuestion } from "@/prisma/client";
 import { InterviewToolName, TAddInterviewUIToolResult } from "./types";
 
 export const InterviewToolUIPartDisplay = ({
@@ -11,7 +12,7 @@ export const InterviewToolUIPartDisplay = ({
 }: {
   toolUIPart: TInterviewMessageWithTool["parts"][number];
   addToolResult?: TAddInterviewUIToolResult;
-  questions: QuestionData[];
+  questions: InterviewProjectQuestion[];
 }) => {
   switch (toolUIPart.type) {
     case `tool-${InterviewToolName.requestInteractionForm}`:

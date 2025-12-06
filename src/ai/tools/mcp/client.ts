@@ -221,12 +221,13 @@ export class MCPClient {
         description: promptResult.description,
         messages: promptResult.messages.map((msg) => {
           // content can be a single object or an array - normalize it to an array
-          const contentArray = Array.isArray(msg.content) ? msg.content : [msg.content];
+          const contentArray: (typeof msg)["content"][] = Array.isArray(msg.content)
+            ? msg.content
+            : [msg.content];
 
           return {
             role: msg.role,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            content: contentArray.map((c: any) => {
+            content: contentArray.map((c) => {
               if (c.type === "text") {
                 return { type: "text" as const, text: c.text };
               } else if (c.type === "image") {

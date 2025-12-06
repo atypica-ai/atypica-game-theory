@@ -1,6 +1,6 @@
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+import { InterviewProjectQuestion } from "@/prisma/client";
 import { Locale } from "next-intl";
-import { QuestionData } from "../types";
 
 /**
  * 真人访谈 Prompt
@@ -12,7 +12,7 @@ export const interviewAgentSystemPromptForHuman = ({
   locale,
 }: {
   brief: string;
-  questions?: Array<QuestionData>;
+  questions?: Array<InterviewProjectQuestion>;
   locale: Locale;
 }) =>
   locale === "zh-CN"

@@ -9,7 +9,7 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import {
   InterviewProject,
-  InterviewProjectExtra,
+  InterviewProjectQuestion,
   InterviewSession,
   InterviewSessionExtra,
   Persona,
@@ -42,7 +42,7 @@ export async function restartPersonaInterviewSession({
       },
       include: {
         userChat: { select: { id: true, token: true } },
-        project: { select: { id: true, userId: true, brief: true, extra: true } },
+        project: { select: { id: true, userId: true, brief: true, questions: true, extra: true } },
       },
     });
 
@@ -71,7 +71,8 @@ export async function restartPersonaInterviewSession({
           id: project.id,
           brief: project.brief,
           userId: project.userId,
-          extra: project.extra as InterviewProjectExtra,
+          questions: project.questions as InterviewProjectQuestion[],
+          // extra: project.extra as InterviewProjectExtra,
         },
         personaId: intervieweePersonaId,
       }),
@@ -106,7 +107,7 @@ export async function manuallyEndHumanInterviewSession({
       },
       include: {
         userChat: { select: { id: true, token: true } },
-        project: { select: { id: true, userId: true, brief: true, extra: true } },
+        project: { select: { id: true, userId: true, brief: true, questions: true, extra: true } },
       },
     });
 
@@ -167,7 +168,8 @@ export async function manuallyEndHumanInterviewSession({
           userChatId,
           project: {
             brief: project.brief,
-            extra: project.extra as InterviewProjectExtra,
+            questions: project.questions as InterviewProjectQuestion[],
+            // extra: project.extra as InterviewProjectExtra,
           },
         },
       }),
@@ -193,7 +195,8 @@ export async function fetchInterviewSessionDetails({
     Pick<InterviewSession, "id" | "projectId" | "title" | "userChatId"> & {
       project: Pick<InterviewProject, "id" | "brief"> & {
         user: Pick<User, "id" | "name" | "email">;
-        extra: InterviewProjectExtra;
+        questions: InterviewProjectQuestion[];
+        // extra: InterviewProjectExtra;
       };
       intervieweeUser: Pick<User, "id" | "name" | "email"> | null;
       intervieweePersona: Pick<Persona, "id" | "name"> | null;
@@ -224,6 +227,7 @@ export async function fetchInterviewSessionDetails({
           select: {
             id: true,
             brief: true,
+            questions: true,
             extra: true,
             user: {
               select: { id: true, name: true, email: true },
@@ -247,7 +251,7 @@ export async function fetchInterviewSessionDetails({
       };
     }
 
-    const session = sessions[0];
+    const { project, ...session } = sessions[0];
 
     return {
       success: true,
@@ -255,8 +259,9 @@ export async function fetchInterviewSessionDetails({
         ...session,
         extra: session.extra as InterviewSessionExtra,
         project: {
-          ...session.project,
-          extra: session.project.extra as InterviewProjectExtra,
+          ...project,
+          questions: project.questions as InterviewProjectQuestion[],
+          // extra: project.extra as InterviewProjectExtra,
         },
       },
     };

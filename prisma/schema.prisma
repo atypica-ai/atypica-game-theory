@@ -571,6 +571,7 @@ model InterviewProject {
   userId Int
   user   User   @relation(fields: [userId], references: [id])
   brief  String @db.Text
+  questions Json   @default("[]")
   extra  Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)

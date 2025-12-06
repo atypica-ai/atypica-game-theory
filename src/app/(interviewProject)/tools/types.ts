@@ -1,3 +1,4 @@
+import { InterviewProjectQuestion } from "@/prisma/client";
 import z from "zod/v3";
 
 // Image attachment schema (reusable)
@@ -72,7 +73,13 @@ export const questionSchema = z
     }
   });
 
-export type QuestionData = z.infer<typeof questionSchema>;
+type QuestionData = z.infer<typeof questionSchema>;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type same = InterviewProjectQuestion extends QuestionData
+  ? QuestionData extends InterviewProjectQuestion
+    ? true
+    : false
+  : false;
 
 // InterviewProjectExtra schema
 export const interviewProjectQuestionsSchema = z.object({

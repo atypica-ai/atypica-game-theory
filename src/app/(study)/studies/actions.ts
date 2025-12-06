@@ -2,6 +2,7 @@
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystKind, ChatMessageAttachment } from "@/prisma/client";
+import { UserChatWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 
 export async function fetchUserStudies({
@@ -46,8 +47,7 @@ export async function fetchUserStudies({
     const skip = (page - 1) * pageSize;
 
     // Build where condition with search and user filters
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = { userId: user.id, kind: "study" };
+    const where: UserChatWhereInput = { userId: user.id, kind: "study" };
 
     // Add search condition if provided
     if (searchQuery) {

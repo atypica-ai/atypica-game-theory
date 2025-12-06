@@ -13,7 +13,7 @@ import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
+import { InterviewProjectQuestion, InterviewSessionExtra } from "@/prisma/client";
 import {
   ModelMessage,
   smoothStream,
@@ -107,7 +107,7 @@ export async function runHumanInterview({
     userChatId: number;
     project: {
       brief: string;
-      extra: InterviewProjectExtra;
+      questions: InterviewProjectQuestion[];
     };
   };
   systemHint?: string; // 下一步做什么的提醒，默认是用 question 上的 hint 加上不断提问直到最后一句的提醒
@@ -142,7 +142,7 @@ export async function runHumanInterview({
 
   // Generate system prompt based on interview context
   // Use questions from session snapshot (with fallback to project for backward compatibility)
-  const questions = sessionExtra.questions || project.extra?.questions;
+  const questions = sessionExtra.questions || project.questions;
 
   let hintFromSelectedQuestion = "";
   if (newMessage.role === "assistant") {
@@ -158,8 +158,8 @@ export async function runHumanInterview({
   // Debug: Log questions to verify data
   logger.debug({
     msg: "Interview questions data",
-    hasSessionQuestions: !!sessionExtra.questions,
-    hasProjectQuestions: !!project.extra?.questions,
+    hasSessionQuestions: !!sessionExtra.questions?.length,
+    hasProjectQuestions: !!project.questions?.length,
     questionsCount: questions?.length || 0,
     firstQuestion: questions?.[0],
   });

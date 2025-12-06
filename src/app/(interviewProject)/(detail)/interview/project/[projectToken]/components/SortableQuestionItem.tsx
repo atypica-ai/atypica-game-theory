@@ -1,7 +1,7 @@
-import { QuestionData } from "@/app/(interviewProject)/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { InterviewProjectQuestion } from "@/prisma/client";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { EditIcon, GripVerticalIcon, TrashIcon } from "lucide-react";
@@ -16,7 +16,7 @@ export function SortableQuestionItem({
   onDelete,
   readOnly,
 }: {
-  question: QuestionData;
+  question: InterviewProjectQuestion;
   index: number;
   sortableId: string;
   onEdit: () => void;

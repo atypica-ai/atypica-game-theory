@@ -154,17 +154,17 @@ export type PersonaImportExtra = Partial<{
     | false;
 }>;
 
+export type InterviewProjectQuestion = {
+  text: string;
+  image?: ChatMessageAttachment; // 使用标准的 attachment 结构
+  questionType?: "open" | "single-choice" | "multiple-choice";
+  hint?: string; // AI 处理问题的自然语言提示
+  options?: Array<string | { text: string }>; // 选择题的选项（支持旧格式兼容）
+};
+
 export type InterviewProjectExtra = Partial<{
   error: string;
   processing: boolean;
-  questionTypePreference: "open-ended" | "multiple-choice" | "mixed"; // 问题类型偏好
-  questions: Array<{
-    text: string;
-    image?: ChatMessageAttachment; // 使用标准的 attachment 结构
-    questionType?: "open" | "single-choice" | "multiple-choice";
-    hint?: string; // AI 处理问题的自然语言提示
-    options?: Array<string | { text: string }>; // 选择题的选项（支持旧格式兼容）
-  }>; // 问题列表
   permanentShareToken: string; // 永久链接令牌，用于验证永久链接
 }>;
 

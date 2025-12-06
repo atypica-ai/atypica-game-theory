@@ -13,6 +13,7 @@ import {
   UserOnboardingData,
   UserProfileExtra,
 } from "@/prisma/client";
+import { UserWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -39,8 +40,7 @@ export async function fetchUsers(
   const skip = (page - 1) * pageSize;
 
   // Build the where condition based on search query and admin filter
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {};
+  const where: UserWhereInput = {};
 
   // Add search condition if provided
   if (searchQuery) {

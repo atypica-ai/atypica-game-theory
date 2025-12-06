@@ -2,7 +2,7 @@
 // Migrate interview project questions from brief field to questions array
 // Usage: pnpm tsx scripts/migrate-questions-to-array.ts
 
-import { InterviewProjectExtra } from "@/prisma/client";
+import { InterviewProjectExtra, InterviewProjectQuestion } from "@/prisma/client";
 import { loadEnvConfig } from "@next/env";
 import "./mock-server-only";
 
@@ -67,6 +67,7 @@ async function main() {
       const currentExtra =
         (project.extra as InterviewProjectExtra &
           Partial<{
+            questions: InterviewProjectQuestion[];
             optimizedQuestions: string[];
             optimizationReason: string;
             lastOptimizedAt: number;

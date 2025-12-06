@@ -145,10 +145,10 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
                             {t("optimizing")}
                           </Badge>
                         );
-                      } else if (extra?.questions && extra.questions.length > 0) {
+                      } else if (project.questions && project.questions.length > 0) {
                         return (
                           <Badge variant="outline" className="text-xs">
-                            {extra.questions.length} Questions
+                            {project.questions.length} Questions
                           </Badge>
                         );
                       }

@@ -4,8 +4,8 @@
  * 访谈相关的所有 Prompt 统一导出
  */
 
+import { InterviewProjectQuestion } from "@/prisma/client";
 import { Locale } from "next-intl";
-import { QuestionData } from "../types";
 import { interviewAgentSystemPromptForHuman } from "./human";
 import { interviewAgentSystemPromptForPersona } from "./persona";
 
@@ -33,7 +33,7 @@ export function interviewAgentSystemPrompt({
   locale,
 }: {
   brief: string;
-  questions?: Array<QuestionData>;
+  questions?: Array<InterviewProjectQuestion>;
   isPersonaInterview: boolean;
   personaName?: string;
   locale: Locale;

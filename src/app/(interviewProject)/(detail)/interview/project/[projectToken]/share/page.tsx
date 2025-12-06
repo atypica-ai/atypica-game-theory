@@ -1,7 +1,7 @@
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
-import { InterviewProjectExtra } from "@/prisma/client";
+import { InterviewProjectExtra, InterviewProjectQuestion } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
@@ -41,6 +41,7 @@ async function ProjectSharePage({ params }: { params: Promise<{ projectToken: st
       id: true,
       token: true,
       brief: true,
+      questions: true,
       extra: true,
       createdAt: true,
     },
@@ -56,6 +57,7 @@ async function ProjectSharePage({ params }: { params: Promise<{ projectToken: st
         id: interviewProject.id,
         token: interviewProject.token,
         brief: interviewProject.brief,
+        questions: interviewProject.questions as InterviewProjectQuestion[],
         extra: interviewProject.extra as InterviewProjectExtra,
         createdAt: interviewProject.createdAt,
       }}

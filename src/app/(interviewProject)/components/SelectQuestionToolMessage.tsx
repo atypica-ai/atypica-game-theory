@@ -1,10 +1,11 @@
 "use client";
 
-import type { QuestionData, TAddInterviewUIToolResult } from "@/app/(interviewProject)/tools/types";
+import type { TAddInterviewUIToolResult } from "@/app/(interviewProject)/tools/types";
 import { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
 import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
+import { InterviewProjectQuestion } from "@/prisma/client";
 import { ToolUIPart } from "ai";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -15,7 +16,7 @@ import { ChoiceField, TextField } from "./RequestInteractionForm/fields";
 interface SelectQuestionToolMessageProps {
   toolInvocation: ToolUIPart<Pick<TInterviewUITools, InterviewToolName.selectQuestion>>;
   addToolResult?: TAddInterviewUIToolResult;
-  questions: QuestionData[];
+  questions: InterviewProjectQuestion[];
 }
 
 export const SelectQuestionToolMessage: FC<SelectQuestionToolMessageProps> = ({

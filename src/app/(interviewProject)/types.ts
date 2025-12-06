@@ -10,6 +10,3 @@ export interface InterviewSharePayload {
 }
 
 export type TInterviewMessageWithTool = UIMessage<unknown, UIDataTypes, TInterviewUITools>;
-
-// Question data structure used in interview sessions
-export type { QuestionData } from "./tools/types";

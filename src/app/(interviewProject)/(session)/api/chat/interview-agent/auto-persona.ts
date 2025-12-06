@@ -18,7 +18,7 @@ import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { InterviewProjectExtra, InterviewSessionExtra } from "@/prisma/client";
+import { InterviewProjectQuestion, InterviewSessionExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
@@ -77,7 +77,8 @@ export interface AutoPersonaInterviewParams {
     id: number;
     brief: string;
     userId: number;
-    extra?: InterviewProjectExtra;
+    questions: InterviewProjectQuestion[];
+    // extra: InterviewProjectExtra;
   };
   sessionId: number;
   userChatId: number;
@@ -138,7 +139,7 @@ export async function runAutoPersonaInterview({
   });
 
   // Use questions from session snapshot (with fallback to project for backward compatibility)
-  const questions = currentSession.extra.questions || project.extra?.questions;
+  const questions = currentSession.extra.questions || project.questions;
   const interviewerSystemPrompt = interviewAgentSystemPrompt({
     brief: project.brief,
     questions,

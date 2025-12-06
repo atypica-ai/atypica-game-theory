@@ -9,12 +9,11 @@ import {
 import { InviteDialog } from "@/app/(interviewProject)/(detail)/interview/invite/InviteDialog";
 import { createPersonaInterviewSession } from "@/app/(interviewProject)/actions";
 import { EditProjectDialog } from "@/app/(interviewProject)/components/EditProjectDialog";
-import { QuestionData } from "@/app/(interviewProject)/types";
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
-import { InterviewProjectExtra } from "@/prisma/client";
+import { InterviewProjectExtra, InterviewProjectQuestion } from "@/prisma/client";
 import {
   closestCenter,
   DndContext,
@@ -60,6 +59,7 @@ export function ProjectDetails({
     id: number;
     token: string;
     brief: string;
+    questions: InterviewProjectQuestion[];
     extra: InterviewProjectExtra;
     createdAt: Date;
   };
@@ -74,14 +74,15 @@ export function ProjectDetails({
   const [briefExpanded, setBriefExpanded] = useState(false);
   const [, setCreatingPersonaSessions] = useState(false);
   const [optimizing, setOptimizing] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<NonNullable<QuestionData> | null>(null);
+  const [editingQuestion, setEditingQuestion] =
+    useState<NonNullable<InterviewProjectQuestion> | null>(null);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | undefined>();
   const [questionEditDialogOpen, setQuestionEditDialogOpen] = useState(false);
 
   // Use stable IDs for drag and drop
   // Map each question to a stable ID based on its initial position
   const [questionItems, setQuestionItems] = useState<
-    Array<{ id: string; data: QuestionData; originalIndex: number }>
+    Array<{ id: string; data: InterviewProjectQuestion; originalIndex: number }>
   >([]);
 
   // Drag and drop sensors
@@ -94,14 +95,14 @@ export function ProjectDetails({
 
   // Sync question items with project data
   useEffect(() => {
-    const questions = project.extra?.questions || [];
+    const questions = project.questions || [];
     const items = questions.map((q, index) => ({
       id: `question-${index}-${q.text.slice(0, 20)}`, // Stable ID based on initial index and text
       data: q,
       originalIndex: index,
     }));
     setQuestionItems(items);
-  }, [project.extra?.questions]);
+  }, [project.questions]);
 
   // Polling mechanism - refresh every 10 seconds during processing
   useEffect(() => {
@@ -199,14 +200,14 @@ export function ProjectDetails({
     setQuestionEditDialogOpen(true);
   }, []);
 
-  const handleEditQuestion = useCallback((index: number, question: QuestionData) => {
+  const handleEditQuestion = useCallback((index: number, question: InterviewProjectQuestion) => {
     setEditingQuestionIndex(index);
     setEditingQuestion(question);
     setQuestionEditDialogOpen(true);
   }, []);
 
   const handleSaveQuestion = useCallback(
-    async (questionData: QuestionData) => {
+    async (questionData: InterviewProjectQuestion) => {
       try {
         // If editingQuestionIndex is undefined, create new question
         if (editingQuestionIndex === undefined) {
@@ -352,11 +353,11 @@ export function ProjectDetails({
             <div>
               <CardTitle className="flex items-center">
                 <ListIcon className="h-5 w-5 mr-2" />
-                {t("questionList")} ({project.extra?.questions?.length || 0})
+                {t("questionList")} ({project.questions?.length || 0})
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">{t("questionListDescription")}</p>
             </div>
-            {!readOnly && project.extra?.questions && project.extra.questions.length > 0 && (
+            {!readOnly && project.questions && project.questions.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleCreateQuestion}>
                 {t("addQuestion")}
               </Button>
@@ -370,7 +371,7 @@ export function ProjectDetails({
               <Loader2Icon className="h-8 w-8 animate-spin mb-4" />
               <p className="text-sm">{t("optimizing")}</p>
             </div>
-          ) : !project.extra?.questions || project.extra.questions.length === 0 ? (
+          ) : !project.questions || project.questions.length === 0 ? (
             // Empty state
             <div className="flex flex-col items-center justify-center py-12">
               <ListIcon className="h-8 w-8 mb-4 opacity-50 text-muted-foreground" />

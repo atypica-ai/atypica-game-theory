@@ -3,16 +3,14 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { processInterviewQuestionOptimization } from "@/app/(interviewProject)/processing";
-import {
-  interviewProjectQuestionsSchema,
-  questionSchema,
-} from "@/app/(interviewProject)/tools/types";
+import { questionSchema } from "@/app/(interviewProject)/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import {
   InterviewProject,
   InterviewProjectExtra,
+  InterviewProjectQuestion,
   InterviewReportExtra,
   InterviewSessionExtra,
   UserChat,
@@ -22,7 +20,6 @@ import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { isToolOrDynamicToolUIPart } from "ai";
 import { notFound } from "next/navigation";
-import z from "zod";
 import { TInterviewMessageWithTool } from "../types";
 
 /**
@@ -30,7 +27,7 @@ import { TInterviewMessageWithTool } from "../types";
  */
 export async function createInterviewQuestion(
   projectId: number,
-  questionData: z.infer<typeof questionSchema>,
+  questionData: InterviewProjectQuestion,
 ): Promise<ServerActionResult<InterviewProject>> {
   return withAuth(async (user) => {
     // Validate input data
@@ -55,23 +52,8 @@ export async function createInterviewQuestion(
       };
     }
 
-    // Validate and parse extra field
-    const extraParseResult = interviewProjectQuestionsSchema.safeParse(project.extra || {});
-    if (!extraParseResult.success) {
-      rootLogger.error({
-        msg: "Invalid project extra data structure",
-        projectId,
-        error: extraParseResult.error.message,
-      });
-      return {
-        success: false,
-        code: "internal_server_error",
-        message: "Invalid project data structure",
-      };
-    }
-
-    const extra = extraParseResult.data;
-    const questions = extra.questions || [];
+    // Get existing questions
+    const questions = (project.questions as InterviewProjectQuestion[]) || [];
 
     // Add the new question to the end of the array
     questions.push(validationResult.data);
@@ -80,10 +62,7 @@ export async function createInterviewQuestion(
     const updatedProject = await prisma.interviewProject.update({
       where: { id: projectId },
       data: {
-        extra: {
-          ...extra,
-          questions,
-        },
+        questions,
       },
     });
 
@@ -117,23 +96,8 @@ export async function deleteInterviewQuestion(
       };
     }
 
-    // Validate and parse extra field
-    const extraParseResult = interviewProjectQuestionsSchema.safeParse(project.extra || {});
-    if (!extraParseResult.success) {
-      rootLogger.error({
-        msg: "Invalid project extra data structure",
-        projectId,
-        error: extraParseResult.error.message,
-      });
-      return {
-        success: false,
-        code: "internal_server_error",
-        message: "Invalid project data structure",
-      };
-    }
-
-    const extra = extraParseResult.data;
-    const questions = extra.questions || [];
+    // Get existing questions
+    const questions = (project.questions as InterviewProjectQuestion[]) || [];
 
     if (questionIndex < 0 || questionIndex >= questions.length) {
       return {
@@ -150,10 +114,7 @@ export async function deleteInterviewQuestion(
     const updatedProject = await prisma.interviewProject.update({
       where: { id: projectId },
       data: {
-        extra: {
-          ...extra,
-          questions,
-        },
+        questions,
       },
     });
 
@@ -187,23 +148,8 @@ export async function reorderInterviewQuestions(
       };
     }
 
-    // Validate and parse extra field
-    const extraParseResult = interviewProjectQuestionsSchema.safeParse(project.extra || {});
-    if (!extraParseResult.success) {
-      rootLogger.error({
-        msg: "Invalid project extra data structure",
-        projectId,
-        error: extraParseResult.error.message,
-      });
-      return {
-        success: false,
-        code: "internal_server_error",
-        message: "Invalid project data structure",
-      };
-    }
-
-    const extra = extraParseResult.data;
-    const questions = extra.questions || [];
+    // Get existing questions
+    const questions = (project.questions as InterviewProjectQuestion[]) || [];
 
     // Validate newOrder array
     if (newOrder.length !== questions.length) {
@@ -232,10 +178,7 @@ export async function reorderInterviewQuestions(
     const updatedProject = await prisma.interviewProject.update({
       where: { id: projectId },
       data: {
-        extra: {
-          ...extra,
-          questions: reorderedQuestions,
-        },
+        questions: reorderedQuestions,
       },
     });
 
@@ -255,7 +198,7 @@ export async function reorderInterviewQuestions(
 export async function updateInterviewQuestion(
   projectId: number,
   questionIndex: number,
-  questionData: z.infer<typeof questionSchema>,
+  questionData: InterviewProjectQuestion,
 ): Promise<ServerActionResult<InterviewProject>> {
   return withAuth(async (user) => {
     // Validate input data
@@ -279,22 +222,8 @@ export async function updateInterviewQuestion(
       };
     }
 
-    // Validate and parse extra field
-    const extraParseResult = interviewProjectQuestionsSchema.safeParse(project.extra || {});
-    if (!extraParseResult.success) {
-      rootLogger.error({
-        msg: "Invalid project extra data structure",
-        projectId,
-        error: extraParseResult.error.message,
-      });
-      return {
-        success: false,
-        message: "Invalid project data structure",
-      };
-    }
-
-    const extra = extraParseResult.data;
-    const questions = extra.questions || [];
+    // Get existing questions
+    const questions = (project.questions as InterviewProjectQuestion[]) || [];
 
     if (questionIndex < 0 || questionIndex >= questions.length) {
       return {
@@ -310,10 +239,7 @@ export async function updateInterviewQuestion(
     const updatedProject = await prisma.interviewProject.update({
       where: { id: projectId },
       data: {
-        extra: {
-          ...extra,
-          questions,
-        },
+        questions,
       },
     });
 
@@ -348,8 +274,7 @@ export async function optimizeInterviewQuestions(
     }
 
     // Check if questions array is empty
-    const extra = (project.extra as InterviewProjectExtra) || {};
-    const questions = extra.questions || [];
+    const questions = (project.questions as InterviewProjectQuestion[]) || [];
 
     if (questions.length > 0) {
       return {

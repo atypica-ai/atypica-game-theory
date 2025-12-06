@@ -8,6 +8,7 @@ import { generateToken } from "@/lib/utils";
 import {
   InterviewProject,
   InterviewProjectExtra,
+  InterviewProjectQuestion,
   InterviewReportExtra,
   InterviewSessionExtra,
   User,
@@ -21,14 +22,13 @@ import { runAutoPersonaInterview } from "./(session)/api/chat/interview-agent/au
 import { generateInterviewReportContent } from "./artifacts/generateReport";
 import { validateInterviewShareToken } from "./lib";
 import { processInterviewQuestionOptimization } from "./processing";
-import { QuestionData } from "./tools/types";
 
 /**
  * Create a snapshot of questions (converts old format to new format)
  */
 function createQuestionsSnapshot(
-  questions: NonNullable<InterviewProjectExtra["questions"]>,
-): QuestionData[] {
+  questions: InterviewProjectQuestion[],
+): InterviewProjectQuestion[] {
   return questions.map((q) => q);
   // return questions.map((q) => ({
   //   text: q.text,
@@ -46,7 +46,10 @@ function createQuestionsSnapshot(
  */
 export async function fetchUserInterviewProjects(): Promise<
   ServerActionResult<
-    (InterviewProject & {
+    (Omit<InterviewProject, "questions" | "extra"> & {
+      questions: InterviewProjectQuestion[];
+      extra: InterviewProjectExtra;
+    } & {
       sessionStats: {
         humanSessions: number;
         personaSessions: number;
@@ -73,11 +76,12 @@ export async function fetchUserInterviewProjects(): Promise<
     });
     return {
       success: true,
-      data: projects.map(({ sessions, extra, ...project }) => {
+      data: projects.map(({ sessions, questions, extra, ...project }) => {
         const humanSessions = sessions.filter((s) => s.intervieweeUserId).length;
         const personaSessions = sessions.filter((s) => s.intervieweePersonaId).length;
         return {
           ...project,
+          questions: questions as InterviewProjectQuestion[],
           extra: extra as InterviewProjectExtra,
           sessionStats: {
             humanSessions,
@@ -125,9 +129,7 @@ export async function createInterviewProject(
         brief,
         userId,
         token,
-        extra: {
-          questions,
-        },
+        questions,
       },
     });
 
@@ -228,18 +230,18 @@ export async function createPersonaInterviewSession({
     });
 
     // Create questions snapshot with pre-generated form fields
-    const projectExtra = (project.extra as InterviewProjectExtra) || {};
-    const projectQuestions = projectExtra.questions || [];
-    const questionsSnapshot = createQuestionsSnapshot(projectQuestions);
+    const projectQuestions = (project.questions as InterviewProjectQuestion[]) || [];
+    // const questionsSnapshot = createQuestionsSnapshot(projectQuestions);
 
     const session = await prisma.interviewSession.create({
       data: {
         projectId: project.id,
         intervieweePersonaId: persona.id,
         userChatId: userChat.id,
-        extra: {
-          questions: questionsSnapshot,
-        } as InterviewSessionExtra,
+        // persona 访谈不需要 snapshot, 因为是一次性放进提示词的
+        // extra: {
+        //   questions: questionsSnapshot,
+        // } as InterviewSessionExtra,
       },
     });
 
@@ -252,7 +254,8 @@ export async function createPersonaInterviewSession({
           id: project.id,
           brief: project.brief,
           userId: project.userId,
-          extra: project.extra as InterviewProjectExtra,
+          questions: projectQuestions,
+          // extra: project.extra as InterviewProjectExtra,
         },
         personaId: persona.id,
       }),
@@ -339,8 +342,7 @@ export async function createHumanInterviewSession({
     });
 
     // Create questions snapshot with pre-generated form fields
-    const projectExtra = (project.extra as InterviewProjectExtra) || {};
-    const projectQuestions = projectExtra.questions || [];
+    const projectQuestions = (project.questions as InterviewProjectQuestion[]) || [];
     const questionsSnapshot = createQuestionsSnapshot(projectQuestions);
 
     const session = await prisma.interviewSession.create({
@@ -377,7 +379,7 @@ export async function fetchInterviewSessionChat({
     interviewSessionId: number;
     project: Pick<InterviewProject, "id" | "brief"> & {
       user: Pick<User, "id" | "name" | "email">;
-      extra: InterviewProjectExtra;
+      questions: InterviewProjectQuestion[];
     };
     userChatId: number;
     intervieweeUser: Pick<User, "id" | "name" | "email">;
@@ -400,6 +402,7 @@ export async function fetchInterviewSessionChat({
               select: {
                 id: true,
                 brief: true,
+                questions: true,
                 extra: true,
                 user: {
                   select: { id: true, name: true, email: true },
@@ -437,7 +440,8 @@ export async function fetchInterviewSessionChat({
         interviewSessionId: session.id,
         project: {
           ...session.project,
-          extra: session.project.extra as InterviewProjectExtra,
+          questions: session.project.questions as InterviewProjectQuestion[],
+          // extra: session.project.extra as InterviewProjectExtra,
         },
         userChatId: userChat.id,
         intervieweeUser: session.intervieweeUser,

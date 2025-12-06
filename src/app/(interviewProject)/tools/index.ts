@@ -91,16 +91,12 @@ export const questionOptimizationTools = ({ projectId }: { projectId: number }) 
         // Convert string array to questions array format
         const questions = optimizedQuestions.map((text) => ({ text }));
 
-        // Use raw SQL to update extra field with JSON operators
-        // This safely merges new fields into existing extra without race conditions
-        await prisma.$executeRaw`
-          UPDATE "InterviewProject"
-          SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+        await prisma.interviewProject.update({
+          where: { id: projectId },
+          data: {
             questions,
-          })}::jsonb,
-              "updatedAt" = NOW()
-          WHERE "id" = ${projectId}
-        `;
+          },
+        });
 
         return {
           success: true,

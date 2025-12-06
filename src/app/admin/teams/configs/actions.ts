@@ -7,6 +7,7 @@ import { AdminPermission } from "@/app/admin/types";
 import { deleteTeamConfig, setTeamConfig } from "@/app/team/teamConfig/lib";
 import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { ServerActionResult } from "@/lib/serverAction";
+import { TeamWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 
@@ -73,8 +74,7 @@ export async function fetchTeamsWithConfigs(
   await checkAdminAuth([AdminPermission.MANAGE_USERS]);
   const skip = (page - 1) * pageSize;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {};
+  const where: TeamWhereInput = {};
 
   if (searchQuery) {
     where.name = { contains: searchQuery, mode: "insensitive" };
