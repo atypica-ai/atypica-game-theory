@@ -38,10 +38,16 @@ export function proxiedObjectCdnUrl({
   return cdnUrl;
 }
 
-export function proxiedImageCdnUrl(args: { src: string; width?: number; quality?: number }): string;
+export function proxiedImageCdnUrl(args: {
+  src: string;
+  width?: number;
+  height?: number;
+  quality?: number;
+}): string;
 export function proxiedImageCdnUrl(args: {
   objectUrl: string;
   width?: number;
+  height?: number;
   quality?: number;
 }): string;
 
@@ -49,17 +55,22 @@ export function proxiedImageCdnUrl(args: {
  *
  * @param src: 任意图片 src, 通过代理访问
  * @param objectUrl: AWS_S3_CONFIG 里面配置过的 S3 object url, 无需签名
+ * @param width: 目标宽度
+ * @param height: 目标高度 (如果同时提供 width 和 height，会进行裁剪)
+ * @param quality: 图片质量 (1-100)
  * @todo proxy-image api 需要有自己的签名并支持有效期，以防传入任意 src 或者长期外链 objectUrl 滥用
  */
 export function proxiedImageCdnUrl({
   src,
   objectUrl,
   width = 1920,
+  height,
   quality = 100,
 }: {
   src?: string;
   objectUrl?: string;
   width?: number;
+  height?: number;
   quality?: number;
 }) {
   if ((!src && !objectUrl) || (src && objectUrl)) {
@@ -77,11 +88,20 @@ export function proxiedImageCdnUrl({
       ? (objectUrl.split("?")[0].split("/").pop() as string)
       : "404";
 
-  const proxiedUrl = src
-    ? `/cdn/proxy-image/${fileNameInUrl}?url=${encodeURIComponent(src)}&w=${width}&q=${quality}`
-    : objectUrl
-      ? `/cdn/proxy-image/${fileNameInUrl}?objectUrl=${encodeURIComponent(objectUrl)}&w=${width}&q=${quality}`
-      : "404";
+  // 构建查询参数
+  const params = new URLSearchParams();
+  if (src) {
+    params.set("url", src);
+  } else if (objectUrl) {
+    params.set("objectUrl", objectUrl);
+  }
+  params.set("w", width.toString());
+  if (height !== undefined) {
+    params.set("h", height.toString());
+  }
+  params.set("q", quality.toString());
+
+  const proxiedUrl = `/cdn/proxy-image/${fileNameInUrl}?${params.toString()}`;
 
   if (objectCdnOrigin) {
     // CDN 已经缓存了，所以不再需要 /_next/image

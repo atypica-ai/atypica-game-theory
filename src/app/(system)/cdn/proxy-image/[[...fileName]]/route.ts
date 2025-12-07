@@ -46,18 +46,40 @@ export async function GET(
     const contentType = imageResponse.headers.get("Content-Type") || "image/jpeg";
 
     const width = searchParams.get("w");
+    const height = searchParams.get("h");
     const quality = searchParams.get("q");
 
-    // 如果有 width 或 quality 参数，使用 sharp 处理图像
-    if (width || quality) {
+    // 如果有 width、height 或 quality 参数，使用 sharp 处理图像
+    if (width || height || quality) {
       try {
         let sharpInstance = sharp(imageData);
 
-        // 处理宽度调整
-        if (width) {
-          const widthNum = parseInt(width, 10);
-          if (!isNaN(widthNum) && widthNum > 0 && widthNum <= 3840) {
-            sharpInstance = sharpInstance.resize({ width: widthNum });
+        // 处理尺寸调整
+        if (width || height) {
+          const widthNum = width ? parseInt(width, 10) : undefined;
+          const heightNum = height ? parseInt(height, 10) : undefined;
+
+          // 验证参数有效性
+          const isValidWidth =
+            widthNum === undefined || (!isNaN(widthNum) && widthNum > 0 && widthNum <= 3840);
+          const isValidHeight =
+            heightNum === undefined || (!isNaN(heightNum) && heightNum > 0 && heightNum <= 3840);
+
+          if (isValidWidth && isValidHeight) {
+            // 如果同时提供 width 和 height，使用 cover 模式进行裁剪
+            if (widthNum && heightNum) {
+              sharpInstance = sharpInstance.resize(widthNum, heightNum, {
+                fit: "cover",
+              });
+            }
+            // 只提供 width，保持宽高比
+            else if (widthNum) {
+              sharpInstance = sharpInstance.resize({ width: widthNum });
+            }
+            // 只提供 height，保持宽高比
+            else if (heightNum) {
+              sharpInstance = sharpInstance.resize({ height: heightNum });
+            }
           }
         }
 
