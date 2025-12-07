@@ -26,7 +26,7 @@ export async function fetchAnalystReportsAction(
       analyst: Analyst & {
         user: Pick<User, "email"> | null;
       };
-      coverUrl?: string;
+      coverCdnHttpUrl?: string;
     })[]
   >
 > {
@@ -87,10 +87,10 @@ export async function fetchAnalystReportsAction(
     analystReports.map(async (report) => {
       const objectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
       if (objectUrl) {
-        const coverUrl = proxiedImageCdnUrl({ objectUrl });
-        return { ...report, coverUrl };
+        const coverCdnHttpUrl = proxiedImageCdnUrl({ objectUrl });
+        return { ...report, coverCdnHttpUrl };
       } else {
-        return { ...report, coverUrl: undefined };
+        return { ...report, coverCdnHttpUrl: undefined };
       }
     }),
   );
@@ -150,13 +150,14 @@ export async function adminGenerateScreenshotAction(
   // const { coverUrl } = await generateReportScreenshot(report);
   waitUntil(
     generateReportCoverImage({
+      ratio: "landscape",
       analyst: report.analyst,
       report,
       locale,
       abortSignal,
       statReport,
       logger: rootLogger.child({ reportId, analystId: report.analyst.id }),
-    }),
+    }).catch(() => {}),
   );
 
   revalidatePath("/admin/studies/reports");

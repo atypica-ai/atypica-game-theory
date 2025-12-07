@@ -125,6 +125,7 @@ export const generateReportTool = ({
 
       await Promise.all([
         generateReportCoverImage({
+          ratio: "landscape",
           analyst,
           report,
           locale,
