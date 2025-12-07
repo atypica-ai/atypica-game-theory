@@ -39,6 +39,7 @@ podcast/
 **文档**: [volcano-tts-podcast-api-doc.md](./volcano-tts-podcast-api-doc.md)
 
 **主要功能**:
+
 - 多角色对话生成
 - 情感和语气控制
 - 音频拼接和合成
@@ -51,6 +52,7 @@ podcast/
 **文档**: [volcano-tts-monologue-api-doc.md](./volcano-tts-monologue-api-doc.md)
 
 **主要功能**:
+
 - 单人语音合成
 - 情感表达控制
 - 停顿和节奏调整
@@ -62,6 +64,7 @@ podcast/
 **位置**: [prompt-backup/podcast_prompt_v7.md](./prompt-backup/podcast_prompt_v7.md)
 
 **特点**:
+
 - 优化的对话流程
 - 更自然的情感表达
 - 改进的内容结构
@@ -69,25 +72,27 @@ podcast/
 
 ### 版本历史
 
-| 版本 | 主要改进 | 文件 |
-|------|----------|------|
-| v1 | 初始版本，基础对话生成 | [podcast_prompt_v1.md](./prompt-backup/podcast_prompt_v1.md) |
-| v2 | 增加情感控制 | [podcast_prompt_v2.md](./prompt-backup/podcast_prompt_v2.md) |
-| v3 | 优化对话节奏 | [podcast_prompt_v3.md](./prompt-backup/podcast_prompt_v3.md) |
-| v4 | 引入 NotebookLM 风格 | [podcast_prompt_v4.md](./prompt-backup/podcast_prompt_v4.md) |
-| v5 | 改进开场和结尾 | [podcast_prompt_v5.md](./prompt-backup/podcast_prompt_v5.md) |
-| v6 | 增强互动性 | [podcast_prompt_v6.md](./prompt-backup/podcast_prompt_v6.md) |
-| v7 | 综合优化 ✨ **当前** | [podcast_prompt_v7.md](./prompt-backup/podcast_prompt_v7.md) |
+| 版本 | 主要改进               | 文件                                                         |
+| ---- | ---------------------- | ------------------------------------------------------------ |
+| v1   | 初始版本，基础对话生成 | [podcast_prompt_v1.md](./prompt-backup/podcast_prompt_v1.md) |
+| v2   | 增加情感控制           | [podcast_prompt_v2.md](./prompt-backup/podcast_prompt_v2.md) |
+| v3   | 优化对话节奏           | [podcast_prompt_v3.md](./prompt-backup/podcast_prompt_v3.md) |
+| v4   | 引入 NotebookLM 风格   | [podcast_prompt_v4.md](./prompt-backup/podcast_prompt_v4.md) |
+| v5   | 改进开场和结尾         | [podcast_prompt_v5.md](./prompt-backup/podcast_prompt_v5.md) |
+| v6   | 增强互动性             | [podcast_prompt_v6.md](./prompt-backup/podcast_prompt_v6.md) |
+| v7   | 综合优化 ✨ **当前**   | [podcast_prompt_v7.md](./prompt-backup/podcast_prompt_v7.md) |
 
 ### Opinion-Oriented 分支
 
 专门针对观点导向型内容的 prompt 变体。
 
 **版本**:
+
 - [opinionOriented/v0.md](./prompt-backup/opinionOriented/v0.md) - 初始版本
 - [opinionOriented/v1.md](./prompt-backup/opinionOriented/v1.md) - 优化版本
 
 **特点**:
+
 - 强调观点表达
 - 辩论式对话
 - 多角度分析
@@ -101,6 +106,7 @@ podcast/
 **位置**: [examples/script_v4.md](./examples/script_v4.md)
 
 这是当前推荐的脚本格式参考，包含：
+
 - 完整的对话结构
 - 合适的节奏和停顿
 - 情感标记示例
@@ -111,6 +117,7 @@ podcast/
 **位置**: [examples/notebooklm_example_script.md](./examples/notebooklm_example_script.md)
 
 Google NotebookLM 风格的播客对话示例，特点：
+
 - 轻松友好的语气
 - 探索性对话
 - 自然的话题过渡
@@ -209,6 +216,7 @@ src/
 **问题 1**: 生成的对话不自然
 
 **解决方案**:
+
 - 检查 prompt 版本是否为最新
 - 调整情感标记
 - 参考 NotebookLM 示例优化对话流
@@ -216,6 +224,7 @@ src/
 **问题 2**: TTS 音频质量问题
 
 **解决方案**:
+
 - 检查 API 参数配置
 - 调整语速和音调
 - 确认使用正确的音色 ID
@@ -223,6 +232,7 @@ src/
 **问题 3**: 批量生成失败
 
 **解决方案**:
+
 - 检查 API 配额
 - 添加重试机制
 - 分批处理减小单次负载

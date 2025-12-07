@@ -98,7 +98,9 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
   const coverObjectUrl = latestReport
     ? (latestReport.extra as AnalystReportExtra).coverObjectUrl
     : undefined;
-  const coverCdnHttpUrl = coverObjectUrl ? proxiedImageCdnUrl({ objectUrl: coverObjectUrl }) : undefined;
+  const coverCdnHttpUrl = coverObjectUrl
+    ? proxiedImageCdnUrl({ objectUrl: coverObjectUrl })
+    : undefined;
 
   return {
     success: true,

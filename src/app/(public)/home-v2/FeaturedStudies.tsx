@@ -28,7 +28,7 @@ export function FeaturedStudies() {
       setLoading(true);
       const result = await fetchPublicFeaturedStudies({
         locale,
-        limit: 6,
+        pageSize: 6,
         random: true,
       });
       if (result.success) {

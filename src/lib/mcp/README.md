@@ -46,9 +46,9 @@ import { createMcpStreamingCallback } from "@/lib/mcp";
 
 // 在 MCP tool 中创建回调
 const onStreamChunk = createMcpStreamingCallback(
-  extra.sendNotification,      // MCP SDK 提供
-  extra._meta?.progressToken,  // 客户端请求的进度令牌
-  "tool_name"                  // 工具名称(用于日志)
+  extra.sendNotification, // MCP SDK 提供
+  extra._meta?.progressToken, // 客户端请求的进度令牌
+  "tool_name", // 工具名称(用于日志)
 );
 
 // 传给业务逻辑，AI SDK 的 chunk 会自动转为 MCP 通知

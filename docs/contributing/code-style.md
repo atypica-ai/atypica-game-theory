@@ -21,6 +21,7 @@ pnpm lint:fix
 ```
 
 **规则**:
+
 - 继承 Next.js 推荐配置
 - **零警告容忍**: `--max-warnings 0`
 - TypeScript 严格模式
@@ -35,6 +36,7 @@ pnpm format
 ```
 
 **规则**:
+
 - 支持的文件类型：`**/*.{ts,tsx,md}`
 - 自动格式化导入、换行、缩进
 
@@ -51,31 +53,33 @@ pnpm format
 ### 类型导入
 
 ✅ **正确**:
+
 ```typescript
 import type { User, Persona } from "@/prisma/client";
 import type { ReactNode } from "react";
 ```
 
 ❌ **错误**:
+
 ```typescript
-import { User } from "@prisma/client";  // 不要从 @prisma/client 导入
+import { User } from "@prisma/client"; // 不要从 @prisma/client 导入
 ```
 
 ### 函数类型定义
 
 ✅ **正确**:
+
 ```typescript
-async function processData(
-  userId: number,
-  options: ProcessOptions
-): Promise<ProcessResult> {
+async function processData(userId: number, options: ProcessOptions): Promise<ProcessResult> {
   // ...
 }
 ```
 
 ❌ **错误**:
+
 ```typescript
-async function processData(userId, options) {  // 缺少类型
+async function processData(userId, options) {
+  // 缺少类型
   // ...
 }
 ```
@@ -83,6 +87,7 @@ async function processData(userId, options) {  // 缺少类型
 ### 组件 Props
 
 ✅ **正确**:
+
 ```typescript
 interface ButtonProps {
   children: ReactNode;
@@ -100,6 +105,7 @@ export function Button({ children, onClick, variant = "primary" }: ButtonProps) 
 ### 服务端组件 vs 客户端组件
 
 **默认使用服务端组件**：
+
 ```typescript
 // app/page.tsx - 默认是服务端组件
 export default async function Page() {
@@ -109,6 +115,7 @@ export default async function Page() {
 ```
 
 **客户端组件**（仅在需要时）：
+
 ```typescript
 "use client";
 
@@ -121,6 +128,7 @@ export function ClientComponent() {
 ```
 
 **何时使用客户端组件**:
+
 - 事件处理器（onClick, onChange）
 - 状态管理（useState, useReducer）
 - 副作用（useEffect）
@@ -216,16 +224,14 @@ export async function createItem(data: CreateItemInput): Promise<ServerActionRes
 ```typescript
 import { withAuth } from "@/lib/request/withAuth";
 
-export const updateProfile = withAuth(
-  async ({ session, user }, profileData: ProfileData) => {
-    // session 和 user 自动可用
-    const result = await prisma.userProfile.update({
-      where: { userId: user.id },
-      data: profileData,
-    });
-    return { success: true, data: result };
-  }
-);
+export const updateProfile = withAuth(async ({ session, user }, profileData: ProfileData) => {
+  // session 和 user 自动可用
+  const result = await prisma.userProfile.update({
+    where: { userId: user.id },
+    data: profileData,
+  });
+  return { success: true, data: result };
+});
 ```
 
 ## Styling 规范
@@ -233,6 +239,7 @@ export const updateProfile = withAuth(
 ### Tailwind CSS
 
 **使用 `cn()` 工具**:
+
 ```typescript
 import { cn } from "@/lib/utils";
 
@@ -246,6 +253,7 @@ import { cn } from "@/lib/utils";
 ### Component Variants
 
 使用 `class-variance-authority`:
+
 ```typescript
 import { cva } from "class-variance-authority";
 
@@ -279,6 +287,7 @@ export function Button({ variant, size, className, ...props }: ButtonProps) {
 ### 主题变量
 
 使用 CSS 变量:
+
 ```typescript
 <div className="bg-background text-foreground border-border" />
 ```
@@ -288,12 +297,14 @@ export function Button({ variant, size, className, ...props }: ButtonProps) {
 ### 导入路径
 
 ✅ **正确**:
+
 ```typescript
 import { prisma } from "@/prisma/prisma";
 import type { User, Prisma } from "@/prisma/client";
 ```
 
 ❌ **错误**:
+
 ```typescript
 import { PrismaClient } from "@prisma/client";
 import type { User } from "@prisma/client";
@@ -325,15 +336,17 @@ const chat = await prisma.userChat.findUnique({
 **重要**: Logger 只接受一个参数
 
 ✅ **正确**:
+
 ```typescript
 logger.info({ msg: "Operation completed", userId, duration });
 logger.error({ msg: "Operation failed", error: error.message, stack: error.stack });
 ```
 
 ❌ **错误**:
+
 ```typescript
-logger.info("Message", { field1: value1 });  // 两个参数
-logger.info({ field1: value1 });  // 缺少 msg 字段
+logger.info("Message", { field1: value1 }); // 两个参数
+logger.info({ field1: value1 }); // 缺少 msg 字段
 ```
 
 ### Child Logger
@@ -351,7 +364,7 @@ logger.info({ msg: "User action", action: "login" });
 import { llm } from "@/ai/provider";
 
 const result = streamText({
-  model: llm("gpt-4o"),  // 使用抽象的 provider 函数
+  model: llm("gpt-4o"), // 使用抽象的 provider 函数
   messages,
   tools,
 });
@@ -465,7 +478,7 @@ try {
  */
 export async function processUserData(
   userId: number,
-  options: ProcessOptions
+  options: ProcessOptions,
 ): Promise<ProcessResult> {
   // ...
 }
@@ -496,6 +509,7 @@ updateState();
 ```
 
 **类型**:
+
 - `feat`: 新功能
 - `fix`: Bug 修复
 - `docs`: 文档更新
@@ -506,6 +520,7 @@ updateState();
 - `chore`: 构建/工具相关
 
 **示例**:
+
 ```
 feat: add user profile editing
 
@@ -519,6 +534,7 @@ Closes #123
 ### 重要提示
 
 **仅在 Claude 独立完成全部代码时添加署名**：
+
 ```
 feat: add new feature
 

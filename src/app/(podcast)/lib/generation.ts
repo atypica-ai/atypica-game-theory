@@ -18,14 +18,7 @@ import {
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
-import {
-  FilePart,
-  FinishReason,
-  generateObject,
-  ModelMessage,
-  stepCountIs,
-  streamText,
-} from "ai";
+import { FilePart, FinishReason, generateObject, ModelMessage, stepCountIs, streamText } from "ai";
 import { parseBuffer } from "music-metadata";
 import { Locale } from "next-intl";
 import { Logger } from "pino";

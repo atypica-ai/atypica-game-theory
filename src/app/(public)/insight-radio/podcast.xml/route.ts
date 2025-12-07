@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   const locale = localeParam === "zh-CN" ? "zh-CN" : "en-US"; // Default to en-US
 
   // Fetch podcasts
-  const result = await fetchFeaturedPodcasts({ locale, limit: 100 });
+  const result = await fetchFeaturedPodcasts({ locale, pageSize: 100 });
 
   if (!result.success || !result.data) {
     return new Response("Failed to fetch podcasts", { status: 500 });

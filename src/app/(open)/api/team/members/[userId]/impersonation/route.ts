@@ -46,7 +46,6 @@ export async function POST(
     }
 
     return await withTeamApiKey(async (team) => {
-
       // Verify the member belongs to this team
       const member = await prisma.user.findUnique({
         where: { id: userIdNumber },

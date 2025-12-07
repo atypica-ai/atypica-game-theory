@@ -8,7 +8,7 @@
 
 MCP 开发的核心文档已集成到源代码中，便于查阅和维护：
 
-- **[如何搭建 MCP HTTP 服务器](../../src/app/(deepResearch)/mcp/README.md)** - 完整的 MCP 服务器搭建教程
+- **[如何搭建 MCP HTTP 服务器](<../../src/app/(deepResearch)/mcp/README.md>)** - 完整的 MCP 服务器搭建教程
   - 端点配置和认证方式
   - 快速起步（2个文件搞定）
   - 关键概念和最佳实践
@@ -31,10 +31,12 @@ atypica.AI 当前实现的 MCP 功能：
 **功能**: 提供深度研究工具，集成了 Grok 模型的流式文本生成能力。
 
 **认证方式**:
+
 - API Key 认证（`Authorization: Bearer atypica_xxxxx`）
 - 内部服务认证（`x-internal-secret` + `x-user-id`）
 
 **工具**:
+
 - `atypica_deep_research` - 执行深度研究任务
   - 支持流式输出（SSE）
   - 支持 JSON 响应（`?sse=0`）
@@ -45,11 +47,13 @@ atypica.AI 当前实现的 MCP 功能：
 **功能**: 团队级别的 MCP 服务器配置管理。
 
 **位置**:
+
 - 数据库模型：`prisma/schema.prisma` (`TeamConfig` 表)
 - 配置类型：`src/app/team/teamConfig/types.ts`
 - 管理界面：团队管理后台
 
 **特性**:
+
 - 每个团队可配置自己的 MCP 服务器
 - 支持自定义系统提示词
 - 配置存储在数据库中
@@ -119,7 +123,7 @@ curl -X POST "https://atypica.ai/mcp/deepResearch?sse=0" \
 
 ## 开发新的 MCP 工具
 
-参考 [搭建指南](../../src/app/(deepResearch)/mcp/README.md) 了解如何：
+参考 [搭建指南](<../../src/app/(deepResearch)/mcp/README.md>) 了解如何：
 
 1. 定义 MCP Server (`mcpServer.ts`)
 2. 创建 HTTP Route (`route.ts`)
@@ -140,6 +144,7 @@ curl -X POST "https://atypica.ai/mcp/deepResearch?sse=0" \
 **Q: API Key 认证失败**
 
 A: 确保：
+
 - API Key 格式正确（`atypica_` 开头）
 - 使用个人用户的 API Key（不支持团队 API Key）
 - Header 格式：`Authorization: Bearer atypica_xxxxx`
@@ -147,6 +152,7 @@ A: 确保：
 **Q: 流式响应无输出**
 
 A: 检查：
+
 - `Accept` header 是否包含 `text/event-stream`
 - 是否设置了 `?sse=0` 参数
 - 客户端是否支持 SSE
@@ -154,6 +160,7 @@ A: 检查：
 **Q: 内部认证失败**
 
 A: 验证：
+
 - `x-internal-secret` 与环境变量 `INTERNAL_API_SECRET` 一致
 - `x-user-id` 是有效的用户 ID（整数）
 - 两个 header 必须同时提供

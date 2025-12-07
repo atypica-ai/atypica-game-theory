@@ -151,10 +151,12 @@ docker run -p 3000:3000 --env-file ./.env.docker atypica-llm-app
 ## 📚 文档
 
 ### 开发文档
+
 - [开发指南](docs/development/) - AI SDK、播客、报告等开发文档
 - [数据库维护](docs/howto/how-to-squash-migrations.md) - Prisma 迁移管理
 
 ### 操作手册
+
 - [PostgreSQL 安装](docs/howto/setup-postgresql.md) - 数据库和 pgvector 安装指南
 - [API 健康检查](docs/howto/api-health-check.md) - 系统监控和 Uptime Kuma 集成
 - [月度 Token 重置](docs/howto/monthly-tokens-reset.md) - 自动化 Token 管理
@@ -163,11 +165,13 @@ docker run -p 3000:3000 --env-file ./.env.docker atypica-llm-app
 - [iframe 集成](docs/howto/iframe-embed-integration.md) - 嵌入式集成指南
 
 ### 产品文档
+
 - [产品概览](docs/product/sage-overview.md) - Sage 功能详解
 - [术语表](docs/product/glossary.md) - 核心概念定义
 - [更新日志](docs/product/changelog-zh.md) - 版本更新记录
 
 ### MCP 集成
+
 - [MCP 文档](docs/mcp/) - Model Context Protocol 集成
 
 ## 🛠️ 脚本工具

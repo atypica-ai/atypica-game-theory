@@ -89,7 +89,10 @@ export class AudioCache {
   private static async load(key: AudioCacheKey): Promise<Buffer> {
     try {
       // Load audio cache store JSON file
-      const cacheStorePath = join(process.cwd(), "src/app/(podcast)/lib/volcano/audioCacheStore.json");
+      const cacheStorePath = join(
+        process.cwd(),
+        "src/app/(podcast)/lib/volcano/audioCacheStore.json",
+      );
       const cacheStoreContent = readFileSync(cacheStorePath, "utf-8");
       const cacheStore: AudioCacheStore = JSON.parse(cacheStoreContent);
 
@@ -103,7 +106,9 @@ export class AudioCache {
       // Decode base64 to buffer
       return Buffer.from(base64String.trim(), "base64");
     } catch (error) {
-      throw new Error(`Failed to load audio cache for key "${key}": ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to load audio cache for key "${key}": ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 }
@@ -117,4 +122,3 @@ export class SilenceBuffer {
     return AudioCache.get("silence");
   }
 }
-

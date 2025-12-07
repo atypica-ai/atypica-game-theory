@@ -43,6 +43,7 @@ pnpm admintool add-team-subscription --teamId 123 --seats 5 --start 2024-01-30 -
 ```
 
 **功能特性：**
+
 - 用户创建与邮箱验证
 - 超级管理员权限管理
 - 团队创建与管理
@@ -73,6 +74,7 @@ npx tsx scripts/admin/check-status.ts --create-monitors --override --site https:
 ```
 
 **监控内容：**
+
 - Ping 服务
 - 数据库连接
 - 浏览器 API (HTML to PDF)
@@ -83,6 +85,7 @@ npx tsx scripts/admin/check-status.ts --create-monitors --override --site https:
 - 社交媒体搜索（小红书、抖音、Instagram、TikTok、Twitter）
 
 **环境变量配置：**
+
 ```env
 # Uptime Kuma Socket.io API
 UPTIME_KUMA_API_URL=http://your-uptime-kuma.com
@@ -122,6 +125,7 @@ pnpm analytics podcast <token>
 ```
 
 **功能特性：**
+
 - Study/Report/Podcast 分享页面浏览统计
 - 支持单个 token 查询或批量查询
 - 地域过滤（mainland/global/all）
@@ -146,6 +150,7 @@ pnpm tsx scripts/utils/payment-stats.ts > payment-stats.csv
 ```
 
 **输出内容：**
+
 - 订单号和发票信息
 - Stripe Charge ID
 - 付款方式和金额
@@ -154,6 +159,7 @@ pnpm tsx scripts/utils/payment-stats.ts > payment-stats.csv
 - 付款日期
 
 **注意事项：**
+
 - 脚本中的时间范围需要根据导出需求调整（默认 2025-11-01 之前）
 - 包含手动修复的异常订单注释
 - 需要处理退款订单标记
@@ -177,16 +183,19 @@ npx tsx scripts/utils/public-assets.ts --region global --list
 ```
 
 **支持的区域：**
+
 - `mainland` - 中国北京（cn-north-1）
 - `global` - 美国东部（us-east-1）
 
 **支持的文件格式：**
+
 - 图片：jpg, jpeg, png, gif, webp, svg
 - 视频：mp4, webm
 - 音频：mp3, wav, ogg, m4a
 - 文档：pdf
 
 **功能特性：**
+
 - 自动设置正确的 Content-Type
 - 公共读取权限
 - 文件存储在 `atypica/public/` 前缀下
@@ -204,12 +213,14 @@ pnpm tsx scripts/utils/rescore-personas.ts
 ```
 
 **功能特性：**
+
 - 分批处理（batch size: 30）
 - 并行处理提高效率
 - 支持断点续传（可配置起始 ID）
 - 实时进度显示
 
 **适用场景：**
+
 - 评分算法更新后的数据迁移
 - 批量修复异常评分
 - 定期重新评分维护
@@ -221,6 +232,7 @@ pnpm tsx scripts/utils/rescore-personas.ts
 包含各类常用的数据库查询语句，用于数据分析和业务报表。
 
 **主要查询类型：**
+
 - 研究数据导出查询
 - 用户转换付费周期统计
 - 工具调用统计
@@ -253,12 +265,14 @@ pnpm tsx scripts/dumps/export-interview-project.ts abc123def456
 ```
 
 **导出内容：**
+
 - InterviewProject 基本信息（token, brief, extra, 时间戳）
 - InterviewSession 会话列表（userId/personaId 用 `[PLACEHOLDER]` 标记）
 - UserChat 对话数据（每个会话的聊天记录）
 - ChatMessage 所有消息（包含 role, content, parts, attachments）
 
 **不导出内容：**
+
 - InterviewReport（可重新生成）
 - ChatStatistics（统计数据）
 - TokensLog（token 日志）
@@ -287,6 +301,7 @@ pnpm tsx scripts/dumps/import-interview-project.ts 123 scripts/dumps/exports/int
 ```
 
 **功能特性：**
+
 - 自动生成新的项目 token（避免冲突）
 - 保留原始 token 到 `extra.originalToken`
 - project brief 加上 `[IMPORTED]` 前缀方便识别
@@ -299,12 +314,14 @@ pnpm tsx scripts/dumps/import-interview-project.ts 123 scripts/dumps/exports/int
 - 使用 Prisma 事务确保原子性
 
 **导入效果：**
+
 - 创建完整的项目副本
 - 所有数据归属于指定用户
 - 保留原始数据结构和内容
 - 附件引用保持不变（仅保存 JSON）
 
 **注意事项：**
+
 - 确保目标用户 ID 存在
 - 会根据导出时的标记保持原始的字段类型
 - 附件文件不会被复制，只保留引用
@@ -316,15 +333,17 @@ pnpm tsx scripts/dumps/import-interview-project.ts 123 scripts/dumps/exports/int
 ### archive/legacy/
 
 包含 31 个历史遗留脚本，主要用于：
-- 数据迁移（migrate-*.js/ts）
-- 数据修复（fix-*.js/ts）
-- 数据生成和处理（generate-*.js/ts）
+
+- 数据迁移（migrate-\*.js/ts）
+- 数据修复（fix-\*.js/ts）
+- 数据生成和处理（generate-\*.js/ts）
 
 **状态：** 已完成历史使命，仅作参考保留。
 
 ### archive/stripe-migration/
 
 包含 5 个 Stripe 订阅系统迁移的 SQL 脚本：
+
 - 活跃订阅 ID 迁移
 - Stripe 支付数据迁移
 - 团队 token 迁移
@@ -344,6 +363,7 @@ pnpm tsx scripts/dumps/import-interview-project.ts 123 scripts/dumps/exports/int
 **使用方法：**
 
 在脚本开头导入：
+
 ```typescript
 import "./mock-server-only";
 ```
@@ -362,9 +382,10 @@ import "./mock-server-only";
    - 数据导入导出 → `dumps/`
 
 2. 创建脚本文件：
+
 ```typescript
 import { loadEnvConfig } from "@next/env";
-import "./mock-server-only";  // 如果需要访问服务端代码
+import "./mock-server-only"; // 如果需要访问服务端代码
 
 async function main() {
   loadEnvConfig(process.cwd());
@@ -380,6 +401,7 @@ if (require.main === module) {
 ```
 
 3. 如果是常用命令，在 `package.json` 中添加快捷方式：
+
 ```json
 {
   "scripts": {

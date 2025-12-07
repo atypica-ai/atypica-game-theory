@@ -20,6 +20,7 @@ pnpm test --coverage
 ```
 
 **特性**:
+
 - 基于 Vite 的快速测试运行器
 - 兼容 Jest API
 - jsdom 环境支持
@@ -195,7 +196,7 @@ vi.mock("@/auth", () => ({
   auth: vi.fn(() =>
     Promise.resolve({
       user: { id: 1, email: "test@example.com" },
-    })
+    }),
   ),
 }));
 
@@ -246,9 +247,7 @@ describe("myTool", () => {
   });
 
   it("should handle invalid parameters", async () => {
-    await expect(
-      myTool.execute({ query: "", limit: -1 })
-    ).rejects.toThrow();
+    await expect(myTool.execute({ query: "", limit: -1 })).rejects.toThrow();
   });
 });
 ```
@@ -302,9 +301,7 @@ vi.mocked(prisma.user.findUnique).mockImplementation(mockFindUnique);
 ```typescript
 vi.mock("ai", () => ({
   streamText: vi.fn(() => ({
-    toUIMessageStreamResponse: vi.fn(() =>
-      new Response("Mock response")
-    ),
+    toUIMessageStreamResponse: vi.fn(() => new Response("Mock response")),
   })),
   tool: vi.fn((config) => config),
 }));
@@ -375,11 +372,11 @@ let userId: number;
 
 it("should create user", async () => {
   const user = await createUser({ email: "test@example.com" });
-  userId = user.id;  // 不好：依赖外部状态
+  userId = user.id; // 不好：依赖外部状态
 });
 
 it("should update user", async () => {
-  await updateUser(userId, { name: "New Name" });  // 依赖上一个测试
+  await updateUser(userId, { name: "New Name" }); // 依赖上一个测试
 });
 ```
 
@@ -443,6 +440,7 @@ pnpm test --coverage
 ### 关注重点
 
 优先测试：
+
 1. **业务逻辑**: 核心算法和数据处理
 2. **工具函数**: 可复用的辅助函数
 3. **API 路由**: 公开的 API 端点
@@ -450,6 +448,7 @@ pnpm test --coverage
 5. **AI Tools**: AI 工具的 execute 函数
 
 可以跳过：
+
 - UI 组件的样式测试
 - 简单的数据传递组件
 - 第三方库的 wrapper
@@ -524,10 +523,7 @@ export const mockUser = {
   name: "Test User",
 };
 
-export const mockUsers = [
-  mockUser,
-  { id: 2, email: "test2@example.com", name: "Test User 2" },
-];
+export const mockUsers = [mockUser, { id: 2, email: "test2@example.com", name: "Test User 2" }];
 ```
 
 ### Factory Functions

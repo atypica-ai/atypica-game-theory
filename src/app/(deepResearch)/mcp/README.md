@@ -71,7 +71,7 @@ function createMyMcpServer(): McpServer {
       const onStreamChunk = createMcpStreamingCallback(
         extra.sendNotification,
         extra._meta?.progressToken,
-        "my_tool"
+        "my_tool",
       );
 
       // 执行业务逻辑
@@ -84,7 +84,7 @@ function createMyMcpServer(): McpServer {
       return {
         content: [{ type: "text", text: result }],
       };
-    }
+    },
   );
 
   return server;
@@ -106,7 +106,7 @@ export function getMyMcpServer() {
 import {
   runWithMcpRequestContext,
   createMcpIncomingMessage,
-  createMcpServerResponse
+  createMcpServerResponse,
 } from "@/lib/mcp";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { NextRequest } from "next/server";
@@ -216,7 +216,7 @@ async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
         success: false,
         errorResponse: Response.json(
           { jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized" }, id: null },
-          { status: 401, headers: CORS_HEADERS }
+          { status: 401, headers: CORS_HEADERS },
         ),
       };
     }
@@ -227,7 +227,7 @@ async function authenticateAndGetUserId(req: NextRequest): Promise<AuthResult> {
         success: false,
         errorResponse: Response.json(
           { jsonrpc: "2.0", error: { code: -32602, message: "Invalid user ID" }, id: null },
-          { status: 400, headers: CORS_HEADERS }
+          { status: 400, headers: CORS_HEADERS },
         ),
       };
     }
@@ -273,6 +273,7 @@ if (authorization?.startsWith("Bearer ")) {
 ```
 
 **注意**：MCP 不使用 `withPersonalApiKey` 中间件的原因：
+
 - 需要支持两种不同的认证方式
 - 需要返回 JSON-RPC 格式的错误响应
 - 内部认证完全绕过 API key 验证

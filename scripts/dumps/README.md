@@ -11,12 +11,14 @@ pnpm tsx scripts/dumps/export-interview-project.ts <project-token>
 ```
 
 导出内容：
+
 - InterviewProject 项目信息
 - InterviewSession 所有会话（userId/personaId 用 `[PLACEHOLDER]` 标记原始类型）
 - UserChat 对话记录
 - ChatMessage 所有消息
 
 不导出：
+
 - InterviewReport（可重新生成）
 - ChatStatistics、TokensLog
 - 附件文件本身（只导出引用）
@@ -31,6 +33,7 @@ pnpm tsx scripts/dumps/import-interview-project.ts <user-id> <json-file-path>
 ```
 
 导入行为：
+
 - 生成新的 project token、userChat token、messageId（避免冲突）
 - 原始 token 保存到 `extra.originalToken`
 - project brief 加上 `[IMPORTED]` 前缀方便识别

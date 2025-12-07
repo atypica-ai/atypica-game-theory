@@ -16,6 +16,7 @@
 **位置**: `prisma/schema.prisma`
 
 **特性**:
+
 - 自定义输出路径：`src/prisma/generated`
 - 使用 `postgresqlExtensions` 预览特性
 - 支持 pgvector 扩展
@@ -23,6 +24,7 @@
 ### 权限要求
 
 **开发环境**:
+
 ```sql
 -- 创建 extension 时需要 SUPERUSER 权限
 ALTER USER atypica WITH SUPERUSER;
@@ -31,6 +33,7 @@ ALTER USER atypica WITH NOSUPERUSER;
 ```
 
 **生产环境**:
+
 ```sql
 -- 先用 superuser 创建 extension
 CREATE EXTENSION vector;
@@ -44,10 +47,12 @@ CREATE EXTENSION vector;
 #### User - 用户
 
 **类型**:
+
 - **Personal User**: 独立个人用户（`teamIdAsMember` 为 null）
 - **Team Member User**: 团队成员用户（关联到团队）
 
 **关键字段**:
+
 ```prisma
 model User {
   id             Int       @id @default(autoincrement())
@@ -143,6 +148,7 @@ model Persona {
 ```
 
 **向量搜索**:
+
 - 使用 pgvector 扩展
 - 768 维嵌入向量
 - 余弦相似度搜索
@@ -429,6 +435,7 @@ WITH (lists = 100);
 详见：`scripts/utils/utility-sqls.sql`
 
 **示例**:
+
 ```sql
 -- 查询用户 token 余额
 SELECT balance, monthlyLimit, monthlyConsumed

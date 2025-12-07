@@ -29,28 +29,35 @@ npx tsx scripts/admin/check-status.ts --site http://localhost:3000
 check-status 脚本会测试以下 API 端点的健康状况：
 
 ### 基础服务
+
 - **Ping** - 基本连接测试
 - **Database** - 数据库连接测试
 
 ### 浏览器 API
+
 - **HTML to PDF** - HTML 转 PDF 功能
 
 ### 通信服务
+
 - **Email** - 邮件发送服务
 
 ### AI 服务
+
 - **Embedding** - 文本向量化服务
 - **Web Search** - 网页搜索服务
 
 ### LLM 模型
+
 - **Claude** - Anthropic Claude API
 - **GPT** - OpenAI GPT API
 - **Gemini** - Google Gemini API
 
 ### 语音服务
+
 - **Whisper** - 语音转文字服务
 
 ### 社交媒体搜索
+
 - **XHS Search** - 小红书搜索
 - **Douyin Search** - 抖音搜索
 - **Instagram Search** - Instagram 搜索
@@ -81,6 +88,7 @@ npx tsx scripts/admin/check-status.ts --create-monitors --site https://atypica.a
 ```
 
 **工作流程：**
+
 1. 连接到 Uptime Kuma
 2. 检查是否存在对应的监控分组
 3. 检查是否存在相同名称的监控项
@@ -140,23 +148,23 @@ atypica.ai (主分组)
 
 所有健康检查端点都位于 `/api/health` 路径下：
 
-| 端点 | 功能 | 请求体 |
-|------|------|--------|
-| `/api/health?api=ping` | 基本连接 | - |
-| `/api/health?api=database` | 数据库连接 | - |
-| `/api/health?api=htmlToPdf` | PDF 转换 | `{ url: string }` |
-| `/api/health?api=sendEmail` | 邮件发送 | `{ to: string }` |
-| `/api/health?api=embedding` | 文本向量化 | `{ text: string }` |
-| `/api/health?api=webSearch` | 网页搜索 | `{ query: string }` |
-| `/api/health?api=claude` | Claude API | `{ prompt: string }` |
-| `/api/health?api=gpt` | GPT API | `{ prompt: string }` |
-| `/api/health?api=gemini` | Gemini API | `{ prompt: string }` |
-| `/api/health?api=whisper` | 语音转文字 | `{ audio: base64 }` |
-| `/api/health?api=xhsSearch` | 小红书搜索 | `{ query: string }` |
-| `/api/health?api=dySearch` | 抖音搜索 | `{ query: string }` |
-| `/api/health?api=insSearch` | Instagram 搜索 | `{ query: string }` |
-| `/api/health?api=tiktokSearch` | TikTok 搜索 | `{ query: string }` |
-| `/api/health?api=twitterSearch` | Twitter 搜索 | `{ query: string }` |
+| 端点                            | 功能           | 请求体               |
+| ------------------------------- | -------------- | -------------------- |
+| `/api/health?api=ping`          | 基本连接       | -                    |
+| `/api/health?api=database`      | 数据库连接     | -                    |
+| `/api/health?api=htmlToPdf`     | PDF 转换       | `{ url: string }`    |
+| `/api/health?api=sendEmail`     | 邮件发送       | `{ to: string }`     |
+| `/api/health?api=embedding`     | 文本向量化     | `{ text: string }`   |
+| `/api/health?api=webSearch`     | 网页搜索       | `{ query: string }`  |
+| `/api/health?api=claude`        | Claude API     | `{ prompt: string }` |
+| `/api/health?api=gpt`           | GPT API        | `{ prompt: string }` |
+| `/api/health?api=gemini`        | Gemini API     | `{ prompt: string }` |
+| `/api/health?api=whisper`       | 语音转文字     | `{ audio: base64 }`  |
+| `/api/health?api=xhsSearch`     | 小红书搜索     | `{ query: string }`  |
+| `/api/health?api=dySearch`      | 抖音搜索       | `{ query: string }`  |
+| `/api/health?api=insSearch`     | Instagram 搜索 | `{ query: string }`  |
+| `/api/health?api=tiktokSearch`  | TikTok 搜索    | `{ query: string }`  |
+| `/api/health?api=twitterSearch` | Twitter 搜索   | `{ query: string }`  |
 
 ## 输出示例
 
@@ -202,6 +210,7 @@ Failed tests:
 **问题**: 无法连接到 API 端点
 
 **解决方案**:
+
 1. 确认服务器正在运行（`pnpm dev` 或生产环境）
 2. 检查网络连接
 3. 验证 URL 是否正确
@@ -212,6 +221,7 @@ Failed tests:
 **问题**: API 返回 401 或 403 错误
 
 **解决方案**:
+
 1. 检查环境变量是否正确配置
 2. 验证 API keys 是否有效
 3. 检查 API 配额是否已用完
@@ -221,6 +231,7 @@ Failed tests:
 **问题**: 无法连接到 Uptime Kuma
 
 **解决方案**:
+
 1. 验证 `UPTIME_KUMA_API_URL` 是否正确
 2. 检查用户名和密码
 3. 确认 Uptime Kuma 服务正在运行
@@ -231,6 +242,7 @@ Failed tests:
 **问题**: 创建监控时出现重复项目
 
 **解决方案**:
+
 1. 使用智能模式（不加 `--override`）会自动检测并更新
 2. 如果需要完全重建，使用 `--override` 标志
 3. 手动在 Uptime Kuma 中删除重复项目
@@ -249,6 +261,7 @@ Failed tests:
 ### 监控告警
 
 在 Uptime Kuma 中配置告警通知：
+
 1. 邮件通知
 2. Slack 集成
 3. Discord webhook
@@ -280,10 +293,10 @@ npx tsx scripts/admin/check-status.ts --create-monitors --site https://staging.a
 
 ```typescript
 const monitorConfig = {
-  interval: 60,        // 心跳间隔（秒）
-  retryInterval: 60,   // 重试间隔（秒）
-  maxretries: 3,       // 最大重试次数
-  timeout: 30,         // 超时时间（秒）
+  interval: 60, // 心跳间隔（秒）
+  retryInterval: 60, // 重试间隔（秒）
+  maxretries: 3, // 最大重试次数
+  timeout: 30, // 超时时间（秒）
 };
 ```
 

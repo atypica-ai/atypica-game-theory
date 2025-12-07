@@ -10,7 +10,6 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     return await withTeamApiKey(async (team) => {
-
       // Fetch all team members (only active members with personalUserId)
       const members = await prisma.user.findMany({
         where: {

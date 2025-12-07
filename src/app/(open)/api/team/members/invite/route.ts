@@ -15,7 +15,6 @@ const logger = rootLogger.child({ api: "/api/team/members/invite" });
 export async function POST(request: NextRequest) {
   try {
     return await withTeamApiKey(async (team) => {
-
       // 1. 解析请求体
       const body = await request.json();
       const { email } = body;

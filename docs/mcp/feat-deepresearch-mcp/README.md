@@ -16,6 +16,7 @@
 ### 新增文件
 
 #### 1. `src/app/(deepResearch)/mcp/deepResearch/route.ts`
+
 **功能**: MCP API 路由处理器,处理 POST/GET/DELETE 请求
 
 - **POST**: 处理 JSON-RPC 请求,支持 SSE 流式响应和 JSON 响应两种模式
@@ -23,12 +24,14 @@
 - **DELETE**: 会话终止(无状态模式下为 no-op)
 
 **关键特性**:
+
 - 无状态设计:每个请求创建新的 `StreamableHTTPServerTransport`,提高并发性能
 - 自动检测客户端是否支持 SSE(通过 `Accept: text/event-stream` 头)
 - 使用 `createMcpIncomingMessage` 和 `createMcpServerResponse` 适配 Next.js 和 Node.js HTTP 对象
 - 通过 `runWithMcpRequestContext` 设置请求上下文(userId)
 
 #### 2. `src/app/(deepResearch)/mcp/mcpServer.ts`
+
 **功能**: MCP 服务器实例管理
 
 - 创建和配置 DeepResearch MCP 服务器
@@ -37,6 +40,7 @@
 - 通过 `getMcpRequestContext()` 获取 userId
 
 #### 3. `src/lib/mcp/streaming.ts`
+
 **功能**: 创建流式回调函数,将 AI SDK 的文本流块转换为 MCP ProgressNotification
 
 - 导出 `createMcpStreamingCallback` 函数
@@ -46,6 +50,7 @@
 - 错误处理:通知发送失败不影响主流程
 
 #### 4. `src/lib/mcp/context.ts`
+
 **功能**: 基于 AsyncLocalStorage 的请求上下文管理
 
 - 仅存储 `userId`(应用特定数据)
@@ -53,12 +58,14 @@
 - 导出 `getMcpRequestContext()` 和 `runWithMcpRequestContext()` 函数
 
 #### 5. `src/lib/mcp/types.ts`
+
 **功能**: TypeScript 类型定义
 
 - `McpRequestContext`: 包含 `userId` 的请求上下文类型
 - `StreamChunkCallback`: 流式块回调函数类型
 
 #### 6. `src/lib/mcp/adapters.ts`
+
 **功能**: Next.js 与 Node.js HTTP 对象的适配器
 
 - `createMcpIncomingMessage`: 将 Next.js Request 转换为 Node.js IncomingMessage
@@ -67,6 +74,7 @@
 ### 修改文件
 
 #### 1. `src/app/(deepResearch)/deepResearch.ts`
+
 **变更**: 添加流式回调支持
 
 - 新增 `onStreamChunk` 参数(可选)
@@ -92,6 +100,7 @@
 ### SDK 集成
 
 充分利用 MCP SDK 的内置功能:
+
 - `extra.sendNotification`: 发送通知的标准方式
 - `extra._meta.progressToken`: 进度令牌,由 SDK 管理
 - `StreamableHTTPServerTransport`: 处理 SSE 流和 JSON 响应

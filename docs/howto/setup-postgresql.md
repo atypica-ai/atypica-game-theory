@@ -110,12 +110,14 @@ npx prisma migrate dev
 ### Q: 为什么需要 SUPERUSER 权限？
 
 A: 在 migration 执行时需要创建 vector extension，这个操作需要 SUPERUSER 权限。如果你的生产环境不允许应用使用 SUPERUSER，可以：
+
 1. 手动在数据库中创建 vector extension
 2. 然后移除用户的 SUPERUSER 权限
 
 ### Q: 编译 pgvector 时出错怎么办？
 
 A: 常见问题和解决方案：
+
 1. **找不到 pg_config**：确保 PostgreSQL 已正确安装，并检查 `PG_CONFIG` 路径
 2. **权限问题**：使用 `sudo make install` 安装
 3. **编译错误**：确保安装了所有编译依赖（git、make、gcc）

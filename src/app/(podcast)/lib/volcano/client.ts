@@ -3,6 +3,7 @@ import "server-only";
 import { Logger } from "pino";
 import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
+import { AudioCache } from "./audioCache";
 import {
   EventType,
   FinishConnection,
@@ -16,7 +17,6 @@ import {
   VolcanoHeaders,
   WaitForEvent,
 } from "./protocols";
-import { AudioCache } from "./audioCache";
 
 const VOLCANO_ENDPOINT = "wss://openspeech.bytedance.com/api/v3/sami/podcasttts";
 
@@ -43,9 +43,7 @@ export interface PodcastGenerationResult {
 // Default speaker configuration
 const DEFAULT_SPEAKERS = {
   "zh-CN": ["zh_male_dayixiansheng_v2_saturn_bigtts", "zh_female_mizaitongxue_v2_saturn_bigtts"],
-  "en-US": [
-    "zh_male_liufei_v2_saturn_bigtts","zh_male_xiaolei_v2_saturn_bigtts"
-  ],
+  "en-US": ["zh_male_liufei_v2_saturn_bigtts", "zh_male_xiaolei_v2_saturn_bigtts"],
 };
 
 export class VolcanoTTSClient {
@@ -356,8 +354,7 @@ export class VolcanoTTSClient {
             },
             speaker_info: {
               random_order: false,
-              speakers:
-                usedSpeakers,
+              speakers: usedSpeakers,
             },
           };
 
@@ -393,7 +390,7 @@ export class VolcanoTTSClient {
           // Add prologue audio at the beginning
           try {
             audioChunks.push(prologueAudio);
-            audioChunks.push(SILENCE)
+            audioChunks.push(SILENCE);
             this.logger?.info({
               msg: "Prologue audio added",
               locale,
@@ -487,7 +484,7 @@ export class VolcanoTTSClient {
 
               // Add epilogue audio at the end
               try {
-                audioChunks.push(SILENCE)
+                audioChunks.push(SILENCE);
                 audioChunks.push(epilogueAudio);
                 this.logger?.info({
                   msg: "Epilogue audio added",
