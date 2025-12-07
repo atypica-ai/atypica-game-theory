@@ -2,10 +2,6 @@ import { StudyUITools, ToolName, TStudyMessageWithTool } from "@/ai/tools/types"
 import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
-import {
-  consoleStreamWaitTime,
-  useProgressiveMessages,
-} from "@/app/(study)/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { ToolUIPart } from "ai";
@@ -19,19 +15,14 @@ export const ScoutTaskChatConsole = ({
     Pick<StudyUITools, ToolName.scoutTaskChat | ToolName.scoutSocialTrends>
   >;
 }) => {
-  const { studyUserChat } = useStudyContext();
+  const { studyUserChat, replay } = useStudyContext();
   const scoutUserChatToken = toolInvocation.input?.scoutUserChatToken;
   const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
   const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
   const backgroundRunning = useMemo(() => !!backgroundToken, [backgroundToken]);
 
-  const { replay } = useStudyContext();
-  const { partialMessages: messagesDisplay } = useProgressiveMessages({
-    uniqueId: `toolInvocation-${toolInvocation.toolCallId}`,
-    messages: messages,
-    enabled: replay,
-    fixedDuration: consoleStreamWaitTime(ToolName.scoutTaskChat),
-  });
+  // Console 不做回放，直接显示完整内容
+  const messagesDisplay = messages;
 
   const reloadMessages = useCallback(async () => {
     if (!scoutUserChatToken) return;

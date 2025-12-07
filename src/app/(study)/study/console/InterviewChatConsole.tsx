@@ -5,10 +5,6 @@ import {
   fetchAnalystInterviewForPersona,
 } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
-import {
-  consoleStreamWaitTime,
-  useProgressiveMessages,
-} from "@/app/(study)/study/hooks/useProgressiveMessages";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
@@ -112,7 +108,6 @@ export const InterviewChatConsole = ({
 const SingleInterviewChat = ({
   analyst,
   personaId,
-  toolInvocation,
 }: {
   analyst: Pick<Analyst, "id" | "role" | "topic">;
   personaId: number;
@@ -147,12 +142,8 @@ const SingleInterviewChat = ({
   }, [studyUserChat.token, personaId]);
 
   const { replay } = useStudyContext();
-  const { partialMessages: messagesDisplay } = useProgressiveMessages({
-    uniqueId: `toolInvocation-${toolInvocation.toolCallId}`,
-    messages: messages,
-    enabled: replay,
-    fixedDuration: consoleStreamWaitTime(ToolName.interviewChat),
-  });
+  // Console 不做回放，直接显示完整内容
+  const messagesDisplay = messages;
 
   // 添加定时器效果
   useEffect(() => {

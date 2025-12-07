@@ -1,15 +1,8 @@
-import { ToolName } from "@/ai/tools/types";
-import { getToolName, isToolUIPart, UIMessage } from "ai";
+import { UIMessage } from "ai";
 import { useEffect, useMemo, useState } from "react";
 
-export const consoleStreamWaitTime = (name?: ToolName) => {
-  const vals = {
-    [ToolName.interviewChat]: 15 * 1000,
-    [ToolName.scoutTaskChat]: 30 * 1000,
-    [ToolName.createSubAgent]: 20 * 1000,
-  } as Record<ToolName, number>;
-  return name && vals[name] ? vals[name] : 1000;
-};
+// 统一的回放步进时间：1秒/步
+const REPLAY_STEP_DURATION = 1000;
 
 export function useProgressiveMessages<T extends UIMessage>({
   uniqueId,
@@ -93,16 +86,8 @@ export function useProgressiveMessages<T extends UIMessage>({
       // timer = setTimeout(() => {
       // }, waitTime);
     } else {
-      let waitTime = 100;
-      if (fixedWaitTime) {
-        waitTime = fixedWaitTime;
-      } else if (parts) {
-        const part = parts[partIndex];
-        if (part && isToolUIPart(part)) {
-          const toolName = getToolName(part) as ToolName;
-          waitTime = consoleStreamWaitTime(toolName);
-        }
-      }
+      // 统一使用固定的步进时间
+      const waitTime = fixedWaitTime ?? REPLAY_STEP_DURATION;
       timer = setTimeout(() => {
         setPartIndex((prev) => prev + 1);
       }, waitTime);
