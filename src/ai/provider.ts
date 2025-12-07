@@ -167,6 +167,7 @@ export type LLMModelName =
   | "claude-haiku-4-5"
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
+  | "gemini-2.5-flash-image"
   | "gemini-3-pro-image"
   | "grok-4-1"
   | "grok-4-1-fast-non-reasoning"
@@ -274,6 +275,8 @@ export function llm(modelName: LLMModelName) {
       return vertex("gemini-2.5-flash");
     case "gemini-2.5-pro":
       return vertex("gemini-2.5-pro");
+    case "gemini-2.5-flash-image":
+      return vertexGlobal("gemini-2.5-flash-image");
     case "gemini-3-pro-image":
       return vertexGlobal("gemini-3-pro-image-preview");
     case "grok-4-1":
