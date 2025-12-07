@@ -5,6 +5,7 @@ import {
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
@@ -19,6 +20,7 @@ import {
   AnalystPodcast,
   AnalystPodcastExtra,
   AnalystReport,
+  AnalystReportExtra,
   ChatMessageAttachment,
   Persona,
   UserChat,
@@ -528,14 +530,15 @@ export async function userStopBackgroundStudyAction(
   });
 }
 
-export async function fetchAnalystReportByToken(
-  token: string,
-): Promise<
+export async function fetchAnalystReportByToken(token: string): Promise<
   ServerActionResult<
     Pick<
       AnalystReport,
-      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
-    > & { analyst: Analyst }
+      "id" | "token" | "analystId" | "generatedAt" | "createdAt" | "updatedAt"
+    > & {
+      analyst: Analyst;
+      coverCdnHttpUrl?: string;
+    }
   >
 > {
   const report = await prisma.analystReport.findUnique({
@@ -545,7 +548,7 @@ export async function fetchAnalystReportByToken(
       token: true,
       analystId: true,
       analyst: true,
-      coverSvg: true,
+      extra: true,
       generatedAt: true,
       createdAt: true,
       updatedAt: true,
@@ -558,9 +561,17 @@ export async function fetchAnalystReportByToken(
       message: "AnalystReport not found",
     };
   }
+
+  const { extra, ...rest } = report;
+  const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
+  const coverCdnHttpUrl = objectUrl ? proxiedImageCdnUrl({ objectUrl }) : undefined;
+
   return {
     success: true,
-    data: report,
+    data: {
+      ...rest,
+      coverCdnHttpUrl,
+    },
   };
 }
 
@@ -572,10 +583,12 @@ export async function fetchAnalystReportsOfStudyUserChat({
   includeOnePageHtml?: boolean;
 }): Promise<
   ServerActionResult<
-    Pick<
+    (Pick<
       AnalystReport,
-      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
-    >[]
+      "id" | "token" | "analystId" | "generatedAt" | "createdAt" | "updatedAt"
+    > & {
+      coverCdnHttpUrl?: string;
+    })[]
   >
 > {
   const reports = await prisma.analystReport.findMany({
@@ -589,7 +602,7 @@ export async function fetchAnalystReportsOfStudyUserChat({
       id: true,
       token: true,
       analystId: true,
-      coverSvg: true,
+      extra: true,
       generatedAt: true,
       createdAt: true,
       updatedAt: true,
@@ -597,9 +610,21 @@ export async function fetchAnalystReportsOfStudyUserChat({
     },
     orderBy: { id: "desc" },
   });
+
+  const reportsWithCoverUrls = reports.map((report) => {
+    const { extra, ...rest } = report;
+    const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
+    if (objectUrl) {
+      const coverCdnHttpUrl = proxiedImageCdnUrl({ objectUrl });
+      return { ...rest, coverCdnHttpUrl };
+    } else {
+      return { ...rest, coverCdnHttpUrl: undefined };
+    }
+  });
+
   return {
     success: true,
-    data: reports,
+    data: reportsWithCoverUrls,
   };
 }
 

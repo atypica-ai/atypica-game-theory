@@ -57,7 +57,8 @@ export async function generateMetadata({
 }
 
 async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
-  const { podcast, analyst, studyUserChat, report } = await getCachedPodcastData(podcastToken);
+  const { podcast, analyst, studyUserChat, report, coverCdnHttpUrl } =
+    await getCachedPodcastData(podcastToken);
 
   const title = podcast.extra.metadata?.title || studyUserChat.title;
 
@@ -67,7 +68,7 @@ async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
       analyst={analyst}
       title={title}
       studyUserChatToken={studyUserChat.token}
-      coverSvg={report?.coverSvg}
+      coverCdnHttpUrl={coverCdnHttpUrl}
       reportToken={report?.token}
     />
   );

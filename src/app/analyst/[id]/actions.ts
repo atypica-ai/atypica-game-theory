@@ -5,6 +5,7 @@ import { generateReport } from "@/ai/tools/experts/report";
 import { generateReportCoverSvg } from "@/ai/tools/experts/report/coverSvg";
 import { StatReporter } from "@/ai/tools/types";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
@@ -114,16 +115,15 @@ export async function batchBackgroundInterview({
   });
 }
 
-export async function fetchAnalystReports({
-  analystId,
-}: {
-  analystId: number;
-}): Promise<
+export async function fetchAnalystReports({ analystId }: { analystId: number }): Promise<
   ServerActionResult<
     (Pick<
       AnalystReport,
-      "id" | "token" | "analystId" | "coverSvg" | "generatedAt" | "createdAt" | "updatedAt"
-    > & { analyst: Analyst })[]
+      "id" | "token" | "analystId" | "generatedAt" | "createdAt" | "updatedAt"
+    > & {
+      analyst: Analyst;
+      coverCdnHttpUrl?: string;
+    })[]
   >
 > {
   return withAuth(async (user) => {
@@ -147,16 +147,28 @@ export async function fetchAnalystReports({
         token: true,
         analystId: true,
         analyst: true,
-        coverSvg: true,
+        extra: true,
         generatedAt: true,
         createdAt: true,
         updatedAt: true,
       },
       orderBy: { createdAt: "desc" },
     });
+
+    const reportsWithCoverUrls = reports.map((report) => {
+      const { extra, ...rest } = report;
+      const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
+      if (objectUrl) {
+        const coverCdnHttpUrl = proxiedImageCdnUrl({ objectUrl });
+        return { ...rest, coverCdnHttpUrl };
+      } else {
+        return { ...rest, coverCdnHttpUrl: undefined };
+      }
+    });
+
     return {
       success: true,
-      data: reports,
+      data: reportsWithCoverUrls,
     };
   });
 }

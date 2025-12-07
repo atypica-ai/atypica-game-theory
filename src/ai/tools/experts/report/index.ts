@@ -10,7 +10,6 @@ import { Analyst, AnalystKind, AnalystReport, AnalystReportExtra } from "@/prism
 import { prisma } from "@/prisma/prisma";
 import { FinishReason, ModelMessage, stepCountIs, streamText, tool } from "ai";
 import { generateReportCoverImage } from "./coverImage";
-import { generateReportCoverSvg } from "./coverSvg";
 import { generateAndSaveStudyLog } from "./studyLog";
 import {
   generateReportInputSchema,
@@ -129,7 +128,10 @@ export const generateReportTool = ({
           analyst,
           report,
           locale,
-          abortSignal,
+          abortSignal: AbortSignal.any([
+            abortSignal,
+            AbortSignal.timeout(180 * 1000), // 3 minutes timeout
+          ]),
           statReport,
           logger: reportLogger,
         }).catch(async (error) => {
@@ -146,17 +148,18 @@ export const generateReportTool = ({
             reportLogger.error(`Error generating screenshot for report ${report.token}: ${error}`); // screenshot 生成失败就算了
           });
         }),
-        generateReportCoverSvg({
-          analyst,
-          report,
-          instruction,
-          locale,
-          abortSignal,
-          statReport,
-          logger: reportLogger,
-        }).catch((error) => {
-          reportLogger.error(`Error generating cover for analyst ${analystId}: ${error}`); // cover 生成失败就算了
-        }),
+        // Deprecated: coverSvg generation is no longer used, replaced by coverImage
+        // generateReportCoverSvg({
+        //   analyst,
+        //   report,
+        //   instruction,
+        //   locale,
+        //   abortSignal,
+        //   statReport,
+        //   logger: reportLogger,
+        // }).catch((error) => {
+        //   reportLogger.error(`Error generating cover for analyst ${analystId}: ${error}`); // cover 生成失败就算了
+        // }),
       ]);
 
       return {

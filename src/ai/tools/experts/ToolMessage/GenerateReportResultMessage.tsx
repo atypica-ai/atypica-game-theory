@@ -6,6 +6,7 @@ import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export const GenerateReportResultMessage = ({
@@ -47,10 +48,23 @@ export const GenerateReportResultMessage = ({
         dangerouslySetInnerHTML={{ __html: report.coverSvg }}
       ></Link> */}
       <AnalystReportShareButton reportToken={report.token} download={!replay}>
-        <div
+        {/*<div
           className="block mb-4 w-[360px] h-[180px] [&>svg]:w-[360px] [&>svg]:h-[180px] cursor-pointer border border-input/50 rounded-md overflow-hidden"
           dangerouslySetInnerHTML={{ __html: report.coverSvg }}
-        ></div>
+        ></div>*/}
+        <div className="relative mb-4 w-[360px] h-[202.5px] cursor-pointer border border-input/50 rounded-md overflow-hidden">
+          {report.coverCdnHttpUrl ? (
+            <Image
+              loader={({ src }) => src}
+              src={report.coverCdnHttpUrl}
+              alt="Report cover"
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground"></div>
+          )}
+        </div>
       </AnalystReportShareButton>
     </div>
   );

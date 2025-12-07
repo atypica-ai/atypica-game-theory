@@ -10,6 +10,7 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
 import { ClipboardListIcon, FileType2Icon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { useStudyContext } from "../hooks/StudyContext";
 import { AnalystReportShareButton } from "./AnalystReportShareButton";
@@ -136,10 +137,19 @@ export default function ReportsListPanel({
                 download={download}
               >
                 <div>
-                  <div
-                    className="block w-full aspect-[2/1] cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-accent/10 [&>svg]:w-full [&>svg]:h-full"
-                    dangerouslySetInnerHTML={{ __html: report.coverSvg }}
-                  ></div>
+                  <div className="relative w-full aspect-[16/9] cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-accent/10">
+                    {report.coverCdnHttpUrl ? (
+                      <Image
+                        loader={({ src }) => src}
+                        src={report.coverCdnHttpUrl}
+                        alt="Report cover"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground"></div>
+                    )}
+                  </div>
                   <div className="mt-1 ml-1 font-mono text-xs text-muted-foreground">
                     {formatDistanceToNow(report.createdAt)}
                   </div>

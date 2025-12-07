@@ -76,9 +76,7 @@ export function ReportsList({ data, isLoading }: ReportsListProps) {
                       />
                     </Link>
                   ) : (
-                    <div className="w-40 h-24 shrink-0 rounded border border-dashed border-gray-300 flex items-center justify-center">
-                      <span className="text-xs text-gray-400">No Cover</span>
-                    </div>
+                    <div className="w-40 h-24 shrink-0 rounded border border-dashed border-gray-300 flex items-center justify-center"></div>
                   )}
 
                   {/* Text Content */}

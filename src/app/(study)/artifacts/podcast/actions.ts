@@ -1,4 +1,5 @@
 "use server";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { ServerActionResult } from "@/lib/serverAction";
 import {
   Analyst,
@@ -20,9 +21,9 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
       id: number;
       token: string;
       generatedAt: Date | null;
-      coverSvg: string;
       extra: AnalystReportExtra;
     };
+    coverCdnHttpUrl?: string;
   }>
 > {
   const podcast = await prisma.analystPodcast.findUnique({
@@ -67,7 +68,6 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
           id: true,
           token: true,
           generatedAt: true,
-          coverSvg: true,
           extra: true,
         },
       }),
@@ -95,6 +95,11 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
     };
   }
 
+  const coverObjectUrl = latestReport
+    ? (latestReport.extra as AnalystReportExtra).coverObjectUrl
+    : undefined;
+  const coverCdnHttpUrl = coverObjectUrl ? proxiedImageCdnUrl({ objectUrl: coverObjectUrl }) : undefined;
+
   return {
     success: true,
     data: {
@@ -119,10 +124,10 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
             id: latestReport.id,
             token: latestReport.token,
             generatedAt: latestReport.generatedAt,
-            coverSvg: latestReport.coverSvg,
             extra: latestReport.extra as AnalystReportExtra,
           }
         : undefined,
+      coverCdnHttpUrl,
     },
   };
 }
