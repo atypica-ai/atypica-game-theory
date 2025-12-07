@@ -119,6 +119,8 @@ export const proxiedImageLoader: ImageLoader = ({ src, width, quality }) => {
   return proxiedUrl;
 };
 
+// export const noImageLoader: ImageLoader = ({ src }) => src;
+
 export function safeAbort(abortController: AbortController) {
   try {
     abortController.abort();

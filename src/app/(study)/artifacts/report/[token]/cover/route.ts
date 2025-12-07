@@ -69,9 +69,12 @@ async function getImageGenObjectUrl(imageSrc: string): Promise<string | null> {
  */
 async function processImageToSquareJpg(imageBuffer: Buffer): Promise<Buffer> {
   const processedBuffer = await sharp(imageBuffer)
+    // .resize(2000, 2000, {
+    //   fit: "contain", // Fit within bounds, maintain aspect ratio with padding
+    //   background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background for letterboxing
+    // })
     .resize(2000, 2000, {
-      fit: "contain", // Fit within bounds, maintain aspect ratio with padding
-      background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background for letterboxing
+      fit: "cover",
     })
     .jpeg({
       quality: 90, // High quality JPEG

@@ -51,7 +51,7 @@ export async function generateMetadata({
 
   let image: string | undefined;
   if (report) {
-    image = `${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`;
+    image = `${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover?square=0`;
   }
   return generatePageMetadata({ title, description, locale, image });
 }

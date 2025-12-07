@@ -80,7 +80,7 @@ export async function generateMetadata({
     suffix: "...",
   }).replace(/[\n\r]/g, " ");
 
-  const image = `${getObjectCdnOrigin()}/artifacts/report/${reportToken}/cover`;
+  const image = `${getObjectCdnOrigin()}/artifacts/report/${reportToken}/cover?square=0`;
 
   return generatePageMetadata({ title, description, locale, image });
 }

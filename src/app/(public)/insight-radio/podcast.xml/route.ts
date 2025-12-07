@@ -18,6 +18,7 @@ export async function GET(request: Request) {
   // Parse locale from query parameter
   const url = new URL(request.url);
   const localeParam = url.searchParams.get("locale");
+  const platform = url.searchParams.get("platform"); // youtube | xiaoyuzhou | spotify | apple
   const locale = localeParam === "zh-CN" ? "zh-CN" : "en-US"; // Default to en-US
 
   // Fetch podcasts
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
       // Get cover image URL from report
       let coverImageUrl: string | undefined;
       if (item.report) {
-        coverImageUrl = `${getObjectCdnOrigin()}/artifacts/report/${item.report.token}/cover?square`;
+        coverImageUrl = `${getObjectCdnOrigin()}/artifacts/report/${item.report.token}/cover?square=${platform === "youtube" ? 0 : 1}`;
       }
 
       return {
