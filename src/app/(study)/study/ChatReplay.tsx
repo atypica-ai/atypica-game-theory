@@ -7,7 +7,8 @@ import { isToolOrDynamicToolUIPart } from "ai";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { StudyReplayIntro } from "./components/StudyReplayIntro";
 import { useStudyContext } from "./hooks/StudyContext";
 import { useProgressiveMessages } from "./hooks/useProgressiveMessages";
 import { SingleMessage } from "./SingleMessage";
@@ -17,6 +18,18 @@ export function ChatReplay() {
   const t = useTranslations("StudyPage.ChatReplay");
   const tCompliance = useTranslations("AICompliance");
   const { data: session } = useSession();
+
+  // 开场动画状态
+  const [introCompleted, setIntroCompleted] = useState(false);
+
+  // 获取第一条用户消息的文本
+  const firstUserMessageText = useMemo(() => {
+    const firstUserMessage = studyUserChat.messages.find((msg) => msg.role === "user");
+    if (!firstUserMessage?.parts) return "";
+    const textPart = firstUserMessage.parts.find((part) => part.type === "text");
+    return textPart && "text" in textPart ? textPart.text : "";
+  }, [studyUserChat.messages]);
+
   const {
     partialMessages: messagesDisplay,
     skipToEnd,
@@ -24,7 +37,7 @@ export function ChatReplay() {
   } = useProgressiveMessages({
     uniqueId: `studyUserChat-${studyUserChat.id}`,
     messages: studyUserChat.messages,
-    enabled: true,
+    enabled: introCompleted, // 开场完成后才开始回放
   });
 
   const isOwnStudy = session?.user?.id === studyUserChat.userId;
@@ -48,6 +61,14 @@ export function ChatReplay() {
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   return (
     <div className="flex-1 overflow-hidden relative">
+      {/* 开场动画 */}
+      {!introCompleted && (
+        <StudyReplayIntro
+          title={studyUserChat.title || "Research Study"}
+          firstUserMessage={firstUserMessageText}
+          onComplete={() => setIntroCompleted(true)}
+        />
+      )}
       <div
         ref={messagesContainerRef}
         className={cn(

@@ -57,6 +57,10 @@
       "startNewStudyDescription": "这项研究属于其他用户。创建您自己的研究来开始吧。",
       "startNewStudy": "开始新研究"
     },
+    "ReplayIntro": {
+      "skipButton": "跳过开场",
+      "starting": "即将开始"
+    },
     "SingleMessage": {
       "viewToolCall": "查看过程"
     },

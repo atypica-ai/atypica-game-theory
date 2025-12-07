@@ -57,6 +57,10 @@
       "startNewStudyDescription": "This study belongs to another user. Create your own study to get started.",
       "startNewStudy": "Start New Study"
     },
+    "ReplayIntro": {
+      "skipButton": "Skip Intro",
+      "starting": "Starting"
+    },
     "SingleMessage": {
       "viewToolCall": "View process"
     },

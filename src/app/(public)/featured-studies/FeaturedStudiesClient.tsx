@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
-import { ExtractServerActionData } from "@/lib/serverAction";
+import { ExtractServerActionData, ServerActionResultPagination } from "@/lib/serverAction";
 import { proxiedImageLoader } from "@/lib/utils";
 import { AnalystKind } from "@/prisma/client";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon } from "lucide-react";
@@ -15,8 +15,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchPublicFeaturedStudies } from "./actions";
 
-type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>["data"]["data"];
-type TPagination = ExtractServerActionData<typeof fetchPublicFeaturedStudies>["data"]["pagination"];
+type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
 
 export const SearchParamsConfig = {
   page: createParamConfig.number(1),
@@ -43,7 +42,7 @@ export default function FeaturedStudiesClient({
   const locale = useLocale();
   const t = useTranslations("FeaturedStudiesPage");
   const [studies, setStudies] = useState<TStudies>([]);
-  const [pagination, setPagination] = useState<TPagination | null>(null);
+  const [pagination, setPagination] = useState<ServerActionResultPagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const {
@@ -66,8 +65,10 @@ export default function FeaturedStudiesClient({
           pageSize: 12,
         });
         if (result.success) {
-          setStudies(result.data.data);
-          setPagination(result.data.pagination);
+          setStudies(result.data);
+          if (result.pagination) {
+            setPagination(result.pagination);
+          }
         }
       } finally {
         setIsLoading(false);
@@ -198,9 +199,7 @@ export default function FeaturedStudiesClient({
               </TabsTrigger>
             ))}
           </TabsList>
-          <TabsContent value={activeAnalystKind}>
-            {renderStudyGrid(studies)}
-          </TabsContent>
+          <TabsContent value={activeAnalystKind}>{renderStudyGrid(studies)}</TabsContent>
         </Tabs>
 
         {/* Mobile view: Dropdown select */}
@@ -219,9 +218,7 @@ export default function FeaturedStudiesClient({
         </div>
 
         {/* Mobile view: Content area */}
-        <div className="md:hidden w-full mt-4">
-          {renderStudyGrid(studies)}
-        </div>
+        <div className="md:hidden w-full mt-4">{renderStudyGrid(studies)}</div>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
