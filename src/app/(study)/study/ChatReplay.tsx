@@ -1,13 +1,14 @@
+import { ToolName } from "@/ai/tools/types";
 import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
-import { isToolOrDynamicToolUIPart } from "ai";
+import { isToolOrDynamicToolUIPart, isToolUIPart } from "ai";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { StudyReplayIntro } from "./components/StudyReplayIntro";
 import { useStudyContext } from "./hooks/StudyContext";
 import { useProgressiveMessages } from "./hooks/useProgressiveMessages";
@@ -33,6 +34,7 @@ export function ChatReplay() {
   const {
     partialMessages: messagesDisplay,
     skipToEnd,
+    jumpToProgress,
     isCompleted,
   } = useProgressiveMessages({
     uniqueId: `studyUserChat-${studyUserChat.id}`,
@@ -59,6 +61,59 @@ export function ChatReplay() {
   }, [messagesDisplay, setLastToolInvocation]);
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
+
+  // 找到最后一个 report tool 的 toolCallId
+  const lastReportToolCallId = useMemo(() => {
+    for (let i = studyUserChat.messages.length - 1; i >= 0; i--) {
+      const message = studyUserChat.messages[i];
+      if (!message.parts) continue;
+      for (let j = message.parts.length - 1; j >= 0; j--) {
+        const part = message.parts[j];
+        if (
+          isToolUIPart(part) &&
+          part.type === `tool-${ToolName.generateReport}` &&
+          part.state === "output-available"
+        ) {
+          return part.toolCallId;
+        }
+      }
+    }
+    return null;
+  }, [studyUserChat.messages]);
+
+  // 滚动到最后一个 report
+  const scrollToLastReport = useCallback(() => {
+    if (!lastReportToolCallId) return;
+
+    // 通过 data-tool-call-id 找到 report 元素
+    const reportElement = messagesContainerRef.current?.querySelector(
+      `[data-tool-call-id="${lastReportToolCallId}"]`,
+    );
+    if (reportElement) {
+      reportElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [lastReportToolCallId, messagesContainerRef]);
+
+  // 自定义的 skipToEnd，完成后滚动到 report
+  const handleSkipToEnd = useCallback(() => {
+    skipToEnd();
+    // 等待消息渲染完成后滚动
+    setTimeout(() => {
+      scrollToLastReport();
+    }, 300);
+  }, [skipToEnd, scrollToLastReport]);
+
+  // 计算进度：基于 parts 数量
+  const totalParts = useMemo(() => {
+    return studyUserChat.messages.reduce((sum, msg) => sum + (msg.parts?.length || 1), 0);
+  }, [studyUserChat.messages]);
+
+  const displayedParts = useMemo(() => {
+    return messagesDisplay.reduce((sum, msg) => sum + (msg.parts?.length || 1), 0);
+  }, [messagesDisplay]);
+
+  const progress = totalParts > 0 ? (displayedParts / totalParts) * 100 : 0;
+
   return (
     <div className="flex-1 overflow-hidden relative">
       {/* 开场动画 */}
@@ -87,7 +142,7 @@ export function ChatReplay() {
               ) : undefined
             }
             isLastMessage={index === messagesDisplay.length - 1}
-          ></SingleMessage>
+          />
         ))}
 
         {/* AI Compliance Disclaimer */}
@@ -126,10 +181,64 @@ export function ChatReplay() {
       </div>
       {!isCompleted && (
         // StudyPageClient 的 left panel 容器是 relative 的
-        <div className="flex justify-center absolute bottom-4 left-1/2 -translate-x-1/2">
-          <Button variant="outline" size="sm" onClick={skipToEnd}>
-            {t("skipToEnd")}
-          </Button>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md">
+          <div className="bg-background/95 backdrop-blur-sm border rounded-full shadow-lg pl-4 pr-2 py-1.5 flex items-center gap-3">
+            {/* 进度信息 */}
+            <div className="text-[10px] text-muted-foreground whitespace-nowrap">
+              {Math.round(progress)}%
+            </div>
+
+            {/* 可拖动进度条 */}
+            <div className="flex-1 relative group">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={progress}
+                onChange={(e) => jumpToProgress(Number(e.target.value) / 100)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div className="relative h-1.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 bg-primary transition-all duration-300 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              {/* 拖动手柄 */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 shadow-lg"
+                style={{ left: `calc(${progress}% - 6px)` }}
+              />
+            </div>
+
+            {/* 步数信息 */}
+            <div className="text-[10px] text-muted-foreground whitespace-nowrap">
+              {displayedParts}/{totalParts}
+            </div>
+
+            {/* Skip 图标按钮 */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSkipToEnd}
+              className="h-8 w-8 rounded-full shrink-0"
+              title={t("skipToEnd")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-3 h-3"
+              >
+                <polygon points="5 4 15 12 5 20 5 4" />
+                <line x1="19" y1="5" x2="19" y2="19" />
+              </svg>
+            </Button>
+          </div>
         </div>
       )}
     </div>

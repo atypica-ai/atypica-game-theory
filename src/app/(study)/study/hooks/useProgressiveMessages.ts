@@ -17,6 +17,7 @@ export function useProgressiveMessages<T extends UIMessage>({
 }): {
   partialMessages: T[];
   skipToEnd: () => void;
+  jumpToProgress: (progress: number) => void;
   isCompleted: boolean;
 } {
   const [messageIndex, setMessageIndex] = useState(0);
@@ -101,9 +102,38 @@ export function useProgressiveMessages<T extends UIMessage>({
     setIsCompleted(true);
   };
 
+  const jumpToProgress = (progress: number) => {
+    // progress 是 0-1 之间的数值
+    const targetProgress = Math.max(0, Math.min(1, progress));
+
+    // 计算总的 parts 数量
+    let totalParts = 0;
+    messages.forEach((msg) => {
+      totalParts += msg.parts?.length || 1;
+    });
+
+    const targetPartIndex = Math.floor(totalParts * targetProgress);
+
+    // 找到对应的 messageIndex 和 partIndex
+    let currentPartCount = 0;
+    for (let i = 0; i < messages.length; i++) {
+      const partsCount = messages[i].parts?.length || 1;
+      if (currentPartCount + partsCount > targetPartIndex) {
+        setMessageIndex(i);
+        setPartIndex(targetPartIndex - currentPartCount);
+        return;
+      }
+      currentPartCount += partsCount;
+    }
+
+    // 如果超出范围，跳到最后
+    setIsCompleted(true);
+  };
+
   return {
     partialMessages,
     skipToEnd,
+    jumpToProgress,
     isCompleted,
   };
 }

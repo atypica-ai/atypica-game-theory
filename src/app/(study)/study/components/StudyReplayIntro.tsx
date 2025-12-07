@@ -93,7 +93,7 @@ export function StudyReplayIntro({ title, firstUserMessage, onComplete }: StudyR
             if (e.target === e.currentTarget) handleSkip();
           }}
         >
-          <div className="relative w-full max-w-3xl px-4 md:px-8">
+          <div className="relative w-full max-w-3xl">
             {/* 跳过按钮 */}
             <Button
               variant="ghost"
@@ -111,7 +111,7 @@ export function StudyReplayIntro({ title, firstUserMessage, onComplete }: StudyR
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -20, opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-center"
+                className="text-center px-4 md:px-8"
               >
                 <div className="mb-8 text-sm text-white/50 uppercase tracking-wider">
                   Research Study
@@ -133,7 +133,7 @@ export function StudyReplayIntro({ title, firstUserMessage, onComplete }: StudyR
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -20, opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-center max-h-[80vh] overflow-y-auto scrollbar-thin"
+                className="text-center px-4 md:px-8 max-h-[80vh] overflow-y-auto scrollbar-thin"
               >
                 <div className="mb-4 md:mb-6 text-xs md:text-sm text-white/50 uppercase tracking-wider">
                   Research Brief
@@ -155,7 +155,7 @@ export function StudyReplayIntro({ title, firstUserMessage, onComplete }: StudyR
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 1.1, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="text-center space-y-8"
+                className="text-center px-4 md:px-8 space-y-8"
               >
                 <div className="text-sm text-white/50 uppercase tracking-wider">
                   {t("starting")}

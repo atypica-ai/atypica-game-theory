@@ -50,6 +50,7 @@
     },
     "ChatReplay": {
       "skipToEnd": "跳到结尾",
+      "steps": "步",
       "continueStudyTitle": "继续您的研究",
       "continueStudyDescription": "从上次停止的地方继续，深入探索您的研究主题。",
       "continueStudy": "继续研究",

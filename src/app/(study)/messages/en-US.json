@@ -50,6 +50,7 @@
     },
     "ChatReplay": {
       "skipToEnd": "Skip to End",
+      "steps": "steps",
       "continueStudyTitle": "Continue Your Study",
       "continueStudyDescription": "Pick up where you left off and continue exploring your study topic.",
       "continueStudy": "Continue Study",

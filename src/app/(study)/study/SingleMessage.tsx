@@ -63,6 +63,9 @@ const ToolInvocationMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
   return (
     <>
       <Collapsible
+        data-tool-call-id={
+          isToolOrDynamicToolUIPart(toolInvocation) ? toolInvocation.toolCallId : undefined
+        }
         className={cn(
           "text-xs font-mono rounded-lg p-2",
           "bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700/50",
