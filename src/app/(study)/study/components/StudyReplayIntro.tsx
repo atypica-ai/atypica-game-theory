@@ -12,7 +12,7 @@ interface StudyReplayIntroProps {
   onComplete: () => void;
 }
 
-const COUNTDOWN_SECONDS = 2;
+const COUNTDOWN_FROM = 3;
 
 enum IntroStage {
   Title = "title",
@@ -28,7 +28,7 @@ enum IntroStage {
 export function StudyReplayIntro({ title, firstUserMessage, onComplete }: StudyReplayIntroProps) {
   const t = useTranslations("StudyPage.ReplayIntro");
   const [stage, setStage] = useState<IntroStage>(IntroStage.Title);
-  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
+  const [countdown, setCountdown] = useState(COUNTDOWN_FROM);
   const [skipToEnd, setSkipToEnd] = useState(false);
 
   // ESC 键跳过
@@ -50,13 +50,14 @@ export function StudyReplayIntro({ title, firstUserMessage, onComplete }: StudyR
     if (countdown <= 0) {
       setStage(IntroStage.Complete);
       // 短暂延迟后调用完成回调，让淡出动画完成
-      setTimeout(() => onComplete(), 300);
+      setTimeout(() => onComplete(), 100);
       return;
     }
 
+    // 倒计时, 三倍速快进, 300ms 跳一次
     const timer = setInterval(() => {
       setCountdown((prev) => prev - 1);
-    }, 1000);
+    }, 300);
 
     return () => clearInterval(timer);
   }, [stage, countdown, onComplete]);
@@ -76,7 +77,7 @@ export function StudyReplayIntro({ title, firstUserMessage, onComplete }: StudyR
 
   const handleUserMessageComplete = () => {
     if (!skipToEnd) {
-      setTimeout(() => setStage(IntroStage.Countdown), 300);
+      setTimeout(() => setStage(IntroStage.Countdown), 1500);
     }
   };
 
@@ -151,54 +152,31 @@ export function StudyReplayIntro({ title, firstUserMessage, onComplete }: StudyR
             {/* 倒计时阶段 */}
             {stage === IntroStage.Countdown && (
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 1.1, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="text-center px-4 md:px-8 space-y-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-center px-4 md:px-8 space-y-6"
               >
-                <div className="text-sm text-white/50 uppercase tracking-wider">
-                  {t("starting")}
-                </div>
-
-                {/* 倒计时数字 */}
-                <motion.div
-                  key={countdown}
-                  initial={{ scale: 1.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-8xl md:text-9xl font-bold text-white"
-                >
-                  {countdown}
-                </motion.div>
-
                 {/* 进度条 */}
-                <div className="w-full max-w-md mx-auto h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-full max-w-sm mx-auto h-1 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: "0%" }}
                     animate={{
-                      width: `${((COUNTDOWN_SECONDS - countdown) / COUNTDOWN_SECONDS) * 100}%`,
+                      width: `${((COUNTDOWN_FROM - countdown) / COUNTDOWN_FROM) * 100}%`,
                     }}
                     transition={{ duration: 1, ease: "linear" }}
-                    className="h-full bg-linear-to-r from-emerald-500 via-green-500 to-teal-500"
+                    className="h-full bg-linear-to-r from-emerald-500/60 via-green-500/60 to-teal-500/60"
                   />
                 </div>
 
-                {/* 播放图标动画 */}
-                <motion.div
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    opacity: [0.5, 1, 0.5],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="flex justify-center"
-                >
-                  <PlayIcon className="size-12 text-white/70" />
-                </motion.div>
+                {/* 倒计时提示 - 更低调 */}
+                <div className="flex items-center justify-center gap-3 text-white/40">
+                  <PlayIcon className="size-4" />
+                  <span className="text-sm">
+                    {t("starting")} {countdown}
+                  </span>
+                </div>
               </motion.div>
             )}
           </div>
