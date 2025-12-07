@@ -1,5 +1,6 @@
 "use client";
 import { PaginationInfo } from "@/app/admin/types";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -207,7 +208,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                 </CardHeader>
                 <CardContent>
                   {/* Cover Image */}
-                  {report.coverUrl ? (
+                  {report.coverUrl && (
                     <div className="relative w-full aspect-video overflow-hidden rounded-lg mb-4">
                       <Image
                         loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
@@ -218,20 +219,35 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                         className="object-cover"
                       />
                     </div>
-                  ) : (
-                    <div className="mb-4">
+                  )}
+
+                  {/* Generate Cover Button - Always visible */}
+                  <div className="mb-4">
+                    <ConfirmDialog
+                      title="Regenerate Cover Image"
+                      description={
+                        report.coverUrl
+                          ? "This will replace the existing cover image. Are you sure?"
+                          : "Generate a new cover image for this report?"
+                      }
+                      onConfirm={() => handleGenerateScreenshot(report.id)}
+                      confirmLabel="Generate"
+                    >
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleGenerateScreenshot(report.id)}
                         disabled={generatingScreenshots.has(report.id)}
                         className="flex items-center gap-1"
                       >
                         <CameraIcon className="h-3 w-3" />
-                        {generatingScreenshots.has(report.id) ? "Generating..." : "Generate Cover"}
+                        {generatingScreenshots.has(report.id)
+                          ? "Generating..."
+                          : report.coverUrl
+                            ? "Regenerate Cover"
+                            : "Generate Cover"}
                       </Button>
-                    </div>
-                  )}
+                    </ConfirmDialog>
+                  </div>
 
                   {/* Topic Section */}
                   <div className="mb-4">
@@ -325,7 +341,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                         // loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
                         // src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`}
                         // 用 cdn 域名会让 /_next/image 的后端超时（能成功请求的，就是时间有点久），而且其实也没必要这里用 CDN，拿掉即可
-                        src={`/artifacts/report/${report.token}/cover`}
+                        src={`/artifacts/report/${report.token}/cover?inContent=1&square=1`}
                         alt="report cover"
                         fill
                         className="object-cover"

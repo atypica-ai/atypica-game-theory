@@ -4,10 +4,11 @@ import { reportHTMLPrologue, reportHTMLSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
-import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
+// import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { Analyst, AnalystKind, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { FinishReason, ModelMessage, stepCountIs, streamText, tool } from "ai";
+import { generateReportCoverImage } from "./coverImage";
 import { generateReportCoverSvg } from "./coverSvg";
 import { generateAndSaveStudyLog } from "./studyLog";
 import {
@@ -15,6 +16,7 @@ import {
   generateReportOutputSchema,
   type GenerateReportResult,
 } from "./types";
+import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 
 /**
  * Clean up markdown code blocks that AI models (especially Gemini) often add around HTML content
@@ -122,12 +124,26 @@ export const generateReportTool = ({
       }
 
       await Promise.all([
-        generateReportScreenshot({
-          ...report,
-          extra: report.extra as AnalystReportExtra,
+        generateReportCoverImage({
           analyst,
+          report,
+          locale,
+          abortSignal,
+          statReport,
+          logger: reportLogger,
         }).catch((error) => {
-          reportLogger.error(`Error generating screenshot for report ${report.token}: ${error}`); // screenshot 生成失败就算了
+          reportLogger.error({
+            msg: `Error generating cover image for report ${report.token}, fallback to screenshot`,
+            error: error.message,
+          });
+          // Fallback to screenshot
+          return generateReportScreenshot({
+            ...report,
+            extra: report.extra as AnalystReportExtra,
+            analyst,
+          }).catch((error) => {
+            reportLogger.error(`Error generating screenshot for report ${report.token}: ${error}`); // screenshot 生成失败就算了
+          });
         }),
         generateReportCoverSvg({
           analyst,

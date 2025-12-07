@@ -78,11 +78,11 @@ export type UserLastLogin = Partial<{
 
 export type AnalystReportExtra = Partial<{
   coverObjectUrl: string;
-  s3SignedCoverObjectUrl: string;
-  s3SignedCoverObjectUrlExpiresAt: number; // timestamp millis
+  s3SignedCoverObjectUrl: string | null;
+  s3SignedCoverObjectUrlExpiresAt: number | null; // timestamp millis
   pdfObjectUrl: string;
-  s3SignedPdfObjectUrl: string;
-  s3SignedPdfObjectUrlExpiresAt: number; // timestamp millis
+  s3SignedPdfObjectUrl: string | null;
+  s3SignedPdfObjectUrlExpiresAt: number | null; // timestamp millis
 }>;
 
 export type UserChatExtra = Partial<{

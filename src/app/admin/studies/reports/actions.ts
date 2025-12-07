@@ -1,11 +1,16 @@
 "use server";
-import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
+import { generateReportCoverImage } from "@/ai/tools/experts/report/coverImage";
+// import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
+import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystReport, AnalystReportExtra, User } from "@/prisma/client";
+import { Analyst, AnalystReport, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
+import { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 // Get all analyst reports with pagination
@@ -114,47 +119,58 @@ export async function fetchAnalystReportsAction(
 // Generate screenshot for an analyst report
 export async function adminGenerateScreenshotAction(
   reportId: number,
-): Promise<ServerActionResult<string>> {
+): Promise<ServerActionResult<void>> {
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
-  const report = (await prisma.analystReport.findUnique({
+  const report = (await prisma.analystReport.findUniqueOrThrow({
     where: { id: reportId },
-    include: {
+    select: {
+      id: true,
+      token: true,
       analyst: {
         select: {
-          userId: true,
           id: true,
+          locale: true,
           topic: true,
+          studySummary: true,
+          studyLog: true,
+          brief: true,
         },
       },
+      // extra: true,
     },
-  })) as Omit<AnalystReport, "extra"> & {
-    extra: AnalystReportExtra;
-    analyst: {
-      userId: number;
-      id: number;
-      topic: string;
-    };
+  })) as Pick<AnalystReport, "id" | "token"> & {
+    // extra: AnalystReportExtra;
+    analyst: Pick<Analyst, "id" | "locale" | "topic" | "studySummary" | "studyLog" | "brief">;
   };
 
-  if (!report) {
-    return {
-      success: false,
-      message: "Analyst report not found",
-    };
-  }
+  // Determine locale from analyst or use default
+  const locale: Locale =
+    report.analyst.locale === "zh-CN"
+      ? "zh-CN"
+      : report.analyst.locale === "en-US"
+        ? "en-US"
+        : await getLocale();
 
-  try {
-    const { coverUrl } = await generateReportScreenshot(report);
-    revalidatePath("/admin/studies/reports");
-    return {
-      success: true,
-      data: coverUrl,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: (error as Error).message,
-    };
-  }
+  // Empty stat reporter for admin (free generation)
+  const statReport = async () => {};
+  const abortSignal = AbortSignal.timeout(300_000); // 5 minutes timeout
+
+  // const { coverUrl } = await generateReportScreenshot(report);
+  waitUntil(
+    generateReportCoverImage({
+      analyst: report.analyst,
+      report,
+      locale,
+      abortSignal,
+      statReport,
+      logger: rootLogger.child({ reportId, analystId: report.analyst.id }),
+    }),
+  );
+
+  revalidatePath("/admin/studies/reports");
+  return {
+    success: true,
+    data: undefined,
+  };
 }
