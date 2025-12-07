@@ -1,4 +1,5 @@
 "use client";
+import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
 import { PaginationInfo } from "@/app/admin/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
@@ -11,10 +12,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
+import { Switch } from "@/components/ui/switch";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { formatDate, proxiedImageLoader } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { CameraIcon, ChevronDown, ChevronUp, ExternalLinkIcon, SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
@@ -158,6 +161,14 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
             className="pl-8"
           />
         </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="featured-only"
+            checked={featuredOnly}
+            onCheckedChange={(checked) => setParams({ featured: checked, page: 1 })}
+          />
+          <Label htmlFor="featured-only">Featured only</Label>
+        </div>
         <Button type="submit">Search</Button>
         {searchQuery && (
           <Button
@@ -208,12 +219,11 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                 </CardHeader>
                 <CardContent>
                   {/* Cover Image */}
-                  {report.coverUrl && (
+                  {report.coverCdnHttpUrl && (
                     <div className="relative w-full aspect-video overflow-hidden rounded-lg mb-4">
                       <Image
-                        loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
-                        src={report.coverUrl}
-                        // src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`}
+                        loader={({ src }) => src} // 已经是 cdn url，不再需要 loader
+                        src={report.coverCdnHttpUrl}
                         alt="report cover"
                         fill
                         className="object-cover"
@@ -226,7 +236,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                     <ConfirmDialog
                       title="Regenerate Cover Image"
                       description={
-                        report.coverUrl
+                        report.coverCdnHttpUrl
                           ? "This will replace the existing cover image. Are you sure?"
                           : "Generate a new cover image for this report?"
                       }
@@ -242,7 +252,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                         <CameraIcon className="h-3 w-3" />
                         {generatingScreenshots.has(report.id)
                           ? "Generating..."
-                          : report.coverUrl
+                          : report.coverCdnHttpUrl
                             ? "Regenerate Cover"
                             : "Generate Cover"}
                       </Button>
@@ -341,7 +351,8 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                         // loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
                         // src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`}
                         // 用 cdn 域名会让 /_next/image 的后端超时（能成功请求的，就是时间有点久），而且其实也没必要这里用 CDN，拿掉即可
-                        src={`/artifacts/report/${report.token}/cover?inContent=1&square=1`}
+                        loader={({ src }) => src} // 覆盖 loader，不需要再进行处理, 因为不再需要 /_next/image 去取图片，这里可以用 CDN Origin 了
+                        src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover?inContent=1&square=1`}
                         alt="report cover"
                         fill
                         className="object-cover"
