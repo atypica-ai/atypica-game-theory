@@ -1,7 +1,7 @@
 import "server-only";
 
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
-import { llm } from "@/ai/provider";
+import { llm, LLMModelName } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";
@@ -163,11 +163,12 @@ export async function generateReportCoverImage({
 } & AgentToolConfigArgs): Promise<{
   coverUrl: string;
 }> {
-  logger.info({ msg: "Starting cover image generation with Gemini 3 Pro Image" });
+  const modelName: LLMModelName =
+    locale === "zh-CN" ? "gemini-3-pro-image" : "gemini-2.5-flash-image";
+  logger.info({ msg: "Starting cover image generation", modelName });
   const promise = new Promise<{ text: string; files: GeneratedFile[] }>(async (resolve, reject) => {
     const response = streamText({
-      model: llm("gemini-3-pro-image"),
-      // model: llm("gemini-2.5-flash-image"),
+      model: llm(modelName),
       providerOptions: {
         google: {
           responseModalities: ["IMAGE"],
@@ -182,10 +183,11 @@ export async function generateReportCoverImage({
         } satisfies GoogleGenerativeAIProviderOptions,
       },
       temperature: 0,
-      system: coverImageSystemPrompt({ locale, englishOnly: false }),
+      system: coverImageSystemPrompt({ locale, englishOnly: modelName !== "gemini-3-pro-image" }),
       prompt: coverImageProloguePrompt({ locale, analyst }),
-      abortSignal: abortSignal || AbortSignal.timeout(300 * 1000), // 5 minutes timeout
+      abortSignal, // 5 minutes timeout
       stopWhen: stepCountIs(5),
+      maxRetries: 3,
       onChunk: ({ chunk }) => {
         logger.debug({
           msg: "generateReportCoverImage streamText onChunk",
@@ -195,6 +197,7 @@ export async function generateReportCoverImage({
       onStepFinish: async (step) => {
         logger.info({
           msg: "generateReportCoverImage streamText onStepFinish",
+          modelName,
           finishReason: step.finishReason,
           text: step.text,
           reasoning: step.reasoningText,
@@ -202,7 +205,12 @@ export async function generateReportCoverImage({
         });
       },
       onFinish: async ({ text, files, usage }) => {
-        logger.info({ msg: `generateReportCoverImage streamText onFinish`, text, usage });
+        logger.info({
+          msg: `generateReportCoverImage streamText onFinish`,
+          modelName,
+          text,
+          usage,
+        });
         if (files.length > 0 && statReport) {
           // const tokens = usage.totalTokens * 5;
           // 现在的 1k 配置下，ano banana 一张图大概 0.3 元，nano banana pro 一张图大概 1 元，使用固定 tokens
@@ -215,7 +223,10 @@ export async function generateReportCoverImage({
         resolve({ text, files });
       },
       onError: ({ error }) => {
-        logger.info(`generateReportCoverImage streamText onError: ${(error as Error).message}`);
+        logger.info({
+          msg: `generateReportCoverImage streamText onError: ${(error as Error).message}`,
+          modelName,
+        });
         reject(error);
       },
     });
@@ -236,10 +247,28 @@ export async function generateReportCoverImage({
     }
   }
   if (!imageFile) {
-    throw new Error("No image file generated from Gemini 3 Pro Image");
+    // ⚠️ TODO: 在 Nano banana 3 pro 稳定了以后，这个要拿掉
+    if (modelName === "gemini-3-pro-image") {
+      logger.error({
+        msg: "No image file generated, will retry with gemini 2.5 flash image",
+        modelName,
+      });
+      return await generateReportCoverImage({
+        ratio,
+        analyst,
+        report,
+        locale: "en-US", // 使用 en-US 强制使用 gemini 2.5 flash image
+        abortSignal,
+        statReport,
+        logger,
+      });
+    } else {
+      logger.error({ msg: "No image file generated", modelName });
+      throw new Error("No image file generated");
+    }
   }
 
-  logger.info({ msg: "Image generated successfully", mediaType: imageFile.mediaType });
+  logger.info({ msg: "Image generated successfully", mediaType: imageFile.mediaType, modelName });
   // 使用图片 base64 作为 hash 内容
   const hash = createHash("sha256").update(imageFile.base64).digest("hex").substring(0, 40);
   const { getObjectUrl, objectUrl } = await uploadToS3({
@@ -258,7 +287,7 @@ export async function generateReportCoverImage({
     } satisfies AnalystReportExtra,
   });
 
-  logger.info({ msg: "Cover image uploaded to S3", objectUrl });
+  // logger.info({ msg: "Cover image uploaded to S3", objectUrl });
   return {
     coverUrl: getObjectUrl,
   };
