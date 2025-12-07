@@ -1,18 +1,35 @@
 "use client";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface CharByCharTypewriterProps {
   text: string;
-  speed?: number; // 每个字符的显示间隔（毫秒）
+  speed?: number; // 每个单元的显示间隔（毫秒）
   className?: string;
   onComplete?: () => void;
   skipToEnd?: boolean; // 外部控制跳过
 }
 
+// 检测文本是否主要是中文（或其他 CJK 字符）
+function isMostlyCJK(text: string): boolean {
+  const cjkRegex = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/g;
+  const cjkMatches = text.match(cjkRegex);
+  const cjkCount = cjkMatches ? cjkMatches.length : 0;
+  return cjkCount / text.length > 0.3; // 超过30%是中文就按字符分割
+}
+
+// 按单词分割英文文本（保留空格和标点）
+function splitIntoWords(text: string): string[] {
+  // 匹配单词、空格、标点等
+  const regex = /\S+|\s+/g;
+  return text.match(regex) || [];
+}
+
 /**
- * 逐字符打字机效果组件
- * 默认速度：120ms/字符
+ * 智能打字机效果组件
+ * - 中文/CJK：按字符显示
+ * - 英文：按单词显示
+ * 默认速度：120ms/单元
  */
 export function CharByCharTypewriter({
   text,
@@ -21,39 +38,47 @@ export function CharByCharTypewriter({
   onComplete,
   skipToEnd = false,
 }: CharByCharTypewriterProps) {
-  const [displayedChars, setDisplayedChars] = useState(0);
-  const chars = Array.from(text); // 正确处理 emoji 和多字节字符
+  const [displayedUnits, setDisplayedUnits] = useState(0);
+
+  // 根据语言智能分割文本
+  const units = useMemo(() => {
+    if (isMostlyCJK(text)) {
+      return Array.from(text); // 中文按字符
+    } else {
+      return splitIntoWords(text); // 英文按单词
+    }
+  }, [text]);
 
   useEffect(() => {
     if (skipToEnd) {
-      setDisplayedChars(chars.length);
+      setDisplayedUnits(units.length);
       onComplete?.();
       return;
     }
 
-    if (displayedChars >= chars.length) {
+    if (displayedUnits >= units.length) {
       onComplete?.();
       return;
     }
 
     const timer = setTimeout(() => {
-      setDisplayedChars((prev) => prev + 1);
+      setDisplayedUnits((prev) => prev + 1);
     }, speed);
 
     return () => clearTimeout(timer);
-  }, [displayedChars, chars.length, speed, skipToEnd, onComplete]);
+  }, [displayedUnits, units.length, speed, skipToEnd, onComplete]);
 
   return (
     <div className={className}>
-      {chars.map((char, index) => (
+      {units.map((unit, index) => (
         <motion.span
           key={index}
           initial={{ opacity: 0 }}
-          animate={{ opacity: index < displayedChars ? 1 : 0 }}
+          animate={{ opacity: index < displayedUnits ? 1 : 0 }}
           transition={{ duration: 0.1 }}
           style={{ display: "inline-block", whiteSpace: "pre" }}
         >
-          {char}
+          {unit}
         </motion.span>
       ))}
     </div>
