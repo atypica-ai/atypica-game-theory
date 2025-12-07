@@ -14,14 +14,29 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-async function FeaturedPodcastsPage() {
-  return <FeaturedPodcastsClient />;
+async function FeaturedPodcastsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const initialSearchParams: Record<string, string | number> = {};
+
+  if (params.page && typeof params.page === "string") {
+    initialSearchParams.page = params.page;
+  }
+
+  return <FeaturedPodcastsClient initialSearchParams={initialSearchParams} />;
 }
 
-export default async function FeaturedPodcastsPageWithLoading() {
+export default async function FeaturedPodcastsPageWithLoading({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <FeaturedPodcastsPage />
+      <FeaturedPodcastsPage searchParams={searchParams} />
     </Suspense>
   );
 }

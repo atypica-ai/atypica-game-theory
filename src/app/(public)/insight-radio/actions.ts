@@ -107,7 +107,15 @@ export const pickRandomFeaturedPodcast = unstable_cache(
  * Single query with proper filtering
  */
 export const fetchFeaturedPodcasts = unstable_cache(
-  async function ({ locale, limit = 20 }: { locale: Locale; limit?: number }): Promise<
+  async function ({
+    locale,
+    page = 1,
+    pageSize = 20,
+  }: {
+    locale: Locale;
+    page?: number;
+    pageSize?: number;
+  }): Promise<
     ServerActionResult<
       {
         // Flattened fields
@@ -201,19 +209,24 @@ export const fetchFeaturedPodcasts = unstable_cache(
     }
 
     // Convert to array and sort by featured study order
-    const validPodcasts = Array.from(podcastsByAnalyst.values())
+    const allValidPodcasts = Array.from(podcastsByAnalyst.values())
       .filter((p) => p.analyst.studyUserChat !== null && p.analyst.featuredStudy !== null)
       .sort((a, b) => {
         // Sort by featured study id (desc)
         const aId = a.analyst.featuredStudy?.id || 0;
         const bId = b.analyst.featuredStudy?.id || 0;
         return bId - aId;
-      })
-      .slice(0, limit);
+      });
+
+    // Apply pagination
+    const totalCount = allValidPodcasts.length;
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const skip = (page - 1) * pageSize;
+    const paginatedPodcasts = allValidPodcasts.slice(skip, skip + pageSize);
 
     return {
       success: true,
-      data: validPodcasts.map((p) => ({
+      data: paginatedPodcasts.map((p) => ({
         // Flatten the three key objects
         podcast: {
           token: p.token,
@@ -233,6 +246,12 @@ export const fetchFeaturedPodcasts = unstable_cache(
           extra: AnalystReportExtra;
         } | null,
       })),
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages,
+      },
     };
   },
   ["featured-podcasts"],

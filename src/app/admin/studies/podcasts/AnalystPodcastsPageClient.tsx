@@ -2,7 +2,9 @@
 import { PaginationInfo } from "@/app/admin/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
+import { Switch } from "@/components/ui/switch";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { FlaskConicalIcon, SearchIcon } from "lucide-react";
@@ -18,11 +20,13 @@ type AnalystPodcastWithAnalyst = ExtractServerActionData<typeof fetchAnalystPodc
 export const SearchParamsConfig = {
   page: createParamConfig.number(1),
   search: createParamConfig.string(""),
+  featured: createParamConfig.boolean(false),
 } as const;
 
 export type AnalystPodcastsSearchParams = {
   page: number;
   search: string;
+  featured: boolean;
 };
 
 interface AnalystPodcastsPageClientProps {
@@ -40,7 +44,7 @@ export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcas
 
   // Use search params hook for URL synchronization
   const {
-    values: { page: currentPage, search: searchQuery },
+    values: { page: currentPage, search: searchQuery, featured: featuredOnly },
     setParam,
     setParams,
   } = useListQueryParams<AnalystPodcastsSearchParams>({
@@ -50,7 +54,7 @@ export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcas
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const result = await fetchAnalystPodcastsAction(currentPage, 12, searchQuery);
+    const result = await fetchAnalystPodcastsAction(currentPage, 12, searchQuery, featuredOnly);
     if (!result.success) {
       setError(result.message);
     } else {
@@ -58,7 +62,7 @@ export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcas
       if (result.pagination) setPagination(result.pagination);
     }
     setIsLoading(false);
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, featuredOnly]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -115,26 +119,42 @@ export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcas
             className="pl-8"
           />
         </div>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="featured-only"
+            checked={featuredOnly}
+            onCheckedChange={(checked) => setParams({ featured: checked, page: 1 })}
+          />
+          <Label htmlFor="featured-only">Featured only</Label>
+        </div>
         <Button type="submit">Search</Button>
-        {searchQuery && (
+        {(searchQuery || featuredOnly) && (
           <Button
             variant="outline"
             onClick={() => {
               if (inputRef.current) {
                 inputRef.current.value = "";
               }
-              setParams({ search: "", page: 1 });
+              setParams({ search: "", featured: false, page: 1 });
             }}
           >
-            Clear Search
+            Clear Filters
           </Button>
         )}
       </form>
 
       <div className="mb-4">
-        {searchQuery && (
-          <div className="mb-4 text-sm text-muted-foreground">
-            Filtering by token, topic, or email: <span className="font-medium">{searchQuery}</span>
+        {(searchQuery || featuredOnly) && (
+          <div className="mb-4 flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Active filters:</span>
+            {searchQuery && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                Search: {searchQuery}
+              </span>
+            )}
+            {featuredOnly && (
+              <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Featured only</span>
+            )}
           </div>
         )}
         {analystPodcasts.length === 0 ? (

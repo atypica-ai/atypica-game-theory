@@ -1,6 +1,8 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { ExtractServerActionData } from "@/lib/serverAction";
+import { Pagination } from "@/components/ui/pagination";
+import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
+import { ExtractServerActionData, ServerActionResultPagination } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { PlayIcon, SquareArrowOutUpLeftIcon, Volume2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -11,26 +13,50 @@ import { HighlightPodcast } from "./HighlightPodcast";
 
 type FeaturedPodcastItem = ExtractServerActionData<typeof fetchFeaturedPodcasts>[number];
 
-export function FeaturedPodcastsClient() {
+export const SearchParamsConfig = {
+  page: createParamConfig.number(1),
+} as const;
+
+export type FeaturedPodcastsSearchParams = {
+  page: number;
+};
+
+export function FeaturedPodcastsClient({
+  initialSearchParams,
+}: {
+  initialSearchParams: Record<string, string | number>;
+}) {
   const locale = useLocale();
   const t = useTranslations("FeaturedPodcastsPage");
   const [featuredPodcasts, setFeaturedPodcasts] = useState<FeaturedPodcastItem[]>([]);
+  const [pagination, setPagination] = useState<ServerActionResultPagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [podcastFilter, setPodcastFilter] = useState<"top" | "all">("top");
+
+  const {
+    values: { page: currentPage },
+    setParam,
+  } = useListQueryParams<FeaturedPodcastsSearchParams>({
+    params: SearchParamsConfig,
+    initialValues: initialSearchParams,
+  });
 
   const loadFeaturedPodcasts = useCallback(async () => {
+    setLoading(true);
     try {
-      const result = await fetchFeaturedPodcasts({ locale });
+      const result = await fetchFeaturedPodcasts({ locale, page: currentPage, pageSize: 10 });
       if (result.success) {
         setFeaturedPodcasts(result.data);
+        if (result.pagination) {
+          setPagination(result.pagination);
+        }
       }
     } catch (error) {
       console.error("Failed to load featured podcasts:", error);
     } finally {
       setLoading(false);
     }
-  }, [locale]);
+  }, [locale, currentPage]);
 
   useEffect(() => {
     loadFeaturedPodcasts();
@@ -55,26 +81,12 @@ export function FeaturedPodcastsClient() {
         ? societyPodcasts
         : [];
 
-  // Apply Top/All filter
-  const displayPodcasts = podcastFilter === "top" ? featuredPodcasts.slice(0, 5) : featuredPodcasts;
-
   // Highlight podcast (random)
   const highlightPodcast = useMemo(() => {
     return featuredPodcasts.length > 0
       ? featuredPodcasts[Math.floor(Math.random() * featuredPodcasts.length)]
       : null;
   }, [featuredPodcasts]);
-
-  if (loading) {
-    return (
-      <div className="min-h-[50dvh] bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t("loading")}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,36 +112,14 @@ export function FeaturedPodcastsClient() {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          {/* Filter Tabs */}
-          <div className="flex items-center gap-2 bg-muted p-1 rounded-lg mb-8 w-fit mx-auto">
-            <button
-              onClick={() => setPodcastFilter("top")}
-              className={cn(
-                "px-6 py-2 text-sm font-medium rounded-md transition-colors",
-                podcastFilter === "top"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {t("topPodcasts")}
-            </button>
-            <button
-              onClick={() => setPodcastFilter("all")}
-              className={cn(
-                "px-6 py-2 text-sm font-medium rounded-md transition-colors",
-                podcastFilter === "all"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {t("allPodcasts")}
-            </button>
-          </div>
-
           {/* Podcast List */}
-          {displayPodcasts.length > 0 ? (
+          {loading ? (
+            <div className="min-h-[50dvh] flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            </div>
+          ) : featuredPodcasts.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
-              {displayPodcasts.map((featuredPodcast) => (
+              {featuredPodcasts.map((featuredPodcast) => (
                 <div
                   key={featuredPodcast.podcast.token}
                   className={cn(
@@ -151,7 +141,7 @@ export function FeaturedPodcastsClient() {
                     <div
                       className={cn(
                         "size-8 sm:size-16 rounded-sm sm:rounded-xl",
-                        "bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-xs shrink-0",
+                        "bg-linear-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-xs shrink-0",
                       )}
                     >
                       <Volume2Icon className="size-4 sm:size-6" />
@@ -213,6 +203,20 @@ export function FeaturedPodcastsClient() {
               </Button>
             </div>
           )}
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={(page) => setParam("page", page)}
+              />
+              <div className="text-sm text-muted-foreground">
+                Total: {pagination.totalCount.toLocaleString()}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -238,7 +242,7 @@ export function FeaturedPodcastsClient() {
             >
               <div className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-6 flex-1">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors flex-shrink-0">
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
                     <Volume2Icon className="w-8 h-8 text-primary" />
                   </div>
                   <div className="flex-1">
@@ -261,7 +265,7 @@ export function FeaturedPodcastsClient() {
                         key={featuredPodcast.podcast.token}
                         className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
                       >
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                        <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">
                           <Volume2Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -298,7 +302,7 @@ export function FeaturedPodcastsClient() {
             >
               <div className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-6 flex-1">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors flex-shrink-0">
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
                     <Volume2Icon className="w-8 h-8 text-primary" />
                   </div>
                   <div className="flex-1">
@@ -323,7 +327,7 @@ export function FeaturedPodcastsClient() {
                         key={featuredPodcast.podcast.token}
                         className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
                       >
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                        <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">
                           <Volume2Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">

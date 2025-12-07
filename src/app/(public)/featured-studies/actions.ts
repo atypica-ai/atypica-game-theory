@@ -202,18 +202,33 @@ const getCachedFeaturedStudies = unstable_cache(
 export async function fetchPublicFeaturedStudies({
   locale,
   kind,
-  limit,
+  page = 1,
+  pageSize = 12,
   random,
 }: {
   locale: Locale;
   kind?: AnalystKind | "all";
-  limit?: number;
+  page?: number;
+  pageSize?: number;
   random?: boolean;
 }): Promise<ServerActionResult<Awaited<ReturnType<typeof _fetchPublicFeaturedStudiesImpl>>>> {
   const localeResolved = locale || (await getLocale());
-  const data = await getCachedFeaturedStudies(localeResolved, kind, limit, random);
+  const allData = await getCachedFeaturedStudies(localeResolved, kind, undefined, random);
+
+  // Apply pagination
+  const totalCount = allData.length;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const skip = (page - 1) * pageSize;
+  const paginatedData = allData.slice(skip, skip + pageSize);
+
   return {
     success: true,
-    data,
+    data: paginatedData,
+    pagination: {
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+    },
   };
 }

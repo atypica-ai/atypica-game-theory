@@ -415,7 +415,6 @@
   },
   "FeaturedPodcastsPage": {
     "title": "AI 播客",
-    "loading": "正在加载播客...",
     "allPodcasts": "全部播客",
     "allPodcastsDescription": "浏览和搜索您所有的研究播客",
     "topPodcasts": "热门播客",

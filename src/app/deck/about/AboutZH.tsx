@@ -128,7 +128,7 @@ export class ResearchAgent {
               <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 opacity-80 mb-4">
                 用「语言模型」为「主观世界」建模
               </p>
-              <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-[#1bff1b] to-transparent mx-auto shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-20 h-0.5 bg-linear-to-r from-transparent via-[#1bff1b] to-transparent mx-auto shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             {/* 描述文字 */}
@@ -177,7 +177,7 @@ simulation.run(complexProblem);`}
               <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_15px_rgba(27,255,27,0.25)]">
                 &ldquo;复杂问题&rdquo;
               </h2>
-              <div className="w-16 h-0.5 mt-4 bg-gradient-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-16 h-0.5 mt-4 bg-linear-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             {/* 内容 */}
@@ -198,7 +198,7 @@ simulation.run(complexProblem);`}
                 </p>
               </div>
 
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-zinc-600 p-6 rounded-lg text-center shadow-xl">
+              <div className="bg-linear-to-r from-[#1e1e1e] to-[#2a2a2a] border border-zinc-600 p-6 rounded-lg text-center shadow-xl">
                 <p className="text-base md:text-lg font-medium leading-relaxed text-[#1bff1b]">
                   Atypica.AI 从模拟消费者的行为和决策入手
                 </p>
@@ -239,7 +239,7 @@ const llmModels = {
               <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_15px_rgba(27,255,27,0.25)]">
                 局限性
               </h2>
-              <div className="w-16 h-0.5 mt-4 bg-gradient-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-16 h-0.5 mt-4 bg-linear-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             {/* 内容 */}
@@ -309,7 +309,7 @@ class SubjectiveAgent {
               <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_15px_rgba(27,255,27,0.25)]">
                 (ABM)
               </h2>
-              <div className="w-16 h-0.5 mt-4 bg-gradient-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-16 h-0.5 mt-4 bg-linear-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             {/* 内容 */}
@@ -324,7 +324,7 @@ class SubjectiveAgent {
                 </p>
               </div>
 
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-8 rounded-xl text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
+              <div className="bg-linear-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-8 rounded-xl text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
                 <p className="text-3xl md:text-4xl font-bold mb-4 text-[#1bff1b] shadow-[0_0_20px_rgba(27,255,27,0.35)]">
                   &ldquo;主观世界建模法&rdquo;
                 </p>

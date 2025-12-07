@@ -2,7 +2,9 @@
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { proxiedImageLoader } from "@/lib/utils";
 import { AnalystKind } from "@/prisma/client";
@@ -13,14 +15,45 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchPublicFeaturedStudies } from "./actions";
 
-type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
+type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>["data"]["data"];
+type TPagination = ExtractServerActionData<typeof fetchPublicFeaturedStudies>["data"]["pagination"];
 
-export default function FeaturedStudiesClient() {
+export const SearchParamsConfig = {
+  page: createParamConfig.number(1),
+  kind: {
+    defaultValue: "all" as AnalystKind | "all",
+    serialize: (value: AnalystKind | "all") => value,
+    deserialize: (value: string | null) => {
+      if (!value) return "all" as AnalystKind | "all";
+      return value as AnalystKind | "all";
+    },
+  },
+} as const;
+
+export type FeaturedStudiesSearchParams = {
+  page: number;
+  kind: AnalystKind | "all";
+};
+
+export default function FeaturedStudiesClient({
+  initialSearchParams,
+}: {
+  initialSearchParams: Record<string, string | number>;
+}) {
   const locale = useLocale();
   const t = useTranslations("FeaturedStudiesPage");
   const [studies, setStudies] = useState<TStudies>([]);
+  const [pagination, setPagination] = useState<TPagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeAnalystKind, setActiveAnalystKind] = useState<AnalystKind | "all">("all");
+
+  const {
+    values: { page: currentPage, kind: activeAnalystKind },
+    setParam,
+    setParams,
+  } = useListQueryParams<FeaturedStudiesSearchParams>({
+    params: SearchParamsConfig,
+    initialValues: initialSearchParams,
+  });
 
   useEffect(() => {
     async function loadStudies() {
@@ -29,23 +62,23 @@ export default function FeaturedStudiesClient() {
         const result = await fetchPublicFeaturedStudies({
           locale,
           kind: activeAnalystKind === "all" ? undefined : activeAnalystKind,
-          limit: 12,
+          page: currentPage,
+          pageSize: 12,
         });
         if (result.success) {
-          setStudies(result.data);
+          setStudies(result.data.data);
+          setPagination(result.data.pagination);
         }
       } finally {
         setIsLoading(false);
       }
     }
     loadStudies();
-  }, [activeAnalystKind, locale]);
+  }, [activeAnalystKind, locale, currentPage]);
 
-  // Filter studies by category
-  const filteredStudies =
-    activeAnalystKind === "all"
-      ? studies
-      : studies.filter((study) => study.analyst.kind === activeAnalystKind);
+  const handleKindChange = (value: string) => {
+    setParams({ kind: value as AnalystKind | "all", page: 1 });
+  };
 
   const kinds: ("all" | AnalystKind)[] = [
     "all",
@@ -72,6 +105,19 @@ export default function FeaturedStudiesClient() {
         return kind;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="py-4 md:py-6 px-4 md:px-6">
+        <div className="flex flex-col items-center gap-4 md:gap-6 max-w-screen-2xl mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold text-center">{t("title")}</h1>
+          <div className="flex justify-center py-8">
+            <Loader2Icon className="size-8 animate-spin" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderStudyGrid = (studies: TStudies) => {
     if (studies.length === 0) {
@@ -142,7 +188,7 @@ export default function FeaturedStudiesClient() {
         <Tabs
           defaultValue={"all" as AnalystKind | "all"}
           value={activeAnalystKind}
-          onValueChange={(value) => setActiveAnalystKind(value as AnalystKind | "all")}
+          onValueChange={handleKindChange}
           className="mt-6 items-center hidden md:flex w-full"
         >
           <TabsList className="mb-6">
@@ -153,13 +199,7 @@ export default function FeaturedStudiesClient() {
             ))}
           </TabsList>
           <TabsContent value={activeAnalystKind}>
-            {isLoading ? (
-              <div className="flex justify-center">
-                <Loader2Icon className="size-8 animate-spin" />
-              </div>
-            ) : (
-              renderStudyGrid(filteredStudies)
-            )}
+            {renderStudyGrid(studies)}
           </TabsContent>
         </Tabs>
 
@@ -167,7 +207,7 @@ export default function FeaturedStudiesClient() {
         <div className="md:hidden w-full max-w-xs mt-6">
           <select
             value={activeAnalystKind}
-            onChange={(e) => setActiveAnalystKind(e.target.value as AnalystKind | "all")}
+            onChange={(e) => handleKindChange(e.target.value)}
             className="w-full p-2 border rounded-md bg-background"
           >
             {kinds.map((kind) => (
@@ -180,14 +220,22 @@ export default function FeaturedStudiesClient() {
 
         {/* Mobile view: Content area */}
         <div className="md:hidden w-full mt-4">
-          {isLoading ? (
-            <div className="flex justify-center">
-              <Loader2Icon className="size-8 animate-spin" />
-            </div>
-          ) : (
-            renderStudyGrid(filteredStudies)
-          )}
+          {renderStudyGrid(studies)}
         </div>
+
+        {/* Pagination */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 w-full">
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={(page) => setParam("page", page)}
+            />
+            <div className="text-sm text-muted-foreground">
+              Total: {pagination.totalCount.toLocaleString()}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

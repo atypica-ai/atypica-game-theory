@@ -26,7 +26,12 @@ async function regenerateFeaturedCovers() {
         },
       },
     },
-    orderBy: { displayOrder: "asc" },
+    // orderBy: { displayOrder: "asc" },
+    orderBy: {
+      analyst: {
+        id: "desc",
+      },
+    },
   });
 
   console.log(`Found ${featuredStudies.length} featured studies\n`);

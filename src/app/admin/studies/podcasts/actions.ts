@@ -15,6 +15,7 @@ export async function fetchAnalystPodcastsAction(
   page: number = 1,
   pageSize: number = 10,
   searchQuery?: string,
+  featuredOnly?: boolean,
 ): Promise<
   ServerActionResult<
     (AnalystPodcast & {
@@ -36,6 +37,7 @@ export async function fetchAnalystPodcastsAction(
         user?: { email?: { contains: string } };
       };
     }>;
+    analyst?: { featuredStudy: { isNot: null } };
   } = searchQuery
     ? {
         OR: [
@@ -46,6 +48,14 @@ export async function fetchAnalystPodcastsAction(
         ],
       }
     : {};
+
+  if (featuredOnly) {
+    where.analyst = {
+      featuredStudy: {
+        isNot: null,
+      },
+    };
+  }
 
   const analystPodcasts = await prisma.analystPodcast.findMany({
     where,

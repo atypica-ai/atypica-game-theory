@@ -18,6 +18,20 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function FeaturedStudiesPage() {
-  return <FeaturedStudiesClient />;
+export default async function FeaturedStudiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const initialSearchParams: Record<string, string | number> = {};
+
+  if (params.page && typeof params.page === "string") {
+    initialSearchParams.page = params.page;
+  }
+  if (params.kind && typeof params.kind === "string") {
+    initialSearchParams.kind = params.kind;
+  }
+
+  return <FeaturedStudiesClient initialSearchParams={initialSearchParams} />;
 }

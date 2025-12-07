@@ -10,16 +10,17 @@
 
 import { forbidden, notFound, unauthorized } from "next/navigation";
 
+export type ServerActionResultPagination = {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+};
 export type ServerActionResult<T> =
   | {
       success: true;
       data: T;
-      pagination?: {
-        page: number;
-        pageSize: number;
-        totalCount: number;
-        totalPages: number;
-      };
+      pagination?: ServerActionResultPagination;
     }
   | {
       success: false;

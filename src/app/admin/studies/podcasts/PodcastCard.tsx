@@ -254,10 +254,7 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
                 <TooltipTrigger>
                   <span className="text-sm font-semibold">{kindInfo.kind}</span>
                 </TooltipTrigger>
-                <TooltipContent
-                  side="left"
-                  className="max-w-md bg-background text-xs p-3 shadow-md rounded-md"
-                >
+                <TooltipContent side="left" className="max-w-md text-xs p-3">
                   {kindInfo.reason}
                 </TooltipContent>
               </Tooltip>

@@ -415,7 +415,6 @@
   },
   "FeaturedPodcastsPage": {
     "title": "AI Podcasts",
-    "loading": "Loading podcasts...",
     "allPodcasts": "All Podcasts",
     "allPodcastsDescription": "Browse and search through all your research podcasts",
     "topPodcasts": "Top Podcasts",
