@@ -20,7 +20,7 @@ export function proxiedObjectCdnUrl({
   objectUrl,
   mimeType,
 }: {
-  name: string;
+  name?: string;
   objectUrl: string;
   mimeType: string;
 }) {
@@ -38,22 +38,51 @@ export function proxiedObjectCdnUrl({
   return cdnUrl;
 }
 
+export function proxiedImageCdnUrl(args: { src: string; width?: number; quality?: number }): string;
+export function proxiedImageCdnUrl(args: {
+  objectUrl: string;
+  width?: number;
+  quality?: number;
+}): string;
+
+/**
+ *
+ * @param src: 任意图片 src, 通过代理访问
+ * @param objectUrl: AWS_S3_CONFIG 里面配置过的 S3 object url, 无需签名
+ * @todo proxy-image api 需要有自己的签名并支持有效期，以防传入任意 src 或者长期外链 objectUrl 滥用
+ */
 export function proxiedImageCdnUrl({
   src,
+  objectUrl,
   width = 1920,
   quality = 100,
 }: {
-  src: string;
+  src?: string;
+  objectUrl?: string;
   width?: number;
   quality?: number;
 }) {
+  if ((!src && !objectUrl) || (src && objectUrl)) {
+    throw new Error("Either src or objectUrl must be provided");
+  }
+
   const objectCdnOrigin = getObjectCdnOrigin();
   // 可以为空字符串的，这样就是用源站域名
   // if (!objectCdnOrigin) {
   //   throw new Error("OBJECT_CDN_ORIGIN environment variable is not set");
   // }
-  const fileNameInUrl = src.split("?")[0].split("/").pop() as string;
-  const proxiedUrl = `/cdn/proxy-image/${fileNameInUrl}?url=${encodeURIComponent(src)}&w=${width}&q=${quality}`;
+  const fileNameInUrl = src
+    ? (src.split("?")[0].split("/").pop() as string)
+    : objectUrl
+      ? (objectUrl.split("?")[0].split("/").pop() as string)
+      : "404";
+
+  const proxiedUrl = src
+    ? `/cdn/proxy-image/${fileNameInUrl}?url=${encodeURIComponent(src)}&w=${width}&q=${quality}`
+    : objectUrl
+      ? `/cdn/proxy-image/${fileNameInUrl}?objectUrl=${encodeURIComponent(objectUrl)}&w=${width}&q=${quality}`
+      : "404";
+
   if (objectCdnOrigin) {
     // CDN 已经缓存了，所以不再需要 /_next/image
     // return new URL(proxiedUrl, objectCdnOrigin).toString();

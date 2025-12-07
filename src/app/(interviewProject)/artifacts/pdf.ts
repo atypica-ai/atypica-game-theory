@@ -1,11 +1,14 @@
 "use server";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { InterviewReportExtra, InterviewSessionExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { createHash } from "node:crypto";
 
 export async function generateInterviewReportPDF(report: {
+  id: number;
   token: string;
   project: {
     id: number;
@@ -18,9 +21,11 @@ export async function generateInterviewReportPDF(report: {
 }> {
   const pdfObjectUrl = report.extra?.pdfObjectUrl;
   if (pdfObjectUrl) {
-    const pdfUrl = await s3SignedUrl(pdfObjectUrl);
     return {
-      pdfUrl,
+      pdfUrl: proxiedObjectCdnUrl({
+        objectUrl: pdfObjectUrl,
+        mimeType: "application/pdf",
+      }),
     };
   }
 
@@ -59,6 +64,12 @@ export async function generateInterviewReportPDF(report: {
     SET extra = extra || ${JSON.stringify({ pdfObjectUrl: objectUrl })}::jsonb
     WHERE token = ${reportToken}
   `;
+
+  await mergeExtra({
+    tableName: "InterviewReport",
+    id: report.id,
+    extra: { pdfObjectUrl: objectUrl },
+  });
 
   return {
     pdfUrl: getObjectUrl,

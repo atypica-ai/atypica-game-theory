@@ -1,8 +1,8 @@
 "use client";
-import { getPodcastAudioSignedUrl } from "@/app/(podcast)/actions";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
-import { Analyst } from "@/prisma/client";
+import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { DownloadIcon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -38,36 +38,40 @@ function SharePageHeader({
 }
 
 export default function PodcastSharePageClient({
-  podcastToken,
+  podcast,
   // analyst,
   title,
   studyUserChatToken,
-  script,
   coverSvg,
   reportToken,
 }: {
-  podcastToken: string;
+  podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl"> & {
+    extra: AnalystPodcastExtra;
+  };
   analyst: Pick<Analyst, "id" | "topic">;
   title: string;
   studyUserChatToken: string;
-  script?: string;
   coverSvg?: string;
   reportToken?: string;
 }) {
   const t = useTranslations("PodcastSharePage");
   const pathname = usePathname();
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [podcastAudioSrc, setPodcastAudioSrc] = useState<string | null>(null);
 
   // Load audio URL for download
   useEffect(() => {
-    const loadAudioUrl = async () => {
-      const result = await getPodcastAudioSignedUrl({ podcastToken });
-      if (result.success && result.data) {
-        setAudioUrl(result.data);
-      }
-    };
-    loadAudioUrl();
-  }, [podcastToken]);
+    const objectUrl = podcast.objectUrl;
+    const mimeType = podcast.extra.metadata?.mimeType;
+    if (objectUrl && mimeType) {
+      setPodcastAudioSrc(
+        proxiedObjectCdnUrl({
+          name: podcast.extra.metadata?.title ?? undefined,
+          mimeType,
+          objectUrl,
+        }),
+      );
+    }
+  }, [podcast]);
 
   const copyShareLink = useCallback(() => {
     const url = new URL(window.location.origin + pathname);
@@ -82,9 +86,9 @@ export default function PodcastSharePageClient({
   }, [pathname, t]);
 
   const handleDownload = useCallback(() => {
-    if (!audioUrl) return;
-    window.open(audioUrl, "_blank");
-  }, [audioUrl]);
+    if (!podcastAudioSrc) return;
+    window.open(podcastAudioSrc, "_blank");
+  }, [podcastAudioSrc]);
 
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
@@ -112,16 +116,16 @@ export default function PodcastSharePageClient({
           )}
 
           {/* Podcast Script */}
-          {script && (
+          {podcast.script && (
             <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none">
               <div className="whitespace-pre-wrap text-foreground leading-relaxed text-sm">
-                {script}
+                {podcast.script}
               </div>
             </div>
           )}
 
           {/* Fallback: Show title if no content */}
-          {!script && !coverSvg && (
+          {!podcast.script && !coverSvg && (
             <h1 className="text-xl sm:text-xl md:text-2xl font-medium text-zinc-900 dark:text-zinc-50 leading-tight text-center">
               {title}
             </h1>
@@ -132,7 +136,7 @@ export default function PodcastSharePageClient({
       {/* Sticky Player with links */}
       <div className="shrink-0 absolute bottom-0 left-0 w-full">
         <StickyPlayer
-          podcastToken={podcastToken}
+          podcastAudioSrc={podcastAudioSrc}
           title={title}
           studyReplayUrl={`/study/${studyUserChatToken}/share?replay=1`}
           moreInsightRadioUrl="/insight-radio"

@@ -78,11 +78,11 @@ export type UserLastLogin = Partial<{
 
 export type AnalystReportExtra = Partial<{
   coverObjectUrl: string;
-  s3SignedCoverObjectUrl: string | null;
-  s3SignedCoverObjectUrlExpiresAt: number | null; // timestamp millis
+  // s3SignedCoverObjectUrl: string | null;
+  // s3SignedCoverObjectUrlExpiresAt: number | null; // timestamp millis
   pdfObjectUrl: string;
-  s3SignedPdfObjectUrl: string | null;
-  s3SignedPdfObjectUrlExpiresAt: number | null; // timestamp millis
+  // s3SignedPdfObjectUrl: string;
+  // s3SignedPdfObjectUrlExpiresAt: number; // timestamp millis
 }>;
 
 export type UserChatExtra = Partial<{
@@ -125,13 +125,13 @@ export type ImageGenerationExtra = Partial<{
   ratio: string;
   reportToken: string;
   midjourney: { urls: string[] };
-  s3SignedUrl: string;
-  s3SignedUrlExpiresAt: number; // timestamp millis
+  // s3SignedUrl: string;
+  // s3SignedUrlExpiresAt: number; // timestamp millis
 }>;
 
 export type AttachmentFileExtra = Partial<{
-  s3SignedUrl: string;
-  s3SignedUrlExpiresAt: number; // timestamp millis
+  // s3SignedUrl: string;
+  // s3SignedUrlExpiresAt: number; // timestamp millis
   processing:
     | {
         startsAt: number;
@@ -209,8 +209,8 @@ export type AnalystPodcastExtra = Partial<{
   };
 
   // S3 签名URL缓存（音频文件）
-  s3SignedUrl: string;
-  s3SignedUrlExpiresAt: number; // timestamp millis
+  // s3SignedUrl: string;
+  // s3SignedUrlExpiresAt: number; // timestamp millis
 
   // 处理状态 - 参考 PersonaImportExtra 的详细模式
   processing:

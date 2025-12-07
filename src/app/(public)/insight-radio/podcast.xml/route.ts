@@ -1,5 +1,4 @@
-import { podcastObjectUrlToHttpUrl } from "@/app/(podcast)/lib/utils";
-import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
+import { getObjectCdnOrigin, proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { truncateByDisplayWidth } from "@/lib/textUtils";
 import { fetchFeaturedPodcasts } from "../actions";
 
@@ -33,29 +32,30 @@ export async function GET(request: Request) {
   // Generate signed URLs for all podcasts
   const podcastsWithUrls = await Promise.all(
     podcasts.map(async (item) => {
-      const urlResult = await podcastObjectUrlToHttpUrl({
-        id: item.analyst.id, // Use analyst ID as a fallback
+      const mimeType = item.podcast.extra.metadata?.mimeType ?? "audio/mpeg";
+      const audioSrc = proxiedObjectCdnUrl({
+        name: item.podcast.extra.metadata?.title ?? undefined,
         objectUrl: item.podcast.objectUrl!,
-        extra: item.podcast.extra,
+        mimeType,
       });
 
       // Get cover image URL from report
       let coverImageUrl: string | undefined;
       if (item.report) {
-        coverImageUrl = `${getObjectCdnOrigin()}/artifacts/report/${item.report.token}/cover`;
+        coverImageUrl = `${getObjectCdnOrigin()}/artifacts/report/${item.report.token}/cover?square`;
       }
 
       return {
         ...item,
-        s3SignedObjectUrl: urlResult?.signedObjectUrl || null,
-        mimeType: urlResult?.mimeType || "audio/mpeg",
+        audioSrc: audioSrc,
+        mimeType,
         coverImageUrl,
       };
     }),
   );
 
   // Filter out podcasts without valid URLs
-  const validPodcasts = podcastsWithUrls.filter((p) => p.s3SignedObjectUrl);
+  const validPodcasts = podcastsWithUrls.filter((p) => p.audioSrc);
   // Sort podcasts by generatedAt in descending order (newest first)
   validPodcasts.sort(
     (a, b) => new Date(b.podcast.generatedAt).getTime() - new Date(a.podcast.generatedAt).getTime(),
@@ -112,7 +112,6 @@ export async function GET(request: Request) {
           ? showNotes
           : item.podcast.script || "AI-powered research insights";
         const pubDate = new Date(item.podcast.generatedAt).toUTCString();
-        const audioUrl = item.s3SignedObjectUrl!;
         const episodeUrl = `${baseUrl}/artifacts/podcast/${item.podcast.token}/share?utm_source=podcast&utm_medium=feed`;
         const guid = item.podcast.token;
         // Determine episode type based on kindDetermination
@@ -140,7 +139,7 @@ export async function GET(request: Request) {
       <link>${escapeXml(episodeUrl)}</link>
       <guid isPermaLink="false">${guid}</guid>
       <pubDate>${pubDate}</pubDate>
-      <enclosure url="${escapeXml(audioUrl)}" type="${item.mimeType}"${fileSize ? ` length="${fileSize}"` : ""}/>
+      <enclosure url="${escapeXml(item.audioSrc)}" type="${item.mimeType}"${fileSize ? ` length="${fileSize}"` : ""}/>
       <itunes:title>${escapeXml(title)}</itunes:title>
       <itunes:summary><![CDATA[${formattedDescription}]]></itunes:summary>
       <itunes:episodeType>${episodeType}</itunes:episodeType>

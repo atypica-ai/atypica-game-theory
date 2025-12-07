@@ -1,12 +1,13 @@
 "use server";
 import { generateReportCoverImage } from "@/ai/tools/experts/report/coverImage";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
-import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
+// import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystReport, User } from "@/prisma/client";
+import { Analyst, AnalystReport, AnalystReportExtra, User } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
@@ -84,23 +85,13 @@ export async function fetchAnalystReportsAction(
   // Generate cover URLs for reports that have coverObjectUrl
   const reportsWithCoverUrls = await Promise.all(
     analystReports.map(async (report) => {
-      let coverUrl: string | undefined;
-
-      if (report.extra && typeof report.extra === "object" && "coverObjectUrl" in report.extra) {
-        const result = await reportCoverObjectUrlToHttpUrl(report);
-        if (result) {
-          try {
-            coverUrl = result.signedCoverObjectUrl;
-          } catch (error) {
-            console.error(`Failed to generate signed URL for report ${report.id}:`, error);
-          }
-        }
+      const objectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
+      if (objectUrl) {
+        const coverUrl = proxiedImageCdnUrl({ objectUrl });
+        return { ...report, coverUrl };
+      } else {
+        return { ...report, coverUrl: undefined };
       }
-
-      return {
-        ...report,
-        coverUrl,
-      };
     }),
   );
 

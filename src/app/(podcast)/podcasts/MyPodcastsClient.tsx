@@ -1,5 +1,5 @@
 "use client";
-import { getPodcastAudioSignedUrl } from "@/app/(podcast)/actions";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -58,8 +58,8 @@ export default function MyPodcastsClient() {
   }, []);
 
   const playPodcast = useCallback(
-    async (podcastToken: string) => {
-      if (playingPodcast === podcastToken) {
+    async (podcast: PodcastItem) => {
+      if (playingPodcast === podcast.token) {
         // Pause current audio
         if (audioRef.current) {
           audioRef.current.pause();
@@ -68,45 +68,44 @@ export default function MyPodcastsClient() {
         return;
       }
 
-      try {
-        // Stop any currently playing audio
-        if (audioRef.current) {
-          audioRef.current.pause();
-        }
-
-        // Get signed URL for the podcast
-        const result = await getPodcastAudioSignedUrl({ podcastToken });
-        if (!result.success || !result.data) {
-          toast.error(t("playFailed"));
-          return;
-        }
-
-        // Create new audio element
-        const audio = new Audio(result.data);
-        audioRef.current = audio;
-
-        audio.addEventListener("ended", () => {
-          setPlayingPodcast(null);
-        });
-
-        audio.addEventListener("error", () => {
-          toast.error(t("playFailed"));
-          setPlayingPodcast(null);
-        });
-
-        audio
-          .play()
-          .then(() => {
-            setPlayingPodcast(podcastToken);
-          })
-          .catch(() => {
-            toast.error(t("playFailed"));
-            setPlayingPodcast(null);
-          });
-      } catch (error) {
+      const objectUrl = podcast.objectUrl;
+      const mimeType = podcast.extra.metadata?.mimeType;
+      if (!objectUrl || !mimeType) {
         toast.error(t("playFailed"));
-        console.error("Play audio error:", error);
+        console.log("Missing object URL or MIME type", objectUrl, mimeType);
+        return;
       }
+
+      // Stop any currently playing audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+
+      // Get signed URL for the podcast
+      const audioSrc = proxiedObjectCdnUrl({ name: undefined, objectUrl, mimeType });
+
+      // Create new audio element
+      const audio = new Audio(audioSrc);
+      audioRef.current = audio;
+
+      audio.addEventListener("ended", () => {
+        setPlayingPodcast(null);
+      });
+
+      audio.addEventListener("error", () => {
+        toast.error(t("playFailed"));
+        setPlayingPodcast(null);
+      });
+
+      audio
+        .play()
+        .then(() => {
+          setPlayingPodcast(podcast.token);
+        })
+        .catch(() => {
+          toast.error(t("playFailed"));
+          setPlayingPodcast(null);
+        });
     },
     [playingPodcast, t],
   );
@@ -157,7 +156,7 @@ export default function MyPodcastsClient() {
                   className={cn(
                     "transition-all duration-300 hover:shadow-md flex flex-col",
                     "border border-zinc-200 dark:border-zinc-700 shadow-sm",
-                    "bg-gradient-to-br from-white to-zinc-50/50 dark:from-zinc-800 dark:to-zinc-700/50",
+                    "bg-linear-to-br from-white to-zinc-50/50 dark:from-zinc-800 dark:to-zinc-700/50",
                   )}
                 >
                   <CardHeader>
@@ -165,7 +164,7 @@ export default function MyPodcastsClient() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         {/* Podcast Icon - small like StudyCard avatar */}
-                        <div className="size-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="size-10 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center shrink-0">
                           <Volume2Icon className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -246,7 +245,7 @@ export default function MyPodcastsClient() {
                         variant={isPlaying ? "default" : "outline"}
                         size="sm"
                         className="w-full"
-                        onClick={() => playPodcast(podcast.token)}
+                        onClick={() => playPodcast(podcast)}
                       >
                         {isPlaying ? (
                           <>

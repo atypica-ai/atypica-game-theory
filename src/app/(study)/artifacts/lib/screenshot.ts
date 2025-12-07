@@ -1,5 +1,5 @@
 "use server";
-import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { AnalystReportExtra } from "@/prisma/client";
@@ -20,12 +20,14 @@ export async function generateReportScreenshot(report: {
   // screenshotBlob: Blob;
   coverUrl: string;
 }> {
-  const result = await reportCoverObjectUrlToHttpUrl(report);
-  if (result) {
-    const coverUrl = result.signedCoverObjectUrl;
-    return {
-      coverUrl,
-    };
+  // const result = await reportCoverObjectUrlToHttpUrl(report);
+  // if (result) {
+  //   const coverUrl = result.signedCoverObjectUrl;
+  //   return { coverUrl };
+  // }
+  if (report.extra.coverObjectUrl) {
+    const coverUrl = proxiedImageCdnUrl({ objectUrl: report.extra.coverObjectUrl });
+    return { coverUrl };
   }
 
   const reportToken = report.token;

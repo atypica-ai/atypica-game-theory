@@ -1,5 +1,6 @@
 // node 18 和 20 的 fetch 函数不直接使用代理，需要额外实现
 // https://stackoverflow.com/questions/72306101/make-a-request-in-native-fetch-with-proxy-in-nodejs-18
+import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { NextResponse } from "next/server";
@@ -8,24 +9,44 @@ import sharp from "sharp";
 /**
  * @description 参数里有一个 fileName, 这个文件名没有用到，只是在 url 上面显示，这样用来直接通过 url 下载的时候有文件名
  */
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  {
+    // params,
+  }: {
+    params: Promise<{ fileName?: string[] }>;
+  },
+) {
   const { searchParams } = new URL(request.url);
-  const url = searchParams.get("url");
-  const width = searchParams.get("w");
-  const quality = searchParams.get("q");
 
-  if (!url) {
-    return NextResponse.json({ error: "Missing URL parameter" }, { status: 400 });
+  let imageSrc: string;
+  if (searchParams.has("url")) {
+    imageSrc = searchParams.get("url") as string;
+  } else if (searchParams.has("objectUrl")) {
+    const objectUrl = searchParams.get("objectUrl") as string;
+    const signingDate = new Date();
+    const expiresIn = 7 * 24 * 3600; // in seconds
+    try {
+      imageSrc = await s3SignedUrl(objectUrl, { signingDate, expiresIn });
+    } catch {
+      // objectUrl 不是有效的 S3 域名，这时候只支持 url 参数
+      return NextResponse.json({ error: "Invalid object url origin" }, { status: 500 });
+    }
+  } else {
+    return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+  }
+
+  const imageResponse = await proxiedFetch(imageSrc);
+  if (!imageResponse.ok) {
+    return NextResponse.json({ error: "Failed to fetch image" }, { status: 502 });
   }
 
   try {
-    const imageResponse = await proxiedFetch(url);
-    if (!imageResponse.ok) {
-      return NextResponse.json({ error: "Failed to fetch image" }, { status: 502 });
-    }
-
     let imageData = await imageResponse.arrayBuffer();
     const contentType = imageResponse.headers.get("Content-Type") || "image/jpeg";
+
+    const width = searchParams.get("w");
+    const quality = searchParams.get("q");
 
     // 如果有 width 或 quality 参数，使用 sharp 处理图像
     if (width || quality) {
@@ -68,7 +89,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error proxying image:", error);
-    return NextResponse.json({ error: "Failed to proxy image" }, { status: 500 });
+    rootLogger.error(`Failed to process image: ${(error as Error).message}`);
+    return NextResponse.json({ error: "Failed to process image" }, { status: 500 });
   }
 }

@@ -16,6 +16,7 @@ export async function generateInterviewReportPDFAction(reportToken: string): Pro
     const report = await prisma.interviewReport.findUniqueOrThrow({
       where: { token: reportToken },
       select: {
+        id: true,
         token: true,
         onePageHtml: true,
         extra: true,
@@ -52,6 +53,7 @@ export async function generateInterviewReportPDFAction(reportToken: string): Pro
     const fileName = `${titleExcept} Interview Report [${reportToken}].pdf`;
 
     const { pdfUrl } = await generateInterviewReportPDF({
+      id: report.id,
       token: report.token,
       project: {
         id: report.project.id,

@@ -1,4 +1,3 @@
-import { getPodcastAudioSignedUrl } from "@/app/(podcast)/actions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,19 +6,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
-import { Loader2Icon, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX } from "lucide-react";
+import { Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export function StickyPlayer({
-  podcastToken,
+  podcastAudioSrc,
   title,
   studyReplayUrl,
   moreInsightRadioUrl,
   autoPlay = false,
 }: {
-  podcastToken: string;
+  podcastAudioSrc: string | null;
   title: string;
   studyReplayUrl?: string;
   moreInsightRadioUrl?: string;
@@ -30,33 +29,12 @@ export function StickyPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [volume, setVolume] = useState(50);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(50);
   const autoPlayAttemptedRef = useRef(false);
   const interactionPlayAttemptedRef = useRef(false);
-
-  // Load audio URL
-  useEffect(() => {
-    const loadAudioUrl = async () => {
-      try {
-        setIsLoading(true);
-        const result = await getPodcastAudioSignedUrl({ podcastToken });
-        if (!result.success) throw result;
-        setAudioUrl(result.data);
-      } catch {
-        setError("Failed to load audio");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadAudioUrl();
-  }, [podcastToken]);
 
   // Audio event handlers
   useEffect(() => {
@@ -97,7 +75,7 @@ export function StickyPlayer({
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [audioUrl, autoPlay]);
+  }, [podcastAudioSrc, autoPlay]);
 
   // Try to play on first user interaction if autoplay was blocked
   useEffect(() => {
@@ -105,7 +83,7 @@ export function StickyPlayer({
 
     const tryPlayOnInteraction = () => {
       const audio = audioRef.current;
-      if (!audio || isPlaying || !audioUrl) return;
+      if (!audio || isPlaying || !podcastAudioSrc) return;
 
       interactionPlayAttemptedRef.current = true;
 
@@ -129,7 +107,7 @@ export function StickyPlayer({
       document.removeEventListener("touchstart", tryPlayOnInteraction);
       document.removeEventListener("keydown", tryPlayOnInteraction);
     };
-  }, [autoPlay, isPlaying, audioUrl]);
+  }, [autoPlay, isPlaying, podcastAudioSrc]);
 
   const togglePlayPause = useCallback(() => {
     const audio = audioRef.current;
@@ -225,18 +203,10 @@ export function StickyPlayer({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   }, []);
 
-  if (error) {
-    return (
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 text-center">
-        <p className="text-destructive text-sm">{error}</p>
-      </div>
-    );
-  }
-
   return (
     <>
       {/* Hidden audio element */}
-      {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" />}
+      {podcastAudioSrc && <audio ref={audioRef} src={podcastAudioSrc} preload="metadata" />}
 
       {/* Sticky Player */}
       <div className="bg-background/80 backdrop-blur-sm text-foreground border-t border-muted">
@@ -279,7 +249,7 @@ export function StickyPlayer({
               max={duration || 100}
               step={0.1}
               className="cursor-pointer"
-              disabled={!audioUrl || !duration}
+              disabled={!podcastAudioSrc || !duration}
             />
             <div className="flex justify-between text-xs text-muted-foreground mt-2">
               <span>{formatTime(currentTime)}</span>
@@ -322,7 +292,7 @@ export function StickyPlayer({
                 variant="ghost"
                 size="icon"
                 onClick={skipBackward}
-                disabled={isLoading || !audioUrl}
+                disabled={!podcastAudioSrc}
                 className="size-full rounded-full absolute left-0 top-0 bg-transparent hover:bg-transparent"
               >
                 <RotateCcw className="size-full rotate-45" />
@@ -333,12 +303,10 @@ export function StickyPlayer({
             <Button
               size="icon"
               onClick={togglePlayPause}
-              disabled={isLoading || !audioUrl}
+              disabled={!podcastAudioSrc}
               className="h-14 w-14 sm:h-16 sm:w-16 rounded-full"
             >
-              {isLoading ? (
-                <Loader2Icon className="h-6 w-6 sm:h-7 sm:w-7 animate-spin" />
-              ) : isPlaying ? (
+              {isPlaying ? (
                 <Pause className="h-6 w-6 sm:h-7 sm:w-7" />
               ) : (
                 <Play className="h-6 w-6 sm:h-7 sm:w-7 ml-0.5" />
@@ -352,7 +320,7 @@ export function StickyPlayer({
                 variant="ghost"
                 size="icon"
                 onClick={skipForward}
-                disabled={isLoading || !audioUrl}
+                disabled={!podcastAudioSrc}
                 className="size-full rounded-full absolute left-0 top-0 bg-transparent hover:bg-transparent"
               >
                 <RotateCw className="size-full -rotate-45" />
@@ -378,12 +346,7 @@ export function StickyPlayer({
 
           {/* Volume Control - Desktop only */}
           <div className="hidden sm:flex items-center gap-3 max-w-xs mx-auto mt-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleMute}
-              className="h-8 w-8 flex-shrink-0"
-            >
+            <Button variant="ghost" size="icon" onClick={toggleMute} className="h-8 w-8 shrink-0">
               {isMuted || volume === 0 ? (
                 <VolumeX className="h-4 w-4" />
               ) : (

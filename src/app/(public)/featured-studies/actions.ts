@@ -1,7 +1,7 @@
 "use server";
-import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystKind, FeaturedStudy, UserChat } from "@/prisma/client";
+import { Analyst, AnalystKind, AnalystReportExtra, FeaturedStudy, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -136,15 +136,22 @@ async function _fetchPublicFeaturedStudiesImpl({
     await Promise.all(
       latestReports.map(async (report) => {
         const { analystId, token, extra } = report;
-        if (extra && typeof extra === "object" && "coverObjectUrl" in extra) {
-          const result = await reportCoverObjectUrlToHttpUrl(report);
-          if (result) {
-            try {
-              const coverUrl = result.signedCoverObjectUrl;
-              return [analystId, { token, coverUrl }] as [number, TReportInfo];
-            } catch {}
-          }
+        const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
+        if (objectUrl) {
+          const coverUrl = proxiedImageCdnUrl({ objectUrl });
+          return [analystId, { token, coverUrl }] as [number, TReportInfo];
+        } else {
+          return [analystId, { token, coverUrl: null }] as [number, TReportInfo];
         }
+        // if (extra && typeof extra === "object" && "coverObjectUrl" in extra) {
+        //   const result = await reportCoverObjectUrlToHttpUrl(report);
+        //   if (result) {
+        //     try {
+        //       const coverUrl = result.signedCoverObjectUrl;
+        //       return [analystId, { token, coverUrl }] as [number, TReportInfo];
+        //     } catch {}
+        //   }
+        // }
         return [analystId, { token, coverUrl: null }] as [number, TReportInfo];
       }),
     ),

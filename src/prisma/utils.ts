@@ -16,6 +16,7 @@ export async function mergeExtra({
     | "AnalystReport"
     | "AnalystPodcast"
     | "InterviewSession"
+    | "InterviewReport"
     | "UserChat"
     | "Subscription"
     | "Team"

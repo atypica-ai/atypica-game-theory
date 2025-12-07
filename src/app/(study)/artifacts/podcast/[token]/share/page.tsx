@@ -63,11 +63,10 @@ async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
 
   return (
     <PodcastSharePageClient
-      podcastToken={podcastToken}
+      podcast={podcast}
       analyst={analyst}
       title={title}
       studyUserChatToken={studyUserChat.token}
-      script={podcast.script}
       coverSvg={report?.coverSvg}
       reportToken={report?.token}
     />

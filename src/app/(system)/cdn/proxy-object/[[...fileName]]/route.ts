@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 
   let buffer: Buffer;
   let contentType: string;
-  const url = await s3SignedUrl(objectUrl);
+  const signedHttpUrl = await s3SignedUrl(objectUrl);
   if (shouldParse) {
     contentType = "text/plain";
     const fileFullPath = path.join(cacheDir, hash, "parse.txt");
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.JINA_API_KEY}`,
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: signedHttpUrl }),
       });
       if (!response.ok) {
         console.log(await response.text());
@@ -62,7 +62,7 @@ export async function GET(req: Request) {
     if (shouldCache && fs.existsSync(fileFullPath)) {
       buffer = await fs.promises.readFile(fileFullPath);
     } else {
-      const response = await proxiedFetch(url);
+      const response = await proxiedFetch(signedHttpUrl);
       if (!response.ok) {
         return NextResponse.json({ error: "Failed to fetch file" }, { status: 500 });
       }

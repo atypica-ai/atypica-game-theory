@@ -1,4 +1,5 @@
 "use server";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getDeployRegion } from "@/lib/request/deployRegion";
@@ -10,7 +11,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { withAuth } from "../request/withAuth";
 import { resizeImageToWebP } from "./image";
-import { attachmentFileObjectUrlToHttpUrl } from "./lib";
 import { s3SignedUrl, s3UploadCredentials } from "./s3";
 import { S3UploadCredentials } from "./types";
 
@@ -144,7 +144,8 @@ export async function getAttachmentFiles(): Promise<
             return {
               file,
               thumbnailHttpUrl: file.mimeType.startsWith("image/")
-                ? await attachmentFileObjectUrlToHttpUrl(file)
+                ? // await attachmentFileObjectUrlToHttpUrl(file)
+                  proxiedImageCdnUrl({ objectUrl: file.objectUrl, width: 200, quality: 90 })
                 : undefined,
             };
           }),
@@ -161,36 +162,36 @@ export async function getAttachmentFiles(): Promise<
   });
 }
 
-export async function getSignedUrlForAttachment({
-  objectUrl,
-}: {
-  objectUrl: string;
-}): Promise<ServerActionResult<string>> {
-  return withAuth(async (user) => {
-    try {
-      const file = await prisma.attachmentFile.findFirst({
-        where: {
-          objectUrl,
-          userId: user.id,
-        },
-      });
-      if (!file) {
-        return {
-          success: false,
-          message: "File not found or access denied.",
-        };
-      }
-      const url = await attachmentFileObjectUrlToHttpUrl(file);
-      return {
-        success: true,
-        data: url,
-      };
-    } catch (error) {
-      rootLogger.error(`Error getting signed URL for ${objectUrl}: ${(error as Error).message}`);
-      return {
-        success: false,
-        message: error instanceof Error ? error.message : "Unknown error occurred",
-      };
-    }
-  });
-}
+// export async function getSignedUrlForAttachment({
+//   objectUrl,
+// }: {
+//   objectUrl: string;
+// }): Promise<ServerActionResult<string>> {
+//   return withAuth(async (user) => {
+//     try {
+//       const file = await prisma.attachmentFile.findFirst({
+//         where: {
+//           objectUrl,
+//           userId: user.id,
+//         },
+//       });
+//       if (!file) {
+//         return {
+//           success: false,
+//           message: "File not found or access denied.",
+//         };
+//       }
+//       const url = await attachmentFileObjectUrlToHttpUrl(file);
+//       return {
+//         success: true,
+//         data: url,
+//       };
+//     } catch (error) {
+//       rootLogger.error(`Error getting signed URL for ${objectUrl}: ${(error as Error).message}`);
+//       return {
+//         success: false,
+//         message: error instanceof Error ? error.message : "Unknown error occurred",
+//       };
+//     }
+//   });
+// }

@@ -174,8 +174,8 @@ export async function generateReportCoverImage({
     id: report.id,
     extra: {
       coverObjectUrl: objectUrl,
-      s3SignedCoverObjectUrl: null,
-      s3SignedCoverObjectUrlExpiresAt: null,
+      // s3SignedCoverObjectUrl: null,
+      // s3SignedCoverObjectUrlExpiresAt: null,
     } satisfies AnalystReportExtra,
   });
 

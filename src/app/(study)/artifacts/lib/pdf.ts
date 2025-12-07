@@ -1,11 +1,13 @@
 "use server";
-import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
+import { uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { AnalystReportExtra } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { createHash } from "node:crypto";
 
 export async function generateReportPDF(report: {
+  id: number;
   token: string;
   analyst: {
     userId: number;
@@ -20,9 +22,11 @@ export async function generateReportPDF(report: {
 }> {
   const pdfObjectUrl = report.extra?.pdfObjectUrl;
   if (pdfObjectUrl) {
-    const pdfUrl = await s3SignedUrl(pdfObjectUrl);
     return {
-      pdfUrl,
+      pdfUrl: proxiedObjectCdnUrl({
+        objectUrl: pdfObjectUrl,
+        mimeType: "application/pdf",
+      }),
     };
   }
 
@@ -59,15 +63,19 @@ export async function generateReportPDF(report: {
 
   // 使用原生 SQL 和 || 操作符安全地只更新 JSON extra 字段中的 pdfObjectUrl。
   // 这种方法的优势：1) 避免并发更新时的竞态条件，2) 优雅地处理 null 值，3) 只更新指定字段而不覆盖 extra 中的其他数据。
-  //
   // 其他可选写法：
   // 方法1 - 使用 jsonb_set(): SET extra = jsonb_set(extra, '{pdfObjectUrl}', '"url"'::jsonb, true)
   // 方法2 - 使用 COALESCE: SET extra = COALESCE(extra, '{}'::jsonb) || '{"pdfObjectUrl":"url"}'::jsonb
-  await prisma.$executeRaw`
-    UPDATE "AnalystReport"
-    SET extra = extra || ${JSON.stringify({ pdfObjectUrl: objectUrl })}::jsonb
-    WHERE token = ${reportToken}
-  `;
+  // await prisma.$executeRaw`
+  //   UPDATE "AnalystReport"
+  //   SET extra = extra || ${JSON.stringify({ pdfObjectUrl: objectUrl })}::jsonb
+  //   WHERE token = ${reportToken}
+  // `;
+  await mergeExtra({
+    tableName: "AnalystReport",
+    id: report.id,
+    extra: { pdfObjectUrl: objectUrl },
+  });
 
   return {
     // pdfBlob,

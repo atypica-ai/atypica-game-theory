@@ -2,15 +2,12 @@
 
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
-import { getDeployRegion } from "@/lib/request/deployRegion";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { proxiedObjectCdnUrl } from "../(system)/cdn/lib";
 import { determineKindAndGeneratePodcast } from "./lib/evaluate";
-import { podcastObjectUrlToHttpUrl } from "./lib/utils";
 
 // ========================================
 // SERVER ACTIONS (WITH AUTH)
@@ -116,60 +113,56 @@ export async function determineKindAndGeneratePodcastAction({
 
 // Server action: Get signed URL for podcast audio
 // No auth required - podcast token itself serves as authorization
-export async function getPodcastAudioSignedUrl({
-  podcastToken,
-}: {
-  podcastToken: string;
-}): Promise<ServerActionResult<string | null>> {
-  const podcast = await prisma.analystPodcast.findUnique({
-    where: { token: podcastToken },
-    select: {
-      id: true,
-      objectUrl: true,
-      extra: true,
-      generatedAt: true,
-    },
-  });
-
-  if (!podcast || !podcast.generatedAt || !podcast.objectUrl) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Podcast audio not found.",
-    };
-  }
-
-  const result = await podcastObjectUrlToHttpUrl(podcast);
-  if (!result) {
-    return {
-      success: true,
-      data: null,
-    };
-  }
-  const { signedObjectUrl, mimeType } = result;
-  let fileName = signedObjectUrl.split("?")[0].split("/").pop() as string;
-  const podcastTitle = (podcast.extra as AnalystPodcastExtra).metadata?.title;
-  if (podcastTitle) {
-    fileName = podcastTitle + "." + fileName.split(".").pop();
-  }
-
-  // TODO:下面这个逻辑挪到 podcastObjectUrlToHttpUrl 里
-  if (
-    true || // 国内和海外都用 CDN
-    (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(signedObjectUrl))
-  ) {
-    return {
-      success: true,
-      data: proxiedObjectCdnUrl({
-        name: fileName,
-        objectUrl: signedObjectUrl,
-        mimeType,
-      }),
-    };
-  } else {
-    return {
-      success: true,
-      data: signedObjectUrl,
-    };
-  }
-}
+// export async function getPodcastAudioSignedUrl({
+//   podcastToken,
+// }: {
+//   podcastToken: string;
+// }): Promise<ServerActionResult<string | null>> {
+//   const podcast = await prisma.analystPodcast.findUnique({
+//     where: { token: podcastToken },
+//     select: {
+//       id: true,
+//       objectUrl: true,
+//       extra: true,
+//       generatedAt: true,
+//     },
+//   });
+//   if (!podcast || !podcast.generatedAt || !podcast.objectUrl) {
+//     return {
+//       success: false,
+//       code: "not_found",
+//       message: "Podcast audio not found.",
+//     };
+//   }
+//   if (!result) {
+//     return {
+//       success: true,
+//       data: null,
+//     };
+//   }
+//   const { signedObjectUrl, mimeType } = result;
+//   let fileName = signedObjectUrl.split("?")[0].split("/").pop() as string;
+//   const podcastTitle = (podcast.extra as AnalystPodcastExtra).metadata?.title;
+//   if (podcastTitle) {
+//     fileName = podcastTitle + "." + fileName.split(".").pop();
+//   }
+//   // TODO: 应该直接调用 proxiedObjectCdnUrl, 不需要前面 sign 一下
+//   if (
+//     true || // 国内和海外都用 CDN
+//     (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(signedObjectUrl))
+//   ) {
+//     return {
+//       success: true,
+//       data: proxiedObjectCdnUrl({
+//         name: fileName,
+//         objectUrl: signedObjectUrl,
+//         mimeType,
+//       }),
+//     };
+//   } else {
+//     return {
+//       success: true,
+//       data: signedObjectUrl,
+//     };
+//   }
+// }

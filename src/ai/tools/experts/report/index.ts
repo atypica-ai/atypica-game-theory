@@ -5,6 +5,7 @@ import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
+import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { Analyst, AnalystKind, AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { FinishReason, ModelMessage, stepCountIs, streamText, tool } from "ai";
@@ -16,7 +17,6 @@ import {
   generateReportOutputSchema,
   type GenerateReportResult,
 } from "./types";
-import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 
 /**
  * Clean up markdown code blocks that AI models (especially Gemini) often add around HTML content
@@ -131,13 +131,13 @@ export const generateReportTool = ({
           abortSignal,
           statReport,
           logger: reportLogger,
-        }).catch((error) => {
+        }).catch(async (error) => {
           reportLogger.error({
             msg: `Error generating cover image for report ${report.token}, fallback to screenshot`,
             error: error.message,
           });
           // Fallback to screenshot
-          return generateReportScreenshot({
+          return await generateReportScreenshot({
             ...report,
             extra: report.extra as AnalystReportExtra,
             analyst,

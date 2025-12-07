@@ -1,8 +1,8 @@
 import {
   determineKindAndGeneratePodcastAction,
   fetchAnalystPodcasts,
-  getPodcastAudioSignedUrl,
 } from "@/app/(podcast)/actions";
+import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,23 +14,22 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-type AnalystPodcast = ExtractServerActionData<typeof fetchAnalystPodcasts>[number];
+type PodcastItem = ExtractServerActionData<typeof fetchAnalystPodcasts>[number];
 
 export function AnalystPodcastsSection({
   analyst,
   podcasts: initialPodcasts,
 }: {
   analyst: Analyst;
-  podcasts: AnalystPodcast[];
+  podcasts: PodcastItem[];
 }) {
   const router = useRouter();
   const [isPodcastDialogOpen, setIsPodcastDialogOpen] = useState<{
-    analystPodcast: AnalystPodcast;
+    analystPodcast: PodcastItem;
   } | null>(null);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
-  const [podcasts, setPodcasts] = useState<AnalystPodcast[]>(initialPodcasts);
-  const [downloadUrls, setDownloadUrls] = useState<Record<string, string>>({});
+  const [podcasts, setPodcasts] = useState<PodcastItem[]>(initialPodcasts);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handleGeneratePodcast = useCallback(async () => {
@@ -48,8 +47,8 @@ export function AnalystPodcastsSection({
   }, [analyst.id, router]);
 
   const playAudio = useCallback(
-    async (podcastToken: string) => {
-      if (playingAudio === podcastToken) {
+    async (podcast: PodcastItem) => {
+      if (playingAudio === podcast.token) {
         // Stop current audio
         if (audioRef.current) {
           audioRef.current.pause();
@@ -59,70 +58,66 @@ export function AnalystPodcastsSection({
         return;
       }
 
-      try {
-        // Get signed URL for the podcast
-        const result = await getPodcastAudioSignedUrl({ podcastToken });
-        if (!result.success || !result.data) {
-          toast.error("Failed to get audio URL");
-          return;
-        }
+      const objectUrl = podcast.objectUrl;
+      const mimeType = podcast.extra.metadata?.mimeType;
+      if (!objectUrl || !mimeType) {
+        toast.error("Invalid podcast data");
+        return;
+      }
 
-        // Stop any currently playing audio
-        if (audioRef.current) {
-          audioRef.current.pause();
-        }
+      const audioSrc = proxiedObjectCdnUrl({
+        name: podcast.extra.metadata?.title ?? undefined,
+        objectUrl,
+        mimeType,
+      });
 
-        // Create new audio element
-        const audio = new Audio(result.data);
-        audioRef.current = audio;
+      // Stop any currently playing audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
 
-        audio.addEventListener("ended", () => {
-          setPlayingAudio(null);
-        });
+      // Create new audio element
+      const audio = new Audio(audioSrc);
+      audioRef.current = audio;
 
-        audio.addEventListener("error", () => {
+      audio.addEventListener("ended", () => {
+        setPlayingAudio(null);
+      });
+
+      audio.addEventListener("error", () => {
+        toast.error("Failed to play audio");
+        setPlayingAudio(null);
+      });
+
+      audio
+        .play()
+        .then(() => {
+          setPlayingAudio(podcast.token);
+        })
+        .catch(() => {
           toast.error("Failed to play audio");
           setPlayingAudio(null);
         });
-
-        audio
-          .play()
-          .then(() => {
-            setPlayingAudio(podcastToken);
-          })
-          .catch(() => {
-            toast.error("Failed to play audio");
-            setPlayingAudio(null);
-          });
-      } catch (error) {
-        toast.error("Failed to play audio");
-        console.error("Play audio error:", error);
-      }
     },
     [playingAudio],
   );
 
-  const getDownloadUrl = useCallback(
-    async (podcastToken: string) => {
-      // Return cached URL if available
-      if (downloadUrls[podcastToken]) {
-        return downloadUrls[podcastToken];
-      }
+  const getDownloadUrl = useCallback(async (podcast: PodcastItem) => {
+    // Return cached URL if available
 
-      try {
-        const result = await getPodcastAudioSignedUrl({ podcastToken });
-        if (result.success && result.data) {
-          setDownloadUrls((prev) => ({ ...prev, [podcastToken]: result.data! }));
-          return result.data;
-        }
-        return null;
-      } catch (error) {
-        console.error("Get download URL error:", error);
-        return null;
-      }
-    },
-    [downloadUrls],
-  );
+    const objectUrl = podcast.objectUrl;
+    const mimeType = podcast.extra.metadata?.mimeType;
+    if (!objectUrl || !mimeType) {
+      toast.error("Invalid podcast data");
+      return;
+    }
+    const audioSrc = proxiedObjectCdnUrl({
+      name: podcast.extra.metadata?.title ?? undefined,
+      objectUrl,
+      mimeType,
+    });
+    return audioSrc;
+  }, []);
 
   // Polling effect for podcast generation status (script + audio)
   useEffect(() => {
@@ -194,7 +189,7 @@ export function AnalystPodcastsSection({
             className="cursor-pointer"
             onClick={() => setIsPodcastDialogOpen({ analystPodcast: podcast })}
           >
-            <div className="aspect-[2/1] border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 flex flex-col items-center justify-center text-center p-4">
+            <div className="aspect-2/1 border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-linear-to-br from-purple-100 to-blue-100 dark:from-purple-900/20 dark:to-blue-900/20 flex flex-col items-center justify-center text-center p-4">
               {podcast.objectUrl ? (
                 <Volume2Icon className="size-8 mb-2 text-green-600 dark:text-green-400" />
               ) : (
@@ -244,7 +239,7 @@ export function AnalystPodcastsSection({
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => playAudio(isPodcastDialogOpen.analystPodcast.token)}
+                              onClick={() => playAudio(isPodcastDialogOpen.analystPodcast)}
                               disabled={!!isPodcastDialogOpen.analystPodcast.extra?.processing}
                             >
                               {playingAudio === isPodcastDialogOpen.analystPodcast.token ? (
@@ -264,7 +259,7 @@ export function AnalystPodcastsSection({
                               size="sm"
                               onClick={async () => {
                                 const url = await getDownloadUrl(
-                                  isPodcastDialogOpen.analystPodcast.token,
+                                  isPodcastDialogOpen.analystPodcast,
                                 );
                                 if (url) {
                                   window.open(url, "_blank");
