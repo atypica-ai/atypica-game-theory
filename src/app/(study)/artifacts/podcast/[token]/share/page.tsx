@@ -1,5 +1,5 @@
 import { fetchPodcastByToken } from "@/app/(study)/artifacts/podcast/actions";
-import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
@@ -50,8 +50,11 @@ export async function generateMetadata({
   }).replace(/[\n\r]/g, " ");
 
   let image: string | undefined;
-  if (report) {
-    image = `${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover?square=0`;
+  if (report?.extra.coverObjectUrl) {
+    image = proxiedImageCdnUrl({
+      objectUrl: report.extra.coverObjectUrl,
+      width: 2000,
+    });
   }
   return generatePageMetadata({ title, description, locale, image });
 }

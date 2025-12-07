@@ -1,5 +1,4 @@
 "use client";
-import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
 import { PaginationInfo } from "@/app/admin/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
@@ -350,9 +349,9 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                       <Image
                         // loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
                         // src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover`}
-                        // 用 cdn 域名会让 /_next/image 的后端超时（能成功请求的，就是时间有点久），而且其实也没必要这里用 CDN，拿掉即可
-                        loader={({ src }) => src} // 覆盖 loader，不需要再进行处理, 因为不再需要 /_next/image 去取图片，这里可以用 CDN Origin 了
-                        src={`${getObjectCdnOrigin()}/artifacts/report/${report.token}/cover?inContent=1&square=1`}
+                        // 用 cdn 域名会让 /_next/image 的后端超时（能成功请求的，就是时间有点久）
+                        // 而且现在 cdn 域名只应用于 /cdn 路由了，这里不用其实问题也不大，拿掉没问题
+                        src={`/artifacts/report/${report.token}/cover?inContent=1&square=1`}
                         alt="report cover"
                         fill
                         className="object-cover"

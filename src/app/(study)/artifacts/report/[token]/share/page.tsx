@@ -1,7 +1,8 @@
-import { getObjectCdnOrigin } from "@/app/(system)/cdn/lib";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
+import { AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
@@ -80,7 +81,14 @@ export async function generateMetadata({
     suffix: "...",
   }).replace(/[\n\r]/g, " ");
 
-  const image = `${getObjectCdnOrigin()}/artifacts/report/${reportToken}/cover?square=0`;
+  let image: string | undefined;
+  const reportCoverObjectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
+  if (reportCoverObjectUrl) {
+    image = proxiedImageCdnUrl({
+      objectUrl: reportCoverObjectUrl,
+      width: 2000,
+    });
+  }
 
   return generatePageMetadata({ title, description, locale, image });
 }

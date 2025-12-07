@@ -1,4 +1,4 @@
-import { getObjectCdnOrigin, proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
+import { proxiedImageCdnUrl, proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { truncateByDisplayWidth } from "@/lib/textUtils";
 import { fetchFeaturedPodcasts } from "../actions";
 
@@ -42,8 +42,12 @@ export async function GET(request: Request) {
 
       // Get cover image URL from report
       let coverImageUrl: string | undefined;
-      if (item.report) {
-        coverImageUrl = `${getObjectCdnOrigin()}/artifacts/report/${item.report.token}/cover?square=${platform === "youtube" ? 0 : 1}`;
+      if (item.report?.extra.coverObjectUrl) {
+        coverImageUrl = proxiedImageCdnUrl({
+          objectUrl: item.report.extra.coverObjectUrl,
+          width: 2000,
+          height: platform === "youtube" ? undefined : 2000,
+        });
       }
 
       return {
