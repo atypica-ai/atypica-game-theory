@@ -138,7 +138,7 @@ export function StudyListPageClient({ initialSearchParams }: StudyListPageClient
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 w-full">
               {/* New Study Quick Action Card */}
-              <Card className="flex flex-col h-full border-2 border-dashed border-zinc-200 dark:border-zinc-700 bg-gradient-to-br from-zinc-50 to-zinc-50/50 dark:from-zinc-900/50 dark:to-zinc-900/30">
+              <Card className="flex flex-col h-full border-2 border-dashed border-zinc-200 dark:border-zinc-700 bg-linear-to-br from-zinc-50 to-zinc-50/50 dark:from-zinc-900/50 dark:to-zinc-900/30">
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="bg-zinc-600 dark:bg-zinc-500 rounded-xl p-2.5 shadow-sm">
@@ -160,7 +160,7 @@ export function StudyListPageClient({ initialSearchParams }: StudyListPageClient
                   </p>
                   <div className="flex items-center justify-center">
                     <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800/30 rounded-full flex items-center justify-center">
-                      <div className="w-0 h-0 border-l-[8px] border-l-zinc-600 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent ml-1"></div>
+                      <div className="w-0 h-0 border-l-8 border-l-zinc-600 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent ml-1"></div>
                     </div>
                   </div>
                 </CardContent>

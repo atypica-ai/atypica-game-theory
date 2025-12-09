@@ -132,7 +132,7 @@ export async function fetchAnalysts(
     };
   }
 
-  // Get all analysts with their featured status
+  // Step 1: Get main analyst data without nested collections
   const analysts = await prisma.analyst.findMany({
     where,
     include: {
@@ -149,24 +149,6 @@ export async function fetchAnalysts(
           email: true,
         },
       },
-      reports: {
-        select: {
-          id: true,
-          token: true,
-          createdAt: true,
-          generatedAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-      },
-      podcasts: {
-        select: {
-          id: true,
-          token: true,
-          createdAt: true,
-          generatedAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-      },
     },
     orderBy: { createdAt: "desc" },
     skip,
@@ -175,9 +157,73 @@ export async function fetchAnalysts(
 
   const totalCount = await prisma.analyst.count({ where });
 
+  // Extract analyst IDs for batch queries
+  const analystIds = analysts.map((a) => a.id);
+
+  // Step 2: Batch fetch reports and podcasts in parallel (2 queries instead of 2N)
+  const [allReports, allPodcasts] = await Promise.all([
+    prisma.analystReport.findMany({
+      where: {
+        analystId: { in: analystIds },
+      },
+      select: {
+        id: true,
+        token: true,
+        createdAt: true,
+        generatedAt: true,
+        analystId: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.analystPodcast.findMany({
+      where: {
+        analystId: { in: analystIds },
+      },
+      select: {
+        id: true,
+        token: true,
+        createdAt: true,
+        generatedAt: true,
+        analystId: true,
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  // Step 3: Group data by analystId for O(1) lookup
+  const reportsMap = new Map<
+    number,
+    Pick<AnalystReport, "id" | "token" | "createdAt" | "generatedAt">[]
+  >();
+  const podcastsMap = new Map<
+    number,
+    Pick<AnalystPodcast, "id" | "token" | "createdAt" | "generatedAt">[]
+  >();
+
+  allReports.forEach((report) => {
+    const { analystId, ...reportData } = report;
+    if (!reportsMap.has(analystId)) {
+      reportsMap.set(analystId, []);
+    }
+    reportsMap.get(analystId)!.push(reportData);
+  });
+
+  allPodcasts.forEach((podcast) => {
+    const { analystId, ...podcastData } = podcast;
+    if (!podcastsMap.has(analystId)) {
+      podcastsMap.set(analystId, []);
+    }
+    podcastsMap.get(analystId)!.push(podcastData);
+  });
+
+  // Step 4: Combine data
   return {
     success: true,
-    data: analysts,
+    data: analysts.map((analyst) => ({
+      ...analyst,
+      reports: reportsMap.get(analyst.id) || [],
+      podcasts: podcastsMap.get(analyst.id) || [],
+    })),
     pagination: {
       page,
       pageSize,

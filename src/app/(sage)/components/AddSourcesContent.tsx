@@ -230,7 +230,9 @@ export function AddSourcesContent({
 
       {/* Text Modal */}
       <Dialog open={showTextModal} onOpenChange={setShowTextModal}>
-        <DialogContent>
+        <DialogContent
+          className="max-h-dvh overflow-auto" // 其实，这个样式是所有 dialog 都应该要有的
+        >
           <DialogHeader>
             <DialogTitle>{t("addTextTitle")}</DialogTitle>
           </DialogHeader>
@@ -240,7 +242,7 @@ export function AddSourcesContent({
               onChange={(e) => setTextContent(e.target.value)}
               placeholder={t("textPlaceholder")}
               rows={10}
-              className="resize-none"
+              className="resize-none max-h-80"
             />
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowTextModal(false)}>

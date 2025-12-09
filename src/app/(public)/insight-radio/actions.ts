@@ -142,92 +142,98 @@ export const fetchFeaturedPodcasts = unstable_cache(
       }[]
     >
   > {
-    // Single query: get podcasts with featured studies, group by analyst
-    const allPodcasts = await prisma.analystPodcast.findMany({
-      where: {
-        generatedAt: { not: null },
-        analyst: {
-          locale,
-          studyUserChat: { isNot: null },
-          featuredStudy: { isNot: null }, // Must be in featured studies
+    const skip = (page - 1) * pageSize;
+
+    // Step 1: Direct database pagination on podcasts
+    // Note: One analyst may have multiple podcasts, so pagination count may not be exact
+    // But most analysts only have one podcast, so this is acceptable
+    const [podcasts, totalCount] = await Promise.all([
+      prisma.analystPodcast.findMany({
+        where: {
+          generatedAt: { not: null },
+          analyst: {
+            locale,
+            studyUserChat: { isNot: null },
+            featuredStudy: { isNot: null }, // Must be in featured studies
+          },
         },
+        select: {
+          id: true,
+          token: true,
+          analystId: true,
+          script: true,
+          objectUrl: true,
+          generatedAt: true,
+          extra: true,
+          analyst: {
+            select: {
+              id: true,
+              topic: true,
+              studyUserChat: {
+                select: {
+                  token: true,
+                  title: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          generatedAt: "desc",
+        },
+        skip,
+        take: pageSize,
+      }),
+      prisma.analystPodcast.count({
+        where: {
+          generatedAt: { not: null },
+          analyst: {
+            locale,
+            studyUserChat: { isNot: null },
+            featuredStudy: { isNot: null },
+          },
+        },
+      }),
+    ]);
+
+    // Filter out podcasts with missing relations
+    const validPodcasts = podcasts.filter((p) => p.analyst.studyUserChat !== null);
+
+    // Step 2: Batch fetch reports for all analysts (1 query instead of N)
+    const analystIds = validPodcasts.map((p) => p.analystId);
+    const latestReports = await prisma.analystReport.findMany({
+      where: {
+        analystId: { in: analystIds },
+        generatedAt: { not: null },
       },
       select: {
         id: true,
         token: true,
-        analystId: true,
-        script: true,
-        objectUrl: true,
-        generatedAt: true,
         extra: true,
-        analyst: {
-          select: {
-            id: true,
-            topic: true,
-            studyUserChat: {
-              select: {
-                token: true,
-                title: true,
-              },
-            },
-            featuredStudy: {
-              select: {
-                id: true,
-              },
-            },
-            reports: {
-              select: {
-                id: true,
-                token: true,
-                extra: true,
-              },
-              orderBy: {
-                generatedAt: "desc",
-              },
-              take: 1,
-            },
-          },
-        },
+        analystId: true,
+        generatedAt: true,
       },
       orderBy: {
         generatedAt: "desc",
       },
     });
 
-    // Group by analystId and take the latest one for each
-    const podcastsByAnalyst = new Map<number, (typeof allPodcasts)[number]>();
-    for (const podcast of allPodcasts) {
-      const existing = podcastsByAnalyst.get(podcast.analystId);
-      if (!existing) {
-        podcastsByAnalyst.set(podcast.analystId, podcast);
-      } else if (
-        podcast.generatedAt &&
-        (!existing.generatedAt || podcast.generatedAt > existing.generatedAt)
-      ) {
-        podcastsByAnalyst.set(podcast.analystId, podcast);
+    // Step 3: Group reports by analystId and take the latest one
+    const reportsMap = new Map<number, { id: number; token: string; extra: AnalystReportExtra }>();
+    latestReports.forEach((report) => {
+      if (!reportsMap.has(report.analystId)) {
+        reportsMap.set(report.analystId, {
+          id: report.id,
+          token: report.token,
+          extra: (report.extra || {}) as AnalystReportExtra,
+        });
       }
-    }
+    });
 
-    // Convert to array and sort by featured study order
-    const allValidPodcasts = Array.from(podcastsByAnalyst.values())
-      .filter((p) => p.analyst.studyUserChat !== null && p.analyst.featuredStudy !== null)
-      .sort((a, b) => {
-        // Sort by featured study id (desc)
-        const aId = a.analyst.featuredStudy?.id || 0;
-        const bId = b.analyst.featuredStudy?.id || 0;
-        return bId - aId;
-      });
-
-    // Apply pagination
-    const totalCount = allValidPodcasts.length;
-    const totalPages = Math.ceil(totalCount / pageSize);
-    const skip = (page - 1) * pageSize;
-    const paginatedPodcasts = allValidPodcasts.slice(skip, skip + pageSize);
-
+    // Step 4: Combine data
     return {
       success: true,
-      data: paginatedPodcasts.map((p) => ({
-        // Flatten the three key objects
+      data: validPodcasts.map((p) => ({
         podcast: {
           token: p.token,
           script: p.script,
@@ -240,17 +246,13 @@ export const fetchFeaturedPodcasts = unstable_cache(
           topic: p.analyst.topic,
         },
         studyUserChat: p.analyst.studyUserChat!,
-        report: (p.analyst.reports?.[0] || null) as {
-          id: number;
-          token: string;
-          extra: AnalystReportExtra;
-        } | null,
+        report: reportsMap.get(p.analystId) || null,
       })),
       pagination: {
         page,
         pageSize,
         totalCount,
-        totalPages,
+        totalPages: Math.ceil(totalCount / pageSize),
       },
     };
   },
