@@ -203,6 +203,8 @@ model Analyst {
   reports       AnalystReport[]
   podcasts      AnalystPodcast[]
   featuredStudy FeaturedStudy?
+
+  @@index([userId])
 }
 
 model FeaturedStudy {
@@ -231,6 +233,8 @@ model AnalystReport {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([analystId])
 }
 
 model AnalystPodcast {
@@ -246,6 +250,8 @@ model AnalystPodcast {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([analystId])
 }
 
 model AnalystInterview {
@@ -298,6 +304,8 @@ model UserChat {
   interviewSession        InterviewSession?
   sageChat                SageChat?
   sageInterview           SageInterview?
+
+  @@index([userId])
 }
 
 enum MessageRole {
@@ -402,6 +410,8 @@ model PaymentRecord {
 
   paymentLines PaymentLine[]
   subscription Subscription?
+
+  @@index([userId])
 }
 
 model PaymentLine {
@@ -450,6 +460,9 @@ model Subscription {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   activeTokensAccount TokensAccount?
+
+  @@index([userId])
+  @@index([teamId])
 }
 
 model TokensAccount {
@@ -468,6 +481,8 @@ model TokensAccount {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([userId])
 }
 
 enum TokensLogVerb {
@@ -566,13 +581,13 @@ model UserPersonaChatRelation {
 }
 
 model InterviewProject {
-  id     Int    @id @default(autoincrement())
-  token  String @unique
-  userId Int
-  user   User   @relation(fields: [userId], references: [id])
-  brief  String @db.Text
+  id        Int    @id @default(autoincrement())
+  token     String @unique
+  userId    Int
+  user      User   @relation(fields: [userId], references: [id])
+  brief     String @db.Text
   questions Json   @default("[]")
-  extra  Json   @default("{}")
+  extra     Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
