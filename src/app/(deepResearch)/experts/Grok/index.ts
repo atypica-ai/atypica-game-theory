@@ -3,6 +3,7 @@ import { calculateStepTokensUsage, TReduceTokens } from "@/ai/usage";
 import { xai } from "@ai-sdk/xai";
 import { stepCountIs, streamText, ToolSet, TypeValidationError } from "ai";
 import { ExpertExecutor, ExpertStreamTextResult } from "../types";
+import { deduplicateText } from "./fix";
 import grokSystemPrompt from "./prompt";
 const MAX_STEPS = 8;
 
@@ -75,7 +76,7 @@ export const grokExpert: ExpertExecutor = async ({
         logger.error(`grokExpert streamText onError: ${(error as Error).message}`);
         reject(error);
       },
-      onFinish: async ({ text, usage, providerMetadata, sources }) => {
+      onFinish: async ({ text, steps, usage, providerMetadata, sources }) => {
         logger.info("grokExpert streamText onFinish");
         const { tokens, extra } = calculateStepTokensUsage(
           { usage, providerMetadata },
@@ -86,7 +87,15 @@ export const grokExpert: ExpertExecutor = async ({
           expert: "Grok",
           ...extra,
         });
-        resolve({ text, usage, sources });
+        // Use the last step's text instead of accumulated text to avoid duplication
+        // The accumulated text may include duplicate content from multiple steps
+        const finalText = steps.length > 0 ? steps[steps.length - 1].text : text;
+        const deduplicated = deduplicateText(finalText, {
+          logger,
+          minLength: 100,
+          similarityThreshold: 0.95,
+        });
+        resolve({ text: deduplicated, usage, sources });
       },
     });
 
