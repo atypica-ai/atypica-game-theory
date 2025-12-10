@@ -17,7 +17,4 @@ CREATE INDEX "Subscription_userId_idx" ON "Subscription"("userId");
 CREATE INDEX "Subscription_teamId_idx" ON "Subscription"("teamId");
 
 -- CreateIndex
-CREATE INDEX "TokensAccount_userId_idx" ON "TokensAccount"("userId");
-
--- CreateIndex
 CREATE INDEX "UserChat_userId_idx" ON "UserChat"("userId");
