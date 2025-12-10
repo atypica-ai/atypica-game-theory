@@ -1,5 +1,6 @@
 import {
   BuildPersonaResultMessage,
+  GeneratePodcastResultMessage,
   GenerateReportResultMessage,
   ReasoningThinkingResultMessage,
   ScoutTaskChatResultMessage,
@@ -55,6 +56,8 @@ export const StudyToolUIPartDisplay = ({
 
     case `tool-${ToolName.generateReport}`:
       return <GenerateReportResultMessage toolInvocation={toolUIPart} />;
+    case `tool-${ToolName.generatePodcast}`:
+      return <GeneratePodcastResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.scoutTaskChat}`:
       return <ScoutTaskChatResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.scoutSocialTrends}`:

@@ -1,0 +1,144 @@
+import "server-only";
+
+import { planPodcastPrologue, planPodcastSystem } from "@/ai/prompt/study/planPodcast";
+import { defaultProviderOptions, llm } from "@/ai/provider";
+import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
+import { generateChatTitle } from "@/lib/userChat/lib";
+import { AnalystKind } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
+import { google } from "@ai-sdk/google";
+import { waitUntil } from "@vercel/functions";
+import { streamText, tool, UserModelMessage } from "ai";
+import { planPodcastInputSchema, planPodcastOutputSchema, type PlanPodcastResult } from "./types";
+
+async function planPodcast({
+  locale,
+  background,
+  question,
+  abortSignal,
+  statReport,
+  logger,
+}: {
+  background: string;
+  question: string;
+} & AgentToolConfigArgs): Promise<PlanPodcastResult> {
+  return new Promise(async (resolve, reject) => {
+    const response = streamText({
+      model: llm("gemini-2.5-pro"),
+      providerOptions: defaultProviderOptions,
+      tools: {
+        google_search: google.tools.googleSearch({
+          mode: "MODE_DYNAMIC",
+          dynamicThreshold: 0, // threshold 越小，使用搜索的可能性就越高，0就是一定会搜索
+        }),
+      },
+      system: planPodcastSystem({ locale }),
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: planPodcastPrologue({ locale, background, question }),
+            },
+          ],
+        },
+      ] as UserModelMessage[],
+      onFinish: async (result) => {
+        logger.info(`planPodcast streamText onFinish`);
+        const reasoningText = result.reasoningText ?? "";
+        const text = result.text ?? "";
+        if (statReport) {
+          const { tokens, extra } = calculateStepTokensUsage(result);
+          await statReport("tokens", tokens, {
+            reportedBy: "planPodcast tool",
+            ...extra,
+          });
+        }
+        resolve({
+          reasoning: reasoningText,
+          text,
+          plainText: text,
+        });
+      },
+      onError: ({ error }) => {
+        logger.error(`planPodcast streamText onError: ${(error as Error).message}`);
+        reject(error);
+      },
+      abortSignal,
+    });
+    await response
+      .consumeStream()
+      .then(() => {})
+      .catch((error) => reject(error));
+  });
+}
+
+export const planPodcastTool = ({
+  studyUserChatId,
+  ...toolCallConfigArgs
+}: {
+  studyUserChatId: number;
+} & AgentToolConfigArgs) =>
+  tool({
+    description:
+      "Plan a podcast content strategy and search strategy based on the user's question. This tool combines planning with saving the analyst configuration. The analyst kind is fixed to 'opinionOriented' for podcast generation.",
+    inputSchema: planPodcastInputSchema,
+    outputSchema: planPodcastOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
+    },
+    execute: async ({ background, question }) => {
+      // Step 1: Plan the podcast strategy
+      const planResult = await planPodcast({
+        background,
+        question,
+        ...toolCallConfigArgs,
+      });
+
+      // Step 2: Save analyst with opinionOriented kind
+      // The plan result text becomes the topic, and we derive a simple role from the question
+      const { analyst } = await prisma.userChat.findUniqueOrThrow({
+        where: { id: studyUserChatId, kind: "study" },
+        select: {
+          analyst: {
+            select: {
+              id: true,
+              topic: true,
+              kind: true,
+            },
+          },
+        },
+      });
+
+      if (!analyst) {
+        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
+      }
+
+      const analystId = analyst.id;
+      const isUpdate = !!analyst.topic;
+
+      // Use plan result as the topic
+      const topic = planResult.text || question;
+
+      await prisma.analyst.update({
+        where: { id: analystId },
+        data: {
+          role: "Podcast Researcher", // Simple default role for podcast studies
+          topic: topic,
+          kind: AnalystKind.fastInsight,
+          locale: toolCallConfigArgs.locale,
+        },
+      });
+
+      // Generate chat title after saving analyst
+      waitUntil(generateChatTitle(studyUserChatId));
+
+      return {
+        reasoning: planResult.reasoning,
+        text: planResult.text,
+        plainText: `Podcast planning ${isUpdate ? "updated" : "completed"} successfully. ${planResult.plainText}`,
+      };
+    },
+  });

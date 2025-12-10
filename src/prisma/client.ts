@@ -13,6 +13,7 @@ export enum AnalystKind {
   insights = "insights",
   creation = "creation",
   productRnD = "productRnD",
+  fastInsight = "fastInsight",
   misc = "misc",
 }
 

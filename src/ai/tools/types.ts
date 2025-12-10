@@ -1,3 +1,4 @@
+import { DeepResearchInput, DeepResearchOutput } from "@/app/(deepResearch)/types";
 import { AgentStatisticsExtra } from "@/prisma/client";
 import { UIDataTypes, UIMessage } from "ai";
 import { Locale } from "next-intl";
@@ -5,7 +6,9 @@ import { Logger } from "pino";
 import { AudienceCallResult, AudienceCallToolInput } from "./experts/audienceCall/types";
 import { BuildPersonaToolInput, BuildPersonaToolResult } from "./experts/buildPersona/types";
 import { CreateSubAgentResult, CreateSubAgentToolInput } from "./experts/createSubAgent/types";
+import { GeneratePodcastResult, GeneratePodcastToolInput } from "./experts/generatePodcast/types";
 import { InterviewChatResult, InterviewChatToolInput } from "./experts/interviewChat/types";
+import { PlanPodcastResult, PlanPodcastToolInput } from "./experts/planPodcast/types";
 import { PlanStudyResult, PlanStudyToolInput } from "./experts/planStudy/types";
 import { ReasoningThinkingResult, ReasoningThinkingToolInput } from "./experts/reasoning/types";
 import { GenerateReportResult, GenerateReportToolInput } from "./experts/report/types";
@@ -56,8 +59,11 @@ export type TMessageWithPlainTextTool<TOOLS extends PlainTextUITools = PlainText
 
 export enum ToolName {
   planStudy = "planStudy",
+  planPodcast = "planPodcast",
   interviewChat = "interviewChat",
   generateReport = "generateReport",
+  generatePodcast = "generatePodcast",
+  deepResearch = "deepResearch",
   reasoningThinking = "reasoningThinking",
   searchPersonas = "searchPersonas",
   scoutTaskChat = "scoutTaskChat",
@@ -103,8 +109,14 @@ type GenericInputType = Record<any, any>; // eslint-disable-line @typescript-esl
 
 export type StudyUITools = {
   [ToolName.planStudy]: { input: PlanStudyToolInput; output: PlanStudyResult };
+  [ToolName.planPodcast]: { input: PlanPodcastToolInput; output: PlanPodcastResult };
   [ToolName.interviewChat]: { input: InterviewChatToolInput; output: InterviewChatResult };
   [ToolName.generateReport]: { input: GenerateReportToolInput; output: GenerateReportResult };
+  [ToolName.generatePodcast]: { input: GeneratePodcastToolInput; output: GeneratePodcastResult };
+  [ToolName.deepResearch]: {
+    input: DeepResearchInput;
+    output: DeepResearchOutput & PlainTextToolResult;
+  };
   [ToolName.reasoningThinking]: {
     input: ReasoningThinkingToolInput;
     output: ReasoningThinkingResult;
