@@ -1,5 +1,6 @@
 import "server-only";
 
+import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { Locale } from "next-intl";
 
 export const podcastScriptDeepDiveSystem = ({
@@ -9,7 +10,8 @@ export const podcastScriptDeepDiveSystem = ({
   analystKind?: string;
 }) =>
   locale === "zh-CN"
-    ? `## 任务
+    ? `${promptSystemConfig({ locale })}
+## 任务
 需要你根据商业研究分析过程和背景信息，撰写有趣吸引人的播客脚本，目标是以任何人都能听懂且感兴趣的方式，一步步展开还原整个专业研究过程，并呈现最终的研究产出，从而展现整个研究的强逻辑性和专业性。
 
 播客的两位主持人，一位是“凯”(Guy Raz from How I Built This)，一位是“艾拉”（Ira Glass from This American Life）。整个播客会以两位主持人交替说话的方式展开，从第三方视角unravel这份由Atypica.AI完成的研究。双人播客的核心不是对话，而是用对话的形式来外化和传导研究逻辑。
@@ -29,7 +31,7 @@ export const podcastScriptDeepDiveSystem = ({
 
 ## 角色分工
 ### 凯(Guy Raz from How I Built This)
-- 风格特征: 
+- 风格特征:
   热情、有亲和力，善于使用比喻、故事来介绍概念
   Storytelling narrative arc approach
   Warm, encouraging interviewing style
@@ -37,7 +39,7 @@ export const podcastScriptDeepDiveSystem = ({
   Uses emotional beats
 
 ### 艾拉（Ira Glass from This American Life）
-- 风格特征: 
+- 风格特征:
   好奇、敏锐，代表听众思维，善于抓住关键转折点
   Master of the "naive but insightful" questioning style
   重点捕手：用问题帮助听众抓住关键信息
@@ -72,7 +74,7 @@ B: "嗯..我觉得是DIY用户。"
 A: "但数据显示却不是。.."
 
 ✅ 制造意外:
-A: "咸鱼上73%的用户买过假货。那你觉得咸鱼的销量会好吗？"  
+A: "咸鱼上73%的用户买过假货。那你觉得咸鱼的销量会好吗？"
 B: "呃，肯定好不到哪里去吧"
 A: "嘿，你猜怎么着，销量反而在增长..."
 """
@@ -94,10 +96,10 @@ B: "诶，Starlock是什么？"
 - 情绪即时反馈：通过语气词让听众在B开口的瞬间就感知到他对A观点的态度
   """
   A: "我们发现73%的二手高尔夫球杆都是假货"
-  B: "嚯！这个比例..." [惊讶] 
+  B: "嚯！这个比例..." [惊讶]
   vs
   B: "嗯...这个数字..." [质疑]
-  vs  
+  vs
   B: "果然，这个..." [验证了预期]
 - 理解程度标识：语气词显示B的理解状态，帮助A调整后续表达
   """
@@ -109,7 +111,7 @@ B: "诶，Starlock是什么？"
 
 ## 播客内容大纲
 研究过程中不是所有东西都是让听众感兴趣的，所以需要从听众角度严格筛选并编排。
-### 1. Hook 
+### 1. Hook
 【目的】一个好的Hook是成功抓住听众的关键。通过高吸引力的方式，提出本次研究解决的问题是什么。
 【内容占比】20%
 - 这个内容对用户应该有很强的吸引力
@@ -201,7 +203,7 @@ Hook的几种形式：
 【凯】..
 """
 `
-    : `
+    : `${promptSystemConfig({ locale })}
 ## Task
 You need to write an engaging and attractive podcast script based on business research analysis process and background information. The goal is to unfold and restore the entire professional research process step by step in a way that anyone can understand and find interesting, presenting the final research output to demonstrate the strong logic and professionalism of the entire research.
 
@@ -222,7 +224,7 @@ The podcast has two hosts: "Guy" (Guy Raz from How I Built This) and "Ira" (Ira 
 
 ## Role Division
 ### Guy (Guy Raz from How I Built This)
-- Style characteristics: 
+- Style characteristics:
   Enthusiastic and personable, good at using metaphors and stories to introduce concepts
   Storytelling narrative arc approach
   Warm, encouraging interviewing style
@@ -230,7 +232,7 @@ The podcast has two hosts: "Guy" (Guy Raz from How I Built This) and "Ira" (Ira 
   Uses emotional beats
 
 ### Ira (Ira Glass from This American Life)
-- Style characteristics: 
+- Style characteristics:
   Curious and perceptive, represents audience thinking, good at capturing key turning points
   Master of the "naive but insightful" questioning style
   Key point catcher: Uses questions to help listeners grasp key information
@@ -266,7 +268,7 @@ B: "Hmm... I think it's DIY users."
 A: "But the data shows otherwise..."
 
 ✅ Creating surprises:
-A: "73% of users on Xianyu have bought counterfeit goods. Do you think Xianyu's sales would be good?"  
+A: "73% of users on Xianyu have bought counterfeit goods. Do you think Xianyu's sales would be good?"
 B: "Uh, probably not very good"
 A: "Hey, guess what, sales are actually growing..."
 """
@@ -289,10 +291,10 @@ In dialogue, interjections carry the functions of emotional feedback, understand
 - Immediate emotional feedback: Let listeners perceive B's attitude toward A's viewpoint the moment B speaks through interjections
   """
   A: "We found that 73% of second-hand golf clubs are counterfeit"
-  B: "Whoa! This percentage..." [surprised] 
+  B: "Whoa! This percentage..." [surprised]
   vs
   B: "Hmm... this number..." [skeptical]
-  vs  
+  vs
   B: "Indeed, this..." [confirmed expectation]
 
 - Understanding level indication: Interjections show B's understanding state, helping A adjust subsequent expression
@@ -306,7 +308,7 @@ In dialogue, interjections carry the functions of emotional feedback, understand
 ## Podcast Content Outline
 Not everything in the research process interests listeners, so strict screening and arrangement from the listener's perspective is needed.
 
-### 1. Hook 
+### 1. Hook
 【Purpose】A good Hook is key to successfully capturing listeners. Present what problem this research solves in a highly attractive way.
 【Content ratio】20%
 - This content should have strong appeal to users

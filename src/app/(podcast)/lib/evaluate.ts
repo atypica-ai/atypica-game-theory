@@ -5,6 +5,7 @@ import { StatReporter } from "@/ai/tools/types";
 import { podcastEvaluationSystem } from "@/app/(podcast)/prompt/evaluation";
 import {
   PodcastEvaluationScores,
+  PodcastKind,
   PodcastKindDetermination,
   podcastEvaluationScoresSchema,
   podcastKindDeterminationSchema,
@@ -22,11 +23,11 @@ import { notifyPodcastReady } from "./notify";
 const PODCAST_KIND_DETERMINATION_SYSTEM = `
 You are an expert podcast producer. Your task is to determine the best podcast format for a research topic based on its content and nature.
 
-**Default preference**: Choose opinionOriented whenever the research has any actionable insights or practical implications. Only choose deepDive when the research is purely exploratory without clear recommendations.
+**Default preference**: Choose ${PodcastKind.opinionOriented} whenever the research has any actionable insights or practical implications. Only choose ${PodcastKind.deepDive} when the research is purely exploratory without clear recommendations.
 
 ## Available Podcast Formats
 
-### 1. opinionOriented (观点导向) - PREFERRED FORMAT
+### 1. ${PodcastKind.opinionOriented} (观点导向) - PREFERRED FORMAT
 **Format**: Solo host (the researcher) presenting with strong conviction
 **Best for**: Most research with insights, findings, or implications
 **Characteristics**:
@@ -38,7 +39,7 @@ You are an expert podcast producer. Your task is to determine the best podcast f
 - The researcher acts as a guide sharing valuable insights
 - **Default choice for most research with any actionable takeaways**
 
-### 2. deepDive (深度探讨) - ONLY FOR PURELY EXPLORATORY CONTENT
+### 2. ${PodcastKind.deepDive} (深度探讨) - ONLY FOR PURELY EXPLORATORY CONTENT
 **Format**: Two hosts (Guy & Ira) presenting from a third-party perspective
 **Best for**: Purely exploratory research without clear conclusions
 **Characteristics**:
@@ -50,7 +51,7 @@ You are an expert podcast producer. Your task is to determine the best podcast f
 
 ## Decision Guidelines
 
-**Choose opinionOriented (PREFERRED) when**:
+**Choose ${PodcastKind.opinionOriented} (PREFERRED) when**:
 - The research has ANY findings, insights, or recommendations
 - There are practical implications or learnings from the research
 - The study reveals patterns, trends, or useful information
@@ -58,14 +59,14 @@ You are an expert podcast producer. Your task is to determine the best podcast f
 - The content can help listeners understand or make decisions
 - **When in doubt, choose opinionOriented as the default**
 
-**Choose deepDive (ONLY WHEN NECESSARY) when**:
+**Choose ${PodcastKind.deepDive} (ONLY WHEN NECESSARY) when**:
 - The research is purely exploratory with no findings yet
 - The content is entirely theoretical with no practical application
 - There are literally no insights or recommendations to share
 - The study is incomplete with no conclusions
 
 ## Output Requirement
-You must choose either "deepDive" or "opinionOriented". Strongly prefer opinionOriented unless the research is purely exploratory. Provide clear, specific reasoning for your choice based on the research content, conclusions, and the value it provides to listeners.
+You must choose either "${PodcastKind.deepDive}" or "${PodcastKind.opinionOriented}". Strongly prefer ${PodcastKind.opinionOriented} unless the research is purely exploratory. Provide clear, specific reasoning for your choice based on the research content, conclusions, and the value it provides to listeners.
 `;
 
 async function determinePodcastKind(
@@ -81,7 +82,7 @@ async function determinePodcastKind(
 
 **Study Log**: ${analyst.studyLog || "No study log available"}
 
-Based on the research content, conclusions, and the value it provides to listeners, determine whether this should be a "deepDive" or "opinionOriented" podcast. Provide clear, specific reasoning for your choice.`;
+Based on the research content, conclusions, and the value it provides to listeners, determine whether this should be a "${PodcastKind.deepDive}" or "${PodcastKind.opinionOriented}" podcast. Provide clear, specific reasoning for your choice.`;
 
   const result = await generateObject({
     model: llm("gpt-5-mini"),
@@ -325,7 +326,7 @@ export async function evaluateAndGeneratePodcast({
         script: "",
         extra: {
           kindDetermination: {
-            kind: "deepDive",
+            kind: PodcastKind.deepDive,
             reason: "Evaluation passed threshold",
           },
         } as AnalystPodcastExtra,

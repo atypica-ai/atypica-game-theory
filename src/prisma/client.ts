@@ -203,7 +203,7 @@ export type AnalystPodcastExtra = Partial<{
 
   // Podcast kind determination by LLM with reasoning
   kindDetermination: {
-    kind: "deepDive" | "opinionOriented" | "debate";
+    kind: "deepDive" | "opinionOriented" | "fastInsight" | "debate";
     reason: string;
     systemPrompt?: string; // 覆盖 systemPrompt
   };

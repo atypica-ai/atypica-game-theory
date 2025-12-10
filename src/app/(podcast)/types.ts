@@ -1,4 +1,3 @@
-import { AnalystPodcastExtra } from "@/prisma/client";
 import { z } from "zod/v3";
 
 const podcastEvaluationScoreSchema = z.object({
@@ -19,13 +18,20 @@ export const podcastEvaluationScoresSchema = z.object({
 
 export type PodcastEvaluationScores = z.infer<typeof podcastEvaluationScoresSchema>;
 
-// LLM determination schema - only 2 kinds for now
+// Podcast kind enum - centralized definition
+export enum PodcastKind {
+  deepDive = "deepDive",
+  opinionOriented = "opinionOriented",
+  fastInsight = "fastInsight",
+  debate = "debate", // May be used in the future
+}
+
+// LLM determination schema - includes all kinds except fastInsight (which is determined by analyst.kind)
+// fastInsight is excluded because it's determined by analyst.kind, not by LLM
+// Using enum values ensures type safety and maintainability
 export const podcastKindDeterminationSchema = z.object({
-  kind: z.enum(["deepDive", "opinionOriented"]),
+  kind: z.enum([PodcastKind.deepDive, PodcastKind.opinionOriented] as const),
   reason: z.string(),
 });
 
 export type PodcastKindDetermination = z.infer<typeof podcastKindDeterminationSchema>;
-
-// Full podcast kind type - includes all 3 kinds (debate may be used in the future)
-export type PodcastKind = NonNullable<AnalystPodcastExtra["kindDetermination"]>["kind"]; // "deepDive" | "opinionOriented" | "debate";

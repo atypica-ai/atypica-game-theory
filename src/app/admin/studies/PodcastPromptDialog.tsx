@@ -1,3 +1,4 @@
+import { PodcastKind } from "@/app/(podcast)/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,14 +12,12 @@ import type { fetchAnalysts } from "./actions";
 
 type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];
 
-type PodcastKind = "auto" | "deepDive" | "opinionOriented";
-
 interface PodcastPromptDialogProps {
   open: boolean;
   analyst: AnalystWithFeature | null;
   defaultPrompt: string;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (params: { podcastKind: PodcastKind; systemPrompt?: string }) => void;
+  onConfirm: (params: { podcastKind: PodcastKind | "auto"; systemPrompt?: string }) => void;
 }
 
 export function PodcastPromptDialog({
@@ -28,7 +27,7 @@ export function PodcastPromptDialog({
   onOpenChange,
   onConfirm,
 }: PodcastPromptDialogProps) {
-  const [podcastKind, setPodcastKind] = useState<PodcastKind>("auto");
+  const [podcastKind, setPodcastKind] = useState<PodcastKind | "auto">("auto");
   const [showPromptEditor, setShowPromptEditor] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState("");
   const [currentDefaultPrompt, setCurrentDefaultPrompt] = useState("");
