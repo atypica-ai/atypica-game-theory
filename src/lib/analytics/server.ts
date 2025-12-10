@@ -256,13 +256,21 @@ export async function trackUserServerSide(args: {
   traitTypes: UserTraitType[] | "all";
 }) {
   waitUntil(
-    _trackUserServerSide(args).catch((error) => {
-      rootLogger.error({
-        msg: `Failed to track user`,
-        stack: (error as Error).stack,
-        error: (error as Error).message,
-        user: args.user?.id || args.userId,
-      });
-    }),
+    _trackUserServerSide(args)
+      .then(() => {
+        rootLogger.info(
+          { userId: args.userId, traitTypes: args.traitTypes },
+          `Successfully tracked user`,
+        );
+      })
+      .catch((error) => {
+        rootLogger.error({
+          msg: `Failed to track user`,
+          stack: (error as Error).stack,
+          error: (error as Error).message,
+          user: args.userId,
+          traitTypes: args.traitTypes,
+        });
+      }),
   );
 }
