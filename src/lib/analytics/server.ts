@@ -5,6 +5,7 @@ import { proxiedFetch } from "@/lib/proxy/fetch";
 import {
   SubscriptionPlan,
   User,
+  UserLastLogin,
   UserOnboardingData,
   UserProfile,
   UserProfileExtra,
@@ -79,7 +80,7 @@ async function _trackUserServerSide({
   traitTypes,
 }: {
   user?: Pick<User, "id" | "name" | "email" | "createdAt">;
-  userProfile?: Pick<UserProfile, "extra" | "onboarding">;
+  userProfile?: Pick<UserProfile, "extra" | "onboarding" | "lastLogin">;
   userId?: number;
   traitTypes: UserTraitType[] | "all";
 }) {
@@ -180,6 +181,28 @@ async function _trackUserServerSide({
     } catch (error) {
       rootLogger.error(`Failed to track client info traits: ${(error as Error).message}`);
     }
+  } else {
+    // ⚠️，context 信息一定要有，不然就会被设置默认值
+    try {
+      if (!userProfile) {
+        userProfile = await prisma.userProfile.findUniqueOrThrow({
+          where: { userId },
+          select: { id: true, onboarding: true, lastLogin: true, extra: true },
+        });
+      }
+      const lastLogin = userProfile.lastLogin as UserLastLogin;
+      context = {
+        ...context,
+        ...(lastLogin.clientIp ? { ip: lastLogin.clientIp } : {}),
+        ...(lastLogin.userAgent ? { userAgent: lastLogin.userAgent } : {}),
+        ...(lastLogin.geo
+          ? { location: { city: lastLogin.geo.city, country: lastLogin.geo.country } }
+          : {}),
+        // ...(locale ? { locale } : {}),
+      };
+    } catch (error) {
+      rootLogger.error(`Failed to track last login traits: ${(error as Error).message}`);
+    }
   }
 
   if (traitTypesToUse["profile"]) {
@@ -193,7 +216,7 @@ async function _trackUserServerSide({
       if (!userProfile) {
         userProfile = await prisma.userProfile.findUniqueOrThrow({
           where: { userId },
-          select: { id: true, onboarding: true, extra: true },
+          select: { id: true, onboarding: true, lastLogin: true, extra: true },
         });
       }
       // 提取 acquisition 数据
@@ -240,7 +263,7 @@ async function _trackUserServerSide({
 
 export async function trackUserServerSide(args: {
   user: Pick<User, "id" | "name" | "email" | "createdAt"> & {};
-  userProfile: Pick<UserProfile, "extra" | "onboarding">;
+  userProfile: Pick<UserProfile, "extra" | "onboarding" | "lastLogin">;
   traitTypes: UserTraitType[] | "all";
 }): Promise<void>;
 
@@ -251,7 +274,7 @@ export async function trackUserServerSide(args: {
 
 export async function trackUserServerSide(args: {
   user?: Pick<User, "id" | "name" | "email" | "createdAt">;
-  userProfile?: Pick<UserProfile, "extra" | "onboarding">;
+  userProfile?: Pick<UserProfile, "extra" | "onboarding" | "lastLogin">;
   userId?: number;
   traitTypes: UserTraitType[] | "all";
 }) {
