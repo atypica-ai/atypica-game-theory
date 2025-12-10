@@ -24,6 +24,7 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { getHostCountForPodcastType } from "../types";
 import { generatePodcastCoverImage } from "./coverImage";
+import { createGoogleTTSClient, GoogleTTSClient } from "./google/client";
 import { createVolcanoClient } from "./volcano/client";
 
 /**
@@ -469,24 +470,72 @@ export async function generatePodcastAudio({
   try {
     logger.info({ msg: "Starting podcast audio generation", hostCount });
 
-    // Create Volcano TTS client
-    const volcanoClient = createVolcanoClient(logger);
-
-    // Step 1: Fetch audio from Volcano TTS API (with silence already inserted between rounds)
-    const result = await volcanoClient.fetchAudioChunks({
-      script: script,
-      podcastToken,
-      locale,
-      hostCount,
-      logger,
-    });
+    // Determine which TTS engine to use
+    // Google TTS: only for single speaker and en-US locale
+    // Volcano TTS: for all other cases
+    const useGoogleTTS = GoogleTTSClient.canUseGoogleTTS(script, locale);
 
     logger.info({
-      msg: "Received audio from Volcano TTS",
-      bufferSize: result.audioBuffer.byteLength,
-      duration: result.duration,
-      mimeType: result.mimeType,
+      msg: "Selected TTS engine",
+      engine: useGoogleTTS ? "Google" : "Volcano",
+      locale,
+      scriptLength: script.length,
     });
+
+    // Step 1: Fetch audio from selected TTS API
+    let result;
+    if (useGoogleTTS) {
+      try {
+        const googleClient = createGoogleTTSClient(logger);
+        result = await googleClient.fetchAudioChunks({
+          script: script,
+          podcastToken,
+          hostCount,
+          locale,
+          logger,
+        });
+        logger.info({
+          msg: "Received audio from Google TTS",
+          bufferSize: result.audioBuffer.byteLength,
+          mimeType: result.mimeType,
+        });
+      } catch (error) {
+        logger.warn({
+          msg: "Google TTS failed, falling back to Volcano",
+          error: error instanceof Error ? error.message : String(error),
+        });
+        // Fallback to Volcano if Google TTS fails
+        const volcanoClient = createVolcanoClient(logger);
+        result = await volcanoClient.fetchAudioChunks({
+          script: script,
+          podcastToken,
+          hostCount,
+          locale,
+          logger,
+        });
+        logger.info({
+          msg: "Received audio from Volcano TTS (fallback)",
+          bufferSize: result.audioBuffer.byteLength,
+          duration: result.duration,
+          mimeType: result.mimeType,
+        });
+      }
+    } else {
+      const volcanoClient = createVolcanoClient(logger);
+      result = await volcanoClient.fetchAudioChunks({
+        script: script,
+        podcastToken,
+        locale,
+        hostCount,
+        logger,
+      });
+      logger.info({
+        msg: "Received audio from Volcano TTS",
+        bufferSize: result.audioBuffer.byteLength,
+        duration: result.duration,
+        mimeType: result.mimeType,
+      });
+    }
 
     // Step 2: Get the final audio buffer (already concatenated by the client)
     const finalAudioBuffer = result.audioBuffer;
@@ -521,10 +570,10 @@ export async function generatePodcastAudio({
       });
     } catch (error) {
       logger.warn({
-        msg: "Failed to parse audio metadata, using Volcano TTS duration as fallback",
+        msg: "Failed to parse audio metadata, using TTS duration as fallback",
         error: error instanceof Error ? error.message : String(error),
       });
-      // Use Volcano TTS duration as fallback
+      // Use TTS duration as fallback (if available)
       duration = result.duration ? Number(result.duration.toFixed(3)) : undefined;
     }
 

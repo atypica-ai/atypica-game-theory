@@ -91,7 +91,7 @@ export class AudioCache {
       // Load audio cache store JSON file
       const cacheStorePath = join(
         process.cwd(),
-        "src/app/(podcast)/lib/volcano/audioCacheStore.json",
+        "src/app/(podcast)/lib/cache/audioCacheStore.json",
       );
       const cacheStoreContent = readFileSync(cacheStorePath, "utf-8");
       const cacheStore: AudioCacheStore = JSON.parse(cacheStoreContent);

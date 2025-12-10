@@ -3,7 +3,7 @@ import "server-only";
 import { Logger } from "pino";
 import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
-import { AudioCache } from "./audioCache";
+import { AudioCache } from "../cache/audioCache";
 import {
   EventType,
   FinishConnection,
