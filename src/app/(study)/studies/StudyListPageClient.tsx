@@ -5,35 +5,19 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import { Loader2Icon, NotebookTextIcon, SearchIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useRef } from "react";
+import useSWR from "swr";
 import { fetchUserStudies } from "./actions";
 import { StudyCard } from "./StudyCard";
 
-type TStudy = ExtractServerActionData<typeof fetchUserStudies>[number];
-type PaginationInfo = {
-  page: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
-};
-
-type StudiesSearchParams = {
-  page: number;
-  search: string;
-};
-
-interface StudyListPageClientProps {
+export function StudyListPageClient({
+  initialSearchParams,
+}: {
   initialSearchParams: Record<string, string | number>;
-}
-
-export function StudyListPageClient({ initialSearchParams }: StudyListPageClientProps) {
+}) {
   const t = useTranslations("StudyListPage");
-  const [studies, setStudies] = useState<TStudy[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Use query params hook with initial values from server
@@ -41,7 +25,10 @@ export function StudyListPageClient({ initialSearchParams }: StudyListPageClient
     values: { page: currentPage, search: searchQuery },
     setParam,
     setParams,
-  } = useListQueryParams<StudiesSearchParams>({
+  } = useListQueryParams<{
+    page: number;
+    search: string;
+  }>({
     params: {
       page: createParamConfig.number(1),
       search: createParamConfig.string(""),
@@ -49,9 +36,10 @@ export function StudyListPageClient({ initialSearchParams }: StudyListPageClient
     initialValues: initialSearchParams,
   });
 
-  const loadStudies = useCallback(async () => {
-    setIsLoading(true);
-    try {
+  // Use SWR for data fetching
+  const { data, isLoading } = useSWR(
+    ["studies", currentPage, searchQuery],
+    async () => {
       const result = await fetchUserStudies({
         page: currentPage,
         pageSize: 8, // 3x3-1 grid (留一个给 new study block)
@@ -62,20 +50,19 @@ export function StudyListPageClient({ initialSearchParams }: StudyListPageClient
         throw new Error(result.message);
       }
 
-      setStudies(result.data);
-      if (result.pagination) {
-        setPagination(result.pagination);
-      }
-    } catch (error) {
-      console.log("Failed to fetch studies:", (error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentPage, searchQuery]);
+      return {
+        studies: result.data,
+        pagination: result.pagination,
+      };
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
-  useEffect(() => {
-    loadStudies();
-  }, [loadStudies]);
+  const studies = data?.studies ?? [];
+  const pagination = data?.pagination ?? null;
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();

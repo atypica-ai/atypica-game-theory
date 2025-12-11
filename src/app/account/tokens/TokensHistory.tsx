@@ -12,7 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import { TokensLog, TokensLogVerb } from "@/prisma/client";
 import { TokensLogResourceType } from "@/tokens/types";
@@ -27,93 +26,78 @@ import {
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
 
 interface TokensHistoryProps {
   initialSearchParams: Record<string, string | number>;
 }
 
+type TokensHistoryItem = TokensLog & { consumedBy?: string; noCharge?: "true" | "false" | null };
+
 export function TokensHistory({ initialSearchParams }: TokensHistoryProps) {
   const { data: session } = useSession();
   const t = useTranslations("AccountPage");
   const locale = useLocale();
-  const [tokensHistory, setTokensHistory] = useState<
-    (TokensLog & { consumedBy?: string; noCharge?: "true" | "false" | null })[]
-  >([]);
-  const [historyIsLoading, setHistoryIsLoading] = useState(true);
 
   // Use query params hook for URL synchronization
-  type TokensHistorySearchParams = {
-    page: number;
-  };
-
   const {
     values: { page: currentPage },
     setParam,
-  } = useListQueryParams<TokensHistorySearchParams>({
+  } = useListQueryParams<{ page: number }>({
     params: {
       page: createParamConfig.number(1),
     },
     initialValues: initialSearchParams,
   });
 
-  const [teamStatus, setTeamStatus] = useState<ExtractServerActionData<
-    typeof getUserTeamStatusAction
-  > | null>(null);
+  // Fetch team status first
+  const { data: teamStatus, isLoading: teamStatusLoading } = useSWR(
+    session?.user?.id ? ["team-status", session.user.id] : null,
+    async () => {
+      const result = await getUserTeamStatusAction();
+      if (!result.success) throw new Error("Failed to fetch team status");
+      return result.data;
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
-  // 加载用户团队状态
-  useEffect(() => {
-    if (session?.user?.id) {
-      getUserTeamStatusAction().then((result) => {
-        if (result.success) {
-          setTeamStatus(result.data);
-        }
-      });
-    }
-  }, [session?.user?.id]);
+  // Fetch tokens history based on team status and current page
+  const { data, isLoading: historyIsLoading } = useSWR(
+    teamStatus ? ["tokens-history", currentPage, teamStatus.teamRole] : null,
+    async () => {
+      // Double check teamStatus exists (should always be true when this runs)
+      if (!teamStatus) throw new Error("Team status not loaded");
 
-  const [pagination, setPagination] = useState<{
-    page: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-  } | null>(null);
-
-  const loadTokensHistory = useCallback(async () => {
-    if (!teamStatus) {
-      // 等 teamStatus 加载好了再获取 tokens
-      return;
-    }
-    setHistoryIsLoading(true);
-    try {
-      console.log(teamStatus, "start");
       const result =
         teamStatus.teamRole === "owner"
           ? await fetchTokensHistoryAsTeamOwner(currentPage, 10)
           : await fetchTokensHistory(currentPage, 10);
-      if (result.success) {
-        setTokensHistory(result.data);
-        if (result.pagination) {
-          setPagination(result.pagination);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to fetch tokens history:", error);
-    } finally {
-      setHistoryIsLoading(false);
-    }
-  }, [currentPage, teamStatus]);
 
-  // 当页面或团队状态变化时加载数据
-  useEffect(() => {
-    loadTokensHistory();
-  }, [loadTokensHistory]);
+      if (!result.success) throw new Error("Failed to fetch tokens history");
+
+      return {
+        tokensHistory: result.data as TokensHistoryItem[],
+        pagination: result.pagination,
+      };
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+
+  const tokensHistory = (data?.tokensHistory ?? []) as TokensHistoryItem[];
+  const pagination = data?.pagination ?? null;
+  const isLoading = teamStatusLoading || historyIsLoading;
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">{t("tokensHistorySection.title")}</h1>
       <div>
-        {historyIsLoading ? (
+        {isLoading ? (
           <div className="text-center py-6 text-muted-foreground">Loading...</div>
         ) : tokensHistory.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground">

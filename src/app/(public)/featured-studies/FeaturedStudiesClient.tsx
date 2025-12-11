@@ -5,34 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
-import { ExtractServerActionData, ServerActionResultPagination } from "@/lib/serverAction";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { proxiedImageLoader } from "@/lib/utils";
 import { AnalystKind } from "@/prisma/client";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { fetchPublicFeaturedStudies } from "./actions";
 
 type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
-
-export const SearchParamsConfig = {
-  page: createParamConfig.number(1),
-  kind: {
-    defaultValue: "all" as AnalystKind | "all",
-    serialize: (value: AnalystKind | "all") => value,
-    deserialize: (value: string | null) => {
-      if (!value) return "all" as AnalystKind | "all";
-      return value as AnalystKind | "all";
-    },
-  },
-} as const;
-
-export type FeaturedStudiesSearchParams = {
-  page: number;
-  kind: AnalystKind | "all";
-};
 
 export default function FeaturedStudiesClient({
   initialSearchParams,
@@ -41,41 +24,55 @@ export default function FeaturedStudiesClient({
 }) {
   const locale = useLocale();
   const t = useTranslations("FeaturedStudiesPage");
-  const [studies, setStudies] = useState<TStudies>([]);
-  const [pagination, setPagination] = useState<ServerActionResultPagination | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const {
     values: { page: currentPage, kind: activeAnalystKind },
     setParam,
     setParams,
-  } = useListQueryParams<FeaturedStudiesSearchParams>({
-    params: SearchParamsConfig,
+  } = useListQueryParams<{
+    page: number;
+    kind: AnalystKind | "all";
+  }>({
+    params: {
+      page: createParamConfig.number(1),
+      kind: {
+        defaultValue: "all" as AnalystKind | "all",
+        serialize: (value: AnalystKind | "all") => value,
+        deserialize: (value: string | null) => {
+          if (!value) return "all" as AnalystKind | "all";
+          return value as AnalystKind | "all";
+        },
+      },
+    },
     initialValues: initialSearchParams,
   });
 
-  useEffect(() => {
-    async function loadStudies() {
-      setIsLoading(true);
-      try {
-        const result = await fetchPublicFeaturedStudies({
-          locale,
-          kind: activeAnalystKind === "all" ? undefined : activeAnalystKind,
-          page: currentPage,
-          pageSize: 12,
-        });
-        if (result.success) {
-          setStudies(result.data);
-          if (result.pagination) {
-            setPagination(result.pagination);
-          }
-        }
-      } finally {
-        setIsLoading(false);
+  // Use SWR for data fetching
+  const { data, isLoading } = useSWR(
+    ["featured-studies", locale, activeAnalystKind, currentPage],
+    async () => {
+      const result = await fetchPublicFeaturedStudies({
+        locale,
+        kind: activeAnalystKind === "all" ? undefined : activeAnalystKind,
+        page: currentPage,
+        pageSize: 12,
+      });
+      if (!result.success) {
+        throw new Error("Failed to load featured studies");
       }
-    }
-    loadStudies();
-  }, [activeAnalystKind, locale, currentPage]);
+      return {
+        studies: result.data,
+        pagination: result.pagination,
+      };
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+
+  const studies = data?.studies ?? [];
+  const pagination = data?.pagination ?? null;
 
   const handleKindChange = (value: string) => {
     setParams({ kind: value as AnalystKind | "all", page: 1 });

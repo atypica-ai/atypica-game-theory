@@ -2,24 +2,17 @@
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
-import { ExtractServerActionData, ServerActionResultPagination } from "@/lib/serverAction";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { PlayIcon, SquareArrowOutUpLeftIcon, Volume2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 import { fetchFeaturedPodcasts } from "./actions";
 import { HighlightPodcast } from "./HighlightPodcast";
 
 type FeaturedPodcastItem = ExtractServerActionData<typeof fetchFeaturedPodcasts>[number];
-
-export const SearchParamsConfig = {
-  page: createParamConfig.number(1),
-} as const;
-
-export type FeaturedPodcastsSearchParams = {
-  page: number;
-};
 
 export function FeaturedPodcastsClient({
   initialSearchParams,
@@ -28,50 +21,64 @@ export function FeaturedPodcastsClient({
 }) {
   const locale = useLocale();
   const t = useTranslations("FeaturedPodcastsPage");
-  const [featuredPodcasts, setFeaturedPodcasts] = useState<FeaturedPodcastItem[]>([]);
-  const [pagination, setPagination] = useState<ServerActionResultPagination | null>(null);
-  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const {
     values: { page: currentPage },
     setParam,
-  } = useListQueryParams<FeaturedPodcastsSearchParams>({
-    params: SearchParamsConfig,
+  } = useListQueryParams<{
+    page: number;
+  }>({
+    params: {
+      page: createParamConfig.number(1),
+    },
     initialValues: initialSearchParams,
   });
 
-  const loadFeaturedPodcasts = useCallback(async () => {
-    setLoading(true);
-    try {
+  // Use SWR for data fetching
+  const { data, isLoading: loading } = useSWR(
+    ["featured-podcasts", locale, currentPage],
+    async () => {
       const result = await fetchFeaturedPodcasts({ locale, page: currentPage, pageSize: 10 });
-      if (result.success) {
-        setFeaturedPodcasts(result.data);
-        if (result.pagination) {
-          setPagination(result.pagination);
-        }
+      if (!result.success) {
+        throw new Error("Failed to load featured podcasts");
       }
-    } catch (error) {
-      console.error("Failed to load featured podcasts:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [locale, currentPage]);
-
-  useEffect(() => {
-    loadFeaturedPodcasts();
-  }, [loadFeaturedPodcasts]);
-
-  // Get podcast kind from extra
-  const getPodcastKind = (featuredPodcast: FeaturedPodcastItem) => {
-    return featuredPodcast.podcast.extra?.kindDetermination?.kind;
-  };
-
-  // Categorize podcasts by kind
-  const businessPodcasts = featuredPodcasts.filter((p) => getPodcastKind(p) === "opinionOriented");
-  const societyPodcasts = featuredPodcasts.filter(
-    (p) => getPodcastKind(p) === "deepDive" || getPodcastKind(p) === "debate",
+      return {
+        featuredPodcasts: result.data,
+        pagination: result.pagination,
+      };
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
   );
+
+  // Memoize derived data to prevent unnecessary recalculations
+  const { featuredPodcasts, businessPodcasts, societyPodcasts, highlightPodcast } = useMemo(() => {
+    const podcasts = data?.featuredPodcasts ?? [];
+
+    // Get podcast kind from extra
+    const getPodcastKind = (featuredPodcast: FeaturedPodcastItem) => {
+      return featuredPodcast.podcast.extra?.kindDetermination?.kind;
+    };
+
+    const business = podcasts.filter((p) => getPodcastKind(p) === "opinionOriented");
+    const society = podcasts.filter(
+      (p) => getPodcastKind(p) === "deepDive" || getPodcastKind(p) === "debate",
+    );
+    const highlight =
+      podcasts.length > 0 ? podcasts[Math.floor(Math.random() * podcasts.length)] : null;
+
+    return {
+      featuredPodcasts: podcasts,
+      businessPodcasts: business,
+      societyPodcasts: society,
+      highlightPodcast: highlight,
+    };
+  }, [data]);
+
+  const pagination = data?.pagination ?? null;
 
   // Get category filtered podcasts for More to Discover
   const categoryFilteredPodcasts =
@@ -80,13 +87,6 @@ export function FeaturedPodcastsClient({
       : selectedCategory === "society"
         ? societyPodcasts
         : [];
-
-  // Highlight podcast (random)
-  const highlightPodcast = useMemo(() => {
-    return featuredPodcasts.length > 0
-      ? featuredPodcasts[Math.floor(Math.random() * featuredPodcasts.length)]
-      : null;
-  }, [featuredPodcasts]);
 
   return (
     <div className="min-h-screen bg-background">

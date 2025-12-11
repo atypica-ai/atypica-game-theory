@@ -17,6 +17,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import useSWR from "swr";
 import { fetchMyPodcasts } from "./actions";
 
 type PodcastItem = ExtractServerActionData<typeof fetchMyPodcasts>[number];
@@ -24,29 +25,25 @@ type PodcastItem = ExtractServerActionData<typeof fetchMyPodcasts>[number];
 export default function MyPodcastsClient() {
   const t = useTranslations("MyPodcastsPage");
   const locale = useLocale();
-  const [podcasts, setPodcasts] = useState<PodcastItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [playingPodcast, setPlayingPodcast] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const loadPodcasts = useCallback(async () => {
-    try {
+  // Use SWR for data fetching
+  const { data: podcasts = [], isLoading: loading } = useSWR(
+    "my-podcasts",
+    async () => {
       const result = await fetchMyPodcasts();
-      if (!result.success) throw result;
-      // Use real data if available, otherwise use placeholder data
-      setPodcasts(result.data);
-    } catch (error) {
-      // On error, show placeholder data for demo
-      setPodcasts([]);
-      console.error("Load podcasts error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadPodcasts();
-  }, [loadPodcasts]);
+      if (!result.success) throw new Error("Failed to fetch podcasts");
+      return result.data;
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      onError: (error) => {
+        console.error("Load podcasts error:", error);
+      },
+    },
+  );
 
   // Clean up audio on unmount
   useEffect(() => {
