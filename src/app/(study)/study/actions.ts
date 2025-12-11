@@ -154,6 +154,31 @@ export async function createProductRnDStudyUserChat(
   return result;
 }
 
+export async function createFastInsightStudyUserChat(
+  {
+    role,
+    content,
+    attachments,
+  }: {
+    role: "user" | "assistant";
+    content: string;
+    attachments?: ChatMessageAttachment[];
+  },
+  extra?: Pick<UserChatExtra, "briefUserChatId" | "referenceUserChats">,
+): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
+  const result = await createStudyUserChat({ role, content, attachments }, extra);
+  if (result.success) {
+    const studyUserChatId = result.data.id;
+    await prisma.analyst.update({
+      where: { studyUserChatId },
+      data: {
+        kind: AnalystKind.fastInsight,
+      },
+    });
+  }
+  return result;
+}
+
 export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   token: string,
   kind: Tkind,

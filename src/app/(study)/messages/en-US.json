@@ -31,6 +31,16 @@
       "openButton": "Open",
       "copySuccess": "Link copied to clipboard"
     },
+    "AnalystPodcastShareButton": {
+      "listenPodcast": "Listen Podcast",
+      "title": "Podcast URL",
+      "successMessage": "Podcast URL is ready. You can access the podcast at this address or share it with others:",
+      "copyButton": "Copy",
+      "openInstructions": "You can also click the \"Open\" button below to listen in a new tab.",
+      "closeButton": "Close",
+      "openButton": "Open",
+      "copySuccess": "Link copied to clipboard"
+    },
     "ChatBox": {
       "placeholder": "Ask a follow-up question or reply",
       "noneOfTheAbove": "None of the above",

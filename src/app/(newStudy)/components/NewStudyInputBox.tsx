@@ -1,6 +1,10 @@
 "use client";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
-import { createProductRnDStudyUserChat, createStudyUserChat } from "@/app/(study)/study/actions";
+import {
+  createFastInsightStudyUserChat,
+  createProductRnDStudyUserChat,
+  createStudyUserChat,
+} from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { FileUploadStatus } from "@/components/chat/FileUploadStatus";
@@ -53,7 +57,7 @@ export function NewStudyInputBox({
   const [input, setInput] = useState("");
   const [partialTranscript, setPartialTranscript] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [studyType, setStudyType] = useState<"general" | "product-rnd">("general");
+  const [studyType, setStudyType] = useState<"general" | "product-rnd" | "fast-insight">("general");
   const [showStudyTypeSelector, setShowStudyTypeSelector] = useState(false);
   const [referenceChatTitles, setReferenceChatTitles] = useState<
     { token: string; title: string }[]
@@ -127,7 +131,12 @@ export function NewStudyInputBox({
                 { role: "user", content: input, attachments },
                 extra,
               )
-            : await createStudyUserChat({ role: "user", content: input, attachments }, extra);
+            : studyType === "fast-insight"
+              ? await createFastInsightStudyUserChat(
+                  { role: "user", content: input, attachments },
+                  extra,
+                )
+              : await createStudyUserChat({ role: "user", content: input, attachments }, extra);
         if (!result.success) {
           throw result;
         }
@@ -158,7 +167,9 @@ export function NewStudyInputBox({
           isSM ? (
             <RadioGroup
               value={studyType}
-              onValueChange={(value) => setStudyType(value as "general" | "product-rnd")}
+              onValueChange={(value) =>
+                setStudyType(value as "general" | "product-rnd" | "fast-insight")
+              }
               className="flex gap-4 ml-1"
             >
               <div className="flex items-center">
@@ -173,11 +184,19 @@ export function NewStudyInputBox({
                   {t("productRnDStudy")}
                 </Label>
               </div>
+              <div className="flex items-center">
+                <RadioGroupItem value="fast-insight" id="fast-insight" className="h-3 w-3 mr-0.5" />
+                <Label htmlFor="fast-insight" className="text-xs cursor-pointer p-1">
+                  {t("fastInsightStudy")}
+                </Label>
+              </div>
             </RadioGroup>
           ) : (
             <Select
               value={studyType}
-              onValueChange={(value) => setStudyType(value as "general" | "product-rnd")}
+              onValueChange={(value) =>
+                setStudyType(value as "general" | "product-rnd" | "fast-insight")
+              }
             >
               <SelectTrigger className="w-auto h-auto text-xs px-2 py-1 border-none bg-transparent shadow-none focus:ring-0 gap-1.5">
                 <SelectValue placeholder={t("studyType")} />
@@ -188,6 +207,9 @@ export function NewStudyInputBox({
                 </SelectItem>
                 <SelectItem value="product-rnd" className="text-xs">
                   {t("productRnDStudy")}
+                </SelectItem>
+                <SelectItem value="fast-insight" className="text-xs">
+                  {t("fastInsightStudy")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -226,7 +248,13 @@ export function NewStudyInputBox({
           setInput(value);
           debouncedSaveToLocalStorage(value);
         }}
-        placeholder={studyType === "product-rnd" ? t("productRnDPlaceholder") : t("placeholder")}
+        placeholder={
+          studyType === "product-rnd"
+            ? t("productRnDPlaceholder")
+            : studyType === "fast-insight"
+              ? t("fastInsightPlaceholder")
+              : t("placeholder")
+        }
         className={cn(
           "resize-none border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60",
           "flex-1 min-h-48 sm:min-h-32 max-h-80 w-full px-4 scrollbar-thin",

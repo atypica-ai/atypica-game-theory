@@ -99,12 +99,14 @@
       "startNewStudy": "Start New Study",
       "placeholder": "Ask any business question about human behavior and decision-making. We'll model the subjective factors that drive real choices.",
       "productRnDPlaceholder": "Describe a product idea you'd like to explore.",
+      "fastInsightPlaceholder": "Ask a question or describe a topic for a fast, podcast-oriented deep research study.",
       "sendLabel": "Study",
       "enterToSend": "Enter to start",
       "tapToSend": "Tap to start",
       "studyType": "Select Study Type",
       "generalStudy": "General Study",
       "productRnDStudy": "Product R&D",
+      "fastInsightStudy": "Fast Insight",
       "needHelpToClarify": "Need help to clarify your thoughts?"
     },
     "GlobalHeader": {
@@ -268,6 +270,9 @@
       "recording": "Recording",
       "processing": "Processing",
       "tapToRecord": "Tap to record"
+    },
+    "GeneratePodcastResultMessage": {
+      "podcastGenerated": "Podcast generated successfully"
     },
     "GenerateReportResultMessage": {
       "reportGenerated": "Report is generated, click to view"

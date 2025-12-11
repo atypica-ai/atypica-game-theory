@@ -11,6 +11,7 @@ import { createUIMessageStream, createUIMessageStreamResponse, generateId } from
 import { getServerSession } from "next-auth/next";
 import { Locale } from "next-intl";
 import { NextResponse } from "next/server";
+import { fastInsightAgentRequest } from "./fastInsightAgentRequest";
 import { noQuotaAgentRequest } from "./noQuotaAgentRequest";
 import { productRnDAgentRequest } from "./productRnDAgentRequest";
 import { studyAgentRequest } from "./studyAgentRequest";
@@ -110,6 +111,18 @@ export async function POST(req: Request) {
     return await noQuotaAgentRequest(params);
   } else if (userChat.analyst.kind === AnalystKind.productRnD) {
     return await productRnDAgentRequest(params);
+  } else if (userChat.analyst.kind === AnalystKind.fastInsight) {
+    const stream = createUIMessageStream({
+      async execute({ writer }) {
+        await fastInsightAgentRequest({ ...params, streamWriter: writer });
+      },
+      onError: (error) => {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        logger.error(errorMsg);
+        return errorMsg;
+      },
+    });
+    return createUIMessageStreamResponse({ stream });
   } else {
     // return await studyAgentRequest(params);
     const stream = createUIMessageStream({

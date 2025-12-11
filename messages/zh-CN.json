@@ -99,12 +99,14 @@
       "startNewStudy": "开始新研究",
       "placeholder": "提出任何关于人类行为和决策的商业问题。我们将为驱动真实选择的主观因素建模。",
       "productRnDPlaceholder": "描述一个你想探索的产品想法。",
+      "fastInsightPlaceholder": "提出问题或描述主题，进行快速、播客导向的深度研究。",
       "sendLabel": "研究",
       "enterToSend": "按回车开始",
       "tapToSend": "点击开始",
       "studyType": "选择研究类型",
       "generalStudy": "常规研究",
       "productRnDStudy": "产品研发",
+      "fastInsightStudy": "快速洞察",
       "needHelpToClarify": "需要灵感或梳理思路？"
     },
     "GlobalHeader": {
@@ -268,6 +270,9 @@
       "recording": "录音中",
       "processing": "处理中",
       "tapToRecord": "点击录音"
+    },
+    "GeneratePodcastResultMessage": {
+      "podcastGenerated": "播客已生成"
     },
     "GenerateReportResultMessage": {
       "reportGenerated": "报告已生成，点击查看"
