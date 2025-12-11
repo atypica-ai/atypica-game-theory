@@ -2,10 +2,38 @@
 
 ---
 
-## Future Updates Preview
+## v11.x: AI Research Platform & Developer Tools
 
-- **🧪 Alpha Testing: Product R&D Flow**
-  - A new "Product R&D" research template focusing on market trends, user needs, and creative ideation.
+### `v11.0.0` — _2025-12-11_
+
+- **🚀 Major Feature: Fast Insight**
+  - Brand new fast research mode focused on rapidly generating high-quality podcast content.
+  - Five-stage automated workflow: Topic Understanding → Podcast Planning → Deep Research → Podcast Generation → Completion.
+  - Dual-model collaboration using Claude 3.7 Sonnet and Gemini 2.5 Pro.
+  - Intelligent podcast content strategy and search strategy planning, automatically generates opinion-oriented podcast scripts and audio.
+- **🎯 Full Launch: Product R&D Flow**
+  - New "Product R&D" research template focusing on market trends, user needs, and creative ideation.
+  - Optimized research workflow and report structure for product innovation scenarios.
+  - Helps teams quickly validate product ideas and market opportunities.
+- **🔬 Core Feature: Deep Research MCP Service**
+  - Implemented Deep Research functionality as an MCP (Model Context Protocol) service.
+  - Supports multiple research experts: Grok Expert, Trend Explorer, and more.
+  - Integrated Perplexity Sonar Pro for high-quality web searches.
+  - Provides standard MCP API interface for third-party integration with streaming output support.
+- **🔑 Developer Feature: API Key Management**
+  - Users can create and manage personal API Keys.
+  - Teams support multi-member API Key management with permission validation and ownership control.
+  - Deep Research MCP endpoint supports API Key authentication.
+- **🎨 Content Enhancement: AI-Generated Cover Images**
+  - Reports and podcasts support AI auto-generated cover images (integrated Gemini 2.5 Flash Image model).
+  - Supports custom aspect ratio and layout controls, podcast RSS supports platform-specific cover ratios.
+- **📽️ UX Improvements: Enhanced Replay Feature**
+  - Added cinematic intro animation effects and progress bar to display research progress.
+  - Supports quick jump to report functionality, optimized visual hierarchy and console display.
+- **⚡ Technical Optimizations**
+  - Database performance optimization (foreign key indexes, N+1 query fixes, Token deadlock resolution).
+  - System enhancements (interview project import/export, mobile menu, security updates, etc.).
+  - Code refactoring and cleanup for improved system stability and maintainability.
 
 ---
 

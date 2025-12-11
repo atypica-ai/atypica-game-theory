@@ -8,20 +8,77 @@ export const ChangelogZH: React.FC = () => {
       </header>
 
       <div className="space-y-16">
-        {/* Future Updates */}
+        {/* v11.x */}
         <section>
-          <h2 className="text-2xl font-bold mb-6 border-b border-gray-300 dark:border-gray-700 pb-3">
-            未来更新预览
-          </h2>
-          <div className="space-y-6 text-gray-800 dark:text-gray-200">
+          <h2 className="text-2xl font-bold mb-8">v11.x: AI 研究平台化与开发者工具</h2>
+          <div className="space-y-10">
             <article>
-              <ul className="space-y-4">
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v11.0.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-12-11</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
-                  <h4 className="font-semibold text-lg">
-                    🧪 Alpha 测试中: 产品研发流程 (Product R&D Flow)
-                  </h4>
-                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    全新的&quot;产品创新&quot;研究模板，专注于市场趋势、用户需求和创意生成。
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🚀 重磅功能: Fast Insight (快速洞察)
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    全新的快速研究模式，专注于快速生成高质量播客内容。五阶段自动化工作流：主题理解
+                    → 播客规划 → 深度研究 → 播客生成 →
+                    完成。使用 Claude 3.7 Sonnet 和 Gemini 2.5 Pro
+                    双模型协作。智能规划播客内容策略和搜索策略，自动生成观点导向的播客脚本和音频。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🎯 正式上线: 产品研发流程 (Product R&D)
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    全新的"产品研发"研究模板，专注于市场趋势、用户需求和创意生成。针对产品创新场景优化的研究工作流和报告结构。帮助团队快速验证产品想法和市场机会。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🔬 核心功能: Deep Research MCP 服务
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    实现深度研究功能的 MCP (Model Context Protocol)
+                    服务化。支持多种研究专家：Grok Expert、Trend Explorer
+                    等。集成 Perplexity Sonar Pro 进行高质量网络搜索。提供标准 MCP API 接口，支持第三方集成和流式输出。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🔑 开发者功能: API Key 管理
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    用户可创建和管理个人 API Keys。团队支持多成员 API Key 管理，支持 API Key 权限验证和所有权控制。Deep
+                    Research MCP 端点支持 API Key 认证。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🎨 内容增强: AI 生成封面图片
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    报告和播客支持 AI 自动生成封面图片（集成 Gemini 2.5 Flash Image
+                    模型）。支持自定义宽高比和布局控制，播客 RSS 支持平台特定的封面比例。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    📽️ 体验优化: Replay 功能增强
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    新增电影式开场动画效果，添加进度条显示研究进度。支持快速跳转到报告功能，优化视觉层次和控制台显示。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    ⚡ 技术优化
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    数据库性能优化（外键索引、N+1 查询修复、Token 死锁修复）。系统增强（访谈项目导入导出、移动端菜单、安全更新等）。代码重构和清理，提升系统稳定性和可维护性。
                   </p>
                 </li>
               </ul>

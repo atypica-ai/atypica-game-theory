@@ -8,19 +8,93 @@ export const ChangelogEN: React.FC = () => {
       </header>
 
       <div className="space-y-16">
-        {/* Future Updates */}
+        {/* v11.x */}
         <section>
-          <h2 className="text-2xl font-bold mb-6 border-b border-gray-300 dark:border-gray-700 pb-3">
-            Future Updates Preview
+          <h2 className="text-2xl font-bold mb-8">
+            v11.x: AI Research Platform & Developer Tools
           </h2>
-          <div className="space-y-6 text-gray-800 dark:text-gray-200">
+          <div className="space-y-10">
             <article>
-              <ul className="space-y-4">
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v11.0.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-12-11</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
-                  <h4 className="font-semibold text-lg">🧪 Alpha Testing: Product R&D Flow</h4>
-                  <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    A new &quot;Product R&D&quot; research template focusing on market trends, user
-                    needs, and creative ideation.
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🚀 Major Feature: Fast Insight
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Brand new fast research mode focused on rapidly generating high-quality podcast
+                    content. Five-stage automated workflow: Topic Understanding → Podcast Planning →
+                    Deep Research → Podcast Generation → Completion. Dual-model collaboration using
+                    Claude 3.7 Sonnet and Gemini 2.5 Pro. Intelligent podcast content strategy and
+                    search strategy planning, automatically generates opinion-oriented podcast
+                    scripts and audio.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🎯 Full Launch: Product R&D Flow
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    New &quot;Product R&D&quot; research template focusing on market trends, user
+                    needs, and creative ideation. Optimized research workflow and report structure
+                    for product innovation scenarios. Helps teams quickly validate product ideas and
+                    market opportunities.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🔬 Core Feature: Deep Research MCP Service
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Implemented Deep Research functionality as an MCP (Model Context Protocol)
+                    service. Supports multiple research experts: Grok Expert, Trend Explorer, and
+                    more. Integrated Perplexity Sonar Pro for high-quality web searches. Provides
+                    standard MCP API interface for third-party integration with streaming output
+                    support.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🔑 Developer Feature: API Key Management
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Users can create and manage personal API Keys. Teams support multi-member API
+                    Key management with permission validation and ownership control. Deep Research
+                    MCP endpoint supports API Key authentication.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🎨 Content Enhancement: AI-Generated Cover Images
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Reports and podcasts support AI auto-generated cover images (integrated Gemini
+                    2.5 Flash Image model). Supports custom aspect ratio and layout controls,
+                    podcast RSS supports platform-specific cover ratios.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    📽️ UX Improvements: Enhanced Replay Feature
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Added cinematic intro animation effects and progress bar to display research
+                    progress. Supports quick jump to report functionality, optimized visual
+                    hierarchy and console display.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    ⚡ Technical Optimizations
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Database performance optimization (foreign key indexes, N+1 query fixes, Token
+                    deadlock resolution). System enhancements (interview project import/export,
+                    mobile menu, security updates, etc.). Code refactoring and cleanup for improved
+                    system stability and maintainability.
                   </p>
                 </li>
               </ul>
