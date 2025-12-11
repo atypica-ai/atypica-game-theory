@@ -16,7 +16,7 @@ export const ChangelogEN: React.FC = () => {
           <div className="space-y-10">
             <article>
               <h3 className="font-semibold text-xl mb-4">
-                <code>v11.0.0</code> —{" "}
+                <code>v11.3.0</code> —{" "}
                 <em className="text-gray-600 dark:text-gray-400 font-normal">2025-12-11</em>
               </h3>
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
@@ -35,15 +35,33 @@ export const ChangelogEN: React.FC = () => {
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🎯 Full Launch: Product R&D Flow
+                    📽️ UX Improvements: Enhanced Replay Feature
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    New &quot;Product R&D&quot; research template focusing on market trends, user
-                    needs, and creative ideation. Optimized research workflow and report structure
-                    for product innovation scenarios. Helps teams quickly validate product ideas and
-                    market opportunities.
+                    Added cinematic intro animation effects and progress bar to display research
+                    progress. Supports quick jump to report functionality, optimized visual
+                    hierarchy and console display.
                   </p>
                 </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    ⚡ Technical Optimizations
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Database performance optimization (foreign key indexes, N+1 query fixes, Token
+                    deadlock resolution). System enhancements (interview project import/export,
+                    mobile menu, security updates, etc.). Code refactoring and cleanup for improved
+                    system stability and maintainability.
+                  </p>
+                </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v11.2.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-12-05</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
                     🔬 Core Feature: Deep Research MCP Service
@@ -76,25 +94,72 @@ export const ChangelogEN: React.FC = () => {
                     podcast RSS supports platform-specific cover ratios.
                   </p>
                 </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v11.1.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-12-03</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    📽️ UX Improvements: Enhanced Replay Feature
+                    🎯 Full Launch: Product R&D Flow
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    Added cinematic intro animation effects and progress bar to display research
-                    progress. Supports quick jump to report functionality, optimized visual
-                    hierarchy and console display.
+                    New &quot;Product R&D&quot; research template focusing on market trends, user
+                    needs, and creative ideation. Optimized research workflow and report structure
+                    for product innovation scenarios. Helps teams quickly validate product ideas and
+                    market opportunities.
+                  </p>
+                </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v11.0.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-11-21</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    💎 New Plans: Unlimited Subscriptions
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Launched Super (personal) and SuperTeam (team) unlimited token plans. Unlimited
+                    token usage for high-intensity research needs. Flexible team member management
+                    and subscription controls.
                   </p>
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    ⚡ Technical Optimizations
+                    🏢 Enterprise Features Upgrade
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    Database performance optimization (foreign key indexes, N+1 query fixes, Token
-                    deadlock resolution). System enhancements (interview project import/export,
-                    mobile menu, security updates, etc.). Code refactoring and cleanup for improved
-                    system stability and maintainability.
+                    Comprehensive Pricing page overhaul with enterprise feature showcase.
+                    Enterprise-exclusive features: custom development, dedicated customer success,
+                    API access, etc. Optimized enterprise lead collection with enhanced information
+                    gathering.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🔒 SOC 2 Certification
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Platform achieved SOC 2 security compliance certification. Certification badges
+                    displayed across website, pricing, and enterprise pages. Enhanced
+                    enterprise-grade security and compliance assurance.
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🤝 Launch: Affiliate Program
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Officially launched friends.atypica.ai affiliate platform. Integrated Tolt
+                    tracking system for referral links and commission management. Automatic tracking
+                    of referral sources for user signups and payments.
                   </p>
                 </li>
               </ul>

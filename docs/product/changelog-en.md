@@ -4,17 +4,23 @@
 
 ## v11.x: AI Research Platform & Developer Tools
 
-### `v11.0.0` — _2025-12-11_
+### `v11.3.0` — _2025-12-11_
 
 - **🚀 Major Feature: Fast Insight**
   - Brand new fast research mode focused on rapidly generating high-quality podcast content.
   - Five-stage automated workflow: Topic Understanding → Podcast Planning → Deep Research → Podcast Generation → Completion.
   - Dual-model collaboration using Claude 3.7 Sonnet and Gemini 2.5 Pro.
   - Intelligent podcast content strategy and search strategy planning, automatically generates opinion-oriented podcast scripts and audio.
-- **🎯 Full Launch: Product R&D Flow**
-  - New "Product R&D" research template focusing on market trends, user needs, and creative ideation.
-  - Optimized research workflow and report structure for product innovation scenarios.
-  - Helps teams quickly validate product ideas and market opportunities.
+- **📽️ UX Improvements: Enhanced Replay Feature**
+  - Added cinematic intro animation effects and progress bar to display research progress.
+  - Supports quick jump to report functionality, optimized visual hierarchy and console display.
+- **⚡ Technical Optimizations**
+  - Database performance optimization (foreign key indexes, N+1 query fixes, Token deadlock resolution).
+  - System enhancements (interview project import/export, mobile menu, security updates, etc.).
+  - Code refactoring and cleanup for improved system stability and maintainability.
+
+### `v11.2.0` — _2025-12-05_
+
 - **🔬 Core Feature: Deep Research MCP Service**
   - Implemented Deep Research functionality as an MCP (Model Context Protocol) service.
   - Supports multiple research experts: Grok Expert, Trend Explorer, and more.
@@ -27,13 +33,32 @@
 - **🎨 Content Enhancement: AI-Generated Cover Images**
   - Reports and podcasts support AI auto-generated cover images (integrated Gemini 2.5 Flash Image model).
   - Supports custom aspect ratio and layout controls, podcast RSS supports platform-specific cover ratios.
-- **📽️ UX Improvements: Enhanced Replay Feature**
-  - Added cinematic intro animation effects and progress bar to display research progress.
-  - Supports quick jump to report functionality, optimized visual hierarchy and console display.
-- **⚡ Technical Optimizations**
-  - Database performance optimization (foreign key indexes, N+1 query fixes, Token deadlock resolution).
-  - System enhancements (interview project import/export, mobile menu, security updates, etc.).
-  - Code refactoring and cleanup for improved system stability and maintainability.
+
+### `v11.1.0` — _2025-12-03_
+
+- **🎯 Full Launch: Product R&D Flow**
+  - New "Product R&D" research template focusing on market trends, user needs, and creative ideation.
+  - Optimized research workflow and report structure for product innovation scenarios.
+  - Helps teams quickly validate product ideas and market opportunities.
+
+### `v11.0.0` — _2025-11-21_
+
+- **💎 New Plans: Unlimited Subscriptions**
+  - Launched Super (personal) and SuperTeam (team) unlimited token plans.
+  - Unlimited token usage for high-intensity research needs.
+  - Flexible team member management and subscription controls.
+- **🏢 Enterprise Features Upgrade**
+  - Comprehensive Pricing page overhaul with enterprise feature showcase.
+  - Enterprise-exclusive features: custom development, dedicated customer success, API access, etc.
+  - Optimized enterprise lead collection with enhanced information gathering.
+- **🔒 SOC 2 Certification**
+  - Platform achieved SOC 2 security compliance certification.
+  - Certification badges displayed across website, pricing, and enterprise pages.
+  - Enhanced enterprise-grade security and compliance assurance.
+- **🤝 Launch: Affiliate Program**
+  - Officially launched friends.atypica.ai affiliate platform.
+  - Integrated Tolt tracking system for referral links and commission management.
+  - Automatic tracking of referral sources for user signups and payments.
 
 ---
 

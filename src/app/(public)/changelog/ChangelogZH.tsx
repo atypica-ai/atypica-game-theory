@@ -14,7 +14,7 @@ export const ChangelogZH: React.FC = () => {
           <div className="space-y-10">
             <article>
               <h3 className="font-semibold text-xl mb-4">
-                <code>v11.0.0</code> —{" "}
+                <code>v11.3.0</code> —{" "}
                 <em className="text-gray-600 dark:text-gray-400 font-normal">2025-12-11</em>
               </h3>
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
@@ -31,12 +31,28 @@ export const ChangelogZH: React.FC = () => {
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🎯 正式上线: 产品研发流程 (Product R&D)
+                    📽️ 体验优化: Replay 功能增强
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    全新的"产品研发"研究模板，专注于市场趋势、用户需求和创意生成。针对产品创新场景优化的研究工作流和报告结构。帮助团队快速验证产品想法和市场机会。
+                    新增电影式开场动画效果，添加进度条显示研究进度。支持快速跳转到报告功能，优化视觉层次和控制台显示。
                   </p>
                 </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    ⚡ 技术优化
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    数据库性能优化（外键索引、N+1 查询修复、Token 死锁修复）。系统增强（访谈项目导入导出、移动端菜单、安全更新等）。代码重构和清理，提升系统稳定性和可维护性。
+                  </p>
+                </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v11.2.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-12-05</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
                     🔬 核心功能: Deep Research MCP 服务
@@ -65,20 +81,65 @@ export const ChangelogZH: React.FC = () => {
                     模型）。支持自定义宽高比和布局控制，播客 RSS 支持平台特定的封面比例。
                   </p>
                 </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v11.1.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-12-03</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    📽️ 体验优化: Replay 功能增强
+                    🎯 正式上线: 产品研发流程 (Product R&D)
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    新增电影式开场动画效果，添加进度条显示研究进度。支持快速跳转到报告功能，优化视觉层次和控制台显示。
+                    全新的"产品研发"研究模板，专注于市场趋势、用户需求和创意生成。针对产品创新场景优化的研究工作流和报告结构。帮助团队快速验证产品想法和市场机会。
+                  </p>
+                </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
+                <code>v11.0.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-11-21</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    💎 全新套餐: Unlimited 无限套餐
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    推出 Super（个人）和 SuperTeam（团队）无限 token
+                    套餐。无限 token 使用，满足高强度研究需求。支持灵活的团队成员管理和订阅管理。
                   </p>
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    ⚡ 技术优化
+                    🏢 企业版功能升级
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    数据库性能优化（外键索引、N+1 查询修复、Token 死锁修复）。系统增强（访谈项目导入导出、移动端菜单、安全更新等）。代码重构和清理，提升系统稳定性和可维护性。
+                    全面升级 Pricing
+                    页面，增加企业版功能展示。企业专属功能：定制化研发、专属客户成功团队、API
+                    访问等。优化企业客户引导流程，增强信息收集。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🔒 SOC 2 认证
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    平台通过 SOC 2
+                    安全合规认证。在官网、定价页和企业页展示认证标识。提升企业级安全和合规保障。
+                  </p>
+                </li>
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🤝 推出 Affiliate Program (联盟推广计划)
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    正式上线 friends.atypica.ai
+                    联盟推广平台。集成 Tolt 推广追踪系统，支持推广链接和佣金管理。用户注册和付费自动追踪推广来源。
                   </p>
                 </li>
               </ul>
