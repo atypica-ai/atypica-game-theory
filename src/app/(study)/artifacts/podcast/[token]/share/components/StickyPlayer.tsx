@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
-import { Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX } from "lucide-react";
+import { Loader2, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -27,6 +27,7 @@ export function StickyPlayer({
   const t = useTranslations("PodcastSharePage");
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(50);
@@ -41,8 +42,17 @@ export function StickyPlayer({
     const audio = audioRef.current;
     if (!audio) return;
 
+    const handleLoadStart = () => {
+      setIsLoading(true);
+    };
+
+    const handleCanPlay = () => {
+      setIsLoading(false);
+    };
+
     const handleLoadedMetadata = () => {
       setDuration(audio.duration);
+      setIsLoading(false);
       // Auto-play when metadata is loaded
       if (autoPlay && !autoPlayAttemptedRef.current) {
         autoPlayAttemptedRef.current = true;
@@ -58,6 +68,14 @@ export function StickyPlayer({
       }
     };
 
+    const handleWaiting = () => {
+      setIsLoading(true);
+    };
+
+    const handlePlaying = () => {
+      setIsLoading(false);
+    };
+
     const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
     };
@@ -66,12 +84,20 @@ export function StickyPlayer({
       setIsPlaying(false);
     };
 
+    audio.addEventListener("loadstart", handleLoadStart);
+    audio.addEventListener("canplay", handleCanPlay);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("waiting", handleWaiting);
+    audio.addEventListener("playing", handlePlaying);
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("ended", handleEnded);
 
     return () => {
+      audio.removeEventListener("loadstart", handleLoadStart);
+      audio.removeEventListener("canplay", handleCanPlay);
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("waiting", handleWaiting);
+      audio.removeEventListener("playing", handlePlaying);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
     };
@@ -117,8 +143,12 @@ export function StickyPlayer({
       audio.pause();
       setIsPlaying(false);
     } else {
-      audio.play();
-      setIsPlaying(true);
+      setIsLoading(true);
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch(() => {
+        setIsLoading(false);
+      });
     }
   }, [isPlaying]);
 
@@ -128,8 +158,17 @@ export function StickyPlayer({
       if (!audio || !duration) return;
 
       const newTime = value[0];
+      const wasPlaying = !audio.paused;
       audio.currentTime = newTime;
       setCurrentTime(newTime);
+
+      // Resume playing if it was playing before the seek
+      if (wasPlaying) {
+        audio.play().catch(() => {
+          // Handle play failure silently
+          setIsPlaying(false);
+        });
+      }
     },
     [duration],
   );
@@ -303,10 +342,12 @@ export function StickyPlayer({
             <Button
               size="icon"
               onClick={togglePlayPause}
-              disabled={!podcastAudioSrc}
+              disabled={!podcastAudioSrc || isLoading}
               className="h-14 w-14 sm:h-16 sm:w-16 rounded-full"
             >
-              {isPlaying ? (
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 sm:h-7 sm:w-7 animate-spin" />
+              ) : isPlaying ? (
                 <Pause className="h-6 w-6 sm:h-7 sm:w-7" />
               ) : (
                 <Play className="h-6 w-6 sm:h-7 sm:w-7 ml-0.5" />
