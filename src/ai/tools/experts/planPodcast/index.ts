@@ -83,7 +83,7 @@ export const planPodcastTool = ({
 } & AgentToolConfigArgs) =>
   tool({
     description:
-      "Plan a podcast content strategy and search strategy based on the user's question. This tool combines planning with saving the analyst configuration. The analyst kind is fixed to 'opinionOriented' for podcast generation.",
+      "Plan a podcast content strategy based on the user's question. This tool analyzes the most attractive angle for audiences and plans research strategy including core questions, research directions, and information depth requirements. The analyst kind is fixed to 'fastInsight' for podcast generation.",
     inputSchema: planPodcastInputSchema,
     outputSchema: planPodcastOutputSchema,
     toModelOutput: (result: PlainTextToolResult) => {

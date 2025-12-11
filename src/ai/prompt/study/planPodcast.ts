@@ -35,7 +35,6 @@ export const planPodcastSystem = ({ locale }: { locale: Locale }) => {
 - 为了在这个角度上制作深度、有信息量但聚焦的播客，需要规划：
 - 研究问题：需要回答哪些关键问题来支撑这个角度？
 - 研究方向：需要从哪些维度收集信息？（例如：最新动态、数据趋势、案例研究、专家观点、争议讨论等）
-- 搜索策略：使用网络搜索应该查询哪些具体内容？每个查询的目的是什么？
 - 信息深度要求：需要收集多深度的信息？（例如：表面现象、深层原因、未来趋势、不同观点等）
 </目标>
 
@@ -61,12 +60,8 @@ export const planPodcastSystem = ({ locale }: { locale: Locale }) => {
 **研究方向：**
 [列出需要收集信息的维度，例如：最新动态、数据趋势、案例研究、专家观点等]
 
-**搜索策略：**
-[列出具体的网络搜索查询，每个查询包含：
-- 查询内容：[具体的搜索关键词或问题]
-- 搜索目的：[这个查询是为了获取什么信息]
-- 信息用途：[获取的信息将如何用于播客内容]
-]
+**信息深度要求：**
+[说明需要收集多深度的信息，例如：需要了解表面现象、深层原因、未来趋势、不同观点等]
 
 </输出格式>
 
@@ -109,7 +104,6 @@ Your planning needs to achieve the following objectives:
 - To produce a deep, informative but focused podcast in this angle, need to plan:
 - Research questions: What key questions need to be answered to support this angle?
 - Research directions: From which dimensions should information be collected? (e.g., latest trends, data trends, case studies, expert opinions, controversial discussions, etc.)
-- Search strategy: What specific content should be queried using web search? What is the purpose of each query?
 - Information depth requirements: How deep should the information collected be? (e.g., surface phenomena, deep causes, future trends, different perspectives, etc.)
 </Objectives>
 
@@ -134,13 +128,6 @@ Your planning should be output in the following structure:
 
 **Research Directions:**
 [List dimensions from which information needs to be collected, e.g., latest trends, data trends, case studies, expert opinions, etc.]
-
-**Search Strategy:**
-[List specific web search queries, each query includes:
-- Query content: [Specific search keywords or questions]
-- Search purpose: [What information is this query to obtain]
-- Information usage: [How the obtained information will be used in podcast content]
-]
 
 **Information Depth Requirements:**
 [Specify the depth of information to be collected, e.g., need to understand surface phenomena, deep causes, future trends, different perspectives, etc.]
