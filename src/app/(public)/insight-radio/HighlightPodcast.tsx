@@ -64,10 +64,7 @@ export function HighlightPodcast({
           {/* Play Button */}
           <Button
             variant="default"
-            className={cn(
-              "sm:h-20 sm:w-20 md:h-24 md:w-24 sm:rounded-full",
-              "shadow-lg flex-shrink-0",
-            )}
+            className={cn("sm:h-20 sm:w-20 md:h-24 md:w-24 sm:rounded-full", "shadow-lg shrink-0")}
             asChild
           >
             <Link href={`/artifacts/podcast/${podcast.token}/share`} target="_blank">

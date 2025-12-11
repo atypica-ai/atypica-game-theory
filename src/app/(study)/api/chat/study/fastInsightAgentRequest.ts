@@ -24,12 +24,10 @@ import {
   ImagePart,
   smoothStream,
   stepCountIs,
-  StepResult,
   streamText,
   TextPart,
-  TextStreamPart,
   ToolChoice,
-  ToolSet,
+  TypedToolResult,
   UIMessageStreamWriter,
 } from "ai";
 import { Locale } from "next-intl";
@@ -46,7 +44,7 @@ const MAX_STEPS_EACH_ROUND = 4;
 export async function fastInsightAgentRequest({
   userChat: { id: studyUserChatId, extra: userChatExtra, analyst },
   userId,
-  teamId,
+  // teamId,
   // reqSignal,
   logger,
   locale,
@@ -101,7 +99,7 @@ export async function fastInsightAgentRequest({
     // 直接使用 tool，没必要用 mcp 了，因为已经写死了 tool name
     [ToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
-  } as ToolSet;
+  };
 
   // Load DeepResearch MCP to get the deepResearchTool
   // const deepResearchClient = await createDeepResearchMcpClient(userId);
@@ -128,8 +126,8 @@ export async function fastInsightAgentRequest({
     streamingMessage: streamingMessage, // 和后面 toUIMessageStream 固定 messageId 同理，要固定 messageId, 不然 waitUntilAttachmentsProcessed 里面的消息在 UI 上会显示 2 条，因为后面 toUIMessageStream 会改变 id
   });
 
-  const tools = allTools as ToolSet;
-  const toolChoice: ToolChoice<ToolSet> = "auto";
+  const tools = allTools;
+  const toolChoice: ToolChoice<typeof allTools> = "auto";
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
 
@@ -246,7 +244,7 @@ export async function fastInsightAgentRequest({
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
 
-    onChunk: async ({ chunk }: { chunk: TextStreamPart<ToolSet> }) => {
+    onChunk: async ({ chunk }) => {
       appendChunkToStreamingMessage(streamingMessage, chunk);
       await debouncePersistentMessage(streamingMessage, {
         immediate:
@@ -258,7 +256,7 @@ export async function fastInsightAgentRequest({
       });
     },
 
-    onStepFinish: async (step: StepResult<ToolSet>) => {
+    onStepFinish: async (step) => {
       await immediatePersistentMessage();
       // 注意，stepFinish 一定要保存，并且 immediate:true，前面等待中的 chunk persistent 会被去掉，没影响
       // 有时候 llm 返回的消息很少，前面 onChunk 的 persistent 还在 debounce 的时候，后面 user 的 continue 消息已经保存了，这就会导致
@@ -291,17 +289,14 @@ export async function fastInsightAgentRequest({
         // 到 onStepFinish 的时候，所有 tool 肯定都已经停止，只需要 abort study
         safeAbort(studyAbortController);
       }
-      // Store deepResearch result in analyst.studySummary
+
+      // ⚠️ Store deepResearch result in analyst.studySummary
       const deepResearchTool = step.toolResults.find(
         (tool) => tool?.toolName === ToolName.deepResearch,
-      );
+      ) as Extract<TypedToolResult<typeof allTools>, { toolName: ToolName.deepResearch }>;
       if (deepResearchTool) {
         // MCP tools return structuredContent with the result
-        const output = deepResearchTool.output as any;
-        const deepResearchResult =
-          output?.structuredContent?.result ||
-          output?.result ||
-          (typeof output === "string" ? output : null);
+        const deepResearchResult = deepResearchTool.output.result;
         if (deepResearchResult) {
           // Fetch analyst including the required studySummary field
           const { analyst } = await prisma.userChat.findUniqueOrThrow({

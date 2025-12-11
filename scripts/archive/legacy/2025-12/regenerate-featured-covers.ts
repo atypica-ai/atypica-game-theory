@@ -9,7 +9,7 @@ async function regenerateFeaturedCovers() {
   loadEnvConfig(process.cwd());
   // ensure env vars are loaded
   const { rootLogger } = await import("@/lib/logging");
-  const { generateReportCoverImage } = await import("@/ai/tools/experts/report/coverImage");
+  const { generateReportCoverImage } = await import("@/ai/tools/experts/generateReport/coverImage");
   const { prisma } = await import("@/prisma/prisma");
 
   console.log("Starting regeneration of cover images for featured studies...\n");

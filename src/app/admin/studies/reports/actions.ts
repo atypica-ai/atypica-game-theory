@@ -1,5 +1,5 @@
 "use server";
-import { generateReportCoverImage } from "@/ai/tools/experts/report/coverImage";
+import { generateReportCoverImage } from "@/ai/tools/experts/generateReport/coverImage";
 import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 // import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";

@@ -7,11 +7,11 @@ import { AudienceCallResult, AudienceCallToolInput } from "./experts/audienceCal
 import { BuildPersonaToolInput, BuildPersonaToolResult } from "./experts/buildPersona/types";
 import { CreateSubAgentResult, CreateSubAgentToolInput } from "./experts/createSubAgent/types";
 import { GeneratePodcastResult, GeneratePodcastToolInput } from "./experts/generatePodcast/types";
+import { GenerateReportResult, GenerateReportToolInput } from "./experts/generateReport/types";
 import { InterviewChatResult, InterviewChatToolInput } from "./experts/interviewChat/types";
 import { PlanPodcastResult, PlanPodcastToolInput } from "./experts/planPodcast/types";
 import { PlanStudyResult, PlanStudyToolInput } from "./experts/planStudy/types";
 import { ReasoningThinkingResult, ReasoningThinkingToolInput } from "./experts/reasoning/types";
-import { GenerateReportResult, GenerateReportToolInput } from "./experts/report/types";
 import {
   ScoutSocialTrendsResult,
   ScoutSocialTrendsToolInput,

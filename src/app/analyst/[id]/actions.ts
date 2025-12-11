@@ -1,8 +1,8 @@
 "use server";
 import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/interviewChat";
 
-import { generateReport } from "@/ai/tools/experts/report";
-import { generateReportCoverSvg } from "@/ai/tools/experts/report/coverSvg";
+import { generateReport } from "@/ai/tools/experts/generateReport";
+import { generateReportCoverSvg } from "@/ai/tools/experts/generateReport/coverSvg";
 import { StatReporter } from "@/ai/tools/types";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
