@@ -18,11 +18,15 @@ function injectImgTag(html: string, reportToken: string) {
  * Clean up markdown code blocks that AI models (especially Gemini) often add around HTML content
  */
 function cleanHtmlFromMarkdown(html: string): string {
-  return html
+  const cleaned = html
     .trim()
     .replace(/^```html\s*/i, "")
     .replace(/\s*```\s*$/i, "")
     .trim();
+
+  // Extract content between <!DOCTYPE html> and </html>
+  const match = cleaned.match(/<!DOCTYPE html>[\s\S]*?<\/html>/i);
+  return match ? match[0] : cleaned;
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
@@ -47,7 +51,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
             const analystReport = await prisma.analystReport.findUniqueOrThrow({
               where: { token: reportToken },
             });
-            const onePageHtml = analystReport.onePageHtml;
+            const onePageHtml = cleanHtmlFromMarkdown(analystReport.onePageHtml);
             const chunk = onePageHtml.substring(start);
             controller.enqueue(encoder.encode(chunk));
             start = onePageHtml.length;

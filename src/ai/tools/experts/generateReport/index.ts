@@ -20,11 +20,15 @@ import {
  * Clean up markdown code blocks that AI models (especially Gemini) often add around HTML content
  */
 function cleanHtmlFromMarkdown(html: string): string {
-  return html
+  const cleaned = html
     .trim()
     .replace(/^```html\s*/i, "")
     .replace(/\s*```\s*$/i, "")
     .trim();
+
+  // Extract content between <!DOCTYPE html> and </html>
+  const match = cleaned.match(/<!DOCTYPE html>[\s\S]*?<\/html>/i);
+  return match ? match[0] : cleaned;
 }
 
 export const generateReportTool = ({
@@ -317,7 +321,14 @@ export async function generateReport({
       }
       const response = streamText({
         model: llm(modelName),
-        providerOptions: defaultProviderOptions,
+        providerOptions: {
+          ...defaultProviderOptions,
+          // bedrock: {
+          //   reasoningConfig: {
+          //     type: "disabled",
+          //   },
+          // } as BedrockProviderOptions,
+        },
 
         system: systemPrompt
           ? systemPrompt

@@ -1,6 +1,7 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { StudyPageClient } from "@/app/(study)/study/StudyPageClient";
 import { Forbidden } from "@/components/Forbidden";
+import { DefaultLayout } from "@/components/layout/DefaultLayout";
 import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
@@ -46,7 +47,13 @@ async function StudyPage({
   if (!result.success) {
     // notFound(); // Cannot use notFound() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
     // Instead, return a NotFound component directly
-    return <NotFound />;
+    // return <NotFound />;
+    // 因为这个页面没有 layout.ts, 是写在 client.tsx 里的，所以这里要另外定义一下
+    return (
+      <DefaultLayout header={true} footer={true}>
+        <NotFound />
+      </DefaultLayout>
+    );
     // throwServerActionError(result);
   }
   const studyUserChat = result.data;
