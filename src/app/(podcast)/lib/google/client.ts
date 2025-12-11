@@ -1,10 +1,12 @@
 import "server-only";
 
-import { TextToSpeechLongAudioSynthesizeClient } from "@google-cloud/text-to-speech";
+import { GoogleAuth } from "google-auth-library";
 import { Logger } from "pino";
+import { proxiedFetch } from "@/lib/proxy/fetch";
 import { AudioCache } from "../cache/audioCache";
 import { PodcastGenerationOptions, PodcastGenerationResult } from "../volcano/client";
-import { Storage } from "@google-cloud/storage";
+import { splitStringIntoChunks } from "./utils";
+
 /**
  * Google Cloud TTS Client for podcast audio generation
  *
@@ -14,9 +16,11 @@ import { Storage } from "@google-cloud/storage";
  * - English (en-US) locale
  *
  * For other cases, use the Volcano TTS client instead.
+ *
+ * Uses direct HTTP requests with proxiedFetch to support proxy configuration.
  */
 export class GoogleTTSClient {
-  private client: TextToSpeechLongAudioSynthesizeClient;
+  private auth: GoogleAuth;
   private projectId: string;
   private location: string;
   private gcsBucket: string;
@@ -35,29 +39,29 @@ export class GoogleTTSClient {
     this.gcsBucket = config.gcsBucket;
     this.logger = logger;
 
-    // Initialize Google Cloud TTS client with Application Default Credentials
-    // The user mentioned auth is already prepared via environment variables
-    this.client = new TextToSpeechLongAudioSynthesizeClient();
+    // Initialize Google Auth with Application Default Credentials
+    // This will work with the https.request override in proxy/fetch.ts
+    this.auth = new GoogleAuth({
+      scopes: [
+        "https://www.googleapis.com/auth/cloud-platform",
+        "https://www.googleapis.com/auth/cloud-platform.read-only",
+      ],
+    });
   }
 
   /**
-   * Get the validated number of podcast hosts for TTS generation
-   * Returns 1 if only one unique host is detected, otherwise returns 2+
+   * Retrieves an access token using Application Default Credentials.
    */
-  private getValidatedHostCount(script: string): number {
-    // Regular expression to match host markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】
-    const hostMarkerRegex = /【([^】]+)】/g;
-    const hosts = new Set<string>();
+  async getAuthToken() {
+    const auth = new GoogleAuth({
+      // Optional: explicitly define scopes if needed, otherwise 'cloud-platform' is often the default
+      scopes: ['https://www.googleapis.com/auth/cloud-platform'] 
+    });
 
-    let match;
-    while ((match = hostMarkerRegex.exec(script)) !== null) {
-      const hostName = match[1].trim();
-      if (hostName) {
-        hosts.add(hostName);
-      }
-    }
-
-    return hosts.size || 1; // Default to 1 if no markers found
+    // This method automatically detects credentials from the GOOGLE_APPLICATION_CREDENTIALS 
+    // environment variable and generates an access token.
+    const accessToken = await auth.getAccessToken();
+    return accessToken;
   }
 
   /**
@@ -120,26 +124,62 @@ export class GoogleTTSClient {
   }
 
   /**
-   * Download audio file from Google Cloud Storage
+   * Start long audio synthesis operation
    */
-  private async downloadFromGCS(gcsUri: string): Promise<Buffer> {
-    // Extract bucket and object name from GCS URI (format: gs://bucket-name/object-name)
-    const match = gcsUri.match(/^gs:\/\/([^\/]+)\/(.+)$/);
-    if (!match) {
-      throw new Error(`Invalid GCS URI format: ${gcsUri}`);
+  private async startSynthesis(
+    text: string,
+    accessToken: string,
+  ): Promise<Buffer> {
+    // const parent = `projects/${this.projectId}/locations/${this.location}`;
+    const url = `https://texttospeech.googleapis.com/v1/text:synthesize`;
+
+    const requestBody = {
+      input: {
+        prompt: "Speak aloud in a natural and friendly tone as the host of a Podcast: ",
+        text: text,
+      },
+      voice: {
+        languageCode: "en-us",
+        "name": "Zephyr",
+        "ssmlGender": "FEMALE",
+        "modelName": "gemini-2.5-flash-tts"
+      },
+      audioConfig: {
+        audioEncoding: "MP3",
+        speakingRate: 1.1,
+        sampleRateHertz: 44100,
+      },
+    };
+
+    this.logger?.info({
+      msg: "Starting long audio synthesis",
+      url,
+      textLength: text.length,
+    });
+
+    const response = await proxiedFetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        "x-goog-user-project": this.projectId,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Failed to start synthesis: ${response.status} ${response.statusText} - ${errorText}`,
+      );
     }
-
-    const [, bucketName, objectName] = match;
-
-    // Use Google Cloud Storage client to download
-    // Since auth is prepared, we can use Application Default Credentials
-    const storage = new Storage();
-    const bucket = storage.bucket(bucketName);
-    const file = bucket.file(objectName);
-
-    // Download the file
-    const [buffer] = await file.download();
-    return Buffer.from(buffer);
+    // Parse JSON and decode base64 audioContent to Buffer
+    const json = await response.json();
+    if (!json.audioContent) {
+      throw new Error("No audioContent found in synthesis response");
+    }
+    const audioChunk = Buffer.from(json.audioContent, "base64");
+    return audioChunk;
   }
 
   /**
@@ -174,64 +214,44 @@ export class GoogleTTSClient {
         textLength: text.length,
       });
 
-      // Generate unique GCS output path
-      const outputObjectName = `podcast-audio/${podcastToken}-${Date.now()}.mp3`;
-      const outputGcsUri = `gs://${this.gcsBucket}/${outputObjectName}`;
+      // Get access token
+      const accessToken = await this.getAuthToken();
+      if (!accessToken) {
+        throw new Error("Failed to obtain Google Cloud access token.");
+      }
 
-      // Prepare the synthesis request
-      const parent = `projects/${this.projectId}/locations/${this.location}`;
+      const audioChunks: Buffer[] = [];
 
-      const request = {
-        parent,
-        input: {
-          prompt: "speak in the style of solo-cast podcast with opinion",
-          text: text,
-        },
-        voice: {
-          languageCode: "en-us",
-          name: "Kore", // Default English voice, can be customized
-          model: "gemini-2.5-flash-tts"
-        },
-        audioConfig: {
-          audioEncoding: "MP3" as const,
-          sampleRateHertz: 24000,
-        },
-        outputGcsUri,
-      };
-
-      this.logger?.info({
-        msg: "Starting long audio synthesis",
-        outputGcsUri,
-        textLength: text.length,
-      });
-
-      // Start the long audio synthesis operation
-      const [operation] = await this.client.synthesizeLongAudio(request);
-
-      // Wait for the operation to complete
-      this.logger?.info({
-        msg: "Waiting for synthesis operation to complete",
-        operationName: operation.name,
-      });
-
-      const [response] = await operation.promise();
+      // Split text into chunks and synthesize each chunk
+      const chunks = splitStringIntoChunks(text, 3000);
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        
+        try {
+          const audioChunk = await this.startSynthesis(chunk, accessToken);
+          audioChunks.push(audioChunk);
+          this.logger?.info({
+            msg: "Audio chunk received.",
+            chunkIndex: i + 1,
+            totalChunks: chunks.length,
+            size: audioChunk.byteLength,
+          });
+          
+          await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+        } catch (error) {
+          this.logger?.error({
+            msg: "Failed to synthesize chunk",
+            chunkIndex: i + 1,
+            error: error instanceof Error ? error.message : String(error as Error),
+            chunk: chunk.substring(0, 100) + '...'
+          });
+          throw error; // Re-throw or handle as needed
+        }
+      }
 
       this.logger?.info({
-        msg: "Synthesis operation completed",
-        response,
-      });
-
-      // Download the synthesized audio from GCS
-      this.logger?.info({
-        msg: "Downloading audio from GCS",
-        gcsUri: outputGcsUri,
-      });
-
-      const synthesizedAudio = await this.downloadFromGCS(outputGcsUri);
-
-      this.logger?.info({
-        msg: "Downloaded audio from GCS",
-        size: synthesizedAudio.byteLength,
+        msg: "audio synthesis complete.",
+        length: audioChunks.length,
       });
 
       // Load prologue and epilogue audio
@@ -240,40 +260,40 @@ export class GoogleTTSClient {
       const epilogueAudio = await AudioCache.getEpilogue(locale);
 
       // Concatenate: prologue + silence + synthesized audio + silence + epilogue
-      const audioChunks: Buffer[] = [];
+      
 
-      // Add prologue
-      try {
-        audioChunks.push(prologueAudio);
-        audioChunks.push(SILENCE);
-        this.logger?.info({
-          msg: "Prologue audio added",
-          locale,
-        });
-      } catch (error) {
-        this.logger?.warn({
-          msg: "Failed to load prologue audio, continuing without it",
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
+      // // Add prologue
+      // try {
+      //   audioChunks.push(prologueAudio);
+      //   audioChunks.push(SILENCE);
+      //   this.logger?.info({
+      //     msg: "Prologue audio added",
+      //     locale,
+      //   });
+      // } catch (error) {
+      //   this.logger?.warn({
+      //     msg: "Failed to load prologue audio, continuing without it",
+      //     error: error instanceof Error ? error.message : String(error),
+      //   });
+      // }
 
-      // Add synthesized audio
-      audioChunks.push(synthesizedAudio);
+      // // Add synthesized audio
+      // audioChunks.push(synthesizedAudio);
 
-      // Add epilogue
-      try {
-        audioChunks.push(SILENCE);
-        audioChunks.push(epilogueAudio);
-        this.logger?.info({
-          msg: "Epilogue audio added",
-          locale,
-        });
-      } catch (error) {
-        this.logger?.warn({
-          msg: "Failed to load epilogue audio, continuing without it",
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
+      // // Add epilogue
+      // try {
+      //   audioChunks.push(SILENCE);
+      //   audioChunks.push(epilogueAudio);
+      //   this.logger?.info({
+      //     msg: "Epilogue audio added",
+      //     locale,
+      //   });
+      // } catch (error) {
+      //   this.logger?.warn({
+      //     msg: "Failed to load epilogue audio, continuing without it",
+      //     error: error instanceof Error ? error.message : String(error),
+      //   });
+      // }
 
       // Concatenate all chunks
       const finalAudioBuffer = Buffer.concat(audioChunks);
@@ -283,23 +303,6 @@ export class GoogleTTSClient {
         totalSize: finalAudioBuffer.byteLength,
         chunks: audioChunks.length,
       });
-
-      // Clean up: delete the temporary file from GCS
-      try {
-        const storage = new Storage();
-        const bucket = storage.bucket(this.gcsBucket);
-        const file = bucket.file(outputObjectName);
-        await file.delete();
-        this.logger?.info({
-          msg: "Cleaned up temporary GCS file",
-          objectName: outputObjectName,
-        });
-      } catch (error) {
-        this.logger?.warn({
-          msg: "Failed to clean up temporary GCS file (non-critical)",
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
 
       return {
         audioBuffer: finalAudioBuffer,
@@ -325,7 +328,7 @@ export function createGoogleTTSClient(logger?: Logger): GoogleTTSClient {
 
   if (!projectId || !gcsBucket) {
     throw new Error(
-      "Missing Google Cloud configuration. Please set GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_STORAGE_BUCKET environment variables.",
+      "Missing Google Cloud configuration. Please set GOOGLE_VERTEX_PROJECT and GOOGLE_CLOUD_STORAGE_BUCKET environment variables.",
     );
   }
 

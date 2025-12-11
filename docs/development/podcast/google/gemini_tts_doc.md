@@ -1,4 +1,29 @@
 # Auth
+## Generating access token with sdk
+```
+const {IAMCredentialsClient} = require('@google-cloud/iam-credentials');
+
+// The service account email (e.g., 'my-service-account@my-project.iam.gserviceaccount.com')
+const serviceAccount = 'ACCOUNT_EMAIL_OR_UNIQUEID';
+// The scopes your token needs (e.g., ['www.googleapis.com'])
+const scopes = ['my-scopes'];
+
+// Creates a client. The library automatically uses the GOOGLE_APPLICATION_CREDENTIALS
+// environment variable for authentication.
+const client = new IAMCredentialsClient();
+
+async function generateAccessToken() {
+  const [token] = await client.generateAccessToken({
+    name: `projects/-/serviceAccounts/${serviceAccount}`,
+    scope: scopes,
+  });
+  console.log(`Generated Access Token: ${token.accessToken}`);
+  return token.accessToken;
+}
+
+generateAccessToken();
+
+```
 ## Authenticating with this module
 
 It's incredibly easy to get authenticated and start using Google's APIs. You can set your credentials on a global basis as well as on a per-API basis. See each individual API section below to see how you can auth on a per-API-basis. This is useful if you want to use different accounts for different Cloud services.
