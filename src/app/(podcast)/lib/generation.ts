@@ -22,6 +22,7 @@ import { FilePart, FinishReason, generateObject, ModelMessage, stepCountIs, stre
 import { parseBuffer } from "music-metadata";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
+import { generatePodcastCoverImage } from "./coverImage";
 import { createVolcanoClient } from "./volcano/client";
 
 /**
@@ -109,26 +110,40 @@ export async function generatePodcast({
       .findUniqueOrThrow({ where: { id: podcast.id } })
       .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
-    // Step 3: Generate audio and metadata in parallel
-    logger.info("Starting audio and metadata generation in parallel");
-    const [{ objectUrl, mimeType, duration, fileSize }, { title, showNotes }] = await Promise.all([
-      generatePodcastAudio({
-        podcastId: podcast.id,
-        podcastToken: podcast.token,
-        script: script,
-        locale: locale,
-        abortSignal: abortSignal,
-        statReport: statReport,
-        logger: logger,
-      }),
-      generatePodcastMetadata({
-        script: script,
-        locale: locale,
-        abortSignal: abortSignal,
-        statReport: statReport,
-        logger: logger,
-      }),
-    ]);
+    // Step 3: Generate audio, metadata, and cover image in parallel
+    logger.info("Starting audio, metadata, and cover image generation in parallel");
+    const [{ objectUrl, mimeType, duration, fileSize }, { title, showNotes }, { coverObjectUrl }] =
+      await Promise.all([
+        generatePodcastAudio({
+          podcastId: podcast.id,
+          podcastToken: podcast.token,
+          script: script,
+          locale: locale,
+          abortSignal: abortSignal,
+          statReport: statReport,
+          logger: logger,
+        }),
+        generatePodcastMetadata({
+          script: script,
+          locale: locale,
+          abortSignal: abortSignal,
+          statReport: statReport,
+          logger: logger,
+        }),
+        generatePodcastCoverImage({
+          ratio: "landscape",
+          analyst,
+          podcast,
+          script,
+          locale,
+          abortSignal,
+          statReport,
+          logger,
+        }).catch((error) => {
+          logger.error(`Failed to generate podcast cover image: ${(error as Error).message}`);
+          return { coverObjectUrl: undefined };
+        }),
+      ]);
 
     // Step 4: Mark as completely finished with generatedAt
     await prisma.analystPodcast.update({
@@ -146,6 +161,7 @@ export async function generatePodcast({
           duration,
           size: fileSize,
           showNotes,
+          coverObjectUrl,
         },
       } satisfies AnalystPodcastExtra,
     });

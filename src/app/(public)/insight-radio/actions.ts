@@ -1,6 +1,6 @@
 "use server";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystPodcastExtra, AnalystReportExtra } from "@/prisma/client";
+import { AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { unstable_cache } from "next/cache";
@@ -134,11 +134,6 @@ export const fetchFeaturedPodcasts = unstable_cache(
           token: string;
           title: string;
         };
-        report: {
-          id: number;
-          token: string;
-          extra: AnalystReportExtra;
-        } | null;
       }[]
     >
   > {
@@ -199,38 +194,7 @@ export const fetchFeaturedPodcasts = unstable_cache(
     // Filter out podcasts with missing relations
     const validPodcasts = podcasts.filter((p) => p.analyst.studyUserChat !== null);
 
-    // Step 2: Batch fetch reports for all analysts (1 query instead of N)
-    const analystIds = validPodcasts.map((p) => p.analystId);
-    const latestReports = await prisma.analystReport.findMany({
-      where: {
-        analystId: { in: analystIds },
-        generatedAt: { not: null },
-      },
-      select: {
-        id: true,
-        token: true,
-        extra: true,
-        analystId: true,
-        generatedAt: true,
-      },
-      orderBy: {
-        generatedAt: "desc",
-      },
-    });
-
-    // Step 3: Group reports by analystId and take the latest one
-    const reportsMap = new Map<number, { id: number; token: string; extra: AnalystReportExtra }>();
-    latestReports.forEach((report) => {
-      if (!reportsMap.has(report.analystId)) {
-        reportsMap.set(report.analystId, {
-          id: report.id,
-          token: report.token,
-          extra: (report.extra || {}) as AnalystReportExtra,
-        });
-      }
-    });
-
-    // Step 4: Combine data
+    // Step 3: Combine data
     return {
       success: true,
       data: validPodcasts.map((p) => ({
@@ -246,7 +210,6 @@ export const fetchFeaturedPodcasts = unstable_cache(
           topic: p.analyst.topic,
         },
         studyUserChat: p.analyst.studyUserChat!,
-        report: reportsMap.get(p.analystId) || null,
       })),
       pagination: {
         page,

@@ -200,6 +200,7 @@ export type AnalystPodcastExtra = Partial<{
     duration?: number; // 音频时长，单位：秒
     size?: number; // 文件大小，单位：字节
     showNotes?: string; // 播客节目说明
+    coverObjectUrl?: string; // 封面图片
   };
 
   // Podcast kind determination by LLM with reasoning

@@ -44,7 +44,6 @@ export default function PodcastSharePageClient({
   title,
   studyUserChatToken,
   coverCdnHttpUrl,
-  reportToken,
 }: {
   podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl"> & {
     extra: AnalystPodcastExtra;
@@ -53,7 +52,6 @@ export default function PodcastSharePageClient({
   title: string;
   studyUserChatToken: string;
   coverCdnHttpUrl?: string;
-  reportToken?: string;
 }) {
   const t = useTranslations("PodcastSharePage");
   const pathname = usePathname();
@@ -98,10 +96,10 @@ export default function PodcastSharePageClient({
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin pb-64">
         <div className="max-w-4xl mx-auto px-4 py-6 sm:py-12 space-y-6">
-          {/* Report Cover Image */}
-          {coverCdnHttpUrl && reportToken && (
+          {/* Podcast Cover Image */}
+          {coverCdnHttpUrl && (
             <Link
-              href={`/artifacts/report/${reportToken}/share`}
+              href={`/study/${studyUserChatToken}/share?reply=1`}
               target="_blank"
               className="block w-full max-w-lg mx-auto"
             >
@@ -109,23 +107,12 @@ export default function PodcastSharePageClient({
                 <Image
                   loader={({ src }) => src}
                   src={coverCdnHttpUrl}
-                  alt="Report cover"
+                  alt="Podcast cover"
                   fill
                   className="object-cover"
                 />
               </div>
             </Link>
-          )}
-          {coverCdnHttpUrl && !reportToken && (
-            <div className="relative w-full max-w-lg mx-auto aspect-[16/9] bg-muted rounded-lg overflow-hidden">
-              <Image
-                loader={({ src }) => src}
-                src={coverCdnHttpUrl}
-                alt="Report cover"
-                fill
-                className="object-cover"
-              />
-            </div>
           )}
 
           {/* Podcast Script */}

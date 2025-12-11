@@ -5,7 +5,6 @@ import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { notifyPodcastReady } from "@/app/(podcast)/lib/notify";
 import { PodcastKind } from "@/app/(podcast)/types";
 import { rootLogger } from "@/lib/logging";
-import { generateToken } from "@/lib/utils";
 import { AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
@@ -29,8 +28,12 @@ export const generatePodcastTool = ({
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({}): Promise<GeneratePodcastResult> => {
-      const logger = rootLogger.child({ method: "generatePodcastTool", studyUserChatId });
+    execute: async ({ podcastToken }): Promise<GeneratePodcastResult> => {
+      const logger = rootLogger.child({
+        method: "generatePodcastTool",
+        studyUserChatId,
+        podcastToken,
+      });
 
       // Get analyst to access topic, studySummary, and kind
       const { analyst } = await prisma.userChat.findUniqueOrThrow({
@@ -68,7 +71,7 @@ export const generatePodcastTool = ({
         .create({
           data: {
             analystId: analyst.id,
-            token: generateToken(),
+            token: podcastToken,
             instruction: "",
             script: "",
             extra: {

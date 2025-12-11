@@ -54,11 +54,11 @@ export function AnalystPodcastShareButton({
         <div className="space-y-3 overflow-hidden">
           <p className="text-sm text-muted-foreground mb-2">{t("successMessage")}</p>
           <div className="flex items-center gap-2 mt-1">
-            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden break-words">
+            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden wrap-break-words">
               {fullUrl}
             </div>
             <Button size="sm" variant="outline" onClick={handleCopyUrl} className="shrink-0">
-              <ClipboardCopyIcon size={16} className="mr-1" />
+              <ClipboardCopyIcon className="size-4" />
               {t("copyButton")}
             </Button>
           </div>
@@ -67,7 +67,7 @@ export function AnalystPodcastShareButton({
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => setOpen(false)}>{t("closeButton")}</AlertDialogCancel>
           <Button onClick={() => window.open(fullUrl, "_blank")}>
-            <PlayIcon size={16} className="mr-1" />
+            <PlayIcon className="size-4" />
             {t("openButton")}
           </Button>
         </AlertDialogFooter>

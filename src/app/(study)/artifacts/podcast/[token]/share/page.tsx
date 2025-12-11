@@ -35,7 +35,7 @@ export async function generateMetadata({
   const locale = await getLocale();
   const { token: podcastToken } = await params;
 
-  const { podcast, analyst, studyUserChat, report } = await getCachedPodcastData(podcastToken);
+  const { podcast, analyst, studyUserChat } = await getCachedPodcastData(podcastToken);
 
   const title =
     "🎙️ " +
@@ -50,9 +50,10 @@ export async function generateMetadata({
   }).replace(/[\n\r]/g, " ");
 
   let image: string | undefined;
-  if (report?.extra.coverObjectUrl) {
+  // Use podcast's own cover image
+  if (podcast.extra.metadata?.coverObjectUrl) {
     image = proxiedImageCdnUrl({
-      objectUrl: report.extra.coverObjectUrl,
+      objectUrl: podcast.extra.metadata.coverObjectUrl,
       width: 2000,
     });
   }
@@ -60,7 +61,7 @@ export async function generateMetadata({
 }
 
 async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
-  const { podcast, analyst, studyUserChat, report, coverCdnHttpUrl } =
+  const { podcast, analyst, studyUserChat, coverCdnHttpUrl } =
     await getCachedPodcastData(podcastToken);
 
   const title = podcast.extra.metadata?.title || studyUserChat.title;
@@ -72,7 +73,6 @@ async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
       title={title}
       studyUserChatToken={studyUserChat.token}
       coverCdnHttpUrl={coverCdnHttpUrl}
-      reportToken={report?.token}
     />
   );
 }

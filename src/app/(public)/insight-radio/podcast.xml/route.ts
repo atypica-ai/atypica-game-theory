@@ -40,11 +40,11 @@ export async function GET(request: Request) {
         mimeType,
       });
 
-      // Get cover image URL from report
+      // Get cover image URL from podcast
       let coverImageUrl: string | undefined;
-      if (item.report?.extra.coverObjectUrl) {
+      if (item.podcast.extra.metadata?.coverObjectUrl) {
         coverImageUrl = proxiedImageCdnUrl({
-          objectUrl: item.report.extra.coverObjectUrl,
+          objectUrl: item.podcast.extra.metadata.coverObjectUrl,
           width: 2000,
           height: platform === "youtube" ? undefined : 2000,
         });
@@ -135,7 +135,7 @@ export async function GET(request: Request) {
               baseUrl,
             })
           : formatSummary(description, episodeUrl, locale);
-        // Use report cover image URL (if available)
+        // Use podcast cover image URL (if available)
         const coverImageUrl = item.coverImageUrl;
         return `
     <item>
