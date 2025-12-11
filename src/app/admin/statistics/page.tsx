@@ -103,6 +103,7 @@ export default function StatisticsPage() {
           [AnalystKind.insights]: 0,
           [AnalystKind.creation]: 0,
           [AnalystKind.productRnD]: 0,
+          [AnalystKind.fastInsight]: 0,
           [AnalystKind.misc]: 0,
         },
         feedback: {

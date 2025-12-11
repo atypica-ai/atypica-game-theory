@@ -6,18 +6,34 @@ import {
   ScoutTaskChatResultMessage,
   WebSearchResultMessage,
 } from "@/ai/tools/experts/ToolMessage";
-import { CreateSubAgentResultMessage } from "@/ai/tools/experts/ToolMessage/CreateSubAgentResultMessage";
 import { InterviewChatResultMessage } from "@/ai/tools/experts/ToolMessage/InterviewChatResultMessage";
-import { PlanStudyToolResultMessage } from "@/ai/tools/experts/ToolMessage/PlanStudyToolResultMessage";
-import { ScoutSocialTrendsResultMessage } from "@/ai/tools/experts/ToolMessage/ScoutSocialTrendsResultMessage";
 import { SearchPersonasResultMessage } from "@/ai/tools/experts/ToolMessage/SearchPersonasResultMessage";
 import {
   SocialPostCommentsResultMessage,
   SocialPostsResultMessage,
 } from "@/ai/tools/social/ToolMessage";
 import { SaveAnalystToolResultMessage } from "@/ai/tools/system/ToolMessage";
-import { TAddStudyUIToolResult, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
+import {
+  PlainTextUITools,
+  TAddStudyUIToolResult,
+  ToolName,
+  TStudyMessageWithTool,
+} from "@/ai/tools/types";
 import { RequestInteractionMessage, RequestPaymentMessage } from "@/ai/tools/user/ToolMessage";
+import { Markdown } from "@/components/markdown";
+import { ToolUIPart } from "ai";
+
+export const PlainTextToolResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<ToolUIPart<PlainTextUITools>, { state: "output-available" }>;
+}) => {
+  return (
+    <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
+      <Markdown>{toolInvocation.output.plainText}</Markdown>
+    </div>
+  );
+};
 
 /**
  * 因为 v5 sdk 的 UIMessage 类型改复杂，这里没法精确定义和 UIMessage 的 TOOLS 对应的 ToolUIPart 类型，但是可以定义 UIMessagePart 的泛型类型
@@ -60,12 +76,9 @@ export const StudyToolUIPartDisplay = ({
       return <GeneratePodcastResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.scoutTaskChat}`:
       return <ScoutTaskChatResultMessage toolInvocation={toolUIPart} />;
-    case `tool-${ToolName.scoutSocialTrends}`:
-      return <ScoutSocialTrendsResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.audienceCall}`:
       return <ReasoningThinkingResultMessage toolInvocation={toolUIPart} />;
-    case `tool-${ToolName.createSubAgent}`:
-      return <CreateSubAgentResultMessage toolInvocation={toolUIPart} />;
+
     case `tool-${ToolName.buildPersona}`:
       return <BuildPersonaResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.searchPersonas}`:
@@ -75,8 +88,13 @@ export const StudyToolUIPartDisplay = ({
 
     case `tool-${ToolName.saveAnalyst}`:
       return <SaveAnalystToolResultMessage toolInvocation={toolUIPart} />;
+
+    case `tool-${ToolName.scoutSocialTrends}`:
+    case `tool-${ToolName.createSubAgent}`:
     case `tool-${ToolName.planStudy}`:
-      return <PlanStudyToolResultMessage toolInvocation={toolUIPart} />;
+    case `tool-${ToolName.planPodcast}`:
+    case `tool-${ToolName.deepResearch}`:
+      return <PlainTextToolResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${ToolName.xhsSearch}`:
     case `tool-${ToolName.dySearch}`:

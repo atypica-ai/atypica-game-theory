@@ -113,10 +113,7 @@ export type StudyUITools = {
   [ToolName.interviewChat]: { input: InterviewChatToolInput; output: InterviewChatResult };
   [ToolName.generateReport]: { input: GenerateReportToolInput; output: GenerateReportResult };
   [ToolName.generatePodcast]: { input: GeneratePodcastToolInput; output: GeneratePodcastResult };
-  [ToolName.deepResearch]: {
-    input: DeepResearchInput;
-    output: DeepResearchOutput & PlainTextToolResult;
-  };
+  [ToolName.deepResearch]: { input: DeepResearchInput; output: DeepResearchOutput };
   [ToolName.reasoningThinking]: {
     input: ReasoningThinkingToolInput;
     output: ReasoningThinkingResult;
