@@ -127,30 +127,6 @@ export const generateReportTool = ({
         }
       }
 
-      // Generate Report
-      try {
-        await generateReport({
-          analyst,
-          report,
-          lastReport,
-          instruction,
-          locale,
-          abortSignal,
-          statReport,
-          logger: reportLogger,
-        });
-        // 更新一下 report 的数据
-        report = await prisma.analystReport.findUniqueOrThrow({
-          where: { id: report.id },
-        });
-      } catch (error) {
-        reportLogger.error(`Error generating report for analyst ${analystId}: ${error}`);
-        throw error;
-        // return {
-        //   plainText: `为研究主题 ${analystId} 生成报告失败：${(error as Error).message}`,
-        // };
-      }
-
       await Promise.all([
         generateReport({
           analyst,
