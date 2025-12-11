@@ -1,11 +1,12 @@
 import "server-only";
 
 import { StatReporter } from "@/ai/tools/types";
-import { executeDeepResearch } from "@/app/(deepResearch)/deepResearch";
+import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
 import { ExpertName } from "@/app/(deepResearch)/experts/types";
 import {
   DeepResearchInput,
   deepResearchInputSchema,
+  DeepResearchOutput,
   deepResearchOutputSchema,
 } from "@/app/(deepResearch)/types";
 import { rootLogger } from "@/lib/logging";
@@ -95,37 +96,56 @@ export function createDeepResearchMcpServer(): McpServer {
 
       // Execute with streaming callback that sends MCP progress notifications
       // UserChat creation and message persistence are handled inside executeDeepResearch
-      const result = await executeDeepResearch({
-        query: args.query,
+      // const result = await executeDeepResearch({
+      //   query: args.query,
+      //   expert: args.expert ?? ExpertName.Auto,
+      //   userId,
+      //   locale,
+      //   logger,
+      //   statReport,
+      //   abortSignal,
+      //   onStreamChunk,
+      // });
+      const toolInstance = deepResearchTool({
         userId,
-        expert: args.expert ?? ExpertName.Auto,
         locale,
         logger,
         statReport,
         abortSignal,
         onStreamChunk,
       });
-
+      if (!toolInstance.execute) {
+        throw new Error("Tool instance does not support execution");
+      }
+      const toolCallId = `mcp-tool-call-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const toolOutput = await toolInstance.execute(
+        {
+          query: args.query,
+          expert: args.expert ?? ExpertName.Auto,
+        },
+        { toolCallId, messages: [], abortSignal },
+      );
+      let result: DeepResearchOutput | undefined;
+      if (Symbol.asyncIterator in toolOutput) {
+        for await (const item of toolOutput) {
+          result = item;
+        }
+      } else {
+        result = toolOutput;
+      }
+      if (!result) {
+        throw new Error("Tool output is undefined");
+      }
       // Return final complete result
       return {
-        content: [
-          {
-            type: "text",
-            text: result.result,
-          },
-        ],
+        content: [{ type: "text", text: result.result }],
         structuredContent: result,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       rootLogger.error({ error: errorMessage }, "Deep research tool execution failed");
       return {
-        content: [
-          {
-            type: "text",
-            text: `Error performing deep research: ${errorMessage}`,
-          },
-        ],
+        content: [{ type: "text", text: `Error performing deep research: ${errorMessage}` }],
         isError: true,
       };
     }

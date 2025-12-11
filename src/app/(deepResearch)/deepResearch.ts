@@ -1,17 +1,22 @@
 import "server-only";
 
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
-import { StatReporter } from "@/ai/tools/types";
+import { AgentToolConfigArgs, PlainTextToolResult, StatReporter } from "@/ai/tools/types";
 import { StreamChunkCallback } from "@/lib/mcp/types";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { generateId, TextStreamPart, ToolSet } from "ai";
+import { generateId, TextStreamPart, tool, ToolSet } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { resolveExpert } from "./experts";
-import { DeepResearchInput, DeepResearchOutput } from "./types";
+import {
+  DeepResearchInput,
+  deepResearchInputSchema,
+  DeepResearchOutput,
+  deepResearchOutputSchema,
+} from "./types";
 
 /**
  * Executes deep research using Grok model with web search and X search tools
@@ -23,7 +28,7 @@ import { DeepResearchInput, DeepResearchOutput } from "./types";
  * @param abortSignal - Optional abort signal for cancellation
  * @param onStreamChunk - Optional callback for streaming chunks to MCP client
  */
-export async function executeDeepResearch({
+async function executeDeepResearch({
   query,
   userId,
   expert,
@@ -145,6 +150,7 @@ export async function executeDeepResearch({
     }
     return {
       result: finalResult,
+      plainText: finalResult,
     };
   } catch (error) {
     // Clear backgroundToken on error
@@ -184,3 +190,38 @@ export async function executeDeepResearch({
     throw error;
   }
 }
+
+export const deepResearchTool = ({
+  userId,
+  locale,
+  abortSignal,
+  statReport,
+  logger,
+  onStreamChunk,
+}: {
+  userId: number;
+  onStreamChunk?: StreamChunkCallback;
+} & AgentToolConfigArgs) =>
+  tool({
+    description:
+      "Performs deep research on a query using advanced AI with web search and X (Twitter) search capabilities. Returns comprehensive research results.",
+    inputSchema: deepResearchInputSchema,
+    outputSchema: deepResearchOutputSchema,
+    toModelOutput: (result: PlainTextToolResult) => {
+      return { type: "text", value: result.plainText };
+    },
+    execute: async ({ query, expert }) => {
+      return await executeDeepResearch({
+        // tool call input
+        query: query,
+        expert: expert,
+        // tool init params
+        userId,
+        locale,
+        logger,
+        statReport,
+        abortSignal,
+        onStreamChunk,
+      });
+    },
+  });
