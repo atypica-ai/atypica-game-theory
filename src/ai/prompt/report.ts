@@ -1,6 +1,7 @@
 import { Analyst, AnalystKind, AnalystReport } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { reportHTMLSystemCreation } from "./report/creation";
+import { reportHTMLSystemFastInsight } from "./report/fastInsight";
 import { reportHTMLSystemInsights } from "./report/insights";
 import { reportHTMLSystemMisc } from "./report/misc";
 import { reportHTMLSystemPlanning } from "./report/planning";
@@ -26,6 +27,8 @@ export const reportHTMLSystem = ({
       return reportHTMLSystemPlanning({ locale });
     case AnalystKind.productRnD:
       return reportHTMLSystemProductRnD({ locale });
+    case AnalystKind.fastInsight:
+      return reportHTMLSystemFastInsight({ locale });
     case AnalystKind.misc:
     default:
       return reportHTMLSystemMisc({ locale });
@@ -39,13 +42,13 @@ export const reportHTMLPrologue = ({
   lastReport,
 }: {
   locale: Locale;
-  analyst: Analyst & {
+  analyst: Pick<Analyst, "role" | "brief" | "studyLog"> & {
     interviews: {
       conclusion: string;
     }[];
   };
   instruction: string;
-  lastReport?: AnalystReport;
+  lastReport?: Pick<AnalystReport, "onePageHtml">;
 }) =>
   locale === "zh-CN"
     ? `
