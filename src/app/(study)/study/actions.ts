@@ -26,7 +26,7 @@ import {
   UserChat,
   UserChatExtra,
 } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { FileUIPart, generateId, UIMessage } from "ai";
 
 export async function createStudyUserChat(
@@ -249,7 +249,7 @@ export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
 export async function fetchStatsByStudyUserChatToken(
   studyUserChatToken: string,
 ): Promise<ServerActionResult<Array<{ dimension: string; total: number | null }>>> {
-  const result = await prisma.chatStatistics.groupBy({
+  const result = await prismaRO.chatStatistics.groupBy({
     by: ["dimension"],
     where: {
       userChat: {
@@ -616,7 +616,7 @@ export async function fetchAnalystReportsOfStudyUserChat({
     })[]
   >
 > {
-  const reports = await prisma.analystReport.findMany({
+  const reports = await prismaRO.analystReport.findMany({
     where: {
       analyst: {
         studyUserChat: { token: studyUserChatToken, kind: "study" },
@@ -667,7 +667,7 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
     })[]
   >
 > {
-  const podcasts = await prisma.analystPodcast.findMany({
+  const podcasts = await prismaRO.analystPodcast.findMany({
     where: {
       analyst: {
         studyUserChat: { token: studyUserChatToken, kind: "study" },

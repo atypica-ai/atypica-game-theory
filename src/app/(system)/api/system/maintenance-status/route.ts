@@ -1,4 +1,4 @@
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { NextResponse } from "next/server";
 
 // Type definitions for maintenance config
@@ -19,7 +19,7 @@ export async function GET() {
     const now = new Date();
 
     // Get maintenance config
-    const configRecord = await prisma.systemConfig.findUnique({
+    const configRecord = await prismaRO.systemConfig.findUnique({
       where: { key: MAINTENANCE_CONFIG_KEY },
     });
 

@@ -1,45 +1,47 @@
 import { loadEnvConfig } from "@next/env";
-import "./mock-server-only";
+import "../mock-server-only";
 
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 
 async function listCities() {
   // load env config from .env file
   loadEnvConfig(process.cwd());
-  const { prisma } = await import("@/prisma/prisma");
+  const { prismaRO } = await import("@/prisma/prisma");
   const { convertDBMessageToAIMessage } = await import("@/ai/messageUtils");
 
-  const interviewProject = await prisma.interviewProject.findUniqueOrThrow({
+  const interviewProject = await prismaRO.interviewProject.findUniqueOrThrow({
     where: { token: "FApusdYsrTmTAtuK" },
     include: {
-      sessions: {
-        include: {
-          userChat: {
-            include: {
-              messages: true,
-            },
-          },
-        },
-      },
+      sessions: true,
+      // sessions: {
+      //   include: {
+      //     userChat: {
+      //       include: {
+      //         messages: true,
+      //       },
+      //     },
+      //   },
+      // },
     },
   });
   const stats: Record<string, number> = {};
   for (const session of interviewProject.sessions) {
     console.log(session.id);
-    if (!session.userChat) {
+    // if (!session.userChat) {
+    if (!session.userChatId) {
       continue;
     }
-    // const userChat = await prisma.userChat.findUniqueOrThrow({
-    //   where: {
-    //     id: session.userChatId,
-    //   },
-    //   include: {
-    //     messages: true,
-    //   },
-    // });
+    const userChat = await prismaRO.userChat.findUniqueOrThrow({
+      where: {
+        id: session.userChatId,
+      },
+      include: {
+        messages: true,
+      },
+    });
     let completed = false;
     let answer: string | null = null;
-    const userChat = session.userChat;
+    // const userChat = session.userChat;
     for (const message of userChat.messages.map(convertDBMessageToAIMessage)) {
       for (const part of (message as TInterviewMessageWithTool).parts) {
         if (
@@ -73,14 +75,14 @@ async function listCities() {
 async function listAnwsers() {
   // load env config from .env file
   loadEnvConfig(process.cwd());
-  const { prisma } = await import("@/prisma/prisma");
+  const { prismaRO } = await import("@/prisma/prisma");
   const { convertDBMessageToAIMessage } = await import("@/ai/messageUtils");
 
   // 姓名和性别从开场表单里提取
   const questions: string[] = ["姓名", "性别"];
   const anwsers: Record<string, Record<string, string>> = {};
 
-  const interviewProject = await prisma.interviewProject.findUniqueOrThrow({
+  const interviewProject = await prismaRO.interviewProject.findUniqueOrThrow({
     where: { token: "FApusdYsrTmTAtuK" },
     include: {
       // sessions: { take: 5 },
@@ -93,7 +95,7 @@ async function listAnwsers() {
     if (!session.userChatId) {
       continue;
     }
-    const userChat = await prisma.userChat.findUniqueOrThrow({
+    const userChat = await prismaRO.userChat.findUniqueOrThrow({
       where: {
         id: session.userChatId,
       },
@@ -163,10 +165,10 @@ async function listAnwsers() {
 async function listGenders() {
   // load env config from .env file
   loadEnvConfig(process.cwd());
-  const { prisma } = await import("@/prisma/prisma");
+  const { prismaRO } = await import("@/prisma/prisma");
   const { convertDBMessageToAIMessage } = await import("@/ai/messageUtils");
 
-  const interviewProject = await prisma.interviewProject.findUniqueOrThrow({
+  const interviewProject = await prismaRO.interviewProject.findUniqueOrThrow({
     where: { token: "FApusdYsrTmTAtuK" },
     include: {
       sessions: {
@@ -215,8 +217,8 @@ async function main() {
   // load env config from .env file
   loadEnvConfig(process.cwd());
   // await listGenders();
-  // await listCities();
-  await listAnwsers();
+  await listCities();
+  // await listAnwsers();
 }
 
 if (require.main === module) {
