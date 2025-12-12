@@ -3,7 +3,7 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystKind } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 
 /**
  * Defines the structure for daily statistics
@@ -103,7 +103,7 @@ export async function fetchDailyStatistics(
     // Use AT TIME ZONE to convert user timezone timestamps to UTC for comparison
 
     // Daily new user registrations
-    const userQuery = prisma.$queryRaw<[{ date: Date; total: bigint }]>`
+    const userQuery = prismaRO.$queryRaw<[{ date: Date; total: bigint }]>`
       SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
       FROM "User"
       WHERE "createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
@@ -112,7 +112,7 @@ export async function fetchDailyStatistics(
     `;
 
     // Daily successful payments
-    const paymentQuery = prisma.$queryRaw<[{ date: Date; total: bigint }]>`
+    const paymentQuery = prismaRO.$queryRaw<[{ date: Date; total: bigint }]>`
       SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
       FROM "PaymentRecord"
       WHERE "status" = 'succeeded'
@@ -122,7 +122,7 @@ export async function fetchDailyStatistics(
     `;
 
     // Daily total studies
-    const totalStudiesQuery = prisma.$queryRaw<[{ date: Date; total: bigint }]>`
+    const totalStudiesQuery = prismaRO.$queryRaw<[{ date: Date; total: bigint }]>`
       SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
       FROM "UserChat"
       WHERE kind = 'study'
@@ -132,7 +132,9 @@ export async function fetchDailyStatistics(
     `;
 
     // Daily studies broken down by kind
-    const studiesByKindQuery = prisma.$queryRaw<[{ date: Date; kind: AnalystKind; total: bigint }]>`
+    const studiesByKindQuery = prismaRO.$queryRaw<
+      [{ date: Date; kind: AnalystKind; total: bigint }]
+    >`
       SELECT DATE(uc."createdAt" AT TIME ZONE ${timezone})::date as date, a.kind, COUNT(uc.id) as total
       FROM "UserChat" uc
       JOIN "Analyst" a ON a."studyUserChatId" = uc.id
@@ -144,7 +146,7 @@ export async function fetchDailyStatistics(
     `;
 
     // Daily studies broken down by feedback rating
-    const studiesByFeedbackQuery = prisma.$queryRaw<
+    const studiesByFeedbackQuery = prismaRO.$queryRaw<
       [{ date: Date; feedback_rating: string; total: bigint }]
     >`
       SELECT
@@ -278,7 +280,7 @@ export async function fetchUsersByCountry(
 
   try {
     // Use SQL aggregation to group by country
-    const results = await prisma.$queryRaw<Array<{ country: string | null; count: bigint }>>`
+    const results = await prismaRO.$queryRaw<Array<{ country: string | null; count: bigint }>>`
       SELECT
         COALESCE(
           up."lastLogin"::jsonb->'geo'->>'country',
@@ -356,7 +358,7 @@ export async function fetchUsersBySource(
 
   try {
     // Use SQL aggregation with CASE WHEN to determine source priority
-    const results = await prisma.$queryRaw<Array<{ source: string | null; count: bigint }>>`
+    const results = await prismaRO.$queryRaw<Array<{ source: string | null; count: bigint }>>`
       SELECT
         CASE
           WHEN up.extra::jsonb->'acquisition'->'utm'->>'utm_medium' IS NOT NULL

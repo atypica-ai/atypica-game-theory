@@ -7,6 +7,7 @@ import {
   TokensLogExtra,
   TokensLogVerb,
 } from "@/prisma/client";
+import { PrismaClient } from "@/prisma/generated/client";
 import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
 import { TokensLogResourceType } from "./types";
@@ -194,15 +195,22 @@ export async function consumeUserTokens({
   }
 }
 
-export async function getUserTokens({ userId }: { userId: number }) {
-  const user = await prisma.user.findUniqueOrThrow({
+export async function getUserTokens({
+  userId,
+  prismaInstance,
+}: {
+  userId: number;
+  prismaInstance?: PrismaClient; // 前端获取的时候实时性要求不高，会传入一个 read-only connection
+}) {
+  prismaInstance ??= prisma;
+  const user = await prismaInstance.user.findUniqueOrThrow({
     where: { id: userId },
     select: { id: true, teamIdAsMember: true },
   });
   if (user.teamIdAsMember) {
     const teamId = user.teamIdAsMember;
     const { permanentBalance, monthlyBalance, monthlyResetAt, extra } =
-      await prisma.tokensAccount.findUniqueOrThrow({
+      await prismaInstance.tokensAccount.findUniqueOrThrow({
         where: { teamId },
       });
     const balance = (extra as TokensAccountExtra).unlimitedTokens
@@ -217,7 +225,7 @@ export async function getUserTokens({ userId }: { userId: number }) {
     };
   } else {
     const { permanentBalance, monthlyBalance, monthlyResetAt, extra } =
-      await prisma.tokensAccount.findUniqueOrThrow({
+      await prismaInstance.tokensAccount.findUniqueOrThrow({
         where: { userId },
       });
     const balance = (extra as TokensAccountExtra).unlimitedTokens

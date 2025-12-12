@@ -10,7 +10,7 @@ import {
   UserProfile,
   UserProfileExtra,
 } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import {
   Analytics as AnalyticsServer,
   UserTraits as UserTraitsSegment,
@@ -116,11 +116,11 @@ async function _trackUserServerSide({
     try {
       const now = new Date();
       const [activeSubscription, payments] = await Promise.all([
-        prisma.subscription.findFirst({
+        prismaRO.subscription.findFirst({
           where: { userId: userId, startsAt: { lte: now }, endsAt: { gt: now } },
           orderBy: { endsAt: "desc" },
         }),
-        prisma.paymentRecord.count({
+        prismaRO.paymentRecord.count({
           where: { userId: userId, status: "succeeded" },
         }),
       ]);
@@ -140,10 +140,10 @@ async function _trackUserServerSide({
   if (traitTypesToUse["stats"]) {
     try {
       const [studies, interviews, personas, tokensConsumed] = await Promise.all([
-        prisma.analyst.count({ where: { userId: userId } }),
-        prisma.interviewProject.count({ where: { userId: userId } }),
-        prisma.personaImport.count({ where: { userId: userId } }),
-        prisma.tokensLog
+        prismaRO.analyst.count({ where: { userId: userId } }),
+        prismaRO.interviewProject.count({ where: { userId: userId } }),
+        prismaRO.personaImport.count({ where: { userId: userId } }),
+        prismaRO.tokensLog
           .aggregate({
             where: { userId: userId, verb: "consume" },
             _sum: { value: true },
@@ -185,7 +185,7 @@ async function _trackUserServerSide({
     // ⚠️，context 信息一定要有，不然就会被设置默认值
     try {
       if (!userProfile) {
-        userProfile = await prisma.userProfile.findUniqueOrThrow({
+        userProfile = await prismaRO.userProfile.findUniqueOrThrow({
           where: { userId },
           select: { id: true, onboarding: true, lastLogin: true, extra: true },
         });
@@ -208,13 +208,13 @@ async function _trackUserServerSide({
   if (traitTypesToUse["profile"]) {
     try {
       if (!user) {
-        user = await prisma.user.findUniqueOrThrow({
+        user = await prismaRO.user.findUniqueOrThrow({
           where: { id: userId },
           select: { id: true, name: true, email: true, createdAt: true },
         });
       }
       if (!userProfile) {
-        userProfile = await prisma.userProfile.findUniqueOrThrow({
+        userProfile = await prismaRO.userProfile.findUniqueOrThrow({
           where: { userId },
           select: { id: true, onboarding: true, lastLogin: true, extra: true },
         });

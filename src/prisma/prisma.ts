@@ -30,12 +30,25 @@ function newPrismaClient() {
   //   : new PrismaClient({ log }).$extends(readReplicas({ url: databaseUrl }));
 }
 
+function newPrismaROClient() {
+  const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_RO_URL || process.env.DATABASE_URL,
+  });
+  return new PrismaClient({
+    adapter,
+    log,
+  });
+}
+
 const globalForPrisma = global as unknown as {
   prisma: ReturnType<typeof newPrismaClient> | undefined;
+  prismaRO: ReturnType<typeof newPrismaROClient> | undefined;
 };
 
 // 创建 PrismaClient 实例或使用已有实例
 export const prisma = globalForPrisma.prisma || newPrismaClient();
+export const prismaRO = globalForPrisma.prismaRO || newPrismaROClient();
 
 // 在所有环境中都保存到全局对象，只是开发环境会频繁热重载
 globalForPrisma.prisma = prisma;
+globalForPrisma.prismaRO = prismaRO;

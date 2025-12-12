@@ -2,7 +2,7 @@
 import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystKind, AnalystReportExtra, FeaturedStudy, UserChat } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
@@ -63,7 +63,7 @@ async function _fetchPublicFeaturedStudiesImpl({
   if (random && limit) {
     let result: { id: number }[];
     if (kind && kind !== "all") {
-      result = (await prisma.$queryRaw`
+      result = (await prismaRO.$queryRaw`
         SELECT "FeaturedStudy".id
         FROM "FeaturedStudy"
         INNER JOIN "Analyst" ON "Analyst".id = "FeaturedStudy"."analystId"
@@ -72,7 +72,7 @@ async function _fetchPublicFeaturedStudiesImpl({
         LIMIT ${limit}
       `) as { id: number }[];
     } else {
-      result = (await prisma.$queryRaw`
+      result = (await prismaRO.$queryRaw`
         SELECT "FeaturedStudy".id
         FROM "FeaturedStudy"
         INNER JOIN "Analyst" ON "Analyst".id = "FeaturedStudy"."analystId"
@@ -84,7 +84,7 @@ async function _fetchPublicFeaturedStudiesImpl({
     const studyIds = result.map((item) => item.id);
 
     if (studyIds.length > 0) {
-      const studies = await prisma.featuredStudy.findMany({
+      const studies = await prismaRO.featuredStudy.findMany({
         where: { id: { in: studyIds } },
         select: selectClause,
       });
@@ -102,7 +102,7 @@ async function _fetchPublicFeaturedStudiesImpl({
         ? { analyst: { locale: locale, kind: kind } }
         : { analyst: { locale: locale } };
 
-    featuredStudies = await prisma.featuredStudy.findMany({
+    featuredStudies = await prismaRO.featuredStudy.findMany({
       where,
       select: selectClause,
       // orderBy: { displayOrder: "asc" },
@@ -120,7 +120,7 @@ async function _fetchPublicFeaturedStudiesImpl({
 
   const analystIds = featuredStudies.map((study) => study.analyst.id);
 
-  const latestReports = await prisma.analystReport.findMany({
+  const latestReports = await prismaRO.analystReport.findMany({
     where: { analystId: { in: analystIds } },
     distinct: ["analystId"],
     orderBy: [{ analystId: "desc" }, { createdAt: "desc" }],

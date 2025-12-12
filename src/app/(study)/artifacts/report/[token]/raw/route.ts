@@ -1,6 +1,6 @@
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { checkAdminAuth } from "@/app/admin/actions";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function injectImgTag(html: string, reportToken: string) {
@@ -31,7 +31,7 @@ function cleanHtmlFromMarkdown(html: string): string {
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const reportToken = (await params).token;
-  const analystReport = await prisma.analystReport.findUniqueOrThrow({
+  const analystReport = await prismaRO.analystReport.findUniqueOrThrow({
     where: { token: reportToken },
     include: { analyst: true },
   });
@@ -48,7 +48,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
         let start = 0;
         while (true) {
           try {
-            const analystReport = await prisma.analystReport.findUniqueOrThrow({
+            const analystReport = await prismaRO.analystReport.findUniqueOrThrow({
               where: { token: reportToken },
             });
             const onePageHtml = cleanHtmlFromMarkdown(analystReport.onePageHtml);

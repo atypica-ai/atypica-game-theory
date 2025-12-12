@@ -2,7 +2,7 @@
 import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystPodcast, AnalystPodcastExtra, UserChat } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 
 export async function fetchPodcastByToken(podcastToken: string): Promise<
   ServerActionResult<{
@@ -14,7 +14,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
     coverCdnHttpUrl?: string;
   }>
 > {
-  const podcast = await prisma.analystPodcast.findUnique({
+  const podcast = await prismaRO.analystPodcast.findUnique({
     where: { token: podcastToken },
     select: {
       id: true,
@@ -43,7 +43,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
     };
   }
 
-  const analyst = await prisma.analyst.findUnique({
+  const analyst = await prismaRO.analyst.findUnique({
     where: {
       id: podcast.analystId,
     },

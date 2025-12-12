@@ -16,7 +16,7 @@ import {
   User,
   UserChat,
 } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 
 export interface PageViewWithReport extends PageViewsReport {
   report?: AnalystReport & {
@@ -95,7 +95,7 @@ export async function fetchTopPageViewsAction(
       .filter(Boolean) as string[];
 
     // Fetch report details from database
-    const reportDetails = await prisma.analystReport.findMany({
+    const reportDetails = await prismaRO.analystReport.findMany({
       where: {
         token: {
           in: reportTokens,
@@ -205,7 +205,7 @@ export async function fetchTopStudyPageViewsAction(
       .filter(Boolean) as string[];
 
     // Fetch study details from database
-    const studyDetails = await prisma.userChat.findMany({
+    const studyDetails = await prismaRO.userChat.findMany({
       where: {
         token: {
           in: studyTokens,
@@ -302,7 +302,7 @@ export async function fetchTopPodcastPageViewsAction(
       .filter(Boolean) as string[];
 
     // Fetch podcast details from database
-    const podcastDetails = await prisma.analystPodcast.findMany({
+    const podcastDetails = await prismaRO.analystPodcast.findMany({
       where: {
         token: {
           in: podcastTokens,

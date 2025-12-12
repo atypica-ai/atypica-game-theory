@@ -1,6 +1,6 @@
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -17,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const locale = await getLocale();
   const { token: reportToken } = await params;
-  const report = await prisma.interviewReport.findUnique({
+  const report = await prismaRO.interviewReport.findUnique({
     where: { token: reportToken },
     select: {
       project: {
@@ -40,7 +40,7 @@ export async function generateMetadata({
 }
 
 async function InterviewReportSharePage({ reportToken }: { reportToken: string }) {
-  const report = await prisma.interviewReport.findUnique({
+  const report = await prismaRO.interviewReport.findUnique({
     where: { token: reportToken },
     select: {
       project: {

@@ -1,10 +1,10 @@
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const reportToken = (await params).token;
 
   try {
-    const interviewReport = await prisma.interviewReport.findUniqueOrThrow({
+    const interviewReport = await prismaRO.interviewReport.findUniqueOrThrow({
       where: { token: reportToken },
       include: {
         project: {
@@ -24,7 +24,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
           let start = 0;
           while (true) {
             try {
-              const report = await prisma.interviewReport.findUniqueOrThrow({
+              const report = await prismaRO.interviewReport.findUniqueOrThrow({
                 where: { token: reportToken },
               });
               const onePageHtml = report.onePageHtml;

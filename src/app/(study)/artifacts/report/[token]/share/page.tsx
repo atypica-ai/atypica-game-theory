@@ -3,7 +3,7 @@ import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
 import { AnalystReportExtra } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
  */
 const getCachedReportData = unstable_cache(
   async (reportToken: string) => {
-    const report = await prisma.analystReport.findUnique({
+    const report = await prismaRO.analystReport.findUnique({
       where: { token: reportToken },
       select: {
         id: true,

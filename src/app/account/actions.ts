@@ -6,7 +6,7 @@ import { getRequestOrigin } from "@/lib/request/headers";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentRecord, TokensLog } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import Stripe from "stripe";
 import { fetchActiveSubscription } from "./lib";
@@ -21,7 +21,7 @@ export async function fetchTokensHistory(
 
     const [tokensLogs, totalCount] = await Promise.all([
       (async () => {
-        // (await prisma.tokensLog.groupBy({
+        // (await prismaRO.tokensLog.groupBy({
         //   by: ["userId", "resourceType", "resourceId", "verb"],
         //   where: { userId },
         //   _sum: { value: true },
@@ -36,7 +36,7 @@ export async function fetchTokensHistory(
         //   createdAt: _min.createdAt!,
         //   updatedAt: _min.updatedAt!,
         // }));
-        const result = await prisma.$queryRaw<
+        const result = await prismaRO.$queryRaw<
           Array<TokensLog & { noCharge: "true" | "false" | null }>
         >`
         SELECT
@@ -63,11 +63,11 @@ export async function fetchTokensHistory(
         return result;
       })(),
       (async () => {
-        // (await prisma.tokensLog.groupBy({
+        // (await prismaRO.tokensLog.groupBy({
         //   by: ["userId", "resourceType", "resourceId", "verb"],
         //   where: { userId },
         // })).length,
-        const result = await prisma.$queryRaw<Array<{ count: bigint }>>`
+        const result = await prismaRO.$queryRaw<Array<{ count: bigint }>>`
         SELECT COUNT(*) as count
         FROM (
           SELECT
@@ -125,7 +125,7 @@ export async function fetchTokensHistoryAsTeamOwner(
     // const userId = user.id;
     const skip = (page - 1) * pageSize;
 
-    const ownerUser = await prisma.user.findUnique({
+    const ownerUser = await prismaRO.user.findUnique({
       where: { id: user.id },
     });
     if (!ownerUser?.teamIdAsMember) {
@@ -134,7 +134,7 @@ export async function fetchTokensHistoryAsTeamOwner(
         message: "User is not a team user",
       };
     }
-    const teamAsMember = await prisma.team.findUnique({
+    const teamAsMember = await prismaRO.team.findUnique({
       where: { id: ownerUser.teamIdAsMember },
     });
     if (teamAsMember?.ownerUserId !== ownerUser.personalUserId) {
@@ -149,7 +149,7 @@ export async function fetchTokensHistoryAsTeamOwner(
     // 需要 join user 以获取 user.name，但是过滤直接用 teamId，有些 log 没有 userid，所以要用 leftjoin
     const [tokensLogs, totalCount] = await Promise.all([
       (async () => {
-        const result = await prisma.$queryRaw<
+        const result = await prismaRO.$queryRaw<
           Array<TokensLog & { consumedBy: string; noCharge: "true" | "false" | null }>
         >`
         SELECT
@@ -178,7 +178,7 @@ export async function fetchTokensHistoryAsTeamOwner(
         return result;
       })(),
       (async () => {
-        const result = await prisma.$queryRaw<Array<{ count: bigint }>>`
+        const result = await prismaRO.$queryRaw<Array<{ count: bigint }>>`
         SELECT COUNT(*) as count
         FROM (
           SELECT
@@ -235,7 +235,7 @@ export async function fetchPaymentRecords(
     const userId = user.id;
     const skip = (page - 1) * pageSize;
     const [paymentRecords, totalCount] = await Promise.all([
-      prisma.paymentRecord.findMany({
+      prismaRO.paymentRecord.findMany({
         where: { userId },
         select: {
           id: true,
@@ -255,7 +255,7 @@ export async function fetchPaymentRecords(
         take: pageSize,
         skip: skip,
       }),
-      prisma.paymentRecord.count({
+      prismaRO.paymentRecord.count({
         where: { userId },
       }),
     ]);
@@ -281,7 +281,10 @@ export async function getUserTokensBalanceAction(): Promise<
   ServerActionResult<number | "Unlimited">
 > {
   return withAuth(async ({ id: userId }) => {
-    const { balance } = await getUserTokens({ userId });
+    const { balance } = await getUserTokens({
+      userId,
+      prismaInstance: prismaRO, // 前端获取的时候实时性要求不高，传入一个 read-only connection
+    });
     return {
       success: true,
       data: balance,

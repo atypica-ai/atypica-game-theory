@@ -2,7 +2,7 @@
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 
 export type TokenSource = {
   reportedBy: string;
@@ -38,7 +38,7 @@ export async function fetchTokenConsumption(
 
   // Get all data in a single query - with reduction calculation
   const result = searchQuery
-    ? await prisma.$queryRaw`
+    ? await prismaRO.$queryRaw`
     SELECT
       uc.id as "userChatId",
       uc.token,
@@ -66,7 +66,7 @@ export async function fetchTokenConsumption(
     LIMIT ${pageSize * 10}
     OFFSET ${skip}
   `
-    : await prisma.$queryRaw`
+    : await prismaRO.$queryRaw`
     SELECT
       uc.id as "userChatId",
       uc.token,
@@ -138,7 +138,7 @@ export async function fetchTokenConsumption(
   });
 
   // Get total count for pagination
-  const countResult = await prisma.userChat.count({
+  const countResult = await prismaRO.userChat.count({
     where: searchQuery
       ? {
           kind: "study",

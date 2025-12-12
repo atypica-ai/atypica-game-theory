@@ -1,7 +1,7 @@
 "use server";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystPodcastExtra } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { unstable_cache } from "next/cache";
 
@@ -30,7 +30,7 @@ export const pickRandomFeaturedPodcast = unstable_cache(
     } | null>
   > {
     // Single query: get all podcasts from featured studies with the locale
-    const podcasts = await prisma.analystPodcast.findMany({
+    const podcasts = await prismaRO.analystPodcast.findMany({
       where: {
         generatedAt: { not: null },
         analyst: {
@@ -143,7 +143,7 @@ export const fetchFeaturedPodcasts = unstable_cache(
     // Note: One analyst may have multiple podcasts, so pagination count may not be exact
     // But most analysts only have one podcast, so this is acceptable
     const [podcasts, totalCount] = await Promise.all([
-      prisma.analystPodcast.findMany({
+      prismaRO.analystPodcast.findMany({
         where: {
           generatedAt: { not: null },
           analyst: {
@@ -179,7 +179,7 @@ export const fetchFeaturedPodcasts = unstable_cache(
         skip,
         take: pageSize,
       }),
-      prisma.analystPodcast.count({
+      prismaRO.analystPodcast.count({
         where: {
           generatedAt: { not: null },
           analyst: {

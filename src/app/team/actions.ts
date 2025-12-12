@@ -3,7 +3,7 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Team, User } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import authOptions from "../(auth)/authOptions";
@@ -92,7 +92,7 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
   }
   const user = session.user;
   try {
-    const fullUser = await prisma.user.findUniqueOrThrow({
+    const fullUser = await prismaRO.user.findUniqueOrThrow({
       where: { id: user.id },
       select: {
         id: true,
@@ -110,7 +110,7 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
       // 个人用户，返回个人用户和其团队用户
       personalUser = fullUser;
       teamUsers = (
-        await prisma.user.findMany({
+        await prismaRO.user.findMany({
           where: {
             personalUserId: fullUser.id,
             teamIdAsMember: { not: null },
@@ -129,14 +129,14 @@ export async function getUserSwitchableIdentitiesAction(): Promise<
         personalUser = null;
         teamUsers = [];
       } else {
-        personalUser = await prisma.user.findUnique({
+        personalUser = await prismaRO.user.findUnique({
           where: {
             id: fullUser.personalUserId,
           },
           select: { id: true, name: true },
         });
         teamUsers = (
-          await prisma.user.findMany({
+          await prismaRO.user.findMany({
             where: {
               personalUserId: fullUser.personalUserId,
               teamIdAsMember: { not: null },
@@ -234,7 +234,7 @@ export async function getUserTeamStatusAction(): Promise<
   }
   const user = session.user;
   try {
-    const currentUser = await prisma.user.findUniqueOrThrow({
+    const currentUser = await prismaRO.user.findUniqueOrThrow({
       where: { id: user.id },
     });
 
@@ -245,7 +245,7 @@ export async function getUserTeamStatusAction(): Promise<
     // 检查是否为个人用户
     if (!currentUser.teamIdAsMember) {
       // 检查是否有活跃的团队用户可以切换
-      const teamUsersCount = await prisma.user.count({
+      const teamUsersCount = await prismaRO.user.count({
         where: {
           personalUserId: user.id,
           teamIdAsMember: { not: null },
@@ -264,7 +264,7 @@ export async function getUserTeamStatusAction(): Promise<
         // 有效的团队用户，总是可以切换回个人用户或其他团队
         canSwitchIdentity = true;
         // 检查所在团队的 owner 是否是当前团队用户，team owner 等于当前 team user 关联的 personal user
-        const teamAsMember = await prisma.team.findUnique({
+        const teamAsMember = await prismaRO.team.findUnique({
           where: { id: currentUser.teamIdAsMember },
         });
         teamRole = teamAsMember?.ownerUserId === currentUser.personalUserId ? "owner" : "member";

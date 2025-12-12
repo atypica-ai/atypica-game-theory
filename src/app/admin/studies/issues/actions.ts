@@ -6,7 +6,7 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentRecord, TokensAccount, User, UserChat, UserChatExtra } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { createUIMessageStream, generateId } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -32,7 +32,7 @@ export async function fetchIssueStudies(
   const skip = (page - 1) * pageSize;
 
   // Find UserChats that have backgroundToken (meaning they're in progress)
-  const studies = await prisma.userChat.findMany({
+  const studies = await prismaRO.userChat.findMany({
     where: {
       kind: "study",
       backgroundToken: {
@@ -60,7 +60,7 @@ export async function fetchIssueStudies(
     take: pageSize,
   });
 
-  const totalCount = await prisma.userChat.count({
+  const totalCount = await prismaRO.userChat.count({
     where: {
       kind: "study",
       backgroundToken: {
@@ -104,7 +104,7 @@ export async function fetchErrorStudies(
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
   // Find UserChats that have extra.error in the last 14 days
-  const studies = await prisma.$queryRaw<
+  const studies = await prismaRO.$queryRaw<
     (UserChat & {
       user: Pick<User, "id" | "email"> & {
         tokensAccount: TokensAccount | null;
@@ -144,7 +144,7 @@ export async function fetchErrorStudies(
     LIMIT ${pageSize} OFFSET ${skip}
   `;
 
-  const totalCount = await prisma.$queryRaw<[{ count: bigint }]>`
+  const totalCount = await prismaRO.$queryRaw<[{ count: bigint }]>`
     SELECT COUNT(*)::int as count
     FROM "UserChat" uc
     WHERE uc.kind = 'study'
