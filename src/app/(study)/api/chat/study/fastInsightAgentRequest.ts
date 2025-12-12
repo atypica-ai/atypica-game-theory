@@ -8,6 +8,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import {
   generatePodcastTool,
+  generateReportTool,
   handleToolCallError,
   planPodcastTool,
   toolCallError,
@@ -16,10 +17,11 @@ import {
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
-import { setUserChatError } from "@/lib/userChat/lib";
+import { generateChatTitle, setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
-import { Analyst, UserChatExtra } from "@/prisma/client";
+import { Analyst, AnalystKind, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import {
   ImagePart,
   smoothStream,
@@ -34,13 +36,22 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyStudyInterruption } from "./notify";
-import { buildReferenceStudyContext } from "./referenceContext";
 import { outOfBalance, setBedrockCache, waitUntilAttachmentsProcessed } from "./utils";
 
 // autopolot 模式默认 4 步，websearch+plan+deepresearch mcp+podcast
 const MAX_STEPS_EACH_ROUND = 4;
 
-// 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
+/**
+ * Fast Insight agent request handler for podcast-first research workflow.
+ *
+ * Data Flow:
+ * - Tools return results only, no database updates
+ * - All analyst updates (topic, kind, studySummary) are handled in onStepFinish:
+ *   - planPodcast result → analyst.topic, analyst.kind
+ *   - deepResearch result → analyst.studySummary
+ *
+ * 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
+ */
 export async function fastInsightAgentRequest({
   userChat: { id: studyUserChatId, extra: userChatExtra, analyst },
   userId,
@@ -64,14 +75,6 @@ export async function fastInsightAgentRequest({
 }) {
   await setUserChatError(studyUserChatId, null);
 
-  const referenceStudyContext = userChatExtra?.referenceUserChats
-    ? await buildReferenceStudyContext({
-        referenceTokens: userChatExtra.referenceUserChats,
-        userId,
-        locale,
-      })
-    : null;
-
   const { statReport } = initStudyStatReporter({ userId, studyUserChatId, logger });
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
     studyUserChatId,
@@ -92,11 +95,15 @@ export async function fastInsightAgentRequest({
 
   // Build tools object: start with regular tools, then merge MCP tools
   // Using the same pattern as createSubAgent for type compatibility
+  // Note: Tools only return results; analyst.topic and analyst.studySummary are saved in onStepFinish
   const allTools = {
     [ToolName.webSearch]: webSearchTool({ provider: "perplexity", ...agentToolArgs }),
+    // ⚠️ planPodcast tool returns planning result; analyst.topic will be updated in onStepFinish below
     [ToolName.planPodcast]: planPodcastTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
+    [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     // 直接使用 tool，没必要用 mcp 了，因为已经写死了 tool name
+    // ⚠️ deepResearch tool returns result; analyst.studySummary will be updated in onStepFinish below
     [ToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
@@ -131,16 +138,10 @@ export async function fastInsightAgentRequest({
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
 
-  if ((toolUseCount[ToolName.generatePodcast] ?? 0) >= 1) {
-    // 一旦播客生成，后面就不允许构建人设和搜索等其他操作了，但是可以继续和播客进行问答，也可以重新生成播客
-    // tools = Object.fromEntries(
-    //   Object.entries(allTools).filter(([key]) =>
-    //     [
-    //       ToolName.generatePodcast,
-    //       ToolName.toolCallError,
-    //     ].includes(key as ToolName),
-    //   ),
-    // ) as typeof allTools;
+  if (
+    (toolUseCount[ToolName.generateReport] ?? 0) >= 1 ||
+    (toolUseCount[ToolName.generatePodcast] ?? 0) >= 1
+  ) {
     maxSteps = 2;
   }
 
@@ -150,13 +151,7 @@ export async function fastInsightAgentRequest({
   });
 
   const modelMessages = coreMessages;
-  // Insert reference study context as the first user message if available
-  if (referenceStudyContext) {
-    modelMessages.unshift({
-      role: "user",
-      content: referenceStudyContext,
-    });
-  }
+
   if (parsedAttachments.length) {
     modelMessages.unshift({
       role: "user",
@@ -202,35 +197,28 @@ export async function fastInsightAgentRequest({
     maxOutputTokens: maxTokens,
 
     prepareStep: async ({ messages: modelMessages }) => {
-      // Object.fromEntries(
-      //   Object.entries(allTools).filter(([key]) =>
-      //     [
-      //       // ToolName.requestInteraction,
-      //       ToolName.generateReport,
-      //       ToolName.reasoningThinking,
-      //       ToolName.toolCallError,
-      //     ].includes(key as ToolName),
-      //   ),
-      // ) as typeof allTools;
-      let podcastGenerated = false;
+      let artifactsGenerated = false;
       for (const message of modelMessages) {
         if (message.role === "tool") {
           for (const part of message.content) {
-            if (part.toolName === ToolName.generatePodcast) {
-              podcastGenerated = true;
+            if (
+              part.toolName === ToolName.generatePodcast ||
+              part.toolName === ToolName.generateReport
+            ) {
+              artifactsGenerated = true;
               break;
             }
           }
         }
-        if (podcastGenerated) break;
+        if (artifactsGenerated) break;
       }
-      const activeTools = podcastGenerated
-        ? [ToolName.generatePodcast as const, ToolName.toolCallError as const]
+      const activeTools = artifactsGenerated
+        ? [
+            ToolName.generateReport as const,
+            ToolName.generatePodcast as const,
+            ToolName.toolCallError as const,
+          ]
         : undefined;
-      /**
-       * ⚠️ 由于整个过程是一气呵成的，cache 必须在这里面设置，之前调用 streamText 前设置好的 cache 其实大部分没生效
-       * 因为比如 messages 长度到 8 的时候，streamText 还在自动跑，始终没有结束
-       */
       const messages = setBedrockCache("claude-3-7-sonnet", [...modelMessages]);
       return {
         messages,
@@ -290,7 +278,31 @@ export async function fastInsightAgentRequest({
         safeAbort(studyAbortController);
       }
 
-      // ⚠️ Store deepResearch result in analyst.studySummary
+      // ⚠️ Store planPodcast result in analyst.topic and kind
+      const planPodcastTool = step.toolResults.find(
+        (tool) => tool?.toolName === ToolName.planPodcast,
+      ) as Extract<TypedToolResult<typeof allTools>, { toolName: ToolName.planPodcast }>;
+      if (planPodcastTool && planPodcastTool.output?.text) {
+        const { analyst } = await prisma.userChat.findUniqueOrThrow({
+          where: { id: studyUserChatId, kind: "study" },
+          select: { analyst: { select: { id: true } } },
+        });
+        if (analyst) {
+          await prisma.analyst.update({
+            where: { id: analyst.id },
+            data: {
+              role: "Podcast Researcher",
+              topic: planPodcastTool.output.text,
+              kind: AnalystKind.fastInsight,
+              locale: locale,
+            },
+          });
+          // Generate chat title after saving analyst
+          waitUntil(generateChatTitle(studyUserChatId));
+        }
+      }
+
+      // ⚠️ Store deepResearch result in analyst.studySummary (required for generateReport)
       const deepResearchTool = step.toolResults.find(
         (tool) => tool?.toolName === ToolName.deepResearch,
       ) as Extract<TypedToolResult<typeof allTools>, { toolName: ToolName.deepResearch }>;
@@ -313,6 +325,7 @@ export async function fastInsightAgentRequest({
           }
         }
       }
+
       {
         // TODO: Need to implement a podcast version of the following notify function:
         // const generateReportTool = step.toolResults.find(

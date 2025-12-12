@@ -4,11 +4,7 @@ import { planPodcastPrologue, planPodcastSystem } from "@/ai/prompt/study/planPo
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
-import { generateChatTitle } from "@/lib/userChat/lib";
-import { AnalystKind } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
-import { waitUntil } from "@vercel/functions";
 import { streamText, tool, UserModelMessage } from "ai";
 import { planPodcastInputSchema, planPodcastOutputSchema, type PlanPodcastResult } from "./types";
 
@@ -90,55 +86,18 @@ export const planPodcastTool = ({
       return { type: "text", value: result.plainText };
     },
     execute: async ({ background, question }) => {
-      // Step 1: Plan the podcast strategy
+      // Plan the podcast strategy
       const planResult = await planPodcast({
         background,
         question,
         ...toolCallConfigArgs,
       });
 
-      // Step 2: Save analyst with opinionOriented kind
-      // The plan result text becomes the topic, and we derive a simple role from the question
-      const { analyst } = await prisma.userChat.findUniqueOrThrow({
-        where: { id: studyUserChatId, kind: "study" },
-        select: {
-          analyst: {
-            select: {
-              id: true,
-              topic: true,
-              kind: true,
-            },
-          },
-        },
-      });
-
-      if (!analyst) {
-        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
-      }
-
-      const analystId = analyst.id;
-      const isUpdate = !!analyst.topic;
-
-      // Use plan result as the topic
-      const topic = planResult.text || question;
-
-      await prisma.analyst.update({
-        where: { id: analystId },
-        data: {
-          role: "Podcast Researcher", // Simple default role for podcast studies
-          topic: topic,
-          kind: AnalystKind.fastInsight,
-          locale: toolCallConfigArgs.locale,
-        },
-      });
-
-      // Generate chat title after saving analyst
-      waitUntil(generateChatTitle(studyUserChatId));
-
+      // Return planning result; analyst updates will be handled by lead agent in onStepFinish
       return {
         reasoning: planResult.reasoning,
         text: planResult.text,
-        plainText: `Podcast planning ${isUpdate ? "updated" : "completed"} successfully. ${planResult.plainText}`,
+        plainText: `Podcast planning completed successfully. ${planResult.plainText}`,
       };
     },
   });
