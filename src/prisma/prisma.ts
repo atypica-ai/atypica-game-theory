@@ -3,6 +3,7 @@ import "server-only";
 
 // import { readReplicas } from "@prisma/extension-read-replicas";
 // import { withAccelerate } from "@prisma/extension-accelerate";
+import { rootLogger } from "@/lib/logging";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Prisma, PrismaClient } from "./generated/client";
 
@@ -17,10 +18,14 @@ function newPrismaClient() {
   const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL,
   });
-  return new PrismaClient({
+  const client = new PrismaClient({
     adapter,
     log,
   });
+  client.$on("error", (e) => {
+    rootLogger.error({ error: e.message, target: e.target, ro: false }, "prisma:error");
+  });
+  return client;
   // return new PrismaClient({ log }).$extends(withAccelerate());
   // const databaseUrl = process.env.DATABASE_URL
   //   ? process.env.DATABASE_URL
@@ -34,10 +39,14 @@ function newPrismaROClient() {
   const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_RO_URL || process.env.DATABASE_URL,
   });
-  return new PrismaClient({
+  const client = new PrismaClient({
     adapter,
     log,
   });
+  client.$on("error", (e) => {
+    rootLogger.error({ error: e.message, target: e.target, ro: true }, "prisma:error");
+  });
+  return client;
 }
 
 const globalForPrisma = global as unknown as {
