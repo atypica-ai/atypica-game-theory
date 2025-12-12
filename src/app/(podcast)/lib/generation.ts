@@ -24,8 +24,7 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { getHostCountForPodcastType } from "../types";
 import { generatePodcastCoverImage } from "./coverImage";
-import { createGoogleTTSClient, GoogleTTSClient } from "./google/client";
-import { createVolcanoClient } from "./volcano/client";
+import { getTTSClient, selectTTSEngine } from "./selectEngine";
 
 /**
  * Main podcast generation function that handles both script and audio generation
@@ -470,74 +469,34 @@ export async function generatePodcastAudio({
   try {
     logger.info({ msg: "Starting podcast audio generation", hostCount });
 
-    // Determine which TTS engine to use
-    // Google TTS: only for single speaker and en-US locale
-    // Volcano TTS: for all other cases
-    const useGoogleTTS = GoogleTTSClient.canUseGoogleTTS(script, locale);
+    // Step 1: Select appropriate TTS engine
+    const engineType = selectTTSEngine(script, locale, logger);
+    const client = getTTSClient(engineType, logger);
 
     logger.info({
       msg: "Selected TTS engine",
-      engine: useGoogleTTS ? "Google" : "Volcano",
+      engine: engineType,
       locale,
       scriptLength: script.length,
     });
 
-    // Step 1: Fetch audio from selected TTS API
-    let result;
-    if (useGoogleTTS) {
-      try {
-        const googleClient = createGoogleTTSClient(logger);
-        result = await googleClient.fetchAudioChunks({
-          script: script,
-          podcastToken,
-          hostCount,
-          locale,
-          logger,
-        });
-        logger.info({
-          msg: "Received audio from Google TTS",
-          bufferSize: result.audioBuffer.byteLength,
-          mimeType: result.mimeType,
-        });
-      } catch (error) {
-        logger.warn({
-          msg: "Google TTS failed, falling back to Volcano",
-          error: error instanceof Error ? error.message : String(error),
-        });
-        // Fallback to Volcano if Google TTS fails
-        const volcanoClient = createVolcanoClient(logger);
-        result = await volcanoClient.fetchAudioChunks({
-          script: script,
-          podcastToken,
-          hostCount,
-          locale,
-          logger,
-        });
-        logger.info({
-          msg: "Received audio from Volcano TTS (fallback)",
-          bufferSize: result.audioBuffer.byteLength,
-          duration: result.duration,
-          mimeType: result.mimeType,
-        });
-      }
-    } else {
-      const volcanoClient = createVolcanoClient(logger);
-      result = await volcanoClient.fetchAudioChunks({
-        script: script,
-        podcastToken,
-        locale,
-        hostCount,
-        logger,
-      });
-      logger.info({
-        msg: "Received audio from Volcano TTS",
-        bufferSize: result.audioBuffer.byteLength,
-        duration: result.duration,
-        mimeType: result.mimeType,
-      });
-    }
+    // Step 2: Fetch audio from selected TTS engine
+    const result = await client.fetchAudioChunks({
+      script: script,
+      podcastToken,
+      hostCount,
+      locale,
+      logger,
+    });
 
-    // Step 2: Get the final audio buffer (already concatenated by the client)
+    logger.info({
+      msg: `Received audio from ${engineType}`,
+      bufferSize: result.audioBuffer.byteLength,
+      duration: result.duration,
+      mimeType: result.mimeType,
+    });
+
+    // Step 3: Get the final audio buffer (already concatenated by the engine)
     const finalAudioBuffer = result.audioBuffer;
 
     logger.info({
@@ -545,7 +504,7 @@ export async function generatePodcastAudio({
       totalSize: finalAudioBuffer.byteLength,
     });
 
-    // Step 3: Validate audio size (business rule: max 10MB)
+    // Step 4: Validate audio size (business rule: max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (finalAudioBuffer.byteLength > maxSize) {
       throw new Error(
@@ -553,7 +512,7 @@ export async function generatePodcastAudio({
       );
     }
 
-    // Step 4: Parse audio buffer to get accurate duration
+    // Step 5: Parse audio buffer to get accurate duration
     let duration: number | undefined;
     try {
       logger.info({ msg: "Parsing audio metadata from buffer" });
@@ -577,7 +536,7 @@ export async function generatePodcastAudio({
       duration = result.duration ? Number(result.duration.toFixed(3)) : undefined;
     }
 
-    // Step 5: Upload to S3
+    // Step 6: Upload to S3
     const keySuffix = `podcasts/${podcastToken}.mp3` as const;
     const { objectUrl } = await uploadToS3({
       keySuffix,

@@ -4,6 +4,8 @@ import { Logger } from "pino";
 import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
 import { AudioCache } from "../cache/audioCache";
+import { cleanPodcastScriptLine } from "../script/cleaner";
+import { countHosts } from "../script/hostCounter";
 import {
   EventType,
   FinishConnection,
@@ -56,22 +58,6 @@ export class VolcanoTTSClient {
     this.logger = logger;
   }
 
-
-  /**
-   * Clean a single line of podcast script by removing markdown and stage directions
-   */
-  private cleanPodcastScriptLine(line: string): string | null {
-    const trimmed = line.trim();
-    if (trimmed.startsWith("#")) {
-      return null;
-    }
-    return trimmed
-      .replace(/^#.*$/gm, "")
-      .replace(/\*/g, "")
-      .replace(/【[^】]*】/g, "")
-      .trim();
-  }
-
   /**
    * Parse markdown podcast script into NLP texts format
    * Uses provided hostCount to determine speaker allocation
@@ -105,7 +91,7 @@ export class VolcanoTTSClient {
 
     for (const line of lines) {
       const trimmedLine = line.trim();
-      const cleanedText = this.cleanPodcastScriptLine(trimmedLine);
+      const cleanedText = cleanPodcastScriptLine(trimmedLine);
       if (!cleanedText) {
         continue;
       }

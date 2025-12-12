@@ -5,6 +5,7 @@ import { Logger } from "pino";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { AudioCache } from "../cache/audioCache";
 import { PodcastGenerationOptions, PodcastGenerationResult } from "../volcano/client";
+import { parseScriptToText } from "../script/parser";
 import { splitStringIntoChunks } from "./utils";
 
 /**
@@ -64,63 +65,22 @@ export class GoogleTTSClient {
     return accessToken;
   }
 
-  /**
-   * Clean a single line of podcast script by removing markdown and stage directions
-   */
-  private cleanPodcastScriptLine(line: string): string | null {
-    const trimmed = line.trim();
-    if (trimmed.startsWith("#")) {
-      return null;
-    }
-    return trimmed
-      .replace(/^#.*$/gm, "")
-      .replace(/\*/g, "")
-      .replace(/【[^】]*】/g, "")
-      .trim();
-  }
 
   /**
-   * Parse markdown podcast script into plain text
-   * Removes host markers and combines all dialogue into a single text
-   */
-  private parseScriptToText(script: string): string {
-    const lines = script.split("\n").filter((line) => line.trim());
-    const textParts: string[] = [];
-
-    for (const line of lines) {
-      const cleanedText = this.cleanPodcastScriptLine(line);
-      if (cleanedText && cleanedText.length > 0) {
-        textParts.push(cleanedText);
-      }
-    }
-
-    return textParts.join(" ");
-  }
-
-  /**
-   * Check if Google TTS can be used for this podcast
-   * Requirements: single speaker and en-US locale
+   * @deprecated Use selectTTSEngine from ../selectEngine instead
+   * This method is kept for backward compatibility only
    */
   static canUseGoogleTTS(script: string, locale: string): boolean {
+    // Import here to avoid circular dependencies
+    const { countHosts } = require("../script/hostCounter");
+    
     if (locale !== "en-US") {
       return false;
     }
 
-    // Check for single speaker
-    const hostMarkerRegex = /【([^】]+)】/g;
-    const hosts = new Set<string>();
-
-    let match;
-    while ((match = hostMarkerRegex.exec(script)) !== null) {
-      const hostName = match[1].trim();
-      if (hostName) {
-        hosts.add(hostName);
-      }
-    }
-
-    // If no markers found, assume single speaker (default)
-    // If exactly one unique host, it's single speaker
-    return hosts.size === 0 || hosts.size === 1;
+    const hostCount = countHosts(script);
+    // Google TTS only supports single speaker (0 or 1 host)
+    return hostCount === 0 || hostCount === 1;
   }
 
   /**
@@ -132,25 +92,22 @@ export class GoogleTTSClient {
   ): Promise<Buffer> {
     // const parent = `projects/${this.projectId}/locations/${this.location}`;
     const url = `https://texttospeech.googleapis.com/v1/text:synthesize`;
-
     const requestBody = {
       input: {
-        prompt: "Speak aloud in a natural and friendly tone as the host of a Podcast: ",
+        prompt: "You are Scott Galloway, the solo-cast of a opinion-heavy podcast where your voice is deep, raspy. At the end of sentences, your pitch goes down to signal authority. You sounds like you are the smartest person in the room, you deliver opinions as if they are absolute facts. Regarding pace, you introduces a topic slowly, and accelerates on data and factual lists. After the fast list, you pauses completely for 1-2 seconds before delivering your opinion.",
         text: text,
       },
       voice: {
         languageCode: "en-us",
-        "name": "Zephyr",
-        "ssmlGender": "FEMALE",
-        "modelName": "gemini-2.5-flash-tts"
+        "name": "Orus",
+        "modelName": "gemini-2.5-pro-tts"
       },
       audioConfig: {
         audioEncoding: "MP3",
-        speakingRate: 1.1,
+        speakingRate: 1.2,
         sampleRateHertz: 44100,
       },
     };
-
     this.logger?.info({
       msg: "Starting long audio synthesis",
       url,
@@ -194,16 +151,9 @@ export class GoogleTTSClient {
 
     this.logger?.info({ msg: "Starting Google TTS podcast audio generation", podcastToken });
 
-    // Validate that we can use Google TTS
-    if (!GoogleTTSClient.canUseGoogleTTS(script, locale)) {
-      throw new Error(
-        "Google TTS can only be used for single speaker podcasts with en-US locale",
-      );
-    }
-
     try {
       // Parse script to plain text (remove host markers)
-      const text = this.parseScriptToText(script);
+      const text = parseScriptToText(script);
 
       if (!text || text.trim().length === 0) {
         throw new Error("No dialogue content found in script");
@@ -223,7 +173,7 @@ export class GoogleTTSClient {
       const audioChunks: Buffer[] = [];
 
       // Split text into chunks and synthesize each chunk
-      const chunks = splitStringIntoChunks(text, 3000);
+      const chunks = splitStringIntoChunks(text, 1000);
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         
