@@ -1,5 +1,7 @@
 "use server";
 import { generatePodcastAudio } from "@/app/(podcast)/lib/generation";
+import { getHostCountForPodcastType } from "@/app/(podcast)/types";
+import { PodcastKind } from "@/app/(podcast)/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
@@ -19,9 +21,11 @@ import { Locale } from "next-intl";
 export async function generatePodcastAudioFromScriptAction({
   script,
   locale,
+  podcastKind = PodcastKind.opinionOriented,
 }: {
   script: string;
   locale?: "zh-CN" | "en-US" | "auto";
+  podcastKind?: PodcastKind;
 }): Promise<
   ServerActionResult<{
     podcastId: number;
@@ -66,6 +70,7 @@ export async function generatePodcastAudioFromScriptAction({
       msg: "Generating podcast audio from script",
       locale: finalLocale,
       scriptLength: script.length,
+      podcastKind,
     });
 
     // Get or create a test analyst for testing purposes
@@ -146,7 +151,7 @@ export async function generatePodcastAudioFromScriptAction({
           script: script.trim(),
           extra: {
             kindDetermination: {
-              kind: "opinionOriented", // Default for testing
+              kind: podcastKind,
               reason: "Test podcast audio generation",
             },
             processing: {
@@ -168,6 +173,9 @@ export async function generatePodcastAudioFromScriptAction({
       token: podcastToken,
     });
 
+    // Determine hostCount based on podcastType
+    const hostCount = getHostCountForPodcastType(podcastKind);
+
     // Generate audio using existing function
     const statReport = async () => {
       // No-op for testing
@@ -179,6 +187,7 @@ export async function generatePodcastAudioFromScriptAction({
       podcastToken: podcast.token,
       script: podcast.script,
       locale: finalLocale,
+      hostCount: hostCount,
       abortSignal,
       statReport,
       logger: logger.child({ podcastId: podcast.id }),

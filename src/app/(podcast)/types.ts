@@ -35,3 +35,27 @@ export const podcastKindDeterminationSchema = z.object({
 });
 
 export type PodcastKindDetermination = z.infer<typeof podcastKindDeterminationSchema>;
+
+/**
+ * Maps podcast type to host count for audio generation
+ * This ensures consistent audio generation based on podcast type, not script content
+ */
+export function getHostCountForPodcastType(
+  podcastKind: PodcastKind | "deepDive" | "opinionOriented" | "fastInsight" | "debate",
+): 1 | 2 {
+  switch (podcastKind) {
+    case PodcastKind.fastInsight:
+    case "fastInsight":
+    case PodcastKind.opinionOriented:
+    case "opinionOriented":
+      return 1; // Solo cast
+    case PodcastKind.deepDive:
+    case "deepDive":
+    case PodcastKind.debate:
+    case "debate":
+      return 2; // Duo cast
+    default:
+      // Default to solo for unknown types
+      return 1;
+  }
+}

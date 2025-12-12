@@ -30,6 +30,7 @@ export interface PodcastGenerationOptions {
   script: string;
   podcastToken: string;
   locale?: string;
+  hostCount: 1 | 2; // Number of hosts for audio generation (1 = solo, 2 = duo) - REQUIRED
   logger?: Logger;
 }
 
@@ -55,56 +56,6 @@ export class VolcanoTTSClient {
     this.logger = logger;
   }
 
-  /**
-   * Get the validated number of podcast hosts for TTS generation
-   *
-   * Extracts host names from markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】 and returns
-   * a validated count suitable for Volcano TTS generation.
-   *
-   * **Important behavioral notes:**
-   * - Returns 1 if only one unique host is detected
-   * - Returns 2 if multiple hosts are detected (capped at 2 due to Volcano TTS limitation)
-   * - Returns 2 as default if no host markers found (for backward compatibility)
-   *
-   * @param script - The podcast script with host markers
-   * @returns Validated host count for TTS (always 1 or 2)
-   *
-   * @example
-   * // Script with 2 hosts: returns 2
-   * // 【Guy】AI, artificial intelligence is so hot right now...
-   * // 【Ira】Exactly, the core question we're discussing today...
-   *
-   * // Script with 1 host: returns 1
-   * // 【Guy】Today we're discussing...
-   * // 【Guy】In conclusion...
-   *
-   * // Script with 3+ hosts: returns 2 (capped)
-   * // Script with no markers: returns 2 (default)
-   */
-  private getValidatedHostCount(script: string): 1 | 2 {
-    // Regular expression to match host markers like 【Guy】, 【Ira】, 【凯】, 【艾拉】
-    const hostMarkerRegex = /【([^】]+)】/g;
-    const hosts = new Set<string>();
-
-    let match;
-    while ((match = hostMarkerRegex.exec(script)) !== null) {
-      // match[1] contains the host name inside 【】
-      const hostName = match[1].trim();
-      if (hostName) {
-        hosts.add(hostName);
-      }
-    }
-
-    const hostCount = hosts.size;
-
-    // Return the validated count, capped at 2 (Volcano TTS limitation)
-    // If no hosts detected, default to 2 for backward compatibility
-    if (hostCount === 0) {
-      return 2; // Default to 2 speakers if no markers found
-    }
-
-    return Math.min(hostCount, 2) as 1 | 2;
-  }
 
   /**
    * Clean a single line of podcast script by removing markdown and stage directions
@@ -123,23 +74,24 @@ export class VolcanoTTSClient {
 
   /**
    * Parse markdown podcast script into NLP texts format
-   * Automatically detects the number of hosts and adjusts speaker allocation
+   * Uses provided hostCount to determine speaker allocation
    */
-  private parseScriptToNLPTexts(script: string, locale: string = "zh-CN"): PodcastNLPText[] {
-    // Get the validated number of hosts in the script
-    const hostCount = this.getValidatedHostCount(script);
-
+  private parseScriptToNLPTexts(
+    script: string,
+    locale: string = "zh-CN",
+    hostCount: 1 | 2,
+  ): PodcastNLPText[] {
     // Get the default speakers for the locale
     const allSpeakers =
       DEFAULT_SPEAKERS[locale as keyof typeof DEFAULT_SPEAKERS] || DEFAULT_SPEAKERS["zh-CN"];
 
-    // Adjust speakers array based on detected host count
-    // If only 1 host detected, use only the first speaker
-    // If 2 hosts detected (or default), use both speakers
-    const speakers = hostCount === 1 ? [allSpeakers[0]] : allSpeakers;
+    // Adjust speakers array based on host count
+    // If only 1 host, use only the first speaker
+    // If 2 hosts, use 1st and 2nd speakers
+    const speakers = allSpeakers.slice(0, hostCount);
 
     this.logger?.info({
-      msg: "Detected podcast configuration",
+      msg: "Podcast configuration",
       hostCount,
       speakersUsed: speakers.length,
       locale,
@@ -276,7 +228,7 @@ export class VolcanoTTSClient {
    * Does NOT perform S3 upload - that's the caller's responsibility
    */
   async fetchAudioChunks(options: PodcastGenerationOptions): Promise<PodcastGenerationResult> {
-    const { script, podcastToken, locale = "zh-CN", logger } = options;
+    const { script, podcastToken, locale = "zh-CN", hostCount, logger } = options;
     if (logger) {
       this.logger = logger;
     }
@@ -298,8 +250,8 @@ export class VolcanoTTSClient {
     try {
       while (retryCount < maxRetries) {
         try {
-          // Parse script to NLP texts
-          const nlpTexts = this.parseScriptToNLPTexts(script, locale);
+          // Parse script to NLP texts with provided hostCount
+          const nlpTexts = this.parseScriptToNLPTexts(script, locale, hostCount);
           // this.logger?.info({ msg: "Parsed script to NLP texts", nlpTexts });
 
           if (nlpTexts.length === 0) {

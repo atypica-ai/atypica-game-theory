@@ -23,6 +23,7 @@ import { parseBuffer } from "music-metadata";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { generatePodcastCoverImage } from "./coverImage";
+import { getHostCountForPodcastType } from "../types";
 import { createVolcanoClient } from "./volcano/client";
 
 /**
@@ -110,7 +111,19 @@ export async function generatePodcast({
       .findUniqueOrThrow({ where: { id: podcast.id } })
       .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
-    // Step 3: Generate audio, metadata, and cover image in parallel
+    // Step 3: Determine hostCount based on podcastType
+    const podcastKind = podcast.extra.kindDetermination?.kind;
+    if (!podcastKind) {
+      throw new Error("Podcast kind determination is missing");
+    }
+    const hostCount = getHostCountForPodcastType(podcastKind);
+    logger.info({
+      msg: "Determined hostCount from podcastType",
+      podcastKind,
+      hostCount,
+    });
+
+    // Step 4: Generate audio, metadata, and cover image in parallel
     logger.info("Starting audio, metadata, and cover image generation in parallel");
     const [{ objectUrl, mimeType, duration, fileSize }, { title, showNotes }, { coverObjectUrl }] =
       await Promise.all([
@@ -119,6 +132,7 @@ export async function generatePodcast({
           podcastToken: podcast.token,
           script: script,
           locale: locale,
+          hostCount: hostCount,
           abortSignal: abortSignal,
           statReport: statReport,
           logger: logger,
@@ -145,7 +159,7 @@ export async function generatePodcast({
         }),
       ]);
 
-    // Step 4: Mark as completely finished with generatedAt
+    // Step 5: Mark as completely finished with generatedAt
     await prisma.analystPodcast.update({
       where: { id: podcast.id },
       data: { objectUrl, generatedAt: new Date() },
@@ -433,6 +447,7 @@ export async function generatePodcastAudio({
   podcastToken,
   script,
   locale,
+  hostCount,
   // abortSignal,
   // statReport,  // TODO 目前暂时免费，不消耗 token
   logger,
@@ -441,6 +456,7 @@ export async function generatePodcastAudio({
   podcastToken: string;
   script: string;
   locale: string;
+  hostCount: 1 | 2;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
@@ -451,7 +467,7 @@ export async function generatePodcastAudio({
   fileSize: number;
 }> {
   try {
-    logger.info({ msg: "Starting podcast audio generation" });
+    logger.info({ msg: "Starting podcast audio generation", hostCount });
 
     // Create Volcano TTS client
     const volcanoClient = createVolcanoClient(logger);
@@ -461,6 +477,7 @@ export async function generatePodcastAudio({
       script: script,
       podcastToken,
       locale,
+      hostCount,
       logger,
     });
 

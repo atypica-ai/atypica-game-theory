@@ -1,4 +1,5 @@
 "use client";
+import { PodcastKind } from "@/app/(podcast)/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +27,7 @@ interface GenerationResult {
 export function PodcastTestPageClient() {
   const [script, setScript] = useState("");
   const [locale, setLocale] = useState<"zh-CN" | "en-US" | "auto">("auto");
+  const [podcastKind, setPodcastKind] = useState<PodcastKind>(PodcastKind.opinionOriented);
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<GenerationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +47,7 @@ export function PodcastTestPageClient() {
       const response = await generatePodcastAudioFromScriptAction({
         script: script.trim(),
         locale,
+        podcastKind,
       });
 
       if (response.success && response.data) {
@@ -62,6 +65,7 @@ export function PodcastTestPageClient() {
   const handleReset = () => {
     setScript("");
     setLocale("auto");
+    setPodcastKind(PodcastKind.opinionOriented);
     setResult(null);
     setError(null);
   };
@@ -98,6 +102,31 @@ export function PodcastTestPageClient() {
                   <SelectItem value="en-US">English (en-US)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="podcastKind">Podcast Type</Label>
+              <Select
+                value={podcastKind}
+                onValueChange={(v) => setPodcastKind(v as PodcastKind)}
+              >
+                <SelectTrigger id="podcastKind">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={PodcastKind.opinionOriented}>
+                    Opinion Oriented (Solo)
+                  </SelectItem>
+                  <SelectItem value={PodcastKind.fastInsight}>
+                    Fast Insight (Solo)
+                  </SelectItem>
+                  <SelectItem value={PodcastKind.deepDive}>Deep Dive (Duo)</SelectItem>
+                  <SelectItem value={PodcastKind.debate}>Debate (Duo)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Solo = 1 host, Duo = 2 hosts. This determines the audio generation format.
+              </p>
             </div>
 
             <div className="space-y-2">
