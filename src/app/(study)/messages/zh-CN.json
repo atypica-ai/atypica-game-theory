@@ -134,15 +134,12 @@
       "title": "研究产出"
     },
     "NextSteps": {
-      "title": "您可能感兴趣",
+      "artifactsTitle": "研究产出",
+      "questionsTitle": "您可能感兴趣",
       "newStudyBadge": "新研究",
       "generatePodcast": "生成播客，聆听研究成果的深度解读",
-      "generating": "生成中...",
-      "podcastGenerationStarted": "播客生成已开始，请稍后查看",
-      "podcastExistsTitle": "已有播客",
-      "podcastExistsMessage": "您已经生成过播客，是否要重新生成？",
-      "regenerate": "重新生成",
-      "cancel": "取消"
+      "generateReport": "生成报告，可视化展示研究成果",
+      "generating": "生成中..."
     }
   },
   "StudyListPage": {
