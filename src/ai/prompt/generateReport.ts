@@ -1,12 +1,12 @@
 import { Analyst, AnalystKind, AnalystReport } from "@/prisma/client";
 import { Locale } from "next-intl";
-import { reportHTMLSystemCreation } from "./report/creation";
-import { reportHTMLSystemFastInsight } from "./report/fastInsight";
-import { reportHTMLSystemInsights } from "./report/insights";
-import { reportHTMLSystemMisc } from "./report/misc";
-import { reportHTMLSystemPlanning } from "./report/planning";
-import { reportHTMLSystemProductRnD } from "./report/productRnD";
-import { reportHTMLSystemTesting } from "./report/testing";
+import { reportHTMLSystemCreation } from "./generateReport/creation";
+import { reportHTMLSystemFastInsight } from "./generateReport/fastInsight";
+import { reportHTMLSystemInsights } from "./generateReport/insights";
+import { reportHTMLSystemMisc } from "./generateReport/misc";
+import { reportHTMLSystemPlanning } from "./generateReport/planning";
+import { reportHTMLSystemProductRnD } from "./generateReport/productRnD";
+import { reportHTMLSystemTesting } from "./generateReport/testing";
 import { promptSystemConfig } from "./systemConfig";
 
 export const reportHTMLSystem = ({

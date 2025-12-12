@@ -1,6 +1,6 @@
-import { sharedTechnicalSpecs } from "@/ai/prompt/report/shared";
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { Locale } from "next-intl";
+import { sharedTechnicalSpecs } from "./shared";
 
 export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
