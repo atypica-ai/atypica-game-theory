@@ -10,6 +10,7 @@ import { initStudyStatReporter } from "@/ai/tools/stats";
 import {
   buildPersonaTool,
   createSubAgentTool,
+  generatePodcastTool,
   generateReportTool,
   handleToolCallError,
   interviewChatTool,
@@ -134,6 +135,7 @@ export async function studyAgentRequest({
     [ToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
+    [ToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.planStudy]: planStudyTool({
       studyUserChatId,
       teamStudySystemPrompt,
@@ -182,13 +184,17 @@ export async function studyAgentRequest({
   const maxTokens: number | undefined = undefined;
   let maxSteps = MAX_STEPS_EACH_ROUND;
 
-  if ((toolUseCount[ToolName.generateReport] ?? 0) >= 1) {
-    // 一旦报告生成，后面就不允许构建人设和搜索等其他操作了，但是可以继续和报告进行问答，也可以重新生成报告
+  if (
+    (toolUseCount[ToolName.generateReport] ?? 0) >= 1 ||
+    (toolUseCount[ToolName.generatePodcast] ?? 0) >= 1
+  ) {
+    // 一旦报告或播客生成，后面就不允许构建人设和搜索等其他操作了，但是可以继续进行问答，也可以重新生成报告或播客
     // tools = Object.fromEntries(
     //   Object.entries(allTools).filter(([key]) =>
     //     [
     //       // ToolName.requestInteraction,
     //       ToolName.generateReport,
+    //       ToolName.generatePodcast,
     //       ToolName.reasoningThinking,
     //       ToolName.toolCallError,
     //     ].includes(key as ToolName),
@@ -298,22 +304,26 @@ export async function studyAgentRequest({
       //     ].includes(key as ToolName),
       //   ),
       // ) as typeof allTools;
-      let reportGenerated = false;
+      let artifactsGenerated = false;
       for (const message of modelMessages) {
         if (message.role === "tool") {
           for (const part of message.content) {
-            if (part.toolName === ToolName.generateReport) {
-              reportGenerated = true;
+            if (
+              part.toolName === ToolName.generateReport ||
+              part.toolName === ToolName.generatePodcast
+            ) {
+              artifactsGenerated = true;
               break;
             }
           }
         }
-        if (reportGenerated) break;
+        if (artifactsGenerated) break;
       }
-      const activeTools = reportGenerated
+      const activeTools = artifactsGenerated
         ? [
             // ToolName.requestInteraction,
             ToolName.generateReport as const,
+            ToolName.generatePodcast as const,
             ToolName.reasoningThinking as const,
             ToolName.toolCallError as const,
           ]

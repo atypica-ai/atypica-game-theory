@@ -272,10 +272,12 @@
       "tapToRecord": "Tap to record"
     },
     "GeneratePodcastResultMessage": {
-      "podcastGenerated": "Podcast generated successfully"
+      "podcastGenerated": "Podcast generated successfully",
+      "generateReport": "Generate Report"
     },
     "GenerateReportResultMessage": {
-      "reportGenerated": "Report is generated, click to view"
+      "reportGenerated": "Report is generated, click to view",
+      "generatePodcast": "Generate Podcast"
     },
     "ScoutTaskChatResultMessage": {
       "searchStats": "Search Statistics"

@@ -72,7 +72,7 @@ async function planPodcast({
 }
 
 export const planPodcastTool = ({
-  studyUserChatId,
+  // studyUserChatId,
   ...toolCallConfigArgs
 }: {
   studyUserChatId: number;

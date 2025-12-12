@@ -244,6 +244,7 @@ ${
   • 💬 **追问报告内容**：对报告中的任何部分提出问题，获得更详细的解释
   • ✏️ **修改报告**：要求调整报告的风格、格式、重点或增删特定内容
   • 🔄 **重新生成报告**：如需大幅调整，可要求重新生成整份报告
+  • 🎙️ **生成播客**：如需要音频形式的内容呈现，可使用 generatePodcast 工具基于报告生成播客内容
 - **❌ 不再允许的操作**：构建新人设、收集新数据、扩展研究范围等新研究活动
 
 🎯 **积极引导用户**：
@@ -501,6 +502,7 @@ If the above conditions are not met, do not proceed to the final phase
   • 💬 **Follow-up Questions**: Ask questions about any part of the report for more detailed explanations
   • ✏️ **Report Modifications**: Request adjustments to report style, format, focus, or add/remove specific content
   • 🔄 **Report Regeneration**: For major adjustments, request complete report regeneration
+  • 🎙️ **Generate Podcast**: If audio content presentation is needed, use the generatePodcast tool to generate podcast content based on the report
 - **❌ No Longer Allowed**: Building new personas, collecting new data, expanding research scope, and other new research activities
 
 🎯 **Actively Guide Users**:

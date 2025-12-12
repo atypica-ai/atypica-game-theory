@@ -39,14 +39,18 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
+type TStudyType = "general" | "product-rnd" | "fast-insight";
+
 export function NewStudyInputBox({
   className,
   initialQuestion,
   referenceUserChatTokens,
+  fixedStudyType,
 }: {
   className?: string;
   initialQuestion?: string;
   referenceUserChatTokens?: string[];
+  fixedStudyType?: TStudyType;
 }) {
   const { status: sessionStatus, data: session } = useSession();
   const locale = useLocale();
@@ -57,7 +61,7 @@ export function NewStudyInputBox({
   const [input, setInput] = useState("");
   const [partialTranscript, setPartialTranscript] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [studyType, setStudyType] = useState<"general" | "product-rnd" | "fast-insight">("general");
+  const [studyType, setStudyType] = useState<TStudyType>(fixedStudyType ?? "general");
   const [showStudyTypeSelector, setShowStudyTypeSelector] = useState(false);
   const [referenceChatTitles, setReferenceChatTitles] = useState<
     { token: string; title: string }[]
@@ -86,6 +90,9 @@ export function NewStudyInputBox({
   useEffect(() => {
     if (sessionStatus === "loading") {
       setShowStudyTypeSelector(false);
+    } else if (!!fixedStudyType) {
+      // 如果指定了固定研究类型，不显示研究类型选择器
+      setShowStudyTypeSelector(false);
     } else {
       // 🎉 这个 commit 里的修改，对 prompt cache 做了优化，现在可以对所有人开放了!
       setShowStudyTypeSelector(true);
@@ -95,7 +102,7 @@ export function NewStudyInputBox({
     // } else {
     //   setShowStudyTypeSelector(false);
     // }
-  }, [sessionStatus, session?.user?.email]);
+  }, [sessionStatus, session?.user?.email, fixedStudyType]);
 
   // Load reference chat titles
   useEffect(() => {
@@ -348,12 +355,14 @@ export function NewStudyButton({
   children,
   initialQuestion,
   referenceUserChatTokens,
+  fixedStudyType,
   open,
   onOpenChange,
 }: {
   children?: React.ReactNode;
   initialQuestion?: string;
   referenceUserChatTokens?: string[];
+  fixedStudyType?: TStudyType;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
@@ -387,6 +396,7 @@ export function NewStudyButton({
           className="rounded-sm"
           initialQuestion={initialQuestion}
           referenceUserChatTokens={referenceUserChatTokens}
+          fixedStudyType={fixedStudyType}
         />
       </DialogContent>
     </Dialog>

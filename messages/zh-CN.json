@@ -272,10 +272,12 @@
       "tapToRecord": "点击录音"
     },
     "GeneratePodcastResultMessage": {
-      "podcastGenerated": "播客已生成"
+      "podcastGenerated": "播客已生成",
+      "generateReport": "生成报告"
     },
     "GenerateReportResultMessage": {
-      "reportGenerated": "报告已生成，点击查看"
+      "reportGenerated": "报告已生成，点击查看",
+      "generatePodcast": "生成播客"
     },
     "ScoutTaskChatResultMessage": {
       "searchStats": "搜索统计"

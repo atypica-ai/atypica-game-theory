@@ -53,7 +53,11 @@ const MAX_STEPS_EACH_ROUND = 4;
  * 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
  */
 export async function fastInsightAgentRequest({
-  userChat: { id: studyUserChatId, extra: userChatExtra, analyst },
+  userChat: {
+    id: studyUserChatId,
+    // extra: userChatExtra,
+    analyst,
+  },
   userId,
   // teamId,
   // reqSignal,

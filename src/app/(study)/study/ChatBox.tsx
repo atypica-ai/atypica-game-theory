@@ -98,7 +98,7 @@ export function ChatBox() {
     status: useChatStatus,
     regenerate,
     // append,
-    addToolResult: _addToolResult,
+    addToolOutput: _addToolOutput,
   } = useChat({
     id: studyUserChatId.toString(),
     // 下面这行设置了以后可以实现：addToolResult 调用以后，立即调用 sendMessage，但是它个有问题，在工具调用出错以后，会进入死循环，所以改成人工 sendMessage
@@ -151,11 +151,11 @@ export function ChatBox() {
   );
 
   const addToolResult = useCallback(
-    async (...args: Parameters<typeof _addToolResult>) => {
-      await _addToolResult(...args); // 首先调用 useChat 上的 addToolResult 修改 ToolUIPart 的状态
+    async (...args: Parameters<typeof _addToolOutput>) => {
+      await _addToolOutput(...args); // 首先调用 useChat 上的 addToolResult 修改 ToolUIPart 的状态
       useChatRef.current.sendMessage(); // 不传参数调用 sendMessage 直接发送最后一条 assistant 消息
     },
-    [_addToolResult],
+    [_addToolOutput],
   );
 
   // React 在 development 模式下默认会执行两次 useEffect，这是 React 的严格模式的有意设计，帮助发现副作用
@@ -279,10 +279,12 @@ export function ChatBox() {
         waitForUser = true;
       }
     }
+    // Study completed when either report or podcast is generated
     const studyCompleted = !!messages.find((message) => {
       return !!message.parts?.find(
         (part) =>
-          part.type === `tool-${ToolName.generateReport}` &&
+          (part.type === `tool-${ToolName.generateReport}` ||
+            part.type === `tool-${ToolName.generatePodcast}`) &&
           // "toolCallId" in part &&  // part.type === `tool-xxx` can infer toolInvocation type
           part.state === "output-available",
       );
@@ -389,7 +391,7 @@ export function ChatBox() {
         {/* Study Next Steps */}
         {studyCompleted && uiStatus === "ready" ? (
           <div className="w-full mt-4">
-            <StudyNextSteps studyUserChatToken={studyUserChatToken} />
+            <StudyNextSteps studyUserChatToken={studyUserChatToken} sendMessage={sendMessage} />
           </div>
         ) : null}
 
