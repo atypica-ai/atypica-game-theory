@@ -13,18 +13,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type FeaturedStudy = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
+type FeaturedReport = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
 
 export function FeaturedStudies() {
   const locale = useLocale();
   const t = useTranslations("HomePage.FeaturedStudies");
   const router = useRouter();
-  const [studies, setStudies] = useState<FeaturedStudy[]>([]);
+  const [reports, setReports] = useState<FeaturedReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadStudies = async () => {
+    const loadReports = async () => {
       setLoading(true);
       const result = await fetchPublicFeaturedStudies({
         locale,
@@ -32,13 +32,13 @@ export function FeaturedStudies() {
         random: true,
       });
       if (result.success) {
-        setStudies(result.data);
+        setReports(result.data);
       } else {
         setError(result.message);
       }
       setLoading(false);
     };
-    loadStudies();
+    loadReports();
   }, [locale]);
 
   if (loading) {
@@ -74,12 +74,12 @@ export function FeaturedStudies() {
   if (error) {
     return (
       <div className="text-center space-y-4">
-        <div className="text-red-500 text-sm">Error loading featured studies: {error}</div>
+        <div className="text-red-500 text-sm">Error loading featured reports: {error}</div>
       </div>
     );
   }
 
-  if (studies.length === 0) {
+  if (reports.length === 0) {
     return (
       <div className="text-center space-y-4">
         <h2 className="text-2xl font-bold tracking-tight leading-tight">{t("title")}</h2>
@@ -96,27 +96,27 @@ export function FeaturedStudies() {
       </div>
 
       <div className="max-w-6xl mx-auto grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {studies.map((study) => (
-          <Card key={study.id} className="group relative overflow-hidden pb-0">
+        {reports.map((report) => (
+          <Card key={report.id} className="group relative overflow-hidden pb-0">
             <CardHeader className="space-y-3">
               <div className="flex items-center gap-3 overflow-hidden">
-                <HippyGhostAvatar seed={study.id} className="shrink-0 size-8" />
-                <div className="text-sm truncate">{study.analyst.role}</div>
+                <HippyGhostAvatar seed={report.id} className="shrink-0 size-8" />
+                <div className="text-sm truncate">{report.category}</div>
               </div>
               <CardTitle className="text-base line-clamp-2 tracking-tight leading-tight">
-                {study.analyst.topic}
+                {report.title}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-1">
               <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                {study.analyst.studySummary}
+                {report.description}
               </p>
             </CardContent>
-            {study.analyst.latestReport?.coverUrl ? (
+            {report.coverUrl ? (
               <div className="relative aspect-video rounded-t-xl overflow-hidden mt-4 mx-12 border">
                 <Image
                   loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
-                  src={study.analyst.latestReport?.coverUrl}
+                  src={report.coverUrl}
                   alt="report cover"
                   fill
                   sizes="600px"
@@ -126,7 +126,7 @@ export function FeaturedStudies() {
             ) : null}
             <div
               className="absolute inset-0 bg-background/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-xl cursor-pointer"
-              onClick={() => router.push(`/study/${study.studyUserChat.token}/share?replay=1`)}
+              onClick={() => router.push(report.url)}
             >
               <Button
                 variant="secondary"

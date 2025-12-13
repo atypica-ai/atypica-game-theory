@@ -8,19 +8,18 @@ import { useEffect, useState } from "react";
 import { pickRandomFeaturedPodcast } from "../insight-radio/actions";
 
 type FeaturedPodcast = {
-  podcast: {
-    token: string;
-    script: string | null;
-    objectUrl: string | null;
-    generatedAt: Date;
-  };
-  analyst: {
-    id: number;
-    topic: string;
-  };
-  studyUserChat: {
-    token: string;
-    title: string;
+  id: number;
+  token: string;
+  title: string;
+  description: string;
+  coverUrl: string | null;
+  url: string;
+  objectUrl: string | null;
+  script: string | null;
+  generatedAt: Date;
+  kindDetermination?: {
+    kind: "deepDive" | "opinionOriented" | "fastInsight" | "debate";
+    reason: string;
   };
 };
 
@@ -74,21 +73,21 @@ export function InsightRadioCard() {
         {/* Podcast Info */}
         <div className="space-y-2">
           <Link
-            href={`/artifacts/podcast/${podcast.podcast.token}/share`}
+            href={podcast.url}
             target="_blank"
             className="block"
           >
             <h4 className="text-sm font-medium text-foreground line-clamp-2 hover:text-primary transition-colors">
-              {podcast.studyUserChat.title}
+              {podcast.title}
             </h4>
           </Link>
-          <p className="text-xs text-muted-foreground line-clamp-2">{podcast.analyst.topic}</p>
+          <p className="text-xs text-muted-foreground line-clamp-2">{podcast.description}</p>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2">
           <Button size="sm" className="flex-1 h-8 text-xs rounded-full" asChild>
-            <Link href={`/artifacts/podcast/${podcast.podcast.token}/share`} target="_blank">
+            <Link href={podcast.url} target="_blank">
               <Volume2Icon className="w-3 h-3" />
               {t("listen")}
             </Link>
@@ -122,12 +121,12 @@ export function InsightRadioCard() {
           <div className="flex-1 min-w-0">
             <h3 className="text-xs font-semibold text-muted-foreground mb-1">{t("title")}</h3>
             <Link
-              href={`/artifacts/podcast/${podcast.podcast.token}/share`}
+              href={podcast.url}
               target="_blank"
               className="block"
             >
               <h4 className="text-sm font-medium text-foreground line-clamp-1 hover:text-primary transition-colors">
-                {podcast.studyUserChat.title}
+                {podcast.title}
               </h4>
             </Link>
           </div>
@@ -135,7 +134,7 @@ export function InsightRadioCard() {
           {/* Actions */}
           <div className="flex items-center gap-2 shrink-0">
             <Button size="sm" className="h-9 w-9 rounded-full p-0" asChild>
-              <Link href={`/artifacts/podcast/${podcast.podcast.token}/share`} target="_blank">
+              <Link href={podcast.url} target="_blank">
                 <Volume2Icon className="w-4 h-4" />
               </Link>
             </Button>

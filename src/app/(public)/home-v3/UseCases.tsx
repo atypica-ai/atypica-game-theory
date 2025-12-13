@@ -11,12 +11,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type FeaturedStudy = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
+type FeaturedReport = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
 
 export function UseCases() {
   const locale = useLocale();
   const t = useTranslations("HomePageV3.UseCases");
-  const [studies, setStudies] = useState<FeaturedStudy[]>([]);
+  const [studies, setStudies] = useState<FeaturedReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,16 +92,16 @@ export function UseCases() {
                 )}
               >
                 <Link
-                  href={`/study/${study.studyUserChat.token}/share?replay=1`}
+                  href={study.url}
                   className="absolute inset-0 z-10"
                 >
-                  <span className="sr-only">View Case Study: {study.studyUserChat.title}</span>
+                  <span className="sr-only">View Case Study: {study.title}</span>
                 </Link>
                 <div className="relative aspect-video overflow-hidden">
-                  {study.analyst.latestReport?.coverUrl ? (
+                  {study.coverUrl ? (
                     <Image
                       loader={proxiedImageLoader}
-                      src={study.analyst.latestReport.coverUrl}
+                      src={study.coverUrl}
                       alt="report cover"
                       fill
                       // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -124,10 +124,10 @@ export function UseCases() {
                 </div>
                 <div className="p-6 grow flex flex-col">
                   <span className="text-xs capitalize bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 font-medium py-1 px-2.5 rounded-full self-start mb-3">
-                    {study.analyst.kind}
+                    {study.category}
                   </span>
                   <h3 className="text-lg font-bold line-clamp-2 leading-snug grow">
-                    {study.studyUserChat.title}
+                    {study.title}
                   </h3>
                 </div>
               </Card>
