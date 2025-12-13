@@ -61,7 +61,7 @@ function ArtifactsCountBadge() {
   return (
     <Badge
       variant="default"
-      className="absolute -top-2 -left-2 size-5 flex items-center justify-center text-xs font-bold font-mono rounded-full p-0 scale-75"
+      className="absolute -top-1 -left-2 size-5 flex items-center justify-center text-xs font-bold font-mono rounded-full p-0 scale-75"
     >
       {totalCount}
     </Badge>
@@ -118,7 +118,7 @@ export default function StudyArtifactsListPanel({ download = false }: { download
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 gap-1.5 relative hover:bg-transparent hover:text-primary"
+          className="h-8 px-2 has-[>svg]:px-2 gap-1.5 relative hover:bg-transparent hover:text-primary"
         >
           <ArtifactsIcon className="shrink-0 size-4" />
           <span className="text-xs max-sm:hidden whitespace-nowrap">{tArtifacts("title")}</span>
@@ -231,7 +231,7 @@ export default function StudyArtifactsListPanel({ download = false }: { download
                     download={download}
                   >
                     <div>
-                      <div className="relative w-full aspect-[16/9] cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-accent/10">
+                      <div className="relative w-full aspect-video cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-accent/10">
                         {report.coverCdnHttpUrl ? (
                           <Image
                             loader={({ src }) => src}

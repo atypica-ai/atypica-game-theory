@@ -61,7 +61,11 @@ async function StudyPage({
   if (studyUserChat.userId !== sessionUserId) {
     // forbidden(); // Cannot use forbidden() inside Suspense boundary - it throws an error that Suspense catches, causing page interaction issues
     // Instead, return a Forbidden component directly
-    return <Forbidden />;
+    return (
+      <DefaultLayout header={true} footer={true}>
+        <Forbidden />
+      </DefaultLayout>
+    );
   }
 
   return <StudyPageClient studyUserChat={studyUserChat} replay={false} />;

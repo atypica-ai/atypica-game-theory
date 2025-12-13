@@ -73,7 +73,7 @@ export function NerdStats() {
             variant="ghost"
             size="sm"
             className={cn(
-              "h-7 px-2 gap-1.5 hover:bg-transparent hover:text-primary",
+              "h-8 px-2 has-[>svg]:px-2 gap-1.5 hover:bg-transparent hover:text-primary",
               "text-xs",
               // "text-muted-foreground max-sm:text-foreground",
             )}

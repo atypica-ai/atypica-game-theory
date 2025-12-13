@@ -100,7 +100,7 @@ const Agent = () => {
         )}
         drawerDirection="left"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <StudyArtifactsListPanel download={!replay} />
           <NerdStats />
           {!replay && <ShareReplayButton studyUserChat={studyUserChat} />}

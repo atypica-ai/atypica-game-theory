@@ -72,7 +72,7 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
       <GlobalHeader className="h-12">
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={copyShareLink}>
             <Share2 size={14} />
             <span className="hidden sm:inline">{t("copyLink")}</span>

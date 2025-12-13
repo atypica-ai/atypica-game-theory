@@ -62,7 +62,7 @@ export function ShareReplayButton({
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 gap-1.5 hover:bg-transparent hover:text-primary text-xs"
+          className="h-8 px-2 has-[>svg]:px-2 gap-1.5 hover:bg-transparent hover:text-primary text-xs"
         >
           <ShareIcon className="size-4" />
           <span className="max-sm:hidden">{t("shareReplay")}</span>
@@ -76,7 +76,7 @@ export function ShareReplayButton({
         <div className="mt-3 space-y-3 overflow-hidden">
           <p className="text-sm text-muted-foreground mb-2">{t("shareTipMessage")}</p>
           <div className="flex items-center gap-2 mt-1">
-            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden break-words">
+            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden wrap-break-words">
               {shareUrl}
             </div>
             <Button size="sm" variant="outline" onClick={handleCopyUrl} className="shrink-0">
