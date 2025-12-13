@@ -264,6 +264,20 @@ export type ApiKeyExtra = Partial<{
   createdByEmail: string; // Email of the creator
 }>;
 
+export type FeaturedItemExtra = Partial<{
+  title: string;
+  description: string;
+  coverObjectUrl: string;
+  url: string;
+  category: string; // report 的 analyst.kind, podcast 暂时没有不需要设置
+}>;
+
+export enum FeaturedItemResourceType {
+  StudyUserChat = "StudyUserChat",
+  AnalystReport = "AnalystReport",
+  AnalystPodcast = "AnalystPodcast",
+}
+
 // Removed
 // export type ProductExtra = Partial<{
 //   stripePriceId: string;

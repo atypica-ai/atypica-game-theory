@@ -220,6 +220,19 @@ model FeaturedStudy {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
+model FeaturedItem {
+  id           Int    @id @default(autoincrement())
+  resourceType String @db.VarChar(50)
+  resourceId   Int
+  locale       String @db.VarChar(16)
+  extra        Json   @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([resourceType, resourceId])
+}
+
 model AnalystReport {
   id          Int       @id @default(autoincrement())
   token       String    @unique @db.VarChar(64)
