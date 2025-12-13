@@ -46,7 +46,6 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   persistMessages?: boolean;
 }) {
   const t = useTranslations("Components.UserChatSession");
-  const tCompliance = useTranslations("AICompliance");
   const locale = useLocale();
   const { uploadedFiles, handleFileUploaded, handleRemoveFile, clearFiles, isUploadDisabled } =
     useFileUploadManager();
@@ -128,8 +127,8 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
           ))}
         {/* AI Compliance Disclaimer */}
         {messages.length > 0 && status === "ready" ? (
-          <div className="w-full text-xs text-center text-zinc-500 dark:text-zinc-400 px-4 mt-4 mb-8">
-            {tCompliance("fullDisclaimer")}
+          <div className="w-full text-xs text-left text-zinc-500 dark:text-zinc-400 px-4 mt-4 mb-8">
+            {locale === "zh-CN" ? "以上内容由人工智能生成" : ""}
           </div>
         ) : null}
         {error ? (

@@ -6,7 +6,7 @@ import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { isToolOrDynamicToolUIPart, isToolUIPart } from "ai";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { StudyReplayIntro } from "./components/StudyReplayIntro";
@@ -16,8 +16,8 @@ import { SingleMessage } from "./SingleMessage";
 
 export function ChatReplay() {
   const { studyUserChat, setLastToolInvocation } = useStudyContext();
+  const locale = useLocale();
   const t = useTranslations("StudyPage.ChatReplay");
-  const tCompliance = useTranslations("AICompliance");
   const { data: session } = useSession();
 
   // 开场动画状态
@@ -147,8 +147,8 @@ export function ChatReplay() {
 
         {/* AI Compliance Disclaimer */}
         {messagesDisplay.length > 0 && (
-          <div className="w-full text-xs text-center text-zinc-500 dark:text-zinc-400 px-4 mt-4 mb-8">
-            {tCompliance("fullDisclaimer")}
+          <div className="w-full text-xs text-left text-zinc-500 dark:text-zinc-400 mb-6">
+            {locale === "zh-CN" ? "以上内容由人工智能生成" : ""}
           </div>
         )}
 

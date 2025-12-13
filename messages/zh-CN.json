@@ -408,10 +408,5 @@
     "playPodcast": "播放播客",
     "pausePodcast": "暂停播客",
     "generatingAudio": "正在生成音频..."
-  },
-  "AICompliance": {
-    "fullDisclaimer": "以上内容由人工智能生成",
-    "shortDisclaimer": "内容由AI生成",
-    "period": "。"
   }
 }

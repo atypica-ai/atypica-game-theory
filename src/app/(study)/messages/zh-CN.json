@@ -173,7 +173,7 @@
   },
   "ReportSharePage": {
     "title": "研究报告",
-    "attribution": "报告来自研究\"{topic}\"。",
+    "attribution": "报告来自研究\"{topic}\"",
     "viewReplay": "研究回放",
     "shareReport": "分享报告",
     "copyLink": "复制链接",

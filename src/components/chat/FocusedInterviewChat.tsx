@@ -147,7 +147,6 @@ export function FocusedInterviewChat<
   // const locale = useLocale();
   const { isMobile } = useDevice();
   const t = useTranslations("Components.FocusedInterviewChat");
-  const tCompliance = useTranslations("AICompliance");
 
   const [timeLeft, setTimeLeft] = useState(DEFAULT_TIME_LEFT);
   const [hasTimedOut, setHasTimedOut] = useState(false);
@@ -530,7 +529,7 @@ export function FocusedInterviewChat<
           "w-full text-xs text-center font-normal text-zinc-400 dark:text-zinc-600 px-4 my-4",
         )}
       >
-        {tCompliance("shortDisclaimer")}
+        {locale === "zh-CN" ? "内容由AI生成" : ""}
       </div>
     </div>
   );

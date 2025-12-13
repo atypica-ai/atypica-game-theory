@@ -25,7 +25,7 @@ import {
   UIMessage,
 } from "ai";
 import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -53,7 +53,7 @@ function popLastUserMessage(messages: UIMessage[]) {
 export function ChatBox() {
   // 这个组件是不支持对话直接切换的，如果切换，需要刷新页面重新加载！);
   const t = useTranslations("StudyPage.ChatBox");
-  const tCompliance = useTranslations("AICompliance");
+  const locale = useLocale();
   const {
     setLastToolInvocation,
     studyUserChat: {
@@ -388,6 +388,13 @@ export function ChatBox() {
           ))}
         </div>
 
+        {/* AI Compliance Disclaimer */}
+        {messages.length > 0 && uiStatus === "ready" ? (
+          <div className="w-full text-xs text-left text-zinc-400 dark:text-zinc-600 mb-6">
+            {locale === "zh-CN" ? "以上内容由人工智能生成" : ""}
+          </div>
+        ) : null}
+
         {/* Study Next Steps */}
         {studyCompleted && uiStatus === "ready" ? (
           <div className="w-full mt-4">
@@ -399,13 +406,6 @@ export function ChatBox() {
         {studyCompleted && uiStatus === "ready" ? (
           <div className="w-full mt-4 flex justify-start">
             <StudyFeedback studyUserChatId={studyUserChatId} />
-          </div>
-        ) : null}
-
-        {/* AI Compliance Disclaimer */}
-        {messages.length > 0 && uiStatus === "ready" ? (
-          <div className="w-full text-xs text-center text-zinc-400 dark:text-zinc-600 px-4 mt-12 mb-8">
-            {tCompliance("fullDisclaimer")}
           </div>
         ) : null}
 

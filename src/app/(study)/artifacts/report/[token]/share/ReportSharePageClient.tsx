@@ -3,7 +3,7 @@ import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Loader2Icon, Play, Share2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -43,8 +43,8 @@ export default function ReportSharePageClient({
   studyReplayUrl: string;
   studyTitle: string;
 }) {
+  const locale = useLocale();
   const t = useTranslations("ReportSharePage");
-  const tCompliance = useTranslations("AICompliance");
   const [isLoading, setIsLoading] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -140,8 +140,7 @@ export default function ReportSharePageClient({
         {t("attribution", {
           topic: truncateForTitle(studyTitle, { maxDisplayWidth: 60, suffix: "..." }),
         })}{" "}
-        {tCompliance("shortDisclaimer")}
-        {tCompliance("period")}
+        {locale === "zh-CN" ? "，内容由AI生成。" : ""}
       </footer>
     </div>
   );

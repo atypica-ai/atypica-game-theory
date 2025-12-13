@@ -173,7 +173,7 @@
   },
   "ReportSharePage": {
     "title": "Research Report",
-    "attribution": "Report from research \"{topic}\".",
+    "attribution": "Report from research \"{topic}\"",
     "viewReplay": "Replay Study",
     "shareReport": "Share Report",
     "copyLink": "Copy Link",
