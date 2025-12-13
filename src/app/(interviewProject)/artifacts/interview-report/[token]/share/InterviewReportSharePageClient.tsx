@@ -7,7 +7,13 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-export default function InterviewReportSharePageClient({ reportToken }: { reportToken: string }) {
+export default function InterviewReportSharePageClient({
+  reportToken,
+  onePageHtml,
+}: {
+  reportToken: string;
+  onePageHtml: string;
+}) {
   const t = useTranslations("InterviewProject.reportShare");
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
@@ -16,6 +22,7 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
   const [ratio, setRatio] = useState(100);
   const [iframeHeight, setIframeHeight] = useState<number | undefined>(undefined);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const reportUrl = useMemo(() => {
     return `/artifacts/interview-report/${reportToken}/raw`;
   }, [reportToken]);
@@ -65,7 +72,7 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsLoading(false);
-    }, 3000);
+    }, 1000); // 现在是用了 srcDoc, 超时可以短一点了
     return () => clearTimeout(timeout);
   }, []);
 
@@ -96,7 +103,8 @@ export default function InterviewReportSharePageClient({ reportToken }: { report
         )}
 
         <iframe
-          src={reportUrl}
+          // src={reportUrl}
+          srcDoc={onePageHtml}
           className="flex-1 border-none"
           style={{
             width: ratio < 100 ? "800px" : "100%",

@@ -44,6 +44,7 @@ const getCachedReportData = unstable_cache(
             },
           },
         },
+        onePageHtml: true,
         extra: true,
       },
     });
@@ -105,6 +106,7 @@ async function ReportSharePage({ reportToken }: { reportToken: string }) {
       reportToken={reportToken}
       studyTitle={report.analyst.studyUserChat.title}
       studyReplayUrl={studyReplayUrl}
+      onePageHtml={report.onePageHtml}
     />
   );
 }

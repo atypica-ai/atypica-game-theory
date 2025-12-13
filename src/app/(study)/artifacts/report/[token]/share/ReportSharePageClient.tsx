@@ -32,10 +32,12 @@ export default function ReportSharePageClient({
   reportToken,
   studyReplayUrl,
   studyTitle,
+  onePageHtml,
 }: {
   reportToken: string;
   studyReplayUrl: string;
   studyTitle: string;
+  onePageHtml: string;
 }) {
   const locale = useLocale();
   const t = useTranslations("ReportSharePage");
@@ -45,6 +47,7 @@ export default function ReportSharePageClient({
   const [ratio, setRatio] = useState(100);
   const [iframeHeight, setIframeHeight] = useState<number | undefined>(undefined);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const reportUrl = useMemo(() => {
     return `/artifacts/report/${reportToken}/raw`;
   }, [reportToken]);
@@ -99,7 +102,7 @@ export default function ReportSharePageClient({
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsLoading(false);
-    }, 3000);
+    }, 1000); // 现在是用了 srcDoc, 超时可以短一点了
     return () => clearTimeout(timeout);
   }, []);
 
@@ -118,7 +121,8 @@ export default function ReportSharePageClient({
         )}
 
         <iframe
-          src={reportUrl}
+          // src={reportUrl}
+          srcDoc={onePageHtml}
           className="flex-1 border-none"
           style={{
             width: ratio < 100 ? "800px" : "100%",

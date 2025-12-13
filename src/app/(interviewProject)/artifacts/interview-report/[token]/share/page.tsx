@@ -43,6 +43,9 @@ async function InterviewReportSharePage({ reportToken }: { reportToken: string }
   const report = await prismaRO.interviewReport.findUnique({
     where: { token: reportToken },
     select: {
+      id: true,
+      token: true,
+      onePageHtml: true,
       project: {
         select: {
           id: true,
@@ -52,7 +55,9 @@ async function InterviewReportSharePage({ reportToken }: { reportToken: string }
     },
   });
   if (!report) notFound();
-  return <InterviewReportSharePageClient reportToken={reportToken} />;
+  return (
+    <InterviewReportSharePageClient reportToken={reportToken} onePageHtml={report.onePageHtml} />
+  );
 }
 
 export default async function InterviewReportSharePageWithLoading({
