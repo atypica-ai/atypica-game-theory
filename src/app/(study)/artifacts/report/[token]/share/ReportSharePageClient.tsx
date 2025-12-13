@@ -2,31 +2,25 @@
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import { truncateForTitle } from "@/lib/textUtils";
+import { cn } from "@/lib/utils";
 import { Loader2Icon, Play, Share2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-function SharePageHeader({
-  studyReplayUrl,
-  copyShareLink,
-}: {
-  studyReplayUrl: string;
-  copyShareLink: () => void;
-}) {
+function SharePageHeader({ copyShareLink }: { copyShareLink: () => void }) {
   const t = useTranslations("ReportSharePage");
   return (
     <GlobalHeader className="h-12">
       <div className="flex items-center gap-1 sm:gap-2">
-        <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
-          <Link href={studyReplayUrl}>
-            <Play size={14} />
-            <span className="max-sm:text-xs max-sm:tracking-tighter">{t("viewReplay")}</span>
-          </Link>
-        </Button>
-        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={copyShareLink}>
-          <Share2 size={14} />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 has-[>svg]:px-2 gap-1.5 text-xs"
+          onClick={copyShareLink}
+        >
+          <Share2 className="size-4" />
           <span className="hidden sm:inline">{t("copyLink")}</span>
         </Button>
       </div>
@@ -111,7 +105,7 @@ export default function ReportSharePageClient({
 
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
-      <SharePageHeader studyReplayUrl={studyReplayUrl} copyShareLink={copyShareLink} />
+      <SharePageHeader copyShareLink={copyShareLink} />
 
       <div className="flex-1 w-full relative overflow-hidden" ref={containerRef}>
         {isLoading && (
@@ -136,11 +130,29 @@ export default function ReportSharePageClient({
         />
       </div>
 
-      <footer className="py-2 px-4 text-center text-xs text-muted-foreground border-t border-border">
-        {t("attribution", {
-          topic: truncateForTitle(studyTitle, { maxDisplayWidth: 60, suffix: "..." }),
-        })}{" "}
-        {locale === "zh-CN" ? "，内容由AI生成。" : ""}
+      <footer
+        className={cn(
+          "py-2 px-4 text-xs text-muted-foreground border-t border-border",
+          "flex flex-row items-center justify-center gap-2",
+        )}
+      >
+        <div className="text-left">
+          {t("attribution", {
+            topic: truncateForTitle(studyTitle, { maxDisplayWidth: 60, suffix: "..." }),
+          })}
+          {locale === "zh-CN" ? "，内容由AI生成。" : ""}
+        </div>
+        <Button
+          variant="default"
+          size="sm"
+          className="h-8 px-3 has-[>svg]:px-3 text-xs shrink-0"
+          asChild
+        >
+          <Link href={studyReplayUrl}>
+            <Play className="size-3.5" />
+            <span>{t("viewReplay")}</span>
+          </Link>
+        </Button>
       </footer>
     </div>
   );

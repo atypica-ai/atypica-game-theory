@@ -83,6 +83,17 @@ const GlobalHeader = React.memo(function GlobalHeader({
   children?: React.ReactNode;
   drawerDirection?: "left" | "right";
 }) {
+  const { status: sessionStatus, data: session } = useSession();
+  const isAuthenticated = sessionStatus === "authenticated" && session?.user;
+  const t = useTranslations("Components.GlobalHeader");
+  const searchParams = useSearchParams();
+  const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
+
+  useEffect(() => {
+    const pathWithParams = window.location.href.replace(window.location.origin, "");
+    setSigninCallbackUrl(searchParams.get("callbackUrl") || pathWithParams || "/");
+  }, [searchParams]);
+
   return (
     <>
       <header
@@ -105,7 +116,20 @@ const GlobalHeader = React.memo(function GlobalHeader({
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           {children}
-          <IntercomLauncher />
+          {isAuthenticated ? (
+            <IntercomLauncher />
+          ) : (
+            <Button
+              variant="default"
+              size="sm"
+              className="h-8 px-4 scale-90 max-[360px]:hidden"
+              asChild
+            >
+              <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(signinCallbackUrl)}`}>
+                {t("getStarted")}
+              </Link>
+            </Button>
+          )}
           <GlobalHeaderDrawer direction={drawerDirection} />
         </div>
         {!children && (

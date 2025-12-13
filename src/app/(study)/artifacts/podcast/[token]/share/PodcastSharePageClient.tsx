@@ -23,13 +23,23 @@ function SharePageHeader({
   return (
     <GlobalHeader className="h-12">
       <div className="flex items-center gap-1 sm:gap-2">
-        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={copyShareLink}>
-          <Share2 size={14} />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 has-[>svg]:px-2 gap-1.5 text-xs"
+          onClick={copyShareLink}
+        >
+          <Share2 className="size-4" />
           <span className="hidden sm:inline">{t("copyLink")}</span>
         </Button>
         {onDownload && (
-          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onDownload}>
-            <DownloadIcon size={14} />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 has-[>svg]:px-2 gap-1.5 text-xs"
+            onClick={onDownload}
+          >
+            <DownloadIcon className="size-4" />
             <span className="hidden sm:inline">{t("download")}</span>
           </Button>
         )}
@@ -103,7 +113,7 @@ export default function PodcastSharePageClient({
               target="_blank"
               className="block w-full max-w-lg mx-auto"
             >
-              <div className="relative w-full aspect-[16/9] bg-muted rounded-lg overflow-hidden transition-all hover:border hover:border-primary/50 hover:shadow-sm cursor-pointer">
+              <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden cursor-pointer">
                 <Image
                   loader={({ src }) => src}
                   src={coverCdnHttpUrl}

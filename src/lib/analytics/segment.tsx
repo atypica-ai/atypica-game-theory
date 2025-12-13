@@ -92,4 +92,5 @@ export function SegmentAnalytics() {
   }, [pathname]);
 
   // return isSegmentLoaded ? <IntercomLauncher /> : null;
+  return <></>;
 }
