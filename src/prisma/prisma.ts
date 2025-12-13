@@ -24,6 +24,7 @@ function newPrismaClient() {
   });
   client.$on("error", (e) => {
     rootLogger.error({ error: e.message, target: e.target, ro: false }, "prisma:error");
+    rootLogger.error({ target: e.target, ro: false }, `Prisma Error: ${e.message}`);
   });
   return client;
   // return new PrismaClient({ log }).$extends(withAccelerate());
@@ -44,7 +45,7 @@ function newPrismaROClient() {
     log,
   });
   client.$on("error", (e) => {
-    rootLogger.error({ error: e.message, target: e.target, ro: true }, "prisma:error");
+    rootLogger.error({ target: e.target, ro: true }, `Prisma Error: ${e.message}`);
   });
   return client;
 }

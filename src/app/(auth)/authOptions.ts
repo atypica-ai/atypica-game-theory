@@ -15,11 +15,12 @@ import { authLogger, createPersonalUser, recordLastLogin } from "./lib";
 const authOptions: NextAuthOptions = {
   logger: {
     error(code, metadata) {
+      const logger = code === "CLIENT_FETCH_ERROR" ? authLogger.warn : authLogger.error;
       if (metadata instanceof Error) {
-        authLogger.error({ code, msg: metadata.message });
+        logger({ code, msg: metadata.message });
       } else {
         const { error, ...rest } = metadata;
-        authLogger.error({
+        logger({
           code,
           msg: JSON.stringify({
             error: error.message,
