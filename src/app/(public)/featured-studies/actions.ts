@@ -1,24 +1,23 @@
 "use server";
 import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystKind, AnalystReportExtra, FeaturedStudy, UserChat } from "@/prisma/client";
+import { AnalystKind, FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
 
-type TFeaturedStudyResult = Pick<FeaturedStudy, "id" | "displayOrder"> & {
-  analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary" | "kind">;
-  studyUserChat: Pick<UserChat, "id" | "token" | "title">;
-};
-
-type TReportInfo = {
-  token: string;
+type FeaturedReportResult = {
+  id: number;
+  title: string;
+  description: string;
   coverUrl: string | null;
+  url: string;
+  category: AnalystKind;
 };
 
-// Internal implementation of fetchPublicFeaturedStudies
-async function _fetchPublicFeaturedStudiesImpl({
+// Internal implementation of fetchPublicFeaturedReports
+async function _fetchPublicFeaturedReportsImpl({
   locale,
   kind,
   limit,
@@ -28,174 +27,159 @@ async function _fetchPublicFeaturedStudiesImpl({
   kind?: AnalystKind | "all";
   limit?: number;
   random?: boolean;
-}): Promise<
-  (Omit<TFeaturedStudyResult, "analyst"> & {
-    analyst: Pick<Analyst, "id" | "role" | "topic" | "studySummary"> & {
-      kind: AnalystKind;
-      latestReport: TReportInfo | null;
-    };
-  })[]
-> {
-  locale = locale || (await getLocale());
-  let featuredStudies: TFeaturedStudyResult[];
-
-  const selectClause = {
-    id: true,
-    displayOrder: true,
-    studyUserChat: {
-      select: {
-        id: true,
-        token: true,
-        title: true,
-      },
-    },
-    analyst: {
-      select: {
-        id: true,
-        kind: true,
-        role: true,
-        topic: true,
-        studySummary: true,
-      },
-    },
-  };
+}): Promise<FeaturedReportResult[]> {
+  let featuredItems: Array<{
+    id: number;
+    resourceType: FeaturedItemResourceType;
+    resourceId: number;
+    extra: unknown;
+    createdAt: Date;
+  }>;
 
   if (random && limit) {
-    let result: { id: number }[];
+    // Random selection with category filter
     if (kind && kind !== "all") {
-      result = (await prismaRO.$queryRaw`
-        SELECT "FeaturedStudy".id
-        FROM "FeaturedStudy"
-        INNER JOIN "Analyst" ON "Analyst".id = "FeaturedStudy"."analystId"
-        WHERE "Analyst".locale = ${locale} AND "Analyst".kind = ${kind}
+      const result = (await prismaRO.$queryRaw`
+        SELECT id FROM "FeaturedItem"
+        WHERE "resourceType" = ${FeaturedItemResourceType.AnalystReport}
+        AND locale = ${locale}
+        AND extra->>'category' = ${kind}
         ORDER BY RANDOM()
         LIMIT ${limit}
       `) as { id: number }[];
-    } else {
-      result = (await prismaRO.$queryRaw`
-        SELECT "FeaturedStudy".id
-        FROM "FeaturedStudy"
-        INNER JOIN "Analyst" ON "Analyst".id = "FeaturedStudy"."analystId"
-        WHERE "Analyst".locale = ${locale}
-        ORDER BY RANDOM()
-        LIMIT ${limit}
-      `) as { id: number }[];
-    }
-    const studyIds = result.map((item) => item.id);
 
-    if (studyIds.length > 0) {
-      const studies = await prismaRO.featuredStudy.findMany({
-        where: { id: { in: studyIds } },
-        select: selectClause,
-      });
-      // Re-sort to maintain random order from the raw query
-      const studyMap = new Map(studies.map((s) => [s.id, s]));
-      featuredStudies = studyIds
-        .map((id) => studyMap.get(id))
-        .filter((s): s is NonNullable<typeof s> => s != null);
+      const itemIds = result.map((r) => r.id);
+
+      if (itemIds.length > 0) {
+        const items = await prismaRO.featuredItem.findMany({
+          where: { id: { in: itemIds } },
+          select: {
+            id: true,
+            resourceType: true,
+            resourceId: true,
+            extra: true,
+            createdAt: true,
+          },
+        });
+
+        // Maintain random order from raw query
+        const itemMap = new Map(items.map((i) => [i.id, i]));
+        featuredItems = itemIds
+          .map((id) => itemMap.get(id))
+          .filter((i): i is NonNullable<typeof i> => i != null) as typeof featuredItems;
+      } else {
+        featuredItems = [];
+      }
     } else {
-      featuredStudies = [];
+      // Random without category filter
+      const result = (await prismaRO.$queryRaw`
+        SELECT id FROM "FeaturedItem"
+        WHERE "resourceType" = ${FeaturedItemResourceType.AnalystReport}
+        AND locale = ${locale}
+        ORDER BY RANDOM()
+        LIMIT ${limit}
+      `) as { id: number }[];
+
+      const itemIds = result.map((r) => r.id);
+
+      if (itemIds.length > 0) {
+        const items = await prismaRO.featuredItem.findMany({
+          where: { id: { in: itemIds } },
+          select: {
+            id: true,
+            resourceType: true,
+            resourceId: true,
+            extra: true,
+            createdAt: true,
+          },
+        });
+
+        const itemMap = new Map(items.map((i) => [i.id, i]));
+        featuredItems = itemIds
+          .map((id) => itemMap.get(id))
+          .filter((i): i is NonNullable<typeof i> => i != null) as typeof featuredItems;
+      } else {
+        featuredItems = [];
+      }
     }
   } else {
-    const where =
-      kind && kind !== "all"
-        ? { analyst: { locale: locale, kind: kind } }
-        : { analyst: { locale: locale } };
-
-    featuredStudies = await prismaRO.featuredStudy.findMany({
-      where,
-      select: selectClause,
-      // orderBy: { displayOrder: "asc" },
-      orderBy: {
-        analyst: { id: "desc" },
-        // displayOrder: "asc",
+    // Fetch all and filter in memory (acceptable for small dataset)
+    const allItems = await prismaRO.featuredItem.findMany({
+      where: {
+        resourceType: FeaturedItemResourceType.AnalystReport,
+        locale,
       },
-      take: limit,
+      select: {
+        id: true,
+        resourceType: true,
+        resourceId: true,
+        extra: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
     });
+
+    // Filter by category if specified
+    if (kind && kind !== "all") {
+      featuredItems = allItems.filter((item) => {
+        const extra = item.extra as FeaturedItemExtra;
+        return extra.category === kind;
+      }) as typeof featuredItems;
+    } else {
+      featuredItems = allItems as typeof featuredItems;
+    }
+
+    // Apply limit if specified
+    if (limit) {
+      featuredItems = featuredItems.slice(0, limit);
+    }
   }
 
-  if (!featuredStudies || featuredStudies.length === 0) {
+  if (!featuredItems || featuredItems.length === 0) {
     return [];
   }
 
-  const analystIds = featuredStudies.map((study) => study.analyst.id);
-
-  const latestReports = await prismaRO.analystReport.findMany({
-    where: { analystId: { in: analystIds } },
-    distinct: ["analystId"],
-    orderBy: [{ analystId: "desc" }, { createdAt: "desc" }],
-    select: {
-      id: true,
-      analystId: true,
-      token: true,
-      extra: true,
-    },
-  });
-
-  const reportsMap = Object.fromEntries(
-    await Promise.all(
-      latestReports.map(async (report) => {
-        const { analystId, token, extra } = report;
-        const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
-        if (objectUrl) {
-          const coverUrl = proxiedImageCdnUrl({ objectUrl });
-          return [analystId, { token, coverUrl }] as [number, TReportInfo];
-        } else {
-          return [analystId, { token, coverUrl: null }] as [number, TReportInfo];
-        }
-        // if (extra && typeof extra === "object" && "coverObjectUrl" in extra) {
-        //   const result = await reportCoverObjectUrlToHttpUrl(report);
-        //   if (result) {
-        //     try {
-        //       const coverUrl = result.signedCoverObjectUrl;
-        //       return [analystId, { token, coverUrl }] as [number, TReportInfo];
-        //     } catch {}
-        //   }
-        // }
-        return [analystId, { token, coverUrl: null }] as [number, TReportInfo];
-      }),
-    ),
-  );
-
-  const data = featuredStudies.map((study) => {
+  // Transform to display format
+  return featuredItems.map((item) => {
+    const extra = (item.extra as FeaturedItemExtra) || {};
     return {
-      ...study,
-      analyst: {
-        ...study.analyst,
-        kind: study.analyst.kind ? (study.analyst.kind as AnalystKind) : AnalystKind.misc,
-        latestReport: reportsMap[study.analyst.id.toString()] || null,
-      },
+      id: item.id,
+      title: extra.title || "",
+      description: extra.description || "",
+      coverUrl: extra.coverObjectUrl
+        ? proxiedImageCdnUrl({ objectUrl: extra.coverObjectUrl })
+        : null,
+      url: extra.url || "",
+      category: (extra.category || AnalystKind.misc) as AnalystKind,
     };
   });
-
-  return data;
 }
 
 /**
- * Public action for fetching featured studies (no auth check needed)
+ * Public action for fetching featured reports (no auth check needed)
  *
  * unstable_cache 原理：
  * - 函数参数会自动成为缓存key的一部分
- * - 实际缓存key: ["public-featured-studies", locale, kind, limit, random]
+ * - 实际缓存key: ["public-featured-reports", locale, kind, limit, random]
  * - 不同的参数组合有独立的缓存项
  * - 缓存时间: 1天 (86400秒)
  *
  * 缓存清除：
- * 在需要清除缓存时使用: revalidateTag("public-featured-studies")
+ * 在需要清除缓存时使用: revalidateTag("public-featured-reports")
  */
-const getCachedFeaturedStudies = unstable_cache(
+const getCachedFeaturedReports = unstable_cache(
   async (locale: Locale, kind?: AnalystKind | "all", limit?: number, random?: boolean) => {
-    return _fetchPublicFeaturedStudiesImpl({
+    return _fetchPublicFeaturedReportsImpl({
       locale,
       kind,
       limit,
       random,
     });
   },
-  ["public-featured-studies"],
+  ["public-featured-reports"],
   {
     revalidate: 86400, // 1 day cache
-    tags: ["public-featured-studies"],
+    tags: ["public-featured-reports"],
   },
 );
 
@@ -211,9 +195,9 @@ export async function fetchPublicFeaturedStudies({
   page?: number;
   pageSize?: number;
   random?: boolean;
-}): Promise<ServerActionResult<Awaited<ReturnType<typeof _fetchPublicFeaturedStudiesImpl>>>> {
+}): Promise<ServerActionResult<FeaturedReportResult[]>> {
   const localeResolved = locale || (await getLocale());
-  const allData = await getCachedFeaturedStudies(localeResolved, kind, undefined, random);
+  const allData = await getCachedFeaturedReports(localeResolved, kind, undefined, random);
 
   // Apply pagination
   const totalCount = allData.length;

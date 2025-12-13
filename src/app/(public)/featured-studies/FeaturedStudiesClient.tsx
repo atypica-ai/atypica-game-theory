@@ -15,7 +15,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { fetchPublicFeaturedStudies } from "./actions";
 
-type TStudies = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
+type TReports = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
 
 export default function FeaturedStudiesClient({
   initialSearchParams,
@@ -49,7 +49,7 @@ export default function FeaturedStudiesClient({
 
   // Use SWR for data fetching
   const { data, isLoading } = useSWR(
-    ["featured-studies", locale, activeAnalystKind, currentPage],
+    ["featured-reports", locale, activeAnalystKind, currentPage],
     async () => {
       const result = await fetchPublicFeaturedStudies({
         locale,
@@ -58,10 +58,10 @@ export default function FeaturedStudiesClient({
         pageSize: 12,
       });
       if (!result.success) {
-        throw new Error("Failed to load featured studies");
+        throw new Error("Failed to load featured reports");
       }
       return {
-        studies: result.data,
+        reports: result.data,
         pagination: result.pagination,
       };
     },
@@ -71,7 +71,7 @@ export default function FeaturedStudiesClient({
     },
   );
 
-  const studies = data?.studies ?? [];
+  const reports = data?.reports ?? [];
   const pagination = data?.pagination ?? null;
 
   const handleKindChange = (value: string) => {
@@ -117,8 +117,8 @@ export default function FeaturedStudiesClient({
     );
   }
 
-  const renderStudyGrid = (studies: TStudies) => {
-    if (studies.length === 0) {
+  const renderReportGrid = (reports: TReports) => {
+    if (reports.length === 0) {
       return (
         <div className="text-center py-8">
           <p className="text-muted-foreground">{t("noStudies")}</p>
@@ -128,24 +128,23 @@ export default function FeaturedStudiesClient({
 
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full">
-        {studies.map((study) => (
-          <Card key={study.id} className="flex flex-col h-full group relative pb-0">
+        {reports.map((report) => (
+          <Card key={report.id} className="flex flex-col h-full group relative pb-0">
             <CardHeader className="flex items-center">
-              <HippyGhostAvatar seed={study.id} className="shrink-0 size-8" />
-              <CardTitle className="text-sm font-normal truncate">{study.analyst.role}</CardTitle>
+              <HippyGhostAvatar seed={report.id} className="shrink-0 size-8" />
+              <CardTitle className="text-sm font-normal truncate">{report.title}</CardTitle>
               <div className="ml-auto text-xs md:text-sm text-muted-foreground">
-                {getAnalystKindLabel(study.analyst.kind)}
+                {getAnalystKindLabel(report.category)}
               </div>
             </CardHeader>
             <CardContent className="flex-1">
-              <p className="font-medium mb-2 line-clamp-1">{study.studyUserChat.title}</p>
-              <p className="text-xs text-muted-foreground line-clamp-3">{study.analyst.topic}</p>
+              <p className="text-xs text-muted-foreground line-clamp-3">{report.description}</p>
             </CardContent>
-            {study.analyst.latestReport?.coverUrl ? (
+            {report.coverUrl ? (
               <div className="relative aspect-video rounded-t-xl overflow-hidden mt-4 mx-16 border">
                 <Image
                   loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
-                  src={study.analyst.latestReport?.coverUrl}
+                  src={report.coverUrl}
                   alt="report cover"
                   fill
                   sizes="600px" // fill 模式下, 不能写 100%, 否则 nextjs 会按照 100vw 来构建 imageloader 上的 w 参数，这里其实最大 600px 够了
@@ -156,7 +155,8 @@ export default function FeaturedStudiesClient({
             <Link
               prefetch={true}
               className="absolute inset-0 bg-background/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-xl cursor-pointer"
-              href={`/study/${study.studyUserChat.token}/share?replay=1`}
+              href={report.url}
+              target="_blank"
             >
               <Button
                 variant="secondary"
@@ -196,7 +196,7 @@ export default function FeaturedStudiesClient({
               </TabsTrigger>
             ))}
           </TabsList>
-          <TabsContent value={activeAnalystKind}>{renderStudyGrid(studies)}</TabsContent>
+          <TabsContent value={activeAnalystKind}>{renderReportGrid(reports)}</TabsContent>
         </Tabs>
 
         {/* Mobile view: Dropdown select */}
@@ -215,7 +215,7 @@ export default function FeaturedStudiesClient({
         </div>
 
         {/* Mobile view: Content area */}
-        <div className="md:hidden w-full mt-4">{renderStudyGrid(studies)}</div>
+        <div className="md:hidden w-full mt-4">{renderReportGrid(reports)}</div>
 
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
