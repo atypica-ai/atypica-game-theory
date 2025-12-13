@@ -16,67 +16,25 @@ import {
   AnalystPodcast,
   AnalystPodcastExtra,
   AnalystReport,
-  FeaturedStudy,
   User,
   UserChat,
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { UIMessage } from "ai";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 
-// Get all featured studies
-export async function fetchFeaturedStudies(): Promise<
-  ServerActionResult<
-    (Pick<FeaturedStudy, "id" | "displayOrder"> & {
-      analyst: Omit<Analyst, "kind"> & {
-        kind: AnalystKind | null;
-      };
-      studyUserChat: Pick<UserChat, "id" | "token" | "title">;
-    })[]
-  >
-> {
-  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
-  const featuredStudies = await prisma.featuredStudy.findMany({
-    select: {
-      id: true,
-      displayOrder: true,
-      analyst: true,
-      studyUserChat: {
-        select: {
-          id: true,
-          token: true,
-          title: true,
-        },
-      },
-    },
-    orderBy: { displayOrder: "asc" },
-  });
-  return {
-    success: true,
-    data: featuredStudies.map((study) => ({
-      ...study,
-      analyst: {
-        ...study.analyst,
-        kind: study.analyst.kind as AnalystKind | null,
-      },
-    })),
-  };
-}
-
-// Get all analysts with their featured status
+// Get all analysts
 export async function fetchAnalysts(
   page: number = 1,
   search?: string,
   pageSize: number = 12,
   kind?: AnalystKind | "all",
-  featuredOnly?: boolean,
 ): Promise<
   ServerActionResult<
     (Analyst & {
       user: Pick<User, "email"> | null;
-      featuredStudy: FeaturedStudy | null;
       studyUserChat: Pick<UserChat, "token" | "title" | "extra"> | null;
       reports: Pick<AnalystReport, "id" | "token" | "createdAt" | "generatedAt">[];
       podcasts: Pick<AnalystPodcast, "id" | "token" | "createdAt" | "generatedAt">[];
@@ -97,7 +55,6 @@ export async function fetchAnalysts(
       studyUserChat?: { token: { contains: string } };
     }>;
     kind?: AnalystKind;
-    featuredStudy?: { isNot: null };
   } = {
     topic: { not: "" },
   };
@@ -125,18 +82,10 @@ export async function fetchAnalysts(
     where.kind = kind;
   }
 
-  // Add featured filter
-  if (featuredOnly) {
-    where.featuredStudy = {
-      isNot: null,
-    };
-  }
-
   // Step 1: Get main analyst data without nested collections
   const analysts = await prisma.analyst.findMany({
     where,
     include: {
-      featuredStudy: true,
       studyUserChat: {
         select: {
           token: true,
@@ -233,51 +182,6 @@ export async function fetchAnalysts(
   };
 }
 
-// Toggle featured status for a study
-export async function toggleFeaturedStatus(analyst: Analyst): Promise<ServerActionResult<void>> {
-  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
-
-  // Check if the analyst is already featured
-  const existingFeatured = await prisma.featuredStudy.findFirst({
-    where: { analystId: analyst.id },
-  });
-
-  if (existingFeatured) {
-    // If already featured, remove it
-    await prisma.featuredStudy.delete({
-      where: { id: existingFeatured.id },
-    });
-  } else if (analyst.studyUserChatId) {
-    // If not featured, add it
-    // Get the highest current display order
-    const highestOrder = await prisma.featuredStudy.findFirst({
-      orderBy: { displayOrder: "desc" },
-    });
-
-    const nextOrder = (highestOrder?.displayOrder || 0) + 1;
-
-    await prisma.featuredStudy.create({
-      data: {
-        analystId: analyst.id,
-        studyUserChatId: analyst.studyUserChatId,
-        displayOrder: nextOrder,
-      },
-    });
-  } else {
-    return {
-      success: false,
-      message: "Study user chat ID is required",
-    };
-  }
-
-  revalidatePath("/admin/studies");
-  revalidateTag("featured-studies");
-  return {
-    success: true,
-    data: undefined,
-  };
-}
-
 export async function generateChatTitleAction(
   userChatId: number,
 ): Promise<ServerActionResult<void>> {
@@ -285,159 +189,6 @@ export async function generateChatTitleAction(
 
   after(generateChatTitle(userChatId));
 
-  return {
-    success: true,
-    data: undefined,
-  };
-}
-
-// Remove a study from featured list
-export async function removeFeaturedStudy(id: number): Promise<ServerActionResult<void>> {
-  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
-  await prisma.featuredStudy.delete({
-    where: { id },
-  });
-  revalidatePath("/admin/studies");
-  return {
-    success: true,
-    data: undefined,
-  };
-}
-
-export async function updateDisplayOrder(
-  id: number,
-  direction: "up" | "down",
-): Promise<ServerActionResult<void>> {
-  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
-
-  // Get the current featured study
-  const currentStudy = await prisma.featuredStudy.findUnique({
-    where: { id },
-  });
-
-  if (!currentStudy) {
-    return {
-      success: false,
-      message: "Featured study not found",
-    };
-  }
-
-  // Find adjacent study
-  const adjacentStudy = await prisma.featuredStudy.findFirst({
-    where: {
-      displayOrder:
-        direction === "up" ? { lt: currentStudy.displayOrder } : { gt: currentStudy.displayOrder },
-    },
-    orderBy: {
-      displayOrder: direction === "up" ? "desc" : "asc",
-    },
-  });
-
-  if (!adjacentStudy) {
-    // No study to swap with, already at the extreme
-    return { success: true, data: undefined };
-  }
-
-  // Swap display orders
-  await prisma.$transaction(async (tx) => {
-    await tx.featuredStudy.update({
-      where: { id: currentStudy.id },
-      data: { displayOrder: adjacentStudy.displayOrder },
-    });
-    await tx.featuredStudy.update({
-      where: { id: adjacentStudy.id },
-      data: { displayOrder: currentStudy.displayOrder },
-    });
-  });
-
-  revalidatePath("/admin/studies");
-  return {
-    success: true,
-    data: undefined,
-  };
-}
-
-export async function updatePositionDirect(
-  id: number,
-  newPosition: number,
-): Promise<ServerActionResult<void>> {
-  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
-
-  // Ensure newPosition is a positive integer
-  const position = Math.max(1, Math.floor(newPosition));
-
-  // Get the current study
-  const currentStudy = await prisma.featuredStudy.findUnique({
-    where: { id },
-  });
-
-  if (!currentStudy) {
-    return {
-      success: false,
-      message: "Featured study not found",
-    };
-  }
-
-  // Get all featured studies
-  const allStudies = await prisma.featuredStudy.findMany({
-    orderBy: { displayOrder: "asc" },
-  });
-
-  // If position is beyond the end, set it to the last position
-  const maxPosition = allStudies.length;
-  const targetPosition = Math.min(position, maxPosition);
-
-  // If the current position is the same as the target, no need to update
-  if (currentStudy.displayOrder === targetPosition) {
-    return { success: true, data: undefined };
-  }
-
-  // Update all affected studies in a transaction
-  if (currentStudy.displayOrder > targetPosition) {
-    // Moving up: increment studies between target and current
-    await prisma.$transaction(async (tx) => {
-      // Move studies between target and current position down by 1
-      await tx.featuredStudy.updateMany({
-        where: {
-          displayOrder: {
-            gte: targetPosition,
-            lt: currentStudy.displayOrder,
-          },
-        },
-        data: {
-          displayOrder: { increment: 1 },
-        },
-      });
-      // Set the current study to the target position
-      await tx.featuredStudy.update({
-        where: { id },
-        data: { displayOrder: targetPosition },
-      });
-    });
-  } else {
-    // Moving down: decrement studies between current and target
-    await prisma.$transaction(async (tx) => {
-      // Move studies between current position and target down by 1
-      await tx.featuredStudy.updateMany({
-        where: {
-          displayOrder: {
-            gt: currentStudy.displayOrder,
-            lte: targetPosition,
-          },
-        },
-        data: {
-          displayOrder: { decrement: 1 },
-        },
-      });
-      // Set the current study to the target position
-      await tx.featuredStudy.update({
-        where: { id },
-        data: { displayOrder: targetPosition },
-      });
-    });
-  }
-
-  revalidatePath("/admin/studies");
   return {
     success: true,
     data: undefined,

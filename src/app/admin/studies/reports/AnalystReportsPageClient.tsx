@@ -17,14 +17,25 @@ import { Switch } from "@/components/ui/switch";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { CameraIcon, ChevronDown, ChevronUp, ExternalLinkIcon, SearchIcon } from "lucide-react";
+import {
+  CameraIcon,
+  ChevronDown,
+  ChevronUp,
+  ExternalLinkIcon,
+  SearchIcon,
+  Star,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { adminGenerateScreenshotAction, fetchAnalystReportsAction } from "./actions";
+import {
+  adminGenerateScreenshotAction,
+  featureReportAction,
+  fetchAnalystReportsAction,
+} from "./actions";
 
 type AnalystReportWithAnalyst = ExtractServerActionData<typeof fetchAnalystReportsAction>[number];
 
@@ -55,6 +66,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
   const [generatingScreenshots, setGeneratingScreenshots] = useState<Set<number>>(new Set());
   const [expandedInstructions, setExpandedInstructions] = useState<Set<number>>(new Set());
   const [expandedTopics, setExpandedTopics] = useState<Set<number>>(new Set());
+  const [togglingFeatured, setTogglingFeatured] = useState<Set<number>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Use search params hook for URL synchronization
@@ -139,6 +151,31 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
     });
   };
 
+  const handleToggleFeatured = async (reportId: number, isFeatured: boolean) => {
+    setTogglingFeatured((prev) => new Set(prev).add(reportId));
+    try {
+      const result = await featureReportAction(reportId);
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        // Update local state
+        setAnalystReports((prev) =>
+          prev.map((report) =>
+            report.id === reportId ? { ...report, isFeatured: !isFeatured } : report,
+          ),
+        );
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setTogglingFeatured((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(reportId);
+        return newSet;
+      });
+    }
+  };
+
   if (status === "loading" || isLoading) {
     return <div className="container">Loading...</div>;
   }
@@ -201,15 +238,32 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {analystReports.map((report) => (
-              <Card key={report.id}>
+              <Card
+                key={report.id}
+                className={report.isFeatured ? "border-2 border-yellow-400" : ""}
+              >
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between w-full overflow-hidden">
+                  <CardTitle className="flex items-center justify-between w-full overflow-hidden gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="leading-normal truncate font-semibold">
                         <span className="text-xs text-muted-foreground font-normal">Brief: </span>
                         {report.analyst.brief || "Untitled Report"}
                       </div>
                     </div>
+                    <button
+                      onClick={() => handleToggleFeatured(report.id, !!report.isFeatured)}
+                      disabled={togglingFeatured.has(report.id)}
+                      className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                      title={report.isFeatured ? "Remove from featured" : "Add to featured"}
+                    >
+                      <Star
+                        className={`h-5 w-5 ${
+                          report.isFeatured
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-400 hover:text-yellow-400"
+                        } transition-colors`}
+                      />
+                    </button>
                   </CardTitle>
                   <CardDescription>
                     <span className="text-xs text-muted-foreground">Role: </span>

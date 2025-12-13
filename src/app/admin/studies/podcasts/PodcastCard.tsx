@@ -13,12 +13,14 @@ import {
   ExternalLinkIcon,
   PencilIcon,
   SparklesIcon,
+  Star,
   XIcon,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 import {
+  featurePodcastAction,
   fetchAnalystPodcastsAction,
   generatePodcastMetadataAction,
   updatePodcastTitleAction,
@@ -40,6 +42,7 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
   const [editingTitleValue, setEditingTitleValue] = useState("");
   const [savingTitle, setSavingTitle] = useState(false);
   const [generatingMetadata, setGeneratingMetadata] = useState(false);
+  const [togglingFeatured, setTogglingFeatured] = useState(false);
 
   const extra = (podcast.extra || {}) as AnalystPodcastExtra;
   const podcastTitle = extra.metadata?.title || "";
@@ -113,8 +116,27 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
     }
   };
 
+  const handleToggleFeatured = async () => {
+    setTogglingFeatured(true);
+    try {
+      const result = await featurePodcastAction(podcast.id);
+      if (result.success) {
+        onUpdate({
+          ...podcast,
+          isFeatured: !podcast.isFeatured,
+        });
+      } else {
+        onError(result.message);
+      }
+    } catch (err) {
+      onError((err as Error).message);
+    } finally {
+      setTogglingFeatured(false);
+    }
+  };
+
   return (
-    <Card>
+    <Card className={podcast.isFeatured ? "border-2 border-yellow-400" : ""}>
       <CardHeader>
         <CardTitle className="flex items-center justify-between w-full overflow-hidden gap-2">
           <div className="flex-1 min-w-0">
@@ -167,6 +189,28 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
             </div>
           ) : (
             <div className="flex items-center gap-1 shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 w-7 p-0"
+                    onClick={handleToggleFeatured}
+                    disabled={togglingFeatured}
+                  >
+                    <Star
+                      className={`h-4 w-4 ${
+                        podcast.isFeatured
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-400 hover:text-yellow-400"
+                      } transition-colors`}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="text-xs">
+                  {podcast.isFeatured ? "Remove from featured" : "Add to featured"}
+                </TooltipContent>
+              </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button

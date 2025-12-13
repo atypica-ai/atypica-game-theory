@@ -7,12 +7,22 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystReport, AnalystReportExtra, User } from "@/prisma/client";
+import { truncateForTitle } from "@/lib/textUtils";
+import {
+  Analyst,
+  AnalystReport,
+  AnalystReportExtra,
+  FeaturedItemExtra,
+  FeaturedItemResourceType,
+  User,
+} from "@/prisma/client";
+import { AnalystReportWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { VALID_LOCALES } from "@/i18n/routing";
 
 // Get all analyst reports with pagination
 export async function fetchAnalystReportsAction(
@@ -27,23 +37,14 @@ export async function fetchAnalystReportsAction(
         user: Pick<User, "email"> | null;
       };
       coverCdnHttpUrl?: string;
+      isFeatured?: boolean;
     })[]
   >
 > {
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const skip = (page - 1) * pageSize;
-  const where: {
-    OR?: Array<{
-      token?: { contains: string };
-      analyst?: {
-        topic?: { contains: string };
-        brief?: { contains: string };
-        user?: { email?: { contains: string } };
-      };
-    }>;
-    analyst?: { featuredStudy: { isNot: null } };
-  } = searchQuery
+  const where: AnalystReportWhereInput = searchQuery
     ? {
         OR: [
           { token: { contains: searchQuery } },
@@ -54,12 +55,33 @@ export async function fetchAnalystReportsAction(
       }
     : {};
 
+  // Get featured report IDs if featuredOnly filter is active
   if (featuredOnly) {
-    where.analyst = {
-      featuredStudy: {
-        isNot: null,
+    const featuredItems = await prisma.featuredItem.findMany({
+      where: {
+        resourceType: FeaturedItemResourceType.AnalystReport,
       },
-    };
+      select: {
+        resourceId: true,
+      },
+    });
+    const featuredReportIds = featuredItems.map((item) => item.resourceId);
+
+    if (featuredReportIds.length === 0) {
+      // No featured reports, return empty result
+      return {
+        success: true,
+        data: [],
+        pagination: {
+          page,
+          pageSize,
+          totalCount: 0,
+          totalPages: 0,
+        },
+      };
+    }
+
+    where.id = { in: featuredReportIds };
   }
 
   const analystReports = await prisma.analystReport.findMany({
@@ -82,15 +104,33 @@ export async function fetchAnalystReportsAction(
 
   const totalCount = await prisma.analystReport.count({ where });
 
+  // Check featured status for each report
+  const reportIds = analystReports.map((r) => r.id);
+  const featuredItems = await prisma.featuredItem.findMany({
+    where: {
+      resourceType: FeaturedItemResourceType.AnalystReport,
+      resourceId: { in: reportIds },
+    },
+  });
+  const featuredReportIdsSet = new Set(featuredItems.map((item) => item.resourceId));
+
   // Generate cover URLs for reports that have coverObjectUrl
   const reportsWithCoverUrls = await Promise.all(
     analystReports.map(async (report) => {
       const objectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
       if (objectUrl) {
         const coverCdnHttpUrl = proxiedImageCdnUrl({ objectUrl });
-        return { ...report, coverCdnHttpUrl };
+        return {
+          ...report,
+          coverCdnHttpUrl,
+          isFeatured: featuredReportIdsSet.has(report.id),
+        };
       } else {
-        return { ...report, coverCdnHttpUrl: undefined };
+        return {
+          ...report,
+          coverCdnHttpUrl: undefined,
+          isFeatured: featuredReportIdsSet.has(report.id),
+        };
       }
     }),
   );
@@ -161,6 +201,91 @@ export async function adminGenerateScreenshotAction(
   );
 
   revalidatePath("/admin/studies/reports");
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+// Toggle featured status for a report
+export async function featureReportAction(reportId: number): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
+
+  const report = await prisma.analystReport.findUnique({
+    where: { id: reportId },
+    include: {
+      analyst: {
+        select: {
+          locale: true,
+          kind: true,
+          topic: true,
+          studyUserChat: {
+            select: {
+              title: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!report) {
+    return {
+      success: false,
+      message: "Report not found",
+      code: "not_found",
+    };
+  }
+
+  // Check if analyst has valid locale
+  if (!report.analyst.locale || !VALID_LOCALES.includes(report.analyst.locale as Locale)) {
+    return {
+      success: false,
+      message: "Analyst locale is not valid. Cannot feature this report.",
+      code: "forbidden",
+    };
+  }
+
+  // Check if already featured
+  const existingFeatured = await prisma.featuredItem.findFirst({
+    where: {
+      resourceType: FeaturedItemResourceType.AnalystReport,
+      resourceId: reportId,
+    },
+  });
+
+  if (existingFeatured) {
+    // Remove from featured
+    await prisma.featuredItem.delete({
+      where: { id: existingFeatured.id },
+    });
+  } else {
+    // Add to featured - copy info from report
+    const extra = report.extra as AnalystReportExtra;
+    const title = report.analyst.studyUserChat?.title || "";
+    const description = truncateForTitle(report.analyst.topic, {
+      maxDisplayWidth: 200,
+      suffix: "...",
+    });
+
+    await prisma.featuredItem.create({
+      data: {
+        resourceType: FeaturedItemResourceType.AnalystReport,
+        resourceId: reportId,
+        locale: report.analyst.locale as Locale,
+        extra: {
+          title,
+          description,
+          coverObjectUrl: extra?.coverObjectUrl || "",
+          url: `/artifacts/report/${report.token}/share`,
+          category: report.analyst.kind || undefined,
+        } satisfies FeaturedItemExtra,
+      },
+    });
+  }
+
+  revalidatePath("/admin/studies/reports");
+  revalidateTag("public-featured-reports");
   return {
     success: true,
     data: undefined,

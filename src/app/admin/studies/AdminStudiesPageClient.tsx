@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
 import {
   Select,
@@ -25,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
@@ -39,7 +37,6 @@ import {
   PlusIcon,
   RefreshCcwIcon,
   SearchIcon,
-  Star,
   ThumbsDownIcon,
   ThumbsUpIcon,
 } from "lucide-react";
@@ -53,7 +50,6 @@ import {
   fetchAnalysts,
   fetchBriefChatMessages,
   generateChatTitleAction,
-  toggleFeaturedStatus,
 } from "./actions";
 import { PodcastPromptDialog } from "./PodcastPromptDialog";
 
@@ -70,14 +66,12 @@ export const SearchParamsConfig = {
       return value as AnalystKind | "all";
     },
   },
-  featured: createParamConfig.boolean(false),
 } as const;
 
 export type AdminStudiesSearchParams = {
   page: number;
   search: string;
   kind: AnalystKind | "all";
-  featured: boolean;
 };
 
 export function AdminStudiesPageClient({
@@ -106,7 +100,7 @@ export function AdminStudiesPageClient({
 
   // Use search params hook for URL synchronization
   const {
-    values: { page: currentPage, search: searchQuery, kind: selectedKind, featured: featuredOnly },
+    values: { page: currentPage, search: searchQuery, kind: selectedKind },
     setParam,
     setParams,
   } = useListQueryParams<AdminStudiesSearchParams>({
@@ -132,13 +126,7 @@ export function AdminStudiesPageClient({
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const analystsResult = await fetchAnalysts(
-      currentPage,
-      searchQuery,
-      12,
-      selectedKind,
-      featuredOnly,
-    );
+    const analystsResult = await fetchAnalysts(currentPage, searchQuery, 12, selectedKind);
 
     if (!analystsResult.success) {
       setError(analystsResult.message);
@@ -147,7 +135,7 @@ export function AdminStudiesPageClient({
       if (analystsResult.pagination) setPagination(analystsResult.pagination);
     }
     setIsLoading(false);
-  }, [currentPage, searchQuery, selectedKind, featuredOnly]);
+  }, [currentPage, searchQuery, selectedKind]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -163,18 +151,6 @@ export function AdminStudiesPageClient({
       setParams({ search: inputRef.current?.value ?? "", page: 1 }); // Reset to first page on new search
     },
     [setParams],
-  );
-
-  const handleToggleFeatured = useCallback(
-    async (analyst: Analyst) => {
-      const result = await toggleFeaturedStatus(analyst);
-      if (!result.success) {
-        setError(result.message);
-      } else {
-        await fetchData();
-      }
-    },
-    [fetchData],
   );
 
   const handleGenerateChatTitle = useCallback(
@@ -218,15 +194,11 @@ export function AdminStudiesPageClient({
     });
   };
 
-  const handleFeaturedToggle = (checked: boolean) => {
-    setParams({ featured: checked, page: 1 });
-  };
-
   const clearAllFilters = () => {
     if (inputRef.current) {
       inputRef.current.value = "";
     }
-    setParams({ search: "", kind: "all", featured: false, page: 1 });
+    setParams({ search: "", kind: "all", page: 1 });
   };
 
   const openPodcastPromptDialog = useCallback((analyst: AnalystWithFeature) => {
@@ -298,7 +270,7 @@ export function AdminStudiesPageClient({
     return <div className="container">Loading...</div>;
   }
 
-  const hasActiveFilters = searchQuery || selectedKind !== "all" || featuredOnly;
+  const hasActiveFilters = searchQuery || selectedKind !== "all";
 
   return (
     <div>
@@ -335,14 +307,6 @@ export function AdminStudiesPageClient({
               <SelectItem value={AnalystKind.misc}>Misc</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="featured-only"
-              checked={featuredOnly}
-              onCheckedChange={handleFeaturedToggle}
-            />
-            <Label htmlFor="featured-only">Featured only</Label>
-          </div>
           <Button type="submit">Search</Button>
         </form>
 
@@ -358,9 +322,6 @@ export function AdminStudiesPageClient({
               <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
                 Kind: {selectedKind}
               </span>
-            )}
-            {featuredOnly && (
-              <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Featured only</span>
             )}
             <Button variant="outline" size="sm" onClick={clearAllFilters}>
               Clear all
@@ -381,10 +342,7 @@ export function AdminStudiesPageClient({
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {analysts.map((analyst) => (
-              <Card
-                key={analyst.id}
-                className={analyst.featuredStudy ? "border-2 border-blue-400" : ""}
-              >
+              <Card key={analyst.id}>
                 <CardHeader>
                   <CardTitle className="flex items-start justify-between gap-2 w-full overflow-hidden">
                     <div className="flex-1 min-w-0">
@@ -409,19 +367,6 @@ export function AdminStudiesPageClient({
                         ) : null;
                       })()}
                       <div className="flex flex-col items-center">
-                        <button
-                          onClick={() => handleToggleFeatured(analyst)}
-                          className="p-1 hover:bg-gray-100 rounded transition-colors"
-                          title={analyst.featuredStudy ? "Remove from featured" : "Add to featured"}
-                        >
-                          <Star
-                            className={`h-5 w-5 ${
-                              analyst.featuredStudy
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-gray-400 hover:text-yellow-400"
-                            } transition-colors`}
-                          />
-                        </button>
                         <button
                           onClick={() => handleGenerateChatTitle(analyst)}
                           className="p-1 hover:bg-gray-100 rounded transition-colors"
