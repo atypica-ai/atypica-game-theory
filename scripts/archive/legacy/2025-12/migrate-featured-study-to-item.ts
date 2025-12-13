@@ -31,7 +31,8 @@ async function main() {
   const { prisma } = await import("@/prisma/prisma");
 
   // Get all FeaturedStudy records
-  const featuredStudies = await prisma.featuredStudy.findMany({
+  // @eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const featuredStudies = await (prisma as any).featuredStudy.findMany({
     include: {
       analyst: {
         select: {
@@ -120,6 +121,7 @@ async function main() {
               url: `/artifacts/report/${lastReport.token}/share`,
               category: analyst.kind || undefined,
             } satisfies FeaturedItemExtra,
+            createdAt: lastReport.generatedAt!, // where 已经确保 not null 了
           };
 
           if (!isDryRun) {
@@ -183,6 +185,7 @@ async function main() {
               url: `/artifacts/podcast/${lastPodcast.token}/share`,
               category: analyst.kind || undefined,
             } satisfies FeaturedItemExtra,
+            createdAt: lastPodcast.generatedAt!, // where 已经确保 not null 了
           };
 
           if (!isDryRun) {

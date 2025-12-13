@@ -1,4 +1,5 @@
 import { getRequestOrigin } from "@/lib/request/headers";
+import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { MetadataRoute } from "next";
 import { getLocale } from "next-intl/server";
@@ -6,47 +7,71 @@ import { unstable_cache } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
-// Cache featured studies for 1 day
-const getFeaturedStudies = unstable_cache(
+// Cache featured reports for 1 day
+const getFeaturedReports = unstable_cache(
   async (locale: string) => {
-    const result = (await prisma.$queryRaw`
-      SELECT "UserChat".token, "Analyst"."updatedAt"
-      FROM "FeaturedStudy"
-      INNER JOIN "Analyst" ON "Analyst".id = "FeaturedStudy"."analystId"
-      INNER JOIN "UserChat" ON "UserChat".id = "FeaturedStudy"."studyUserChatId"
-      WHERE "Analyst".locale = ${locale}
-      ORDER BY RANDOM()
-      LIMIT 6
-    `) as { token: string; updatedAt: Date }[];
-    return result;
+    const featuredItems = await prisma.featuredItem.findMany({
+      where: {
+        resourceType: FeaturedItemResourceType.AnalystReport,
+        locale,
+      },
+      select: {
+        extra: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 10,
+    });
+
+    return featuredItems.map((item) => {
+      const extra = item.extra as FeaturedItemExtra;
+      // Extract token from url: /artifacts/report/{token}/share
+      const urlMatch = extra.url?.match(/\/artifacts\/report\/([^\/]+)\/share/);
+      const token = urlMatch?.[1] || "";
+      return {
+        token,
+        url: extra.url || "",
+        updatedAt: item.createdAt,
+      };
+    });
   },
-  ["sitemap-featured-studies"],
+  ["sitemap-featured-reports"],
   {
     revalidate: 86400, // 1 day cache
   },
 );
 
-// Cache featured radio episodes for 1 day
+// Cache featured podcast episodes for 1 day
 const getFeaturedPodcastEpisodes = unstable_cache(
   async (locale: string) => {
-    const podcasts = await prisma.analystPodcast.findMany({
+    const featuredItems = await prisma.featuredItem.findMany({
       where: {
-        generatedAt: { not: null },
-        analyst: {
-          locale,
-          featuredStudy: { isNot: null },
-        },
+        resourceType: FeaturedItemResourceType.AnalystPodcast,
+        locale,
       },
       select: {
-        token: true,
-        generatedAt: true,
+        extra: true,
+        createdAt: true,
       },
       orderBy: {
-        generatedAt: "desc",
+        createdAt: "desc",
       },
       take: 10,
     });
-    return podcasts;
+
+    return featuredItems.map((item) => {
+      const extra = item.extra as FeaturedItemExtra;
+      // Extract token from url: /artifacts/podcast/{token}/share
+      const urlMatch = extra.url?.match(/\/artifacts\/podcast\/([^\/]+)\/share/);
+      const token = urlMatch?.[1] || "";
+      return {
+        token,
+        url: extra.url || "",
+        updatedAt: item.createdAt,
+      };
+    });
   },
   ["sitemap-featured-podcasts"],
   {
@@ -141,10 +166,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    // Fetch featured studies with cache
-    const studyResults = await getFeaturedStudies(locale);
-    const studyRoutes: MetadataRoute.Sitemap = studyResults.map(({ token, updatedAt }) => ({
-      url: `${siteOrigin}/study/${token}/share?replay=1`,
+    // Fetch featured reports with cache
+    const reportResults = await getFeaturedReports(locale);
+    const reportRoutes: MetadataRoute.Sitemap = reportResults.map(({ url, updatedAt }) => ({
+      url: `${siteOrigin}${url}`,
       lastModified: updatedAt,
       changeFrequency: "daily",
       priority: 0.6,
@@ -152,14 +177,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Fetch featured podcast episodes with cache
     const podcastEpisodes = await getFeaturedPodcastEpisodes(locale);
-    const podcastRoutes: MetadataRoute.Sitemap = podcastEpisodes.map((podcast) => ({
-      url: `${siteOrigin}/artifacts/podcast/${podcast.token}/share`,
-      lastModified: podcast.generatedAt!,
+    const podcastRoutes: MetadataRoute.Sitemap = podcastEpisodes.map(({ url, updatedAt }) => ({
+      url: `${siteOrigin}${url}`,
+      lastModified: updatedAt,
       changeFrequency: "daily",
       priority: 0.6,
     }));
 
-    return [...staticRoutes, ...studyRoutes, ...podcastRoutes];
+    return [...staticRoutes, ...reportRoutes, ...podcastRoutes];
   } catch (error) {
     console.error("Error generating sitemap:", error);
     // Return static routes if database query fails

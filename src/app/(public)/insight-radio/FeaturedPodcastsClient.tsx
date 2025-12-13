@@ -58,9 +58,9 @@ export function FeaturedPodcastsClient({
   const { featuredPodcasts, businessPodcasts, societyPodcasts, highlightPodcast } = useMemo(() => {
     const podcasts = data?.featuredPodcasts ?? [];
 
-    // Get podcast kind from kindDetermination
+    // Get podcast kind from podcast.extra.kindDetermination
     const getPodcastKind = (featuredPodcast: FeaturedPodcastItem) => {
-      return featuredPodcast.kindDetermination?.kind;
+      return featuredPodcast.podcast.extra?.kindDetermination?.kind;
     };
 
     const business = podcasts.filter((p) => getPodcastKind(p) === "opinionOriented");
@@ -114,7 +114,7 @@ export function FeaturedPodcastsClient({
             <div className="grid grid-cols-1 gap-4">
               {featuredPodcasts.map((featuredPodcast) => (
                 <div
-                  key={featuredPodcast.token}
+                  key={featuredPodcast.id}
                   className={cn(
                     "bg-card border border-border rounded-xl hover:shadow-md transition-shadow group relative",
                     "p-4 sm:p-6",
@@ -236,7 +236,7 @@ export function FeaturedPodcastsClient({
                   <div className="space-y-3">
                     {categoryFilteredPodcasts.map((featuredPodcast) => (
                       <div
-                        key={featuredPodcast.token}
+                        key={featuredPodcast.id}
                         className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
                       >
                         <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">
@@ -295,7 +295,7 @@ export function FeaturedPodcastsClient({
                   <div className="space-y-3">
                     {categoryFilteredPodcasts.map((featuredPodcast) => (
                       <div
-                        key={featuredPodcast.token}
+                        key={featuredPodcast.id}
                         className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
                       >
                         <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">

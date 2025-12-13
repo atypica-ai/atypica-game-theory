@@ -28,23 +28,23 @@ export async function GET(request: Request) {
     return new Response("Failed to fetch podcasts", { status: 500 });
   }
 
-  const podcasts = result.data.filter((p) => p.objectUrl); // Only include podcasts with audio
+  const podcasts = result.data.filter((p) => p.podcast.objectUrl); // Only include podcasts with audio
 
   // Generate signed URLs for all podcasts
   const podcastsWithUrls = await Promise.all(
     podcasts.map(async (item) => {
-      const mimeType = item.extra.metadata?.mimeType ?? "audio/mpeg";
+      const mimeType = item.podcast.extra.metadata?.mimeType ?? "audio/mpeg";
       const audioSrc = proxiedObjectCdnUrl({
-        name: item.extra.metadata?.title ?? undefined,
-        objectUrl: item.objectUrl!,
+        name: item.podcast.extra.metadata?.title ?? undefined,
+        objectUrl: item.podcast.objectUrl!,
         mimeType,
       });
 
       // Get cover image URL from podcast
       let coverImageUrl: string | undefined;
-      if (item.extra.metadata?.coverObjectUrl) {
+      if (item.podcast.extra.metadata?.coverObjectUrl) {
         coverImageUrl = proxiedImageCdnUrl({
-          objectUrl: item.extra.metadata.coverObjectUrl,
+          objectUrl: item.podcast.extra.metadata.coverObjectUrl,
           width: 2000,
           height: platform === "youtube" ? undefined : 2000,
         });
@@ -61,10 +61,8 @@ export async function GET(request: Request) {
 
   // Filter out podcasts without valid URLs
   const validPodcasts = podcastsWithUrls.filter((p) => p.audioSrc);
-  // Sort podcasts by generatedAt in descending order (newest first)
-  validPodcasts.sort(
-    (a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime(),
-  );
+  // Sort podcasts by createdAt in descending order (newest first)
+  validPodcasts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   // Set language code for RSS feed
   const languageCode = locale === "zh-CN" ? "zh" : "en";
@@ -111,17 +109,17 @@ export async function GET(request: Request) {
       .map((item, index) => {
         const title = item.title || "Untitled Episode";
         // Use showNotes if available, otherwise fallback to truncated script
-        const showNotes = item.extra?.metadata?.showNotes;
-        const description = showNotes ? showNotes : item.script || "AI-powered research insights";
-        const pubDate = new Date(item.generatedAt).toUTCString();
+        const showNotes = item.podcast.extra?.metadata?.showNotes;
+        const description = showNotes ? showNotes : item.podcast.script || "AI-powered research insights";
+        const pubDate = new Date(item.createdAt).toUTCString();
         const episodeUrl = item.url;
-        const guid = item.token;
+        const guid = item.podcast.token;
         // Determine episode type based on kindDetermination
-        const kind = item.kindDetermination?.kind;
+        const kind = item.podcast.extra?.kindDetermination?.kind;
         const episodeType = kind === "debate" ? "full" : "full"; // All episodes are full episodes
         // Extract audio metadata
-        const duration = item.extra?.metadata?.duration; // in seconds
-        const fileSize = item.extra?.metadata?.size; // in bytes
+        const duration = item.podcast.extra?.metadata?.duration; // in seconds
+        const fileSize = item.podcast.extra?.metadata?.size; // in bytes
         // Format description (add link, don't truncate if using showNotes)
         const formattedDescription = showNotes
           ? formatShowNotes({

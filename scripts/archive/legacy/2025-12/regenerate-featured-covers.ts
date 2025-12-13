@@ -15,7 +15,8 @@ async function regenerateFeaturedCovers() {
   console.log("Starting regeneration of cover images for featured studies...\n");
 
   // Fetch all featured studies with their reports
-  const featuredStudies = await prisma.featuredStudy.findMany({
+  // @eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const featuredStudies = await (prisma as any).featuredStudy.findMany({
     include: {
       analyst: {
         include: {

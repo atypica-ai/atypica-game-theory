@@ -8,18 +8,17 @@ import { unstable_cache } from "next/cache";
 
 type FeaturedPodcastResult = {
   id: number;
-  token: string;
+  createdAt: Date;
   title: string;
   description: string;
   coverUrl: string | null;
   url: string;
-  objectUrl: string | null;
-  script: string | null;
-  generatedAt: Date;
-  extra: AnalystPodcastExtra;
-  kindDetermination?: {
-    kind: "deepDive" | "opinionOriented" | "fastInsight" | "debate";
-    reason: string;
+  category?: string;
+  podcast: {
+    token: string;
+    objectUrl: string | null;
+    script: string | null;
+    extra: AnalystPodcastExtra;
   };
 };
 
@@ -43,6 +42,7 @@ export const pickRandomFeaturedPodcast = unstable_cache(
         id: true,
         resourceId: true,
         extra: true,
+        createdAt: true,
       },
     });
 
@@ -63,12 +63,11 @@ export const pickRandomFeaturedPodcast = unstable_cache(
         token: true,
         objectUrl: true,
         script: true,
-        generatedAt: true,
         extra: true,
       },
     });
 
-    if (!podcast || !podcast.generatedAt) {
+    if (!podcast) {
       return {
         success: true,
         data: null,
@@ -82,18 +81,20 @@ export const pickRandomFeaturedPodcast = unstable_cache(
       success: true,
       data: {
         id: randomItem.id,
-        token: podcast.token,
+        createdAt: randomItem.createdAt,
         title: extra.title || "",
         description: extra.description || "",
         coverUrl: extra.coverObjectUrl
           ? proxiedImageCdnUrl({ objectUrl: extra.coverObjectUrl })
           : null,
         url: extra.url || "",
-        objectUrl: podcast.objectUrl,
-        script: podcast.script,
-        generatedAt: podcast.generatedAt,
-        extra: podcastExtra,
-        kindDetermination: podcastExtra?.kindDetermination,
+        category: extra.category,
+        podcast: {
+          token: podcast.token,
+          objectUrl: podcast.objectUrl,
+          script: podcast.script,
+          extra: podcastExtra,
+        },
       },
     };
   },
@@ -149,14 +150,12 @@ export const fetchFeaturedPodcasts = unstable_cache(
     const podcasts = await prismaRO.analystPodcast.findMany({
       where: {
         id: { in: podcastIds },
-        generatedAt: { not: null },
       },
       select: {
         id: true,
         token: true,
         objectUrl: true,
         script: true,
-        generatedAt: true,
         extra: true,
       },
     });
@@ -168,25 +167,27 @@ export const fetchFeaturedPodcasts = unstable_cache(
     const data = featuredItems
       .map((item) => {
         const podcast = podcastMap.get(item.resourceId);
-        if (!podcast || !podcast.generatedAt) return null;
+        if (!podcast) return null;
 
         const extra = (item.extra as FeaturedItemExtra) || {};
         const podcastExtra = (podcast.extra as AnalystPodcastExtra) || {};
 
         return {
           id: item.id,
-          token: podcast.token,
+          createdAt: item.createdAt,
           title: extra.title || "",
           description: extra.description || "",
           coverUrl: extra.coverObjectUrl
             ? proxiedImageCdnUrl({ objectUrl: extra.coverObjectUrl })
             : null,
           url: extra.url || "",
-          objectUrl: podcast.objectUrl,
-          script: podcast.script,
-          generatedAt: podcast.generatedAt,
-          extra: podcastExtra,
-          kindDetermination: podcastExtra?.kindDetermination,
+          category: extra.category,
+          podcast: {
+            token: podcast.token,
+            objectUrl: podcast.objectUrl,
+            script: podcast.script,
+            extra: podcastExtra,
+          },
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null);

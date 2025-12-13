@@ -9,17 +9,16 @@ import { pickRandomFeaturedPodcast } from "../insight-radio/actions";
 
 type FeaturedPodcast = {
   id: number;
-  token: string;
+  createdAt: Date;
   title: string;
   description: string;
   coverUrl: string | null;
   url: string;
-  objectUrl: string | null;
-  script: string | null;
-  generatedAt: Date;
-  kindDetermination?: {
-    kind: "deepDive" | "opinionOriented" | "fastInsight" | "debate";
-    reason: string;
+  category?: string;
+  podcast: {
+    token: string;
+    objectUrl: string | null;
+    script: string | null;
   };
 };
 

@@ -9,6 +9,7 @@ import { unstable_cache } from "next/cache";
 
 type FeaturedReportResult = {
   id: number;
+  createdAt: Date;
   title: string;
   description: string;
   coverUrl: string | null;
@@ -144,6 +145,7 @@ async function _fetchPublicFeaturedReportsImpl({
     const extra = (item.extra as FeaturedItemExtra) || {};
     return {
       id: item.id,
+      createdAt: item.createdAt,
       title: extra.title || "",
       description: extra.description || "",
       coverUrl: extra.coverObjectUrl
