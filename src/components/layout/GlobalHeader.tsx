@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
+import { IntercomLauncher } from "@/lib/analytics/intercom/launcher";
 import { cn, formatTokensNumber } from "@/lib/utils";
 import Cookies from "js-cookie";
 import {
@@ -102,8 +103,9 @@ const GlobalHeader = React.memo(function GlobalHeader({
             </div>
           </Link>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1 sm:gap-2">
           {children}
+          <IntercomLauncher />
           <GlobalHeaderDrawer direction={drawerDirection} />
         </div>
         {!children && (

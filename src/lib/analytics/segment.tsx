@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { trackUserAction } from "./actions";
 import { calcIntercomUserHash, segmentAnalyticsWriteKey } from "./config";
-import { IntercomLauncher } from "./intercom/launcher";
 
 // 用一个模块级变量存储 analytics 实例
 let analyticsInstance: AnalyticsBrowser | null = null;
@@ -92,5 +91,5 @@ export function SegmentAnalytics() {
     trackPage();
   }, [pathname]);
 
-  return isSegmentLoaded ? <IntercomLauncher /> : null;
+  // return isSegmentLoaded ? <IntercomLauncher /> : null;
 }
