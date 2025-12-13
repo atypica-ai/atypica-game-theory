@@ -99,6 +99,8 @@ export default function FeaturedStudiesClient({
         return t("kinds.insights");
       case AnalystKind.creation:
         return t("kinds.creation");
+      case AnalystKind.fastInsight:
+        return t("kinds.fastInsight");
       default:
         return kind;
     }
@@ -133,7 +135,7 @@ export default function FeaturedStudiesClient({
             <CardHeader className="flex items-center">
               <HippyGhostAvatar seed={report.id} className="shrink-0 size-8" />
               <CardTitle className="text-sm font-normal truncate">{report.title}</CardTitle>
-              <div className="ml-auto text-xs md:text-sm text-muted-foreground">
+              <div className="shrink-0 ml-auto text-xs md:text-sm text-muted-foreground">
                 {getAnalystKindLabel(report.category)}
               </div>
             </CardHeader>

@@ -9,7 +9,8 @@
       "planning": "规划",
       "insights": "洞察",
       "creation": "创意",
-      "productRnD": "产品研发"
+      "productRnD": "产品研发",
+      "fastInsight": "快速洞察"
     },
     "noStudies": "该类别下暂无研究。",
     "viewStudy": "查看研究"
@@ -37,6 +38,7 @@
       "insights": "洞察",
       "creation": "创意",
       "productRnD": "产品研发",
+      "fastInsight": "快速洞察",
       "misc": "其他"
     }
   },

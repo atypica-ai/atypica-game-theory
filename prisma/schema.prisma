@@ -199,25 +199,11 @@ model Analyst {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  interviews    AnalystInterview[]
-  reports       AnalystReport[]
-  podcasts      AnalystPodcast[]
-  featuredStudy FeaturedStudy?
+  interviews AnalystInterview[]
+  reports    AnalystReport[]
+  podcasts   AnalystPodcast[]
 
   @@index([userId])
-}
-
-model FeaturedStudy {
-  id              Int      @id @default(autoincrement())
-  analystId       Int      @unique
-  analyst         Analyst  @relation(fields: [analystId], references: [id])
-  studyUserChatId Int      @unique @db.Integer
-  studyUserChat   UserChat @relation(fields: [studyUserChatId], references: [id])
-  displayOrder    Int      @default(0)
-  category        String?  @db.VarChar(64)
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model FeaturedItem {
@@ -309,7 +295,6 @@ model UserChat {
   personas                Persona[]
   analyst                 Analyst?
   analystInterview        AnalystInterview?
-  featuredStudy           FeaturedStudy?
   statistics              ChatStatistics[]
   messages                ChatMessage[]
   personaImport           PersonaImport?

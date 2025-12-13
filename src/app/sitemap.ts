@@ -22,7 +22,7 @@ const getFeaturedReports = unstable_cache(
       orderBy: {
         createdAt: "desc",
       },
-      take: 10,
+      take: 100,
     });
 
     return featuredItems.map((item) => {
@@ -58,7 +58,7 @@ const getFeaturedPodcastEpisodes = unstable_cache(
       orderBy: {
         createdAt: "desc",
       },
-      take: 10,
+      take: 100,
     });
 
     return featuredItems.map((item) => {

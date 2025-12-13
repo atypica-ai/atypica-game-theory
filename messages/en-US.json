@@ -9,7 +9,8 @@
       "planning": "Planning",
       "insights": "Insights",
       "creation": "Creation",
-      "productRnD": "Product R&D"
+      "productRnD": "Product R&D",
+      "fastInsight": "Fast Insight"
     },
     "noStudies": "No studies found in this category.",
     "viewStudy": "View Study"
@@ -37,6 +38,7 @@
       "insights": "Insights",
       "creation": "Creation",
       "productRnD": "Product R&D",
+      "fastInsight": "Fast Insight",
       "misc": "Misc"
     }
   },

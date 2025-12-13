@@ -63,7 +63,7 @@ export function InsightRadioCard() {
       >
         {/* Header */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
             <Volume2Icon className="w-4 h-4 text-white" />
           </div>
           <h3 className="text-sm font-semibold text-foreground">{t("title")}</h3>
@@ -71,11 +71,7 @@ export function InsightRadioCard() {
 
         {/* Podcast Info */}
         <div className="space-y-2">
-          <Link
-            href={podcast.url}
-            target="_blank"
-            className="block"
-          >
+          <Link href={podcast.url} target="_blank" className="block">
             <h4 className="text-sm font-medium text-foreground line-clamp-2 hover:text-primary transition-colors">
               {podcast.title}
             </h4>
@@ -112,18 +108,14 @@ export function InsightRadioCard() {
         {/* Compact layout for mobile */}
         <div className="flex items-center gap-3">
           {/* Icon */}
-          <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 shrink-0 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
             <Volume2Icon className="w-5 h-5 text-white" />
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             <h3 className="text-xs font-semibold text-muted-foreground mb-1">{t("title")}</h3>
-            <Link
-              href={podcast.url}
-              target="_blank"
-              className="block"
-            >
+            <Link href={podcast.url} target="_blank" className="block">
               <h4 className="text-sm font-medium text-foreground line-clamp-1 hover:text-primary transition-colors">
                 {podcast.title}
               </h4>
