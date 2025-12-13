@@ -10,9 +10,7 @@ export const ChangelogEN: React.FC = () => {
       <div className="space-y-16">
         {/* v11.x */}
         <section>
-          <h2 className="text-2xl font-bold mb-8">
-            v11.x: AI Research Platform & Developer Tools
-          </h2>
+          <h2 className="text-2xl font-bold mb-8">v11.x: AI Research Platform & Developer Tools</h2>
           <div className="space-y-10">
             <article>
               <h3 className="font-semibold text-xl mb-4">
@@ -76,7 +74,15 @@ export const ChangelogEN: React.FC = () => {
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🔑 Developer Feature: API Key Management
+                    🔑 Developer Feature:{" "}
+                    <a
+                      href="https://atypica.ai/account"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      API Key Management
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Users can create and manage personal API Keys. Teams support multi-member API
@@ -104,7 +110,15 @@ export const ChangelogEN: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🎯 Full Launch: Product R&D Flow
+                    🎯 Full Launch:{" "}
+                    <a
+                      href="https://atypica.ai/newstudy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Product R&D Flow
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     New &quot;Product R&D&quot; research template focusing on market trends, user
@@ -123,7 +137,15 @@ export const ChangelogEN: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    💎 New Plans: Unlimited Subscriptions
+                    💎 New Plans:{" "}
+                    <a
+                      href="https://atypica.ai/pricing#unlimited"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Unlimited Subscriptions
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Launched Super (personal) and SuperTeam (team) unlimited token plans. Unlimited
@@ -136,10 +158,18 @@ export const ChangelogEN: React.FC = () => {
                     🏢 Enterprise Features Upgrade
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    Comprehensive Pricing page overhaul with enterprise feature showcase.
-                    Enterprise-exclusive features: custom development, dedicated customer success,
-                    API access, etc. Optimized enterprise lead collection with enhanced information
-                    gathering.
+                    Comprehensive{" "}
+                    <a
+                      href="https://atypica.ai/pricing#organization"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Pricing page
+                    </a>{" "}
+                    overhaul with enterprise feature showcase. Enterprise-exclusive features: custom
+                    development, dedicated customer success, API access, etc. Optimized enterprise
+                    lead collection with enhanced information gathering.
                   </p>
                 </li>
                 <li>
@@ -157,9 +187,18 @@ export const ChangelogEN: React.FC = () => {
                     🤝 Launch: Affiliate Program
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    Officially launched friends.atypica.ai affiliate platform. Integrated Tolt
-                    tracking system for referral links and commission management. Automatic tracking
-                    of referral sources for user signups and payments.
+                    Officially launched{" "}
+                    <a
+                      href="https://friends.atypica.ai"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      friends.atypica.ai
+                    </a>{" "}
+                    affiliate platform. Integrated Tolt tracking system for referral links and
+                    commission management. Automatic tracking of referral sources for user signups
+                    and payments.
                   </p>
                 </li>
               </ul>
@@ -175,21 +214,66 @@ export const ChangelogEN: React.FC = () => {
           <div className="space-y-10">
             <article>
               <h3 className="font-semibold text-xl mb-4">
+                <code>v10.2.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-11-01</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🧠 Major Feature:{" "}
+                    <a
+                      href="https://atypica.ai/sage"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      AI Expert Agents (Sage)
+                    </a>
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    Launched evolvable AI expert agent system. Two-layer memory architecture (Core
+                    Memory + Working Memory) supporting long-term knowledge accumulation.
+                    Intelligent knowledge gap identification with automatic supplementary
+                    interviews. Builds continuously evolving domain experts through continuous
+                    learning and knowledge supplementation. Supports version control and knowledge
+                    source management for expert knowledge traceability.
+                  </p>
+                </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
                 <code>v10.1.0</code> —{" "}
                 <em className="text-gray-600 dark:text-gray-400 font-normal">2025-10-25</em>
               </h3>
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🎧 Full Launch: Study-to-Podcast Generation
+                    🎧 Full Launch:{" "}
+                    <a
+                      href="https://atypica.ai/insight-radio"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Study-to-Podcast Generation
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Research reports can now be converted into podcast audio with one click,
                     supporting online listening and downloading. Multiple podcast styles available:
                     deep dive analysis, opinion discussion, and debate format. Intelligent script
                     generation with automatic host dialogue configuration. Email notifications sent
-                    when podcast generation is complete. Full functionality available to Pro, Max,
-                    and Team plan subscribers.
+                    when podcast generation is complete. Full functionality available to{" "}
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Pro, Max, and Team plan
+                    </a>{" "}
+                    subscribers.
                   </p>
                 </li>
               </ul>
@@ -202,7 +286,16 @@ export const ChangelogEN: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🎤 Major Upgrade: Interview System Enhancements
+                    🎤 Major Upgrade:{" "}
+                    <a
+                      href="https://atypica.ai/interview"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Interview System
+                    </a>{" "}
+                    Enhancements
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Added multiple-choice question support for richer interview formats. Interview
@@ -214,7 +307,15 @@ export const ChangelogEN: React.FC = () => {
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🧑‍💼 Enhanced: Persona System
+                    🧑‍💼 Enhanced:{" "}
+                    <a
+                      href="https://atypica.ai/persona"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Persona System
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Personas can now be shared via public access links. Persona chat supports file
@@ -304,15 +405,48 @@ export const ChangelogEN: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <h4 className="font-semibold text-lg">
-                    🚀 Full Launch: Interview Project & AI Persona Import
+                    🚀 Full Launch:{" "}
+                    <a
+                      href="https://atypica.ai/interview"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Interview Project
+                    </a>{" "}
+                    &{" "}
+                    <a
+                      href="https://atypica.ai/persona"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      AI Persona Import
+                    </a>
                   </h4>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
                     Both features now available to all plans (removed preview/beta status)
                   </p>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    Free/Pro plans: Access to limited features
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Free/Pro plans
+                    </a>
+                    : Access to limited features
                     <br />
-                    Max/Team plans: Access to full functionality
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Max/Team plans
+                    </a>
+                    : Access to full functionality
                   </p>
                 </li>
                 <li>
@@ -363,7 +497,15 @@ export const ChangelogEN: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-3 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    ✨ Feature: Team Management
+                    ✨ Feature:{" "}
+                    <a
+                      href="https://atypica.ai/team"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Team Management
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Added team workspaces, supporting member invitations, removal, and role
@@ -382,16 +524,37 @@ export const ChangelogEN: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-3 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    ✨ Core Feature: Build Private AI Personas (AI Persona Import) [Beta]
+                    ✨ Core Feature: Build Private{" "}
+                    <a
+                      href="https://atypica.ai/persona"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      AI Personas (AI Persona Import)
+                    </a>{" "}
+                    [Beta]
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Launched the core <code>AI Persona Import</code> feature, opening up a{" "}
-                    <strong>public beta for Max plan users</strong>. Users can upload their own
-                    interview transcripts (<code>PDF</code>, <code>JSON</code>, <code>CSV</code>) to
-                    build completely private <code>Human AI Personas (Proprietary)</code>. The AI
-                    provides multi-dimensional analysis and scoring for the uploaded content,
-                    generating an interactive <code>AI Persona</code> and visualizing the analysis
-                    with tools like radar charts.
+                    <strong>
+                      public beta for{" "}
+                      <a
+                        href="https://atypica.ai/pricing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Max plan
+                      </a>{" "}
+                      users
+                    </strong>
+                    . Users can upload their own interview transcripts (<code>PDF</code>,{" "}
+                    <code>JSON</code>, <code>CSV</code>) to build completely private{" "}
+                    <code>Human AI Personas (Proprietary)</code>. The AI provides multi-dimensional
+                    analysis and scoring for the uploaded content, generating an interactive{" "}
+                    <code>AI Persona</code> and visualizing the analysis with tools like radar
+                    charts.
                   </p>
                 </li>
               </ul>
@@ -461,7 +624,15 @@ export const ChangelogEN: React.FC = () => {
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🌱 Development: Product R&D Flow
+                    🌱 Development:{" "}
+                    <a
+                      href="https://atypica.ai/newstudy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Product R&D Flow
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Completed the core development of the <code>Product R&D</code> research flow and
@@ -491,11 +662,19 @@ export const ChangelogEN: React.FC = () => {
                     💰 Commercialization: Pricing & Plan Upgrades
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    Launched the <code>MAX</code> subscription plan, offering more tokens and
-                    advanced features (2025-06-12). Implemented plan upgrades/downgrades with
-                    automated pro-rated pricing based on remaining tokens (2025-06-26). Transitioned
-                    to USD-based pricing and integrated Stripe&apos;s Alipay auto-debit feature to
-                    streamline payments (2025-06-19).
+                    Launched the{" "}
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      <code>MAX</code> subscription plan
+                    </a>
+                    , offering more tokens and advanced features (2025-06-12). Implemented plan
+                    upgrades/downgrades with automated pro-rated pricing based on remaining tokens
+                    (2025-06-26). Transitioned to USD-based pricing and integrated Stripe&apos;s
+                    Alipay auto-debit feature to streamline payments (2025-06-19).
                   </p>
                 </li>
                 <li>
@@ -666,9 +845,26 @@ export const ChangelogEN: React.FC = () => {
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Switched the billing system from simple &quot;points&quot; to a more granular{" "}
-                    <code>Tokens</code>-based model. Officially launched the <code>Pro</code>{" "}
-                    subscription plan and a new <code>Pricing</code> page (2025-04-20). Integrated{" "}
-                    <code>Stripe</code> to support global credit card payments (2025-04-09).
+                    <code>Tokens</code>-based model. Officially launched the{" "}
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      <code>Pro</code> subscription plan
+                    </a>{" "}
+                    and a new{" "}
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      <code>Pricing</code> page
+                    </a>{" "}
+                    (2025-04-20). Integrated <code>Stripe</code> to support global credit card
+                    payments (2025-04-09).
                   </p>
                 </li>
                 <li>

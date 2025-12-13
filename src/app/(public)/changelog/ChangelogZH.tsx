@@ -23,9 +23,8 @@ export const ChangelogZH: React.FC = () => {
                     🚀 重磅功能: Fast Insight (快速洞察)
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    全新的快速研究模式，专注于快速生成高质量播客内容。五阶段自动化工作流：主题理解
-                    → 播客规划 → 深度研究 → 播客生成 →
-                    完成。使用 Claude 3.7 Sonnet 和 Gemini 2.5 Pro
+                    全新的快速研究模式，专注于快速生成高质量播客内容。五阶段自动化工作流：主题理解 →
+                    播客规划 → 深度研究 → 播客生成 → 完成。使用 Claude 3.7 Sonnet 和 Gemini 2.5 Pro
                     双模型协作。智能规划播客内容策略和搜索策略，自动生成观点导向的播客脚本和音频。
                   </p>
                 </li>
@@ -42,7 +41,8 @@ export const ChangelogZH: React.FC = () => {
                     ⚡ 技术优化
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    数据库性能优化（外键索引、N+1 查询修复、Token 死锁修复）。系统增强（访谈项目导入导出、移动端菜单、安全更新等）。代码重构和清理，提升系统稳定性和可维护性。
+                    数据库性能优化（外键索引、N+1 查询修复、Token
+                    死锁修复）。系统增强（访谈项目导入导出、移动端菜单、安全更新等）。代码重构和清理，提升系统稳定性和可维护性。
                   </p>
                 </li>
               </ul>
@@ -58,18 +58,26 @@ export const ChangelogZH: React.FC = () => {
                     🔬 核心功能: Deep Research MCP 服务
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    实现深度研究功能的 MCP (Model Context Protocol)
-                    服务化。支持多种研究专家：Grok Expert、Trend Explorer
-                    等。集成 Perplexity Sonar Pro 进行高质量网络搜索。提供标准 MCP API 接口，支持第三方集成和流式输出。
+                    实现深度研究功能的 MCP (Model Context Protocol) 服务化。支持多种研究专家：Grok
+                    Expert、Trend Explorer 等。集成 Perplexity Sonar Pro
+                    进行高质量网络搜索。提供标准 MCP API 接口，支持第三方集成和流式输出。
                   </p>
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🔑 开发者功能: API Key 管理
+                    🔑 开发者功能:{" "}
+                    <a
+                      href="https://atypica.ai/account"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      API Key 管理
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    用户可创建和管理个人 API Keys。团队支持多成员 API Key 管理，支持 API Key 权限验证和所有权控制。Deep
-                    Research MCP 端点支持 API Key 认证。
+                    用户可创建和管理个人 API Keys。团队支持多成员 API Key 管理，支持 API Key
+                    权限验证和所有权控制。Deep Research MCP 端点支持 API Key 认证。
                   </p>
                 </li>
                 <li>
@@ -91,7 +99,15 @@ export const ChangelogZH: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🎯 正式上线: 产品研发流程 (Product R&D)
+                    🎯 正式上线:{" "}
+                    <a
+                      href="https://atypica.ai/newstudy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      产品研发流程 (Product R&D)
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     全新的&quot;产品研发&quot;研究模板，专注于市场趋势、用户需求和创意生成。针对产品创新场景优化的研究工作流和报告结构。帮助团队快速验证产品想法和市场机会。
@@ -107,11 +123,19 @@ export const ChangelogZH: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    💎 全新套餐: Unlimited 无限套餐
+                    💎 全新套餐:{" "}
+                    <a
+                      href="https://atypica.ai/pricing#unlimited"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Unlimited 无限套餐
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    推出 Super（个人）和 SuperTeam（团队）无限 token
-                    套餐。无限 token 使用，满足高强度研究需求。支持灵活的团队成员管理和订阅管理。
+                    推出 Super（个人）和 SuperTeam（团队）无限 token 套餐。无限 token
+                    使用，满足高强度研究需求。支持灵活的团队成员管理和订阅管理。
                   </p>
                 </li>
                 <li>
@@ -119,8 +143,16 @@ export const ChangelogZH: React.FC = () => {
                     🏢 企业版功能升级
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    全面升级 Pricing
-                    页面，增加企业版功能展示。企业专属功能：定制化研发、专属客户成功团队、API
+                    全面升级{" "}
+                    <a
+                      href="https://atypica.ai/pricing#organization"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Pricing 页面
+                    </a>
+                    ，增加企业版功能展示。企业专属功能：定制化研发、专属客户成功团队、API
                     访问等。优化企业客户引导流程，增强信息收集。
                   </p>
                 </li>
@@ -138,8 +170,17 @@ export const ChangelogZH: React.FC = () => {
                     🤝 推出 Affiliate Program (联盟推广计划)
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    正式上线 friends.atypica.ai
-                    联盟推广平台。集成 Tolt 推广追踪系统，支持推广链接和佣金管理。用户注册和付费自动追踪推广来源。
+                    正式上线{" "}
+                    <a
+                      href="https://friends.atypica.ai"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      friends.atypica.ai
+                    </a>{" "}
+                    联盟推广平台。集成 Tolt
+                    推广追踪系统，支持推广链接和佣金管理。用户注册和付费自动追踪推广来源。
                   </p>
                 </li>
               </ul>
@@ -153,17 +194,58 @@ export const ChangelogZH: React.FC = () => {
           <div className="space-y-10">
             <article>
               <h3 className="font-semibold text-xl mb-4">
+                <code>v10.2.0</code> —{" "}
+                <em className="text-gray-600 dark:text-gray-400 font-normal">2025-11-01</em>
+              </h3>
+              <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
+                <li>
+                  <strong className="font-semibold text-gray-900 dark:text-gray-100">
+                    🧠 重磅功能:{" "}
+                    <a
+                      href="https://atypica.ai/sage"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      专家智能体 (Sage)
+                    </a>
+                  </strong>
+                  <p className="text-gray-700 dark:text-gray-300 mt-1">
+                    推出可进化的 AI 专家智能体系统。双层记忆架构（核心记忆 +
+                    工作记忆），支持长期知识积累。智能识别知识空白，自动发起补充访谈。通过持续学习和知识补充，构建不断进化的领域专家。支持版本控制和知识源管理，确保专家知识的可追溯性。
+                  </p>
+                </li>
+              </ul>
+            </article>
+            <article>
+              <h3 className="font-semibold text-xl mb-4">
                 <code>v10.1.0</code> —{" "}
                 <em className="text-gray-600 dark:text-gray-400 font-normal">2025-10-25</em>
               </h3>
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🎧 正式上线: 研究播客自动生成
+                    🎧 正式上线:{" "}
+                    <a
+                      href="https://atypica.ai/insight-radio"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      研究播客自动生成
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    研究报告可一键转换为播客音频，支持在线收听和下载。支持多种播客风格：深度解析、观点讨论、辩论式对话。智能生成播客脚本，自动配置主持人对话。播客生成完成后邮件通知。Pro、Max
-                    和 Team 套餐用户可使用完整功能。
+                    研究报告可一键转换为播客音频，支持在线收听和下载。支持多种播客风格：深度解析、观点讨论、辩论式对话。智能生成播客脚本，自动配置主持人对话。播客生成完成后邮件通知。
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Pro、Max 和 Team 套餐
+                    </a>
+                    用户可使用完整功能。
                   </p>
                 </li>
               </ul>
@@ -176,7 +258,16 @@ export const ChangelogZH: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🎤 重要升级: 访谈系统增强
+                    🎤 重要升级:{" "}
+                    <a
+                      href="https://atypica.ai/interview"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      访谈系统
+                    </a>
+                    增强
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     新增多选题支持，丰富访谈问题形式。访谈报告可生成、分享和下载
@@ -185,7 +276,15 @@ export const ChangelogZH: React.FC = () => {
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🧑‍💼 功能增强: Persona 系统
+                    🧑‍💼 功能增强:{" "}
+                    <a
+                      href="https://atypica.ai/persona"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Persona 系统
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     Persona 可通过分享链接公开访问。Persona
@@ -268,14 +367,49 @@ export const ChangelogZH: React.FC = () => {
               </h3>
               <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
                 <li>
-                  <h4 className="font-semibold text-lg">🚀 正式上线: 访谈项目 & AI 人设导入</h4>
+                  <h4 className="font-semibold text-lg">
+                    🚀 正式上线:{" "}
+                    <a
+                      href="https://atypica.ai/interview"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      访谈项目
+                    </a>{" "}
+                    &{" "}
+                    <a
+                      href="https://atypica.ai/persona"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      AI 人设导入
+                    </a>
+                  </h4>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
                     两大功能现已面向所有套餐用户开放（移除预览/测试状态）
                   </p>
                   <p className="text-gray-700 dark:text-gray-300 mt-1 pl-1">
-                    Free/Pro 套餐：可使用基础功能
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Free/Pro 套餐
+                    </a>
+                    ：可使用基础功能
                     <br />
-                    Max/Team 套餐：可使用全部功能
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Max/Team 套餐
+                    </a>
+                    ：可使用全部功能
                   </p>
                 </li>
                 <li>
@@ -319,7 +453,15 @@ export const ChangelogZH: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-3 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    ✨ 新功能: 团队管理
+                    ✨ 新功能:{" "}
+                    <a
+                      href="https://atypica.ai/team"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      团队管理
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     新增团队协作空间，支持成员邀请、移除和角色管理。
@@ -337,11 +479,32 @@ export const ChangelogZH: React.FC = () => {
               <ul className="list-disc list-outside pl-6 space-y-3 text-gray-800 dark:text-gray-200">
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    ✨ 核心功能: 构建私有 AI 人设 (AI Persona Import) [Beta]
+                    ✨ 核心功能: 构建私有{" "}
+                    <a
+                      href="https://atypica.ai/persona"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      AI 人设 (AI Persona Import)
+                    </a>{" "}
+                    [Beta]
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    上线核心功能 <code>AI 人设导入</code>，开启 <strong>Max 套餐用户公测</strong>。
-                    用户可上传自己的访谈记录 (<code>PDF</code>, <code>JSON</code>, <code>CSV</code>
+                    上线核心功能 <code>AI 人设导入</code>，开启{" "}
+                    <strong>
+                      <a
+                        href="https://atypica.ai/pricing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        Max 套餐
+                      </a>
+                      用户公测
+                    </strong>
+                    。 用户可上传自己的访谈记录 (<code>PDF</code>, <code>JSON</code>,{" "}
+                    <code>CSV</code>
                     )，构建出完全私有的 <code>真人 AI 人设 (私有)</code>。 AI
                     会对上传内容进行多维度分析与打分，生成可交互的 <code>AI 人设</code>
                     ，并以雷达图等可视化形式呈现分析结果。
@@ -409,7 +572,15 @@ export const ChangelogZH: React.FC = () => {
                 </li>
                 <li>
                   <strong className="font-semibold text-gray-900 dark:text-gray-100">
-                    🌱 功能开发: 产品研发流程
+                    🌱 功能开发:{" "}
+                    <a
+                      href="https://atypica.ai/newstudy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      产品研发流程
+                    </a>
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
                     完成 <code>Product R&D</code> 研究流程的核心开发，并转入内部 Alpha 测试阶段
@@ -438,10 +609,18 @@ export const ChangelogZH: React.FC = () => {
                     💰 商业化: 定价与套餐升级
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    上线 <code>MAX</code> 订阅套餐，提供更多 Tokens 和高级功能 (2025-06-12)。
-                    支持套餐升降级，并根据剩余 Tokens 比例自动折抵费用 (2025-06-26)。
-                    全面转向美元定价，并集成 Stripe 的支付宝自动扣款功能，简化支付流程
-                    (2025-06-19)。
+                    上线{" "}
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      <code>MAX</code> 订阅套餐
+                    </a>
+                    ，提供更多 Tokens 和高级功能 (2025-06-12)。 支持套餐升降级，并根据剩余 Tokens
+                    比例自动折抵费用 (2025-06-26)。 全面转向美元定价，并集成 Stripe
+                    的支付宝自动扣款功能，简化支付流程 (2025-06-19)。
                   </p>
                 </li>
                 <li>
@@ -601,9 +780,25 @@ export const ChangelogZH: React.FC = () => {
                     💰 商业化: Tokens 计费模式上线
                   </strong>
                   <p className="text-gray-700 dark:text-gray-300 mt-1">
-                    计费模式从简单的“点数”切换为更精细的 <code>Tokens</code> 计费。 正式推出{" "}
-                    <code>Pro</code> 订阅套餐与新的 <code>Pricing</code> 定价页面 (2025-04-20)。
-                    集成 <code>Stripe</code>，支持全球用户信用卡支付 (2025-04-09)。
+                    计费模式从简单的&ldquo;点数&rdquo;切换为更精细的 <code>Tokens</code> 计费。 正式推出{" "}
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      <code>Pro</code> 订阅套餐
+                    </a>
+                    与新的{" "}
+                    <a
+                      href="https://atypica.ai/pricing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      <code>Pricing</code> 定价页面
+                    </a>{" "}
+                    (2025-04-20)。 集成 <code>Stripe</code>，支持全球用户信用卡支付 (2025-04-09)。
                   </p>
                 </li>
                 <li>

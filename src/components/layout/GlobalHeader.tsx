@@ -84,7 +84,6 @@ const GlobalHeader = React.memo(function GlobalHeader({
   drawerDirection?: "left" | "right";
 }) {
   const { status: sessionStatus, data: session } = useSession();
-  const isAuthenticated = sessionStatus === "authenticated" && session?.user;
   const t = useTranslations("Components.GlobalHeader");
   const searchParams = useSearchParams();
   const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
@@ -116,9 +115,9 @@ const GlobalHeader = React.memo(function GlobalHeader({
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           {children}
-          {isAuthenticated ? (
+          {session?.user ? (
             <IntercomLauncher />
-          ) : (
+          ) : sessionStatus != "loading" ? (
             <Button
               variant="default"
               size="sm"
@@ -129,7 +128,7 @@ const GlobalHeader = React.memo(function GlobalHeader({
                 {t("getStarted")}
               </Link>
             </Button>
-          )}
+          ) : null}
           <GlobalHeaderDrawer direction={drawerDirection} />
         </div>
         {!children && (
