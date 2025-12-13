@@ -4,7 +4,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import { PlayIcon, SquareArrowOutUpLeftIcon, Volume2Icon } from "lucide-react";
+import { PlayIcon, Volume2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -58,9 +58,9 @@ export function FeaturedPodcastsClient({
   const { featuredPodcasts, businessPodcasts, societyPodcasts, highlightPodcast } = useMemo(() => {
     const podcasts = data?.featuredPodcasts ?? [];
 
-    // Get podcast kind from extra
+    // Get podcast kind from kindDetermination
     const getPodcastKind = (featuredPodcast: FeaturedPodcastItem) => {
-      return featuredPodcast.podcast.extra?.kindDetermination?.kind;
+      return featuredPodcast.kindDetermination?.kind;
     };
 
     const business = podcasts.filter((p) => getPodcastKind(p) === "opinionOriented");
@@ -91,14 +91,7 @@ export function FeaturedPodcastsClient({
   return (
     <div className="min-h-screen bg-background">
       {/* Highlight Section - Featured Podcast */}
-      {highlightPodcast && (
-        <HighlightPodcast
-          podcast={highlightPodcast.podcast}
-          analyst={highlightPodcast.analyst}
-          studyUserChat={highlightPodcast.studyUserChat}
-          locale={locale}
-        />
-      )}
+      {highlightPodcast && <HighlightPodcast podcast={highlightPodcast} />}
 
       {/* All Podcasts Section */}
       <section className="bg-zinc-50 dark:bg-zinc-800 px-4 py-20 md:py-28">
@@ -121,7 +114,7 @@ export function FeaturedPodcastsClient({
             <div className="grid grid-cols-1 gap-4">
               {featuredPodcasts.map((featuredPodcast) => (
                 <div
-                  key={featuredPodcast.podcast.token}
+                  key={featuredPodcast.token}
                   className={cn(
                     "bg-card border border-border rounded-xl hover:shadow-md transition-shadow group relative",
                     "p-4 sm:p-6",
@@ -149,41 +142,22 @@ export function FeaturedPodcastsClient({
 
                     <div className="flex-1 min-w-0 sm:pr-8">
                       <h3 className="font-semibold text-base sm:text-lg text-foreground mb-2 line-clamp-2 sm:line-clamp-1 group-hover:text-primary transition-colors">
-                        {featuredPodcast.podcast.extra.metadata?.title ||
-                          featuredPodcast.studyUserChat.title}
+                        {featuredPodcast.title}
                       </h3>
                       <p className="text-muted-foreground text-sm mb-4 line-clamp-3 sm:line-clamp-2">
-                        {featuredPodcast.analyst.topic}
+                        {featuredPodcast.description}
                       </p>
 
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 text-xs shadow-none max-sm:hidden"
-                          asChild
-                        >
-                          <Link
-                            href={`/study/${featuredPodcast.studyUserChat.token}/share`}
-                            target="_blank"
-                          >
-                            <SquareArrowOutUpLeftIcon className="size-3" />
-                            {t("viewStudyProcess")}
-                          </Link>
-                        </Button>
-
                         <Button variant="default" asChild className="text-xs h-7 shadow-none">
-                          <Link
-                            href={`/artifacts/podcast/${featuredPodcast.podcast.token}/share`}
-                            target="_blank"
-                          >
+                          <Link href={featuredPodcast.url} target="_blank">
                             <PlayIcon className="size-4" />
                             {t("playPodcast")}
                           </Link>
                         </Button>
 
                         {/*<CalendarDaysIcon className="w-3.5 h-3.5" />
-                        <span>{formatDate(featuredPodcast.podcast.generatedAt, locale)}</span>*/}
+                        <span>{formatDate(featuredPodcast.generatedAt, locale)}</span>*/}
                         {/*<MessageSquareIcon className="w-3.5 h-3.5" />
                         <span>{PLACEHOLDER_REPLIES} replies</span>
                         <span>{PLACEHOLDER_DURATION}</span>*/}
@@ -262,7 +236,7 @@ export function FeaturedPodcastsClient({
                   <div className="space-y-3">
                     {categoryFilteredPodcasts.map((featuredPodcast) => (
                       <div
-                        key={featuredPodcast.podcast.token}
+                        key={featuredPodcast.token}
                         className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
                       >
                         <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">
@@ -270,15 +244,12 @@ export function FeaturedPodcastsClient({
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-foreground line-clamp-1">
-                            {featuredPodcast.studyUserChat.title}
+                            {featuredPodcast.title}
                           </h4>
                           {/*<p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>*/}
                         </div>
                         <Button variant="outline" size="sm" asChild>
-                          <Link
-                            href={`/artifacts/podcast/${featuredPodcast.podcast.token}/share`}
-                            target="_blank"
-                          >
+                          <Link href={featuredPodcast.url} target="_blank">
                             <PlayIcon className="h-3.5 w-3.5" />
                           </Link>
                         </Button>
@@ -324,7 +295,7 @@ export function FeaturedPodcastsClient({
                   <div className="space-y-3">
                     {categoryFilteredPodcasts.map((featuredPodcast) => (
                       <div
-                        key={featuredPodcast.podcast.token}
+                        key={featuredPodcast.token}
                         className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
                       >
                         <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">
@@ -332,15 +303,12 @@ export function FeaturedPodcastsClient({
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-foreground line-clamp-1">
-                            {featuredPodcast.studyUserChat.title}
+                            {featuredPodcast.title}
                           </h4>
                           {/*<p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>*/}
                         </div>
                         <Button variant="outline" size="sm" asChild>
-                          <Link
-                            href={`/artifacts/podcast/${featuredPodcast.podcast.token}/share`}
-                            target="_blank"
-                          >
+                          <Link href={featuredPodcast.url} target="_blank">
                             <PlayIcon className="h-3.5 w-3.5" />
                           </Link>
                         </Button>

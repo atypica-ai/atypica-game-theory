@@ -1,98 +1,99 @@
 "use server";
+import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystPodcastExtra } from "@/prisma/client";
+import { AnalystPodcastExtra, FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { unstable_cache } from "next/cache";
 
+type FeaturedPodcastResult = {
+  id: number;
+  token: string;
+  title: string;
+  description: string;
+  coverUrl: string | null;
+  url: string;
+  objectUrl: string | null;
+  script: string | null;
+  generatedAt: Date;
+  extra: AnalystPodcastExtra;
+  kindDetermination?: {
+    kind: "deepDive" | "opinionOriented" | "fastInsight" | "debate";
+    reason: string;
+  };
+};
+
 /**
  * Pick a random featured podcast
- * Single query: get all podcasts from featured studies, then pick random
+ * Fetches from FeaturedItem, then gets full podcast details
  */
 export const pickRandomFeaturedPodcast = unstable_cache(
-  async function ({ locale }: { locale: Locale }): Promise<
-    ServerActionResult<{
-      podcast: {
-        token: string;
-        script: string | null;
-        objectUrl: string | null;
-        generatedAt: Date;
-        extra: AnalystPodcastExtra;
-      };
-      analyst: {
-        id: number;
-        topic: string;
-      };
-      studyUserChat: {
-        token: string;
-        title: string;
-      };
-    } | null>
-  > {
-    // Single query: get all podcasts from featured studies with the locale
-    const podcasts = await prismaRO.analystPodcast.findMany({
+  async function ({
+    locale,
+  }: {
+    locale: Locale;
+  }): Promise<ServerActionResult<FeaturedPodcastResult | null>> {
+    // Get all featured podcast items
+    const featuredItems = await prismaRO.featuredItem.findMany({
       where: {
-        generatedAt: { not: null },
-        analyst: {
-          locale,
-          studyUserChat: { isNot: null },
-          featuredStudy: { isNot: null }, // Must be in featured studies
-        },
+        resourceType: FeaturedItemResourceType.AnalystPodcast,
+        locale,
       },
       select: {
-        token: true,
-        script: true,
-        objectUrl: true,
-        generatedAt: true,
+        id: true,
+        resourceId: true,
         extra: true,
-        analyst: {
-          select: {
-            id: true,
-            topic: true,
-            studyUserChat: {
-              select: {
-                token: true,
-                title: true,
-              },
-            },
-          },
-        },
       },
     });
 
-    if (podcasts.length === 0) {
+    if (featuredItems.length === 0) {
       return {
         success: true,
         data: null,
       };
     }
 
-    // Pick a random podcast in memory (dataset is small)
-    const randomIndex = Math.floor(Math.random() * podcasts.length);
-    const podcast = podcasts[randomIndex];
+    // Pick random in memory
+    const randomItem = featuredItems[Math.floor(Math.random() * featuredItems.length)];
 
-    if (!podcast.analyst.studyUserChat) {
+    // Fetch podcast details
+    const podcast = await prismaRO.analystPodcast.findUnique({
+      where: { id: randomItem.resourceId },
+      select: {
+        token: true,
+        objectUrl: true,
+        script: true,
+        generatedAt: true,
+        extra: true,
+      },
+    });
+
+    if (!podcast || !podcast.generatedAt) {
       return {
         success: true,
         data: null,
       };
     }
+
+    const extra = (randomItem.extra as FeaturedItemExtra) || {};
+    const podcastExtra = (podcast.extra as AnalystPodcastExtra) || {};
 
     return {
       success: true,
       data: {
-        podcast: {
-          token: podcast.token,
-          script: podcast.script,
-          objectUrl: podcast.objectUrl,
-          generatedAt: podcast.generatedAt!,
-          extra: (podcast.extra || {}) as AnalystPodcastExtra,
-        },
-        analyst: {
-          id: podcast.analyst.id,
-          topic: podcast.analyst.topic,
-        },
-        studyUserChat: podcast.analyst.studyUserChat,
+        id: randomItem.id,
+        token: podcast.token,
+        title: extra.title || "",
+        description: extra.description || "",
+        coverUrl: extra.coverObjectUrl
+          ? proxiedImageCdnUrl({ objectUrl: extra.coverObjectUrl })
+          : null,
+        url: extra.url || "",
+        objectUrl: podcast.objectUrl,
+        script: podcast.script,
+        generatedAt: podcast.generatedAt,
+        extra: podcastExtra,
+        kindDetermination: podcastExtra?.kindDetermination,
       },
     };
   },
@@ -103,8 +104,8 @@ export const pickRandomFeaturedPodcast = unstable_cache(
 );
 
 /**
- * Fetch featured podcasts from featured studies
- * Single query with proper filtering
+ * Fetch featured podcasts from FeaturedItem
+ * Batch joins with AnalystPodcast for additional data
  */
 export const fetchFeaturedPodcasts = unstable_cache(
   async function ({
@@ -115,102 +116,84 @@ export const fetchFeaturedPodcasts = unstable_cache(
     locale: Locale;
     page?: number;
     pageSize?: number;
-  }): Promise<
-    ServerActionResult<
-      {
-        // Flattened fields
-        podcast: {
-          token: string;
-          script: string | null;
-          objectUrl: string | null;
-          generatedAt: Date;
-          extra: AnalystPodcastExtra;
-        };
-        analyst: {
-          id: number;
-          topic: string;
-        };
-        studyUserChat: {
-          token: string;
-          title: string;
-        };
-      }[]
-    >
-  > {
+  }): Promise<ServerActionResult<FeaturedPodcastResult[]>> {
     const skip = (page - 1) * pageSize;
 
-    // Step 1: Direct database pagination on podcasts
-    // Note: One analyst may have multiple podcasts, so pagination count may not be exact
-    // But most analysts only have one podcast, so this is acceptable
-    const [podcasts, totalCount] = await Promise.all([
-      prismaRO.analystPodcast.findMany({
+    // Fetch featured items with pagination
+    const [featuredItems, totalCount] = await Promise.all([
+      prismaRO.featuredItem.findMany({
         where: {
-          generatedAt: { not: null },
-          analyst: {
-            locale,
-            studyUserChat: { isNot: null },
-            featuredStudy: { isNot: null }, // Must be in featured studies
-          },
+          resourceType: FeaturedItemResourceType.AnalystPodcast,
+          locale,
         },
         select: {
           id: true,
-          token: true,
-          analystId: true,
-          script: true,
-          objectUrl: true,
-          generatedAt: true,
+          resourceId: true,
           extra: true,
-          analyst: {
-            select: {
-              id: true,
-              topic: true,
-              studyUserChat: {
-                select: {
-                  token: true,
-                  title: true,
-                },
-              },
-            },
-          },
+          createdAt: true,
         },
-        orderBy: {
-          generatedAt: "desc",
-        },
+        orderBy: { createdAt: "desc" },
         skip,
         take: pageSize,
       }),
-      prismaRO.analystPodcast.count({
+      prismaRO.featuredItem.count({
         where: {
-          generatedAt: { not: null },
-          analyst: {
-            locale,
-            studyUserChat: { isNot: null },
-            featuredStudy: { isNot: null },
-          },
+          resourceType: FeaturedItemResourceType.AnalystPodcast,
+          locale,
         },
       }),
     ]);
 
-    // Filter out podcasts with missing relations
-    const validPodcasts = podcasts.filter((p) => p.analyst.studyUserChat !== null);
+    // Batch fetch podcast details
+    const podcastIds = featuredItems.map((item) => item.resourceId);
+    const podcasts = await prismaRO.analystPodcast.findMany({
+      where: {
+        id: { in: podcastIds },
+        generatedAt: { not: null },
+      },
+      select: {
+        id: true,
+        token: true,
+        objectUrl: true,
+        script: true,
+        generatedAt: true,
+        extra: true,
+      },
+    });
 
-    // Step 3: Combine data
+    // Create map for efficient lookup
+    const podcastMap = new Map(podcasts.map((p) => [p.id, p]));
+
+    // Combine data
+    const data = featuredItems
+      .map((item) => {
+        const podcast = podcastMap.get(item.resourceId);
+        if (!podcast || !podcast.generatedAt) return null;
+
+        const extra = (item.extra as FeaturedItemExtra) || {};
+        const podcastExtra = (podcast.extra as AnalystPodcastExtra) || {};
+
+        return {
+          id: item.id,
+          token: podcast.token,
+          title: extra.title || "",
+          description: extra.description || "",
+          coverUrl: extra.coverObjectUrl
+            ? proxiedImageCdnUrl({ objectUrl: extra.coverObjectUrl })
+            : null,
+          url: extra.url || "",
+          objectUrl: podcast.objectUrl,
+          script: podcast.script,
+          generatedAt: podcast.generatedAt,
+          extra: podcastExtra,
+          kindDetermination: podcastExtra?.kindDetermination,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
     return {
       success: true,
-      data: validPodcasts.map((p) => ({
-        podcast: {
-          token: p.token,
-          script: p.script,
-          objectUrl: p.objectUrl,
-          generatedAt: p.generatedAt!,
-          extra: (p.extra || {}) as AnalystPodcastExtra,
-        },
-        analyst: {
-          id: p.analyst.id,
-          topic: p.analyst.topic,
-        },
-        studyUserChat: p.analyst.studyUserChat!,
-      })),
+      data,
       pagination: {
         page,
         pageSize,

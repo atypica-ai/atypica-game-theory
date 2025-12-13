@@ -1,24 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import { PlayIcon, SquareArrowOutUpLeftIcon } from "lucide-react";
-import { Locale, useTranslations } from "next-intl";
+import { PlayIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { fetchFeaturedPodcasts } from "./actions";
 
 type FeaturedPodcastItem = ExtractServerActionData<typeof fetchFeaturedPodcasts>[number];
 
-export function HighlightPodcast({
-  podcast,
-  analyst,
-  studyUserChat,
-  // locale,
-}: {
-  podcast: FeaturedPodcastItem["podcast"];
-  analyst: FeaturedPodcastItem["analyst"];
-  studyUserChat: FeaturedPodcastItem["studyUserChat"];
-  locale: Locale;
-}) {
+export function HighlightPodcast({ podcast }: { podcast: FeaturedPodcastItem }) {
   const t = useTranslations("FeaturedPodcastsPage");
   return (
     <section className="container mx-auto px-4 py-10 md:py-28">
@@ -36,23 +26,12 @@ export function HighlightPodcast({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
           <div className="flex-1">
             <h1 className="font-EuclidCircularA font-medium text-2xl md:text-3xl tracking-tight mb-4 line-clamp-2 sm:line-clamp-1">
-              {podcast.extra.metadata?.title || studyUserChat.title}
+              {podcast.title}
             </h1>
-            <h2 className="text-muted-foreground line-clamp-4 sm:mb-6">{analyst.topic}</h2>
+            <h2 className="text-muted-foreground line-clamp-4 sm:mb-6">{podcast.description}</h2>
 
             {/* Metadata */}
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-6 text-xs rounded-full shadow-none max-sm:hidden"
-                asChild
-              >
-                <Link href={`/study/${studyUserChat.token}/share`} target="_blank">
-                  <SquareArrowOutUpLeftIcon className="size-3" />
-                  {t("viewStudyProcess")}
-                </Link>
-              </Button>
               {/*<CalendarDaysIcon className="w-4 h-4" />
               <span>{formatDate(podcast.generatedAt, locale)}</span>*/}
               {/*<MessageSquareIcon className="w-4 h-4" />
@@ -67,7 +46,7 @@ export function HighlightPodcast({
             className={cn("sm:h-20 sm:w-20 md:h-24 md:w-24 sm:rounded-full", "shadow-lg shrink-0")}
             asChild
           >
-            <Link href={`/artifacts/podcast/${podcast.token}/share`} target="_blank">
+            <Link href={podcast.url} target="_blank">
               <PlayIcon className="size-4 sm:size-8 md:size-10" />
               <span className="sm:hidden">{t("playPodcast")}</span>
             </Link>
