@@ -1,6 +1,6 @@
 import "server-only";
 
-import { trackUserServerSide } from "@/lib/analytics/server";
+import { trackEventServerSide, trackUserServerSide } from "@/lib/analytics/server";
 import { getToltFromCookieStore } from "@/lib/analytics/tolt";
 import { trackToltSignup } from "@/lib/analytics/tolt/lib";
 import { getRefererFromCookieStore, getUtmFromCookieStore } from "@/lib/analytics/utm";
@@ -9,8 +9,8 @@ import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/re
 import { Team, User, UserLastLogin, UserProfileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
-import { waitUntil } from "@vercel/functions";
 import { hash } from "bcryptjs";
+import { after } from "next/server";
 
 export const authLogger = rootLogger.child({ api: "next-auth" });
 
@@ -31,6 +31,30 @@ export const authClientInfo = async (): Promise<
   };
 };
 
+async function _recordLastLogin({
+  userId,
+  provider,
+}: {
+  userId: number;
+  provider: "email-password" | "impersonation" | "team-switch" | "google";
+}) {
+  try {
+    const clientInfo = await authClientInfo();
+    await prisma.userProfile.update({
+      where: { userId },
+      data: {
+        lastLogin: {
+          ...clientInfo,
+          provider,
+        },
+      },
+    });
+  } catch (error) {
+    // 不抛出异常
+    authLogger.error(`Error updating user last login: ${(error as Error).message}`);
+  }
+}
+
 export function recordLastLogin({
   userId,
   provider,
@@ -39,117 +63,56 @@ export function recordLastLogin({
   provider: "email-password" | "impersonation" | "team-switch" | "google";
 }) {
   // 后台运行，不要 await
-  waitUntil(
-    (async () => {
-      try {
-        const clientInfo = await authClientInfo();
-        await prisma.userProfile.update({
-          where: { userId },
-          data: {
-            lastLogin: {
-              ...clientInfo,
-              provider,
-            },
-          },
-        });
-      } catch (error) {
-        authLogger.error(`Error updating user last login: ${(error as Error).message}`);
-      }
-    })(),
-  );
+  after(_recordLastLogin({ userId, provider }));
 }
 
 /**
  * 保存用户的 acquisition 信息（UTM、Referer 和 Tolt）到 UserProfile
  * 如果有 Tolt referral，在保存后触发 Tolt API 追踪
  */
-export function recordAcquisition({ userId }: { userId: number }) {
-  // 后台运行，不要 await
-  waitUntil(
-    (async () => {
-      try {
-        const userProfile = await prisma.userProfile.findUniqueOrThrow({
-          where: { userId },
-          select: { id: true },
-        });
-        // 获取 acquisition 数据
-        const [utmParams, refererParams, toltParams] = await Promise.all([
-          getUtmFromCookieStore(),
-          getRefererFromCookieStore(),
-          getToltFromCookieStore(),
-        ]);
-        // 如果有 acquisition 数据，更新到数据库
-        if (utmParams || refererParams || toltParams) {
-          await mergeExtra({
-            tableName: "UserProfile",
-            extra: {
-              acquisition: {
-                ...(utmParams ? { utm: utmParams } : {}),
-                ...(refererParams ? { referer: refererParams } : {}),
-              } satisfies UserProfileExtra["acquisition"],
-              ...(toltParams
-                ? {
-                    tolt: toltParams satisfies UserProfileExtra["tolt"],
-                  }
-                : {}),
-            },
-            id: userProfile.id,
-          });
-        }
-        // 如果有 Tolt referral，调用 Tolt API 追踪注册
-        if (toltParams) {
-          await trackToltSignup({ userId });
-        }
-      } catch (error) {
-        authLogger.error(`Error recording acquisition: ${(error as Error).message}`);
-      }
-      trackUserServerSide({
-        userId: userId,
-        traitTypes: ["profile", "clientInfo"],
+export async function _recordAcquisition({ userId }: { userId: number }) {
+  try {
+    const userProfile = await prisma.userProfile.findUniqueOrThrow({
+      where: { userId },
+      select: { id: true },
+    });
+    // 获取 acquisition 数据
+    const [utmParams, refererParams, toltParams] = await Promise.all([
+      getUtmFromCookieStore(),
+      getRefererFromCookieStore(),
+      getToltFromCookieStore(),
+    ]);
+    // 如果有 acquisition 数据，更新到数据库
+    if (utmParams || refererParams || toltParams) {
+      await mergeExtra({
+        tableName: "UserProfile",
+        extra: {
+          acquisition: {
+            ...(utmParams ? { utm: utmParams } : {}),
+            ...(refererParams ? { referer: refererParams } : {}),
+          } satisfies UserProfileExtra["acquisition"],
+          ...(toltParams
+            ? {
+                tolt: toltParams satisfies UserProfileExtra["tolt"],
+              }
+            : {}),
+        },
+        id: userProfile.id,
       });
-    })(),
-  );
+    }
+    // 如果有 Tolt referral，调用 Tolt API 追踪注册
+    if (toltParams) {
+      await trackToltSignup({ userId });
+    }
+  } catch (error) {
+    // 不抛出异常
+    authLogger.error(`Error recording acquisition: ${(error as Error).message}`);
+  }
 }
 
-/**
- * 迁移阶段，在更新 lastLogin, onboarding, extra 的时候，需要先调用 upsertUserProfile
- * 一段时间已有，当所有用户都在创建的时候有了 profile，这部分可以删除
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function DEPRECATED_upsertUserProfile({ userId }: { userId: number }) {
-  throw new Error("Deprecated");
-  // const profile = await prisma.$transaction(async (tx) => {
-  //   let profile = await tx.userProfile.findUnique({
-  //     where: { userId },
-  //   });
-  //   if (profile) {
-  //     return profile;
-  //   }
-  //   const {
-  //     lastLogin,
-  //     extra: { onboarding, ...extra },
-  //   } = await tx.user
-  //     .findUniqueOrThrow({
-  //       where: { id: userId },
-  //       select: { id: true, lastLogin: true, extra: true },
-  //     })
-  //     .then(({ extra, ...user }) => ({ ...user, extra: extra as DeprecatedUserExtra }));
-  //   profile = await tx.userProfile.create({
-  //     data: {
-  //       userId,
-  //       lastLogin: lastLogin ?? {},
-  //       onboarding: onboarding ?? {},
-  //       extra: extra ?? {},
-  //     },
-  //   });
-  //   // 清空 user 上的 lastLogin, onboarding, extra
-  //   await tx.user.update({
-  //     where: { id: userId },
-  //     data: { lastLogin: {}, extra: {} },
-  //   });
-  //   return profile;
-  // });
-  // return profile;
+export function recordAcquisition({ userId }: { userId: number }) {
+  // 后台运行，不要 await
+  after(_recordAcquisition({ userId }));
 }
 
 export async function createPersonalUser({
@@ -213,10 +176,22 @@ export async function createPersonalUser({
     });
   }
 
-  recordLastLogin({ userId: user.id, provider: "email-password" });
-  recordAcquisition({ userId: user.id }); // 保存 UTM、Referer 和 Tolt，如有 Tolt 会自动调用 API 追踪
-  // ⚠️ 因为要等到 acquisition 信息完整以后才能 track, trackUserServerSide 在 recordAcquisition 里进行
-  // trackUserServerSide({});
+  // waitUntil 和 after 有所不同，waitUntil 接受一个 Promise，after 接受一个 Promise 或者有一个返回 Promise 的方法（会先调用这个方法）
+  after(async () => {
+    await Promise.all([
+      _recordLastLogin({ userId: user.id, provider: "email-password" }),
+      _recordAcquisition({ userId: user.id }), // 保存 UTM、Referer 和 Tolt，如有 Tolt 会自动调用 API 追踪
+    ]).catch(() => {});
+    trackUserServerSide({
+      userId: user.id,
+      traitTypes: ["profile", "clientInfo"],
+    });
+    trackEventServerSide({
+      userId: user.id,
+      event: "Signed Up",
+      properties: { email },
+    });
+  });
 
   return { ...user, email } as Omit<User, "email"> & { email: string };
 }
@@ -263,4 +238,45 @@ export async function createTeamMemberUser({
     teamIdAsMember: number;
     personalUserId: number;
   };
+}
+
+/**
+ * 迁移阶段，在更新 lastLogin, onboarding, extra 的时候，需要先调用 upsertUserProfile
+ * 一段时间已有，当所有用户都在创建的时候有了 profile，这部分可以删除
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function DEPRECATED_upsertUserProfile({ userId }: { userId: number }) {
+  throw new Error("Deprecated");
+  // const profile = await prisma.$transaction(async (tx) => {
+  //   let profile = await tx.userProfile.findUnique({
+  //     where: { userId },
+  //   });
+  //   if (profile) {
+  //     return profile;
+  //   }
+  //   const {
+  //     lastLogin,
+  //     extra: { onboarding, ...extra },
+  //   } = await tx.user
+  //     .findUniqueOrThrow({
+  //       where: { id: userId },
+  //       select: { id: true, lastLogin: true, extra: true },
+  //     })
+  //     .then(({ extra, ...user }) => ({ ...user, extra: extra as DeprecatedUserExtra }));
+  //   profile = await tx.userProfile.create({
+  //     data: {
+  //       userId,
+  //       lastLogin: lastLogin ?? {},
+  //       onboarding: onboarding ?? {},
+  //       extra: extra ?? {},
+  //     },
+  //   });
+  //   // 清空 user 上的 lastLogin, onboarding, extra
+  //   await tx.user.update({
+  //     where: { id: userId },
+  //     data: { lastLogin: {}, extra: {} },
+  //   });
+  //   return profile;
+  // });
+  // return profile;
 }

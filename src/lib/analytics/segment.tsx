@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { trackUserAction } from "./actions";
 import { calcIntercomUserHash, segmentAnalyticsWriteKey } from "./config";
+import { TAnalyticsEvent } from "./event";
 
 // 用一个模块级变量存储 analytics 实例
 let analyticsInstance: AnalyticsBrowser | null = null;
@@ -40,10 +41,12 @@ export async function trackPage(properties?: Record<string, any>) {
 }
 
 // 实用工具函数，用于追踪事件
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function trackEvent(event: string, properties?: Record<string, any>) {
+export async function trackEvent<E extends keyof TAnalyticsEvent, T extends TAnalyticsEvent[E]>(
+  event: E,
+  ...args: T extends undefined ? [] : [properties: T]
+) {
   if (analyticsInstance) {
-    analyticsInstance.track(event, properties);
+    analyticsInstance.track(event, args[0]);
   }
 }
 

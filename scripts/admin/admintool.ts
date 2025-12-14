@@ -5,7 +5,7 @@
 
 import { AdminRole } from "@/prisma/client";
 import { loadEnvConfig } from "@next/env";
-import "./mock-server-only";
+import "../mock-server-only";
 
 // Parse --key value style arguments
 function parseKeyValueArgs(args: string[]): Record<string, string> {

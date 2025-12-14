@@ -16,10 +16,11 @@ import {
   UserTraits as UserTraitsSegment,
 } from "@segment/analytics-node";
 import { ExtraContext as ExtraContextSegment } from "@segment/analytics-node/dist/types/app/types";
-import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
+import { after } from "next/server";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "../request/headers";
 import { segmentAnalyticsWriteKey } from "./config";
+import { TAnalyticsEvent } from "./event";
 
 // 用一个模块级变量存储 analytics 实例
 let analyticsInstance: AnalyticsServer | null = null;
@@ -36,6 +37,127 @@ async function loadSegmentAnalytics(): Promise<AnalyticsServer | null> {
     rootLogger.error(`Failed to load Segment Analytics: ${(error as Error).message}`);
     throw error;
   }
+}
+
+/**
+ *
+ */
+async function _trackEventServerSide<E extends keyof TAnalyticsEvent, T extends TAnalyticsEvent[E]>(
+  {
+    user,
+    userProfile,
+    userId,
+    event,
+    properties,
+  }: {
+    user?: Pick<User, "id" | "name" | "email" | "createdAt">;
+    userProfile?: Pick<UserProfile, "extra" | "lastLogin">;
+    userId?: number;
+    event: E;
+  } & (T extends undefined
+    ? { properties?: undefined } // undefined 时可选
+    : { properties: T }), // 有值时必填
+) {
+  if (!userId) {
+    if (!user) {
+      throw new Error("userId or user must be provided");
+    }
+    userId = user.id;
+  }
+
+  // prepare
+  const analytics = await loadSegmentAnalytics().catch(() => null);
+  if (!analytics) return;
+
+  let context: ExtraContextSegment = {};
+  try {
+    if (!userProfile) {
+      userProfile = await prismaRO.userProfile.findUniqueOrThrow({
+        where: { userId },
+        select: { id: true, onboarding: true, lastLogin: true, extra: true },
+      });
+    }
+    const lastLogin = userProfile.lastLogin as UserLastLogin;
+    context = {
+      ...context,
+      ...(lastLogin.clientIp ? { ip: lastLogin.clientIp } : {}),
+      ...(lastLogin.userAgent ? { userAgent: lastLogin.userAgent } : {}),
+      ...(lastLogin.geo
+        ? { location: { city: lastLogin.geo.city, country: lastLogin.geo.country } }
+        : {}),
+      // ...(locale ? { locale } : {}),
+    };
+  } catch (error) {
+    rootLogger.error(
+      { event, userId },
+      `Failed to track last login traits: ${(error as Error).message}`,
+    );
+  }
+
+  try {
+    analytics.track({
+      userId: userId.toString(),
+      event,
+      properties,
+      context,
+    });
+  } catch (error) {
+    rootLogger.error(
+      { event, userId },
+      `Failed to send track request: ${(error as Error).message}`,
+    );
+  }
+}
+
+export async function trackEventServerSide<
+  E extends keyof TAnalyticsEvent,
+  T extends TAnalyticsEvent[E],
+>(
+  args: {
+    user: Pick<User, "id" | "name" | "email" | "createdAt"> & {};
+    userProfile: Pick<UserProfile, "extra" | "lastLogin">;
+    event: E;
+  } & (T extends undefined
+    ? { properties?: undefined } // undefined 时可选
+    : { properties: T }), // 有值时必填
+): Promise<void>;
+
+export async function trackEventServerSide<
+  E extends keyof TAnalyticsEvent,
+  T extends TAnalyticsEvent[E],
+>(
+  args: { userId: number; event: E } & (T extends undefined
+    ? { properties?: undefined } // undefined 时可选
+    : { properties: T }), // 有值时必填
+): Promise<void>;
+
+export async function trackEventServerSide<
+  E extends keyof TAnalyticsEvent,
+  T extends TAnalyticsEvent[E],
+>(
+  args: {
+    user?: Pick<User, "id" | "name" | "email" | "createdAt">;
+    userProfile?: Pick<UserProfile, "extra" | "lastLogin">;
+    userId?: number;
+    event: E;
+  } & (T extends undefined
+    ? { properties?: undefined } // undefined 时可选
+    : { properties: T }), // 有值时必填
+) {
+  after(
+    _trackEventServerSide(args)
+      .then(() => {
+        rootLogger.info({ userId: args.userId, event: args.event }, `Successfully tracked event`);
+      })
+      .catch((error) => {
+        rootLogger.error({
+          msg: `Failed to track event: ${(error as Error).message}`,
+          stack: (error as Error).stack,
+          event: args.event,
+          userId: args.userId,
+        });
+      }),
+  );
 }
 
 type UserTraits = UserTraitsSegment &
@@ -133,7 +255,7 @@ async function _trackUserServerSide({
           : { plan: null, planEndsAt: null }),
       };
     } catch (error) {
-      rootLogger.error(`Failed to track revenue traits: ${(error as Error).message}`);
+      rootLogger.error({ userId }, `Failed to track revenue traits: ${(error as Error).message}`);
     }
   }
 
@@ -159,7 +281,7 @@ async function _trackUserServerSide({
         tokensConsumed,
       };
     } catch (error) {
-      rootLogger.error(`Failed to track stats traits: ${(error as Error).message}`);
+      rootLogger.error({ userId }, `Failed to track stats traits: ${(error as Error).message}`);
     }
   }
 
@@ -179,7 +301,10 @@ async function _trackUserServerSide({
         ...(locale ? { locale } : {}),
       };
     } catch (error) {
-      rootLogger.error(`Failed to track client info traits: ${(error as Error).message}`);
+      rootLogger.error(
+        { userId },
+        `Failed to track client info traits: ${(error as Error).message}`,
+      );
     }
   } else {
     // ⚠️，context 信息一定要有，不然就会被设置默认值
@@ -201,7 +326,10 @@ async function _trackUserServerSide({
         // ...(locale ? { locale } : {}),
       };
     } catch (error) {
-      rootLogger.error(`Failed to track last login traits: ${(error as Error).message}`);
+      rootLogger.error(
+        { userId },
+        `Failed to track last login traits: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -246,7 +374,7 @@ async function _trackUserServerSide({
         ...(Object.keys(acquisition).length > 0 ? { acquisition } : {}),
       };
     } catch (error) {
-      rootLogger.error(`Failed to track profile traits: ${(error as Error).message}`);
+      rootLogger.error({ userId }, `Failed to track profile traits: ${(error as Error).message}`);
     }
   }
 
@@ -257,7 +385,10 @@ async function _trackUserServerSide({
       context,
     });
   } catch (error) {
-    rootLogger.error(`Failed to send identify user request: ${(error as Error).message}`);
+    rootLogger.error(
+      { userId },
+      `Failed to send identify user request: ${(error as Error).message}`,
+    );
   }
 }
 
@@ -278,7 +409,7 @@ export async function trackUserServerSide(args: {
   userId?: number;
   traitTypes: UserTraitType[] | "all";
 }) {
-  waitUntil(
+  after(
     _trackUserServerSide(args)
       .then(() => {
         rootLogger.info(
@@ -288,10 +419,9 @@ export async function trackUserServerSide(args: {
       })
       .catch((error) => {
         rootLogger.error({
-          msg: `Failed to track user`,
+          msg: `Failed to track user: ${(error as Error).message}`,
           stack: (error as Error).stack,
-          error: (error as Error).message,
-          user: args.userId,
+          userId: args.userId,
           traitTypes: args.traitTypes,
         });
       }),
