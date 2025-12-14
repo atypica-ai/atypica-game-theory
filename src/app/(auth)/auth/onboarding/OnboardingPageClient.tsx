@@ -1,0 +1,293 @@
+"use client";
+import { FitToViewport } from "@/components/layout/FitToViewport";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { trackEvent } from "@/lib/analytics/segment";
+import { UserOnboardingData } from "@/prisma/client";
+import { SparklesIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { saveOnboardingData } from "./actions";
+
+export function OnboardingPageClient({ callbackUrl }: { callbackUrl: string }) {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const t = useTranslations("Auth.Onboarding");
+
+  const [usageType, setUsageType] = useState<"work" | "personal" | "">("");
+  const [role, setRole] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [howDidYouHear, setHowDidYouHear] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    // Update URL with callbackUrl parameter without triggering navigation
+    if (typeof window !== "undefined" && callbackUrl) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("callbackUrl", callbackUrl);
+      window.history.replaceState(null, "", url.toString());
+    }
+  }, [callbackUrl]);
+
+  // 统一的字段更新函数，同时触发 analytics 追踪
+  const updateField = useCallback(
+    (field: keyof UserOnboardingData, value: string) => {
+      // 更新对应的 state
+      switch (field) {
+        case "usageType":
+          setUsageType(value as "work" | "personal");
+          break;
+        case "role":
+          setRole(value);
+          break;
+        case "industry":
+          setIndustry(value);
+          break;
+        case "companyName":
+          setCompanyName(value);
+          break;
+        case "howDidYouHear":
+          setHowDidYouHear(value);
+          break;
+      }
+
+      // 触发 analytics 事件，传入更新后的完整数据
+      const updatedData: UserOnboardingData = {
+        usageType: (field === "usageType" ? value : usageType) as "work" | "personal",
+        role: field === "role" ? value : role,
+        industry: field === "industry" ? value : industry,
+        companyName: field === "companyName" ? value : companyName,
+        howDidYouHear: field === "howDidYouHear" ? value : howDidYouHear,
+      };
+
+      trackEvent("Onboarding Step Updated", updatedData);
+    },
+    [usageType, role, industry, companyName, howDidYouHear],
+  );
+
+  const onSubmit = useCallback(
+    async (/*e: React.FormEvent*/) => {
+      // e.preventDefault();
+      if (!session?.user?.id) return;
+
+      // Validation - all fields except companyName are required
+      if (!usageType || !role.trim() || !industry.trim() || !howDidYouHear.trim()) {
+        setError(t("requiredFields"));
+        return;
+      }
+
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const data: UserOnboardingData = {
+          usageType: usageType as "work" | "personal",
+          role: role.trim(),
+          industry: industry.trim(),
+          companyName: companyName.trim(),
+          howDidYouHear: howDidYouHear.trim(),
+        };
+
+        trackEvent("Onboarding Completed", data);
+        const result = await saveOnboardingData(data);
+
+        if (!result.success) {
+          throw new Error(result.message);
+        }
+
+        toast.success(t("successMessage"));
+        router.push(callbackUrl);
+      } catch (error) {
+        setError((error as Error).message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      usageType,
+      role,
+      industry,
+      howDidYouHear,
+      callbackUrl,
+      companyName,
+      router,
+      session?.user?.id,
+      t,
+    ],
+  );
+
+  return (
+    <FitToViewport>
+      <div className="container max-w-3xl mx-auto px-4 py-8 md:py-16">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-full mb-4">
+            <SparklesIcon className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-EuclidCircularA font-medium tracking-tight mb-2">
+            {t("introTitle")}
+          </h1>
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            {t("introDescription")}
+          </p>
+        </div>
+
+        {/* Form */}
+        <div className="bg-card rounded-2xl shadow-lg border overflow-hidden">
+          {/** <form onSubmit={onSubmit} className="p-6 md:p-8 space-y-6">
+           * form 元素会让下面的 select 的 portal 失效，本来 select 应该是 button 点了以后新建一个 fixed 元素 append 到 body
+           * 但这里用 form 元素会导致 select 元素渲染在 form 里，并且是 absolute，很奇怪，
+           * 进一步的这会导致整个 body 可以滚动，因为父元素都没有刻意设置 relative
+           */}
+          <div className="p-6 md:p-8 space-y-6">
+            {error && (
+              <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20">
+                {error}
+              </div>
+            )}
+
+            {/* Usage Type */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                {t("usageTypeLabel")} <span className="text-red-500">*</span>
+              </Label>
+              <RadioGroup
+                value={usageType}
+                onValueChange={(value) => updateField("usageType", value)}
+                className="grid grid-cols-1 md:grid-cols-2 gap-3"
+              >
+                <Label
+                  htmlFor="onboarding-usage-work"
+                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover:border-primary/60 ${usageType === "work" ? "border-primary bg-primary/5" : "border-border"}`}
+                >
+                  <RadioGroupItem value="work" id="onboarding-usage-work" />
+                  <span className="font-medium">{t("usageTypeWorkOption")}</span>
+                </Label>
+                <Label
+                  htmlFor="onboarding-usage-personal"
+                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-all hover:border-primary/60 ${usageType === "personal" ? "border-primary bg-primary/5" : "border-border"}`}
+                >
+                  <RadioGroupItem value="personal" id="onboarding-usage-personal" />
+                  <span className="font-medium">{t("usageTypePersonalOption")}</span>
+                </Label>
+              </RadioGroup>
+            </div>
+
+            {/* Role */}
+            <div className="space-y-3">
+              <Label htmlFor="role" className="text-base font-medium flex items-center gap-2">
+                {t("roleLabel")} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="role"
+                placeholder={t("rolePlaceholder")}
+                value={role}
+                onChange={(e) => updateField("role", e.target.value)}
+                className="h-12 text-base"
+              />
+            </div>
+
+            {/* Industry */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                {t("industryLabel")} <span className="text-red-500">*</span>
+              </Label>
+              <Select value={industry} onValueChange={(value) => updateField("industry", value)}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder={t("industryPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="technology">{t("industryTechnology")}</SelectItem>
+                  <SelectItem value="finance">{t("industryFinance")}</SelectItem>
+                  <SelectItem value="healthcare">{t("industryHealthcare")}</SelectItem>
+                  <SelectItem value="education">{t("industryEducation")}</SelectItem>
+                  <SelectItem value="retail">{t("industryRetail")}</SelectItem>
+                  <SelectItem value="manufacturing">{t("industryManufacturing")}</SelectItem>
+                  <SelectItem value="consulting">{t("industryConsulting")}</SelectItem>
+                  <SelectItem value="media">{t("industryMedia")}</SelectItem>
+                  <SelectItem value="government">{t("industryGovernment")}</SelectItem>
+                  <SelectItem value="nonprofit">{t("industryNonprofit")}</SelectItem>
+                  <SelectItem value="other">{t("industryOther")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Company Name */}
+            <div className="space-y-3">
+              <Label htmlFor="companyName" className="text-base font-medium">
+                {t("companyNameLabel")}
+              </Label>
+              <Input
+                id="companyName"
+                placeholder={t("companyNamePlaceholder")}
+                value={companyName}
+                onChange={(e) => updateField("companyName", e.target.value)}
+                className="h-12 text-base"
+              />
+            </div>
+
+            {/* How did you hear */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                {t("howDidYouHearLabel")} <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={howDidYouHear}
+                onValueChange={(value) => updateField("howDidYouHear", value)}
+              >
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder={t("howDidYouHearPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="search">{t("howDidYouHearSearch")}</SelectItem>
+                  <SelectItem value="social_media">{t("howDidYouHearSocial_media")}</SelectItem>
+                  <SelectItem value="friend_colleague">
+                    {t("howDidYouHearFriend_colleague")}
+                  </SelectItem>
+                  <SelectItem value="blog_article">{t("howDidYouHearBlog_article")}</SelectItem>
+                  <SelectItem value="advertisement">{t("howDidYouHearAdvertisement")}</SelectItem>
+                  <SelectItem value="conference_event">
+                    {t("howDidYouHearConference_event")}
+                  </SelectItem>
+                  <SelectItem value="other">{t("howDidYouHearOther")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Required fields note */}
+            <div className="text-sm text-muted-foreground">{t("optionalFieldNote")}</div>
+
+            {/* Submit button */}
+            <Button
+              className="w-full h-12 text-base font-medium"
+              disabled={isLoading}
+              onClick={onSubmit}
+            >
+              {isLoading ? t("submittingButton") : t("submitButton")}
+            </Button>
+          </div>
+        </div>
+
+        {/* Footer note */}
+        <div className="text-center mt-6 text-sm text-muted-foreground">
+          <span className="font-mono">atypica.ai</span> • AI-powered user research platform
+        </div>
+      </div>
+    </FitToViewport>
+  );
+}

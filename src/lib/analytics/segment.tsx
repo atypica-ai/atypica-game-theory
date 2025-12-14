@@ -34,19 +34,19 @@ async function unloadSegmentAnalytics() {
 
 // 实用工具函数，用于追踪页面浏览
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function trackPage(properties?: Record<string, any>) {
+export function trackPage(properties?: Record<string, any>) {
   if (analyticsInstance) {
-    analyticsInstance.page(properties);
+    analyticsInstance.page(properties).catch(() => {});
   }
 }
 
 // 实用工具函数，用于追踪事件
-export async function trackEvent<E extends keyof TAnalyticsEvent, T extends TAnalyticsEvent[E]>(
+export function trackEvent<E extends keyof TAnalyticsEvent, T extends TAnalyticsEvent[E]>(
   event: E,
   ...args: T extends undefined ? [] : [properties: T]
 ) {
   if (analyticsInstance) {
-    analyticsInstance.track(event, args[0]);
+    analyticsInstance.track(event, args[0]).catch(() => {});
   }
 }
 
@@ -61,13 +61,15 @@ export function SegmentAnalytics() {
       if (session?.user) {
         const userId = session.user.id.toString();
         // 前端 identify 初始化 intercom
-        analyticsInstance.identify(
-          userId,
-          { email: session.user.email },
-          { integrations: { Intercom: { user_hash: calcIntercomUserHash(userId) } } },
-        );
+        analyticsInstance
+          .identify(
+            userId,
+            { email: session.user.email },
+            { integrations: { Intercom: { user_hash: calcIntercomUserHash(userId) } } },
+          )
+          .catch(() => {});
         // 后端 track 上报完整信息
-        trackUserAction();
+        trackUserAction().catch(() => {});
       }
     };
     if (status === "authenticated" && !isSegmentLoaded) {
