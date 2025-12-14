@@ -30,6 +30,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDevice } from "@/hooks/use-device";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { trackEvent } from "@/lib/analytics/segment";
+import { truncateForTitle } from "@/lib/textUtils";
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon, NotebookTextIcon, RotateCwIcon, SparklesIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -74,6 +76,13 @@ export function NewStudyInputBox({
     localStorage.setItem("studyInputCache", value);
   }, 300);
 
+  const trackStudyBriefUpdated = useDebouncedCallback((brief: string) => {
+    trackEvent("Study Brief Updated", {
+      brief: truncateForTitle(brief, { maxDisplayWidth: 30, suffix: "..." }),
+      interview: false,
+    });
+  }, 2000);
+
   useEffect(() => {
     // If initialQuestion is provided, use it; otherwise load from cache
     if (initialQuestion) {
@@ -85,6 +94,25 @@ export function NewStudyInputBox({
       }
     }
   }, [initialQuestion]);
+
+  const setStudyBrief = useCallback(
+    ({ text, append = false }: { text: string; append?: boolean }) => {
+      setInput((current) => {
+        let inputValue: string;
+        if (append) {
+          inputValue = current ? `${current} ${text}` : text;
+        } else {
+          inputValue = text;
+        }
+        setTimeout(() => {
+          debouncedSaveToLocalStorage(inputValue);
+          trackStudyBriefUpdated(inputValue);
+        }, 100);
+        return inputValue;
+      });
+    },
+    [debouncedSaveToLocalStorage],
+  );
 
   // Check if user should see study type selector
   useEffect(() => {
@@ -250,11 +278,7 @@ export function NewStudyInputBox({
       <Textarea
         name="study-brief"
         value={input}
-        onChange={(e) => {
-          const value = e.target.value;
-          setInput(value);
-          debouncedSaveToLocalStorage(value);
-        }}
+        onChange={(e) => setStudyBrief({ text: e.target.value })}
         placeholder={
           studyType === "product-rnd"
             ? t("productRnDPlaceholder")
@@ -318,7 +342,7 @@ export function NewStudyInputBox({
         <div className="ml-auto" />
         <RecordButton
           onTranscript={(text) => {
-            setInput((current) => (current ? `${current} ${text}` : text));
+            setStudyBrief({ text, append: true });
             setPartialTranscript(""); // Clear partial transcript when final transcript is set
           }}
           onPartialTranscript={(text) => {

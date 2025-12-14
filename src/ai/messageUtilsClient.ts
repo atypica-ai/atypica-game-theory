@@ -127,6 +127,6 @@ export function isSystemMessage(text: string): boolean {
 export function prepareLastUIMessageForRequest(messages: UIMessage[]) {
   return messages[messages.length - 1] as Omit<UIMessage, "role" | "parts"> & {
     role: "user" | "assistant";
-    parts: Extract<UIMessage["parts"][number], { type: "text" }>[];
+    parts: Extract<UIMessage["parts"][number], { type: "text" | `tool-${string}` }>[];
   };
 }

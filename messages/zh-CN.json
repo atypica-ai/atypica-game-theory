@@ -363,7 +363,6 @@
     "couldNotStartStudy": "无法开始研究。请重试。",
     "newStudyPlanningTitle": "新研究规划",
     "chatNotFound": "未找到聊天。",
-    "studyPlanningComplete": "您的研究规划已完成。",
     "execEndInterviewTool": "正在总结研究问题"
   },
   "FileUploadLimits": {

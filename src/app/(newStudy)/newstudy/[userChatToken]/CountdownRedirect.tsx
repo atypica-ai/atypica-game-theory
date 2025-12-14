@@ -86,7 +86,7 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
           {/* Progress Animation */}
           <div className="w-24 h-0.5 bg-zinc-200 dark:bg-zinc-700 rounded-full mx-auto mb-4 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 dark:from-green-400 dark:via-emerald-400 dark:to-cyan-400 rounded-full transition-all duration-1000 ease-linear"
+              className="h-full bg-linear-to-r from-emerald-500 via-green-500 to-teal-500 dark:from-green-400 dark:via-emerald-400 dark:to-cyan-400 rounded-full transition-all duration-1000 ease-linear"
               style={{ width: `${((COUNTDOWN_SECONDS - countdown) / COUNTDOWN_SECONDS) * 100}%` }}
             />
           </div>

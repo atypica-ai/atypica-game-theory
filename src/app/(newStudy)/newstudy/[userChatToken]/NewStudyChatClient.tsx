@@ -3,12 +3,15 @@ import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messa
 import { TNewStudyMessageWithTool } from "@/app/(newStudy)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
+import { trackEvent } from "@/lib/analytics/segment";
+import { truncateForTitle } from "@/lib/textUtils";
 import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import { CountdownRedirect } from "./CountdownRedirect";
 
 export function NewStudyChatClient({
@@ -21,6 +24,13 @@ export function NewStudyChatClient({
 }) {
   const locale = useLocale();
   const t = useTranslations("NewStudyChatPage");
+
+  const trackStudyBriefUpdated = useDebouncedCallback((brief: string) => {
+    trackEvent("Study Brief Updated", {
+      brief: truncateForTitle(brief, { maxDisplayWidth: 30, suffix: "..." }),
+      interview: true,
+    });
+  }, 2000);
 
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChat.token }), [userChat.token]);
 
@@ -38,11 +48,16 @@ export function NewStudyChatClient({
     transport: new DefaultChatTransport({
       api: `/api/chat/newstudy`,
       prepareSendMessagesRequest({ id, messages }) {
-        const body: ClientMessagePayload = {
-          id,
-          message: prepareLastUIMessageForRequest(messages),
-          ...extraRequestPayload,
-        };
+        const message = prepareLastUIMessageForRequest(messages);
+        setTimeout(() => {
+          trackStudyBriefUpdated(
+            message.parts
+              .filter((part) => part.type === "text")
+              .map((part) => part.text)
+              .join(""),
+          );
+        }, 100);
+        const body: ClientMessagePayload = { id, message, ...extraRequestPayload };
         return { body };
       },
     }),
@@ -75,7 +90,9 @@ export function NewStudyChatClient({
     for (const message of messages) {
       for (const part of message.parts ?? []) {
         if (part.type === "tool-endInterview" && part.state === "output-available") {
-          return part.output.studyBrief || t("studyPlanningComplete");
+          const brief = part.output.studyBrief;
+          setTimeout(() => trackStudyBriefUpdated(brief), 100);
+          return brief;
         }
       }
     }

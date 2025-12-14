@@ -363,7 +363,6 @@
     "couldNotStartStudy": "Could not start study. Please try again.",
     "newStudyPlanningTitle": "New Study Planning",
     "chatNotFound": "Chat not found.",
-    "studyPlanningComplete": "Your study planning is complete.",
     "execEndInterviewTool": "Summarizing the study brief"
   },
   "FileUploadLimits": {
