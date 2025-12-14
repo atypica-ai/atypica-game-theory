@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics/segment";
 import { ClipboardCopyIcon, EyeIcon, FileDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState, useTransition } from "react";
@@ -34,6 +35,7 @@ export function AnalystReportShareButton({
   const handleCopyUrl = useCallback(() => {
     navigator.clipboard.writeText(fullUrl);
     toast.success(t("copySuccess"));
+    trackEvent("Study Artifact Exported", { intent: "share", type: "report", url: fullUrl });
   }, [t, fullUrl]);
 
   const handleDownloadPDF = useCallback(() => {
@@ -59,6 +61,7 @@ export function AnalystReportShareButton({
         URL.revokeObjectURL(url);
         toast.dismiss();
         toast.success(t("pdfDownloadSuccess"));
+        trackEvent("Study Artifact Exported", { intent: "download", type: "report", url: url });
       } catch (error) {
         console.log(error);
         toast.dismiss();
@@ -89,7 +92,7 @@ export function AnalystReportShareButton({
         <div className="space-y-3 overflow-hidden">
           <p className="text-sm text-muted-foreground mb-2">{t("successMessage")}</p>
           <div className="flex items-center gap-2 mt-1">
-            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden break-words">
+            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden wrap-break-words">
               {fullUrl}
             </div>
             <Button size="sm" variant="outline" onClick={handleCopyUrl} className="shrink-0">
@@ -107,7 +110,18 @@ export function AnalystReportShareButton({
               {isPending ? t("generatingPDF") : t("downloadPDF")}
             </Button>
           )}
-          <Button onClick={() => window.open(fullUrl, "_blank")}>{t("openButton")}</Button>
+          <Button
+            onClick={() => {
+              window.open(fullUrl, "_blank");
+              trackEvent("Study Artifact Exported", {
+                intent: "visit",
+                type: "report",
+                url: fullUrl,
+              });
+            }}
+          >
+            {t("openButton")}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

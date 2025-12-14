@@ -13,7 +13,10 @@ export type TAnalyticsEvent = {
    * 在发起研究界面，一旦开始输入就上报
    * @param interview: 是否使用 newstudy interview
    */
-  "Study Brief Updated": { brief: string; interview?: boolean };
+  "Study Brief Updated": {
+    brief: string;
+    interview?: boolean;
+  };
   /**
    * 新的研究创建后上报
    * @param userChatToken: 通过 token 来关联后续事件
@@ -35,6 +38,18 @@ export type TAnalyticsEvent = {
   "Study Session Completed": {
     userChatId: number;
   };
-  "Study Report Exported": undefined;
-  "Study Feedback Submitted": undefined;
+  /**
+   * 点击或者复制了回放/报告/播客的分享链接，或者下载
+   * @param url: 回放/报告/播客的链接
+   * @param intent: 分享(复制链接)、打开链接访问、导出下载
+   */
+  "Study Artifact Exported": {
+    intent: "share" | "visit" | "download";
+    type: "replay" | "report" | "podcast";
+    url: string;
+  };
+  "Study Feedback Submitted": {
+    userChatId: number;
+    rating: "useful" | "not_useful";
+  };
 };

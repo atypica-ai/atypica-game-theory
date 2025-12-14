@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics/segment";
 import { cn } from "@/lib/utils";
 import { CheckIcon, ThumbsDownIcon, ThumbsUpIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -55,12 +56,12 @@ export function StudyFeedback({
       const result = await submitStudyFeedback(studyUserChatId, {
         rating,
       });
-
       if (result.success) {
         setJustSubmitted(true);
         onFeedbackSubmitted?.();
         // Hide thank you message after 2 seconds
         setTimeout(() => setJustSubmitted(false), 2000);
+        trackEvent("Study Feedback Submitted", { rating, userChatId: studyUserChatId });
       } else {
         console.log("Failed to submit feedback:", result.message);
       }

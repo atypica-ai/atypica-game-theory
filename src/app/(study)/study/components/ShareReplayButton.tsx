@@ -10,6 +10,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics/segment";
 import { UserChat } from "@/prisma/client";
 import { ClipboardCopyIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -44,13 +45,17 @@ export function ShareReplayButton({
   const t = useTranslations("StudyPage.ShareReplayButton");
   const [open, setOpen] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
+
   useEffect(() => {
     setShareUrl(`${window.location.origin}/study/${studyUserChat.token}/share?replay=1`);
   }, [studyUserChat.token]);
+
   const handleCopyUrl = useCallback(() => {
     navigator.clipboard.writeText(shareUrl);
     toast.success(t("copySuccess"));
+    trackEvent("Study Artifact Exported", { intent: "share", type: "replay", url: shareUrl });
   }, [t, shareUrl]);
+
   return (
     <AlertDialog
       open={open}
@@ -88,7 +93,18 @@ export function ShareReplayButton({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => setOpen(false)}>{t("closeButton")}</AlertDialogCancel>
-          <Button onClick={() => window.open(shareUrl, "_blank")}>{t("openButton")}</Button>
+          <Button
+            onClick={() => {
+              window.open(shareUrl, "_blank");
+              trackEvent("Study Artifact Exported", {
+                intent: "visit",
+                type: "replay",
+                url: shareUrl,
+              });
+            }}
+          >
+            {t("openButton")}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
