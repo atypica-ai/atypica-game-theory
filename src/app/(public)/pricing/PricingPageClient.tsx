@@ -5,6 +5,7 @@ import { SubscriptionDialog } from "@/app/payment/components/SubscriptionDialog"
 import { TeamSubscriptionDialog } from "@/app/payment/components/TeamSubscriptionDialog";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { trackEvent } from "@/lib/analytics/segment";
 import { Subscription, SubscriptionPlan, Team, UserType } from "@/prisma/client";
 import { InfoIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -17,6 +18,8 @@ import { SuperPlanCard } from "./SuperPlanCard";
 import { SuperTeamPlanCard } from "./SuperTeamPlanCard";
 import { TeamPlanCard } from "./TeamPlanCard";
 import { createHelloUserChatAction } from "./actions";
+
+type TPricingTab = "organization" | "individual" | "unlimited";
 
 export default function PricingPageClient({
   productPrices,
@@ -39,22 +42,26 @@ export default function PricingPageClient({
   const [isTeamSubscriptionDialogOpen, setIsTeamSubscriptionDialogOpen] = useState<{
     plan: SubscriptionPlan;
   } | null>(null);
-  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TPricingTab | null>(null);
 
   // Read hash on mount
   useEffect(() => {
+    let tab: TPricingTab;
     const hash = window.location.hash.slice(1);
     if (hash === "organization" || hash === "individual" || hash === "unlimited") {
-      setActiveTab(hash);
+      tab = hash;
     } else {
-      setActiveTab("individual");
+      tab = "individual";
     }
+    setActiveTab(tab);
+    trackEvent("Product List Viewed", { category: tab });
   }, []);
 
   // Update hash when tab changes
-  const handleTabChange = (value: string) => {
+  const handleTabChange = (value: TPricingTab) => {
     setActiveTab(value);
     window.history.pushState(null, "", `#${value}`);
+    trackEvent("Product List Viewed", { category: value });
   };
 
   const sayHelloToSales = useCallback(async () => {
@@ -79,15 +86,28 @@ export default function PricingPageClient({
         <p className="text-xl text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="max-w-7xl mx-auto">
+      <Tabs
+        value={activeTab}
+        onValueChange={(tab) => handleTabChange(tab as TPricingTab)}
+        className="max-w-7xl mx-auto"
+      >
         <TabsList className="mx-auto mb-8 h-12 w-full max-w-2xl">
-          <TabsTrigger value="individual" className="flex-none w-[30%] cursor-pointer px-0">
+          <TabsTrigger
+            value={"individual" as TPricingTab}
+            className="flex-none w-[30%] cursor-pointer px-0"
+          >
             <span className="truncate">{t("tabs.individual")}</span>
           </TabsTrigger>
-          <TabsTrigger value="organization" className="flex-1 cursor-pointer px-0 tracking-tighter">
+          <TabsTrigger
+            value={"organization" as TPricingTab}
+            className="flex-1 cursor-pointer px-0 tracking-tighter"
+          >
             <span className="truncate">{t("tabs.teamEnterprise")}</span>
           </TabsTrigger>
-          <TabsTrigger value="unlimited" className="flex-none w-[30%] cursor-pointer px-0">
+          <TabsTrigger
+            value={"unlimited" as TPricingTab}
+            className="flex-none w-[30%] cursor-pointer px-0"
+          >
             <span className="truncate">{t("tabs.unlimited")}</span>
           </TabsTrigger>
         </TabsList>

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { trackEvent } from "@/lib/analytics/segment";
 import { SubscriptionPlan, Team } from "@/prisma/client";
 import {
   CalendarIcon,
@@ -67,6 +68,11 @@ export const TeamSubscriptionDialog = ({
         return ProductName.TEAMSEAT1MONTH;
     }
   }, [plan]);
+
+  useEffect(() => {
+    if (!open) return;
+    trackEvent("Product Viewed", { name: productName, currency });
+  }, [open, productName, currency]);
 
   const isUnlimited = plan === SubscriptionPlan.superteam;
 

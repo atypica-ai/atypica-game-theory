@@ -1,3 +1,4 @@
+import { ProductName } from "@/app/payment/data";
 import { UserLastLogin, UserOnboardingData } from "@/prisma/client";
 
 export type TAnalyticsEvent = {
@@ -51,5 +52,40 @@ export type TAnalyticsEvent = {
   "Study Feedback Submitted": {
     userChatId: number;
     rating: "useful" | "not_useful";
+  };
+  /**
+   * 查看 pricing 页面，打开或者切换 tab 的时候上报
+   */
+  "Product List Viewed": {
+    category: "organization" | "individual" | "unlimited";
+  };
+  /**
+   * 查看具体价格，点击了购买弹出框的时候上报
+   */
+  "Product Viewed": {
+    name?: ProductName;
+    currency: "USD" | "CNY";
+  };
+  /**
+   * 创建 payment record 以后调用, createPaymentRecord 方法里
+   */
+  "Checkout Started": {
+    paymentRecordId: number;
+    currency: "USD" | "CNY";
+    price: number;
+    productName?: ProductName;
+    // products: { name: ProductName; price: number }[];
+  };
+  /**
+   * 支付成功以后上报
+   * @param renew: 是否续费
+   */
+  "Order Completed": {
+    paymentRecordId: number;
+    currency: "USD" | "CNY";
+    price: number;
+    productName?: ProductName;
+    renew?: boolean;
+    // products: { name: ProductName; price: number }[];
   };
 };

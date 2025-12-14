@@ -1,10 +1,12 @@
 import "server-only";
 
 import { stripeClient } from "@/app/payment/(stripe)/lib";
-import { PaymentMethod } from "@/app/payment/data";
+import { PaymentMethod, ProductName, StripeMetadata } from "@/app/payment/data";
+import { trackEventServerSide } from "@/lib/analytics/server";
 import { PaymentRecord, PaymentStatus, Product } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { InputJsonValue } from "@prisma/client/runtime/client";
+import { after } from "next/server";
 import Stripe from "stripe";
 
 export async function requirePersonalUser(userId: number) {
@@ -160,6 +162,132 @@ export async function createPaymentRecord({
       paymentRecordId: paymentRecord.id,
       ...line,
     })),
+  });
+
+  trackEventServerSide({
+    userId,
+    event: "Checkout Started",
+    properties: {
+      paymentRecordId: paymentRecord.id,
+      currency: paymentRecord.currency,
+      price: paymentRecord.amount,
+      productName: lines[0]?.productName as ProductName | undefined,
+    },
+  });
+
+  return paymentRecord;
+}
+
+export async function cycleNewPaymentRecord(
+  invoiceData: Omit<Stripe.Invoice, "id"> & { id: string },
+  metadata: StripeMetadata,
+) {
+  const invoiceId = invoiceData.id;
+  const initial = await prisma.paymentRecord.findUniqueOrThrow({
+    where: { orderNo: metadata.orderNo },
+    include: { paymentLines: true },
+  });
+  const count = await prisma.paymentRecord.count({
+    where: { orderNo: { startsWith: metadata.orderNo } },
+  });
+  const uniqueIdSuffix = `-${count}`;
+  const paymentRecord = await prisma.paymentRecord.create({
+    data: {
+      userId: initial.userId,
+      orderNo: initial.orderNo + uniqueIdSuffix,
+      // amount: initial.amount, // Convert cents to yuan
+      // initial amount 可能是升级套餐折扣后的，不能直接复制过来，世纪金额要以 invoiceData 上的为准，一般就是套餐的原价
+      amount: invoiceData.total / 100,
+      currency: invoiceData.currency === "cny" ? "CNY" : "USD",
+      paymentMethod: "stripe",
+      stripeInvoiceId: invoiceId,
+      stripeInvoice: invoiceData as unknown as InputJsonValue,
+      description: initial.description,
+      status: "succeeded",
+      paidAt: new Date(),
+    },
+  });
+
+  const lines = invoiceData.lines.data
+    .map((line) => {
+      // 对于续费，line.metadata 可能为空，使用 metadata.productName（从 subscription metadata 传递过来）
+      const productName = line.metadata?.productName || metadata.productName;
+      const paymentLine = initial.paymentLines.find((p) => p.productName === productName);
+      return paymentLine
+        ? {
+            paymentRecordId: paymentRecord.id,
+            productId: paymentLine.productId,
+            productName: productName,
+            quantity: line.quantity ?? paymentLine.quantity,
+            price: line.amount / 100,
+            currency: (line.currency === "cny" ? "CNY" : "USD") as "CNY" | "USD",
+            description: line.description ?? paymentLine.description,
+          }
+        : null;
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
+  // initial.paymentLines.map(
+  //   ({ productId, productName, quantity, price, currency, description }) => ({
+  //     paymentRecordId: paymentRecord.id,
+  //     productId, productName, quantity, price, currency, description,
+  //   }),
+  // ),
+  await prisma.paymentLine.createMany({
+    data: lines,
+  });
+
+  trackEventServerSide({
+    userId: initial.userId,
+    event: "Order Completed",
+    properties: {
+      paymentRecordId: paymentRecord.id,
+      currency: paymentRecord.currency,
+      price: paymentRecord.amount,
+      productName: lines[0]?.productName as ProductName | undefined,
+      renew: true,
+    },
+  });
+
+  return paymentRecord;
+}
+
+export async function succeedPaymentRecord({
+  orderNo,
+  invoiceId,
+  invoiceData,
+}: {
+  orderNo: string;
+  invoiceId: string;
+  invoiceData: Stripe.Invoice;
+}) {
+  const paymentRecord = await prisma.paymentRecord.update({
+    where: {
+      orderNo: orderNo,
+      status: "pending", // 确保 pending -> succeeded 只更新一次
+    },
+    data: {
+      status: "succeeded",
+      paidAt: new Date(),
+      stripeInvoiceId: invoiceId,
+      stripeInvoice: invoiceData as unknown as InputJsonValue,
+    },
+  });
+
+  after(async () => {
+    const line = await prisma.paymentLine.findFirst({
+      where: { paymentRecordId: paymentRecord.id },
+      orderBy: { id: "asc" },
+    });
+    trackEventServerSide({
+      userId: paymentRecord.userId,
+      event: "Order Completed",
+      properties: {
+        paymentRecordId: paymentRecord.id,
+        currency: paymentRecord.currency,
+        price: paymentRecord.amount,
+        productName: line?.productName as ProductName | undefined,
+      },
+    });
   });
 
   return paymentRecord;

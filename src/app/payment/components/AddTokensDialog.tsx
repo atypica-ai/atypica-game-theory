@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { trackEvent } from "@/lib/analytics/segment";
 import { CoinsIcon, CreditCardIcon, GiftIcon, LoaderCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -42,6 +43,11 @@ export const AddTokensDialog = ({
     const sign = currency === "CNY" ? "¥" : "$";
     return `${sign}${productPrices["TOKENS1M"][currency]}`;
   }, [productPrices, currency]);
+
+  useEffect(() => {
+    if (!open) return;
+    trackEvent("Product Viewed", { name: ProductName.TOKENS1M, currency });
+  }, [open, currency]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

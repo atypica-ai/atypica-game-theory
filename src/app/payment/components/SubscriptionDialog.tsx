@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { trackEvent } from "@/lib/analytics/segment";
 import { Subscription, SubscriptionPlan } from "@/prisma/client";
 import {
   CalendarIcon,
@@ -77,6 +78,21 @@ export const SubscriptionDialog = ({
         return "-";
     }
   }, [plan, productPrices, currency]);
+
+  useEffect(() => {
+    if (!open) return;
+    trackEvent("Product Viewed", {
+      name:
+        plan === SubscriptionPlan.pro
+          ? ProductName.PRO1MONTH
+          : plan === SubscriptionPlan.max
+            ? ProductName.MAX1MONTH
+            : plan === SubscriptionPlan.super
+              ? ProductName.SUPER1MONTH
+              : undefined,
+      currency,
+    });
+  }, [open, plan, currency]);
 
   const isUpgradeFromPro = useMemo(() => {
     return activeSubscription?.plan === SubscriptionPlan.pro && plan === SubscriptionPlan.max;
@@ -156,7 +172,7 @@ export const SubscriptionDialog = ({
             {isUpgradeFromPro && (
               <div className="p-3 border rounded-lg mb-1 bg-blue-50 border-blue-200">
                 <div className="flex items-start gap-2">
-                  <InfoIcon className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <InfoIcon className="size-4 text-blue-600 mt-0.5 shrink-0" />
                   <div className="text-blue-800">
                     <div className="text-sm font-medium mb-1">{t("upgradeNotice.title")}</div>
                     <div className="text-xs text-blue-700">{t("upgradeNotice.description")}</div>

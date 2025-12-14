@@ -4,10 +4,11 @@ import {
   handleTeamSubscriptionPaymentSuccess,
   handleUserSubscriptionPaymentSuccess,
 } from "@/app/payment/(stripe)/success";
+import { cycleNewPaymentRecord, succeedPaymentRecord } from "@/app/payment/(stripe)/utils";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
 import { rootLogger } from "@/lib/logging";
+import { PaymentRecord } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { InputJsonValue } from "@prisma/client/runtime/client";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -30,64 +31,6 @@ function checkInvoiceMetadata(invoiceData: Stripe.Invoice) {
     return null;
   }
   return metadata;
-}
-
-async function cycleNewPaymentRecord(
-  invoiceData: Omit<Stripe.Invoice, "id"> & { id: string },
-  metadata: StripeMetadata,
-) {
-  const invoiceId = invoiceData.id;
-  const initial = await prisma.paymentRecord.findUniqueOrThrow({
-    where: { orderNo: metadata.orderNo },
-    include: { paymentLines: true },
-  });
-  const count = await prisma.paymentRecord.count({
-    where: { orderNo: { startsWith: metadata.orderNo } },
-  });
-  const uniqueIdSuffix = `-${count}`;
-  const paymentRecord = await prisma.paymentRecord.create({
-    data: {
-      userId: initial.userId,
-      orderNo: initial.orderNo + uniqueIdSuffix,
-      // amount: initial.amount, // Convert cents to yuan
-      // initial amount 可能是升级套餐折扣后的，不能直接复制过来，世纪金额要以 invoiceData 上的为准，一般就是套餐的原价
-      amount: invoiceData.total / 100,
-      currency: invoiceData.currency === "cny" ? "CNY" : "USD",
-      paymentMethod: "stripe",
-      stripeInvoiceId: invoiceId,
-      stripeInvoice: invoiceData as unknown as InputJsonValue,
-      description: initial.description,
-      status: "succeeded",
-      paidAt: new Date(),
-    },
-  });
-  await prisma.paymentLine.createMany({
-    data: invoiceData.lines.data
-      .map((line) => {
-        // 对于续费，line.metadata 可能为空，使用 metadata.productName（从 subscription metadata 传递过来）
-        const productName = line.metadata?.productName || metadata.productName;
-        const paymentLine = initial.paymentLines.find((p) => p.productName === productName);
-        return paymentLine
-          ? {
-              paymentRecordId: paymentRecord.id,
-              productId: paymentLine.productId,
-              productName: productName,
-              quantity: line.quantity ?? paymentLine.quantity,
-              price: line.amount / 100,
-              currency: (line.currency === "cny" ? "CNY" : "USD") as "CNY" | "USD",
-              description: line.description ?? paymentLine.description,
-            }
-          : null;
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null),
-    // initial.paymentLines.map(
-    //   ({ productId, productName, quantity, price, currency, description }) => ({
-    //     paymentRecordId: paymentRecord.id,
-    //     productId, productName, quantity, price, currency, description,
-    //   }),
-    // ),
-  });
-  return paymentRecord;
 }
 
 export async function POST(req: Request) {
@@ -120,7 +63,7 @@ export async function POST(req: Request) {
         // 没法通过 voiceData.billing_reason === "manual" 来判断，因为购买 TOKENS1M 的时候，也是 manual
         return NextResponse.json({ received: true }, { status: 200 });
       }
-      let paymentRecord;
+      let paymentRecord: PaymentRecord;
       if (invoiceData.billing_reason === "subscription_cycle") {
         if (await prisma.paymentRecord.findUnique({ where: { stripeInvoiceId: invoiceId } })) {
           rootLogger.error(`Payment record with chargeId/invoiceId ${invoiceId} already exists`);
@@ -131,17 +74,10 @@ export async function POST(req: Request) {
         paymentRecord = await cycleNewPaymentRecord({ ...invoiceData, id: invoiceId }, metadata);
       } else {
         try {
-          paymentRecord = await prisma.paymentRecord.update({
-            where: {
-              orderNo: metadata.orderNo,
-              status: "pending", // 确保 pending -> succeeded 只更新一次
-            },
-            data: {
-              status: "succeeded",
-              paidAt: new Date(),
-              stripeInvoiceId: invoiceId,
-              stripeInvoice: invoiceData as unknown as InputJsonValue,
-            },
+          paymentRecord = await succeedPaymentRecord({
+            orderNo: metadata.orderNo,
+            invoiceId,
+            invoiceData,
           });
         } catch (error) {
           rootLogger.error(
