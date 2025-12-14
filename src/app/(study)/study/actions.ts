@@ -6,6 +6,7 @@ import {
 } from "@/ai/messageUtils";
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
 import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
+import { trackEventServerSide } from "@/lib/analytics/server";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
@@ -41,6 +42,8 @@ export async function createStudyUserChat(
   },
   // 任何额外要存储的信息
   extra?: Pick<UserChatExtra, "briefUserChatId" | "referenceUserChats">,
+  // 其他的研究类型也通过这个方法统一创建
+  studyType: "general" | "product-rnd" | "fast-insight" = "general",
 ): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
   return withAuth(async (user) => {
     // Validate file upload limits
@@ -108,6 +111,12 @@ export async function createStudyUserChat(
         data: {
           userId: user.id,
           studyUserChatId: userChat.id,
+          kind:
+            studyType === "product-rnd"
+              ? AnalystKind.productRnD
+              : studyType === "fast-insight"
+                ? AnalystKind.fastInsight
+                : null,
           brief: content, // 用户的第一条消息作为 brief
           locale,
           role: "",
@@ -119,6 +128,20 @@ export async function createStudyUserChat(
       });
       return userChat;
     });
+
+    trackEventServerSide({
+      userId: user.id,
+      event: "Study Session Started",
+      properties: {
+        studyType,
+        userChatId: userChat.id,
+        brief: truncateForTitle(content, { maxDisplayWidth: 30, suffix: "..." }),
+        interview: !!extra?.briefUserChatId,
+        attachments: attachments?.length,
+        references: extra?.referenceUserChats?.length,
+      },
+    });
+
     return {
       success: true,
       data: {
@@ -127,56 +150,6 @@ export async function createStudyUserChat(
       },
     };
   });
-}
-
-export async function createProductRnDStudyUserChat(
-  {
-    role,
-    content,
-    attachments,
-  }: {
-    role: "user" | "assistant";
-    content: string;
-    attachments?: ChatMessageAttachment[];
-  },
-  extra?: Pick<UserChatExtra, "briefUserChatId" | "referenceUserChats">,
-): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
-  const result = await createStudyUserChat({ role, content, attachments }, extra);
-  if (result.success) {
-    const studyUserChatId = result.data.id;
-    await prisma.analyst.update({
-      where: { studyUserChatId },
-      data: {
-        kind: AnalystKind.productRnD,
-      },
-    });
-  }
-  return result;
-}
-
-export async function createFastInsightStudyUserChat(
-  {
-    role,
-    content,
-    attachments,
-  }: {
-    role: "user" | "assistant";
-    content: string;
-    attachments?: ChatMessageAttachment[];
-  },
-  extra?: Pick<UserChatExtra, "briefUserChatId" | "referenceUserChats">,
-): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
-  const result = await createStudyUserChat({ role, content, attachments }, extra);
-  if (result.success) {
-    const studyUserChatId = result.data.id;
-    await prisma.analyst.update({
-      where: { studyUserChatId },
-      data: {
-        kind: AnalystKind.fastInsight,
-      },
-    });
-  }
-  return result;
 }
 
 export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(

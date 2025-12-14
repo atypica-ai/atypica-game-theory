@@ -1,10 +1,6 @@
 "use client";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
-import {
-  createFastInsightStudyUserChat,
-  createProductRnDStudyUserChat,
-  createStudyUserChat,
-} from "@/app/(study)/study/actions";
+import { createStudyUserChat } from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { FileUploadStatus } from "@/components/chat/FileUploadStatus";
@@ -111,7 +107,7 @@ export function NewStudyInputBox({
         return inputValue;
       });
     },
-    [debouncedSaveToLocalStorage],
+    [debouncedSaveToLocalStorage, trackStudyBriefUpdated],
   );
 
   // Check if user should see study type selector
@@ -160,18 +156,11 @@ export function NewStudyInputBox({
         const extra = referenceUserChatTokens
           ? { referenceUserChats: referenceUserChatTokens }
           : undefined;
-        const result =
-          studyType === "product-rnd"
-            ? await createProductRnDStudyUserChat(
-                { role: "user", content: input, attachments },
-                extra,
-              )
-            : studyType === "fast-insight"
-              ? await createFastInsightStudyUserChat(
-                  { role: "user", content: input, attachments },
-                  extra,
-                )
-              : await createStudyUserChat({ role: "user", content: input, attachments }, extra);
+        const result = await createStudyUserChat(
+          { role: "user", content: input, attachments },
+          extra,
+          studyType,
+        );
         if (!result.success) {
           throw result;
         }

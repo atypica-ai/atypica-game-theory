@@ -17,6 +17,7 @@ import {
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
+import { trackEventServerSide } from "@/lib/analytics/server";
 import { generateChatTitle, setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { Analyst, AnalystKind, UserChatExtra } from "@/prisma/client";
@@ -331,21 +332,30 @@ export async function fastInsightAgentRequest({
       }
 
       {
-        // TODO: Need to implement a podcast version of the following notify function:
-        // const generateReportTool = step.toolResults.find(
-        //   (tool) => tool?.toolName === ToolName.generateReport,
-        // ) as
-        //   | Extract<(typeof step.toolResults)[number], { toolName: ToolName.generateReport }>
-        //   | undefined;
-        // if (generateReportTool) {
-        //   notifyReportCompletion({
-        //     // reportToken: generateReportTool.args.reportToken,
-        //     reportToken:
-        //       generateReportTool.output.reportToken || generateReportTool.input.reportToken, // 要先取 result 里的
-        //     studyUserChatId,
-        //     logger,
-        //   }).catch(() => {}); //不 await
-        // }
+        const generateReportOrPodcastTool = step.toolResults.find(
+          (tool) =>
+            tool?.toolName === ToolName.generateReport ||
+            tool?.toolName === ToolName.generatePodcast,
+        ) as
+          | Extract<
+              (typeof step.toolResults)[number],
+              { toolName: ToolName.generateReport | ToolName.generatePodcast }
+            >
+          | undefined;
+        if (generateReportOrPodcastTool) {
+          // notifyReportCompletion({
+          //   // reportToken: generateReportTool.args.reportToken,
+          //   reportToken:
+          //     generateReportTool.output.reportToken || generateReportTool.input.reportToken, // 要先取 result 里的
+          //   studyUserChatId,
+          //   logger,
+          // }).catch(() => {}); //不 await
+          trackEventServerSide({
+            userId,
+            event: "Study Session Completed",
+            properties: { userChatId: studyUserChatId },
+          });
+        }
       }
     },
 

@@ -17,6 +17,7 @@ import {
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { trackEventServerSide } from "@/lib/analytics/server";
 import { setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { smoothStream, stepCountIs, StepResult, streamText, TextStreamPart, ToolChoice } from "ai";
@@ -212,6 +213,11 @@ export async function productRnDAgentRequest({
             studyUserChatId,
             logger,
           }).catch(() => {}); //不 await
+          trackEventServerSide({
+            userId,
+            event: "Study Session Completed",
+            properties: { userChatId: studyUserChatId },
+          });
         }
       }
     },
