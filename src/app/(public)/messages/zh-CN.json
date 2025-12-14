@@ -434,5 +434,128 @@
     "ctaTitle": "准备好创建自己的播客了吗？",
     "ctaDescription": "开始新的研究，几分钟内生成您的第一个 AI 播客。",
     "createMyPodcast": "创建我的播客"
+  },
+  "CreatorPage": {
+    "HeroSection": {
+      "badge": "创作者专区",
+      "title": "用AI赋能您的创作之旅",
+      "subtitle": "通过AI驱动的研究、人设和内容生成工具，转变您的创作流程，专为现代创作者设计。",
+      "ctaButton": "开始创作"
+    },
+    "PainPointSection": {
+      "title": "创作者面临的挑战",
+      "description": "每位创作者在成功之路上都会遇到这些障碍",
+      "point1": {
+        "title": "找到您的受众",
+        "description": "了解您的内容与谁产生共鸣，以及如何有效地触达他们"
+      },
+      "point2": {
+        "title": "内容策略",
+        "description": "制定与您的目标和受众需求一致的一致内容计划"
+      },
+      "point3": {
+        "title": "脱颖而出",
+        "description": "在拥挤的创作领域中区分您的作品"
+      }
+    },
+    "FeatureSection": {
+      "title": "Atypica的不同功能如何在每个阶段支持创作者",
+      "description": "发现帮助创作者研究、理解受众和生成内容的工具",
+      "aiResearch": {
+        "title": "AI研究",
+        "value": "在几分钟内进行深入的市场研究和受众分析",
+        "howToUse": {
+          "title": "如何使用",
+          "step1": "询问有关目标受众或市场趋势的问题",
+          "step2": "AI自动生成人设并进行访谈",
+          "step3": "获得全面的洞察和可操作的建议"
+        },
+        "example": {
+          "title": "示例",
+          "text": "研究Z世代在可持续时尚品牌中重视什么"
+        }
+      },
+      "aiPersona": {
+        "title": "AI人设",
+        "value": "构建并互动代表您理想受众的AI人设",
+        "howToUse": {
+          "title": "如何使用",
+          "step1": "创建或导入与目标受众匹配的人设",
+          "step2": "进行访谈以了解他们的偏好和行为",
+          "step3": "使用洞察来调整您的内容策略"
+        },
+        "example": {
+          "title": "示例",
+          "text": "访谈人设以在发布前测试您的内容想法"
+        }
+      },
+      "aiPodcast": {
+        "title": "AI播客",
+        "value": "自动将您的研究转化为引人入胜的播客内容",
+        "howToUse": {
+          "title": "如何使用",
+          "step1": "完成研究或使用现有洞察",
+          "step2": "AI自动生成播客脚本和音频",
+          "step3": "在多个平台上分享您的播客"
+        },
+        "example": {
+          "title": "示例",
+          "text": "将您的市场研究发现转化为播客剧集"
+        }
+      },
+      "imagePlaceholder": "图片占位符 - 在此添加您的功能图片"
+    },
+    "AdvancedCreatorSection": {
+      "badge": "高级工具",
+      "title": "面向高级创作者",
+      "description": "专业级功能，帮助创作者扩大影响力",
+      "contentColumn": {
+        "title": "内容专栏",
+        "description": "通过AI驱动的规划和优化，构建系统化的内容策略",
+        "howToUse": {
+          "title": "如何使用",
+          "step1": "定义您的内容主题和目标",
+          "step2": "AI根据受众洞察建议内容想法",
+          "step3": "规划并安排您的内容日历"
+        }
+      },
+      "differentiation": {
+        "title": "差异化策略",
+        "description": "为您的创作工作识别独特的角度和定位",
+        "howToUse": {
+          "title": "如何使用",
+          "step1": "分析竞争对手内容和市场空白",
+          "step2": "为您的受众发现独特的价值主张",
+          "step3": "发展独特的创作声音"
+        }
+      },
+      "paidContent": {
+        "title": "付费内容规划",
+        "description": "通过数据驱动的洞察优化您的变现策略",
+        "howToUse": {
+          "title": "如何使用",
+          "step1": "研究您的受众愿意为什么付费",
+          "step2": "使用AI人设测试定价策略",
+          "step3": "规划您的付费内容产品"
+        }
+      }
+    },
+    "CTASection": {
+      "title": "准备好转变您的创作流程了吗？",
+      "description": "加入数千名使用AI进行研究、理解受众和创作更好内容的创作者",
+      "ctaButton": "免费开始",
+      "benefit1": {
+        "title": "节省时间",
+        "description": "在几分钟内获得研究和洞察，而不是数周"
+      },
+      "benefit2": {
+        "title": "更好的决策",
+        "description": "数据驱动的洞察指导您的创作选择"
+      },
+      "benefit3": {
+        "title": "更快扩展",
+        "description": "使用AI驱动的工具扩大您的受众和影响力"
+      }
+    }
   }
 }

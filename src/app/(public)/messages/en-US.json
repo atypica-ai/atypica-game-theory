@@ -434,5 +434,128 @@
     "ctaTitle": "Ready to create your own podcast?",
     "ctaDescription": "Start a new research and generate your first AI podcast in minutes.",
     "createMyPodcast": "Create My Podcast"
+  },
+  "CreatorPage": {
+    "HeroSection": {
+      "badge": "For Creators",
+      "title": "Empower Your Creative Journey with AI",
+      "subtitle": "Transform your creative process with AI-powered research, personas, and content generation tools designed for modern creators.",
+      "ctaButton": "Start Creating"
+    },
+    "PainPointSection": {
+      "title": "Challenges Creators Face",
+      "description": "Every creator encounters these obstacles on their journey to success",
+      "point1": {
+        "title": "Finding Your Audience",
+        "description": "Understanding who your content resonates with and how to reach them effectively"
+      },
+      "point2": {
+        "title": "Content Strategy",
+        "description": "Developing a consistent content plan that aligns with your goals and audience needs"
+      },
+      "point3": {
+        "title": "Standing Out",
+        "description": "Differentiating your work in a crowded creative landscape"
+      }
+    },
+    "FeatureSection": {
+      "title": "How Atypica's Different Features Support Creators at Every Stage",
+      "description": "Discover the tools that help creators research, understand audiences, and generate content",
+      "aiResearch": {
+        "title": "AI Research",
+        "value": "Conduct deep market research and audience analysis in minutes",
+        "howToUse": {
+          "title": "How to Use",
+          "step1": "Ask questions about your target audience or market trends",
+          "step2": "AI generates personas and conducts interviews automatically",
+          "step3": "Get comprehensive insights and actionable recommendations"
+        },
+        "example": {
+          "title": "Example",
+          "text": "Research what Gen Z values in sustainable fashion brands"
+        }
+      },
+      "aiPersona": {
+        "title": "AI Persona",
+        "value": "Build and interact with AI personas representing your ideal audience",
+        "howToUse": {
+          "title": "How to Use",
+          "step1": "Create or import personas that match your target audience",
+          "step2": "Conduct interviews to understand their preferences and behaviors",
+          "step3": "Use insights to tailor your content strategy"
+        },
+        "example": {
+          "title": "Example",
+          "text": "Interview personas to test your content ideas before publishing"
+        }
+      },
+      "aiPodcast": {
+        "title": "AI Podcast",
+        "value": "Transform your research into engaging podcast content automatically",
+        "howToUse": {
+          "title": "How to Use",
+          "step1": "Complete a research study or use existing insights",
+          "step2": "AI generates podcast scripts and audio automatically",
+          "step3": "Share your podcast across platforms"
+        },
+        "example": {
+          "title": "Example",
+          "text": "Turn your market research findings into a podcast episode"
+        }
+      },
+      "imagePlaceholder": "Image placeholder - Add your feature image here"
+    },
+    "AdvancedCreatorSection": {
+      "badge": "Advanced Tools",
+      "title": "For Advanced Creators",
+      "description": "Professional-grade features for creators ready to scale their impact",
+      "contentColumn": {
+        "title": "Content Column",
+        "description": "Build a systematic content strategy with AI-powered planning and optimization",
+        "howToUse": {
+          "title": "How to Use",
+          "step1": "Define your content themes and goals",
+          "step2": "AI suggests content ideas based on audience insights",
+          "step3": "Plan and schedule your content calendar"
+        }
+      },
+      "differentiation": {
+        "title": "Differentiation Strategy",
+        "description": "Identify unique angles and positioning for your creative work",
+        "howToUse": {
+          "title": "How to Use",
+          "step1": "Analyze competitor content and market gaps",
+          "step2": "Discover unique value propositions for your audience",
+          "step3": "Develop a distinctive creative voice"
+        }
+      },
+      "paidContent": {
+        "title": "Paid Content Planning",
+        "description": "Optimize your monetization strategy with data-driven insights",
+        "howToUse": {
+          "title": "How to Use",
+          "step1": "Research what your audience is willing to pay for",
+          "step2": "Test pricing strategies with AI personas",
+          "step3": "Plan your paid content offerings"
+        }
+      }
+    },
+    "CTASection": {
+      "title": "Ready to Transform Your Creative Process?",
+      "description": "Join thousands of creators using AI to research, understand audiences, and create better content",
+      "ctaButton": "Get Started Free",
+      "benefit1": {
+        "title": "Save Time",
+        "description": "Research and insights in minutes, not weeks"
+      },
+      "benefit2": {
+        "title": "Better Decisions",
+        "description": "Data-driven insights to guide your creative choices"
+      },
+      "benefit3": {
+        "title": "Scale Faster",
+        "description": "Grow your audience and impact with AI-powered tools"
+      }
+    }
   }
 }
