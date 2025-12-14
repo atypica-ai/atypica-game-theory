@@ -10,7 +10,7 @@ import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { verifyImpersonationLoginToken } from "./impersonationLogin";
-import { authLogger, createPersonalUser, recordLastLogin } from "./lib";
+import { authLogger, createPersonalUser, recordAndTrackLastLogin } from "./lib";
 
 const authOptions: NextAuthOptions = {
   logger: {
@@ -98,7 +98,7 @@ const authOptions: NextAuthOptions = {
           }
           throw new Error("EMAIL_NOT_VERIFIED");
         }
-        recordLastLogin({ userId: user.id, provider: "email-password" });
+        recordAndTrackLastLogin({ userId: user.id, provider: "email-password" });
         return {
           id: user.id,
           name: user.name,
@@ -241,7 +241,7 @@ const authOptions: NextAuthOptions = {
           throw new Error("EMAIL_NOT_VERIFIED");
         }
 
-        recordLastLogin({ userId: targetUser.id, provider: "team-switch" });
+        recordAndTrackLastLogin({ userId: targetUser.id, provider: "team-switch" });
         // 获取显示用的email
         let displayEmail = targetUser.email;
         if (!displayEmail && targetUser.personalUserId) {
@@ -349,7 +349,7 @@ const authOptions: NextAuthOptions = {
         }
         user.userType = "Personal";
         user.teamIdAsMember = null;
-        recordLastLogin({ userId: user.id, provider: "google" });
+        recordAndTrackLastLogin({ userId: user.id, provider: "google" });
       }
       return true;
     },

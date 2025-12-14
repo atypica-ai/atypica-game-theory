@@ -36,34 +36,23 @@ async function _recordLastLogin({
   provider,
 }: {
   userId: number;
-  provider: "email-password" | "impersonation" | "team-switch" | "google";
-}) {
+  provider?: "email-password" | "impersonation" | "team-switch" | "google"; // 注册完会立即调用一次，此时没有 provider
+}): Promise<UserLastLogin | void> {
   try {
     const clientInfo = await authClientInfo();
+    const lastLogin = {
+      ...clientInfo,
+      provider,
+    } satisfies UserLastLogin;
     await prisma.userProfile.update({
       where: { userId },
-      data: {
-        lastLogin: {
-          ...clientInfo,
-          provider,
-        },
-      },
+      data: { lastLogin },
     });
+    return lastLogin;
   } catch (error) {
     // 不抛出异常
     authLogger.error(`Error updating user last login: ${(error as Error).message}`);
   }
-}
-
-export function recordLastLogin({
-  userId,
-  provider,
-}: {
-  userId: number;
-  provider: "email-password" | "impersonation" | "team-switch" | "google";
-}) {
-  // 后台运行，不要 await
-  after(_recordLastLogin({ userId, provider }));
 }
 
 /**
@@ -110,9 +99,23 @@ export async function _recordAcquisition({ userId }: { userId: number }) {
   }
 }
 
-export function recordAcquisition({ userId }: { userId: number }) {
+export function recordAndTrackLastLogin({
+  userId,
+  provider,
+}: {
+  userId: number;
+  provider: "email-password" | "impersonation" | "team-switch" | "google";
+}) {
   // 后台运行，不要 await
-  after(_recordAcquisition({ userId }));
+  after(async () => {
+    const lastLogin = await _recordLastLogin({ userId, provider }).catch(() => {});
+    if (!lastLogin) return; // 如果没有 lastLogin，肯定是哪里出了问题，不上报事件
+    trackEventServerSide({
+      userId,
+      event: "Signed In",
+      properties: { ...lastLogin },
+    });
+  });
 }
 
 export async function createPersonalUser({
@@ -179,7 +182,7 @@ export async function createPersonalUser({
   // waitUntil 和 after 有所不同，waitUntil 接受一个 Promise，after 接受一个 Promise 或者有一个返回 Promise 的方法（会先调用这个方法）
   after(async () => {
     await Promise.all([
-      _recordLastLogin({ userId: user.id, provider: "email-password" }),
+      _recordLastLogin({ userId: user.id }),
       _recordAcquisition({ userId: user.id }), // 保存 UTM、Referer 和 Tolt，如有 Tolt 会自动调用 API 追踪
     ]).catch(() => {});
     trackUserServerSide({
@@ -232,7 +235,7 @@ export async function createTeamMemberUser({
   //   },
   // });
 
-  recordLastLogin({ userId: teamUser.id, provider: "team-switch" });
+  recordAndTrackLastLogin({ userId: teamUser.id, provider: "team-switch" });
 
   return teamUser as Omit<User, "teamIdAsMember" | "personalUserId"> & {
     teamIdAsMember: number;
