@@ -1,6 +1,17 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Image from "next/image";
+
+// Content transformation infographic prompt
+const outputPrompt = `
+Dynamic infographic: "1 RESEARCH → 10+ OUTPUTS" transformation flow.
+Show: Large "1" on left (research input) flowing to "10+" on right (multiple outputs). Visual flow arrows. Output types labeled: "ARTICLE", "PODCAST SCRIPT", "SOCIAL POSTS", "VIDEO OUTLINE".
+Information: Display "80% TIME SAVED" metric, "MULTI-FORMAT" badge, content type icons with quantities.
+Colors: Warm coral/orange gradient with teal accents. Bold yellow highlights for metrics.
+Style: Modern infographic with oversized numbers, bold labels, flow diagrams. Eye-catching for social sharing.
+Mood: Productive, transformative, exciting for content creators.
+`;
 
 export function TurnResearchSectionV3() {
   const t = useTranslations("CreatorPage.TurnResearchSection");
@@ -28,7 +39,7 @@ export function TurnResearchSectionV3() {
           <h3 className="text-2xl font-bold mb-8 text-zinc-900 dark:text-white">
             {t("outputs.title")}
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
             <div className="flex items-start gap-4">
               <span className="text-4xl">📝</span>
               <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
@@ -42,6 +53,18 @@ export function TurnResearchSectionV3() {
               </p>
             </div>
           </div>
+
+          {/* Content transformation illustration */}
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
+            <Image
+              loader={({ src }) => src}
+              src={`/api/imagegen/dev/${encodeURIComponent(outputPrompt)}?ratio=landscape`}
+              alt="Content transformation process"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 1200px"
+            />
+          </div>
         </div>
 
         {/* Ideal For */}
@@ -52,19 +75,27 @@ export function TurnResearchSectionV3() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
-              <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("idealFor.type1")}</span>
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                {t("idealFor.type1")}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
-              <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("idealFor.type2")}</span>
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                {t("idealFor.type2")}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
-              <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("idealFor.type3")}</span>
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                {t("idealFor.type3")}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
-              <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("idealFor.type4")}</span>
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                {t("idealFor.type4")}
+              </span>
             </div>
           </div>
         </div>
@@ -77,23 +108,33 @@ export function TurnResearchSectionV3() {
           <ul className="space-y-4 max-w-4xl">
             <li className="flex items-start gap-3">
               <span className="text-brand-green font-semibold text-lg">→</span>
-              <span className="text-base text-zinc-700 dark:text-zinc-300">{t("reuseOptions.option1")}</span>
+              <span className="text-base text-zinc-700 dark:text-zinc-300">
+                {t("reuseOptions.option1")}
+              </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-brand-green font-semibold text-lg">→</span>
-              <span className="text-base text-zinc-700 dark:text-zinc-300">{t("reuseOptions.option2")}</span>
+              <span className="text-base text-zinc-700 dark:text-zinc-300">
+                {t("reuseOptions.option2")}
+              </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-brand-green font-semibold text-lg">→</span>
-              <span className="text-base text-zinc-700 dark:text-zinc-300">{t("reuseOptions.option3")}</span>
+              <span className="text-base text-zinc-700 dark:text-zinc-300">
+                {t("reuseOptions.option3")}
+              </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-brand-green font-semibold text-lg">→</span>
-              <span className="text-base text-zinc-700 dark:text-zinc-300">{t("reuseOptions.option4")}</span>
+              <span className="text-base text-zinc-700 dark:text-zinc-300">
+                {t("reuseOptions.option4")}
+              </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-brand-green font-semibold text-lg">→</span>
-              <span className="text-base text-zinc-700 dark:text-zinc-300">{t("reuseOptions.option5")}</span>
+              <span className="text-base text-zinc-700 dark:text-zinc-300">
+                {t("reuseOptions.option5")}
+              </span>
             </li>
           </ul>
         </div>

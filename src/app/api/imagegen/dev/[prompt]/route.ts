@@ -37,7 +37,10 @@ async function syncToS3MultipleRegions({
 
 export async function GET(req: Request, { params }: { params: Promise<{ prompt: string }> }) {
   const { prompt } = await params;
-  const ratio = "square";
+  const url = new URL(req.url);
+  const ratioParam = url.searchParams.get("ratio");
+  const ratio: "square" | "landscape" | "portrait" =
+    ratioParam === "landscape" || ratioParam === "portrait" ? ratioParam : "square";
 
   const promptHash = createHash("sha256")
     .update(JSON.stringify({ prompt, ratio }))
@@ -88,7 +91,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
 
   const result = await generateDevImage({
     prompt,
-    ratio: "square",
+    ratio,
     promptHash,
   });
 

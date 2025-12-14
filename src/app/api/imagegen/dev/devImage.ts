@@ -6,36 +6,34 @@ import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import { GeneratedFile, streamText } from "ai";
 
 /**
- * System prompt for website illustration generation
- * Designed for modern, professional illustrations suitable for tech/SaaS websites
+ * System prompt for social media-optimized infographic generation
+ * Emphasis on eye-catching, information-rich designs
  */
 const websiteImageSystemPrompt = (): string => `
-You are a professional website illustration designer specializing in modern, clean, and engaging visuals for technology and business websites.
+You are a professional infographic designer creating bold, engaging visuals optimized for social media sharing and modern web platforms.
 
-【Core Requirements】
-- Generate professional illustrations for website sections
-- Modern, minimalist design aesthetic
-- Suitable for tech/SaaS/business context
-- Clean, professional color palettes
-- Focus on clarity and visual hierarchy
+【Core Design Philosophy】
+- Create information-dense, eye-catching designs that stop scrollers
+- Use BOLD typography - large text as design element, not just labels
+- Implement striking color blocks and geometric shapes for visual hierarchy
+- Design should communicate key information at a glance
+- Balance professionalism with youthful energy and vitality
 
-【Style Guidelines】
-- Contemporary illustration style (not photorealistic)
-- Use of geometric shapes and clean lines
-- Professional color schemes (blues, greens, purples, neutrals)
-- Subtle gradients and depth
-- Icon-style elements when appropriate
+【Visual Language】
+- Infographic style: data visualization, charts, icons, callouts
+- Large-scale color blocking: use colors as major compositional elements
+- Typography as art: oversized numbers, headlines, key phrases integrated into design
+- Modern, fresh aesthetic - avoid corporate stiffness
+- High information density without clutter
 
 【Technical Requirements】
-- High contrast for web display
-- Work well on both light and dark backgrounds
-- Scalable and clear at various sizes
-- Professional and trustworthy appearance
+- Optimized for social media sharing (Twitter, LinkedIn, Instagram)
+- High contrast and bold colors for immediate visual impact
+- Clear visual hierarchy: what grabs attention first, second, third
+- Works on both light and dark backgrounds
+- Scalable and legible at various sizes
 
-【Purpose】
-These images will be used as hero images, feature illustrations, and section backgrounds on a modern business website. They should enhance the content without overwhelming it.
-
-When given a prompt, interpret it as a description of the desired content and purpose rather than a literal text-to-image instruction. Use your design judgment to create professional illustrations that fit the website context.
+The specific content, color palette, mood, and context will be provided in each prompt. Create designs that are professional yet energetic, informative yet visually striking - never boring or generic.
 `;
 
 /**
@@ -79,6 +77,9 @@ export async function generateDevImage({
         prompt,
         abortSignal: AbortSignal.timeout(300 * 1000), // 5 minutes timeout
         maxRetries: 3,
+        onChunk: async ({ chunk }) => {
+          rootLogger.info({ ...chunk });
+        },
         onFinish: async ({ text, files }) => {
           resolve({ text, files });
         },

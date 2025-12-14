@@ -4,20 +4,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-// Hero image prompt - reasoning-based for Gemini 2.5 Flash
-const heroImagePrompt = `
-Create a hero illustration for a creator-focused AI research platform.
-Show: Modern content creation workspace with elements like microphone, video camera, writing tools, and laptop.
-Include AI assistance visualization through subtle brain icon, sparkles, and connection lines between tools.
-Purpose: Convey that this platform empowers creators with AI-powered research and audience insights.
-Style: Clean, professional, energetic with vibrant brand green (#18FF19) accents.
-Mood: Professional yet creative, innovative and empowering.
-Technical: High contrast, works on light background, modern illustration style.
-`;
 
 export function HeroSectionV3() {
   const t = useTranslations("CreatorPage.HeroSection");
@@ -71,27 +59,6 @@ export function HeroSectionV3() {
         >
           {t("subtitle")}
         </p>
-
-        {/* Hero Image - Test Gemini 2.5 Flash generation */}
-        <div
-          className={cn(
-            "relative w-full aspect-video mb-16 rounded-2xl overflow-hidden",
-            "border border-zinc-200 dark:border-zinc-800",
-            "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
-          )}
-          style={{ transitionDelay: "0.25s" }}
-        >
-          <Image
-            loader={({ src }) => src}
-            src={`/api/imagegen/dev/${encodeURIComponent(heroImagePrompt)}`}
-            alt="AI-powered creator research platform"
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 1200px"
-            priority
-          />
-        </div>
 
         {/* Pain Points - minimal design with brand green accent */}
         <div

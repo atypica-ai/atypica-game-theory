@@ -1,6 +1,17 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Image from "next/image";
+
+// Content planning infographic prompt
+const planningPrompt = `
+Bold infographic: "PLAN SMARTER" content strategy system.
+Show: Large "30 DAYS" headline, visual content calendar grid with colorful topic clusters, "3 AUDIENCE SEGMENTS" with icons, "5X ENGAGEMENT" metric callout.
+Information: Display planning workflow with numbered steps (1→2→3), data points, progress indicators.
+Colors: Vibrant purple and electric blue blocks with white text. High contrast geometric sections.
+Style: Modern infographic - bold typography, data visualization, clean icons. Social media ready.
+Mood: Energetic, strategic, empowering for creators.
+`;
 
 export function PlanSmarterSectionV3() {
   const t = useTranslations("CreatorPage.PlanSmarterSection");
@@ -34,9 +45,21 @@ export function PlanSmarterSectionV3() {
               <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">
                 {t("useCase1.title")}
               </h3>
-              <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-6 leading-relaxed">
+              <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-8 leading-relaxed">
                 {t("useCase1.description")}
               </p>
+
+              {/* Planning illustration */}
+              <div className="relative w-full aspect-video mb-8 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
+                <Image
+                  loader={({ src }) => src}
+                  src={`/api/imagegen/dev/${encodeURIComponent(planningPrompt)}?ratio=landscape`}
+                  alt="Content planning workspace"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 800px"
+                />
+              </div>
 
               <div className="space-y-3 mb-6">
                 <p className="text-sm text-zinc-500 dark:text-zinc-500 italic">
@@ -51,9 +74,7 @@ export function PlanSmarterSectionV3() {
                 <p className="text-xs font-semibold tracking-wider uppercase text-brand-green mb-2">
                   Output
                 </p>
-                <p className="text-sm text-zinc-700 dark:text-zinc-300">
-                  {t("useCase1.output")}
-                </p>
+                <p className="text-sm text-zinc-700 dark:text-zinc-300">{t("useCase1.output")}</p>
               </div>
             </div>
           </div>
@@ -74,19 +95,27 @@ export function PlanSmarterSectionV3() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("useCase2.point1")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("useCase2.point1")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("useCase2.point2")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("useCase2.point2")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("useCase2.point3")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("useCase2.point3")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("useCase2.point4")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("useCase2.point4")}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -118,9 +147,7 @@ export function PlanSmarterSectionV3() {
                 <p className="text-xs font-semibold tracking-wider uppercase text-brand-green mb-2">
                   Output
                 </p>
-                <p className="text-sm text-zinc-700 dark:text-zinc-300">
-                  {t("useCase3.output")}
-                </p>
+                <p className="text-sm text-zinc-700 dark:text-zinc-300">{t("useCase3.output")}</p>
               </div>
             </div>
           </div>
@@ -166,15 +193,21 @@ export function PlanSmarterSectionV3() {
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-3">
                   <span className="text-brand-green font-semibold">→</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-white">{t("realExample.output1")}</span>
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                    {t("realExample.output1")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-brand-green font-semibold">→</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-white">{t("realExample.output2")}</span>
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                    {t("realExample.output2")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-brand-green font-semibold">→</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-white">{t("realExample.output3")}</span>
+                  <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                    {t("realExample.output3")}
+                  </span>
                 </li>
               </ul>
 
