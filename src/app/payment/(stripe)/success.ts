@@ -161,7 +161,7 @@ export async function handleUserSubscriptionPaymentSuccess({
   trackUserServerSide({
     userId,
     traitTypes: ["revenue"],
-  }).catch(() => {});
+  });
 }
 
 export async function handleRechargePaymentSuccess({
@@ -189,5 +189,5 @@ export async function handleRechargePaymentSuccess({
   trackUserServerSide({
     userId,
     traitTypes: ["revenue"],
-  }).catch(() => {});
+  });
 }

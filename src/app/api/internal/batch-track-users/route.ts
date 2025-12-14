@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     // 遍历每个用户，调用 trackUserServerSide
     for (const user of users) {
       try {
-        await trackUserServerSide({ userId: user.id, traitTypes });
+        trackUserServerSide({ userId: user.id, traitTypes });
         successCount++;
         logger.debug({ msg: `Successfully tracked user`, userId: user.id });
 

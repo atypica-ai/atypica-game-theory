@@ -109,10 +109,7 @@ async function _trackEventServerSide<E extends keyof TAnalyticsEvent, T extends 
   }
 }
 
-export async function trackEventServerSide<
-  E extends keyof TAnalyticsEvent,
-  T extends TAnalyticsEvent[E],
->(
+export function trackEventServerSide<E extends keyof TAnalyticsEvent, T extends TAnalyticsEvent[E]>(
   args: {
     user: Pick<User, "id" | "name" | "email" | "createdAt"> & {};
     userProfile: Pick<UserProfile, "extra" | "lastLogin">;
@@ -120,21 +117,15 @@ export async function trackEventServerSide<
   } & (T extends undefined
     ? { properties?: undefined } // undefined 时可选
     : { properties: T }), // 有值时必填
-): Promise<void>;
+): void;
 
-export async function trackEventServerSide<
-  E extends keyof TAnalyticsEvent,
-  T extends TAnalyticsEvent[E],
->(
+export function trackEventServerSide<E extends keyof TAnalyticsEvent, T extends TAnalyticsEvent[E]>(
   args: { userId: number; event: E } & (T extends undefined
     ? { properties?: undefined } // undefined 时可选
     : { properties: T }), // 有值时必填
-): Promise<void>;
+): void;
 
-export async function trackEventServerSide<
-  E extends keyof TAnalyticsEvent,
-  T extends TAnalyticsEvent[E],
->(
+export function trackEventServerSide<E extends keyof TAnalyticsEvent, T extends TAnalyticsEvent[E]>(
   args: {
     user?: Pick<User, "id" | "name" | "email" | "createdAt">;
     userProfile?: Pick<UserProfile, "extra" | "lastLogin">;
@@ -392,18 +383,18 @@ async function _trackUserServerSide({
   }
 }
 
-export async function trackUserServerSide(args: {
+export function trackUserServerSide(args: {
   user: Pick<User, "id" | "name" | "email" | "createdAt"> & {};
   userProfile: Pick<UserProfile, "extra" | "onboarding" | "lastLogin">;
   traitTypes: UserTraitType[] | "all";
-}): Promise<void>;
+}): void;
 
-export async function trackUserServerSide(args: {
+export function trackUserServerSide(args: {
   userId: number;
   traitTypes: UserTraitType[] | "all";
-}): Promise<void>;
+}): void;
 
-export async function trackUserServerSide(args: {
+export function trackUserServerSide(args: {
   user?: Pick<User, "id" | "name" | "email" | "createdAt">;
   userProfile?: Pick<UserProfile, "extra" | "onboarding" | "lastLogin">;
   userId?: number;

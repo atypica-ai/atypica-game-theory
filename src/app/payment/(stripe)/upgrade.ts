@@ -213,5 +213,5 @@ export async function createProToMaxInvoice({ userId }: { userId: number }) {
   trackUserServerSide({
     userId,
     traitTypes: ["revenue"],
-  }).catch(() => {});
+  });
 }
