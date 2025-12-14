@@ -8,7 +8,7 @@ import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import type { Sage, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { after } from "node:test";
+import { after } from "next/server";
 import z from "zod";
 
 /**

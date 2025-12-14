@@ -97,7 +97,7 @@ export function NewStudyChatClient({
       }
     }
     return "";
-  }, [messages, t, trackStudyBriefUpdated]);
+  }, [messages, trackStudyBriefUpdated]);
 
   // Automatically start the conversation when the component mounts.
   const requestSentRef = useRef(false);
