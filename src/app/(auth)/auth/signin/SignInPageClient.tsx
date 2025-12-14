@@ -9,15 +9,13 @@ import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { signInWithEmail } from "./client";
 
-export function SignInClient() {
+export function SignInPageClient({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const t = useTranslations("Auth.SignIn");
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +27,7 @@ export function SignInClient() {
     if (typeof window !== "undefined") {
       setIsWechat(window.navigator.userAgent.toLowerCase().includes("micromessenger"));
     }
-  }, [searchParams, router, callbackUrl]);
+  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

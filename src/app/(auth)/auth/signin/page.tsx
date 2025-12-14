@@ -1,11 +1,11 @@
-import { PageLoadingFallback } from "@/components/PageLoadingFallback";
-import { Suspense } from "react";
-import { SignInClient } from "./SignInClient";
+import { cleanAuthCallbackUrl } from "@/app/(auth)/lib";
+import { SignInPageClient } from "./SignInPageClient";
 
-export default function SignInPageWithLoading() {
-  return (
-    <Suspense fallback={<PageLoadingFallback />}>
-      <SignInClient />
-    </Suspense>
-  );
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+  return <SignInPageClient callbackUrl={cleanAuthCallbackUrl(callbackUrl || "/")} />;
 }

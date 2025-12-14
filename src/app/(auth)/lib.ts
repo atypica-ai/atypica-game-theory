@@ -241,6 +241,38 @@ export async function createTeamMemberUser({
 }
 
 /**
+ * 清理认证回调 URL，确保只返回路径部分，防止开放重定向攻击
+ * @param url - 原始回调 URL
+ * @returns 清理后的相对路径（以 / 开头）
+ * @example
+ * cleanAuthCallbackUrl("https://evil.com/path") // => "/path"
+ * cleanAuthCallbackUrl("/account") // => "/account"
+ * cleanAuthCallbackUrl("account") // => "/account"
+ * cleanAuthCallbackUrl("") // => "/"
+ */
+export function cleanAuthCallbackUrl(url: string): string {
+  // 空字符串或 falsy 值，返回默认路径
+  if (!url || !url.trim()) return "/";
+  url = url.trim();
+  // 如果包含协议（http:// 或 https:// 或 //），解析并只取路径
+  if (url.includes("://") || url.startsWith("//")) {
+    try {
+      // 对于 // 开头的协议相对 URL，补充协议
+      const urlToParse = url.startsWith("//") ? `https:${url}` : url;
+      const parsed = new URL(urlToParse);
+      // 只返回路径部分（pathname + search + hash）
+      const cleanPath = parsed.pathname + parsed.search + parsed.hash;
+      return cleanPath || "/";
+    } catch {
+      // 解析失败，返回默认路径
+      return "/";
+    }
+  }
+  // 已经是相对路径，确保以 / 开头
+  return url.startsWith("/") ? url : `/${url}`;
+}
+
+/**
  * 迁移阶段，在更新 lastLogin, onboarding, extra 的时候，需要先调用 upsertUserProfile
  * 一段时间已有，当所有用户都在创建的时候有了 profile，这部分可以删除
  */
