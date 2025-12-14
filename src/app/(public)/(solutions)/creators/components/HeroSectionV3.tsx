@@ -4,8 +4,20 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+// Hero image prompt - reasoning-based for Gemini 2.5 Flash
+const heroImagePrompt = `
+Create a hero illustration for a creator-focused AI research platform.
+Show: Modern content creation workspace with elements like microphone, video camera, writing tools, and laptop.
+Include AI assistance visualization through subtle brain icon, sparkles, and connection lines between tools.
+Purpose: Convey that this platform empowers creators with AI-powered research and audience insights.
+Style: Clean, professional, energetic with vibrant brand green (#18FF19) accents.
+Mood: Professional yet creative, innovative and empowering.
+Technical: High contrast, works on light background, modern illustration style.
+`;
 
 export function HeroSectionV3() {
   const t = useTranslations("CreatorPage.HeroSection");
@@ -15,12 +27,7 @@ export function HeroSectionV3() {
     setIsVisible(true);
   }, []);
 
-  const painPoints = [
-    t("painPoint1"),
-    t("painPoint2"),
-    t("painPoint3"),
-    t("painPoint4"),
-  ];
+  const painPoints = [t("painPoint1"), t("painPoint2"), t("painPoint3"), t("painPoint4")];
 
   return (
     <section className="py-32 md:py-40 bg-white dark:bg-zinc-950">
@@ -29,7 +36,7 @@ export function HeroSectionV3() {
         <div
           className={cn(
             "mb-8 transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4",
           )}
         >
           <p className="text-sm font-medium tracking-wider uppercase text-zinc-500 dark:text-zinc-400">
@@ -45,7 +52,7 @@ export function HeroSectionV3() {
             "tracking-tight leading-[0.95] mb-8",
             "text-zinc-900 dark:text-white",
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.1s" }}
         >
@@ -58,29 +65,47 @@ export function HeroSectionV3() {
             "text-xl md:text-2xl leading-relaxed mb-16 max-w-4xl",
             "text-zinc-600 dark:text-zinc-400",
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.2s" }}
         >
           {t("subtitle")}
         </p>
 
+        {/* Hero Image - Test Gemini 2.5 Flash generation */}
+        <div
+          className={cn(
+            "relative w-full aspect-video mb-16 rounded-2xl overflow-hidden",
+            "border border-zinc-200 dark:border-zinc-800",
+            "transition-all duration-700",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
+          )}
+          style={{ transitionDelay: "0.25s" }}
+        >
+          <Image
+            loader={({ src }) => src}
+            src={`/api/imagegen/dev/${encodeURIComponent(heroImagePrompt)}`}
+            alt="AI-powered creator research platform"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 1200px"
+            priority
+          />
+        </div>
+
         {/* Pain Points - minimal design with brand green accent */}
         <div
           className={cn(
             "mb-12 max-w-3xl",
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.3s" }}
         >
           <div className="space-y-4">
             {painPoints.map((point, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-4 group"
-              >
-                <div className="flex-shrink-0 w-1 h-1 mt-3 bg-brand-green rounded-full" />
+              <div key={index} className="flex items-start gap-4 group">
+                <div className="shrink-0 w-1 h-1 mt-3 bg-brand-green rounded-full" />
                 <p className="text-base md:text-lg text-zinc-700 dark:text-zinc-300 leading-relaxed group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                   {point}
                 </p>
@@ -94,7 +119,7 @@ export function HeroSectionV3() {
           className={cn(
             "mb-8 max-w-4xl",
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.4s" }}
         >
@@ -109,7 +134,7 @@ export function HeroSectionV3() {
             "text-base md:text-lg mb-12 max-w-3xl",
             "text-zinc-600 dark:text-zinc-400",
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.5s" }}
         >
@@ -120,7 +145,7 @@ export function HeroSectionV3() {
         <div
           className={cn(
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.6s" }}
         >
@@ -129,7 +154,7 @@ export function HeroSectionV3() {
             className={cn(
               "rounded-full h-14 px-10 text-base font-semibold",
               "bg-brand-green hover:brightness-95 text-zinc-900",
-              "transition-all duration-200 group"
+              "transition-all duration-200 group",
             )}
             asChild
           >

@@ -1,9 +1,9 @@
-import { generateGPTImage } from "@/app/(study)/artifacts/lib/imagegen";
 import { AWS_S3_CONFIG } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { createHash } from "crypto";
+import { generateDevImage } from "../devImage";
 
 async function syncToS3MultipleRegions({
   fileBody,
@@ -64,7 +64,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
   }
 
   // 还没生成过，继续后面的流程，生成图片
-  console.log(`Image ${s3Key} not found, continue to generate`);
+  rootLogger.info(`Image ${s3Key} not found, continue to generate`);
   if (process.env.NODE_ENV !== "development") {
     throw new Error("dev imagegen api is only available in development mode");
   }
@@ -86,28 +86,26 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
   //   return response;
   // }
 
-  const result = await generateGPTImage({
+  const result = await generateDevImage({
     prompt,
     ratio: "square",
     promptHash,
-    genLog: rootLogger,
   });
 
-  const { getObjectUrl } = result;
-  const imageResponse = await fetch(getObjectUrl);
-  const imageBuffer = await imageResponse.arrayBuffer();
-  // await fs.promises.writeFile(fileFullPath, Buffer.from(imageBuffer));
+  const { uint8Array, mediaType } = result;
+  const imageBuffer = Buffer.from(uint8Array);
 
+  // Upload directly to public S3 (no intermediate download needed)
   await syncToS3MultipleRegions({
-    fileBody: Buffer.from(imageBuffer),
-    mimeType: "image/png",
+    fileBody: imageBuffer,
+    mimeType: mediaType,
     key: s3Key,
   });
 
-  const response = new Response(Buffer.from(imageBuffer), {
+  const response = new Response(imageBuffer, {
     headers: {
-      "Content-Type": "image/png",
-      "Content-Length": imageBuffer.byteLength.toString(),
+      "Content-Type": mediaType,
+      "Content-Length": imageBuffer.length.toString(),
     },
   });
   return response;
