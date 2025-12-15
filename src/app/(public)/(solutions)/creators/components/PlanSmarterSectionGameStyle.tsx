@@ -116,11 +116,11 @@ export function PlanSmarterSectionGameStyle() {
           </span>
         </div>
 
-        <h2 className="font-EuclidCircularA font-bold text-4xl md:text-5xl lg:text-6xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-4 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 
-        <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-16 max-w-4xl leading-relaxed">
+        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-12 max-w-3xl leading-relaxed">
           {t("subtitle")}
         </p>
 
@@ -184,10 +184,10 @@ export function PlanSmarterSectionGameStyle() {
               </div>
 
               {/* 标题和描述 */}
-              <h3 className="text-xl font-bold mb-3 text-zinc-900 dark:text-white">
+              <h3 className="text-lg font-bold mb-2 text-zinc-900 dark:text-white">
                 {t(`useCase${index + 1}.title`)}
               </h3>
-              <p className="text-sm text-zinc-700 dark:text-zinc-300 mb-4 leading-relaxed">
+              <p className="text-xs text-zinc-700 dark:text-zinc-300 mb-3 leading-relaxed">
                 {t(`useCase${index + 1}.description`)}
               </p>
 
@@ -251,14 +251,14 @@ export function PlanSmarterSectionGameStyle() {
               >
                 WORKFLOW VISUALIZATION
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">
+              <h3 className="text-xl md:text-2xl font-bold mb-3 text-zinc-900 dark:text-white">
                 Visual Content Planning
               </h3>
-              <p className="text-base text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
                 See your entire content calendar at a glance. Drag-and-drop scheduling with
                 AI-powered suggestions for optimal posting times.
               </p>
-              <ul className="space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
+              <ul className="space-y-2 text-xs text-zinc-700 dark:text-zinc-300">
                 <li className="flex items-start gap-3">
                   <span style={{ color: "#a855f7" }}>✓</span>
                   <span>4-week planning view with color-coded content types</span>
@@ -318,14 +318,14 @@ export function PlanSmarterSectionGameStyle() {
               >
                 AUDIENCE INTELLIGENCE
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">
+              <h3 className="text-xl md:text-2xl font-bold mb-3 text-zinc-900 dark:text-white">
                 Deep Audience Understanding
               </h3>
-              <p className="text-base text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
                 Get detailed persona profiles with demographic data, interests, and engagement
                 patterns. Match your content to your audience with 85%+ accuracy.
               </p>
-              <ul className="space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
+              <ul className="space-y-2 text-xs text-zinc-700 dark:text-zinc-300">
                 <li className="flex items-start gap-3">
                   <span style={{ color: "#3b82f6" }}>✓</span>
                   <span>AI-generated persona cards with verified characteristics</span>
@@ -351,14 +351,14 @@ export function PlanSmarterSectionGameStyle() {
               >
                 GROWTH TRACKING
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">
+              <h3 className="text-xl md:text-2xl font-bold mb-3 text-zinc-900 dark:text-white">
                 Track What Works
               </h3>
-              <p className="text-base text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
                 Real-time analytics showing content performance, trending topics, and growth metrics.
                 Identify your viral content patterns.
               </p>
-              <ul className="space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
+              <ul className="space-y-2 text-xs text-zinc-700 dark:text-zinc-300">
                 <li className="flex items-start gap-3">
                   <span style={{ color: "#18FF19" }}>✓</span>
                   <span>Growth percentage tracking with historical comparison</span>

@@ -88,11 +88,11 @@ export function TurnResearchSectionGameStyle() {
           </span>
         </div>
 
-        <h2 className="font-EuclidCircularA font-bold text-4xl md:text-5xl lg:text-6xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-4 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 
-        <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-20 max-w-4xl leading-relaxed">
+        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-12 max-w-3xl leading-relaxed">
           {t("subtitle")}
         </p>
 
@@ -104,10 +104,10 @@ export function TurnResearchSectionGameStyle() {
               background: "linear-gradient(135deg, #ff6b35, #14b8a6)",
             }}
           >
-            <div className="bg-white dark:bg-zinc-900 p-8 md:p-12 rounded-2xl">
-              <div className="flex items-center justify-center gap-6 md:gap-10 flex-wrap">
+            <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-2xl">
+              <div className="flex items-center justify-center gap-4 md:gap-6 flex-wrap">
                 <div
-                  className="text-7xl md:text-8xl font-bold"
+                  className="text-5xl md:text-6xl font-bold"
                   style={{
                     color: "#ff6b35",
                     textShadow: "0 0 30px rgba(255, 107, 53, 0.5)",
@@ -115,9 +115,9 @@ export function TurnResearchSectionGameStyle() {
                 >
                   1
                 </div>
-                <div className="text-5xl md:text-6xl text-zinc-400">→</div>
+                <div className="text-4xl md:text-5xl text-zinc-400">→</div>
                 <div
-                  className="text-7xl md:text-8xl font-bold"
+                  className="text-5xl md:text-6xl font-bold"
                   style={{
                     color: "#14b8a6",
                     textShadow: "0 0 30px rgba(20, 184, 166, 0.5)",
@@ -125,11 +125,11 @@ export function TurnResearchSectionGameStyle() {
                 >
                   10+
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <div className="ml-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Research
                   </p>
-                  <p className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white">
+                  <p className="text-lg md:text-xl font-bold text-zinc-900 dark:text-white">
                     Multiple Outputs
                   </p>
                 </div>

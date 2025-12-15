@@ -44,24 +44,24 @@ export function AskAudienceSectionGameStyle() {
           </span>
         </div>
 
-        <h2 className="font-EuclidCircularA font-bold text-4xl md:text-5xl lg:text-6xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-4 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 
-        <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-12 max-w-4xl leading-relaxed">
+        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-10 max-w-3xl leading-relaxed">
           {t("subtitle")}
         </p>
 
         {/* 价值主张 - 醒目强调 */}
         <div
-          className="mb-20 p-8 md:p-12 rounded-3xl mx-auto max-w-4xl relative overflow-hidden"
+          className="mb-16 p-6 md:p-8 rounded-2xl mx-auto max-w-3xl relative overflow-hidden"
           style={{
             background: "linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(168, 85, 247, 0.08))",
             border: "2px solid rgba(59, 130, 246, 0.2)",
             boxShadow: "0 8px 32px rgba(59, 130, 246, 0.15)",
           }}
         >
-          <p className="text-2xl md:text-3xl font-bold text-center text-zinc-900 dark:text-white leading-tight">
+          <p className="text-lg md:text-xl font-bold text-center text-zinc-900 dark:text-white leading-tight">
             {t("value")}
           </p>
 

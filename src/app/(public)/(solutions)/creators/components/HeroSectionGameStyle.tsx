@@ -60,11 +60,11 @@ export function HeroSectionGameStyle() {
         </div>
 
         {/* 主标题 - 带粒子轨道装饰 */}
-        <div className="relative mb-8">
+        <div className="relative mb-6">
           <h1
             className={cn(
               "font-EuclidCircularA font-bold text-center",
-              "text-4xl sm:text-5xl md:text-6xl lg:text-7xl",
+              "text-3xl sm:text-4xl md:text-5xl lg:text-6xl",
               "tracking-tight leading-[1.1]",
               "bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 dark:from-white dark:via-zinc-100 dark:to-white",
               "bg-clip-text text-transparent",
@@ -116,7 +116,7 @@ export function HeroSectionGameStyle() {
         {/* 副标题 */}
         <p
           className={cn(
-            "text-center text-lg md:text-xl max-w-4xl mx-auto mb-12",
+            "text-center text-base md:text-lg max-w-3xl mx-auto mb-10",
             "text-zinc-600 dark:text-zinc-400",
             "transition-all duration-700",
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
@@ -129,7 +129,7 @@ export function HeroSectionGameStyle() {
         {/* 痛点 - 游戏化卡片 */}
         <div
           className={cn(
-            "grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto mb-12",
+            "grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto mb-10",
             "transition-all duration-700",
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}
@@ -138,24 +138,24 @@ export function HeroSectionGameStyle() {
           {painPoints.map((point, index) => (
             <div
               key={index}
-              className="group relative p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-[#18FF19] dark:hover:border-[#18FF19] transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-default"
+              className="group relative p-3 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-[#18FF19] dark:hover:border-[#18FF19] transition-all duration-300 hover:scale-105 hover:shadow-lg cursor-default"
               style={{
                 boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
               }}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2.5">
                 <div
-                  className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5"
+                  className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5"
                   style={{
                     background: "rgba(24, 255, 25, 0.1)",
                     border: "2px solid rgba(24, 255, 25, 0.3)",
                   }}
                 >
-                  <span className="text-xs font-bold" style={{ color: "#18FF19" }}>
+                  <span className="text-[10px] font-bold" style={{ color: "#18FF19" }}>
                     {index + 1}
                   </span>
                 </div>
-                <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                   {point}
                 </p>
               </div>
@@ -175,7 +175,7 @@ export function HeroSectionGameStyle() {
         {/* 价值主张 - 强调块 */}
         <div
           className={cn(
-            "max-w-4xl mx-auto mb-12 p-6 rounded-2xl relative overflow-hidden",
+            "max-w-3xl mx-auto mb-8 p-5 rounded-xl relative overflow-hidden",
             "transition-all duration-700",
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}
@@ -185,7 +185,7 @@ export function HeroSectionGameStyle() {
             border: "1px solid rgba(24, 255, 25, 0.2)",
           }}
         >
-          <p className="text-lg md:text-xl font-semibold text-center text-zinc-900 dark:text-white leading-relaxed">
+          <p className="text-base md:text-lg font-semibold text-center text-zinc-900 dark:text-white leading-relaxed">
             {t("value")}
           </p>
 
@@ -203,7 +203,7 @@ export function HeroSectionGameStyle() {
         {/* Tagline */}
         <p
           className={cn(
-            "text-center text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-10 max-w-3xl mx-auto",
+            "text-center text-sm md:text-base text-zinc-600 dark:text-zinc-400 mb-8 max-w-2xl mx-auto",
             "transition-all duration-700",
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}
@@ -223,7 +223,7 @@ export function HeroSectionGameStyle() {
           <Button
             size="lg"
             className={cn(
-              "rounded-full h-14 px-10 text-base font-semibold",
+              "rounded-full h-12 px-8 text-sm font-semibold",
               "hover:scale-105 active:scale-95 transition-all duration-200 group",
               "relative overflow-hidden"
             )}

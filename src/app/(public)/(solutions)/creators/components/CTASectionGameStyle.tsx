@@ -47,9 +47,9 @@ export function CTASectionGameStyle() {
 
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* 醒目标题组 */}
-        <div className="mb-20 max-w-5xl">
+        <div className="mb-12 max-w-4xl">
           <h2
-            className="font-EuclidCircularA font-bold text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[0.95] mb-8"
+            className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-[0.95] mb-6"
             style={{
               textShadow: "0 0 60px rgba(255, 255, 255, 0.3)",
             }}
@@ -58,7 +58,7 @@ export function CTASectionGameStyle() {
           </h2>
 
           <p
-            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight"
+            className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 leading-tight"
             style={{
               color: "#18FF19",
               textShadow: "0 0 40px rgba(24, 255, 25, 0.6)",
@@ -67,32 +67,32 @@ export function CTASectionGameStyle() {
             {t("subheadline")}
           </p>
 
-          <p className="text-xl md:text-2xl text-zinc-400 max-w-3xl">
+          <p className="text-base md:text-lg text-zinc-400 max-w-2xl">
             {t("tagline")}
           </p>
         </div>
 
         {/* 主要价值标题 */}
-        <h3 className="text-3xl md:text-4xl font-bold mb-12 max-w-4xl leading-tight">
+        <h3 className="text-xl md:text-2xl font-bold mb-8 max-w-3xl leading-tight">
           {t("title")}
         </h3>
 
         {/* 收益列表 - 大字体 */}
-        <div className="mb-16 max-w-4xl">
-          <ul className="space-y-6">
+        <div className="mb-10 max-w-3xl">
+          <ul className="space-y-4">
             {[1, 2, 3, 4].map((i) => (
               <li
                 key={i}
-                className="flex items-start gap-4 group hover:translate-x-2 transition-transform duration-200"
+                className="flex items-start gap-3 group hover:translate-x-2 transition-transform duration-200"
               >
                 <span
-                  className="shrink-0 w-3 h-3 rounded-full mt-3 group-hover:scale-150 transition-transform duration-200"
+                  className="shrink-0 w-2 h-2 rounded-full mt-2 group-hover:scale-150 transition-transform duration-200"
                   style={{
                     background: "#18FF19",
                     boxShadow: "0 0 20px rgba(24, 255, 25, 0.8)",
                   }}
                 />
-                <span className="text-xl md:text-2xl leading-relaxed">
+                <span className="text-base md:text-lg leading-relaxed">
                   {t(`benefit${i}`)}
                 </span>
               </li>
@@ -101,7 +101,7 @@ export function CTASectionGameStyle() {
         </div>
 
         {/* 结束陈述 */}
-        <p className="text-lg md:text-xl text-zinc-400 mb-12 max-w-4xl leading-relaxed">
+        <p className="text-sm md:text-base text-zinc-400 mb-10 max-w-3xl leading-relaxed">
           {t("closing")}
         </p>
 
@@ -119,7 +119,7 @@ export function CTASectionGameStyle() {
           <Button
             size="lg"
             className={cn(
-              "relative rounded-full h-16 md:h-20 px-12 md:px-16 text-lg md:text-xl font-bold",
+              "relative rounded-full h-12 md:h-14 px-8 md:px-12 text-sm md:text-base font-bold",
               "hover:scale-110 active:scale-95 transition-all duration-200 group",
               "overflow-hidden"
             )}

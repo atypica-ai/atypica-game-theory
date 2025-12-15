@@ -40,11 +40,11 @@ export function AdvancedWorkflowSectionGameStyle() {
           </span>
         </div>
 
-        <h2 className="font-EuclidCircularA font-bold text-4xl md:text-5xl lg:text-6xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-4 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 
-        <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-20 max-w-4xl leading-relaxed">
+        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-12 max-w-3xl leading-relaxed">
           {t("subtitle")}
         </p>
 
@@ -86,10 +86,10 @@ export function AdvancedWorkflowSectionGameStyle() {
 
                 {/* 内容 */}
                 <div className="lg:col-span-10">
-                  <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white group-hover:translate-x-2 transition-transform duration-300">
+                  <h3 className="text-xl md:text-2xl font-bold mb-3 text-zinc-900 dark:text-white group-hover:translate-x-2 transition-transform duration-300">
                     {t(`workflow${index + 1}.title`)}
                   </h3>
-                  <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-6 leading-relaxed">
+                  <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 mb-4 leading-relaxed">
                     {t(`workflow${index + 1}.description`)}
                   </p>
 
