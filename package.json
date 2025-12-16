@@ -94,6 +94,7 @@
     "react-markdown": "^10.1.0",
     "recharts": "^3.5.1",
     "remark-gfm": "^4.0.1",
+    "rss-parser": "^3.13.0",
     "server-only": "^0.0.1",
     "sharp": "^0.33.5",
     "sonner": "^2.0.7",
@@ -146,6 +147,7 @@
       "prisma",
       "protobufjs",
       "sharp",
+      "sqlite3",
       "unrs-resolver"
     ]
   }

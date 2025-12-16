@@ -30,6 +30,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.twimg.com" },
       { protocol: "https", hostname: "**.hippyghosts.io" },
       { protocol: "https", hostname: "**.qlogo.cn" },
+      { protocol: "https", hostname: "substackcdn.com" },
+      { protocol: "https", hostname: "**.s3.amazonaws.com" },
     ],
     // loader: "custom",
     // loaderFile: "./lib/imageLoader",

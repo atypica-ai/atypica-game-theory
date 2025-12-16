@@ -4,6 +4,7 @@ import { prisma } from "@/prisma/prisma";
 import { MetadataRoute } from "next";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
+import { getSubstackPosts } from "./blog/lib";
 
 export const dynamic = "force-dynamic";
 
@@ -163,11 +164,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.3,
     },
+    {
+      url: `${siteOrigin}/blog`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.7,
+    },
   ];
 
   try {
-    // Fetch featured reports with cache
-    const reportResults = await getFeaturedReports(locale);
+    const [reportResults, podcastEpisodes, blogPosts] = await Promise.all([
+      getFeaturedReports(locale),
+      getFeaturedPodcastEpisodes(locale),
+      getSubstackPosts(),
+    ]);
+
     const reportRoutes: MetadataRoute.Sitemap = reportResults.map(({ url, updatedAt }) => ({
       url: `${siteOrigin}${url}`,
       lastModified: updatedAt,
@@ -175,8 +186,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    // Fetch featured podcast episodes with cache
-    const podcastEpisodes = await getFeaturedPodcastEpisodes(locale);
     const podcastRoutes: MetadataRoute.Sitemap = podcastEpisodes.map(({ url, updatedAt }) => ({
       url: `${siteOrigin}${url}`,
       lastModified: updatedAt,
@@ -184,7 +193,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    return [...staticRoutes, ...reportRoutes, ...podcastRoutes];
+    const blogRoutes: MetadataRoute.Sitemap = blogPosts.map((post) => ({
+      url: `${siteOrigin}/blog/${post.slug}`,
+      lastModified: post.pubDate ? new Date(post.pubDate) : new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+
+    return [...staticRoutes, ...reportRoutes, ...podcastRoutes, ...blogRoutes];
   } catch (error) {
     console.error("Error generating sitemap:", error);
     // Return static routes if database query fails
