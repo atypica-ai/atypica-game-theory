@@ -152,7 +152,27 @@ export class GoogleTTSClient {
         throw new Error("Failed to obtain Google Cloud access token.");
       }
 
+      // Load prologue and epilogue audio
+      // const SILENCE = await AudioCache.get("silence");
+      const prologueAudio = await AudioCache.get("prologue_en-US_Google");
+      const epilogueAudio = await AudioCache.get("epilogue_en-US_Google");
+
       const audioChunks: Buffer[] = [];
+
+      // Add prologue
+      try {
+        audioChunks.push(prologueAudio);
+        // audioChunks.push(SILENCE);
+        this.logger?.info({
+          msg: "Prologue audio added",
+          locale,
+        });
+      } catch (error) {
+        this.logger?.warn({
+          msg: "Failed to load prologue audio, continuing without it",
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
 
       // Split text into chunks and synthesize each chunk
       const chunks = splitStringIntoChunks(text, 1000);
@@ -160,6 +180,7 @@ export class GoogleTTSClient {
         const chunk = chunks[i];
         
         try {
+          console.log(chunk)
           const audioChunk = await this.startSynthesis(chunk, accessToken);
           audioChunks.push(audioChunk);
           this.logger?.info({
@@ -185,47 +206,21 @@ export class GoogleTTSClient {
         msg: "audio synthesis complete.",
         length: audioChunks.length,
       });
-
-      // Load prologue and epilogue audio
-      const SILENCE = await AudioCache.get("silence");
-      const prologueAudio = await AudioCache.getPrologue(locale);
-      const epilogueAudio = await AudioCache.getEpilogue(locale);
-
-      // Concatenate: prologue + silence + synthesized audio + silence + epilogue
-      
-
-      // // Add prologue
-      // try {
-      //   audioChunks.push(prologueAudio);
-      //   audioChunks.push(SILENCE);
-      //   this.logger?.info({
-      //     msg: "Prologue audio added",
-      //     locale,
-      //   });
-      // } catch (error) {
-      //   this.logger?.warn({
-      //     msg: "Failed to load prologue audio, continuing without it",
-      //     error: error instanceof Error ? error.message : String(error),
-      //   });
-      // }
-
-      // // Add synthesized audio
-      // audioChunks.push(synthesizedAudio);
-
-      // // Add epilogue
-      // try {
-      //   audioChunks.push(SILENCE);
-      //   audioChunks.push(epilogueAudio);
-      //   this.logger?.info({
-      //     msg: "Epilogue audio added",
-      //     locale,
-      //   });
-      // } catch (error) {
-      //   this.logger?.warn({
-      //     msg: "Failed to load epilogue audio, continuing without it",
-      //     error: error instanceof Error ? error.message : String(error),
-      //   });
-      // }
+ 
+      // Add epilogue
+      try {
+        // audioChunks.push(SILENCE);
+        audioChunks.push(epilogueAudio);
+        this.logger?.info({
+          msg: "Epilogue audio added",
+          locale,
+        });
+      } catch (error) {
+        this.logger?.warn({
+          msg: "Failed to load epilogue audio, continuing without it",
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
 
       // Concatenate all chunks
       const finalAudioBuffer = Buffer.concat(audioChunks);
