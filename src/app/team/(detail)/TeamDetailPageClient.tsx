@@ -307,11 +307,13 @@ export function TeamDetailPageClient({ team, isOwner }: { team: Team; isOwner: b
                 </TableRow>
               ) : (
                 members.map((member) => {
-                  const isDeleted = !member.personalUserId;
-                  const isOwner = member.personalUserId === team.ownerUserId;
-
+                  const memberDeleted = !member.personalUserId;
+                  const memberIsOwner = member.personalUserId === team.ownerUserId;
                   return (
-                    <TableRow key={member.id} className={isDeleted ? "opacity-50 bg-muted/50" : ""}>
+                    <TableRow
+                      key={member.id}
+                      className={memberDeleted ? "opacity-50 bg-muted/50" : ""}
+                    >
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-9 w-9">
@@ -321,13 +323,13 @@ export function TeamDetailPageClient({ team, isOwner }: { team: Team; isOwner: b
                           </Avatar>
                           <div className="flex flex-col">
                             <span>{member.name}</span>
-                            {isOwner && (
+                            {memberIsOwner && (
                               <span className="flex items-center gap-1 text-xs text-primary font-normal sm:hidden">
                                 <CrownIcon className="w-3 h-3" /> {t("table.ownerBadge")}
                               </span>
                             )}
                           </div>
-                          {isOwner && (
+                          {memberIsOwner && (
                             <Badge
                               variant="secondary"
                               className="hidden sm:flex items-center gap-1 ml-2"
@@ -339,19 +341,23 @@ export function TeamDetailPageClient({ team, isOwner }: { team: Team; isOwner: b
                       </TableCell>
                       <TableCell>
                         {member.personalUser?.email ||
-                          (isDeleted ? t("table.removedStatus") : t("table.noEmail"))}
+                          (memberDeleted ? t("table.removedStatus") : t("table.noEmail"))}
                       </TableCell>
                       <TableCell>{new Date(member.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        {/* 非 owner、已删除的成员、或者是 owner 本人时禁用移除按钮 */}
-                        {!isDeleted && member.personalUserId !== team.ownerUserId && (
+                        {/* 当前用户是 owner 的时候，显示 */}
+                        {isOwner && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className="text-muted-foreground hover:text-destructive"
-                                disabled={!isOwner || removingMemberId === member.id}
+                                disabled={
+                                  removingMemberId === member.id ||
+                                  memberDeleted ||
+                                  member.personalUserId === team.ownerUserId // 不能删除自己
+                                }
                               >
                                 <TrashIcon className="w-4 h-4" />
                               </Button>

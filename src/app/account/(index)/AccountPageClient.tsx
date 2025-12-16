@@ -203,12 +203,13 @@ export function AccountPageClient({
                 )}
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col items-stretch sm:flex-row gap-4">
+            <CardFooter className="flex flex-col items-stretch sm:flex-row sm:items-center gap-4">
               {activeSubscription && activeSubscription.stripeSubscriptionId && (
                 <Button
                   variant="outline"
                   onClick={() => handleManageSubscription(activeSubscription)}
                   disabled={isCreatingPortalSession || isCanceling}
+                  className="flex-1"
                 >
                   {isCreatingPortalSession && <Loader2Icon className="animate-spin size-4" />}
                   {t("subscriptionSection.manageSubscription")}
@@ -217,7 +218,11 @@ export function AccountPageClient({
               {stripeSubscription?.status === "active" ? (
                 <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
                   <AlertDialogTrigger asChild>
-                    <Button variant="outline" disabled={isCanceling || isCreatingPortalSession}>
+                    <Button
+                      variant="outline"
+                      disabled={isCanceling || isCreatingPortalSession}
+                      className="flex-1"
+                    >
                       {isCanceling
                         ? t("subscriptionSection.canceling")
                         : t("subscriptionSection.cancelSubscription")}
@@ -247,7 +252,7 @@ export function AccountPageClient({
                 <></>
               ) : (
                 // 非 stripeSubscription，直接显示续费/升级按钮
-                <Button asChild>
+                <Button asChild className="flex-1">
                   <Link href="/pricing">
                     {activeSubscription
                       ? t("subscriptionSection.renew")
