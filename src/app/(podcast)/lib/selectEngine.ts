@@ -13,12 +13,10 @@ import { createVolcanoClient } from "./volcano/client";
  * - Volcano TTS: all other cases (multi-speaker, other locales)
  */
 export function selectTTSEngine(
-  script: string,
+  hostCount: 1 | 2,
   locale: string,
   logger?: Logger,
 ): "google" | "volcano" {
-  const hostCount = countHosts(script);
-
   // Google TTS: only for en-US with single speaker
   if (locale === "en-US" && hostCount <= 1) {
     logger?.info({

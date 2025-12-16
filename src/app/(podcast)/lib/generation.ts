@@ -470,7 +470,7 @@ export async function generatePodcastAudio({
     logger.info({ msg: "Starting podcast audio generation", hostCount });
 
     // Step 1: Select appropriate TTS engine
-    const engineType = selectTTSEngine(script, locale, logger);
+    const engineType = selectTTSEngine(hostCount, locale, logger);
     const client = getTTSClient(engineType, logger);
 
     logger.info({

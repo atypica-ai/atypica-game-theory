@@ -65,24 +65,6 @@ export class GoogleTTSClient {
     return accessToken;
   }
 
-
-  /**
-   * @deprecated Use selectTTSEngine from ../selectEngine instead
-   * This method is kept for backward compatibility only
-   */
-  static canUseGoogleTTS(script: string, locale: string): boolean {
-    // Import here to avoid circular dependencies
-    const { countHosts } = require("../script/hostCounter");
-    
-    if (locale !== "en-US") {
-      return false;
-    }
-
-    const hostCount = countHosts(script);
-    // Google TTS only supports single speaker (0 or 1 host)
-    return hostCount === 0 || hostCount === 1;
-  }
-
   /**
    * Start long audio synthesis operation
    */
@@ -149,7 +131,7 @@ export class GoogleTTSClient {
       this.logger = logger;
     }
 
-    this.logger?.info({ msg: "Starting Google TTS podcast audio generation", podcastToken });
+    this.logger?.info({ msg: "Starting Google TTS podcast audio generation", podcastToken, hostCount });
 
     try {
       // Parse script to plain text (remove host markers)
