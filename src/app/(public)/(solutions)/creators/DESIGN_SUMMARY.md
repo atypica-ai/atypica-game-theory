@@ -1,6 +1,6 @@
 # Creators Page 设计总结
 
-本文档总结了 `/creators` 页面的内容结构规划和配图方法。
+本文档总结了 `/creators` 页面的内容结构规划、配图方法和**专用配色**。
 
 ---
 
@@ -152,13 +152,53 @@ CreatorPage
 
 ---
 
-## 2. 如何配图
+## 2. Creators 专用配色（仅用于 `/creators` 页面）
+
+> 说明：本节中的颜色仅适用于 `/creators` 解决方案页面，用来营造 futuristic / game-like HUD 体验，**不作为全站品牌色规范**。
+
+- **中性色（背景 / 卡片）**
+  - **白天模式**：
+    - 页面背景：`#FFFFFF`（`bg-white`）
+    - 浅灰卡片：`#F4F4F5` / `#F9FAFB`（`bg-zinc-100` / `bg-zinc-50`）
+    - 边框：`#E4E4E7`（`border-zinc-200`）
+  - **夜晚模式**：
+    - 页面背景：`#020617` / `#030712`（`bg-zinc-950`）
+    - 深灰卡片：`#020617` / `#111827`（`bg-zinc-950` / `bg-zinc-900`）
+    - 深色边框：`#27272A` / `#3F3F46`（`border-zinc-700` / `border-zinc-800`）
+
+- **主强调色（CTA / 能量点）**
+  - **品牌绿**（Creators 页内的唯一强主色）：
+    - 约等于 Tailwind `emerald-400/500` 区间（代码中使用 `bg-brand-green`）。
+    - 用途：Hero / Section CTA 按钮、粒子轨道中心点、进度条高亮（播客播放器）、部分标签小圆点。
+
+- **霓虹辅助色（HUD 感）**
+  - **Neon Red**：`#F97373`（`text-red-500` 一类）
+    - 用途：use case 1 编号、红色渐变卡片、部分 glow 阴影、线框。
+  - **Electric Blue**：`#3B82F6`（`text-blue-500/400`）
+    - 用途：use case 2 编号、蓝色渐变卡片、部分 hover glow、Ask Audience HUD 光晕。
+  - **Cyber Yellow / Amber**：`#FACC15`（`text-amber-400/500`）
+    - 用途：use case 3 编号、黄色渐变卡片、workflow 03 数字、部分标签。
+
+- **文字颜色规则**
+  - 白天模式：主文字 `#0F172A`（`text-zinc-900`），次级文字 `#4B5563` / `#6B7280`。
+  - 夜晚模式：主文字 `#F9FAFB` / `#E5E7EB`，次级信息 `#9CA3AF` / `#6B7280`。
+  - 所有绿色 CTA 按钮在白天模式下使用 **深色文字 `text-zinc-900`**，避免「不 hover 看不见字」的问题。
+
+- **Tab / 按钮选中态**
+  - 白天：选中使用 `bg-zinc-100 text-zinc-900 border-brand-green`；未选中为白底深灰字，hover 时加深背景与边框。
+  - 夜晚：选中使用 `bg-zinc-900 text-white border-brand-green`，带轻微绿色阴影；未选中为深灰底浅色字。
+
+> 如果在其他页面需要使用类似的 HUD 风格，请单独评估，并在对应页面的设计文档中重新声明色板，不要直接复用本节为「全局配色」。
+
+---
+
+## 3. 如何配图
 
 第三阶段的核心：**通过编写代码来利用图像生成工具，实时创造与上下文匹配的夺人眼球的配图**。
 
 ### 关键区别：Gemini 3 Pro Image 不是传统 text2image
 
-**传统模型**（Midjourney/DALL-E/SD）: 需要精确关键词和技巧  
+**传统模型**（Midjourney/DALL-E/SD）: 需要精确关键词和技巧
 **Gemini 3 Pro Image**: 基于推理，像对话一样告诉它背景和需求即可
 
 ### 可用的 API
@@ -187,13 +227,13 @@ CreatorPage
 
 // 小图标提示词 - 简洁明确
 const iconPrompts = {
-  useCase1: `Icon illustration: Content calendar with checkmarks. 
+  useCase1: `Icon illustration: Content calendar with checkmarks.
              Minimal, clean, purple accent. Square icon style.`,
-  
-  useCase2: `Icon illustration: Target audience segments diagram. 
+
+  useCase2: `Icon illustration: Target audience segments diagram.
              Minimal, clean, blue accent. Square icon style.`,
-  
-  useCase3: `Icon illustration: Trending chart going up. 
+
+  useCase3: `Icon illustration: Trending chart going up.
              Minimal, clean, green accent. Square icon style.`,
 };
 ```
@@ -211,13 +251,13 @@ const iconPrompts = {
 const mediumImagePrompts = {
   planningWorkflow: `
     Infographic: Content planning workflow visualization.
-    Show: Weekly calendar layout, content idea bubbles, 
+    Show: Weekly calendar layout, content idea bubbles,
           drag-and-drop scheduling interface.
-    Information: "PLAN 4 WEEKS AHEAD", "AUTO-SCHEDULE", 
+    Information: "PLAN 4 WEEKS AHEAD", "AUTO-SCHEDULE",
                  timeline with colored content blocks.
-    Colors: Purple gradient background, white UI elements, 
+    Colors: Purple gradient background, white UI elements,
             bold purple accents.
-    Style: Dashboard UI infographic, organized grid layout, 
+    Style: Dashboard UI infographic, organized grid layout,
            modern SaaS aesthetic.
     Mood: Productive, organized, empowering for content creators.
   `,
@@ -281,7 +321,7 @@ const [hoveredCard, setHoveredCard] = useState<string | null>(null);
       <li>✓ Auto-schedule based on audience patterns</li>
     </ul>
   </div>
-  
+
   {/* 右侧：信息图 */}
   <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg">
     <Image
@@ -310,13 +350,13 @@ const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 const contentFlowPrompts = {
   multiFormat: `
     Infographic: Content transformation pipeline flow.
-    Show: Single research document branching into multiple 
+    Show: Single research document branching into multiple
           format outputs (article, video script, social posts, email).
-    Information: "1 RESEARCH INPUT", "10+ FORMATS", 
+    Information: "1 RESEARCH INPUT", "10+ FORMATS",
                  "80% TIME SAVED" badges with bold numbers.
-    Colors: Warm coral-orange primary, teal secondary accents, 
+    Colors: Warm coral-orange primary, teal secondary accents,
             yellow highlight badges.
-    Style: Flow diagram with arrows, format icons, metric callouts. 
+    Style: Flow diagram with arrows, format icons, metric callouts.
            Bold typography.
     Mood: Efficient, productive, transformative for content creators.
   `,
@@ -334,11 +374,11 @@ const contentFlowPrompts = {
 const contentFlowPrompts = {
   socialStrategy: `
     Infographic: Social media content calendar strategy.
-    Show: Grid calendar with color-coded post types, engagement metrics, 
+    Show: Grid calendar with color-coded post types, engagement metrics,
           platform icons.
-    Information: "30 POSTS/MONTH", "5 PLATFORMS", weekly planning view 
+    Information: "30 POSTS/MONTH", "5 PLATFORMS", weekly planning view
                  with content types.
-    Colors: Vibrant multi-color palette (Instagram pink, Twitter blue, 
+    Colors: Vibrant multi-color palette (Instagram pink, Twitter blue,
             TikTok teal), organized grid layout.
     Style: Dashboard-style calendar infographic with data viz elements.
     Mood: Strategic, organized, multi-platform success.
@@ -357,13 +397,13 @@ const contentFlowPrompts = {
 const mediumImagePrompts = {
   audienceInsights: `
     Infographic: Audience analysis dashboard with persona cards.
-    Show: 3 persona cards with avatars, demographic data bars, 
+    Show: 3 persona cards with avatars, demographic data bars,
           interest tag clouds, engagement metrics.
-    Information: "AUDIENCE SEGMENTS", "85% MATCH", "TOP INTERESTS" 
+    Information: "AUDIENCE SEGMENTS", "85% MATCH", "TOP INTERESTS"
                  labels with data.
-    Colors: Blue-teal gradient, white cards with colored accents, 
+    Colors: Blue-teal gradient, white cards with colored accents,
             data visualization bars.
-    Style: Analytics dashboard infographic, card-based layout, 
+    Style: Analytics dashboard infographic, card-based layout,
            professional data viz.
     Mood: Strategic, data-driven, insightful.
   `,
@@ -439,11 +479,11 @@ Mood: Professional
 
 #### 色彩协调策略
 将图片色彩与交互式卡片渐变绑定：
-- **Plan Smarter Section**: 
+- **Plan Smarter Section**:
   - 卡片 1: 紫色渐变 → 图片用紫色系
   - 卡片 2: 蓝色渐变 → 图片用蓝色系
   - 卡片 3: 绿色渐变 → 图片用绿色系
-- **Turn Research Section**: 
+- **Turn Research Section**:
   - 卡片 1: 橙色渐变 → 图片用橙色系
   - 卡片 2: 青色渐变 → 图片用青色系
 
@@ -534,4 +574,3 @@ aafefa21 feat: add atypica for creators page with animations and game-like UI
 ---
 
 *最后更新: 2025-12-15*
-
