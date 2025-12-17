@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { StarPosition } from "../types";
 import { fadeinAnimation, keyframes, usePrefersReducedMotion } from "../animations";
 
+// Revert to original, proven-good starfield implementation
 const STAR_COUNT = 40; // Reduced from 100 (60% reduction)
 const STAR_SIZE = 5; // px
 
@@ -40,8 +41,10 @@ export function StarField() {
     };
   }, []);
 
-  // Don't render stars if user prefers reduced motion
-  if (prefersReducedMotion) {
+  // In development we always render for easier visual debugging,
+  // in production we still respect reduced-motion preference.
+  const ignoreReducedMotion = process.env.NODE_ENV === "development";
+  if (prefersReducedMotion && !ignoreReducedMotion) {
     return null;
   }
 

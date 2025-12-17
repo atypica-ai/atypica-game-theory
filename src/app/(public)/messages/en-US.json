@@ -550,6 +550,8 @@
       "badge": "Section 1",
       "title": "Plan Smarter: Use AI Research to Build Your Content Strategy",
       "subtitle": "A multi-agent system that behaves like a real strategy team, conducting audience analysis, competitive reviews, and insight discovery.",
+      "quickStartPrompt": "Don\u2019t know where to start? Try one of these research prompts:",
+      "ctaResearch": "Start AI Research",
       "useCase1": {
         "title": "Build your content/account strategy from scratch",
         "description": "Get audience profiles, motivations, pain points, content pillars, formats & angles. A blueprint normally created by strategists, not by guesswork.",
@@ -589,6 +591,7 @@
       "title": "Test Ideas Instantly: AI Personas as Your Always-On Focus Group",
       "subtitle": "Create proprietary Human AI Personas based on existing user interview records. These personas represent your target audience, reflecting real users' needs and pain points surprisingly well.",
       "value": "Your always-available focus group to review and vote for your content ideas",
+      "ctaInterview": "Start AI Interviews",
       "useCases": {
         "title": "You can ask them:",
         "case1": "Which of these 3 titles would you click, and why?",
@@ -613,6 +616,7 @@
       "badge": "Section 3",
       "title": "Turn Insights into Publish-Ready Content with AI Podcast",
       "subtitle": "After running AI Research, you'll have a structured content plan. Atypica moves a step further: turn that report into a narrated episode in minutes.",
+      "ctaPodcast": "Generate AI Podcast",
       "outputs": {
         "title": "You instantly get:",
         "output1": "A concise and detailed script full of real insights",
@@ -634,6 +638,11 @@
         "option5": "Extract talking points for webinars or live streams"
       },
       "formula": "One research session → one podcast → a week of content assets.",
+      "tabs": {
+        "overview": "Overview",
+        "reuse": "Reuse your research",
+        "examples": "Real examples"
+      },
       "realExamples": {
         "title": "Convincing Examples",
         "description": "These podcasts and videos generated from them have helped us rapidly grow our following across platforms:",
@@ -687,7 +696,9 @@
       "benefit2": "See your niche and competitors clearly",
       "benefit3": "Test ideas before you publish",
       "benefit4": "Turn research into consistent, multi-platform output",
-      "closing": "Whether you're starting your first channel or scaling into a real creator business, Atypica acts as your research team, strategist, and content engine in one place."
+      "closing": "Whether you're starting your first channel or scaling into a real creator business, Atypica acts as your research team, strategist, and content engine in one place.",
+      "contactCtaLabel": "Contact our team",
+      "contactCtaHint": "Prefer a guided walkthrough? Email us and we\u2019ll help you design your first creator workflow."
     }
   }
 }

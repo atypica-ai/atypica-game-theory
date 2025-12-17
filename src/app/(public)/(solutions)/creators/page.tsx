@@ -1,7 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import type { Metadata } from "next";
-import CreatorPageGameStyle from "./CreatorPageGameStyle";
+import CreatorPage from "./CreatorPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -15,5 +15,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Page() {
-  return <CreatorPageGameStyle />;
+  return <CreatorPage />;
 }
