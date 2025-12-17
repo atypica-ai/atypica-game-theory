@@ -10,7 +10,7 @@ const MAX_STEPS = 8;
 export const grokExpert: ExpertExecutor = async ({
   query,
   // userId,
-  // locale,
+  locale,
   logger,
   statReport,
   abortSignal,
@@ -33,7 +33,7 @@ export const grokExpert: ExpertExecutor = async ({
   const promise = new Promise<ExpertStreamTextResult>((resolve, reject) => {
     const response = streamText({
       model: llm("grok-4-1-fast-non-reasoning"),
-      system: grokSystemPrompt,
+      system: grokSystemPrompt({ locale }),
       providerOptions: defaultProviderOptions,
       tools: allTools,
       toolChoice: "auto",

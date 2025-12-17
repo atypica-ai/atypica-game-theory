@@ -46,7 +46,7 @@ export const trendExplorerExpert: ExpertExecutor = async ({
   const promise = new Promise<ExpertStreamTextResult>((resolve, reject) => {
     const response = streamText({
       model: llm("gemini-2.5-pro"), // Using Gemini 2.5 Pro model for trend analysis
-      system: trendExplorerSystemPrompt,
+      system: trendExplorerSystemPrompt({ locale }),
       providerOptions: defaultProviderOptions,
       tools: allTools,
       toolChoice: "auto",
