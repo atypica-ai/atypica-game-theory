@@ -11,9 +11,11 @@ export { tavilyClient } from "./tavily";
 export const webSearchTool = ({
   provider = "tavily",
   statReport,
+  enableToolCountRestriction = true,
 }: {
   studyUserChatId?: number;
   provider?: "tavily" | "perplexity";
+  enableToolCountRestriction?: boolean;
 } & Omit<AgentToolConfigArgs, "logger" | "locale" | "abortSignal">) =>
   tool({
     description:
@@ -40,8 +42,9 @@ export const webSearchTool = ({
           {} as Partial<Record<ToolName, number>>,
         );
 
-      // Before planStudy is called, webSearch can only be used once
+      // Before planStudy is called, webSearch can only be used once when restrictions are enabled
       if (
+        enableToolCountRestriction &&
         (toolUseCount[ToolName.planStudy] ?? 0) < 1 &&
         (toolUseCount[ToolName.webSearch] ?? 0) >= 1
       ) {
@@ -51,7 +54,10 @@ export const webSearchTool = ({
             "The webSearch tool can only be used once before the planStudy tool is called. Please save your analyst topic and use planStudy to plan the searches first, then you can continue web searching.",
         };
       }
-      if ((toolUseCount[ToolName.webSearch] ?? 0) >= 3) {
+      if (
+        enableToolCountRestriction &&
+        (toolUseCount[ToolName.webSearch] ?? 0) >= 3
+      ) {
         return {
           results: [],
           plainText:
