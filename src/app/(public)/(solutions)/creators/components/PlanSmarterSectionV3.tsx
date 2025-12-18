@@ -7,22 +7,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-// Small icon-style prompts for hover interactions
-const iconPrompts = {
-  useCase1: `
-    Icon: Futuristic content calendar HUD with checkmarks and timeline blocks.
-    Neon red accent (#f97373) on a dark grid background, minimal, square format.
-  `,
-  useCase2: `
-    Icon: Futuristic radar screen with creator avatars and targeting arcs.
-    Electric blue accent (#3b82f6), holographic grid, minimal, square format.
-  `,
-  useCase3: `
-    Icon: Neon growth chart with upward arrows and percentage badges.
-    Cyber yellow accent (#facc15) with subtle red and blue highlights, square format.
-  `,
-};
-
 // Medium-sized infographic images
 const mediumImagePrompts = {
   planningWorkflow: `
@@ -99,8 +83,6 @@ export function PlanSmarterSectionV3() {
       number: "text-amber-500 dark:text-amber-400",
     };
   };
-
-  const activeIndex = featureConfigs.findIndex((f) => f.id === activeTab) ?? 0;
 
   // Simple 2-slide carousel for useCase1 main image
   const [useCase1Slide, setUseCase1Slide] = useState<0 | 1>(0);
@@ -290,19 +272,19 @@ export function PlanSmarterSectionV3() {
                     {feature.id === "useCase2" ? (
                       <ul className="space-y-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300">
                         <li className="flex items-start gap-2">
-                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
                           <span>{t("useCase2.point1")}</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
                           <span>{t("useCase2.point2")}</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
                           <span>{t("useCase2.point3")}</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
                           <span>{t("useCase2.point4")}</span>
                         </li>
                       </ul>

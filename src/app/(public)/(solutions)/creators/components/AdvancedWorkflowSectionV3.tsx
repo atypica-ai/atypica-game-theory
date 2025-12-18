@@ -46,7 +46,7 @@ export function AdvancedWorkflowSectionV3() {
         {/* Futuristic workflow illustration */}
         <div className="mb-20">
           <div className="relative rounded-3xl overflow-hidden border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/80">
-            <div className="relative aspect-[16/9]">
+            <div className="relative aspect-video">
               <Image
                 loader={({ src }) => src}
                 src={`/api/imagegen/dev/${encodeURIComponent(advancedWorkflowPrompt)}?ratio=landscape`}

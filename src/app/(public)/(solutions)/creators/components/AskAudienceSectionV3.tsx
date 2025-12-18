@@ -102,25 +102,25 @@ export function AskAudienceSectionV3() {
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
+                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
                     {t("applications.app1")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
+                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
                     {t("applications.app2")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
+                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
                     {t("applications.app3")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
+                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
                     {t("applications.app4")}
                   </span>
