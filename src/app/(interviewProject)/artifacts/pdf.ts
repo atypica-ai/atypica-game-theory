@@ -1,5 +1,5 @@
 "use server";
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { InterviewReportExtra, InterviewSessionExtra } from "@/prisma/client";
@@ -22,10 +22,11 @@ export async function generateInterviewReportPDF(report: {
   const pdfObjectUrl = report.extra?.pdfObjectUrl;
   if (pdfObjectUrl) {
     return {
-      pdfUrl: proxiedObjectCdnUrl({
-        objectUrl: pdfObjectUrl,
-        mimeType: "application/pdf",
-      }),
+      pdfUrl: await getS3SignedCdnUrl(pdfObjectUrl),
+      // proxiedObjectCdnUrl({
+      //   objectUrl: pdfObjectUrl,
+      //   mimeType: "application/pdf",
+      // }),
     };
   }
 

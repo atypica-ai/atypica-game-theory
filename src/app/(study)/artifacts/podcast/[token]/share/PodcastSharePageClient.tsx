@@ -1,7 +1,7 @@
 "use client";
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { DownloadIcon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -72,13 +72,16 @@ export default function PodcastSharePageClient({
     const objectUrl = podcast.objectUrl;
     const mimeType = podcast.extra.metadata?.mimeType;
     if (objectUrl && mimeType) {
-      setPodcastAudioSrc(
-        proxiedObjectCdnUrl({
-          name: podcast.extra.metadata?.title ?? undefined,
-          mimeType,
-          objectUrl,
-        }),
-      );
+      // setPodcastAudioSrc(
+      //   proxiedObjectCdnUrl({
+      //     name: podcast.extra.metadata?.title ?? undefined,
+      //     mimeType,
+      //     objectUrl,
+      //   }),
+      // );
+      getS3SignedCdnUrl(objectUrl).then((url) => {
+        setPodcastAudioSrc(url);
+      });
     }
   }, [podcast]);
 

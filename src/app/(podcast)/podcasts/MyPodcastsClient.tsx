@@ -1,7 +1,7 @@
 "use client";
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import {
@@ -79,7 +79,8 @@ export default function MyPodcastsClient() {
       }
 
       // Get signed URL for the podcast
-      const audioSrc = proxiedObjectCdnUrl({ name: undefined, objectUrl, mimeType });
+      const audioSrc = await getS3SignedCdnUrl(objectUrl);
+      // proxiedObjectCdnUrl({ name: undefined, objectUrl, mimeType });
 
       // Create new audio element
       const audio = new Audio(audioSrc);

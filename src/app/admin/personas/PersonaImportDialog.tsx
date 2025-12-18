@@ -1,8 +1,8 @@
 import { AnalysisResult } from "@/app/(persona)/persona/import/[personaImportId]/AnalysisResult";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ChatMessageAttachment, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { CalendarIcon, DownloadIcon, FileIcon, UserIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -57,11 +57,12 @@ export function PersonaImportDialog({
   const handleViewFile = useCallback(async (attachment: ChatMessageAttachment) => {
     if (attachment?.objectUrl && attachment?.mimeType) {
       window.open(
-        proxiedObjectCdnUrl({
-          name: attachment.name,
-          objectUrl: attachment.objectUrl,
-          mimeType: attachment.mimeType,
-        }),
+        await getS3SignedCdnUrl(attachment.objectUrl),
+        // proxiedObjectCdnUrl({
+        //   name: attachment.name,
+        //   objectUrl: attachment.objectUrl,
+        //   mimeType: attachment.mimeType,
+        // }),
         "_blank",
       );
     }

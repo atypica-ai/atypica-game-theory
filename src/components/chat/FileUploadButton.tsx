@@ -1,4 +1,3 @@
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -8,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { getAttachmentFiles } from "@/lib/attachments/actions";
+import { getAttachmentFiles, getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { clientUploadFileToS3 } from "@/lib/attachments/client";
 import {
   checkFileUploadLimits,
@@ -258,11 +257,12 @@ function SelectFromLibraryDialog({
 
     setIsSelecting(true);
     try {
-      const fileHttpUrl = proxiedObjectCdnUrl({
-        name: file.name,
-        objectUrl: file.objectUrl,
-        mimeType: file.mimeType,
-      });
+      const fileHttpUrl = await getS3SignedCdnUrl(file.objectUrl);
+      // proxiedObjectCdnUrl({
+      //   name: file.name,
+      //   objectUrl: file.objectUrl,
+      //   mimeType: file.mimeType,
+      // });
       onFileSelectedAction({
         objectUrl: file.objectUrl,
         url: fileHttpUrl,

@@ -5,7 +5,6 @@ import { addSageSources, deleteSageSources } from "@/app/(sage)/(public)/actions
 import { extractSageKnowledgeAction } from "@/app/(sage)/actions";
 import { AddSourcesContent } from "@/app/(sage)/components/AddSourcesContent";
 import type { SageSourceContent } from "@/app/(sage)/types";
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import {
@@ -263,16 +263,17 @@ function SourceItem({
     return "";
   };
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
     if (source.content.type === "url") {
       window.open(source.content.url, "_blank");
     } else if (source.content.type === "file") {
       window.open(
-        proxiedObjectCdnUrl({
-          name: source.content.name,
-          objectUrl: source.content.objectUrl,
-          mimeType: source.content.mimeType,
-        }),
+        await getS3SignedCdnUrl(source.content.objectUrl),
+        // proxiedObjectCdnUrl({
+        //   name: source.content.name,
+        //   objectUrl: source.content.objectUrl,
+        //   mimeType: source.content.mimeType,
+        // }),
         "_blank",
       );
     }

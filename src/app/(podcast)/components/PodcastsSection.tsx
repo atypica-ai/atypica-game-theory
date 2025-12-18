@@ -2,10 +2,10 @@ import {
   determineKindAndGeneratePodcastAction,
   fetchAnalystPodcasts,
 } from "@/app/(podcast)/actions";
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { TokenAlertDialog } from "@/components/TokenAlertDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDistanceToNow } from "@/lib/utils";
 import { Analyst } from "@/prisma/client";
@@ -65,11 +65,12 @@ export function AnalystPodcastsSection({
         return;
       }
 
-      const audioSrc = proxiedObjectCdnUrl({
-        name: podcast.extra.metadata?.title ?? undefined,
-        objectUrl,
-        mimeType,
-      });
+      const audioSrc = await getS3SignedCdnUrl(objectUrl);
+      // proxiedObjectCdnUrl({
+      //   name: podcast.extra.metadata?.title ?? undefined,
+      //   objectUrl,
+      //   mimeType,
+      // });
 
       // Stop any currently playing audio
       if (audioRef.current) {
@@ -111,11 +112,12 @@ export function AnalystPodcastsSection({
       toast.error("Invalid podcast data");
       return;
     }
-    const audioSrc = proxiedObjectCdnUrl({
-      name: podcast.extra.metadata?.title ?? undefined,
-      objectUrl,
-      mimeType,
-    });
+    const audioSrc = await getS3SignedCdnUrl(objectUrl);
+    // proxiedObjectCdnUrl({
+    //   name: podcast.extra.metadata?.title ?? undefined,
+    //   objectUrl,
+    //   mimeType,
+    // });
     return audioSrc;
   }, []);
 

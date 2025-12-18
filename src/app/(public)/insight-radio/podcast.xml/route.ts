@@ -110,7 +110,9 @@ export async function GET(request: Request) {
         const title = item.title || "Untitled Episode";
         // Use showNotes if available, otherwise fallback to truncated script
         const showNotes = item.podcast.extra?.metadata?.showNotes;
-        const description = showNotes ? showNotes : item.podcast.script || "AI-powered research insights";
+        const description = showNotes
+          ? showNotes
+          : item.podcast.script || "AI-powered research insights";
         const pubDate = new Date(item.createdAt).toUTCString();
         const episodeUrl = item.url;
         const guid = item.podcast.token;

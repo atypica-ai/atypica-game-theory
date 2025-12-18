@@ -1,9 +1,9 @@
 "use client";
 import { processPersonaImportAction } from "@/app/(persona)/actions";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
-import { proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { cn } from "@/lib/utils";
 import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { BrainIcon, RefreshCwIcon } from "lucide-react";
@@ -86,11 +86,12 @@ export function PersonaImportView({
     if (attachment?.objectUrl && attachment?.mimeType) {
       // Use the existing attachment API endpoint
       window.open(
-        proxiedObjectCdnUrl({
-          name: attachment.name,
-          objectUrl: attachment.objectUrl,
-          mimeType: attachment.mimeType,
-        }),
+        await getS3SignedCdnUrl(attachment.objectUrl),
+        // proxiedObjectCdnUrl({
+        //   name: attachment.name,
+        //   objectUrl: attachment.objectUrl,
+        //   mimeType: attachment.mimeType,
+        // }),
         "_blank",
       );
     }
