@@ -2,9 +2,6 @@
 
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 const advancedWorkflowPrompt = `
   Futuristic workflow map UI for advanced creators on a dark grid.
@@ -82,15 +79,21 @@ export function AdvancedWorkflowSectionV3() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow1.actions.action1")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow1.actions.action1")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow1.actions.action2")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow1.actions.action2")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow1.actions.action3")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow1.actions.action3")}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -114,19 +117,27 @@ export function AdvancedWorkflowSectionV3() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="text-blue-300 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow2.actions.action1")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow2.actions.action1")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-300 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow2.actions.action2")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow2.actions.action2")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-300 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow2.actions.action3")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow2.actions.action3")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-300 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow2.actions.action4")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow2.actions.action4")}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -154,15 +165,21 @@ export function AdvancedWorkflowSectionV3() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="text-amber-300 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow3.actions.action1")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow3.actions.action1")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-amber-300 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow3.actions.action2")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow3.actions.action2")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-amber-300 font-semibold">→</span>
-                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{t("workflow3.actions.action3")}</span>
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {t("workflow3.actions.action3")}
+                  </span>
                 </li>
               </ul>
             </div>

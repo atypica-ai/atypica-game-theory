@@ -51,10 +51,7 @@ export function AdvancedWorkflowSectionGameStyle() {
         {/* 工作流列表 */}
         <div className="space-y-16">
           {workflows.map((workflow, index) => (
-            <div
-              key={index}
-              className="group"
-            >
+            <div key={index} className="group">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* 大号数字 */}
                 <div className="lg:col-span-2">
@@ -104,7 +101,7 @@ export function AdvancedWorkflowSectionGameStyle() {
                   <ul className="space-y-3">
                     {Array.from(
                       { length: index === 0 ? 3 : index === 1 ? 4 : 3 },
-                      (_, i) => i + 1
+                      (_, i) => i + 1,
                     ).map((actionNum) => (
                       <li
                         key={actionNum}
@@ -141,4 +138,3 @@ export function AdvancedWorkflowSectionGameStyle() {
     </section>
   );
 }
-

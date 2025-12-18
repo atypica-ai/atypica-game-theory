@@ -79,7 +79,8 @@ export function TurnResearchSectionGameStyle() {
           <span
             className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider"
             style={{
-              background: "linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(20, 184, 166, 0.1))",
+              background:
+                "linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(20, 184, 166, 0.1))",
               border: "1px solid rgba(255, 107, 53, 0.3)",
               color: "#ff6b35",
             }}
@@ -152,7 +153,7 @@ export function TurnResearchSectionGameStyle() {
                   "relative p-6 rounded-2xl border-2 transition-all duration-300 cursor-default",
                   `bg-gradient-to-br ${output.bgGradient}`,
                   `border-${output.borderColor}`,
-                  "hover:scale-105 hover:shadow-2xl"
+                  "hover:scale-105 hover:shadow-2xl",
                 )}
                 style={{
                   boxShadow:
@@ -169,12 +170,13 @@ export function TurnResearchSectionGameStyle() {
                     className={cn(
                       "relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0",
                       `border-2 border-${output.borderColor}`,
-                      "transition-all duration-300"
+                      "transition-all duration-300",
                     )}
                     style={{
                       transform:
                         hoveredOutput === output.id ? "scale(1.2) rotate(10deg)" : "scale(1)",
-                      boxShadow: hoveredOutput === output.id ? `0 0 30px ${output.color}60` : "none",
+                      boxShadow:
+                        hoveredOutput === output.id ? `0 0 30px ${output.color}60` : "none",
                     }}
                   >
                     <Image
@@ -223,7 +225,9 @@ export function TurnResearchSectionGameStyle() {
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ background: "#18FF19", boxShadow: "0 0 10px rgba(24, 255, 25, 0.5)" }}
                 />
-                <span className="text-sm text-zinc-700 dark:text-zinc-300">{t(`idealFor.type${i}`)}</span>
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  {t(`idealFor.type${i}`)}
+                </span>
               </div>
             ))}
           </div>
@@ -312,7 +316,8 @@ export function TurnResearchSectionGameStyle() {
         <div
           className="mb-28 text-center py-16 rounded-3xl"
           style={{
-            background: "linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(20, 184, 166, 0.05))",
+            background:
+              "linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(20, 184, 166, 0.05))",
             border: "2px solid rgba(255, 107, 53, 0.2)",
           }}
         >
@@ -350,4 +355,3 @@ export function TurnResearchSectionGameStyle() {
     </section>
   );
 }
-

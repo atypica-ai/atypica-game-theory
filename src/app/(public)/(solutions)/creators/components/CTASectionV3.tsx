@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 export function CTASectionV3() {
   const t = useTranslations("CreatorPage.CTASection");

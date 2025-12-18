@@ -1,11 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 
 // Small icon-style prompts for hover interactions
 const iconPrompts = {
@@ -197,7 +197,7 @@ export function PlanSmarterSectionV3() {
                 key={topic.id}
                 href={`/newstudy?topic=${encodeURIComponent(topic.label)}`}
                 prefetch={true}
-            className={cn(
+                className={cn(
                   "inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs md:text-sm",
                   "border border-zinc-200 bg-white text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950/80 dark:text-zinc-200",
                   "hover:border-[#18FF19] hover:text-zinc-900 dark:hover:text-white",
@@ -222,7 +222,7 @@ export function PlanSmarterSectionV3() {
                 onClick={() => setActiveTab(feature.id)}
                 onMouseEnter={() => setHoveredCard(feature.id)}
                 onMouseLeave={() => setHoveredCard(null)}
-            className={cn(
+                className={cn(
                   "px-6 py-3 rounded-lg font-medium transition-all duration-300 border text-sm md:text-base",
                   "hover:scale-105 active:scale-95 relative",
                   isActive
@@ -251,7 +251,7 @@ export function PlanSmarterSectionV3() {
               </button>
             );
           })}
-            </div>
+        </div>
 
         {/* Active feature content */}
         {featureConfigs.map((feature) => {
@@ -264,57 +264,53 @@ export function PlanSmarterSectionV3() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                   {/* Left: Text content */}
                   <div className="animate-slide-in-left">
-                  <div className="flex items-center gap-3 mb-6">
-                    <span className={cn("text-4xl font-bold", accentClasses.number)}>
-                      {feature.number}
-                    </span>
-            <div
-              className={cn(
-                        "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
-                        accentClasses.badgeBg,
-                        accentClasses.badgeText,
-                      )}
-                    >
-                      {t("badge")}
+                    <div className="flex items-center gap-3 mb-6">
+                      <span className={cn("text-4xl font-bold", accentClasses.number)}>
+                        {feature.number}
+                      </span>
+                      <div
+                        className={cn(
+                          "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
+                          accentClasses.badgeBg,
+                          accentClasses.badgeText,
+                        )}
+                      >
+                        {t("badge")}
+                      </div>
                     </div>
-            </div>
 
                     <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">
                       {t(`${feature.id}.title`)}
-            </h3>
+                    </h3>
                     <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 mb-6 leading-relaxed">
                       {t(`${feature.id}.description`)}
-            </p>
+                    </p>
 
                     {/* Use-case specific body, 复用现有文案 */}
                     {feature.id === "useCase2" ? (
                       <ul className="space-y-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300">
-              <li className="flex items-start gap-2">
+                        <li className="flex items-start gap-2">
                           <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
-                <span>{t("useCase2.point1")}</span>
-              </li>
-              <li className="flex items-start gap-2">
+                          <span>{t("useCase2.point1")}</span>
+                        </li>
+                        <li className="flex items-start gap-2">
                           <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
-                <span>{t("useCase2.point2")}</span>
-              </li>
-              <li className="flex items-start gap-2">
+                          <span>{t("useCase2.point2")}</span>
+                        </li>
+                        <li className="flex items-start gap-2">
                           <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
-                <span>{t("useCase2.point3")}</span>
-              </li>
-              <li className="flex items-start gap-2">
+                          <span>{t("useCase2.point3")}</span>
+                        </li>
+                        <li className="flex items-start gap-2">
                           <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
-                <span>{t("useCase2.point4")}</span>
-              </li>
-            </ul>
+                          <span>{t("useCase2.point4")}</span>
+                        </li>
+                      </ul>
                     ) : (
                       <div className="space-y-3 text-xs md:text-sm text-zinc-700 dark:text-zinc-300">
-                        <p className="italic">
-                          &ldquo;{t(`${feature.id}.example1`)}&rdquo;
-                        </p>
-                        <p className="italic">
-                          &ldquo;{t(`${feature.id}.example2`)}&rdquo;
-                        </p>
-          </div>
+                        <p className="italic">&ldquo;{t(`${feature.id}.example1`)}&rdquo;</p>
+                        <p className="italic">&ldquo;{t(`${feature.id}.example2`)}&rdquo;</p>
+                      </div>
                     )}
 
                     <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
@@ -327,7 +323,7 @@ export function PlanSmarterSectionV3() {
                           : t(`${feature.id}.output`)}
                       </p>
                     </div>
-            </div>
+                  </div>
 
                   {/* Right: Image generated via Gemini Image */}
                   <div className="relative animate-slide-in-right w-full max-w-md mx-auto">
@@ -378,7 +374,11 @@ export function PlanSmarterSectionV3() {
                                   ? "bg-zinc-900 dark:bg-white"
                                   : "bg-transparent",
                               )}
-                              aria-label={idx === 0 ? "Show planning workflow infographic" : "Show AI research report example"}
+                              aria-label={
+                                idx === 0
+                                  ? "Show planning workflow infographic"
+                                  : "Show AI research report example"
+                              }
                             />
                           ))}
                         </div>
@@ -409,7 +409,6 @@ export function PlanSmarterSectionV3() {
             </div>
           );
         })}
-
       </div>
     </section>
   );

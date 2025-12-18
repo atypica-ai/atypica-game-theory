@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 
 const heroImagePrompt = `
   Futuristic creator control room UI on a dark grid background.
@@ -60,7 +60,7 @@ export function HeroSectionV3() {
 
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         <div className="max-w-5xl mx-auto text-center">
-        {/* Small label - with subtle glow to echo game feel */}
+          {/* Small label - with subtle glow to echo game feel */}
           <div
             className={cn(
               "mb-4 transition-all duration-700",

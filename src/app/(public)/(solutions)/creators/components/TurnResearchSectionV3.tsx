@@ -1,12 +1,12 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Pause, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Pause, Play } from "lucide-react";
+import { useRef, useState } from "react";
 
 // Small output format icons
 const outputIconPrompts = {
@@ -252,7 +252,8 @@ export function TurnResearchSectionV3() {
                 When Giants Fail: Why Meta Blew Its AI Lead
               </h3>
               <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 mb-3">
-                Generated from an Atypica research workflow — turn one deep dive into an episode your audience actually wants to hear.
+                Generated from an Atypica research workflow — turn one deep dive into an episode
+                your audience actually wants to hear.
               </p>
 
               {/* Compact podcast player styled like Insight Radio sticky player */}
@@ -433,25 +434,19 @@ export function TurnResearchSectionV3() {
                 </div>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">
-                      →
-                    </span>
+                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">→</span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
                       {t("reuseOptions.option1")}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">
-                      →
-                    </span>
+                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">→</span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
                       {t("reuseOptions.option2")}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">
-                      →
-                    </span>
+                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">→</span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
                       {t("reuseOptions.option3")}
                     </span>
@@ -463,13 +458,17 @@ export function TurnResearchSectionV3() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <ul className="space-y-4 lg:order-first">
                   <li className="flex items-start gap-3">
-                    <span className="text-amber-500 dark:text-amber-400 font-semibold text-lg">→</span>
+                    <span className="text-amber-500 dark:text-amber-400 font-semibold text-lg">
+                      →
+                    </span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
                       {t("reuseOptions.option4")}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-amber-500 dark:text-amber-400 font-semibold text-lg">→</span>
+                    <span className="text-amber-500 dark:text-amber-400 font-semibold text-lg">
+                      →
+                    </span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
                       {t("reuseOptions.option5")}
                     </span>

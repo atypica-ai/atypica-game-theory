@@ -57,7 +57,7 @@ export function useScrollAnimation(threshold = 0.1) {
           setIsVisible(true);
         }
       },
-      { threshold }
+      { threshold },
     );
 
     observer.observe(ref.current);

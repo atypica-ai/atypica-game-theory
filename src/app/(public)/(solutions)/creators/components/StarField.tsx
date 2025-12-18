@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { StarPosition } from "../types";
 import { fadeinAnimation, keyframes, usePrefersReducedMotion } from "../animations";
+import type { StarPosition } from "../types";
 
 // Revert to original, proven-good starfield implementation
 const STAR_COUNT = 40; // Reduced from 100 (60% reduction)

@@ -134,7 +134,7 @@ export function PlanSmarterSectionGameStyle() {
                 `bg-gradient-to-br ${useCase.bgGradient}`,
                 `border-${useCase.borderColor}`,
                 "hover:scale-105 hover:shadow-2xl",
-                hoveredCard === useCase.id && "ring-4"
+                hoveredCard === useCase.id && "ring-4",
               )}
               style={{
                 boxShadow:
@@ -167,7 +167,7 @@ export function PlanSmarterSectionGameStyle() {
                   "transition-all duration-300",
                   hoveredCard === useCase.id
                     ? "opacity-100 scale-110 rotate-6"
-                    : "opacity-70 scale-100 rotate-0"
+                    : "opacity-70 scale-100 rotate-0",
                 )}
                 style={{
                   boxShadow: hoveredCard === useCase.id ? `0 0 30px ${useCase.glowColor}` : "none",
@@ -355,8 +355,8 @@ export function PlanSmarterSectionGameStyle() {
                 Track What Works
               </h3>
               <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
-                Real-time analytics showing content performance, trending topics, and growth metrics.
-                Identify your viral content patterns.
+                Real-time analytics showing content performance, trending topics, and growth
+                metrics. Identify your viral content patterns.
               </p>
               <ul className="space-y-2 text-xs text-zinc-700 dark:text-zinc-300">
                 <li className="flex items-start gap-3">
@@ -461,4 +461,3 @@ export function PlanSmarterSectionGameStyle() {
     </section>
   );
 }
-

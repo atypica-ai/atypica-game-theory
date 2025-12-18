@@ -1,10 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 export function CTASectionGameStyle() {
   const t = useTranslations("CreatorPage.CTASection");
@@ -67,15 +67,11 @@ export function CTASectionGameStyle() {
             {t("subheadline")}
           </p>
 
-          <p className="text-base md:text-lg text-zinc-400 max-w-2xl">
-            {t("tagline")}
-          </p>
+          <p className="text-base md:text-lg text-zinc-400 max-w-2xl">{t("tagline")}</p>
         </div>
 
         {/* 主要价值标题 */}
-        <h3 className="text-xl md:text-2xl font-bold mb-8 max-w-3xl leading-tight">
-          {t("title")}
-        </h3>
+        <h3 className="text-xl md:text-2xl font-bold mb-8 max-w-3xl leading-tight">{t("title")}</h3>
 
         {/* 收益列表 - 大字体 */}
         <div className="mb-10 max-w-3xl">
@@ -92,9 +88,7 @@ export function CTASectionGameStyle() {
                     boxShadow: "0 0 20px rgba(24, 255, 25, 0.8)",
                   }}
                 />
-                <span className="text-base md:text-lg leading-relaxed">
-                  {t(`benefit${i}`)}
-                </span>
+                <span className="text-base md:text-lg leading-relaxed">{t(`benefit${i}`)}</span>
               </li>
             ))}
           </ul>
@@ -121,7 +115,7 @@ export function CTASectionGameStyle() {
             className={cn(
               "relative rounded-full h-12 md:h-14 px-8 md:px-12 text-sm md:text-base font-bold",
               "hover:scale-110 active:scale-95 transition-all duration-200 group",
-              "overflow-hidden"
+              "overflow-hidden",
             )}
             style={{
               background: "#18FF19",
@@ -170,4 +164,3 @@ export function CTASectionGameStyle() {
     </section>
   );
 }
-

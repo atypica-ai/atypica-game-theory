@@ -1,10 +1,10 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
 const personaPanelPrompt = `
@@ -103,19 +103,27 @@ export function AskAudienceSectionV3() {
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
-                  <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">{t("applications.app1")}</span>
+                  <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
+                    {t("applications.app1")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
-                  <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">{t("applications.app2")}</span>
+                  <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
+                    {t("applications.app2")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
-                  <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">{t("applications.app3")}</span>
+                  <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
+                    {t("applications.app3")}
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
-                  <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">{t("applications.app4")}</span>
+                  <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
+                    {t("applications.app4")}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -159,7 +167,9 @@ export function AskAudienceSectionV3() {
                     "h-2.5 w-2.5 rounded-full border border-zinc-400 dark:border-zinc-500 transition-colors",
                     activeSlide === idx ? "bg-zinc-900 dark:bg-white" : "bg-transparent",
                   )}
-                  aria-label={idx === 0 ? "Show AI persona HUD illustration" : "Show AI persona video example"}
+                  aria-label={
+                    idx === 0 ? "Show AI persona HUD illustration" : "Show AI persona video example"
+                  }
                 />
               ))}
             </div>

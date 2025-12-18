@@ -43,7 +43,7 @@ export function HeroSectionGameStyle() {
         <div
           className={cn(
             "mb-6 text-center transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4",
           )}
         >
           <span
@@ -69,7 +69,7 @@ export function HeroSectionGameStyle() {
               "bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 dark:from-white dark:via-zinc-100 dark:to-white",
               "bg-clip-text text-transparent",
               "transition-all duration-700",
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
             )}
             style={{ transitionDelay: "0.1s" }}
           >
@@ -81,7 +81,7 @@ export function HeroSectionGameStyle() {
             className={cn(
               "absolute -right-4 md:-right-12 top-0 w-32 h-32 md:w-48 md:h-48",
               "transition-all duration-700",
-              isVisible ? "opacity-100 scale-100" : "opacity-0 scale-75"
+              isVisible ? "opacity-100 scale-100" : "opacity-0 scale-75",
             )}
             style={{ transitionDelay: "0.3s" }}
           >
@@ -119,7 +119,7 @@ export function HeroSectionGameStyle() {
             "text-center text-base md:text-lg max-w-3xl mx-auto mb-10",
             "text-zinc-600 dark:text-zinc-400",
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.2s" }}
         >
@@ -131,7 +131,7 @@ export function HeroSectionGameStyle() {
           className={cn(
             "grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto mb-10",
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.3s" }}
         >
@@ -155,9 +155,7 @@ export function HeroSectionGameStyle() {
                     {index + 1}
                   </span>
                 </div>
-                <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                  {point}
-                </p>
+                <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">{point}</p>
               </div>
 
               {/* 悬停发光效果 */}
@@ -177,7 +175,7 @@ export function HeroSectionGameStyle() {
           className={cn(
             "max-w-3xl mx-auto mb-8 p-5 rounded-xl relative overflow-hidden",
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{
             transitionDelay: "0.4s",
@@ -205,7 +203,7 @@ export function HeroSectionGameStyle() {
           className={cn(
             "text-center text-sm md:text-base text-zinc-600 dark:text-zinc-400 mb-8 max-w-2xl mx-auto",
             "transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.5s" }}
         >
@@ -216,7 +214,7 @@ export function HeroSectionGameStyle() {
         <div
           className={cn(
             "text-center transition-all duration-700",
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
           )}
           style={{ transitionDelay: "0.6s" }}
         >
@@ -225,7 +223,7 @@ export function HeroSectionGameStyle() {
             className={cn(
               "rounded-full h-12 px-8 text-sm font-semibold",
               "hover:scale-105 active:scale-95 transition-all duration-200 group",
-              "relative overflow-hidden"
+              "relative overflow-hidden",
             )}
             style={{
               background: "#18FF19",
@@ -297,4 +295,3 @@ export function HeroSectionGameStyle() {
     </section>
   );
 }
-

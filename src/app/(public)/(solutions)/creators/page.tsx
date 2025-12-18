@@ -1,6 +1,6 @@
-import { getLocale, getTranslations } from "next-intl/server";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import type { Metadata } from "next";
+import { getLocale, getTranslations } from "next-intl/server";
 import CreatorPage from "./CreatorPage";
 
 export async function generateMetadata(): Promise<Metadata> {
