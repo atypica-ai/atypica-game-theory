@@ -1,6 +1,6 @@
 "use server";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
-import { s3SignedUrl, uploadToS3 } from "@/lib/attachments/s3";
+import { uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { InterviewReportExtra, InterviewSessionExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -87,7 +87,7 @@ export async function generateInterviewTranscriptPDF(transcript: {
 }> {
   // Check if PDF already exists
   if (transcript.extra?.pdfObjectUrl) {
-    const pdfUrl = await s3SignedUrl(transcript.extra.pdfObjectUrl);
+    const pdfUrl = await getS3SignedCdnUrl(transcript.extra.pdfObjectUrl);
     return {
       pdfUrl,
     };

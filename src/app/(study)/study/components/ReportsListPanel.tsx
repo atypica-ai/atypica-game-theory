@@ -137,10 +137,9 @@ export default function ReportsListPanel({
                 download={download}
               >
                 <div>
-                  <div className="relative w-full aspect-[16/9] cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-accent/10">
+                  <div className="relative w-full aspect-video cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-accent/10">
                     {report.coverCdnHttpUrl ? (
                       <Image
-                        loader={({ src }) => src}
                         src={report.coverCdnHttpUrl}
                         alt="Report cover"
                         fill

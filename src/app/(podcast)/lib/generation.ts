@@ -5,7 +5,7 @@ import { StatReporter } from "@/ai/tools/types";
 import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { podcastMetadataSchema, podcastMetadataSystem } from "@/app/(podcast)/prompt/metadata";
 import { VALID_LOCALES } from "@/i18n/routing";
-import { fileUrlToDataUrl } from "@/lib/attachments/actions";
+import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -22,8 +22,8 @@ import { FilePart, FinishReason, generateObject, ModelMessage, stepCountIs, stre
 import { parseBuffer } from "music-metadata";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { generatePodcastCoverImage } from "./coverImage";
 import { getHostCountForPodcastType } from "../types";
+import { generatePodcastCoverImage } from "./coverImage";
 import { createVolcanoClient } from "./volcano/client";
 
 /**

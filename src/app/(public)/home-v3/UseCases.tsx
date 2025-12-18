@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { cn, proxiedImageLoader } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { PlayIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
@@ -91,16 +91,12 @@ export function UseCases() {
                   "flex flex-col py-0",
                 )}
               >
-                <Link
-                  href={study.url}
-                  className="absolute inset-0 z-10"
-                >
+                <Link href={study.url} className="absolute inset-0 z-10">
                   <span className="sr-only">View Case Study: {study.title}</span>
                 </Link>
                 <div className="relative aspect-video overflow-hidden">
                   {study.coverUrl ? (
                     <Image
-                      loader={proxiedImageLoader}
                       src={study.coverUrl}
                       alt="report cover"
                       fill

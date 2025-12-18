@@ -54,13 +54,7 @@ export const GenerateReportResultMessage = ({
         ></div>*/}
         <div className="relative mb-4 w-[360px] h-[202.5px] cursor-pointer border border-input/50 rounded-md overflow-hidden">
           {report.coverCdnHttpUrl ? (
-            <Image
-              loader={({ src }) => src}
-              src={report.coverCdnHttpUrl}
-              alt="Report cover"
-              fill
-              className="object-cover"
-            />
+            <Image src={report.coverCdnHttpUrl} alt="Report cover" fill className="object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground"></div>
           )}

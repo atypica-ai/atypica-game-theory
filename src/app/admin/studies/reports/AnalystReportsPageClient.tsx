@@ -253,7 +253,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                     <button
                       onClick={() => handleToggleFeatured(report.id, !!report.isFeatured)}
                       disabled={togglingFeatured.has(report.id)}
-                      className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                      className="p-1 hover:bg-gray-100 rounded transition-colors shrink-0"
                       title={report.isFeatured ? "Remove from featured" : "Add to featured"}
                     >
                       <Star
@@ -275,7 +275,6 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                   {report.coverCdnHttpUrl && (
                     <div className="relative w-full aspect-video overflow-hidden rounded-lg mb-4">
                       <Image
-                        loader={({ src }) => src} // 已经是 cdn url，不再需要 loader
                         src={report.coverCdnHttpUrl}
                         alt="report cover"
                         fill

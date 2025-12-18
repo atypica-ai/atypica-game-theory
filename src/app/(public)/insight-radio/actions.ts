@@ -1,5 +1,5 @@
 "use server";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystPodcastExtra, FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
@@ -84,9 +84,7 @@ export const pickRandomFeaturedPodcast = unstable_cache(
         createdAt: randomItem.createdAt,
         title: extra.title || "",
         description: extra.description || "",
-        coverUrl: extra.coverObjectUrl
-          ? proxiedImageCdnUrl({ objectUrl: extra.coverObjectUrl })
-          : null,
+        coverUrl: extra.coverObjectUrl ? await getS3SignedCdnUrl(extra.coverObjectUrl) : null,
         url: extra.url || "",
         category: extra.category,
         podcast: {
@@ -164,33 +162,31 @@ export const fetchFeaturedPodcasts = unstable_cache(
     const podcastMap = new Map(podcasts.map((p) => [p.id, p]));
 
     // Combine data
-    const data = featuredItems
-      .map((item) => {
-        const podcast = podcastMap.get(item.resourceId);
-        if (!podcast) return null;
-
-        const extra = (item.extra as FeaturedItemExtra) || {};
-        const podcastExtra = (podcast.extra as AnalystPodcastExtra) || {};
-
-        return {
-          id: item.id,
-          createdAt: item.createdAt,
-          title: extra.title || "",
-          description: extra.description || "",
-          coverUrl: extra.coverObjectUrl
-            ? proxiedImageCdnUrl({ objectUrl: extra.coverObjectUrl })
-            : null,
-          url: extra.url || "",
-          category: extra.category,
-          podcast: {
-            token: podcast.token,
-            objectUrl: podcast.objectUrl,
-            script: podcast.script,
-            extra: podcastExtra,
-          },
-        };
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null);
+    const data = (
+      await Promise.all(
+        featuredItems.map(async (item) => {
+          const podcast = podcastMap.get(item.resourceId);
+          if (!podcast) return null;
+          const extra = (item.extra as FeaturedItemExtra) || {};
+          const podcastExtra = (podcast.extra as AnalystPodcastExtra) || {};
+          return {
+            id: item.id,
+            createdAt: item.createdAt,
+            title: extra.title || "",
+            description: extra.description || "",
+            coverUrl: extra.coverObjectUrl ? await getS3SignedCdnUrl(extra.coverObjectUrl) : null,
+            url: extra.url || "",
+            category: extra.category,
+            podcast: {
+              token: podcast.token,
+              objectUrl: podcast.objectUrl,
+              script: podcast.script,
+              extra: podcastExtra,
+            },
+          };
+        }),
+      )
+    ).filter((item): item is NonNullable<typeof item> => item !== null);
 
     return {
       success: true,

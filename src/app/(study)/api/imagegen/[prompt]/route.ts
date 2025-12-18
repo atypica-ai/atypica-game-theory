@@ -1,26 +1,23 @@
 // import { imageGenerationObjectUrlToHttpUrl } from "@/app/(study)/artifacts/lib/imagegen";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { ImageGeneration } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "crypto";
 import { z } from "zod/v3";
 
-async function optimizedImageUrl(imageGeneration: ImageGeneration) {
-  return proxiedImageCdnUrl({ objectUrl: imageGeneration.objectUrl });
-
-  // const url = await imageGenerationObjectUrlToHttpUrl(imageGeneration);
-  // ⚠️ 不再区分区域，全部都用 CDN
-  // if (true || (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(url))) {
-  //   return proxiedImageCdnUrl({ src: url });
-  // } else {
-  //   return noProxiedImageCdnUrl({
-  //     src: url,
-  //     // origin: await getRequestOrigin(), // 其实没必要，其实可以直接用 cdn 域名的
-  //   });
-  // }
-}
+// async function optimizedImageUrl(imageGeneration: ImageGeneration) {
+//   const url = await imageGenerationObjectUrlToHttpUrl(imageGeneration);
+//   ⚠️ 不再区分区域，全部都用 CDN
+//   if (true || (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(url))) {
+//     return proxiedImageCdnUrl({ src: url });
+//   } else {
+//     return noProxiedImageCdnUrl({
+//       src: url,
+//       // origin: await getRequestOrigin(), // 其实没必要，其实可以直接用 cdn 域名的
+//     });
+//   }
+// }
 
 const ratioSchema = z.enum(["square", "landscape", "portrait"]).default("square");
 
@@ -47,7 +44,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
   }
 
   if (existingImage.generatedAt) {
-    const imageUrl = await optimizedImageUrl(existingImage);
+    const imageUrl = await getS3SignedCdnUrl(existingImage.objectUrl);
     const fullUrl = new URL(
       imageUrl,
       imageUrl.startsWith("http") ? undefined : await getRequestOrigin(),
@@ -78,7 +75,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
         }
         const updatedImage = await prisma.imageGeneration.findUniqueOrThrow({ where: { id } });
         if (updatedImage.generatedAt) {
-          resolve(await optimizedImageUrl(updatedImage));
+          resolve(await getS3SignedCdnUrl(updatedImage.objectUrl));
           return;
         } else {
           setTimeout(checkImage, 5000);

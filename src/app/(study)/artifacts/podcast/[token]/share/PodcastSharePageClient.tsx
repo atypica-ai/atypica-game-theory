@@ -117,13 +117,7 @@ export default function PodcastSharePageClient({
               className="block w-full max-w-lg mx-auto"
             >
               <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden cursor-pointer">
-                <Image
-                  loader={({ src }) => src}
-                  src={coverCdnHttpUrl}
-                  alt="Podcast cover"
-                  fill
-                  className="object-cover"
-                />
+                <Image src={coverCdnHttpUrl} alt="Podcast cover" fill className="object-cover" />
               </div>
             </Link>
           )}

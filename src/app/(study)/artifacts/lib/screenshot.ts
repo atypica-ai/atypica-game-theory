@@ -1,5 +1,5 @@
 "use server";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { AnalystReportExtra } from "@/prisma/client";
@@ -26,7 +26,7 @@ export async function generateReportScreenshot(report: {
   //   return { coverUrl };
   // }
   if (report.extra.coverObjectUrl) {
-    const coverUrl = proxiedImageCdnUrl({ objectUrl: report.extra.coverObjectUrl });
+    const coverUrl = await getS3SignedCdnUrl(report.extra.coverObjectUrl);
     return { coverUrl };
   }
 

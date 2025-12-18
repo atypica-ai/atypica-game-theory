@@ -5,8 +5,8 @@ import { generateReport } from "@/ai/tools/experts/generateReport";
 import { generateReportCoverSvg } from "@/ai/tools/experts/generateReport/coverSvg";
 import { StatReporter } from "@/ai/tools/types";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { VALID_LOCALES } from "@/i18n/routing";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -155,16 +155,18 @@ export async function fetchAnalystReports({ analystId }: { analystId: number }):
       orderBy: { createdAt: "desc" },
     });
 
-    const reportsWithCoverUrls = reports.map((report) => {
-      const { extra, ...rest } = report;
-      const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
-      if (objectUrl) {
-        const coverCdnHttpUrl = proxiedImageCdnUrl({ objectUrl });
-        return { ...rest, coverCdnHttpUrl };
-      } else {
-        return { ...rest, coverCdnHttpUrl: undefined };
-      }
-    });
+    const reportsWithCoverUrls = await Promise.all(
+      reports.map(async (report) => {
+        const { extra, ...rest } = report;
+        const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
+        if (objectUrl) {
+          const coverCdnHttpUrl = await getS3SignedCdnUrl(objectUrl);
+          return { ...rest, coverCdnHttpUrl };
+        } else {
+          return { ...rest, coverCdnHttpUrl: undefined };
+        }
+      }),
+    );
 
     return {
       success: true,

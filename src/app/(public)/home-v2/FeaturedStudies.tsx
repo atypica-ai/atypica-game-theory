@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { proxiedImageLoader } from "@/lib/utils";
 import { ExternalLinkIcon, FileTextIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
@@ -115,7 +114,6 @@ export function FeaturedStudies() {
             {report.coverUrl ? (
               <div className="relative aspect-video rounded-t-xl overflow-hidden mt-4 mx-12 border">
                 <Image
-                  loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
                   src={report.coverUrl}
                   alt="report cover"
                   fill

@@ -1,5 +1,4 @@
 "use server";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import {
@@ -7,6 +6,7 @@ import {
   PageViewsReport,
   RegionFilter,
 } from "@/lib/analytics/google/reporter";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ServerActionResult } from "@/lib/serverAction";
 import {
   Analyst,
@@ -119,7 +119,7 @@ export async function fetchTopPageViewsAction(
       reportDetails.map(async (report) => {
         const objectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
         if (objectUrl) {
-          const coverUrl = proxiedImageCdnUrl({ objectUrl });
+          const coverUrl = await getS3SignedCdnUrl(objectUrl);
           return { ...report, coverUrl };
         } else {
           return { ...report, coverUrl: undefined };

@@ -23,7 +23,7 @@ import {
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
-import { fileUrlToDataUrl } from "@/lib/attachments/actions";
+import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { createUserChat } from "@/lib/userChat/lib";
 import { ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";

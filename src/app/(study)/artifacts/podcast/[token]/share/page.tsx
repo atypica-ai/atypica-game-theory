@@ -1,6 +1,6 @@
 import { fetchPodcastByToken } from "@/app/(study)/artifacts/podcast/actions";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
 import { Metadata } from "next";
@@ -52,10 +52,7 @@ export async function generateMetadata({
   let image: string | undefined;
   // Use podcast's own cover image
   if (podcast.extra.metadata?.coverObjectUrl) {
-    image = proxiedImageCdnUrl({
-      objectUrl: podcast.extra.metadata.coverObjectUrl,
-      width: 2000,
-    });
+    image = await getS3SignedCdnUrl(podcast.extra.metadata.coverObjectUrl);
   }
   return generatePageMetadata({ title, description, locale, image });
 }

@@ -207,7 +207,17 @@ export async function GET(
       }
 
       // If inContent=1 but no image found in HTML, return 404
-      return new NextResponse("No image found in report content", { status: 404 });
+      // return new NextResponse("No image found in report content", { status: 404 });
+      const emptyImageBuffer = Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+        "base64",
+      );
+      return new NextResponse(Uint8Array.from(emptyImageBuffer), {
+        headers: {
+          "Content-Type": "image/png",
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      });
     }
 
     // Step 2: Use report cover image (default behavior when inContent != 1)

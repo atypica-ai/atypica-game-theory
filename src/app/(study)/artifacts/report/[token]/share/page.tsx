@@ -1,5 +1,5 @@
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
 import { AnalystReportExtra } from "@/prisma/client";
@@ -85,10 +85,7 @@ export async function generateMetadata({
   let image: string | undefined;
   const reportCoverObjectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
   if (reportCoverObjectUrl) {
-    image = proxiedImageCdnUrl({
-      objectUrl: reportCoverObjectUrl,
-      width: 2000,
-    });
+    image = await getS3SignedCdnUrl(reportCoverObjectUrl);
   }
 
   return generatePageMetadata({ title, description, locale, image });

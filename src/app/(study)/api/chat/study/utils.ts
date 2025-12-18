@@ -1,6 +1,6 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { StudyUITools, ToolName } from "@/ai/tools/types";
-import { fileUrlToDataUrl } from "@/lib/attachments/actions";
+import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { parseAttachmentText } from "@/lib/attachments/processing";
 import { Analyst, AttachmentFileExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";

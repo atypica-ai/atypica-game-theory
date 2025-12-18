@@ -6,7 +6,6 @@ import { Pagination } from "@/components/ui/pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { proxiedImageLoader } from "@/lib/utils";
 import { AnalystKind } from "@/prisma/client";
 import { ExternalLinkIcon, FileTextIcon, Loader2Icon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -145,7 +144,6 @@ export default function FeaturedStudiesClient({
             {report.coverUrl ? (
               <div className="relative aspect-video rounded-t-xl overflow-hidden mt-4 mx-16 border">
                 <Image
-                  loader={proxiedImageLoader} // mainland 加载 us s3 的资源需要 proxy
                   src={report.coverUrl}
                   alt="report cover"
                   fill

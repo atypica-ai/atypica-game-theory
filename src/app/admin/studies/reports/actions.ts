@@ -1,10 +1,11 @@
 "use server";
 import { generateReportCoverImage } from "@/ai/tools/experts/generateReport/coverImage";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 // import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
+import { VALID_LOCALES } from "@/i18n/routing";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
@@ -22,7 +23,6 @@ import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { VALID_LOCALES } from "@/i18n/routing";
 
 // Get all analyst reports with pagination
 export async function fetchAnalystReportsAction(
@@ -119,7 +119,7 @@ export async function fetchAnalystReportsAction(
     analystReports.map(async (report) => {
       const objectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
       if (objectUrl) {
-        const coverCdnHttpUrl = proxiedImageCdnUrl({ objectUrl });
+        const coverCdnHttpUrl = await getS3SignedCdnUrl(objectUrl);
         return {
           ...report,
           coverCdnHttpUrl,

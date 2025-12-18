@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDate, proxiedImageLoader } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { RefreshCwIcon } from "lucide-react";
 import { useLocale } from "next-intl";
 import Image from "next/image";
@@ -68,7 +68,6 @@ export function ReportsList({ data, isLoading }: ReportsListProps) {
                       className="relative w-40 h-24 shrink-0 overflow-hidden rounded border hover:opacity-80 transition-opacity"
                     >
                       <Image
-                        loader={proxiedImageLoader}
                         src={pageView.report.coverUrl}
                         alt="report cover"
                         fill

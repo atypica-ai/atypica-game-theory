@@ -1,5 +1,5 @@
 "use server";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Analyst, AnalystPodcast, AnalystPodcastExtra, UserChat } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
@@ -66,9 +66,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
 
   // Use podcast's own cover image
   const coverObjectUrl = (podcast.extra as AnalystPodcastExtra).metadata?.coverObjectUrl;
-  const coverCdnHttpUrl = coverObjectUrl
-    ? proxiedImageCdnUrl({ objectUrl: coverObjectUrl })
-    : undefined;
+  const coverCdnHttpUrl = coverObjectUrl ? await getS3SignedCdnUrl(coverObjectUrl) : undefined;
 
   return {
     success: true,

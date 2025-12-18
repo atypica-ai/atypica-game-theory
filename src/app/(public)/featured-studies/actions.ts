@@ -1,5 +1,5 @@
 "use server";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystKind, FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
@@ -141,20 +141,20 @@ async function _fetchPublicFeaturedReportsImpl({
   }
 
   // Transform to display format
-  return featuredItems.map((item) => {
-    const extra = (item.extra as FeaturedItemExtra) || {};
-    return {
-      id: item.id,
-      createdAt: item.createdAt,
-      title: extra.title || "",
-      description: extra.description || "",
-      coverUrl: extra.coverObjectUrl
-        ? proxiedImageCdnUrl({ objectUrl: extra.coverObjectUrl })
-        : null,
-      url: extra.url || "",
-      category: (extra.category || AnalystKind.misc) as AnalystKind,
-    };
-  });
+  return Promise.all(
+    featuredItems.map(async (item) => {
+      const extra = (item.extra as FeaturedItemExtra) || {};
+      return {
+        id: item.id,
+        createdAt: item.createdAt,
+        title: extra.title || "",
+        description: extra.description || "",
+        coverUrl: extra.coverObjectUrl ? await getS3SignedCdnUrl(extra.coverObjectUrl) : null,
+        url: extra.url || "",
+        category: (extra.category || AnalystKind.misc) as AnalystKind,
+      };
+    }),
+  );
 }
 
 /**

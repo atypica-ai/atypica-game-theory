@@ -43,13 +43,7 @@ export const GeneratePodcastResultMessage = ({
       <AnalystPodcastShareButton podcastToken={data.podcast.token}>
         <div className="relative mb-4 w-[360px] h-[202.5px] cursor-pointer border border-input/50 rounded-md overflow-hidden">
           {data.coverCdnHttpUrl ? (
-            <Image
-              loader={({ src }) => src}
-              src={data.coverCdnHttpUrl}
-              alt="Podcast cover"
-              fill
-              className="object-cover"
-            />
+            <Image src={data.coverCdnHttpUrl} alt="Podcast cover" fill className="object-cover" />
           ) : (
             <div className="w-full h-full bg-muted/50 flex items-center justify-center">
               <MicIcon className="size-12 text-muted-foreground" />

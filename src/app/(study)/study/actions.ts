@@ -5,9 +5,8 @@ import {
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
-import { proxiedImageCdnUrl } from "@/app/(system)/cdn/lib";
 import { trackEventServerSide } from "@/lib/analytics/server";
-import { s3SignedUrl } from "@/lib/attachments/s3";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
@@ -290,7 +289,7 @@ export async function fetchAttachmentsByStudyUserChatToken({
   const fileUIParts = await Promise.all(
     (studyUserChat.analyst.attachments as ChatMessageAttachment[]).map(
       async ({ name, objectUrl, mimeType }) => {
-        const url = await s3SignedUrl(objectUrl);
+        const url = await getS3SignedCdnUrl(objectUrl);
         return { type: "file" as const, mediaType: mimeType, filename: name, url: url };
       },
     ),
@@ -562,7 +561,7 @@ export async function fetchAnalystReportByToken(token: string): Promise<
 
   const { extra, ...rest } = report;
   const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
-  const coverCdnHttpUrl = objectUrl ? proxiedImageCdnUrl({ objectUrl }) : undefined;
+  const coverCdnHttpUrl = objectUrl ? await getS3SignedCdnUrl(objectUrl) : undefined;
 
   return {
     success: true,
@@ -609,16 +608,18 @@ export async function fetchAnalystReportsOfStudyUserChat({
     orderBy: { id: "desc" },
   });
 
-  const reportsWithCoverUrls = reports.map((report) => {
-    const { extra, ...rest } = report;
-    const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
-    if (objectUrl) {
-      const coverCdnHttpUrl = proxiedImageCdnUrl({ objectUrl });
-      return { ...rest, coverCdnHttpUrl };
-    } else {
-      return { ...rest, coverCdnHttpUrl: undefined };
-    }
-  });
+  const reportsWithCoverUrls = await Promise.all(
+    reports.map(async (report) => {
+      const { extra, ...rest } = report;
+      const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
+      if (objectUrl) {
+        const coverCdnHttpUrl = await getS3SignedCdnUrl(objectUrl);
+        return { ...rest, coverCdnHttpUrl };
+      } else {
+        return { ...rest, coverCdnHttpUrl: undefined };
+      }
+    }),
+  );
 
   return {
     success: true,
