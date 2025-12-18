@@ -11,7 +11,7 @@ const advancedWorkflowPrompt = `
 `;
 
 export function AdvancedWorkflowSectionV3() {
-  const t = useTranslations("CreatorPage.AdvancedWorkflowSection");
+  const t = useTranslations("CreatorsPage.AdvancedWorkflowSection");
 
   return (
     <section className="py-32 md:py-40 bg-white dark:bg-zinc-950 relative overflow-hidden">
@@ -48,7 +48,6 @@ export function AdvancedWorkflowSectionV3() {
           <div className="relative rounded-3xl overflow-hidden border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/80">
             <div className="relative aspect-video">
               <Image
-                loader={({ src }) => src}
                 src={`/api/imagegen/dev/${encodeURIComponent(advancedWorkflowPrompt)}?ratio=landscape`}
                 alt="Advanced creator workflow map"
                 fill

@@ -4,6 +4,7 @@ import interviewProjectMessages from "../app/(interviewProject)/messages/zh-CN.j
 import personaMessages from "../app/(persona)/messages/zh-CN.json";
 import publicMessages from "../app/(public)/messages/zh-CN.json";
 import sageMessages from "../app/(sage)/messages/zh-CN.json";
+import solutionsMessages from "../app/(solutions)/messages/zh-CN.json";
 import studyMessages from "../app/(study)/messages/zh-CN.json";
 import accountMessages from "../app/account/messages/zh-CN.json";
 import teamMessages from "../app/team/messages/zh-CN.json";
@@ -20,6 +21,7 @@ declare module "next-intl" {
       typeof sageMessages &
       typeof studyMessages &
       typeof publicMessages &
+      typeof solutionsMessages &
       typeof accountMessages &
       typeof teamMessages;
   }

@@ -17,7 +17,7 @@ const heroImagePrompt = `
 `;
 
 export function HeroSectionV3() {
-  const t = useTranslations("CreatorPage.HeroSection");
+  const t = useTranslations("CreatorsPage.HeroSection");
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -285,7 +285,7 @@ export function HeroSectionV3() {
                   }}
                 />
                 <div
-                  className="absolute inset-[1px] rounded-[1.4rem]"
+                  className="absolute inset-px rounded-[1.4rem]"
                   style={{
                     background:
                       "linear-gradient(90deg, rgba(248,113,113,0.3), rgba(59,130,246,0.3), rgba(250,204,21,0.35))",
@@ -295,9 +295,8 @@ export function HeroSectionV3() {
                 />
               </div>
 
-              <div className="relative aspect-[16/9]">
+              <div className="relative aspect-video">
                 <Image
-                  loader={({ src }) => src}
                   src={`/api/imagegen/dev/${encodeURIComponent(heroImagePrompt)}?ratio=landscape`}
                   alt="Futuristic creator control room UI"
                   fill

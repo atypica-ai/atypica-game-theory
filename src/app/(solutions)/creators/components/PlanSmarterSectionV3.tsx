@@ -36,7 +36,7 @@ const mediumImagePrompts = {
 };
 
 export function PlanSmarterSectionV3() {
-  const t = useTranslations("CreatorPage.PlanSmarterSection");
+  const t = useTranslations("CreatorsPage.PlanSmarterSection");
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"useCase1" | "useCase2" | "useCase3">("useCase1");
 
@@ -324,7 +324,6 @@ export function PlanSmarterSectionV3() {
                         >
                           {useCase1Slide === 0 ? (
                             <Image
-                              loader={({ src }) => src}
                               src={`/api/imagegen/dev/${encodeURIComponent(
                                 mediumImagePrompts[feature.mediumPromptKey],
                               )}?ratio=square`}
@@ -374,7 +373,6 @@ export function PlanSmarterSectionV3() {
                         )}
                       >
                         <Image
-                          loader={({ src }) => src}
                           src={`/api/imagegen/dev/${encodeURIComponent(
                             mediumImagePrompts[feature.mediumPromptKey],
                           )}?ratio=square`}

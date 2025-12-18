@@ -12,6 +12,7 @@ const getMessages = async (locale: string) => {
     sageMessages,
     studyMessages,
     publicMessages,
+    solutionsMessages,
     accountMessages,
     teamMessages,
   ] = await Promise.all([
@@ -22,6 +23,7 @@ const getMessages = async (locale: string) => {
     import(`../app/(sage)/messages/${locale}.json`),
     import(`../app/(study)/messages/${locale}.json`),
     import(`../app/(public)/messages/${locale}.json`),
+    import(`../app/(solutions)/messages/${locale}.json`),
     import(`../app/account/messages/${locale}.json`),
     import(`../app/team/messages/${locale}.json`),
   ]);
@@ -33,6 +35,7 @@ const getMessages = async (locale: string) => {
     ...sageMessages.default,
     ...studyMessages.default,
     ...publicMessages.default,
+    ...solutionsMessages.default,
     ...accountMessages.default,
     ...teamMessages.default,
   };

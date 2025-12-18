@@ -2,14 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fadeinAnimation, keyframes, usePrefersReducedMotion } from "../animations";
-import type { StarPosition } from "../types";
 
 // Revert to original, proven-good starfield implementation
 const STAR_COUNT = 40; // Reduced from 100 (60% reduction)
 const STAR_SIZE = 5; // px
 
 export function StarField() {
-  const [stars, setStars] = useState<StarPosition[]>([]);
+  const [stars, setStars] = useState<{ x: number; y: number; delay: number }[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
 
@@ -17,7 +16,7 @@ export function StarField() {
     const generateStars = () => {
       // Use percentage positioning (0-100%) instead of pixels
       // This eliminates the need for window size calculations
-      const newStars: StarPosition[] = Array.from({ length: STAR_COUNT }, () => ({
+      const newStars = Array.from({ length: STAR_COUNT }, () => ({
         x: Math.random() * 100, // 0-100% instead of pixel width
         y: Math.random() * 100, // 0-100% instead of scrollHeight
         delay: Math.random() * 3,

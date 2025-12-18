@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 export function CTASectionV3() {
-  const t = useTranslations("CreatorPage.CTASection");
+  const t = useTranslations("CreatorsPage.CTASection");
 
   return (
     <section className="py-32 md:py-40 bg-white dark:bg-zinc-950">
@@ -32,25 +32,25 @@ export function CTASectionV3() {
         <div className="mb-12 max-w-3xl">
           <ul className="space-y-4">
             <li className="flex items-start gap-4">
-              <span className="flex-shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
+              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
               <span className="text-base md:text-lg text-zinc-900 dark:text-white leading-relaxed">
                 {t("benefit1")}
               </span>
             </li>
             <li className="flex items-start gap-4">
-              <span className="flex-shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
+              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
               <span className="text-base md:text-lg text-zinc-900 dark:text-white leading-relaxed">
                 {t("benefit2")}
               </span>
             </li>
             <li className="flex items-start gap-4">
-              <span className="flex-shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
+              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
               <span className="text-base md:text-lg text-zinc-900 dark:text-white leading-relaxed">
                 {t("benefit3")}
               </span>
             </li>
             <li className="flex items-start gap-4">
-              <span className="flex-shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
+              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
               <span className="text-base md:text-lg text-zinc-900 dark:text-white leading-relaxed">
                 {t("benefit4")}
               </span>
@@ -115,7 +115,7 @@ export function CTASectionV3() {
                 rel="noreferrer"
                 className={cn(
                   "w-11 h-11 rounded-md flex items-center justify-center",
-                  "bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-400 text-white",
+                  "bg-linear-to-tr from-pink-500 via-red-500 to-yellow-400 text-white",
                   "transition-opacity hover:opacity-90",
                 )}
                 aria-label="Atypica on Instagram"
@@ -161,8 +161,8 @@ export function CTASectionV3() {
                 )}
                 aria-label="Atypica on YouTube"
               >
-                <div className="relative w-4 h-3 rounded-[4px] border border-white/60 flex items-center justify-center">
-                  <div className="w-0 h-0 border-l-[6px] border-l-white border-y-[4px] border-y-transparent translate-x-[1px]" />
+                <div className="relative w-4 h-3 rounded-lg border border-white/60 flex items-center justify-center">
+                  <div className="w-0 h-0 border-l-[6px] border-l-white border-y-4 border-y-transparent translate-x-px" />
                 </div>
               </Link>
 

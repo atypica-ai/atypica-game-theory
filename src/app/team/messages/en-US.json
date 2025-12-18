@@ -204,9 +204,6 @@
       "listApiKeys": {
         "failed": "Failed to list API keys"
       },
-      "generateApiKey": {
-        "failed": "Failed to generate API key"
-      },
       "deleteApiKey": {
         "failed": "Failed to delete API key"
       }

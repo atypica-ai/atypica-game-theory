@@ -7,8 +7,9 @@ import { HeroSectionV3 } from "./components/HeroSectionV3";
 import { PlanSmarterSectionV3 } from "./components/PlanSmarterSectionV3";
 import { StarField } from "./components/StarField";
 import { TurnResearchSectionV3 } from "./components/TurnResearchSectionV3";
+import "./style.css";
 
-export default function CreatorPage() {
+export default function CreatorsPage() {
   return (
     <>
       {/* Optimized star field: 40 stars with reduced motion support */}

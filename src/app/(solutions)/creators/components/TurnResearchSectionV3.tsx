@@ -44,7 +44,7 @@ const contentFlowPrompts = {
 };
 
 export function TurnResearchSectionV3() {
-  const t = useTranslations("CreatorPage.TurnResearchSection");
+  const t = useTranslations("CreatorsPage.TurnResearchSection");
   const [hoveredOutput, setHoveredOutput] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<"overview" | "reuse" | "examples">("overview");
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -137,7 +137,7 @@ export function TurnResearchSectionV3() {
             {/* Transformation Flow with Interactive Cards */}
             <div className="mb-16">
               {/* Bold transformation statement */}
-              <div className="bg-gradient-to-r from-red-500 via-blue-500 to-amber-400 p-[1px] rounded-2xl mb-8 max-w-2xl mx-auto">
+              <div className="bg-linear-to-r from-red-500 via-blue-500 to-amber-400 p-px rounded-2xl mb-8 max-w-2xl mx-auto">
                 <div className="bg-white dark:bg-zinc-900 px-6 py-5 rounded-xl">
                   <div className="flex items-center justify-center gap-4 flex-wrap md:flex-nowrap">
                     <span className="text-4xl md:text-5xl font-bold text-red-500">1</span>
@@ -165,7 +165,7 @@ export function TurnResearchSectionV3() {
                 <div
                   className={cn(
                     "relative p-6 rounded-xl border transition-all duration-300 cursor-default",
-                    "bg-gradient-to-br from-red-50 to-red-100/30 dark:from-red-950/20 dark:to-red-900/10",
+                    "bg-linear-to-br from-red-50 to-red-100/30 dark:from-red-950/20 dark:to-red-900/10",
                     "border-red-200 dark:border-red-800",
                     "hover:shadow-2xl hover:-translate-y-2 hover:-rotate-1 hover:scale-[1.02]",
                     hoveredOutput === "article" && "ring-2 ring-red-400 dark:ring-red-600",
@@ -177,14 +177,13 @@ export function TurnResearchSectionV3() {
                     {/* Small icon image */}
                     <div
                       className={cn(
-                        "relative w-16 h-16 rounded-lg overflow-hidden border border-red-300 dark:border-red-700 flex-shrink-0",
+                        "relative w-16 h-16 rounded-lg overflow-hidden border border-red-300 dark:border-red-700 shrink-0",
                         "bg-white",
                         "transition-all duration-300",
                         hoveredOutput === "article" ? "scale-110" : "scale-100",
                       )}
                     >
                       <Image
-                        loader={({ src }) => src}
                         src={`/api/imagegen/dev/${encodeURIComponent(outputIconPrompts.article)}?ratio=square`}
                         alt="Article output"
                         fill
@@ -205,7 +204,7 @@ export function TurnResearchSectionV3() {
                 <div
                   className={cn(
                     "relative p-6 rounded-xl border transition-all duration-300 cursor-default",
-                    "bg-gradient-to-br from-blue-50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10",
+                    "bg-linear-to-br from-blue-50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10",
                     "border-blue-200 dark:border-blue-800",
                     "hover:shadow-2xl hover:-translate-y-2 hover:-rotate-1 hover:scale-[1.02]",
                     hoveredOutput === "podcast" && "ring-2 ring-blue-400 dark:ring-blue-600",
@@ -217,14 +216,13 @@ export function TurnResearchSectionV3() {
                     {/* Small icon image */}
                     <div
                       className={cn(
-                        "relative w-16 h-16 rounded-lg overflow-hidden border border-blue-300 dark:border-blue-700 flex-shrink-0",
+                        "relative w-16 h-16 rounded-lg overflow-hidden border border-blue-300 dark:border-blue-700 shrink-0",
                         "bg-white",
                         "transition-all duration-300",
                         hoveredOutput === "podcast" ? "scale-110" : "scale-100",
                       )}
                     >
                       <Image
-                        loader={({ src }) => src}
                         src={`/api/imagegen/dev/${encodeURIComponent(outputIconPrompts.podcast)}?ratio=square`}
                         alt="Podcast output"
                         fill
@@ -346,25 +344,25 @@ export function TurnResearchSectionV3() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
                     {t("idealFor.type1")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
                     {t("idealFor.type2")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
                     {t("idealFor.type3")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
                     {t("idealFor.type4")}
                   </span>
@@ -386,7 +384,7 @@ export function TurnResearchSectionV3() {
               <div className="mb-10 relative w-full">
                 <div
                   className={cn(
-                    "relative aspect-[16/3] rounded-xl overflow-hidden",
+                    "relative aspect-16/3 rounded-xl overflow-hidden",
                     "border border-zinc-200 dark:border-zinc-800",
                     "bg-white dark:bg-zinc-900 shadow-lg",
                     "hover:shadow-xl hover:scale-[1.01] transition-all duration-300",
@@ -396,7 +394,6 @@ export function TurnResearchSectionV3() {
                   }}
                 >
                   <Image
-                    loader={({ src }) => src}
                     src={`/api/imagegen/dev/${encodeURIComponent(contentFlowPrompts.rawMaterial)}?ratio=landscape`}
                     alt="Podcast audio as raw material for content creation"
                     fill
@@ -418,9 +415,8 @@ export function TurnResearchSectionV3() {
 
               {/* Content Flow Visualization */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-10">
-                <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-red-200 bg-white dark:border-red-800 dark:bg-zinc-900 shadow-lg max-w-md mx-auto">
+                <div className="relative aspect-4/3 rounded-xl overflow-hidden border border-red-200 bg-white dark:border-red-800 dark:bg-zinc-900 shadow-lg max-w-md mx-auto">
                   <Image
-                    loader={({ src }) => src}
                     src={`/api/imagegen/dev/${encodeURIComponent(contentFlowPrompts.multiFormat)}?ratio=landscape`}
                     alt="Multi-format content transformation"
                     fill
@@ -474,9 +470,8 @@ export function TurnResearchSectionV3() {
                     </span>
                   </li>
                 </ul>
-                <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-amber-200 bg-white dark:border-amber-800 dark:bg-zinc-900 shadow-lg lg:order-last order-first max-w-md mx-auto">
+                <div className="relative aspect-4/3 rounded-xl overflow-hidden border border-amber-200 bg-white dark:border-amber-800 dark:bg-zinc-900 shadow-lg lg:order-last order-first max-w-md mx-auto">
                   <Image
-                    loader={({ src }) => src}
                     src={`/api/imagegen/dev/${encodeURIComponent(contentFlowPrompts.socialStrategy)}?ratio=landscape`}
                     alt="Social media strategy calendar"
                     fill
@@ -517,7 +512,7 @@ export function TurnResearchSectionV3() {
                 rel="noreferrer"
                 className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 hover:-translate-y-1 transition-transform duration-300"
               >
-                <div className="h-24 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 flex items-center justify-between px-4">
+                <div className="h-24 bg-linear-to-r from-zinc-900 via-zinc-800 to-zinc-900 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 flex items-center justify-between px-4">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-md bg-brand-green/10 flex items-center justify-center text-brand-green text-lg">
                       🎧
@@ -542,7 +537,7 @@ export function TurnResearchSectionV3() {
                 rel="noreferrer"
                 className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 hover:-translate-y-1 transition-transform duration-300"
               >
-                <div className="h-24 bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 flex items-center justify-between px-4">
+                <div className="h-24 bg-linear-to-r from-blue-900 via-blue-800 to-blue-900 flex items-center justify-between px-4">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center text-white text-lg">
                       🎙️
@@ -567,7 +562,7 @@ export function TurnResearchSectionV3() {
                 rel="noreferrer"
                 className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 hover:-translate-y-1 transition-transform duration-300"
               >
-                <div className="h-24 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-between px-4">
+                <div className="h-24 bg-linear-to-r from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-between px-4">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-md bg-brand-green/20 flex items-center justify-center text-brand-green text-lg">
                       ▶

@@ -15,7 +15,7 @@ const personaPanelPrompt = `
 `;
 
 export function AskAudienceSectionV3() {
-  const t = useTranslations("CreatorPage.AskAudienceSection");
+  const t = useTranslations("CreatorsPage.AskAudienceSection");
 
   // Simple 2-slide carousel for the right visual (HUD + real persona video)
   const [activeSlide, setActiveSlide] = useState<0 | 1>(0);
@@ -138,7 +138,6 @@ export function AskAudienceSectionV3() {
             <div className="relative aspect-video rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 shadow-[0_0_24px_rgba(59,130,246,0.4)]">
               {activeSlide === 0 ? (
                 <Image
-                  loader={({ src }) => src}
                   src={`/api/imagegen/dev/${encodeURIComponent(personaPanelPrompt)}?ratio=landscape`}
                   alt="AI persona focus group dashboard"
                   fill
