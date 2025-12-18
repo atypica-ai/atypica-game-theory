@@ -9,6 +9,7 @@ import { S3UploadCredentials } from "./types";
 
 export const AWS_S3_CONFIG: {
   origin: string;
+  cdnOrigin?: string;
   bucketName: string;
   region: "cn-north-1" | "us-east-1";
   accessKeyId: string;
