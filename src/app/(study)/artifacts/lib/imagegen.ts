@@ -13,37 +13,6 @@ import { createHash } from "crypto";
 import { Logger } from "pino";
 import { z } from "zod/v3";
 
-// export async function imageGenerationObjectUrlToHttpUrl(imageGeneration: ImageGeneration) {
-//   const { id, objectUrl } = imageGeneration;
-//   let extra = imageGeneration.extra as unknown as NonNullable<ImageGenerationExtra>;
-//   let url: string;
-//   if (
-//     extra?.s3SignedUrl &&
-//     extra?.s3SignedUrlExpiresAt &&
-//     extra.s3SignedUrlExpiresAt > Date.now() + 60 * 60 * 1000
-//   ) {
-//     // s3SignedUrl exists and expires in the next hour
-//     url = extra.s3SignedUrl;
-//   } else {
-//     const signingDate = new Date();
-//     const expiresIn = 7 * 24 * 3600; // in seconds
-//     url = await s3SignedUrl(objectUrl, { signingDate, expiresIn });
-//     extra = {
-//       ...extra,
-//       s3SignedUrl: url,
-//       s3SignedUrlExpiresAt: signingDate.valueOf() + expiresIn * 1000,
-//     };
-//     waitUntil(
-//       new Promise((resolve) => {
-//         prisma.imageGeneration
-//           .update({ where: { id }, data: { extra } })
-//           .finally(() => resolve(null));
-//       }),
-//     );
-//   }
-//   return url;
-// }
-
 /**
  * 在 reportGenerationTool 的 throttleSaveHTML 方法里调用
  */
