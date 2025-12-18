@@ -1,8 +1,8 @@
 import "server-only";
 
 import { ToolName } from "@/ai/tools/types";
-import { fileUrlToDataUrl } from "@/lib/attachments/actions";
-import { s3SignedUrl } from "@/lib/attachments/s3";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { InputJsonValue, ITXClientDenyList } from "@prisma/client/runtime/client";
@@ -380,7 +380,7 @@ export async function convertDBMessagesToAIMessages(
           attachments.map(async ({ name, objectUrl, mimeType, size }, index) => {
             const url =
               convertObjectUrl === "HttpUrl"
-                ? await s3SignedUrl(objectUrl)
+                ? await getS3SignedCdnUrl(objectUrl)
                 : convertObjectUrl === "DataUrl"
                   ? await fileUrlToDataUrl({ objectUrl, mimeType })
                   : "";
