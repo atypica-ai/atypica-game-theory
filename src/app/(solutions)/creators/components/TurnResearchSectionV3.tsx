@@ -87,7 +87,7 @@ export function TurnResearchSectionV3() {
   }, []);
 
   return (
-    <section className="py-16 md:py-20 bg-muted/30">
+    <section className="py-20 md:py-28 bg-muted/30">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-4">
@@ -95,7 +95,7 @@ export function TurnResearchSectionV3() {
         </p>
 
         {/* Title - follow global max heading size */}
-        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-3 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 
@@ -182,6 +182,10 @@ export function TurnResearchSectionV3() {
                     "hover:shadow-2xl hover:-translate-y-2 hover:-rotate-1 hover:scale-[1.02]",
                     hoveredOutput === "article" && "ring-2 ring-red-400 dark:ring-red-600",
                   )}
+                  style={{
+                    boxShadow:
+                      hoveredOutput === "article" ? "0 0 32px rgba(248,113,113,0.5)" : undefined,
+                  }}
                   onMouseEnter={() => setHoveredOutput("article")}
                   onMouseLeave={() => setHoveredOutput(null)}
                 >
@@ -221,6 +225,10 @@ export function TurnResearchSectionV3() {
                     "hover:shadow-2xl hover:-translate-y-2 hover:-rotate-1 hover:scale-[1.02]",
                     hoveredOutput === "podcast" && "ring-2 ring-blue-400 dark:ring-blue-600",
                   )}
+                  style={{
+                    boxShadow:
+                      hoveredOutput === "podcast" ? "0 0 32px rgba(59,130,246,0.5)" : undefined,
+                  }}
                   onMouseEnter={() => setHoveredOutput("podcast")}
                   onMouseLeave={() => setHoveredOutput(null)}
                 >

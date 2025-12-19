@@ -3,11 +3,11 @@
   0%,
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
   50% {
     opacity: 0.7;
-    transform: translate(-50%, -50%) scale(1.1);
+    transform: scale(1.1);
   }
 }
 
@@ -82,7 +82,9 @@
 
 /* Utility classes for game-style effects */
 .hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .hover-lift:hover {
@@ -108,4 +110,19 @@
 
 .animate-slide-in-left {
   animation: fadeInUp 0.6s ease-out;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-scale-in,
+  .animate-slide-in-left {
+    animation: none;
+  }
+
+  [style*="animation: orbit"],
+  [style*="animation: float"],
+  [style*="animation: glow-pulse"] {
+    animation: none !important;
+  }
 }

@@ -98,7 +98,7 @@ export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
   }, [useCase1Hovered]);
 
   return (
-    <section className="py-16 md:py-20 relative overflow-hidden">
+    <section className="py-20 md:py-28 relative overflow-hidden bg-zinc-50/50 dark:bg-zinc-900/50">
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-xs font-medium tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-4">
@@ -106,7 +106,7 @@ export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
         </p>
 
         {/* Title */}
-        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-3 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 
@@ -161,7 +161,6 @@ export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
         <div className="flex flex-wrap justify-center gap-4 mb-12">
           {featureConfigs.map((feature) => {
             const isActive = activeTab === feature.id;
-
             return (
               <button
                 key={feature.id}
@@ -190,9 +189,27 @@ export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
           if (activeTab !== feature.id) return null;
           const accentClasses = getAccentClasses(feature.accent);
 
+          const glowColors = {
+            red: "0 0 40px rgba(248,113,113,0.4)",
+            blue: "0 0 40px rgba(59,130,246,0.4)",
+            yellow: "0 0 40px rgba(250,204,21,0.4)",
+          };
+
           return (
             <div key={feature.id} className="max-w-6xl mx-auto animate-scale-in">
-              <div className="bg-card/70 rounded-3xl p-8 md:p-10 lg:p-12 border border-border hover:border-[#18FF19]/40 transition-all duration-300 hover:shadow-[0_0_40px_rgba(24,255,25,0.25)]">
+              <div
+                className="bg-card/70 rounded-3xl p-8 md:p-10 lg:p-12 border border-border hover:border-[#18FF19]/40 transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  boxShadow: "0 0 0 rgba(0,0,0,0)",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = glowColors[feature.accent];
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
+                }}
+              >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                   {/* Left: Text content */}
                   <div className="animate-slide-in-left">

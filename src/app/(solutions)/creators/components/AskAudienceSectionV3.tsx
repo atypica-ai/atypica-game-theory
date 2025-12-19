@@ -30,7 +30,7 @@ export function AskAudienceSectionV3({ s3Origin }: { s3Origin: string }) {
   }, [hovered]);
 
   return (
-    <section className="py-16 md:py-20 relative overflow-hidden">
+    <section className="bg-zinc-100 dark:bg-zinc-800 py-20 md:py-28 relative overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-4">
@@ -38,7 +38,7 @@ export function AskAudienceSectionV3({ s3Origin }: { s3Origin: string }) {
         </p>
 
         {/* Title */}
-        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-3 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 
@@ -135,7 +135,15 @@ export function AskAudienceSectionV3({ s3Origin }: { s3Origin: string }) {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
           >
-            <div className="relative aspect-video rounded-3xl overflow-hidden border border-border bg-card/80 shadow-[0_0_24px_rgba(59,130,246,0.4)]">
+            <div
+              className="relative aspect-video rounded-3xl overflow-hidden border border-border bg-card/80 transition-all duration-300"
+              style={{
+                boxShadow:
+                  activeSlide === 1
+                    ? "0 0 32px rgba(59,130,246,0.5)"
+                    : "0 0 24px rgba(59,130,246,0.3)",
+              }}
+            >
               {activeSlide === 0 ? (
                 <Image
                   src={`/api/imagegen/dev/${encodeURIComponent(personaPanelPrompt)}?ratio=landscape`}

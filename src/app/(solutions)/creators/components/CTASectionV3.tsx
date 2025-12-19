@@ -8,7 +8,7 @@ export function CTASectionV3() {
   const t = useTranslations("CreatorsPage.CTASection");
 
   return (
-    <section className="py-20 md:py-24">
+    <section className="bg-zinc-100 dark:bg-zinc-800 py-20 md:py-28">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Headlines - Bold Statement (but within global max size) */}
         <div className="mb-16 max-w-3xl">
@@ -78,8 +78,17 @@ export function CTASectionV3() {
                 className={cn(
                   "w-11 h-11 rounded-md flex items-center justify-center",
                   "bg-zinc-900 text-white hover:bg-zinc-800",
-                  "transition-colors",
+                  "transition-all duration-300",
                 )}
+                style={{
+                  boxShadow: "0 0 0 rgba(0,0,0,0)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 20px rgba(24,255,25,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
+                }}
                 aria-label="Atypica on X"
               >
                 <svg
@@ -116,8 +125,17 @@ export function CTASectionV3() {
                 className={cn(
                   "w-11 h-11 rounded-md flex items-center justify-center",
                   "bg-linear-to-tr from-pink-500 via-red-500 to-yellow-400 text-white",
-                  "transition-opacity hover:opacity-90",
+                  "transition-all duration-300 hover:opacity-90",
                 )}
+                style={{
+                  boxShadow: "0 0 0 rgba(0,0,0,0)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 20px rgba(24,255,25,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
+                }}
                 aria-label="Atypica on Instagram"
               >
                 <span className="text-xs font-semibold tracking-wide">IG</span>
@@ -131,8 +149,17 @@ export function CTASectionV3() {
                 className={cn(
                   "w-11 h-11 rounded-md flex items-center justify-center",
                   "bg-[#0A66C2] text-white hover:bg-[#09529a]",
-                  "transition-colors",
+                  "transition-all duration-300",
                 )}
+                style={{
+                  boxShadow: "0 0 0 rgba(0,0,0,0)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 20px rgba(24,255,25,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
+                }}
                 aria-label="Atypica on LinkedIn"
               >
                 <svg
@@ -157,8 +184,17 @@ export function CTASectionV3() {
                 className={cn(
                   "w-11 h-11 rounded-md flex items-center justify-center",
                   "bg-[#FF0000] text-white hover:bg-[#cc0000]",
-                  "transition-colors",
+                  "transition-all duration-300",
                 )}
+                style={{
+                  boxShadow: "0 0 0 rgba(0,0,0,0)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 20px rgba(24,255,25,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
+                }}
                 aria-label="Atypica on YouTube"
               >
                 <div className="relative w-4 h-3 rounded-lg border border-white/60 flex items-center justify-center">
@@ -174,8 +210,17 @@ export function CTASectionV3() {
                 className={cn(
                   "w-11 h-11 rounded-md flex items-center justify-center",
                   "bg-[#5662F6] text-white hover:bg-[#4650c8]",
-                  "transition-colors",
+                  "transition-all duration-300",
                 )}
+                style={{
+                  boxShadow: "0 0 0 rgba(0,0,0,0)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 20px rgba(24,255,25,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
+                }}
                 aria-label="Atypica on Discord"
               >
                 <svg

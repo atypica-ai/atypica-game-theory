@@ -14,7 +14,7 @@ export function AdvancedWorkflowSectionV3() {
   const t = useTranslations("CreatorsPage.AdvancedWorkflowSection");
 
   return (
-    <section className="py-16 md:py-20 relative overflow-hidden">
+    <section className="bg-white dark:bg-zinc-900 py-20 md:py-28 relative overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-4">
@@ -51,7 +51,13 @@ export function AdvancedWorkflowSectionV3() {
           {/* Workflow 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-2">
-              <span className="text-6xl font-bold text-red-500 drop-shadow-[0_0_10px_rgba(248,113,113,0.6)]">
+              <span
+                className="text-6xl font-bold text-red-500"
+                style={{
+                  textShadow: "0 0 20px rgba(248,113,113,0.6)",
+                  filter: "drop-shadow(0 0 10px rgba(248,113,113,0.6))",
+                }}
+              >
                 01
               </span>
             </div>
@@ -89,7 +95,13 @@ export function AdvancedWorkflowSectionV3() {
           {/* Workflow 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-t border-zinc-200 dark:border-zinc-800 pt-20">
             <div className="lg:col-span-2">
-              <span className="text-6xl font-bold text-blue-400 drop-shadow-[0_0_10px_rgba(59,130,246,0.6)]">
+              <span
+                className="text-6xl font-bold text-blue-400"
+                style={{
+                  textShadow: "0 0 20px rgba(59,130,246,0.6)",
+                  filter: "drop-shadow(0 0 10px rgba(59,130,246,0.6))",
+                }}
+              >
                 02
               </span>
             </div>
@@ -133,7 +145,13 @@ export function AdvancedWorkflowSectionV3() {
           {/* Workflow 3 */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 border-t border-zinc-200 dark:border-zinc-800 pt-20">
             <div className="lg:col-span-2">
-              <span className="text-6xl font-bold text-amber-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]">
+              <span
+                className="text-6xl font-bold text-amber-400"
+                style={{
+                  textShadow: "0 0 20px rgba(250,204,21,0.8)",
+                  filter: "drop-shadow(0 0 10px rgba(250,204,21,0.8))",
+                }}
+              >
                 03
               </span>
             </div>
