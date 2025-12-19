@@ -21,33 +21,17 @@ import { splitStringIntoChunks } from "./utils";
  * Uses direct HTTP requests with proxiedFetch to support proxy configuration.
  */
 export class GoogleTTSClient {
-  private auth: GoogleAuth;
   private projectId: string;
-  private location: string;
-  private gcsBucket: string;
   private logger?: Logger;
 
   constructor(
     config: {
       projectId: string;
-      location?: string;
-      gcsBucket: string;
     },
     logger?: Logger,
   ) {
     this.projectId = config.projectId;
-    this.location = config.location || "global";
-    this.gcsBucket = config.gcsBucket;
     this.logger = logger;
-
-    // Initialize Google Auth with Application Default Credentials
-    // This will work with the https.request override in proxy/fetch.ts
-    this.auth = new GoogleAuth({
-      scopes: [
-        "https://www.googleapis.com/auth/cloud-platform",
-        "https://www.googleapis.com/auth/cloud-platform.read-only",
-      ],
-    });
   }
 
   /**
@@ -69,7 +53,6 @@ export class GoogleTTSClient {
    * Start long audio synthesis operation
    */
   private async startSynthesis(text: string, accessToken: string): Promise<Buffer> {
-    // const parent = `projects/${this.projectId}/locations/${this.location}`;
     const url = `https://texttospeech.googleapis.com/v1/text:synthesize`;
     const requestBody = {
       input: {
@@ -182,7 +165,6 @@ export class GoogleTTSClient {
         const chunk = chunks[i];
 
         try {
-          console.log(chunk);
           const audioChunk = await this.startSynthesis(chunk, accessToken);
           audioChunks.push(audioChunk);
           this.logger?.info({
@@ -253,18 +235,16 @@ export class GoogleTTSClient {
  */
 export function createGoogleTTSClient(logger?: Logger): GoogleTTSClient {
   const projectId = process.env.GOOGLE_VERTEX_PROJECT;
-  const gcsBucket = process.env.GOOGLE_CLOUD_STORAGE_BUCKET;
 
-  if (!projectId || !gcsBucket) {
+  if (!projectId) {
     throw new Error(
-      "Missing Google Cloud configuration. Please set GOOGLE_VERTEX_PROJECT and GOOGLE_CLOUD_STORAGE_BUCKET environment variables.",
+      "Missing Google Cloud configuration. Please set GOOGLE_VERTEX_PROJECT environment variable.",
     );
   }
 
   return new GoogleTTSClient(
     {
       projectId,
-      gcsBucket,
     },
     logger,
   );
