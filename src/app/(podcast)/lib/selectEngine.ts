@@ -2,6 +2,7 @@ import "server-only";
 
 import { Logger } from "pino";
 import { createGoogleTTSClient } from "./google/client";
+import { TTSClient } from "./types";
 import { createVolcanoClient } from "./volcano/client";
 
 /**
@@ -38,7 +39,7 @@ export function selectTTSEngine(
 /**
  * Get the appropriate TTS client based on selection
  */
-export function getTTSClient(engine: "google" | "volcano", logger?: Logger) {
+export function getTTSClient(engine: "google" | "volcano", logger?: Logger): TTSClient {
   if (engine === "google") {
     return createGoogleTTSClient(logger);
   }

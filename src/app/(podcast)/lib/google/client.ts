@@ -5,7 +5,7 @@ import { GoogleAuth } from "google-auth-library";
 import { Logger } from "pino";
 import { AudioCache } from "../cache/audioCache";
 import { parseScriptToText } from "../script/parser";
-import { PodcastGenerationOptions, PodcastGenerationResult } from "../volcano/client";
+import { PodcastGenerationOptions, PodcastGenerationResult, TTSClient } from "../types";
 import { splitStringIntoChunks } from "./utils";
 
 /**
@@ -20,7 +20,7 @@ import { splitStringIntoChunks } from "./utils";
  *
  * Uses direct HTTP requests with proxiedFetch to support proxy configuration.
  */
-export class GoogleTTSClient {
+export class GoogleTTSClient implements TTSClient {
   private projectId: string;
   private logger?: Logger;
 
@@ -115,10 +115,28 @@ export class GoogleTTSClient {
       this.logger = logger;
     }
 
+    // Input validation
+    if (!script || script.trim().length === 0) {
+      throw new Error("Script is required and cannot be empty");
+    }
+
+    if (!podcastToken || podcastToken.trim().length === 0) {
+      throw new Error("Podcast token is required");
+    }
+
+    if (hostCount !== 1) {
+      throw new Error("Google TTS only supports single-speaker podcasts (hostCount = 1)");
+    }
+
+    if (locale !== "en-US") {
+      throw new Error("Google TTS currently only supports en-US locale");
+    }
+
     this.logger?.info({
       msg: "Starting Google TTS podcast audio generation",
       podcastToken,
       hostCount,
+      scriptLength: script.length,
     });
 
     try {
@@ -126,7 +144,15 @@ export class GoogleTTSClient {
       const text = parseScriptToText(script);
 
       if (!text || text.trim().length === 0) {
-        throw new Error("No dialogue content found in script");
+        throw new Error("No dialogue content found in script after parsing");
+      }
+
+      // Validate text length (Google TTS has practical limits)
+      const MAX_TEXT_LENGTH = 500000; // ~500KB of text
+      if (text.length > MAX_TEXT_LENGTH) {
+        throw new Error(
+          `Text length (${text.length} characters) exceeds maximum supported length (${MAX_TEXT_LENGTH} characters)`,
+        );
       }
 
       this.logger?.info({
@@ -162,8 +188,8 @@ export class GoogleTTSClient {
         });
       }
 
-      // Split text into chunks and synthesize each chunk
-      const chunks = splitStringIntoChunks(text, 1000);
+      // Split text into chunks and synthesize each chunk (using default MAX_CHUNK_SIZE of 3500 bytes)
+      const chunks = splitStringIntoChunks(text);
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
 

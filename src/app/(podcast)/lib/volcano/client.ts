@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
 import { AudioCache } from "../cache/audioCache";
 import { cleanPodcastScriptLine } from "../script/cleaner";
+import { PodcastGenerationOptions, PodcastGenerationResult, TTSClient } from "../types";
 import {
   EventType,
   FinishConnection,
@@ -27,28 +28,13 @@ export interface VolcanoTTSConfig {
   resourceId?: string;
 }
 
-export interface PodcastGenerationOptions {
-  script: string;
-  podcastToken: string;
-  locale?: string;
-  hostCount: 1 | 2; // Number of hosts for audio generation (1 = solo, 2 = duo) - REQUIRED
-  logger?: Logger;
-}
-
-export interface PodcastGenerationResult {
-  audioBuffer: Buffer;
-  duration?: number;
-  mimeType: string;
-  error?: string;
-}
-
 // Default speaker configuration
 const DEFAULT_SPEAKERS = {
   "zh-CN": ["zh_male_dayixiansheng_v2_saturn_bigtts", "zh_female_mizaitongxue_v2_saturn_bigtts"],
   "en-US": ["zh_male_liufei_v2_saturn_bigtts", "zh_male_xiaolei_v2_saturn_bigtts"],
 };
 
-export class VolcanoTTSClient {
+export class VolcanoTTSClient implements TTSClient {
   private config: VolcanoTTSConfig;
   private logger?: Logger;
 
