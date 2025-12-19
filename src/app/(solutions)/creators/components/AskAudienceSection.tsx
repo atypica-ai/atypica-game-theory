@@ -14,7 +14,7 @@ const personaPanelPrompt = `
   Style: sci-fi game interface, clean, no characters, only UI elements.
 `;
 
-export function AskAudienceSectionV3({ s3Origin }: { s3Origin: string }) {
+export function AskAudienceSection({ s3Origin }: { s3Origin: string }) {
   const t = useTranslations("CreatorsPage.AskAudienceSection");
 
   // Simple 2-slide carousel for the right visual (HUD + real persona video)

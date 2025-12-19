@@ -16,7 +16,7 @@ const heroImagePrompt = `
   Colors: deep charcoal background, neon red, electric blue, cyber yellow accents, a little brand green.
 `;
 
-export function HeroSectionV3() {
+export function HeroSection() {
   const t = useTranslations("CreatorsPage.HeroSection");
   const [isVisible, setIsVisible] = useState(false);
 

@@ -44,7 +44,7 @@ const contentFlowPrompts = {
   `,
 };
 
-export function TurnResearchSectionV3() {
+export function TurnResearchSection() {
   const t = useTranslations("CreatorsPage.TurnResearchSection");
   const [hoveredOutput, setHoveredOutput] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<"overview" | "reuse" | "examples">("overview");

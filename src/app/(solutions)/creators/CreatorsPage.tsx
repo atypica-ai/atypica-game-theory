@@ -2,12 +2,12 @@
 
 import { reginalS3Origin } from "@/app/(public)/home-v3/actions";
 import { useEffect, useState } from "react";
-import { AdvancedWorkflowSectionV3 } from "./components/AdvancedWorkflowSectionV3";
-import { AskAudienceSectionV3 } from "./components/AskAudienceSectionV3";
-import { CTASectionV3 } from "./components/CTASectionV3";
-import { HeroSectionV3 } from "./components/HeroSectionV3";
-import { PlanSmarterSectionV3 } from "./components/PlanSmarterSectionV3";
-import { TurnResearchSectionV3 } from "./components/TurnResearchSectionV3";
+import { AdvancedWorkflowSection } from "./components/AdvancedWorkflowSection";
+import { AskAudienceSection } from "./components/AskAudienceSection";
+import { CTASection } from "./components/CTASection";
+import { HeroSection } from "./components/HeroSection";
+import { PlanSmarterSection } from "./components/PlanSmarterSection";
+import { TurnResearchSection } from "./components/TurnResearchSection";
 import "./style.css";
 
 export default function CreatorsPage() {
@@ -26,12 +26,12 @@ export default function CreatorsPage() {
 
       {/* Main content - Professional, minimal design with brand green accents */}
       <div className="relative" style={{ zIndex: 1 }}>
-        <HeroSectionV3 />
-        <PlanSmarterSectionV3 s3Origin={s3Origin} />
-        <AskAudienceSectionV3 s3Origin={s3Origin} />
-        <TurnResearchSectionV3 />
-        <AdvancedWorkflowSectionV3 />
-        <CTASectionV3 />
+        <HeroSection />
+        <PlanSmarterSection s3Origin={s3Origin} />
+        <AskAudienceSection s3Origin={s3Origin} />
+        <TurnResearchSection />
+        <AdvancedWorkflowSection />
+        <CTASection />
       </div>
     </>
   ) : null;

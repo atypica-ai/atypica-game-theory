@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
-export function CTASectionV3() {
+export function CTASection() {
   const t = useTranslations("CreatorsPage.CTASection");
 
   return (

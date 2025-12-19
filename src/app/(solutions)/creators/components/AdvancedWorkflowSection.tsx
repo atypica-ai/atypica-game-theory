@@ -10,7 +10,7 @@ const advancedWorkflowPrompt = `
   No characters, only UI elements.
 `;
 
-export function AdvancedWorkflowSectionV3() {
+export function AdvancedWorkflowSection() {
   const t = useTranslations("CreatorsPage.AdvancedWorkflowSection");
 
   return (

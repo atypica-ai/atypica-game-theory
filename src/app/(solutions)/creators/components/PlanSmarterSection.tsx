@@ -35,7 +35,7 @@ const mediumImagePrompts = {
   `,
 };
 
-export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
+export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
   const t = useTranslations("CreatorsPage.PlanSmarterSection");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
