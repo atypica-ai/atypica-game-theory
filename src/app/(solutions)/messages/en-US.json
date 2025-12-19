@@ -116,15 +116,16 @@
       "subtitle": "A multi-agent system that behaves like a real strategy team, conducting audience analysis, competitive reviews, and insight discovery.",
       "quickStartPrompt": "Don\u2019t know where to start? Try one of these research prompts:",
       "ctaResearch": "Start AI Research",
+      "selectUseCase": "Select a use case:",
       "useCase1": {
-        "title": "Build your content/account strategy from scratch",
+        "title": "Content Strategy Planning",
         "description": "Get audience profiles, motivations, pain points, content pillars, formats & angles. A blueprint normally created by strategists, not by guesswork.",
         "example1": "Plan my content strategy for a TikTok account about AI tools.",
         "example2": "What content pillars fit a creator focusing on personal finance?",
         "output": "Clear audience profiles, their motivations & pain points, recommended content pillars, formats & angles that resonate."
       },
       "useCase2": {
-        "title": "Benchmark creators across TikTok, Instagram, and X",
+        "title": "Creator Benchmarking",
         "description": "Atypica can actively browse social platforms to instantly see what's working, what's missing, and where you can stand out.",
         "point1": "What top creators in your niche post",
         "point2": "How they structure winning content",
@@ -132,7 +133,7 @@
         "point4": "What white-space opportunities exist"
       },
       "useCase3": {
-        "title": "Generate a personalized idea library",
+        "title": "Personalized Idea Library",
         "description": "Ideas aren't random prompts — they're grounded in audience psychology, interview patterns, competitive patterns, and platform preferences.",
         "example1": "Create 20 video ideas based on real audience insights.",
         "example2": "Give me a one-month content calendar with hooks.",

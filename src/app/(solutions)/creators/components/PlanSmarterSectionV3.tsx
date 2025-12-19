@@ -153,31 +153,33 @@ export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
           </div>
         </div>
 
-        {/* Tab Navigation - game-like pills */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {featureConfigs.map((feature) => {
-            const isActive = activeTab === feature.id;
-            return (
-              <button
-                key={feature.id}
-                onClick={() => setActiveTab(feature.id)}
-                onMouseEnter={() => setHoveredCard(feature.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                className={cn(
-                  "px-6 py-3 rounded-lg font-medium transition-all duration-300 border text-sm md:text-base",
-                  "hover:scale-105 active:scale-95 relative",
-                  isActive
-                    ? "bg-muted text-foreground border-primary shadow-lg"
-                    : "bg-background text-muted-foreground hover:bg-muted border-border",
-                )}
-                style={{
-                  boxShadow: isActive ? "0 0 20px rgba(34, 197, 94, 0.5)" : undefined,
-                }}
-              >
-                {t(`${feature.id}.title`)}
-              </button>
-            );
-          })}
+        {/* Tab Navigation - 改进后的 tab 设计 */}
+        <div className="mt-16 mb-12">
+          {/* Tab 容器：典型的 tab bar 外观 */}
+          <div className="flex justify-center">
+            <div className="inline-flex bg-muted rounded-lg p-1 gap-1">
+              {featureConfigs.map((feature) => {
+                const isActive = activeTab === feature.id;
+                return (
+                  <button
+                    key={feature.id}
+                    onClick={() => setActiveTab(feature.id)}
+                    onMouseEnter={() => setHoveredCard(feature.id)}
+                    onMouseLeave={() => setHoveredCard(null)}
+                    className={cn(
+                      "px-4 py-2.5 rounded-md font-medium text-sm transition-all duration-200",
+                      "whitespace-nowrap", // 防止文本换行
+                      isActive
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {t(`${feature.id}.title`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Active feature content */}
@@ -194,7 +196,7 @@ export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
           return (
             <div key={feature.id} className="max-w-6xl mx-auto animate-scale-in">
               <div
-                className="bg-card/70 rounded-3xl p-8 md:p-10 lg:p-12 border border-border hover:border-[#18FF19]/40 transition-all duration-300 hover:-translate-y-1"
+                className="bg-card/70 rounded-3xl p-8 md:p-10 lg:p-12 border border-border transition-all duration-300 hover:-translate-y-1"
                 style={{
                   boxShadow: "0 0 0 rgba(0,0,0,0)",
                   transition: "all 0.3s ease",
@@ -213,15 +215,6 @@ export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
                       <span className={cn("text-4xl font-bold", accentClasses.number)}>
                         {feature.number}
                       </span>
-                      <div
-                        className={cn(
-                          "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
-                          accentClasses.badgeBg,
-                          accentClasses.badgeText,
-                        )}
-                      >
-                        {t("badge")}
-                      </div>
                     </div>
 
                     <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">

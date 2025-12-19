@@ -54,7 +54,7 @@ export function AdvancedWorkflowSectionV3() {
               <span
                 className="text-6xl font-bold text-red-500"
                 style={{
-                  textShadow: "0 0 20px rgba(248,113,113,0.6)",
+                  textShadow: "0 0 2px rgba(248,113,113,0.6)",
                   filter: "drop-shadow(0 0 10px rgba(248,113,113,0.6))",
                 }}
               >
@@ -98,7 +98,7 @@ export function AdvancedWorkflowSectionV3() {
               <span
                 className="text-6xl font-bold text-blue-400"
                 style={{
-                  textShadow: "0 0 20px rgba(59,130,246,0.6)",
+                  textShadow: "0 0 2px rgba(59,130,246,0.6)",
                   filter: "drop-shadow(0 0 10px rgba(59,130,246,0.6))",
                 }}
               >
@@ -148,7 +148,7 @@ export function AdvancedWorkflowSectionV3() {
               <span
                 className="text-6xl font-bold text-amber-400"
                 style={{
-                  textShadow: "0 0 20px rgba(250,204,21,0.8)",
+                  textShadow: "0 0 2px rgba(250,204,21,0.8)",
                   filter: "drop-shadow(0 0 10px rgba(250,204,21,0.8))",
                 }}
               >
