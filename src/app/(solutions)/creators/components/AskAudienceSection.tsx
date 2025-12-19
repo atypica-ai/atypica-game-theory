@@ -34,7 +34,7 @@ export function AskAudienceSection({ s3Origin }: { s3Origin: string }) {
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-4">
-          {t("badge")}
+          {t("sectionLabel")}
         </p>
 
         {/* Title */}
@@ -76,17 +76,17 @@ export function AskAudienceSection({ s3Origin }: { s3Origin: string }) {
               <div className="space-y-4">
                 <div className="border-l-2 border-primary pl-5">
                   <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                    {t("useCases.case1")}
+                    {t("useCases.titleSelection")}
                   </p>
                 </div>
                 <div className="border-l-2 border-primary pl-5">
                   <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                    {t("useCases.case2")}
+                    {t("useCases.hookEffectiveness")}
                   </p>
                 </div>
                 <div className="border-l-2 border-primary pl-5">
                   <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                    {t("useCases.case3")}
+                    {t("useCases.outlineCompleteness")}
                   </p>
                 </div>
               </div>
@@ -100,25 +100,25 @@ export function AskAudienceSection({ s3Origin }: { s3Origin: string }) {
                 <li className="flex items-start gap-3">
                   <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-primary rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
-                    {t("applications.app1")}
+                    {t("applications.titlesAndSubjects")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-primary rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
-                    {t("applications.app2")}
+                    {t("applications.hooksAndIntros")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-primary rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
-                    {t("applications.app3")}
+                    {t("applications.thumbnailCopy")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-primary rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
-                    {t("applications.app4")}
+                    {t("applications.contentAngles")}
                   </span>
                 </li>
               </ul>

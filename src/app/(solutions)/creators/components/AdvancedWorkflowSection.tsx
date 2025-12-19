@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
@@ -18,7 +19,7 @@ export function AdvancedWorkflowSection() {
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-4">
-          {t("badge")}
+          {t("sectionLabel")}
         </p>
 
         {/* Title */}
@@ -32,17 +33,21 @@ export function AdvancedWorkflowSection() {
         </p>
 
         {/* Futuristic workflow illustration */}
-        <div className="mb-20">
-          <div className="relative rounded-3xl overflow-hidden border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/80">
-            <div className="relative aspect-video">
-              <Image
-                src={`/api/imagegen/dev/${encodeURIComponent(advancedWorkflowPrompt)}?ratio=landscape`}
-                alt="Advanced creator workflow map"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 70vw"
-              />
-            </div>
+        <div
+          className={cn(
+            "mb-20 relative rounded-3xl overflow-hidden border",
+            "border-zinc-200 bg-zinc-50",
+            "dark:border-zinc-800 dark:bg-zinc-950/80",
+          )}
+        >
+          <div className="relative aspect-video">
+            <Image
+              src={`/api/imagegen/dev/${encodeURIComponent(advancedWorkflowPrompt)}?ratio=landscape`}
+              alt="Advanced creator workflow map"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 70vw"
+            />
           </div>
         </div>
 
@@ -63,29 +68,29 @@ export function AdvancedWorkflowSection() {
             </div>
             <div className="lg:col-span-10">
               <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">
-                {t("workflow1.title")}
+                {t("contentPillarsDesign.title")}
               </h3>
               <p className="text-base md:text-lg text-zinc-700 dark:text-zinc-400 mb-6 leading-relaxed">
-                {t("workflow1.description")}
+                {t("contentPillarsDesign.description")}
               </p>
 
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow1.actions.action1")}
+                    {t("contentPillarsDesign.actions.identifyThemes")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow1.actions.action2")}
+                    {t("contentPillarsDesign.actions.clusterIntoPillars")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-400 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow1.actions.action3")}
+                    {t("contentPillarsDesign.actions.proposeRecurringSeries")}
                   </span>
                 </li>
               </ul>
@@ -107,35 +112,35 @@ export function AdvancedWorkflowSection() {
             </div>
             <div className="lg:col-span-10">
               <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">
-                {t("workflow2.title")}
+                {t("nicheDifferentiation.title")}
               </h3>
               <p className="text-base md:text-lg text-zinc-700 dark:text-zinc-400 mb-6 leading-relaxed">
-                {t("workflow2.description")}
+                {t("nicheDifferentiation.description")}
               </p>
 
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="text-blue-300 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow2.actions.action1")}
+                    {t("nicheDifferentiation.actions.mapCompetition")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-300 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow2.actions.action2")}
+                    {t("nicheDifferentiation.actions.spotOverusedNarratives")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-300 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow2.actions.action3")}
+                    {t("nicheDifferentiation.actions.uncoverQuestions")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-blue-300 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow2.actions.action4")}
+                    {t("nicheDifferentiation.actions.positionToFillGaps")}
                   </span>
                 </li>
               </ul>
@@ -157,33 +162,33 @@ export function AdvancedWorkflowSection() {
             </div>
             <div className="lg:col-span-10">
               <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">
-                {t("workflow3.title")}
+                {t("paidProductValidation.title")}
               </h3>
               <p className="text-base md:text-lg text-zinc-700 dark:text-zinc-400 mb-6 leading-relaxed">
-                {t("workflow3.description")}
+                {t("paidProductValidation.description")}
               </p>
 
               <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-4">
-                {t("workflow3.beforeLaunching")}
+                {t("paidProductValidation.beforeLaunching")}
               </p>
 
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="text-amber-300 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow3.actions.action1")}
+                    {t("paidProductValidation.actions.researchWillingness")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-amber-300 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow3.actions.action2")}
+                    {t("paidProductValidation.actions.uncoverObjections")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-amber-300 font-semibold">→</span>
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("workflow3.actions.action3")}
+                    {t("paidProductValidation.actions.testMessaging")}
                   </span>
                 </li>
               </ul>

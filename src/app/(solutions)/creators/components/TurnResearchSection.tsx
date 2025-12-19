@@ -91,7 +91,7 @@ export function TurnResearchSection() {
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-4">
-          {t("badge")}
+          {t("sectionLabel")}
         </p>
 
         {/* Title - follow global max heading size */}
@@ -206,7 +206,7 @@ export function TurnResearchSection() {
                     <div className="flex-1">
                       <span className="text-3xl mb-2 block">📝</span>
                       <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                        {t("outputs.output1")}
+                        {t("outputs.detailedScript")}
                       </p>
                     </div>
                   </div>
@@ -249,7 +249,7 @@ export function TurnResearchSection() {
                     <div className="flex-1">
                       <span className="text-3xl mb-2 block">🎙️</span>
                       <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                        {t("outputs.output2")}
+                        {t("outputs.naturalAudio")}
                       </p>
                     </div>
                   </div>
@@ -332,13 +332,12 @@ export function TurnResearchSection() {
 
                 {/* Controls row */}
                 <div className="flex items-center justify-center gap-6 text-[11px] text-zinc-500 dark:text-zinc-300">
-                  <span className="text-xs">1x</span>
                   <button
                     type="button"
                     onClick={toggleAudio}
                     className={cn(
                       "h-10 w-10 rounded-full flex items-center justify-center",
-                      "bg-primary text-zinc-900 dark:text-white shadow-[0_0_18px_rgba(34,197,94,0.7)]",
+                      "bg-primary text-white shadow-[0_0_18px_rgba(34,197,94,0.7)]",
                       "hover:brightness-95 transition-transform duration-150",
                     )}
                   >
@@ -361,25 +360,25 @@ export function TurnResearchSection() {
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("idealFor.type1")}
+                    {t("idealFor.businessMarketing")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("idealFor.type2")}
+                    {t("idealFor.techAIExplainers")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("idealFor.type3")}
+                    {t("idealFor.consumerTrends")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("idealFor.type4")}
+                    {t("idealFor.careerSelfImprovement")}
                   </span>
                 </div>
               </div>
@@ -447,19 +446,19 @@ export function TurnResearchSection() {
                   <li className="flex items-start gap-3">
                     <span className="text-red-500 dark:text-red-400 font-semibold text-lg">→</span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.option1")}
+                      {t("reuseOptions.shortsVoiceover")}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-red-500 dark:text-red-400 font-semibold text-lg">→</span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.option2")}
+                      {t("reuseOptions.socialQuotes")}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-red-500 dark:text-red-400 font-semibold text-lg">→</span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.option3")}
+                      {t("reuseOptions.podcastDistribution")}
                     </span>
                   </li>
                 </ul>
@@ -473,7 +472,7 @@ export function TurnResearchSection() {
                       →
                     </span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.option4")}
+                      {t("reuseOptions.newsletterBlog")}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
@@ -481,7 +480,7 @@ export function TurnResearchSection() {
                       →
                     </span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.option5")}
+                      {t("reuseOptions.webinarTalkingPoints")}
                     </span>
                   </li>
                 </ul>
@@ -540,7 +539,7 @@ export function TurnResearchSection() {
                 </div>
                 <div className="p-4">
                   <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
-                    {t("realExamples.example1")}
+                    {t("realExamples.aiBrowserShowdown")}
                   </p>
                 </div>
               </Link>
@@ -565,7 +564,7 @@ export function TurnResearchSection() {
                 </div>
                 <div className="p-4">
                   <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
-                    {t("realExamples.example2")}
+                    {t("realExamples.aiTrustVsEmployees")}
                   </p>
                 </div>
               </Link>
@@ -590,7 +589,7 @@ export function TurnResearchSection() {
                 </div>
                 <div className="p-4">
                   <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
-                    {t("realExamples.example3")}
+                    {t("realExamples.socialMediaLuxury")}
                   </p>
                 </div>
               </Link>

@@ -1,142 +1,44 @@
 {
   "CreatorsPage": {
-    "PainPointSection": {
-      "title": "Creator Challenges",
-      "description": "Every creator faces these obstacles on the path to success",
-      "point1": {
-        "title": "Finding Your Audience",
-        "description": "Understanding who resonates with your content and how to reach them effectively"
-      },
-      "point2": {
-        "title": "Content Strategy",
-        "description": "Developing a consistent content plan that aligns with your goals and audience needs"
-      },
-      "point3": {
-        "title": "Standing Out",
-        "description": "Differentiating your work in a crowded creator landscape"
-      }
-    },
-    "FeatureSection": {
-      "title": "How Atypica's Different Features Support Creators at Every Stage",
-      "description": "Discover the tools that help creators research, understand audiences, and generate content",
-      "aiResearch": {
-        "title": "AI Research",
-        "value": "Conduct deep market research and audience analysis in minutes",
-        "howToUse": {
-          "title": "How to Use",
-          "step1": "Ask questions about your target audience or market trends",
-          "step2": "AI automatically generates personas and conducts interviews",
-          "step3": "Receive comprehensive insights and actionable recommendations"
-        },
-        "example": {
-          "title": "Example",
-          "text": "Research what Gen Z values in sustainable fashion brands"
-        }
-      },
-      "aiPersona": {
-        "title": "AI Personas",
-        "value": "Build and interact with AI personas representing your ideal audience",
-        "howToUse": {
-          "title": "How to Use",
-          "step1": "Create or import personas matching your target audience",
-          "step2": "Conduct interviews to understand their preferences and behaviors",
-          "step3": "Use insights to refine your content strategy"
-        },
-        "example": {
-          "title": "Example",
-          "text": "Interview personas to test your content ideas before publishing"
-        }
-      },
-      "aiPodcast": {
-        "title": "AI Podcasts",
-        "value": "Automatically transform your research into engaging podcast content",
-        "howToUse": {
-          "title": "How to Use",
-          "step1": "Complete your research or use existing insights",
-          "step2": "AI generates podcast script and audio automatically",
-          "step3": "Share your podcast across multiple platforms"
-        },
-        "example": {
-          "title": "Example",
-          "text": "Turn your market research findings into a podcast episode"
-        }
-      },
-      "imagePlaceholder": "Image Placeholder - Add your feature image here"
-    },
-    "AdvancedCreatorSection": {
-      "badge": "Advanced Tools",
-      "title": "For Advanced Creators",
-      "description": "Professional-grade features to help creators scale their impact",
-      "contentColumn": {
-        "title": "Content Column",
-        "description": "Build a systematic content strategy with AI-powered planning and optimization",
-        "howToUse": {
-          "title": "How to Use",
-          "step1": "Define your content themes and objectives",
-          "step2": "AI suggests content ideas based on audience insights",
-          "step3": "Plan and schedule your content calendar"
-        }
-      },
-      "differentiation": {
-        "title": "Differentiation Strategy",
-        "description": "Identify unique angles and positioning for your creative work",
-        "howToUse": {
-          "title": "How to Use",
-          "step1": "Analyze competitor content and market gaps",
-          "step2": "Discover unique value propositions for your audience",
-          "step3": "Develop a distinctive creative voice"
-        }
-      },
-      "paidContent": {
-        "title": "Paid Content Planning",
-        "description": "Optimize your monetization strategy with data-driven insights",
-        "howToUse": {
-          "title": "How to Use",
-          "step1": "Research what your audience is willing to pay for",
-          "step2": "Test pricing strategies with AI personas",
-          "step3": "Plan your paid content offerings"
-        }
-      }
-    },
     "HeroSection": {
       "badge": "Atypica.AI for Content Creators",
       "title": "From Zero Direction to Insight-Driven Creativity",
       "subtitle": "A personal research engine that analyzes audiences, competitors, insights — and even turns them into publishable content.",
-      "painPoint1": "I'm not sure what my audience really wants.",
-      "painPoint2": "I don't know which creators to benchmark.",
-      "painPoint3": "I need more ideas but not generic ones.",
-      "painPoint4": "I wish I could turn my research into actual content.",
+      "audienceUncertainty": "I'm not sure what my audience really wants.",
+      "benchmarkingConfusion": "I don't know which creators to benchmark.",
+      "ideaDrought": "I need more ideas but not generic ones.",
+      "researchToContentGap": "I wish I could turn my research into actual content.",
       "value": "Atypica gives content creators something we've never had before: a personal research engine that analyzes audiences, competitors, and insights — and even turns them into publishable content.",
       "tagline": "Here's how creators are using Atypica to plan smarter, test faster, and create better.",
       "ctaButton": "Start Your Research"
     },
     "PlanSmarterSection": {
-      "badge": "Section 1",
+      "sectionLabel": "Section 1",
       "title": "Plan Smarter: Use AI Research to Build Your Content Strategy",
       "subtitle": "A multi-agent system that behaves like a real strategy team, conducting audience analysis, competitive reviews, and insight discovery.",
-      "quickStartPrompt": "Don\u2019t know where to start? Try one of these research prompts:",
+      "quickStartPrompt": "Don't know where to start? Try one of these research prompts:",
       "ctaResearch": "Start AI Research",
       "selectUseCase": "Select a use case:",
-      "useCase1": {
+      "contentStrategyPlanning": {
         "title": "Content Strategy Planning",
         "description": "Get audience profiles, motivations, pain points, content pillars, formats & angles. A blueprint normally created by strategists, not by guesswork.",
-        "example1": "Plan my content strategy for a TikTok account about AI tools.",
-        "example2": "What content pillars fit a creator focusing on personal finance?",
+        "exampleTikTokAI": "Plan my content strategy for a TikTok account about AI tools.",
+        "exampleFinanceContent": "What content pillars fit a creator focusing on personal finance?",
         "output": "Clear audience profiles, their motivations & pain points, recommended content pillars, formats & angles that resonate."
       },
-      "useCase2": {
+      "creatorBenchmarking": {
         "title": "Creator Benchmarking",
         "description": "Atypica can actively browse social platforms to instantly see what's working, what's missing, and where you can stand out.",
-        "point1": "What top creators in your niche post",
-        "point2": "How they structure winning content",
-        "point3": "What topics are oversaturated",
-        "point4": "What white-space opportunities exist"
+        "topCreatorsPosts": "What top creators in your niche post",
+        "contentStructure": "How they structure winning content",
+        "oversaturatedTopics": "What topics are oversaturated",
+        "opportunityGaps": "What white-space opportunities exist"
       },
-      "useCase3": {
+      "personalizedIdeaLibrary": {
         "title": "Personalized Idea Library",
         "description": "Ideas aren't random prompts — they're grounded in audience psychology, interview patterns, competitive patterns, and platform preferences.",
-        "example1": "Create 20 video ideas based on real audience insights.",
-        "example2": "Give me a one-month content calendar with hooks.",
+        "exampleVideoIdeas": "Create 20 video ideas based on real audience insights.",
+        "exampleContentCalendar": "Give me a one-month content calendar with hooks.",
         "output": "A living idea bank that actually fits your audience and positioning."
       },
       "realExample": {
@@ -152,23 +54,23 @@
       }
     },
     "AskAudienceSection": {
-      "badge": "Section 2",
+      "sectionLabel": "Section 2",
       "title": "Test Ideas Instantly: AI Personas as Your Always-On Focus Group",
       "subtitle": "Create proprietary Human AI Personas based on existing user interview records. These personas represent your target audience, reflecting real users' needs and pain points surprisingly well.",
       "value": "Your always-available focus group to review and vote for your content ideas",
       "ctaInterview": "Start AI Interviews",
       "useCases": {
         "title": "You can ask them:",
-        "case1": "Which of these 3 titles would you click, and why?",
-        "case2": "Does this hook make you want to keep watching?",
-        "case3": "What's missing from this outline if you're a beginner?"
+        "titleSelection": "Which of these 3 titles would you click, and why?",
+        "hookEffectiveness": "Does this hook make you want to keep watching?",
+        "outlineCompleteness": "What's missing from this outline if you're a beginner?"
       },
       "applications": {
         "title": "Get instant feedback on:",
-        "app1": "Titles & subject lines",
-        "app2": "Hooks & intros",
-        "app3": "Thumbnail copy",
-        "app4": "Content angles & messaging"
+        "titlesAndSubjects": "Titles & subject lines",
+        "hooksAndIntros": "Hooks & intros",
+        "thumbnailCopy": "Thumbnail copy",
+        "contentAngles": "Content angles & messaging"
       },
       "benefit": "Instead of relying purely on your own taste, or waiting for real-world metrics, you get instant feedback from audience-shaped minds.",
       "realExample": {
@@ -178,29 +80,29 @@
       }
     },
     "TurnResearchSection": {
-      "badge": "Section 3",
+      "sectionLabel": "Section 3",
       "title": "Turn Insights into Publish-Ready Content with AI Podcast",
       "subtitle": "After running AI Research, you'll have a structured content plan. Atypica moves a step further: turn that report into a narrated episode in minutes.",
       "ctaPodcast": "Generate AI Podcast",
       "outputs": {
         "title": "You instantly get:",
-        "output1": "A concise and detailed script full of real insights",
-        "output2": "Natural-sounding audio that can be added into your video"
+        "detailedScript": "A concise and detailed script full of real insights",
+        "naturalAudio": "Natural-sounding audio that can be added into your video"
       },
       "idealFor": {
         "title": "Works especially well for:",
-        "type1": "Business & marketing breakdowns",
-        "type2": "Tech / AI explainers",
-        "type3": "Consumer trend analysis",
-        "type4": "Career & self-improvement content"
+        "businessMarketing": "Business & marketing breakdowns",
+        "techAIExplainers": "Tech / AI explainers",
+        "consumerTrends": "Consumer trend analysis",
+        "careerSelfImprovement": "Career & self-improvement content"
       },
       "reuseOptions": {
         "title": "The audio isn't just a podcast — it's raw material:",
-        "option1": "Use the script as a YouTube Shorts/Reels voiceover",
-        "option2": "Pull quotes for LinkedIn/X posts",
-        "option3": "Release the audio on Spotify/Apple Podcast",
-        "option4": "Reuse sections in a newsletter or blog",
-        "option5": "Extract talking points for webinars or live streams"
+        "shortsVoiceover": "Use the script as a YouTube Shorts/Reels voiceover",
+        "socialQuotes": "Pull quotes for LinkedIn/X posts",
+        "podcastDistribution": "Release the audio on Spotify/Apple Podcast",
+        "newsletterBlog": "Reuse sections in a newsletter or blog",
+        "webinarTalkingPoints": "Extract talking points for webinars or live streams"
       },
       "formula": "One research session → one podcast → a week of content assets.",
       "tabs": {
@@ -211,42 +113,42 @@
       "realExamples": {
         "title": "Convincing Examples",
         "description": "These podcasts and videos generated from them have helped us rapidly grow our following across platforms:",
-        "example1": "AI Browser Showdown: FlowithOS vs Atlas vs Fellou vs Comet — Which One Actually Works?",
-        "example2": "When companies trust AI more than their employees, are they becoming more efficient or more dangerous?",
-        "example3": "Social media influence luxury purchases despite debt and psychological drivers"
+        "aiBrowserShowdown": "AI Browser Showdown: FlowithOS vs Atlas vs Fellou vs Comet — Which One Actually Works?",
+        "aiTrustVsEmployees": "When companies trust AI more than their employees, are they becoming more efficient or more dangerous?",
+        "socialMediaLuxury": "Social media influence luxury purchases despite debt and psychological drivers"
       }
     },
     "AdvancedWorkflowSection": {
-      "badge": "Section 4",
+      "sectionLabel": "Section 4",
       "title": "Advanced Workflows for Serious Creators",
       "subtitle": "As your content operation grows, Atypica becomes the research engine behind your whole creator business — not just single posts.",
-      "workflow1": {
+      "contentPillarsDesign": {
         "title": "Design long-term content pillars & series",
         "description": "Build a recognizable content universe, not just scattered posts.",
         "actions": {
-          "action1": "Identify recurring audience themes",
-          "action2": "Cluster them into durable pillars (e.g. case studies, myths, beginner mistakes, trend breakdowns)",
-          "action3": "Propose recurring series you can run every week"
+          "identifyThemes": "Identify recurring audience themes",
+          "clusterIntoPillars": "Cluster them into durable pillars (e.g. case studies, myths, beginner mistakes, trend breakdowns)",
+          "proposeRecurringSeries": "Propose recurring series you can run every week"
         }
       },
-      "workflow2": {
+      "nicheDifferentiation": {
         "title": "Find your differentiation in a crowded niche",
         "description": "You're not 'yet another explainer' — you occupy a specific angle.",
         "actions": {
-          "action1": "Map what everyone else is saying",
-          "action2": "Spot overused narratives",
-          "action3": "Uncover questions audiences still struggle with",
-          "action4": "Position your content to fill those gaps"
+          "mapCompetition": "Map what everyone else is saying",
+          "spotOverusedNarratives": "Spot overused narratives",
+          "uncoverQuestions": "Uncover questions audiences still struggle with",
+          "positionToFillGaps": "Position your content to fill those gaps"
         }
       },
-      "workflow3": {
+      "paidProductValidation": {
         "title": "Validate paid products and collaborations",
         "description": "Reduce risk and design offers that actually resonate.",
         "beforeLaunching": "Before creating a course, membership, or sponsored series:",
         "actions": {
-          "action1": "Research your audience's willingness to pay",
-          "action2": "Uncover objections and hesitations",
-          "action3": "Test messaging ideas with Personas"
+          "researchWillingness": "Research your audience's willingness to pay",
+          "uncoverObjections": "Uncover objections and hesitations",
+          "testMessaging": "Test messaging ideas with Personas"
         }
       }
     },
@@ -257,13 +159,13 @@
       "headline": "Most creators operate on intuition.",
       "subheadline": "Atypica lets you operate on insight.",
       "tagline": "The same advantage large media and strategy teams have.",
-      "benefit1": "Stop guessing what your audience wants",
-      "benefit2": "See your niche and competitors clearly",
-      "benefit3": "Test ideas before you publish",
-      "benefit4": "Turn research into consistent, multi-platform output",
+      "stopGuessing": "Stop guessing what your audience wants",
+      "clearVisibility": "See your niche and competitors clearly",
+      "testBeforePublish": "Test ideas before you publish",
+      "consistentOutput": "Turn research into consistent, multi-platform output",
       "closing": "Whether you're starting your first channel or scaling into a real creator business, Atypica acts as your research team, strategist, and content engine in one place.",
       "contactCtaLabel": "Contact our team",
-      "contactCtaHint": "Prefer a guided walkthrough? Email us and we\u2019ll help you design your first creator workflow."
+      "contactCtaHint": "Prefer a guided walkthrough? Email us and we'll help you design your first creator workflow."
     }
   }
 }

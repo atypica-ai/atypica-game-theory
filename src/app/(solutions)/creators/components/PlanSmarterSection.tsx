@@ -39,25 +39,42 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
   const t = useTranslations("CreatorsPage.PlanSmarterSection");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"useCase1" | "useCase2" | "useCase3">("useCase1");
+  const [activeTab, setActiveTab] = useState<
+    "contentStrategyPlanning" | "creatorBenchmarking" | "personalizedIdeaLibrary"
+  >("contentStrategyPlanning");
 
   // Quick-start topics built from existing examples
   const quickStartTopics: { id: string; label: string }[] = [
-    { id: "topic-1", label: t("useCase1.example1") },
-    { id: "topic-2", label: t("useCase1.example2") },
-    { id: "topic-3", label: t("useCase3.example1") },
-    { id: "topic-4", label: t("useCase3.example2") },
+    { id: "topic-1", label: t("contentStrategyPlanning.exampleTikTokAI") },
+    { id: "topic-2", label: t("contentStrategyPlanning.exampleFinanceContent") },
+    { id: "topic-3", label: t("personalizedIdeaLibrary.exampleVideoIdeas") },
+    { id: "topic-4", label: t("personalizedIdeaLibrary.exampleContentCalendar") },
   ];
 
   const featureConfigs: {
-    id: "useCase1" | "useCase2" | "useCase3";
+    id: "contentStrategyPlanning" | "creatorBenchmarking" | "personalizedIdeaLibrary";
     number: string;
     accent: "red" | "blue" | "yellow";
     mediumPromptKey: keyof typeof mediumImagePrompts;
   }[] = [
-    { id: "useCase1", number: "01", accent: "red", mediumPromptKey: "planningWorkflow" },
-    { id: "useCase2", number: "02", accent: "blue", mediumPromptKey: "audienceInsights" },
-    { id: "useCase3", number: "03", accent: "yellow", mediumPromptKey: "analyticsGrowth" },
+    {
+      id: "contentStrategyPlanning",
+      number: "01",
+      accent: "red",
+      mediumPromptKey: "planningWorkflow",
+    },
+    {
+      id: "creatorBenchmarking",
+      number: "02",
+      accent: "blue",
+      mediumPromptKey: "audienceInsights",
+    },
+    {
+      id: "personalizedIdeaLibrary",
+      number: "03",
+      accent: "yellow",
+      mediumPromptKey: "analyticsGrowth",
+    },
   ];
 
   const getAccentClasses = (accent: "red" | "blue" | "yellow") => {
@@ -102,7 +119,7 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-xs font-medium tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-4">
-          {t("badge")}
+          {t("sectionLabel")}
         </p>
 
         {/* Title */}
@@ -225,29 +242,41 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
                     </p>
 
                     {/* Use-case specific body, 复用现有文案 */}
-                    {feature.id === "useCase2" ? (
+                    {feature.id === "creatorBenchmarking" ? (
                       <ul className="space-y-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300">
                         <li className="flex items-start gap-2">
                           <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                          <span>{t("useCase2.point1")}</span>
+                          <span>{t("creatorBenchmarking.topCreatorsPosts")}</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                          <span>{t("useCase2.point2")}</span>
+                          <span>{t("creatorBenchmarking.contentStructure")}</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                          <span>{t("useCase2.point3")}</span>
+                          <span>{t("creatorBenchmarking.oversaturatedTopics")}</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                          <span>{t("useCase2.point4")}</span>
+                          <span>{t("creatorBenchmarking.opportunityGaps")}</span>
                         </li>
                       </ul>
                     ) : (
                       <div className="space-y-3 text-xs md:text-sm text-zinc-700 dark:text-zinc-300">
-                        <p className="italic">&ldquo;{t(`${feature.id}.example1`)}&rdquo;</p>
-                        <p className="italic">&ldquo;{t(`${feature.id}.example2`)}&rdquo;</p>
+                        <p className="italic">
+                          &ldquo;
+                          {feature.id === "contentStrategyPlanning"
+                            ? t("contentStrategyPlanning.exampleTikTokAI")
+                            : t("personalizedIdeaLibrary.exampleVideoIdeas")}
+                          &rdquo;
+                        </p>
+                        <p className="italic">
+                          &ldquo;
+                          {feature.id === "contentStrategyPlanning"
+                            ? t("contentStrategyPlanning.exampleFinanceContent")
+                            : t("personalizedIdeaLibrary.exampleContentCalendar")}
+                          &rdquo;
+                        </p>
                       </div>
                     )}
 
@@ -256,8 +285,8 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
                         Output
                       </p>
                       <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-200">
-                        {feature.id === "useCase2"
-                          ? t("useCase2.point4")
+                        {feature.id === "creatorBenchmarking"
+                          ? t("creatorBenchmarking.opportunityGaps")
                           : t(`${feature.id}.output`)}
                       </p>
                     </div>
@@ -265,7 +294,7 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
 
                   {/* Right: Image generated via Gemini Image */}
                   <div className="relative animate-slide-in-right w-full max-w-md mx-auto">
-                    {feature.id === "useCase1" ? (
+                    {feature.id === "contentStrategyPlanning" ? (
                       <div
                         className="relative"
                         onMouseEnter={() => setUseCase1Hovered(true)}
