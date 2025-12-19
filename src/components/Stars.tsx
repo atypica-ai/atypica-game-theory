@@ -17,11 +17,12 @@ export default function Stars() {
   };
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const generateStars = () => {
-      const starsArray = new Array(30).fill(null).map(() => {
+      const starsArray = new Array(10).fill(null).map(() => {
         return {
-          left: randomNum(0, document.body.offsetWidth) + "px",
-          top: randomNum(0, document.body.offsetHeight) + "px",
+          left: randomNum(0, window.innerWidth) + "px",
+          top: randomNum(0, window.innerHeight) + "px",
           delay: randomNum(0, 3) + "s",
         };
       });
