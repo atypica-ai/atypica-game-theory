@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import "./style.css";
 
-export function NewStudyClient() {
+export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
   const t = useTranslations("StudyPage.NewStudy");
   return (
     <FitToViewport className="hero-grid">
@@ -15,7 +15,7 @@ export function NewStudyClient() {
           <span>{t("startYourStudy")}</span>
         </div>
         <div className="w-full">
-          <NewStudyInputBox />
+          <NewStudyInputBox initialBrief={initialBrief} />
         </div>
         <div className="mt-8 text-center text-sm">
           <Link

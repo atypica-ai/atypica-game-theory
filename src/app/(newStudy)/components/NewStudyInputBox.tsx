@@ -41,12 +41,12 @@ type TStudyType = "general" | "product-rnd" | "fast-insight";
 
 export function NewStudyInputBox({
   className,
-  initialQuestion,
+  initialBrief,
   referenceUserChatTokens,
   fixedStudyType,
 }: {
   className?: string;
-  initialQuestion?: string;
+  initialBrief?: string;
   referenceUserChatTokens?: string[];
   fixedStudyType?: TStudyType;
 }) {
@@ -67,11 +67,6 @@ export function NewStudyInputBox({
   const { uploadedFiles, handleFileUploaded, handleRemoveFile, isUploadDisabled } =
     useFileUploadManager();
 
-  // Create a properly memoized debounced function
-  const debouncedSaveToLocalStorage = useDebouncedCallback((value: string) => {
-    localStorage.setItem("studyInputCache", value);
-  }, 300);
-
   const trackStudyBriefUpdated = useDebouncedCallback((brief: string) => {
     trackEvent("Study Brief Updated", {
       brief: truncateForTitle(brief, { maxDisplayWidth: 30, suffix: "..." }),
@@ -80,16 +75,11 @@ export function NewStudyInputBox({
   }, 2000);
 
   useEffect(() => {
-    // If initialQuestion is provided, use it; otherwise load from cache
-    if (initialQuestion) {
-      setInput(initialQuestion);
-    } else {
-      const savedInput = localStorage.getItem("studyInputCache");
-      if (savedInput) {
-        setInput(savedInput);
-      }
+    // Set initial brief if provided
+    if (initialBrief) {
+      setInput(initialBrief);
     }
-  }, [initialQuestion]);
+  }, [initialBrief]);
 
   const setStudyBrief = useCallback(
     ({ text, append = false }: { text: string; append?: boolean }) => {
@@ -101,13 +91,12 @@ export function NewStudyInputBox({
           inputValue = text;
         }
         setTimeout(() => {
-          debouncedSaveToLocalStorage(inputValue);
           trackStudyBriefUpdated(inputValue);
         }, 100);
         return inputValue;
       });
     },
-    [debouncedSaveToLocalStorage, trackStudyBriefUpdated],
+    [trackStudyBriefUpdated],
   );
 
   // Check if user should see study type selector
@@ -165,8 +154,6 @@ export function NewStudyInputBox({
           throw result;
         }
         const chat = result.data;
-        // Clear input cache after successfully creating chat
-        localStorage.removeItem("studyInputCache");
         router.push(`/study/${chat.token}`);
       } catch (error) {
         console.log("Error saving input:", (error as Error).message);
@@ -366,14 +353,14 @@ export function NewStudyInputBox({
 
 export function NewStudyButton({
   children,
-  initialQuestion,
+  initialBrief,
   referenceUserChatTokens,
   fixedStudyType,
   open,
   onOpenChange,
 }: {
   children?: React.ReactNode;
-  initialQuestion?: string;
+  initialBrief?: string;
   referenceUserChatTokens?: string[];
   fixedStudyType?: TStudyType;
   open?: boolean;
@@ -407,7 +394,7 @@ export function NewStudyButton({
         </DialogHeader>
         <NewStudyInputBox
           className="rounded-sm"
-          initialQuestion={initialQuestion}
+          initialBrief={initialBrief}
           referenceUserChatTokens={referenceUserChatTokens}
           fixedStudyType={fixedStudyType}
         />

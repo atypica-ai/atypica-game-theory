@@ -176,7 +176,7 @@ export function StudyNextSteps({
               questions.map((question, index) => (
                 <NewStudyButton
                   key={index}
-                  initialQuestion={question.brief}
+                  initialBrief={question.brief}
                   referenceUserChatTokens={[studyUserChatToken]}
                   fixedStudyType="general"
                 >
