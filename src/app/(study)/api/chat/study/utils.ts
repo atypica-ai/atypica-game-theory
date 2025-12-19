@@ -20,6 +20,23 @@ export async function outOfBalance({ userId }: { userId: number }) {
   return balance !== "Unlimited" && balance <= 0;
 }
 
+export function calculateToolUsage(modelMessages: ModelMessage[]) {
+  const toolUseCount = modelMessages
+    .filter((message) => message.role === "tool")
+    .reduce(
+      (_count, message) => {
+        const count = { ..._count };
+        (message.content ?? []).forEach((part) => {
+          const toolName = part.toolName as ToolName;
+          count[toolName] = (count[toolName] || 0) + 1;
+        });
+        return count;
+      },
+      {} as Partial<Record<ToolName, number>>,
+    );
+  return toolUseCount;
+}
+
 /**
  * claude 模型支持 cache https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html
  * 最多 4 个 checkpoints，checkpoint 至少 1024 tokens, study agent 第一个 assistant 消息回复以后至少有这个 token 量

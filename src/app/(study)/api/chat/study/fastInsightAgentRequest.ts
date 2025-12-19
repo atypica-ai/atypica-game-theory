@@ -37,7 +37,12 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyStudyInterruption } from "./notify";
-import { outOfBalance, setBedrockCache, waitUntilAttachmentsProcessed } from "./utils";
+import {
+  calculateToolUsage,
+  outOfBalance,
+  setBedrockCache,
+  waitUntilAttachmentsProcessed,
+} from "./utils";
 
 // autopolot 模式默认 4 步，websearch+plan+deepresearch mcp+podcast
 const MAX_STEPS_EACH_ROUND = 4;
@@ -202,28 +207,28 @@ export async function fastInsightAgentRequest({
     maxOutputTokens: maxTokens,
 
     prepareStep: async ({ messages: modelMessages }) => {
-      let artifactsGenerated = false;
-      for (const message of modelMessages) {
-        if (message.role === "tool") {
-          for (const part of message.content) {
-            if (
-              part.toolName === ToolName.generatePodcast ||
-              part.toolName === ToolName.generateReport
-            ) {
-              artifactsGenerated = true;
-              break;
-            }
-          }
+      const toolUseCount = calculateToolUsage(modelMessages);
+      let activeTools: (keyof typeof allTools)[] | undefined = undefined;
+      if (
+        (toolUseCount[ToolName.generateReport] ?? 0) > 0 ||
+        (toolUseCount[ToolName.generatePodcast] ?? 0) > 0
+      ) {
+        activeTools = [
+          ToolName.generateReport as const,
+          ToolName.generatePodcast as const,
+          ToolName.toolCallError as const,
+        ];
+      } else {
+        if (
+          ((toolUseCount[ToolName.planStudy] ?? 0) < 1 &&
+            (toolUseCount[ToolName.webSearch] ?? 0) >= 1) ||
+          (toolUseCount[ToolName.webSearch] ?? 0) >= 3
+        ) {
+          activeTools = (Object.keys(allTools) as (keyof typeof allTools)[]).filter(
+            (toolName) => toolName !== ToolName.webSearch,
+          );
         }
-        if (artifactsGenerated) break;
       }
-      const activeTools = artifactsGenerated
-        ? [
-            ToolName.generateReport as const,
-            ToolName.generatePodcast as const,
-            ToolName.toolCallError as const,
-          ]
-        : undefined;
       const messages = setBedrockCache("claude-3-7-sonnet", [...modelMessages]);
       return {
         messages,

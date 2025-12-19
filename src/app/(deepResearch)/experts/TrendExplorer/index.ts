@@ -23,7 +23,6 @@ export const trendExplorerExpert: ExpertExecutor = async ({
   const webSearchTool = createWebSearchTool({
     provider: "perplexity",
     statReport,
-    enableToolCountRestriction: false,
   });
 
   // Use the actual scoutSocialTrendsTool with proper configuration

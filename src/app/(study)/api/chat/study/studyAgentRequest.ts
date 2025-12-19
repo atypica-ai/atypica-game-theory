@@ -49,6 +49,7 @@ import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 import { buildReferenceStudyContext } from "./referenceContext";
 import {
+  calculateToolUsage,
   outOfBalance,
   setBedrockCache,
   shouldDecidePersonaTier,
@@ -295,40 +296,30 @@ export async function studyAgentRequest({
     maxOutputTokens: maxTokens,
 
     prepareStep: async ({ messages: modelMessages }) => {
-      // Object.fromEntries(
-      //   Object.entries(allTools).filter(([key]) =>
-      //     [
-      //       // ToolName.requestInteraction,
-      //       ToolName.generateReport,
-      //       ToolName.reasoningThinking,
-      //       ToolName.toolCallError,
-      //     ].includes(key as ToolName),
-      //   ),
-      // ) as typeof allTools;
-      let artifactsGenerated = false;
-      for (const message of modelMessages) {
-        if (message.role === "tool") {
-          for (const part of message.content) {
-            if (
-              part.toolName === ToolName.generateReport ||
-              part.toolName === ToolName.generatePodcast
-            ) {
-              artifactsGenerated = true;
-              break;
-            }
-          }
+      const toolUseCount = calculateToolUsage(modelMessages);
+      let activeTools: (keyof typeof allTools)[] | undefined = undefined;
+      if (
+        (toolUseCount[ToolName.generateReport] ?? 0) > 0 ||
+        (toolUseCount[ToolName.generatePodcast] ?? 0) > 0
+      ) {
+        activeTools = [
+          // ToolName.requestInteraction,
+          ToolName.generateReport as const,
+          ToolName.generatePodcast as const,
+          ToolName.reasoningThinking as const,
+          ToolName.toolCallError as const,
+        ];
+      } else {
+        if (
+          ((toolUseCount[ToolName.planStudy] ?? 0) < 1 &&
+            (toolUseCount[ToolName.webSearch] ?? 0) >= 1) ||
+          (toolUseCount[ToolName.webSearch] ?? 0) >= 3
+        ) {
+          activeTools = (Object.keys(allTools) as (keyof typeof allTools)[]).filter(
+            (toolName) => toolName !== ToolName.webSearch,
+          );
         }
-        if (artifactsGenerated) break;
       }
-      const activeTools = artifactsGenerated
-        ? [
-            // ToolName.requestInteraction,
-            ToolName.generateReport as const,
-            ToolName.generatePodcast as const,
-            ToolName.reasoningThinking as const,
-            ToolName.toolCallError as const,
-          ]
-        : undefined;
       /**
        * ⚠️ 由于整个过程是一气呵成的，cache 必须在这里面设置，之前调用 streamText 前设置好的 cache 其实大部分没生效
        * 因为比如 messages 长度到 8 的时候，streamText 还在自动跑，始终没有结束
