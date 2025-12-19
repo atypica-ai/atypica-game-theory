@@ -1,263 +1,203 @@
-# Auth
-## Generating access token with sdk
-```
-const {IAMCredentialsClient} = require('@google-cloud/iam-credentials');
+# Gemini TTS Integration
 
-// The service account email (e.g., 'my-service-account@my-project.iam.gserviceaccount.com')
-const serviceAccount = 'ACCOUNT_EMAIL_OR_UNIQUEID';
-// The scopes your token needs (e.g., ['www.googleapis.com'])
-const scopes = ['my-scopes'];
+## Overview
 
-// Creates a client. The library automatically uses the GOOGLE_APPLICATION_CREDENTIALS
-// environment variable for authentication.
-const client = new IAMCredentialsClient();
+Our implementation uses Google's Gemini TTS API via direct REST API calls with `google-auth-library` for authentication. This approach supports proxy configuration through `proxiedFetch`.
 
-async function generateAccessToken() {
-  const [token] = await client.generateAccessToken({
-    name: `projects/-/serviceAccounts/${serviceAccount}`,
-    scope: scopes,
-  });
-  console.log(`Generated Access Token: ${token.accessToken}`);
-  return token.accessToken;
-}
+**API Endpoint**: `https://texttospeech.googleapis.com/v1/text:synthesize`
 
-generateAccessToken();
+**Current Usage**:
+- Single-speaker podcasts
+- English (en-US) locale
+- Orus voice model (Scott Galloway style)
+- Text chunking for inputs > 1000 characters
 
-```
-## Authenticating with this module
+## Required Environment Variables
 
-It's incredibly easy to get authenticated and start using Google's APIs. You can set your credentials on a global basis as well as on a per-API basis. See each individual API section below to see how you can auth on a per-API-basis. This is useful if you want to use different accounts for different Cloud services.
+### Option 1: Service Account File (Recommended for Development)
 
-```js
-var config = {
-  projectId: 'grape-spaceship-123',
-  keyFilename: '/path/to/keyfile.json'
-};
+```bash
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
+GOOGLE_VERTEX_PROJECT=your-project-id
 ```
 
-### The `config` object
+### Option 2: Manual Credentials (Recommended for Production/CI)
 
-A `config` object is not required if you are in an environment which supports [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials). This could be your own development machine when using the [gcloud SDK](https://cloud.google.com/sdk) or within Google App Engine and Compute Engine. How you [set up Application Default Credentials](https://cloud.google.com/docs/authentication/provide-credentials-adc) depends on where your code is running.
-
-If this doesn't describe your environment, the `config` object expects the following properties:
-
-1. One of the following:
-  1. `credentials` object containing `client_email` and `private_key` properties.
-  2. `keyFilename` path to a .json, .pem, or .p12 key file.
-  3. `GOOGLE_APPLICATION_CREDENTIALS` environment variable with a full path to your key file.
-
-2. `projectId`
-
-  If you wish, you can set an environment variable (`GOOGLE_CLOUD_PROJECT`) in place of specifying this inline. Or, if you have provided a service account JSON key file as the `config.keyFilename` property explained above, your project ID will be detected automatically.
-
-**Note**: When using a .pem or .p12 key file, `config.email` is also required.
-
-
-[dev-console]: https://console.developers.google.com/project
-[gce-how-to]: https://cloud.google.com/compute/docs/authentication#using
-
-# API Intro
-## Parameters
-MODEL = "gemini-2.5-flash-tts"  # @param ["gemini-2.5-flash-tts", "gemini-2.5-pro-tts"]
-
-VOICE = "Kore"  # @param ["Achernar", "Achird", "Algenib", "Algieba", "Alnilam", "Aoede", "Autonoe", "Callirrhoe", "Charon", "Despina", "Enceladus", "Erinome", "Fenrir", "Gacrux", "Iapetus", "Kore", "Laomedeia", "Leda", "Orus", "Puck", "Pulcherrima", "Rasalgethi", "Sadachbia", "Sadaltager", "Schedar", "Sulafat", "Umbriel", "Vindemiatrix", "Zephyr", "Zubenelgenubi"]
-
-LANGUAGE_CODE = "en-us"  # @param ["am-et", "ar-001", "ar-eg",  "az-az",  "be-by",  "bg-bg", "bn-bd", "ca-es", "ceb-ph", "cs-cz",  "da-dk",  "de-de",  "el-gr", "en-au", "en-gb", "en-in",  "en-us",  "es-es",  "es-419", "es-mx", "es-us", "et-ee", "eu-es",  "fa-ir",  "fi-fi",  "fil-ph", "fr-fr", "fr-ca", "gl-es", "gu-in",  "hi-in",  "hr-hr",  "ht-ht",  "hu-hu", "af-za", "hy-am", "id-id",  "is-is",  "it-it",  "he-il",  "ja-jp", "jv-jv", "ka-ge", "kn-in",  "ko-kr",  "kok-in", "la-va",  "lb-lu", "lo-la", "lt-lt", "lv-lv",  "mai-in", "mg-mg",  "mk-mk",  "ml-in", "mn-mn", "mr-in", "ms-my",  "my-mm",  "nb-no",  "ne-np",  "nl-nl", "nn-no", "or-in", "pa-in",  "pl-pl",  "ps-af",  "pt-br",  "pt-pt", "ro-ro", "ru-ru", "sd-in",  "si-lk",  "sk-sk",  "sl-si",  "sq-al", "sr-rs", "sv-se", "sw-ke",  "ta-in",  "te-in",  "th-th",  "tr-tr", "uk-ua", "ur-pk", "vi-vn",  "cmn-cn", "cmn-tw"]
-
-audioConfig = "MP3" # @param [ALAW,MULAW,MP3,OGG_OPUS,PCM]
-## CURL Sample
+```bash
+GOOGLE_VERTEX_CLIENT_EMAIL=your-service-account@project.iam.gserviceaccount.com
+GOOGLE_VERTEX_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+GOOGLE_VERTEX_PROJECT=your-project-id
 ```
-# Make sure to install gcloud cli, and sign in to your project.
-# Make sure to use your PROJECT_ID value.
-# Currently, the available models are gemini-2.5-flash-preview-tts and gemini-2.5-pro-preview-tts
-# To parse the JSON output and use it directly see the last line of the command.
-# Requires JQ and ffplay library to be installed.
-PROJECT_ID=YOUR_PROJECT_ID
+
+**Note**: The private key must include newline characters (`\n`). When setting in environment variables, ensure proper escaping.
+
+## Authentication
+
+### Setting Up Application Default Credentials
+
+Application Default Credentials (ADC) is the recommended authentication method. It works automatically in the following environments:
+
+1. **Local Development**: Using `gcloud` CLI
+   ```bash
+   gcloud auth application-default login
+   ```
+
+2. **Google Cloud Environments**: Automatically available in:
+   - Google App Engine
+   - Google Compute Engine
+   - Google Kubernetes Engine
+
+3. **Service Account**: Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
+   ```bash
+   export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account-key.json"
+   ```
+
+### Creating a Service Account
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Navigate to **IAM & Admin** > **Service Accounts**
+3. Click **Create Service Account**
+4. Grant the following roles:
+   - `Cloud Text-to-Speech User`
+   - `Service Account Token Creator` (if using token generation)
+5. Create and download a JSON key file
+
+## API Parameters
+
+### Available Models
+
+- `gemini-2.5-flash-tts` - Faster, lower cost
+- `gemini-2.5-pro-tts` - Higher quality (currently used)
+
+### Available Voices
+
+Our implementation uses **Orus**, but the following voices are available:
+
+Achernar, Achird, Algenib, Algieba, Alnilam, Aoede, Autonoe, Callirrhoe, Charon, Despina, Enceladus, Erinome, Fenrir, Gacrux, Iapetus, Kore, Laomedeia, Leda, **Orus**, Puck, Pulcherrima, Rasalgethi, Sadachbia, Sadaltager, Schedar, Sulafat, Umbriel, Vindemiatrix, Zephyr, Zubenelgenubi
+
+### Supported Languages
+
+Our implementation currently uses `en-us`, but the API supports 100+ locales including:
+
+- English: en-us, en-gb, en-au, en-in
+- Chinese: cmn-cn, cmn-tw
+- Spanish: es-es, es-mx, es-419
+- And many more...
+
+### Audio Formats
+
+- `MP3` (currently used)
+- `LINEAR16` (PCM)
+- `OGG_OPUS`
+- `MULAW`
+- `ALAW`
+
+## API Usage Example
+
+### CURL Request
+
+```bash
+# Set your project ID
+PROJECT_ID=your-project-id
+
+# Make the request
 curl -X POST \
--H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
--H "x-goog-user-project: $PROJECT_ID" \
--H "Content-Type: application/json" \
--d '{
-"input": {
-  "prompt": "Say the following in a curious way",
-  "text": "OK, so... tell me about this [uhm] AI thing."
-},
-"voice": {
-  "languageCode": "en-us",
-  "name": "Kore",
-  "model_name": "gemini-2.5-flash-preview-tts"
-},
-"audioConfig": {
-  "audioEncoding": "LINEAR16"
+  -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+  -H "x-goog-user-project: $PROJECT_ID" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": {
+      "prompt": "You are Scott Galloway, the solo-cast of a opinion-heavy podcast...",
+      "text": "Your podcast text here"
+    },
+    "voice": {
+      "languageCode": "en-us",
+      "name": "Orus",
+      "modelName": "gemini-2.5-pro-tts"
+    },
+    "audioConfig": {
+      "audioEncoding": "MP3",
+      "speakingRate": 1.2,
+      "sampleRateHertz": 44100
+    }
+  }' \
+  "https://texttospeech.googleapis.com/v1/text:synthesize"
+```
+
+### Response Format
+
+```json
+{
+  "audioContent": "base64-encoded-audio-data"
 }
-}' \
-"https://texttospeech.googleapis.com/v1/text:synthesize" \
-| jq -r '.audioContent' | base64 -d | ffplay - -autoexit
 ```
-# Samples using @google-cloud/text-to-speech
-**be aware that all following samples are in JS, if using TS please only refer to the functions and logic used.**
-## Quickstart
+
+The `audioContent` field contains the synthesized audio in base64 encoding.
+
+## Implementation Details
+
+### File Structure
+
 ```
-'use strict';
-
-function main() {
-  // [START tts_quickstart]
-  // Imports the Google Cloud client library
-  const textToSpeech = require('@google-cloud/text-to-speech');
-
-  // Import other required libraries
-  const fs = require('fs');
-  const util = require('util');
-  // Creates a client
-  const client = new textToSpeech.TextToSpeechClient();
-  async function quickStart() {
-    // The text to synthesize
-    const text = 'hello, world!';
-
-    // Construct the request
-    const request = {
-      input: {text: text},
-      // Select the language and SSML voice gender (optional)
-      voice: {languageCode: 'en-US', ssmlGender: 'NEUTRAL'},
-      // select the type of audio encoding
-      audioConfig: {audioEncoding: 'MP3'},
-    };
-
-    // Performs the text-to-speech request
-    const [response] = await client.synthesizeSpeech(request);
-    // Write the binary audio content to a local file
-    const writeFile = util.promisify(fs.writeFile);
-    await writeFile('output.mp3', response.audioContent, 'binary');
-    console.log('Audio content written to file: output.mp3');
-  }
-  quickStart();
-  // [END tts_quickstart]
-}
-
-main(...process.argv.slice(2));
+src/app/(podcast)/lib/
+├── google/
+│   ├── client.ts      # GoogleTTSClient implementation
+│   ├── index.ts       # Exports
+│   └── utils.ts       # Text chunking utilities
+├── selectEngine.ts    # Engine selection logic
+└── generation.ts      # Main generation function
 ```
-## Synthesize Audio
-```
-'use strict';
 
-function main(input, voice, audioConfig) {
-  // [START texttospeech_v1_generated_TextToSpeech_SynthesizeSpeech_async]
-  /**
-   * This snippet has been automatically generated and should be regarded as a code template only.
-   * It will require modifications to work.
-   * It may require correct/in-range values for request initialization.
-   * TODO(developer): Uncomment these variables before running the sample.
-   */
-  /**
-   *  Required. The Synthesizer requires either plain text or SSML as input.
-   */
-  // const input = {}
-  /**
-   *  Required. The desired voice of the synthesized audio.
-   */
-  // const voice = {}
-  /**
-   *  Required. The configuration of the synthesized audio.
-   */
-  // const audioConfig = {}
-  /**
-   *  Advanced voice options.
-   */
-  // const advancedVoiceOptions = {}
+### Engine Selection
 
-  // Imports the Texttospeech library
-  const {TextToSpeechClient} = require('@google-cloud/text-to-speech').v1;
+The system automatically selects between Google TTS and Volcano TTS based on:
 
-  // Instantiates a client
-  const texttospeechClient = new TextToSpeechClient();
+- **Google TTS**: `en-US` locale + single speaker (hostCount ≤ 1)
+- **Volcano TTS**: All other cases (multi-speaker or other locales)
 
-  async function callSynthesizeSpeech() {
-    // Construct request
-    const request = {
-      input,
-      voice,
-      audioConfig,
-    };
+See `src/app/(podcast)/lib/selectEngine.ts` for implementation.
 
-    // Run request
-    const response = await texttospeechClient.synthesizeSpeech(request);
-    console.log(response);
-  }
+### Text Chunking
 
-  callSynthesizeSpeech();
-  // [END texttospeech_v1_generated_TextToSpeech_SynthesizeSpeech_async]
-}
+Due to API input limits (~4000 bytes), long texts are automatically split into chunks of 1000 characters. Each chunk is processed separately and the results are concatenated.
 
-process.on('unhandledRejection', err => {
-  console.error(err.message);
-  process.exitCode = 1;
-});
-main(...process.argv.slice(2));
-```
-## Synthesize Long text Audio
-```
-'use strict';
+See `src/app/(podcast)/lib/google/utils.ts` for implementation.
 
-function main(input, audioConfig, outputGcsUri, voice) {
-  // [START texttospeech_v1beta1_generated_TextToSpeechLongAudioSynthesize_SynthesizeLongAudio_async]
-  /**
-   * This snippet has been automatically generated and should be regarded as a code template only.
-   * It will require modifications to work.
-   * It may require correct/in-range values for request initialization.
-   * TODO(developer): Uncomment these variables before running the sample.
-   */
-  /**
-   *  The resource states of the request in the form of
-   *  `projects/* /locations/*`.
-   */
-  // const parent = 'abc123'
-  /**
-   *  Required. The Synthesizer requires either plain text or SSML as input.
-   */
-  // const input = {}
-  /**
-   *  Required. The configuration of the synthesized audio.
-   */
-  // const audioConfig = {}
-  /**
-   *  Required. Specifies a Cloud Storage URI for the synthesis results. Must be
-   *  specified in the format: `gs://bucket_name/object_name`, and the bucket
-   *  must already exist.
-   */
-  // const outputGcsUri = 'abc123'
-  /**
-   *  Required. The desired voice of the synthesized audio.
-   */
-  // const voice = {}
+### Caching
 
-  // Imports the Texttospeech library
-  const {TextToSpeechLongAudioSynthesizeClient} = require('@google-cloud/text-to-speech').v1beta1;
+Audio segments (prologue, epilogue, silence) are cached in `src/app/(podcast)/lib/cache/audioCacheStore.json` as base64-encoded MP3 data.
 
-  // Instantiates a client
-  const texttospeechClient = new TextToSpeechLongAudioSynthesizeClient();
+## Troubleshooting
 
-  async function callSynthesizeLongAudio() {
-    // Construct request
-    const request = {
-      input,
-      audioConfig,
-      outputGcsUri,
-      voice,
-    };
+### Authentication Errors
 
-    // Run request
-    const [operation] = await texttospeechClient.synthesizeLongAudio(request);
-    const [response] = await operation.promise();
-    console.log(response);
-  }
+**Error**: `Could not load the default credentials`
 
-  callSynthesizeLongAudio();
-  // [END texttospeech_v1beta1_generated_TextToSpeechLongAudioSynthesize_SynthesizeLongAudio_async]
-}
+**Solutions**:
+1. Verify `GOOGLE_APPLICATION_CREDENTIALS` is set correctly
+2. Check the service account key file exists and is valid
+3. Ensure the service account has the required permissions
+4. Try running `gcloud auth application-default login`
 
-process.on('unhandledRejection', err => {
-  console.error(err.message);
-  process.exitCode = 1;
-});
-main(...process.argv.slice(2));
-```
+### API Errors
+
+**Error**: `403 Forbidden`
+- Check project billing is enabled
+- Verify the Text-to-Speech API is enabled in your project
+- Confirm the service account has the `Cloud Text-to-Speech User` role
+
+**Error**: `400 Bad Request`
+- Verify the request body format matches the API specification
+- Check that text length doesn't exceed limits
+- Ensure the voice name and language code are compatible
+
+### Proxy Issues
+
+If you're behind a corporate proxy, ensure proxy configuration is set in `src/lib/proxy/fetch.ts`.
+
+## References
+
+- [Google Cloud Text-to-Speech API Documentation](https://cloud.google.com/text-to-speech/docs)
+- [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials)
+- [Service Account Authentication](https://cloud.google.com/docs/authentication/provide-credentials-adc)
+- [Gemini TTS Models](https://cloud.google.com/text-to-speech/docs/gemini)
