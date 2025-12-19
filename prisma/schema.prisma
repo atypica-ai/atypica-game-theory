@@ -116,6 +116,7 @@ model User {
   // relations
   userPersonaChatRelations       UserPersonaChatRelation[]
   interviewSessionsAsInterviewee InterviewSession[]
+  awsMarketplaceCustomer         AWSMarketplaceCustomer?
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -839,4 +840,50 @@ model ResearchTemplate {
 
   @@index([locale, userId])
   @@index([locale, teamId])
+}
+
+// ===== AWS Marketplace Integration =====
+
+model AWSMarketplaceCustomer {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // AWS customer identifiers
+  customerIdentifier String @unique // AWS customer ID
+  productCode        String // AWS product code
+
+  // Subscription status
+  status String @default("pending") // pending, active, cancelled, expired
+
+  // Subscription details
+  dimension String? // Subscription dimension/plan (e.g., "team_plan")
+  quantity  Int     @default(3) // Number of allowed users (e.g., 3)
+
+  // Time information
+  subscribedAt DateTime? @db.Timestamptz(6)
+  expiresAt    DateTime? @db.Timestamptz(6)
+  cancelledAt  DateTime? @db.Timestamptz(6)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  events AWSMarketplaceEvent[]
+
+  @@index([customerIdentifier])
+  @@index([userId])
+}
+
+model AWSMarketplaceEvent {
+  id         Int                    @id @default(autoincrement())
+  customerId Int
+  customer   AWSMarketplaceCustomer @relation(fields: [customerId], references: [id])
+
+  eventType String // subscribe-success, unsubscribe-success, etc.
+  eventData Json // Complete SNS message
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([customerId])
+  @@index([eventType])
 }
