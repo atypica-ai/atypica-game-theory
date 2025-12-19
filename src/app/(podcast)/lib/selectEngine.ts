@@ -1,13 +1,12 @@
 import "server-only";
 
 import { Logger } from "pino";
-import { countHosts } from "./script/hostCounter";
 import { createGoogleTTSClient } from "./google/client";
 import { createVolcanoClient } from "./volcano/client";
 
 /**
  * Simple engine selection based on script and locale
- * 
+ *
  * Selection rules:
  * - Google TTS: en-US locale, 0-1 hosts (single speaker)
  * - Volcano TTS: all other cases (multi-speaker, other locales)
@@ -39,10 +38,7 @@ export function selectTTSEngine(
 /**
  * Get the appropriate TTS client based on selection
  */
-export function getTTSClient(
-  engine: "google" | "volcano",
-  logger?: Logger,
-) {
+export function getTTSClient(engine: "google" | "volcano", logger?: Logger) {
   if (engine === "google") {
     return createGoogleTTSClient(logger);
   }

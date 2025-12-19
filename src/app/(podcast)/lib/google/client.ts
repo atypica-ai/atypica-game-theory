@@ -1,11 +1,11 @@
 import "server-only";
 
+import { proxiedFetch } from "@/lib/proxy/fetch";
 import { GoogleAuth } from "google-auth-library";
 import { Logger } from "pino";
-import { proxiedFetch } from "@/lib/proxy/fetch";
 import { AudioCache } from "../cache/audioCache";
-import { PodcastGenerationOptions, PodcastGenerationResult } from "../volcano/client";
 import { parseScriptToText } from "../script/parser";
+import { PodcastGenerationOptions, PodcastGenerationResult } from "../volcano/client";
 import { splitStringIntoChunks } from "./utils";
 
 /**
@@ -56,10 +56,10 @@ export class GoogleTTSClient {
   async getAuthToken() {
     const auth = new GoogleAuth({
       // Optional: explicitly define scopes if needed, otherwise 'cloud-platform' is often the default
-      scopes: ['https://www.googleapis.com/auth/cloud-platform'] 
+      scopes: ["https://www.googleapis.com/auth/cloud-platform"],
     });
 
-    // This method automatically detects credentials from the GOOGLE_APPLICATION_CREDENTIALS 
+    // This method automatically detects credentials from the GOOGLE_APPLICATION_CREDENTIALS
     // environment variable and generates an access token.
     const accessToken = await auth.getAccessToken();
     return accessToken;
@@ -68,21 +68,19 @@ export class GoogleTTSClient {
   /**
    * Start long audio synthesis operation
    */
-  private async startSynthesis(
-    text: string,
-    accessToken: string,
-  ): Promise<Buffer> {
+  private async startSynthesis(text: string, accessToken: string): Promise<Buffer> {
     // const parent = `projects/${this.projectId}/locations/${this.location}`;
     const url = `https://texttospeech.googleapis.com/v1/text:synthesize`;
     const requestBody = {
       input: {
-        prompt: "You are Scott Galloway, the solo-cast of a opinion-heavy podcast where your voice is deep, raspy. At the end of sentences, your pitch goes down to signal authority. You sounds like you are the smartest person in the room, you deliver opinions as if they are absolute facts. Regarding pace, you introduces a topic slowly, and accelerates on data and factual lists. After the fast list, you pauses completely for 1-2 seconds before delivering your opinion.",
+        prompt:
+          "You are Scott Galloway, the solo-cast of a opinion-heavy podcast where your voice is deep, raspy. At the end of sentences, your pitch goes down to signal authority. You sounds like you are the smartest person in the room, you deliver opinions as if they are absolute facts. Regarding pace, you introduces a topic slowly, and accelerates on data and factual lists. After the fast list, you pauses completely for 1-2 seconds before delivering your opinion.",
         text: text,
       },
       voice: {
         languageCode: "en-us",
-        "name": "Orus",
-        "modelName": "gemini-2.5-pro-tts"
+        name: "Orus",
+        modelName: "gemini-2.5-pro-tts",
       },
       audioConfig: {
         audioEncoding: "MP3",
@@ -131,7 +129,11 @@ export class GoogleTTSClient {
       this.logger = logger;
     }
 
-    this.logger?.info({ msg: "Starting Google TTS podcast audio generation", podcastToken, hostCount });
+    this.logger?.info({
+      msg: "Starting Google TTS podcast audio generation",
+      podcastToken,
+      hostCount,
+    });
 
     try {
       // Parse script to plain text (remove host markers)
@@ -178,9 +180,9 @@ export class GoogleTTSClient {
       const chunks = splitStringIntoChunks(text, 1000);
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
-        
+
         try {
-          console.log(chunk)
+          console.log(chunk);
           const audioChunk = await this.startSynthesis(chunk, accessToken);
           audioChunks.push(audioChunk);
           this.logger?.info({
@@ -189,14 +191,14 @@ export class GoogleTTSClient {
             totalChunks: chunks.length,
             size: audioChunk.byteLength,
           });
-          
-          await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+
+          await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
         } catch (error) {
           this.logger?.error({
             msg: "Failed to synthesize chunk",
             chunkIndex: i + 1,
             error: error instanceof Error ? error.message : String(error as Error),
-            chunk: chunk.substring(0, 100) + '...'
+            chunk: chunk.substring(0, 100) + "...",
           });
           throw error; // Re-throw or handle as needed
         }
@@ -206,7 +208,7 @@ export class GoogleTTSClient {
         msg: "audio synthesis complete.",
         length: audioChunks.length,
       });
- 
+
       // Add epilogue
       try {
         // audioChunks.push(SILENCE);

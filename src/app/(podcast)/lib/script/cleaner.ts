@@ -7,7 +7,7 @@ import "server-only";
  * - Markdown headers (lines starting with #)
  * - Markdown bold/italic markers (*)
  * - Host markers (【...】)
- * 
+ *
  * Additionally:
  * - If the line starts with **something**, replaces that with 【something】
  *
@@ -28,7 +28,7 @@ export function cleanPodcastScriptLine(line: string): string | null {
   // eg. ：[]\\]，。。，%&#@*¥一家公司两年内要投入5000万 -> 一家公司两年内要投入5000万，把销售额从1个亿做到2.5个亿
   trimmed = trimmed.replace(
     /^[\p{P}\p{S}\p{Zs}\[\]、，。？！：；“”‘’【】…（）—《》·￥%\s\\@#&*¥]+/u,
-    ""
+    "",
   );
 
   return trimmed

@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
 import { AudioCache } from "../cache/audioCache";
 import { cleanPodcastScriptLine } from "../script/cleaner";
-import { countHosts } from "../script/hostCounter";
 import {
   EventType,
   FinishConnection,
