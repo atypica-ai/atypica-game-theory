@@ -38,13 +38,16 @@ export class GoogleTTSClient {
    * Retrieves an access token using Application Default Credentials.
    */
   async getAuthToken() {
+    // automatically detects credentials from the GOOGLE_APPLICATION_CREDENTIALS environment variable and generates an access token.
+    // if GOOGLE_APPLICATION_CREDENTIALS is not set, manually provide credentials
     const auth = new GoogleAuth({
       // Optional: explicitly define scopes if needed, otherwise 'cloud-platform' is often the default
       scopes: ["https://www.googleapis.com/auth/cloud-platform"],
+      credentials: {
+        client_email: process.env.GOOGLE_VERTEX_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_VERTEX_PRIVATE_KEY,
+      },
     });
-
-    // This method automatically detects credentials from the GOOGLE_APPLICATION_CREDENTIALS
-    // environment variable and generates an access token.
     const accessToken = await auth.getAccessToken();
     return accessToken;
   }
