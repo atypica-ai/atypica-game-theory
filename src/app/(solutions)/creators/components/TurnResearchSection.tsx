@@ -545,9 +545,7 @@ export function TurnResearchSection() {
                           {example.title}
                         </p>
                       </div>
-                      <span className="text-[10px] text-zinc-200 ml-2">
-                        {t("openLink")}
-                      </span>
+                      <span className="text-[10px] text-zinc-200 ml-2">{t("openLink")}</span>
                     </div>
                     <div className="p-4">
                       <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">

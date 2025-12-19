@@ -8,18 +8,24 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { IntercomLauncher } from "@/lib/analytics/intercom/launcher";
 import { cn, formatTokensNumber } from "@/lib/utils";
 import Cookies from "js-cookie";
 import {
   ArrowLeftRightIcon,
+  ChevronDownIcon,
   CoinsIcon,
   CreditCardIcon,
   GlobeIcon,
   HeadphonesIcon,
   HistoryIcon,
-  HomeIcon,
   InfinityIcon,
   LoaderIcon,
   LogInIcon,
@@ -159,13 +165,41 @@ const MenuLink = ({
 const GlobalHeaderMenusDesktop = () => {
   const t = useTranslations("Components.GlobalHeader");
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 en:max-lg:gap-2">
+      <MenuLink href="/insight-radio">{t("insightRadio")}</MenuLink>
       <MenuLink href="/featured-studies">{t("useCases")}</MenuLink>
       <MenuLink href="/newstudy">{t("marketResearch")}</MenuLink>
       <MenuLink href="/persona">{t("personaImport")}</MenuLink>
       <MenuLink href="/interview">{t("interviewProject")}</MenuLink>
+      <DropdownMenu>
+        <DropdownMenuTrigger className="flex items-center gap-1 p-1 text-sm font-normal hover:text-foreground/80 whitespace-nowrap outline-none">
+          {t("solutions")}
+          <ChevronDownIcon className="h-3 w-3" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuItem asChild>
+            <Link href="/creators" className="cursor-pointer">
+              {t("solutionsForCreators")}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+            {t("solutionsForInfluencers")}
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+            {t("solutionsForMarketers")}
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+            {t("solutionsForProductManagers")}
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+            {t("solutionsForStartupOwners")}
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+            {t("solutionsForConsultants")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <MenuLink href="/pricing">{t("pricing")}</MenuLink>
-      <MenuLink href="/insight-radio">{t("insightRadio")}</MenuLink>
     </div>
   );
 };
@@ -177,6 +211,7 @@ const GlobalHeaderDrawer = React.memo(function GlobalHeaderDrawer({
 }) {
   const { status: sessionStatus, data: session } = useSession();
   const [open, setOpen] = useState(false);
+  const [solutionsOpen, setSolutionsOpen] = useState(false);
   const t = useTranslations("Components.GlobalHeader");
   const { setTheme } = useTheme();
   const router = useRouter();
@@ -406,8 +441,11 @@ const GlobalHeaderDrawer = React.memo(function GlobalHeaderDrawer({
               {t("navigation")}
             </div>
             <div className="md:space-y-1">
-              <DrawerLink href="/" icon={HomeIcon}>
+              {/*<DrawerLink href="/" icon={HomeIcon}>
                 {t("home")}
+              </DrawerLink>*/}
+              <DrawerLink href="/insight-radio" icon={HeadphonesIcon}>
+                {t("insightRadio")}
               </DrawerLink>
               <DrawerLink href="/featured-studies" icon={HistoryIcon}>
                 {t("useCases")}
@@ -421,11 +459,49 @@ const GlobalHeaderDrawer = React.memo(function GlobalHeaderDrawer({
               <DrawerLink href="/interview" icon={MicIcon}>
                 {t("interviewProject")}
               </DrawerLink>
+              {/* Solutions expandable menu */}
+              <div>
+                <button
+                  className="w-full flex items-center py-2 px-3 md:py-2.5 md:px-4 hover:bg-accent rounded-md transition-colors text-left"
+                  onClick={() => setSolutionsOpen(!solutionsOpen)}
+                >
+                  <ChevronDownIcon
+                    className={cn(
+                      "h-4 w-4 mr-3 transition-transform",
+                      solutionsOpen && "rotate-180",
+                    )}
+                  />
+                  <span className="text-sm">{t("solutions")}</span>
+                </button>
+                {solutionsOpen && (
+                  <div className="pl-7 space-y-1 mt-1">
+                    <Link
+                      href="/creators"
+                      className="block py-2 px-3 text-sm hover:bg-accent rounded-md transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      {t("solutionsForCreators")}
+                    </Link>
+                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                      {t("solutionsForInfluencers")}
+                    </div>
+                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                      {t("solutionsForMarketers")}
+                    </div>
+                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                      {t("solutionsForProductManagers")}
+                    </div>
+                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                      {t("solutionsForStartupOwners")}
+                    </div>
+                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                      {t("solutionsForConsultants")}
+                    </div>
+                  </div>
+                )}
+              </div>
               <DrawerLink href="/pricing" icon={CreditCardIcon}>
                 {t("pricing")}
-              </DrawerLink>
-              <DrawerLink href="/insight-radio" icon={HeadphonesIcon}>
-                {t("insightRadio")}
               </DrawerLink>
             </div>
             <Separator className="my-3" />

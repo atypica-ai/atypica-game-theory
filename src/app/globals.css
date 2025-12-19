@@ -3,7 +3,9 @@
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
 @custom-variant zh (&:is([lang="zh-CN"] *));
+@custom-variant en (&:is([lang="en-US"] *));
 
 @theme inline {
   --font-EuclidCircularA: "EuclidCircularA", "sans-serif";

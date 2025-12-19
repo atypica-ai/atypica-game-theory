@@ -88,7 +88,7 @@ export default function GlobalFooter({ className }: { className?: string }) {
         </section>
 
         {/* Columns */}
-        <section className="md:ml-auto flex items-start justify-start gap-12 sm:gap-20 sm:mr-20 xl:mr-0">
+        <section className="md:ml-auto flex items-start justify-start gap-8 sm:gap-20 sm:mr-20 xl:mr-0">
           {/* Product Column */}
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-foreground">{t("product")}</h4>
@@ -135,6 +135,34 @@ export default function GlobalFooter({ className }: { className?: string }) {
               >
                 {t("glossary")}
               </Link>
+            </div>
+          </div>
+
+          {/* Solutions Column */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium text-foreground">{t("solutions")}</h4>
+            <div className="space-y-3 text-sm">
+              <Link
+                href="/creators"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("solutionsForCreators")}
+              </Link>
+              <div className="block text-muted-foreground/40 cursor-not-allowed">
+                {t("solutionsForInfluencers")}
+              </div>
+              <div className="block text-muted-foreground/40 cursor-not-allowed">
+                {t("solutionsForMarketers")}
+              </div>
+              <div className="block text-muted-foreground/40 cursor-not-allowed">
+                {t("solutionsForProductManagers")}
+              </div>
+              <div className="block text-muted-foreground/40 cursor-not-allowed">
+                {t("solutionsForStartupOwners")}
+              </div>
+              <div className="block text-muted-foreground/40 cursor-not-allowed">
+                {t("solutionsForConsultants")}
+              </div>
             </div>
           </div>
 
