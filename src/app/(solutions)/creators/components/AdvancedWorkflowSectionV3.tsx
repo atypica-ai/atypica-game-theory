@@ -14,19 +14,7 @@ export function AdvancedWorkflowSectionV3() {
   const t = useTranslations("CreatorsPage.AdvancedWorkflowSection");
 
   return (
-    <section className="py-32 md:py-40 bg-background relative overflow-hidden">
-      {/* subtle grid */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-30"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(248,113,113,0.08) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59,130,246,0.08) 1px, transparent 1px)
-          `,
-          backgroundSize: "42px 42px",
-        }}
-      />
-
+    <section className="py-16 md:py-20 relative overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-4">
@@ -34,7 +22,7 @@ export function AdvancedWorkflowSectionV3() {
         </p>
 
         {/* Title */}
-        <h2 className="font-EuclidCircularA font-bold text-4xl md:text-5xl lg:text-6xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 

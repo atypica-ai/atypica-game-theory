@@ -8,7 +8,7 @@ export function CTASectionV3() {
   const t = useTranslations("CreatorsPage.CTASection");
 
   return (
-    <section className="py-32 md:py-40 bg-background">
+    <section className="py-20 md:py-24">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Headlines - Bold Statement (but within global max size) */}
         <div className="mb-16 max-w-3xl">

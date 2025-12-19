@@ -30,7 +30,7 @@ export function AskAudienceSectionV3() {
   }, [hovered]);
 
   return (
-    <section className="py-32 md:py-40 bg-background relative overflow-hidden">
+    <section className="py-16 md:py-20 relative overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-4">

@@ -53,7 +53,7 @@ export function StarField() {
       <div
         ref={containerRef}
         className="fixed inset-0 pointer-events-none overflow-hidden"
-        style={{ zIndex: 9999 }}
+        style={{ zIndex: 0 }}
         aria-hidden="true"
       >
         {stars.map((star, index) => (

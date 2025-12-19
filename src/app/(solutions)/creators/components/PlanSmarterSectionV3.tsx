@@ -97,44 +97,7 @@ export function PlanSmarterSectionV3() {
   }, [useCase1Hovered]);
 
   return (
-    <section className="py-32 md:py-40 bg-background relative overflow-hidden">
-      {/* 轻量 game-like 背景网格 */}
-      <div
-        className="absolute inset-0 opacity-40 pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(24, 255, 25, 0.08) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(24, 255, 25, 0.08) 1px, transparent 1px)
-          `,
-          backgroundSize: "40px 40px",
-        }}
-      />
-
-      {/* 粒子轨道动效（参考 /atypica-for-creator） */}
-      <div className="absolute top-1/4 right-8 w-24 h-24 opacity-40 pointer-events-none">
-        <div
-          className="absolute top-1/2 left-1/2 w-3 h-3 rounded-full"
-          style={{
-            background: "#18FF19",
-            transform: "translate(-50%, -50%)",
-            boxShadow: "0 0 20px rgba(24, 255, 25, 0.6)",
-            animation: "glow-pulse 2s ease-in-out infinite",
-          }}
-        />
-        {[0, 1].map((i) => (
-          <div
-            key={i}
-            className="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full"
-            style={{
-              background: "#18FF19",
-              transform: "translate(-50%, -50%)",
-              animation: `orbit ${3 + i * 0.5}s linear infinite`,
-              animationDelay: `${i * 0.3}s`,
-            }}
-          />
-        ))}
-      </div>
-
+    <section className="py-16 md:py-20 relative overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-xs font-medium tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-4">
@@ -208,25 +171,11 @@ export function PlanSmarterSectionV3() {
                   "px-6 py-3 rounded-lg font-medium transition-all duration-300 border text-sm md:text-base",
                   "hover:scale-105 active:scale-95 relative",
                   isActive
-                    ? "bg-muted text-foreground shadow-lg"
-                    : "bg-background text-muted-foreground hover:bg-muted",
+                    ? "bg-muted text-foreground border-brand-green shadow-lg"
+                    : "bg-background text-muted-foreground hover:bg-muted border-border",
                 )}
                 style={{
-                  borderColor:
-                    feature.accent === "red"
-                      ? "#f97373"
-                      : feature.accent === "blue"
-                        ? "#3b82f6"
-                        : "#facc15",
-                  boxShadow: isActive
-                    ? feature.accent === "red"
-                      ? "0 0 20px rgba(248, 115, 115, 0.55)"
-                      : feature.accent === "blue"
-                        ? "0 0 20px rgba(59, 130, 246, 0.55)"
-                        : "0 0 20px rgba(250, 204, 21, 0.6)"
-                    : hoveredCard === feature.id
-                      ? "0 0 10px rgba(24, 255, 25, 0.2)"
-                      : undefined,
+                  boxShadow: isActive ? "0 0 20px rgba(34, 197, 94, 0.5)" : undefined,
                 }}
               >
                 {t(`${feature.id}.title`)}

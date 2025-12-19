@@ -27,37 +27,7 @@ export function HeroSectionV3() {
   const painPoints = [t("painPoint1"), t("painPoint2"), t("painPoint3"), t("painPoint4")];
 
   return (
-    <section className="py-32 md:py-40 bg-background relative overflow-hidden">
-      {/* subtle neon grid background */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-20 dark:opacity-40"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(248, 113, 113, 0.09) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59, 130, 246, 0.09) 1px, transparent 1px)
-          `,
-          backgroundSize: "40px 40px",
-        }}
-      />
-
-      {/* scattered color sparkles */}
-      {[0, 1, 2].map((row) => (
-        <div
-          key={row}
-          className="pointer-events-none absolute w-40 h-40 rounded-full blur-3xl opacity-40"
-          style={{
-            top: `${10 + row * 25}%`,
-            left: row === 1 ? "65%" : "10%",
-            background:
-              row === 0
-                ? "radial-gradient(circle at center, rgba(248,113,113,0.4), transparent 60%)"
-                : row === 1
-                  ? "radial-gradient(circle at center, rgba(59,130,246,0.4), transparent 60%)"
-                  : "radial-gradient(circle at center, rgba(250,204,21,0.4), transparent 60%)",
-          }}
-        />
-      ))}
-
+    <section className="py-24 md:py-32 relative overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         <div className="max-w-5xl mx-auto text-center">
           {/* Small label - with subtle glow to echo game feel */}
@@ -67,16 +37,7 @@ export function HeroSectionV3() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2",
             )}
           >
-            <span
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1 text-[11px] font-semibold tracking-[0.22em] uppercase text-zinc-800 dark:text-zinc-100"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(248,113,113,0.08), rgba(59,130,246,0.08), rgba(250,204,21,0.08))",
-                border: "1px solid rgba(148,163,184,0.5)",
-                boxShadow:
-                  "0 0 18px rgba(248,113,113,0.2), 0 0 18px rgba(59,130,246,0.2), 0 0 16px rgba(250,204,21,0.25)",
-              }}
-            >
+            <span className="inline-flex items-center gap-2 rounded-full px-4 py-1 text-[11px] font-semibold tracking-[0.22em] uppercase text-zinc-800 dark:text-zinc-100 border border-border bg-muted/50">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-green" />
               {t("badge")}
             </span>
@@ -87,8 +48,7 @@ export function HeroSectionV3() {
             <h1
               className={cn(
                 "font-EuclidCircularA font-bold",
-                // Global max: keep within 5xl on large screens, avoid wrapping on desktop
-                "text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl lg:whitespace-nowrap",
+                "text-5xl md:text-6xl lg:text-7xl",
                 "tracking-tight leading-[0.95]",
                 "text-zinc-900 dark:text-white",
                 "transition-all duration-700",
@@ -99,7 +59,7 @@ export function HeroSectionV3() {
               {t("title")}
             </h1>
 
-            {/* Right-side orbiting particles, upgraded with multi-color orbits */}
+            {/* Right-side brand green accent */}
             <div
               className={cn(
                 "pointer-events-none absolute -right-10 md:-right-14 top-1/2 h-14 w-14 md:h-16 md:w-16",
@@ -117,44 +77,16 @@ export function HeroSectionV3() {
                   animation: "glow-pulse 2s ease-in-out infinite",
                 }}
               />
-              {[0, 1, 2].map((i) => {
-                const colors = ["#f97373", "#3b82f6", "#facc15"];
-                const shadows = [
-                  "0 0 16px rgba(248,115,115,0.9)",
-                  "0 0 16px rgba(59,130,246,0.9)",
-                  "0 0 16px rgba(250,204,21,0.9)",
-                ];
-                return (
-                  <div
-                    key={i}
-                    className="absolute top-1/2 left-1/2 h-1 w-1 rounded-full"
-                    style={{
-                      background: colors[i],
-                      transform: "translate(-50%, -50%)",
-                      animation: `orbit ${3 + i * 0.6}s linear infinite`,
-                      animationDelay: `${i * 0.25}s`,
-                      boxShadow: shadows[i],
-                    }}
-                  />
-                );
-              })}
-              {/* Floating sparkles */}
-              {[0, 1, 2, 3, 4, 5].map((i) => (
+              {[0, 1, 2].map((i) => (
                 <div
-                  key={`particle-${i}`}
-                  className="absolute top-1/2 left-1/2 h-1 w-1 rounded-sm"
+                  key={i}
+                  className="absolute top-1/2 left-1/2 h-1 w-1 rounded-full"
                   style={{
-                    background:
-                      i % 3 === 0
-                        ? "rgba(248,113,113,0.9)"
-                        : i % 3 === 1
-                          ? "rgba(59,130,246,0.9)"
-                          : "rgba(250,204,21,0.9)",
+                    background: "#22c55e",
                     transform: "translate(-50%, -50%)",
-                    animation: `float ${4 + i * 0.4}s ease-in-out infinite`,
-                    animationDelay: `${i * 0.3}s`,
-                    opacity: 0.8,
-                    boxShadow: "0 0 10px rgba(24, 255, 25, 0.6)",
+                    animation: `orbit ${3 + i * 0.6}s linear infinite`,
+                    animationDelay: `${i * 0.25}s`,
+                    boxShadow: "0 0 16px rgba(34,197,94,0.8)",
                   }}
                 />
               ))}
@@ -187,7 +119,7 @@ export function HeroSectionV3() {
               {painPoints.map((point, index) => (
                 <div
                   key={index}
-                  className="group relative overflow-hidden rounded-xl border border-border bg-card/70 px-4 py-4 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_24px_rgba(59,130,246,0.4)]"
+                  className="group relative overflow-hidden rounded-xl border border-border bg-card/70 px-4 py-4 text-left transition-all duration-300 hover:-translate-y-1 hover:border-brand-green/40 hover:shadow-lg"
                 >
                   <div className="flex items-start gap-3">
                     <div className="mt-1 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-[11px] font-semibold text-muted-foreground">
@@ -196,19 +128,6 @@ export function HeroSectionV3() {
                     <p className="text-sm md:text-base text-foreground/80 leading-relaxed group-hover:text-foreground transition-colors">
                       {point}
                     </p>
-                  </div>
-                  <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background:
-                          index % 3 === 0
-                            ? "radial-gradient(circle at top left, rgba(248,113,113,0.22), transparent 60%)"
-                            : index % 3 === 1
-                              ? "radial-gradient(circle at top right, rgba(59,130,246,0.22), transparent 60%)"
-                              : "radial-gradient(circle at bottom, rgba(250,204,21,0.22), transparent 60%)",
-                      }}
-                    />
                   </div>
                 </div>
               ))}
@@ -275,26 +194,6 @@ export function HeroSectionV3() {
             style={{ transitionDelay: "0.7s" }}
           >
             <div className="relative rounded-3xl overflow-hidden border border-border bg-muted/50">
-              {/* outer neon frame */}
-              <div className="pointer-events-none absolute inset-0">
-                <div
-                  className="absolute inset-0 rounded-3xl hidden dark:block"
-                  style={{
-                    boxShadow:
-                      "0 0 30px rgba(248,113,113,0.4), 0 0 40px rgba(59,130,246,0.4), 0 0 30px rgba(250,204,21,0.4)",
-                  }}
-                />
-                <div
-                  className="absolute inset-px rounded-[1.4rem]"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, rgba(248,113,113,0.3), rgba(59,130,246,0.3), rgba(250,204,21,0.35))",
-                    opacity: 0.35,
-                    mixBlendMode: "screen",
-                  }}
-                />
-              </div>
-
               <div className="relative aspect-video">
                 <Image
                   src={`/api/imagegen/dev/${encodeURIComponent(heroImagePrompt)}?ratio=landscape`}

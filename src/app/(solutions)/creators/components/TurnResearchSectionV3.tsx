@@ -87,7 +87,7 @@ export function TurnResearchSectionV3() {
   }, [audioRef.current]);
 
   return (
-    <section className="py-32 md:py-40 bg-muted/30">
+    <section className="py-16 md:py-20 bg-muted/30">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-4">
