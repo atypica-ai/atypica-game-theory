@@ -20,7 +20,18 @@ let isProcessing = false;
 async function initializeBrowser() {
   if (!globalBrowser) {
     console.log("Initializing global browser instance...");
-    globalBrowser = await puppeteer.launch();
+    globalBrowser = await puppeteer.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+        // Font rendering arguments for better Chinese character support
+        "--font-render-hinting=none",
+        "--disable-font-subpixel-positioning",
+      ],
+    });
     console.log("Global browser instance initialized");
   }
   return globalBrowser;
@@ -98,6 +109,17 @@ async function takeScreenshot({ url, html, filename }) {
       });
     }
 
+    // Inject CSS for Chinese font support
+    await page.addStyleTag({
+      content: `
+        * {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                       "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+                       "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+        }
+      `,
+    });
+
     // Take screenshot
     const screenshotBuffer = await page.screenshot({
       type: "png",
@@ -151,6 +173,17 @@ async function htmlToPDF({ url, html, filename }) {
         timeout: 60000, // 60 second timeout
       });
     }
+
+    // Inject CSS for Chinese font support
+    await page.addStyleTag({
+      content: `
+        * {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                       "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+                       "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+        }
+      `,
+    });
 
     // Get the actual page height
     const bodyHeight = await page.evaluate(() => {
@@ -225,6 +258,17 @@ async function htmlToPaginatedPDF({
         timeout: 60000, // 60 second timeout
       });
     }
+
+    // Inject CSS for Chinese font support
+    await page.addStyleTag({
+      content: `
+        * {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                       "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+                       "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+        }
+      `,
+    });
 
     // Add CSS for better page breaks if HTML content is provided
     if (html) {
