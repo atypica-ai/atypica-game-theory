@@ -63,8 +63,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <article className="mx-auto max-w-4xl px-4 py-8">
-      <header className="mb-8">
-        <h1 className="mb-4 text-4xl font-bold">{post.title}</h1>
+      <header className="mb-2">
+        {/* post.content 已经包含了 title */}
+        {/*<h1 className="mb-4 text-4xl font-bold">{post.title}</h1>*/}
         {post.pubDate && (
           <time className="text-sm text-muted-foreground">
             {new Date(post.pubDate).toLocaleDateString(locale === "zh-CN" ? "zh-CN" : "en-US", {
@@ -77,10 +78,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       </header>
 
       {post.content && (
-        <div
-          className="blog-article"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
+        <div className="blog-article" dangerouslySetInnerHTML={{ __html: post.content }} />
       )}
 
       {post.link && (

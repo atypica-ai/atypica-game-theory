@@ -114,7 +114,8 @@ export async function GET(request: Request) {
           ? showNotes
           : item.podcast.script || "AI-powered research insights";
         const pubDate = new Date(item.createdAt).toUTCString();
-        const episodeUrl = item.url;
+        // item.url 是 featureditem 上的 podcast 分享链接的相对地址
+        const episodeUrl = `${baseUrl}${item.url}`;
         const guid = item.podcast.token;
         // Determine episode type based on kindDetermination
         const kind = item.podcast.extra?.kindDetermination?.kind;
