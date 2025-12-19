@@ -110,13 +110,10 @@
         "reuse": "Reuse your research",
         "examples": "Real examples"
       },
-      "realExamples": {
-        "title": "Convincing Examples",
-        "description": "These podcasts and videos generated from them have helped us rapidly grow our following across platforms:",
-        "aiBrowserShowdown": "AI Browser Showdown: FlowithOS vs Atlas vs Fellou vs Comet — Which One Actually Works?",
-        "aiTrustVsEmployees": "When companies trust AI more than their employees, are they becoming more efficient or more dangerous?",
-        "socialMediaLuxury": "Social media influence luxury purchases despite debt and psychological drivers"
-      }
+      "featuredCaseLabel": "Real AI podcast example",
+      "realExamplesTitle": "Convincing Examples",
+      "realExamplesDescription": "These podcasts and videos generated from them have helped us rapidly grow our following across platforms:",
+      "openLink": "Open"
     },
     "AdvancedWorkflowSection": {
       "sectionLabel": "Section 4",

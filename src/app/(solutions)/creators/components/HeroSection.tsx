@@ -243,7 +243,7 @@ export function HeroSection() {
         >
           <Button
             size="lg"
-            className="bg-primary text-primary-foreground rounded-full shadow-[0_0_28px_rgba(34,197,94,0.7)] h-12 px-6 group"
+            className="bg-primary text-primary-foreground rounded-full shadow-[0_0_28px_rgba(34,197,94,0.7)] h-12 has-[>svg]:px-6 group"
             asChild
           >
             <Link href="/newstudy" prefetch={true}>
@@ -256,7 +256,7 @@ export function HeroSection() {
         <div
           className={cn(
             "mt-12 mx-auto max-w-4xl relative",
-            "rounded-3xl overflow-hidden border border-border bg-muted/50",
+            "rounded-xl overflow-hidden border border-border bg-muted/50",
             "transition-all duration-700",
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
           )}
@@ -265,14 +265,14 @@ export function HeroSection() {
           {/* Neon frame overlay */}
           <div className="pointer-events-none absolute inset-0 z-10">
             <div
-              className="absolute inset-0 rounded-3xl hidden dark:block"
+              className="absolute inset-0 rounded-xl hidden dark:block"
               style={{
                 boxShadow:
                   "0 0 30px rgba(248,113,113,0.4), 0 0 40px rgba(59,130,246,0.4), 0 0 30px rgba(250,204,21,0.4)",
               }}
             />
             <div
-              className="absolute inset-px rounded-[1.4rem]"
+              className="absolute inset-px rounded-xl"
               style={{
                 background:
                   "linear-gradient(90deg, rgba(248,113,113,0.3), rgba(59,130,246,0.3), rgba(250,204,21,0.35))",

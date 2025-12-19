@@ -49,7 +49,7 @@ export function AskAudienceSection({ s3Origin }: { s3Origin: string }) {
             className="bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)]"
             asChild
           >
-            <Link href="/interviewProject" prefetch={true}>
+            <Link href="/interview" prefetch={true}>
               {t("ctaInterview")}
             </Link>
           </Button>

@@ -154,7 +154,7 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
             {quickStartTopics.map((topic) => (
               <Link
                 key={topic.id}
-                href={`/newstudy?topic=${encodeURIComponent(topic.label)}`}
+                href={`/newstudy?brief=${encodeURIComponent(topic.label)}`}
                 prefetch={true}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs md:text-sm",

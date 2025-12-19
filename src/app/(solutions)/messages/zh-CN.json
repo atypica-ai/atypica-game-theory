@@ -110,13 +110,10 @@
         "reuse": "重复利用你的研究",
         "examples": "真实案例"
       },
-      "realExamples": {
-        "title": "令人信服的案例",
-        "description": "这些播客和从中生成的视频帮助我们在各个平台上快速增长关注者：",
-        "aiBrowserShowdown": "AI 浏览器对决：FlowithOS vs Atlas vs Fellou vs Comet——哪一个真正有效？",
-        "aiTrustVsEmployees": "当公司对 AI 的信任超过员工时，它们是变得更高效还是更危险？",
-        "socialMediaLuxury": "社交媒体影响奢侈品购买，尽管存在债务和心理驱动因素"
-      }
+      "featuredCaseLabel": "真实 AI 播客案例",
+      "realExamplesTitle": "令人信服的案例",
+      "realExamplesDescription": "这些播客和从中生成的视频帮助我们在各个平台上快速增长关注者：",
+      "openLink": "打开"
     },
     "AdvancedWorkflowSection": {
       "sectionLabel": "第四部分",

@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { cn } from "@/lib/utils";
 import { Pause, Play } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { getExampleCases, getFeaturedCase } from "../cases";
 
 // Small output format icons
 const outputIconPrompts = {
@@ -46,6 +47,9 @@ const contentFlowPrompts = {
 
 export function TurnResearchSection() {
   const t = useTranslations("CreatorsPage.TurnResearchSection");
+  const locale = useLocale() as "zh-CN" | "en-US";
+  const featuredCase = getFeaturedCase(locale);
+  const exampleCases = getExampleCases(locale);
   const [hoveredOutput, setHoveredOutput] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<"overview" | "reuse" | "examples">("overview");
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -77,14 +81,12 @@ export function TurnResearchSection() {
 
   useEffect(() => {
     if (!audioRef.current) return;
-    getS3SignedCdnUrl(
-      "https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/podcasts/PWchKQcPhH6TTd9p.mp3",
-    ).then((url) => {
+    getS3SignedCdnUrl(featuredCase.audioUrl).then((url) => {
       if (audioRef.current) {
         audioRef.current.src = url;
       }
     });
-  }, []);
+  }, [featuredCase.audioUrl]);
 
   return (
     <section className="py-20 md:py-28 bg-muted/30">
@@ -106,7 +108,7 @@ export function TurnResearchSection() {
             className="bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)]"
             asChild
           >
-            <Link href="/podcasts" prefetch={true}>
+            <Link href="/insight-radio" prefetch={true}>
               {t("ctaPodcast")}
             </Link>
           </Button>
@@ -260,14 +262,13 @@ export function TurnResearchSection() {
             {/* Featured real podcast episode from Atypica */}
             <div className="mb-10 mt-4 rounded-2xl border border-border bg-card p-4 md:p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-2">
-                Real AI podcast example
+                {t("featuredCaseLabel")}
               </p>
               <h3 className="text-sm md:text-base font-semibold text-zinc-900 dark:text-white mb-1">
-                When Giants Fail: Why Meta Blew Its AI Lead
+                {featuredCase.title}
               </h3>
               <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 mb-3">
-                Generated from an Atypica research workflow — turn one deep dive into an episode
-                your audience actually wants to hear.
+                {featuredCase.description}
               </p>
 
               {/* Compact podcast player styled like Insight Radio sticky player */}
@@ -288,26 +289,21 @@ export function TurnResearchSection() {
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-medium line-clamp-1 text-zinc-900 dark:text-zinc-50">
-                      When Giants Fail: Why Meta Blew Its AI Lead
+                      {featuredCase.title}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-[10px]">
-                    <Link
-                      href="/artifacts/podcast/eqxbaF7Yp7qKgTFN/share"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline"
-                    >
-                      View Study
-                    </Link>
-                    <Link
-                      href="/insight-radio"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline"
-                    >
-                      More Insight Radio
-                    </Link>
+                    {featuredCase.additionalLinks.map((link, index) => (
+                      <Link
+                        key={index}
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
                   </div>
                 </div>
 
@@ -512,87 +508,55 @@ export function TurnResearchSection() {
         {activeView === "examples" && (
           <div className="mb-8">
             <h3 className="text-xl md:text-2xl font-bold mb-4 text-zinc-900 dark:text-white">
-              {t("realExamples.title")}
+              {t("realExamplesTitle")}
             </h3>
             <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 mb-8 max-w-3xl">
-              {t("realExamples.description")}
+              {t("realExamplesDescription")}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Example 1 */}
-              <Link
-                href="https://atypica.ai/artifacts/podcast/eqxbaF7Yp7qKgTFN/share"
-                target="_blank"
-                rel="noreferrer"
-                className="border border-border rounded-xl overflow-hidden bg-card hover:-translate-y-1 transition-transform duration-300"
-              >
-                <div className="h-24 bg-linear-to-r from-zinc-900 via-zinc-800 to-zinc-900 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 flex items-center justify-between px-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-primary text-lg">
-                      🎧
-                    </div>
-                    <p className="text-[11px] md:text-xs text-white line-clamp-2">
-                      别再用错误标准选AI浏览器
-                    </p>
-                  </div>
-                  <span className="text-[10px] text-zinc-300 ml-2">Open</span>
-                </div>
-                <div className="p-4">
-                  <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
-                    {t("realExamples.aiBrowserShowdown")}
-                  </p>
-                </div>
-              </Link>
+              {exampleCases.map((example, index) => {
+                const bgColors = [
+                  "from-zinc-900 via-zinc-800 to-zinc-900",
+                  "from-blue-900 via-blue-800 to-blue-900",
+                  "from-emerald-900 via-emerald-800 to-emerald-900",
+                ];
+                const emojis = ["🎧", "🎙️", "▶"];
 
-              {/* Example 2 */}
-              <Link
-                href="https://atypica.ai/artifacts/podcast/TpfaXsrgesAiYy9j/share"
-                target="_blank"
-                rel="noreferrer"
-                className="border border-border rounded-xl overflow-hidden bg-card hover:-translate-y-1 transition-transform duration-300"
-              >
-                <div className="h-24 bg-linear-to-r from-blue-900 via-blue-800 to-blue-900 flex items-center justify-between px-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center text-white text-lg">
-                      🎙️
+                return (
+                  <Link
+                    key={example.token}
+                    href={example.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="border border-border rounded-xl overflow-hidden bg-card hover:-translate-y-1 transition-transform duration-300"
+                  >
+                    <div
+                      className={cn(
+                        "h-24 bg-linear-to-r flex items-center justify-between px-4",
+                        bgColors[index % bgColors.length],
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-primary text-lg">
+                          {emojis[index % emojis.length]}
+                        </div>
+                        <p className="text-[11px] md:text-xs text-white line-clamp-2">
+                          {example.title}
+                        </p>
+                      </div>
+                      <span className="text-[10px] text-zinc-200 ml-2">
+                        {t("openLink")}
+                      </span>
                     </div>
-                    <p className="text-[11px] md:text-xs text-white line-clamp-2">
-                      Insight Radio episode
-                    </p>
-                  </div>
-                  <span className="text-[10px] text-zinc-200 ml-2">Open</span>
-                </div>
-                <div className="p-4">
-                  <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
-                    {t("realExamples.aiTrustVsEmployees")}
-                  </p>
-                </div>
-              </Link>
-
-              {/* Example 3 */}
-              <Link
-                href="https://atypica.ai/artifacts/podcast/epKVADrAwJieCQGd/share"
-                target="_blank"
-                rel="noreferrer"
-                className="border border-border rounded-xl overflow-hidden bg-card hover:-translate-y-1 transition-transform duration-300"
-              >
-                <div className="h-24 bg-linear-to-r from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-between px-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-md bg-primary/20 flex items-center justify-center text-primary text-lg">
-                      ▶
+                    <div className="p-4">
+                      <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
+                        {example.description}
+                      </p>
                     </div>
-                    <p className="text-[11px] md:text-xs text-white line-clamp-2">
-                      Career Resilience in an Uncertain Economy
-                    </p>
-                  </div>
-                  <span className="text-[10px] text-zinc-200 ml-2">Open</span>
-                </div>
-                <div className="p-4">
-                  <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
-                    {t("realExamples.socialMediaLuxury")}
-                  </p>
-                </div>
-              </Link>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}
