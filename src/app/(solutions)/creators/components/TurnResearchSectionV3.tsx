@@ -84,7 +84,7 @@ export function TurnResearchSectionV3() {
         audioRef.current.src = url;
       }
     });
-  }, [audioRef.current]);
+  }, []);
 
   return (
     <section className="py-16 md:py-20 bg-muted/30">

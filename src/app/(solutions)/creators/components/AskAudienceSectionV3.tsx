@@ -14,7 +14,7 @@ const personaPanelPrompt = `
   Style: sci-fi game interface, clean, no characters, only UI elements.
 `;
 
-export function AskAudienceSectionV3() {
+export function AskAudienceSectionV3({ s3Origin }: { s3Origin: string }) {
   const t = useTranslations("CreatorsPage.AskAudienceSection");
 
   // Simple 2-slide carousel for the right visual (HUD + real persona video)
@@ -146,7 +146,7 @@ export function AskAudienceSectionV3() {
                 />
               ) : (
                 <video
-                  src="/_public/creator-images/aipersona_vedio/aipersona_vedio.mov"
+                  src={`${s3Origin}atypica/public/creators-ai-persona-video-1080p-251219.mp4`}
                   className="w-full h-full object-cover"
                   autoPlay
                   loop

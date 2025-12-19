@@ -35,8 +35,9 @@ const mediumImagePrompts = {
   `,
 };
 
-export function PlanSmarterSectionV3() {
+export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
   const t = useTranslations("CreatorsPage.PlanSmarterSection");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"useCase1" | "useCase2" | "useCase3">("useCase1");
 
@@ -283,7 +284,7 @@ export function PlanSmarterSectionV3() {
                             />
                           ) : (
                             <Image
-                              src="/_public/creator-images/ai research_report.jpg"
+                              src={`${s3Origin}atypica/public/creators-ai-research-report-251219.jpg`}
                               alt="AI research report real example"
                               fill
                               className="object-cover"

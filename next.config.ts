@@ -33,6 +33,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "substackcdn.com" },
       { protocol: "https", hostname: "**.s3.amazonaws.com" },
     ],
+    localPatterns: [
+      { pathname: "/api/imagegen/dev/**" /*, search:"" */ },
+      { pathname: "/_public/**" },
+    ],
     // loader: "custom",
     // loaderFile: "./lib/imageLoader",
   },
