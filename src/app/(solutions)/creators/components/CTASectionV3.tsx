@@ -15,7 +15,7 @@ export function CTASectionV3() {
           <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-[0.95] mb-6 text-zinc-900 dark:text-white">
             {t("headline")}
           </h2>
-          <p className="text-2xl md:text-3xl lg:text-3xl font-bold text-brand-green mb-6 leading-tight">
+          <p className="text-2xl md:text-3xl lg:text-3xl font-bold text-primary mb-6 leading-tight">
             {t("subheadline")}
           </p>
           <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 max-w-3xl">
@@ -32,25 +32,25 @@ export function CTASectionV3() {
         <div className="mb-12 max-w-3xl">
           <ul className="space-y-4">
             <li className="flex items-start gap-4">
-              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
+              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-primary rounded-full" />
               <span className="text-base md:text-lg text-zinc-900 dark:text-white leading-relaxed">
                 {t("benefit1")}
               </span>
             </li>
             <li className="flex items-start gap-4">
-              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
+              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-primary rounded-full" />
               <span className="text-base md:text-lg text-zinc-900 dark:text-white leading-relaxed">
                 {t("benefit2")}
               </span>
             </li>
             <li className="flex items-start gap-4">
-              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
+              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-primary rounded-full" />
               <span className="text-base md:text-lg text-zinc-900 dark:text-white leading-relaxed">
                 {t("benefit3")}
               </span>
             </li>
             <li className="flex items-start gap-4">
-              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-brand-green rounded-full" />
+              <span className="shrink-0 w-1.5 h-1.5 mt-3 bg-primary rounded-full" />
               <span className="text-base md:text-lg text-zinc-900 dark:text-white leading-relaxed">
                 {t("benefit4")}
               </span>

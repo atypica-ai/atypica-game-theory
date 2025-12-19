@@ -59,7 +59,7 @@ export function StarField() {
         {stars.map((star, index) => (
           <div
             key={index}
-            className="absolute rounded-full bg-brand-green"
+            className="absolute rounded-full bg-primary"
             style={{
               width: `${STAR_SIZE}px`,
               height: `${STAR_SIZE}px`,

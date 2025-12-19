@@ -46,15 +46,11 @@ export function AskAudienceSectionV3({ s3Origin }: { s3Origin: string }) {
         <div className="mb-5">
           <Button
             size="lg"
-            className={cn(
-              "rounded-full h-11 px-6 text-sm font-semibold",
-              "bg-brand-green hover:brightness-95 text-zinc-900 dark:text-white shadow-[0_0_20px_rgba(34,197,94,0.6)]",
-              "transition-all duration-200",
-            )}
+            className="bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)]"
             asChild
           >
             <Link href="/interviewProject" prefetch={true}>
-              <span className="text-zinc-900 dark:text-white">{t("ctaInterview")}</span>
+              {t("ctaInterview")}
             </Link>
           </Button>
         </div>
@@ -78,17 +74,17 @@ export function AskAudienceSectionV3({ s3Origin }: { s3Origin: string }) {
                 {t("useCases.title")}
               </h3>
               <div className="space-y-4">
-                <div className="border-l-2 border-brand-green pl-5">
+                <div className="border-l-2 border-primary pl-5">
                   <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     {t("useCases.case1")}
                   </p>
                 </div>
-                <div className="border-l-2 border-brand-green pl-5">
+                <div className="border-l-2 border-primary pl-5">
                   <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     {t("useCases.case2")}
                   </p>
                 </div>
-                <div className="border-l-2 border-brand-green pl-5">
+                <div className="border-l-2 border-primary pl-5">
                   <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     {t("useCases.case3")}
                   </p>
@@ -102,25 +98,25 @@ export function AskAudienceSectionV3({ s3Origin }: { s3Origin: string }) {
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
-                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
+                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-primary rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
                     {t("applications.app1")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
+                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-primary rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
                     {t("applications.app2")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
+                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-primary rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
                     {t("applications.app3")}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-brand-green rounded-full" />
+                  <span className="shrink-0 w-1.5 h-1.5 mt-2.5 bg-primary rounded-full" />
                   <span className="text-sm md:text-base text-zinc-700 dark:text-zinc-300">
                     {t("applications.app4")}
                   </span>
@@ -185,14 +181,14 @@ export function AskAudienceSectionV3({ s3Origin }: { s3Origin: string }) {
 
         {/* Benefit Statement */}
         <div className="max-w-4xl mb-16">
-          <p className="text-lg md:text-xl text-zinc-700 dark:text-zinc-300 leading-relaxed border-l-4 border-brand-green pl-8">
+          <p className="text-lg md:text-xl text-zinc-700 dark:text-zinc-300 leading-relaxed border-l-4 border-primary pl-8">
             {t("benefit")}
           </p>
         </div>
 
         {/* Real Example */}
         <div className="border-t border-zinc-200 dark:border-zinc-800 pt-12">
-          <p className="text-xs font-semibold tracking-[0.18em] uppercase text-brand-green mb-4">
+          <p className="text-xs font-semibold tracking-[0.18em] uppercase text-primary mb-4">
             {t("realExample.title")}
           </p>
 

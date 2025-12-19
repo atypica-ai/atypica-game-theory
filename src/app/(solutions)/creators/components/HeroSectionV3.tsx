@@ -77,7 +77,7 @@ export function HeroSectionV3() {
                   "0 0 18px rgba(248,113,113,0.2), 0 0 18px rgba(59,130,246,0.2), 0 0 16px rgba(250,204,21,0.25)",
               }}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-green" />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               {t("badge")}
             </span>
           </div>
@@ -187,7 +187,7 @@ export function HeroSectionV3() {
               {painPoints.map((point, index) => (
                 <div
                   key={index}
-                  className="group relative overflow-hidden rounded-xl border border-border bg-card/70 px-4 py-4 text-left transition-all duration-300 hover:-translate-y-1 hover:border-brand-green/40 hover:shadow-[0_0_24px_rgba(59,130,246,0.4)]"
+                  className="group relative overflow-hidden rounded-xl border border-border bg-card/70 px-4 py-4 text-left transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_0_24px_rgba(59,130,246,0.4)]"
                 >
                   <div className="flex items-start gap-3">
                     <div className="mt-1 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-[11px] font-semibold text-muted-foreground">
@@ -239,16 +239,12 @@ export function HeroSectionV3() {
           >
             <Button
               size="lg"
-              className={cn(
-                "rounded-full h-12 px-8 text-sm font-semibold",
-                "bg-brand-green hover:brightness-95 text-zinc-900 dark:text-white shadow-[0_0_28px_rgba(34,197,94,0.7)]",
-                "transition-all duration-200 group",
-              )}
+              className="bg-primary text-primary-foreground rounded-full shadow-[0_0_28px_rgba(34,197,94,0.7)] h-12 px-6 group"
               asChild
             >
               <Link href="/newstudy" prefetch={true}>
                 <span>{t("ctaButton")}</span>
-                <ChevronRightIcon className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                <ChevronRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
               </Link>
             </Button>
           </div>

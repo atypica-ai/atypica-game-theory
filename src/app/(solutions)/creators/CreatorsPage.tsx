@@ -7,7 +7,6 @@ import { AskAudienceSectionV3 } from "./components/AskAudienceSectionV3";
 import { CTASectionV3 } from "./components/CTASectionV3";
 import { HeroSectionV3 } from "./components/HeroSectionV3";
 import { PlanSmarterSectionV3 } from "./components/PlanSmarterSectionV3";
-import { StarField } from "./components/StarField";
 import { TurnResearchSectionV3 } from "./components/TurnResearchSectionV3";
 import "./style.css";
 
@@ -23,7 +22,7 @@ export default function CreatorsPage() {
   return s3Origin ? (
     <>
       {/* Optimized star field: 40 stars with reduced motion support */}
-      <StarField />
+      {/*<StarField />*/}
 
       {/* Main content - Professional, minimal design with brand green accents */}
       <div className="relative" style={{ zIndex: 1 }}>

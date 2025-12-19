@@ -114,15 +114,11 @@ export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
         <div className="mb-5">
           <Button
             size="lg"
-            className={cn(
-              "rounded-full h-11 px-6 text-sm font-semibold",
-              "bg-brand-green hover:brightness-95 text-zinc-900 dark:text-white shadow-[0_0_20px_rgba(34,197,94,0.6)]",
-              "transition-all duration-200",
-            )}
+            className="bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)]"
             asChild
           >
             <Link href="/newstudy" prefetch={true}>
-              <span className="text-zinc-900 dark:text-white">{t("ctaResearch")}</span>
+              {t("ctaResearch")}
             </Link>
           </Button>
         </div>
@@ -171,7 +167,7 @@ export function PlanSmarterSectionV3({ s3Origin }: { s3Origin: string }) {
                   "px-6 py-3 rounded-lg font-medium transition-all duration-300 border text-sm md:text-base",
                   "hover:scale-105 active:scale-95 relative",
                   isActive
-                    ? "bg-muted text-foreground border-brand-green shadow-lg"
+                    ? "bg-muted text-foreground border-primary shadow-lg"
                     : "bg-background text-muted-foreground hover:bg-muted border-border",
                 )}
                 style={{

@@ -103,15 +103,11 @@ export function TurnResearchSectionV3() {
         <div className="mb-5">
           <Button
             size="lg"
-            className={cn(
-              "rounded-full h-11 px-6 text-sm font-semibold",
-              "bg-brand-green hover:brightness-95 text-zinc-900 dark:text-white shadow-[0_0_20px_rgba(34,197,94,0.6)]",
-              "transition-all duration-200",
-            )}
+            className="bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)]"
             asChild
           >
             <Link href="/podcasts" prefetch={true}>
-              <span className="text-zinc-900 dark:text-white">{t("ctaPodcast")}</span>
+              {t("ctaPodcast")}
             </Link>
           </Button>
         </div>
@@ -134,8 +130,8 @@ export function TurnResearchSectionV3() {
               className={cn(
                 "px-4 py-2 rounded-full text-xs md:text-sm font-medium border transition-all duration-300",
                 activeView === tab.id
-                  ? "bg-muted text-foreground border-brand-green shadow-[0_0_18px_rgba(24,255,25,0.3)]"
-                  : "bg-background text-muted-foreground border-border hover:border-brand-green/70 hover:bg-muted hover:text-foreground",
+                  ? "bg-muted text-foreground border-primary shadow-[0_0_18px_rgba(24,255,25,0.3)]"
+                  : "bg-background text-muted-foreground border-border hover:border-primary/70 hover:bg-muted hover:text-foreground",
               )}
             >
               {tab.label}
@@ -263,7 +259,7 @@ export function TurnResearchSectionV3() {
 
             {/* Featured real podcast episode from Atypica */}
             <div className="mb-10 mt-4 rounded-2xl border border-border bg-card p-4 md:p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-green mb-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-2">
                 Real AI podcast example
               </p>
               <h3 className="text-sm md:text-base font-semibold text-zinc-900 dark:text-white mb-1">
@@ -319,7 +315,7 @@ export function TurnResearchSectionV3() {
                 <div className="mb-3">
                   <div className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-brand-green transition-all duration-150"
+                      className="h-full rounded-full bg-primary transition-all duration-150"
                       style={{
                         width:
                           duration && isFinite(duration) && duration > 0
@@ -342,7 +338,7 @@ export function TurnResearchSectionV3() {
                     onClick={toggleAudio}
                     className={cn(
                       "h-10 w-10 rounded-full flex items-center justify-center",
-                      "bg-brand-green text-zinc-900 dark:text-white shadow-[0_0_18px_rgba(34,197,94,0.7)]",
+                      "bg-primary text-zinc-900 dark:text-white shadow-[0_0_18px_rgba(34,197,94,0.7)]",
                       "hover:brightness-95 transition-transform duration-150",
                     )}
                   >
@@ -363,25 +359,25 @@ export function TurnResearchSectionV3() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
                     {t("idealFor.type1")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
                     {t("idealFor.type2")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
                     {t("idealFor.type3")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
                     {t("idealFor.type4")}
                   </span>
@@ -533,7 +529,7 @@ export function TurnResearchSectionV3() {
               >
                 <div className="h-24 bg-linear-to-r from-zinc-900 via-zinc-800 to-zinc-900 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 flex items-center justify-between px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-md bg-brand-green/10 flex items-center justify-center text-brand-green text-lg">
+                    <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-primary text-lg">
                       🎧
                     </div>
                     <p className="text-[11px] md:text-xs text-white line-clamp-2">
@@ -583,7 +579,7 @@ export function TurnResearchSectionV3() {
               >
                 <div className="h-24 bg-linear-to-r from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-between px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-md bg-brand-green/20 flex items-center justify-center text-brand-green text-lg">
+                    <div className="w-8 h-8 rounded-md bg-primary/20 flex items-center justify-center text-primary text-lg">
                       ▶
                     </div>
                     <p className="text-[11px] md:text-xs text-white line-clamp-2">
