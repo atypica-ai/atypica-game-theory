@@ -8,17 +8,17 @@ export function CTASectionV3() {
   const t = useTranslations("CreatorsPage.CTASection");
 
   return (
-    <section className="py-32 md:py-40 bg-white dark:bg-zinc-950">
+    <section className="py-32 md:py-40 bg-background">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Headlines - Bold Statement (but within global max size) */}
-        <div className="mb-16 max-w-4xl">
+        <div className="mb-16 max-w-3xl">
           <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-[0.95] mb-6 text-zinc-900 dark:text-white">
             {t("headline")}
           </h2>
           <p className="text-2xl md:text-3xl lg:text-3xl font-bold text-brand-green mb-6 leading-tight">
             {t("subheadline")}
           </p>
-          <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 max-w-2xl">
+          <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 max-w-3xl">
             {t("tagline")}
           </p>
         </div>
@@ -64,7 +64,7 @@ export function CTASectionV3() {
         </p>
 
         {/* Social links row at very bottom of page */}
-        <div className="mt-10 border-t border-zinc-200 dark:border-zinc-800 pt-8">
+        <div className="mt-10 border-t border-border pt-8">
           <div className="flex flex-col items-center gap-4">
             <span className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 text-center">
               Find atypica on:

@@ -30,7 +30,7 @@ export function AskAudienceSectionV3() {
   }, [hovered]);
 
   return (
-    <section className="py-32 md:py-40 bg-white dark:bg-zinc-950 relative overflow-hidden">
+    <section className="py-32 md:py-40 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-4">
@@ -60,7 +60,7 @@ export function AskAudienceSectionV3() {
         </div>
 
         {/* Subtitle */}
-        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-4 max-w-4xl leading-relaxed">
+        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-4 max-w-3xl leading-relaxed">
           {t("subtitle")}
         </p>
 
@@ -135,7 +135,7 @@ export function AskAudienceSectionV3() {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
           >
-            <div className="relative aspect-video rounded-3xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 shadow-[0_0_24px_rgba(59,130,246,0.4)]">
+            <div className="relative aspect-video rounded-3xl overflow-hidden border border-border bg-card/80 shadow-[0_0_24px_rgba(59,130,246,0.4)]">
               {activeSlide === 0 ? (
                 <Image
                   src={`/api/imagegen/dev/${encodeURIComponent(personaPanelPrompt)}?ratio=landscape`}
@@ -188,7 +188,7 @@ export function AskAudienceSectionV3() {
             {t("realExample.title")}
           </p>
 
-          <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 mb-6 leading-relaxed max-w-4xl">
+          <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 mb-6 leading-relaxed max-w-3xl">
             {t("realExample.description")}
           </p>
 

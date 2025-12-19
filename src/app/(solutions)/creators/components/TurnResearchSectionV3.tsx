@@ -1,12 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { cn } from "@/lib/utils";
 import { Pause, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Small output format icons
 const outputIconPrompts = {
@@ -74,9 +75,20 @@ export function TurnResearchSectionV3() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  useEffect(() => {
+    if (!audioRef.current) return;
+    getS3SignedCdnUrl(
+      "https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/podcasts/PWchKQcPhH6TTd9p.mp3",
+    ).then((url) => {
+      if (audioRef.current) {
+        audioRef.current.src = url;
+      }
+    });
+  }, [audioRef.current]);
+
   return (
-    <section className="py-24 md:py-32 bg-white dark:bg-zinc-900">
-      <div className="container mx-auto px-4 max-w-5xl">
+    <section className="py-32 md:py-40 bg-muted/30">
+      <div className="container mx-auto px-4 max-w-6xl">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-4">
           {t("badge")}
@@ -122,8 +134,8 @@ export function TurnResearchSectionV3() {
               className={cn(
                 "px-4 py-2 rounded-full text-xs md:text-sm font-medium border transition-all duration-300",
                 activeView === tab.id
-                  ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border-brand-green shadow-[0_0_18px_rgba(24,255,25,0.3)]"
-                  : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-brand-green/70 hover:bg-zinc-900 hover:text-white",
+                  ? "bg-muted text-foreground border-brand-green shadow-[0_0_18px_rgba(24,255,25,0.3)]"
+                  : "bg-background text-muted-foreground border-border hover:border-brand-green/70 hover:bg-muted hover:text-foreground",
               )}
             >
               {tab.label}
@@ -138,7 +150,7 @@ export function TurnResearchSectionV3() {
             <div className="mb-16">
               {/* Bold transformation statement */}
               <div className="bg-linear-to-r from-red-500 via-blue-500 to-amber-400 p-px rounded-2xl mb-8 max-w-2xl mx-auto">
-                <div className="bg-white dark:bg-zinc-900 px-6 py-5 rounded-xl">
+                <div className="bg-background px-6 py-5 rounded-xl">
                   <div className="flex items-center justify-center gap-4 flex-wrap md:flex-nowrap">
                     <span className="text-4xl md:text-5xl font-bold text-red-500">1</span>
                     <span className="text-3xl text-zinc-400">→</span>
@@ -242,7 +254,7 @@ export function TurnResearchSectionV3() {
             </div>
 
             {/* Featured real podcast episode from Atypica */}
-            <div className="mb-10 mt-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 md:p-5">
+            <div className="mb-10 mt-4 rounded-2xl border border-border bg-card p-4 md:p-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-green mb-2">
                 Real AI podcast example
               </p>
@@ -257,7 +269,6 @@ export function TurnResearchSectionV3() {
               {/* Compact podcast player styled like Insight Radio sticky player */}
               <audio
                 ref={audioRef}
-                src="/_public/creator-images/When%20Giants%20Fail_%20Why%20Meta%20Blew%20Its%20AI%20Lead.mp3"
                 preload="metadata"
                 onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                 onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
@@ -278,7 +289,7 @@ export function TurnResearchSectionV3() {
                   </div>
                   <div className="flex items-center gap-3 text-[10px]">
                     <Link
-                      href="https://atypica.ai/artifacts/podcast/eqxbaF7Yp7qKgTFN/share?utm_source=podcast&utm_medium=share"
+                      href="/artifacts/podcast/eqxbaF7Yp7qKgTFN/share"
                       target="_blank"
                       rel="noreferrer"
                       className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline"
@@ -323,7 +334,7 @@ export function TurnResearchSectionV3() {
                     onClick={toggleAudio}
                     className={cn(
                       "h-10 w-10 rounded-full flex items-center justify-center",
-                      "bg-brand-green text-zinc-900 shadow-[0_0_18px_rgba(34,197,94,0.7)]",
+                      "bg-brand-green text-zinc-900 dark:text-white shadow-[0_0_18px_rgba(34,197,94,0.7)]",
                       "hover:brightness-95 transition-transform duration-150",
                     )}
                   >
@@ -385,8 +396,8 @@ export function TurnResearchSectionV3() {
                 <div
                   className={cn(
                     "relative aspect-16/3 rounded-xl overflow-hidden",
-                    "border border-zinc-200 dark:border-zinc-800",
-                    "bg-white dark:bg-zinc-900 shadow-lg",
+                    "border border-border",
+                    "bg-card shadow-lg",
                     "hover:shadow-xl hover:scale-[1.01] transition-all duration-300",
                   )}
                   style={{
@@ -507,10 +518,10 @@ export function TurnResearchSectionV3() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Example 1 */}
               <Link
-                href="https://atypica.ai/artifacts/podcast/eqxbaF7Yp7qKgTFN/share?utm_source=podcast&utm_medium=share"
+                href="https://atypica.ai/artifacts/podcast/eqxbaF7Yp7qKgTFN/share"
                 target="_blank"
                 rel="noreferrer"
-                className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 hover:-translate-y-1 transition-transform duration-300"
+                className="border border-border rounded-xl overflow-hidden bg-card hover:-translate-y-1 transition-transform duration-300"
               >
                 <div className="h-24 bg-linear-to-r from-zinc-900 via-zinc-800 to-zinc-900 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 flex items-center justify-between px-4">
                   <div className="flex items-center gap-3">
@@ -532,10 +543,10 @@ export function TurnResearchSectionV3() {
 
               {/* Example 2 */}
               <Link
-                href="https://atypica.musedam.cc/artifacts/podcast/TpfaXsrgesAiYy9j/share?utm_source=podcast&utm_medium=share"
+                href="https://atypica.ai/artifacts/podcast/TpfaXsrgesAiYy9j/share"
                 target="_blank"
                 rel="noreferrer"
-                className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 hover:-translate-y-1 transition-transform duration-300"
+                className="border border-border rounded-xl overflow-hidden bg-card hover:-translate-y-1 transition-transform duration-300"
               >
                 <div className="h-24 bg-linear-to-r from-blue-900 via-blue-800 to-blue-900 flex items-center justify-between px-4">
                   <div className="flex items-center gap-3">
@@ -557,10 +568,10 @@ export function TurnResearchSectionV3() {
 
               {/* Example 3 */}
               <Link
-                href="https://atypica.musedam.cc/artifacts/podcast/epKVADrAwJieCQGd/share?utm_source=podcast&utm_medium=share"
+                href="https://atypica.ai/artifacts/podcast/epKVADrAwJieCQGd/share"
                 target="_blank"
                 rel="noreferrer"
-                className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 hover:-translate-y-1 transition-transform duration-300"
+                className="border border-border rounded-xl overflow-hidden bg-card hover:-translate-y-1 transition-transform duration-300"
               >
                 <div className="h-24 bg-linear-to-r from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-between px-4">
                   <div className="flex items-center gap-3">

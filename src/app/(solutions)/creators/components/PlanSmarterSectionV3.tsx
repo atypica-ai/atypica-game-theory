@@ -97,7 +97,7 @@ export function PlanSmarterSectionV3() {
   }, [useCase1Hovered]);
 
   return (
-    <section className="py-32 md:py-40 bg-white dark:bg-zinc-950 relative overflow-hidden">
+    <section className="py-32 md:py-40 bg-background relative overflow-hidden">
       {/* 轻量 game-like 背景网格 */}
       <div
         className="absolute inset-0 opacity-40 pointer-events-none"
@@ -208,8 +208,8 @@ export function PlanSmarterSectionV3() {
                   "px-6 py-3 rounded-lg font-medium transition-all duration-300 border text-sm md:text-base",
                   "hover:scale-105 active:scale-95 relative",
                   isActive
-                    ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-lg"
-                    : "bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900",
+                    ? "bg-muted text-foreground shadow-lg"
+                    : "bg-background text-muted-foreground hover:bg-muted",
                 )}
                 style={{
                   borderColor:
@@ -242,7 +242,7 @@ export function PlanSmarterSectionV3() {
 
           return (
             <div key={feature.id} className="max-w-6xl mx-auto animate-scale-in">
-              <div className="bg-white dark:bg-zinc-900/70 rounded-3xl p-8 md:p-10 lg:p-12 border border-zinc-200 dark:border-zinc-800 hover:border-[#18FF19]/40 transition-all duration-300 hover:shadow-[0_0_40px_rgba(24,255,25,0.25)]">
+              <div className="bg-card/70 rounded-3xl p-8 md:p-10 lg:p-12 border border-border hover:border-[#18FF19]/40 transition-all duration-300 hover:shadow-[0_0_40px_rgba(24,255,25,0.25)]">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                   {/* Left: Text content */}
                   <div className="animate-slide-in-left">
@@ -318,8 +318,8 @@ export function PlanSmarterSectionV3() {
                         <div
                           className={cn(
                             "relative aspect-square rounded-2xl shadow-2xl overflow-hidden",
-                            "bg-white dark:bg-zinc-900 flex items-center justify-center",
-                            "hover-scale animate-float border border-zinc-200 dark:border-zinc-800",
+                            "bg-card flex items-center justify-center",
+                            "hover-scale animate-float border border-border",
                           )}
                         >
                           {useCase1Slide === 0 ? (
@@ -368,8 +368,8 @@ export function PlanSmarterSectionV3() {
                       <div
                         className={cn(
                           "relative aspect-square rounded-2xl shadow-2xl overflow-hidden",
-                          "bg-white dark:bg-zinc-900 flex items-center justify-center",
-                          "hover-scale animate-float border border-zinc-200 dark:border-zinc-800",
+                          "bg-card flex items-center justify-center",
+                          "hover-scale animate-float border border-border",
                         )}
                       >
                         <Image

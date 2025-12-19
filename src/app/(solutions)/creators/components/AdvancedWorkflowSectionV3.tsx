@@ -14,7 +14,7 @@ export function AdvancedWorkflowSectionV3() {
   const t = useTranslations("CreatorsPage.AdvancedWorkflowSection");
 
   return (
-    <section className="py-32 md:py-40 bg-white dark:bg-zinc-950 relative overflow-hidden">
+    <section className="py-32 md:py-40 bg-background relative overflow-hidden">
       {/* subtle grid */}
       <div
         className="absolute inset-0 pointer-events-none opacity-30"
@@ -39,7 +39,7 @@ export function AdvancedWorkflowSectionV3() {
         </h2>
 
         {/* Subtitle */}
-        <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-10 max-w-4xl leading-relaxed">
+        <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-10 max-w-3xl leading-relaxed">
           {t("subtitle")}
         </p>
 

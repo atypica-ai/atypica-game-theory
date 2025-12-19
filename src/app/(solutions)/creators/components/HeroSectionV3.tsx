@@ -27,7 +27,7 @@ export function HeroSectionV3() {
   const painPoints = [t("painPoint1"), t("painPoint2"), t("painPoint3"), t("painPoint4")];
 
   return (
-    <section className="py-32 md:py-40 bg-white dark:bg-zinc-950 relative overflow-hidden">
+    <section className="py-32 md:py-40 bg-background relative overflow-hidden">
       {/* subtle neon grid background */}
       <div
         className="pointer-events-none absolute inset-0 opacity-20 dark:opacity-40"
@@ -187,13 +187,13 @@ export function HeroSectionV3() {
               {painPoints.map((point, index) => (
                 <div
                   key={index}
-                  className="group relative overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/70 px-4 py-4 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_24px_rgba(59,130,246,0.4)]"
+                  className="group relative overflow-hidden rounded-xl border border-border bg-card/70 px-4 py-4 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_24px_rgba(59,130,246,0.4)]"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="mt-1 flex h-7 w-7 items-center justify-center rounded-full border border-zinc-300 bg-zinc-50 text-[11px] font-semibold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+                    <div className="mt-1 flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-[11px] font-semibold text-muted-foreground">
                       #{index + 1}
                     </div>
-                    <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                    <p className="text-sm md:text-base text-foreground/80 leading-relaxed group-hover:text-foreground transition-colors">
                       {point}
                     </p>
                   </div>
@@ -274,7 +274,7 @@ export function HeroSectionV3() {
             )}
             style={{ transitionDelay: "0.7s" }}
           >
-            <div className="relative rounded-3xl overflow-hidden border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950/80">
+            <div className="relative rounded-3xl overflow-hidden border border-border bg-muted/50">
               {/* outer neon frame */}
               <div className="pointer-events-none absolute inset-0">
                 <div
