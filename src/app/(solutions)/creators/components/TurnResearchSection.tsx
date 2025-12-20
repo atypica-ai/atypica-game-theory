@@ -115,7 +115,7 @@ export function TurnResearchSection() {
         </div>
 
         {/* Subtitle */}
-        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-10 max-w-3xl leading-relaxed">
+        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-10 leading-relaxed">
           {t("subtitle")}
         </p>
 
@@ -510,7 +510,7 @@ export function TurnResearchSection() {
             <h3 className="text-xl md:text-2xl font-bold mb-4 text-zinc-900 dark:text-white">
               {t("realExamplesTitle")}
             </h3>
-            <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 mb-8 max-w-3xl">
+            <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 mb-8">
               {t("realExamplesDescription")}
             </p>
 

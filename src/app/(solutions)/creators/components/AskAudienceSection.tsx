@@ -56,12 +56,12 @@ export function AskAudienceSection({ s3Origin }: { s3Origin: string }) {
         </div>
 
         {/* Subtitle */}
-        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-4 max-w-3xl leading-relaxed">
+        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-4 leading-relaxed">
           {t("subtitle")}
         </p>
 
         {/* Value Proposition */}
-        <p className="text-xl md:text-2xl font-semibold mb-10 max-w-3xl text-zinc-900 dark:text-white leading-tight">
+        <p className="text-xl md:text-2xl font-semibold mb-10 text-zinc-900 dark:text-white leading-tight">
           {t("value")}
         </p>
 
@@ -192,7 +192,7 @@ export function AskAudienceSection({ s3Origin }: { s3Origin: string }) {
             {t("realExample.title")}
           </p>
 
-          <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 mb-6 leading-relaxed max-w-3xl">
+          <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 mb-6 leading-relaxed">
             {t("realExample.description")}
           </p>
 

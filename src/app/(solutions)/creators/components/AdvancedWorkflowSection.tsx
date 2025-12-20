@@ -28,7 +28,7 @@ export function AdvancedWorkflowSection() {
         </h2>
 
         {/* Subtitle */}
-        <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-10 max-w-3xl leading-relaxed">
+        <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 mb-10 leading-relaxed">
           {t("subtitle")}
         </p>
 

@@ -141,7 +141,7 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
         </div>
 
         {/* Subtitle */}
-        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-6 max-w-3xl leading-relaxed">
+        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-6 leading-relaxed">
           {t("subtitle")}
         </p>
 

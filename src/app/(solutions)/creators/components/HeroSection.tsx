@@ -168,7 +168,7 @@ export function HeroSection() {
         {/* Subtitle - clean typography */}
         <p
           className={cn(
-            "text-xl md:text-2xl leading-relaxed mb-10 mx-auto max-w-3xl",
+            "text-xl md:text-2xl leading-relaxed mb-10 mx-auto",
             "text-zinc-600 dark:text-zinc-400",
             "transition-all duration-700",
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
