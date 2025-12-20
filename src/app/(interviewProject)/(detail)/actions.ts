@@ -23,20 +23,22 @@ import { notFound } from "next/navigation";
 import { TInterviewMessageWithTool } from "../types";
 
 /**
- * Create a new question for the project
+ * Update all interview questions (批量保存)
+ * 用于替代单条操作，简化索引追踪逻辑
  */
-export async function createInterviewQuestion(
+export async function updateAllInterviewQuestions(
   projectId: number,
-  questionData: InterviewProjectQuestion,
+  questions: InterviewProjectQuestion[],
 ): Promise<ServerActionResult<InterviewProject>> {
   return withAuth(async (user) => {
-    // Validate input data
-    const validationResult = questionSchema.safeParse(questionData);
-    if (!validationResult.success) {
+    // Validate all questions
+    const validationResults = questions.map((q) => questionSchema.safeParse(q));
+    const firstError = validationResults.find((r) => !r.success);
+    if (firstError && !firstError.success) {
       return {
         success: false,
         code: "internal_server_error",
-        message: "Invalid question data: " + validationResult.error.message,
+        message: "Invalid question data: " + firstError.error.message,
       };
     }
 
@@ -52,195 +54,10 @@ export async function createInterviewQuestion(
       };
     }
 
-    // Get existing questions
-    const questions = (project.questions as InterviewProjectQuestion[]) || [];
-
-    // Add the new question to the end of the array
-    questions.push(validationResult.data);
-
-    // Update the project with the modified questions array
+    // Update all questions at once
     const updatedProject = await prisma.interviewProject.update({
       where: { id: projectId },
-      data: {
-        questions,
-      },
-    });
-
-    return {
-      success: true,
-      data: {
-        ...updatedProject,
-        extra: updatedProject.extra as InterviewProjectExtra,
-      },
-    };
-  });
-}
-
-/**
- * Delete a specific question from the project
- */
-export async function deleteInterviewQuestion(
-  projectId: number,
-  questionIndex: number,
-): Promise<ServerActionResult<InterviewProject>> {
-  return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findUnique({
-      where: { id: projectId, userId: user.id },
-    });
-
-    if (!project) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview project not found",
-      };
-    }
-
-    // Get existing questions
-    const questions = (project.questions as InterviewProjectQuestion[]) || [];
-
-    if (questionIndex < 0 || questionIndex >= questions.length) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Question index out of range",
-      };
-    }
-
-    // Remove the question at the specified index
-    questions.splice(questionIndex, 1);
-
-    // Update the project with the modified questions array
-    const updatedProject = await prisma.interviewProject.update({
-      where: { id: projectId },
-      data: {
-        questions,
-      },
-    });
-
-    return {
-      success: true,
-      data: {
-        ...updatedProject,
-        extra: updatedProject.extra as InterviewProjectExtra,
-      },
-    };
-  });
-}
-
-/**
- * Reorder interview questions
- */
-export async function reorderInterviewQuestions(
-  projectId: number,
-  newOrder: number[],
-): Promise<ServerActionResult<InterviewProject>> {
-  return withAuth(async (user) => {
-    const project = await prisma.interviewProject.findUnique({
-      where: { id: projectId, userId: user.id },
-    });
-
-    if (!project) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview project not found",
-      };
-    }
-
-    // Get existing questions
-    const questions = (project.questions as InterviewProjectQuestion[]) || [];
-
-    // Validate newOrder array
-    if (newOrder.length !== questions.length) {
-      return {
-        success: false,
-        code: "internal_server_error",
-        message: "Invalid reorder data: length mismatch",
-      };
-    }
-
-    // Check if all indices are valid
-    const sortedIndices = [...newOrder].sort((a, b) => a - b);
-    const isValidOrder = sortedIndices.every((idx, i) => idx === i);
-    if (!isValidOrder) {
-      return {
-        success: false,
-        code: "internal_server_error",
-        message: "Invalid reorder data: invalid indices",
-      };
-    }
-
-    // Reorder questions based on newOrder array
-    const reorderedQuestions = newOrder.map((oldIndex) => questions[oldIndex]);
-
-    // Update the project with the reordered questions
-    const updatedProject = await prisma.interviewProject.update({
-      where: { id: projectId },
-      data: {
-        questions: reorderedQuestions,
-      },
-    });
-
-    return {
-      success: true,
-      data: {
-        ...updatedProject,
-        extra: updatedProject.extra as InterviewProjectExtra,
-      },
-    };
-  });
-}
-
-/**
- * Update a specific question in the project
- */
-export async function updateInterviewQuestion(
-  projectId: number,
-  questionIndex: number,
-  questionData: InterviewProjectQuestion,
-): Promise<ServerActionResult<InterviewProject>> {
-  return withAuth(async (user) => {
-    // Validate input data
-    const validationResult = questionSchema.safeParse(questionData);
-    if (!validationResult.success) {
-      return {
-        success: false,
-        message: "Invalid question data: " + validationResult.error.message,
-      };
-    }
-
-    const project = await prisma.interviewProject.findUnique({
-      where: { id: projectId, userId: user.id },
-    });
-
-    if (!project) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Interview project not found",
-      };
-    }
-
-    // Get existing questions
-    const questions = (project.questions as InterviewProjectQuestion[]) || [];
-
-    if (questionIndex < 0 || questionIndex >= questions.length) {
-      return {
-        success: false,
-        message: "Question index out of range",
-      };
-    }
-
-    // Update the question at the specified index
-    questions[questionIndex] = validationResult.data;
-
-    // Update the project with the modified questions array
-    const updatedProject = await prisma.interviewProject.update({
-      where: { id: projectId },
-      data: {
-        questions,
-      },
+      data: { questions },
     });
 
     return {

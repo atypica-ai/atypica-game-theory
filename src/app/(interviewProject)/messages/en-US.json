@@ -95,12 +95,11 @@
       "addQuestion": "Add Question",
       "edit": "Edit",
       "delete": "Delete",
-      "questionCreated": "Question created",
-      "questionUpdated": "Question updated",
-      "questionDeleted": "Question deleted",
       "questionUpdateFailed": "Failed to update question",
       "questionDeleteFailed": "Failed to delete question",
-      "questionReorderFailed": "Failed to reorder questions"
+      "questionReorderFailed": "Failed to reorder questions",
+      "saving": "Saving...",
+      "saveFailed": "Save failed"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "Share",

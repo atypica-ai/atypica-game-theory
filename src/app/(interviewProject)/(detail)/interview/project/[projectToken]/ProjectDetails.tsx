@@ -1,10 +1,7 @@
 "use client";
 import {
-  createInterviewQuestion,
-  deleteInterviewQuestion,
   optimizeInterviewQuestions,
-  reorderInterviewQuestions,
-  updateInterviewQuestion,
+  updateAllInterviewQuestions,
 } from "@/app/(interviewProject)/(detail)/actions";
 import { InviteDialog } from "@/app/(interviewProject)/(detail)/interview/invite/InviteDialog";
 import { createPersonaInterviewSession } from "@/app/(interviewProject)/actions";
@@ -42,8 +39,9 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useDebouncedCallback } from "use-debounce";
 import { EditQuestionDialog } from "./components/EditQuestionDialog";
 import { InterviewReportsSection } from "./components/InterviewReportsSection";
 import { InterviewSessionsSection } from "./components/InterviewSessionsSection";
@@ -79,11 +77,12 @@ export function ProjectDetails({
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | undefined>();
   const [questionEditDialogOpen, setQuestionEditDialogOpen] = useState(false);
 
-  // Use stable IDs for drag and drop
-  // Map each question to a stable ID based on its initial position
-  const [questionItems, setQuestionItems] = useState<
-    Array<{ id: string; data: InterviewProjectQuestion; originalIndex: number }>
-  >([]);
+  // Simplified state structure - directly manage questions array
+  const [questions, setQuestions] = useState<InterviewProjectQuestion[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Track if we're currently saving to avoid sync conflicts
+  const isSavingRef = useRef(false);
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -93,16 +92,43 @@ export function ProjectDetails({
     }),
   );
 
-  // Sync question items with project data
+  // Sync questions from server (only when not actively saving)
   useEffect(() => {
-    const questions = project.questions || [];
-    const items = questions.map((q, index) => ({
-      id: `question-${index}-${q.text.slice(0, 20)}`, // Stable ID based on initial index and text
-      data: q,
-      originalIndex: index,
-    }));
-    setQuestionItems(items);
+    if (!isSavingRef.current) {
+      const serverQuestions = project.questions || [];
+      setQuestions(serverQuestions);
+    }
   }, [project.questions]);
+
+  // Debounced save function (1.5 seconds)
+  const debouncedSave = useDebouncedCallback(
+    async (questionsToSave: InterviewProjectQuestion[]) => {
+      isSavingRef.current = true;
+      setIsSaving(true);
+      try {
+        const result = await updateAllInterviewQuestions(project.id, questionsToSave);
+        if (!result.success) {
+          toast.error(result.message || t("saveFailed"));
+          // Revert to server state on error
+          isSavingRef.current = false;
+          router.refresh();
+        } else {
+          // Success - allow next sync after a short delay
+          // This gives router.refresh() time to update props
+          setTimeout(() => {
+            isSavingRef.current = false;
+          }, 100);
+        }
+      } catch (error) {
+        toast.error((error as Error).message || t("saveFailed"));
+        isSavingRef.current = false;
+        router.refresh();
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    1500, // 1.5 second debounce
+  );
 
   // Polling mechanism - refresh every 10 seconds during processing
   useEffect(() => {
@@ -113,46 +139,32 @@ export function ProjectDetails({
     return () => clearInterval(interval);
   }, [project.extra?.processing, router]);
 
-  // Handle drag end
+  // Handle drag end - optimistic update with debounced save
   const handleDragEnd = useCallback(
-    async (event: DragEndEvent) => {
+    (event: DragEndEvent) => {
       const { active, over } = event;
 
       if (!over || active.id === over.id) {
         return;
       }
 
-      const oldIndex = questionItems.findIndex((item) => item.id === active.id);
-      const newIndex = questionItems.findIndex((item) => item.id === over.id);
+      setQuestions((prev) => {
+        const oldIndex = prev.findIndex((_, i) => `question-${i}` === active.id);
+        const newIndex = prev.findIndex((_, i) => `question-${i}` === over.id);
 
-      if (oldIndex === -1 || newIndex === -1) {
-        return;
-      }
-
-      // Optimistically update UI
-      const newItems = arrayMove(questionItems, oldIndex, newIndex);
-      setQuestionItems(newItems);
-
-      // Create index mapping for server (based on original index)
-      const newOrder = newItems.map((item) => item.originalIndex);
-
-      try {
-        const result = await reorderInterviewQuestions(project.id, newOrder);
-        if (!result.success) {
-          // Revert on error
-          setQuestionItems(questionItems);
-          toast.error(result.message || t("questionReorderFailed"));
-          return;
+        if (oldIndex === -1 || newIndex === -1) {
+          return prev;
         }
-        // Don't call router.refresh() to avoid visual jump
-        // The state is already updated optimistically
-      } catch (error) {
-        // Revert on error
-        setQuestionItems(questionItems);
-        toast.error((error as Error).message || t("questionReorderFailed"));
-      }
+
+        const newQuestions = arrayMove(prev, oldIndex, newIndex);
+
+        // Trigger debounced save
+        debouncedSave(newQuestions);
+
+        return newQuestions;
+      });
     },
-    [questionItems, project.id, t],
+    [debouncedSave],
   );
 
   const onSelectPersonas = useCallback(
@@ -200,63 +212,54 @@ export function ProjectDetails({
     setQuestionEditDialogOpen(true);
   }, []);
 
-  const handleEditQuestion = useCallback((index: number, question: InterviewProjectQuestion) => {
-    setEditingQuestionIndex(index);
-    setEditingQuestion(question);
-    setQuestionEditDialogOpen(true);
+  const handleEditQuestion = useCallback((index: number) => {
+    // Read from current state to avoid dependency on questions array
+    setQuestions((currentQuestions) => {
+      setEditingQuestionIndex(index);
+      setEditingQuestion(currentQuestions[index]);
+      setQuestionEditDialogOpen(true);
+      return currentQuestions; // No change to questions
+    });
   }, []);
 
   const handleSaveQuestion = useCallback(
-    async (questionData: InterviewProjectQuestion) => {
-      try {
-        // If editingQuestionIndex is undefined, create new question
-        if (editingQuestionIndex === undefined) {
-          const result = await createInterviewQuestion(project.id, questionData);
-          if (!result.success) {
-            toast.error(result.message || t("questionUpdateFailed"));
-            return;
-          }
-          toast.success(t("questionCreated"));
+    (questionData: InterviewProjectQuestion) => {
+      setQuestions((prev) => {
+        const newQuestions = [...prev];
+        if (editingQuestionIndex !== undefined) {
+          // Update existing question
+          newQuestions[editingQuestionIndex] = questionData;
         } else {
-          // Otherwise, update existing question
-          const result = await updateInterviewQuestion(
-            project.id,
-            editingQuestionIndex,
-            questionData,
-          );
-          if (!result.success) {
-            toast.error(result.message || t("questionUpdateFailed"));
-            return;
-          }
-          toast.success(t("questionUpdated"));
+          // Add new question
+          newQuestions.push(questionData);
         }
-        // Clear dialog state before refresh to prevent flash
-        setQuestionEditDialogOpen(false);
-        setEditingQuestion(null);
-        setEditingQuestionIndex(undefined);
-        router.refresh();
-      } catch (error) {
-        toast.error((error as Error).message || t("questionUpdateFailed"));
-      }
+
+        // Trigger debounced save
+        debouncedSave(newQuestions);
+
+        return newQuestions;
+      });
+
+      // Clear dialog state
+      setQuestionEditDialogOpen(false);
+      setEditingQuestion(null);
+      setEditingQuestionIndex(undefined);
     },
-    [editingQuestionIndex, project.id, router, t],
+    [editingQuestionIndex, debouncedSave],
   );
 
   const handleDeleteQuestion = useCallback(
-    async (index: number) => {
-      try {
-        const result = await deleteInterviewQuestion(project.id, index);
-        if (!result.success) {
-          toast.error(result.message || t("questionDeleteFailed"));
-          return;
-        }
-        toast.success(t("questionDeleted"));
-        router.refresh();
-      } catch (error) {
-        toast.error((error as Error).message || t("questionDeleteFailed"));
-      }
+    (index: number) => {
+      setQuestions((prev) => {
+        const newQuestions = prev.filter((_, i) => i !== index);
+
+        // Trigger debounced save
+        debouncedSave(newQuestions);
+
+        return newQuestions;
+      });
     },
-    [project.id, router, t],
+    [debouncedSave],
   );
 
   // Check if brief text is long (roughly estimate if it would exceed 10 lines)
@@ -351,17 +354,24 @@ export function ProjectDetails({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center">
-                <ListIcon className="h-5 w-5 mr-2" />
-                {t("questionList")} ({project.questions?.length || 0})
+              <CardTitle className="flex items-center justify-between w-full">
+                <div className="flex items-center">
+                  <ListIcon className="h-5 w-5 mr-2" />
+                  {t("questionList")} ({questions.length})
+                </div>
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">{t("questionListDescription")}</p>
             </div>
-            {!readOnly && project.questions && project.questions.length > 0 && (
+            {isSaving ? (
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Loader2Icon className="h-4 w-4 animate-spin mr-1" />
+                {t("saving")}
+              </div>
+            ) : !readOnly && questions.length > 0 ? (
               <Button variant="outline" size="sm" onClick={handleCreateQuestion}>
                 {t("addQuestion")}
               </Button>
-            )}
+            ) : null}
           </div>
         </CardHeader>
         <CardContent className="max-h-[500px] overflow-y-auto scrollbar-thin">
@@ -371,7 +381,7 @@ export function ProjectDetails({
               <Loader2Icon className="h-8 w-8 animate-spin mb-4" />
               <p className="text-sm">{t("optimizing")}</p>
             </div>
-          ) : !project.questions || project.questions.length === 0 ? (
+          ) : questions.length === 0 ? (
             // Empty state
             <div className="flex flex-col items-center justify-center py-12">
               <ListIcon className="h-8 w-8 mb-4 opacity-50 text-muted-foreground" />
@@ -396,28 +406,18 @@ export function ProjectDetails({
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={questionItems.map((item) => item.id)}
+                items={questions.map((_, index) => `question-${index}`)}
                 strategy={verticalListSortingStrategy}
               >
                 <div className="space-y-2">
-                  {questionItems.map((item, displayIndex) => (
+                  {questions.map((question, index) => (
                     <SortableQuestionItem
-                      key={item.id}
-                      question={item.data}
-                      index={displayIndex}
-                      sortableId={item.id}
-                      onEdit={() =>
-                        handleEditQuestion(item.originalIndex, {
-                          text: item.data.text,
-                          image: item.data.image,
-                          questionType: item.data.questionType,
-                          hint: item.data.hint,
-                          options: item.data.options?.map((opt) =>
-                            typeof opt === "string" ? opt : opt.text,
-                          ),
-                        })
-                      }
-                      onDelete={() => handleDeleteQuestion(item.originalIndex)}
+                      key={question.text || `question-${index}`}
+                      question={question}
+                      index={index}
+                      sortableId={`question-${index}`}
+                      onEdit={() => handleEditQuestion(index)}
+                      onDelete={() => handleDeleteQuestion(index)}
                       readOnly={readOnly}
                     />
                   ))}

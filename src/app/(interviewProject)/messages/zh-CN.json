@@ -95,12 +95,11 @@
       "addQuestion": "添加问题",
       "edit": "编辑",
       "delete": "删除",
-      "questionCreated": "问题已创建",
-      "questionUpdated": "问题已更新",
-      "questionDeleted": "问题已删除",
       "questionUpdateFailed": "更新问题失败",
       "questionDeleteFailed": "删除问题失败",
-      "questionReorderFailed": "问题排序失败"
+      "questionReorderFailed": "问题排序失败",
+      "saving": "保存中...",
+      "saveFailed": "保存失败"
     },
     "ShareInterviewProjectButton": {
       "shareProject": "分享",
