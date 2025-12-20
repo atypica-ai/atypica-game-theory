@@ -1,5 +1,5 @@
 import { ChatMessageAttachment } from "@/prisma/client";
-import { UIDataTypes, UIMessage, UIMessagePart, UITools } from "ai";
+import { isToolUIPart, UIDataTypes, UIMessage, UIMessagePart, UITools } from "ai";
 import { z } from "zod/v3";
 
 export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
@@ -20,66 +20,11 @@ export const clientMessagePayloadSchema = z.object({
     id: z.string().optional(),
     role: z.enum(["user", "assistant"]),
     parts: z.custom<UIMessagePart<UIDataTypes, UITools>[]>(() => true),
-    // parts: z.array(
-    //   z.union([
-    //     z.object({
-    //       type: z.literal("step-start"),
-    //     }),
-    //     z
-    //       .object({
-    //         type: z.literal("text"),
-    //         text: z.string(),
-    //       })
-    //       .describe("TextUIPart"),
-    //     z
-    //       .object({
-    //         type: z.literal("reasoning"),
-    //         text: z.string(),
-    //       })
-    //       .describe("ReasoningUIPart"),
-    //     z
-    //       .object({
-    //         type: z.literal("file"),
-    //         mediaType: z.string(),
-    //         filename: z.string().optional(),
-    //         url: z.string(),
-    //         providerMetadata: z.any().optional(),
-    //       })
-    //       .describe("FileUIPart"),
-    //     z
-    //       .object({
-    //         type: z.custom<`tool-${string}`>(
-    //           (val) => typeof val === "string" && /^tool-[a-zA-Z0-9_-]+$/.test(val),
-    //         ),
-    //         toolCallId: z.string(),
-    //         providerExecuted: z.boolean().optional(),
-    //         callProviderMetadata: z.any().optional(),
-    //       })
-    //       .and(
-    //         z.union([
-    //           z.object({
-    //             state: z.literal("output-available"),
-    //             input: z.union([z.string(), z.record(z.any())]),
-    //             output: z.union([z.string(), z.record(z.any())]),
-    //           }),
-    //           z.object({
-    //             state: z.literal("output-error"),
-    //             input: z.union([z.string(), z.record(z.any())]),
-    //             errorText: z.string(),
-    //           }),
-    //           z.object({
-    //             state: z.literal("input-available"),
-    //             input: z.union([z.string(), z.record(z.any())]),
-    //           }),
-    //           z.object({
-    //             state: z.literal("input-streaming"),
-    //             input: z.union([z.string(), z.record(z.any()), z.undefined()]),
-    //           }),
-    //         ]),
-    //       )
-    //       .describe("ToolUIPart"),
-    //   ]),
-    // ),
+    metadata: z
+      .object({
+        shouldCorrectUserMessage: z.boolean().optional(), // 语音输入需要后台优化
+      })
+      .optional(),
   }),
   userChatToken: z.string(),
   attachments: z
@@ -124,9 +69,13 @@ export function isSystemMessage(text: string): boolean {
  * 返回正确的 lastMessage 类型，以匹配 ClientMessagePayload["message"]
  * useChat 提交的最后一条消息，role 不会是 system，只有用户输入的文本和 addToolResult 提交的 tool result 两种类型
  */
-export function prepareLastUIMessageForRequest(messages: UIMessage[]) {
-  return messages[messages.length - 1] as Omit<UIMessage, "role" | "parts"> & {
-    role: "user" | "assistant";
-    parts: Extract<UIMessage["parts"][number], { type: "text" | `tool-${string}` }>[];
-  };
+export function prepareLastUIMessageForRequest<T extends UIMessage>(messages: T[]) {
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage.role === "user" || lastMessage.role === "assistant") {
+    const { id, role, parts: allParts, metadata } = lastMessage;
+    const parts = allParts.filter((part) => part.type == "text" || isToolUIPart(part));
+    return { id, role, parts, metadata: metadata as T["metadata"] };
+  } else {
+    throw new Error("Invalid message role");
+  }
 }

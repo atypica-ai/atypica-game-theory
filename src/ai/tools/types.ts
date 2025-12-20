@@ -50,8 +50,10 @@ export type PlainTextUITools = {
   };
 };
 
-export type TMessageWithPlainTextTool<TOOLS extends PlainTextUITools = PlainTextUITools> =
-  UIMessage<unknown, UIDataTypes, TOOLS>;
+export type TMessageWithPlainTextTool<
+  TOOLS extends PlainTextUITools = PlainTextUITools,
+  METADATA = unknown,
+> = UIMessage<METADATA, UIDataTypes, TOOLS>;
 
 /**
  * 主要用于 AI Study 的 Tool 格式及 UI 类型
