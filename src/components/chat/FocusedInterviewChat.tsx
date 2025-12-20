@@ -5,6 +5,7 @@ import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
+import { getDisplayWidth } from "@/lib/textUtils";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { getToolOrDynamicToolName, isToolOrDynamicToolUIPart, isToolUIPart } from "ai";
@@ -67,13 +68,26 @@ const LastAssistantMessagePart = <
   }
 
   if (lastPart1.type === "text" && lastPart1.text.trim()) {
+    const displayWidth = getDisplayWidth(lastPart1.text);
     return (
       // <TypewriterText
       //   className="text-center text-base sm:text-lg"
       //   id={lastAssistantMessage.id}
       //   text={lastPart1.text}
       // />
-      <div className="text-center text-base sm:text-lg">{lastPart1.text}</div>
+      // 在内部的 div 没撑满的时候是居中的，盛满以后就靠靠左对齐了
+      <div
+        className={cn(
+          "w-full flex flex-col items-center justify-start",
+          "font-EuclidCircularA leading-relaxed font-medium",
+          {
+            "text-base sm:text-lg": displayWidth < 600,
+            "text-sm sm:text-base": displayWidth >= 600,
+          },
+        )}
+      >
+        <div className="w-fit text-left">{lastPart1.text}</div>
+      </div>
     );
   }
 
@@ -81,11 +95,9 @@ const LastAssistantMessagePart = <
     return (
       <>
         {lastPart2?.type === "text" && !isSystemMessage(lastPart2.text) && (
-          <div className="text-center text-sm text-muted-foreground font-normal mb-6">
-            {lastPart2.text}
-          </div>
+          <div className="text-center text-sm text-muted-foreground mb-6">{lastPart2.text}</div>
         )}
-        <div className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono">
+        <div className="my-4 text-sm text-center text-muted-foreground/50 font-mono">
           {t("toolCalling")} {lastPart1.toolName}
           {lastPart1.state === "output-available" ? (
             <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
@@ -99,14 +111,12 @@ const LastAssistantMessagePart = <
     return (
       <>
         {lastPart2?.type === "text" && !isSystemMessage(lastPart2.text) && (
-          <div className="text-center text-sm text-muted-foreground font-normal mb-6">
-            {lastPart2.text}
-          </div>
+          <div className="text-center text-sm text-muted-foreground mb-6">{lastPart2.text}</div>
         )}
         {renderToolUIPart ? (
           renderToolUIPart(lastPart1)
         ) : (
-          <div className="my-4 text-sm text-center text-muted-foreground/50 font-normal font-mono">
+          <div className="my-4 text-sm text-center text-muted-foreground/50 font-mono">
             {t("toolCalling")} {getToolOrDynamicToolName(lastPart1)}
             {lastPart1.state === "output-available" ? (
               <CheckIcon className="size-3 inline-block ml-2 text-green-500" />
@@ -390,7 +400,7 @@ export function FocusedInterviewChat<
           {lastAssistantMessage?.parts?.length ? (
             <div
               className={cn(
-                "font-EuclidCircularA font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed",
+                "text-zinc-900 dark:text-zinc-100",
                 "min-h-full flex flex-col items-center justify-center max-w-4xl w-full mx-auto",
               )}
             >
