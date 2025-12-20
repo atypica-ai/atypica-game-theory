@@ -13,6 +13,7 @@ import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { detectInputLanguage } from "@/lib/textUtils";
+import { correctUserInputMessage } from "@/lib/userChat/lib";
 import { InterviewProjectQuestion, InterviewSessionExtra } from "@/prisma/client";
 import {
   ModelMessage,
@@ -23,6 +24,7 @@ import {
   UserModelMessage,
 } from "ai";
 import { Locale } from "next-intl";
+import { after } from "next/server";
 import { Logger } from "pino";
 
 function setClaudeCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
@@ -183,6 +185,24 @@ export async function runHumanInterview({
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
     tools,
   });
+
+  // 如果需要语音优化，立即启动（不等待）
+  if (newMessage.metadata?.shouldCorrectUserMessage && newMessage.id) {
+    after(
+      correctUserInputMessage({
+        userChatId,
+        messageId: newMessage.id,
+        contextMessages: coreMessages.slice(-3, -1), // 前面的 2 条消息作为上下文（排除最后一条，即当前消息）
+        locale,
+      }).catch((error) => {
+        logger.error({
+          msg: "Voice message optimization failed",
+          error: error.message,
+        });
+      }),
+    );
+  }
+
   const modelMessages = setClaudeCache("claude-sonnet-4-5", coreMessages);
 
   const streamTextPromise = new Promise<void>((resolve, reject) => {
@@ -192,7 +212,12 @@ export async function runHumanInterview({
 
       providerOptions: defaultProviderOptions,
 
-      system: systemPrompt,
+      system:
+        systemPrompt +
+        // 这个提示永远都可以加着，所以无需判断 shouldCorrectUserMessage 是否有设置，这样最大化 prompt cache 的利用
+        (locale === "zh-CN"
+          ? "\n\n用户通过语音输入，可能存在语音识别错误，请理解其真实意图。"
+          : "\n\nUser input is from voice recognition and may contain transcription errors. Please understand the actual intent."),
       messages: modelMessages,
 
       prepareStep: async ({ messages }) => {
