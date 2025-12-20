@@ -34,7 +34,6 @@ This document describes the implementation of file upload limits across the appl
 - `src/components/chat/FileUploadStatus.tsx` - New status display component
 - `src/components/chat/UserChatSession.tsx` - Integrated with new limits
 - `src/components/NewStudyInputBox.tsx` - Integrated with new limits
-- `src/app/(public)/home-v1/InputSection.tsx` - Integrated with new limits
 
 ### Server Actions
 
