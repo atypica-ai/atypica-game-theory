@@ -1,6 +1,5 @@
-import { isSystemMessage } from "@/ai/messageUtilsClient";
-import { TMessageWithPlainTextTool } from "@/ai/tools/types";
-import { correctSpeechText } from "@/app/api/transcribe/actions";
+import { ClientMessagePayload, isSystemMessage } from "@/ai/messageUtilsClient";
+import { PlainTextUITools, TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { RecordButton } from "@/components/chat/RecordButton";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
@@ -122,7 +121,10 @@ const LastAssistantMessagePart = <
 };
 
 export function FocusedInterviewChat<
-  UI_MESSAGE extends TMessageWithPlainTextTool = TMessageWithPlainTextTool,
+  UI_MESSAGE extends TMessageWithPlainTextTool<
+    PlainTextUITools,
+    ClientMessagePayload["message"]["metadata"]
+  > = TMessageWithPlainTextTool<PlainTextUITools, ClientMessagePayload["message"]["metadata"]>,
 >({
   locale,
   useChatHelpers: { messages, status, stop },
@@ -136,7 +138,15 @@ export function FocusedInterviewChat<
   locale: Locale;
   useChatHelpers: Pick<ReturnType<typeof useChat<UI_MESSAGE>>, "messages" | "status" | "stop">;
   useChatRef: React.RefObject<
-    Pick<ReturnType<typeof useChat<UI_MESSAGE>>, "regenerate" | "setMessages" | "sendMessage">
+    Pick<ReturnType<typeof useChat<UI_MESSAGE>>, "regenerate" | "setMessages"> & {
+      // useChat 里面的 infer 太复杂，直接展开来
+      sendMessage: (message: {
+        id?: UI_MESSAGE["id"];
+        role?: "user";
+        text: string;
+        metadata?: UI_MESSAGE["metadata"];
+      }) => Promise<void>;
+    }
   >;
   renderToolUIPart?: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   showTimer?: boolean;
@@ -155,7 +165,7 @@ export function FocusedInterviewChat<
   const [lastUserMessage, setLastUserMessage] = useState<{ content: string } | null>(null);
   const [showTextInput, setShowTextInput] = useState(false);
   const [partialTranscript, setPartialTranscript] = useState("");
-  const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
+  // const [isProcessingTranscript, setIsProcessingTranscript] = useState(false);
 
   const { isDocumentVisible } = useDocumentVisibility();
 
@@ -168,7 +178,10 @@ export function FocusedInterviewChat<
       if (!messageContent) return;
       setLastUserMessage({ content: messageContent });
 
-      useChatRef.current.sendMessage({ text: messageContent });
+      useChatRef.current.sendMessage({
+        text: messageContent,
+        // metadata: { shouldCorrectUserMessage: true },
+      });
       setInput("");
       if (textareaRef.current) {
         // 回复 textarea 的高度
@@ -192,48 +205,52 @@ export function FocusedInterviewChat<
 
   const handleTranscriptInternal = useCallback(
     async (text: string) => {
-      console.log("🎯 Final transcript received in FocusedInterviewChat:", text);
+      // console.log("🎯 Final transcript received in FocusedInterviewChat:", text);
       if (text.trim()) {
-        setIsProcessingTranscript(true);
+        // setIsProcessingTranscript(true);
         setPartialTranscript(""); // Clear partial transcript immediately
 
         try {
-          // Extract context from last 2 messages (recent conversation round)
-          const recentContext = messages
-            .slice(-2)
-            .map((message) =>
-              message.parts.map((part) => (part.type === "text" ? part.text : "")).join("\n"),
-            )
-            .join("\n");
+          // // Extract context from last 2 messages (recent conversation round)
+          // const recentContext = messages
+          //   .slice(-2)
+          //   .map((message) =>
+          //     message.parts.map((part) => (part.type === "text" ? part.text : "")).join("\n"),
+          //   )
+          //   .join("\n");
+          // console.log("📝 Correcting speech text with context:", {
+          //   originalText: text,
+          //   contextLength: recentContext.length,
+          // });
+          // // Apply speech correction
+          // const correctedText = await correctSpeechText(text, recentContext || undefined);
+          // console.log("✨ Speech correction result:", {
+          //   original: text,
+          //   corrected: correctedText,
+          // });
+          // setLastUserMessage({ content: correctedText });
 
-          console.log("📝 Correcting speech text with context:", {
-            originalText: text,
-            contextLength: recentContext.length,
+          // 直接使用原始文本，在服务端异步修正
+          setLastUserMessage({ content: text });
+          // console.log("📨 Sending transcript with voice optimization flag");
+          useChatRef.current.sendMessage({
+            text,
+            metadata: {
+              shouldCorrectUserMessage: true, // 让 API 自行决定是否优化
+            },
           });
 
-          // Apply speech correction
-          const correctedText = await correctSpeechText(text, recentContext || undefined);
-          console.log("✨ Speech correction result:", {
-            original: text,
-            corrected: correctedText,
-          });
-
-          setLastUserMessage({ content: correctedText });
-
-          console.log("📨 Sending corrected transcript message to chat:", correctedText);
-          useChatRef.current.sendMessage({ text: correctedText });
-
-          // Reset timeout state when user responds
+          // 重置超时状态
           setHasTimedOut(false);
           setTimeLeft(DEFAULT_TIME_LEFT);
           setIsTimerActive(false);
-          console.log("✅ Transcript processing completed, chat updated");
+          // console.log("✅ Transcript processing completed, chat updated");
         } finally {
-          setIsProcessingTranscript(false);
+          // setIsProcessingTranscript(false);
         }
       }
     },
-    [useChatRef, messages],
+    [useChatRef],
   );
 
   const handlePartialTranscriptInternal = useCallback((text: string) => {
@@ -250,12 +267,12 @@ export function FocusedInterviewChat<
     return (
       status === "streaming" ||
       status === "submitted" ||
-      isProcessingTranscript ||
+      // isProcessingTranscript ||
       (lastPart &&
         isToolOrDynamicToolUIPart(lastPart) &&
         (lastPart.state === "input-available" || lastPart.state == "input-streaming"))
     );
-  }, [status, isProcessingTranscript, lastAssistantMessage]);
+  }, [status, lastAssistantMessage]);
 
   // Auto show and focus input after AI streaming ends
   useEffect(() => {
@@ -386,11 +403,12 @@ export function FocusedInterviewChat<
           ) : null}
         </div>
       </div>
-      {status === "submitted" || status === "streaming" || isProcessingTranscript ? (
+      {status === "submitted" || status === "streaming" /*|| isProcessingTranscript*/ ? (
         <div className="space-y-4 text-zinc-600 dark:text-zinc-400 pt-2">
           <div className="flex items-center justify-center gap-2 text-sm">
             {/*<EarIcon className="w-4 h-4 text-primary" />*/}
-            <span>{isProcessingTranscript ? t("processing") : t("thinking")}</span>
+            {/*<span>{isProcessingTranscript ? t("processing") : t("thinking")}</span>*/}
+            <span>{t("thinking")}</span>
             <LoadingPulse />
           </div>
           {lastUserMessage && (

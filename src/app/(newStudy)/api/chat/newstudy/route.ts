@@ -12,6 +12,7 @@ import { newStudySystem } from "@/app/(newStudy)/prompt";
 import { newStudyTools } from "@/app/(newStudy)/tools";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
+import { correctUserInputMessage } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
@@ -24,7 +25,7 @@ import {
   streamText,
 } from "ai";
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   // Authenticate user
@@ -116,6 +117,24 @@ export async function POST(req: NextRequest) {
     tools,
   });
 
+  // 如果需要语音优化，立即启动（不等待）
+  if (newMessage.metadata?.shouldCorrectUserMessage && newMessage.id) {
+    // 不使用 await - 让优化与 streamText 并行执行
+    after(
+      correctUserInputMessage({
+        userChatId,
+        messageId: newMessage.id,
+        contextMessages: coreMessages.slice(-3, -1), // 前面的 2 条消息作为上下文（排除最后一条，即当前消息）
+        locale,
+      }).catch((error) => {
+        chatLogger.error({
+          msg: "Voice message optimization failed",
+          error: error.message,
+        });
+      }),
+    );
+  }
+
   const shouldEndInterview = coreMessages.length > 24;
 
   const streamTextResult = streamText({
@@ -136,7 +155,12 @@ export async function POST(req: NextRequest) {
       } satisfies OpenAIResponsesProviderOptions,
     },
 
-    system: newStudySystem({ locale }),
+    system:
+      newStudySystem({ locale }) +
+      // 这个提示永远都可以加着，所以无需判断 shouldCorrectUserMessage 是否有设置，这样最大化 prompt cache 的利用
+      (locale === "zh-CN"
+        ? "\n\n用户通过语音输入，可能存在语音识别错误，请理解其真实意图。"
+        : "\n\nUser input is from voice recognition and may contain transcription errors. Please understand the actual intent."),
     messages: coreMessages,
     tools,
     toolChoice: shouldEndInterview ? "required" : "auto",
