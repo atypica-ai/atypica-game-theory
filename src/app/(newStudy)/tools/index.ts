@@ -12,12 +12,12 @@ export const newStudyTools = {
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     execute: async ({ studyBrief }) => {
-      // 故意等10s，这样前端可以感觉到工具正在被执行。
-      await new Promise((resolve) => setTimeout(resolve, 10_000));
+      // 故意等1s，这样前端可以感觉到工具正在被执行。
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       return {
-        studyBrief,
-        plainText: "",
+        plainText: "Study brief generated successfully.",
       };
     },
   }),

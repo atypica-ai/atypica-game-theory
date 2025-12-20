@@ -10,7 +10,6 @@ export const endInterviewInputSchema = z.object({
 });
 
 export const endInterviewOutputSchema = z.object({
-  studyBrief: z.string(),
   plainText: z.string(),
 });
 

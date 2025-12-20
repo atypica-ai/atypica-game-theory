@@ -100,7 +100,7 @@ export function NewStudyChatClient({
     for (const message of messages) {
       for (const part of message.parts ?? []) {
         if (part.type === "tool-endInterview" && part.state === "output-available") {
-          const brief = part.output.studyBrief;
+          const brief = part.input.studyBrief;
           setTimeout(() => trackStudyBriefUpdated(brief), 100);
           return brief;
         }
