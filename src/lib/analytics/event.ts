@@ -11,6 +11,11 @@ export type TAnalyticsEvent = {
   "Onboarding Step Updated": UserOnboardingData;
   "Onboarding Completed": UserOnboardingData;
   /**
+   * 进入新建研究页面
+   * 在 /newstudy 页面加载时上报
+   */
+  "New Study Viewed": undefined;
+  /**
    * 在发起研究界面，一旦开始输入就上报
    * @param interview: 是否使用 newstudy interview
    */
@@ -88,4 +93,19 @@ export type TAnalyticsEvent = {
     renew?: boolean;
     // products: { name: ProductName; price: number }[];
   };
+  /**
+   * 进入创建知识库页面
+   * 在 /sage/create 页面加载时上报
+   */
+  "New Sage Viewed": undefined;
+  /**
+   * 进入创建访谈项目页面
+   * 在 /interview/projects/new 页面加载时上报
+   */
+  "New Interview Viewed": undefined;
+  /**
+   * 进入导入人设页面
+   * 在 /persona 页面加载时上报
+   */
+  "New Persona Viewed": undefined;
 };

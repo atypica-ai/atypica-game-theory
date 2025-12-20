@@ -5,6 +5,7 @@ import { HeroVideo } from "@/app/(public)/home-v3/HeroVideo";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
+import { trackEvent } from "@/lib/analytics/segment";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
@@ -39,6 +40,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
   const [videoSrc, setVideoSrc] = useState<string | undefined>();
 
   useEffect(() => {
+    trackEvent("New Persona Viewed");
     reginalS3Url("atypica/public/atypica-promo-ai-persona-20250917.mp4").then((res) => {
       setVideoSrc(res);
     });

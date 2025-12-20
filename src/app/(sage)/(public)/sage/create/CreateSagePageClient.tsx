@@ -6,16 +6,21 @@ import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { trackEvent } from "@/lib/analytics/segment";
 import { ArrowRightIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function CreateSagePageClient() {
   const t = useTranslations("Sage.CreatePage");
   const router = useRouter();
   const locale = useLocale();
+
+  useEffect(() => {
+    trackEvent("New Sage Viewed");
+  }, []);
 
   const [sources, setSources] = useState<SageSourceContent[]>([]);
   const [isCreating, setIsCreating] = useState(false);

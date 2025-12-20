@@ -5,15 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { trackEvent } from "@/lib/analytics/segment";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function CreateInterviewProjectClient() {
   const router = useRouter();
   const t = useTranslations("InterviewProject.createProject");
+
+  useEffect(() => {
+    trackEvent("New Interview Viewed");
+  }, []);
 
   const [brief, setBrief] = useState("");
   const [presetQuestions, setPresetQuestions] = useState("");

@@ -1,12 +1,20 @@
+"use client";
 import { NewStudyInputBox } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { FitToViewport } from "@/components/layout/FitToViewport";
+import { trackEvent } from "@/lib/analytics/segment";
 import { CommandIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useEffect } from "react";
 import "./style.css";
 
 export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
   const t = useTranslations("StudyPage.NewStudy");
+
+  useEffect(() => {
+    trackEvent("New Study Viewed");
+  }, []);
+
   return (
     <FitToViewport className="hero-grid">
       <div className="relative w-2xl max-w-full mx-auto px-4 py-12 sm:py-40">
