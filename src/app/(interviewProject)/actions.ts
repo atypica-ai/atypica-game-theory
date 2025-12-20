@@ -1,5 +1,6 @@
 "use server";
 
+import { trackEventServerSide } from "@/lib/analytics/server";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -130,6 +131,16 @@ export async function createInterviewProject(
         userId,
         token,
         questions,
+      },
+    });
+
+    // Track interview project created
+    trackEventServerSide({
+      userId,
+      event: "Interview Project Created",
+      properties: {
+        projectId: project.id,
+        hasPresetQuestions: Boolean(presetQuestions),
       },
     });
 

@@ -10,6 +10,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics/segment";
 import { ClipboardCopyIcon, ShareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -18,7 +19,7 @@ import { toast } from "sonner";
 export function ShareInterviewProjectButton({
   interviewProject,
 }: {
-  interviewProject: { token: string };
+  interviewProject: { id: number; token: string };
 }) {
   const t = useTranslations("InterviewProject.ShareInterviewProjectButton");
   const [open, setOpen] = useState(false);
@@ -29,7 +30,12 @@ export function ShareInterviewProjectButton({
   const handleCopyUrl = useCallback(() => {
     navigator.clipboard.writeText(shareUrl);
     toast.success(t("copySuccess"));
-  }, [t, shareUrl]);
+    trackEvent("Interview Invitation Shared", { projectId: interviewProject.id });
+  }, [t, shareUrl, interviewProject.id]);
+  const handleOpenUrl = useCallback(() => {
+    trackEvent("Interview Invitation Shared", { projectId: interviewProject.id });
+    window.open(shareUrl, "_blank");
+  }, [shareUrl, interviewProject.id]);
   return (
     <AlertDialog
       open={open}
@@ -51,7 +57,7 @@ export function ShareInterviewProjectButton({
         <div className="space-y-3 overflow-hidden">
           <p className="text-sm text-muted-foreground">{t("shareTipMessage")}</p>
           <div className="flex items-center gap-2">
-            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden break-words">
+            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden wrap-break-word">
               {shareUrl}
             </div>
             <Button size="sm" variant="outline" onClick={handleCopyUrl} className="shrink-0">
@@ -63,7 +69,7 @@ export function ShareInterviewProjectButton({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => setOpen(false)}>{t("closeButton")}</AlertDialogCancel>
-          <Button onClick={() => window.open(shareUrl, "_blank")}>{t("openButton")}</Button>
+          <Button onClick={handleOpenUrl}>{t("openButton")}</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

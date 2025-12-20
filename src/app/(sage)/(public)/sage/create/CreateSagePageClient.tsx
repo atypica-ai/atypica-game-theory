@@ -25,6 +25,20 @@ export function CreateSagePageClient() {
   const [sources, setSources] = useState<SageSourceContent[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
+  // Wrapped setSources to track events when sources change
+  const handleSourcesChange = useCallback(
+    (newSources: SageSourceContent[]) => {
+      // Track if sources increased
+      if (newSources.length > sources.length) {
+        trackEvent("Sage Source Updated", {
+          sourcesCount: newSources.length,
+        });
+      }
+      setSources(newSources);
+    },
+    [sources.length],
+  );
+
   // Sage metadata (will be filled after adding sources)
   const [sageName, setSageName] = useState("");
   const [sageDomain, setSageDomain] = useState("");
@@ -133,7 +147,7 @@ export function CreateSagePageClient() {
         {/* Add Sources Content */}
         <AddSourcesContent
           sources={sources}
-          onSourcesChange={setSources}
+          onSourcesChange={handleSourcesChange}
           currentSourceCount={0}
           maxSources={30}
         />

@@ -6,6 +6,7 @@ import { initPersonaImportStatReporter } from "@/ai/tools/stats";
 import { savePersonaTool } from "@/ai/tools/tools";
 import { ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { trackEventServerSide } from "@/lib/analytics/server";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { proxiedFetch } from "@/lib/proxy/fetch";
@@ -96,6 +97,15 @@ export async function processPersonaImport(personaImportId: number) {
         },
       })
       .then(convertType);
+
+    // Track persona import completed
+    trackEventServerSide({
+      userId: personaImport.userId,
+      event: "Persona Import Completed",
+      properties: {
+        personaImportId: personaImport.id,
+      },
+    });
   } catch (error) {
     await prisma.personaImport.update({
       where: { id: personaImportId },

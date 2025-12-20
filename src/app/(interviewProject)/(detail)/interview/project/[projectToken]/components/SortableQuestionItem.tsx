@@ -57,7 +57,7 @@ export function SortableQuestionItem({
         <div className="bg-primary/20 rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
           <span className="text-xs font-medium text-primary">{index + 1}</span>
         </div>
-        <p className="text-sm leading-relaxed wrap-break-words">{question.text}</p>
+        <p className="text-sm leading-relaxed wrap-break-word">{question.text}</p>
       </div>
       {!readOnly && (
         <div className="flex items-center gap-2 shrink-0">

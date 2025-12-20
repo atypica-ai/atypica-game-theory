@@ -56,7 +56,7 @@ export function AnalystPodcastShareButton({
         <div className="space-y-3 overflow-hidden">
           <p className="text-sm text-muted-foreground mb-2">{t("successMessage")}</p>
           <div className="flex items-center gap-2 mt-1">
-            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden wrap-break-words">
+            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden wrap-break-word">
               {fullUrl}
             </div>
             <Button size="sm" variant="outline" onClick={handleCopyUrl} className="shrink-0">

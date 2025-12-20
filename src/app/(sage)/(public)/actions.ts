@@ -1,6 +1,7 @@
 "use server";
 import { extractSageKnowledgeAction } from "@/app/(sage)/actions";
 import { createSageInputSchema, type SageSourceContent } from "@/app/(sage)/types";
+import { trackEventServerSide } from "@/lib/analytics/server";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import type { ServerActionResult } from "@/lib/serverAction";
@@ -53,6 +54,16 @@ export async function createSage(
       sageId: sage.id,
       userId: user.id,
       sourcesCount: validated.sources.length,
+    });
+
+    // Track sage created
+    trackEventServerSide({
+      userId: user.id,
+      event: "Sage Created",
+      properties: {
+        sageId: sage.id,
+        sourcesCount: validated.sources.length,
+      },
     });
 
     // Create a UserChat for management/viewing
@@ -170,7 +181,7 @@ export async function addSageSources(
 
     return {
       success: true,
-      data: { addedCount: sources.length },
+      data: { addedCount: sources.length, totalCount: currentCount + sources.length },
     };
   });
 }

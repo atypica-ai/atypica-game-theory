@@ -108,4 +108,65 @@ export type TAnalyticsEvent = {
    * 在 /persona 页面加载时上报
    */
   "New Persona Viewed": undefined;
+  /**
+   * 开始导入人物
+   * 创建 PersonaImport 后上报
+   */
+  "Persona Import Started": {
+    personaImportId: number;
+    fileSize: number;
+  };
+  /**
+   * 人物导入完成
+   * 处理完成并生成 Persona 后上报
+   */
+  "Persona Import Completed": {
+    personaImportId: number;
+  };
+  /**
+   * Sage 添加或更新数据源
+   * 创建时添加 source 或创建后添加 source 都上报
+   */
+  "Sage Source Updated": {
+    sageId?: number; // Optional: not available during creation
+    sourcesCount: number;
+  };
+  /**
+   * Sage 创建成功
+   * 创建 Sage 后上报
+   */
+  "Sage Created": {
+    sageId: number;
+    sourcesCount: number;
+  };
+  /**
+   * 分享 Sage
+   * 分享专家公共主页时上报
+   */
+  "Sage Profile Shared": {
+    intent: "share" | "visit";
+    url: string;
+  };
+  /**
+   * 访谈项目简介更新
+   * 在创建访谈项目界面，一旦开始输入就上报
+   */
+  "Interview Brief Updated": {
+    brief: string;
+  };
+  /**
+   * 访谈项目创建成功
+   * 创建 Interview Project 后上报
+   */
+  "Interview Project Created": {
+    projectId: number;
+    hasPresetQuestions: boolean;
+  };
+  /**
+   * 分享访谈项目邀请链接
+   * 复制访谈邀请链接时上报
+   */
+  "Interview Invitation Shared": {
+    projectId: number;
+  };
 };

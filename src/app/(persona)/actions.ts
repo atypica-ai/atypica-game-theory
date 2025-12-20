@@ -1,5 +1,6 @@
 "use server";
 import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
+import { trackEventServerSide } from "@/lib/analytics/server";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -48,6 +49,17 @@ export async function createPersonaImport({
       attachments: data.attachments as unknown as ChatMessageAttachment[],
       extra: data.extra as unknown as PersonaImportExtra,
     };
+
+    // Track persona import started
+    trackEventServerSide({
+      userId: user.id,
+      event: "Persona Import Started",
+      properties: {
+        personaImportId: personaImport.id,
+        fileSize: size,
+      },
+    });
+
     // Start processing immediately in the background using waitUntil
     waitUntil(processPersonaImport(personaImport.id));
     return {

@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics/segment";
 import { cn } from "@/lib/utils";
 import { ClipboardCopyIcon, Share2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -38,7 +39,13 @@ export function SageShareButton({
   const handleCopyUrl = useCallback(() => {
     navigator.clipboard.writeText(fullUrl);
     toast.success(t("copySuccess"));
+    trackEvent("Sage Profile Shared", { intent: "share", url: fullUrl });
   }, [t, fullUrl]);
+
+  const handleOpenUrl = useCallback(() => {
+    window.open(fullUrl, "_blank");
+    trackEvent("Sage Profile Shared", { intent: "visit", url: fullUrl });
+  }, [fullUrl]);
 
   return (
     <AlertDialog
@@ -63,7 +70,7 @@ export function SageShareButton({
         <div className="space-y-3 overflow-hidden">
           <p className="text-sm text-muted-foreground mb-2">{t("description")}</p>
           <div className="flex items-center gap-2 mt-1">
-            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden wrap-break-words">
+            <div className="bg-muted p-2 rounded-md text-xs flex-1 overflow-hidden wrap-break-word">
               {fullUrl}
             </div>
             <Button size="sm" variant="outline" onClick={handleCopyUrl} className="shrink-0">
@@ -75,7 +82,7 @@ export function SageShareButton({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => setOpen(false)}>{t("closeButton")}</AlertDialogCancel>
-          <Button onClick={() => window.open(fullUrl, "_blank")}>{t("openButton")}</Button>
+          <Button onClick={handleOpenUrl}>{t("openButton")}</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

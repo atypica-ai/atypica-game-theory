@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { trackEvent } from "@/lib/analytics/segment";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
@@ -71,6 +72,22 @@ export function SourcesPanel() {
   const [isAdding, setIsAdding] = useState(false);
 
   const completedSources = sources.filter((s) => !!s.extractedTextDigest);
+
+  // Wrapped setNewSources to track events when sources change
+  const handleNewSourcesChange = useCallback(
+    (newSourcesList: SageSourceContent[]) => {
+      // Track if sources increased
+      if (newSourcesList.length > newSources.length) {
+        trackEvent("Sage Source Updated", {
+          sageId: sage.id,
+          sourcesCount: sources.length + newSourcesList.length,
+        });
+      }
+      setNewSources(newSourcesList);
+    },
+    [newSources.length, sage.id, sources.length],
+  );
+
   const failedSources = sources.filter((s) => !!s.extra.error);
   const isProcessing = processingStatus === "processing" || isRequesting;
   const canModifySources = processingStatus !== "processing" && !isRequesting;
@@ -204,7 +221,7 @@ export function SourcesPanel() {
           <div className="max-h-[50vh] overflow-y-auto scrollbar-thin -mx-6 px-6">
             <AddSourcesContent
               sources={newSources}
-              onSourcesChange={setNewSources}
+              onSourcesChange={handleNewSourcesChange}
               currentSourceCount={sources.length}
               maxSources={maxSources}
             />

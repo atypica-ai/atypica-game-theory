@@ -6,11 +6,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trackEvent } from "@/lib/analytics/segment";
+import { truncateForTitle } from "@/lib/textUtils";
 import { ArrowLeftIcon, Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useDebouncedCallback } from "use-debounce";
 
 export function CreateInterviewProjectClient() {
   const router = useRouter();
@@ -23,6 +25,12 @@ export function CreateInterviewProjectClient() {
   const [brief, setBrief] = useState("");
   const [presetQuestions, setPresetQuestions] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const trackInterviewBriefUpdated = useDebouncedCallback((brief: string) => {
+    trackEvent("Interview Brief Updated", {
+      brief: truncateForTitle(brief, { maxDisplayWidth: 30, suffix: "..." }),
+    });
+  }, 2000);
 
   // Submit form
   const handleSubmit = useCallback(async () => {
@@ -86,7 +94,13 @@ export function CreateInterviewProjectClient() {
               <Textarea
                 id="brief"
                 value={brief}
-                onChange={(e) => setBrief(e.target.value)}
+                onChange={(e) => {
+                  const newBrief = e.target.value;
+                  setBrief(newBrief);
+                  if (newBrief.trim().length > 0) {
+                    trackInterviewBriefUpdated(newBrief.trim());
+                  }
+                }}
                 placeholder={t("projectBriefPlaceholder")}
                 className="min-h-32"
                 maxLength={5000}
