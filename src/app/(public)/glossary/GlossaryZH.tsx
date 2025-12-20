@@ -86,7 +86,7 @@ export const GlossaryZH: React.FC = () => {
                     <code className="font-semibold text-base">AI 人设 (深度访谈)</code>
                   </td>
                   <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    特指由 atypica.ai 团队通过专业方法构建的、具有更高真实性和行为一致性的 `AI
+                    特指由 atypica.AI 团队通过<strong>深度访谈</strong>真人合成的、具有更高真实性和行为一致性的 `AI
                     人设`（详见 Tier 2）。
                   </td>
                 </tr>
@@ -95,7 +95,7 @@ export const GlossaryZH: React.FC = () => {
                     <code className="font-semibold text-base">真人 AI 人设 (私有)</code>
                   </td>
                   <td className="px-4 py-3">
-                    特指用户通过 `AI 人设导入` 功能生成的、基于真实访谈数据的、私有的 `AI
+                    特指用户通过 `AI 人设导入` 功能生成的、基于<strong>企业</strong>真实访谈数据的、私有的 `AI
                     人设`（详见 Tier 3）。
                   </td>
                 </tr>
@@ -142,10 +142,10 @@ export const GlossaryZH: React.FC = () => {
                 Tier 3: 真人 AI 人设 (私有)
               </h3>
               <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-4">
-                来源: 用户上传的企业私有访谈数据
+                来源: 用户上传的<strong>企业</strong>私有访谈数据
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                <strong>私有性</strong>
+                用户通过 `AI 人设导入` 功能，上传真实的<strong>企业</strong>访谈记录生成的 AI 人设。<strong>私有性</strong>
                 是其最大特点。这类人设完全基于用户提供的私有数据构建，不会被其他用户搜索或使用，确保了商业信息的安全。其真实性直接取决于用户提供的访谈数据质量。
               </p>
             </div>
