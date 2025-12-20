@@ -158,6 +158,7 @@ export type LLMModelName =
   | "gpt-4.1-nano"
   | "gpt-5"
   | "gpt-5-mini"
+  | "gpt-5-mini-responses"
   | "gpt-5-nano"
   | "o3-mini"
   | "claude-3-5-haiku"
@@ -169,7 +170,6 @@ export type LLMModelName =
   | "gemini-2.5-pro"
   | "gemini-2.5-flash-image"
   | "gemini-3-pro-image"
-  | "grok-4-1"
   | "grok-4-1-fast-non-reasoning"
   | "grok-4-1-fast-reasoning"
   | "deepseek-v3"
@@ -185,6 +185,7 @@ export function llm(modelName: LLMModelName) {
       case "gpt-4o":
       case "gpt-5":
       case "gpt-5-mini":
+      case "gpt-5-mini-responses":
       case "gpt-5-nano":
         if (process.env.AZURE_EASTUS2_API_KEY) {
           break;
@@ -217,7 +218,6 @@ export function llm(modelName: LLMModelName) {
         } else {
           return openai(modelName);
         }
-      case "grok-4-1":
       case "grok-4-1-fast-non-reasoning":
       case "grok-4-1-fast-reasoning":
         if (process.env.XAI_API_KEY) {
@@ -241,6 +241,8 @@ export function llm(modelName: LLMModelName) {
       return azureEastUS2("gpt-5");
     case "gpt-5-mini":
       return azureEastUS2("gpt-5-mini");
+    case "gpt-5-mini-responses":
+      return azureEastUS2.responses("gpt-5-mini");
     case "gpt-5-nano":
       return azureEastUS2("gpt-5-nano");
     case "gpt-4.1":
@@ -279,8 +281,6 @@ export function llm(modelName: LLMModelName) {
       return vertexGlobal("gemini-2.5-flash-image");
     case "gemini-3-pro-image":
       return vertexGlobal("gemini-3-pro-image-preview");
-    case "grok-4-1":
-      return xai.responses("grok-4-1");
     case "grok-4-1-fast-non-reasoning":
       return xai.responses("grok-4-1-fast-non-reasoning");
     case "grok-4-1-fast-reasoning":

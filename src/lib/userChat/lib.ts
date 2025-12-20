@@ -250,16 +250,17 @@ export async function correctUserInputMessage({
       .slice(-2) // 取最后 2 条消息
       .map((msg) => {
         // ModelMessage 的 content 可能是 string 或 array
-        if (typeof msg.content === "string") {
-          return msg.content;
+        if (typeof msg.content === "string" && msg.content.length > 0) {
+          return `[${msg.role}]\n${msg.content}\n`;
         }
         if (Array.isArray(msg.content)) {
-          return msg.content
+          const content = msg.content
             .filter((part) => part.type === "text")
             .map((part) => part.text)
             .join("\n");
+          return `[${msg.role}]\n${content}\n`;
         }
-        return "";
+        return;
       })
       .filter(Boolean)
       .join("\n");
@@ -293,16 +294,7 @@ export async function correctUserInputMessage({
 4. **处理中英文混合**：确保中英文之间有适当间距
 5. **品牌名称准确性**：常见软件/工具名称要拼写正确
 
-${
-  recentContext
-    ? `上下文：「${recentContext}」
-
-注意事项：
-- 如果上下文以句号结尾，将新内容作为独立句子开始
-- 如果上下文不完整，自然地续写成完整句子
-- 保持语言风格和话题的连续性`
-    : `这是独立输入，请确保输出语义完整。`
-}
+${recentContext ? `上下文：「${recentContext}」` : ""}
 
 待修正文本：「${originalText}」
 
@@ -321,16 +313,7 @@ Main tasks:
 4. **Handle mixed languages**: Ensure proper spacing between English and other languages
 5. **Brand name accuracy**: Spell common software/tool names correctly
 
-${
-  recentContext
-    ? `Context: "${recentContext}"
-
-Requirements:
-- If context ends with punctuation, start new content as a separate sentence
-- If context is incomplete, naturally continue to form complete sentences
-- Maintain consistent language style and topic continuity`
-    : `This is standalone input. Ensure output is semantically complete.`
-}
+${recentContext ? `Context: "${recentContext}"` : ""}
 
 Text to correct: "${originalText}"
 

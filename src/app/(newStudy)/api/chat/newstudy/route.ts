@@ -4,7 +4,7 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { llm } from "@/ai/provider";
+import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
@@ -15,6 +15,10 @@ import { detectInputLanguage } from "@/lib/textUtils";
 import { correctUserInputMessage } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
+import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
+import { azure } from "@ai-sdk/azure";
+import { google, GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
+import { vertexAnthropic } from "@ai-sdk/google-vertex/anthropic";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import {
   createUIMessageStream,
@@ -135,25 +139,58 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const shouldEndInterview = coreMessages.length > 24;
+  const modelName = "gemini-2.5-flash" as LLMModelName; // gemini-2.5-flash, gpt-5-mini-responses, claude-haiku-4-5
 
   const streamTextResult = streamText({
-    // model: llm("claude-3-7-sonnet"),
-    // model: llm(
-    //   "gemini-2.5-flash",
-    //   shouldEndInterview
-    //     ? {} //必须去掉，否则 toolChoice: "required" 会调用 searchTool 最终还是没有调用 endInterview
-    //     : { useSearchGrounding: true, dynamicRetrievalConfig: { mode: "MODE_DYNAMIC" } },
-    // ),
-    model: llm("gpt-5-mini"),
-
+    model: llm(modelName),
     providerOptions: {
+      ...defaultProviderOptions,
       openai: {
-        // ...defaultProviderOptions.openai,
         reasoningSummary: "auto", // 'auto' | 'detailed'
-        reasoningEffort: "minimal", // 'minimal' | 'low' | 'medium' | 'high'
+        reasoningEffort: "low", // 'minimal' | 'low' | 'medium' | 'high' 使用 web_search_preview 的时候, 不能为 minimal
       } satisfies OpenAIResponsesProviderOptions,
+      google: {
+        // thinkingConfig: { includeThoughts: true, thinkingLevel: "low" },  // 2.5 flash 不支持
+      } satisfies GoogleGenerativeAIProviderOptions,
+      anthropic: {
+        thinking: {
+          type: "disabled",
+        },
+      } satisfies AnthropicProviderOptions,
     },
+    tools:
+      modelName === "gemini-2.5-flash"
+        ? ({
+            ...tools, // 这样好像不行，Google 内置的工具没法和定义的工具一起用
+            google_search: google.tools.googleSearch({ mode: "MODE_DYNAMIC" }), // tool 名字 google_search 是指定的，不能随便写
+            url_context: google.tools.urlContext({}), // tool 名字 url_context 是指定的，不能随便写
+          } as typeof tools)
+        : modelName === "gpt-5-mini"
+          ? ({
+              ...tools,
+              web_search_preview: azure.tools.webSearchPreview({
+                searchContextSize: "low",
+              }), // tool 名字 web_search_preview 是指定的，不能随便写，只支持 responses api
+            } as typeof tools)
+          : modelName === "claude-haiku-4-5"
+            ? ({
+                ...tools,
+                web_search: vertexAnthropic.tools.webSearch_20250305({}), // 会报错，暂时不用了
+                web_fetch: vertexAnthropic.tools.webFetch_20250910({}), // 会报错，暂时不用了
+              } as typeof tools)
+            : tools,
+
+    prepareStep: async ({ messages }) => {
+      if (messages.length > 24) {
+        return {
+          activeTools: ["endInterview"],
+        };
+      }
+      return {};
+    },
+
+    // toolChoice: "auto",
+    stopWhen: stepCountIs(2),
 
     system:
       newStudySystem({ locale }) +
@@ -162,9 +199,7 @@ export async function POST(req: NextRequest) {
         ? "\n\n用户通过语音输入，可能存在语音识别错误，请理解其真实意图。"
         : "\n\nUser input is from voice recognition and may contain transcription errors. Please understand the actual intent."),
     messages: coreMessages,
-    tools,
-    toolChoice: shouldEndInterview ? "required" : "auto",
-    stopWhen: stepCountIs(2),
+
     // temperature: 0,  // gpt-5 不支持 temperature
     experimental_transform: smoothStream({
       delayInMs: 30,
@@ -199,7 +234,7 @@ export async function POST(req: NextRequest) {
     },
 
     onError: ({ error }) => {
-      chatLogger.error(`newstudy planning streamText onError: ${(error as Error).message}`);
+      chatLogger.error(`newstudy planning streamText onError: ${error}`);
     },
 
     abortSignal,
