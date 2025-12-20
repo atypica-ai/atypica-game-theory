@@ -50,9 +50,10 @@ export function PersonaChatClient({
     transport: new DefaultChatTransport({
       api: "/api/chat/persona",
       prepareSendMessagesRequest({ id, messages, body: extraBody }) {
+        const { id: messageId, role, parts } = prepareLastUIMessageForRequest(messages);
         const body: ClientMessagePayload = {
           id,
-          message: prepareLastUIMessageForRequest(messages),
+          message: { id: messageId, role, parts },
           ...extraRequestPayload,
         };
         if (extraBody && "attachments" in extraBody) {

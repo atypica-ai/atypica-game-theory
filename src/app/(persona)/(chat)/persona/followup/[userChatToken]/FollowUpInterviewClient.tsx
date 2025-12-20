@@ -1,5 +1,6 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
+import { TPersonaUITools } from "@/app/(persona)/tools/types";
 import { TPersonaMessageWithTool } from "@/app/(persona)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
@@ -9,12 +10,17 @@ import { ShieldIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+type PERSONA_UI_MESSAGE = TPersonaMessageWithTool<
+  TPersonaUITools,
+  ClientMessagePayload["message"]["metadata"]
+>;
+
 export default function FollowUpInterviewClient({
   userChatToken,
   initialMessages = [],
 }: {
   userChatToken: string;
-  initialMessages?: TPersonaMessageWithTool[];
+  initialMessages?: PERSONA_UI_MESSAGE[];
 }) {
   const locale = useLocale();
   const t = useTranslations("PersonaImport.followUpInterview");
@@ -25,12 +31,13 @@ export default function FollowUpInterviewClient({
   // 正确使用 useChat hook
   const useChatHelpers = useChat({
     messages: initialMessages,
-    transport: new DefaultChatTransport({
+    transport: new DefaultChatTransport<PERSONA_UI_MESSAGE>({
       api: "/api/chat/persona-followup",
       prepareSendMessagesRequest({ id, messages }) {
+        const { id: messageId, role, parts, metadata } = prepareLastUIMessageForRequest(messages);
         const body: ClientMessagePayload = {
           id,
-          message: prepareLastUIMessageForRequest(messages),
+          message: { id: messageId, role, parts, metadata },
           ...extraRequestPayload,
         };
         return { body };
@@ -87,7 +94,7 @@ export default function FollowUpInterviewClient({
 
   return (
     <FitToViewport>
-      <FocusedInterviewChat<TPersonaMessageWithTool>
+      <FocusedInterviewChat<PERSONA_UI_MESSAGE>
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         showTimer={false}

@@ -9,4 +9,7 @@ export interface InterviewSharePayload {
   permanent?: string; // 永久链接标识，存储 permanentShareToken
 }
 
-export type TInterviewMessageWithTool = UIMessage<unknown, UIDataTypes, TInterviewUITools>;
+export type TInterviewMessageWithTool<
+  TOOLS extends TInterviewUITools = TInterviewUITools,
+  METADATA = unknown,
+> = UIMessage<METADATA, UIDataTypes, TOOLS>;

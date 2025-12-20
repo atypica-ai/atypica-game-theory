@@ -62,4 +62,7 @@ export const personaScoringSchema = z.object({
   socialRelations: z.number().min(0).max(1).describe("1 if present, 0 if not"),
 });
 
-export type TPersonaMessageWithTool = UIMessage<unknown, UIDataTypes, TPersonaUITools>;
+export type TPersonaMessageWithTool<
+  TOOLS extends TPersonaUITools = TPersonaUITools,
+  METADATA = unknown,
+> = UIMessage<METADATA, UIDataTypes, TOOLS>;

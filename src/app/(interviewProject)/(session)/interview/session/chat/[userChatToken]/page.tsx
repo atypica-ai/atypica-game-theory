@@ -1,7 +1,6 @@
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
-import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { throwServerActionError } from "@/lib/serverAction";
@@ -32,17 +31,18 @@ async function InterviewSessionChatPage({ userChatToken }: { userChatToken: stri
   const interviewSession = result.data;
 
   // Get existing messages for this chat
-  const initialMessages = await convertDBMessagesToAIMessages(
+  const initialMessages = (await convertDBMessagesToAIMessages(
     await prisma.chatMessage.findMany({
       where: { userChatId: interviewSession.userChatId },
       orderBy: { createdAt: "asc" },
     }),
-  );
+  )) as Parameters<typeof InterviewSessionChatClient>[0]["initialMessages"];
+
   return (
     <InterviewSessionChatClient
       {...interviewSession}
       userChatToken={userChatToken}
-      initialMessages={initialMessages as TInterviewMessageWithTool[]}
+      initialMessages={initialMessages}
     />
   );
 }

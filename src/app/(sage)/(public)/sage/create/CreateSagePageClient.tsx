@@ -140,7 +140,7 @@ export function CreateSagePageClient() {
           </Button>
           <Button onClick={handleNext} disabled={sources.length === 0}>
             {t("next")}
-            <ArrowRightIcon className="size-4 ml-2" />
+            <ArrowRightIcon className="size-4" />
           </Button>
         </div>
       </div>

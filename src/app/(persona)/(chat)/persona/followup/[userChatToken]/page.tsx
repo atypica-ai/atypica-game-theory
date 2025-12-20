@@ -1,11 +1,9 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchFollowUpInterviewChat } from "@/app/(persona)/actions";
-import { TPersonaMessageWithTool } from "@/app/(persona)/types";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { prisma } from "@/prisma/prisma";
-import { UIMessage } from "ai";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -34,21 +32,22 @@ async function FollowUpInterviewPage({ userChatToken }: { userChatToken: string 
   const userChat = result.data;
 
   const userChatId = userChat.id;
-  let messages: UIMessage[] | undefined = undefined;
+  let initialMessages:
+    | Parameters<typeof FollowUpInterviewClient>[0]["initialMessages"]
+    | undefined = undefined;
   if (userChatId) {
-    messages = (
+    initialMessages = (
       await prisma.chatMessage.findMany({
         where: { userChatId },
         orderBy: { id: "asc" },
       })
-    ).map(convertDBMessageToAIMessage);
+    ).map(convertDBMessageToAIMessage) as Parameters<
+      typeof FollowUpInterviewClient
+    >[0]["initialMessages"];
   }
 
   return (
-    <FollowUpInterviewClient
-      userChatToken={userChatToken}
-      initialMessages={messages as TPersonaMessageWithTool[]}
-    />
+    <FollowUpInterviewClient userChatToken={userChatToken} initialMessages={initialMessages} />
   );
 }
 

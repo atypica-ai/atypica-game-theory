@@ -1,6 +1,5 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
-import { TNewStudyMessageWithTool } from "@/app/(newStudy)/types";
 import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
@@ -34,12 +33,12 @@ async function NewStudyPlanningPage({
     return <NotFound />;
   }
 
-  const dbMessages = await prisma.chatMessage.findMany({
-    where: { userChatId: userChat.id },
-    orderBy: { id: "asc" },
-  });
-
-  const initialMessages = dbMessages.map(convertDBMessageToAIMessage) as TNewStudyMessageWithTool[];
+  const initialMessages = (
+    await prisma.chatMessage.findMany({
+      where: { userChatId: userChat.id },
+      orderBy: { id: "asc" },
+    })
+  ).map(convertDBMessageToAIMessage) as Parameters<typeof NewStudyChatClient>[0]["initialMessages"];
 
   return (
     <NewStudyChatClient userChat={userChat} initialMessages={initialMessages} user={sessionUser} />

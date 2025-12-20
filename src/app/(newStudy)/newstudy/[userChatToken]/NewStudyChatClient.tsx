@@ -1,5 +1,6 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
+import { TNewStudyUITools } from "@/app/(newStudy)/tools/types";
 import { TNewStudyMessageWithTool } from "@/app/(newStudy)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
@@ -14,12 +15,17 @@ import { useEffect, useMemo, useRef } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { CountdownRedirect } from "./CountdownRedirect";
 
+type NEW_STUDY_UI_MESSAGE = TNewStudyMessageWithTool<
+  TNewStudyUITools,
+  ClientMessagePayload["message"]["metadata"]
+>;
+
 export function NewStudyChatClient({
   userChat,
   initialMessages,
 }: {
   userChat: UserChat;
-  initialMessages: TNewStudyMessageWithTool[];
+  initialMessages: NEW_STUDY_UI_MESSAGE[];
   user: { id: number; email: string };
 }) {
   const locale = useLocale();
@@ -45,19 +51,23 @@ export function NewStudyChatClient({
       console.error("Chat error:", err);
       // TODO: Implement user-facing error feedback (e.g., a toast notification).
     },
-    transport: new DefaultChatTransport({
+    transport: new DefaultChatTransport<NEW_STUDY_UI_MESSAGE>({
       api: `/api/chat/newstudy`,
       prepareSendMessagesRequest({ id, messages }) {
-        const message = prepareLastUIMessageForRequest(messages);
+        const { id: messageId, role, parts, metadata } = prepareLastUIMessageForRequest(messages);
         setTimeout(() => {
           trackStudyBriefUpdated(
-            message.parts
+            parts
               .filter((part) => part.type === "text")
               .map((part) => part.text)
               .join(""),
           );
         }, 100);
-        const body: ClientMessagePayload = { id, message, ...extraRequestPayload };
+        const body: ClientMessagePayload = {
+          id,
+          message: { id: messageId, role, parts, metadata },
+          ...extraRequestPayload,
+        };
         return { body };
       },
     }),
@@ -114,7 +124,7 @@ export function NewStudyChatClient({
 
   const chatWithAIArea = (
     <FitToViewport>
-      <FocusedInterviewChat<TNewStudyMessageWithTool>
+      <FocusedInterviewChat<NEW_STUDY_UI_MESSAGE>
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         showTimer={true}

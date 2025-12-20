@@ -3,7 +3,7 @@ import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messa
 import { updateInterviewSessionLanguage } from "@/app/(interviewProject)/(session)/actions";
 import { fetchInterviewSessionChat } from "@/app/(interviewProject)/actions";
 import { LanguageSwitcher } from "@/app/(interviewProject)/components/LanguageSwitcher";
-import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
+import { InterviewToolName, TInterviewUITools } from "@/app/(interviewProject)/tools/types";
 import { InterviewToolUIPartDisplay } from "@/app/(interviewProject)/tools/ui";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
@@ -38,6 +38,11 @@ import { Locale, useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+type INTERVIEW_UI_MESSAGE = TInterviewMessageWithTool<
+  TInterviewUITools,
+  ClientMessagePayload["message"]["metadata"]
+>;
+
 export function InterviewSessionChatClient({
   project,
   intervieweeUser,
@@ -46,7 +51,7 @@ export function InterviewSessionChatClient({
   extra: { preferredLanguage, questions = [] },
 }: ExtractServerActionData<typeof fetchInterviewSessionChat> & {
   userChatToken: string;
-  initialMessages?: TInterviewMessageWithTool[];
+  initialMessages?: INTERVIEW_UI_MESSAGE[];
 }) {
   const _locale = useLocale();
 
@@ -136,12 +141,13 @@ export function InterviewSessionChatClient({
 
   const { addToolResult: _addToolResult, ...useChatHelpers } = useChat({
     messages: initialMessages,
-    transport: new DefaultChatTransport({
+    transport: new DefaultChatTransport<INTERVIEW_UI_MESSAGE>({
       api: "/api/chat/interview-agent",
       prepareSendMessagesRequest({ messages, id }) {
+        const { id: messageId, role, parts, metadata } = prepareLastUIMessageForRequest(messages);
         const body: ClientMessagePayload = {
           id,
-          message: prepareLastUIMessageForRequest(messages),
+          message: { id: messageId, role, parts, metadata },
           ...extraRequestPayload,
         };
         return { body };
@@ -372,7 +378,7 @@ export function InterviewSessionChatClient({
 
   return (
     <FitToViewport>
-      <FocusedInterviewChat<TInterviewMessageWithTool>
+      <FocusedInterviewChat<INTERVIEW_UI_MESSAGE>
         locale={locale}
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
