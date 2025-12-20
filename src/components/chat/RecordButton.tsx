@@ -34,7 +34,8 @@ export function RecordButton({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [partialTranscript, setPartialTranscript] = useState("");
   const lastTranscriptRef = useRef<string>("");
-  const fullTranscriptRef = useRef<string>(""); // Accumulate all streaming results
+  const transcriptSegmentsRef = useRef<string[]>([]); // Store each transcription segment
+  const lastTranscribedChunkIndexRef = useRef<number>(0); // Track which chunks have been transcribed
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -45,33 +46,48 @@ export function RecordButton({
   const isTranscribingRef = useRef<boolean>(false);
   const lastTranscribeTimeRef = useRef<number>(0);
 
-  const transcribeAccumulatedAudio = useCallback(
+  const transcribeSegment = useCallback(
     async (isFinal: boolean = false) => {
       try {
-        if (chunksRef.current.length === 0) {
-          console.log("⚠️ No audio chunks to transcribe");
+        // Only transcribe new chunks (from last transcribed position to current end)
+        const startIndex = lastTranscribedChunkIndexRef.current;
+        const chunksToTranscribe = chunksRef.current.slice(startIndex);
+
+        if (chunksToTranscribe.length === 0) {
+          console.log("⚠️ No new chunks to transcribe");
+          // If this is final call and we have existing segments, send them
+          if (isFinal && transcriptSegmentsRef.current.length > 0) {
+            const finalText = transcriptSegmentsRef.current.join("\n");
+            console.log("✅ No new chunks, sending existing segments:", finalText);
+            setPartialTranscript("");
+            onTranscript(finalText);
+          }
           return;
         }
 
-        // Create a complete audio file with proper headers
-        const audioBlob = new Blob(chunksRef.current, { type: "audio/webm;codecs=opus" });
+        const audioBlob = new Blob(chunksToTranscribe, { type: "audio/webm;codecs=opus" });
 
-        // Validate minimum audio size
         if (audioBlob.size < 2000) {
-          console.log("⚠️ Audio too small for transcription:", audioBlob.size, "bytes");
+          console.log("⚠️ Audio segment too small for transcription:", audioBlob.size, "bytes");
+          // If this is final call and we have existing segments, send them
+          if (isFinal && transcriptSegmentsRef.current.length > 0) {
+            const finalText = transcriptSegmentsRef.current.join("\n");
+            console.log("✅ Segment too small, sending existing segments:", finalText);
+            setPartialTranscript("");
+            onTranscript(finalText);
+          }
           return;
         }
 
-        console.log(`🎙️ Transcribing ${isFinal ? "FINAL" : "PARTIAL"} audio:`, {
+        console.log(`🎙️ Transcribing ${isFinal ? "FINAL" : "SEGMENT"} audio:`, {
+          startChunk: startIndex,
+          endChunk: chunksRef.current.length,
+          newChunkCount: chunksToTranscribe.length,
           size: audioBlob.size,
-          type: audioBlob.type,
-          chunks: chunksRef.current.length,
           language,
-          isFinal,
         });
 
-        // Create a new File object to ensure proper format
-        const audioFile = new File([audioBlob], isFinal ? "final.webm" : "partial.webm", {
+        const audioFile = new File([audioBlob], isFinal ? "final.webm" : "segment.webm", {
           type: "audio/webm;codecs=opus",
           lastModified: Date.now(),
         });
@@ -94,36 +110,34 @@ export function RecordButton({
         }
 
         const result = await response.json();
-        console.log(`✅ Transcription result (${isFinal ? "FINAL" : "PARTIAL"}):`, result);
+        console.log(`✅ Transcription result (${isFinal ? "FINAL" : "SEGMENT"}):`, result);
 
         if (result.text && result.text.trim()) {
           const transcriptText = result.text.trim();
-          lastTranscriptRef.current = transcriptText; // Always update the last transcript
+          lastTranscriptRef.current = transcriptText;
+
+          // Add this segment to the list
+          transcriptSegmentsRef.current.push(transcriptText);
+
+          // Update the last transcribed position
+          lastTranscribedChunkIndexRef.current = chunksRef.current.length;
 
           if (isFinal) {
-            // For final transcription, use complete result and replace any streaming result
-            console.log("🎯 Setting final transcript (complete):", transcriptText);
-            console.log(`📝 Final replaces streaming: "${fullTranscriptRef.current || "none"}"`);
-            // Server logging for mobile debugging
+            // Join all segments with newlines and send final result
+            const finalText = transcriptSegmentsRef.current.join("\n");
+            console.log("🎯 Final transcript with all segments:", finalText);
             serverLog("🎯 FINAL TRANSCRIPT COMPLETE", {
-              finalLength: transcriptText.length,
-              previousStreamingText: fullTranscriptRef.current || "empty",
-              newText: transcriptText,
-              isReplacement: fullTranscriptRef.current ? 1 : 0,
+              segmentCount: transcriptSegmentsRef.current.length,
+              finalLength: finalText.length,
             });
             setPartialTranscript("");
-            onTranscript(transcriptText);
+            onTranscript(finalText);
           } else {
-            console.log("⚡ Setting partial transcript:", transcriptText);
-            // Server logging for mobile debugging
-            serverLog("⚡ STREAMING TRANSCRIPT UPDATE", {
-              newLength: transcriptText.length,
-              previousText: fullTranscriptRef.current || "empty",
-            });
-            // Update accumulated transcript for streaming results
-            fullTranscriptRef.current = transcriptText;
-            setPartialTranscript(transcriptText);
-            onPartialTranscript?.(transcriptText);
+            // Show partial transcript (all segments so far)
+            const partialText = transcriptSegmentsRef.current.join("\n");
+            console.log("⚡ Partial transcript updated:", partialText);
+            setPartialTranscript(partialText);
+            onPartialTranscript?.(partialText);
           }
         } else {
           console.log("⚠️ No text in transcription result");
@@ -158,7 +172,8 @@ export function RecordButton({
 
       // Reset transcript state for new recording
       lastTranscriptRef.current = "";
-      fullTranscriptRef.current = "";
+      transcriptSegmentsRef.current = [];
+      lastTranscribedChunkIndexRef.current = 0;
       setPartialTranscript("");
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -189,21 +204,23 @@ export function RecordButton({
             clearTimeout(transcribeTimeoutRef.current);
           }
 
-          // Only transcribe if we have meaningful audio and haven't transcribed recently
+          // Transcribe new segments every 4 seconds
           const now = Date.now();
           const timeSinceLastTranscribe = now - lastTranscribeTimeRef.current;
           // Calculate total audio size
           const totalSize = chunksRef.current.reduce((sum, chunk) => sum + chunk.size, 0);
+          const newChunksCount = chunksRef.current.length - lastTranscribedChunkIndexRef.current;
+
           const shouldTranscribe =
-            chunksRef.current.length >= 3 && totalSize >= 4000 && timeSinceLastTranscribe > 4000; // 4 second minimum interval
+            newChunksCount >= 4 && totalSize >= 6000 && timeSinceLastTranscribe > 4000; // 4 second minimum interval
 
           if (shouldTranscribe && !isTranscribingRef.current) {
             console.log(
-              "📤 Processing accumulated audio:",
-              chunksRef.current.length,
-              "chunks,",
+              "📤 Transcribing new segment:",
+              newChunksCount,
+              "new chunks,",
               totalSize,
-              "bytes",
+              "bytes total",
             );
 
             // Set flag to prevent concurrent transcriptions
@@ -211,18 +228,19 @@ export function RecordButton({
             lastTranscribeTimeRef.current = now;
 
             try {
-              serverLog("🚀 IMMEDIATE TRANSCRIPTION START", {
-                chunksCount: chunksRef.current.length,
+              serverLog("🚀 SEGMENT TRANSCRIPTION START", {
+                totalChunks: chunksRef.current.length,
+                newChunks: newChunksCount,
                 totalSize,
-                path: "immediate",
+                lastTranscribedIndex: lastTranscribedChunkIndexRef.current,
               });
-              await transcribeAccumulatedAudio(false);
+              await transcribeSegment(false);
             } finally {
               isTranscribingRef.current = false;
             }
           } else {
-            console.log("⏸️ Debouncing transcription:", {
-              chunks: chunksRef.current.length,
+            console.log("⏸️ Waiting for next segment:", {
+              newChunks: newChunksCount,
               totalSize,
               timeSinceLastTranscribe,
               isTranscribing: isTranscribingRef.current,
@@ -230,39 +248,39 @@ export function RecordButton({
 
             // Set a debounced transcription for later
             transcribeTimeoutRef.current = setTimeout(async () => {
-              if (chunksRef.current.length >= 3 && !isTranscribingRef.current) {
+              if (
+                chunksRef.current.length - lastTranscribedChunkIndexRef.current >= 4 &&
+                !isTranscribingRef.current
+              ) {
                 const currentTotalSize = chunksRef.current.reduce(
                   (sum, chunk) => sum + chunk.size,
                   0,
                 );
-                if (currentTotalSize >= 4000) {
-                  console.log("⏰ Debounced transcription executing");
+                if (currentTotalSize >= 6000) {
+                  console.log("⏰ Debounced segment transcription executing");
                   isTranscribingRef.current = true;
                   lastTranscribeTimeRef.current = Date.now();
 
                   try {
-                    const currentTotalSize = chunksRef.current.reduce(
-                      (sum, chunk) => sum + chunk.size,
-                      0,
-                    );
-                    serverLog("🚀 DEBOUNCED TRANSCRIPTION START", {
-                      chunksCount: chunksRef.current.length,
+                    serverLog("🚀 DEBOUNCED SEGMENT TRANSCRIPTION", {
+                      totalChunks: chunksRef.current.length,
+                      newChunks: chunksRef.current.length - lastTranscribedChunkIndexRef.current,
                       totalSize: currentTotalSize,
-                      path: "debounced",
+                      lastTranscribedIndex: lastTranscribedChunkIndexRef.current,
                     });
-                    await transcribeAccumulatedAudio(false);
+                    await transcribeSegment(false);
                   } finally {
                     isTranscribingRef.current = false;
                   }
                 }
               }
-            }, 3000); // 3 second debounce
+            }, 4000); // 4 second debounce
           }
         }
       };
 
       mediaRecorder.onstop = async () => {
-        console.log("🛑 Recording stopped, processing final audio...");
+        console.log("🛑 Recording stopped, processing final segment...");
 
         // Clear any pending debounced transcriptions
         if (transcribeTimeoutRef.current) {
@@ -272,94 +290,45 @@ export function RecordButton({
 
         // Wait a moment for any final data to arrive from requestData()
         console.log("⏳ Waiting for final audio chunks...");
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Wait for any ongoing streaming transcription to complete
+        // Wait for any ongoing segment transcription to complete
         while (isTranscribingRef.current) {
           console.log("⏳ Waiting for ongoing transcription to complete...");
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
-        // Smart wait for streaming transcription completion - check periodically instead of fixed wait
-        console.log("⏳ Smart wait for streaming transcription completion...");
-        let waitTime = 0;
-        const maxWait = 3000; // 3 seconds maximum
-        const checkInterval = 200; // Check every 200ms
-
-        while (!fullTranscriptRef.current && waitTime < maxWait) {
-          await new Promise((resolve) => setTimeout(resolve, checkInterval));
-          waitTime += checkInterval;
-
-          if (waitTime % 1000 === 0) {
-            console.log(`⏳ Still waiting for streaming result... ${waitTime / 1000}s elapsed`);
-          }
-        }
-
-        if (fullTranscriptRef.current) {
-          console.log(`✅ Streaming result received after ${waitTime}ms wait`);
-        } else {
-          console.log(`⏰ Timeout after ${waitTime}ms, proceeding without streaming result`);
-        }
-
-        // Simple logic: Check if we have audio to transcribe
+        // Check if there are untranscribed chunks remaining
+        const remainingChunks = chunksRef.current.length - lastTranscribedChunkIndexRef.current;
         const totalSize = chunksRef.current.reduce((sum, chunk) => sum + chunk.size, 0);
 
-        // Check streaming result status after smart wait
-        serverLog("🔍 STREAMING RESULT CHECK AFTER SMART WAIT", {
-          fullTranscriptLength: fullTranscriptRef.current?.length || 0,
-          fullTranscriptContent: fullTranscriptRef.current || "empty",
-          lastTranscriptContent: lastTranscriptRef.current || "empty",
-          actualWaitTime: waitTime,
-          maxWaitTime: maxWait,
-          waitEfficiency: fullTranscriptRef.current
-            ? ((waitTime / maxWait) * 100).toFixed(1) + "%"
-            : "timeout",
-        });
-
-        serverLog("🛑 FINAL TRANSCRIPTION DECISION", {
+        serverLog("🛑 FINAL SEGMENT CHECK", {
           totalChunks: chunksRef.current.length,
-          totalSize: totalSize,
-          hasStreamingResult: fullTranscriptRef.current ? 1 : 0,
-          willDoFinalTranscription: totalSize > 2000 ? 1 : 0,
+          transcribedChunks: lastTranscribedChunkIndexRef.current,
+          remainingChunks,
+          totalSize,
+          segmentCount: transcriptSegmentsRef.current.length,
         });
 
-        if (totalSize > 2000) {
-          // Always do final transcription to ensure no audio is missed
-          console.log("🎬 Processing complete audio for final transcription...");
-          console.log(
-            `📊 Total audio: ${chunksRef.current.length} chunks, size: ${totalSize} bytes`,
-          );
-
-          if (fullTranscriptRef.current && fullTranscriptRef.current.trim()) {
-            console.log("ℹ️ Note: Streaming result available, final transcription will replace it");
-            serverLog("ℹ️ FINAL TRANSCRIPTION WITH STREAMING BACKUP", {
-              streamingLength: fullTranscriptRef.current.length,
-              reason: "ensure_completeness",
-            });
-          } else {
-            console.log("ℹ️ No streaming result, final transcription is primary");
-            serverLog("ℹ️ FINAL TRANSCRIPTION PRIMARY", {
-              reason: "no_streaming_result",
-            });
-          }
+        if (remainingChunks > 0) {
+          // Transcribe the remaining segment (transcribeSegment will check if size is sufficient)
+          console.log("🎬 Processing final segment...");
+          console.log(`📊 Remaining: ${remainingChunks} chunks`);
 
           isTranscribingRef.current = true;
           try {
-            await transcribeAccumulatedAudio(true);
+            await transcribeSegment(true);
           } finally {
             isTranscribingRef.current = false;
           }
-        } else if (fullTranscriptRef.current && fullTranscriptRef.current.trim()) {
-          // Audio too small for final transcription, but we have streaming result
-          console.log("✅ Audio too small, using streaming result:", fullTranscriptRef.current);
-          serverLog("✅ USING STREAMING RESULT ONLY", {
-            cachedLength: fullTranscriptRef.current.length,
-            reason: "audio_too_small",
-          });
+        } else if (transcriptSegmentsRef.current.length > 0) {
+          // No remaining chunks, use existing segments
+          const finalText = transcriptSegmentsRef.current.join("\n");
+          console.log("✅ Using existing segments, no final transcription needed");
           setPartialTranscript("");
-          onTranscript(fullTranscriptRef.current);
+          onTranscript(finalText);
         } else {
-          console.log("⚠️ No sufficient audio for transcription and no streaming result");
+          console.log("⚠️ No sufficient audio for transcription");
         }
 
         // Clean up stream
@@ -381,7 +350,7 @@ export function RecordButton({
       console.error("❌ Error starting recording:", error);
       // TODO: Show user-friendly error message
     }
-  }, [transcribeAccumulatedAudio, visualize, onTranscript]);
+  }, [transcribeSegment, visualize, onTranscript]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
@@ -431,7 +400,8 @@ export function RecordButton({
       // Reset transcription state
       isTranscribingRef.current = false;
       lastTranscriptRef.current = "";
-      fullTranscriptRef.current = "";
+      transcriptSegmentsRef.current = [];
+      lastTranscribedChunkIndexRef.current = 0;
     };
   }, [isRecording]);
 
