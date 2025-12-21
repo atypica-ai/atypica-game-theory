@@ -6,7 +6,7 @@ export const TermsEN: React.FC = () => {
     <div className="max-w-4xl mx-auto px-6 py-12">
       <header className="text-center mb-12">
         <h1 className="text-2xl font-bold mb-2">atypica.AI Terms of Service</h1>
-        <p className="text-gray-600">Version Date: April 01, 2025</p>
+        <p className="text-gray-600">Version Date: December 15, 2025</p>
       </header>
 
       <div className="space-y-8 leading-relaxed">
@@ -657,12 +657,10 @@ export const TermsEN: React.FC = () => {
             <p>
               For the purpose of this Agreement, the formulation, validity, interpretation,
               execution, modification, termination, and disputes arising from the aforementioned
-              matters shall be governed by the laws of the jurisdiction where the dispute arises or
-              as otherwise agreed upon by the parties. If any disputes arise between the parties
-              regarding the content of this Agreement or its execution, the parties shall try to
-              resolve them through friendly negotiation. If negotiation fails, disputes may be
-              resolved through binding arbitration or in the courts of competent jurisdiction as
-              determined by applicable law.
+              matters shall be governed by the <strong>laws of the Hong Kong Special Administrative Region</strong>.
+              If any disputes arise between the parties regarding the content of this Agreement or its execution,
+              the parties shall try to resolve them through friendly negotiation. If negotiation fails,
+              either party may submit the dispute to the <strong>Hong Kong International Arbitration Centre</strong> for arbitration.
             </p>
           </div>
         </section>

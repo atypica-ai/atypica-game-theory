@@ -6,7 +6,7 @@ export const TermsZH: React.FC = () => {
     <div className="max-w-4xl mx-auto px-6 py-12">
       <header className="text-center mb-12">
         <h1 className="text-2xl font-bold mb-2">atypica.AI 用户协议</h1>
-        <p className="text-gray-600">版本日期：2025年04月01日</p>
+        <p className="text-gray-600">版本日期：2025年12月15日</p>
       </header>
 
       <div className="space-y-8 leading-relaxed">
@@ -206,7 +206,7 @@ export const TermsZH: React.FC = () => {
                 您上传、输入、发布、传输、分享或以其他方式使用的内容中不应当包含以下内容：
               </h4>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-1 text-sm ml-4">
-                <li>• 反对宪法所确定的基本原则的</li>
+                <li>• 反对法律所确定的基本原则的</li>
                 <li>• 泄露国家秘密，危害国家安全的</li>
                 <li>• 颠覆国家政权，危害国家统一的</li>
                 <li>• 煽动民族仇恨、种族歧视的</li>
@@ -265,7 +265,7 @@ export const TermsZH: React.FC = () => {
           <h4 className="font-semibold mb-2">特别提醒 - AI 标识义务</h4>
           <p className="text-sm">
             <u>
-              依据《人工智能生成合成内容标识办法》规定，为了确保 AI 内容的来源可追溯，保障 AI
+              依据相关法律规定，为了确保 AI 内容的来源可追溯，保障 AI
               内容的合规性和透明度，您通过运用本服务所生成的各类内容，无论其形式和用途如何，您应当主动声明并使用我们提供的标识功能进行标识。任何组织和个人不得恶意删除、篡改、伪造、隐匿
               AI 内容标识。
             </u>
@@ -462,10 +462,10 @@ export const TermsZH: React.FC = () => {
           <div className="border border-gray-300 p-4">
             <p>
               为本协议目的，本协议的制定、有效性、解释、执行、修改、终止及因上述事项引起的争议受
-              <strong>中华人民共和国大陆地区法律</strong>
+              <strong>香港特别行政区法律</strong>
               管辖。如双方就本协议内容或其执行发生任何争议，双方应尽量友好协商解决；协商不成时，任何一方均可向
-              <strong>我们公司所在地</strong>
-              的人民法院提起诉讼。
+              <strong>香港国际仲裁中心</strong>
+              提起仲裁。
             </p>
           </div>
         </section>
