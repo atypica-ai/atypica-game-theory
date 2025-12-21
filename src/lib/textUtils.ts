@@ -139,18 +139,23 @@ export async function detectInputLanguage({
     return fallbackLocale || (await getLocale());
   }
 
+  // 清理文本：去掉 URL 和连续数字，避免干扰语言检测
+  const cleanedText = text
+    .replace(/https?:\/\/[^\s]+/g, "") // 去掉 URL
+    .replace(/\d+/g, ""); // 去掉连续数字
+
   let adjustedThreshold = threshold;
 
   // 启发式规则1: 中文开头强烈倾向中文（用户意图优先）
-  if (/^[\u4e00-\u9fff]/.test(text.trim())) {
+  if (/^[\u4e00-\u9fff]/.test(cleanedText.trim())) {
     adjustedThreshold *= 0.4; // 0.3 -> 0.12，大幅降低阈值
   }
 
   // 启发式规则2: 英文开头但有较多连续中文，适度倾向中文
-  else if (/[\u4e00-\u9fff]{3,}/.test(text)) {
+  else if (/[\u4e00-\u9fff]{3,}/.test(cleanedText)) {
     adjustedThreshold *= 0.8; // 0.3 -> 0.24，适度降低阈值
   }
 
-  const chineseRatio = getChineseCharacterRatio(text);
+  const chineseRatio = getChineseCharacterRatio(cleanedText);
   return chineseRatio > adjustedThreshold ? "zh-CN" : "en-US";
 }
