@@ -16,9 +16,6 @@ import { correctUserInputMessage } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
-import { azure } from "@ai-sdk/azure";
-import { google, GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
-import { vertexAnthropic } from "@ai-sdk/google-vertex/anthropic";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import {
   createUIMessageStream,
@@ -139,7 +136,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const modelName = "gemini-2.5-flash" as LLMModelName; // gemini-2.5-flash, gpt-5-mini-responses, claude-haiku-4-5
+  const modelName = "claude-haiku-4-5" as LLMModelName; // gemini-2.5-flash, gpt-5-mini-responses, claude-haiku-4-5
 
   const streamTextResult = streamText({
     model: llm(modelName),
@@ -149,36 +146,15 @@ export async function POST(req: NextRequest) {
         reasoningSummary: "auto", // 'auto' | 'detailed'
         reasoningEffort: "low", // 'minimal' | 'low' | 'medium' | 'high' 使用 web_search_preview 的时候, 不能为 minimal
       } satisfies OpenAIResponsesProviderOptions,
-      google: {
-        // thinkingConfig: { includeThoughts: true, thinkingLevel: "low" },  // 2.5 flash 不支持
-      } satisfies GoogleGenerativeAIProviderOptions,
       anthropic: {
         thinking: {
           type: "disabled",
         },
       } satisfies AnthropicProviderOptions,
     },
-    tools:
-      modelName === "gemini-2.5-flash"
-        ? ({
-            ...tools, // 这样好像不行，Google 内置的工具没法和定义的工具一起用
-            google_search: google.tools.googleSearch({ mode: "MODE_DYNAMIC" }), // tool 名字 google_search 是指定的，不能随便写
-            url_context: google.tools.urlContext({}), // tool 名字 url_context 是指定的，不能随便写
-          } as typeof tools)
-        : modelName === "gpt-5-mini"
-          ? ({
-              ...tools,
-              web_search_preview: azure.tools.webSearchPreview({
-                searchContextSize: "low",
-              }), // tool 名字 web_search_preview 是指定的，不能随便写，只支持 responses api
-            } as typeof tools)
-          : modelName === "claude-haiku-4-5"
-            ? ({
-                ...tools,
-                web_search: vertexAnthropic.tools.webSearch_20250305({}), // 会报错，暂时不用了
-                web_fetch: vertexAnthropic.tools.webFetch_20250910({}), // 会报错，暂时不用了
-              } as typeof tools)
-            : tools,
+
+    // 自定义的 tool 和模型内置的 tool 没法一起用，所以加了一个 webFetch 工具，在里面让 gemini 2.5 flash 去获取信息
+    tools,
 
     prepareStep: async ({ messages }) => {
       if (messages.length > 24) {
