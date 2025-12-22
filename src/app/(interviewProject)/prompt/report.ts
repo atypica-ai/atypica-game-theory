@@ -183,37 +183,39 @@ Your response should contain only ready-to-use HTML code, starting with <!DOCTYP
 export const interviewReportPrologue = ({
   locale,
   projectBrief,
-  conversations,
+  summaries,
+  // conversations,
 }: {
   locale: Locale;
   projectBrief: string;
-  conversations: Array<{
-    sessionTitle: string;
-    messages: Array<{
-      role: "user" | "assistant";
-      content: string;
-    }>;
-  }>;
+  summaries: string;
+  // conversations: Array<{
+  //   sessionTitle: string;
+  //   messages: Array<{
+  //     role: "user" | "assistant";
+  //     content: string;
+  //   }>;
+  // }>;
 }) => {
-  const conversationText = conversations
-    .map(({ sessionTitle, messages }) => {
-      const messagesText = messages
-        .map((msg) => {
-          const speaker = msg.role === "user" ? "Interviewee" : "Interviewer";
-          return `${speaker}: ${msg.content}`;
-        })
-        .join("\n");
-      return `=== ${sessionTitle} ===\n${messagesText}`;
-    })
-    .join("\n\n");
+  // const conversationText = conversations
+  //   .map(({ sessionTitle, messages }) => {
+  //     const messagesText = messages
+  //       .map((msg) => {
+  //         const speaker = msg.role === "user" ? "Interviewee" : "Interviewer";
+  //         return `${speaker}: ${msg.content}`;
+  //       })
+  //       .join("\n");
+  //     return `=== ${sessionTitle} ===\n${messagesText}`;
+  //   })
+  //   .join("\n\n");
 
   return locale === "zh-CN"
     ? `
 【访谈项目简介】
 ${projectBrief}
 
-【访谈对话记录】
-${conversationText}
+【访谈对话总结】
+${summaries}
 
 请直接输出完整HTML代码，从<!DOCTYPE html>开始，不要包含任何解释、前言或markdown标记。
 `
@@ -221,8 +223,8 @@ ${conversationText}
 【Interview Project Brief】
 ${projectBrief}
 
-【Interview Conversation Records】
-${conversationText}
+【Interview Summaries】
+${summaries}
 
 Please directly output complete HTML code, starting with <!DOCTYPE html>, without any explanations, preface, or markdown formatting.
 `;

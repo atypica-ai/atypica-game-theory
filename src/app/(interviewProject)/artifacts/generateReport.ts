@@ -101,34 +101,42 @@ export async function generateInterviewReportContent({
   });
 
   // Prepare conversation data
-  const conversations = await Promise.all(
-    project.sessions.map(async ({ title: sessionTitle, userChatId }) => {
-      const transcript = await extractInterviewTranscript(userChatId);
+  // const conversations = await Promise.all(
+  //   project.sessions.map(async ({ title: sessionTitle, userChatId }) => {
+  //     const transcript = await extractInterviewTranscript(userChatId);
+  //     // Convert transcript messages to simple format for AI
+  //     const messages: Array<{ role: "user" | "assistant"; content: string }> = [];
+  //     for (const msg of transcript.messages) {
+  //       if (msg.type === "message") {
+  //         messages.push({
+  //           role: msg.role,
+  //           content: msg.textContent,
+  //         });
+  //       } else if (msg.type === "form") {
+  //         // Convert form data to readable text
+  //         const formText = msg.formData.fields
+  //           .map((field) => `${field.label}: ${field.value}`)
+  //           .join("\n");
+  //         messages.push({
+  //           role: "user",
+  //           content: formText,
+  //         });
+  //       }
+  //     }
+  //     return { sessionTitle, messages };
+  //   }),
+  // );
 
-      // Convert transcript messages to simple format for AI
-      const messages: Array<{ role: "user" | "assistant"; content: string }> = [];
-
-      for (const msg of transcript.messages) {
-        if (msg.type === "message") {
-          messages.push({
-            role: msg.role,
-            content: msg.textContent,
-          });
-        } else if (msg.type === "form") {
-          // Convert form data to readable text
-          const formText = msg.formData.fields
-            .map((field) => `${field.label}: ${field.value}`)
-            .join("\n");
-          messages.push({
-            role: "user",
-            content: formText,
-          });
-        }
-      }
-
-      return { sessionTitle, messages };
-    }),
-  );
+  const summaries = (
+    await Promise.all(
+      project.sessions.map(async ({ title: sessionTitle, userChatId }) => {
+        const { summary, personalInfo } = await extractInterviewTranscript(userChatId);
+        const personalDesc = personalInfo?.map(({ label, text }) => `${label}: ${text}`).join("\n");
+        // return { sessionTitle, summary };
+        return `---\n${sessionTitle}\n${personalDesc}\n${summary}\n`;
+      }),
+    )
+  ).join("\n\n");
 
   let onePageHtml = "";
   const response = streamText({
@@ -144,7 +152,12 @@ export async function generateInterviewReportContent({
         content: [
           {
             type: "text",
-            text: interviewReportPrologue({ locale, projectBrief: project.brief, conversations }),
+            text: interviewReportPrologue({
+              locale,
+              projectBrief: project.brief,
+              summaries,
+              // conversations,
+            }),
           },
         ],
       },
