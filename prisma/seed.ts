@@ -28,70 +28,70 @@ async function main() {
       price: 129,
       currency: "CNY",
       description: "atypica.AI Pro 会员 1 个月",
-      stripePriceId: "price_1RbZj5GU0jUFYcrN9K2QZFDN", // 测试环境 price_1RbQuJGU0jUFYcrNyw8cxtEi
+      stripePriceId: "price_1ShpScGU0jUFYcrNoHr5JuKF", // 测试环境 price_1RbQuJGU0jUFYcrNyw8cxtEi
     },
     {
       name: "PRO1MONTH",
       price: 20,
       currency: "USD",
       description: "atypica.AI Pro membership for 1 month",
-      stripePriceId: "price_1RbZj5GU0jUFYcrN9K2QZFDN", // 测试环境 price_1RbQuJGU0jUFYcrNyw8cxtEi
+      stripePriceId: "price_1ShpScGU0jUFYcrNoHr5JuKF", // 测试环境 price_1RbQuJGU0jUFYcrNyw8cxtEi
     },
     {
       name: "MAX1MONTH",
       price: 329,
       currency: "CNY",
       description: "atypica.AI Max 会员 1 个月",
-      stripePriceId: "price_1RbZkAGU0jUFYcrNGukQQlO3", // 测试环境 price_1RbZ6RGU0jUFYcrNBY6pI6kh
+      stripePriceId: "price_1ShppKGU0jUFYcrN5K9V1Meh", // 测试环境 price_1RbZ6RGU0jUFYcrNBY6pI6kh
     },
     {
       name: "MAX1MONTH",
       price: 50,
       currency: "USD",
       description: "atypica.AI Max membership for 1 month",
-      stripePriceId: "price_1RbZkAGU0jUFYcrNGukQQlO3", // 测试环境 price_1RbZ6RGU0jUFYcrNBY6pI6kh
+      stripePriceId: "price_1ShppKGU0jUFYcrN5K9V1Meh", // 测试环境 price_1RbZ6RGU0jUFYcrNBY6pI6kh
     },
     {
       name: "SUPER1MONTH",
       price: 1299,
       currency: "CNY",
       description: "atypica.AI Super 会员 1 个月",
-      stripePriceId: "price_1SSKjWGU0jUFYcrNRH1ufe1O", // 测试环境 price_1SSfJbGU0jUFYcrNsgGGqgyR
+      stripePriceId: "price_1ShprwGU0jUFYcrNFtrBYeLz", // 测试环境 price_1SSfJbGU0jUFYcrNsgGGqgyR
     },
     {
       name: "SUPER1MONTH",
       price: 200,
       currency: "USD",
       description: "atypica.AI Super membership for 1 month",
-      stripePriceId: "price_1SSKjWGU0jUFYcrNRH1ufe1O", // 测试环境 price_1SSfJbGU0jUFYcrNsgGGqgyR
+      stripePriceId: "price_1ShprwGU0jUFYcrNFtrBYeLz", // 测试环境 price_1SSfJbGU0jUFYcrNsgGGqgyR
     },
     {
       name: "TEAMSEAT1MONTH",
       price: 329,
       currency: "CNY",
       description: "atypica.AI 团队席位 1 个月",
-      stripePriceId: "price_1RvMvAGU0jUFYcrNyXESaM2d", // 测试环境 price_1RvJllGU0jUFYcrNgxki8pwe
+      stripePriceId: "price_1ShpxHGU0jUFYcrNknazRbIv", // 测试环境 price_1RvJllGU0jUFYcrNgxki8pwe
     },
     {
       name: "TEAMSEAT1MONTH",
       price: 50,
       currency: "USD",
       description: "atypica.AI team seat for 1 month",
-      stripePriceId: "price_1RvMvAGU0jUFYcrNyXESaM2d", // 测试环境 price_1RvJllGU0jUFYcrNgxki8pwe
+      stripePriceId: "price_1ShpxHGU0jUFYcrNknazRbIv", // 测试环境 price_1RvJllGU0jUFYcrNgxki8pwe
     },
     {
       name: "SUPERTEAMSEAT1MONTH",
       price: 1299,
       currency: "CNY",
       description: "atypica.AI Super 团队席位 1 个月",
-      stripePriceId: "price_1SSZoGGU0jUFYcrN3QlJrCE7", // 测试环境 price_1SSfLGGU0jUFYcrN3zzP6ZbJ
+      stripePriceId: "price_1ShpzDGU0jUFYcrNGLjo5KP4", // 测试环境 price_1SSfLGGU0jUFYcrN3zzP6ZbJ
     },
     {
       name: "SUPERTEAMSEAT1MONTH",
       price: 200,
       currency: "USD",
       description: "atypica.AI Super team seat for 1 month",
-      stripePriceId: "price_1SSZoGGU0jUFYcrN3QlJrCE7", // 测试环境 price_1SSfLGGU0jUFYcrN3zzP6ZbJ
+      stripePriceId: "price_1ShpzDGU0jUFYcrNGLjo5KP4", // 测试环境 price_1SSfLGGU0jUFYcrN3zzP6ZbJ
     },
   ];
   // Create products
