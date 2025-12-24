@@ -1,14 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { cn } from "@/lib/utils";
-import { Pause, Play } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { getExampleCases, getFeaturedCase } from "../cases";
+import { Pause, Play } from "lucide-react";
 
 // Small output format icons
 const outputIconPrompts = {
@@ -45,11 +43,8 @@ const contentFlowPrompts = {
   `,
 };
 
-export function TurnResearchSection() {
-  const t = useTranslations("CreatorsPage.TurnResearchSection");
-  const locale = useLocale() as "zh-CN" | "en-US";
-  const featuredCase = getFeaturedCase(locale);
-  const exampleCases = getExampleCases(locale);
+export function TurnResearchSectionV3() {
+  const t = useTranslations("CreatorPage.TurnResearchSection");
   const [hoveredOutput, setHoveredOutput] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<"overview" | "reuse" | "examples">("overview");
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -79,25 +74,16 @@ export function TurnResearchSection() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  useEffect(() => {
-    if (!audioRef.current) return;
-    getS3SignedCdnUrl(featuredCase.audioUrl).then((url) => {
-      if (audioRef.current) {
-        audioRef.current.src = url;
-      }
-    });
-  }, [featuredCase.audioUrl]);
-
   return (
-    <section className="py-20 md:py-28 bg-muted/30">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <section className="py-24 md:py-32 bg-white dark:bg-zinc-900">
+      <div className="container mx-auto px-4 max-w-screen-2xl">
         {/* Section Label */}
         <p className="text-sm font-medium tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-4">
-          {t("sectionLabel")}
+          {t("badge")}
         </p>
 
         {/* Title - follow global max heading size */}
-        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl tracking-tight leading-tight mb-3 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 
@@ -105,17 +91,21 @@ export function TurnResearchSection() {
         <div className="mb-5">
           <Button
             size="lg"
-            className="bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)]"
+            className={cn(
+              "rounded-full h-11 px-6 text-sm font-semibold",
+              "bg-brand-green hover:brightness-95 text-zinc-900 dark:text-white shadow-[0_0_20px_rgba(34,197,94,0.6)]",
+              "transition-all duration-200",
+            )}
             asChild
           >
-            <Link href="/insight-radio" prefetch={true}>
-              {t("ctaPodcast")}
+            <Link href="/podcasts" prefetch={true}>
+              <span className="text-zinc-900 dark:text-white">{t("ctaPodcast")}</span>
             </Link>
           </Button>
         </div>
 
         {/* Subtitle */}
-        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-10 leading-relaxed">
+        <p className="text-base md:text-lg xl:text-xl 2xl:text-2xl text-zinc-600 dark:text-zinc-400 mb-10 max-w-4xl leading-relaxed">
           {t("subtitle")}
         </p>
 
@@ -132,8 +122,8 @@ export function TurnResearchSection() {
               className={cn(
                 "px-4 py-2 rounded-full text-xs md:text-sm font-medium border transition-all duration-300",
                 activeView === tab.id
-                  ? "bg-muted text-foreground border-primary shadow-[0_0_18px_rgba(24,255,25,0.3)]"
-                  : "bg-background text-muted-foreground border-border hover:border-primary/70 hover:bg-muted hover:text-foreground",
+                  ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border-brand-green shadow-[0_0_18px_rgba(24,255,25,0.3)]"
+                  : "bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-brand-green/70 hover:bg-zinc-900 hover:text-white",
               )}
             >
               {tab.label}
@@ -144,20 +134,20 @@ export function TurnResearchSection() {
         {/* OVERVIEW TAB: 1→10+ block + outputs + ideal for */}
         {activeView === "overview" && (
           <>
-            {/* Transformation Flow with Interactive Cards */}
+              {/* Transformation Flow with Interactive Cards */}
             <div className="mb-16">
               {/* Bold transformation statement */}
-              <div className="bg-linear-to-r from-red-500 via-blue-500 to-amber-400 p-px rounded-2xl mb-8 max-w-2xl mx-auto">
-                <div className="bg-background px-6 py-5 rounded-xl">
-                  <div className="flex items-center justify-center gap-4 flex-wrap md:flex-nowrap">
-                    <span className="text-4xl md:text-5xl font-bold text-red-500">1</span>
-                    <span className="text-3xl text-zinc-400">→</span>
-                    <span className="text-4xl md:text-5xl font-bold text-blue-400">10+</span>
+              <div className="bg-gradient-to-r from-red-500 via-blue-500 to-amber-400 p-[1px] rounded-2xl mb-8 max-w-4xl mx-auto">
+                <div className="bg-white dark:bg-zinc-900 px-10 py-8 rounded-xl">
+                  <div className="flex items-center justify-center gap-8 flex-wrap md:flex-nowrap">
+                    <span className="text-5xl md:text-7xl font-bold text-red-500">1</span>
+                    <span className="text-4xl text-zinc-400">→</span>
+                    <span className="text-5xl md:text-7xl font-bold text-blue-400">10+</span>
                     <div className="ml-4">
                       <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                         Research
                       </p>
-                      <p className="text-lg md:text-xl font-bold text-zinc-900 dark:text-white">
+                      <p className="text-xl md:text-3xl font-bold text-zinc-900 dark:text-white">
                         Multiple Outputs
                       </p>
                     </div>
@@ -175,15 +165,11 @@ export function TurnResearchSection() {
                 <div
                   className={cn(
                     "relative p-6 rounded-xl border transition-all duration-300 cursor-default",
-                    "bg-linear-to-br from-red-50 to-red-100/30 dark:from-red-950/20 dark:to-red-900/10",
+                    "bg-gradient-to-br from-red-50 to-red-100/30 dark:from-red-950/20 dark:to-red-900/10",
                     "border-red-200 dark:border-red-800",
                     "hover:shadow-2xl hover:-translate-y-2 hover:-rotate-1 hover:scale-[1.02]",
                     hoveredOutput === "article" && "ring-2 ring-red-400 dark:ring-red-600",
                   )}
-                  style={{
-                    boxShadow:
-                      hoveredOutput === "article" ? "0 0 32px rgba(248,113,113,0.5)" : undefined,
-                  }}
                   onMouseEnter={() => setHoveredOutput("article")}
                   onMouseLeave={() => setHoveredOutput(null)}
                 >
@@ -191,13 +177,14 @@ export function TurnResearchSection() {
                     {/* Small icon image */}
                     <div
                       className={cn(
-                        "relative w-16 h-16 rounded-lg overflow-hidden border border-red-300 dark:border-red-700 shrink-0",
+                        "relative w-16 h-16 rounded-lg overflow-hidden border border-red-300 dark:border-red-700 flex-shrink-0",
                         "bg-white",
                         "transition-all duration-300",
                         hoveredOutput === "article" ? "scale-110" : "scale-100",
                       )}
                     >
                       <Image
+                        loader={({ src }) => src}
                         src={`/api/imagegen/dev/${encodeURIComponent(outputIconPrompts.article)}?ratio=square`}
                         alt="Article output"
                         fill
@@ -208,7 +195,7 @@ export function TurnResearchSection() {
                     <div className="flex-1">
                       <span className="text-3xl mb-2 block">📝</span>
                       <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                        {t("outputs.detailedScript")}
+                        {t("outputs.output1")}
                       </p>
                     </div>
                   </div>
@@ -218,15 +205,11 @@ export function TurnResearchSection() {
                 <div
                   className={cn(
                     "relative p-6 rounded-xl border transition-all duration-300 cursor-default",
-                    "bg-linear-to-br from-blue-50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10",
+                    "bg-gradient-to-br from-blue-50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10",
                     "border-blue-200 dark:border-blue-800",
                     "hover:shadow-2xl hover:-translate-y-2 hover:-rotate-1 hover:scale-[1.02]",
                     hoveredOutput === "podcast" && "ring-2 ring-blue-400 dark:ring-blue-600",
                   )}
-                  style={{
-                    boxShadow:
-                      hoveredOutput === "podcast" ? "0 0 32px rgba(59,130,246,0.5)" : undefined,
-                  }}
                   onMouseEnter={() => setHoveredOutput("podcast")}
                   onMouseLeave={() => setHoveredOutput(null)}
                 >
@@ -234,13 +217,14 @@ export function TurnResearchSection() {
                     {/* Small icon image */}
                     <div
                       className={cn(
-                        "relative w-16 h-16 rounded-lg overflow-hidden border border-blue-300 dark:border-blue-700 shrink-0",
+                        "relative w-16 h-16 rounded-lg overflow-hidden border border-blue-300 dark:border-blue-700 flex-shrink-0",
                         "bg-white",
                         "transition-all duration-300",
                         hoveredOutput === "podcast" ? "scale-110" : "scale-100",
                       )}
                     >
                       <Image
+                        loader={({ src }) => src}
                         src={`/api/imagegen/dev/${encodeURIComponent(outputIconPrompts.podcast)}?ratio=square`}
                         alt="Podcast output"
                         fill
@@ -251,7 +235,7 @@ export function TurnResearchSection() {
                     <div className="flex-1">
                       <span className="text-3xl mb-2 block">🎙️</span>
                       <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                        {t("outputs.naturalAudio")}
+                        {t("outputs.output2")}
                       </p>
                     </div>
                   </div>
@@ -260,20 +244,21 @@ export function TurnResearchSection() {
             </div>
 
             {/* Featured real podcast episode from Atypica */}
-            <div className="mb-10 mt-4 rounded-2xl border border-border bg-card p-4 md:p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-2">
-                {t("featuredCaseLabel")}
+            <div className="mb-10 mt-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 md:p-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-green mb-2">
+                Real AI podcast example
               </p>
               <h3 className="text-sm md:text-base font-semibold text-zinc-900 dark:text-white mb-1">
-                {featuredCase.title}
+                When Giants Fail: Why Meta Blew Its AI Lead
               </h3>
               <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 mb-3">
-                {featuredCase.description}
+                Generated from an Atypica research workflow — turn one deep dive into an episode your audience actually wants to hear.
               </p>
 
               {/* Compact podcast player styled like Insight Radio sticky player */}
               <audio
                 ref={audioRef}
+                src="/_public/creator-images/When%20Giants%20Fail_%20Why%20Meta%20Blew%20Its%20AI%20Lead.mp3"
                 preload="metadata"
                 onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                 onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
@@ -289,21 +274,26 @@ export function TurnResearchSection() {
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-medium line-clamp-1 text-zinc-900 dark:text-zinc-50">
-                      {featuredCase.title}
+                      When Giants Fail: Why Meta Blew Its AI Lead
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-[10px]">
-                    {featuredCase.additionalLinks.map((link, index) => (
-                      <Link
-                        key={index}
-                        href={link.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline"
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
+                    <Link
+                      href="https://atypica.ai/artifacts/podcast/eqxbaF7Yp7qKgTFN/share?utm_source=podcast&utm_medium=share"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline"
+                    >
+                      View Study
+                    </Link>
+                    <Link
+                      href="/insight-radio"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-zinc-500 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white underline"
+                    >
+                      More Insight Radio
+                    </Link>
                   </div>
                 </div>
 
@@ -311,7 +301,7 @@ export function TurnResearchSection() {
                 <div className="mb-3">
                   <div className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-primary transition-all duration-150"
+                      className="h-full rounded-full bg-brand-green transition-all duration-150"
                       style={{
                         width:
                           duration && isFinite(duration) && duration > 0
@@ -328,12 +318,13 @@ export function TurnResearchSection() {
 
                 {/* Controls row */}
                 <div className="flex items-center justify-center gap-6 text-[11px] text-zinc-500 dark:text-zinc-300">
+                  <span className="text-xs">1x</span>
                   <button
                     type="button"
                     onClick={toggleAudio}
                     className={cn(
                       "h-10 w-10 rounded-full flex items-center justify-center",
-                      "bg-primary text-white shadow-[0_0_18px_rgba(34,197,94,0.7)]",
+                      "bg-brand-green text-zinc-900 shadow-[0_0_18px_rgba(34,197,94,0.7)]",
                       "hover:brightness-95 transition-transform duration-150",
                     )}
                   >
@@ -354,27 +345,27 @@ export function TurnResearchSection() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("idealFor.businessMarketing")}
+                    {t("idealFor.type1")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("idealFor.techAIExplainers")}
+                    {t("idealFor.type2")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("idealFor.consumerTrends")}
+                    {t("idealFor.type3")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full shrink-0" />
+                  <span className="w-1.5 h-1.5 bg-brand-green rounded-full flex-shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                    {t("idealFor.careerSelfImprovement")}
+                    {t("idealFor.type4")}
                   </span>
                 </div>
               </div>
@@ -394,9 +385,9 @@ export function TurnResearchSection() {
               <div className="mb-10 relative w-full">
                 <div
                   className={cn(
-                    "relative aspect-16/3 rounded-xl overflow-hidden",
-                    "border border-border",
-                    "bg-card shadow-lg",
+                    "relative aspect-[21/5] rounded-xl overflow-hidden",
+                    "border border-zinc-200 dark:border-zinc-800",
+                    "bg-white dark:bg-zinc-900 shadow-lg",
                     "hover:shadow-xl hover:scale-[1.01] transition-all duration-300",
                   )}
                   style={{
@@ -404,11 +395,12 @@ export function TurnResearchSection() {
                   }}
                 >
                   <Image
+                    loader={({ src }) => src}
                     src={`/api/imagegen/dev/${encodeURIComponent(contentFlowPrompts.rawMaterial)}?ratio=landscape`}
                     alt="Podcast audio as raw material for content creation"
                     fill
                     className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 90vw"
+                    sizes="(max-width: 1024px) 100vw, 100vw"
                   />
                   {/* Subtle animated glow overlay on hover */}
                   <div className="pointer-events-none absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300">
@@ -424,9 +416,10 @@ export function TurnResearchSection() {
               </div>
 
               {/* Content Flow Visualization */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-10">
-                <div className="relative aspect-4/3 rounded-xl overflow-hidden border border-red-200 bg-white dark:border-red-800 dark:bg-zinc-900 shadow-lg max-w-md mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+                <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-red-200 bg-white dark:border-red-800 dark:bg-zinc-900 shadow-lg max-w-xl mx-auto w-full">
                   <Image
+                    loader={({ src }) => src}
                     src={`/api/imagegen/dev/${encodeURIComponent(contentFlowPrompts.multiFormat)}?ratio=landscape`}
                     alt="Multi-format content transformation"
                     fill
@@ -440,48 +433,51 @@ export function TurnResearchSection() {
                 </div>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">→</span>
+                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">
+                      →
+                    </span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.shortsVoiceover")}
+                      {t("reuseOptions.option1")}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">→</span>
+                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">
+                      →
+                    </span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.socialQuotes")}
+                      {t("reuseOptions.option2")}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">→</span>
+                    <span className="text-red-500 dark:text-red-400 font-semibold text-lg">
+                      →
+                    </span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.podcastDistribution")}
+                      {t("reuseOptions.option3")}
                     </span>
                   </li>
                 </ul>
               </div>
 
               {/* Social Strategy Visualization */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <ul className="space-y-4 lg:order-first">
                   <li className="flex items-start gap-3">
-                    <span className="text-amber-500 dark:text-amber-400 font-semibold text-lg">
-                      →
-                    </span>
+                    <span className="text-amber-500 dark:text-amber-400 font-semibold text-lg">→</span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.newsletterBlog")}
+                      {t("reuseOptions.option4")}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-amber-500 dark:text-amber-400 font-semibold text-lg">
-                      →
-                    </span>
+                    <span className="text-amber-500 dark:text-amber-400 font-semibold text-lg">→</span>
                     <span className="text-base text-zinc-700 dark:text-zinc-300">
-                      {t("reuseOptions.webinarTalkingPoints")}
+                      {t("reuseOptions.option5")}
                     </span>
                   </li>
                 </ul>
-                <div className="relative aspect-4/3 rounded-xl overflow-hidden border border-amber-200 bg-white dark:border-amber-800 dark:bg-zinc-900 shadow-lg lg:order-last order-first max-w-md mx-auto">
+                <div className="relative aspect-[4/3] rounded-xl overflow-hidden border border-amber-200 bg-white dark:border-amber-800 dark:bg-zinc-900 shadow-lg lg:order-last order-first max-w-xl mx-auto w-full">
                   <Image
+                    loader={({ src }) => src}
                     src={`/api/imagegen/dev/${encodeURIComponent(contentFlowPrompts.socialStrategy)}?ratio=landscape`}
                     alt="Social media strategy calendar"
                     fill
@@ -508,53 +504,87 @@ export function TurnResearchSection() {
         {activeView === "examples" && (
           <div className="mb-8">
             <h3 className="text-xl md:text-2xl font-bold mb-4 text-zinc-900 dark:text-white">
-              {t("realExamplesTitle")}
+              {t("realExamples.title")}
             </h3>
-            <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 mb-8">
-              {t("realExamplesDescription")}
+            <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 mb-8 max-w-3xl">
+              {t("realExamples.description")}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {exampleCases.map((example, index) => {
-                const bgColors = [
-                  "from-zinc-900 via-zinc-800 to-zinc-900",
-                  "from-blue-900 via-blue-800 to-blue-900",
-                  "from-emerald-900 via-emerald-800 to-emerald-900",
-                ];
-                const emojis = ["🎧", "🎙️", "▶"];
+              {/* Example 1 */}
+              <Link
+                href="https://atypica.ai/artifacts/podcast/eqxbaF7Yp7qKgTFN/share?utm_source=podcast&utm_medium=share"
+                target="_blank"
+                rel="noreferrer"
+                className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 hover:-translate-y-1 transition-transform duration-300"
+              >
+                <div className="h-24 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 flex items-center justify-between px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-md bg-brand-green/10 flex items-center justify-center text-brand-green text-lg">
+                      🎧
+                    </div>
+                    <p className="text-[11px] md:text-xs text-white line-clamp-2">
+                      别再用错误标准选AI浏览器
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-zinc-300 ml-2">Open</span>
+                </div>
+                <div className="p-4">
+                  <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
+                    {t("realExamples.example1")}
+                  </p>
+                </div>
+              </Link>
 
-                return (
-                  <Link
-                    key={example.token}
-                    href={example.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="border border-border rounded-xl overflow-hidden bg-card hover:-translate-y-1 transition-transform duration-300"
-                  >
-                    <div
-                      className={cn(
-                        "h-24 bg-linear-to-r flex items-center justify-between px-4",
-                        bgColors[index % bgColors.length],
-                      )}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-primary text-lg">
-                          {emojis[index % emojis.length]}
-                        </div>
-                        <p className="text-[11px] md:text-xs text-white line-clamp-2">
-                          {example.title}
-                        </p>
-                      </div>
-                      <span className="text-[10px] text-zinc-200 ml-2">{t("openLink")}</span>
+              {/* Example 2 */}
+              <Link
+                href="https://atypica.musedam.cc/artifacts/podcast/TpfaXsrgesAiYy9j/share?utm_source=podcast&utm_medium=share"
+                target="_blank"
+                rel="noreferrer"
+                className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 hover:-translate-y-1 transition-transform duration-300"
+              >
+                <div className="h-24 bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 flex items-center justify-between px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-md bg-white/10 flex items-center justify-center text-white text-lg">
+                      🎙️
                     </div>
-                    <div className="p-4">
-                      <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
-                        {example.description}
-                      </p>
+                    <p className="text-[11px] md:text-xs text-white line-clamp-2">
+                      Insight Radio episode
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-zinc-200 ml-2">Open</span>
+                </div>
+                <div className="p-4">
+                  <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
+                    {t("realExamples.example2")}
+                  </p>
+                </div>
+              </Link>
+
+              {/* Example 3 */}
+              <Link
+                href="https://atypica.musedam.cc/artifacts/podcast/epKVADrAwJieCQGd/share?utm_source=podcast&utm_medium=share"
+                target="_blank"
+                rel="noreferrer"
+                className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 hover:-translate-y-1 transition-transform duration-300"
+              >
+                <div className="h-24 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-900 flex items-center justify-between px-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-md bg-brand-green/20 flex items-center justify-center text-brand-green text-lg">
+                      ▶
                     </div>
-                  </Link>
-                );
-              })}
+                    <p className="text-[11px] md:text-xs text-white line-clamp-2">
+                      Career Resilience in an Uncertain Economy
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-zinc-200 ml-2">Open</span>
+                </div>
+                <div className="p-4">
+                  <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-3">
+                    {t("realExamples.example3")}
+                  </p>
+                </div>
+              </Link>
             </div>
           </div>
         )}

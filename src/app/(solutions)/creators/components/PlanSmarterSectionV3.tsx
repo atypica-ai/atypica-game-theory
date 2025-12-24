@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 // Medium-sized infographic images
 const mediumImagePrompts = {
@@ -35,46 +35,28 @@ const mediumImagePrompts = {
   `,
 };
 
-export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
-  const t = useTranslations("CreatorsPage.PlanSmarterSection");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function PlanSmarterSectionV3() {
+  const t = useTranslations("CreatorPage.PlanSmarterSection");
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<
-    "contentStrategyPlanning" | "creatorBenchmarking" | "personalizedIdeaLibrary"
-  >("contentStrategyPlanning");
+  const [activeTab, setActiveTab] = useState<"useCase1" | "useCase2" | "useCase3">("useCase1");
 
   // Quick-start topics built from existing examples
   const quickStartTopics: { id: string; label: string }[] = [
-    { id: "topic-1", label: t("contentStrategyPlanning.exampleTikTokAI") },
-    { id: "topic-2", label: t("contentStrategyPlanning.exampleFinanceContent") },
-    { id: "topic-3", label: t("personalizedIdeaLibrary.exampleVideoIdeas") },
-    { id: "topic-4", label: t("personalizedIdeaLibrary.exampleContentCalendar") },
+    { id: "topic-1", label: t("useCase1.example1") },
+    { id: "topic-2", label: t("useCase1.example2") },
+    { id: "topic-3", label: t("useCase3.example1") },
+    { id: "topic-4", label: t("useCase3.example2") },
   ];
 
   const featureConfigs: {
-    id: "contentStrategyPlanning" | "creatorBenchmarking" | "personalizedIdeaLibrary";
+    id: "useCase1" | "useCase2" | "useCase3";
     number: string;
     accent: "red" | "blue" | "yellow";
     mediumPromptKey: keyof typeof mediumImagePrompts;
   }[] = [
-    {
-      id: "contentStrategyPlanning",
-      number: "01",
-      accent: "red",
-      mediumPromptKey: "planningWorkflow",
-    },
-    {
-      id: "creatorBenchmarking",
-      number: "02",
-      accent: "blue",
-      mediumPromptKey: "audienceInsights",
-    },
-    {
-      id: "personalizedIdeaLibrary",
-      number: "03",
-      accent: "yellow",
-      mediumPromptKey: "analyticsGrowth",
-    },
+    { id: "useCase1", number: "01", accent: "red", mediumPromptKey: "planningWorkflow" },
+    { id: "useCase2", number: "02", accent: "blue", mediumPromptKey: "audienceInsights" },
+    { id: "useCase3", number: "03", accent: "yellow", mediumPromptKey: "analyticsGrowth" },
   ];
 
   const getAccentClasses = (accent: "red" | "blue" | "yellow") => {
@@ -115,15 +97,52 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
   }, [useCase1Hovered]);
 
   return (
-    <section className="py-20 md:py-28 relative overflow-hidden bg-zinc-50/50 dark:bg-zinc-900/50">
-      <div className="container mx-auto px-4 max-w-6xl relative z-10">
+    <section className="py-32 md:py-40 bg-white dark:bg-zinc-950 relative overflow-hidden">
+      {/* 轻量 game-like 背景网格 */}
+      <div
+        className="absolute inset-0 opacity-40 pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(24, 255, 25, 0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(24, 255, 25, 0.08) 1px, transparent 1px)
+          `,
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      {/* 粒子轨道动效（参考 /atypica-for-creator） */}
+      <div className="absolute top-1/4 right-8 w-24 h-24 opacity-40 pointer-events-none">
+        <div
+          className="absolute top-1/2 left-1/2 w-3 h-3 rounded-full"
+          style={{
+            background: "#18FF19",
+            transform: "translate(-50%, -50%)",
+            boxShadow: "0 0 20px rgba(24, 255, 25, 0.6)",
+            animation: "glow-pulse 2s ease-in-out infinite",
+          }}
+        />
+        {[0, 1].map((i) => (
+          <div
+            key={i}
+            className="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full"
+            style={{
+              background: "#18FF19",
+              transform: "translate(-50%, -50%)",
+              animation: `orbit ${3 + i * 0.5}s linear infinite`,
+              animationDelay: `${i * 0.3}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="container mx-auto px-4 max-w-screen-2xl relative z-10">
         {/* Section Label */}
         <p className="text-xs font-medium tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-4">
-          {t("sectionLabel")}
+          {t("badge")}
         </p>
 
         {/* Title */}
-        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight mb-6 text-zinc-900 dark:text-white">
+        <h2 className="font-EuclidCircularA font-bold text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl tracking-tight leading-tight mb-3 text-zinc-900 dark:text-white">
           {t("title")}
         </h2>
 
@@ -131,17 +150,21 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
         <div className="mb-5">
           <Button
             size="lg"
-            className="bg-primary text-primary-foreground rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)]"
+            className={cn(
+              "rounded-full h-11 px-6 text-sm font-semibold",
+              "bg-brand-green hover:brightness-95 text-zinc-900 dark:text-white shadow-[0_0_20px_rgba(34,197,94,0.6)]",
+              "transition-all duration-200",
+            )}
             asChild
           >
             <Link href="/newstudy" prefetch={true}>
-              {t("ctaResearch")}
+              <span className="text-zinc-900 dark:text-white">{t("ctaResearch")}</span>
             </Link>
           </Button>
         </div>
 
         {/* Subtitle */}
-        <p className="text-base md:text-lg text-zinc-600 dark:text-zinc-400 mb-6 leading-relaxed">
+        <p className="text-base md:text-lg xl:text-xl 2xl:text-2xl text-zinc-600 dark:text-zinc-400 mb-6 max-w-4xl leading-relaxed">
           {t("subtitle")}
         </p>
 
@@ -154,9 +177,9 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
             {quickStartTopics.map((topic) => (
               <Link
                 key={topic.id}
-                href={`/newstudy?brief=${encodeURIComponent(topic.label)}`}
+                href={`/newstudy?topic=${encodeURIComponent(topic.label)}`}
                 prefetch={true}
-                className={cn(
+            className={cn(
                   "inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs md:text-sm",
                   "border border-zinc-200 bg-white text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950/80 dark:text-zinc-200",
                   "hover:border-[#18FF19] hover:text-zinc-900 dark:hover:text-white",
@@ -170,114 +193,110 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
           </div>
         </div>
 
-        {/* Tab Navigation - 改进后的 tab 设计 */}
-        <div className="mt-16 mb-12">
-          {/* Tab 容器：典型的 tab bar 外观 */}
-          <div className="flex justify-center">
-            <div className="inline-flex bg-muted rounded-lg p-1 gap-1">
-              {featureConfigs.map((feature) => {
-                const isActive = activeTab === feature.id;
-                return (
-                  <button
-                    key={feature.id}
-                    onClick={() => setActiveTab(feature.id)}
-                    onMouseEnter={() => setHoveredCard(feature.id)}
-                    onMouseLeave={() => setHoveredCard(null)}
-                    className={cn(
-                      "px-4 py-2.5 rounded-md font-medium text-sm transition-all duration-200",
-                      "whitespace-nowrap", // 防止文本换行
-                      isActive
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {t(`${feature.id}.title`)}
-                  </button>
-                );
-              })}
+        {/* Tab Navigation - game-like pills */}
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+          {featureConfigs.map((feature) => {
+            const isActive = activeTab === feature.id;
+
+            return (
+              <button
+                key={feature.id}
+                onClick={() => setActiveTab(feature.id)}
+                onMouseEnter={() => setHoveredCard(feature.id)}
+                onMouseLeave={() => setHoveredCard(null)}
+            className={cn(
+                  "px-6 py-3 rounded-lg font-medium transition-all duration-300 border text-sm md:text-base",
+                  "hover:scale-105 active:scale-95 relative",
+                  isActive
+                    ? "bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-lg"
+                    : "bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900",
+                )}
+                style={{
+                  borderColor:
+                    feature.accent === "red"
+                      ? "#f97373"
+                      : feature.accent === "blue"
+                        ? "#3b82f6"
+                        : "#facc15",
+                  boxShadow: isActive
+                    ? feature.accent === "red"
+                      ? "0 0 20px rgba(248, 115, 115, 0.55)"
+                      : feature.accent === "blue"
+                        ? "0 0 20px rgba(59, 130, 246, 0.55)"
+                        : "0 0 20px rgba(250, 204, 21, 0.6)"
+                    : hoveredCard === feature.id
+                      ? "0 0 10px rgba(24, 255, 25, 0.2)"
+                      : undefined,
+                }}
+              >
+                {t(`${feature.id}.title`)}
+              </button>
+            );
+          })}
             </div>
-          </div>
-        </div>
 
         {/* Active feature content */}
         {featureConfigs.map((feature) => {
           if (activeTab !== feature.id) return null;
           const accentClasses = getAccentClasses(feature.accent);
 
-          const glowColors = {
-            red: "0 0 40px rgba(248,113,113,0.4)",
-            blue: "0 0 40px rgba(59,130,246,0.4)",
-            yellow: "0 0 40px rgba(250,204,21,0.4)",
-          };
-
           return (
-            <div key={feature.id} className="max-w-6xl mx-auto animate-scale-in">
-              <div
-                className="bg-card/70 rounded-3xl p-8 md:p-10 lg:p-12 border border-border transition-all duration-300 hover:-translate-y-1"
-                style={{
-                  boxShadow: "0 0 0 rgba(0,0,0,0)",
-                  transition: "all 0.3s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = glowColors[feature.accent];
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "0 0 0 rgba(0,0,0,0)";
-                }}
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+            <div key={feature.id} className="max-w-screen-2xl mx-auto animate-scale-in">
+              <div className="bg-white dark:bg-zinc-900/70 rounded-3xl p-8 md:p-10 lg:p-20 border border-zinc-200 dark:border-zinc-800 hover:border-[#18FF19]/40 transition-all duration-300 hover:shadow-[0_0_40px_rgba(24,255,25,0.25)]">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                   {/* Left: Text content */}
                   <div className="animate-slide-in-left">
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className={cn("text-4xl font-bold", accentClasses.number)}>
-                        {feature.number}
-                      </span>
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className={cn("text-4xl font-bold", accentClasses.number)}>
+                      {feature.number}
+                    </span>
+            <div
+              className={cn(
+                        "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]",
+                        accentClasses.badgeBg,
+                        accentClasses.badgeText,
+                      )}
+                    >
+                      {t("badge")}
                     </div>
+            </div>
 
                     <h3 className="text-2xl md:text-3xl font-bold mb-4 text-zinc-900 dark:text-white">
                       {t(`${feature.id}.title`)}
-                    </h3>
+            </h3>
                     <p className="text-sm md:text-base text-zinc-700 dark:text-zinc-300 mb-6 leading-relaxed">
                       {t(`${feature.id}.description`)}
-                    </p>
+            </p>
 
                     {/* Use-case specific body, 复用现有文案 */}
-                    {feature.id === "creatorBenchmarking" ? (
+                    {feature.id === "useCase2" ? (
                       <ul className="space-y-2 text-xs md:text-sm text-zinc-700 dark:text-zinc-300">
-                        <li className="flex items-start gap-2">
-                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                          <span>{t("creatorBenchmarking.topCreatorsPosts")}</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                          <span>{t("creatorBenchmarking.contentStructure")}</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                          <span>{t("creatorBenchmarking.oversaturatedTopics")}</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                          <span>{t("creatorBenchmarking.opportunityGaps")}</span>
-                        </li>
-                      </ul>
+              <li className="flex items-start gap-2">
+                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                <span>{t("useCase2.point1")}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                <span>{t("useCase2.point2")}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                <span>{t("useCase2.point3")}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                          <span className="mt-1 w-1 h-1 rounded-full bg-blue-400 flex-shrink-0" />
+                <span>{t("useCase2.point4")}</span>
+              </li>
+            </ul>
                     ) : (
                       <div className="space-y-3 text-xs md:text-sm text-zinc-700 dark:text-zinc-300">
                         <p className="italic">
-                          &ldquo;
-                          {feature.id === "contentStrategyPlanning"
-                            ? t("contentStrategyPlanning.exampleTikTokAI")
-                            : t("personalizedIdeaLibrary.exampleVideoIdeas")}
-                          &rdquo;
+                          &ldquo;{t(`${feature.id}.example1`)}&rdquo;
                         </p>
                         <p className="italic">
-                          &ldquo;
-                          {feature.id === "contentStrategyPlanning"
-                            ? t("contentStrategyPlanning.exampleFinanceContent")
-                            : t("personalizedIdeaLibrary.exampleContentCalendar")}
-                          &rdquo;
+                          &ldquo;{t(`${feature.id}.example2`)}&rdquo;
                         </p>
-                      </div>
+          </div>
                     )}
 
                     <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800">
@@ -285,16 +304,16 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
                         Output
                       </p>
                       <p className="text-xs md:text-sm text-zinc-700 dark:text-zinc-200">
-                        {feature.id === "creatorBenchmarking"
-                          ? t("creatorBenchmarking.opportunityGaps")
+                        {feature.id === "useCase2"
+                          ? t("useCase2.point4")
                           : t(`${feature.id}.output`)}
                       </p>
                     </div>
-                  </div>
+            </div>
 
                   {/* Right: Image generated via Gemini Image */}
-                  <div className="relative animate-slide-in-right w-full max-w-md mx-auto">
-                    {feature.id === "contentStrategyPlanning" ? (
+                  <div className="relative animate-slide-in-right w-full max-w-xl mx-auto">
+                    {feature.id === "useCase1" ? (
                       <div
                         className="relative"
                         onMouseEnter={() => setUseCase1Hovered(true)}
@@ -303,12 +322,13 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
                         <div
                           className={cn(
                             "relative aspect-square rounded-2xl shadow-2xl overflow-hidden",
-                            "bg-card flex items-center justify-center",
-                            "hover-scale animate-float border border-border",
+                            "bg-white dark:bg-zinc-900 flex items-center justify-center",
+                            "hover-scale animate-float border border-zinc-200 dark:border-zinc-800",
                           )}
                         >
                           {useCase1Slide === 0 ? (
                             <Image
+                              loader={({ src }) => src}
                               src={`/api/imagegen/dev/${encodeURIComponent(
                                 mediumImagePrompts[feature.mediumPromptKey],
                               )}?ratio=square`}
@@ -319,7 +339,7 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
                             />
                           ) : (
                             <Image
-                              src={`${s3Origin}atypica/public/creators-ai-research-report-251219.jpg`}
+                              src="/_public/creator-images/ai research_report.jpg"
                               alt="AI research report real example"
                               fill
                               className="object-cover"
@@ -340,11 +360,7 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
                                   ? "bg-zinc-900 dark:bg-white"
                                   : "bg-transparent",
                               )}
-                              aria-label={
-                                idx === 0
-                                  ? "Show planning workflow infographic"
-                                  : "Show AI research report example"
-                              }
+                              aria-label={idx === 0 ? "Show planning workflow infographic" : "Show AI research report example"}
                             />
                           ))}
                         </div>
@@ -353,11 +369,12 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
                       <div
                         className={cn(
                           "relative aspect-square rounded-2xl shadow-2xl overflow-hidden",
-                          "bg-card flex items-center justify-center",
-                          "hover-scale animate-float border border-border",
+                          "bg-white dark:bg-zinc-900 flex items-center justify-center",
+                          "hover-scale animate-float border border-zinc-200 dark:border-zinc-800",
                         )}
                       >
                         <Image
+                          loader={({ src }) => src}
                           src={`/api/imagegen/dev/${encodeURIComponent(
                             mediumImagePrompts[feature.mediumPromptKey],
                           )}?ratio=square`}
@@ -374,6 +391,7 @@ export function PlanSmarterSection({ s3Origin }: { s3Origin: string }) {
             </div>
           );
         })}
+
       </div>
     </section>
   );
