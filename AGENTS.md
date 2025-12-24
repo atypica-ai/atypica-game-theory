@@ -8,7 +8,7 @@ This document helps contributors make effective, consistent changes to atypica-l
 - `src/ai/`: LLM tools, message utilities, agent logic.
 - `src/components/`, `src/hooks/`, `src/lib/`: UI, hooks, shared utilities and configs.
 - `src/prisma/`: Prisma client wrapper (`prisma.ts`); do not edit generated client in `src/prisma/client/`.
-- `prisma/`: schema and seeds (`prisma/seed.js`).
+- `prisma/`: schema and seeds (`prisma/seed.ts`).
 - `__tests__/`: Vitest unit/integration tests.
 - `scripts/`: maintenance tools (`admintool.ts`, `analytics-report.ts`).
 - `docs/`, `public/`: documentation and static assets.

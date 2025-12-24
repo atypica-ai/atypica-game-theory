@@ -1,8 +1,12 @@
-const { PrismaClient } = require("../src/prisma/client");
+import "../scripts/mock-server-only";
 
-const prisma = new PrismaClient();
+import { loadEnvConfig } from "@next/env";
 
 async function main() {
+  loadEnvConfig(process.cwd());
+
+  const { prisma } = require("@/prisma/prisma");
+
   console.log("Starting to seed products...");
   const products = [
     {
@@ -10,14 +14,14 @@ async function main() {
       price: 100,
       currency: "CNY",
       description: "atypica.AI 充值 100 万 Tokens",
-      stripePriceId: "price_1RbZh6GU0jUFYcrNqYSrWXfG", // 测试环境 price_1RbZ7CGU0jUFYcrNOrdZfZkP
+      stripePriceId: "price_1ShoCHGU0jUFYcrNhdxLaIHw", // 测试环境 price_1Sho4vGU0jUFYcrN9ZlHcF2a
     },
     {
       name: "TOKENS1M",
       price: 16,
       currency: "USD",
       description: "atypica.AI recharge 1 million Tokens",
-      stripePriceId: "price_1RbZh6GU0jUFYcrNqYSrWXfG", // 测试环境 price_1RbZ7CGU0jUFYcrNOrdZfZkP
+      stripePriceId: "price_1ShoCHGU0jUFYcrNhdxLaIHw", // 测试环境 price_1Sho4vGU0jUFYcrN9ZlHcF2a
     },
     {
       name: "PRO1MONTH",
@@ -117,5 +121,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    // await prisma.$disconnect();
   });

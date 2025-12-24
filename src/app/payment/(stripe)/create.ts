@@ -84,10 +84,13 @@ export async function createSubscriptionStripeSession({
     metadata,
     mode: "subscription",
     subscription_data: { metadata },
+    // 个人订阅支持关联自动的优惠券
     discounts: await availableCoupons({
       userId,
       userProfileExtra,
     }),
+    // 个人订阅支持用户自己 REDEEM 优惠券
+    allow_promotion_codes: true,
     line_items: [
       {
         // price_data: priceData,
@@ -180,6 +183,8 @@ export async function createPaymentStripeSession({
       currency === "CNY" && amountInCents * quantity <= 800 * 100 ? ["card", "alipay"] : ["card"],
     metadata,
     mode: "payment",
+    discounts: undefined, // 充值目前不支持折扣
+    allow_promotion_codes: false, // 充值目前不支持 REDEEM 优惠券
     invoice_creation: {
       enabled: true,
       invoice_data: { metadata },
@@ -291,10 +296,13 @@ export async function createTeamSubscriptionStripeSession({
     metadata,
     mode: "subscription",
     subscription_data: { metadata },
+    // 团队订阅支持关联自动的优惠券
     discounts: await availableCoupons({
       userId: userId, // 不是 personnalUser, 而是当前用户
       userProfileExtra: personalUserProfileExtra,
     }),
+    // 团队订阅支持用户自己 REDEEM 优惠券
+    allow_promotion_codes: true,
     line_items: [
       {
         // price_data: priceData,
