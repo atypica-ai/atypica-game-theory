@@ -3,27 +3,33 @@ import "server-only";
 import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { PaymentMethod, ProductName, StripeMetadata } from "@/app/payment/data";
 import { trackEventServerSide } from "@/lib/analytics/server";
-import { PaymentRecord, PaymentStatus, Product } from "@/prisma/client";
+import { rootLogger } from "@/lib/logging";
+import { PaymentRecord, PaymentStatus, Product, UserProfileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { InputJsonValue } from "@prisma/client/runtime/client";
 import { after } from "next/server";
 import Stripe from "stripe";
 
 export async function requirePersonalUser(userId: number) {
-  const { tokensAccount, email, ...user } = await prisma.user.findUniqueOrThrow({
+  const { tokensAccount, profile, email, ...user } = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    include: { tokensAccount: true },
+    include: {
+      tokensAccount: true,
+      profile: true,
+    },
   });
   if (user.personalUserId || user.teamIdAsMember) {
     throw new Error("Only personal users can purchase");
   }
   if (!email) throw new Error("User must have an email");
   if (!tokensAccount) throw new Error("User must have tokens");
+  if (!profile) throw new Error("User must have a profile");
   return {
     user: {
-      ...user,
+      id: user.id,
       email,
     },
+    userProfileExtra: profile.extra as UserProfileExtra,
     monthlyBalance: tokensAccount.monthlyBalance,
   };
 }
@@ -34,14 +40,18 @@ export async function requireTeamlUser(userId: number) {
     include: {
       // tokens: true,
       teamAsMember: true,
-      personalUser: true,
+      personalUser: {
+        include: {
+          profile: true,
+        },
+      },
     },
   });
   if (!user.personalUserId || !user.teamIdAsMember) {
     throw new Error("Only team users can purchase");
   }
-  if (!personalUser || !personalUser.email) {
-    throw new Error("User must be linked to a personal user with an email");
+  if (!personalUser || !personalUser.email || !personalUser.profile) {
+    throw new Error("User must be linked to a personal user with an email and profile");
   }
   if (!teamAsMember) {
     throw new Error("User must be a member of a team");
@@ -49,7 +59,8 @@ export async function requireTeamlUser(userId: number) {
   return {
     teamUser: user,
     team: teamAsMember,
-    email: personalUser.email,
+    personalUserEmail: personalUser.email,
+    personalUserProfileExtra: personalUser.profile.extra as UserProfileExtra,
   };
 }
 
@@ -359,3 +370,38 @@ export async function retrieveStripeSubscriptionDetails({
 //   });
 //   return stripeCustomerId;
 // }
+
+export async function availableCoupons({
+  userId,
+  userProfileExtra,
+}: {
+  userId: number; // 不是 personalUser, 而是当前用户
+  userProfileExtra: UserProfileExtra;
+}) {
+  let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined = undefined;
+  try {
+    if (userProfileExtra.tolt?.via) {
+      // 通过 affiliate 项目进来的用户首次付款享受九折
+      const successfulPayment = await prisma.paymentRecord.findFirst({
+        where: { userId, status: "succeeded" },
+        select: { id: true },
+      });
+      if (!successfulPayment) {
+        rootLogger.info(`User ${userId} eligible for affiliate discount`);
+        discounts = [{ coupon: "AFFILIATE10" }];
+      } else {
+        rootLogger.info(
+          `User ${userId} eligible for affiliate discount but already has a successful payment`,
+        );
+      }
+    }
+  } catch (error) {
+    rootLogger.error({
+      msg: "Error fetching available coupons",
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+  }
+  return discounts;
+}

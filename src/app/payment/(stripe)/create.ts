@@ -8,6 +8,7 @@ import { getRequestOrigin } from "@/lib/request/headers";
 import { Currency, SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import {
+  availableCoupons,
   createPaymentRecord,
   generateOrderNo,
   getStripePriceIdForUser,
@@ -28,6 +29,7 @@ export async function createSubscriptionStripeSession({
 }) {
   const {
     user,
+    userProfileExtra,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     monthlyBalance: currentMonthlyBalance,
   } = await requirePersonalUser(userId);
@@ -41,24 +43,6 @@ export async function createSubscriptionStripeSession({
       `Cannot switch subscription plans. You have an active ${activeSubscription.plan} subscription. Please wait until it expires or contact support.`,
     );
   }
-  // if (productName === ProductName.PRO1MONTH) {
-  //   // 如果当前有套餐，不能继续 PRO 会员购买
-  //   if (activeSubscription) {
-  //     throw new Error("Pro subscription is only available to users without an active subscription");
-  //   }
-  // }
-  // if (productName === ProductName.MAX1MONTH) {
-  //   // 如果当前套餐是 MAX，不能继续，如果当前套餐是 PRO，则这是一个升级套餐
-  //   if (activeSubscription) {
-  //     if (activeSubscription.plan === SubscriptionPlan.pro) {
-  //       upgradeFrom = ProductName.PRO1MONTH;
-  //     } else {
-  //       throw new Error(
-  //         "Max subscription is only available to users with a PRO subscription or without an existing subscription",
-  //       );
-  //     }
-  //   }
-  // }
 
   const orderNo = generateOrderNo();
   const product = await prisma.product.findUniqueOrThrow({
@@ -70,31 +54,7 @@ export async function createSubscriptionStripeSession({
   const stripe = stripeClient();
 
   const amountInCents = product.price * 100;
-  // 这部分现在用不到了，但是代码保留一段日子
-  // let discountAmountInCents = 0;
-  // let discountCoupon: string | null = null;
-  // if (productName === ProductName.MAX1MONTH && upgradeFrom === ProductName.PRO1MONTH) {
-  //   const monthlyBalance = Math.max(currentMonthlyBalance, 0); // >=0
-  //   const monthlyInitial = PRO_MONTHLY_TOKENS + PRO_MONTHLY_GIFT;
-  //   const proProduct = await prisma.product.findUniqueOrThrow({
-  //     where: {
-  //       name_currency: { name: ProductName.PRO1MONTH, currency: currency },
-  //     },
-  //   });
-  //   discountAmountInCents = Math.floor(proProduct.price * 100 * (monthlyBalance / monthlyInitial));
-  //   if (discountAmountInCents > 0) {
-  //     // 动态创建一次性折扣券
-  //     const coupon = await stripe.coupons.create({
-  //       amount_off: discountAmountInCents,
-  //       currency: currency,
-  //       duration: "once", // 只应用一次
-  //       name: currency === "CNY" ? `PRO升级到MAX套餐扣减` : `Pro to Max Upgrade Credit`,
-  //       max_redemptions: 1, // 只能使用1次
-  //       redeem_by: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24小时后过期
-  //     });
-  //     discountCoupon = coupon.id;
-  //   }
-  // }
+  const quantity = 1;
 
   const siteOrigin = await getRequestOrigin();
   const metadata: StripeMetadata = {
@@ -103,21 +63,12 @@ export async function createSubscriptionStripeSession({
     orderNo,
     productName, // 目前只有一个 product, 直接放进 metadata
   };
-  // const priceData: Stripe.Checkout.SessionCreateParams.LineItem.PriceData = {
-  //   product_data: {
-  //     name: product.name,
-  //     description: product.description,
-  //   },
-  //   currency: currency,
-  //   unit_amount: amountInCents,
-  //   recurring: { interval: "month" },
-  // };
-  // const stripePriceId = product.stripePriceId;
+
   const stripePriceId = getStripePriceIdForUser({ user, product });
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
-  const quantity = 1;
+
   // const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
   const session = await stripe.checkout.sessions.create({
     customer_email: user.email,
@@ -133,7 +84,10 @@ export async function createSubscriptionStripeSession({
     metadata,
     mode: "subscription",
     subscription_data: { metadata },
-    // discounts: discountCoupon ? [{ coupon: discountCoupon }] : undefined,
+    discounts: await availableCoupons({
+      userId,
+      userProfileExtra,
+    }),
     line_items: [
       {
         // price_data: priceData,
@@ -199,6 +153,8 @@ export async function createPaymentStripeSession({
   const stripe = stripeClient();
 
   const amountInCents = product.price * 100;
+  const quantity = 1;
+
   const siteOrigin = await getRequestOrigin();
   const metadata: StripeMetadata = {
     project: "atypica",
@@ -206,20 +162,12 @@ export async function createPaymentStripeSession({
     orderNo,
     productName, // 目前只有一个 product, 直接放进 metadata
   };
-  // const priceData: Stripe.Checkout.SessionCreateParams.LineItem.PriceData = {
-  //   product_data: {
-  //     name: product.name,
-  //     description: product.description,
-  //   },
-  //   currency: currency,
-  //   unit_amount: amountInCents,
-  // };
-  // const stripePriceId = product.stripePriceId;
+
   const stripePriceId = getStripePriceIdForUser({ user, product });
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
-  const quantity = 1;
+
   // const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
   const session = await stripe.checkout.sessions.create({
     customer_email: user.email,
@@ -285,8 +233,13 @@ export async function createTeamSubscriptionStripeSession({
     throw new Error("Minimum 3 seats required for team subscription");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { email: personalUserEmail, team, teamUser } = await requireTeamlUser(userId);
+  const {
+    personalUserEmail,
+    personalUserProfileExtra,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    team,
+    teamUser,
+  } = await requireTeamlUser(userId);
   // team user 会取 team subscription
   const { activeSubscription: activeTeamSubscription } = await fetchActiveSubscription({ userId });
 
@@ -317,16 +270,7 @@ export async function createTeamSubscriptionStripeSession({
     orderNo,
     productName,
   };
-  // const priceData: Stripe.Checkout.SessionCreateParams.LineItem.PriceData = {
-  //   product_data: {
-  //     name: `${product.name} x ${quantity}`,
-  //     description: `${product.description} (${quantity} seats)`,
-  //   },
-  //   currency: currency,
-  //   unit_amount: amountInCents,
-  //   recurring: { interval: "month" },
-  // };
-  // const stripeCustomerId = await stripeCustomerIdForUser(teamUser, personalUserEmail);
+
   // const stripePriceId = product.stripePriceId;
   const stripePriceId = getStripePriceIdForUser({
     user: { id: teamUser.personalUserId }, // stripePriceId override 是针对个人用户的
@@ -347,6 +291,10 @@ export async function createTeamSubscriptionStripeSession({
     metadata,
     mode: "subscription",
     subscription_data: { metadata },
+    discounts: await availableCoupons({
+      userId: userId, // 不是 personnalUser, 而是当前用户
+      userProfileExtra: personalUserProfileExtra,
+    }),
     line_items: [
       {
         // price_data: priceData,
