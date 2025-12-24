@@ -175,6 +175,7 @@ type UserTraits = UserTraitsSegment &
       utm_content: string;
       referer: string;
     }>;
+    affiliateCode?: string; // affiliate partner code from ?via=xxx (e.g., Tolt)
   }>;
 
 type UserTraitType = "profile" | "clientInfo" | "stats" | "revenue";
@@ -354,6 +355,8 @@ async function _trackUserServerSide({
       if (acquisitionData?.referer?.hostname) {
         acquisition.referer = acquisitionData.referer.hostname;
       }
+      // affiliate code
+      const affiliateCode = profileExtra?.tolt?.via;
       // merge traits
       traits = {
         ...traits,
@@ -363,6 +366,8 @@ async function _trackUserServerSide({
         onboarding: userProfile.onboarding as UserOnboardingData,
         // acquisition
         ...(Object.keys(acquisition).length > 0 ? { acquisition } : {}),
+        // affiliate
+        ...(affiliateCode ? { affiliateCode } : {}),
       };
     } catch (error) {
       rootLogger.error({ userId }, `Failed to track profile traits: ${(error as Error).message}`);
