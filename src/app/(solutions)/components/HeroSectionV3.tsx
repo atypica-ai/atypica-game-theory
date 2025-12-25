@@ -8,10 +8,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface HeroSectionV3Props {
-  namespace?: string;
+  namespace: string;
 }
 
-export function HeroSectionV3({ namespace = "CreatorPages.HeroSection" }: HeroSectionV3Props) {
+export function HeroSectionV3({ namespace }: HeroSectionV3Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = useTranslations(namespace as any) as any;
   const { data: session, status } = useSession();

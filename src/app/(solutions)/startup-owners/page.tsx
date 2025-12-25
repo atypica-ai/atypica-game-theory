@@ -5,7 +5,7 @@ import StartupOwnerPage from "./StartupOwnerPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("StartupOwnerPage.HeroSection");
+  const t = await getTranslations("Solutions.StartupOwnerPage.HeroSection");
 
   return generatePageMetadata({
     title: t("title"),

@@ -5,7 +5,7 @@ import ConsultantPage from "./ConsultantPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("ConsultantPage.HeroSection");
+  const t = await getTranslations("Solutions.ConsultantPage.HeroSection");
 
   return generatePageMetadata({
     title: t("title"),

@@ -5,7 +5,7 @@ import ProductManagerPage from "./ProductManagerPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("ProductManagerPage.HeroSection");
+  const t = await getTranslations("Solutions.ProductManagerPage.HeroSection");
 
   return generatePageMetadata({
     title: t("title"),

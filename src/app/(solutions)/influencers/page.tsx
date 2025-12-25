@@ -5,7 +5,7 @@ import InfluencerPage from "./InfluencerPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("InfluencerPage.HeroSection");
+  const t = await getTranslations("Solutions.InfluencerPage.HeroSection");
 
   return generatePageMetadata({
     title: t("title"),

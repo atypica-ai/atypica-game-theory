@@ -1,11 +1,11 @@
 import { generatePageMetadata } from "@/lib/request/metadata";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import CreatorPage from "./CreatorPage";
+import CreatorsPage from "./CreatorsPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("CreatorPages.HeroSection");
+  const t = await getTranslations("Solutions.CreatorsPage.HeroSection");
 
   return generatePageMetadata({
     title: t("title"),
@@ -15,5 +15,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function Page() {
-  return <CreatorPage />;
+  return <CreatorsPage />;
 }

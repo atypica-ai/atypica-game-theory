@@ -15,13 +15,10 @@ const iconMap = {
 };
 
 interface UseCasesSectionProps {
-  namespace?: string;
+  namespace: string;
 }
 
-export function UseCasesSection({
-  namespace = "CreatorPages.UseCasesSection",
-}: UseCasesSectionProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function UseCasesSection({ namespace }: UseCasesSectionProps) {
   const t = useTranslations(namespace as any) as any;
 
   // Helper function to properly encode URL with topic parameter

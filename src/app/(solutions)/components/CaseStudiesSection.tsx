@@ -38,14 +38,11 @@ const getTagColorClasses = (tag: string): string => {
 };
 
 interface CaseStudiesSectionProps {
-  namespace?: string;
+  namespace: string;
 }
 
-export function CaseStudiesSection({
-  namespace = "CreatorPages.CaseStudiesSection",
-}: CaseStudiesSectionProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const t = useTranslations(namespace as any) as any;
+export function CaseStudiesSection({ namespace }: CaseStudiesSectionProps) {
+  const t = useTranslations(namespace);
 
   // Check if studies exist first (preferred mode)
   let studies: MockStudy[] = [];
