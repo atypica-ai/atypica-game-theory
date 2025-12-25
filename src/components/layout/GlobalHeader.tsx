@@ -182,20 +182,30 @@ const GlobalHeaderMenusDesktop = () => {
               {t("solutionsForCreators")}
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
-            {t("solutionsForInfluencers")}
+          <DropdownMenuItem asChild>
+            <Link href="/influencers" className="cursor-pointer">
+              {t("solutionsForInfluencers")}
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
-            {t("solutionsForMarketers")}
+          <DropdownMenuItem asChild>
+            <Link href="/marketers" className="cursor-pointer">
+              {t("solutionsForMarketers")}
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
-            {t("solutionsForProductManagers")}
+          <DropdownMenuItem asChild>
+            <Link href="/product-managers" className="cursor-pointer">
+              {t("solutionsForProductManagers")}
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
-            {t("solutionsForStartupOwners")}
+          <DropdownMenuItem asChild>
+            <Link href="/startup-owners" className="cursor-pointer">
+              {t("solutionsForStartupOwners")}
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
-            {t("solutionsForConsultants")}
+          <DropdownMenuItem asChild>
+            <Link href="/consultants" className="cursor-pointer">
+              {t("solutionsForConsultants")}
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -482,21 +492,41 @@ const GlobalHeaderDrawer = React.memo(function GlobalHeaderDrawer({
                     >
                       {t("solutionsForCreators")}
                     </Link>
-                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                    <Link
+                      href="/influencers"
+                      className="block py-2 px-3 text-sm hover:bg-accent rounded-md transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
                       {t("solutionsForInfluencers")}
-                    </div>
-                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                    </Link>
+                    <Link
+                      href="/marketers"
+                      className="block py-2 px-3 text-sm hover:bg-accent rounded-md transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
                       {t("solutionsForMarketers")}
-                    </div>
-                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                    </Link>
+                    <Link
+                      href="/product-managers"
+                      className="block py-2 px-3 text-sm hover:bg-accent rounded-md transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
                       {t("solutionsForProductManagers")}
-                    </div>
-                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                    </Link>
+                    <Link
+                      href="/startup-owners"
+                      className="block py-2 px-3 text-sm hover:bg-accent rounded-md transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
                       {t("solutionsForStartupOwners")}
-                    </div>
-                    <div className="block py-2 px-3 text-sm opacity-50 cursor-not-allowed">
+                    </Link>
+                    <Link
+                      href="/consultants"
+                      className="block py-2 px-3 text-sm hover:bg-accent rounded-md transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
                       {t("solutionsForConsultants")}
-                    </div>
+                    </Link>
                   </div>
                 )}
               </div>

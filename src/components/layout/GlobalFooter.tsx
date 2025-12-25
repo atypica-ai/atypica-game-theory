@@ -148,21 +148,36 @@ export default function GlobalFooter({ className }: { className?: string }) {
               >
                 {t("solutionsForCreators")}
               </Link>
-              <div className="block text-muted-foreground/40 cursor-not-allowed">
+              <Link
+                href="/influencers"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
                 {t("solutionsForInfluencers")}
-              </div>
-              <div className="block text-muted-foreground/40 cursor-not-allowed">
+              </Link>
+              <Link
+                href="/marketers"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
                 {t("solutionsForMarketers")}
-              </div>
-              <div className="block text-muted-foreground/40 cursor-not-allowed">
+              </Link>
+              <Link
+                href="/product-managers"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
                 {t("solutionsForProductManagers")}
-              </div>
-              <div className="block text-muted-foreground/40 cursor-not-allowed">
+              </Link>
+              <Link
+                href="/startup-owners"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
                 {t("solutionsForStartupOwners")}
-              </div>
-              <div className="block text-muted-foreground/40 cursor-not-allowed">
+              </Link>
+              <Link
+                href="/consultants"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
                 {t("solutionsForConsultants")}
-              </div>
+              </Link>
             </div>
           </div>
 

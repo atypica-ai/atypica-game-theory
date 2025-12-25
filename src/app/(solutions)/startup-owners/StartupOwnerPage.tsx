@@ -1,9 +1,9 @@
 "use client";
 
-import { StarField } from "../creators/components/StarField";
-import { HeroSectionV3 } from "../creators/components/HeroSectionV3";
-import { CaseStudiesSection } from "../creators/components/CaseStudiesSection";
-import { UseCasesSection } from "../creators/components/UseCasesSection";
+import { StarField } from "../components/StarField";
+import { HeroSectionV3 } from "../components/HeroSectionV3";
+import { CaseStudiesSection } from "../components/CaseStudiesSection";
+import { UseCasesSection } from "../components/UseCasesSection";
 
 export default function StartupOwnerPage() {
   return (

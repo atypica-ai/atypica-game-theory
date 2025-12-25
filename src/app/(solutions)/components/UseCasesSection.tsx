@@ -1,9 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { BarChart3, MessageSquare, Mic, Search, Sparkles, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { Search, Mic, BarChart3, MessageSquare, Sparkles, Users } from "lucide-react";
 
 const iconMap = {
   aiResearch: Search,
@@ -18,7 +18,9 @@ interface UseCasesSectionProps {
   namespace?: string;
 }
 
-export function UseCasesSection({ namespace = "CreatorPage.UseCasesSection" }: UseCasesSectionProps) {
+export function UseCasesSection({
+  namespace = "CreatorPages.UseCasesSection",
+}: UseCasesSectionProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = useTranslations(namespace as any) as any;
 
@@ -28,12 +30,12 @@ export function UseCasesSection({ namespace = "CreatorPage.UseCasesSection" }: U
     if (baseHref.startsWith("/personas")) {
       return baseHref;
     }
-    
+
     // For /newstudy, ensure topic parameter is properly encoded
     if (baseHref.startsWith("/newstudy")) {
       const [path, queryString] = baseHref.split("?");
       const params = new URLSearchParams();
-      
+
       // Parse existing query parameters using URLSearchParams for proper handling
       if (queryString) {
         // Use URLSearchParams to properly parse (handles encoding automatically)
@@ -60,13 +62,13 @@ export function UseCasesSection({ namespace = "CreatorPage.UseCasesSection" }: U
           }
         }
       }
-      
+
       // Set topic parameter with properly encoded question
       params.set("topic", question);
-      
+
       return `${path}?${params.toString()}`;
     }
-    
+
     return baseHref;
   };
 
@@ -109,18 +111,25 @@ export function UseCasesSection({ namespace = "CreatorPage.UseCasesSection" }: U
             {(() => {
               const title = t("title");
               // Emphasize KEYWORDS with extra bold (no green) - works for both EN and ZH
-              if (title.includes("研究、优化、发布") || title === "Research it. Optimize it. Ship it.") {
+              if (
+                title.includes("研究、优化、发布") ||
+                title === "Research it. Optimize it. Ship it."
+              ) {
                 // Creators
                 if (title.includes("研究、优化、发布")) {
                   return (
                     <>
-                      <span className="font-black text-[1.15em]">研究</span>、<span className="font-black text-[1.15em]">优化</span>、<span className="font-black text-[1.15em]">发布</span>
+                      <span className="font-black text-[1.15em]">研究</span>、
+                      <span className="font-black text-[1.15em]">优化</span>、
+                      <span className="font-black text-[1.15em]">发布</span>
                     </>
                   );
                 }
                 return (
                   <>
-                    <span className="font-black text-[1.15em]">Research</span> it. <span className="font-black text-[1.15em]">Optimize</span> it. <span className="font-black text-[1.15em]">Ship</span> it.
+                    <span className="font-black text-[1.15em]">Research</span> it.{" "}
+                    <span className="font-black text-[1.15em]">Optimize</span> it.{" "}
+                    <span className="font-black text-[1.15em]">Ship</span> it.
                   </>
                 );
               } else if (title.includes("参与更深") || title === "Engage deeper, earn more") {
@@ -128,13 +137,15 @@ export function UseCasesSection({ namespace = "CreatorPage.UseCasesSection" }: U
                 if (title.includes("参与更深")) {
                   return (
                     <>
-                      <span className="font-black text-[1.15em]">参与</span>更深，<span className="font-black text-[1.15em]">赚取</span>更多
+                      <span className="font-black text-[1.15em]">参与</span>更深，
+                      <span className="font-black text-[1.15em]">赚取</span>更多
                     </>
                   );
                 }
                 return (
                   <>
-                    <span className="font-black text-[1.15em]">Engage</span> deeper, <span className="font-black text-[1.15em]">earn</span> more
+                    <span className="font-black text-[1.15em]">Engage</span> deeper,{" "}
+                    <span className="font-black text-[1.15em]">earn</span> more
                   </>
                 );
               } else if (title.includes("测试它") || title === "Test it. Validate it. Win it.") {
@@ -142,55 +153,76 @@ export function UseCasesSection({ namespace = "CreatorPage.UseCasesSection" }: U
                 if (title.includes("测试它")) {
                   return (
                     <>
-                      <span className="font-black text-[1.15em]">测试</span>它。<span className="font-black text-[1.15em]">验证</span>它。<span className="font-black text-[1.15em]">赢得</span>它。
+                      <span className="font-black text-[1.15em]">测试</span>它。
+                      <span className="font-black text-[1.15em]">验证</span>它。
+                      <span className="font-black text-[1.15em]">赢得</span>它。
                     </>
                   );
                 }
                 return (
                   <>
-                    <span className="font-black text-[1.15em]">Test</span> it. <span className="font-black text-[1.15em]">Validate</span> it. <span className="font-black text-[1.15em]">Win</span> it.
+                    <span className="font-black text-[1.15em]">Test</span> it.{" "}
+                    <span className="font-black text-[1.15em]">Validate</span> it.{" "}
+                    <span className="font-black text-[1.15em]">Win</span> it.
                   </>
                 );
-              } else if (title.includes("倾听用户") || title === "Listen to users. Build what matters.") {
+              } else if (
+                title.includes("倾听用户") ||
+                title === "Listen to users. Build what matters."
+              ) {
                 // Product Managers
                 if (title.includes("倾听用户")) {
                   return (
                     <>
-                      倾听<span className="font-black text-[1.15em]">用户</span>。构建<span className="font-black text-[1.15em]">重要</span>内容。
+                      倾听<span className="font-black text-[1.15em]">用户</span>。构建
+                      <span className="font-black text-[1.15em]">重要</span>内容。
                     </>
                   );
                 }
                 return (
                   <>
-                    Listen to <span className="font-black text-[1.15em]">users</span>. Build what <span className="font-black text-[1.15em]">matters</span>.
+                    Listen to <span className="font-black text-[1.15em]">users</span>. Build what{" "}
+                    <span className="font-black text-[1.15em]">matters</span>.
                   </>
                 );
-              } else if (title.includes("证明你的概念") || title === "Prove your concept. Fund your future.") {
+              } else if (
+                title.includes("证明你的概念") ||
+                title === "Prove your concept. Fund your future."
+              ) {
                 // Startup Owners
                 if (title.includes("证明你的概念")) {
                   return (
                     <>
-                      证明你的<span className="font-black text-[1.15em]">概念</span>。资助你的<span className="font-black text-[1.15em]">未来</span>。
+                      证明你的<span className="font-black text-[1.15em]">概念</span>。资助你的
+                      <span className="font-black text-[1.15em]">未来</span>。
                     </>
                   );
                 }
                 return (
                   <>
-                    Prove your <span className="font-black text-[1.15em]">concept</span>. Fund your <span className="font-black text-[1.15em]">future</span>.
+                    Prove your <span className="font-black text-[1.15em]">concept</span>. Fund your{" "}
+                    <span className="font-black text-[1.15em]">future</span>.
                   </>
                 );
-              } else if (title.includes("研究它。证明它") || title === "Research it. Prove it. Present it.") {
+              } else if (
+                title.includes("研究它。证明它") ||
+                title === "Research it. Prove it. Present it."
+              ) {
                 // Consultants
                 if (title.includes("研究它。证明它")) {
                   return (
                     <>
-                      <span className="font-black text-[1.15em]">研究</span>它。<span className="font-black text-[1.15em]">证明</span>它。<span className="font-black text-[1.15em]">呈现</span>它。
+                      <span className="font-black text-[1.15em]">研究</span>它。
+                      <span className="font-black text-[1.15em]">证明</span>它。
+                      <span className="font-black text-[1.15em]">呈现</span>它。
                     </>
                   );
                 }
                 return (
                   <>
-                    <span className="font-black text-[1.15em]">Research</span> it. <span className="font-black text-[1.15em]">Prove</span> it. <span className="font-black text-[1.15em]">Present</span> it.
+                    <span className="font-black text-[1.15em]">Research</span> it.{" "}
+                    <span className="font-black text-[1.15em]">Prove</span> it.{" "}
+                    <span className="font-black text-[1.15em]">Present</span> it.
                   </>
                 );
               }

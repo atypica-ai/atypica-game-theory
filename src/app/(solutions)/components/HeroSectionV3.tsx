@@ -1,17 +1,17 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface HeroSectionV3Props {
   namespace?: string;
 }
 
-export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSectionV3Props) {
+export function HeroSectionV3({ namespace = "CreatorPages.HeroSection" }: HeroSectionV3Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = useTranslations(namespace as any) as any;
   const { data: session, status } = useSession();
@@ -35,10 +35,11 @@ export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSec
       {/* Apple-style minimal background - subtle and sophisticated */}
       <div className="absolute inset-0 z-0 bg-background bg-gradient-to-b from-background via-background to-background/95">
         {/* Very subtle radial gradient accent - brand green hint */}
-        <div 
+        <div
           className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full blur-3xl opacity-[0.25] dark:opacity-20"
           style={{
-            background: 'radial-gradient(ellipse at center, rgba(34, 197, 94, 0.08) 0%, rgba(16, 185, 129, 0.04) 40%, transparent 80%)',
+            background:
+              "radial-gradient(ellipse at center, rgba(34, 197, 94, 0.08) 0%, rgba(16, 185, 129, 0.04) 40%, transparent 80%)",
           }}
         />
       </div>
@@ -78,7 +79,8 @@ export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSec
                       <span className="relative inline-block ml-6">
                         <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
                         <span className="font-black text-[1.1em]">让</span>
-                      </span>趋势在几天内爆火
+                      </span>
+                      趋势在几天内爆火
                     </>
                   );
                 }
@@ -87,7 +89,8 @@ export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSec
                     <span className="relative inline-block ml-6">
                       <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
                       <span className="font-black text-[1.1em]">Turn</span>
-                    </span> Trends viral, In Days
+                    </span>{" "}
+                    Trends viral, In Days
                   </>
                 );
               } else if (title.includes("将信任") || title.includes("Monetize Trust")) {
@@ -98,13 +101,17 @@ export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSec
                       <span className="relative inline-block ml-6">
                         <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
                         <span className="font-black text-[1.1em]">将</span>
-                      </span>信任变现
+                      </span>
+                      信任变现
                     </>
                   );
                 }
                 return (
                   <>
-                    <span className="font-black text-[1.1em]">Monet<span className="text-primary">i</span>ze</span> Trust
+                    <span className="font-black text-[1.1em]">
+                      Monet<span className="text-primary">i</span>ze
+                    </span>{" "}
+                    Trust
                   </>
                 );
               } else if (title.includes("真实声音") || title.includes("Real voices")) {
@@ -112,16 +119,20 @@ export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSec
                 if (title.includes("真实声音")) {
                   return (
                     <>
-                      <span className="font-black text-[1.1em]">真实</span>声音，<span className="font-black text-[1.1em]">真实</span>转化
+                      <span className="font-black text-[1.1em]">真实</span>声音，
+                      <span className="font-black text-[1.1em]">真实</span>转化
                     </>
                   );
                 }
                 return (
                   <>
-                    Real <span className="relative inline-block ml-6">
+                    Real{" "}
+                    <span className="relative inline-block ml-6">
                       <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
                       <span className="font-black text-[1.1em]">voices</span>
-                    </span>, real <span className="relative inline-block ml-6">
+                    </span>
+                    , real{" "}
+                    <span className="relative inline-block ml-6">
                       <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
                       <span className="font-black text-[1.1em]">conversions</span>
                     </span>
@@ -132,7 +143,8 @@ export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSec
                 if (title.includes("创新，去风险化")) {
                   return (
                     <>
-                      创新，<span className="relative inline-block ml-6">
+                      创新，
+                      <span className="relative inline-block ml-6">
                         <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
                         <span className="font-black text-[1.1em]">去风险化</span>
                       </span>
@@ -141,7 +153,10 @@ export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSec
                 }
                 return (
                   <>
-                    Innovation, <span className="font-black text-[1.1em]">De-R<span className="text-primary">i</span>sked</span>
+                    Innovation,{" "}
+                    <span className="font-black text-[1.1em]">
+                      De-R<span className="text-primary">i</span>sked
+                    </span>
                   </>
                 );
               } else if (title.includes("尽早淘汰") || title.includes("Kill Bad Ideas")) {
@@ -152,13 +167,23 @@ export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSec
                       <span className="relative inline-block ml-6">
                         <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
                         <span className="font-black text-[1.1em]">尽早</span>
-                      </span>淘汰<span className="line-through decoration-primary decoration-[3px]">坏想法</span>
+                      </span>
+                      淘汰
+                      <span className="line-through decoration-primary decoration-[3px]">
+                        坏想法
+                      </span>
                     </>
                   );
                 }
                 return (
                   <>
-                    <span className="font-black text-[1.1em]">K<span className="text-primary">i</span>ll</span> <span className="line-through decoration-primary decoration-[3px]">Bad Ideas</span> Early
+                    <span className="font-black text-[1.1em]">
+                      K<span className="text-primary">i</span>ll
+                    </span>{" "}
+                    <span className="line-through decoration-primary decoration-[3px]">
+                      Bad Ideas
+                    </span>{" "}
+                    Early
                   </>
                 );
               } else if (title.includes("展示消费者") || title.includes("Show consumer proof")) {
@@ -169,13 +194,17 @@ export function HeroSectionV3({ namespace = "CreatorPage.HeroSection" }: HeroSec
                       <span className="relative inline-block ml-6">
                         <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
                         <span className="font-black text-[1.1em]">展示</span>
-                      </span>消费者证据，而非幻灯片
+                      </span>
+                      消费者证据，而非幻灯片
                     </>
                   );
                 }
                 return (
                   <>
-                    <span className="font-black text-[1.1em]">Sh<span className="text-primary">o</span>w</span> consumer proof, more than slides
+                    <span className="font-black text-[1.1em]">
+                      Sh<span className="text-primary">o</span>w
+                    </span>{" "}
+                    consumer proof, more than slides
                   </>
                 );
               }

@@ -2,8 +2,8 @@
 
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
 
 type MockStudyKey = string;
@@ -41,7 +41,9 @@ interface CaseStudiesSectionProps {
   namespace?: string;
 }
 
-export function CaseStudiesSection({ namespace = "CreatorPage.CaseStudiesSection" }: CaseStudiesSectionProps) {
+export function CaseStudiesSection({
+  namespace = "CreatorPages.CaseStudiesSection",
+}: CaseStudiesSectionProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = useTranslations(namespace as any) as any;
 
@@ -61,7 +63,9 @@ export function CaseStudiesSection({ namespace = "CreatorPage.CaseStudiesSection
           tag: study.tag || "",
           title: study.title || "",
           description: study.description || "",
-          imagePrompt: study.imagePrompt || `professional dashboard for ${study.tag?.toLowerCase() || "research"} analysis, ${study.title?.toLowerCase() || ""}, modern analytics interface, clean design`,
+          imagePrompt:
+            study.imagePrompt ||
+            `professional dashboard for ${study.tag?.toLowerCase() || "research"} analysis, ${study.title?.toLowerCase() || ""}, modern analytics interface, clean design`,
         };
       });
     } else {
@@ -111,61 +115,66 @@ export function CaseStudiesSection({ namespace = "CreatorPage.CaseStudiesSection
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8">
-          {studies.map((study) => (
-            <Card
-              key={study.id}
-              className={cn(
-                "group relative overflow-hidden rounded-2xl shadow-none",
-                "transition-all duration-300 hover:scale-[1.02] cursor-pointer",
-                "flex flex-col h-full",
-              )}
-            >
-              {/* Card content */}
-              <div className="relative z-10 flex flex-col h-full transition-all duration-300">
-                        <div className="px-4 sm:px-5 pt-4 pb-4 sm:pb-5 flex flex-col gap-2.5">
-                  <span className={cn("text-xs uppercase tracking-wide font-medium py-0.5 px-2 rounded-full self-start", getTagColorClasses(study.tag))}>
-                    {study.tag}
-                  </span>
-                  <h3 className="text-base md:text-lg font-semibold leading-snug text-card-foreground line-clamp-2">
-                    {study.title}
-                  </h3>
-                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-3">
-                    {study.description}
-                  </p>
+            {studies.map((study) => (
+              <Card
+                key={study.id}
+                className={cn(
+                  "group relative overflow-hidden rounded-2xl shadow-none",
+                  "transition-all duration-300 hover:scale-[1.02] cursor-pointer",
+                  "flex flex-col h-full",
+                )}
+              >
+                {/* Card content */}
+                <div className="relative z-10 flex flex-col h-full transition-all duration-300">
+                  <div className="px-4 sm:px-5 pt-4 pb-4 sm:pb-5 flex flex-col gap-2.5">
+                    <span
+                      className={cn(
+                        "text-xs uppercase tracking-wide font-medium py-0.5 px-2 rounded-full self-start",
+                        getTagColorClasses(study.tag),
+                      )}
+                    >
+                      {study.tag}
+                    </span>
+                    <h3 className="text-base md:text-lg font-semibold leading-snug text-card-foreground line-clamp-2">
+                      {study.title}
+                    </h3>
+                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-3">
+                      {study.description}
+                    </p>
+                  </div>
+
+                  <div className="relative aspect-video mx-4 sm:mx-5 mb-4 sm:mb-5 rounded-xl overflow-hidden border bg-muted">
+                    {study.imagePrompt ? (
+                      <Image
+                        loader={({ src }) => src}
+                        src={`${IMAGE_BASE_URL}/${encodeURIComponent(study.imagePrompt)}?ratio=landscape`}
+                        alt={study.title}
+                        fill
+                        sizes="600px"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        unoptimized
+                        onError={(e) => {
+                          console.error("Image load error:", study.id, e);
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <span className="text-xs text-muted-foreground">Image placeholder</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                        <div className="relative aspect-video mx-4 sm:mx-5 mb-4 sm:mb-5 rounded-xl overflow-hidden border bg-muted">
-                  {study.imagePrompt ? (
-                    <Image
-                      loader={({ src }) => src}
-                      src={`${IMAGE_BASE_URL}/${encodeURIComponent(study.imagePrompt)}?ratio=landscape`}
-                      alt={study.title}
-                      fill
-                      sizes="600px"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      unoptimized
-                      onError={(e) => {
-                        console.error("Image load error:", study.id, e);
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted">
-                      <span className="text-xs text-muted-foreground">Image placeholder</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Clickable link overlay to featured studies */}
-              <Link
-                href="/featured-studies"
-                prefetch={true}
-                className="absolute inset-0 z-30"
-                aria-label={`View study: ${study.title}`}
-              />
-            </Card>
-          ))}
-        </div>
+                {/* Clickable link overlay to featured studies */}
+                <Link
+                  href="/featured-studies"
+                  prefetch={true}
+                  className="absolute inset-0 z-30"
+                  aria-label={`View study: ${study.title}`}
+                />
+              </Card>
+            ))}
+          </div>
         )}
       </div>
     </section>
