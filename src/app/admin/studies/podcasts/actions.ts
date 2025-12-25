@@ -33,6 +33,7 @@ export async function fetchAnalystPodcastsAction(
         user: Pick<User, "email"> | null;
       };
       isFeatured?: boolean;
+      tags?: string;
     })[]
   >
 > {
@@ -99,7 +100,7 @@ export async function fetchAnalystPodcastsAction(
 
   const totalCount = await prisma.analystPodcast.count({ where });
 
-  // Check featured status for each podcast
+  // Check featured status for each podcast and get tags
   const podcastIds = analystPodcasts.map((p) => p.id);
   const featuredItems = await prisma.featuredItem.findMany({
     where: {
@@ -107,14 +108,26 @@ export async function fetchAnalystPodcastsAction(
       resourceId: { in: podcastIds },
     },
   });
-  const featuredPodcastIdsSet = new Set(featuredItems.map((item) => item.resourceId));
+  const featuredItemsMap = new Map(
+    featuredItems.map((item) => [
+      item.resourceId,
+      {
+        isFeatured: true,
+        tags: ((item.extra as FeaturedItemExtra) || {}).tags || "",
+      },
+    ]),
+  );
 
   return {
     success: true,
-    data: analystPodcasts.map((podcast) => ({
-      ...podcast,
-      isFeatured: featuredPodcastIdsSet.has(podcast.id),
-    })),
+    data: analystPodcasts.map((podcast) => {
+      const featuredInfo = featuredItemsMap.get(podcast.id);
+      return {
+        ...podcast,
+        isFeatured: featuredInfo?.isFeatured || false,
+        tags: featuredInfo?.tags || "",
+      };
+    }),
     pagination: {
       page,
       pageSize,
@@ -307,11 +320,55 @@ export async function featurePodcastAction(podcastId: number): Promise<ServerAct
           description: metadata?.showNotes || "",
           coverObjectUrl: metadata?.coverObjectUrl || "",
           url: `/artifacts/podcast/${podcast.token}/share`,
-          category: podcast.analyst.kind || undefined,
+          category: podcast.analyst.kind || undefined, // 保留字段但不使用
+          tags: podcast.analyst.kind || "", // 默认写入 kind 作为 tags
         } satisfies FeaturedItemExtra,
       },
     });
   }
+
+  revalidatePath("/admin/studies/podcasts");
+  revalidateTag("featured-podcasts");
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+// Update tags for a featured podcast
+export async function updateFeaturedItemTagsAction(
+  podcastId: number,
+  tags: string,
+): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
+
+  // Find the featured item for this podcast
+  const featuredItem = await prisma.featuredItem.findFirst({
+    where: {
+      resourceType: FeaturedItemResourceType.AnalystPodcast,
+      resourceId: podcastId,
+    },
+  });
+
+  if (!featuredItem) {
+    return {
+      success: false,
+      message: "Podcast is not featured",
+      code: "not_found",
+    };
+  }
+
+  // Update the extra field with tags
+  const currentExtra = (featuredItem.extra as FeaturedItemExtra) || {};
+  await prisma.featuredItem.update({
+    where: { id: featuredItem.id },
+    data: {
+      extra: {
+        ...currentExtra,
+        tags,
+      } satisfies FeaturedItemExtra,
+    },
+  });
 
   revalidatePath("/admin/studies/podcasts");
   revalidateTag("featured-podcasts");

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
@@ -23,8 +24,10 @@ import {
   featurePodcastAction,
   fetchAnalystPodcastsAction,
   generatePodcastMetadataAction,
+  updateFeaturedItemTagsAction,
   updatePodcastTitleAction,
 } from "./actions";
+import { TagsInput } from "../reports/TagsInput";
 
 type AnalystPodcastWithAnalyst = ExtractServerActionData<typeof fetchAnalystPodcastsAction>[number];
 
@@ -121,9 +124,12 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
     try {
       const result = await featurePodcastAction(podcast.id);
       if (result.success) {
+        // When featuring, set tags to analyst.kind; when unfeaturing, clear tags
+        const tags = !podcast.isFeatured ? podcast.analyst.kind || "" : "";
         onUpdate({
           ...podcast,
           isFeatured: !podcast.isFeatured,
+          tags,
         });
       } else {
         onError(result.message);
@@ -132,6 +138,22 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
       onError((err as Error).message);
     } finally {
       setTogglingFeatured(false);
+    }
+  };
+
+  const handleUpdateTags = async (tags: string) => {
+    try {
+      const result = await updateFeaturedItemTagsAction(podcast.id, tags);
+      if (result.success) {
+        onUpdate({
+          ...podcast,
+          tags,
+        });
+      } else {
+        onError(result.message);
+      }
+    } catch (err) {
+      onError((err as Error).message);
     }
   };
 
@@ -324,36 +346,46 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
           </p>
         </div>
       </CardContent>
-      <CardFooter className="gap-2 items-center justify-between flex-wrap mt-auto">
-        <div className="flex items-center">
-          <span
-            className={`px-2 py-1 text-xs font-semibold rounded-full ${
-              podcast.analyst.kind === "testing"
-                ? "bg-blue-100 text-blue-800"
-                : podcast.analyst.kind === "planning"
-                  ? "bg-green-100 text-green-800"
-                  : podcast.analyst.kind === "insights"
-                    ? "bg-purple-100 text-purple-800"
-                    : podcast.analyst.kind === "creation"
-                      ? "bg-orange-100 text-orange-800"
-                      : podcast.analyst.kind === "misc"
-                        ? "bg-gray-100 text-gray-800"
-                        : "bg-gray-100 text-gray-500"
-            }`}
-          >
-            {podcast.analyst.kind || "N/A"}
-          </span>
+      <CardFooter className="flex-col gap-4 mt-auto">
+        {/* Tags Input - Only for featured podcasts */}
+        {podcast.isFeatured && (
+          <div className="w-full">
+            <Label className="text-xs font-medium text-muted-foreground mb-2 block">Tags</Label>
+            <TagsInput value={podcast.tags || ""} onChange={handleUpdateTags} />
+          </div>
+        )}
+
+        <div className="w-full flex gap-2 items-center justify-between flex-wrap">
+          <div className="flex items-center">
+            <span
+              className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                podcast.analyst.kind === "testing"
+                  ? "bg-blue-100 text-blue-800"
+                  : podcast.analyst.kind === "planning"
+                    ? "bg-green-100 text-green-800"
+                    : podcast.analyst.kind === "insights"
+                      ? "bg-purple-100 text-purple-800"
+                      : podcast.analyst.kind === "creation"
+                        ? "bg-orange-100 text-orange-800"
+                        : podcast.analyst.kind === "misc"
+                          ? "bg-gray-100 text-gray-800"
+                          : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {podcast.analyst.kind || "N/A"}
+            </span>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <Link
+              href={`/artifacts/podcast/${podcast.token}/share`}
+              target="_blank"
+              className="flex items-center gap-1"
+            >
+              <ExternalLinkIcon className="h-3 w-3" />
+              Listen
+            </Link>
+          </Button>
         </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link
-            href={`/artifacts/podcast/${podcast.token}/share`}
-            target="_blank"
-            className="flex items-center gap-1"
-          >
-            <ExternalLinkIcon className="h-3 w-3" />
-            Listen
-          </Link>
-        </Button>
       </CardFooter>
     </Card>
   );
