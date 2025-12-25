@@ -52,7 +52,7 @@ export default function FeaturedStudiesClient({
     async () => {
       const result = await fetchPublicFeaturedStudies({
         locale,
-        kind: activeAnalystKind === "all" ? undefined : activeAnalystKind,
+        tag: activeAnalystKind === "all" ? undefined : activeAnalystKind,
         page: currentPage,
         pageSize: 12,
       });

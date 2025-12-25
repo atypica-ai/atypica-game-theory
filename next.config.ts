@@ -35,6 +35,7 @@ const nextConfig: NextConfig = {
     ],
     localPatterns: [
       { pathname: "/api/imagegen/dev/**" /*, search:"" */ },
+      { pathname: "/artifacts/report/*/cover" },
       { pathname: "/_public/**" },
     ],
     // loader: "custom",

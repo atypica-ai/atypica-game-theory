@@ -20,12 +20,12 @@ type FeaturedReportResult = {
 // Internal implementation of fetchPublicFeaturedReports
 async function _fetchPublicFeaturedReportsImpl({
   locale,
-  kind,
+  tag,
   limit,
   random,
 }: {
   locale: Locale;
-  kind?: AnalystKind | "all";
+  tag?: string | "all";
   limit?: number;
   random?: boolean;
 }): Promise<FeaturedReportResult[]> {
@@ -38,13 +38,16 @@ async function _fetchPublicFeaturedReportsImpl({
   }>;
 
   if (random && limit) {
-    // Random selection with category filter
-    if (kind && kind !== "all") {
+    // Random selection with tag filter
+    if (tag && tag !== "all") {
+      // Use raw SQL with LIKE to check if tags contains the specified tag
       const result = (await prismaRO.$queryRaw`
         SELECT id FROM "FeaturedItem"
         WHERE "resourceType" = ${FeaturedItemResourceType.AnalystReport}
         AND locale = ${locale}
-        AND extra->>'category' = ${kind}
+        AND (
+          extra->>'tags' LIKE ${"%" + tag + "%"}
+        )
         ORDER BY RANDOM()
         LIMIT ${limit}
       `) as { id: number }[];
@@ -72,7 +75,7 @@ async function _fetchPublicFeaturedReportsImpl({
         featuredItems = [];
       }
     } else {
-      // Random without category filter
+      // Random without tag filter
       const result = (await prismaRO.$queryRaw`
         SELECT id FROM "FeaturedItem"
         WHERE "resourceType" = ${FeaturedItemResourceType.AnalystReport}
@@ -120,11 +123,16 @@ async function _fetchPublicFeaturedReportsImpl({
       orderBy: { createdAt: "desc" },
     });
 
-    // Filter by category if specified
-    if (kind && kind !== "all") {
+    // Filter by tag if specified
+    if (tag && tag !== "all") {
       featuredItems = allItems.filter((item) => {
         const extra = item.extra as FeaturedItemExtra;
-        return extra.category === kind;
+        const tags = extra.tags || "";
+        // Split by comma and check if tag exists
+        return tags
+          .split(",")
+          .map((t) => t.trim())
+          .includes(tag);
       }) as typeof featuredItems;
     } else {
       featuredItems = allItems as typeof featuredItems;
@@ -162,7 +170,7 @@ async function _fetchPublicFeaturedReportsImpl({
  *
  * unstable_cache 原理：
  * - 函数参数会自动成为缓存key的一部分
- * - 实际缓存key: ["public-featured-reports", locale, kind, limit, random]
+ * - 实际缓存key: ["public-featured-reports", locale, tag, limit, random]
  * - 不同的参数组合有独立的缓存项
  * - 缓存时间: 1天 (86400秒)
  *
@@ -170,10 +178,10 @@ async function _fetchPublicFeaturedReportsImpl({
  * 在需要清除缓存时使用: revalidateTag("public-featured-reports")
  */
 const getCachedFeaturedReports = unstable_cache(
-  async (locale: Locale, kind?: AnalystKind | "all", limit?: number, random?: boolean) => {
+  async (locale: Locale, tag?: string | "all", limit?: number, random?: boolean) => {
     return _fetchPublicFeaturedReportsImpl({
       locale,
-      kind,
+      tag,
       limit,
       random,
     });
@@ -187,19 +195,19 @@ const getCachedFeaturedReports = unstable_cache(
 
 export async function fetchPublicFeaturedStudies({
   locale,
-  kind,
+  tag,
   page = 1,
   pageSize = 12,
   random,
 }: {
   locale: Locale;
-  kind?: AnalystKind | "all";
+  tag?: string | "all";
   page?: number;
   pageSize?: number;
   random?: boolean;
 }): Promise<ServerActionResult<FeaturedReportResult[]>> {
   const localeResolved = locale || (await getLocale());
-  const allData = await getCachedFeaturedReports(localeResolved, kind, undefined, random);
+  const allData = await getCachedFeaturedReports(localeResolved, tag, undefined, random);
 
   // Apply pagination
   const totalCount = allData.length;

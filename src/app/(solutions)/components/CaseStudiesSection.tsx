@@ -47,6 +47,7 @@ export function CaseStudiesSection({ tag }: CaseStudiesSectionProps) {
       setLoading(true);
       const result = await fetchPublicFeaturedStudies({
         locale,
+        tag,
         pageSize: 6,
         random: true,
       });

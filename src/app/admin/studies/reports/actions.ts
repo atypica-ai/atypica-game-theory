@@ -38,6 +38,7 @@ export async function fetchAnalystReportsAction(
       };
       coverCdnHttpUrl?: string;
       isFeatured?: boolean;
+      tags?: string;
     })[]
   >
 > {
@@ -104,7 +105,7 @@ export async function fetchAnalystReportsAction(
 
   const totalCount = await prisma.analystReport.count({ where });
 
-  // Check featured status for each report
+  // Check featured status for each report and get tags
   const reportIds = analystReports.map((r) => r.id);
   const featuredItems = await prisma.featuredItem.findMany({
     where: {
@@ -112,24 +113,35 @@ export async function fetchAnalystReportsAction(
       resourceId: { in: reportIds },
     },
   });
-  const featuredReportIdsSet = new Set(featuredItems.map((item) => item.resourceId));
+  const featuredItemsMap = new Map(
+    featuredItems.map((item) => [
+      item.resourceId,
+      {
+        isFeatured: true,
+        tags: ((item.extra as FeaturedItemExtra) || {}).tags || "",
+      },
+    ]),
+  );
 
   // Generate cover URLs for reports that have coverObjectUrl
   const reportsWithCoverUrls = await Promise.all(
     analystReports.map(async (report) => {
       const objectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
+      const featuredInfo = featuredItemsMap.get(report.id);
       if (objectUrl) {
         const coverCdnHttpUrl = await getS3SignedCdnUrl(objectUrl);
         return {
           ...report,
           coverCdnHttpUrl,
-          isFeatured: featuredReportIdsSet.has(report.id),
+          isFeatured: featuredInfo?.isFeatured || false,
+          tags: featuredInfo?.tags || "",
         };
       } else {
         return {
           ...report,
           coverCdnHttpUrl: undefined,
-          isFeatured: featuredReportIdsSet.has(report.id),
+          isFeatured: featuredInfo?.isFeatured || false,
+          tags: featuredInfo?.tags || "",
         };
       }
     }),
@@ -278,11 +290,55 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
           description,
           coverObjectUrl: extra?.coverObjectUrl || "",
           url: `/artifacts/report/${report.token}/share`,
-          category: report.analyst.kind || undefined,
+          category: report.analyst.kind || undefined, // 保留字段但不使用
+          tags: report.analyst.kind || "", // 默认写入 kind 作为 tags
         } satisfies FeaturedItemExtra,
       },
     });
   }
+
+  revalidatePath("/admin/studies/reports");
+  revalidateTag("public-featured-reports");
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+// Update tags for a featured report
+export async function updateFeaturedItemTagsAction(
+  reportId: number,
+  tags: string,
+): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
+
+  // Find the featured item for this report
+  const featuredItem = await prisma.featuredItem.findFirst({
+    where: {
+      resourceType: FeaturedItemResourceType.AnalystReport,
+      resourceId: reportId,
+    },
+  });
+
+  if (!featuredItem) {
+    return {
+      success: false,
+      message: "Report is not featured",
+      code: "not_found",
+    };
+  }
+
+  // Update the extra field with tags
+  const currentExtra = (featuredItem.extra as FeaturedItemExtra) || {};
+  await prisma.featuredItem.update({
+    where: { id: featuredItem.id },
+    data: {
+      extra: {
+        ...currentExtra,
+        tags,
+      } satisfies FeaturedItemExtra,
+    },
+  });
 
   revalidatePath("/admin/studies/reports");
   revalidateTag("public-featured-reports");

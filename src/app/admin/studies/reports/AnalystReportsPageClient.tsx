@@ -35,7 +35,9 @@ import {
   adminGenerateScreenshotAction,
   featureReportAction,
   fetchAnalystReportsAction,
+  updateFeaturedItemTagsAction,
 } from "./actions";
+import { TagsInput } from "./TagsInput";
 
 type AnalystReportWithAnalyst = ExtractServerActionData<typeof fetchAnalystReportsAction>[number];
 
@@ -160,9 +162,14 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
       } else {
         // Update local state
         setAnalystReports((prev) =>
-          prev.map((report) =>
-            report.id === reportId ? { ...report, isFeatured: !isFeatured } : report,
-          ),
+          prev.map((report) => {
+            if (report.id === reportId) {
+              // When featuring, set tags to analyst.kind; when unfeaturing, clear tags
+              const tags = !isFeatured ? report.analyst.kind || "" : "";
+              return { ...report, isFeatured: !isFeatured, tags };
+            }
+            return report;
+          }),
         );
       }
     } catch (err) {
@@ -173,6 +180,22 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
         newSet.delete(reportId);
         return newSet;
       });
+    }
+  };
+
+  const handleUpdateTags = async (reportId: number, tags: string) => {
+    try {
+      const result = await updateFeaturedItemTagsAction(reportId, tags);
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        // Update local state
+        setAnalystReports((prev) =>
+          prev.map((report) => (report.id === reportId ? { ...report, tags } : report)),
+        );
+      }
+    } catch (err) {
+      setError((err as Error).message);
     }
   };
 
@@ -412,36 +435,51 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="gap-2 items-center justify-between flex-wrap mt-auto">
-                  <div className="flex items-center">
-                    <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        report.analyst.kind === "testing"
-                          ? "bg-blue-100 text-blue-800"
-                          : report.analyst.kind === "planning"
-                            ? "bg-green-100 text-green-800"
-                            : report.analyst.kind === "insights"
-                              ? "bg-purple-100 text-purple-800"
-                              : report.analyst.kind === "creation"
-                                ? "bg-orange-100 text-orange-800"
-                                : report.analyst.kind === "misc"
-                                  ? "bg-gray-100 text-gray-800"
-                                  : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {report.analyst.kind || "N/A"}
-                    </span>
+                <CardFooter className="flex-col gap-4 mt-auto">
+                  {/* Tags Input - Only for featured reports */}
+                  {report.isFeatured && (
+                    <div className="w-full">
+                      <Label className="text-xs font-medium text-muted-foreground mb-2 block">
+                        Tags
+                      </Label>
+                      <TagsInput
+                        value={report.tags || ""}
+                        onChange={(tags) => handleUpdateTags(report.id, tags)}
+                      />
+                    </div>
+                  )}
+
+                  <div className="w-full flex gap-2 items-center justify-between flex-wrap">
+                    <div className="flex items-center">
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          report.analyst.kind === "testing"
+                            ? "bg-blue-100 text-blue-800"
+                            : report.analyst.kind === "planning"
+                              ? "bg-green-100 text-green-800"
+                              : report.analyst.kind === "insights"
+                                ? "bg-purple-100 text-purple-800"
+                                : report.analyst.kind === "creation"
+                                  ? "bg-orange-100 text-orange-800"
+                                  : report.analyst.kind === "misc"
+                                    ? "bg-gray-100 text-gray-800"
+                                    : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {report.analyst.kind || "N/A"}
+                      </span>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link
+                        href={`/artifacts/report/${report.token}/share`}
+                        target="_blank"
+                        className="flex items-center gap-1"
+                      >
+                        <ExternalLinkIcon className="h-3 w-3" />
+                        View Report
+                      </Link>
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link
-                      href={`/artifacts/report/${report.token}/share`}
-                      target="_blank"
-                      className="flex items-center gap-1"
-                    >
-                      <ExternalLinkIcon className="h-3 w-3" />
-                      View Report
-                    </Link>
-                  </Button>
                 </CardFooter>
               </Card>
             ))}

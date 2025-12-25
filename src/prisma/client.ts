@@ -270,6 +270,7 @@ export type FeaturedItemExtra = Partial<{
   coverObjectUrl: string;
   url: string;
   category: string; // report 的 analyst.kind, podcast 暂时没有不需要设置
+  tags: string; // 逗号分隔的标签字符串
 }>;
 
 export enum FeaturedItemResourceType {
