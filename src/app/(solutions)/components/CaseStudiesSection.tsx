@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { PlayIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type FeaturedReport = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
@@ -106,7 +107,7 @@ export function CaseStudiesSection({ tag, title }: CaseStudiesSectionProps) {
               <Card
                 key={study.id}
                 className={cn(
-                  "group relative overflow-hidden rounded-2xl shadow-none cursor-pointer py-0",
+                  "relative overflow-hidden rounded-2xl shadow-none py-0",
                   "flex flex-col justify-between",
                 )}
               >
@@ -121,11 +122,16 @@ export function CaseStudiesSection({ tag, title }: CaseStudiesSectionProps) {
                     {study.category}
                   </span>
                   <h3 className="text-base md:text-lg font-semibold leading-snug text-card-foreground line-clamp-2">
-                    {study.title}
+                    <Link href={study.url} target="_blank">
+                      {study.title}
+                    </Link>
                   </h3>
                 </div>
-
-                <div className="relative aspect-video mx-4 sm:mx-5 mb-4 sm:mb-5 rounded-xl overflow-hidden border bg-muted">
+                <Link
+                  href={study.url}
+                  target="_blank"
+                  className="group block relative aspect-video mx-4 sm:mx-5 mb-4 sm:mb-5 rounded-xl overflow-hidden border bg-muted"
+                >
                   {study.coverUrl ? (
                     <Image
                       src={study.coverUrl}
@@ -135,18 +141,16 @@ export function CaseStudiesSection({ tag, title }: CaseStudiesSectionProps) {
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted">
-                      <div className="relative">
-                        <div className="w-12 h-12 rounded-full bg-muted-foreground/20 flex items-center justify-center">
-                          <PlayIcon
-                            className="w-4 h-4 text-muted-foreground ml-0.5"
-                            fill="currentColor"
-                          />
-                        </div>
+                    <div className="w-full h-full flex items-center justify-center bg-muted relative">
+                      <div className="w-12 h-12 rounded-full bg-muted-foreground/20 flex items-center justify-center">
+                        <PlayIcon
+                          className="w-4 h-4 text-muted-foreground ml-0.5"
+                          fill="currentColor"
+                        />
                       </div>
                     </div>
                   )}
-                </div>
+                </Link>
               </Card>
             ))}
           </div>
