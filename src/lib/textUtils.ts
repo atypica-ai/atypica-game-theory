@@ -159,3 +159,92 @@ export async function detectInputLanguage({
   const chineseRatio = getChineseCharacterRatio(cleanedText);
   return chineseRatio > adjustedThreshold ? "zh-CN" : "en-US";
 }
+
+/**
+ * 识别纯文本中的 URL 并转换为 Markdown 链接格式
+ * @param text 要处理的文本
+ * @returns 转换后的文本，纯文本 URL 会被转换为 [URL](URL) 格式
+ */
+export function convertUrlsToMarkdownLinks(text: string): string {
+  // Step 1: 移除所有 Markdown 链接格式（包括格式错误的），提取其中的 URL
+  // 匹配各种可能的 Markdown 链接格式，包括格式错误的
+  // 使用更宽松的匹配策略：先找到所有可能的 [text](url) 模式
+  let cleanedText = text;
+  
+  // 使用更宽松的正则，匹配可能包含各种字符的 Markdown 链接
+  // 注意：对于格式错误的链接如 [url。](url`。)，需要匹配到真正的结束位置
+  // 使用非贪婪匹配，但需要处理括号内可能包含的格式错误字符
+  const markdownLinkPattern = /\[([^\]]*?)\]\(([^)]*?)\)/g;
+  const matches: Array<{ fullMatch: string; url: string; linkText: string; index: number }> = [];
+  let match;
+  
+  // 收集所有匹配
+  while ((match = markdownLinkPattern.exec(text)) !== null) {
+    matches.push({
+      fullMatch: match[0],
+      url: match[2], // 提取 URL（括号中的内容）
+      linkText: match[1], // 提取链接文本（中括号中的内容）
+      index: match.index,
+    });
+  }
+
+  // 从后往前替换，避免索引偏移
+  for (let i = matches.length - 1; i >= 0; i--) {
+    const { fullMatch, url, linkText, index } = matches[i];
+    
+    // 清理 URL：移除所有可能的格式错误字符
+    // 1. 移除所有反引号
+    let cleanUrl = url.replace(/`/g, "");
+    // 2. 移除末尾的所有标点符号（中文和英文）
+    cleanUrl = cleanUrl.replace(/[。，,;:!?、。]+$/g, "").trim();
+    // 3. 再次清理，确保没有残留的标点
+    cleanUrl = cleanUrl.replace(/[。，,;:!?、。]+$/g, "").trim();
+    
+    // 如果提取的 URL 看起来像是一个有效的 URL，替换为纯文本 URL
+    if (cleanUrl && (cleanUrl.startsWith("http") || cleanUrl.startsWith("www."))) {
+      cleanedText = cleanedText.slice(0, index) + cleanUrl + cleanedText.slice(index + fullMatch.length);
+    } else {
+      // 如果提取的内容不是有效的 URL，尝试从链接文本中提取
+      let urlFromText = linkText.replace(/`/g, "");
+      urlFromText = urlFromText.replace(/[。，,;:!?、。]+$/g, "").trim();
+      urlFromText = urlFromText.replace(/[。，,;:!?、。]+$/g, "").trim();
+      if (urlFromText && (urlFromText.startsWith("http") || urlFromText.startsWith("www."))) {
+        cleanedText = cleanedText.slice(0, index) + urlFromText + cleanedText.slice(index + fullMatch.length);
+      } else {
+        // 如果都无效，直接移除整个 Markdown 格式
+        cleanedText = cleanedText.slice(0, index) + cleanedText.slice(index + fullMatch.length);
+      }
+    }
+  }
+
+  // Step 2: 统一处理所有纯文本 URL（包括从 Markdown 链接中提取出来的）
+  const urlRegex = /(https?:\/\/[^\s\)]+|www\.[^\s\)]+)/g;
+  const urlMatches: Array<{ url: string; index: number }> = [];
+  urlRegex.lastIndex = 0;
+  while ((match = urlRegex.exec(cleanedText)) !== null) {
+    urlMatches.push({ url: match[0], index: match.index });
+  }
+
+  // 从后往前处理，避免索引偏移
+  let result = cleanedText;
+  for (let i = urlMatches.length - 1; i >= 0; i--) {
+    const { url, index } = urlMatches[i];
+
+    // 彻底清理 URL：移除所有反引号和标点符号
+    let cleanUrl = url.replace(/`/g, ""); // 先移除反引号
+    // 移除末尾的所有标点符号（中文和英文）
+    const trailingPunctuation = cleanUrl.match(/[。，,;:!?、。]+$/);
+    cleanUrl = trailingPunctuation ? cleanUrl.slice(0, -trailingPunctuation[0].length) : cleanUrl;
+    cleanUrl = cleanUrl.trim();
+    const punctuation = trailingPunctuation ? trailingPunctuation[0] : "";
+
+    // 确保 URL 有协议
+    const fullUrl = cleanUrl.startsWith("http") ? cleanUrl : `https://${cleanUrl}`;
+
+    // 直接使用 Markdown 自动链接格式 <URL>，这样只会显示 URL 本身（可点击），不显示中括号
+    const replacement = `<${fullUrl}>${punctuation}`;
+    result = result.slice(0, index) + replacement + result.slice(index + url.length);
+  }
+
+  return result;
+}

@@ -58,8 +58,13 @@ export async function POST(req: Request) {
   }
 
   // Get sage with memory document
+  const sageToken = userChat.sageChat.sage?.token;
+  if (!sageToken) {
+    return NextResponse.json({ error: "Sage token not found" }, { status: 404 });
+  }
+
   const sageData = await prisma.sage.findUnique({
-    where: { token: userChat.sageChat.sage.token },
+    where: { token: sageToken },
     include: {
       memoryDocuments: {
         orderBy: { version: "desc" },

@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import { convertUrlsToMarkdownLinks } from "@/lib/textUtils";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
+  // 预处理：将纯文本 URL 转换为 Markdown 自动链接格式
+  const processedText = convertUrlsToMarkdownLinks(children);
+
   const components = {
     code: ({ node, inline, className, children, ...props }: any) => {
       const match = /language-(\w+)/.exec(className || "");
@@ -82,11 +86,24 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         </h3>
       );
     },
+    a: ({ node, href, children, ...props }: any) => {
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline break-words"
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    },
   };
 
   return (
     <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-      {children}
+      {processedText}
     </ReactMarkdown>
   );
 };
