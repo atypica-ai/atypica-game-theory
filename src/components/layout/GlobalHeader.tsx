@@ -167,7 +167,6 @@ const GlobalHeaderMenusDesktop = () => {
   return (
     <div className="flex items-center gap-4 en:max-lg:gap-2">
       <MenuLink href="/insight-radio">{t("insightRadio")}</MenuLink>
-      <MenuLink href="/featured-studies">{t("useCases")}</MenuLink>
       <MenuLink href="/newstudy">{t("marketResearch")}</MenuLink>
       <MenuLink href="/persona">{t("personaImport")}</MenuLink>
       <MenuLink href="/interview">{t("interviewProject")}</MenuLink>
@@ -177,6 +176,11 @@ const GlobalHeaderMenusDesktop = () => {
           <ChevronDownIcon className="h-3 w-3" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuItem asChild>
+            <Link href="/featured-studies" className="cursor-pointer">
+              {t("allUseCases")}
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/creators" className="cursor-pointer">
               {t("solutionsForCreators")}
@@ -457,9 +461,6 @@ const GlobalHeaderDrawer = React.memo(function GlobalHeaderDrawer({
               <DrawerLink href="/insight-radio" icon={HeadphonesIcon}>
                 {t("insightRadio")}
               </DrawerLink>
-              <DrawerLink href="/featured-studies" icon={HistoryIcon}>
-                {t("useCases")}
-              </DrawerLink>
               <DrawerLink href="/newstudy" icon={HistoryIcon}>
                 {t("marketResearch")}
               </DrawerLink>
@@ -485,6 +486,13 @@ const GlobalHeaderDrawer = React.memo(function GlobalHeaderDrawer({
                 </button>
                 {solutionsOpen && (
                   <div className="pl-7 space-y-1 mt-1">
+                    <Link
+                      href="/featured-studies"
+                      className="block py-2 px-3 text-sm hover:bg-accent rounded-md transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      {t("allUseCases")}
+                    </Link>
                     <Link
                       href="/creators"
                       className="block py-2 px-3 text-sm hover:bg-accent rounded-md transition-colors"

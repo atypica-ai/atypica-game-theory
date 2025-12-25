@@ -106,6 +106,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 {t("pricing")}
               </Link>
               <Link
+                href="/affiliate"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("affiliate")}
+              </Link>
+              <Link
                 href="/docs/api"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
