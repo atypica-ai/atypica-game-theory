@@ -33,9 +33,10 @@ const getTagColorClasses = (tag: string): string => {
 
 interface CaseStudiesSectionProps {
   tag: string;
+  title: string;
 }
 
-export function CaseStudiesSection({ tag }: CaseStudiesSectionProps) {
+export function CaseStudiesSection({ tag, title }: CaseStudiesSectionProps) {
   const locale = useLocale();
   const t = useTranslations("Solutions.CaseStudiesSection");
   const [studies, setStudies] = useState<FeaturedReport[]>([]);
@@ -81,11 +82,11 @@ export function CaseStudiesSection({ tag }: CaseStudiesSectionProps) {
 
   return (
     <section className="py-20 relative overflow-hidden">
-      <div className="container mx-auto px-6 sm:px-8 md:px-6 lg:px-4 max-w-screen-2xl">
+      <div className="container mx-auto px-4 sm:px-8">
         {/* Section title */}
         <div className="mb-12 text-center">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
-            {t("title")}
+            {title}
           </h2>
         </div>
 

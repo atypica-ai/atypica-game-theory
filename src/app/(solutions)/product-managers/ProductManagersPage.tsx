@@ -8,11 +8,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CaseStudiesSection } from "../components/CaseStudiesSection";
+import { HeroTitle } from "../components/HeroTitle";
 import { ScenarioCard } from "../components/ScenarioCard";
 
 export default function ProductManagersPage() {
   const locale = useLocale();
-  const t = useTranslations("Solutions.ProductManagersPage.UseCasesSection");
+  const t = useTranslations("Solutions.ProductManagersPage");
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
@@ -35,7 +36,7 @@ export default function ProductManagersPage() {
     <div className="relative">
       {/* Hero Section */}
       <section className="relative min-h-[560px] md:min-h-[640px] lg:min-h-[720px] overflow-hidden">
-        <div className="container mx-auto relative h-full">
+        <div className="container mx-auto relative h-full px-4 sm:px-8">
           <div
             className={cn(
               "flex flex-col justify-center items-center text-center min-h-[560px] md:min-h-[640px] lg:min-h-[720px] py-16 md:py-20",
@@ -43,19 +44,23 @@ export default function ProductManagersPage() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
             )}
           >
-            <p className="text-base md:text-lg lg:text-xl font-medium tracking-[0.22em] uppercase text-muted-foreground mb-6">
-              {isZh ? "Atypica For Product Managers" : "ATYPICA For Product Managers"}
+            <p className="text-sm md:text-xl font-medium tracking-[0.22em] uppercase text-muted-foreground mb-6">
+              Atypica For Product Managers
             </p>
 
-            <h1 className="relative mb-6 pl-12">
-              <span
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
-              ></span>
-              <span className="font-EuclidCircularA font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-[1.3]">
-                {isZh ? "创新，去风险化" : "Innovation, De-Risked"}
+            <HeroTitle>
+              <span className="font-EuclidCircularA font-normal text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-[1.3]">
+                {isZh ? (
+                  <>
+                    <span className="font-bold">创新</span>，去风险化
+                  </>
+                ) : (
+                  <>
+                    <span className="font-bold">Innovation</span>, De-Risked
+                  </>
+                )}
               </span>
-            </h1>
+            </HeroTitle>
 
             <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-4xl leading-relaxed mb-10">
               {isZh
@@ -66,7 +71,7 @@ export default function ProductManagersPage() {
             <Button
               size="lg"
               onClick={handleGetStarted}
-              className="h-14 px-10 text-base font-semibold rounded-full"
+              className="h-12 sm:h-14 sm:px-10 text-base font-semibold rounded-full"
             >
               {isZh ? "开始使用" : "Get Started"}
             </Button>
@@ -74,33 +79,33 @@ export default function ProductManagersPage() {
         </div>
       </section>
 
-      <CaseStudiesSection tag="product-managers" />
+      <CaseStudiesSection tag="productManagers" title={t("CaseStudiesSection.title")} />
 
       {/* Use Cases Section */}
       <section className="py-20 md:py-32 relative overflow-hidden">
-        <div className="container mx-auto relative">
+        <div className="container mx-auto px-4 sm:px-8">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground text-center mb-12">
-            {t("title")}
+            {t("UseCasesSection.title")}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8 lg:gap-12">
             <ScenarioCard
-              question={t("scenario1.question")}
-              toolLabel={t("scenario1.primaryTool.label")}
+              question={t("UseCasesSection.scenario1.question")}
+              toolLabel={t("UseCasesSection.scenario1.primaryTool.label")}
               toolIcon={Search}
-              href={`/newstudy?topic=${encodeURIComponent(t("scenario1.question"))}`}
+              href={`/newstudy?brief=${encodeURIComponent(t("UseCasesSection.scenario1.question"))}`}
             />
             <ScenarioCard
-              question={t("scenario2.question")}
-              toolLabel={t("scenario2.primaryTool.label")}
+              question={t("UseCasesSection.scenario2.question")}
+              toolLabel={t("UseCasesSection.scenario2.primaryTool.label")}
               toolIcon={MessageSquare}
-              href={`/newstudy?topic=${encodeURIComponent(t("scenario2.question"))}`}
+              href={`/interview`}
             />
             <ScenarioCard
-              question={t("scenario3.question")}
-              toolLabel={t("scenario3.primaryTool.label")}
+              question={t("UseCasesSection.scenario3.question")}
+              toolLabel={t("UseCasesSection.scenario3.primaryTool.label")}
               toolIcon={Users}
-              href="/personas"
+              href="/sage"
             />
           </div>
         </div>

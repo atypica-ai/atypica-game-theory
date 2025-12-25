@@ -1,7 +1,6 @@
 {
   "Solutions": {
     "CaseStudiesSection": {
-      "title": "成功案例",
       "errorMessage": "加载失败",
       "emptyMessage": "暂无案例"
     },
@@ -9,6 +8,9 @@
       "metadata": {
         "title": "创作者 - 让趋势在几天内爆火",
         "description": "快速知道什么会火、怎么优化、趋势在哪"
+      },
+      "CaseStudiesSection": {
+        "title": "创作者爆款案例"
       },
       "UseCasesSection": {
         "title": "研究、优化、发布",
@@ -37,6 +39,9 @@
         "title": "网红/KOL - 将信任变现",
         "description": "通过数据驱动的洞察将影响力转化为可持续收入"
       },
+      "CaseStudiesSection": {
+        "title": "网红变现案例"
+      },
       "UseCasesSection": {
         "title": "参与更深，赚取更多",
         "scenario1": {
@@ -63,6 +68,9 @@
       "metadata": {
         "title": "营销人员 - 真实声音，真实转化",
         "description": "在发布前用真实消费者洞察验证营销活动"
+      },
+      "CaseStudiesSection": {
+        "title": "营销转化案例"
       },
       "UseCasesSection": {
         "title": "测试它。验证它。赢得它。",
@@ -91,6 +99,9 @@
         "title": "创业者 - 尽早淘汰坏想法",
         "description": "在花费时间和金钱之前验证您的创业想法"
       },
+      "CaseStudiesSection": {
+        "title": "创业验证案例"
+      },
       "UseCasesSection": {
         "title": "证明你的概念。资助你的未来。",
         "scenario1": {
@@ -118,6 +129,9 @@
         "title": "咨询顾问 - 展示消费者证据，而非幻灯片",
         "description": "用真实的消费者研究和洞察支持您的建议"
       },
+      "CaseStudiesSection": {
+        "title": "咨询成功案例"
+      },
       "UseCasesSection": {
         "title": "研究它。证明它。呈现它。",
         "scenario1": {
@@ -144,6 +158,9 @@
       "metadata": {
         "title": "产品经理 - 创新，去风险化",
         "description": "用真实用户洞察打造用户真正想要的产品"
+      },
+      "CaseStudiesSection": {
+        "title": "用户喜爱的产品案例"
       },
       "UseCasesSection": {
         "title": "倾听用户。构建重要内容。",

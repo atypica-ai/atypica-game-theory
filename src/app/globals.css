@@ -142,6 +142,13 @@
 
 @font-face {
   font-family: "EuclidCircularA";
+  src: url("/_public/fonts/Euclid-Circular-A-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "EuclidCircularA";
   src: url("/_public/fonts/Euclid-Circular-A-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;

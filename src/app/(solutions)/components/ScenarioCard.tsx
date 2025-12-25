@@ -13,7 +13,7 @@ export function ScenarioCard({ question, toolLabel, toolIcon: Icon, href }: Scen
   return (
     <div className="group relative bg-card rounded-2xl overflow-hidden border flex flex-col h-full">
       <div className="relative flex flex-col h-full p-5 sm:p-6 transition-all duration-300">
-        <h3 className="text-lg md:text-xl font-semibold leading-snug text-card-foreground">
+        <h3 className="text-lg md:text-xl font-medium leading-snug text-card-foreground">
           {question}
         </h3>
         <div className="flex-1 min-h-[30px] md:min-h-10" />

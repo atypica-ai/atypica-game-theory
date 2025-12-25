@@ -1,7 +1,6 @@
 {
   "Solutions": {
     "CaseStudiesSection": {
-      "title": "Success Stories",
       "errorMessage": "Failed to load",
       "emptyMessage": "No studies yet"
     },
@@ -9,6 +8,9 @@
       "metadata": {
         "title": "For Creators - Turn Trends Viral, In Days",
         "description": "Quickly discover what will go viral, how to optimize, and where trends are heading"
+      },
+      "CaseStudiesSection": {
+        "title": "Creators Going Viral"
       },
       "UseCasesSection": {
         "title": "Research it. Optimize it. Ship it.",
@@ -37,6 +39,9 @@
         "title": "For Influencers - Monetize Trust",
         "description": "Turn your influence into sustainable income with data-driven insights"
       },
+      "CaseStudiesSection": {
+        "title": "Influencers Earning More"
+      },
       "UseCasesSection": {
         "title": "Engage deeper, earn more",
         "scenario1": {
@@ -63,6 +68,9 @@
       "metadata": {
         "title": "For Marketers - Real Voices, Real Conversions",
         "description": "Validate campaigns with real consumer insights before you launch"
+      },
+      "CaseStudiesSection": {
+        "title": "Marketing That Converts"
       },
       "UseCasesSection": {
         "title": "Test it. Validate it. Win it.",
@@ -91,6 +99,9 @@
         "title": "For Startup Owners - Kill Bad Ideas Early",
         "description": "Validate your startup ideas before spending time and money"
       },
+      "CaseStudiesSection": {
+        "title": "Startups That Validated"
+      },
       "UseCasesSection": {
         "title": "Prove your concept. Fund your future.",
         "scenario1": {
@@ -118,6 +129,9 @@
         "title": "For Consultants - Show Consumer Proof, Not Just Slides",
         "description": "Back your recommendations with real consumer research and insights"
       },
+      "CaseStudiesSection": {
+        "title": "Consulting Wins"
+      },
       "UseCasesSection": {
         "title": "Research it. Prove it. Present it.",
         "scenario1": {
@@ -144,6 +158,9 @@
       "metadata": {
         "title": "For Product Managers - Innovation, De-Risked",
         "description": "Build products users actually want with real user insights"
+      },
+      "CaseStudiesSection": {
+        "title": "Products Users Love"
       },
       "UseCasesSection": {
         "title": "Listen to users. Build what matters.",
