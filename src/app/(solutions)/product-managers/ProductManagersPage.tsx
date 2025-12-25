@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Mic, Search, Users } from "lucide-react";
+import { MessageSquare, Search, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -10,9 +10,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CaseStudiesSection } from "../components/CaseStudiesSection";
 
-export default function CreatorsPage() {
+export default function ProductManagersPage() {
   const locale = useLocale();
-  const t = useTranslations("Solutions.CreatorsPage.UseCasesSection");
+  const t = useTranslations("Solutions.ProductManagersPage.UseCasesSection");
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
@@ -36,9 +36,7 @@ export default function CreatorsPage() {
       <div className="relative z-10">
         {/* Hero Section */}
         <section className="relative min-h-[560px] md:min-h-[640px] lg:min-h-[720px] overflow-hidden">
-          {/* Apple-style minimal background - subtle and sophisticated */}
           <div className="absolute inset-0 z-0 bg-background bg-linear-to-b from-background via-background to-background/95">
-            {/* Very subtle radial gradient accent - brand green hint */}
             <div
               className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full blur-3xl opacity-[0.25] dark:opacity-20"
               style={{
@@ -48,7 +46,6 @@ export default function CreatorsPage() {
             />
           </div>
 
-          {/* Content */}
           <div className="container mx-auto px-6 sm:px-8 md:px-6 lg:px-4 max-w-screen-2xl relative z-10 h-full">
             <div
               className={cn(
@@ -57,12 +54,10 @@ export default function CreatorsPage() {
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
               )}
             >
-              {/* Eyebrow */}
               <p className="text-base md:text-lg lg:text-xl font-medium tracking-[0.22em] uppercase text-muted-foreground mb-6">
-                {isZh ? "Atypica For Creators" : "ATYPICA For Creators"}
+                {isZh ? "Atypica For Product Managers" : "ATYPICA For Product Managers"}
               </p>
 
-              {/* Title */}
               <h1
                 className={cn(
                   "font-EuclidCircularA font-bold mb-6",
@@ -73,31 +68,28 @@ export default function CreatorsPage() {
               >
                 {isZh ? (
                   <>
+                    创新，
                     <span className="relative inline-block ml-6">
                       <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
-                      <span className="font-black text-[1.1em]">让</span>
+                      <span className="font-black text-[1.1em]">去风险化</span>
                     </span>
-                    趋势在几天内爆火
                   </>
                 ) : (
                   <>
-                    <span className="relative inline-block ml-6">
-                      <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary"></span>
-                      <span className="font-black text-[1.1em]">Turn</span>
-                    </span>{" "}
-                    Trends viral, In Days
+                    Innovation,{" "}
+                    <span className="font-black text-[1.1em]">
+                      De-R<span className="text-primary">i</span>sked
+                    </span>
                   </>
                 )}
               </h1>
 
-              {/* Subtitle */}
               <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-4xl leading-relaxed mb-10">
                 {isZh
                   ? "快速知道什么会火、怎么优化、趋势在哪"
                   : "Quickly discover what will go viral, how to optimize, and where trends are heading"}
               </p>
 
-              {/* CTA */}
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
                 <Button
                   size="lg"
@@ -111,22 +103,17 @@ export default function CreatorsPage() {
           </div>
         </section>
 
-        {/* Other Sections */}
-        <CaseStudiesSection tag="creators" />
+        <CaseStudiesSection tag="product-managers" />
 
         {/* Use Cases Section */}
         <section className="py-20 md:py-32 bg-background relative overflow-hidden">
           <div className="container mx-auto px-6 sm:px-8 md:px-6 lg:px-4 max-w-screen-2xl relative z-10">
-            {/* Section title */}
             <div className="mb-12 text-center">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
                 {t("title")}
               </h2>
             </div>
-
-            {/* Grid Layout - 3 columns on large screens */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8 lg:gap-12">
-              {/* Scenario 1 */}
               <div className="group relative bg-card rounded-2xl overflow-hidden border transition-all duration-300 hover:scale-[1.02] flex flex-col h-full">
                 <div className="relative z-10 flex flex-col h-full p-5 sm:p-6 transition-all duration-300">
                   <div>
@@ -137,18 +124,16 @@ export default function CreatorsPage() {
                   <div className="flex-1 min-h-[30px] md:min-h-10" />
                   <div>
                     <Link
-                      href={`/newstudy?fast-insight=1&topic=${encodeURIComponent(t("scenario1.question"))}`}
+                      href={`/newstudy?topic=${encodeURIComponent(t("scenario1.question"))}`}
                       prefetch={true}
                       className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-foreground text-background text-xs sm:text-sm md:text-base font-semibold transition-transform duration-200 group-hover:scale-105 hover:opacity-90"
                     >
-                      <Mic className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                      <Search className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                       <span>{t("scenario1.primaryTool.label")}</span>
                     </Link>
                   </div>
                 </div>
               </div>
-
-              {/* Scenario 2 */}
               <div className="group relative bg-card rounded-2xl overflow-hidden border transition-all duration-300 hover:scale-[1.02] flex flex-col h-full">
                 <div className="relative z-10 flex flex-col h-full p-5 sm:p-6 transition-all duration-300">
                   <div>
@@ -163,14 +148,12 @@ export default function CreatorsPage() {
                       prefetch={true}
                       className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-foreground text-background text-xs sm:text-sm md:text-base font-semibold transition-transform duration-200 group-hover:scale-105 hover:opacity-90"
                     >
-                      <Search className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                      <MessageSquare className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                       <span>{t("scenario2.primaryTool.label")}</span>
                     </Link>
                   </div>
                 </div>
               </div>
-
-              {/* Scenario 3 */}
               <div className="group relative bg-card rounded-2xl overflow-hidden border transition-all duration-300 hover:scale-[1.02] flex flex-col h-full">
                 <div className="relative z-10 flex flex-col h-full p-5 sm:p-6 transition-all duration-300">
                   <div>

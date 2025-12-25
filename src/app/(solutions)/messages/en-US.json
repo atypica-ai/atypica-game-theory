@@ -1,727 +1,163 @@
 {
   "Solutions": {
     "CreatorsPage": {
-      "PainPointSection": {
-        "title": "Creator Challenges",
-        "description": "Every creator faces these obstacles on the path to success",
-        "point1": {
-          "title": "Finding Your Audience",
-          "description": "Understanding who resonates with your content and how to reach them effectively"
-        },
-        "point2": {
-          "title": "Content Strategy",
-          "description": "Developing a consistent content plan that aligns with your goals and audience needs"
-        },
-        "point3": {
-          "title": "Standing Out",
-          "description": "Differentiating your work in a crowded creator landscape"
-        }
-      },
-      "FeatureSection": {
-        "title": "How Atypica's Different Features Support Creators at Every Stage",
-        "description": "Discover the tools that help creators research, understand audiences, and generate content",
-        "aiResearch": {
-          "title": "AI Research",
-          "value": "Conduct deep market research and audience analysis in minutes",
-          "howToUse": {
-            "title": "How to Use",
-            "step1": "Ask questions about your target audience or market trends",
-            "step2": "AI automatically generates personas and conducts interviews",
-            "step3": "Receive comprehensive insights and actionable recommendations"
-          },
-          "example": {
-            "title": "Example",
-            "text": "Research what Gen Z values in sustainable fashion brands"
-          }
-        },
-        "aiPersona": {
-          "title": "AI Personas",
-          "value": "Build and interact with AI personas representing your ideal audience",
-          "howToUse": {
-            "title": "How to Use",
-            "step1": "Create or import personas matching your target audience",
-            "step2": "Conduct interviews to understand their preferences and behaviors",
-            "step3": "Use insights to refine your content strategy"
-          },
-          "example": {
-            "title": "Example",
-            "text": "Interview personas to test your content ideas before publishing"
-          }
-        },
-        "aiPodcast": {
-          "title": "AI Podcasts",
-          "value": "Automatically transform your research into engaging podcast content",
-          "howToUse": {
-            "title": "How to Use",
-            "step1": "Complete your research or use existing insights",
-            "step2": "AI generates podcast script and audio automatically",
-            "step3": "Share your podcast across multiple platforms"
-          },
-          "example": {
-            "title": "Example",
-            "text": "Turn your market research findings into a podcast episode"
-          }
-        },
-        "imagePlaceholder": "Image Placeholder - Add your feature image here"
-      },
-      "AdvancedCreatorSection": {
-        "badge": "Advanced Tools",
-        "title": "For Advanced Creators",
-        "description": "Professional-grade features to help creators scale their impact",
-        "contentColumn": {
-          "title": "Content Column",
-          "description": "Build a systematic content strategy with AI-powered planning and optimization",
-          "howToUse": {
-            "title": "How to Use",
-            "step1": "Define your content themes and objectives",
-            "step2": "AI suggests content ideas based on audience insights",
-            "step3": "Plan and schedule your content calendar"
-          }
-        },
-        "differentiation": {
-          "title": "Differentiation Strategy",
-          "description": "Identify unique angles and positioning for your creative work",
-          "howToUse": {
-            "title": "How to Use",
-            "step1": "Analyze competitor content and market gaps",
-            "step2": "Discover unique value propositions for your audience",
-            "step3": "Develop a distinctive creative voice"
-          }
-        },
-        "paidContent": {
-          "title": "Paid Content Planning",
-          "description": "Optimize your monetization strategy with data-driven insights",
-          "howToUse": {
-            "title": "How to Use",
-            "step1": "Research what your audience is willing to pay for",
-            "step2": "Test pricing strategies with AI personas",
-            "step3": "Plan your paid content offerings"
-          }
-        }
-      },
-      "HeroSection": {
-        "eyebrow": "ATYPICA For Creators",
-        "title": "Turn Trends viral, In Days",
-        "subtitle": "Quickly discover what will go viral, how to optimize, and where trends are heading",
-        "getStarted": "Get Started"
-      },
-      "CaseStudiesSection": {
-        "title": "Use Cases",
-        "studies": {
-          "tiktokTrendMap": {
-            "tag": "AI Research",
-            "title": "TikTok Creative Trend Map: Which lanes will spike in the next 30 days?",
-            "description": "Use AI Research to scan top creators, topics, and sounds to surface short- and mid-term opportunities, plus suggested ways for you to plug in."
-          },
-          "hookBenchmark": {
-            "tag": "AI Research",
-            "title": "Hook Benchmarking: Which opening makes viewers actually stop?",
-            "description": "Compare different video concepts and openings with AI Research and real audience-style feedback to find the version that drives the strongest thumb‑stop."
-          },
-          "fastInsightPodcast": {
-            "tag": "AI Podcast",
-            "title": "Turn one research sprint into a 10‑minute podcast script",
-            "description": "Use Fast Insight to compress a dense study into a high‑signal podcast episode that helps you decide where to go next."
-          },
-          "personaDeepDive": {
-            "tag": "AI Persona",
-            "title": "Why do your fans actually like you? A persona deep dive",
-            "description": "Build multiple AI Personas representing different fan segments and ask them how they perceive your style, value, and on‑camera personality."
-          },
-          "creativeABTest": {
-            "tag": "AI Interview",
-            "title": "A/B creative concepts: which world feels more clickable?",
-            "description": "Run AI Interviews that expose each concept to persona audiences, capture their reactions, and surface what feels fresh vs overused."
-          },
-          "fanResonance": {
-            "tag": "AI Persona",
-            "title": "Design a video that makes fans say \"this is exactly how I feel\"",
-            "description": "Combine Research + Persona + Podcast to mine comments, past content, and benchmarks for repeatable emotional hooks and story angles."
-          }
-        },
-        "showMore": "Show More Cases",
-        "showLess": "Show Less",
-        "noCases": "No cases available",
-        "viewStudy": "View Study"
+      "metadata": {
+        "title": "For Creators - Turn Trends Viral, In Days",
+        "description": "Quickly discover what will go viral, how to optimize, and where trends are heading"
       },
       "UseCasesSection": {
         "title": "Research it. Optimize it. Ship it.",
         "scenario1": {
           "question": "What creative directions are hottest on TikTok right now, and which lane should I lean into?",
           "primaryTool": {
-            "id": "aiPodcast",
-            "label": "AI Podcast",
-            "href": "/newstudy?fast-insight=1&topic=What creative directions are hottest on TikTok right now, and which lane should I lean into?"
+            "label": "AI Podcast"
           }
         },
         "scenario2": {
           "question": "Between my video concept and my competitor's, which one will attract viewers more?",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=Between my video concept and my competitor's, which one will attract viewers more?"
+            "label": "AI Research"
           }
         },
         "scenario3": {
           "question": "Will this creative concept genuinely resonate with my fans?",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         }
-      },
-      "PlanSmarterSection": {
-        "badge": "Section 1",
-        "title": "Plan Smarter: Use AI Research to Build Your Content Strategy",
-        "subtitle": "A multi-agent system that behaves like a real strategy team, conducting audience analysis, competitive reviews, and insight discovery.",
-        "quickStartPrompt": "Don’t know where to start? Try one of these research prompts:",
-        "ctaResearch": "Start AI Research",
-        "useCase1": {
-          "title": "Build your content/account strategy from scratch",
-          "description": "Get audience profiles, motivations, pain points, content pillars, formats & angles. A blueprint normally created by strategists, not by guesswork.",
-          "example1": "Plan my content strategy for a TikTok account about AI tools.",
-          "example2": "What content pillars fit a creator focusing on personal finance?",
-          "output": "Clear audience profiles, their motivations & pain points, recommended content pillars, formats & angles that resonate."
-        },
-        "useCase2": {
-          "title": "Benchmark creators across TikTok, Instagram, and X",
-          "description": "Atypica can actively browse social platforms to instantly see what's working, what's missing, and where you can stand out.",
-          "point1": "What top creators in your niche post",
-          "point2": "How they structure winning content",
-          "point3": "What topics are oversaturated",
-          "point4": "What white-space opportunities exist"
-        },
-        "useCase3": {
-          "title": "Generate a personalized idea library",
-          "description": "Ideas aren't random prompts — they're grounded in audience psychology, interview patterns, competitive patterns, and platform preferences.",
-          "example1": "Create 20 video ideas based on real audience insights.",
-          "example2": "Give me a one-month content calendar with hooks.",
-          "output": "A living idea bank that actually fits your audience and positioning."
-        },
-        "realExample": {
-          "title": "Real Example",
-          "persona": "YouTuber & Travel Vlogger",
-          "situation": "Makes videos about China's market, culture, and new places. Wants to promote new tools but doesn't know what angle will resonate.",
-          "solution": "Uses Atypica AI Research to generate:",
-          "output1": "Audience Segmentation Analysis",
-          "output2": "Content Marketing Matrix Implementation",
-          "output3": "Multi-Platform Implementation Strategy",
-          "result": "In a few minutes, gets a full insight report that guides promotion strategy.",
-          "linkText": "View full report"
-        }
-      },
-      "AskAudienceSection": {
-        "badge": "Section 2",
-        "title": "Test Ideas Instantly: AI Personas as Your Always-On Focus Group",
-        "subtitle": "Create proprietary Human AI Personas based on existing user interview records. These personas represent your target audience, reflecting real users' needs and pain points surprisingly well.",
-        "value": "Your always-available focus group to review and vote for your content ideas",
-        "ctaInterview": "Start AI Interviews",
-        "useCases": {
-          "title": "You can ask them:",
-          "case1": "Which of these 3 titles would you click, and why?",
-          "case2": "Does this hook make you want to keep watching?",
-          "case3": "What's missing from this outline if you're a beginner?"
-        },
-        "applications": {
-          "title": "Get instant feedback on:",
-          "app1": "Titles & subject lines",
-          "app2": "Hooks & intros",
-          "app3": "Thumbnail copy",
-          "app4": "Content angles & messaging"
-        },
-        "benefit": "Instead of relying purely on your own taste, or waiting for real-world metrics, you get instant feedback from audience-shaped minds.",
-        "realExample": {
-          "title": "Real Example",
-          "description": "A digital content creator's AI Persona not only helped choose the most attractive headline but also explained why and provided additional content angles.",
-          "result": "More than just a choice — strategic insights to boost content creation."
-        }
-      },
-      "TurnResearchSection": {
-        "badge": "Section 3",
-        "title": "Turn Insights into Publish-Ready Content with AI Podcast",
-        "subtitle": "After running AI Research, you'll have a structured content plan. Atypica moves a step further: turn that report into a narrated episode in minutes.",
-        "ctaPodcast": "Generate AI Podcast",
-        "outputs": {
-          "title": "You instantly get:",
-          "output1": "A concise and detailed script full of real insights",
-          "output2": "Natural-sounding audio that can be added into your video"
-        },
-        "idealFor": {
-          "title": "Works especially well for:",
-          "type1": "Business & marketing breakdowns",
-          "type2": "Tech / AI explainers",
-          "type3": "Consumer trend analysis",
-          "type4": "Career & self-improvement content"
-        },
-        "reuseOptions": {
-          "title": "The audio isn't just a podcast — it's raw material:",
-          "option1": "Use the script as a YouTube Shorts/Reels voiceover",
-          "option2": "Pull quotes for LinkedIn/X posts",
-          "option3": "Release the audio on Spotify/Apple Podcast",
-          "option4": "Reuse sections in a newsletter or blog",
-          "option5": "Extract talking points for webinars or live streams"
-        },
-        "formula": "One research session → one podcast → a week of content assets.",
-        "tabs": {
-          "overview": "Overview",
-          "reuse": "Reuse your research",
-          "examples": "Real examples"
-        },
-        "realExamples": {
-          "title": "Convincing Examples",
-          "description": "These podcasts and videos generated from them have helped us rapidly grow our following across platforms:",
-          "example1": "AI Browser Showdown: FlowithOS vs Atlas vs Fellou vs Comet — Which One Actually Works?",
-          "example2": "When companies trust AI more than their employees, are they becoming more efficient or more dangerous?",
-          "example3": "Social media influence luxury purchases despite debt and psychological drivers"
-        }
-      },
-      "AdvancedWorkflowSection": {
-        "badge": "Section 4",
-        "title": "Advanced Workflows for Serious Creators",
-        "subtitle": "As your content operation grows, Atypica becomes the research engine behind your whole creator business — not just single posts.",
-        "workflow1": {
-          "title": "Design long-term content pillars & series",
-          "description": "Build a recognizable content universe, not just scattered posts.",
-          "actions": {
-            "action1": "Identify recurring audience themes",
-            "action2": "Cluster them into durable pillars (e.g. case studies, myths, beginner mistakes, trend breakdowns)",
-            "action3": "Propose recurring series you can run every week"
-          }
-        },
-        "workflow2": {
-          "title": "Find your differentiation in a crowded niche",
-          "description": "You're not 'yet another explainer' — you occupy a specific angle.",
-          "actions": {
-            "action1": "Map what everyone else is saying",
-            "action2": "Spot overused narratives",
-            "action3": "Uncover questions audiences still struggle with",
-            "action4": "Position your content to fill those gaps"
-          }
-        },
-        "workflow3": {
-          "title": "Validate paid products and collaborations",
-          "description": "Reduce risk and design offers that actually resonate.",
-          "beforeLaunching": "Before creating a course, membership, or sponsored series:",
-          "actions": {
-            "action1": "Research your audience's willingness to pay",
-            "action2": "Uncover objections and hesitations",
-            "action3": "Test messaging ideas with Personas"
-          }
-        }
-      },
-      "CTASection": {
-        "title": "Ready to Transform Your Creative Process?",
-        "description": "Join thousands of creators using AI to research, understand audiences, and create better content",
-        "ctaButton": "Get Started Free",
-        "headline": "Most creators operate on intuition.",
-        "subheadline": "Atypica lets you operate on insight.",
-        "tagline": "The same advantage large media and strategy teams have.",
-        "benefit1": "Stop guessing what your audience wants",
-        "benefit2": "See your niche and competitors clearly",
-        "benefit3": "Test ideas before you publish",
-        "benefit4": "Turn research into consistent, multi-platform output",
-        "closing": "Whether you're starting your first channel or scaling into a real creator business, Atypica acts as your research team, strategist, and content engine in one place.",
-        "contactCtaLabel": "Contact our team",
-        "contactCtaHint": "Prefer a guided walkthrough? Email us and we’ll help you design your first creator workflow."
       }
     },
-    "InfluencerPage": {
-      "HeroSection": {
-        "eyebrow": "ATYPICA For Influencers",
-        "title": "Monetize Trust",
-        "subtitle": "Quickly discover what will go viral, how to optimize, and where trends are heading",
-        "getStarted": "Get Started"
-      },
-      "CaseStudiesSection": {
-        "title": "Use Cases",
-        "studies": {
-          "fanInsight": {
-            "tag": "AI Sage",
-            "title": "Fan Trust Insights: Why do they trust me?",
-            "description": "Create a fan insight expert agent to deeply analyze fans' real needs, concerns, and sources of trust, helping you optimize your persona positioning.",
-            "imagePrompt": "influencer analytics dashboard showing fan engagement metrics, trust indicators, audience insights, modern social media analytics interface with colorful charts"
-          },
-          "contentStrategy": {
-            "tag": "AI Research",
-            "title": "Persona Trait Strategy: Which trait boosts fan engagement most?",
-            "description": "Compare the impact of different persona traits on fan engagement through AI Research to find the dimension that best strengthens your unique value.",
-            "imagePrompt": "professional dashboard for ai-research analysis, persona trait strategy: which trait boosts fan engagement most?, modern analytics interface, clean design"
-          },
-          "formatPreference": {
-            "tag": "AI Persona",
-            "title": "Fan Content Preference Test: What format do they want most?",
-            "description": "Build fan Personas to test different content formats (live streaming, knowledge sharing, daily vlogs) and find the content direction that best matches fan expectations.",
-            "imagePrompt": "professional dashboard for ai-persona analysis, fan content preference test: what format do they want most?, modern analytics interface, clean design"
-          },
-          "monetizationPath": {
-            "tag": "AI Research",
-            "title": "Monetization Path Optimization: What content are fans willing to pay for?",
-            "description": "Research fan payment willingness and preferences to find the monetization model and pricing strategy that best fits you.",
-            "imagePrompt": "professional dashboard for ai-research analysis, monetization path optimization: what content are fans willing to pay for?, modern analytics interface, clean design"
-          },
-          "collaborationFit": {
-            "tag": "AI Persona",
-            "title": "Brand Collaboration Fit: Which brand partnership resonates most with fans?",
-            "description": "Let AI Personas evaluate the acceptance of different brand collaborations to find partnership directions that best match fan values.",
-            "imagePrompt": "professional dashboard for ai-persona analysis, brand collaboration fit: which brand partnership resonates most with fans?, modern analytics interface, clean design"
-          },
-          "engagementBoost": {
-            "tag": "AI Interview",
-            "title": "Engagement Optimization Interview: How to make fans more willing to comment and share?",
-            "description": "Understand fan interaction motivations through AI Interviews to find content strategies that maximize comments, shares, and engagement.",
-            "imagePrompt": "professional dashboard for ai-interview analysis, engagement optimization interview: how to make fans more willing to comment and share?, modern analytics interface, clean design"
-          }
-        },
-        "showMore": "Show More Cases",
-        "showLess": "Show Less",
-        "noCases": "No cases available",
-        "viewStudy": "View Study"
+    "InfluencersPage": {
+      "metadata": {
+        "title": "For Influencers - Monetize Trust",
+        "description": "Turn your influence into sustainable income with data-driven insights"
       },
       "UseCasesSection": {
         "title": "Engage deeper, earn more",
         "scenario1": {
           "question": "What do my fans truly care about? Which aspects of me do they find most interesting?",
           "primaryTool": {
-            "id": "aiSage",
-            "label": "AI Sage",
-            "href": "/newstudy?topic=What do my fans truly care about? Which aspects of me do they find most interesting?"
+            "label": "AI Sage"
           }
         },
         "scenario2": {
           "question": "Which persona trait should I emphasize to maximize fan engagement?",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=Which persona trait should I emphasize to maximize fan engagement?"
+            "label": "AI Research"
           }
         },
         "scenario3": {
           "question": "What content format do my fans want most? Live streaming, knowledge sharing, or something else?",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         }
       }
     },
-    "MarketerPage": {
-      "HeroSection": {
-        "eyebrow": "ATYPICA For Marketers",
-        "title": "Real voices, real conversions",
-        "subtitle": "Quickly discover what will go viral, how to optimize, and where trends are heading",
-        "getStarted": "Get Started"
-      },
-      "CaseStudiesSection": {
-        "title": "Use Cases",
-        "studies": {
-          "consumerInsight": {
-            "tag": "AI Research",
-            "title": "Consumer Pain Point Insights: What do they care about most right now?",
-            "description": "Deeply understand target consumers' real thoughts, pain points, and needs through AI Research to provide data support for marketing strategies.",
-            "imagePrompt": "marketing analytics dashboard showing consumer insights, pain points analysis, modern marketing research interface with trend charts and consumer sentiment"
-          },
-          "adCopyTest": {
-            "tag": "AI Persona",
-            "title": "Ad Copy Testing: Which version resonates most with consumers?",
-            "description": "Build target consumer Personas to test the acceptance and conversion potential of different ad copy, finding the most effective messaging.",
-            "imagePrompt": "split screen a/b testing interface showing two ad copy variations, consumer feedback bubbles, conversion metrics, modern marketing analytics dashboard"
-          },
-          "brandPerception": {
-            "tag": "AI Sage",
-            "title": "Brand Perception Analysis: Why do consumers choose competitors?",
-            "description": "Create a brand expert agent to deeply analyze consumers' real views on brands and competitors, finding optimization directions for brand positioning.",
-            "imagePrompt": "brand perception analysis dashboard, competitor comparison charts, consumer sentiment visualization, modern brand analytics interface"
-          },
-          "campaignStrategy": {
-            "tag": "AI Research",
-            "title": "Marketing Campaign Strategy: Which timing and channels are most effective?",
-            "description": "Research the effectiveness of different marketing campaigns, analyze optimal timing, channel mix, and target audiences to optimize marketing ROI.",
-            "imagePrompt": "professional dashboard for ai-research analysis, marketing campaign strategy: which timing and channels are most effective?, modern analytics interface, clean design"
-          },
-          "messageResonance": {
-            "tag": "AI Interview",
-            "title": "Marketing Message Resonance Test: How do consumers understand our message?",
-            "description": "Understand consumers' real understanding and reactions to marketing messages through AI Interviews, finding blind spots and optimization opportunities in message delivery.",
-            "imagePrompt": "professional dashboard for ai-interview analysis, marketing message resonance test: how do consumers understand our message?, modern analytics interface, clean design"
-          },
-          "pricingStrategy": {
-            "tag": "AI Persona",
-            "title": "Pricing Strategy Test: Do consumers think our prices are reasonable?",
-            "description": "Let AI Personas evaluate the acceptance of different pricing strategies to find price points that best match consumer expectations.",
-            "imagePrompt": "professional dashboard for ai-persona analysis, pricing strategy test: do consumers think our prices are reasonable?, modern analytics interface, clean design"
-          }
-        },
-        "showMore": "Show More Cases",
-        "showLess": "Show Less",
-        "noCases": "No cases available",
-        "viewStudy": "View Study"
+    "MarketersPage": {
+      "metadata": {
+        "title": "For Marketers - Real Voices, Real Conversions",
+        "description": "Validate campaigns with real consumer insights before you launch"
       },
       "UseCasesSection": {
         "title": "Test it. Validate it. Win it.",
         "scenario1": {
           "question": "What are my target consumers thinking right now? What are their real pain points?",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=What are my target consumers thinking right now? What are their real pain points?"
+            "label": "AI Research"
           }
         },
         "scenario2": {
           "question": "Will this ad copy genuinely resonate with consumers? What are their real reactions?",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         },
         "scenario3": {
           "question": "Why do consumers choose competitors over us? How do they view our brand?",
           "primaryTool": {
-            "id": "aiSage",
-            "label": "AI Sage",
-            "href": "/newstudy?topic=Why do consumers choose competitors over us? How do they view our brand?"
+            "label": "AI Sage"
           }
         }
       }
     },
-    "ProductManagerPage": {
-      "HeroSection": {
-        "eyebrow": "ATYPICA For Product Managers",
-        "title": "Innovation, De-Risked",
-        "subtitle": "Quickly discover what will go viral, how to optimize, and where trends are heading",
-        "getStarted": "Get Started"
-      },
-      "CaseStudiesSection": {
-        "title": "Use Cases",
-        "studies": {
-          "userNeeds": {
-            "tag": "AI Research",
-            "title": "User Needs Discovery: What feature do they truly need next?",
-            "description": "Deeply understand users' real needs and use cases through AI Research to find the most valuable product innovation directions.",
-            "imagePrompt": "product management dashboard showing user needs analysis, feature priority matrix, user journey maps, modern product research interface"
-          },
-          "featureAdoption": {
-            "tag": "AI Interview",
-            "title": "Feature Adoption Prediction: Will users actually use this new feature?",
-            "description": "Test users' acceptance and willingness to use new features through AI Interviews to identify potential adoption barriers in advance.",
-            "imagePrompt": "feature adoption testing interface, user interview responses, adoption prediction charts, modern product validation dashboard"
-          },
-          "productDirection": {
-            "tag": "AI Sage",
-            "title": "Product Direction Validation: Does our innovation really solve users' core problems?",
-            "description": "Create a product expert agent to deeply analyze whether product directions align with users' real needs, finding optimization opportunities for product positioning.",
-            "imagePrompt": "product direction validation dashboard, user problem analysis, product-market fit metrics, modern product strategy interface"
-          },
-          "competitorAnalysis": {
-            "tag": "AI Research",
-            "title": "Competitor Feature Comparison: Where is our product differentiated?",
-            "description": "Deeply research competitor features and user reviews to find our differentiation advantages and feature gaps that need strengthening.",
-            "imagePrompt": "professional dashboard for ai-research analysis, competitor feature comparison: where is our product differentiated?, modern analytics interface, clean design"
-          },
-          "userOnboarding": {
-            "tag": "AI Persona",
-            "title": "User Onboarding Optimization: How can new users quickly understand product value?",
-            "description": "Build new user Personas to test different onboarding flows and explanation methods, optimizing the first-use experience.",
-            "imagePrompt": "professional dashboard for ai-persona analysis, user onboarding optimization: how can new users quickly understand product value?, modern analytics interface, clean design"
-          },
-          "featurePriority": {
-            "tag": "AI Research",
-            "title": "Feature Priority Ranking: Which feature matters most to users?",
-            "description": "Analyze the impact of different features on user value through AI Research to scientifically prioritize the product roadmap.",
-            "imagePrompt": "professional dashboard for ai-research analysis, feature priority ranking: which feature matters most to users?, modern analytics interface, clean design"
-          }
-        },
-        "showMore": "Show More Cases",
-        "showLess": "Show Less",
-        "noCases": "No cases available",
-        "viewStudy": "View Study"
-      },
-      "UseCasesSection": {
-        "title": "Listen to users. Build what matters.",
-        "scenario1": {
-          "question": "What's the next innovative feature users truly need? What haven't we thought of?",
-          "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=What's the next innovative feature users truly need? What haven't we thought of?"
-          }
-        },
-        "scenario2": {
-          "question": "Will users actually adopt this innovative feature? What are their reactions?",
-          "primaryTool": {
-            "id": "aiInterview",
-            "label": "AI Interview",
-            "href": "/newstudy?topic=Will users actually adopt this innovative feature? What are their reactions?"
-          }
-        },
-        "scenario3": {
-          "question": "Does my product innovation direction really solve users' core problems?",
-          "primaryTool": {
-            "id": "aiSage",
-            "label": "AI Sage",
-            "href": "/newstudy?topic=Does my product innovation direction really solve users' core problems?"
-          }
-        }
-      }
-    },
-    "StartupOwnerPage": {
-      "HeroSection": {
-        "eyebrow": "ATYPICA For Startup Owners",
-        "title": "Kill Bad Ideas Early",
-        "subtitle": "Quickly discover what will go viral, how to optimize, and where trends are heading",
-        "getStarted": "Get Started"
-      },
-      "CaseStudiesSection": {
-        "title": "Use Cases",
-        "studies": {
-          "marketValidation": {
-            "tag": "AI Research",
-            "title": "Market Opportunity Validation: Does this market really exist? How strong is demand?",
-            "description": "Validate the reality and scale of market opportunities through AI Research, assessing the intensity and urgency of consumer demand.",
-            "imagePrompt": "market validation dashboard showing market size analysis, demand intensity metrics, opportunity assessment, modern startup research interface"
-          },
-          "businessModel": {
-            "tag": "AI Persona",
-            "title": "Business Model Validation: Will consumers accept our model?",
-            "description": "Build target user Personas to test the acceptance of business models, pricing, and delivery methods, validating business assumptions.",
-            "imagePrompt": "business model validation dashboard, pricing strategy testing, consumer acceptance metrics, modern startup validation interface"
-          },
-          "riskAnalysis": {
-            "tag": "AI Sage",
-            "title": "Risk Identification: What risks are we missing in our business model?",
-            "description": "Create a business model expert agent to deeply analyze potential risks in business assumptions, identifying possible issues in advance.",
-            "imagePrompt": "risk analysis dashboard, business model risks, assumption validation, modern startup risk assessment interface"
-          },
-          "targetAudience": {
-            "tag": "AI Research",
-            "title": "Target Audience Profile: Who is our ideal customer?",
-            "description": "Deeply research target user group characteristics, needs, and pain points to clearly define ideal customer profiles.",
-            "imagePrompt": "professional dashboard for ai-research analysis, target audience profile: who is our ideal customer?, modern analytics interface, clean design"
-          },
-          "pricingValidation": {
-            "tag": "AI Persona",
-            "title": "Pricing Strategy Validation: Are consumers willing to pay this price?",
-            "description": "Let AI Personas test the acceptance of different price points to find the optimal pricing strategy.",
-            "imagePrompt": "professional dashboard for ai-persona analysis, pricing strategy validation: are consumers willing to pay this price?, modern analytics interface, clean design"
-          },
-          "fundingPrep": {
-            "tag": "AI Interview",
-            "title": "Funding Preparation: How to prove market opportunity with data?",
-            "description": "Collect user feedback and market data through AI Interviews to build compelling fundraising materials.",
-            "imagePrompt": "professional dashboard for ai-interview analysis, funding preparation: how to prove market opportunity with data?, modern analytics interface, clean design"
-          }
-        },
-        "showMore": "Show More Cases",
-        "showLess": "Show Less",
-        "noCases": "No cases available",
-        "viewStudy": "View Study"
+    "StartupOwnersPage": {
+      "metadata": {
+        "title": "For Startup Owners - Kill Bad Ideas Early",
+        "description": "Validate your startup ideas before spending time and money"
       },
       "UseCasesSection": {
         "title": "Prove your concept. Fund your future.",
         "scenario1": {
           "question": "Does this market opportunity really exist? How strong is consumer demand?",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=Does this market opportunity really exist? How strong is consumer demand?"
+            "label": "AI Research"
           }
         },
         "scenario2": {
           "question": "Will consumers accept my business model? Are pricing and delivery methods correct?",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         },
         "scenario3": {
           "question": "Are my business model and product assumptions really valid? What risks am I missing?",
           "primaryTool": {
-            "id": "aiSage",
-            "label": "AI Sage",
-            "href": "/newstudy?topic=Are my business model and product assumptions really valid? What risks am I missing?"
+            "label": "AI Sage"
           }
         }
       }
     },
-    "ConsultantPage": {
-      "HeroSection": {
-        "eyebrow": "ATYPICA For Consultants",
-        "title": "Show consumer proof, more than slides",
-        "subtitle": "Quickly discover what will go viral, how to optimize, and where trends are heading",
-        "getStarted": "Get Started"
-      },
-      "CaseStudiesSection": {
-        "title": "Use Cases",
-        "studies": {
-          "strategyProof": {
-            "tag": "AI Research",
-            "title": "Strategic Advice Data Support: Is my advice backed by consumer data?",
-            "description": "Collect consumer data through AI Research to provide strong data support and persuasive evidence for strategic recommendations.",
-            "imagePrompt": "consulting strategy dashboard showing consumer data insights, strategic recommendations with data proof, modern consulting analytics interface"
-          },
-          "solutionValidation": {
-            "tag": "AI Persona",
-            "title": "Consulting Solution Feasibility Validation: Will consumers accept this direction?",
-            "description": "Build target market Personas to test the feasibility and acceptance of consulting solutions, ensuring solutions align with market reality.",
-            "imagePrompt": "consulting solution validation dashboard, market acceptance testing, feasibility analysis, modern consulting validation interface"
-          },
-          "clientPersuasion": {
-            "tag": "AI Interview",
-            "title": "Client Persuasion Strategy: How to use consumers' real voices to persuade clients?",
-            "description": "Collect consumers' real voices and feedback through AI Interviews to build persuasive client argumentation materials.",
-            "imagePrompt": "client persuasion dashboard, consumer voice quotes, persuasive presentation materials, modern consulting communication interface"
-          },
-          "marketInsight": {
-            "tag": "AI Research",
-            "title": "Market Insight Report: What is the real state of the current market?",
-            "description": "Deeply research market conditions and trends to provide clients with data-based market insight reports.",
-            "imagePrompt": "professional dashboard for ai-research analysis, market insight report: what is the real state of the current market?, modern analytics interface, clean design"
-          },
-          "competitiveAnalysis": {
-            "tag": "AI Sage",
-            "title": "Competitive Analysis Deep Report: What is the real situation of competitors?",
-            "description": "Create a competitive analysis expert agent to deeply research competitor strategies and market performance, providing clients with comprehensive competitive analysis.",
-            "imagePrompt": "professional dashboard for ai-sage analysis, competitive analysis deep report: what is the real situation of competitors?, modern analytics interface, clean design"
-          },
-          "implementationRisk": {
-            "tag": "AI Persona",
-            "title": "Implementation Risk Assessment: What resistance will this solution encounter during implementation?",
-            "description": "Build implementation environment Personas to predict resistance and risks during solution implementation, preparing response strategies in advance.",
-            "imagePrompt": "professional dashboard for ai-persona analysis, implementation risk assessment: what resistance will this solution encounter during implementation?, modern analytics interface, clean design"
-          }
-        },
-        "showMore": "Show More Cases",
-        "showLess": "Show Less",
-        "noCases": "No cases available",
-        "viewStudy": "View Study"
+    "ConsultantsPage": {
+      "metadata": {
+        "title": "For Consultants - Show Consumer Proof, Not Just Slides",
+        "description": "Back your recommendations with real consumer research and insights"
       },
       "UseCasesSection": {
         "title": "Research it. Prove it. Present it.",
         "scenario1": {
           "question": "Is my strategic advice to clients supported by consumer data? How can I present it most persuasively?",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=Is my strategic advice to clients supported by consumer data? How can I present it most persuasively?"
+            "label": "AI Research"
           }
         },
         "scenario2": {
           "question": "Is my consulting solution really viable in the market? Will consumers accept this direction?",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         },
         "scenario3": {
           "question": "The client is hesitant. How can I use consumers' real voices to convince them to adopt my recommendations?",
           "primaryTool": {
-            "id": "aiInterview",
-            "label": "AI Interview",
-            "href": "/newstudy?topic=The client is hesitant. How can I use consumers' real voices to convince them to adopt my recommendations?"
+            "label": "AI Interview"
+          }
+        }
+      }
+    },
+    "ProductManagersPage": {
+      "metadata": {
+        "title": "For Product Managers - Innovation, De-Risked",
+        "description": "Build products users actually want with real user insights"
+      },
+      "UseCasesSection": {
+        "title": "Listen to users. Build what matters.",
+        "scenario1": {
+          "question": "What's the next innovative feature users truly need? What haven't we thought of?",
+          "primaryTool": {
+            "label": "AI Research"
+          }
+        },
+        "scenario2": {
+          "question": "Will users actually adopt this innovative feature? What are their reactions?",
+          "primaryTool": {
+            "label": "AI Interview"
+          }
+        },
+        "scenario3": {
+          "question": "Does my product innovation direction really solve users' core problems?",
+          "primaryTool": {
+            "label": "AI Sage"
           }
         }
       }

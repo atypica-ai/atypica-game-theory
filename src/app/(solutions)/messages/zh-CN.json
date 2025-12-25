@@ -1,727 +1,163 @@
 {
   "Solutions": {
     "CreatorsPage": {
-      "PainPointSection": {
-        "title": "创作者面临的挑战",
-        "description": "每位创作者在成功之路上都会遇到这些障碍",
-        "point1": {
-          "title": "找到您的受众",
-          "description": "了解您的内容与谁产生共鸣，以及如何有效地触达他们"
-        },
-        "point2": {
-          "title": "内容策略",
-          "description": "制定与您的目标和受众需求一致的一致内容计划"
-        },
-        "point3": {
-          "title": "脱颖而出",
-          "description": "在拥挤的创作领域中区分您的作品"
-        }
-      },
-      "FeatureSection": {
-        "title": "Atypica的不同功能如何在每个阶段支持创作者",
-        "description": "发现帮助创作者研究、理解受众和生成内容的工具",
-        "aiResearch": {
-          "title": "AI研究",
-          "value": "在几分钟内进行深入的市场研究和受众分析",
-          "howToUse": {
-            "title": "如何使用",
-            "step1": "询问有关目标受众或市场趋势的问题",
-            "step2": "AI自动生成人设并进行访谈",
-            "step3": "获得全面的洞察和可操作的建议"
-          },
-          "example": {
-            "title": "示例",
-            "text": "研究Z世代在可持续时尚品牌中重视什么"
-          }
-        },
-        "aiPersona": {
-          "title": "AI人设",
-          "value": "构建并互动代表您理想受众的AI人设",
-          "howToUse": {
-            "title": "如何使用",
-            "step1": "创建或导入与目标受众匹配的人设",
-            "step2": "进行访谈以了解他们的偏好和行为",
-            "step3": "使用洞察来调整您的内容策略"
-          },
-          "example": {
-            "title": "示例",
-            "text": "访谈人设以在发布前测试您的内容想法"
-          }
-        },
-        "aiPodcast": {
-          "title": "AI播客",
-          "value": "自动将您的研究转化为引人入胜的播客内容",
-          "howToUse": {
-            "title": "如何使用",
-            "step1": "完成研究或使用现有洞察",
-            "step2": "AI自动生成播客脚本和音频",
-            "step3": "在多个平台上分享您的播客"
-          },
-          "example": {
-            "title": "示例",
-            "text": "将您的市场研究发现转化为播客剧集"
-          }
-        },
-        "imagePlaceholder": "图片占位符 - 在此添加您的功能图片"
-      },
-      "AdvancedCreatorSection": {
-        "badge": "高级工具",
-        "title": "面向高级创作者",
-        "description": "专业级功能，帮助创作者扩大影响力",
-        "contentColumn": {
-          "title": "内容专栏",
-          "description": "通过AI驱动的规划和优化，构建系统化的内容策略",
-          "howToUse": {
-            "title": "如何使用",
-            "step1": "定义您的内容主题和目标",
-            "step2": "AI根据受众洞察建议内容想法",
-            "step3": "规划并安排您的内容日历"
-          }
-        },
-        "differentiation": {
-          "title": "差异化策略",
-          "description": "为您的创作工作识别独特的角度和定位",
-          "howToUse": {
-            "title": "如何使用",
-            "step1": "分析竞争对手内容和市场空白",
-            "step2": "为您的受众发现独特的价值主张",
-            "step3": "发展独特的创作声音"
-          }
-        },
-        "paidContent": {
-          "title": "付费内容规划",
-          "description": "通过数据驱动的洞察优化您的变现策略",
-          "howToUse": {
-            "title": "如何使用",
-            "step1": "研究您的受众愿意为什么付费",
-            "step2": "使用AI人设测试定价策略",
-            "step3": "规划您的付费内容产品"
-          }
-        }
-      },
-      "HeroSection": {
-        "eyebrow": "Atypica For Creators",
-        "title": "让趋势在几天内爆火",
-        "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
-        "getStarted": "开始使用"
-      },
-      "CaseStudiesSection": {
-        "title": "使用案例",
-        "studies": {
-          "tiktokTrendMap": {
-            "tag": "AI Research",
-            "title": "TikTok 创意趋势地图：未来 30 天哪些赛道会起量？",
-            "description": "通过 AI Research 扫描热门账号、话题与音乐，识别短期与中期可进入的创意赛道，并给出适合你的切入点。"
-          },
-          "hookBenchmark": {
-            "tag": "AI Research",
-            "title": "开场 Hook 对比测试：我 vs 竞品，谁更抓人？",
-            "description": "用 AI Research 对比不同视频概念与开场方式，结合真实用户反馈，找出最容易让观众停留和点开的表达方式。"
-          },
-          "fastInsightPodcast": {
-            "tag": "AI Podcast",
-            "title": "把一场研究变成 10 分钟播客脚本",
-            "description": "用 Fast Insight 把复杂调研总结成高信息密度的播客，用创作者能听懂的语言帮你做方向决策。"
-          },
-          "personaDeepDive": {
-            "tag": "AI Persona",
-            "title": "粉丝画像深挖：他们为什么会为你点赞和转发？",
-            "description": "构建多个 AI Persona，模拟不同粉丝群体，对你的内容风格、价值主张和人设偏好给出具体反馈。"
-          },
-          "creativeABTest": {
-            "tag": "AI Interview",
-            "title": "A/B 概念访谈：哪一种内容世界观更打动人？",
-            "description": "让 AI Interview 逐一向受众人设展示不同创意概念，记录他们的真实反应和疑虑，帮你做出更大胆又更稳的选择。"
-          },
-          "fanResonance": {
-            "tag": "AI Persona",
-            "title": "一次视频，让粉丝感觉\"说出了我没说出口的话\"",
-            "description": "结合 Research + Persona + Podcast 分析评论、弹幕与历史内容表现，提炼可以反复使用的情绪钩子与表达角度。"
-          }
-        },
-        "showMore": "查看更多案例",
-        "showLess": "显示更少",
-        "noCases": "暂无案例",
-        "viewStudy": "查看研究"
+      "metadata": {
+        "title": "创作者 - 让趋势在几天内爆火",
+        "description": "快速知道什么会火、怎么优化、趋势在哪"
       },
       "UseCasesSection": {
         "title": "研究、优化、发布",
         "scenario1": {
           "question": "TikTok 现在最火的创意方向是什么？我应该往哪个赛道靠？",
           "primaryTool": {
-            "id": "aiPodcast",
-            "label": "AI Podcast",
-            "href": "/newstudy?fast-insight=1&topic=TikTok 现在最火的创意方向是什么？我应该往哪个赛道靠？"
+            "label": "AI Podcast"
           }
         },
         "scenario2": {
           "question": "我的视频概念和竞争对手对比，哪个更容易吸引观众？",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=我的视频概念和竞争对手对比，哪个更容易吸引观众？"
+            "label": "AI Research"
           }
         },
         "scenario3": {
           "question": "这个创意概念真的会引起粉丝的共鸣吗？",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         }
-      },
-      "PlanSmarterSection": {
-        "badge": "第一部分",
-        "title": "更聪明地规划：使用 AI 研究构建您的内容策略",
-        "subtitle": "一个多智能体系统，像真正的策略团队一样运作，进行受众分析、竞争审查和洞察发现。",
-        "quickStartPrompt": "不知道从哪里开始？可以先试试这些研究主题：",
-        "ctaResearch": "开始 AI 研究",
-        "useCase1": {
-          "title": "从零开始构建您的内容/账号策略",
-          "description": "获得受众画像、动机、痛点、内容支柱、格式和角度。这是通常由策略师创建的蓝图，而不是靠猜测。",
-          "example1": "为一个关于 AI 工具的 TikTok 账号规划我的内容策略。",
-          "example2": "什么内容支柱适合专注于个人理财的创作者？",
-          "output": "清晰的受众画像、他们的动机和痛点、推荐的内容支柱、能引起共鸣的格式和角度。"
-        },
-        "useCase2": {
-          "title": "在 TikTok、Instagram 和 X 上对标创作者",
-          "description": "Atypica 可以主动浏览社交平台，立即看到什么有效、什么缺失，以及你可以在哪里脱颖而出。",
-          "point1": "你的细分领域中顶级创作者发布的内容",
-          "point2": "他们如何构建成功的内容",
-          "point3": "哪些话题已经饱和",
-          "point4": "存在哪些空白机会"
-        },
-        "useCase3": {
-          "title": "生成个性化的创意库",
-          "description": "创意不是随机的提示——它们基于受众心理、访谈模式、竞争模式和平台偏好。",
-          "example1": "根据真实的受众洞察创建 20 个视频创意。",
-          "example2": "给我一个带有钩子的一个月内容日历。",
-          "output": "一个真正适合你的受众和定位的活跃创意库。"
-        },
-        "realExample": {
-          "title": "真实案例",
-          "persona": "YouTuber 和旅行博主",
-          "situation": "制作关于中国市场、文化和新地方的视频。想要推广新工具，但不知道什么角度会引起共鸣。",
-          "solution": "使用 Atypica AI 研究生成：",
-          "output1": "受众细分分析",
-          "output2": "内容营销矩阵实施",
-          "output3": "多平台实施策略",
-          "result": "几分钟内，获得指导推广策略的完整洞察报告。",
-          "linkText": "查看完整报告"
-        }
-      },
-      "AskAudienceSection": {
-        "badge": "第二部分",
-        "title": "即时测试创意：AI 人设作为您的全天候焦点小组",
-        "subtitle": "基于现有用户访谈记录创建专有的人类 AI 人设。这些人设代表您的目标受众，出人意料地很好地反映了真实用户的需求和痛点。",
-        "value": "您的全天候焦点小组，可以审查和投票支持您的内容创意",
-        "ctaInterview": "开始 AI 访谈",
-        "useCases": {
-          "title": "您可以问他们：",
-          "case1": "这 3 个标题中你会点击哪一个，为什么？",
-          "case2": "这个钩子让你想继续看吗？",
-          "case3": "如果你是初学者，这个大纲缺少什么？"
-        },
-        "applications": {
-          "title": "获得即时反馈：",
-          "app1": "标题和主题行",
-          "app2": "钩子和开场",
-          "app3": "缩略图文案",
-          "app4": "内容角度和消息传递"
-        },
-        "benefit": "不再仅仅依赖自己的品味，或等待现实世界的指标，你可以从受众塑造的思维中获得即时反馈。",
-        "realExample": {
-          "title": "真实案例",
-          "description": "一位数字内容创作者的 AI 人设不仅帮助选择了最吸引人的标题，还解释了原因并提供了额外的内容角度。",
-          "result": "不仅仅是选择——还有提升内容创作的战略洞察。"
-        }
-      },
-      "TurnResearchSection": {
-        "badge": "第三部分",
-        "title": "用 AI 播客将洞察转化为可发布的内容",
-        "subtitle": "运行 AI 研究后，您将拥有一个结构化的内容计划。Atypica 更进一步：在几分钟内将该报告转化为叙述性剧集。",
-        "ctaPodcast": "生成 AI 播客",
-        "outputs": {
-          "title": "您立即获得：",
-          "output1": "一个简洁而详细的脚本，充满真实洞察",
-          "output2": "可以添加到您的视频中的自然声音音频"
-        },
-        "idealFor": {
-          "title": "特别适合：",
-          "type1": "商业和营销分析",
-          "type2": "科技 / AI 解说",
-          "type3": "消费者趋势分析",
-          "type4": "职业和自我提升内容"
-        },
-        "reuseOptions": {
-          "title": "音频不仅仅是播客——它是原材料：",
-          "option1": "将脚本用作 YouTube Shorts/Reels 旁白",
-          "option2": "为 LinkedIn/X 帖子提取引用",
-          "option3": "在 Spotify/Apple Podcast 上发布音频",
-          "option4": "在新闻通讯或博客中重用部分内容",
-          "option5": "为网络研讨会或直播提取讨论要点"
-        },
-        "formula": "一次研究会话 → 一个播客 → 一周的内容资产。",
-        "tabs": {
-          "overview": "总览",
-          "reuse": "重复利用你的研究",
-          "examples": "真实案例"
-        },
-        "realExamples": {
-          "title": "令人信服的案例",
-          "description": "这些播客和从中生成的视频帮助我们在各个平台上快速增长关注者：",
-          "example1": "AI 浏览器对决：FlowithOS vs Atlas vs Fellou vs Comet——哪一个真正有效？",
-          "example2": "当公司对 AI 的信任超过员工时，它们是变得更高效还是更危险？",
-          "example3": "社交媒体影响奢侈品购买，尽管存在债务和心理驱动因素"
-        }
-      },
-      "AdvancedWorkflowSection": {
-        "badge": "第四部分",
-        "title": "为认真的创作者提供的高级工作流程",
-        "subtitle": "随着您的内容运营增长，Atypica 成为整个创作者业务背后的研究引擎——不仅仅是单个帖子。",
-        "workflow1": {
-          "title": "设计长期内容支柱和系列",
-          "description": "构建一个可识别的内容宇宙，而不仅仅是零散的帖子。",
-          "actions": {
-            "action1": "识别反复出现的受众主题",
-            "action2": "将它们聚类成持久的支柱（例如案例研究、神话、初学者错误、趋势分析）",
-            "action3": "提出您可以每周运行的定期系列"
-          }
-        },
-        "workflow2": {
-          "title": "在拥挤的细分市场中找到您的差异化",
-          "description": "您不是\"又一个解说者\"——您占据一个特定的角度。",
-          "actions": {
-            "action1": "绘制其他人都在说什么",
-            "action2": "发现过度使用的叙述",
-            "action3": "揭示受众仍在努力解决的问题",
-            "action4": "定位您的内容以填补这些空白"
-          }
-        },
-        "workflow3": {
-          "title": "验证付费产品和合作",
-          "description": "降低风险并设计真正引起共鸣的优惠。",
-          "beforeLaunching": "在创建课程、会员资格或赞助系列之前：",
-          "actions": {
-            "action1": "研究您的受众的付费意愿",
-            "action2": "揭示反对意见和犹豫",
-            "action3": "用人设测试消息传递创意"
-          }
-        }
-      },
-      "CTASection": {
-        "title": "准备好转变您的创作流程了吗？",
-        "description": "加入数千名使用AI进行研究、理解受众和创作更好内容的创作者",
-        "ctaButton": "免费开始",
-        "headline": "大多数创作者凭直觉运作。",
-        "subheadline": "Atypica 让您凭洞察运作。",
-        "tagline": "与大型媒体和策略团队相同的优势。",
-        "benefit1": "停止猜测您的受众想要什么",
-        "benefit2": "清楚地看到您的细分市场和竞争对手",
-        "benefit3": "在发布之前测试创意",
-        "benefit4": "将研究转化为一致的多平台输出",
-        "closing": "无论您是开始您的第一个频道还是扩展到真正的创作者业务，Atypica 都在一个地方充当您的研究团队、策略师和内容引擎。",
-        "contactCtaLabel": "联系我们的团队",
-        "contactCtaHint": "如果你希望我们一起设计首个创作者工作流，可以直接发邮件联系我们。"
       }
     },
-    "InfluencerPage": {
-      "HeroSection": {
-        "eyebrow": "Atypica For Influencers",
-        "title": "将信任变现",
-        "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
-        "getStarted": "开始使用"
-      },
-      "CaseStudiesSection": {
-        "title": "使用案例",
-        "studies": {
-          "fanInsight": {
-            "tag": "AI Sage",
-            "title": "粉丝真实想法洞察：他们为什么信任我？",
-            "description": "创建粉丝洞察专家智能体，深入分析粉丝的真实需求、关注点和信任来源，帮你优化人设定位。",
-            "imagePrompt": "influencer analytics dashboard showing fan engagement metrics, trust indicators, audience insights, modern social media analytics interface with colorful charts"
-          },
-          "contentStrategy": {
-            "tag": "AI Research",
-            "title": "人设特质强化策略：哪个特质最能提升粉丝参与度？",
-            "description": "通过 AI Research 对比不同人设特质对粉丝参与度的影响，找出最能强化你独特价值的维度。",
-            "imagePrompt": "influencer persona strategy dashboard, trait analysis charts, engagement metrics, modern social media analytics interface"
-          },
-          "formatPreference": {
-            "tag": "AI Persona",
-            "title": "粉丝内容偏好测试：他们更想要什么形式？",
-            "description": "构建粉丝 Persona 测试不同内容形式（直播、知识分享、日常vlog），找出最符合粉丝期望的内容方向。",
-            "imagePrompt": "content format preference testing interface, video format comparison, audience preference metrics, modern content strategy dashboard"
-          },
-          "monetizationPath": {
-            "tag": "AI Research",
-            "title": "变现路径优化：粉丝愿意为哪些内容付费？",
-            "description": "研究粉丝付费意愿和偏好，找到最适合你的变现模式和定价策略。",
-            "imagePrompt": "monetization strategy dashboard, payment willingness analysis, revenue optimization charts, modern influencer business analytics interface"
-          },
-          "collaborationFit": {
-            "tag": "AI Persona",
-            "title": "品牌合作匹配度：哪个品牌合作最能打动粉丝？",
-            "description": "让 AI Persona 评估不同品牌合作的接受度，找出与粉丝价值观最匹配的合作方向。",
-            "imagePrompt": "brand collaboration matching dashboard, partnership evaluation metrics, brand fit analysis, modern influencer collaboration interface"
-          },
-          "engagementBoost": {
-            "tag": "AI Interview",
-            "title": "互动优化访谈：如何让粉丝更愿意评论和分享？",
-            "description": "通过 AI Interview 了解粉丝的互动动机，找出能最大化评论、转发和分享的内容策略。",
-            "imagePrompt": "engagement optimization dashboard, interaction metrics, comment and share analysis, modern social media engagement interface"
-          }
-        },
-        "showMore": "查看更多案例",
-        "showLess": "显示更少",
-        "noCases": "暂无案例",
-        "viewStudy": "查看研究"
+    "InfluencersPage": {
+      "metadata": {
+        "title": "网红/KOL - 将信任变现",
+        "description": "通过数据驱动的洞察将影响力转化为可持续收入"
       },
       "UseCasesSection": {
         "title": "参与更深，赚取更多",
         "scenario1": {
           "question": "我的粉丝真正关心什么？他们对我的哪些方面最感兴趣？",
           "primaryTool": {
-            "id": "aiSage",
-            "label": "AI Sage",
-            "href": "/newstudy?topic=我的粉丝真正关心什么？他们对我的哪些方面最感兴趣？"
+            "label": "AI Sage"
           }
         },
         "scenario2": {
           "question": "我应该强化哪个人设特质来最大化粉丝参与度？",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=我应该强化哪个人设特质来最大化粉丝参与度？"
+            "label": "AI Research"
           }
         },
         "scenario3": {
           "question": "我的粉丝最想要什么内容形式？直播、知识分享还是其他？",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         }
       }
     },
-    "MarketerPage": {
-      "HeroSection": {
-        "eyebrow": "Atypica For Marketers",
-        "title": "真实声音，真实转化",
-        "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
-        "getStarted": "开始使用"
-      },
-      "CaseStudiesSection": {
-        "title": "使用案例",
-        "studies": {
-          "consumerInsight": {
-            "tag": "AI Research",
-            "title": "消费者真实痛点洞察：他们现在最关心什么？",
-            "description": "通过 AI Research 深入了解目标消费者的真实想法、痛点和需求，为营销策略提供数据支持。",
-            "imagePrompt": "marketing analytics dashboard showing consumer insights, pain points analysis, modern marketing research interface with trend charts and consumer sentiment"
-          },
-          "adCopyTest": {
-            "tag": "AI Persona",
-            "title": "广告文案测试：哪个版本最能打动消费者？",
-            "description": "构建目标消费者 Persona，测试不同广告文案的接受度和转化潜力，找出最有效的表达方式。",
-            "imagePrompt": "split screen a/b testing interface showing two ad copy variations, consumer feedback bubbles, conversion metrics, modern marketing analytics dashboard"
-          },
-          "brandPerception": {
-            "tag": "AI Sage",
-            "title": "品牌认知分析：消费者为什么选择竞争对手？",
-            "description": "创建品牌专家智能体，深度分析消费者对品牌和竞品的真实看法，找出品牌定位的优化方向。",
-            "imagePrompt": "brand perception analysis dashboard, competitor comparison charts, consumer sentiment visualization, modern brand analytics interface"
-          },
-          "campaignStrategy": {
-            "tag": "AI Research",
-            "title": "营销活动策略：哪个时机和渠道最有效？",
-            "description": "研究不同营销活动的效果，分析最佳投放时机、渠道组合和目标受众，优化营销 ROI。",
-            "imagePrompt": "professional dashboard for ai-research analysis, marketing campaign strategy: which timing and channels are most effective?, modern analytics interface, clean design"
-          },
-          "messageResonance": {
-            "tag": "AI Interview",
-            "title": "营销信息共鸣度测试：消费者如何理解我们的信息？",
-            "description": "通过 AI Interview 了解消费者对营销信息的真实理解和反应，找出信息传达的盲点和优化空间。",
-            "imagePrompt": "professional dashboard for ai-interview analysis, marketing message resonance test: how do consumers understand our message?, modern analytics interface, clean design"
-          },
-          "pricingStrategy": {
-            "tag": "AI Persona",
-            "title": "定价策略测试：消费者认为我们的价格合理吗？",
-            "description": "让 AI Persona 评估不同定价策略的接受度，找出最符合消费者心理预期的价格点。",
-            "imagePrompt": "professional dashboard for ai-persona analysis, pricing strategy test: do consumers think our prices are reasonable?, modern analytics interface, clean design"
-          }
-        },
-        "showMore": "查看更多案例",
-        "showLess": "显示更少",
-        "noCases": "暂无案例",
-        "viewStudy": "查看研究"
+    "MarketersPage": {
+      "metadata": {
+        "title": "营销人员 - 真实声音，真实转化",
+        "description": "在发布前用真实消费者洞察验证营销活动"
       },
       "UseCasesSection": {
         "title": "测试它。验证它。赢得它。",
         "scenario1": {
           "question": "我的目标消费者现在在想什么？他们关心的真实痛点是什么？",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=我的目标消费者现在在想什么？他们关心的真实痛点是什么？"
+            "label": "AI Research"
           }
         },
         "scenario2": {
           "question": "这个广告文案能真正打动消费者吗？他们的真实反应是什么？",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         },
         "scenario3": {
           "question": "消费者为什么选竞争对手而不选我们？他们怎么看我们的品牌？",
           "primaryTool": {
-            "id": "aiSage",
-            "label": "AI Sage",
-            "href": "/newstudy?topic=消费者为什么选竞争对手而不选我们？他们怎么看我们的品牌？"
+            "label": "AI Sage"
           }
         }
       }
     },
-    "ProductManagerPage": {
-      "HeroSection": {
-        "eyebrow": "Atypica For Product Managers",
-        "title": "创新，去风险化",
-        "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
-        "getStarted": "开始使用"
-      },
-      "CaseStudiesSection": {
-        "title": "使用案例",
-        "studies": {
-          "userNeeds": {
-            "tag": "AI Research",
-            "title": "用户需求挖掘：他们真正需要的下一个功能是什么？",
-            "description": "通过 AI Research 深入了解用户的真实需求和使用场景，找出最有价值的产品创新方向。",
-            "imagePrompt": "product management dashboard showing user needs analysis, feature priority matrix, user journey maps, modern product research interface"
-          },
-          "featureAdoption": {
-            "tag": "AI Interview",
-            "title": "功能采用度预测：用户会使用这个新功能吗？",
-            "description": "通过 AI Interview 测试用户对新功能的接受度和使用意愿，提前识别潜在采用障碍。",
-            "imagePrompt": "feature adoption testing interface, user interview responses, adoption prediction charts, modern product validation dashboard"
-          },
-          "productDirection": {
-            "tag": "AI Sage",
-            "title": "产品方向验证：我们的创新真的解决了用户核心问题吗？",
-            "description": "创建产品专家智能体，深度分析产品方向是否符合用户真实需求，找出产品定位的优化空间。",
-            "imagePrompt": "product direction validation dashboard, user problem analysis, product-market fit metrics, modern product strategy interface"
-          },
-          "competitorAnalysis": {
-            "tag": "AI Research",
-            "title": "竞品功能对比：我们的产品差异化在哪里？",
-            "description": "深入研究竞品功能和用户评价，找出我们的差异化优势和需要补强的功能点。",
-            "imagePrompt": "professional dashboard for ai-research analysis, competitor feature comparison: where is our product differentiated?, modern analytics interface, clean design"
-          },
-          "userOnboarding": {
-            "tag": "AI Persona",
-            "title": "用户引导优化：新用户如何最快理解产品价值？",
-            "description": "构建新用户 Persona，测试不同的引导流程和说明方式，优化首次使用体验。",
-            "imagePrompt": "professional dashboard for ai-persona analysis, user onboarding optimization: how can new users quickly understand product value?, modern analytics interface, clean design"
-          },
-          "featurePriority": {
-            "tag": "AI Research",
-            "title": "功能优先级排序：哪个功能对用户最重要？",
-            "description": "通过 AI Research 分析不同功能对用户价值的影响，科学排序产品路线图。",
-            "imagePrompt": "professional dashboard for ai-research analysis, feature priority ranking: which feature matters most to users?, modern analytics interface, clean design"
-          }
-        },
-        "showMore": "查看更多案例",
-        "showLess": "显示更少",
-        "noCases": "暂无案例",
-        "viewStudy": "查看研究"
-      },
-      "UseCasesSection": {
-        "title": "倾听用户。构建重要内容。",
-        "scenario1": {
-          "question": "用户真正需要的下一个创新功能是什么？有什么我们没想到的？",
-          "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=用户真正需要的下一个创新功能是什么？有什么我们没想到的？"
-          }
-        },
-        "scenario2": {
-          "question": "这个创新功能真的会被用户采用吗？他们的反应怎样？",
-          "primaryTool": {
-            "id": "aiInterview",
-            "label": "AI Interview",
-            "href": "/newstudy?topic=这个创新功能真的会被用户采用吗？他们的反应怎样？"
-          }
-        },
-        "scenario3": {
-          "question": "我的产品创新方向真的解决了用户的核心问题吗？",
-          "primaryTool": {
-            "id": "aiSage",
-            "label": "AI Sage",
-            "href": "/newstudy?topic=我的产品创新方向真的解决了用户的核心问题吗？"
-          }
-        }
-      }
-    },
-    "StartupOwnerPage": {
-      "HeroSection": {
-        "eyebrow": "Atypica For Startup Owners",
-        "title": "尽早淘汰坏想法",
-        "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
-        "getStarted": "开始使用"
-      },
-      "CaseStudiesSection": {
-        "title": "使用案例",
-        "studies": {
-          "marketValidation": {
-            "tag": "AI Research",
-            "title": "市场机会验证：这个市场真的存在吗？需求有多强烈？",
-            "description": "通过 AI Research 验证市场机会的真实性和规模，评估消费者需求的强度和迫切性。",
-            "imagePrompt": "market validation dashboard showing market size analysis, demand intensity metrics, opportunity assessment, modern startup research interface"
-          },
-          "businessModel": {
-            "tag": "AI Persona",
-            "title": "商业模式验证：消费者会接受我们的模式吗？",
-            "description": "构建目标用户 Persona，测试商业模式、定价和交付方式的接受度，验证商业假设。",
-            "imagePrompt": "business model validation dashboard, pricing strategy testing, consumer acceptance metrics, modern startup validation interface"
-          },
-          "riskAnalysis": {
-            "tag": "AI Sage",
-            "title": "风险识别：我们的商业模式有什么遗漏的风险？",
-            "description": "创建商业模式专家智能体，深度分析商业假设中的潜在风险，提前识别可能的问题。",
-            "imagePrompt": "risk analysis dashboard, business model risks, assumption validation, modern startup risk assessment interface"
-          },
-          "targetAudience": {
-            "tag": "AI Research",
-            "title": "目标用户画像：我们的理想客户是谁？",
-            "description": "深入研究目标用户群体的特征、需求和痛点，清晰定义理想客户画像。",
-            "imagePrompt": "professional dashboard for ai-research analysis, target audience profile: who is our ideal customer?, modern analytics interface, clean design"
-          },
-          "pricingValidation": {
-            "tag": "AI Persona",
-            "title": "定价策略验证：消费者愿意为这个价格买单吗？",
-            "description": "让 AI Persona 测试不同定价点的接受度，找出最优的价格定位策略。",
-            "imagePrompt": "professional dashboard for ai-persona analysis, pricing strategy validation: are consumers willing to pay this price?, modern analytics interface, clean design"
-          },
-          "fundingPrep": {
-            "tag": "AI Interview",
-            "title": "融资准备：如何用数据证明市场机会？",
-            "description": "通过 AI Interview 收集用户反馈和市场数据，构建有说服力的融资论证材料。",
-            "imagePrompt": "professional dashboard for ai-interview analysis, funding preparation: how to prove market opportunity with data?, modern analytics interface, clean design"
-          }
-        },
-        "showMore": "查看更多案例",
-        "showLess": "显示更少",
-        "noCases": "暂无案例",
-        "viewStudy": "查看研究"
+    "StartupOwnersPage": {
+      "metadata": {
+        "title": "创业者 - 尽早淘汰坏想法",
+        "description": "在花费时间和金钱之前验证您的创业想法"
       },
       "UseCasesSection": {
         "title": "证明你的概念。资助你的未来。",
         "scenario1": {
           "question": "这个市场机会真的存在吗？消费者的需求有多强烈？",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=这个市场机会真的存在吗？消费者的需求有多强烈？"
+            "label": "AI Research"
           }
         },
         "scenario2": {
           "question": "我的商业模式消费者会接受吗？定价、交付方式都对吗？",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         },
         "scenario3": {
           "question": "我的商业模式和产品假设真的成立吗？有什么我遗漏的风险？",
           "primaryTool": {
-            "id": "aiSage",
-            "label": "AI Sage",
-            "href": "/newstudy?topic=我的商业模式和产品假设真的成立吗？有什么我遗漏的风险？"
+            "label": "AI Sage"
           }
         }
       }
     },
-    "ConsultantPage": {
-      "HeroSection": {
-        "eyebrow": "Atypica For Consultants",
-        "title": "展示消费者证据，而非幻灯片",
-        "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
-        "getStarted": "开始使用"
-      },
-      "CaseStudiesSection": {
-        "title": "使用案例",
-        "studies": {
-          "strategyProof": {
-            "tag": "AI Research",
-            "title": "战略建议数据支撑：我的建议有消费者数据支持吗？",
-            "description": "通过 AI Research 收集消费者数据，为战略建议提供有力的数据支撑和说服依据。",
-            "imagePrompt": "consulting strategy dashboard showing consumer data insights, strategic recommendations with data proof, modern consulting analytics interface"
-          },
-          "solutionValidation": {
-            "tag": "AI Persona",
-            "title": "咨询方案可行性验证：消费者会接受这个方向吗？",
-            "description": "构建目标市场 Persona，测试咨询方案的可行性和接受度，确保方案符合市场实际。",
-            "imagePrompt": "consulting solution validation dashboard, market acceptance testing, feasibility analysis, modern consulting validation interface"
-          },
-          "clientPersuasion": {
-            "tag": "AI Interview",
-            "title": "客户说服策略：如何用消费者真实声音说服客户？",
-            "description": "通过 AI Interview 收集消费者的真实声音和反馈，构建有说服力的客户论证材料。",
-            "imagePrompt": "client persuasion dashboard, consumer voice quotes, persuasive presentation materials, modern consulting communication interface"
-          },
-          "marketInsight": {
-            "tag": "AI Research",
-            "title": "市场洞察报告：当前市场的真实状况是什么？",
-            "description": "深入研究市场现状和趋势，为客户提供基于数据的市场洞察报告。",
-            "imagePrompt": "professional dashboard for ai-research analysis, market insight report: what is the real state of the current market?, modern analytics interface, clean design"
-          },
-          "competitiveAnalysis": {
-            "tag": "AI Sage",
-            "title": "竞争分析深度报告：竞争对手的真实情况如何？",
-            "description": "创建竞争分析专家智能体，深度研究竞争对手的策略和市场表现，为客户提供全面的竞争分析。",
-            "imagePrompt": "professional dashboard for ai-sage analysis, competitive analysis deep report: what is the real situation of competitors?, modern analytics interface, clean design"
-          },
-          "implementationRisk": {
-            "tag": "AI Persona",
-            "title": "实施风险评估：这个方案在执行时会遇到什么阻力？",
-            "description": "构建实施环境 Persona，预测方案实施过程中可能遇到的阻力和风险，提前准备应对策略。",
-            "imagePrompt": "professional dashboard for ai-persona analysis, implementation risk assessment: what resistance will this solution encounter during implementation?, modern analytics interface, clean design"
-          }
-        },
-        "showMore": "查看更多案例",
-        "showLess": "显示更少",
-        "noCases": "暂无案例",
-        "viewStudy": "查看研究"
+    "ConsultantsPage": {
+      "metadata": {
+        "title": "咨询顾问 - 展示消费者证据，而非幻灯片",
+        "description": "用真实的消费者研究和洞察支持您的建议"
       },
       "UseCasesSection": {
         "title": "研究它。证明它。呈现它。",
         "scenario1": {
           "question": "我给客户的战略建议有消费者数据支持吗？怎么讲最有说服力？",
           "primaryTool": {
-            "id": "aiResearch",
-            "label": "AI Research",
-            "href": "/newstudy?topic=我给客户的战略建议有消费者数据支持吗？怎么讲最有说服力？"
+            "label": "AI Research"
           }
         },
         "scenario2": {
           "question": "我的咨询方案在市场上真的可行吗？消费者会接受这个方向吗？",
           "primaryTool": {
-            "id": "aiPersona",
-            "label": "AI Persona",
-            "href": "/personas"
+            "label": "AI Persona"
           }
         },
         "scenario3": {
           "question": "客户犹豫不决，我怎么用消费者的真实声音来说服他采纳建议？",
           "primaryTool": {
-            "id": "aiInterview",
-            "label": "AI Interview",
-            "href": "/newstudy?topic=客户犹豫不决，我怎么用消费者的真实声音来说服他采纳建议？"
+            "label": "AI Interview"
+          }
+        }
+      }
+    },
+    "ProductManagersPage": {
+      "metadata": {
+        "title": "产品经理 - 创新，去风险化",
+        "description": "用真实用户洞察打造用户真正想要的产品"
+      },
+      "UseCasesSection": {
+        "title": "倾听用户。构建重要内容。",
+        "scenario1": {
+          "question": "用户真正需要的下一个创新功能是什么？有什么我们没想到的？",
+          "primaryTool": {
+            "label": "AI Research"
+          }
+        },
+        "scenario2": {
+          "question": "这个创新功能真的会被用户采用吗？他们的反应怎样？",
+          "primaryTool": {
+            "label": "AI Interview"
+          }
+        },
+        "scenario3": {
+          "question": "我的产品创新方向真的解决了用户的核心问题吗？",
+          "primaryTool": {
+            "label": "AI Sage"
           }
         }
       }

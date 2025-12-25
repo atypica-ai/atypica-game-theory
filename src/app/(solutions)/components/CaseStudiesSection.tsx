@@ -1,22 +1,17 @@
 "use client";
 
+import { fetchPublicFeaturedStudies } from "@/app/(public)/featured-studies/actions";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
+import { PlayIcon } from "lucide-react";
+import { useLocale } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-type MockStudyKey = string;
-
-type MockStudy = {
-  id: MockStudyKey;
-  tag: string;
-  title: string;
-  description: string;
-  imagePrompt: string;
-};
-
-const IMAGE_BASE_URL = "/api/imagegen/dev";
+type FeaturedReport = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
 
 // Tag color mapping - different shades for different tools using theme-aware colors
 const getTagColorClasses = (tag: string): string => {
@@ -38,77 +33,70 @@ const getTagColorClasses = (tag: string): string => {
 };
 
 interface CaseStudiesSectionProps {
-  namespace: string;
+  tag: string;
 }
 
-export function CaseStudiesSection({ namespace }: CaseStudiesSectionProps) {
-  const t = useTranslations(namespace);
+export function CaseStudiesSection({ tag }: CaseStudiesSectionProps) {
+  const locale = useLocale();
+  const [studies, setStudies] = useState<FeaturedReport[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Check if studies exist first (preferred mode)
-  let studies: MockStudy[] = [];
-  let placeholder = "";
-  let hasPlaceholder = false;
-
-  try {
-    const studiesObj = t.raw("studies") as Record<string, Record<string, string>> | undefined;
-    if (studiesObj && typeof studiesObj === "object" && Object.keys(studiesObj).length > 0) {
-      // Studies exist, use them
-      studies = Object.entries(studiesObj).map(([id, studyData]) => {
-        const study = studyData as Record<string, string>;
-        return {
-          id: id as MockStudyKey,
-          tag: study.tag || "",
-          title: study.title || "",
-          description: study.description || "",
-          imagePrompt:
-            study.imagePrompt ||
-            `professional dashboard for ${study.tag?.toLowerCase() || "research"} analysis, ${study.title?.toLowerCase() || ""}, modern analytics interface, clean design`,
-        };
+  useEffect(() => {
+    const loadStudies = async () => {
+      setLoading(true);
+      const result = await fetchPublicFeaturedStudies({
+        locale,
+        pageSize: 6,
+        random: true,
       });
-    } else {
-      // No studies, check for placeholder
-      try {
-        const placeholderValue = t.raw("placeholder");
-        if (typeof placeholderValue === "string" && placeholderValue !== "") {
-          placeholder = placeholderValue;
-          hasPlaceholder = true;
-        }
-      } catch {
-        // placeholder key doesn't exist either, will show "noCases"
-        hasPlaceholder = false;
+      if (result.success) {
+        setStudies(result.data);
+      } else {
+        setError(result.message);
       }
-    }
-  } catch {
-    // studies key doesn't exist, check for placeholder
-    try {
-      const placeholderValue = t.raw("placeholder");
-      if (typeof placeholderValue === "string" && placeholderValue !== "") {
-        placeholder = placeholderValue;
-        hasPlaceholder = true;
-      }
-    } catch {
-      // Neither studies nor placeholder exist, will show "noCases"
-      hasPlaceholder = false;
-    }
-  }
+      setLoading(false);
+    };
+    loadStudies();
+  }, [locale, tag]);
+
+  const renderSkeletons = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8">
+      {[...Array(6)].map((_, i) => (
+        <Card key={i} className="flex flex-col h-full rounded-2xl shadow-none overflow-hidden">
+          <div className="px-4 sm:px-5 pt-4 pb-4 sm:pb-5 flex flex-col gap-2.5">
+            <Skeleton className="h-5 w-20 rounded-full" />
+            <Skeleton className="h-5 w-full rounded-md" />
+            <Skeleton className="h-5 w-3/4 rounded-md" />
+            <Skeleton className="h-4 w-full rounded-md" />
+          </div>
+          <div className="relative aspect-video mx-4 sm:mx-5 mb-4 sm:mb-5 rounded-xl overflow-hidden">
+            <Skeleton className="w-full h-full" />
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
 
   return (
-    <section className="py-20 md:py-32 bg-background bg-gradient-to-b from-background via-background to-background relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-background bg-linear-to-b from-background via-background to-background relative overflow-hidden">
       <div className="container mx-auto px-6 sm:px-8 md:px-6 lg:px-4 max-w-screen-2xl">
         {/* Section title */}
         <div className="mb-12 text-center">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
-            {t("title")}
+            {locale === "zh-CN" ? "成功案例" : "Success Stories"}
           </h2>
         </div>
 
-        {hasPlaceholder ? (
+        {loading ? (
+          renderSkeletons()
+        ) : error ? (
           <div className="text-center py-20 text-muted-foreground">
-            <p>{placeholder}</p>
+            <p>{locale === "zh-CN" ? "加载失败" : "Failed to load"}</p>
           </div>
         ) : studies.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
-            <p>{t("noCases")}</p>
+            <p>{locale === "zh-CN" ? "暂无案例" : "No studies yet"}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8">
@@ -127,44 +115,43 @@ export function CaseStudiesSection({ namespace }: CaseStudiesSectionProps) {
                     <span
                       className={cn(
                         "text-xs uppercase tracking-wide font-medium py-0.5 px-2 rounded-full self-start",
-                        getTagColorClasses(study.tag),
+                        getTagColorClasses(study.category),
                       )}
                     >
-                      {study.tag}
+                      {study.category}
                     </span>
                     <h3 className="text-base md:text-lg font-semibold leading-snug text-card-foreground line-clamp-2">
                       {study.title}
                     </h3>
-                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-3">
-                      {study.description}
-                    </p>
                   </div>
 
                   <div className="relative aspect-video mx-4 sm:mx-5 mb-4 sm:mb-5 rounded-xl overflow-hidden border bg-muted">
-                    {study.imagePrompt ? (
+                    {study.coverUrl ? (
                       <Image
-                        loader={({ src }) => src}
-                        src={`${IMAGE_BASE_URL}/${encodeURIComponent(study.imagePrompt)}?ratio=landscape`}
+                        src={study.coverUrl}
                         alt={study.title}
                         fill
                         sizes="600px"
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        unoptimized
-                        onError={(e) => {
-                          console.error("Image load error:", study.id, e);
-                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-muted">
-                        <span className="text-xs text-muted-foreground">Image placeholder</span>
+                        <div className="relative">
+                          <div className="w-12 h-12 rounded-full bg-muted-foreground/20 flex items-center justify-center">
+                            <PlayIcon
+                              className="w-4 h-4 text-muted-foreground ml-0.5"
+                              fill="currentColor"
+                            />
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Clickable link overlay to featured studies */}
+                {/* Clickable link overlay */}
                 <Link
-                  href="/featured-studies"
+                  href={study.url}
                   prefetch={true}
                   className="absolute inset-0 z-30"
                   aria-label={`View study: ${study.title}`}

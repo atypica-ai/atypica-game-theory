@@ -5,12 +5,12 @@ import CreatorsPage from "./CreatorsPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("Solutions.CreatorsPage.HeroSection");
+  const t = await getTranslations("Solutions.CreatorsPage.metadata");
 
   return generatePageMetadata({
     title: t("title"),
-    description: t("subtitle"),
-    locale: locale as "en-US" | "zh-CN",
+    description: t("description"),
+    locale,
   });
 }
 
