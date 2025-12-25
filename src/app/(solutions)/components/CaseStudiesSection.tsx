@@ -6,9 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { PlayIcon } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 type FeaturedReport = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
@@ -38,6 +37,7 @@ interface CaseStudiesSectionProps {
 
 export function CaseStudiesSection({ tag }: CaseStudiesSectionProps) {
   const locale = useLocale();
+  const t = useTranslations("Solutions.CaseStudiesSection");
   const [studies, setStudies] = useState<FeaturedReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,12 +79,12 @@ export function CaseStudiesSection({ tag }: CaseStudiesSectionProps) {
   );
 
   return (
-    <section className="py-20 md:py-32 bg-background bg-linear-to-b from-background via-background to-background relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden">
       <div className="container mx-auto px-6 sm:px-8 md:px-6 lg:px-4 max-w-screen-2xl">
         {/* Section title */}
         <div className="mb-12 text-center">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
-            {locale === "zh-CN" ? "成功案例" : "Success Stories"}
+            {t("title")}
           </h2>
         </div>
 
@@ -92,70 +92,59 @@ export function CaseStudiesSection({ tag }: CaseStudiesSectionProps) {
           renderSkeletons()
         ) : error ? (
           <div className="text-center py-20 text-muted-foreground">
-            <p>{locale === "zh-CN" ? "加载失败" : "Failed to load"}</p>
+            <p>{t("errorMessage")}</p>
           </div>
         ) : studies.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
-            <p>{locale === "zh-CN" ? "暂无案例" : "No studies yet"}</p>
+            <p>{t("emptyMessage")}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {studies.map((study) => (
               <Card
                 key={study.id}
                 className={cn(
-                  "group relative overflow-hidden rounded-2xl shadow-none",
-                  "transition-all duration-300 hover:scale-[1.02] cursor-pointer",
-                  "flex flex-col h-full",
+                  "group relative overflow-hidden rounded-2xl shadow-none cursor-pointer py-0",
+                  "flex flex-col justify-between",
                 )}
               >
                 {/* Card content */}
-                <div className="relative z-10 flex flex-col h-full transition-all duration-300">
-                  <div className="px-4 sm:px-5 pt-4 pb-4 sm:pb-5 flex flex-col gap-2.5">
-                    <span
-                      className={cn(
-                        "text-xs uppercase tracking-wide font-medium py-0.5 px-2 rounded-full self-start",
-                        getTagColorClasses(study.category),
-                      )}
-                    >
-                      {study.category}
-                    </span>
-                    <h3 className="text-base md:text-lg font-semibold leading-snug text-card-foreground line-clamp-2">
-                      {study.title}
-                    </h3>
-                  </div>
-
-                  <div className="relative aspect-video mx-4 sm:mx-5 mb-4 sm:mb-5 rounded-xl overflow-hidden border bg-muted">
-                    {study.coverUrl ? (
-                      <Image
-                        src={study.coverUrl}
-                        alt={study.title}
-                        fill
-                        sizes="600px"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-muted">
-                        <div className="relative">
-                          <div className="w-12 h-12 rounded-full bg-muted-foreground/20 flex items-center justify-center">
-                            <PlayIcon
-                              className="w-4 h-4 text-muted-foreground ml-0.5"
-                              fill="currentColor"
-                            />
-                          </div>
-                        </div>
-                      </div>
+                <div className="px-4 sm:px-5 pt-4 flex flex-col gap-2.5">
+                  <span
+                    className={cn(
+                      "text-xs uppercase tracking-wide font-medium py-1 px-2 rounded-full self-start",
+                      getTagColorClasses(study.category),
                     )}
-                  </div>
+                  >
+                    {study.category}
+                  </span>
+                  <h3 className="text-base md:text-lg font-semibold leading-snug text-card-foreground line-clamp-2">
+                    {study.title}
+                  </h3>
                 </div>
 
-                {/* Clickable link overlay */}
-                <Link
-                  href={study.url}
-                  prefetch={true}
-                  className="absolute inset-0 z-30"
-                  aria-label={`View study: ${study.title}`}
-                />
+                <div className="relative aspect-video mx-4 sm:mx-5 mb-4 sm:mb-5 rounded-xl overflow-hidden border bg-muted">
+                  {study.coverUrl ? (
+                    <Image
+                      src={study.coverUrl}
+                      alt={study.title}
+                      fill
+                      sizes="600px"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                      <div className="relative">
+                        <div className="w-12 h-12 rounded-full bg-muted-foreground/20 flex items-center justify-center">
+                          <PlayIcon
+                            className="w-4 h-4 text-muted-foreground ml-0.5"
+                            fill="currentColor"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </Card>
             ))}
           </div>

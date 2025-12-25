@@ -1,5 +1,10 @@
 {
   "Solutions": {
+    "CaseStudiesSection": {
+      "title": "成功案例",
+      "errorMessage": "加载失败",
+      "emptyMessage": "暂无案例"
+    },
     "CreatorsPage": {
       "metadata": {
         "title": "创作者 - 让趋势在几天内爆火",

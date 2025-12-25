@@ -1,5 +1,10 @@
 {
   "Solutions": {
+    "CaseStudiesSection": {
+      "title": "Success Stories",
+      "errorMessage": "Failed to load",
+      "emptyMessage": "No studies yet"
+    },
     "CreatorsPage": {
       "metadata": {
         "title": "For Creators - Turn Trends Viral, In Days",
