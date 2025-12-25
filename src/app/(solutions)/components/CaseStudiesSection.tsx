@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchPublicFeaturedStudies } from "@/app/(public)/featured-studies/actions";
+import { fetchPublicFeaturedItems } from "@/app/(public)/featured-studies/actions";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -11,26 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type FeaturedReport = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
-
-// Tag color mapping - different shades for different tools using theme-aware colors
-const getTagColorClasses = (tag: string): string => {
-  const tagLower = tag.toLowerCase();
-  // Use muted background with varying opacity for visual distinction
-  if (tagLower.includes("research")) {
-    return "bg-muted/50 text-muted-foreground";
-  } else if (tagLower.includes("podcast")) {
-    return "bg-muted/70 text-foreground";
-  } else if (tagLower.includes("persona")) {
-    return "bg-muted text-foreground";
-  } else if (tagLower.includes("interview")) {
-    return "bg-muted-foreground/20 text-foreground";
-  } else if (tagLower.includes("sage")) {
-    return "bg-muted-foreground/30 text-foreground";
-  }
-  // Default
-  return "bg-muted/50 text-muted-foreground";
-};
+type FeaturedItem = ExtractServerActionData<typeof fetchPublicFeaturedItems>[number];
 
 interface CaseStudiesSectionProps {
   tag: string;
@@ -40,27 +21,28 @@ interface CaseStudiesSectionProps {
 export function CaseStudiesSection({ tag, title }: CaseStudiesSectionProps) {
   const locale = useLocale();
   const t = useTranslations("Solutions.CaseStudiesSection");
-  const [studies, setStudies] = useState<FeaturedReport[]>([]);
+  const [featuredItems, setFeaturedItems] = useState<FeaturedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadStudies = async () => {
+    const loadFeaturedItems = async () => {
       setLoading(true);
-      const result = await fetchPublicFeaturedStudies({
+      const result = await fetchPublicFeaturedItems({
+        resourceType: "all",
         locale,
         tag,
         pageSize: 6,
         random: true,
       });
       if (result.success) {
-        setStudies(result.data);
+        setFeaturedItems(result.data);
       } else {
         setError(result.message);
       }
       setLoading(false);
     };
-    loadStudies();
+    loadFeaturedItems();
   }, [locale, tag]);
 
   const renderSkeletons = () => (
@@ -97,13 +79,13 @@ export function CaseStudiesSection({ tag, title }: CaseStudiesSectionProps) {
           <div className="text-center py-20 text-muted-foreground">
             <p>{t("errorMessage")}</p>
           </div>
-        ) : studies.length === 0 ? (
+        ) : featuredItems.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
             <p>{t("emptyMessage")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {studies.map((study) => (
+            {featuredItems.map((study) => (
               <Card
                 key={study.id}
                 className={cn(
@@ -113,14 +95,6 @@ export function CaseStudiesSection({ tag, title }: CaseStudiesSectionProps) {
               >
                 {/* Card content */}
                 <div className="px-4 sm:px-5 pt-4 flex flex-col gap-2.5">
-                  <span
-                    className={cn(
-                      "text-xs uppercase tracking-wide font-medium py-1 px-2 rounded-full self-start",
-                      getTagColorClasses(study.category),
-                    )}
-                  >
-                    {study.category}
-                  </span>
                   <h3 className="text-base md:text-lg font-semibold leading-snug text-card-foreground line-clamp-2">
                     <Link href={study.url} target="_blank">
                       {study.title}

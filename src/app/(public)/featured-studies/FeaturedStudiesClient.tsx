@@ -12,9 +12,9 @@ import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import useSWR from "swr";
-import { fetchPublicFeaturedStudies } from "./actions";
+import { fetchPublicFeaturedItems } from "./actions";
 
-type TReports = ExtractServerActionData<typeof fetchPublicFeaturedStudies>;
+type TReports = ExtractServerActionData<typeof fetchPublicFeaturedItems>;
 
 export default function FeaturedStudiesClient({
   initialSearchParams,
@@ -50,7 +50,8 @@ export default function FeaturedStudiesClient({
   const { data, isLoading } = useSWR(
     ["featured-reports", locale, activeAnalystKind, currentPage],
     async () => {
-      const result = await fetchPublicFeaturedStudies({
+      const result = await fetchPublicFeaturedItems({
+        resourceType: "AnalystReport",
         locale,
         tag: activeAnalystKind === "all" ? undefined : activeAnalystKind,
         page: currentPage,
@@ -134,9 +135,6 @@ export default function FeaturedStudiesClient({
             <CardHeader className="flex items-center">
               <HippyGhostAvatar seed={report.id} className="shrink-0 size-8" />
               <CardTitle className="text-sm font-normal truncate">{report.title}</CardTitle>
-              <div className="shrink-0 ml-auto text-xs md:text-sm text-muted-foreground">
-                {getAnalystKindLabel(report.category)}
-              </div>
             </CardHeader>
             <CardContent className="flex-1">
               <p className="text-xs text-muted-foreground line-clamp-3">{report.description}</p>

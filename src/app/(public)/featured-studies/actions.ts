@@ -1,41 +1,53 @@
 "use server";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystKind, FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
+import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
+import { Prisma as PrismaRuntime } from "@/prisma/generated/client";
 import { prismaRO } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
 
-type FeaturedReportResult = {
+type TResourceType =
+  // | FeaturedItemResourceType.AnalystPodcast
+  // | FeaturedItemResourceType.AnalystReport
+  "AnalystPodcast" | "AnalystReport" | "all";
+
+type FeaturedItemResult = {
   id: number;
   createdAt: Date;
   title: string;
   description: string;
   coverUrl: string | null;
   url: string;
-  category: AnalystKind;
 };
 
 // Internal implementation of fetchPublicFeaturedReports
-async function _fetchPublicFeaturedReportsImpl({
+async function _fetchPublicFeaturedItemsImpl({
+  resourceType,
   locale,
   tag,
   limit,
   random,
 }: {
+  resourceType: TResourceType;
   locale: Locale;
   tag?: string | "all";
   limit?: number;
   random?: boolean;
-}): Promise<FeaturedReportResult[]> {
+}): Promise<FeaturedItemResult[]> {
   let featuredItems: Array<{
     id: number;
-    resourceType: FeaturedItemResourceType;
+    resourceType: TResourceType;
     resourceId: number;
     extra: unknown;
     createdAt: Date;
   }>;
+
+  const resourceTypes: string[] =
+    resourceType === "all"
+      ? [FeaturedItemResourceType.AnalystPodcast, FeaturedItemResourceType.AnalystReport]
+      : [resourceType];
 
   if (random && limit) {
     // Random selection with tag filter
@@ -43,7 +55,7 @@ async function _fetchPublicFeaturedReportsImpl({
       // Use raw SQL with LIKE to check if tags contains the specified tag
       const result = (await prismaRO.$queryRaw`
         SELECT id FROM "FeaturedItem"
-        WHERE "resourceType" = ${FeaturedItemResourceType.AnalystReport}
+        WHERE "resourceType" in (${PrismaRuntime.join(resourceTypes)})
         AND locale = ${locale}
         AND (
           extra->>'tags' LIKE ${"%" + tag + "%"}
@@ -78,7 +90,7 @@ async function _fetchPublicFeaturedReportsImpl({
       // Random without tag filter
       const result = (await prismaRO.$queryRaw`
         SELECT id FROM "FeaturedItem"
-        WHERE "resourceType" = ${FeaturedItemResourceType.AnalystReport}
+        WHERE "resourceType" in (${PrismaRuntime.join(resourceTypes)})
         AND locale = ${locale}
         ORDER BY RANDOM()
         LIMIT ${limit}
@@ -110,7 +122,9 @@ async function _fetchPublicFeaturedReportsImpl({
     // Fetch all and filter in memory (acceptable for small dataset)
     const allItems = await prismaRO.featuredItem.findMany({
       where: {
-        resourceType: FeaturedItemResourceType.AnalystReport,
+        resourceType: {
+          in: resourceTypes,
+        },
         locale,
       },
       select: {
@@ -159,7 +173,6 @@ async function _fetchPublicFeaturedReportsImpl({
         description: extra.description || "",
         coverUrl: extra.coverObjectUrl ? await getS3SignedCdnUrl(extra.coverObjectUrl) : null,
         url: extra.url || "",
-        category: (extra.category || AnalystKind.misc) as AnalystKind,
       };
     }),
   );
@@ -177,9 +190,16 @@ async function _fetchPublicFeaturedReportsImpl({
  * 缓存清除：
  * 在需要清除缓存时使用: revalidateTag("public-featured-reports")
  */
-const getCachedFeaturedReports = unstable_cache(
-  async (locale: Locale, tag?: string | "all", limit?: number, random?: boolean) => {
-    return _fetchPublicFeaturedReportsImpl({
+const getCachedFeaturedItems = unstable_cache(
+  async (
+    resourceType: TResourceType,
+    locale: Locale,
+    tag?: string | "all",
+    limit?: number,
+    random?: boolean,
+  ) => {
+    return _fetchPublicFeaturedItemsImpl({
+      resourceType,
       locale,
       tag,
       limit,
@@ -188,26 +208,29 @@ const getCachedFeaturedReports = unstable_cache(
   },
   ["public-featured-reports"],
   {
-    revalidate: 86400, // 1 day cache
+    // revalidate: 86400, // 1 day cache
+    revalidate: 1,
     tags: ["public-featured-reports"],
   },
 );
 
-export async function fetchPublicFeaturedStudies({
+export async function fetchPublicFeaturedItems({
+  resourceType,
   locale,
   tag,
   page = 1,
   pageSize = 12,
   random,
 }: {
+  resourceType: TResourceType;
   locale: Locale;
   tag?: string | "all";
   page?: number;
   pageSize?: number;
   random?: boolean;
-}): Promise<ServerActionResult<FeaturedReportResult[]>> {
+}): Promise<ServerActionResult<FeaturedItemResult[]>> {
   const localeResolved = locale || (await getLocale());
-  const allData = await getCachedFeaturedReports(localeResolved, tag, undefined, random);
+  const allData = await getCachedFeaturedItems(resourceType, localeResolved, tag, pageSize, random);
 
   // Apply pagination
   const totalCount = allData.length;

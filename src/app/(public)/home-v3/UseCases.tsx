@@ -1,5 +1,5 @@
 "use client";
-import { fetchPublicFeaturedStudies } from "@/app/(public)/featured-studies/actions";
+import { fetchPublicFeaturedItems } from "@/app/(public)/featured-studies/actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,7 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type FeaturedReport = ExtractServerActionData<typeof fetchPublicFeaturedStudies>[number];
+type FeaturedReport = ExtractServerActionData<typeof fetchPublicFeaturedItems>[number];
 
 export function UseCases() {
   const locale = useLocale();
@@ -23,7 +23,8 @@ export function UseCases() {
   useEffect(() => {
     const loadStudies = async () => {
       setLoading(true);
-      const result = await fetchPublicFeaturedStudies({
+      const result = await fetchPublicFeaturedItems({
+        resourceType: "AnalystReport",
         locale,
         pageSize: 6,
         random: true,
@@ -119,9 +120,11 @@ export function UseCases() {
                   )}
                 </div>
                 <div className="p-6 grow flex flex-col">
+                  {/*
                   <span className="text-xs capitalize bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 font-medium py-1 px-2.5 rounded-full self-start mb-3">
                     {study.category}
                   </span>
+                  */}
                   <h3 className="text-lg font-bold line-clamp-2 leading-snug grow">
                     {study.title}
                   </h3>

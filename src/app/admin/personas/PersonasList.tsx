@@ -316,7 +316,7 @@ export default function PersonasList({
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-xs h-6 px-2 ml-2 flex-shrink-0"
+                      className="text-xs h-6 px-2 ml-2 shrink-0"
                       onClick={() => setSelectedPersona(persona)}
                     >
                       <EyeIcon className="size-3" />
