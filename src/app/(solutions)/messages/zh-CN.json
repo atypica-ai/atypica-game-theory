@@ -100,7 +100,7 @@
     },
     "HeroSection": {
       "eyebrow": "Atypica For Creators",
-      "title": "Turn Trends viral, In Days",
+      "title": "让趋势在几天内爆火",
       "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
       "getStarted": "开始使用"
     },
@@ -328,7 +328,7 @@
   "InfluencerPage": {
     "HeroSection": {
       "eyebrow": "Atypica For Influencers",
-      "title": "Monetize Trust",
+      "title": "将信任变现",
       "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
       "getStarted": "开始使用"
     },
@@ -378,7 +378,7 @@
       "viewStudy": "查看研究"
     },
     "UseCasesSection": {
-      "title": "Engage deeper, earn more",
+      "title": "参与更深，赚取更多",
       "scenario1": {
         "question": "我的粉丝真正关心什么？他们对我的哪些方面最感兴趣？",
         "primaryTool": {
@@ -408,7 +408,7 @@
   "MarketerPage": {
     "HeroSection": {
       "eyebrow": "Atypica For Marketers",
-      "title": "Real voices, real conversions",
+      "title": "真实声音，真实转化",
       "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
       "getStarted": "开始使用"
     },
@@ -458,7 +458,7 @@
       "viewStudy": "查看研究"
     },
     "UseCasesSection": {
-      "title": "Test it. Validate it. Win it.",
+      "title": "测试它。验证它。赢得它。",
       "scenario1": {
         "question": "我的目标消费者现在在想什么？他们关心的真实痛点是什么？",
         "primaryTool": {
@@ -488,7 +488,7 @@
   "ProductManagerPage": {
     "HeroSection": {
       "eyebrow": "Atypica For Product Managers",
-      "title": "Innovation, De-Risked",
+      "title": "创新，去风险化",
       "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
       "getStarted": "开始使用"
     },
@@ -538,7 +538,7 @@
       "viewStudy": "查看研究"
     },
     "UseCasesSection": {
-      "title": "Listen to users. Build what matters.",
+      "title": "倾听用户。构建重要内容。",
       "scenario1": {
         "question": "用户真正需要的下一个创新功能是什么？有什么我们没想到的？",
         "primaryTool": {
@@ -568,7 +568,7 @@
   "StartupOwnerPage": {
     "HeroSection": {
       "eyebrow": "Atypica For Startup Owners",
-      "title": "Kill Bad Ideas Early",
+      "title": "尽早淘汰坏想法",
       "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
       "getStarted": "开始使用"
     },
@@ -618,7 +618,7 @@
       "viewStudy": "查看研究"
     },
     "UseCasesSection": {
-      "title": "Prove your concept. Fund your future.",
+      "title": "证明你的概念。资助你的未来。",
       "scenario1": {
         "question": "这个市场机会真的存在吗？消费者的需求有多强烈？",
         "primaryTool": {
@@ -648,7 +648,7 @@
   "ConsultantPage": {
     "HeroSection": {
       "eyebrow": "Atypica For Consultants",
-      "title": "Show consumer proof, more than slides",
+      "title": "展示消费者证据，而非幻灯片",
       "subtitle": "快速知道什么会火、怎么优化、趋势在哪",
       "getStarted": "开始使用"
     },
@@ -698,7 +698,7 @@
       "viewStudy": "查看研究"
     },
     "UseCasesSection": {
-      "title": "Research it. Prove it. Present it.",
+      "title": "研究它。证明它。呈现它。",
       "scenario1": {
         "question": "我给客户的战略建议有消费者数据支持吗？怎么讲最有说服力？",
         "primaryTool": {

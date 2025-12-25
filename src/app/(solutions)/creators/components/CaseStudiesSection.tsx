@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { FileText, ExternalLink } from "lucide-react";
 
 type MockStudyKey = string;
 
@@ -94,7 +93,7 @@ export function CaseStudiesSection({ namespace = "CreatorPage.CaseStudiesSection
 
   return (
     <section className="py-20 md:py-32 bg-background bg-gradient-to-b from-background via-background to-background relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 md:px-4 max-w-screen-2xl">
+      <div className="container mx-auto px-6 sm:px-8 md:px-6 lg:px-4 max-w-screen-2xl">
         {/* Section title */}
         <div className="mb-12 text-center">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
@@ -111,19 +110,19 @@ export function CaseStudiesSection({ namespace = "CreatorPage.CaseStudiesSection
             <p>{t("noCases")}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 md:gap-8">
           {studies.map((study) => (
             <Card
               key={study.id}
               className={cn(
                 "group relative overflow-hidden rounded-2xl shadow-none",
-                "transition-all duration-300 hover:-translate-y-1 cursor-pointer",
+                "transition-all duration-300 hover:scale-[1.02] cursor-pointer",
                 "flex flex-col h-full",
               )}
             >
-              {/* Card content - blur on hover */}
-              <div className="relative z-10 flex flex-col h-full transition-all duration-300 group-hover:blur-md group-hover:brightness-75">
-                <div className="px-5 pt-4 pb-5 flex flex-col gap-2.5">
+              {/* Card content */}
+              <div className="relative z-10 flex flex-col h-full transition-all duration-300">
+                        <div className="px-4 sm:px-5 pt-4 pb-4 sm:pb-5 flex flex-col gap-2.5">
                   <span className={cn("text-xs uppercase tracking-wide font-medium py-0.5 px-2 rounded-full self-start", getTagColorClasses(study.tag))}>
                     {study.tag}
                   </span>
@@ -135,7 +134,7 @@ export function CaseStudiesSection({ namespace = "CreatorPage.CaseStudiesSection
                   </p>
                 </div>
 
-                <div className="relative aspect-video mx-5 mb-5 rounded-xl overflow-hidden border bg-muted">
+                        <div className="relative aspect-video mx-4 sm:mx-5 mb-4 sm:mb-5 rounded-xl overflow-hidden border bg-muted">
                   {study.imagePrompt ? (
                     <Image
                       loader={({ src }) => src}
@@ -154,16 +153,6 @@ export function CaseStudiesSection({ namespace = "CreatorPage.CaseStudiesSection
                       <span className="text-xs text-muted-foreground">Image placeholder</span>
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Hover overlay with View Study */}
-              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="absolute inset-0 bg-foreground/45 backdrop-blur-md" />
-                <div className="relative inline-flex items-center gap-2 rounded-full bg-card text-card-foreground px-5 py-2.5 text-sm font-semibold shadow-lg">
-                  <FileText className="w-4 h-4" />
-                  <span>View Study</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
                 </div>
               </div>
 
