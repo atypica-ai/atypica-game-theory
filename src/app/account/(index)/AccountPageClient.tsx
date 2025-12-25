@@ -1,21 +1,6 @@
 "use client";
-import {
-  cancelSubscriptionAction,
-  createCustomerPortalSessionAction,
-  stripeSubscriptionAction,
-} from "@/app/account/actions";
+import { createCustomerPortalSessionAction, stripeSubscriptionAction } from "@/app/account/actions";
 import { AddTokensDialog } from "@/app/payment/components/AddTokensDialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
@@ -27,6 +12,7 @@ import {
   InfinityIcon,
   InfoIcon,
   Loader2Icon,
+  SettingsIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -66,8 +52,8 @@ export function AccountPageClient({
   const locale = useLocale();
 
   const [isAddTokensOpen, setIsAddTokensOpen] = useState(false);
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const [isCanceling, setIsCanceling] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
+  const [isCanceling, setIsCanceling] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [isCreatingPortalSession, setIsCreatingPortalSession] = useState(false);
   const [stripeSubscription, setStripeSubscription] = useState<Pick<
     Stripe.Subscription,
@@ -86,27 +72,27 @@ export function AccountPageClient({
     }
   }, [stripeSubscriptionId]);
 
-  const handleCancelSubscription = useCallback(async () => {
-    if (!stripeSubscriptionId) {
-      return;
-    }
-    setIsCanceling(true);
-    try {
-      const result = await cancelSubscriptionAction();
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-      toast.success(t("subscriptionSection.cancelSuccess"));
-      // Refresh the page to update subscription status
-      await new Promise((resolve) => setTimeout(() => resolve(null), 1000));
-      window.location.reload();
-    } catch (error) {
-      toast.error((error as Error).message || t("subscriptionSection.cancelError"));
-    } finally {
-      setIsCanceling(false);
-      setIsCancelDialogOpen(false);
-    }
-  }, [stripeSubscriptionId, t]);
+  // const handleCancelSubscription = useCallback(async () => {
+  //   if (!stripeSubscriptionId) {
+  //     return;
+  //   }
+  //   setIsCanceling(true);
+  //   try {
+  //     const result = await cancelSubscriptionAction();
+  //     if (!result.success) {
+  //       throw new Error(result.message);
+  //     }
+  //     toast.success(t("subscriptionSection.cancelSuccess"));
+  //     // Refresh the page to update subscription status
+  //     await new Promise((resolve) => setTimeout(() => resolve(null), 1000));
+  //     window.location.reload();
+  //   } catch (error) {
+  //     toast.error((error as Error).message || t("subscriptionSection.cancelError"));
+  //   } finally {
+  //     setIsCanceling(false);
+  //     setIsCancelDialogOpen(false);
+  //   }
+  // }, [stripeSubscriptionId, t]);
 
   const handleManageSubscription = useCallback(async (activeSubscription: Subscription) => {
     setIsCreatingPortalSession(true);
@@ -132,9 +118,26 @@ export function AccountPageClient({
           {/* Subscription Section */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <CreditCardIcon className="mr-2 h-5 w-5" />
-                {t("subscriptionSection.title")}
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <CreditCardIcon className="mr-2 h-5 w-5" />
+                  {t("subscriptionSection.title")}
+                </div>
+                {activeSubscription && activeSubscription.stripeSubscriptionId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleManageSubscription(activeSubscription)}
+                    disabled={isCreatingPortalSession}
+                    className="size-8 has-[>svg]:p-0 -mr-2"
+                  >
+                    {isCreatingPortalSession ? (
+                      <Loader2Icon className="size-4 animate-spin" />
+                    ) : (
+                      <SettingsIcon className="size-4" />
+                    )}
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-1">
@@ -203,55 +206,9 @@ export function AccountPageClient({
                 )}
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col items-stretch sm:flex-row sm:items-center gap-4">
-              {activeSubscription && activeSubscription.stripeSubscriptionId && (
-                <Button
-                  variant="outline"
-                  onClick={() => handleManageSubscription(activeSubscription)}
-                  disabled={isCreatingPortalSession || isCanceling}
-                  className="flex-1"
-                >
-                  {isCreatingPortalSession && <Loader2Icon className="animate-spin size-4" />}
-                  {t("subscriptionSection.manageSubscription")}
-                </Button>
-              )}
-              {stripeSubscription?.status === "active" ? (
-                <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      disabled={isCanceling || isCreatingPortalSession}
-                      className="flex-1"
-                    >
-                      {isCanceling
-                        ? t("subscriptionSection.canceling")
-                        : t("subscriptionSection.cancelSubscription")}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{t("subscriptionSection.confirmCancel")}</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t("subscriptionSection.cancelDescription")}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel disabled={isCanceling}>
-                        {t("subscriptionSection.keepSubscription")}
-                      </AlertDialogCancel>
-                      <AlertDialogAction onClick={handleCancelSubscription} disabled={isCanceling}>
-                        {isCanceling
-                          ? t("subscriptionSection.canceling")
-                          : t("subscriptionSection.confirmCancel")}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              ) : stripeSubscriptionId ? (
-                // 是 stripeSubscription 但是状态不是 active，啥也不显示
-                <></>
-              ) : (
-                // 非 stripeSubscription，直接显示续费/升级按钮
+            {/* 只有非 Stripe 订阅时才显示 CardFooter（续费/升级按钮） */}
+            {!stripeSubscriptionId && (
+              <CardFooter>
                 <Button asChild className="flex-1">
                   <Link href="/pricing">
                     {activeSubscription
@@ -259,8 +216,8 @@ export function AccountPageClient({
                       : t("subscriptionSection.upgrade")}
                   </Link>
                 </Button>
-              )}
-            </CardFooter>
+              </CardFooter>
+            )}
           </Card>
 
           {/* Tokens Section */}
@@ -339,3 +296,38 @@ export function AccountPageClient({
     </div>
   );
 }
+
+/*
+取消按钮备份
+<AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+  <AlertDialogTrigger asChild>
+    <Button
+      variant="outline"
+      disabled={isCanceling || isCreatingPortalSession}
+      className="flex-1"
+    >
+      {isCanceling
+        ? t("subscriptionSection.canceling")
+        : t("subscriptionSection.cancelSubscription")}
+    </Button>
+  </AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>{t("subscriptionSection.confirmCancel")}</AlertDialogTitle>
+      <AlertDialogDescription>
+        {t("subscriptionSection.cancelDescription")}
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel disabled={isCanceling}>
+        {t("subscriptionSection.keepSubscription")}
+      </AlertDialogCancel>
+      <AlertDialogAction onClick={handleCancelSubscription} disabled={isCanceling}>
+        {isCanceling
+          ? t("subscriptionSection.canceling")
+          : t("subscriptionSection.confirmCancel")}
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+*/
