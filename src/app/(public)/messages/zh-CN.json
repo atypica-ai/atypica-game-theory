@@ -332,5 +332,44 @@
     "ctaTitle": "准备好创建自己的播客了吗？",
     "ctaDescription": "开始新的研究，几分钟内生成您的第一个 AI 播客。",
     "createMyPodcast": "创建我的播客"
+  },
+  "AffiliatePage": {
+    "hero": {
+      "title": "通过推广 atypica.AI 赚取丰厚收益",
+      "description": "推荐付费用户，前 3 个月的前 3 笔订单可获",
+      "commission": "30%",
+      "descriptionSuffix": "佣金",
+      "cta": "加入联盟计划",
+      "bubbleText": "30% 佣金！"
+    },
+    "howItWorks": {
+      "title": "如何运作",
+      "steps": {
+        "join": {
+          "title": "加入",
+          "description": "联盟计划，获取专属推荐链接",
+          "linkText": "注册"
+        },
+        "promote": {
+          "title": "推广",
+          "description": "分享您的专属链接，通过",
+          "linkText": "Tolt",
+          "descriptionSuffix": "实时跟踪推广表现"
+        },
+        "earn": {
+          "title": "赚取",
+          "description": "每位推荐用户前 3 个月的前 3 笔订单赚取 30% 佣金"
+        }
+      }
+    },
+    "help": {
+      "title": "有疑问？",
+      "description": "与我们的 AI 智能体对话，即时获取解答",
+      "cta": "咨询专家"
+    },
+    "links": {
+      "affiliateProgram": "https://friends.atypica.ai",
+      "sage": "/sage/profile/TbbLWdttgRyhqgvU"
+    }
   }
 }

@@ -332,5 +332,44 @@
     "ctaTitle": "Ready to create your own podcast?",
     "ctaDescription": "Start a new research and generate your first AI podcast in minutes.",
     "createMyPodcast": "Create My Podcast"
+  },
+  "AffiliatePage": {
+    "hero": {
+      "title": "Get Paid to Share atypica.AI",
+      "description": "Earn",
+      "commission": "30%",
+      "descriptionSuffix": "commission on the first 3 payments within 3 months from every customer you refer",
+      "cta": "Join Affiliate Program",
+      "bubbleText": "30% commission!"
+    },
+    "howItWorks": {
+      "title": "How it Works",
+      "steps": {
+        "join": {
+          "title": "Join",
+          "description": "for the affiliate program and get your unique referral link",
+          "linkText": "Sign up"
+        },
+        "promote": {
+          "title": "Promote",
+          "description": "Share your unique link and track performance in real-time via",
+          "linkText": "Tolt",
+          "descriptionSuffix": ""
+        },
+        "earn": {
+          "title": "Earn",
+          "description": "Earn 30% commission on the first 3 payments within 3 months per customer"
+        }
+      }
+    },
+    "help": {
+      "title": "Questions?",
+      "description": "Chat with our AI sage for instant answers",
+      "cta": "Chat with Sage"
+    },
+    "links": {
+      "affiliateProgram": "https://friends.atypica.ai",
+      "sage": "/sage/profile/jv62NzUkJjfsbhxq"
+    }
   }
 }
