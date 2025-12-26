@@ -105,43 +105,53 @@ export const pickRandomFeaturedPodcast = unstable_cache(
 /**
  * Fetch featured podcasts from FeaturedItem
  * Batch joins with AnalystPodcast for additional data
+ * @param tag - Optional tag filter (e.g., "podcastRSS")
  */
 export const fetchFeaturedPodcasts = unstable_cache(
   async function ({
     locale,
+    tag,
     page = 1,
     pageSize = 20,
   }: {
     locale: Locale;
+    tag?: string;
     page?: number;
     pageSize?: number;
   }): Promise<ServerActionResult<FeaturedPodcastResult[]>> {
-    const skip = (page - 1) * pageSize;
+    // Fetch all featured items first (without pagination if we need to filter by tag)
+    const allFeaturedItems = await prismaRO.featuredItem.findMany({
+      where: {
+        resourceType: FeaturedItemResourceType.AnalystPodcast,
+        locale,
+      },
+      select: {
+        id: true,
+        resourceId: true,
+        extra: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
-    // Fetch featured items with pagination
-    const [featuredItems, totalCount] = await Promise.all([
-      prismaRO.featuredItem.findMany({
-        where: {
-          resourceType: FeaturedItemResourceType.AnalystPodcast,
-          locale,
-        },
-        select: {
-          id: true,
-          resourceId: true,
-          extra: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: pageSize,
-      }),
-      prismaRO.featuredItem.count({
-        where: {
-          resourceType: FeaturedItemResourceType.AnalystPodcast,
-          locale,
-        },
-      }),
-    ]);
+    // Filter by tag if specified
+    let filteredItems = allFeaturedItems;
+    if (tag) {
+      filteredItems = allFeaturedItems.filter((item) => {
+        const extra = item.extra as FeaturedItemExtra;
+        const tags = extra.tags || "";
+        // Split by comma and check if tag exists
+        return tags
+          .split(",")
+          .map((t) => t.trim())
+          .includes(tag);
+      });
+    }
+
+    // Apply pagination after filtering
+    const totalCount = filteredItems.length;
+    const skip = (page - 1) * pageSize;
+    const featuredItems = filteredItems.slice(skip, skip + pageSize);
 
     // Batch fetch podcast details
     const podcastIds = featuredItems.map((item) => item.resourceId);

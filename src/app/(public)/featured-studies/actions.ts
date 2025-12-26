@@ -183,12 +183,12 @@ async function _fetchPublicFeaturedItemsImpl({
  *
  * unstable_cache 原理：
  * - 函数参数会自动成为缓存key的一部分
- * - 实际缓存key: ["public-featured-reports", locale, tag, limit, random]
+ * - 实际缓存key: ["public-featured-items", locale, tag, limit, random]
  * - 不同的参数组合有独立的缓存项
  * - 缓存时间: 1天 (86400秒)
  *
  * 缓存清除：
- * 在需要清除缓存时使用: revalidateTag("public-featured-reports")
+ * 在需要清除缓存时使用: revalidateTag("public-featured-items")
  */
 const getCachedFeaturedItems = unstable_cache(
   async (
@@ -206,11 +206,10 @@ const getCachedFeaturedItems = unstable_cache(
       random,
     });
   },
-  ["public-featured-reports"],
+  ["public-featured-items"],
   {
-    // revalidate: 86400, // 1 day cache
-    revalidate: 1,
-    tags: ["public-featured-reports"],
+    revalidate: 86400, // 1 day cache
+    tags: ["public-featured-items"],
   },
 );
 

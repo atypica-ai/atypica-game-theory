@@ -2,6 +2,7 @@
 import { generatePodcastMetadata } from "@/app/(podcast)/lib/generation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -18,7 +19,6 @@ import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { Locale } from "next-intl";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { VALID_LOCALES } from "@/i18n/routing";
 
 // Get all analyst podcasts with pagination
 export async function fetchAnalystPodcastsAction(
@@ -328,6 +328,7 @@ export async function featurePodcastAction(podcastId: number): Promise<ServerAct
   }
 
   revalidatePath("/admin/studies/podcasts");
+  revalidateTag("public-featured-items");
   revalidateTag("featured-podcasts");
   return {
     success: true,

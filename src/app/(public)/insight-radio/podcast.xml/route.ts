@@ -21,8 +21,12 @@ export async function GET(request: Request) {
   const platform = url.searchParams.get("platform"); // youtube | xiaoyuzhou | spotify | apple
   const locale = localeParam === "zh-CN" ? "zh-CN" : "en-US"; // Default to en-US
 
-  // Fetch podcasts
-  const result = await fetchFeaturedPodcasts({ locale, pageSize: 100 });
+  // Fetch podcasts with podcastRSS tag filter
+  const result = await fetchFeaturedPodcasts({
+    locale,
+    tag: "podcastRSS",
+    pageSize: 100,
+  });
 
   if (!result.success || !result.data) {
     return new Response("Failed to fetch podcasts", { status: 500 });

@@ -15,9 +15,8 @@ interface TagsInputProps {
   onChange: (value: string) => void;
 }
 
-// AnalystKind 和 Solution roles 作为可选标签
-const AVAILABLE_TAGS = [
-  // AnalystKind
+// AnalystKind, Solution roles, and Podcast RSS 作为可选标签
+const ANALYST_KIND_TAGS = [
   "testing",
   "planning",
   "insights",
@@ -25,7 +24,9 @@ const AVAILABLE_TAGS = [
   "productRnD",
   "fastInsight",
   "misc",
-  // Solution roles
+];
+
+const ROLE_TAGS = [
   "creators",
   "influencers",
   "marketers",
@@ -33,6 +34,24 @@ const AVAILABLE_TAGS = [
   "consultants",
   "productManagers",
 ];
+
+const PODCAST_TAGS = ["podcastRSS"];
+
+const AVAILABLE_TAGS = [...ANALYST_KIND_TAGS, ...ROLE_TAGS, ...PODCAST_TAGS];
+
+// Get emoji prefix for tag based on its type
+function getTagEmoji(tag: string): string {
+  if (ANALYST_KIND_TAGS.includes(tag)) return "🎯";
+  if (ROLE_TAGS.includes(tag)) return "👤";
+  if (PODCAST_TAGS.includes(tag)) return "📻";
+  return "";
+}
+
+// Format tag with emoji for display
+function formatTagDisplay(tag: string): string {
+  const emoji = getTagEmoji(tag);
+  return emoji ? `${emoji} ${tag}` : tag;
+}
 
 export function TagsInput({ value, onChange }: TagsInputProps) {
   // 将逗号分隔的字符串转换为数组
@@ -64,7 +83,7 @@ export function TagsInput({ value, onChange }: TagsInputProps) {
       <div className="flex flex-wrap gap-2 min-h-8">
         {tags.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1 pr-1">
-            {tag}
+            {formatTagDisplay(tag)}
             <button
               type="button"
               onClick={() => removeTag(tag)}
@@ -84,7 +103,7 @@ export function TagsInput({ value, onChange }: TagsInputProps) {
           <SelectContent>
             {availableOptions.map((tag) => (
               <SelectItem key={tag} value={tag}>
-                {tag}
+                {formatTagDisplay(tag)}
               </SelectItem>
             ))}
           </SelectContent>

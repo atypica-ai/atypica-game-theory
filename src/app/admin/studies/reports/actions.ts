@@ -298,7 +298,7 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
   }
 
   revalidatePath("/admin/studies/reports");
-  revalidateTag("public-featured-reports");
+  revalidateTag("public-featured-items");
   return {
     success: true,
     data: undefined,
@@ -341,7 +341,7 @@ export async function updateFeaturedItemTagsAction(
   });
 
   revalidatePath("/admin/studies/reports");
-  revalidateTag("public-featured-reports");
+  revalidateTag("public-featured-items");
   return {
     success: true,
     data: undefined,
