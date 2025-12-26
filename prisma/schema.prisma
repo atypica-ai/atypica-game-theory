@@ -622,6 +622,37 @@ model InterviewReport {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
+model PersonaPanel {
+  id         Int  @id @default(autoincrement())
+  userId     Int
+  personaIds Json @default("[]") // Persona ID 列表
+  extra      Json @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  discussionTimelines DiscussionTimeline[]
+
+  @@index([userId])
+}
+
+model DiscussionTimeline {
+  id             Int           @id @default(autoincrement())
+  token          String        @unique @db.VarChar(64)
+  personaPanelId Int?
+  personaPanel   PersonaPanel? @relation(fields: [personaPanelId], references: [id], onDelete: SetNull)
+  instruction    String        @db.Text // 用户指令
+  events         Json          @default("[]") // TimelineEvent[] 数组
+  summary        String        @db.Text // 主持人最终总结 default empty string
+  minutes        String        @db.Text // 结构化讨论纪要（无损记录）default empty string
+  extra          Json          @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([personaPanelId])
+}
+
 // ===== Sage (Expert Agent) System =====
 
 model Sage {
