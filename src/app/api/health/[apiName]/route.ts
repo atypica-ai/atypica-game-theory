@@ -1,4 +1,4 @@
-import { prisma } from "@/prisma/prisma";
+import { getPoolStats, prisma, prismaRO } from "@/prisma/prisma";
 import { generateText } from "ai";
 import Groq from "groq-sdk";
 import { NextRequest, NextResponse } from "next/server";
@@ -104,9 +104,40 @@ const API_CONFIGS = {
   database: {
     type: "database-service",
     test: async () => {
+      const startTime = Date.now();
+
+      // Test main database
       await prisma.$queryRaw`SELECT 1`;
+      const mainLatency = Date.now() - startTime;
+
+      // Test read-only database
+      const roStartTime = Date.now();
+      await prismaRO.$queryRaw`SELECT 1`;
+      const roLatency = Date.now() - roStartTime;
+
+      // Get connection pool stats
+      const poolStats = getPoolStats();
+
       return {
         message: "Database connection successful",
+        latency: {
+          main: `${mainLatency}ms`,
+          readOnly: `${roLatency}ms`,
+        },
+        pool: {
+          main: {
+            total: poolStats.main.totalCount,
+            idle: poolStats.main.idleCount,
+            waiting: poolStats.main.waitingCount,
+            active: poolStats.main.totalCount - poolStats.main.idleCount,
+          },
+          readOnly: {
+            total: poolStats.readOnly.totalCount,
+            idle: poolStats.readOnly.idleCount,
+            waiting: poolStats.readOnly.waitingCount,
+            active: poolStats.readOnly.totalCount - poolStats.readOnly.idleCount,
+          },
+        },
         timestamp: new Date().toISOString(),
       };
     },
