@@ -187,7 +187,7 @@ model Analyst {
   brief           String    @db.Text
   role            String    @db.VarChar(255)
   topic           String    @db.Text
-  studySummary    String    @db.Text
+  studySummary    String    @db.Text // 目前已经用不到了
   studyLog        String    @default("") @db.Text
   studyUserChatId Int?      @unique @db.Integer
   studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])

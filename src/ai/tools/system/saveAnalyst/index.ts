@@ -8,13 +8,7 @@ import { tool } from "ai";
 import {
   saveAnalystInputSchema,
   saveAnalystOutputSchema,
-  saveAnalystStudySummaryInputSchema,
-  saveAnalystStudySummaryOutputSchema,
-  saveInnovationSummaryInputSchema,
-  saveInnovationSummaryOutputSchema,
-  type SaveAnalystStudySummaryToolResult,
   type SaveAnalystToolResult,
-  type SaveInnovationSummaryToolResult,
 } from "./types";
 
 export const saveAnalystTool = ({
@@ -76,68 +70,6 @@ export const saveAnalystTool = ({
       return {
         analystId: analyst.id,
         plainText: `Study topic and analyst configuration ${isUpdate ? "updated" : "saved"} successfully with analystId: ${analyst.id}`,
-      };
-    },
-  });
-
-export const saveAnalystStudySummaryTool = ({ studyUserChatId }: { studyUserChatId: number }) =>
-  tool({
-    description:
-      "Save an objective summary of the completed study methodology and process workflow for report generation",
-    inputSchema: saveAnalystStudySummaryInputSchema,
-    outputSchema: saveAnalystStudySummaryOutputSchema,
-    toModelOutput: (result: PlainTextToolResult) => {
-      return { type: "text", value: result.plainText };
-    },
-    execute: async ({ studySummary }): Promise<SaveAnalystStudySummaryToolResult> => {
-      const { analyst } = await prisma.userChat.findUniqueOrThrow({
-        where: { id: studyUserChatId, kind: "study" },
-        select: { analyst: { select: { id: true } } },
-      });
-      if (!analyst) {
-        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
-      }
-      const analystId = analyst.id;
-      await prisma.analyst.update({
-        where: { id: analystId },
-        data: { studySummary },
-      });
-      // save summary 以后，有了更多的信息，这时候可以更新一下 chat title
-      waitUntil(generateChatTitle(studyUserChatId));
-      return {
-        // analystId,
-        plainText: `Study summary saved successfully for analyst ${analystId}`,
-      };
-    },
-  });
-
-export const saveInnovationSummaryTool = ({ studyUserChatId }: { studyUserChatId: number }) =>
-  tool({
-    description:
-      "Save an objective summary of the completed study methodology and process workflow for report generation",
-    inputSchema: saveInnovationSummaryInputSchema,
-    outputSchema: saveInnovationSummaryOutputSchema,
-    toModelOutput: (result: PlainTextToolResult) => {
-      return { type: "text", value: result.plainText };
-    },
-    execute: async ({ studySummary, searchLog }): Promise<SaveInnovationSummaryToolResult> => {
-      const { analyst } = await prisma.userChat.findUniqueOrThrow({
-        where: { id: studyUserChatId, kind: "study" },
-        select: { analyst: { select: { id: true } } },
-      });
-      if (!analyst) {
-        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
-      }
-      const analystId = analyst.id;
-
-      const studySummaryWithSearchLog = `${studySummary}\n\n## Innovation Reasoning Process:\n${searchLog}`;
-      await prisma.analyst.update({
-        where: { id: analystId },
-        data: { studySummary: studySummaryWithSearchLog },
-      });
-      return {
-        // analystId,
-        plainText: `Study summary saved successfully for analyst ${analystId}`,
       };
     },
   });

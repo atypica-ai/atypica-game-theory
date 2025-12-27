@@ -22,11 +22,7 @@ import { SearchPersonasToolInput, SearchPersonasToolResult } from "./experts/sea
 import { WebFetchToolInput, WebFetchToolResult } from "./experts/webFetch/types";
 import { WebSearchToolInput, WebSearchToolResult } from "./experts/webSearch/types";
 import { SocialPostCommentToolResult, SocialPostToolResult } from "./social/types";
-import {
-  SaveAnalystToolInput,
-  SaveAnalystToolResult,
-  SaveInnovationSummaryToolResult,
-} from "./system/saveAnalyst/types";
+import { SaveAnalystToolInput, SaveAnalystToolResult } from "./system/saveAnalyst/types";
 import {
   SaveInterviewConclusionToolInput,
   SaveInterviewConclusionToolResult,
@@ -79,7 +75,6 @@ export enum ToolName {
   createSubAgent = "createSubAgent",
 
   saveAnalyst = "saveAnalyst",
-  saveAnalystStudySummary = "saveAnalystStudySummary",
   saveInterviewConclusion = "saveInterviewConclusion",
   savePersona = "savePersona",
   saveInterviewSessionSummary = "saveInterviewSessionSummary",
@@ -138,10 +133,6 @@ export type StudyUITools = {
     output: CreateSubAgentResult;
   };
   [ToolName.saveAnalyst]: { input: SaveAnalystToolInput; output: SaveAnalystToolResult };
-  [ToolName.saveAnalystStudySummary]: {
-    input: GenericInputType;
-    output: SaveInnovationSummaryToolResult;
-  };
   [ToolName.saveInterviewConclusion]: {
     input: SaveInterviewConclusionToolInput;
     output: SaveInterviewConclusionToolResult;
