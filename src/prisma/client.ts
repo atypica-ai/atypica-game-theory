@@ -279,6 +279,13 @@ export enum FeaturedItemResourceType {
   AnalystPodcast = "AnalystPodcast",
 }
 
+export type PersonaPanelExtra = never; // 这个现在暂时没用到
+
+export type DiscussionTimelineExtra = Partial<{
+  error: string | null; // Error message if processing failed
+  moderatorSystem: string; // Moderator system prompt
+}>;
+
 // Removed
 // export type ProductExtra = Partial<{
 //   stripePriceId: string;
