@@ -52,9 +52,8 @@ const MAX_STEPS_EACH_ROUND = 4;
  *
  * Data Flow:
  * - Tools return results only, no database updates
- * - All analyst updates (topic, kind, studySummary) are handled in onStepFinish:
+ * - All analyst updates (topic, kind) are handled in onStepFinish:
  *   - planPodcast result → analyst.topic, analyst.kind
- *   - deepResearch result → analyst.studySummary
  *
  * 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
  */
@@ -105,7 +104,7 @@ export async function fastInsightAgentRequest({
 
   // Build tools object: start with regular tools, then merge MCP tools
   // Using the same pattern as createSubAgent for type compatibility
-  // Note: Tools only return results; analyst.topic and analyst.studySummary are saved in onStepFinish
+  // Note: Tools only return results; analyst.topic is saved in onStepFinish
   const allTools = {
     [ToolName.webSearch]: webSearchTool({ provider: "perplexity", ...agentToolArgs }),
     // ⚠️ planPodcast tool returns planning result; analyst.topic will be updated in onStepFinish below
@@ -113,7 +112,7 @@ export async function fastInsightAgentRequest({
     [ToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     // 直接使用 tool，没必要用 mcp 了，因为已经写死了 tool name
-    // ⚠️ deepResearch tool returns result; analyst.studySummary will be updated in onStepFinish below
+    // ⚠️ deepResearch tool returns result in plainText, which enters messages for studyLog generation
     [ToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
@@ -309,30 +308,6 @@ export async function fastInsightAgentRequest({
           });
           // Generate chat title after saving analyst
           waitUntil(generateChatTitle(studyUserChatId));
-        }
-      }
-
-      // ⚠️ Store deepResearch result in analyst.studySummary (required for generateReport)
-      const deepResearchTool = step.toolResults.find(
-        (tool) => tool?.toolName === ToolName.deepResearch,
-      ) as Extract<TypedToolResult<typeof allTools>, { toolName: ToolName.deepResearch }>;
-      if (deepResearchTool) {
-        // MCP tools return structuredContent with the result
-        const deepResearchResult = deepResearchTool.output.result;
-        if (deepResearchResult) {
-          // Fetch analyst including the required studySummary field
-          const { analyst } = await prisma.userChat.findUniqueOrThrow({
-            where: { id: studyUserChatId, kind: "study" },
-            select: { analyst: { select: { id: true, studySummary: true } } },
-          });
-          if (analyst) {
-            const currentSummary = analyst.studySummary ?? "";
-            const newStudySummary = currentSummary + "\n\n" + String(deepResearchResult);
-            await prisma.analyst.update({
-              where: { id: analyst.id },
-              data: { studySummary: newStudySummary },
-            });
-          }
         }
       }
 

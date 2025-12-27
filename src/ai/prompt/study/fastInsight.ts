@@ -106,8 +106,8 @@ export const fastInsightSystem = ({ locale }: { locale: Locale }) =>
 
 <强制工具使用顺序>
 1. 【必须】调用generatePodcast工具：
-   - 【工具用途】生成播客脚本和音频，结合分析师主题和深度研究结果（自动从studySummary加载）
-   - 【关键参数】无需提供参数 - 工具会自动从studySummary加载深度研究结果
+   - 【工具用途】生成播客脚本和音频，结合分析师主题和深度研究结果（自动从研究过程加载）
+   - 【关键参数】无需提供参数 - 工具会自动从研究过程加载深度研究结果
    - 【输出内容】工具会返回podcastToken，用于访问生成的播客
 </强制工具使用顺序>
 
@@ -274,8 +274,8 @@ Use tool to generate complete podcast script and audio.
 
 <MANDATORY_TOOL_USAGE_ORDER>
 1. 【MANDATORY】Call the generatePodcast tool:
-   - 【TOOL_PURPOSE】Generate podcast script and audio, combining analyst topic and deep research results (which are automatically loaded from studySummary)
-   - 【KEY_PARAMETERS】No parameters required - the tool automatically loads deep research results from studySummary
+   - 【TOOL_PURPOSE】Generate podcast script and audio, combining analyst topic and deep research results (which are automatically loaded from research process)
+   - 【KEY_PARAMETERS】No parameters required - the tool automatically loads deep research results from research process
    - 【OUTPUT_CONTENT】The tool will return podcastToken for accessing the generated podcast
 </MANDATORY_TOOL_USAGE_ORDER>
 

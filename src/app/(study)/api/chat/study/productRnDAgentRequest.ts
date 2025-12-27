@@ -11,15 +11,15 @@ import {
   generateReportTool,
   handleToolCallError,
   saveAnalystTool,
-  saveInnovationSummaryTool,
   scoutSocialTrendsTool,
   toolCallError,
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { trackEventServerSide } from "@/lib/analytics/server";
-import { setUserChatError } from "@/lib/userChat/lib";
+import { generateChatTitle, setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
+import { waitUntil } from "@vercel/functions";
 import { smoothStream, stepCountIs, StepResult, streamText, TextStreamPart, ToolChoice } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -68,7 +68,6 @@ export async function productRnDAgentRequest({
     [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId, productRnD: true }),
     [ToolName.audienceCall]: audienceCallTool({ ...agentToolArgs }),
     [ToolName.scoutSocialTrends]: scoutSocialTrendsTool({ userId, ...agentToolArgs }),
-    [ToolName.saveAnalystStudySummary]: saveInnovationSummaryTool({ studyUserChatId }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.toolCallError]: toolCallError,
   };
@@ -218,6 +217,14 @@ export async function productRnDAgentRequest({
             event: "Study Session Completed",
             properties: { userChatId: studyUserChatId },
           });
+        }
+      }
+      {
+        const saveAnalystTool = step.toolResults.find(
+          (tool) => tool?.toolName === ToolName.saveAnalyst,
+        );
+        if (saveAnalystTool) {
+          waitUntil(generateChatTitle(studyUserChatId));
         }
       }
     },

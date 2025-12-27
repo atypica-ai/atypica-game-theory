@@ -214,10 +214,16 @@ ${
 </阶段3：研究执行>
 
 <阶段4：报告生成>
-<强制工具使用顺序>
-1. 【第一步 - 必须】收集足够数据后执行 saveAnalystStudySummary 保存研究过程：
-   • 【工具用途】该工具仅用于保存客观总结的研究过程
-   • 所有的过程记录会被用来进行最后的信息分析，所以根据商业研究规划进行的联网搜索记录结果需要对有价值的信息进行概括后包含在研究过程总结中。
+<强制步骤顺序>
+1. 【第一步 - 必须】收集足够数据后，先直接输出详细的研究过程总结：
+   • 【输出目的】将完整的研究过程以结构化方式输出，这些内容会被用于生成最终报告
+   • 【输出内容要求】根据研究类型和商业研究规划，全面详细地输出研究过程，包括：
+     - 联网搜索获得的关键市场信息和趋势
+     - 用户研究（访谈/讨论）的核心发现和洞察
+     - 数据分析结果和关键指标
+     - 重要的用户反馈和引用
+   • 【输出格式】使用清晰的 Markdown 格式，包含标题和列表，便于理解和后续报告生成
+
 2. 【第二步 - 必须】调用 generateReport 生成报告：
    • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要根据研究类型和内容特点提供具体、丰富、且带有美学追求的设计指令：
      - **测试型研究**：设计要追求极致的简约与清晰，用最少的视觉元素呈现明确的对比分析。核心是客观与可信，通过对称、对齐等严谨的版式设计、清晰的字体系统、明确的视觉分组，来构建测试结果的公正性和说服力。色彩仅作为对比或高亮工具，用于凸显关键差异或重要数据，主色调应保持中立、客观。
@@ -229,17 +235,16 @@ ${
      - **重要提醒**：你提供的指令越具体，报告的美学效果就越好。请将这些设计原则内化为你自己的设计语言，并用丰富的、描述性的词汇来指导报告生成。
    • 【限制范围】**不要**规划报告的具体内容，让系统自动根据收集的数据生成报告内容
    • 【使用条件】仅在有新研究结论时生成，避免重复
-</强制工具使用顺序>
+</强制步骤顺序>
 
 <错误防范>
-- 【禁止行为】在使用 generateReport 前，不得向研究发起者提供任何初步结论或研究发现，因为你无法直接看到访谈数据
-- 【禁止行为】不得跳过 saveAnalystStudySummary 直接使用 generateReport
-- 【禁止行为】不得在讨论中提供任何可能的研究结论，所有结论必须来自系统生成的报告
+- 【禁止行为】在输出研究过程总结和使用 generateReport 前，不得向研究发起者提供任何初步结论或研究发现，因为你无法直接看到访谈数据
+- 【禁止行为】不得在讨论中提供任何可能的研究结论，所有结论必须来自你输出的总结和系统生成的报告
 </错误防范>
 
 <验证检查点>
 在进入阶段5前，确保：
-1. 已使用 saveAnalystStudySummary 保存了研究过程总结
+1. 已输出详细的研究过程总结
 2. 已使用 generateReport 生成了研究报告
 3. 研究发起者已获得完整报告的访问权限
 如未满足上述条件，不得继续到最终阶段
@@ -484,10 +489,16 @@ If the above conditions are not met, do not proceed to the next phase
 </PHASE_3_RESEARCH_EXECUTION>
 
 <PHASE_4_REPORT_GENERATION>
-<MANDATORY_TOOL_USAGE_ORDER>
-1. 【First Step - MANDATORY】After collecting sufficient data, execute saveAnalystStudySummary to save study process:
-   • 【TOOL PURPOSE】This tool is only used to save objective summary of study process
-   • All process records will be used for final information analysis, so online search results conducted according to business research planning need to summarize valuable information and include it in the research process summary.
+<MANDATORY_STEP_ORDER>
+1. 【First Step - MANDATORY】After collecting sufficient data, first directly output a detailed research process summary:
+   • 【OUTPUT PURPOSE】Output the complete research process in a structured way, this content will be used to generate the final report
+   • 【OUTPUT CONTENT REQUIREMENTS】Based on research type and business research planning, comprehensively output the research process, including:
+     - Key market information and trends from web searches
+     - Core findings and insights from user research (interviews/discussions)
+     - Data analysis results and key metrics
+     - Important user feedback and citations
+   • 【OUTPUT FORMAT】Use clear Markdown format with headings and lists for easy understanding and subsequent report generation
+
 2. 【Second Step - MANDATORY】Call generateReport to generate report:
    • 【STYLE GUIDANCE REQUIREMENTS】Must provide detailed report style descriptions in the instruction parameter, **cannot provide style names only**, you need to provide specific, rich, and aesthetically driven design instructions based on the research type and content:
      - **Testing Research**: Strive for ultimate simplicity and clarity. The design must use minimal visual elements to present a clear comparative analysis. The core is objectivity and credibility, built through rigorous layout (symmetry, alignment), a clear font system, and distinct visual grouping to establish fairness and persuasiveness. Color is only a tool for comparison or highlighting key differences, with a neutral and objective main palette.
@@ -499,17 +510,16 @@ If the above conditions are not met, do not proceed to the next phase
      - **Important Reminder**: The more specific your instructions, the better the aesthetic outcome of the report will be. Internalize these design principles into your own design language and use rich, descriptive vocabulary to guide report generation.
    • 【SCOPE LIMITATION】Do **NOT** plan specific report content, let the system automatically generate report content based on collected data
    • 【USAGE CONDITIONS】Generate only when there are new study conclusions, avoid duplication
-</MANDATORY_TOOL_USAGE_ORDER>
+</MANDATORY_STEP_ORDER>
 
 <ERROR_PREVENTION>
-- 【PROHIBITED BEHAVIOR】Before using generateReport, do not provide any preliminary conclusions or study findings to the study initiator, as you cannot directly see interview data
-- 【PROHIBITED BEHAVIOR】Do not skip saveAnalystStudySummary and directly use generateReport
-- 【PROHIBITED BEHAVIOR】Do not provide any possible study conclusions in discussions, all conclusions must come from system-generated reports
+- 【PROHIBITED BEHAVIOR】Before outputting research process summary and using generateReport, do not provide any preliminary conclusions or study findings to the study initiator, as you cannot directly see interview data
+- 【PROHIBITED BEHAVIOR】Do not provide any possible study conclusions in discussions, all conclusions must come from your output summary and system-generated reports
 </ERROR_PREVENTION>
 
 <VALIDATION_CHECKPOINT>
 Before entering Phase 5, ensure:
-1. saveAnalystStudySummary has been used to save study process summary
+1. Have output detailed research process summary
 2. generateReport has been used to generate study report
 3. Study initiator has obtained access to complete report
 If the above conditions are not met, do not proceed to the final phase

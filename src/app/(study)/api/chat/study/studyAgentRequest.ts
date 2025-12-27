@@ -18,7 +18,6 @@ import {
   planStudyTool,
   reasoningThinkingTool,
   requestInteractionTool,
-  saveAnalystStudySummaryTool,
   saveAnalystTool,
   scoutTaskChatTool,
   searchPersonasTool,
@@ -31,9 +30,10 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
 import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
-import { setUserChatError } from "@/lib/userChat/lib";
+import { generateChatTitle, setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import { Analyst, UserChatExtra } from "@/prisma/client";
+import { waitUntil } from "@vercel/functions";
 import {
   ImagePart,
   smoothStream,
@@ -58,7 +58,7 @@ import {
   waitUntilAttachmentsProcessed,
 } from "./utils";
 
-// autopolot 模式默认 15 步，webSearch 2 + saveAnalyst 1 + searchPersonas 1 + scoutTaskChat 2 + buildPersona 2 + interviewChat 2 + saveAnalystStudySummary 1 + generateReport 1
+// autopolot 模式默认 15 步，webSearch 2 + saveAnalyst 1 + searchPersonas 1 + scoutTaskChat 2 + buildPersona 2 + interviewChat 2 + generateReport 1
 const MAX_STEPS_EACH_ROUND = 15;
 // const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
 
@@ -139,7 +139,6 @@ export async function studyAgentRequest({
     [ToolName.buildPersona]: buildPersonaTool({ userId, ...agentToolArgs }),
     [ToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
     [ToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
-    [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.planStudy]: planStudyTool({
@@ -405,6 +404,14 @@ export async function studyAgentRequest({
             event: "Study Session Completed",
             properties: { userChatId: studyUserChatId },
           });
+        }
+      }
+      {
+        const saveAnalystTool = step.toolResults.find(
+          (tool) => tool?.toolName === ToolName.saveAnalyst,
+        );
+        if (saveAnalystTool) {
+          waitUntil(generateChatTitle(studyUserChatId));
         }
       }
     },

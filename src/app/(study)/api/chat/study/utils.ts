@@ -45,7 +45,6 @@ export function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMe
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
   const checkpoints = {
     firstAssistant: false,
-    saveAnalystStudySummary: false,
     ">=8": false,
     ">=16": false,
   };
@@ -57,18 +56,6 @@ export function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMe
     };
     if (message.role === "assistant" && !checkpoints["firstAssistant"]) {
       checkpoints["firstAssistant"] = true;
-      return { ...message, providerOptions };
-    }
-    if (
-      message.role === "assistant" &&
-      Array.isArray(message.content) &&
-      message.content.find(
-        (content) =>
-          content.type === "tool-call" && content.toolName === ToolName.saveAnalystStudySummary,
-      ) &&
-      !checkpoints["saveAnalystStudySummary"]
-    ) {
-      checkpoints["saveAnalystStudySummary"] = true;
       return { ...message, providerOptions };
     }
     if (message.role === "assistant" && index >= 8 && !checkpoints[">=8"]) {
