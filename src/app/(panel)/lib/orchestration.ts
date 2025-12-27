@@ -14,7 +14,7 @@ import { generatePersonaReply, generateSummaryAndMinutes } from "./generation";
 import { savePersonaPanel, saveTimelineEvent } from "./persistence";
 import { selectNextSpeakerModerator } from "./speaker-selection";
 
-const MAX_DISCUSSION_ROUNDS = 20; // Temporary
+const MAX_DISCUSSION_ROUNDS = 12; // Temporary
 
 /**
  * Initialize panel discussion
@@ -79,6 +79,7 @@ async function executeDiscussionRound({
   abortSignal,
   statReport,
   logger,
+  round,
 }: {
   personaSessions: PersonaSession[];
   timelineEvents: DiscussionTimelineEvent[];
@@ -88,6 +89,7 @@ async function executeDiscussionRound({
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
+  round: number;
 }): Promise<{ updatedTimeline: DiscussionTimelineEvent[]; spokenPersonaId: number }> {
   // Create a new timeline array to avoid mutation issues
   const updatedTimelineEvents: DiscussionTimelineEvent[] = [...timelineEvents];
@@ -101,6 +103,7 @@ async function executeDiscussionRound({
     abortSignal,
     statReport,
     logger,
+    round,
   });
 
   // Record moderator selection with reason
@@ -135,6 +138,7 @@ async function executeDiscussionRound({
     abortSignal,
     statReport,
     logger,
+    round,
   });
 
   if (replyContent) {
@@ -247,6 +251,7 @@ export async function runPersonaDiscussion({
       abortSignal,
       statReport,
       logger,
+      round,
     });
 
     // Update timeline reference (replace contents)

@@ -67,7 +67,7 @@ export const DiscussionChatConsole = ({
                 </div>
                 <div className="flex-1 bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 border">
                   <div className="text-xs font-medium text-muted-foreground mb-1">Question</div>
-                  <div className="text-sm">
+                  <div className="text-xs">
                     <Markdown>{event.content}</Markdown>
                   </div>
                 </div>
@@ -86,7 +86,7 @@ export const DiscussionChatConsole = ({
                   <div className="text-xs font-medium text-muted-foreground mb-1">
                     {event.personaName}
                   </div>
-                  <div className="text-sm">
+                  <div className="text-xs">
                     <Markdown>{event.content}</Markdown>
                   </div>
                 </div>
@@ -104,7 +104,7 @@ export const DiscussionChatConsole = ({
                   <div className="text-xs font-medium text-muted-foreground mb-1">
                     Moderator Summary
                   </div>
-                  <div className="text-sm">
+                  <div className="text-xs">
                     <Markdown>{event.content}</Markdown>
                   </div>
                 </div>

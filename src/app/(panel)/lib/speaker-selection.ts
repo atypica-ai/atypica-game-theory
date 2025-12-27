@@ -4,7 +4,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { VALID_LOCALES } from "@/i18n/routing";
-import { generateObject } from "ai";
+import { generateObject, UserModelMessage } from "ai";
 import { Logger } from "pino";
 import { z } from "zod";
 import { DiscussionTimelineEvent, PersonaSession } from "../types";
@@ -86,6 +86,7 @@ export async function selectNextSpeakerModerator({
   abortSignal,
   statReport,
   logger,
+  round,
 }: {
   personaSessions: PersonaSession[];
   timelineEvents: DiscussionTimelineEvent[];
@@ -94,6 +95,7 @@ export async function selectNextSpeakerModerator({
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
+  round: number;
 }): Promise<{ nextQuestion: string; session: PersonaSession; reason: string }> {
   // Find the last speaker to exclude from selection
   const lastSpeakerId = timelineEvents
@@ -112,18 +114,23 @@ export async function selectNextSpeakerModerator({
       ? `请输出思维过程，然后从以下参与者中选择下一个发言者，最后输出接下来的问题。参与者列表：${availablePersonas.map((s) => `${s.personaName} (ID: ${s.personaId})`).join(", ")}`
       : `Please select the next speaker from the following participants and explain your reasoning. Participants: ${availablePersonas.map((s) => `${s.personaName} (ID: ${s.personaId})`).join(", ")}`;
 
+  const modelMessages: UserModelMessage[] = [
+    {
+      role: "user",
+      content: `${script}\n\n${task}`,
+      providerOptions:
+        // 每 4 轮设置一个 cache checkpoint
+        round % 4 === 1 ? { bedrock: { cachePoint: { type: "default" } } } : undefined,
+    },
+  ];
+
   try {
     const result = await generateObject({
-      model: llm("claude-3-7-sonnet"),
+      model: llm("claude-sonnet-4"),
       providerOptions: defaultProviderOptions,
       system: moderatorSystem({ locale }),
       schema: selectNextSpeakerSchema,
-      messages: [
-        {
-          role: "user" as const,
-          content: `${script}\n\n${task}`,
-        },
-      ],
+      messages: modelMessages,
       maxRetries: 2,
       abortSignal,
     });

@@ -15,6 +15,7 @@ import { VALID_LOCALES } from "@/i18n/routing";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { correctUserInputMessage } from "@/lib/userChat/lib";
 import { InterviewProjectQuestion, InterviewSessionExtra } from "@/prisma/client";
+import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import {
   ModelMessage,
   smoothStream,
@@ -38,7 +39,7 @@ function setClaudeCache(model: `claude-${string}`, coreMessages: ModelMessage[])
   const cachedCoreMessages = coreMessages.map((message, index) => {
     const providerOptions = {
       bedrock: { cachePoint: { type: "default" } },
-      anthropic: { cacheControl: { type: "ephemeral" } },
+      anthropic: { cacheControl: { type: "ephemeral" } } satisfies AnthropicProviderOptions,
     };
     if (message.role === "assistant" && index >= 1 && !checkpoints[">=1"]) {
       checkpoints[">=1"] = true;
