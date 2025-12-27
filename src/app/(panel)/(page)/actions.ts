@@ -4,14 +4,11 @@ import { StatReporter } from "@/ai/tools/types";
 import { runPersonaDiscussion } from "@/app/(panel)/lib";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import { checkAdminAuth } from "@/app/admin/actions";
-import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
-
-type Locale = (typeof VALID_LOCALES)[number];
 
 export async function fetchDiscussionTimeline(timelineToken: string): Promise<
   ServerActionResult<{

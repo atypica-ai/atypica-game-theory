@@ -1,6 +1,5 @@
 import "server-only";
 
-import { studyLogSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
@@ -10,6 +9,7 @@ import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { waitUntil } from "@vercel/functions";
 import { ModelMessage, streamText } from "ai";
+import { studyLogSystem } from "./prompt";
 
 export async function generateAndSaveStudyLog({
   analyst,
@@ -19,7 +19,7 @@ export async function generateAndSaveStudyLog({
   statReport,
   logger,
 }: {
-  analyst: Analyst;
+  analyst: Pick<Analyst, "id">;
   messages: ModelMessage[];
 } & AgentToolConfigArgs): Promise<{ studyLog: string }> {
   const systemPrompt = studyLogSystem({ locale });

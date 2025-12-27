@@ -1,11 +1,10 @@
 import "server-only";
 
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
-import { generateAndSaveStudyLog } from "@/ai/tools/experts/generateReport/studyLog";
 import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { notifyPodcastReady } from "@/app/(podcast)/lib/notify";
 import { PodcastKind } from "@/app/(podcast)/types";
-import { rootLogger } from "@/lib/logging";
+import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
@@ -17,7 +16,10 @@ import {
 
 export const generatePodcastTool = ({
   studyUserChatId,
-  ...toolCallConfigArgs
+  locale,
+  abortSignal,
+  statReport,
+  logger: _logger,
 }: {
   studyUserChatId: number;
 } & AgentToolConfigArgs) =>
@@ -29,15 +31,14 @@ export const generatePodcastTool = ({
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ podcastToken }): Promise<GeneratePodcastResult> => {
-      const logger = rootLogger.child({
-        method: "generatePodcastTool",
-        studyUserChatId,
+    execute: async ({ podcastToken }, { messages }): Promise<GeneratePodcastResult> => {
+      const logger = _logger.child({
+        tool: "generatePodcast",
         podcastToken,
       });
 
       // Get analyst to access topic, studyLog, and kind
-      const { analyst } = await prisma.userChat.findUniqueOrThrow({
+      const userChat = await prisma.userChat.findUniqueOrThrow({
         where: { id: studyUserChatId, kind: "study" },
         select: {
           analyst: {
@@ -51,6 +52,8 @@ export const generatePodcastTool = ({
           },
         },
       });
+
+      let analyst = userChat.analyst;
 
       if (!analyst) {
         throw new Error("Analyst does not exist for this study");
@@ -108,8 +111,8 @@ export const generatePodcastTool = ({
       // Generate podcast with fixed opinionOriented kind
       await generatePodcast({
         podcast,
-        abortSignal: toolCallConfigArgs.abortSignal,
-        statReport: toolCallConfigArgs.statReport,
+        abortSignal,
+        statReport,
       });
 
       // Fetch updated podcast

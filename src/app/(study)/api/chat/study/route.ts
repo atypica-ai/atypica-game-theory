@@ -1,6 +1,10 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import authOptions from "@/app/(auth)/authOptions";
+import { fastInsightAgentRequest } from "@/app/(study)/agents/fastInsightAgentRequest";
+import { noQuotaAgentRequest } from "@/app/(study)/agents/noQuotaAgentRequest";
+import { productRnDAgentRequest } from "@/app/(study)/agents/productRnDAgentRequest";
+import { studyAgentRequest } from "@/app/(study)/agents/studyAgentRequest";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -11,10 +15,6 @@ import { createUIMessageStream, createUIMessageStreamResponse, generateId } from
 import { getServerSession } from "next-auth/next";
 import { Locale } from "next-intl";
 import { NextResponse } from "next/server";
-import { fastInsightAgentRequest } from "./fastInsightAgentRequest";
-import { noQuotaAgentRequest } from "./noQuotaAgentRequest";
-import { productRnDAgentRequest } from "./productRnDAgentRequest";
-import { studyAgentRequest } from "./studyAgentRequest";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);

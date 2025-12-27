@@ -5,11 +5,11 @@ import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
+import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { Analyst, AnalystKind, AnalystReport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { FinishReason, ModelMessage, stepCountIs, streamText, tool } from "ai";
 import { generateReportCoverImage } from "./coverImage";
-import { generateAndSaveStudyLog } from "./studyLog";
 import {
   generateReportInputSchema,
   generateReportOutputSchema,

@@ -1,7 +1,7 @@
 "use server";
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
-import { studyAgentRequest } from "@/app/(study)/api/chat/study/studyAgentRequest";
+import { studyAgentRequest } from "@/app/(study)/agents/studyAgentRequest";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";

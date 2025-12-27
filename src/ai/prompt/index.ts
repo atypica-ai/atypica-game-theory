@@ -10,4 +10,3 @@ export * from "./study/fastInsight";
 export * from "./study/planPodcast";
 export * from "./study/planStudy";
 export * from "./study/study";
-export * from "./study/studyLog";
