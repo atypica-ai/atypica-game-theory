@@ -214,7 +214,7 @@ export const reportCoverPrologue = ({
   instruction,
 }: {
   locale: Locale;
-  analyst: Pick<Analyst, "role" | "topic" | "studySummary">;
+  analyst: Pick<Analyst, "role" | "topic" | "studyLog">;
   instruction: string;
 }) =>
   locale === "zh-CN"
@@ -229,9 +229,9 @@ ${analyst.topic}
 
 以下是调研专家的结论：
 
-<studySummary>
-${analyst.studySummary}
-</studySummary>
+<studyContent>
+${analyst.studyLog}
+</studyContent>
 
 ${instruction ? `额外指令（在遵循上述核心要求的基础上）：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
 
@@ -248,9 +248,9 @@ ${analyst.topic}
 
 Here is the study expert's conclusion:
 
-<studySummary>
-${analyst.studySummary}
-</studySummary>
+<studyContent>
+${analyst.studyLog}
+</studyContent>
 
 ${instruction ? `Additional instructions (while following the core requirements above):\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
 

@@ -101,7 +101,7 @@ function coverImageProloguePrompt({
   analyst,
 }: {
   locale: Locale;
-  analyst: Pick<Analyst, "locale" | "topic" | "studySummary" | "studyLog" | "brief">;
+  analyst: Pick<Analyst, "locale" | "topic" | "studyLog" | "brief">;
 }): string {
   const { topic, studyLog } = analyst;
 
@@ -159,7 +159,7 @@ export async function generateReportCoverImage({
 }: {
   ratio: "square" | "landscape" | "portrait";
   report: Pick<AnalystReport, "id" | "token">;
-  analyst: Pick<Analyst, "id" | "locale" | "topic" | "studySummary" | "studyLog" | "brief">;
+  analyst: Pick<Analyst, "id" | "locale" | "topic" | "studyLog" | "brief">;
 } & AgentToolConfigArgs): Promise<{
   coverUrl: string;
 }> {

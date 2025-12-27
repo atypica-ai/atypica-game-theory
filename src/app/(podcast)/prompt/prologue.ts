@@ -7,7 +7,7 @@ export const podcastScriptPrologue = ({
   instruction,
 }: {
   locale: Locale;
-  analyst: Pick<Analyst, "brief" | "topic" | "studySummary" | "studyLog">;
+  analyst: Pick<Analyst, "brief" | "topic" | "studyLog">;
   instruction?: string;
 }) =>
   locale === "zh-CN"
@@ -22,19 +22,9 @@ ${analyst.brief}
 ${analyst.topic}
 </研究主题>
 
-<研究总结>
-${analyst.studySummary}
-</研究总结>
-
-${
-  analyst.studyLog
-    ? `
-<研究过程>
+<研究内容>
 ${analyst.studyLog}
-</研究过程>
-`
-    : ""
-}
+</研究内容>
 
   ${
     instruction
@@ -61,19 +51,9 @@ ${analyst.brief}
 ${analyst.topic}
 </Research Topic>
 
-<Study Summary>
-${analyst.studySummary}
-</Study Summary>
-
-${
-  analyst.studyLog
-    ? `
-<Research Process>
+<Research Content>
 ${analyst.studyLog}
-</Research Process>
-`
-    : ""
-}
+</Research Content>
 
 ${
   instruction

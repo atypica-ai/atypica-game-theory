@@ -436,7 +436,7 @@ export function AdminStudiesPageClient({
                         expandedSummaries.has(analyst.id) ? "whitespace-pre-wrap" : "line-clamp-3"
                       }`}
                     >
-                      {analyst.studySummary}
+                      {analyst.studyLog || "No study log available"}
                     </p>
                   </div>
 

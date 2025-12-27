@@ -175,7 +175,6 @@ export async function adminGenerateScreenshotAction(
           id: true,
           locale: true,
           topic: true,
-          studySummary: true,
           studyLog: true,
           brief: true,
         },
@@ -184,7 +183,7 @@ export async function adminGenerateScreenshotAction(
     },
   })) as Pick<AnalystReport, "id" | "token"> & {
     // extra: AnalystReportExtra;
-    analyst: Pick<Analyst, "id" | "locale" | "topic" | "studySummary" | "studyLog" | "brief">;
+    analyst: Pick<Analyst, "id" | "locale" | "topic" | "studyLog" | "brief">;
   };
 
   // Determine locale from analyst or use default

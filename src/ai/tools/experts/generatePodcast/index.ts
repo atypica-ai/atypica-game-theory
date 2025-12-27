@@ -1,6 +1,7 @@
 import "server-only";
 
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
+import { generateAndSaveStudyLog } from "@/ai/tools/experts/generateReport/studyLog";
 import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { notifyPodcastReady } from "@/app/(podcast)/lib/notify";
 import { PodcastKind } from "@/app/(podcast)/types";
@@ -35,7 +36,7 @@ export const generatePodcastTool = ({
         podcastToken,
       });
 
-      // Get analyst to access topic, studySummary, and kind
+      // Get analyst to access topic, studyLog, and kind
       const { analyst } = await prisma.userChat.findUniqueOrThrow({
         where: { id: studyUserChatId, kind: "study" },
         select: {
@@ -43,7 +44,8 @@ export const generatePodcastTool = ({
             select: {
               id: true,
               topic: true,
-              studySummary: true,
+              brief: true,
+              studyLog: true,
               kind: true,
             },
           },
@@ -54,8 +56,24 @@ export const generatePodcastTool = ({
         throw new Error("Analyst does not exist for this study");
       }
 
-      if (!analyst.studySummary) {
-        throw new Error("Deep research results not found. Please run deepResearch tool first.");
+      // 如果 studyLog 没有生成过，先生成，podcast 的内容主要来自 studyLog
+      if (analyst.studyLog) {
+        logger.info("generatePodcast: studyLog found in Analyst");
+      } else {
+        logger.info("studyLog not found in Analyst, generating studyLog");
+        const { studyLog } = await generateAndSaveStudyLog({
+          analyst,
+          messages,
+          locale,
+          abortSignal,
+          statReport,
+          logger,
+        });
+        // 更新 analyst 对象上的 studyLog
+        analyst = {
+          ...analyst,
+          studyLog,
+        };
       }
 
       // Determine podcast kind based on analyst kind

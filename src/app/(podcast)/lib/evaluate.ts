@@ -70,15 +70,13 @@ You must choose either "${PodcastKind.deepDive}" or "${PodcastKind.opinionOrient
 `;
 
 async function determinePodcastKind(
-  analyst: Pick<Analyst, "id" | "topic" | "brief" | "studySummary" | "studyLog">,
+  analyst: Pick<Analyst, "id" | "topic" | "brief" | "studyLog">,
 ): Promise<PodcastKindDetermination> {
   const determinationPrompt = `Please determine the best podcast format for this research:
 
 **Topic**: ${analyst.topic || "Not specified"}
 
 **Brief**: ${analyst.brief || "No brief available"}
-
-**Study Summary**: ${analyst.studySummary || "No summary available"}
 
 **Study Log**: ${analyst.studyLog || "No study log available"}
 
@@ -184,7 +182,7 @@ export async function determineKindAndGeneratePodcast({
 }
 
 async function evaluateAnalystForPodcast(
-  analyst: Pick<Analyst, "id" | "topic" | "brief" | "studySummary" | "studyLog">,
+  analyst: Pick<Analyst, "id" | "topic" | "brief" | "studyLog">,
   scoreThreshold: number,
 ): Promise<{
   scores: PodcastEvaluationScores;
@@ -203,8 +201,6 @@ async function evaluateAnalystForPodcast(
 **Topic**: ${analyst.topic || "Not specified"}
 
 **Brief**: ${analyst.brief || "No brief available"}
-
-**Study Summary**: ${analyst.studySummary || "No summary available"}
 
 **Study Log**: ${analyst.studyLog || "No study log available"}
 

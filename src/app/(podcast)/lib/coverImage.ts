@@ -109,7 +109,7 @@ function podcastCoverImageProloguePrompt({
   script,
 }: {
   locale: Locale;
-  analyst: Pick<Analyst, "locale" | "topic" | "studySummary" | "studyLog" | "brief">;
+  analyst: Pick<Analyst, "locale" | "topic" | "studyLog" | "brief">;
   script: string;
 }): string {
   const { topic } = analyst;
@@ -157,7 +157,7 @@ export async function generatePodcastCoverImage({
 }: {
   ratio: "square" | "landscape" | "portrait";
   podcast: Pick<AnalystPodcast, "id" | "token">;
-  analyst: Pick<Analyst, "id" | "locale" | "topic" | "studySummary" | "studyLog" | "brief">;
+  analyst: Pick<Analyst, "id" | "locale" | "topic" | "studyLog" | "brief">;
   script: string;
 } & AgentToolConfigArgs): Promise<{
   coverObjectUrl: string;
