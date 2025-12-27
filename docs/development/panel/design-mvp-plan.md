@@ -4,9 +4,9 @@
 >
 > This document contains idealized design proposals and best practice recommendations for panel discussion features, not the actual current implementation.
 >
-> **当前实现文档请查看**: [README.md](./README.md)
+> **当前实现文档请查看**: [src/app/(panel)/README.md](../../../src/app/(panel)/README.md)
 >
-> **Current implementation docs**: See [README.md](./README.md)
+> **Current implementation docs**: See [src/app/(panel)/README.md](../../../src/app/(panel)/README.md)
 
 ---
 

@@ -74,7 +74,7 @@ export async function startPersonaDiscussionAction({
     const locale = await detectInputLanguage({ text: instruction });
 
     // Create DiscussionTimeline record first
-    const token = generateToken(32);
+    const token = generateToken();
     await prisma.discussionTimeline.create({
       data: {
         token,

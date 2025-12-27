@@ -18,7 +18,7 @@ export const discussionChatInputSchema = z.object({
       "Discussion timeline token used to create records. You don't need to provide this - the system will automatically generate it",
     )
     // Always generate a new token, and this will directly override the parameter on toolInvocation.args in the message
-    .transform(() => generateToken(32)),
+    .transform(() => generateToken()),
 });
 
 export type DiscussionChatToolInput = z.infer<typeof discussionChatInputSchema>;
