@@ -5,6 +5,7 @@ import { BuildPersonaConsole } from "./console/BuildPersonaConsole";
 import { CreateSubAgentConsole } from "./console/CreateSubAgentConsole";
 import { GenerateReportConsole } from "./console/GenerateReportConsole";
 import { InterviewChatConsole } from "./console/InterviewChatConsole";
+import { DiscussionChatConsole } from "./console/DiscussionChatConsole";
 import { ReasoningThinkingConsole } from "./console/ReasoningThinkingConsole";
 import { ScoutTaskChatConsole } from "./console/ScoutTaskChatConsole";
 import { SearchPersonasConsole } from "./console/SearchPersonasConsole";
@@ -24,6 +25,8 @@ export function ToolConsole() {
       return <ScoutTaskChatConsole toolInvocation={activeTool} />;
     case `tool-${ToolName.interviewChat}`:
       return <InterviewChatConsole toolInvocation={activeTool} />;
+    case `tool-${ToolName.discussionChat}`:
+      return <DiscussionChatConsole toolInvocation={activeTool} />;
     case `tool-${ToolName.reasoningThinking}`:
       return <ReasoningThinkingConsole toolInvocation={activeTool} />;
     case `tool-${ToolName.generateReport}`:

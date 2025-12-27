@@ -109,7 +109,9 @@ export async function POST(req: Request) {
   const { balance } = await getUserTokens({ userId });
   if (balance != "Unlimited" && balance <= 0) {
     return await noQuotaAgentRequest(params);
-  } else if (userChat.analyst.kind === AnalystKind.productRnD) {
+  }
+
+  if (userChat.analyst.kind === AnalystKind.productRnD) {
     return await productRnDAgentRequest(params);
   } else if (userChat.analyst.kind === AnalystKind.fastInsight) {
     const stream = createUIMessageStream({

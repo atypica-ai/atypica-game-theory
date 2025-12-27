@@ -179,7 +179,7 @@ export function NewStudyInputBox({
             <RadioGroup
               value={studyType}
               onValueChange={(value) =>
-                setStudyType(value as "general" | "product-rnd" | "fast-insight")
+                setStudyType(value as TStudyType)
               }
               className="flex gap-4 ml-1"
             >
@@ -206,7 +206,7 @@ export function NewStudyInputBox({
             <Select
               value={studyType}
               onValueChange={(value) =>
-                setStudyType(value as "general" | "product-rnd" | "fast-insight")
+                setStudyType(value as TStudyType)
               }
             >
               <SelectTrigger className="w-auto h-auto text-xs px-2 py-1 border-none bg-transparent shadow-none focus:ring-0 gap-1.5">

@@ -6,6 +6,7 @@ import { Logger } from "pino";
 import { AudienceCallResult, AudienceCallToolInput } from "./experts/audienceCall/types";
 import { BuildPersonaToolInput, BuildPersonaToolResult } from "./experts/buildPersona/types";
 import { CreateSubAgentResult, CreateSubAgentToolInput } from "./experts/createSubAgent/types";
+import { DiscussionChatResult, DiscussionChatToolInput } from "./experts/discussionChat/types";
 import { GeneratePodcastResult, GeneratePodcastToolInput } from "./experts/generatePodcast/types";
 import { GenerateReportResult, GenerateReportToolInput } from "./experts/generateReport/types";
 import { InterviewChatResult, InterviewChatToolInput } from "./experts/interviewChat/types";
@@ -63,6 +64,7 @@ export enum ToolName {
   planStudy = "planStudy",
   planPodcast = "planPodcast",
   interviewChat = "interviewChat",
+  discussionChat = "discussionChat",
   generateReport = "generateReport",
   generatePodcast = "generatePodcast",
   deepResearch = "deepResearch",
@@ -113,6 +115,7 @@ export type StudyUITools = {
   [ToolName.planStudy]: { input: PlanStudyToolInput; output: PlanStudyResult };
   [ToolName.planPodcast]: { input: PlanPodcastToolInput; output: PlanPodcastResult };
   [ToolName.interviewChat]: { input: InterviewChatToolInput; output: InterviewChatResult };
+  [ToolName.discussionChat]: { input: DiscussionChatToolInput; output: DiscussionChatResult };
   [ToolName.generateReport]: { input: GenerateReportToolInput; output: GenerateReportResult };
   [ToolName.generatePodcast]: { input: GeneratePodcastToolInput; output: GeneratePodcastResult };
   [ToolName.deepResearch]: { input: DeepResearchInput; output: DeepResearchOutput };

@@ -3,6 +3,7 @@ import "server-only";
 export { audienceCallTool } from "./experts/audienceCall";
 export { buildPersonaTool } from "./experts/buildPersona";
 export { createSubAgentTool } from "./experts/createSubAgent";
+export { discussionChatTool } from "./experts/discussionChat";
 export { generatePodcastTool } from "./experts/generatePodcast";
 export { generateReportTool } from "./experts/generateReport";
 export { interviewChatTool } from "./experts/interviewChat";

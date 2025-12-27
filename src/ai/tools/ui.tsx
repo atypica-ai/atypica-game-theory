@@ -22,6 +22,7 @@ import {
 import { RequestInteractionMessage, RequestPaymentMessage } from "@/ai/tools/user/ToolMessage";
 import { Markdown } from "@/components/markdown";
 import { ToolUIPart } from "ai";
+import { DiscussionChatResultMessage } from "./experts/discussionChat/DiscussionChatResultMessage";
 
 export const PlainTextToolResultMessage = ({
   toolInvocation,
@@ -85,6 +86,8 @@ export const StudyToolUIPartDisplay = ({
       return <SearchPersonasResultMessage toolInvocation={toolUIPart} />;
     case `tool-${ToolName.interviewChat}`:
       return <InterviewChatResultMessage toolInvocation={toolUIPart} />;
+    case `tool-${ToolName.discussionChat}`:
+      return <DiscussionChatResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${ToolName.saveAnalyst}`:
       return <SaveAnalystToolResultMessage toolInvocation={toolUIPart} />;

@@ -85,7 +85,7 @@ model DiscussionTimeline {
 
 **位置**：`src/ai/tools/experts/discussionChat/index.ts`
 
-工具接收用户指令（`instruction`）和 persona ID 列表，自动生成 `discussionTimelineToken`（通过 Zod schema transform），创建 `DiscussionTimeline` 记录后调用核心函数。
+工具接收用户指令（`instruction`）和 persona ID 列表，自动生成 `timelineToken`（通过 Zod schema transform），创建 `DiscussionTimeline` 记录后调用核心函数。
 
 ### 2. 主流程编排
 
@@ -169,7 +169,7 @@ interface PersonaSession {
 
 **位置**：`src/app/(study)/study/console/DiscussionChatConsole.tsx`
 
-- 从工具输入中获取 `discussionTimelineToken`（自动生成，立即可用）
+- 从工具输入中获取 `timelineToken`（自动生成，立即可用）
 - 轮询数据库获取最新时间线
 - 实时渲染讨论内容
 
@@ -200,7 +200,7 @@ interface PersonaSession {
 {
   instruction: "讨论：远程工作是否应该成为强制要求？请以辩论形式进行。",
   personaIds: [1, 2, 3],
-  discussionTimelineToken: string // 自动生成
+  timelineToken: string // 自动生成
 }
 
 // 工具输出
@@ -232,7 +232,7 @@ interface PersonaSession {
 
 ## 注意事项
 
-1. **Token 生成**：`discussionTimelineToken` 在工具输入 schema 中自动生成，前端可立即获取
+1. **Token 生成**：`timelineToken` 在工具输入 schema 中自动生成，前端可立即获取
 2. **实时保存**：时间线事件每次更新都保存，确保前端轮询能获取最新数据
 3. **讨论类型**：只有 `moderatorSystem` 是动态生成的，`panelSummarySystem` 和 `panelRules` 使用默认配置
 4. **最大轮数**：当前设置为 12 轮，可在 `orchestration.ts` 中调整
