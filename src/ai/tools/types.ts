@@ -19,6 +19,7 @@ import {
 } from "./experts/scoutSocialTrends/types";
 import { ScoutTaskChatResult, ScoutTaskChatToolInput } from "./experts/scoutTaskChat/types";
 import { SearchPersonasToolInput, SearchPersonasToolResult } from "./experts/searchPersonas/types";
+import { WebFetchToolInput, WebFetchToolResult } from "./experts/webFetch/types";
 import { WebSearchToolInput, WebSearchToolResult } from "./experts/webSearch/types";
 import { SocialPostCommentToolResult, SocialPostToolResult } from "./social/types";
 import {
@@ -87,6 +88,7 @@ export enum ToolName {
   requestInteraction = "requestInteraction",
   requestPayment = "requestPayment",
 
+  webFetch = "webFetch",
   webSearch = "webSearch",
 
   xhsNoteComments = "xhsNoteComments",
@@ -152,6 +154,7 @@ export type StudyUITools = {
     output: RequestInteractionResult;
   };
   [ToolName.requestPayment]: { input: GenericInputType; output: RequestPaymentResult };
+  [ToolName.webFetch]: { input: WebFetchToolInput; output: WebFetchToolResult };
   [ToolName.webSearch]: { input: WebSearchToolInput; output: WebSearchToolResult };
   [ToolName.xhsNoteComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
   [ToolName.xhsSearch]: { input: GenericInputType; output: SocialPostToolResult };

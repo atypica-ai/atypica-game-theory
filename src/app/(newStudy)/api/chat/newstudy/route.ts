@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
     logger: chatLogger,
   });
 
-  const tools = { ...newStudyTools };
+  const tools = { ...newStudyTools({ locale }) };
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
     tools,
   });

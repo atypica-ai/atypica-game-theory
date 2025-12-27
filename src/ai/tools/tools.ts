@@ -13,6 +13,7 @@ export { reasoningThinkingTool } from "./experts/reasoning";
 export { scoutSocialTrendsTool } from "./experts/scoutSocialTrends";
 export { scoutTaskChatTool } from "./experts/scoutTaskChat";
 export { searchPersonasTool } from "./experts/searchPersonas";
+export { webFetchTool } from "./experts/webFetch";
 export { webSearchTool } from "./experts/webSearch";
 export { dyPostCommentsTool } from "./social/dy/postComments";
 export { dySearchTool } from "./social/dy/search";
