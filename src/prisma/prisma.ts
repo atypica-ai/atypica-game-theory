@@ -30,7 +30,11 @@ function getPoolConfig() {
 }
 
 // 创建连接池配置
-function createPool(connectionString: string, isReadOnly = false) {
+function createPool(connectionString?: string, isReadOnly = false) {
+  if (!connectionString) {
+    return new Pool();
+  }
+
   const poolConfig = getPoolConfig();
 
   const pool = new Pool({
@@ -111,8 +115,8 @@ const globalForPrisma = globalThis as unknown as {
 
 // 创建或重用 Pool 和 PrismaClient 实例（单例模式）
 if (!globalForPrisma.__prismaInstances__) {
-  const pool = createPool(process.env.DATABASE_URL!, false);
-  const poolRO = createPool(process.env.DATABASE_RO_URL || process.env.DATABASE_URL!, true);
+  const pool = createPool(process.env.DATABASE_URL, false);
+  const poolRO = createPool(process.env.DATABASE_RO_URL || process.env.DATABASE_URL, true);
 
   globalForPrisma.__prismaInstances__ = {
     pool,
@@ -122,7 +126,7 @@ if (!globalForPrisma.__prismaInstances__) {
   };
 }
 
-export const { prisma, prismaRO, pool, poolRO } = globalForPrisma.__prismaInstances__!;
+export const { prisma, prismaRO, pool, poolRO } = globalForPrisma.__prismaInstances__;
 
 // 获取连接池状态（用于健康检查和监控）
 export function getPoolStats() {
@@ -141,7 +145,7 @@ export function getPoolStats() {
 }
 
 // 优雅关闭：在生产环境中，确保进程退出时正确断开数据库连接
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
   const gracefulShutdown = async (signal: string) => {
     rootLogger.info({ msg: `Received ${signal}, closing database connections...` });
     try {
@@ -149,7 +153,7 @@ if (process.env.NODE_ENV === "production") {
       await Promise.all([prisma.$disconnect(), prismaRO.$disconnect()]);
 
       // 再关闭底层连接池
-      await Promise.all([pool?.end(), poolRO?.end()]);
+      await Promise.all([pool.end(), poolRO.end()]);
 
       rootLogger.info({ msg: "Database connections closed" });
       process.exit(0);

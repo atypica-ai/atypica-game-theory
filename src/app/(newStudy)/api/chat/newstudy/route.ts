@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
     },
 
     // toolChoice: "auto",
-    stopWhen: stepCountIs(2),
+    stopWhen: stepCountIs(3),
 
     system:
       newStudySystem({ locale }) +
