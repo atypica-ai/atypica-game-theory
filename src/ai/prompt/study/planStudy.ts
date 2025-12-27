@@ -67,19 +67,25 @@ ${teamStudySystemPrompt[locale]}
     </例子>
 4. 根据以上理解，规划如何基于当前框架进行信息的收集。
     - 使用Websearch查询哪些内容？简洁解释这些问题的答案如何帮助进行下一步的分析。
-    - 使用用户访谈哪些客户？目的是哪些信息？应该问哪些问题？简洁解释这些问题的答案如何帮助进行下一步的分析。
+    - 【选择用户研究方式】根据研究目标选择合适的用户研究方式：
+      • **一对一深度访谈 (interviewChat)**: 适用于需要深度个人洞察、细腻情感理解、详细行为动机分析的场景。需要5-10个覆盖不同用户群体的AI人设进行深度访谈
+      • **群体讨论 (discussionChat)**: 适用于需要观察不同观点碰撞、模拟真实群体决策场景（如焦点小组、产品评审会）、测试方案比较的场景。需要3-8个具有对比性观点的AI人设进行群体讨论
+    - 【必须明确推荐】在规划中必须明确推荐使用哪种研究方式，并解释为什么该方式最适合当前研究目标
+    - 根据选择的研究方式规划：访谈/讨论哪些用户？目的是哪些信息？应该问哪些问题？简洁解释这些问题的答案如何帮助进行下一步的分析。
     <例子>
     ## Web搜索内容：
     a. "中国护肤品市场 防晒 抗痘 抗老 美白 市场规模 2024"
     目的：获取各细分市场的规模和增长数据，为GE矩阵的市场吸引力维度提供定量基础
-    """
-    ## 用户访谈规划：
-    访谈对象： 18-35岁女性，不同护肤需求的珂岸目标用户群体
-    访谈目的： 深度理解各功效背后的JTBD和需求优先级
-    核心访谈问题：
+
+    ## 推荐用户研究方式： 一对一深度访谈 (interviewChat)
+    推荐理由：本研究需要深入理解消费者购买护肤品时的个人决策逻辑、情感动机和使用场景，这些细腻的个人洞察在一对一访谈中更容易深度挖掘
+
+    ## 用户研究规划：
+    研究对象： 18-35岁女性，不同护肤需求的珂岸目标用户群体（5-10人）
+    研究目的： 深度理解各功效背后的JTBD和需求优先级
+    核心研究问题：
     a. "描述一下你最近一次购买护肤品的完整过程和考虑因素"
     分析目的：识别真实的购买决策逻辑和功效优先级
-    """
     </例子>
 5. 根据以上理解，规划如何基于当前框架进行信息的分析，从而得到最终产出。
     - 运用你的专业商业分析知识和你建议的商业分析框架，教授用户信息收集阶段收集到的每条信息该如何被利用起来得到最后的产出结果
@@ -150,15 +156,23 @@ Your output process is as follows:
     </Example>
 4. Based on the above understanding, plan how to collect information based on the current framework.
     - What content to search using Web search? Briefly explain how the answers to these questions help with the next step of analysis.
-    - Which customers to interview? What information is the purpose? What questions should be asked? Briefly explain how the answers to these questions help with the next step of analysis.
+    - 【Select User Research Method】Choose appropriate user research method based on research objectives:
+      • **One-on-One Deep Interviews (interviewChat)**: Suitable for scenarios requiring deep personal insights, nuanced emotional understanding, and detailed behavioral motivation analysis. Need 5-10 AI personas covering different user segments for deep interviews
+      • **Group Discussion (discussionChat)**: Suitable for scenarios requiring observation of viewpoint collisions, simulating real group decision-making scenarios (such as focus groups, product review meetings), and testing solution comparisons. Need 3-8 AI personas with contrasting viewpoints for group discussion
+    - 【Must Explicitly Recommend】Must explicitly recommend which research method to use in the plan and explain why this method best fits the current research objectives
+    - Based on the chosen research method, plan: Which users to interview/discuss with? What information is the purpose? What questions should be asked? Briefly explain how the answers to these questions help with the next step of analysis.
     <Example>
     ## Web Search Content:
     a. "China skincare market sunscreen anti-acne anti-aging whitening market size 2024"
     Purpose: Obtain size and growth data for each market segment, providing quantitative basis for the market attractiveness dimension of the GE matrix
-    ## User Interview Planning:
-    Interview subjects: Women aged 18-35, Ke'an target user groups with different skincare needs
-    Interview purpose: Deeply understand JTBD and demand priorities behind each effect
-    Core interview questions:
+
+    ## Recommended User Research Method: One-on-One Deep Interviews (interviewChat)
+    Recommendation Rationale: This research needs to deeply understand consumers' personal decision-making logic, emotional motivations, and usage scenarios when purchasing skincare products. These nuanced personal insights are more easily explored in depth through one-on-one interviews
+
+    ## User Research Planning:
+    Research subjects: Women aged 18-35, Ke'an target user groups with different skincare needs (5-10 people)
+    Research purpose: Deeply understand JTBD and demand priorities behind each effect
+    Core research questions:
     a. "Describe the complete process and considerations of your most recent skincare product purchase"
     Analysis purpose: Identify real purchase decision logic and effect priorities
     </Example>

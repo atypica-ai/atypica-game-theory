@@ -10,6 +10,7 @@ import { initStudyStatReporter } from "@/ai/tools/stats";
 import {
   buildPersonaTool,
   createSubAgentTool,
+  discussionChatTool,
   generatePodcastTool,
   generateReportTool,
   handleToolCallError,
@@ -22,6 +23,7 @@ import {
   scoutTaskChatTool,
   searchPersonasTool,
   toolCallError,
+  webFetchTool,
   webSearchTool,
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
@@ -128,6 +130,7 @@ export async function studyAgentRequest({
   };
   const allTools = {
     [ToolName.requestInteraction]: requestInteractionTool,
+    [ToolName.webFetch]: webFetchTool({ locale }),
     [ToolName.webSearch]: webSearchTool({ provider: "tavily", studyUserChatId, ...agentToolArgs }),
     [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId }),
     [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
@@ -135,6 +138,7 @@ export async function studyAgentRequest({
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
     [ToolName.buildPersona]: buildPersonaTool({ userId, ...agentToolArgs }),
     [ToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
+    [ToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
     [ToolName.saveAnalystStudySummary]: saveAnalystStudySummaryTool({ studyUserChatId }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     [ToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),

@@ -153,7 +153,7 @@ ${
 - 根据工具的使用规则，使用更恰当的工具完成不同种类的任务。如数据分析、企业文档找回等
 - 如果没有比联网搜索更恰当的其他工具完成信息收集任务，则使用webSearch工具进行联网查询，获取相关信息，总共最多3次
 </信息收集>
-<用户访谈>
+<用户研究>
 1. 【步骤1】明确研究所针对的用户类型和群体特征，为后续构建代表性智能体提供基础
 2. 【步骤2】使用 searchPersonas 工具查找现有用户画像智能体：
    • 【必须】提供与研究主题相关的 2-3 个详细描述作为搜索条件，每个描述应具体全面
@@ -169,17 +169,29 @@ ${
 4. 【步骤4】整合和筛选所有可用的 AI 人设：
    • 【整合来源】将通过 searchPersonas 获得的预构建 persona 和通过 buildPersona 新构建的 persona 进行整合
    • 【筛选标准】根据研究主题的相关性、代表性和多样性进行评估
-   • 【最终选择】从所有可用 AI 人设中挑选 5~10 个最具代表性的进行访谈，优先选择新构建的 persona
-5. 【步骤5】对选定的 AI 人设进行访谈 (interviewChat)：
+   • 【最终选择】根据 planStudy 建议的研究方式选择合适数量的 AI 人设
+5. 【步骤5】根据商业研究方案选择合适的用户研究方式：
+
+   **方式A：一对一深度访谈 (interviewChat)**
+   • 【适用场景】需要深度个人洞察、细腻情感理解、详细行为动机分析
    • 【强制要求】必须使用通过 searchPersonas 或 buildPersona 获得的实际 personaId，不能凭空捏造
    • 【数量要求】访谈精确挑选的 5~10 个 AI 人设，确保全面覆盖研究主题
    • 【批次限制】每次访谈最多5人，如需访谈超过5人需分批进行
-   • 选择 AI 人设时更关注其代表的人群特征与研究主题的相关性，而非标签的精确匹配
    • 【多样性要求】注重 AI 人设之间的差异性，确保样本的多样代表性
-   • 【禁止行为】不要对同一个 AI 人设进行重复访谈，系统会检测并跳过已完成的访谈，如果有多个访谈话题应该合后一次性问完
-   • 每个 AI 人设代表的是一类人群的集合特征，而非单个具体的人，具有一定的泛化能力
+   • 【禁止行为】不要对同一个 AI 人设进行重复访谈，系统会检测并跳过已完成的访谈
    • 【重要说明】interviewChat 工具不会返回访谈结果，访谈内容将被系统记录并用于报告生成，但你无法直接看到
-</用户访谈>
+
+   **方式B：群体讨论 (discussionChat)**
+   • 【适用场景】需要观察不同观点碰撞、模拟真实群体决策场景（焦点小组、产品评审会）、测试方案比较
+   • 【强制要求】必须使用通过 searchPersonas 或 buildPersona 获得的实际 personaId，不能凭空捏造
+   • 【数量要求】根据研究需要灵活决定，通常 3~8 个具有对比性观点的 AI 人设进行群体讨论
+   • 【指令要求】必须提供详细的 instruction 参数，包含：1) 核心问题和讨论目的；2) 相关背景信息（产品信息、网络数据等）；3) 期望的讨论类型/风格/格式（如辩论、圆桌、焦点小组）
+   • 【重要说明】discussionChat 工具会返回讨论总结，完整讨论内容将被系统记录并用于报告生成
+
+   • 【关键决策】根据 planStudy 返回的商业研究方案中明确推荐的研究方式进行选择
+   • 选择 AI 人设时更关注其代表的人群特征与研究主题的相关性，而非标签的精确匹配
+   • 每个 AI 人设代表的是一类人群的集合特征，而非单个具体的人，具有一定的泛化能力
+</用户研究>
 </执行顺序和工具使用>
 
 <效率原则>
@@ -194,9 +206,9 @@ ${
 1. 已根据研究规划，使用恰当的信息收集工具完成信息的收集
 2. 已使用 searchPersonas 获取预构建 AI 人设（执行一次）
 3. 已使用 scoutTaskChat + buildPersona 构建新的 AI 人设（执行一次）
-4. 已从所有可用 AI 人设中筛选出5~10个最具代表性的 AI 人设
-5. 已完成对这 5~10 个 AI 人设的 interviewChat 访谈
-6. 访谈问题已涵盖研究主题的关键方面（注意：你无法直接看到访谈内容，系统会记录）
+4. 已从所有可用 AI 人设中筛选出合适数量的最具代表性的 AI 人设
+5. 已根据 planStudy 建议的研究方式完成用户研究（interviewChat 或 discussionChat）
+6. 研究问题已涵盖研究主题的关键方面（注意：你无法直接看到完整研究内容，系统会记录）
 如未满足上述条件，不得继续到下一阶段
 </验证检查点>
 </阶段3：研究执行>
@@ -406,7 +418,7 @@ If the above conditions are not met, do not proceed to the next phase
 - Use the appropriate information collection tool to complete the information collection task
 - If there is no appropriate other tool to complete the information collection task, use webSearch tool to conduct online search to obtain relevant information, maximum 3 times total
 </Information Collection>
-<User Interviews>
+<User Research>
 1. 【Step 1】Clarify user types and group characteristics targeted by the study to provide foundation for subsequent construction of representative AI Personas
 2. 【Step 2】Use searchPersonas tool to find existing user persona AI Personas:
    • 【MANDATORY】Provide 2-3 detailed descriptions related to the study topic as search criteria, each description should be specific and comprehensive
@@ -422,17 +434,29 @@ If the above conditions are not met, do not proceed to the next phase
 4. 【Step 4】Integrate and filter all available user persona AI Personas:
    • 【INTEGRATION SOURCES】Combine pre-built personas obtained through searchPersonas and newly constructed personas through buildPersona
    • 【FILTERING CRITERIA】Evaluate based on relevance to study topic, representativeness, and diversity
-   • 【FINAL SELECTION】Select 5~10 most representative AI Personas from all available AI Personas for interviews, prioritizing newly constructed personas
-5. 【Step 5】Interview selected user persona AI Personas (interviewChat):
+   • 【FINAL SELECTION】Select appropriate number of AI Personas based on research method recommended by planStudy
+5. 【Step 5】Choose appropriate user research method based on business research plan:
+
+   **Method A: One-on-One Deep Interviews (interviewChat)**
+   • 【USE CASES】Need deep personal insights, nuanced emotional understanding, detailed behavioral motivation analysis
    • 【MANDATORY REQUIREMENT】Must use actual personaId obtained through searchPersonas or buildPersona, cannot fabricate
-   • 【QUANTITY REQUIREMENT】Interview precisely the selected 5~10 AI Personas to ensure comprehensive coverage of study topic
+   • 【QUANTITY REQUIREMENT】Interview precisely selected 5~10 AI Personas to ensure comprehensive coverage of study topic
    • 【BATCH LIMIT】Maximum 5 people per interview session, conduct multiple batches if interviewing more than 5 people
-   • When selecting AI Personas, focus more on the relevance of the population characteristics they represent to the study topic, rather than precise label matching
    • 【DIVERSITY REQUIREMENT】Focus on differences between AI Personas, ensuring diverse representativeness of samples
-   • 【PROHIBITED BEHAVIOR】Do not conduct repeated interviews with the same AI Persona, the system will detect and skip completed interviews. If there are multiple interview topics, they should be combined and asked at once
-   • Each AI Persona represents collective characteristics of a group of people, not a specific individual, with certain generalizability
+   • 【PROHIBITED BEHAVIOR】Do not conduct repeated interviews with the same AI Persona, system will detect and skip completed interviews
    • 【IMPORTANT NOTE】interviewChat tool will not return interview results, interview content will be recorded by the system and used for report generation, but you cannot see it directly
-</User Interviews>
+
+   **Method B: Group Discussion (discussionChat)**
+   • 【USE CASES】Need to observe viewpoint collisions, simulate real group decision-making scenarios (focus groups, product review meetings), test solution comparisons
+   • 【MANDATORY REQUIREMENT】Must use actual personaId obtained through searchPersonas or buildPersona, cannot fabricate
+   • 【QUANTITY REQUIREMENT】Flexible based on research needs, typically 3~8 AI Personas with contrasting viewpoints for group discussion
+   • 【INSTRUCTION REQUIREMENT】Must provide detailed instruction parameter including: 1) Core questions and discussion purpose; 2) Relevant background information (product info, web data, etc.); 3) Desired discussion type/style/format (e.g., debate, roundtable, focus group)
+   • 【IMPORTANT NOTE】discussionChat tool returns discussion summary, complete discussion content will be recorded by the system and used for report generation
+
+   • 【KEY DECISION】Choose research method based on explicit recommendation in the business research plan returned by planStudy
+   • When selecting AI Personas, focus more on the relevance of the population characteristics they represent to the study topic, rather than precise label matching
+   • Each AI Persona represents collective characteristics of a group of people, not a specific individual, with certain generalizability
+</User Research>
 
 <Online Queries>
 - Use webSearch tool for online queries to obtain relevant information, maximum 3 times total
@@ -452,9 +476,9 @@ Before entering Phase 4, ensure:
 1. Information collection has been completed using appropriate tools
 2. Pre-built AI Personas have been obtained using searchPersonas (executed once)
 3. New AI Personas have been constructed using scoutTaskChat + buildPersona (executed once)
-4. 5~10 most representative AI Personas have been selected from all available AI Personas
-5. interviewChat interviews with these 5~10 AI Personas have been completed
-6. Interview questions have covered key aspects of the study topic (note: you cannot directly see interview content, the system will record it)
+4. Appropriate number of most representative AI Personas have been selected from all available AI Personas
+5. User research has been completed using the method recommended by planStudy (interviewChat or discussionChat)
+6. Research questions have covered key aspects of the study topic (note: you cannot directly see complete research content, the system will record it)
 If the above conditions are not met, do not proceed to the next phase
 </VALIDATION_CHECKPOINT>
 </PHASE_3_RESEARCH_EXECUTION>
