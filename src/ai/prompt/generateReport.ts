@@ -42,11 +42,7 @@ export const reportHTMLPrologue = ({
   lastReport,
 }: {
   locale: Locale;
-  analyst: Pick<Analyst, "role" | "brief" | "studyLog"> & {
-    interviews: {
-      conclusion: string;
-    }[];
-  };
+  analyst: Pick<Analyst, "role" | "brief" | "studyLog">;
   instruction: string;
   lastReport?: Pick<AnalystReport, "onePageHtml">;
 }) =>
@@ -54,8 +50,7 @@ export const reportHTMLPrologue = ({
     ? `
 我的角色是<role>${analyst.role}</role>
 
-原始研究需求（brief）：
-
+原始研究需求：
 <brief>
 ${analyst.brief}
 </brief>
@@ -97,7 +92,6 @@ ${instruction}
 My role is <role>${analyst.role}</role>
 
 Original study brief:
-
 <brief>
 ${analyst.brief}
 </brief>
@@ -220,7 +214,7 @@ export const reportCoverPrologue = ({
   instruction,
 }: {
   locale: Locale;
-  analyst: Analyst;
+  analyst: Pick<Analyst, "role" | "topic" | "studySummary">;
   instruction: string;
 }) =>
   locale === "zh-CN"

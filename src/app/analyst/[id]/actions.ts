@@ -187,13 +187,6 @@ export async function backgroundGenerateReport({
   return withAuth(async (user) => {
     const analyst = await prisma.analyst.findUnique({
       where: { id: analystId },
-      include: {
-        interviews: {
-          select: {
-            conclusion: true,
-          },
-        },
-      },
     });
     if (analyst?.userId !== user.id) {
       forbidden();

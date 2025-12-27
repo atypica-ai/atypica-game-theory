@@ -1,6 +1,6 @@
 import "server-only";
 
-import { studyLogPrologue, studyLogSystem } from "@/ai/prompt";
+import { studyLogSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
@@ -9,26 +9,50 @@ import { Analyst } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { waitUntil } from "@vercel/functions";
-import { streamText, UserModelMessage } from "ai";
+import { ModelMessage, streamText } from "ai";
 
 export async function generateAndSaveStudyLog({
   analyst,
+  messages,
   locale,
   abortSignal,
   statReport,
   logger,
 }: {
-  analyst: Analyst & {
-    interviews: {
-      conclusion: string;
-    }[];
-  };
+  analyst: Analyst;
+  messages: ModelMessage[];
 } & AgentToolConfigArgs): Promise<{ studyLog: string }> {
   const systemPrompt = studyLogSystem({ locale });
-  // logger.info("Study Process System Prompt:\n" + systemPrompt);
-  const prologue = studyLogPrologue({ locale, analyst });
-  // logger.info("Study Process Prologue:\n" + prologue);
+
+  // 架构变更说明：
+  // 1. 不再需要从 analyst.interviews.conclusion 读取访谈结论
+  //    - 之前 interviewChat 只返回简短的 digest，需要从数据库读取详细的 conclusion
+  //    - 现在 interviewChat 返回详细的 summary (与 discussionChat 一致)
+  //    - 所有研究内容(包括访谈总结、讨论总结)都已包含在 messages 中
+  // 2. 不再需要在 prologue 中放置研究的 topic, brief, summary 等详细信息
+  //    - messages 已经包含完整的研究过程上下文
+  //    - 只需一句简单的开场指令即可
+  // 3. 参数里的 messages 是 tool execute 的时候带过来的处理过 toModelOutput 的 modelmessages，
+  //    所以，只包含了 plainText 的内容，无需重新提取
+
   const promise = new Promise<{ studyLog: string }>(async (resolve, reject) => {
+    // 将完整的研究过程 messages 传递给模型，追加一条简单的任务指令
+    const studyLogMessages = [
+      ...messages,
+      {
+        role: "user" as const,
+        content: [
+          {
+            type: "text" as const,
+            text:
+              locale === "zh-CN"
+                ? "请基于以上研究过程，生成一份详细的研究日志。"
+                : "Please generate a detailed study log based on the research process above.",
+          },
+        ],
+      },
+    ];
+
     const response = streamText({
       model: llm("gemini-2.5-pro"),
       providerOptions: defaultProviderOptions,
@@ -39,12 +63,7 @@ export async function generateAndSaveStudyLog({
         }),
       },
       system: systemPrompt,
-      messages: [
-        {
-          role: "user",
-          content: [{ type: "text", text: prologue }],
-        },
-      ] as UserModelMessage[],
+      messages: studyLogMessages,
       // maxTokens: 500,
       // onChunk: (chunk) => console.log("[Reasoning]", JSON.stringify(chunk)),
       onFinish: async (result) => {

@@ -1,57 +1,5 @@
-import { Analyst } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { promptSystemConfig } from "../systemConfig";
-
-export const studyLogPrologue = ({
-  locale,
-  analyst,
-}: {
-  locale: Locale;
-  analyst: Analyst & {
-    interviews: {
-      conclusion: string;
-    }[];
-  };
-}) =>
-  locale === "zh-CN"
-    ? `
-【原始研究需求】
-${analyst.brief}
-
-【研究主题和商业研究规划】
-${analyst.topic}
-
-${
-  analyst.interviews.length > 0
-    ? `【用户访谈总结】
-
-${analyst.interviews.map((interview) => `\n${interview.conclusion}\n`).join("\n\n")}`
-    : ""
-}
-
-【研究总结】
-${analyst.studySummary}
-
-`
-    : `
-【Original Research Requirements】
-${analyst.brief}
-
-【Research Topic and Business Research Planning】
-${analyst.topic}
-
-${
-  analyst.interviews.length > 0
-    ? `【User Interview Summary】
-
-${analyst.interviews.map((interview) => `\n${interview.conclusion}\n`).join("\n\n")}`
-    : ""
-}
-
-【Summary of The Research】
-${analyst.studySummary}
-
-`;
 
 export const studyLogSystem = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"

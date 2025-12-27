@@ -16,11 +16,7 @@ export async function generateReportCoverSvg({
   statReport,
   logger,
 }: {
-  analyst: Analyst & {
-    interviews: {
-      conclusion: string;
-    }[];
-  };
+  analyst: Analyst;
   report: AnalystReport;
   instruction: string;
 } & AgentToolConfigArgs) {

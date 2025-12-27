@@ -48,21 +48,14 @@ export const generateReportTool = ({
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({
-      instruction,
-      // regenerate,
-      reportToken,
-    }): Promise<GenerateReportResult> => {
+    execute: async (
+      { instruction, /*regenerate,*/ reportToken },
+      { messages },
+    ): Promise<GenerateReportResult> => {
       const studyUserChat = await prisma.userChat.findUniqueOrThrow({
         where: { id: studyUserChatId, kind: "study" },
         select: {
-          analyst: {
-            include: {
-              interviews: {
-                where: { conclusion: { not: "" } },
-              },
-            },
-          },
+          analyst: true,
         },
       });
       if (!studyUserChat.analyst) {
@@ -111,6 +104,7 @@ export const generateReportTool = ({
         try {
           const { studyLog } = await generateAndSaveStudyLog({
             analyst,
+            messages,
             locale,
             abortSignal,
             statReport,
@@ -200,11 +194,7 @@ export async function generateReport({
   logger,
   systemPrompt,
 }: {
-  analyst: Analyst & {
-    interviews: {
-      conclusion: string;
-    }[];
-  };
+  analyst: Analyst;
   report: AnalystReport;
   lastReport?: AnalystReport;
   instruction: string;
