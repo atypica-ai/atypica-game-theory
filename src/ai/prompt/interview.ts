@@ -150,32 +150,3 @@ export const interviewerAttachment = ({ persona, locale }: { persona: Persona; l
 This is an attachment for this interview. The conversation will now be handed over to the interviewee ${persona.name}
 </System Message>
 `;
-
-export const interviewDigestSystem = ({
-  locale,
-  results,
-}: {
-  locale: Locale;
-  results: ({ name: string; issue: string } | { name: string; conclusion: string })[];
-}) => {
-  const text = results
-    .map((result) => {
-      const text =
-        "conclusion" in result && result.conclusion
-          ? result.conclusion
-          : "issue" in result && result.issue
-            ? result.issue
-            : "";
-      return `<interview>${result.name}\n${text}</interview>`;
-    })
-    .join("\n");
-  return locale === "zh-CN"
-    ? `${promptSystemConfig({ locale })}
-请根据以下访谈结果生成一份简单的摘要，不超过500字。
-${text}
-`
-    : `${promptSystemConfig({ locale })}
-Please generate a brief summary based on the following interview results, no more than 500 words.
-${text}
-`;
-};

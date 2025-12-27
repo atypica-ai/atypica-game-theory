@@ -6,7 +6,6 @@ import {
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import {
-  interviewDigestSystem,
   interviewerAttachment,
   interviewerPrologue,
   interviewerSystem,
@@ -138,31 +137,62 @@ export const interviewChatTool = ({
         }
       };
       const interviewResults = await Promise.all(personas.map(single));
-      const digest = await generateDigest(locale, interviewResults);
+
+      // Generate summary similar to discussionChat
+      const successfulInterviews = interviewResults.filter(
+        (result): result is { name: string; conclusion: string } => "conclusion" in result,
+      );
+      const failedInterviews = interviewResults.filter(
+        (result): result is { name: string; issue: string } => "issue" in result,
+      );
+
+      const summary = await generateInterviewSummary(locale, successfulInterviews);
+
+      const plainText =
+        locale === "zh-CN"
+          ? `访谈已完成，共 ${personas.length} 位参与者。${failedInterviews.length > 0 ? `其中 ${failedInterviews.length} 位访谈遇到问题。` : ""}\n\n${summary}`
+          : `Interview completed with ${personas.length} participants.${failedInterviews.length > 0 ? ` ${failedInterviews.length} interview(s) encountered issues.` : ""}\n\n${summary}`;
+
       return {
-        issues: interviewResults.filter((result) => "issue" in result),
-        plainText: digest,
+        issues: failedInterviews,
+        plainText,
       };
     },
   });
 
 /**
+ * Generate interview summary similar to discussionChat summary
  * - 这里没有统计 tokens，模型便宜问题不大
- * - 这里也没有 abortSignal, 所以在研究被人工 abort 了以后 (tool 会先停止，然后是 study)，有一定概率会出现 interview 中断自动跳过开始进行 generateDigest，
+ * - 这里也没有 abortSignal, 所以在研究被人工 abort 了以后 (tool 会先停止，然后是 study)，有一定概率会出现 interview 中断自动跳过开始进行 summary 生成，
  *   最后 study 还是有访谈总结，这样挺好的。。。
  */
-async function generateDigest(
+async function generateInterviewSummary(
   locale: Locale,
-  results: ({ name: string; issue: string } | { name: string; conclusion: string })[],
+  results: { name: string; conclusion: string }[],
 ) {
-  const digest = await generateText({
-    // model: llm("gpt-4.1-nano"),
+  const conclusionsText = results
+    .map((result) => `**${result.name}**\n${result.conclusion}`)
+    .join("\n\n");
+
+  const summaryTask =
+    locale === "zh-CN"
+      ? "请生成一份详细的访谈总结，涵盖所有参与者的主要观点、行为模式和决策因素。"
+      : "Please generate a detailed interview summary covering all participants' main viewpoints, behavioral patterns, and decision-making factors.";
+
+  const systemPrompt =
+    locale === "zh-CN"
+      ? "你是一个专业的用户研究分析师，擅长从访谈中提炼关键洞察。请基于访谈结论生成结构化的总结，突出重要发现和模式。"
+      : "You are a professional user research analyst skilled at extracting key insights from interviews. Please generate a structured summary based on interview conclusions, highlighting important findings and patterns.";
+
+  const summary = await generateText({
     model: llm("gpt-4.1-mini"),
     providerOptions: defaultProviderOptions,
-    prompt: interviewDigestSystem({ locale, results }),
+    system: systemPrompt,
+    messages: [{ role: "user" as const, content: `${conclusionsText}\n\n${summaryTask}` }],
     maxOutputTokens: 2000,
   });
-  return digest.text;
+
+  return summary.text.trim();
 }
 
 export async function prepareDBForInterview({
