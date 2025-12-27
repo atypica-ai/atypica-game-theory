@@ -5,6 +5,7 @@ import { parseAttachmentText } from "@/lib/attachments/processing";
 import { Analyst, AttachmentFileExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
+import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import {
   createUIMessageStream,
   generateId,
@@ -43,27 +44,27 @@ export function calculateToolUsage(modelMessages: ModelMessage[]) {
  */
 export function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]) {
   if (!model) return coreMessages; // 这句话没意义，只是为了用一下 model
+
   const checkpoints = {
-    firstAssistant: false,
-    ">=8": false,
-    ">=16": false,
+    ">=12": false,
+    ">=24": false,
+    ">=36": false,
   };
   const cachedCoreMessages = coreMessages.map((message, index) => {
     const providerOptions = {
-      bedrock: {
-        cachePoint: { type: "default" },
-      },
+      bedrock: { cachePoint: { type: "default" } },
+      anthropic: { cacheControl: { type: "ephemeral" } } satisfies AnthropicProviderOptions,
     };
-    if (message.role === "assistant" && !checkpoints["firstAssistant"]) {
-      checkpoints["firstAssistant"] = true;
+    if (message.role === "assistant" && index >= 8 && !checkpoints[">=12"]) {
+      checkpoints[">=12"] = true;
       return { ...message, providerOptions };
     }
-    if (message.role === "assistant" && index >= 8 && !checkpoints[">=8"]) {
-      checkpoints[">=8"] = true;
+    if (message.role === "assistant" && index >= 4 && !checkpoints[">=24"]) {
+      checkpoints[">=24"] = true;
       return { ...message, providerOptions };
     }
-    if (message.role === "assistant" && index >= 16 && !checkpoints[">=16"]) {
-      checkpoints[">=16"] = true;
+    if (message.role === "assistant" && index >= 16 && !checkpoints[">=36"]) {
+      checkpoints[">=36"] = true;
       return { ...message, providerOptions };
     }
     return { ...message };

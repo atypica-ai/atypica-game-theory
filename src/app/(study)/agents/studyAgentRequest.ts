@@ -58,8 +58,9 @@ import {
   waitUntilAttachmentsProcessed,
 } from "./utils";
 
-// autopolot 模式默认 15 步，webSearch 2 + saveAnalyst 1 + searchPersonas 1 + scoutTaskChat 2 + buildPersona 2 + interviewChat 2 + generateReport 1
-const MAX_STEPS_EACH_ROUND = 15;
+// autopolot 模式设置一个较大的值，后面 stop when 会判断是否要停止的
+const MAX_STEPS_EACH_ROUND = 30;
+
 // const TOKENS_COMSUME_LIMIT = 1_000_000; // 最新统计来看，100 万 tokens 足够
 
 // 参考了 https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#storing-messages 的设计来实现
@@ -288,17 +289,30 @@ export async function studyAgentRequest({
   let streamStartTime = Date.now();
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
-    model: llm("claude-3-7-sonnet"),
+    model: llm("claude-sonnet-4"),
     providerOptions: defaultProviderOptions,
     system: system,
     messages: modelMessages,
     tools: tools,
     toolChoice: toolChoice,
     experimental_repairToolCall: handleToolCallError,
-    stopWhen: stepCountIs(maxSteps),
     maxOutputTokens: maxTokens,
 
+    stopWhen: [
+      stepCountIs(maxSteps),
+      ({ steps }) => {
+        return steps.some((step) =>
+          step.toolResults?.some(
+            (toolResult) =>
+              toolResult?.toolName === ToolName.generatePodcast ||
+              toolResult?.toolName === ToolName.generateReport,
+          ),
+        );
+      },
+    ],
+
     prepareStep: async ({ messages: modelMessages }) => {
+      logger.info({ msg: "studyAgentRequest prepareStep", messagesLength: modelMessages.length });
       const toolUseCount = calculateToolUsage(modelMessages);
       let activeTools: (keyof typeof allTools)[] | undefined = undefined;
       if (
@@ -327,7 +341,7 @@ export async function studyAgentRequest({
        * ⚠️ 由于整个过程是一气呵成的，cache 必须在这里面设置，之前调用 streamText 前设置好的 cache 其实大部分没生效
        * 因为比如 messages 长度到 8 的时候，streamText 还在自动跑，始终没有结束
        */
-      const messages = setBedrockCache("claude-3-7-sonnet", [...modelMessages]);
+      const messages = setBedrockCache("claude-sonnet-4", [...modelMessages]);
       return {
         messages,
         activeTools,

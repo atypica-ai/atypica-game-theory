@@ -12,6 +12,7 @@ import {
   handleToolCallError,
   planPodcastTool,
   toolCallError,
+  webFetchTool,
   webSearchTool,
 } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, ToolName } from "@/ai/tools/types";
@@ -44,8 +45,8 @@ import {
   waitUntilAttachmentsProcessed,
 } from "./utils";
 
-// autopolot 模式默认 4 步，websearch+plan+deepresearch mcp+podcast
-const MAX_STEPS_EACH_ROUND = 4;
+// autopolot 模式设置一个较大的值，后面 stop when 会判断是否要停止的
+const MAX_STEPS_EACH_ROUND = 10;
 
 /**
  * Fast Insight agent request handler for podcast-first research workflow.
@@ -106,6 +107,7 @@ export async function fastInsightAgentRequest({
   // Using the same pattern as createSubAgent for type compatibility
   // Note: Tools only return results; analyst.topic is saved in onStepFinish
   const allTools = {
+    [ToolName.webFetch]: webFetchTool({ locale }),
     [ToolName.webSearch]: webSearchTool({ provider: "perplexity", ...agentToolArgs }),
     // ⚠️ planPodcast tool returns planning result; analyst.topic will be updated in onStepFinish below
     [ToolName.planPodcast]: planPodcastTool({ studyUserChatId, ...agentToolArgs }),
@@ -194,18 +196,30 @@ export async function fastInsightAgentRequest({
 
   let streamStartTime = Date.now();
   const streamTextResult = streamText({
-    // model: llm("claude-sonnet-4"),
-    model: llm("claude-3-7-sonnet"),
+    model: llm("claude-sonnet-4"),
     providerOptions: defaultProviderOptions,
     system: system,
     messages: modelMessages,
     tools: tools,
     toolChoice: toolChoice,
     experimental_repairToolCall: handleToolCallError,
-    stopWhen: stepCountIs(maxSteps),
     maxOutputTokens: maxTokens,
 
+    stopWhen: [
+      stepCountIs(maxSteps),
+      ({ steps }) => {
+        return steps.some((step) =>
+          step.toolResults.some(
+            (toolResult) =>
+              toolResult?.toolName === ToolName.generatePodcast ||
+              toolResult?.toolName === ToolName.generateReport,
+          ),
+        );
+      },
+    ],
+
     prepareStep: async ({ messages: modelMessages }) => {
+      logger.info({ msg: "studyAgentRequest prepareStep", messagesLength: modelMessages.length });
       const toolUseCount = calculateToolUsage(modelMessages);
       let activeTools: (keyof typeof allTools)[] | undefined = undefined;
       if (
@@ -228,7 +242,7 @@ export async function fastInsightAgentRequest({
           );
         }
       }
-      const messages = setBedrockCache("claude-3-7-sonnet", [...modelMessages]);
+      const messages = setBedrockCache("claude-sonnet-4", [...modelMessages]);
       return {
         messages,
         activeTools,
