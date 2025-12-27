@@ -1,5 +1,6 @@
 "use server";
 
+import { StatReporter } from "@/ai/tools/types";
 import { runPersonaDiscussion } from "@/app/(panel)/lib";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import { checkAdminAuth } from "@/app/admin/actions";
@@ -69,6 +70,12 @@ export async function startPersonaDiscussionAction({
 }) {
   try {
     const user = await checkAdminAuth([]);
+    const statReport: StatReporter = async (dimension, value, extra) => {
+      console.log(
+        `Mock StatReport, dimension: ${dimension}, value: ${value}, extra: ${JSON.stringify(extra)}`,
+      );
+    };
+    const abortSignal = new AbortController().signal;
 
     // Detect locale from instruction
     const locale = await detectInputLanguage({ text: instruction });
@@ -92,7 +99,9 @@ export async function startPersonaDiscussionAction({
       instruction,
       personaIds,
       timelineToken: token,
-      locale: locale as Locale,
+      locale,
+      abortSignal,
+      statReport,
       logger,
     }).catch((error) => {
       logger.error(`Panel discussion error: ${(error as Error).message}`);

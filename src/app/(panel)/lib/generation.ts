@@ -1,8 +1,11 @@
 import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import { StatReporter } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { generateText } from "ai";
+import { Logger } from "pino";
 import { DiscussionTypeConfig } from "../discussionTypes";
 import { minutesSystem } from "../prompt/minutes";
 import { DiscussionTimelineEvent, PersonaSession } from "../types";
@@ -20,13 +23,17 @@ export async function generatePersonaReply({
   discussionTypeConfig,
   locale,
   abortSignal,
+  statReport,
+  logger,
 }: {
   personaSession: PersonaSession;
   timelineEvents: DiscussionTimelineEvent[];
   nextQuestion: string;
   discussionTypeConfig: DiscussionTypeConfig;
   locale: Locale;
-  abortSignal?: AbortSignal;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
+  logger: Logger;
 }): Promise<string> {
   const formattedTimeline = formatTimelineForPersona(timeline, personaSession.personaId, locale);
 
@@ -56,6 +63,21 @@ export async function generatePersonaReply({
     abortSignal,
   });
 
+  // Report token usage
+  const { tokens, extra } = calculateStepTokensUsage(personaReply);
+  logger.info({
+    msg: "Persona reply generated",
+    personaId: personaSession.personaId,
+    usage: extra.usage,
+    cache: extra.cache,
+  });
+  await statReport("tokens", tokens, {
+    reportedBy: "discussionChat",
+    step: "persona-reply",
+    personaId: personaSession.personaId,
+    ...extra,
+  });
+
   return personaReply.text.trim();
 }
 
@@ -67,11 +89,15 @@ export async function generateSummaryAndMinutes({
   discussionTypeConfig,
   locale,
   abortSignal,
+  statReport,
+  logger,
 }: {
   timelineEvents: DiscussionTimelineEvent[];
   discussionTypeConfig: DiscussionTypeConfig;
   locale: Locale;
-  abortSignal?: AbortSignal;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
+  logger: Logger;
 }): Promise<{ summary: string; minutes: string }> {
   const completeScript = formatTimelineForModerator(timeline, locale);
   const summaryTask =
@@ -96,27 +122,36 @@ export async function generateSummaryAndMinutes({
       model: llm("gpt-4.1-mini"),
       providerOptions: defaultProviderOptions,
       system: discussionTypeConfig.panelSummarySystem({ locale }),
-      messages: [
-        {
-          role: "user" as const,
-          content: `${completeScript}\n\n${summaryTask}`,
-        },
-      ],
+      messages: [{ role: "user" as const, content: `${completeScript}\n\n${summaryTask}` }],
       maxOutputTokens: 2000,
       abortSignal,
+    }).then(async (response) => {
+      const tokens = calculateStepTokensUsage(response);
+      logger.info({ msg: "Summary generated", ...tokens.extra });
+      await statReport("tokens", tokens.tokens, {
+        reportedBy: "discussionChat",
+        step: "summary",
+        ...tokens.extra,
+      });
+      return response;
     }),
     generateText({
       model: llm("gpt-4.1-mini"),
       providerOptions: defaultProviderOptions,
       system: minutesSystem({ locale }),
-      messages: [
-        {
-          role: "user" as const,
-          content: `${minutesInput}\n\n${minutesTask}`,
-        },
-      ],
+      messages: [{ role: "user" as const, content: `${minutesInput}\n\n${minutesTask}` }],
       maxOutputTokens: 3000,
       abortSignal,
+    }).then(async (response) => {
+      // Report token usage for minutes
+      const tokens = calculateStepTokensUsage(response);
+      logger.info({ msg: "Minutes generated", ...tokens.extra });
+      await statReport("tokens", tokens.tokens, {
+        reportedBy: "discussionChat",
+        step: "minutes",
+        ...tokens.extra,
+      });
+      return response;
     }),
   ]);
 

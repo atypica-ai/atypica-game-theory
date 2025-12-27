@@ -65,7 +65,7 @@ function createPool(connectionString: string, isReadOnly = false) {
     });
   });
 
-  rootLogger.info({
+  rootLogger[process.env.NODE_ENV === "production" ? "info" : "debug"]({
     msg: `Created PostgreSQL connection pool`,
     ro: isReadOnly,
     config: {

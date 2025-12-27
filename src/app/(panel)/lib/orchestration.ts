@@ -1,6 +1,7 @@
 import "server-only";
 
 import { personaAgentSystem } from "@/ai/prompt/personaAgent";
+import { StatReporter } from "@/ai/tools/types";
 import { buildDiscussionType } from "@/app/(panel)//discussionTypes/buildDiscussionType";
 import { DiscussionTimelineEvent, PersonaSession } from "@/app/(panel)//types";
 import { DiscussionTypeConfig } from "@/app/(panel)/discussionTypes";
@@ -76,6 +77,7 @@ async function executeDiscussionRound({
   discussionTypeConfig,
   locale,
   abortSignal,
+  statReport,
   logger,
 }: {
   personaSessions: PersonaSession[];
@@ -83,19 +85,23 @@ async function executeDiscussionRound({
   timelineToken: string;
   discussionTypeConfig: DiscussionTypeConfig;
   locale: Locale;
-  abortSignal?: AbortSignal;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
   logger: Logger;
 }): Promise<{ updatedTimeline: DiscussionTimelineEvent[]; spokenPersonaId: number }> {
   // Create a new timeline array to avoid mutation issues
   const updatedTimelineEvents: DiscussionTimelineEvent[] = [...timelineEvents];
 
   // Select next speaker using moderator strategy
-  const selection = await selectNextSpeakerModerator(
+  const selection = await selectNextSpeakerModerator({
     personaSessions,
-    updatedTimelineEvents,
+    timelineEvents: updatedTimelineEvents,
+    moderatorSystem: discussionTypeConfig.moderatorSystem,
     locale,
-    discussionTypeConfig.moderatorSystem,
-  );
+    abortSignal,
+    statReport,
+    logger,
+  });
 
   // Record moderator selection with reason
   updatedTimelineEvents.push({
@@ -127,6 +133,8 @@ async function executeDiscussionRound({
     discussionTypeConfig,
     locale,
     abortSignal,
+    statReport,
+    logger,
   });
 
   if (replyContent) {
@@ -165,6 +173,7 @@ export async function runPersonaDiscussion({
   timelineToken,
   locale,
   abortSignal,
+  statReport,
   logger,
 }: {
   userId: number;
@@ -173,7 +182,8 @@ export async function runPersonaDiscussion({
   personaIds: number[];
   timelineToken: string;
   locale: Locale;
-  abortSignal?: AbortSignal;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
   logger: Logger;
 }): Promise<{ timelineEvents: DiscussionTimelineEvent[]; summary: string }> {
   // Build custom discussion type configuration from instruction
@@ -235,6 +245,7 @@ export async function runPersonaDiscussion({
       discussionTypeConfig,
       locale,
       abortSignal,
+      statReport,
       logger,
     });
 
@@ -251,6 +262,8 @@ export async function runPersonaDiscussion({
     discussionTypeConfig,
     locale,
     abortSignal,
+    statReport,
+    logger,
   });
 
   // Add summary to timeline

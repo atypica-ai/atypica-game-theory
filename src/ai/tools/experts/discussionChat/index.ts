@@ -15,6 +15,7 @@ export const discussionChatTool = ({
   userId,
   locale,
   abortSignal,
+  statReport,
   logger,
 }: {
   userId: number;
@@ -28,7 +29,7 @@ export const discussionChatTool = ({
       return { type: "text", value: result.plainText };
     },
     execute: async ({ instruction, personaIds, timelineToken }): Promise<DiscussionChatResult> => {
-      const discussionLogger = logger.child({ instruction, personaIds, timelineToken });
+      const discussionLogger = logger.child({ tool: "discussionChat", personaIds, timelineToken });
 
       try {
         // Create DiscussionTimeline record first (with empty events) so frontend can start polling
@@ -52,6 +53,7 @@ export const discussionChatTool = ({
           timelineToken: discussionTimeline.token,
           locale,
           abortSignal,
+          statReport,
           logger: discussionLogger,
         });
 

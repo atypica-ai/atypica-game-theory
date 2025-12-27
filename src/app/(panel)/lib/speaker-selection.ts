@@ -1,8 +1,11 @@
 import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import { StatReporter } from "@/ai/tools/types";
+import { calculateStepTokensUsage } from "@/ai/usage";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { generateObject } from "ai";
+import { Logger } from "pino";
 import { z } from "zod";
 import { DiscussionTimelineEvent, PersonaSession } from "../types";
 import { formatTimelineForModerator } from "./formatting";
@@ -27,10 +30,13 @@ const selectNextSpeakerSchema = z.object({
  * Select next speaker using random strategy.
  * Prefers unspoken personas, then random selection.
  */
-export function selectNextSpeakerRandom(
-  personaSessions: PersonaSession[],
-  timelineEvents: DiscussionTimelineEvent[],
-): PersonaSession {
+export function selectNextSpeakerRandom({
+  personaSessions,
+  timelineEvents,
+}: {
+  personaSessions: PersonaSession[];
+  timelineEvents: DiscussionTimelineEvent[];
+}): PersonaSession {
   const spokenPersonaIds = new Set(
     timelineEvents
       .filter(
@@ -72,12 +78,23 @@ export function selectNextSpeakerRandom(
  * Moderator (LLM) selects based on discussion content
  * Returns the selected persona session and reason
  */
-export async function selectNextSpeakerModerator(
-  personaSessions: PersonaSession[],
-  timelineEvents: DiscussionTimelineEvent[],
-  locale: Locale,
-  moderatorSystem: (params: { locale: Locale }) => string,
-): Promise<{ nextQuestion: string; session: PersonaSession; reason: string }> {
+export async function selectNextSpeakerModerator({
+  personaSessions,
+  timelineEvents,
+  moderatorSystem,
+  locale,
+  abortSignal,
+  statReport,
+  logger,
+}: {
+  personaSessions: PersonaSession[];
+  timelineEvents: DiscussionTimelineEvent[];
+  moderatorSystem: (params: { locale: Locale }) => string;
+  locale: Locale;
+  abortSignal: AbortSignal;
+  statReport: StatReporter;
+  logger: Logger;
+}): Promise<{ nextQuestion: string; session: PersonaSession; reason: string }> {
   // Find the last speaker to exclude from selection
   const lastSpeakerId = timelineEvents
     .filter(
@@ -108,6 +125,20 @@ export async function selectNextSpeakerModerator(
         },
       ],
       maxRetries: 2,
+      abortSignal,
+    });
+
+    // Report token usage
+    const { tokens, extra } = calculateStepTokensUsage(result);
+    logger.info({
+      msg: "Moderator speaker selection completed",
+      usage: extra.usage,
+      cache: extra.cache,
+    });
+    await statReport("tokens", tokens, {
+      reportedBy: "discussionChat",
+      step: "moderator-selection",
+      ...extra,
     });
 
     const { thinking, personaId, followUpQuestion } = result.object;
@@ -115,9 +146,17 @@ export async function selectNextSpeakerModerator(
     // Find the selected persona session
     const selectedSession = availablePersonas.find((s) => s.personaId === personaId);
 
-    if (!selectedSession) {
+    if (selectedSession) {
+      logger.info(`Selected persona: ${selectedSession.personaId}`);
+      return {
+        nextQuestion: followUpQuestion,
+        session: selectedSession,
+        reason: thinking,
+      };
+    } else {
+      logger.warn(`Invalid personaId ${personaId} returned, using random selection. ${thinking}`);
       // Fallback to random if personaId doesn't match any available persona
-      const fallbackSession = selectNextSpeakerRandom(personaSessions, timelineEvents);
+      const fallbackSession = selectNextSpeakerRandom({ personaSessions, timelineEvents });
       return {
         nextQuestion:
           followUpQuestion ||
@@ -126,11 +165,12 @@ export async function selectNextSpeakerModerator(
         reason: `Invalid personaId ${personaId} returned, using random selection. ${thinking}`,
       };
     }
-
-    return { nextQuestion: followUpQuestion, session: selectedSession, reason: thinking };
   } catch (error) {
+    logger.warn(
+      `Error in moderator selection: ${(error as Error).message}, using random selection`,
+    );
     // Fallback to random if generateObject fails
-    const fallbackSession = selectNextSpeakerRandom(personaSessions, timelineEvents);
+    const fallbackSession = selectNextSpeakerRandom({ personaSessions, timelineEvents });
     return {
       nextQuestion: locale === "zh-CN" ? "请继续参与讨论。" : "Please continue the discussion.",
       session: fallbackSession,
