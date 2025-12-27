@@ -98,35 +98,31 @@ function createPrismaWithPool(pool: Pool, isReadOnly: boolean) {
   return client;
 }
 
-const globalForPrisma = global as unknown as {
-  prisma: PrismaClient | undefined;
-  prismaRO: PrismaClient | undefined;
-  pool: Pool | undefined;
-  poolRO: Pool | undefined;
+const globalForPrisma = globalThis as unknown as {
+  __prismaInstances__:
+    | {
+        prisma: PrismaClient;
+        prismaRO: PrismaClient;
+        pool: Pool;
+        poolRO: Pool;
+      }
+    | undefined;
 };
 
 // 创建或重用 Pool 和 PrismaClient 实例（单例模式）
-if (!globalForPrisma.pool) {
-  globalForPrisma.pool = createPool(process.env.DATABASE_URL!, false);
+if (!globalForPrisma.__prismaInstances__) {
+  const pool = createPool(process.env.DATABASE_URL!, false);
+  const poolRO = createPool(process.env.DATABASE_RO_URL || process.env.DATABASE_URL!, true);
+
+  globalForPrisma.__prismaInstances__ = {
+    pool,
+    poolRO,
+    prisma: createPrismaWithPool(pool, false),
+    prismaRO: createPrismaWithPool(poolRO, true),
+  };
 }
-if (!globalForPrisma.poolRO) {
-  globalForPrisma.poolRO = createPool(
-    process.env.DATABASE_RO_URL || process.env.DATABASE_URL!,
-    true,
-  );
-}
 
-export const prisma = globalForPrisma.prisma || createPrismaWithPool(globalForPrisma.pool, false);
-export const prismaRO =
-  globalForPrisma.prismaRO || createPrismaWithPool(globalForPrisma.poolRO, true);
-
-// 导出 Pool 实例供健康检查使用
-export const pool = globalForPrisma.pool;
-export const poolRO = globalForPrisma.poolRO;
-
-// 在所有环境中都保存到全局对象，防止开发环境热重载时的连接池泄漏
-globalForPrisma.prisma = prisma;
-globalForPrisma.prismaRO = prismaRO;
+export const { prisma, prismaRO, pool, poolRO } = globalForPrisma.__prismaInstances__!;
 
 // 获取连接池状态（用于健康检查和监控）
 export function getPoolStats() {
