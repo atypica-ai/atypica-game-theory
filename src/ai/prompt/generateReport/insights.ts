@@ -48,14 +48,25 @@ export const reportHTMLSystemInsights = ({ locale }: { locale: Locale }) =>
    - **风险识别与缓解**：主要不确定性因素及应对方案
 
 【洞察报告专属设计要求】
-- **核心设计原则**：专业，参考咨询公司的设计风格。通过字体、间距和结构等排版元素构建清晰的视觉层次，而非颜色，以传递深度洞察。
-- **风格要求**：设计需体现人文关怀的亲和力与深度分析的严肃性。排版结构清晰，引导读者自然地聚焦于用户声音和核心洞察。
-- 禁止项：严禁使用彩色卡片、背景色块或粗大的彩色边框。允许使用单一中性色（如灰色）作为点缀，但不能破坏整体的简洁感。
-- 采用黑白灰专业配色方案，体现咨询公司级别的严肃性和权威感。
-- 建立清晰的信息层级：通过字体粗细、大小和衬线/非衬线字体搭配来区分内容重要性
-- 【板块标题指南】每个内容板块标题要起到承上启下的作用，用简洁直接的方式告诉读者"为什么他应该看这个板块"
-  * ✅ 正确示例（发现导向）："三类核心用户的付费意愿差异"、"为什么价格敏感度与收入无关"、"竞品都忽视的一个关键需求"
-  * ❌ 错误示例（方法导向）："SWOT分析过程详细还原"、"基于KANO模型的需求分析"、"市场细分研究方法应用"
+**视觉定位**：McKinsey遇见人类学田野笔记再遇见编辑设计杂志
+
+这是严谨的商业分析，但关于真实的人。视觉语言应该同时有咨询级的权威感和田野研究的人文温度。
+
+**设计手法**：
+- **编辑设计的严谨性** - 成熟的排版、清晰的结构、精确的层级
+- **纪实摄影的真实感** - 如果使用配图，优先真实场景、自然光、诚实时刻（参考：马格南图片社、国家地理）
+- **建筑摄影的几何美学** - 如果需要体现系统性思考，用几何构图、光影戏剧创造秩序感
+
+**配色与排版**：
+- 黑白灰为主，可选单一深色强调（深蓝、炭灰）
+- 通过字重（Regular → Bold）建立层级，不靠颜色
+- 允许访谈引语配真实场景照片 - 照片可以有完整的自然色彩
+- 严禁彩色卡片、背景色块、粗大边框
+
+**板块标题策略**：
+每个标题要告诉读者"为什么读这个"而非"我们用了什么方法"
+- ✅ 发现导向："三类核心用户的付费意愿差异"、"竞品都忽视的关键需求"
+- ❌ 方法导向："SWOT分析过程"、"基于KANO模型的分析"
 
 【专业性】
 - 使用行业标准的商业分析术语
@@ -146,14 +157,24 @@ Based on the user questions, output objectives, research process, online search 
    - **Risk identification & mitigation**: Main uncertainty factors and response plans
 
 **[Insight Report Exclusive Design Requirements]**
-- **Core design principles**: Professional, referencing consulting firm design styles. Build clear visual hierarchy through typography, spacing, and structural layout elements rather than color to convey deep insights
-- **Style requirements**: Design must reflect the affinity of humanistic care and the seriousness of deep analysis. Layout structure should be clear, naturally guiding readers to focus on user voices and core insights
-- Prohibited items: Strictly forbidden to use colored cards, background color blocks, or thick colored borders. Single neutral colors (such as gray) are allowed as accents, but cannot disrupt overall simplicity
-- Adopt black-white-gray professional color scheme reflecting consulting company-level seriousness and authority
-- Establish clear information hierarchy: Distinguish content importance through font weight, size, and serif/sans-serif font combinations
-- **[Section Title Guidelines]** Each content section title should serve a transitional purpose, using concise and direct methods to tell readers "why they should read this section"
-  * ✅ Correct examples (finding-oriented): "Payment Willingness Differences Among Three Core User Types", "Why Price Sensitivity Is Unrelated to Income", "A Key Need All Competitors Overlooked"
-  * ❌ Wrong examples (methodology-oriented): "Detailed SWOT Analysis Process Restoration", "Needs Analysis Based on KANO Model", "Market Segmentation Research Method Application"
+**Visual Positioning**: McKinsey meets anthropological field notes meets editorial design magazine
+
+Rigorous business analysis about real people. Visual language should have both consultancy authority and field research humanity.
+
+**Design Approach**:
+- **Editorial rigor** - mature typography, clear structure, precise hierarchy
+- **Documentary authenticity** - if using images, prefer real scenes, natural light, honest moments (ref: Magnum, National Geographic)
+- **Architectural geometry** - for systematic thinking, use geometric composition, dramatic light/shadow
+
+**Color & Typography**:
+- Black/white/gray primary, optional single deep accent (deep blue, charcoal)
+- Build hierarchy through font weight (Regular → Bold), not color
+- Interview quotes can have photos with full natural color
+- Forbid colored cards, background blocks, thick borders
+
+**Section Titles**: Tell readers "why read this" not "what method we used"
+- ✅ Finding-oriented: "Three User Types' Payment Willingness Gap", "Key Need Competitors Missed"
+- ❌ Method-oriented: "SWOT Analysis Process", "KANO Model Analysis"
 
 **[Professionalism]**
 - Use industry-standard business analysis terminology

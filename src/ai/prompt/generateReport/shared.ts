@@ -3,10 +3,33 @@ import { Locale } from "next-intl";
 export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `
-【核心设计原则】
-- **设计哲学**：追求极致简约，用最少的视觉元素（字体、间距、结构）表达最丰富的信息层次，而非依赖颜色。
-- **专业美学**：报告应体现出高端、专业、可信的美学标准。无论是创意报告的优雅，还是分析报告的严谨，都应保持克制与精致。
-- **色彩使用**：色彩仅用作点缀或功能性高亮，严禁使用大面积色块、彩色卡片或抢眼的边框，以确保读者专注于内容本身。
+【核心设计哲学：越不AI越AI】
+用最有力的人性化方式，呈现最智能的洞察。
+
+我们研究的是人、模拟的是人、服务的是理解人。所以报告的视觉语言应该用成熟的专业手法（编辑设计、建筑摄影美学）而非廉价的科技感陈词滥调（霓虹渐变、3D渲染、浮夸特效）。
+
+**关键原则**：
+- 真实大于合成，但要有戏剧性 - 避免合成感的塑料质感，拥抱有力量的视觉呈现
+- 力量和深度 - 既有视觉冲击力，又经得起细看
+- 专业但不疏远 - McKinsey的严谨 + 人类学的人文关怀
+- 色彩作为戏剧，不是装饰 - 有目的的戏剧性对比，而非无意义的彩色点缀
+
+**配色策略**：
+- 黑、白、灰作为基础，可选单一强调色（深蓝、炭灰、暖棕）
+- 严禁大面积彩色卡片、背景色块、粗大彩色边框
+- 排版克制不等于压制所有色彩 - 摄影内容可以有完整的电影化色彩
+- 克制体现在版式和结构，不是把一切都变成灰色
+
+**排版层级**：
+- 通过字重建立层级（Regular → Medium → Bold），不靠颜色
+- 通过字号表示重要性，通过留白创造呼吸感
+- 最好的排版应该隐形，直到需要阅读时毫不费力
+
+**信息密度与阅读效率**：
+- 布局要紧凑，确保一屏内有足够的信息量，不要过度留白导致"一眼看不到什么"
+- 但紧凑不等于密密麻麻 - 要有清晰的视觉分组和适度的呼吸空间
+- 目标是高阅读效率：读者能快速扫视并抓住要点，深入阅读时又不感到拥挤
+- 段落间距、标题间距要适中，既有区隔又不浪费空间
 
 【视觉内容增强】
 - 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
@@ -50,10 +73,33 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 你的回复应该只包含可直接使用的HTML代码，从<!DOCTYPE html>开始。
 `
     : `
-【Core Design Principles】
-- **Design Philosophy**: Strive for ultimate simplicity, using the fewest visual elements (typography, spacing, structure) to convey the richest information hierarchy, rather than relying on color.
-- **Professional Aesthetics**: Reports must adhere to a high-end, professional, and credible aesthetic standard. Whether it's the elegance of a creative report or the rigor of an analytical one, the design should remain restrained and refined.
-- **Use of Color**: Color is to be used only as an accent or for functional highlighting. Strictly prohibit large color blocks, colored cards, or distracting borders to ensure the reader remains focused on the content itself.
+【Core Design Philosophy: The Less AI, the More AI】
+Present the most intelligent insights in the most powerful human way.
+
+We study people, simulate people, and serve the understanding of people. So the report's visual language should use sophisticated professional techniques (editorial design, architectural photography aesthetics) not cheap tech clichés (neon gradients, 3D renders, gaudy effects).
+
+**Key Principles**:
+- Real over synthetic, but with drama - avoid the plastic feel of composites, embrace powerful visual presentation
+- Power and depth - both visual impact and substance that rewards closer examination
+- Professional but not distant - McKinsey's rigor + anthropological humanistic care
+- Color as drama, not decoration - purposeful dramatic contrast, not meaningless colorful accents
+
+**Color Strategy**:
+- Black, white, gray as foundation, optional single accent color (deep blue, charcoal, warm brown)
+- Strictly forbid large colored cards, background blocks, thick colored borders
+- Restrained layout doesn't mean suppressing all color - photographic content can have full cinematic color
+- Restraint is in layout and structure, not turning everything gray
+
+**Typography Hierarchy**:
+- Build hierarchy through font weight (Regular → Medium → Bold), not color
+- Size indicates importance, whitespace creates breathing room
+- The best typography should be invisible until you need to read it, then effortless
+
+**Information Density & Reading Efficiency**:
+- Layout should be compact, ensuring sufficient information per screen - avoid excessive whitespace that makes "nothing visible at a glance"
+- But compact ≠ cramped - maintain clear visual grouping and moderate breathing space
+- Goal is high reading efficiency: readers can quickly scan and grasp key points, yet feel comfortable when reading deeply
+- Paragraph spacing and heading spacing should be moderate - distinct yet space-efficient
 
 【Visual Content Enhancement】
 - Generate illustrations only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.

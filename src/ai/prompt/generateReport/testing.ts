@@ -55,12 +55,20 @@ export const reportHTMLSystemTesting = ({ locale }: { locale: Locale }) =>
 - 坦诚说明定性研究的特点和局限性
 
 【测试报告专属设计要求】
-- **核心设计原则**：专业，参考咨询公司的设计风格。通过字体、间距和结构等排版元素构建清晰的视觉层次，而非颜色，以传递深度洞察。
-- **风格要求**：设计需体现人文关怀的亲和力与深度分析的严肃性。排版结构清晰，引导读者自然地聚焦于用户声音和核心洞察。
-- 禁止项：严禁使用彩色卡片、背景色块或粗大的彩色边框。允许使用单一中性色（如灰色）作为点缀，但不能破坏整体的简洁感。
-- 采用黑白灰专业配色方案，体现咨询公司级别的严肃性和权威感。
-- 建立清晰的信息层级：通过字体粗细、大小和衬线/非衬线字体搭配来区分内容重要性
-- 每个内容板块标题要起到承上启下的作用，用简洁直接的方式，目的是告诉读者“为什么他应该看这个板块”，不要用“SWOT分析过程详细还原”这种。
+**视觉定位**：极致简约 + 客观可信
+
+测试研究需要公正和说服力。用最少视觉元素呈现明确对比。
+
+**设计手法**：
+- **对称对齐的严谨版式** - 构建测试结果的公正性
+- **清晰的对比结构** - 用版式分组展示A vs B，不靠颜色
+- **中性客观的色调** - 黑白灰为主，色彩仅作对比高亮
+
+**配色与排版**：
+- 黑白灰主色调，体现客观中立
+- 可用单一中性色（如深蓝）标注关键差异
+- 严禁彩色卡片、背景色块
+- 通过字重和结构区分内容重要性
 
 【专业性】
 - 使用行业标准的商业分析术语
@@ -137,12 +145,20 @@ Based on the user questions, output goals, research process, online search resul
 - Honestly explain the characteristics and limitations of qualitative research
 
 【Testing Report Exclusive Design Requirements】
-- **Core design principles**: Professional, referencing consulting company design styles. Build clear visual hierarchy through typography elements like fonts, spacing, and structure rather than color, to convey deep insights.
-- **Style requirements**: Design should embody the approachability of humanistic care and the seriousness of deep analysis. Layout structure should be clear, naturally guiding readers to focus on user voices and core insights.
-- Prohibited items: Strictly forbid using colored cards, background color blocks, or thick colored borders. Allow using single neutral colors (like gray) as accents, but cannot break the overall sense of simplicity.
-- Adopt black-white-gray professional color scheme, reflecting consulting company-level seriousness and authority.
-- Establish clear information hierarchy: Use font weight, size, and serif/sans-serif font combinations to differentiate content importance
-- Each content section title should serve a transitional purpose, using concise and direct methods to tell readers "why they should read this section," not using phrases like "SWOT Analysis Process Detailed Reconstruction."
+**Visual Positioning**: Ultimate simplicity + objective credibility
+
+Testing research demands fairness and persuasiveness. Use minimal visual elements to present clear comparisons.
+
+**Design Approach**:
+- **Symmetrical aligned rigorous layout** - build fairness of test results
+- **Clear comparison structure** - use layout grouping for A vs B, not color
+- **Neutral objective tones** - black/white/gray primary, color only for contrast highlighting
+
+**Color & Typography**:
+- Black/white/gray main palette for objectivity
+- Optional single neutral color (deep blue) to mark key differences
+- Forbid colored cards, background blocks
+- Distinguish importance through font weight and structure
 
 【Professionalism】
 - Use industry-standard business analysis terminology

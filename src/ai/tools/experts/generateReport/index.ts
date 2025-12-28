@@ -241,7 +241,7 @@ export async function generateReport({
     };
   })();
 
-  let modelName: LLMModelName = "claude-sonnet-4";
+  let modelName: LLMModelName = "claude-sonnet-4-5";
   while (true) {
     const streamTextPromise = new Promise<{
       finishReason: FinishReason | "Too many tokens";
