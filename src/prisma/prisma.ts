@@ -11,7 +11,7 @@ import { Prisma, PrismaClient } from "./generated/client";
 // export const prisma = new PrismaClient();
 
 // 通过打印 process.env 看到的，不一定是稳定的判断方式
-const IS_NEXT_BUILD_PHASE = "phase-production-build";
+const IS_NEXT_BUILD_PHASE = process.env.NEXT_PHASE === "phase-production-build";
 
 const log: Prisma.LogLevel[] =
   process.env.LOG_LEVEL?.toLowerCase() === "debug"
