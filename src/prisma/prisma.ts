@@ -10,6 +10,9 @@ import { Prisma, PrismaClient } from "./generated/client";
 
 // export const prisma = new PrismaClient();
 
+// 通过打印 process.env 看到的，不一定是稳定的判断方式
+const IS_NEXT_BUILD_PHASE = "phase-production-build";
+
 const log: Prisma.LogLevel[] =
   process.env.LOG_LEVEL?.toLowerCase() === "debug"
     ? ["query", "info", "warn", "error"]
@@ -31,8 +34,12 @@ function getPoolConfig() {
 
 // 创建连接池配置
 function createPool(connectionString?: string, isReadOnly = false) {
-  if (!connectionString) {
+  if (IS_NEXT_BUILD_PHASE) {
     return new Pool();
+  }
+
+  if (!connectionString) {
+    throw new Error("Missing connection string");
   }
 
   const poolConfig = getPoolConfig();
@@ -145,7 +152,7 @@ export function getPoolStats() {
 }
 
 // 优雅关闭：在生产环境中，确保进程退出时正确断开数据库连接
-if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
+if (!IS_NEXT_BUILD_PHASE && process.env.NODE_ENV === "production") {
   const gracefulShutdown = async (signal: string) => {
     rootLogger.info({ msg: `Received ${signal}, closing database connections...` });
     try {
