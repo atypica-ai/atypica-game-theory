@@ -191,6 +191,7 @@ export type InterviewReportExtra = Partial<{
     title: string;
   }>;
   pdfObjectUrl: string;
+  error: string; // 错误信息
 }>;
 
 export type AnalystPodcastExtra = Partial<{

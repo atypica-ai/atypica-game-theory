@@ -3,6 +3,7 @@ import {
   deleteInterviewSessionAction,
   fetchInterviewSessionsByProjectToken,
 } from "@/app/(interviewProject)/(detail)/actions";
+import { clearInterviewSessionError } from "@/app/(interviewProject)/(session)/actions";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,19 +13,23 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import {
+  AlertCircle,
   BotIcon,
   CheckCircleIcon,
   ClockIcon,
+  CreditCardIcon,
   ExternalLinkIcon,
   FileTextIcon,
   Loader2Icon,
   MessageSquareIcon,
+  RefreshCwIcon,
   TrashIcon,
   UsersIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { TranscriptDialog } from "./TranscriptDialog";
 
 type InterviewSessionItem = ExtractServerActionData<
@@ -95,6 +100,29 @@ export function InterviewSessionsSection({
       setLoading(false);
     }
   }, []);
+
+  const handleClearError = useCallback(
+    async (session: InterviewSessionItem) => {
+      try {
+        const result = await clearInterviewSessionError({
+          sessionId: session.id,
+        });
+
+        if (!result.success) {
+          toast.error(t("clearErrorFailed"));
+          return;
+        }
+
+        toast.success(t("clearErrorSuccess"));
+        // Reload sessions to see updated status
+        await loadSessions();
+      } catch (error) {
+        console.error("Error clearing session error:", error);
+        toast.error(t("clearErrorFailed"));
+      }
+    },
+    [t, loadSessions],
+  );
 
   useEffect(() => {
     loadSessions();
@@ -168,6 +196,7 @@ export function InterviewSessionsSection({
               : sessions
             ).map((session) => {
               const isCompleted = !session.extra.ongoing;
+              const hasError = !!session.extra.error;
               return (
                 <div
                   key={session.id}
@@ -197,7 +226,9 @@ export function InterviewSessionsSection({
                         <div className="text-xs text-muted-foreground mr-2">
                           {formatDate(session.createdAt, locale)}
                         </div>
-                        {isCompleted ? (
+                        {hasError ? (
+                          <AlertCircle className="h-3 w-3 text-red-500" />
+                        ) : isCompleted ? (
                           <CheckCircleIcon className="h-3 w-3 text-green-500" />
                         ) : (
                           <ClockIcon className="h-3 w-3 text-amber-500" />
@@ -205,12 +236,18 @@ export function InterviewSessionsSection({
                         <div
                           className={cn(
                             "text-xs",
-                            isCompleted
-                              ? "text-green-600 dark:text-green-400"
-                              : "text-amber-600 dark:text-amber-400",
+                            hasError
+                              ? "text-red-600 dark:text-red-400"
+                              : isCompleted
+                                ? "text-green-600 dark:text-green-400"
+                                : "text-amber-600 dark:text-amber-400",
                           )}
                         >
-                          {isCompleted ? t("completed") : t("inProgress")}
+                          {hasError
+                            ? `${t("interviewPaused")} (${session.extra.error})`
+                            : isCompleted
+                              ? t("completed")
+                              : t("inProgress")}
                         </div>
                         {session.stats.rounds ? (
                           <div className="text-xs text-muted-foreground ml-2">
@@ -220,7 +257,31 @@ export function InterviewSessionsSection({
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-items flex-start">
+                  <div className="flex items-center gap-2">
+                    {/* Error actions - only for project owner */}
+                    {!readOnly && hasError && (
+                      <>
+                        {/* Recharge button for insufficient balance */}
+                        {session.extra.error === "insufficient_balance" && (
+                          <Button variant="ghost" size="sm" className="text-xs" asChild>
+                            <Link href="/pricing">
+                              <CreditCardIcon className="size-4" />
+                              {t("recharge")}
+                            </Link>
+                          </Button>
+                        )}
+                        {/* Clear error button */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => handleClearError(session)}
+                        >
+                          <RefreshCwIcon className="size-4" />
+                          {t("clearError")}
+                        </Button>
+                      </>
+                    )}
                     {/* Transcript button - available for completed sessions */}
                     {isCompleted && (
                       <Button

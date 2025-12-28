@@ -15,6 +15,8 @@ import {
   User,
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
+import { getUserTokens } from "@/tokens/lib";
 import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
 import { notFound } from "next/navigation";
@@ -227,6 +229,16 @@ export async function createPersonaInterviewSession({
   personaToken: string;
 }): Promise<ServerActionResult<{ sessionId: number; chatToken: string }>> {
   return withAuth(async (user) => {
+    // Check token balance before creating any records
+    const { balance } = await getUserTokens({ userId: user.id });
+
+    if (balance !== "Unlimited" && balance <= 0) {
+      return {
+        success: false,
+        message: "Insufficient token balance to create interview session",
+      };
+    }
+
     const [project, persona] = await Promise.all([
       prisma.interviewProject
         .findUniqueOrThrow({ where: { id: projectId, userId: user.id } })
@@ -269,6 +281,21 @@ export async function createPersonaInterviewSession({
           // extra: project.extra as InterviewProjectExtra,
         },
         personaId: persona.id,
+      }).catch(async (error) => {
+        rootLogger.error({
+          msg: "runAutoPersonaInterview failed",
+          error: error instanceof Error ? error.message : String(error),
+          sessionId: session.id,
+        });
+        // Write error to session extra on failure
+        await mergeExtra({
+          tableName: "InterviewSession",
+          id: session.id,
+          extra: {
+            ongoing: true,
+            error: error instanceof Error ? error.message : String(error),
+          } satisfies InterviewSessionExtra,
+        });
       }),
     );
 
@@ -516,8 +543,19 @@ export async function generateInterviewReport(
       },
     });
 
+    // Check token balance before generating report
+    const { balance } = await getUserTokens({ userId: user.id });
+
+    if (balance !== "Unlimited" && balance <= 0) {
+      return {
+        success: false,
+        message: "Insufficient token balance to generate report",
+      };
+    }
+
     // Generate a unique token for this report
     const reportToken = generateToken();
+
     // Create the report record
     const report = await prisma.interviewReport.create({
       data: {
@@ -552,6 +590,20 @@ export async function generateInterviewReport(
               userChatId: s.userChatId,
             })),
         },
+      }).catch(async (error) => {
+        rootLogger.error({
+          msg: "generateInterviewReportContent failed",
+          error: error instanceof Error ? error.message : String(error),
+          reportId: report.id,
+        });
+        // Write error to report extra on failure
+        await mergeExtra({
+          tableName: "InterviewReport",
+          id: report.id,
+          extra: {
+            error: error instanceof Error ? error.message : String(error),
+          } satisfies InterviewReportExtra,
+        });
       }),
     );
 

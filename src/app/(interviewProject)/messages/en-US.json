@@ -167,7 +167,8 @@
       "interviewComplete": "Interview Complete",
       "thankYou": "Thank you for participating in this interview session. Your responses have been recorded and will be used for research purposes.",
       "summaryAnalysis": "The interview summary and analysis will be available to the researcher shortly.",
-      "progress": "{completed}/{total} questions"
+      "progress": "{completed}/{total} questions",
+      "interviewPausedInterviewee": "The interview project has been paused. Please contact the project owner."
     },
     "reportShare": {
       "title": "Interview Report",
@@ -235,10 +236,15 @@
       "noInterviewsDescription": "Share the project link or interview an AI Persona to get started",
       "completed": "Completed",
       "inProgress": "In Progress",
+      "interviewPaused": "Interview Paused",
       "chatRounds": "{rounds} Rounds",
       "filterAll": "All",
       "filterCompleted": "Completed",
-      "filterIncomplete": "In Progress"
+      "filterIncomplete": "In Progress",
+      "recharge": "Add Credits",
+      "clearError": "Resume Interview",
+      "clearErrorSuccess": "Interview resumed successfully",
+      "clearErrorFailed": "Failed to resume interview"
     },
     "requestInteractionForm": {
       "basicInfoPrologue": "Please fill in the following basic information to help us conduct the interview better",

@@ -69,6 +69,7 @@ export function InterviewSessionViewer({
   });
 
   const handleRestartChat = useCallback(async () => {
+    setIsRestartDialogOpen(false);
     startTransition(async () => {
       try {
         const result = await restartPersonaInterviewSession({
@@ -77,16 +78,15 @@ export function InterviewSessionViewer({
         });
         if (!result.success) throw result;
         useChatHelpers.setMessages([]);
-        setIsRestartDialogOpen(false);
         toast.info(t("autoConversationNote"));
       } catch (error) {
         toast.error((error as Error).message || t("restartError"));
-        console.log("Error restarting chat:", error);
       }
     });
   }, [interviewSession.projectId, interviewSession.id, useChatHelpers, t]);
 
   const handleEndInterview = useCallback(async () => {
+    setIsEndDialogOpen(false);
     startTransition(async () => {
       try {
         const result = await manuallyEndHumanInterviewSession({
@@ -94,11 +94,9 @@ export function InterviewSessionViewer({
           sessionId: interviewSession.id,
         });
         if (!result.success) throw result;
-        setIsEndDialogOpen(false);
         toast.success(t("endInterviewSuccess"));
       } catch (error) {
         toast.error((error as Error).message || t("endInterviewError"));
-        console.log("Error ending interview:", error);
       }
     });
   }, [interviewSession.projectId, interviewSession.id, t]);

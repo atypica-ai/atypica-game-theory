@@ -16,6 +16,8 @@ import {
   User,
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
+import { getUserTokens } from "@/tokens/lib";
 import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
 import { Locale } from "next-intl";
@@ -33,6 +35,16 @@ export async function restartPersonaInterviewSession({
   sessionId: number;
 }): Promise<ServerActionResult<{ chatToken: string }>> {
   return withAuth(async (user) => {
+    // Check token balance before any operations
+    const { balance } = await getUserTokens({ userId: user.id });
+
+    if (balance !== "Unlimited" && balance <= 0) {
+      return {
+        success: false,
+        message: "Insufficient token balance to restart interview session",
+      };
+    }
+
     // Verify session ownership
     const session = await prisma.interviewSession.findUnique({
       where: {
@@ -62,6 +74,14 @@ export async function restartPersonaInterviewSession({
       where: { userChatId: userChat.id },
     });
 
+    // Clear error status if it exists using raw SQL
+    await prisma.$executeRaw`
+      UPDATE "InterviewSession"
+      SET "extra" = (COALESCE("extra", '{}') - 'error') || '{"ongoing": true}'::jsonb,
+          "updatedAt" = NOW()
+      WHERE "id" = ${sessionId}
+    `;
+
     // If it's a persona interview, restart auto conversation
     waitUntil(
       runAutoPersonaInterview({
@@ -75,6 +95,21 @@ export async function restartPersonaInterviewSession({
           // extra: project.extra as InterviewProjectExtra,
         },
         personaId: intervieweePersonaId,
+      }).catch(async (error) => {
+        rootLogger.error({
+          msg: "restartPersonaInterviewSession failed",
+          error: error instanceof Error ? error.message : String(error),
+          sessionId,
+        });
+        // Write error to session extra on failure
+        await mergeExtra({
+          tableName: "InterviewSession",
+          id: sessionId,
+          extra: {
+            error: error instanceof Error ? error.message : String(error),
+            ongoing: true,
+          } satisfies InterviewSessionExtra,
+        });
       }),
     );
 
@@ -83,6 +118,48 @@ export async function restartPersonaInterviewSession({
       data: {
         chatToken: userChat.token,
       },
+    };
+  });
+}
+
+/**
+ * Clear error status from interview session
+ */
+export async function clearInterviewSessionError({
+  sessionId,
+}: {
+  sessionId: number;
+}): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    // Verify session ownership
+    const session = await prisma.interviewSession.findUnique({
+      where: {
+        // 直接过滤 project.userId 就行，不需要过滤 projectId
+        project: { userId: user.id },
+        // projectId: projectId,
+        id: sessionId,
+      },
+    });
+
+    if (!session) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Interview session not found",
+      };
+    }
+
+    // Clear error status using raw SQL
+    await prisma.$executeRaw`
+      UPDATE "InterviewSession"
+      SET "extra" = COALESCE("extra", '{}') - 'error',
+          "updatedAt" = NOW()
+      WHERE "id" = ${sessionId}
+    `;
+
+    return {
+      success: true,
+      data: undefined,
     };
   });
 }

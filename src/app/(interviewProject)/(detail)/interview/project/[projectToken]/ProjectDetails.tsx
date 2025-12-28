@@ -178,11 +178,11 @@ export function ProjectDetails({
           });
           if (!result.success) throw result;
         }
+        window.location.reload();
       } catch (error) {
         toast.error((error as Error).message || t("createInterviewFailed"));
       } finally {
         setCreatingPersonaSessions(false);
-        window.location.reload();
       }
     },
     [project.id, t],

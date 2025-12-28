@@ -6,7 +6,9 @@ import { rootLogger } from "@/lib/logging";
 import { throwServerActionError } from "@/lib/serverAction";
 import { InterviewSessionExtra } from "@/prisma/client";
 import { mergeExtra } from "@/prisma/utils";
+import { getUserTokens } from "@/tokens/lib";
 import { createUIMessageStream, createUIMessageStreamResponse, generateId } from "ai";
+import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
 import { runHumanInterview } from "./human";
 
@@ -64,6 +66,38 @@ export async function POST(req: Request) {
       id: newMessage.id ?? generateId(),
     },
   });
+
+  // Check token balance before processing
+  const projectOwnerId = project.user.id;
+  const { balance } = await getUserTokens({ userId: projectOwnerId });
+
+  if (balance !== "Unlimited" && balance <= 0) {
+    // Write error to session extra
+    await mergeExtra({
+      tableName: "InterviewSession",
+      id: interviewSessionId,
+      extra: {
+        error: "insufficient_balance",
+        ongoing: true,
+      } satisfies InterviewSessionExtra,
+    });
+
+    // Return paused message (vague for interviewees)
+    const locale = await getLocale();
+    const message = locale === "zh-CN" ? "访谈已暂停。" : "Interview paused.";
+
+    const stream = createUIMessageStream({
+      execute({ writer }) {
+        writer.write({ type: "start" });
+        writer.write({ type: "text-start", id: "paused" });
+        writer.write({ type: "text-delta", id: "paused", delta: message });
+        writer.write({ type: "text-end", id: "paused" });
+        writer.write({ type: "finish" });
+      },
+    });
+
+    return createUIMessageStreamResponse({ stream });
+  }
 
   const mergedAbortSignal = AbortSignal.any([req.signal]);
 

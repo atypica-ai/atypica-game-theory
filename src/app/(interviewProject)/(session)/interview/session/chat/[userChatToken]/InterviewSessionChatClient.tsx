@@ -33,7 +33,7 @@ import { rootLogger } from "@/lib/logging";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { Info, Shield } from "lucide-react";
+import { AlertCircleIcon, InfoIcon, ShieldIcon } from "lucide-react";
 import { Locale, useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -48,7 +48,7 @@ export function InterviewSessionChatClient({
   intervieweeUser,
   userChatToken,
   initialMessages = [],
-  extra: { preferredLanguage, questions = [] },
+  extra: { preferredLanguage, questions = [], error },
 }: ExtractServerActionData<typeof fetchInterviewSessionChat> & {
   userChatToken: string;
   initialMessages?: INTERVIEW_UI_MESSAGE[];
@@ -172,8 +172,12 @@ export function InterviewSessionChatClient({
 
   const { messages } = useChatHelpers;
 
-  // Determine planning state based on messages content
+  // Determine planning state based on messages content and error status
   const interviewState = useMemo(() => {
+    // Check if session has an error
+    if (error) {
+      return "error";
+    }
     // Check if any message has endInterview tool result
     const hasEndInterviewResult = messages.some((message) =>
       message.parts?.some(
@@ -186,7 +190,7 @@ export function InterviewSessionChatClient({
       return "summary";
     }
     return "active";
-  }, [messages]);
+  }, [messages, error]);
 
   // Calculate progress: based on maximum question index (1-based) that has been asked
   const progress = useMemo(() => {
@@ -285,7 +289,7 @@ export function InterviewSessionChatClient({
           size="icon"
           className="rounded-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700"
         >
-          <Info className="h-5 w-5" />
+          <InfoIcon className="h-5 w-5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto scrollbar-thin">
@@ -323,7 +327,7 @@ export function InterviewSessionChatClient({
 
           <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
             <div className="flex items-start space-x-2">
-              <Shield className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+              <ShieldIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
               <div className="text-sm">
                 <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">
                   {tDetails("privacyNotice")}
@@ -337,13 +341,35 @@ export function InterviewSessionChatClient({
     </Dialog>
   );
 
+  if (interviewState === "error") {
+    return (
+      <FitToViewport className="flex flex-col items-center justify-center h-full p-8 text-center">
+        <div className="max-w-lg space-y-6">
+          <div className="space-y-4">
+            <div className="w-16 h-16 mx-auto bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center">
+              <AlertCircleIcon className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                {t("interviewPausedInterviewee")}
+              </h2>
+              {/*<p className="text-gray-600 dark:text-gray-400">{t("interviewPausedInterviewee")}</p>*/}
+            </div>
+          </div>
+
+          <ProjectInfoButton />
+        </div>
+      </FitToViewport>
+    );
+  }
+
   if (interviewState === "summary") {
     return (
       <FitToViewport className="flex flex-col items-center justify-center h-full p-8 text-center">
         <div className="max-w-lg space-y-6">
           <div className="space-y-4">
             <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-              <Shield className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <ShieldIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">

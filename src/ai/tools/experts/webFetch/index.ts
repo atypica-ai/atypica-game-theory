@@ -15,8 +15,6 @@ export const webFetchTool = ({ locale }: { locale: Locale }) =>
       return { type: "text", value: result.plainText };
     },
     execute: async ({ query }, { messages }) => {
-      // 上下文有点干扰，先不用了，回头再优化
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const processedMessages = messages
         .filter((message) => message.role === "user" || message.role === "assistant")
         .map(({ content, ...message }) => ({
@@ -56,6 +54,7 @@ export const webFetchTool = ({ locale }: { locale: Locale }) =>
             ? "基于用户查询，抓取相关信息。如果查询包含URL，请使用url_context抓取其内容。如果需要网络搜索，请使用google_search。以与查询相同的语言提供简洁、相关的信息。"
             : "Based on the user's query, fetch relevant information. If the query contains URLs, fetch their content using url_context. If it requires web search, use google_search. Provide concise, relevant information in the same language as the query.",
         prompt: query,
+        // 上下文有点干扰，先不用了，回头再优化
         // messages: processedMessages,
       });
       return {

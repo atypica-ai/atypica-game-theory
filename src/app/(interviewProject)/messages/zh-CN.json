@@ -167,7 +167,8 @@
       "interviewComplete": "访谈完成",
       "thankYou": "感谢您参与此次访谈会话。您的回答已被记录并将用于研究目的。",
       "summaryAnalysis": "访谈摘要和分析将很快提供给研究人员。",
-      "progress": "{completed}/{total} 个问题"
+      "progress": "{completed}/{total} 个问题",
+      "interviewPausedInterviewee": "访谈项目已暂停，请联系项目创建者。"
     },
     "reportShare": {
       "title": "访谈报告",
@@ -235,10 +236,15 @@
       "noInterviewsDescription": "分享项目链接或与 AI 人设进行访谈以开始",
       "completed": "已完成",
       "inProgress": "进行中",
+      "interviewPaused": "访谈已暂停",
       "chatRounds": "{rounds} 轮会话",
       "filterAll": "全部",
       "filterCompleted": "已完成",
-      "filterIncomplete": "进行中"
+      "filterIncomplete": "进行中",
+      "recharge": "充值",
+      "clearError": "恢复访谈",
+      "clearErrorSuccess": "访谈已恢复",
+      "clearErrorFailed": "恢复访谈失败"
     },
     "requestInteractionForm": {
       "basicInfoPrologue": "请先填写以下基本信息，以便我们更好地进行访谈",
