@@ -93,6 +93,7 @@ export const reportHTMLSystemFastInsight = ({ locale }: { locale: Locale }) =>
 - 目标受众希望在最短时间内获取最多有用信息
 - 信息密度和可读性的平衡至关重要
 - 所有内容必须可追溯到研究过程和数据来源
+- 【禁止】不要提及分析框架或研究方法（如BCG、KANO、STP等），直接呈现发现和洞察
 
 ${sharedTechnicalSpecs({ locale })}
 `
@@ -185,6 +186,7 @@ Based on the research topic, research process, and deep research results provide
 - Target audience wants maximum useful information in minimum time
 - Balance between information density and readability is crucial
 - All content must be traceable to research process and data sources
+- **[PROHIBITED]** Do not mention analysis frameworks or research methods (such as BCG, KANO, STP, etc.), present findings and insights directly
 
 ${sharedTechnicalSpecs({ locale })}
 `;

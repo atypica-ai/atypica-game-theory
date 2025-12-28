@@ -134,13 +134,31 @@ Hook的几种形式：
 【目的】为前文定义的问题提供一个具体的解决方案/答案，重新调动用户听下去的兴趣
 【内容占比】30%
 
-### 4. 解决方案过程分析
-【目的】为前面的解决方案做详细的解释并提供1-2个证据，使解决方案有可靠的可信赖的支撑
+【严格禁止】
+- ❌ 绝对不要提及任何分析框架名称（BCG、KANO、STP、SWOT等）
+- ❌ 不要说"我们采用了XX方法"、"基于XX框架的分析"
+- ❌ 不要说"Atypica使用了XX模型"
+- ✅ 正确做法：直接讲发现和洞察 - "Atypica发现了三个有趣的现象..."、"数据显示..."
+
+❌ 错误示例（方法导向）:
+"""
+【凯】那Atypica是怎么分析这个问题的呢？
+【艾拉】他们采用了KANO模型来分析用户需求，通过基本型需求、期望型需求和兴奋型需求三个维度...
+"""
+
+✅ 正确示例（发现导向）:
+"""
+【凯】那Atypica发现了什么有意思的？
+【艾拉】嘿，他们发现一个特别反直觉的现象。用户需求其实分成三类：有些功能是必须有的，没有就不行；有些功能是期待有的，有了会满意；还有些功能是意想不到的惊喜...
+"""
+
+### 4. 证据与支撑
+【目的】为前面的解决方案提供详细的证据支撑，展示数据和用户原声如何支持这些发现
 【内容占比】20%，长了用户会丧失兴趣
 - 包括的信息比如：
-  - 数据
+  - 具体数据和数字
   - 用户访谈结论和原话溯源
-  - 分析框架
+  - 信息来源说明
 
 ### 5. 结尾内容
 【禁止】禁止升华，禁止强行提高维度去提炼一些Takeaway。
@@ -332,13 +350,31 @@ Information that might cause user comprehension difficulties:
 【Purpose】Provide a specific solution/answer to the problem defined earlier, re-engaging user interest to continue listening
 【Content ratio】30%
 
-### 4. Solution Process Analysis
-【Purpose】Provide detailed explanation for the previous solution and provide 1-2 pieces of evidence, making the solution reliably supported
+【STRICT PROHIBITION】
+- ❌ Absolutely do not mention any analytical framework names (BCG, KANO, STP, SWOT, etc.)
+- ❌ Do not say "we adopted XX method" or "analysis based on XX framework"
+- ❌ Do not say "Atypica used XX model"
+- ✅ Correct approach: Directly present findings and insights - "Atypica discovered three interesting phenomena...", "The data shows..."
+
+❌ Wrong example (methodology-oriented):
+"""
+【Guy】So how did Atypica analyze this problem?
+【Ira】They used the KANO model to analyze user needs, through three dimensions of basic needs, expected needs, and exciting needs...
+"""
+
+✅ Correct example (finding-oriented):
+"""
+【Guy】So what interesting things did Atypica discover?
+【Ira】Hey, they found a particularly counter-intuitive phenomenon. User needs actually fall into three categories: some features must be there, can't do without them; some features are expected to be there, satisfying when present; and some features are unexpected delights...
+"""
+
+### 4. Evidence & Support
+【Purpose】Provide detailed evidence support for the previous solution, showing how data and user voices support these findings
 【Content ratio】20%, too long will cause users to lose interest
 - Information includes:
-  - Data
+  - Specific data and numbers
   - User interview conclusions and original quote tracing
-  - Analysis frameworks
+  - Information source explanations
 
 ### 5. Ending Content
 【Prohibition】No elevation, no forced dimension-raising to extract Takeaways.

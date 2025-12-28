@@ -169,7 +169,11 @@ Hook的几种形式：
 - 可靠可信的数据和证据支撑
 - 为什么这个结论是正确的/必然的
 - 反驳可能的质疑
-【禁止】听众不太了解专业的分析框架，所以不提及具体的商业分析框架。
+【严格禁止】
+- ❌ 绝对不要提及任何分析框架名称（BCG、KANO、STP、SWOT等）
+- ❌ 不要说"我们采用了XX方法"、"基于XX框架的分析"
+- ❌ 不要说"Atypica使用了XX模型"
+- ✅ 正确做法：直接讲发现和洞察 - "Atypica发现了...", "数据显示..."
 
 ### 4. 行动号召
 【目的】推动听众根据观点采取行动
@@ -374,7 +378,11 @@ Hook forms:
 - Reliable and credible data and evidence support
 - Why this conclusion is correct/inevitable
 - Refute possible objections
-【Prohibition】Listeners are not familiar with professional analysis frameworks, so do not mention specific business analysis frameworks.
+**[STRICTLY PROHIBITED]**
+- ❌ Absolutely do not mention any analysis framework names (BCG, KANO, STP, SWOT, etc.)
+- ❌ Do not say "we adopted XX method", "based on XX framework analysis"
+- ❌ Do not say "Atypica used XX model"
+- ✅ Correct approach: Directly talk about findings and insights - "Atypica discovered...", "The data shows..."
 
 ### 4. Call to Action
 【Purpose】Motivate listeners to take action based on viewpoints

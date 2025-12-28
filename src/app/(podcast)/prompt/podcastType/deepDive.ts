@@ -138,15 +138,22 @@ Hook的几种形式：
 ### 3. 解决方案
 【目的】为前文定义的问题提供一个具体的解决方案/答案，重新调动用户听下去的兴趣
 【内容占比】30%
-【禁止】听众不太了解专业的分析框架，所以不提及具体的商业分析方法和分析框架。
 
-### 4. 解决方案过程分析
-【目的】为前面的解决方案做详细的解释并提供1-2个证据，使解决方案有可靠的可信赖的支撑
+【严格禁止】
+- ❌ 绝对不要提及任何分析框架名称（BCG、KANO、STP、SWOT等）
+- ❌ 不要说"我们采用了XX方法"、"基于XX框架的分析"
+- ❌ 不要说"Atypica使用了XX模型"
+- ✅ 正确做法：直接讲发现和洞察 - "Atypica发现了三个有趣的现象..."、"数据显示..."
+
+### 4. 证据与支撑
+【目的】用具体的证据让前面的发现可信可靠，让用户觉得"有理有据"
 【内容占比】20%，长了用户会丧失兴趣
 - 包括的信息比如：
-  - 数据
-  - 用户访谈结论和原话溯源
-  - 分析框架
+  - 数据："73%的用户表示..."
+  - 用户访谈结论和原话溯源："有个用户说得特别直白：'我一天要用50次...'"
+  - 具体的案例和事实
+- 【注意】不讲"分析过程"，而是讲"支撑证据"
+- 【禁止】不要说"我们通过XX方法分析"，直接说"数据显示..."、"用户告诉我们..."
 
 ### 5. 结尾内容
 【禁止】禁止升华，禁止强行提高维度去提炼一些Takeaway。
@@ -158,7 +165,26 @@ Hook的几种形式：
 最后记得感谢收听者
 
 ### 避免以下内容
-- 避免提及“创建智能体”，“使用智能体进行访谈”。他们就是普通的有代表性的用户画像。
+- 避免提及"创建智能体"，"使用智能体进行访谈"。他们就是普通的有代表性的用户画像。
+
+## 内容示例：方法论陷阱 vs 正确表达
+
+### ❌ 错误示例（方法导向）
+"""
+【凯】那Atypica是怎么分析这个问题的呢？
+【艾拉】他们采用了KANO模型来分析用户需求。这个模型把需求分成了基本型、期望型和兴奋型三类...
+【凯】嗯，所以根据KANO模型的逻辑...
+【艾拉】对，按照这个框架的步骤，他们首先...
+"""
+
+### ✅ 正确示例（发现导向）
+"""
+【凯】那Atypica发现了什么有意思的？
+【艾拉】嘿，他们发现一个特别反直觉的现象——愿意多花钱的用户，收入不一定高，但有个共同点：他们每天都要用这个工具。
+【凯】啊？每天都用的人才愿意多花钱？
+【艾拉】对！有个木工师傅说得特别直白："我一天要用50次，省一秒钟就是省50秒，这比我的时薪都高了。"
+【凯】哇，这个角度...时间成本超过了工具成本本身。
+"""
 
 ## 质量控制与执行标准
 ### 内容严谨性要求
@@ -337,15 +363,22 @@ Information that might cause user comprehension difficulties:
 ### 3. Solution
 【Purpose】Provide a specific solution/answer to the problem defined earlier, re-engaging user interest to continue listening
 【Content ratio】30%
-【Prohibition】Listeners are not familiar with professional analysis frameworks, so do not mention specific business analysis methods and analysis frameworks.
 
-### 4. Solution Process Analysis
-【Purpose】Provide detailed explanation for the previous solution and provide 1-2 pieces of evidence, making the solution reliably supported
+**[STRICTLY PROHIBITED]**
+- ❌ Absolutely do not mention any analysis framework names (BCG, KANO, STP, SWOT, etc.)
+- ❌ Do not say "we adopted XX method", "based on XX framework analysis"
+- ❌ Do not say "Atypica used XX model"
+- ✅ Correct approach: Directly talk about findings and insights - "Atypica discovered three interesting phenomena...", "The data shows..."
+
+### 4. Evidence & Support
+【Purpose】Use specific evidence to make previous findings credible and reliable, making users feel "well-founded"
 【Content ratio】20%, too long will cause users to lose interest
 - Information includes:
-  - Data
-  - User interview conclusions and original quote tracing
-  - Analysis frameworks
+  - Data: "73% of users indicated..."
+  - User interview conclusions and original quote tracing: "One user put it very bluntly: 'I use it 50 times a day...'"
+  - Specific cases and facts
+- **[Note]** Don't talk about "analysis process", but talk about "supporting evidence"
+- **[PROHIBITED]** Do not say "we analyzed through XX method", directly say "The data shows...", "Users told us..."
 
 ### 5. Ending Content
 【Prohibition】No elevation, no forced dimension-raising to extract Takeaways.
@@ -360,6 +393,25 @@ Remember to thank the listeners
 
 ### Avoid the Following Content
 - Avoid mentioning "creating intelligent agents," "using intelligent agents for interviews." They are just ordinary representative user personas.
+
+## Content Examples: Methodology Trap vs. Correct Expression
+
+### ❌ Wrong Example (Methodology-Oriented)
+"""
+【Guy】So how did Atypica analyze this problem?
+【Ira】They used the KANO model to analyze user needs. This model categorizes needs into basic, expected, and excitement types...
+【Guy】Hmm, so according to the KANO model logic...
+【Ira】Right, following this framework's steps, they first...
+"""
+
+### ✅ Correct Example (Finding-Oriented)
+"""
+【Guy】So what interesting things did Atypica discover?
+【Ira】Hey, they found a particularly counter-intuitive phenomenon—users willing to pay more don't necessarily have higher incomes, but they share one thing in common: they use this tool every day.
+【Guy】Huh? The people who use it every day are willing to pay more?
+【Ira】Exactly! One carpenter put it very bluntly: "I use it 50 times a day, saving one second means saving 50 seconds, which is more than my hourly wage."
+【Guy】Wow, that perspective...the time cost exceeds the tool cost itself.
+"""
 
 ## Quality Control and Execution Standards
 ### Content Rigor Requirements
