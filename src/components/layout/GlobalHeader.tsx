@@ -102,6 +102,7 @@ const GlobalHeader = React.memo(function GlobalHeader({
   return (
     <>
       <header
+        data-product-tour="global-header"
         className={cn(
           "relative shrink-0 h-16 px-4 flex items-center justify-between gap-2 bg-background/80 backdrop-blur-sm border-b border-border",
           className,

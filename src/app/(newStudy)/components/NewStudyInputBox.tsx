@@ -34,22 +34,36 @@ import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { JSX, useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-type TStudyType = "general" | "product-rnd" | "fast-insight";
+export type TStudyType = "general" | "product-rnd" | "fast-insight";
+
+export function NewStudyInputBox(args: {
+  className?: string;
+  initialBrief?: string;
+  initialStudyType?: TStudyType;
+}): JSX.Element;
+
+export function NewStudyInputBox(args: {
+  className?: string;
+  initialBrief?: string;
+  referenceUserChatTokens: string[];
+}): JSX.Element;
 
 export function NewStudyInputBox({
   className,
   initialBrief,
+  initialStudyType,
   referenceUserChatTokens,
-  fixedStudyType,
 }: {
   className?: string;
   initialBrief?: string;
+  initialStudyType?: TStudyType;
   referenceUserChatTokens?: string[];
-  fixedStudyType?: TStudyType;
 }) {
+  const forceStudyType = referenceUserChatTokens?.length ? "general" : undefined;
+
   const { status: sessionStatus, data: session } = useSession();
   const locale = useLocale();
   const t = useTranslations("Components.NewStudyInputBox");
@@ -59,7 +73,9 @@ export function NewStudyInputBox({
   const [input, setInput] = useState("");
   const [partialTranscript, setPartialTranscript] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [studyType, setStudyType] = useState<TStudyType>(fixedStudyType ?? "general");
+  const [studyType, setStudyType] = useState<TStudyType>(
+    forceStudyType ?? initialStudyType ?? "general",
+  );
   const [showStudyTypeSelector, setShowStudyTypeSelector] = useState(false);
   const [referenceChatTitles, setReferenceChatTitles] = useState<
     { token: string; title: string }[]
@@ -103,7 +119,7 @@ export function NewStudyInputBox({
   useEffect(() => {
     if (sessionStatus === "loading") {
       setShowStudyTypeSelector(false);
-    } else if (!!fixedStudyType) {
+    } else if (!!forceStudyType) {
       // 如果指定了固定研究类型，不显示研究类型选择器
       setShowStudyTypeSelector(false);
     } else {
@@ -115,7 +131,7 @@ export function NewStudyInputBox({
     // } else {
     //   setShowStudyTypeSelector(false);
     // }
-  }, [sessionStatus, session?.user?.email, fixedStudyType]);
+  }, [sessionStatus, session?.user?.email, forceStudyType]);
 
   // Load reference chat titles
   useEffect(() => {
@@ -165,6 +181,7 @@ export function NewStudyInputBox({
 
   return (
     <form
+      data-product-tour="newstudy-box"
       onSubmit={handleSubmit}
       className={cn(
         "relative border border-border bg-background transition-colors",
@@ -178,9 +195,7 @@ export function NewStudyInputBox({
           isSM ? (
             <RadioGroup
               value={studyType}
-              onValueChange={(value) =>
-                setStudyType(value as TStudyType)
-              }
+              onValueChange={(value) => setStudyType(value as TStudyType)}
               className="flex gap-4 ml-1"
             >
               <div className="flex items-center">
@@ -203,12 +218,7 @@ export function NewStudyInputBox({
               </div>
             </RadioGroup>
           ) : (
-            <Select
-              value={studyType}
-              onValueChange={(value) =>
-                setStudyType(value as TStudyType)
-              }
-            >
+            <Select value={studyType} onValueChange={(value) => setStudyType(value as TStudyType)}>
               <SelectTrigger className="w-auto h-auto text-xs px-2 py-1 border-none bg-transparent shadow-none focus:ring-0 gap-1.5">
                 <SelectValue placeholder={t("studyType")} />
               </SelectTrigger>
@@ -351,18 +361,34 @@ export function NewStudyInputBox({
   );
 }
 
+export function NewStudyButton(args: {
+  children?: React.ReactNode;
+  initialBrief?: string;
+  initialStudyType?: TStudyType;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}): JSX.Element;
+
+export function NewStudyButton(args: {
+  children?: React.ReactNode;
+  initialBrief?: string;
+  referenceUserChatTokens?: string[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}): JSX.Element;
+
 export function NewStudyButton({
   children,
   initialBrief,
+  initialStudyType,
   referenceUserChatTokens,
-  fixedStudyType,
   open,
   onOpenChange,
 }: {
   children?: React.ReactNode;
   initialBrief?: string;
+  initialStudyType?: TStudyType;
   referenceUserChatTokens?: string[];
-  fixedStudyType?: TStudyType;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
@@ -392,12 +418,19 @@ export function NewStudyButton({
         <DialogHeader className="invisible">
           <DialogTitle />
         </DialogHeader>
-        <NewStudyInputBox
-          className="rounded-sm"
-          initialBrief={initialBrief}
-          referenceUserChatTokens={referenceUserChatTokens}
-          fixedStudyType={fixedStudyType}
-        />
+        {referenceUserChatTokens ? (
+          <NewStudyInputBox
+            className="rounded-sm"
+            initialBrief={initialBrief}
+            referenceUserChatTokens={referenceUserChatTokens}
+          />
+        ) : (
+          <NewStudyInputBox
+            className="rounded-sm"
+            initialBrief={initialBrief}
+            initialStudyType={initialStudyType}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

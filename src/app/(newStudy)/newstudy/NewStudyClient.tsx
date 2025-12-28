@@ -1,5 +1,5 @@
 "use client";
-import { NewStudyInputBox } from "@/app/(newStudy)/components/NewStudyInputBox";
+import { NewStudyInputBox, TStudyType } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { trackEvent } from "@/lib/analytics/segment";
 import { CommandIcon } from "lucide-react";
@@ -8,7 +8,13 @@ import Link from "next/link";
 import { useEffect } from "react";
 import "./style.css";
 
-export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
+export function NewStudyClient({
+  initialBrief,
+  initialStudyType,
+}: {
+  initialBrief?: string;
+  initialStudyType?: TStudyType;
+}) {
   const t = useTranslations("StudyPage.NewStudy");
 
   useEffect(() => {
@@ -23,7 +29,7 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
           <span>{t("startYourStudy")}</span>
         </div>
         <div className="w-full">
-          <NewStudyInputBox initialBrief={initialBrief} />
+          <NewStudyInputBox initialBrief={initialBrief} initialStudyType={initialStudyType} />
         </div>
         <div className="mt-8 text-center text-sm">
           <Link

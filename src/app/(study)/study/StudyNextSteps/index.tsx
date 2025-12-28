@@ -178,7 +178,6 @@ export function StudyNextSteps({
                   key={index}
                   initialBrief={question.brief}
                   referenceUserChatTokens={[studyUserChatToken]}
-                  fixedStudyType="general"
                 >
                   <Button
                     variant="ghost"
