@@ -22,16 +22,21 @@ const podcastCoverImageSystemPrompt = ({
 }): string =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
-你是一位专业的播客封面设计师，擅长创造视觉吸引力强的播客封面图。
+你是一位专业的播客封面设计师，擅长创造具有美学品味和社交媒体吸引力的播客封面图。
 
 【核心要求】
-- 生成专业的播客节目封面图
+- 生成专业且具有美学质量的播客节目封面图
 - 适合播客平台分享（Apple Podcasts、Spotify、YouTube、小宇宙等）
-- 主要内容居中，具有视觉冲击力
-- 准确表达播客主题的核心价值
-- 使用现代、简洁的设计风格
-- 色彩搭配专业且吸引眼球
+- 主要内容居中，准确传达播客主题的本质
+- 在社交媒体上具有吸引力，能引起用户点击和分享的兴趣
 - 符合播客封面的特点：简洁、可识别、在小尺寸下依然清晰
+
+【美学原则】
+- 追求美学质量和视觉品味，而非套用固定风格
+- 可以是摄影、设计、插画、概念艺术等任何形式
+- 可以专业严肃，也可以活泼轻松，根据主题选择合适的表达方式
+- 配色可以柔和低调，也可以鲜明有力，关键是有品味、有美感
+- 构图要有张力和美感，同时保持清晰度
 
 【布局要求】
 - 主要视觉内容必须居中放置
@@ -40,37 +45,46 @@ const podcastCoverImageSystemPrompt = ({
 - 方图（square）：四周均留出至少 10% 的安全边距
 - 这样设计可以让图片在各种播客平台裁剪时仍然保持完整
 
+【文字要求】
+- 尽量少用或不用文字，让视觉本身传达主题
+- 如果确实需要文字辅助，最多使用 1-3 个关键词
+- 文字应该融入画面，而非占据主导
 ${
   englishOnly
-    ? `
-【文字要求】
-- 可以包含少量英文文字来强化主题
-- 严格禁止：不要使用中文、日文、韩文等任何非英文文字
-- 如果需要文字，只使用简洁的英文单词或短语
-- 文字应该大而醒目，在缩略图中清晰可读
-`
+    ? `- 严格禁止：不要使用中文、日文、韩文等任何非英文文字
+- 如果需要文字，只使用简洁的英文单词或短语`
     : ""
 }
 
+【禁止项】
+- ❌ 不要使用廉价的信息图表式堆砌（图标+几何图形的模板化设计）
+- ❌ 不要使用过度合成、缺乏质感的元素
+- ❌ 不要使用陈词滥调的商业模板风格
+- ❌ 避免低质量、粗糙的视觉效果
+
 【设计原则】
-1. 清晰的视觉层次
-2. 简洁而不简单
-3. 突出播客主题
-4. 符合播客平台的专业度
-5. 易于在各种平台上识别
-6. 在小尺寸缩略图中依然清晰可辨
+1. 美学质量优先，追求视觉品味
+2. 根据主题选择最合适的表达形式（摄影、设计、插画等）
+3. 既有美学深度，又有社交媒体吸引力
+4. 构图有张力和呼吸感
+5. 在小尺寸缩略图中依然清晰有力
 `
     : `${promptSystemConfig({ locale })}
-You are a professional podcast cover designer who excels at creating visually compelling podcast cover images.
+You are a professional podcast cover designer who excels at creating podcast cover images with aesthetic taste and social media appeal.
 
 【Core Requirements】
-- Generate professional podcast cover images
+- Generate professional podcast cover images with high aesthetic quality
 - Suitable for podcast platform sharing (Apple Podcasts, Spotify, YouTube, Xiaoyuzhou, etc.)
-- Main content centered with strong visual impact
-- Accurately convey the core value of the podcast topic
-- Use modern, clean design style
-- Professional and eye-catching color schemes
+- Main content centered, accurately conveying the essence of the podcast topic
+- Attractive on social media, sparking user interest to click and share
 - Meet podcast cover characteristics: simple, recognizable, clear at small sizes
+
+【Aesthetic Principles】
+- Pursue aesthetic quality and visual taste, not fixed formulas
+- Can be photography, design, illustration, conceptual art, or any form
+- Can be professional and serious, or lively and playful, depending on the topic
+- Color palette can be muted and subtle, or bold and vibrant—key is taste and beauty
+- Composition should have tension and beauty while maintaining clarity
 
 【Layout Requirements】
 - Main visual content must be centered
@@ -79,65 +93,63 @@ You are a professional podcast cover designer who excels at creating visually co
 - Square images: Leave at least 10% safe margin on all sides
 - This design ensures the image remains intact when cropped by various podcast platforms
 
+【Text Requirements】
+- Use minimal or no text, let the visuals themselves convey the theme
+- If text is truly needed, use at most 1-3 keywords
+- Text should blend into the composition, not dominate it
 ${
   englishOnly
-    ? `
-【Text Requirements】
-- May include minimal English text to reinforce the theme
-- Strictly forbidden: Do NOT use Chinese, Japanese, Korean, or any non-English text
-- If text is needed, use only concise English words or phrases
-- Text should be large and prominent, clearly readable in thumbnails
-`
+    ? `- Strictly forbidden: Do NOT use Chinese, Japanese, Korean, or any non-English text
+- If text is needed, use only concise English words or phrases`
     : ""
 }
 
+【Prohibitions】
+- ❌ No cheap infographic-style stacking (templated designs with icons + geometric shapes)
+- ❌ No overly synthetic elements lacking texture
+- ❌ No clichéd business template styles
+- ❌ Avoid low-quality, crude visual effects
+
 【Design Principles】
-1. Clear visual hierarchy
-2. Simple but not simplistic
-3. Highlight podcast theme
-4. Meet professional podcast platform standards
-5. Easy to recognize across platforms
-6. Clear and distinguishable in small thumbnail sizes
+1. Aesthetic quality first, pursue visual taste
+2. Choose the most appropriate form for the topic (photography, design, illustration, etc.)
+3. Balance aesthetic depth with social media appeal
+4. Composition with tension and breathing space
+5. Clear and powerful even in small thumbnail sizes
 `;
 
 /**
- * Generate user prompt for podcast cover image based on podcast script
+ * Generate user prompt for podcast cover image based on topic
  */
 function podcastCoverImageProloguePrompt({
   locale,
   analyst,
-  script,
 }: {
   locale: Locale;
   analyst: Pick<Analyst, "locale" | "topic" | "studyLog" | "brief">;
-  script: string;
 }): string {
   const { topic } = analyst;
 
   return locale === "zh-CN"
     ? `
-请为以下播客节目生成一张专业的封面图：
+请为以下主题生成一张专业的播客封面图：
 
-【播客主题】
+【主题】
 ${topic}
 
-【播客内容】
-${script.substring(0, 3000)}...
-
-请生成一张能够准确表达这个播客主题、适合播客平台分享的专业封面图，
+请创作一张既有美学质量又在社交媒体上具有吸引力的封面图。
+根据主题选择最合适的视觉形式和风格，少用或不用文字。
 主要内容必须居中，根据图片比例留出适当边距。
 `
     : `
-Please generate a professional cover image for the following podcast:
+Please generate a professional podcast cover image for the following topic:
 
-【Podcast Topic】
+【Topic】
 ${topic}
 
-【Podcast Content】
-${script.substring(0, 3000)}...
-
-Please generate a professional cover image that accurately represents this podcast topic and is suitable for podcast platform sharing,
-main content must be centered with appropriate margins based on the image ratio.
+Create a cover image with both aesthetic quality and social media appeal.
+Choose the most appropriate visual form and style based on the topic, minimal or no text.
+Main content must be centered with appropriate margins based on the image ratio.
 `;
 }
 
@@ -182,7 +194,7 @@ export async function generatePodcastCoverImage({
         locale,
         englishOnly: modelName !== "gemini-3-pro-image",
       }),
-      prompt: podcastCoverImageProloguePrompt({ locale, analyst, script }),
+      prompt: podcastCoverImageProloguePrompt({ locale, analyst }),
       abortSignal,
       stopWhen: stepCountIs(5),
       maxRetries: 3,
