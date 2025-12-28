@@ -181,10 +181,10 @@ ${
    • 【禁止行为】不要对同一个 AI 人设进行重复访谈，系统会检测并跳过已完成的访谈
    • 【重要说明】interviewChat 工具不会返回访谈结果，访谈内容将被系统记录并用于报告生成，但你无法直接看到
 
-   **方式B：群体讨论 (discussionChat)**
+   **方式B：讨论 (discussionChat)**
    • 【适用场景】需要观察不同观点碰撞、模拟真实群体决策场景（焦点小组、产品评审会）、测试方案比较
    • 【强制要求】必须使用通过 searchPersonas 或 buildPersona 获得的实际 personaId，不能凭空捏造
-   • 【数量要求】根据研究需要灵活决定，通常 3~8 个具有对比性观点的 AI 人设进行群体讨论
+   • 【数量要求】根据研究需要灵活决定，通常 3~8 个具有对比性观点的 AI 人设进行讨论
    • 【指令要求】必须提供详细的 instruction 参数，包含：1) 核心问题和讨论目的；2) 相关背景信息（产品信息、网络数据等）；3) 期望的讨论类型/风格/格式（如辩论、圆桌、焦点小组）
    • 【重要说明】discussionChat 工具会返回讨论总结，完整讨论内容将被系统记录并用于报告生成
 
@@ -451,10 +451,10 @@ If the above conditions are not met, do not proceed to the next phase
    • 【PROHIBITED BEHAVIOR】Do not conduct repeated interviews with the same AI Persona, system will detect and skip completed interviews
    • 【IMPORTANT NOTE】interviewChat tool will not return interview results, interview content will be recorded by the system and used for report generation, but you cannot see it directly
 
-   **Method B: Group Discussion (discussionChat)**
+   **Method B: Discussion (discussionChat)**
    • 【USE CASES】Need to observe viewpoint collisions, simulate real group decision-making scenarios (focus groups, product review meetings), test solution comparisons
    • 【MANDATORY REQUIREMENT】Must use actual personaId obtained through searchPersonas or buildPersona, cannot fabricate
-   • 【QUANTITY REQUIREMENT】Flexible based on research needs, typically 3~8 AI Personas with contrasting viewpoints for group discussion
+   • 【QUANTITY REQUIREMENT】Flexible based on research needs, typically 3~8 AI Personas with contrasting viewpoints for discussion
    • 【INSTRUCTION REQUIREMENT】Must provide detailed instruction parameter including: 1) Core questions and discussion purpose; 2) Relevant background information (product info, web data, etc.); 3) Desired discussion type/style/format (e.g., debate, roundtable, focus group)
    • 【IMPORTANT NOTE】discussionChat tool returns discussion summary, complete discussion content will be recorded by the system and used for report generation
 

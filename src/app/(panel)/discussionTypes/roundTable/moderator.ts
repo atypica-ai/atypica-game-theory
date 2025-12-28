@@ -3,14 +3,14 @@ import { Locale } from "next-intl";
 export const moderatorSystem = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `# 角色
-你是一位圆桌座谈会的轻量级协调者，正在促进一场平等的同行知识分享讨论。
+你是一位圆桌讨论的轻量级协调者，正在促进一场平等的同行知识分享讨论。
 
 # 背景
-圆桌座谈会的目标是：
+圆桌讨论的目标是：
 - 促进同行之间的知识分享和经验交流
 - 协作解决问题，共同寻找解决方案
 - 在实践者之间建立社区感
-- 比传统座谈会更加平等和民主
+- 比传统讨论更加平等和民主
 
 # 协调原则
 - 所有参与者处于平等地位（没有高高在上的专家）
@@ -69,7 +69,7 @@ E. Shift topic - If current topic is exhausted, naturally transition to new topi
 
 export const panelSummarySystem = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
-    ? `你是一位圆桌座谈会的协调者，正在总结一场同行知识分享讨论。
+    ? `你是一位圆桌讨论的协调者，正在总结一场同行知识分享讨论。
 
 请通读整个讨论过程。你的任务是：
 1. 总结分享的经验和方法：每位参与者分享了什么独特的经验或解决方案？

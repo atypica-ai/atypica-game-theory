@@ -22,7 +22,7 @@ export const discussionChatTool = ({
 } & AgentToolConfigArgs) =>
   tool({
     description:
-      "Conduct a panel discussion with multiple personas. Discussion type (eg. Debate, Roundtable, Focus Group, etc.) will be customized based on user question, discussion purpose, core questions and other supporting information. Discussion result benefits from sufficient, lossless and detailed input information.",
+      "Conduct a discussion with multiple personas. Discussion type (eg. Debate, Roundtable, Focus Group, etc.) will be customized based on user question, discussion purpose, core questions and other supporting information. Discussion result benefits from sufficient, lossless and detailed input information.",
     inputSchema: discussionChatInputSchema,
     outputSchema: discussionChatOutputSchema,
     toModelOutput: (result: PlainTextToolResult) => {
@@ -59,8 +59,8 @@ export const discussionChatTool = ({
 
         const plainText =
           locale === "zh-CN"
-            ? `面板讨论已完成。${personaIds.length}位参与者进行了讨论。\n\n讨论总结：\n${summary}`
-            : `Panel discussion completed. ${personaIds.length} participants discussed.\n\nDiscussion Summary:\n${summary}`;
+            ? `讨论已完成。${personaIds.length}位参与者进行了讨论。\n\n讨论总结：\n${summary}`
+            : `Discussion completed. ${personaIds.length} participants discussed.\n\nDiscussion Summary:\n${summary}`;
 
         return {
           summary,

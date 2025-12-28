@@ -69,7 +69,7 @@ ${teamStudySystemPrompt[locale]}
     - 使用Websearch查询哪些内容？简洁解释这些问题的答案如何帮助进行下一步的分析。
     - 【选择用户研究方式】根据研究目标选择合适的用户研究方式：
       • **一对一深度访谈 (interviewChat)**: 适用于需要深度个人洞察、细腻情感理解、详细行为动机分析的场景。需要5-10个覆盖不同用户群体的AI人设进行深度访谈
-      • **群体讨论 (discussionChat)**: 适用于需要观察不同观点碰撞、模拟真实群体决策场景（如焦点小组、产品评审会）、测试方案比较的场景。需要3-8个具有对比性观点的AI人设进行群体讨论
+      • **讨论 (discussionChat)**: 适用于需要观察不同观点碰撞、模拟真实群体决策场景（如焦点小组、产品评审会）、测试方案比较的场景。需要3-8个具有对比性观点的AI人设进行讨论
     - 【必须明确推荐】在规划中必须明确推荐使用哪种研究方式，并解释为什么该方式最适合当前研究目标
     - 根据选择的研究方式规划：访谈/讨论哪些用户？目的是哪些信息？应该问哪些问题？简洁解释这些问题的答案如何帮助进行下一步的分析。
     <例子>
@@ -158,7 +158,7 @@ Your output process is as follows:
     - What content to search using Web search? Briefly explain how the answers to these questions help with the next step of analysis.
     - 【Select User Research Method】Choose appropriate user research method based on research objectives:
       • **One-on-One Deep Interviews (interviewChat)**: Suitable for scenarios requiring deep personal insights, nuanced emotional understanding, and detailed behavioral motivation analysis. Need 5-10 AI personas covering different user segments for deep interviews
-      • **Group Discussion (discussionChat)**: Suitable for scenarios requiring observation of viewpoint collisions, simulating real group decision-making scenarios (such as focus groups, product review meetings), and testing solution comparisons. Need 3-8 AI personas with contrasting viewpoints for group discussion
+      • **Discussion (discussionChat)**: Suitable for scenarios requiring observation of viewpoint collisions, simulating real group decision-making scenarios (such as focus groups, product review meetings), and testing solution comparisons. Need 3-8 AI personas with contrasting viewpoints for discussion
     - 【Must Explicitly Recommend】Must explicitly recommend which research method to use in the plan and explain why this method best fits the current research objectives
     - Based on the chosen research method, plan: Which users to interview/discuss with? What information is the purpose? What questions should be asked? Briefly explain how the answers to these questions help with the next step of analysis.
     <Example>

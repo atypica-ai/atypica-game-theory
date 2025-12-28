@@ -60,22 +60,22 @@ export async function buildDiscussionType({
   const systemPrompt =
     locale === "zh-CN"
       ? `# 角色
-你是一位专业的座谈会设计专家，擅长根据用户需求设计不同类型的讨论形式。
+你是一位专业的讨论设计专家，擅长根据用户需求设计不同类型的讨论形式。
 
 # 任务背景
-座谈会（Panel Discussion）是一种多人参与的讨论形式，通过参与者之间的互动来产生洞察、达成共识、或探索不同观点。不同的讨论类型服务于不同的目的，主要通过不同的主持风格来实现。
+讨论（Discussion）是一种多人参与的讨论形式，通过参与者之间的互动来产生洞察、达成共识、或探索不同观点。不同的讨论类型服务于不同的目的，主要通过不同的主持风格来实现。
 
-## 座谈会的优势
+## 讨论的优势
 - 社会动态数据化：可观察观点如何传播，谁影响谁，异议如何被化解，哪些内容促成共识，哪些导致分化。
 - 集体共识建构：通过群体讨论与辩论，共同创造更丰富的定义和意义，个人难以独立总结的观点在互动中得以呈现。
 - 创意交融：一个人的不完整想法可能激发他人完善洞见，群体创造力往往超越个体总和。
 - 分群现象可见：不同客户或受众群体会在讨论和辩论中自然显现出来。
 
 ## 不同类型的讨论
-- 辩论式座谈会：通过观点碰撞和对抗，帮助观众更清晰地理解不同立场
-- 圆桌式座谈会：促进同行之间的知识分享和经验交流
-- 焦点小组座谈会：通过参与者之间的互动来产生洞察、达成共识、或探索不同观点
-- 炉边座谈会：通过主持人与嘉宾之间的对话，来探索嘉宾的内心世界和故事
+- 辩论式讨论：通过观点碰撞和对抗，帮助观众更清晰地理解不同立场
+- 圆桌式讨论：促进同行之间的知识分享和经验交流
+- 焦点小组讨论：通过参与者之间的互动来产生洞察、达成共识、或探索不同观点
+- 炉边讨论：通过主持人与嘉宾之间的对话，来探索嘉宾的内心世界和故事
 
 ## 讨论类型的本质
 讨论类型的核心差异在于主持人的控场方式，这通过 moderatorSystem（主持人系统提示词）来定义：
@@ -121,14 +121,14 @@ c) 主持人行为指令（100-150字）
     正式程度：“使用生活化语言” vs. “保持职业距离”
 d) 讨论流程（3-4阶段）
 - 明确讨论的流程结构。
-    用户座谈会流程结构：
+    用户讨论流程结构：
     """
     阶段1（开场）：询问参与者关于[品类]的当前体验
     阶段2（探索）：介绍产品概念，收集初步反应
     阶段3（深挖）：深入探究异议和亮点，鼓励角色间辩论
     阶段4（整合）：请参与者总结购买意愿及原因
     """
-    辩论座谈会流程结构：
+    辩论讨论流程结构：
     """
     阶段1（立场陈述）：各方阐明核心观点（2轮）
     阶段2（交锋）：直接反驳和对立观点（3-4轮）
@@ -147,12 +147,12 @@ ${exampleModeratorSystem}
 \`\`\`
 `
       : `# Role
-You are a professional panel discussion design expert, skilled in designing various types of discussion formats based on user requirements.
+You are a professional discussion design expert, skilled in designing various types of discussion formats based on user requirements.
 
 # Background
-A panel discussion is a multi-person discussion format that generates insights, builds consensus, or explores different viewpoints through participant interaction. Different discussion types serve different purposes, primarily achieved through distinct moderator styles.
+A discussion is a multi-person discussion format that generates insights, builds consensus, or explores different viewpoints through participant interaction. Different discussion types serve different purposes, primarily achieved through distinct moderator styles.
 
-## Advantages of Panel Discussions
+## Advantages of Discussions
 - Social dynamics made visible: Observe how viewpoints spread, who influences whom, how disagreements are resolved, which topics facilitate consensus, and which cause division.
 - Collective consensus building: Group discussions and debates co-create richer definitions and meanings; ideas hard to summarize individually often emerge through interaction.
 - Creative synergy: Incomplete thoughts from one participant can spark insights in others—the creative power of the group often exceeds the sum of its individuals.

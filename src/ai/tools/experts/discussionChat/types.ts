@@ -10,7 +10,7 @@ export const discussionChatInputSchema = z.object({
   personaIds: z
     .array(z.number())
     .min(2)
-    .describe("List of persona IDs to participate in the panel discussion (minimum 2)"),
+    .describe("List of persona IDs to participate in the discussion (minimum 2)"),
   timelineToken: z
     .string()
     .optional()

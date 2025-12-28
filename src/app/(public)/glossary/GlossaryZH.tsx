@@ -1,5 +1,89 @@
 import React from "react";
 
+const coreConcepts = [
+  [
+    "AI 人设",
+    "<strong>（核心术语）</strong> 指由 AI 模拟的、具有特定人口统计学特征、行为模式和心理动机的虚拟用户。是系统的主要<strong>研究对象</strong>。",
+  ],
+  [
+    "AI 人设 (社交媒体)",
+    "基于对社交媒体等公开数据的深度分析和模式提取而合成的 `AI 人设`（详见 Tier 1）。",
+  ],
+  [
+    "AI 人设 (深度访谈)",
+    "特指由 atypica.AI 团队通过<strong>深度访谈</strong>真人合成的、具有更高真实性和行为一致性的 `AI 人设`（详见 Tier 2）。",
+  ],
+  [
+    "真人 AI 人设 (私有)",
+    "特指用户通过 `AI 人设导入` 功能生成的、基于<strong>企业</strong>真实访谈数据的、私有的 `AI 人设`（详见 Tier 3）。",
+  ],
+  [
+    "访谈",
+    "一对一深度访谈形式，由访谈员 AI 与单个 AI 人设进行深入对话，用于获取个人洞察、情感理解和行为动机分析。",
+  ],
+  ["访谈员 AI", '指在"访谈项目"等功能中，负责<strong>执行访谈、提出问题</strong>的 AI 角色。'],
+  [
+    "讨论",
+    "多人群体讨论形式，由主持人引导多个 AI 人设进行互动，用于观察观点碰撞、模拟群体决策场景。包括三种子类型：<strong>焦点小组 (Focus Group)</strong>、<strong>圆桌讨论 (Roundtable)</strong>、<strong>辩论 (Debate)</strong>。",
+  ],
+  [
+    "研究专家",
+    "<strong>（核心技术）</strong> atypica.AI 的核心 AI 技术之一，与 `AI 人设` 同等重要。基于 atypica.AI 团队研发的 reasoning model，负责主导研究规划、执行访谈和深度分析。",
+  ],
+  [
+    "专家",
+    "可进化的领域专家智能体，通过记忆文档、知识空白追踪和补充访谈机制实现持续学习和知识演进。",
+  ],
+  ["AI 人设导入", "指通过上传访谈记录等文件，自动分析并生成 `AI 人设` 的核心功能模块。"],
+  ["访谈项目", "指用户可以创建和管理的研究项目，在项目中可以与 `AI 人设` 或真实用户进行访谈。"],
+];
+
+const tiers = [
+  {
+    title: "Tier 1: AI 人设 (社交媒体)",
+    source: "来源: 基于社交媒体等公开数据合成",
+    desc: "具有更明确的行为模式和特征，质量更高，能够用于更具体的市场分析。",
+  },
+  {
+    title: "Tier 2: AI 人设 (深度访谈)",
+    source: "来源: 由 atypica.AI 团队专业构建",
+    desc: "由 atypica.AI 团队通过深度访谈和专业认知建模构建的高质量、高精度的 AI 人设。它们在认知模式、情感反应和决策逻辑上保持高度一致性，能够模拟真实消费者的复杂行为，是进行深度商业研究的核心。",
+  },
+  {
+    title: "Tier 3: 真人 AI 人设 (私有)",
+    source: "来源: 用户上传的<strong>企业</strong>私有访谈数据",
+    desc: "用户通过 `AI 人设导入` 功能，上传真实的<strong>企业</strong>访谈记录生成的 AI 人设。<strong>私有性</strong>是其最大特点。这类人设完全基于用户提供的私有数据构建，不会被其他用户搜索或使用，确保了商业信息的安全。其真实性直接取决于用户提供的访谈数据质量。",
+  },
+];
+
+const roles = [
+  {
+    title: "AI Persona / AI 人设",
+    position: "被研究对象、受访者、讨论参与者",
+    capability: "真实性模拟、多样化来源、分层体系",
+    usage: "访谈回答、讨论互动",
+  },
+  {
+    title: "Interviewer AI / 访谈员 AI",
+    position: "访谈执行者、提问者",
+    capability: "深度追问、对话引导、结构化访谈",
+    usage: "一对一深度访谈、洞察挖掘",
+  },
+  {
+    title: "Moderator AI / 主持人 AI",
+    position: "讨论主持者、协调者",
+    capability: "多类型主持、互动促进、节奏控制",
+    usage: "焦点小组、圆桌讨论、辩论",
+  },
+  {
+    title: "Sage / 专家",
+    position: "可进化的领域专家智能体",
+    capability: "记忆即专家、持续进化、可追溯性",
+    usage: "记忆文档、知识空白追踪、补充访谈",
+    isCore: true,
+  },
+];
+
 export const GlossaryZH: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 font-sans">
@@ -13,189 +97,84 @@ export const GlossaryZH: React.FC = () => {
       </header>
 
       <div className="space-y-16">
-        {/* Section 1: 核心概念 */}
         <section>
-          <h2 className="text-2xl font-bold mb-6 border-b border-gray-300 dark:border-gray-700 pb-3 font-mono">
+          <h2 className="text-2xl font-bold mb-6 border-b pb-3 font-mono">
             &#123;/* 1. 核心概念 */&#125;
           </h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
-              <thead className="bg-gray-100 dark:bg-gray-800">
+            <table className="min-w-full border-collapse border">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-300 dark:border-gray-700 w-1/4">
-                    术语
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-300 dark:border-gray-700">
-                    描述
-                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold border-b w-1/4">术语</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold border-b">描述</th>
                 </tr>
               </thead>
-              <tbody className="text-gray-800 dark:text-gray-200">
-                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 align-top">
-                    <code className="font-semibold text-base">AI 人设</code>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    <strong>（核心术语）</strong> 指由 AI
-                    模拟的、具有特定人口统计学特征、行为模式和心理动机的虚拟用户。是系统的主要
-                    <strong>被访谈对象</strong>。
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 align-top">
-                    <code className="font-semibold text-base">访谈员 AI</code>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    指在“访谈项目”等功能中，负责<strong>执行访谈、提出问题</strong>的 AI 角色。
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 align-top">
-                    <code className="font-semibold text-base">研究专家</code>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    在某些对话场景中，与 `Interviewer AI` 角色类似，指代负责主导研究和访谈的 AI。
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 align-top">
-                    <code className="font-semibold text-base">AI 人设导入</code>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    指通过上传访谈记录等文件，自动分析并生成 `AI 人设` 的核心功能模块。
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 align-top">
-                    <code className="font-semibold text-base">访谈项目</code>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    指用户可以创建和管理的研究项目，在项目中可以与 `AI 人设` 或真实用户进行访谈。
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 align-top">
-                    <code className="font-semibold text-base">AI 人设 (社交媒体)</code>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    基于对社交媒体等公开数据的深度分析和模式提取而合成的 `AI 人设`。(详见 Tier 1)
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 align-top">
-                    <code className="font-semibold text-base">AI 人设 (深度访谈)</code>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    特指由 atypica.AI 团队通过<strong>深度访谈</strong>真人合成的、具有更高真实性和行为一致性的 `AI
-                    人设`（详见 Tier 2）。
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3 align-top">
-                    <code className="font-semibold text-base">真人 AI 人设 (私有)</code>
-                  </td>
-                  <td className="px-4 py-3">
-                    特指用户通过 `AI 人设导入` 功能生成的、基于<strong>企业</strong>真实访谈数据的、私有的 `AI
-                    人设`（详见 Tier 3）。
-                  </td>
-                </tr>
+              <tbody>
+                {coreConcepts.map(([term, desc], i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-3 border-b align-top">
+                      <code className="font-semibold text-base">{term}</code>
+                    </td>
+                    <td className="px-4 py-3 border-b" dangerouslySetInnerHTML={{ __html: desc }} />
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </section>
 
-        {/* Section 2: AI 人设层级 */}
         <section>
-          <h2 className="text-2xl font-bold mb-8 font-mono border-b border-gray-300 dark:border-gray-700 pb-3">
+          <h2 className="text-2xl font-bold mb-8 font-mono border-b pb-3">
             &#123;/* 2. AI 人设层级 */&#125;
           </h2>
-          <p className="mb-8 text-gray-700 dark:text-gray-300">
+          <p className="mb-8 text-gray-600 dark:text-gray-400">
             `AI 人设` 根据其数据来源、构建方式和精度被划分为不同的层级
             (Tier)。层级越高，代表其行为模拟的真实性和复杂度越高。
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
-            <div className="border border-blue-500/50 dark:border-blue-400/60 rounded-lg p-6 hover:shadow-lg transition-shadow bg-blue-50/20 dark:bg-blue-900/10">
-              <h3 className="text-xl font-bold mb-2 font-mono text-blue-700 dark:text-blue-300">
-                Tier 1: AI 人设 (社交媒体)
-              </h3>
-              <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-4">
-                来源: 基于社交媒体等公开数据合成
-              </p>
-              <p className="text-gray-700 dark:text-gray-300">
-                具有更明确的行为模式和特征，质量更高，能够用于更具体的市场分析。
-              </p>
-            </div>
-            <div className="border border-teal-500/50 dark:border-teal-400/60 rounded-lg p-6 hover:shadow-lg transition-shadow bg-teal-50/20 dark:bg-teal-900/10">
-              <h3 className="text-xl font-bold mb-2 font-mono text-teal-700 dark:text-teal-300">
-                Tier 2: AI 人设 (深度访谈)
-              </h3>
-              <p className="text-sm font-semibold text-teal-600 dark:text-teal-400 mb-4">
-                来源: 由 atypica.AI 团队专业构建
-              </p>
-              <p className="text-gray-700 dark:text-gray-300">
-                由 atypica.AI 团队通过深度访谈和专业认知建模构建的高质量、高精度的 AI
-                人设。它们在认知模式、情感反应和决策逻辑上保持高度一致性，能够模拟真实消费者的复杂行为，是进行深度商业研究的核心。
-              </p>
-            </div>
-            <div className="border border-indigo-500/50 dark:border-indigo-400/60 rounded-lg p-6 hover:shadow-lg transition-shadow bg-indigo-50/20 dark:bg-indigo-900/10">
-              <h3 className="text-xl font-bold mb-2 font-mono text-indigo-700 dark:text-indigo-300">
-                Tier 3: 真人 AI 人设 (私有)
-              </h3>
-              <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-4">
-                来源: 用户上传的<strong>企业</strong>私有访谈数据
-              </p>
-              <p className="text-gray-700 dark:text-gray-300">
-                用户通过 `AI 人设导入` 功能，上传真实的<strong>企业</strong>访谈记录生成的 AI 人设。<strong>私有性</strong>
-                是其最大特点。这类人设完全基于用户提供的私有数据构建，不会被其他用户搜索或使用，确保了商业信息的安全。其真实性直接取决于用户提供的访谈数据质量。
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {tiers.map((tier, i) => (
+              <div key={i} className="border rounded-lg p-6">
+                <h3 className="text-xl font-bold mb-2 font-mono">{tier.title}</h3>
+                <p
+                  className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-4"
+                  dangerouslySetInnerHTML={{ __html: tier.source }}
+                />
+                <p
+                  className="text-gray-600 dark:text-gray-400"
+                  dangerouslySetInnerHTML={{ __html: tier.desc }}
+                />
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* Section 3: 智能体角色区分 */}
         <section>
-          <h2 className="text-2xl font-bold mb-8 font-mono border-b border-gray-300 dark:border-gray-700 pb-3">
-            &#123;/* 3. 智能体角色区分 */&#125;
+          <h2 className="text-2xl font-bold mb-8 font-mono border-b pb-3">
+            &#123;/* 3. 模拟人的智能体角色 */&#125;
           </h2>
-          <p className="mb-8 text-gray-700 dark:text-gray-300">
-            为了避免混淆，项目中涉及的 &quot;Agent&quot; (智能体) 角色必须严格区分其职能。
+          <p className="mb-8 text-gray-600 dark:text-gray-400">
+            系统中有多种模拟人类行为的智能体角色，它们各自承担不同的职能：
           </p>
-          <div className="flex flex-col md:flex-row gap-8">
-            <div className="flex-1 border-l-4 border-blue-500 pl-6 py-4 bg-gray-50 dark:bg-gray-800/50 rounded-r-lg">
-              <h3 className="text-xl font-semibold mb-3">被访谈者 (Interviewee)</h3>
-              <p className="mb-4">
-                <span className="font-semibold text-gray-600 dark:text-gray-400">标准叫法:</span>
-                <br />
-                <code className="text-lg text-blue-700 dark:text-blue-400">
-                  AI Persona / AI 人设
-                </code>
-              </p>
-              <p>
-                <span className="font-semibold text-gray-600 dark:text-gray-400">职责:</span>
-                <br />
-                <span className="text-gray-800 dark:text-gray-200">
-                  作为访谈对象，回答问题，提供数据和洞察。
-                </span>
-              </p>
-            </div>
-
-            <div className="flex-1 border-l-4 border-green-500 pl-6 py-4 bg-gray-50 dark:bg-gray-800/50 rounded-r-lg">
-              <h3 className="text-xl font-semibold mb-3">访谈者 (Interviewer)</h3>
-              <p className="mb-4">
-                <span className="font-semibold text-gray-600 dark:text-gray-400">标准叫法:</span>
-                <br />
-                <code className="text-lg text-green-700 dark:text-green-400">
-                  Interviewer AI / 访谈员 AI
-                </code>
-              </p>
-              <p>
-                <span className="font-semibold text-gray-600 dark:text-gray-400">职责:</span>
-                <br />
-                <span className="text-gray-800 dark:text-gray-200">
-                  作为访谈的发起者和引导者，根据研究目标提出问题，并进行追问。
-                </span>
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {roles.map((role, i) => (
+              <div key={i} className="border rounded-lg p-6">
+                <h3 className="text-xl font-semibold mb-3">{role.title}</h3>
+                <p className="mb-2">
+                  <span className="font-semibold text-gray-600 dark:text-gray-400">角色定位:</span>
+                  <span className="ml-2">{role.position}</span>
+                </p>
+                <p className="mb-2">
+                  <span className="font-semibold text-gray-600 dark:text-gray-400">核心能力:</span>
+                  <span className="ml-2">{role.capability}</span>
+                </p>
+                <p className="mb-2">
+                  <span className="font-semibold text-gray-600 dark:text-gray-400">
+                    {role.isCore ? "核心技术" : "使用场景"}:
+                  </span>
+                  <span className="ml-2">{role.usage}</span>
+                </p>
+              </div>
+            ))}
           </div>
         </section>
       </div>

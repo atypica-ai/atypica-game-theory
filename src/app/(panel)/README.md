@@ -1,6 +1,6 @@
-# Panel Discussion / 面板讨论
+# Discussion / 讨论
 
-面板讨论核心实现模块，负责多 persona 群聊的完整流程。
+讨论核心实现模块，负责多 persona 群聊的完整流程。
 
 ## 快速导航
 
@@ -8,7 +8,7 @@
 
 **`lib/orchestration.ts` - `runPersonaDiscussion()`**
 
-这是发起面板讨论的主入口函数：
+这是发起讨论的主入口函数：
 
 ```typescript
 import { runPersonaDiscussion } from "@/app/(panel)/lib";

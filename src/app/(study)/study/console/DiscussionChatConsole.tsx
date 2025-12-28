@@ -50,7 +50,7 @@ export const DiscussionChatConsole = ({
     return (
       <div className="font-mono text-sm flex items-center gap-2">
         <span className="animate-bounce">✨</span>
-        <span>Starting panel discussion...</span>
+        <span>Starting discussion...</span>
       </div>
     );
   }

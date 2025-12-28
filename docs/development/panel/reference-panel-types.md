@@ -1,8 +1,8 @@
 > **📚 文档类型：背景参考 / Background Reference**
 >
-> 本文档介绍各种 Panel 讨论形式及其特点,用于设计面板讨论功能时的参考。
+> 本文档介绍各种讨论形式及其特点,用于设计讨论功能时的参考。
 >
-> This document introduces various panel discussion formats and their characteristics for reference when designing panel discussion features.
+> This document introduces various discussion formats and their characteristics for reference when designing discussion features.
 
 ---
 
