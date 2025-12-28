@@ -144,7 +144,7 @@ export const generateReportTool = ({
           ratio: "landscape",
           analyst,
           report,
-          locale,
+          locale: locale === "en-US" ? "en-US" : "en-US", // 中文现在容易出现乱码，暂时都用英文
           abortSignal: AbortSignal.any([abortSignal, AbortSignal.timeout(180 * 1000)]), // 3 minutes timeout
           statReport,
           logger: reportLogger,

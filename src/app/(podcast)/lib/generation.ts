@@ -149,7 +149,7 @@ export async function generatePodcast({
           analyst,
           podcast,
           script,
-          locale,
+          locale: locale === "en-US" ? "en-US" : "en-US", // 中文现在容易出现乱码，暂时都用英文
           abortSignal,
           statReport,
           logger,
@@ -164,6 +164,8 @@ export async function generatePodcast({
       where: { id: podcast.id },
       data: { objectUrl, generatedAt: new Date() },
     });
+    // Note: coverObjectUrl was already saved in generatePodcastCoverImage,
+    // but re-saving the entire metadata object here is safe and ensures consistency
     await mergeExtra({
       tableName: "AnalystPodcast",
       id: podcast.id,

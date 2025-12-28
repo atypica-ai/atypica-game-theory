@@ -1,5 +1,6 @@
 "use client";
 
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import { AnalystPodcastExtra } from "@/prisma/client";
 import {
+  CameraIcon,
   ChevronDown,
   ChevronUp,
   ExternalLinkIcon,
@@ -18,9 +20,11 @@ import {
   XIcon,
 } from "lucide-react";
 import { useLocale } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import {
+  adminGeneratePodcastCoverAction,
   featurePodcastAction,
   fetchAnalystPodcastsAction,
   generatePodcastMetadataAction,
@@ -46,6 +50,7 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
   const [savingTitle, setSavingTitle] = useState(false);
   const [generatingMetadata, setGeneratingMetadata] = useState(false);
   const [togglingFeatured, setTogglingFeatured] = useState(false);
+  const [generatingCover, setGeneratingCover] = useState(false);
 
   const extra = (podcast.extra || {}) as AnalystPodcastExtra;
   const podcastTitle = extra.metadata?.title || "";
@@ -157,6 +162,21 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
     }
   };
 
+  const handleGenerateCover = async () => {
+    setGeneratingCover(true);
+    try {
+      const result = await adminGeneratePodcastCoverAction(podcast.id);
+      if (!result.success) {
+        onError(result.message);
+      }
+      // Note: Cover generation happens in background, refresh needed to see result
+    } catch (err) {
+      onError((err as Error).message);
+    } finally {
+      setGeneratingCover(false);
+    }
+  };
+
   return (
     <Card className={podcast.isFeatured ? "border-2 border-yellow-400" : ""}>
       <CardHeader>
@@ -257,6 +277,46 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Cover Image */}
+        {podcast.coverCdnHttpUrl && (
+          <div className="relative w-full aspect-video overflow-hidden rounded-lg mb-4">
+            <Image
+              src={podcast.coverCdnHttpUrl}
+              alt="podcast cover"
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
+
+        {/* Generate Cover Button - Always visible */}
+        <div className="mb-4">
+          <ConfirmDialog
+            title="Regenerate Cover Image"
+            description={
+              podcast.coverCdnHttpUrl
+                ? "This will replace the existing cover image. Are you sure?"
+                : "Generate a new cover image for this podcast?"
+            }
+            onConfirm={handleGenerateCover}
+            confirmLabel="Generate"
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={generatingCover || !podcast.script}
+              className="flex items-center gap-1"
+            >
+              <CameraIcon className="h-3 w-3" />
+              {generatingCover
+                ? "Generating..."
+                : podcast.coverCdnHttpUrl
+                  ? "Regenerate Cover"
+                  : "Generate Cover"}
+            </Button>
+          </ConfirmDialog>
+        </div>
+
         {/* Topic Section */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1">

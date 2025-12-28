@@ -5,6 +5,7 @@ import { llm, LLMModelName } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { Analyst, AnalystPodcast } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import { GeneratedFile, stepCountIs, streamText } from "ai";
 import { createHash } from "crypto";
@@ -286,6 +287,30 @@ export async function generatePodcastCoverImage({
     fileBody: imageFile.uint8Array,
     mimeType: imageFile.mediaType,
   });
+
+  // Update nested metadata.coverObjectUrl using raw SQL
+  await prisma.$executeRaw`
+    UPDATE "AnalystPodcast"
+    SET "extra" = jsonb_set(
+          COALESCE("extra", '{}')::jsonb,
+          '{metadata,coverObjectUrl}',
+          to_jsonb(${objectUrl}::text),
+          true
+        ),
+        "updatedAt" = NOW()
+    WHERE "id" = ${podcast.id}
+  `;
+
+  // Note: Can't use mergeExtra directly because coverObjectUrl is nested in metadata
+  // await mergeExtra({
+  //   tableName: "AnalystPodcast",
+  //   id: podcast.id,
+  //   extra: {
+  //     metadata: {
+  //       coverObjectUrl: objectUrl,
+  //     },
+  //   } satisfies AnalystPodcastExtra,
+  // });
 
   return {
     coverObjectUrl: objectUrl,

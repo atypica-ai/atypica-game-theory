@@ -1,8 +1,10 @@
 "use server";
+import { generatePodcastCoverImage } from "@/app/(podcast)/lib/coverImage";
 import { generatePodcastMetadata } from "@/app/(podcast)/lib/generation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { VALID_LOCALES } from "@/i18n/routing";
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -17,7 +19,9 @@ import {
 import { AnalystPodcastWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
+import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 // Get all analyst podcasts with pagination
@@ -34,6 +38,7 @@ export async function fetchAnalystPodcastsAction(
       };
       isFeatured?: boolean;
       tags?: string;
+      coverCdnHttpUrl?: string;
     })[]
   >
 > {
@@ -118,16 +123,26 @@ export async function fetchAnalystPodcastsAction(
     ]),
   );
 
-  return {
-    success: true,
-    data: analystPodcasts.map((podcast) => {
+  // Get cover CDN URLs for all podcasts
+  const podcastsWithCovers = await Promise.all(
+    analystPodcasts.map(async (podcast) => {
+      const extra = podcast.extra as AnalystPodcastExtra;
+      const coverObjectUrl = extra?.metadata?.coverObjectUrl;
+      const coverCdnHttpUrl = coverObjectUrl ? await getS3SignedCdnUrl(coverObjectUrl) : undefined;
+
       const featuredInfo = featuredItemsMap.get(podcast.id);
       return {
         ...podcast,
         isFeatured: featuredInfo?.isFeatured || false,
         tags: featuredInfo?.tags || "",
+        coverCdnHttpUrl,
       };
     }),
+  );
+
+  return {
+    success: true,
+    data: podcastsWithCovers,
     pagination: {
       page,
       pageSize,
@@ -373,6 +388,72 @@ export async function updateFeaturedItemTagsAction(
 
   revalidatePath("/admin/studies/podcasts");
   revalidateTag("featured-podcasts");
+  return {
+    success: true,
+    data: undefined,
+  };
+}
+
+// Generate cover image for a podcast
+export async function adminGeneratePodcastCoverAction(
+  podcastId: number,
+): Promise<ServerActionResult<void>> {
+  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
+
+  const podcast = (await prisma.analystPodcast.findUniqueOrThrow({
+    where: { id: podcastId },
+    select: {
+      id: true,
+      token: true,
+      script: true,
+      analyst: {
+        select: {
+          id: true,
+          locale: true,
+          topic: true,
+          studyLog: true,
+          brief: true,
+        },
+      },
+    },
+  })) as Pick<AnalystPodcast, "id" | "token" | "script"> & {
+    analyst: Pick<Analyst, "id" | "locale" | "topic" | "studyLog" | "brief">;
+  };
+
+  if (!podcast.script) {
+    return {
+      success: false,
+      message: "Podcast script not available",
+      code: "not_found",
+    };
+  }
+
+  // Determine locale from analyst or use default
+  const locale: Locale =
+    podcast.analyst.locale === "zh-CN"
+      ? "zh-CN"
+      : podcast.analyst.locale === "en-US"
+        ? "en-US"
+        : await getLocale();
+
+  // Empty stat reporter for admin (free generation)
+  const statReport = async () => {};
+  const abortSignal = AbortSignal.timeout(300_000); // 5 minutes timeout
+
+  waitUntil(
+    generatePodcastCoverImage({
+      ratio: "landscape",
+      analyst: podcast.analyst,
+      podcast,
+      script: podcast.script,
+      locale: locale === "en-US" ? "en-US" : "en-US", // 中文现在容易出现乱码，暂时都用英文
+      abortSignal,
+      statReport,
+      logger: rootLogger.child({ podcastId, analystId: podcast.analyst.id }),
+    }).catch(() => {}),
+  );
+
+  revalidatePath("/admin/studies/podcasts");
   return {
     success: true,
     data: undefined,
