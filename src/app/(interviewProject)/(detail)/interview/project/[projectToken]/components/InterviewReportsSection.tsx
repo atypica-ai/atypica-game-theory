@@ -8,7 +8,14 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn, formatDate, formatDistanceToNow } from "@/lib/utils";
 import { InterviewReportExtra } from "@/prisma/client";
-import { ExternalLinkIcon, FileTextIcon, Loader2Icon, PlusIcon, RefreshCwIcon } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  ExternalLinkIcon,
+  FileTextIcon,
+  Loader2Icon,
+  PlusIcon,
+  RefreshCwIcon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -148,7 +155,7 @@ export function InterviewReportsSection({
                               <div>
                                 <h4 className="font-medium text-sm">
                                   {t("reportNumber")}
-                                  {report.token.slice(-8)}
+                                  {report.token}
                                 </h4>
                                 <p className="text-xs text-muted-foreground">
                                   {formatDate(report.createdAt, locale)}
@@ -161,7 +168,6 @@ export function InterviewReportsSection({
                               </div>
                             </div>
                           </div>
-
                           <div className="text-xs text-muted-foreground">
                             <span className="text-green-600 dark:text-green-400">
                               ✓ {t("generated")} {formatDistanceToNow(report.generatedAt)}{" "}
@@ -188,7 +194,7 @@ export function InterviewReportsSection({
                             <div>
                               <h4 className="font-medium text-sm">
                                 {t("reportNumber")}
-                                {report.token.slice(-8)}
+                                {report.token}
                               </h4>
                               <p className="text-xs text-muted-foreground">
                                 {formatDate(report.createdAt, locale)}
@@ -200,14 +206,22 @@ export function InterviewReportsSection({
                               )}
                             </div>
                           </div>
-
-                          <Loader2Icon className="h-4 w-4 animate-spin text-amber-500" />
+                          {report.extra.error ? (
+                            <AlertTriangleIcon className="h-4 w-4 text-red-500" />
+                          ) : (
+                            <Loader2Icon className="h-4 w-4 animate-spin text-amber-500" />
+                          )}
                         </div>
-
                         <div className="text-xs text-muted-foreground">
-                          <span className="text-amber-600 dark:text-amber-400">
-                            ⏳ {t("generating")}
-                          </span>
+                          {report.extra.error ? (
+                            <span className="text-red-600 dark:text-red-400">
+                              ❌ {report.extra.error}
+                            </span>
+                          ) : (
+                            <span className="text-amber-600 dark:text-amber-400">
+                              ⏳ {t("generating")}
+                            </span>
+                          )}
                         </div>
                       </div>
                     ),
