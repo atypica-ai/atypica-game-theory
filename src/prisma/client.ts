@@ -74,7 +74,7 @@ export type UserLastLogin = Partial<{
     countryCode: string;
     city: string;
   }>;
-  provider: "email-password" | "impersonation" | "team-switch" | "google";
+  provider: "email-password" | "impersonation" | "team-switch" | "google" | "aws-marketplace";
 }>;
 
 export type AnalystReportExtra = Partial<{

@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
               subscribedAt: new Date(),
               dimension: subscription.plan,
               quantity: subscription.quantity,
-              expiresAt: subscription.expiresAt,
+              expiresAt: (subscription as { expiresAt?: Date | null }).expiresAt,
             },
           });
 
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
             data: {
               dimension: updatedSubscription.plan,
               quantity: updatedSubscription.quantity,
-              expiresAt: updatedSubscription.expiresAt,
+              expiresAt: (updatedSubscription as { expiresAt?: Date | null }).expiresAt,
             },
           });
 

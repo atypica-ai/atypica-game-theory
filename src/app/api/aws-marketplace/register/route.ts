@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { MarketplaceMetering } from "@aws-sdk/client-marketplace-metering";
 import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
+import { createAWSMarketplaceUserWithTeam, recordLastLogin } from "@/app/(auth)/lib";
+import { SignJWT } from "jose";
 
 const logger = rootLogger.child({ module: "aws-marketplace-register" });
 
@@ -49,32 +51,104 @@ export async function GET(req: NextRequest) {
     });
 
     if (awsCustomer) {
-      // Existing customer - redirect to signin page with customer info
+      // Existing customer - log in and redirect to home
       logger.info({
-        msg: "Existing AWS customer found",
+        msg: "Existing AWS customer found, logging in",
         userId: awsCustomer.userId,
         customerIdentifier: CustomerIdentifier,
       });
 
-      const signinUrl = new URL("/auth/signin", req.url);
-      signinUrl.searchParams.set("awsCustomer", "true");
-      signinUrl.searchParams.set("email", awsCustomer.user.email || "");
-      signinUrl.searchParams.set("redirect", "/");
+      // Check subscription status
+      if (awsCustomer.status !== "active") {
+        logger.warn({
+          msg: "AWS subscription not active",
+          customerIdentifier: CustomerIdentifier,
+          status: awsCustomer.status,
+        });
+        return NextResponse.redirect(
+          new URL(`/error?code=aws_subscription_inactive&status=${awsCustomer.status}`, req.url)
+        );
+      }
 
-      return NextResponse.redirect(signinUrl);
+      // Check if subscription expired
+      if (awsCustomer.expiresAt && awsCustomer.expiresAt < new Date()) {
+        logger.warn({
+          msg: "AWS subscription expired",
+          customerIdentifier: CustomerIdentifier,
+          expiresAt: awsCustomer.expiresAt,
+        });
+        return NextResponse.redirect(
+          new URL("/error?code=aws_subscription_expired", req.url)
+        );
+      }
+
+      // Subscription is valid, set session and redirect
+      const redirectResponse = NextResponse.redirect(new URL("/", req.url));
+
+      // Create JWT token for session
+      const secret = new TextEncoder().encode(process.env.AUTH_SECRET || "");
+      const sessionToken = await new SignJWT({
+        sub: awsCustomer.user.id.toString(),
+        userType: "Personal",
+        _ut: 0,
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .setExpirationTime("30d")
+        .setIssuedAt()
+        .sign(secret);
+
+      redirectResponse.cookies.set("next-auth.session-token", sessionToken, {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: true,
+      });
+
+      recordLastLogin({ userId: awsCustomer.user.id, provider: "aws-marketplace" });
+
+      return redirectResponse;
     }
 
-    // 3. New customer - redirect to AWS Marketplace signup page
+    // 3. New customer - create user and team
     logger.info({
-      msg: "New AWS customer, redirecting to signup",
+      msg: "New AWS customer, creating user and team",
       customerIdentifier: CustomerIdentifier,
     });
 
-    const signupUrl = new URL("/auth/aws-marketplace-signup", req.url);
-    signupUrl.searchParams.set("customerIdentifier", CustomerIdentifier);
-    signupUrl.searchParams.set("productCode", ProductCode);
+    const { user, team } = await createAWSMarketplaceUserWithTeam({
+      customerIdentifier: CustomerIdentifier,
+      productCode: ProductCode,
+    });
 
-    return NextResponse.redirect(signupUrl);
+    // 4. Set session and redirect to home
+    const redirectResponse = NextResponse.redirect(new URL("/", req.url));
+
+    const secret = new TextEncoder().encode(process.env.AUTH_SECRET || "");
+    const sessionToken = await new SignJWT({
+      sub: user.id.toString(),
+      userType: "Personal",
+      _ut: 0,
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("30d")
+      .setIssuedAt()
+      .sign(secret);
+
+    redirectResponse.cookies.set("next-auth.session-token", sessionToken, {
+      httpOnly: true,
+      sameSite: "none",
+      path: "/",
+      secure: true,
+    });
+
+    logger.info({
+      msg: "AWS user registered and logged in",
+      userId: user.id,
+      customerIdentifier: CustomerIdentifier,
+      teamId: team?.id,
+    });
+
+    return redirectResponse;
   } catch (error) {
     logger.error({
       msg: "AWS Marketplace registration error",

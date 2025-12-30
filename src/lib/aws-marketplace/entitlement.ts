@@ -87,7 +87,7 @@ export async function syncCustomerSubscription(customerIdentifier: string) {
       status: subscription.active ? "active" : "expired",
       dimension: subscription.plan,
       quantity: subscription.quantity,
-      expiresAt: subscription.expiresAt,
+      expiresAt: (subscription as { expiresAt?: Date | null }).expiresAt,
     },
   });
 

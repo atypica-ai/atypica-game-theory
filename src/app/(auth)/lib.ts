@@ -36,7 +36,7 @@ async function _recordLastLogin({
   provider,
 }: {
   userId: number;
-  provider?: "email-password" | "impersonation" | "team-switch" | "google"; // 注册完会立即调用一次，此时没有 provider
+  provider?: "email-password" | "impersonation" | "team-switch" | "google" | "aws-marketplace"; // 注册完会立即调用一次，此时没有 provider
 }): Promise<UserLastLogin | void> {
   try {
     const clientInfo = await authClientInfo();
@@ -104,7 +104,7 @@ export function recordAndTrackLastLogin({
   provider,
 }: {
   userId: number;
-  provider: "email-password" | "impersonation" | "team-switch" | "google";
+  provider: "email-password" | "impersonation" | "team-switch" | "google" | "aws-marketplace";
 }) {
   // 后台运行，不要 await
   after(async () => {
@@ -314,4 +314,151 @@ export async function DEPRECATED_upsertUserProfile({ userId }: { userId: number 
   //   return profile;
   // });
   // return profile;
+}
+
+/**
+ * 为 AWS Marketplace 用户创建账户和 Team
+ *
+ * @param customerIdentifier - AWS 生成的客户唯一标识符
+ * @param productCode - AWS Marketplace 产品代码
+ *
+ * @returns { user, team } - 创建的用户和team
+ *
+ * 特点：
+ * - 邮箱格式：${customerIdentifier}@aws.tezign.com
+ * - 密码为空（无法普通登录，只能从AWS Portal进入）
+ * - 自动创建 Team（seats: 3，最多3个成员）
+ * - 赠送初始 tokens (1,000,000)
+ * - 处理并发注册（通过唯一约束冲突检测）
+ */
+export async function createAWSMarketplaceUserWithTeam({
+  customerIdentifier,
+  productCode,
+}: {
+  customerIdentifier: string;
+  productCode: string;
+}) {
+  const email = `${customerIdentifier}@aws.tezign.com`;
+  const name = customerIdentifier;
+  const logger = authLogger.child({ module: "aws-marketplace-user-creation" });
+
+  try {
+    // 使用事务确保原子性
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. 创建 Personal User
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _, ...user } = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: "", // 密码为空，无法普通登录
+          emailVerified: new Date(), // 跳过邮箱验证
+        },
+      });
+
+      // 2. 创建 UserProfile
+      await tx.userProfile.create({
+        data: { userId: user.id },
+      });
+
+      // 3. 创建 TokensAccount
+      await tx.tokensAccount.create({
+        data: {
+          userId: user.id,
+          permanentBalance: 0,
+          monthlyBalance: 0,
+        },
+      });
+
+      // 4. 创建 Team (seats: 3)
+      const team = await tx.team.create({
+        data: {
+          name: "", // 不设置默认名称
+          seats: 3, // AWS Team Plan 固定 3 个席位
+          ownerUserId: user.id,
+        },
+      });
+
+      // 5. 创建 Team Token Account
+      await tx.tokensAccount.create({
+        data: {
+          teamId: team.id,
+          permanentBalance: 0,
+          monthlyBalance: 0,
+        },
+      });
+
+      // 6. 创建 AWSMarketplaceCustomer 记录
+      await tx.aWSMarketplaceCustomer.create({
+        data: {
+          userId: user.id,
+          customerIdentifier,
+          productCode,
+          status: "active",
+          dimension: "team_plan",
+          quantity: 3,
+          subscribedAt: new Date(),
+        },
+      });
+
+      // 7. 赠送初始 tokens (1,000,000)
+      const signupAmount = 1_000_000;
+      await tx.tokensLog.create({
+        data: {
+          userId: user.id,
+          verb: "signup",
+          value: signupAmount,
+        },
+      });
+      await tx.tokensAccount.update({
+        where: { userId: user.id },
+        data: { permanentBalance: { increment: signupAmount } },
+      });
+
+      return { user, team };
+    });
+
+    // 8. 记录登录和获取信息
+    _recordLastLogin({ userId: result.user.id, provider: "aws-marketplace" });
+    _recordAcquisition({ userId: result.user.id });
+
+    logger.info({
+      msg: "AWS Marketplace user and team created",
+      userId: result.user.id,
+      customerIdentifier,
+      teamId: result.team.id,
+    });
+
+    return result;
+  } catch (error) {
+    // 处理唯一约束冲突（并发注册）
+    if ((error as { code?: string }).code === "P2002") {
+      logger.warn({
+        msg: "Concurrent AWS registration detected, fetching existing user",
+        customerIdentifier,
+      });
+
+      const existing = await prisma.aWSMarketplaceCustomer.findUnique({
+        where: { customerIdentifier },
+        include: {
+          user: true,
+        },
+      });
+
+      if (existing) {
+        const team = await prisma.team.findFirst({
+          where: { ownerUserId: existing.user.id },
+        });
+
+        logger.info({
+          msg: "Returning existing AWS user from concurrent registration",
+          userId: existing.user.id,
+          customerIdentifier,
+        });
+
+        return { user: existing.user, team };
+      }
+    }
+    throw error;
+  }
 }

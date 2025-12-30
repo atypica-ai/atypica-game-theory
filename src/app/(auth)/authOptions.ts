@@ -260,6 +260,47 @@ const authOptions: NextAuthOptions = {
         };
       },
     }),
+    CredentialsProvider({
+      id: "aws-marketplace",
+      credentials: {
+        customerIdentifier: { label: "Customer Identifier", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.customerIdentifier) {
+          throw new Error("CUSTOMER_IDENTIFIER_REQUIRED");
+        }
+
+        const awsCustomer = await prisma.aWSMarketplaceCustomer.findUnique({
+          where: { customerIdentifier: credentials.customerIdentifier as string },
+          include: { user: true },
+        });
+
+        if (!awsCustomer) {
+          throw new Error("AWS_CUSTOMER_NOT_FOUND");
+        }
+
+        if (awsCustomer.status !== "active") {
+          throw new Error("SUBSCRIPTION_INACTIVE");
+        }
+
+        if (awsCustomer.expiresAt && awsCustomer.expiresAt < new Date()) {
+          throw new Error("SUBSCRIPTION_EXPIRED");
+        }
+
+        recordLastLogin({
+          userId: awsCustomer.user.id,
+          provider: "aws-marketplace",
+        });
+
+        return {
+          id: awsCustomer.user.id,
+          name: awsCustomer.user.name,
+          email: awsCustomer.user.email!,
+          userType: "Personal",
+          teamIdAsMember: null,
+        };
+      },
+    }),
     GoogleProvider({
       clientId: process.env.OAUTH_GOOGLE_CLIENT_ID!,
       clientSecret: process.env.OAUTH_GOOGLE_CLIENT_SECRET!,
