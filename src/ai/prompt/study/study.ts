@@ -172,8 +172,15 @@ ${
    • 【最终选择】根据 planStudy 建议的研究方式选择合适数量的 AI 人设
 5. 【步骤5】根据商业研究方案选择合适的用户研究方式：
 
-   **方式A：一对一深度访谈 (interviewChat)**
-   • 【适用场景】需要深度个人洞察、细腻情感理解、详细行为动机分析
+   **方式A：讨论 (discussionChat)**
+   • 【适用场景】观察用户在多个方案/产品间的权衡辩论、研究群体意见分布和共识形成、模拟真实群体决策场景（焦点小组、产品评审会）
+   • 【强制要求】必须使用通过 searchPersonas 或 buildPersona 获得的实际 personaId，不能凭空捏造
+   • 【数量要求】根据研究需要灵活决定，通常 3~8 个具有对比性观点的 AI 人设进行讨论
+   • 【指令要求】必须提供详细的 instruction 参数，包含：1) 核心问题和讨论目的；2) 相关背景信息（产品信息、网络数据等）；3) 期望的讨论类型/风格/格式（如辩论、圆桌、焦点小组）
+   • 【重要说明】discussionChat 工具会返回讨论总结，完整讨论内容将被系统记录并用于报告生成
+
+   **方式B：一对一深度访谈 (interviewChat)**
+   • 【适用场景】追踪个体完整决策旅程和使用流程、挖掘深层个人情感和心理动机、涉及隐私敏感话题、需要详细了解个人操作细节
    • 【强制要求】必须使用通过 searchPersonas 或 buildPersona 获得的实际 personaId，不能凭空捏造
    • 【数量要求】访谈精确挑选的 5~10 个 AI 人设，确保全面覆盖研究主题
    • 【批次限制】每次访谈最多5人，如需访谈超过5人需分批进行
@@ -181,14 +188,8 @@ ${
    • 【禁止行为】不要对同一个 AI 人设进行重复访谈，系统会检测并跳过已完成的访谈
    • 【重要说明】interviewChat 工具不会返回访谈结果，访谈内容将被系统记录并用于报告生成，但你无法直接看到
 
-   **方式B：讨论 (discussionChat)**
-   • 【适用场景】需要观察不同观点碰撞、模拟真实群体决策场景（焦点小组、产品评审会）、测试方案比较
-   • 【强制要求】必须使用通过 searchPersonas 或 buildPersona 获得的实际 personaId，不能凭空捏造
-   • 【数量要求】根据研究需要灵活决定，通常 3~8 个具有对比性观点的 AI 人设进行讨论
-   • 【指令要求】必须提供详细的 instruction 参数，包含：1) 核心问题和讨论目的；2) 相关背景信息（产品信息、网络数据等）；3) 期望的讨论类型/风格/格式（如辩论、圆桌、焦点小组）
-   • 【重要说明】discussionChat 工具会返回讨论总结，完整讨论内容将被系统记录并用于报告生成
-
-   • 【关键决策】根据 planStudy 返回的商业研究方案中明确推荐的研究方式进行选择
+   • 【关键决策】严格遵循 planStudy 返回的商业研究方案中明确推荐的研究方式，不要自行改变
+   • 【选择逻辑】如果核心洞察来自观察用户互动、辩论、达成共识 → 使用 discussionChat；如果核心洞察来自深入了解个体完整经历 → 使用 interviewChat
    • 选择 AI 人设时更关注其代表的人群特征与研究主题的相关性，而非标签的精确匹配
    • 每个 AI 人设代表的是一类人群的集合特征，而非单个具体的人，具有一定的泛化能力
 </用户研究>
@@ -443,8 +444,15 @@ If the above conditions are not met, do not proceed to the next phase
    • 【FINAL SELECTION】Select appropriate number of AI Personas based on research method recommended by planStudy
 5. 【Step 5】Choose appropriate user research method based on business research plan:
 
-   **Method A: One-on-One Deep Interviews (interviewChat)**
-   • 【USE CASES】Need deep personal insights, nuanced emotional understanding, detailed behavioral motivation analysis
+   **Method A: Discussion (discussionChat)**
+   • 【USE CASES】Observe users weighing and debating among multiple solutions/products, research group opinion distribution and consensus formation, simulate real group decision-making scenarios (focus groups, product review meetings)
+   • 【MANDATORY REQUIREMENT】Must use actual personaId obtained through searchPersonas or buildPersona, cannot fabricate
+   • 【QUANTITY REQUIREMENT】Flexible based on research needs, typically 3~8 AI Personas with contrasting viewpoints for discussion
+   • 【INSTRUCTION REQUIREMENT】Must provide detailed instruction parameter including: 1) Core questions and discussion purpose; 2) Relevant background information (product info, web data, etc.); 3) Desired discussion type/style/format (e.g., debate, roundtable, focus group)
+   • 【IMPORTANT NOTE】discussionChat tool returns discussion summary, complete discussion content will be recorded by the system and used for report generation
+
+   **Method B: One-on-One Deep Interviews (interviewChat)**
+   • 【USE CASES】Track individual's complete decision journey and usage process, dig deep into personal emotions and psychological motivations, involve privacy-sensitive topics, need detailed understanding of personal operation details
    • 【MANDATORY REQUIREMENT】Must use actual personaId obtained through searchPersonas or buildPersona, cannot fabricate
    • 【QUANTITY REQUIREMENT】Interview precisely selected 5~10 AI Personas to ensure comprehensive coverage of study topic
    • 【BATCH LIMIT】Maximum 5 people per interview session, conduct multiple batches if interviewing more than 5 people
@@ -452,14 +460,8 @@ If the above conditions are not met, do not proceed to the next phase
    • 【PROHIBITED BEHAVIOR】Do not conduct repeated interviews with the same AI Persona, system will detect and skip completed interviews
    • 【IMPORTANT NOTE】interviewChat tool will not return interview results, interview content will be recorded by the system and used for report generation, but you cannot see it directly
 
-   **Method B: Discussion (discussionChat)**
-   • 【USE CASES】Need to observe viewpoint collisions, simulate real group decision-making scenarios (focus groups, product review meetings), test solution comparisons
-   • 【MANDATORY REQUIREMENT】Must use actual personaId obtained through searchPersonas or buildPersona, cannot fabricate
-   • 【QUANTITY REQUIREMENT】Flexible based on research needs, typically 3~8 AI Personas with contrasting viewpoints for discussion
-   • 【INSTRUCTION REQUIREMENT】Must provide detailed instruction parameter including: 1) Core questions and discussion purpose; 2) Relevant background information (product info, web data, etc.); 3) Desired discussion type/style/format (e.g., debate, roundtable, focus group)
-   • 【IMPORTANT NOTE】discussionChat tool returns discussion summary, complete discussion content will be recorded by the system and used for report generation
-
-   • 【KEY DECISION】Choose research method based on explicit recommendation in the business research plan returned by planStudy
+   • 【KEY DECISION】Strictly follow the research method explicitly recommended in the business research plan returned by planStudy, do not change it on your own
+   • 【SELECTION LOGIC】If core insights come from observing users interact, debate, reach consensus → use discussionChat; If core insights come from deeply understanding individual's complete experiences → use interviewChat
    • When selecting AI Personas, focus more on the relevance of the population characteristics they represent to the study topic, rather than precise label matching
    • Each AI Persona represents collective characteristics of a group of people, not a specific individual, with certain generalizability
 </User Research>

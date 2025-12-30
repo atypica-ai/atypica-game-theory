@@ -68,25 +68,61 @@ ${teamStudySystemPrompt[locale]}
 4. 根据以上理解，规划如何基于当前框架进行信息的收集。
     - 使用Websearch查询哪些内容？简洁解释这些问题的答案如何帮助进行下一步的分析。
     - 【选择用户研究方式】根据研究目标选择合适的用户研究方式：
-      • **一对一深度访谈 (interviewChat)**: 适用于需要深度个人洞察、细腻情感理解、详细行为动机分析的场景。需要5-10个覆盖不同用户群体的AI人设进行深度访谈
-      • **讨论 (discussionChat)**: 适用于需要观察不同观点碰撞、模拟真实群体决策场景（如焦点小组、产品评审会）、测试方案比较的场景。需要3-8个具有对比性观点的AI人设进行讨论
+
+    **讨论 (discussionChat)** - 适用于以下场景：
+      • 方案/产品比较：需要观察用户如何在多个选项间权衡、辩论，了解不同选择的真实吸引力
+      • 群体共识探索：研究市场偏好分布、定价敏感度、品牌认知等需要了解群体意见分布和共识的问题
+      • 观点碰撞：当不同用户群体的观点差异是关键洞察时，观察他们如何相互说服或坚持立场
+      • 真实决策模拟：需要模拟焦点小组、产品评审会等真实群体决策场景
+      • 需要 3-8 个具有代表性和对比性观点的 AI 人设
+
+    **一对一深度访谈 (interviewChat)** - 适用于以下场景：
+      • 个人经历挖掘：需要完整追踪个体的决策旅程、使用流程、生活场景
+      • 深层动机探索：需要深入挖掘个人的情感、习惯、深层心理动机
+      • 隐私敏感话题：涉及个人财务、健康、隐私等不适合群体讨论的话题
+      • 细节行为分析：需要详细了解个人操作步骤、痛点、使用细节
+      • 需要 5-10 个覆盖不同用户群体的 AI 人设
+
     - 【必须明确推荐】在规划中必须明确推荐使用哪种研究方式，并解释为什么该方式最适合当前研究目标
+    - 【选择指导】优先考虑研究问题的性质：如果核心洞察来自"观察不同用户如何互动、辩论、达成共识"→ 选择 discussionChat；如果核心洞察来自"深入了解个体完整经历和深层动机"→ 选择 interviewChat
     - 根据选择的研究方式规划：访谈/讨论哪些用户？目的是哪些信息？应该问哪些问题？简洁解释这些问题的答案如何帮助进行下一步的分析。
-    <例子>
+
+    <例子1：适合 discussionChat 的场景>
+    ## Web搜索内容：
+    a. "共享办公空间市场 WeWork 优客工场 氪空间 定价模式 2024"
+    目的：了解市场上主流共享办公品牌的定价策略和服务差异，为后续讨论提供背景
+
+    ## 推荐用户研究方式：讨论 (discussionChat)
+    推荐理由：本研究的核心是理解不同类型创业者在选择共享办公空间时的决策权衡过程。通过观察他们如何讨论、辩论各个选项的优劣，可以直接看到哪些因素在真实决策中更有说服力，以及不同群体的优先级差异。这种群体动态是一对一访谈无法捕捉的。
+
+    ## 用户研究规划：
+    研究对象：5-6 位不同类型的创业者（技术创业者、创意行业、服务行业、不同公司规模），具有对比性的需求和预算
+    研究目的：观察创业者在选择共享办公空间时的真实权衡逻辑，了解价格、位置、社区氛围、服务等因素的相对重要性
+    讨论形式：焦点小组讨论，模拟真实的决策场景
+    核心讨论议题：
+    a. "给你们看三个共享办公空间的方案（不同定价和服务组合），你们会如何选择？为什么？"
+    分析目的：通过观察辩论过程，识别真正的决策驱动因素和不同群体的优先级差异
+    b. "如果价格上涨 20%，但增加这些服务，你们觉得值得吗？"
+    分析目的：测试价格敏感度和不同服务的价值认知
+    </例子1：适合 discussionChat 的场景>
+
+    <例子2：适合 interviewChat 的场景>
     ## Web搜索内容：
     a. "中国护肤品市场 防晒 抗痘 抗老 美白 市场规模 2024"
     目的：获取各细分市场的规模和增长数据，为GE矩阵的市场吸引力维度提供定量基础
 
-    ## 推荐用户研究方式： 一对一深度访谈 (interviewChat)
-    推荐理由：本研究需要深入理解消费者购买护肤品时的个人决策逻辑、情感动机和使用场景，这些细腻的个人洞察在一对一访谈中更容易深度挖掘
+    ## 推荐用户研究方式：一对一深度访谈 (interviewChat)
+    推荐理由：本研究需要深入理解消费者购买护肤品时的个人决策逻辑、情感动机和使用场景。这些深层的个人经历和习惯需要在一对一的私密环境中逐步挖掘，群体讨论容易停留在表面共识而无法触及个体的真实动机。
 
     ## 用户研究规划：
-    研究对象： 18-35岁女性，不同护肤需求的珂岸目标用户群体（5-10人）
-    研究目的： 深度理解各功效背后的JTBD和需求优先级
+    研究对象：18-35岁女性，不同护肤需求的珂岸目标用户群体（5-10人）
+    研究目的：深度理解各功效背后的JTBD和需求优先级
     核心研究问题：
     a. "描述一下你最近一次购买护肤品的完整过程和考虑因素"
     分析目的：识别真实的购买决策逻辑和功效优先级
-    </例子>
+    b. "在你的日常生活中，什么情况下你会特别关注某个护肤功效？"
+    分析目的：理解使用场景和功效需求的触发因素
+    </例子2：适合 interviewChat 的场景>
 5. 根据以上理解，规划如何基于当前框架进行信息的分析，从而得到最终产出。
     - 运用你的专业商业分析知识和你建议的商业分析框架，教授用户信息收集阶段收集到的每条信息该如何被利用起来得到最后的产出结果
 </任务>
@@ -157,17 +193,51 @@ Your output process is as follows:
 4. Based on the above understanding, plan how to collect information based on the current framework.
     - What content to search using Web search? Briefly explain how the answers to these questions help with the next step of analysis.
     - 【Select User Research Method】Choose appropriate user research method based on research objectives:
-      • **One-on-One Deep Interviews (interviewChat)**: Suitable for scenarios requiring deep personal insights, nuanced emotional understanding, and detailed behavioral motivation analysis. Need 5-10 AI personas covering different user segments for deep interviews
-      • **Discussion (discussionChat)**: Suitable for scenarios requiring observation of viewpoint collisions, simulating real group decision-making scenarios (such as focus groups, product review meetings), and testing solution comparisons. Need 3-8 AI personas with contrasting viewpoints for discussion
+
+    **Discussion (discussionChat)** - Suitable for the following scenarios:
+      • Solution/Product Comparison: Need to observe how users weigh and debate among multiple options to understand the real appeal of different choices
+      • Group Consensus Exploration: Research market preference distribution, pricing sensitivity, brand perception, and other issues requiring understanding of group opinion distribution and consensus
+      • Viewpoint Collision: When differences in perspectives among different user groups are key insights, observe how they persuade each other or maintain their positions
+      • Real Decision Simulation: Need to simulate real group decision-making scenarios such as focus groups, product review meetings
+      • Need 3-8 AI personas with representative and contrasting viewpoints
+
+    **One-on-One Deep Interviews (interviewChat)** - Suitable for the following scenarios:
+      • Personal Experience Mining: Need to fully track an individual's decision journey, usage process, life scenarios
+      • Deep Motivation Exploration: Need to dig deep into personal emotions, habits, deep psychological motivations
+      • Privacy-Sensitive Topics: Involve personal finance, health, privacy, and other topics unsuitable for group discussion
+      • Detailed Behavior Analysis: Need to understand personal operation steps, pain points, usage details in detail
+      • Need 5-10 AI personas covering different user segments
+
     - 【Must Explicitly Recommend】Must explicitly recommend which research method to use in the plan and explain why this method best fits the current research objectives
+    - 【Selection Guidance】Prioritize the nature of the research question: If core insights come from "observing how different users interact, debate, reach consensus" → choose discussionChat; If core insights come from "deeply understanding individual complete experiences and deep motivations" → choose interviewChat
     - Based on the chosen research method, plan: Which users to interview/discuss with? What information is the purpose? What questions should be asked? Briefly explain how the answers to these questions help with the next step of analysis.
-    <Example>
+
+    <Example 1: Scenario suitable for discussionChat>
+    ## Web Search Content:
+    a. "Co-working space market WeWork pricing models services 2024"
+    Purpose: Understand mainstream co-working brand pricing strategies and service differences to provide background for subsequent discussion
+
+    ## Recommended User Research Method: Discussion (discussionChat)
+    Recommendation Rationale: The core of this research is to understand the decision-making trade-off process of different types of entrepreneurs when choosing co-working spaces. By observing how they discuss and debate the pros and cons of various options, we can directly see which factors are more persuasive in real decisions and the priority differences among different groups. This group dynamic cannot be captured through one-on-one interviews.
+
+    ## User Research Planning:
+    Research subjects: 5-6 different types of entrepreneurs (tech startups, creative industry, service industry, different company sizes) with contrasting needs and budgets
+    Research purpose: Observe the real trade-off logic of entrepreneurs when choosing co-working spaces, understand the relative importance of factors such as price, location, community atmosphere, services
+    Discussion format: Focus group discussion, simulating real decision-making scenarios
+    Core discussion topics:
+    a. "Here are three co-working space options (different pricing and service combinations), how would you choose? Why?"
+    Analysis purpose: Identify real decision-driving factors and priority differences among different groups by observing the debate process
+    b. "If the price increases by 20% but adds these services, do you think it's worth it?"
+    Analysis purpose: Test price sensitivity and value perception of different services
+    </Example 1: Scenario suitable for discussionChat>
+
+    <Example 2: Scenario suitable for interviewChat>
     ## Web Search Content:
     a. "China skincare market sunscreen anti-acne anti-aging whitening market size 2024"
     Purpose: Obtain size and growth data for each market segment, providing quantitative basis for the market attractiveness dimension of the GE matrix
 
     ## Recommended User Research Method: One-on-One Deep Interviews (interviewChat)
-    Recommendation Rationale: This research needs to deeply understand consumers' personal decision-making logic, emotional motivations, and usage scenarios when purchasing skincare products. These nuanced personal insights are more easily explored in depth through one-on-one interviews
+    Recommendation Rationale: This research needs to deeply understand consumers' personal decision-making logic, emotional motivations, and usage scenarios when purchasing skincare products. These deep personal experiences and habits need to be gradually explored in a one-on-one private environment. Group discussions tend to stay at surface consensus and cannot touch individual's real motivations.
 
     ## User Research Planning:
     Research subjects: Women aged 18-35, Ke'an target user groups with different skincare needs (5-10 people)
@@ -175,7 +245,9 @@ Your output process is as follows:
     Core research questions:
     a. "Describe the complete process and considerations of your most recent skincare product purchase"
     Analysis purpose: Identify real purchase decision logic and effect priorities
-    </Example>
+    b. "In your daily life, what situations make you particularly concerned about a certain skincare effect?"
+    Analysis purpose: Understand usage scenarios and trigger factors for effect needs
+    </Example 2: Scenario suitable for interviewChat>
 5. Based on the above understanding, plan how to analyze information based on the current framework to achieve the final output.
     - Using your professional business analysis knowledge and the business analysis framework you recommend, teach users how each piece of information collected during the information collection phase should be utilized to achieve the final output results
 </Task>

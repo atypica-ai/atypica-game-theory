@@ -121,7 +121,7 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
       <CardFooter className="pt-0">
         <Button asChild variant="outline" size="sm" className="w-full">
           <Link prefetch={true} href={`/study/${studyUserChat.token}`}>
-            <PlayIcon className="h-4 w-4 mr-1.5" />
+            <PlayIcon className="size-4" />
             {t("viewStudy")}
           </Link>
         </Button>

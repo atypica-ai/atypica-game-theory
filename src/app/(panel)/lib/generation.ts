@@ -75,7 +75,7 @@ export async function generatePersonaReply({
     messages: modelMessages,
     tools,
     stopWhen: stepCountIs(2),
-    maxOutputTokens: 500,
+    // maxOutputTokens: 500,  不能设置，会出现对话被截断的错觉
     temperature: 0.7,
     abortSignal,
   });
