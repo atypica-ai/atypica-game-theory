@@ -160,6 +160,7 @@ export type LLMModelName =
   | "gpt-5-mini"
   | "gpt-5-mini-responses"
   | "gpt-5-nano"
+  | "gpt-5.2"
   | "o3-mini"
   | "claude-3-5-haiku"
   | "claude-3-7-sonnet"
@@ -168,6 +169,7 @@ export type LLMModelName =
   | "claude-haiku-4-5"
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
+  | "gemini-3-flash"
   | "gemini-2.5-flash-image"
   | "gemini-3-pro-image"
   | "grok-4-1-fast-non-reasoning"
@@ -187,6 +189,7 @@ export function llm(modelName: LLMModelName) {
       case "gpt-5-mini":
       case "gpt-5-mini-responses":
       case "gpt-5-nano":
+      case "gpt-5.2":
         if (process.env.AZURE_EASTUS2_API_KEY) {
           break;
         } else {
@@ -212,6 +215,7 @@ export function llm(modelName: LLMModelName) {
       case "claude-haiku-4-5":
       case "gemini-2.5-flash":
       case "gemini-2.5-pro":
+      case "gemini-3-flash":
       case "gemini-3-pro-image":
         if (process.env.GOOGLE_VERTEX_PRIVATE_KEY) {
           break;
@@ -245,6 +249,8 @@ export function llm(modelName: LLMModelName) {
       return azureEastUS2.responses("gpt-5-mini");
     case "gpt-5-nano":
       return azureEastUS2("gpt-5-nano");
+    case "gpt-5.2":
+      return azureEastUS2("gpt-5.2");
     case "gpt-4.1":
       return azure("gpt-4.1"); // options 支持 parallelToolCalls 参数
     case "gpt-4.1-mini":
@@ -277,6 +283,8 @@ export function llm(modelName: LLMModelName) {
       return vertex("gemini-2.5-flash");
     case "gemini-2.5-pro":
       return vertex("gemini-2.5-pro");
+    case "gemini-3-flash":
+      return vertexGlobal("gemini-3-flash-preview");
     case "gemini-2.5-flash-image":
       return vertexGlobal("gemini-2.5-flash-image");
     case "gemini-3-pro-image":
