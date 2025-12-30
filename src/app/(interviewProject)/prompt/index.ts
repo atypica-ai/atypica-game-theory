@@ -19,7 +19,11 @@ export { interviewAgentSystemPromptForPersona } from "./persona";
 export { interviewQuestionRefinementPrompt } from "./question-refinement";
 
 // 报告生成 Prompts
-export { interviewReportPrologue, interviewReportSystemPrompt } from "./report";
+export {
+  interviewReportAppendSystemPrompt,
+  interviewReportPrologue,
+  interviewReportSystemPrompt,
+} from "./report";
 
 /**
  * Interview Agent System Prompt Router
