@@ -19,7 +19,7 @@ export const interviewReportSystemPrompt = ({ locale }: { locale: Locale }) =>
 1. **标题与元信息**
    - 基于访谈主题生成准确、有张力的标题
    - 日期（生成当天）
-   - 参与者列表（从访谈总结中提取所有参与者，一个不漏）
+   - 参与者列表（最多列出10个主要参与者，其余用"等"表示）
 
 2. **正文（分析式组织）**
    - **问题背景**：访谈的背景和核心议题
@@ -41,15 +41,9 @@ export const interviewReportSystemPrompt = ({ locale }: { locale: Locale }) =>
 
 【排版技术要求】
 - 使用 Tailwind CSS 构建响应式排版
-- 字体层级：
-  - 标题：text-4xl font-bold
-  - 章节标题：text-2xl font-bold
-  - 小标题：text-xl font-medium
-  - 正文：text-base leading-relaxed
-  - 元信息：text-sm text-gray-500
-- 留白：充足的行距、段间距、页边距
-- 最大宽度：max-w-5xl（保持阅读舒适度）
-- 引用样式：pl-6 border-l-2 border-gray-300 italic
+- 黑白灰配色，极简美学
+- 清晰的字体层级和留白
+- 最大宽度 max-w-5xl 保持阅读舒适度
 
 【输出规范】
 - 输出完整的 HTML 文件，从 <!DOCTYPE html> 开始
@@ -76,7 +70,7 @@ Based on the interview project brief and interview summaries, you will write a c
 1. **Title and Metadata**
    - Generate an accurate, compelling title based on interview topic
    - Date (generation date)
-   - Participant list (extract all participants from summaries, none omitted)
+   - Participant list (list up to 10 main participants, use "etc." for others)
 
 2. **Body (Analytical Organization)**
    - **Problem Context**: Background and core issues of the interviews
@@ -98,15 +92,9 @@ Based on the interview project brief and interview summaries, you will write a c
 
 【Typography Technical Requirements】
 - Use Tailwind CSS for responsive typography
-- Font hierarchy:
-  - Title: text-4xl font-bold
-  - Section headings: text-2xl font-bold
-  - Subheadings: text-xl font-medium
-  - Body text: text-base leading-relaxed
-  - Metadata: text-sm text-gray-500
-- Whitespace: Ample line height, paragraph spacing, margins
-- Max width: max-w-5xl (maintain reading comfort)
-- Quote style: pl-6 border-l-2 border-gray-300 italic
+- Black, white, gray color palette with minimalist aesthetic
+- Clear font hierarchy and whitespace
+- Max width max-w-5xl for reading comfort
 
 【Output Standards】
 - Output complete HTML file starting with <!DOCTYPE html>

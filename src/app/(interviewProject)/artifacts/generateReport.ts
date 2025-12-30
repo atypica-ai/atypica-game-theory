@@ -208,11 +208,11 @@ export async function generateInterviewReportContent({
           text:
             locale === "zh-CN"
               ? isFirstBatch
-                ? `【访谈对话总结】\n${summaries}`
-                : `【新增访谈对话总结】（第 ${currentBatchNumber} 批，共 ${totalBatches} 批）\n${summaries}`
+                ? `【访谈对话总结】${summaries.length}人\n${summaries}`
+                : `【新增访谈对话总结】${summaries.length}人（第 ${currentBatchNumber} 批，共 ${totalBatches} 批）\n${summaries}`
               : isFirstBatch
-                ? `【Interview Summaries】\n${summaries}`
-                : `【New Interview Summaries】(Batch ${currentBatchNumber} of ${totalBatches})\n${summaries}`,
+                ? `【Interview Summaries】${summaries.length} People\n${summaries}`
+                : `【New Interview Summaries】${summaries.length} People (Batch ${currentBatchNumber} of ${totalBatches})\n${summaries}`,
         },
       ],
     });
