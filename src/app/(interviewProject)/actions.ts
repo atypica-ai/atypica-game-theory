@@ -239,12 +239,27 @@ export async function createPersonaInterviewSession({
       };
     }
 
-    const [project, persona] = await Promise.all([
+    const [project, persona, existingPersonaSessionsCount] = await Promise.all([
       prisma.interviewProject
         .findUniqueOrThrow({ where: { id: projectId, userId: user.id } })
         .catch(() => notFound()),
       prisma.persona.findUniqueOrThrow({ where: { token: personaToken } }).catch(() => notFound()),
+      prisma.interviewSession.count({
+        where: {
+          projectId: projectId,
+          intervieweePersonaId: { not: null },
+        },
+      }),
     ]);
+
+    // Check if project has reached the maximum number of persona interviews (200)
+    if (existingPersonaSessionsCount >= 200) {
+      return {
+        success: false,
+        message: "This project has reached the maximum limit of 200 AI persona interviews",
+        code: "forbidden",
+      };
+    }
 
     const userChat = await createUserChat({
       userId: user.id,
