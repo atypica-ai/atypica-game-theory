@@ -1,0 +1,88 @@
+/* https://streamdown.ai/docs/getting-started#tailwind-v4 */
+@source "../../../node_modules/streamdown/dist/*.js";
+
+/* Headings */
+[data-streamdown="heading-1"] {
+  font-size: 1.4em;
+}
+[data-streamdown="heading-2"] {
+  font-size: 1.3em;
+}
+[data-streamdown="heading-3"] {
+  font-size: 1.2em;
+}
+[data-streamdown="heading-4"] {
+  font-size: 1.1em;
+}
+[data-streamdown="heading-5"] {
+  font-size: 1em;
+}
+[data-streamdown="heading-6"] {
+  font-size: 0.9em;
+}
+/* Text elements */
+[data-streamdown="strong"] {
+  font-size: 1em;
+}
+[data-streamdown="link"] {
+  font-size: 1em;
+}
+[data-streamdown="inline-code"] {
+  font-size: 1em;
+}
+/* Lists */
+[data-streamdown="ordered-list"] {
+  font-size: 1em;
+}
+[data-streamdown="unordered-list"] {
+  font-size: 1em;
+}
+[data-streamdown="list-item"] {
+  font-size: 1em;
+}
+/* Blocks */
+[data-streamdown="blockquote"] {
+  font-size: 1em;
+}
+[data-streamdown="horizontal-rule"] {
+  font-size: 1em;
+}
+/* Code */
+[data-streamdown="code-block"] {
+  font-size: 1em;
+}
+[data-streamdown="code-block-body"] {
+  font-size: 1em;
+}
+[data-streamdown="mermaid-block"] {
+  font-size: 1em;
+}
+/* Tables */
+[data-streamdown="table-wrapper"] {
+  font-size: 1em;
+}
+[data-streamdown="table"] {
+  font-size: 1em;
+}
+[data-streamdown="table-header"] {
+  font-size: 1em;
+}
+[data-streamdown="table-body"] {
+  font-size: 1em;
+}
+[data-streamdown="table-row"] {
+  font-size: 1em;
+}
+[data-streamdown="table-header-cell"] {
+  font-size: 1em;
+}
+[data-streamdown="table-cell"] {
+  font-size: 1em;
+}
+/* Other */
+[data-streamdown="superscript"] {
+  font-size: 1em;
+}
+[data-streamdown="subscript"] {
+  font-size: 1em;
+}
