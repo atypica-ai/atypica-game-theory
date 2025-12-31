@@ -1,5 +1,7 @@
 import "server-only";
 
+import { manuallyAddTeamSubscription } from "@/app/payment/manualSubscription";
+import { createTeam } from "@/app/team/lib";
 import { trackEventServerSide, trackUserServerSide } from "@/lib/analytics/server";
 import { getToltFromCookieStore } from "@/lib/analytics/tolt";
 import { trackToltSignup } from "@/lib/analytics/tolt/lib";
@@ -322,13 +324,13 @@ export async function DEPRECATED_upsertUserProfile({ userId }: { userId: number 
  * @param customerIdentifier - AWS 生成的客户唯一标识符
  * @param productCode - AWS Marketplace 产品代码
  *
- * @returns { user, team } - 创建的用户和team
+ * @returns { personalUser, team, teamUser } - Personal User、Team 和 Team Member User
  *
  * 特点：
  * - 邮箱格式：${customerIdentifier}@aws.tezign.com
  * - 密码为空（无法普通登录，只能从AWS Portal进入）
  * - 自动创建 Team（seats: 3，最多3个成员）
- * - 赠送初始 tokens (1,000,000)
+ * - 使用 createTeam 函数复用现有逻辑
  * - 处理并发注册（通过唯一约束冲突检测）
  */
 export async function createAWSMarketplaceUserWithTeam({
@@ -337,15 +339,18 @@ export async function createAWSMarketplaceUserWithTeam({
 }: {
   customerIdentifier: string;
   productCode: string;
-}) {
+}): Promise<{
+  personalUser: Omit<User, "password">;
+  team: Team;
+  teamUser: User;
+}> {
   const email = `${customerIdentifier}@aws.tezign.com`;
   const name = customerIdentifier;
   const logger = authLogger.child({ module: "aws-marketplace-user-creation" });
 
   try {
-    // 使用事务确保原子性
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. 创建 Personal User
+    // 1. 创建 Personal User（不创建 tokensAccount，AWS 用户使用 team 的 tokens）
+    const personalUser = await prisma.$transaction(async (tx) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...user } = await tx.user.create({
         data: {
@@ -356,80 +361,89 @@ export async function createAWSMarketplaceUserWithTeam({
         },
       });
 
-      // 2. 创建 UserProfile
+      // 创建 UserProfile
       await tx.userProfile.create({
         data: { userId: user.id },
       });
 
-      // 3. 创建 TokensAccount
-      await tx.tokensAccount.create({
-        data: {
-          userId: user.id,
-          permanentBalance: 0,
-          monthlyBalance: 0,
-        },
-      });
+      // AWS 用户不需要 personal tokensAccount，他们使用 team 的 tokens
 
-      // 4. 创建 Team (seats: 3)
-      const team = await tx.team.create({
-        data: {
-          name: "", // 不设置默认名称
-          seats: 3, // AWS Team Plan 固定 3 个席位
-          ownerUserId: user.id,
-        },
-      });
-
-      // 5. 创建 Team Token Account
-      await tx.tokensAccount.create({
-        data: {
-          teamId: team.id,
-          permanentBalance: 0,
-          monthlyBalance: 0,
-        },
-      });
-
-      // 6. 创建 AWSMarketplaceCustomer 记录
-      await tx.aWSMarketplaceCustomer.create({
-        data: {
-          userId: user.id,
-          customerIdentifier,
-          productCode,
-          status: "active",
-          dimension: "team_plan",
-          quantity: 3,
-          subscribedAt: new Date(),
-        },
-      });
-
-      // 7. 赠送初始 tokens (1,000,000)
-      const signupAmount = 1_000_000;
-      await tx.tokensLog.create({
-        data: {
-          userId: user.id,
-          verb: "signup",
-          value: signupAmount,
-        },
-      });
-      await tx.tokensAccount.update({
-        where: { userId: user.id },
-        data: { permanentBalance: { increment: signupAmount } },
-      });
-
-      return { user, team };
+      return user;
     });
 
-    // 8. 记录登录和获取信息
-    _recordLastLogin({ userId: result.user.id, provider: "aws-marketplace" });
-    _recordAcquisition({ userId: result.user.id });
+    // 2. 使用 createTeam 创建 Team 和 Team Member User
+    const { team, teamUser } = await createTeam({
+      name: "", // AWS teams 初始没有名称
+      ownerUser: personalUser,
+    });
+
+    // 3. 更新 Team seats 为 3（AWS Team Plan）
+    await prisma.team.update({
+      where: { id: team.id },
+      data: { seats: 3 },
+    });
+
+    // 4. 创建 AWSMarketplaceCustomer 记录
+    await prisma.aWSMarketplaceCustomer.create({
+      data: {
+        userId: personalUser.id,
+        customerIdentifier,
+        productCode,
+        status: "active",
+        dimension: "team_plan",
+        quantity: 3,
+        subscribedAt: new Date(),
+      },
+    });
+
+    // 5. 记录登录和获取信息（使用 teamUser.id）
+    _recordLastLogin({ userId: teamUser.id, provider: "aws-marketplace" });
+    _recordAcquisition({ userId: personalUser.id });
+
+    // 6. 创建团队订阅记录（1个月，team plan，3 seats）
+    await manuallyAddTeamSubscription({
+      teamId: team.id,
+      seats: 3,
+      plan: "team",
+      startsAt: new Date(),
+      months: 1,
+    });
+
+    // 7. 从 AWS Entitlement API 同步订阅过期时间
+    const { checkCustomerSubscription } = await import("@/lib/aws-marketplace/entitlement");
+    const awsSubscription = await checkCustomerSubscription(customerIdentifier);
+
+    if (awsSubscription.active) {
+      const expiresAt = (awsSubscription as { active: true; expiresAt?: Date }).expiresAt;
+      if (expiresAt) {
+        const subscription = await prisma.subscription.findFirst({
+          where: { teamId: team.id },
+        });
+
+        if (subscription) {
+          await prisma.subscription.update({
+            where: { id: subscription.id },
+            data: { endsAt: expiresAt },
+          });
+          logger.info({
+            msg: "Synced subscription expiration from AWS",
+            userId: personalUser.id,
+            teamId: team.id,
+            expiresAt,
+          });
+        }
+      }
+    }
 
     logger.info({
       msg: "AWS Marketplace user and team created",
-      userId: result.user.id,
+      userId: personalUser.id,
       customerIdentifier,
-      teamId: result.team.id,
+      teamId: team.id,
+      teamUserId: teamUser.id,
     });
 
-    return result;
+    return { personalUser, team, teamUser };
   } catch (error) {
     // 处理唯一约束冲突（并发注册）
     if ((error as { code?: string }).code === "P2002") {
@@ -450,13 +464,74 @@ export async function createAWSMarketplaceUserWithTeam({
           where: { ownerUserId: existing.user.id },
         });
 
-        logger.info({
-          msg: "Returning existing AWS user from concurrent registration",
-          userId: existing.user.id,
-          customerIdentifier,
+        // 查找 Team Member User
+        const teamUser = await prisma.user.findFirst({
+          where: {
+            personalUserId: existing.user.id,
+            teamIdAsMember: team?.id,
+          },
         });
 
-        return { user: existing.user, team };
+        if (team && teamUser) {
+          logger.info({
+            msg: "Returning existing AWS user from concurrent registration",
+            userId: existing.user.id,
+            customerIdentifier,
+            teamUserId: teamUser.id,
+          });
+
+          // 检查是否已有订阅记录，没有则创建
+          const existingSubscription = await prisma.subscription.findFirst({
+            where: { teamId: team.id },
+          });
+
+          if (!existingSubscription) {
+            await manuallyAddTeamSubscription({
+              teamId: team.id,
+              seats: 3,
+              plan: "team",
+              startsAt: new Date(),
+              months: 1,
+            });
+
+            // 从 AWS Entitlement API 同步订阅过期时间
+            const { checkCustomerSubscription } = await import("@/lib/aws-marketplace/entitlement");
+            const awsSubscription = await checkCustomerSubscription(customerIdentifier);
+
+            if (awsSubscription.active) {
+              const expiresAt = (awsSubscription as { active: true; expiresAt?: Date }).expiresAt;
+              if (expiresAt) {
+                const newSubscription = await prisma.subscription.findFirst({
+                  where: { teamId: team.id },
+                });
+
+                if (newSubscription) {
+                  await prisma.subscription.update({
+                    where: { id: newSubscription.id },
+                    data: { endsAt: expiresAt },
+                  });
+                  logger.info({
+                    msg: "Synced subscription expiration from AWS for concurrent registration",
+                    userId: existing.user.id,
+                    teamId: team.id,
+                    expiresAt,
+                  });
+                }
+              }
+            }
+
+            logger.info({
+              msg: "Created subscription for existing AWS user",
+              userId: existing.user.id,
+              teamId: team.id,
+            });
+          }
+
+          // 记录登录（使用 teamUser.id）
+          _recordLastLogin({ userId: teamUser.id, provider: "aws-marketplace" });
+
+          return { personalUser: existing.user, team, teamUser };
+        }
       }
     }
     throw error;

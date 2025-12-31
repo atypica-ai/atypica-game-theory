@@ -42,6 +42,7 @@ const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
+    maxAge: 3 * 24 * 60 * 60, // 3 天 (AWS 用户可随时从 Portal 重新进入)
   },
   cookies: {
     sessionToken: {
