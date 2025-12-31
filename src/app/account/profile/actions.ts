@@ -16,6 +16,16 @@ export async function updateName(
   values: z.infer<typeof nameFormSchema>,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
+    // 检查是否是 AWS Marketplace 用户
+    const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
+      where: { userId: user.personalUserId || user.id },
+      select: { id: true },
+    });
+
+    if (awsUser) {
+      return { success: false, message: "AWS Marketplace users cannot change their name." };
+    }
+
     try {
       // Validate input using the schema
       const validatedData = nameFormSchema.parse(values);
@@ -46,6 +56,16 @@ export async function changePassword(
   values: z.infer<typeof passwordFormSchema>,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
+    // 检查是否是 AWS Marketplace 用户
+    const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
+      where: { userId: user.personalUserId || user.id },
+      select: { id: true },
+    });
+
+    if (awsUser) {
+      return { success: false, message: "AWS Marketplace users cannot change their password." };
+    }
+
     try {
       // Validate input using the schema
       const validatedData = passwordFormSchema.parse(values);
@@ -62,7 +82,7 @@ export async function changePassword(
 }
 
 export async function getCurrentUser(): Promise<
-  ServerActionResult<Pick<User, "id" | "name" | "email">>
+  ServerActionResult<Pick<User, "id" | "name" | "email"> & { isAwsUser: boolean }>
 > {
   return withAuth(async (user) => {
     const currentUser = await prisma.user.findUnique({
@@ -71,6 +91,7 @@ export async function getCurrentUser(): Promise<
         id: true,
         name: true,
         email: true,
+        personalUserId: true,
       },
     });
 
@@ -78,6 +99,19 @@ export async function getCurrentUser(): Promise<
       return { success: false, message: "User not found." };
     }
 
-    return { success: true, data: currentUser };
+    // 检查是否是 AWS Marketplace 用户
+    const personalUserId = currentUser.personalUserId || currentUser.id;
+    const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
+      where: { userId: personalUserId },
+      select: { id: true },
+    });
+
+    return {
+      success: true,
+      data: {
+        ...currentUser,
+        isAwsUser: !!awsUser
+      }
+    };
   });
 }

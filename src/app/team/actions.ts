@@ -217,6 +217,7 @@ export async function getUserTeamStatusAction(): Promise<
     teamRole: "owner" | "member" | "removed" | null;
     canSwitchIdentity: boolean;
     teamName: string | null;
+    isAwsUser: boolean;
   }>
 > {
   const t = await getTranslations("Team.Actions");
@@ -229,6 +230,7 @@ export async function getUserTeamStatusAction(): Promise<
         teamRole: null,
         canSwitchIdentity: false,
         teamName: null,
+        isAwsUser: false,
       },
     };
   }
@@ -236,11 +238,24 @@ export async function getUserTeamStatusAction(): Promise<
   try {
     const currentUser = await prismaRO.user.findUniqueOrThrow({
       where: { id: user.id },
+      select: {
+        id: true,
+        teamIdAsMember: true,
+        personalUserId: true,
+      },
     });
 
     let teamRole: "owner" | "member" | "removed" | null = null;
     let canSwitchIdentity = false;
     let teamName: string | null = null;
+
+    // 检查是否为 AWS Marketplace 用户
+    const personalUserId = currentUser.personalUserId || currentUser.id;
+    const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
+      where: { userId: personalUserId },
+      select: { id: true },
+    });
+    const isAwsUser = !!awsUser;
 
     // 检查是否为个人用户
     if (!currentUser.teamIdAsMember) {
@@ -278,6 +293,7 @@ export async function getUserTeamStatusAction(): Promise<
         teamRole,
         canSwitchIdentity,
         teamName,
+        isAwsUser,
       },
     };
   } catch (error) {

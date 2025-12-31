@@ -306,7 +306,7 @@ export default function AccountSidebar() {
                 </li>
               );
             })}
-            {teamStatus?.canSwitchIdentity && (
+            {teamStatus?.canSwitchIdentity && !teamStatus?.isAwsUser && (
               <li>
                 <TeamSwitchButton>
                   <Button variant="ghost" className="w-full justify-start">

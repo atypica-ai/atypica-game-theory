@@ -44,6 +44,7 @@ export default function ProfilePage() {
   const t = useTranslations("AccountPage.profile");
   const [isLoading, setIsLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
+  const [isAwsUser, setIsAwsUser] = useState(false);
 
   const nameForm = useForm<z.infer<typeof nameFormSchema>>({
     resolver: standardSchemaResolver(nameFormSchema),
@@ -67,6 +68,7 @@ export default function ProfilePage() {
       if (result.success) {
         nameForm.reset({ name: result.data.name || "" });
         setUserEmail(result.data.email || "");
+        setIsAwsUser(result.data.isAwsUser || false);
       } else {
         toast.error("Failed to load user data", { description: result.message });
       }
@@ -155,80 +157,94 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* AWS User Notice */}
+          {isAwsUser && (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
+              <p className="text-sm text-amber-900">
+                您是通过 AWS Marketplace 访问的用户，无法修改用户名和密码。
+                如需更改账户信息，请通过 AWS Marketplace 管理您的订阅。
+              </p>
+            </div>
+          )}
+
           {/* Name Section */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-gray-900">{t("nameCard.nameLabel")}</h3>
-            <Form {...nameForm}>
-              <form onSubmit={nameForm.handleSubmit(onNameSubmit)} className="space-y-4">
-                <FormField
-                  control={nameForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          placeholder={t("nameCard.namePlaceholder")}
-                          {...field}
-                          className="max-w-sm"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" disabled={nameForm.formState.isSubmitting} size="sm">
-                  {nameForm.formState.isSubmitting ? t("saving") : t("saveChanges")}
-                </Button>
-              </form>
-            </Form>
-            <p className="text-xs text-muted-foreground">{t("nameCard.description")}</p>
-          </div>
+          {!isAwsUser && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-900">{t("nameCard.nameLabel")}</h3>
+              <Form {...nameForm}>
+                <form onSubmit={nameForm.handleSubmit(onNameSubmit)} className="space-y-4">
+                  <FormField
+                    control={nameForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            placeholder={t("nameCard.namePlaceholder")}
+                            {...field}
+                            className="max-w-sm"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" disabled={nameForm.formState.isSubmitting} size="sm">
+                    {nameForm.formState.isSubmitting ? t("saving") : t("saveChanges")}
+                  </Button>
+                </form>
+              </Form>
+              <p className="text-xs text-muted-foreground">{t("nameCard.description")}</p>
+            </div>
+          )}
 
           {/* Divider */}
-          <div className="border-t"></div>
+          {!isAwsUser && <div className="border-t"></div>}
 
           {/* Password Section */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-gray-900">{t("passwordCard.title")}</h3>
-            <Form {...passwordForm}>
-              <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
-                <FormField
-                  control={passwordForm.control}
-                  name="newPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs">
-                        {t("passwordCard.newPasswordLabel")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input type="password" {...field} className="max-w-sm" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={passwordForm.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs">
-                        {t("passwordCard.confirmPasswordLabel")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input type="password" {...field} className="max-w-sm" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" disabled={passwordForm.formState.isSubmitting} size="sm">
-                  {passwordForm.formState.isSubmitting ? t("saving") : t("updatePassword")}
-                </Button>
-              </form>
-            </Form>
-            <p className="text-xs text-muted-foreground">{t("passwordCard.description")}</p>
-          </div>
+          {!isAwsUser && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-900">{t("passwordCard.title")}</h3>
+              <Form {...passwordForm}>
+                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                  <FormField
+                    control={passwordForm.control}
+                    name="newPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          {t("passwordCard.newPasswordLabel")}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="password" {...field} className="max-w-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={passwordForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs">
+                          {t("passwordCard.confirmPasswordLabel")}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="password" {...field} className="max-w-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" disabled={passwordForm.formState.isSubmitting} size="sm">
+                    {passwordForm.formState.isSubmitting ? t("saving") : t("updatePassword")}
+                  </Button>
+                </form>
+              </Form>
+              <p className="text-xs text-muted-foreground">{t("passwordCard.description")}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

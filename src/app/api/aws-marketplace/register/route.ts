@@ -243,7 +243,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       // Create JWT token for TEAM USER (not personal user)
       const sessionToken = await encode({
         token: {
-          sub: teamUser.id.toString(), // Use teamUser.id
+          id: teamUser.id.toString(), // Use id (not sub) for NextAuth compatibility
           _ut: 1, // 1 = TeamMember
           _tid: team.id, // Team ID
         },
@@ -311,7 +311,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
     // Create JWT token for TEAM USER (not personal user)
     const sessionToken = await encode({
       token: {
-        sub: teamUser.id.toString(), // Use teamUser.id
+        id: teamUser.id.toString(), // Use id (not sub) for NextAuth compatibility
         _ut: 1, // 1 = TeamMember
         _tid: team.id, // Team ID
       },

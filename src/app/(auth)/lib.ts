@@ -327,7 +327,7 @@ export async function DEPRECATED_upsertUserProfile({ userId }: { userId: number 
  * @returns { personalUser, team, teamUser } - Personal User、Team 和 Team Member User
  *
  * 特点：
- * - 邮箱格式：${customerIdentifier}@aws.tezign.com
+ * - 邮箱格式：${customerIdentifier}@aws.atypica.ai
  * - 密码为空（无法普通登录，只能从AWS Portal进入）
  * - 自动创建 Team（seats: 3，最多3个成员）
  * - 使用 createTeam 函数复用现有逻辑
@@ -344,7 +344,7 @@ export async function createAWSMarketplaceUserWithTeam({
   team: Team;
   teamUser: User;
 }> {
-  const email = `${customerIdentifier}@aws.tezign.com`;
+  const email = `${customerIdentifier}@aws.atypica.ai`;
   const name = customerIdentifier;
   const logger = authLogger.child({ module: "aws-marketplace-user-creation" });
 
