@@ -2,7 +2,6 @@
 import { createOrGetUserPersonaChat, fetchPersonaWithDetails } from "@/app/(persona)/actions";
 import { AnalysisResult } from "@/app/(persona)/persona/import/[personaImportId]/AnalysisResult";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
-import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -21,6 +20,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Streamdown } from "streamdown";
 
 export function PersonaDetailClient({
   persona,
@@ -171,7 +171,7 @@ export function PersonaDetailClient({
 
           <div>
             <div className="text-xs max-w-none p-4 bg-muted/50 rounded-lg border">
-              <Markdown>{extractSummaryFromPrompt(persona.prompt)}</Markdown>
+              <Streamdown>{extractSummaryFromPrompt(persona.prompt)}</Streamdown>
             </div>
           </div>
         </div>

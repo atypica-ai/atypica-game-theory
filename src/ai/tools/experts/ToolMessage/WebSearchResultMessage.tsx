@@ -1,9 +1,9 @@
 import { StudyUITools, ToolName } from "@/ai/tools/types";
-import { Markdown } from "@/components/markdown";
 import { ToolUIPart } from "ai";
 import { ExternalLinkIcon, ListIcon, MessageSquareIcon, SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { Streamdown } from "streamdown";
 
 export const WebSearchResultMessage = ({
   toolInvocation,
@@ -28,7 +28,7 @@ export const WebSearchResultMessage = ({
           <MessageSquareIcon className="size-3 shrink-0 mt-0.5" />
           <div className="flex-1 overflow-hidden">
             <div className="leading-3 text-foreground/80 mb-1">{t("summary")}:</div>
-            <Markdown>{toolInvocation.output.answer}</Markdown>
+            <Streamdown>{toolInvocation.output.answer}</Streamdown>
           </div>
         </div>
       )}

@@ -1,17 +1,17 @@
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
-import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
 import { isToolUIPart } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import React, { PropsWithChildren, ReactNode, useCallback } from "react";
+import { Streamdown } from "streamdown";
 
 const PlainText = ({ children }: PropsWithChildren) => {
   return (
     <div className="text-sm flex flex-col gap-4">
-      <Markdown>{children as string}</Markdown>
+      <Streamdown>{children as string}</Streamdown>
     </div>
   );
 };

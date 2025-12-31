@@ -1,5 +1,4 @@
 import { StudyUITools, ToolName } from "@/ai/tools/types";
-import { Markdown } from "@/components/markdown";
 import { ToolUIPart } from "ai";
 
 import {
@@ -12,6 +11,7 @@ import {
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { FC } from "react";
+import { Streamdown } from "streamdown";
 
 export const WebSearchConsole: FC<{
   toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.webSearch>>;
@@ -37,7 +37,7 @@ export const WebSearchConsole: FC<{
               <MessageSquareIcon className="size-3 shrink-0 mt-0.5" />
               <div className="flex-1 overflow-hidden">
                 <div className="leading-3 text-foreground/80 mb-2">{t("summary")}:</div>
-                <Markdown>{toolInvocation.output.answer}</Markdown>
+                <Streamdown>{toolInvocation.output.answer}</Streamdown>
               </div>
             </div>
           )}

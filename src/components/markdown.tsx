@@ -92,7 +92,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline break-words"
+          className="text-primary hover:underline wrap-break-word"
           {...props}
         >
           {children}
@@ -108,6 +108,9 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   );
 };
 
+/**
+ * @deprecated 已经不再使用，改用 Streamdown 了
+ */
 export const Markdown = React.memo(
   NonMemoizedMarkdown,
   (prevProps, nextProps) => prevProps.children === nextProps.children,

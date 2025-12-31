@@ -3,7 +3,6 @@ import { StudyUITools, TStudyMessageWithTool } from "@/ai/tools/types";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import ToolResultTable from "@/components/chat/ToolResultTable";
-import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import {
@@ -25,6 +24,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Streamdown } from "streamdown";
 import { useStudyContext } from "./hooks/StudyContext";
 
 const ToolInvocationMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
@@ -124,7 +124,7 @@ const ToolInvocationMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
 const PlainText = ({ children }: PropsWithChildren) => {
   return children ? (
     <div className="text-sm">
-      <Markdown>{children as string}</Markdown>
+      <Streamdown>{children as string}</Streamdown>
     </div>
   ) : null;
 };

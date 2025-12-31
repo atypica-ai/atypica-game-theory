@@ -3,9 +3,9 @@
 import { fetchDiscussionTimeline } from "@/app/(panel)/(page)/actions";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Markdown } from "@/components/markdown";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { useCallback, useEffect, useState } from "react";
+import { Streamdown } from "streamdown";
 
 export function PanelConsole({ timelineToken }: { timelineToken: string }) {
   const [timelineEvents, setTimelineEvents] = useState<DiscussionTimelineEvent[]>([]);
@@ -70,7 +70,7 @@ export function PanelConsole({ timelineToken }: { timelineToken: string }) {
                       {event.author === "user" ? "Core Question" : "Moderator Question"}
                     </div>
                     <div className="text-sm">
-                      <Markdown>{event.content}</Markdown>
+                      <Streamdown>{event.content}</Streamdown>
                     </div>
                   </div>
                 </div>
@@ -89,7 +89,7 @@ export function PanelConsole({ timelineToken }: { timelineToken: string }) {
                       {event.personaName}
                     </div>
                     <div className="text-sm">
-                      <Markdown>{event.content}</Markdown>
+                      <Streamdown>{event.content}</Streamdown>
                     </div>
                   </div>
                 </div>
@@ -107,7 +107,7 @@ export function PanelConsole({ timelineToken }: { timelineToken: string }) {
                       Moderator Summary
                     </div>
                     <div className="text-sm">
-                      <Markdown>{event.content}</Markdown>
+                      <Streamdown>{event.content}</Streamdown>
                     </div>
                   </div>
                 </div>

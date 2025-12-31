@@ -1,11 +1,11 @@
 import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
-import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
 import { isToolUIPart } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import React, { ReactNode, useMemo } from "react";
+import { Streamdown } from "streamdown";
 import { FileAttachment } from "./FileAttachment";
 import { ToolInvocationMessage } from "./ToolInvocationMessage";
 
@@ -59,7 +59,7 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
           if (part.type === "text") {
             return !isSystemMessage(part.text) ? (
               <div key={i} className="text-sm">
-                <Markdown>{part.text}</Markdown>
+                <Streamdown>{part.text}</Streamdown>
               </div>
             ) : null;
           } else if (part.type === "reasoning") {
@@ -71,7 +71,7 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
                 <div className="flex items-start gap-2">
                   <span className="text-blue-500 dark:text-blue-400 text-base">💭</span>
                   <div className="flex-1 text-xs text-blue-900/80 dark:text-blue-100/80 italic">
-                    <Markdown>{part.text}</Markdown>
+                    <Streamdown>{part.text}</Streamdown>
                   </div>
                 </div>
               </div>

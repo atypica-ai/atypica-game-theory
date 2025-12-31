@@ -1,6 +1,5 @@
 "use client";
 import { createOrGetUserPersonaChat, fetchPersonaChatStat } from "@/app/(persona)/actions";
-import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import { Persona } from "@/prisma/client";
 import { BrainIcon, MessageCircleIcon } from "lucide-react";
@@ -8,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Streamdown } from "streamdown";
 
 type ChatSession = {
   messageCount: number;
@@ -131,7 +131,7 @@ export function PersonaSummary({
                 </div>
                 <div className="mt-2">
                   <div className="p-2 rounded-sm text-xs bg-background border border-border/20">
-                    <Markdown>{extractSummaryFromPrompt(persona.prompt)}</Markdown>
+                    <Streamdown>{extractSummaryFromPrompt(persona.prompt)}</Streamdown>
                   </div>
                 </div>
               </div>

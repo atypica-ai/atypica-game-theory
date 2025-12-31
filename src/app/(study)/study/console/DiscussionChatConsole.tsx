@@ -2,9 +2,9 @@ import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { fetchDiscussionTimeline } from "@/app/(panel)/(page)/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Markdown } from "@/components/markdown";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { ToolUIPart } from "ai";
+import { Streamdown } from "streamdown";
 import useSWR from "swr";
 
 export const DiscussionChatConsole = ({
@@ -68,7 +68,7 @@ export const DiscussionChatConsole = ({
                 <div className="flex-1 bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 border">
                   <div className="text-xs font-medium text-muted-foreground mb-1">Question</div>
                   <div className="text-xs">
-                    <Markdown>{event.content}</Markdown>
+                    <Streamdown>{event.content}</Streamdown>
                   </div>
                 </div>
               </div>
@@ -87,7 +87,7 @@ export const DiscussionChatConsole = ({
                     {event.personaName}
                   </div>
                   <div className="text-xs">
-                    <Markdown>{event.content}</Markdown>
+                    <Streamdown>{event.content}</Streamdown>
                   </div>
                 </div>
               </div>
@@ -105,7 +105,7 @@ export const DiscussionChatConsole = ({
                     Moderator Summary
                   </div>
                   <div className="text-xs">
-                    <Markdown>{event.content}</Markdown>
+                    <Streamdown>{event.content}</Streamdown>
                   </div>
                 </div>
               </div>

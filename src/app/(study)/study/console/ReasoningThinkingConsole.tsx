@@ -1,10 +1,10 @@
 import { StudyUITools, ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { FC } from "react";
+import { Streamdown } from "streamdown";
 
 export const ReasoningThinkingConsole: FC<{
   toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.reasoningThinking>>;
@@ -27,7 +27,7 @@ export const ReasoningThinkingConsole: FC<{
           <HippyGhostAvatar seed={toolInvocation.toolCallId} className="size-6" />
           <div className="flex-1 overflow-hidden">
             <div>{toolInvocation.output.reasoning}</div>
-            <Markdown>{toolInvocation.output.text}</Markdown>
+            <Streamdown>{toolInvocation.output.text}</Streamdown>
           </div>
         </div>
       ) : null}

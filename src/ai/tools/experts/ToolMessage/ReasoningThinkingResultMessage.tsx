@@ -1,9 +1,9 @@
 import { StudyUITools, ToolName } from "@/ai/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Markdown } from "@/components/markdown";
 import { ToolUIPart } from "ai";
 import { BrainIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Streamdown } from "streamdown";
 
 export const ReasoningThinkingResultMessage = ({
   toolInvocation,
@@ -32,7 +32,7 @@ export const ReasoningThinkingResultMessage = ({
             </div>
           )}
           <div className="text-xs">
-            <Markdown>{toolInvocation.output.text}</Markdown>
+            <Streamdown>{toolInvocation.output.text}</Streamdown>
           </div>
         </div>
       </div>
