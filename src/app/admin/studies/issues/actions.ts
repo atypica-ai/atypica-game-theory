@@ -1,11 +1,22 @@
 "use server";
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
-import { studyAgentRequest } from "@/app/(study)/agents/studyAgentRequest";
+import { initStudyStatReporter } from "@/ai/tools/stats";
+import { executeBaseAgentRequest } from "@/app/(study)/agents/baseAgentRequest";
+import { createFastInsightAgentConfig } from "@/app/(study)/agents/configs/fastInsightAgentConfig";
+import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/productRnDAgentConfig";
+import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { PaymentRecord, TokensAccount, User, UserChat, UserChatExtra } from "@/prisma/client";
+import {
+  AnalystKind,
+  PaymentRecord,
+  TokensAccount,
+  User,
+  UserChat,
+  UserChatExtra,
+} from "@/prisma/client";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { createUIMessageStream, generateId } from "ai";
 import { Locale } from "next-intl";
@@ -222,22 +233,50 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
           : await getLocale();
 
     // Start the study agent request in the background
-    const params = {
-      locale,
-      userChat: {
-        id: studyUserChat.id,
-        extra: studyUserChat.extra as UserChatExtra,
-        analyst: studyUserChat.analyst,
-      },
-      userId: studyUserChat.userId,
-      teamId: studyUserChat.user.teamIdAsMember ?? null,
-      reqSignal: null,
-      logger: rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token }),
-    };
+    const userId = studyUserChat.userId;
+    const teamId = studyUserChat.user.teamIdAsMember ?? null;
+    const logger = rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token });
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const stream = createUIMessageStream({
-      async execute({ writer }) {
-        studyAgentRequest({ ...params, streamWriter: writer });
+      async execute({ writer: streamWriter }) {
+        if (!studyUserChat.analyst) throw new Error("Something went wrong");
+
+        // Initialize statistics reporter
+        const { statReport } = initStudyStatReporter({
+          userId,
+          studyUserChatId,
+          logger,
+        });
+
+        // Create abort controllers - must be created here to ensure the same instances
+        // are shared between config creation (for tools) and baseAgentRequest (for abort logic)
+        const toolAbortController = new AbortController();
+        const studyAbortController = new AbortController();
+
+        const agentContext = {
+          userId,
+          teamId,
+          studyUserChatId,
+          analyst: studyUserChat.analyst,
+          userChatExtra: studyUserChat.extra as UserChatExtra,
+          locale,
+          logger,
+          statReport,
+          toolAbortController,
+          studyAbortController,
+        };
+
+        if (studyUserChat.analyst.kind === AnalystKind.productRnD) {
+          const config = await createProductRnDAgentConfig({ ...agentContext });
+          await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+        } else if (studyUserChat.analyst.kind === AnalystKind.fastInsight) {
+          const config = await createFastInsightAgentConfig({ ...agentContext });
+          await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+        } else {
+          const config = await createStudyAgentConfig({ ...agentContext });
+          await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+        }
       },
     });
 

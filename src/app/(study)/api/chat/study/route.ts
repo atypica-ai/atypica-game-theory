@@ -1,17 +1,24 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
+import { initStudyStatReporter } from "@/ai/tools/stats";
 import authOptions from "@/app/(auth)/authOptions";
-import { fastInsightAgentRequest } from "@/app/(study)/agents/fastInsightAgentRequest";
+import { executeBaseAgentRequest } from "@/app/(study)/agents/baseAgentRequest";
+import { createFastInsightAgentConfig } from "@/app/(study)/agents/configs/fastInsightAgentConfig";
+import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/productRnDAgentConfig";
+import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
 import { noQuotaAgentRequest } from "@/app/(study)/agents/noQuotaAgentRequest";
-import { productRnDAgentRequest } from "@/app/(study)/agents/productRnDAgentRequest";
-import { studyAgentRequest } from "@/app/(study)/agents/studyAgentRequest";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { AnalystKind, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
-import { createUIMessageStream, createUIMessageStreamResponse, generateId } from "ai";
+import {
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  generateId,
+  UIMessageStreamWriter,
+} from "ai";
 import { getServerSession } from "next-auth/next";
 import { Locale } from "next-intl";
 import { NextResponse } from "next/server";
@@ -111,32 +118,57 @@ export async function POST(req: Request) {
     return await noQuotaAgentRequest(params);
   }
 
-  if (userChat.analyst.kind === AnalystKind.productRnD) {
-    return await productRnDAgentRequest(params);
-  } else if (userChat.analyst.kind === AnalystKind.fastInsight) {
-    const stream = createUIMessageStream({
-      async execute({ writer }) {
-        await fastInsightAgentRequest({ ...params, streamWriter: writer });
-      },
-      onError: (error) => {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        logger.error(errorMsg);
-        return errorMsg;
-      },
+  const executeAgent = async ({ streamWriter }: { streamWriter: UIMessageStreamWriter }) => {
+    if (!userChat.analyst) throw new Error("Something went wrong");
+
+    const studyUserChatId = userChat.id;
+
+    // Initialize statistics reporter
+    const { statReport } = initStudyStatReporter({
+      userId,
+      studyUserChatId,
+      logger,
     });
-    return createUIMessageStreamResponse({ stream });
-  } else {
-    // return await studyAgentRequest(params);
-    const stream = createUIMessageStream({
-      async execute({ writer }) {
-        await studyAgentRequest({ ...params, streamWriter: writer });
-      },
-      onError: (error) => {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        logger.error(errorMsg);
-        return errorMsg;
-      },
-    });
-    return createUIMessageStreamResponse({ stream });
-  }
+
+    // Create abort controllers - must be created here to ensure the same instances
+    // are shared between config creation (for tools) and baseAgentRequest (for abort logic)
+    const toolAbortController = new AbortController();
+    const studyAbortController = new AbortController();
+
+    const agentContext = {
+      userId,
+      teamId,
+      studyUserChatId,
+      analyst: userChat.analyst,
+      userChatExtra: userChat.extra as UserChatExtra,
+      locale,
+      logger,
+      statReport,
+      toolAbortController,
+      studyAbortController,
+    };
+
+    if (userChat.analyst.kind === AnalystKind.productRnD) {
+      const config = await createProductRnDAgentConfig({ ...agentContext });
+      await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+    } else if (userChat.analyst.kind === AnalystKind.fastInsight) {
+      const config = await createFastInsightAgentConfig({ ...agentContext });
+      await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+    } else {
+      const config = await createStudyAgentConfig({ ...agentContext });
+      await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+    }
+  };
+
+  const stream = createUIMessageStream({
+    async execute({ writer }) {
+      await executeAgent({ streamWriter: writer });
+    },
+    onError: (error) => {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      logger.error(errorMsg);
+      return errorMsg;
+    },
+  });
+  return createUIMessageStreamResponse({ stream });
 }
