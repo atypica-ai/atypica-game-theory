@@ -2,7 +2,6 @@ import { productRnDSystem } from "@/ai/prompt/study/productRnD";
 import {
   audienceCallTool,
   generateReportTool,
-  saveAnalystTool,
   scoutSocialTrendsTool,
   toolCallError,
   webFetchTool,
@@ -108,7 +107,6 @@ export async function createProductRnDAgentConfig(
 
       // Note: customOnStepFinish removed - all notifications handled universally in base
       // - generateReport completion → notifyReportCompletion + trackEvent (in base)
-      // - saveAnalyst completion → generateChatTitle (in base)
     },
   };
 }
@@ -125,7 +123,6 @@ function buildProductRnDTools(params: {
 
   return {
     [ToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
-    [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId, productRnD: true }), // Mark as productRnD
     [ToolName.audienceCall]: audienceCallTool({ ...agentToolArgs }),
     [ToolName.scoutSocialTrends]: scoutSocialTrendsTool({ userId, ...agentToolArgs }),
     [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),

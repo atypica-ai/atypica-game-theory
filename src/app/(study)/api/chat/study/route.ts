@@ -4,6 +4,7 @@ import { initStudyStatReporter } from "@/ai/tools/stats";
 import authOptions from "@/app/(auth)/authOptions";
 import { executeBaseAgentRequest } from "@/app/(study)/agents/baseAgentRequest";
 import { createFastInsightAgentConfig } from "@/app/(study)/agents/configs/fastInsightAgentConfig";
+import { createPlanModeAgentConfig } from "@/app/(study)/agents/configs/planModeAgentConfig";
 import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/productRnDAgentConfig";
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
 import { noQuotaAgentRequest } from "@/app/(study)/agents/noQuotaAgentRequest";
@@ -148,15 +149,20 @@ export async function POST(req: Request) {
       studyAbortController,
     };
 
-    if (userChat.analyst.kind === AnalystKind.productRnD) {
-      const config = await createProductRnDAgentConfig({ ...agentContext });
-      await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+    // Check if this is first-time planning (analyst.kind not set)
+    if (!userChat.analyst.kind) {
+      // NEW: Plan Mode - Intent Layer for research planning
+      const config = await createPlanModeAgentConfig(agentContext);
+      await executeBaseAgentRequest(agentContext, config, streamWriter);
+    } else if (userChat.analyst.kind === AnalystKind.productRnD) {
+      const config = await createProductRnDAgentConfig(agentContext);
+      await executeBaseAgentRequest(agentContext, config, streamWriter);
     } else if (userChat.analyst.kind === AnalystKind.fastInsight) {
-      const config = await createFastInsightAgentConfig({ ...agentContext });
-      await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+      const config = await createFastInsightAgentConfig(agentContext);
+      await executeBaseAgentRequest(agentContext, config, streamWriter);
     } else {
-      const config = await createStudyAgentConfig({ ...agentContext });
-      await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+      const config = await createStudyAgentConfig(agentContext);
+      await executeBaseAgentRequest(agentContext, config, streamWriter);
     }
   };
 
@@ -166,7 +172,13 @@ export async function POST(req: Request) {
     },
     onError: (error) => {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(errorMsg);
+      logger.error(
+        {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        },
+        "study chat api onError",
+      );
       return errorMsg;
     },
   });

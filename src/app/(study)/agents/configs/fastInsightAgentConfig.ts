@@ -10,9 +10,6 @@ import {
 import { AgentToolConfigArgs, StatReporter, ToolName } from "@/ai/tools/types";
 import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
 import type { Analyst, UserChatExtra } from "@/prisma/client";
-import { AnalystKind } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
-import { TypedToolResult } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -43,7 +40,7 @@ type TOOLS = ReturnType<typeof buildFastInsightTools>;
  * - 7 specialized tools (minimal set)
  * - Uses perplexity for webSearch
  * - Fast execution (max 10 steps)
- * - planPodcast result saved to analyst
+ * - Intent and metadata set in Plan Mode
  * - Optional report generation
  * - Universal attachment processing (handled in base)
  */
@@ -116,40 +113,9 @@ export async function createFastInsightAgentConfig(
         return { messages, activeTools };
       },
 
-      /**
-       * customOnStepFinish: Handle planPodcast result saving to analyst
-       * - Save planPodcast result to analyst (topic, kind, locale)
-       * Note: Universal notifications (completion, title) handled in base
-       */
-      customOnStepFinish: async (step) => {
-        // Handle planPodcast result (fast insight specific)
-        const planPodcastTool = step.toolResults.find(
-          (tool) => tool?.toolName === ToolName.planPodcast,
-        ) as Extract<TypedToolResult<typeof tools>, { toolName: ToolName.planPodcast }>;
-
-        if (planPodcastTool && planPodcastTool.output?.text) {
-          const { analyst: analystRecord } = await prisma.userChat.findUniqueOrThrow({
-            where: { id: studyUserChatId, kind: "study" },
-            select: { analyst: { select: { id: true } } },
-          });
-
-          if (analystRecord) {
-            await prisma.analyst.update({
-              where: { id: analystRecord.id },
-              data: {
-                role: "Podcast Researcher",
-                topic: planPodcastTool.output.text,
-                kind: AnalystKind.fastInsight,
-                locale: locale,
-              },
-            });
-
-            // Note: generateChatTitle is already called in base for planPodcast
-          }
-        }
-
-        // Note: generateReport/generatePodcast completion notifications handled in base
-      },
+      // Note: customOnStepFinish removed - all notifications handled universally in base
+      // - generateReport/generatePodcast completion → notifyReportCompletion + trackEvent (in base)
+      // - planPodcast completion → generateChatTitle (in base)
     },
   };
 }

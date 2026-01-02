@@ -11,17 +11,11 @@ import {
   type SaveAnalystToolResult,
 } from "./types";
 
-export const saveAnalystTool = ({
-  studyUserChatId,
-  productRnD,
-}: {
-  studyUserChatId: number;
-  productRnD?: boolean;
-}) =>
+export const saveAnalystTool = ({ studyUserChatId }: { studyUserChatId: number }) =>
   tool({
     description:
       "Save comprehensive study topic definition and expert analyst role configuration for the study. This is a FOUNDATIONAL tool that establishes the complete study context - all subsequent study activities depend on the completeness and quality of information saved here. MUST include all background information, webSearch findings, and contextual details.",
-    inputSchema: saveAnalystInputSchema(productRnD),
+    inputSchema: saveAnalystInputSchema,
     outputSchema: saveAnalystOutputSchema,
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };

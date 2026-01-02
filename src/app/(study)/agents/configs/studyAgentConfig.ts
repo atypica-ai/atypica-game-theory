@@ -8,7 +8,6 @@ import {
   planStudyTool,
   reasoningThinkingTool,
   requestInteractionTool,
-  saveAnalystTool,
   scoutTaskChatTool,
   searchPersonasTool,
   toolCallError,
@@ -151,7 +150,6 @@ export async function createStudyAgentConfig(
 
       // Note: customOnStepFinish removed - all notifications handled universally in base
       // - generateReport completion → notifyReportCompletion + trackEvent (in base)
-      // - saveAnalyst completion → generateChatTitle (in base)
       // - generatePodcast completion → trackEvent (in base)
       // - planPodcast completion → generateChatTitle (in base)
     },
@@ -173,7 +171,6 @@ function buildStudyTools(params: {
     [ToolName.requestInteraction]: requestInteractionTool,
     [ToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
     [ToolName.webSearch]: webSearchTool({ provider: "tavily", studyUserChatId, ...agentToolArgs }),
-    [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId }),
     [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
     [ToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
     [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
