@@ -7,6 +7,7 @@ import { ToolUIPart } from "ai";
 import { MessageCircleQuestionIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
+import { Streamdown } from "streamdown";
 
 export const RequestInteractionMessage = <
   T extends ToolUIPart<
@@ -22,21 +23,36 @@ export const RequestInteractionMessage = <
 }) => {
   const t = useTranslations("StudyPage.ChatBox");
   // input 有可能为空, 当 state === "input-streaming" 时
-  const question = toolInvocation.input?.question ?? "";
+  // const question = toolInvocation.input?.question ?? "";
   const options = toolInvocation.input?.options ?? [];
+  const maxSelect = toolInvocation.input?.maxSelect;
   const { replay } = useStudyContext();
 
   // 用户操作中的 answer，不是 tool result 里面的 answer
   const [pendingAnswer, setPendingAnswer] = useState<string[]>([]);
-  const toggleAnswer = useCallback((option: string) => {
-    setPendingAnswer((prevAnswer) => {
-      if (prevAnswer.includes(option)) {
-        return prevAnswer.filter((a) => a !== option);
-      } else {
-        return [...prevAnswer, option];
-      }
-    });
-  }, []);
+  const toggleAnswer = useCallback(
+    (option: string) => {
+      setPendingAnswer((prevAnswer) => {
+        if (prevAnswer.includes(option)) {
+          // 取消选择
+          return prevAnswer.filter((a) => a !== option);
+        } else {
+          // 添加选择
+          if (maxSelect === 1) {
+            // 单选：直接替换
+            return [option];
+          } else if (maxSelect && prevAnswer.length >= maxSelect) {
+            // 多选但已达到限制：不添加
+            return prevAnswer;
+          } else {
+            // 多选且未达到限制：添加
+            return [...prevAnswer, option];
+          }
+        }
+      });
+    },
+    [maxSelect],
+  );
 
   const confirmAnswer = useCallback(
     (pendingAnswer: string[]) => {
@@ -82,13 +98,12 @@ export const RequestInteractionMessage = <
 
   return (
     <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg">
-      <div className="text-sm text-foreground/80 mb-3 flex items-center justify-start gap-1">
-        <div className="flex-1">
-          <strong>{question}</strong>
-          {toolInvocation.state === "input-available" && (
-            <span className="ml-2 text-xs">({t("multiSelectHint")})</span>
-          )}
-        </div>
+      <div className="text-xs text-foreground/80 mb-3 flex items-start justify-between gap-1">
+        {toolInvocation.input ? (
+          <Streamdown isAnimating={toolInvocation.state === "input-streaming"}>
+            {toolInvocation.input.question ?? ""}
+          </Streamdown>
+        ) : null}
         <MessageCircleQuestionIcon className="size-4" />
       </div>
       {toolInvocation.state === "output-available" || replay ? (
@@ -131,7 +146,16 @@ export const RequestInteractionMessage = <
               {option}
             </div>
           ))}
-          <div className="w-full flex flex-row justify-end gap-2">
+          <div className="w-full flex flex-row items-center justify-end gap-2">
+            {toolInvocation.state === "input-available" && (
+              <div className="text-xs text-muted-foreground">
+                {maxSelect === 1
+                  ? `(${t("singleSelectHint")})`
+                  : maxSelect
+                    ? `(${t("maxSelectHint", { max: maxSelect })})`
+                    : `(${t("multiSelectHint")})`}
+              </div>
+            )}
             <Button
               variant="outline"
               size="sm"

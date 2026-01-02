@@ -104,6 +104,7 @@ export async function shouldDecidePersonaTier({
               "优先使用我的真人画像（不足时由AI画像补充）",
               "仅使用 Atypica 合成的 AI 画像",
             ],
+            maxSelect: 1,
           }
         : {
             question: `We've found ${personaImportCount} private personas you've imported. How would you like to use them in this study?`,
@@ -111,6 +112,7 @@ export async function shouldDecidePersonaTier({
               "Prioritize my private personas (supplemented with AI personas if needed)",
               "Use only Atypica's synthesized AI personas",
             ],
+            maxSelect: 1,
           },
     state: "input-available",
   };
