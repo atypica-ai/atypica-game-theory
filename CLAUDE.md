@@ -225,6 +225,96 @@ Examples:
 
 5. **Custom Fonts**: Project uses custom fonts (EuclidCircularA, IBMPlexMono) defined in globals.css
 
+### TypeScript Type Safety Conventions
+
+**CRITICAL RULES** - These rules are NEVER negotiable:
+
+#### 1. No `any` Types Allowed
+
+```typescript
+// ❌ WRONG: Using any type
+const result: any = tool.output;
+const token = result.reportToken; // No type safety
+
+// ❌ WRONG: Using eslint-disable to bypass type errors
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const output = generateReportTool.output as any;
+
+// ✅ CORRECT: Use proper types from AI SDK
+const generateReportTool = step.toolResults.find(
+  (tool) => !tool.dynamic && tool.type === "tool-result" && tool.toolName === ToolName.generateReport,
+) as StaticToolResult<Pick<StudyToolSet, ToolName.generateReport>> | undefined;
+
+if (generateReportTool && "output" in generateReportTool && generateReportTool.output) {
+  const reportToken = generateReportTool.output.reportToken; // Fully type-safe!
+}
+```
+
+**Rule**: "没有任何 any 是合理的" - No any types are acceptable under any circumstances.
+
+#### 2. No Dynamic Imports with `await import()`
+
+```typescript
+// ❌ WRONG: Dynamic imports
+const { buildReferenceStudyContext } = await import("./referenceContext");
+const { shouldDecidePersonaTier } = await import("./utils");
+
+// ✅ CORRECT: Static imports at file top
+import { buildReferenceStudyContext } from "./referenceContext";
+import { shouldDecidePersonaTier } from "./utils";
+```
+
+**Rule**: "await import 不允许在任何地方出现" - Dynamic imports with `await import()` are not allowed anywhere in the codebase.
+
+#### 3. No ESLint Disables to Bypass Type Errors
+
+```typescript
+// ❌ WRONG: Hiding type problems with eslint-disable
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const data: any = someValue;
+
+// ✅ CORRECT: Find and use the correct types
+import { StaticToolResult } from "ai";
+const data = someValue as StaticToolResult<PickedToolType>;
+```
+
+**Rule**: "别 build 出问题就用 any 和 eslint disable" - Don't use `any` or eslint-disable when build fails. Instead, find the correct types from:
+- AI SDK type definitions (`StaticToolResult`, `PrepareStepFunction`, etc.)
+- Existing similar code patterns
+- Ask for clarification when genuinely unsure
+
+#### 4. Study Existing Patterns Before Implementing
+
+When working with complex types (especially AI SDK types):
+
+1. **Search for similar code**: Use grep/search to find how similar problems are solved
+2. **Read AI SDK types**: Import and explore types from `ai` package
+3. **Look at existing implementations**: Check how other agent configs handle tool results
+4. **Ask when uncertain**: It's better to ask than to implement incorrectly with `any`
+
+**Example**: Before handling tool results, search for existing `StaticToolResult` usage:
+
+```bash
+# Search for existing patterns
+grep -r "StaticToolResult" src/
+grep -r "tool.toolName ===" src/app/(study)/agents/
+```
+
+#### When You're Blocked by Type Errors
+
+**DO**:
+- Read the TypeScript error message carefully
+- Search for the type in AI SDK documentation or source
+- Look for similar code in the codebase
+- Use type guards (`if ("property" in object)`)
+- Ask the user for guidance
+
+**DON'T**:
+- Add `as any` to bypass the error
+- Use `// @ts-ignore` or `eslint-disable`
+- Make up types that "seem right"
+- Use dynamic imports to defer type checking
+
 ### Server Actions Conventions
 
 #### File Structure
@@ -644,6 +734,210 @@ const tools = {
 };
 ```
 
+#### Tool Type Safety Patterns
+
+**CRITICAL**: Follow these patterns for type-safe tool handling in multi-agent systems.
+
+##### 1. Define Base Tool Set Type
+
+Create a centralized type for all possible tools in your agent system:
+
+```typescript
+// src/app/(study)/tools/index.ts
+import "server-only";
+import { ToolSet } from "ai";
+import { ToolName } from "@/ai/tools/types";
+
+// Define all possible tools for study agents
+export type StudyToolSet = Partial<{
+  [ToolName.webSearch]: ReturnType<typeof webSearchTool>;
+  [ToolName.generateReport]: ReturnType<typeof generateReportTool>;
+  [ToolName.saveAnalyst]: ReturnType<typeof saveAnalystTool>;
+  [ToolName.planPodcast]: ReturnType<typeof planPodcastTool>;
+  // ... all other tools
+}>;
+
+// Verify it conforms to AI SDK's ToolSet interface
+type StudyToolSetCheck = StudyToolSet extends ToolSet ? true : false;
+```
+
+**Key points**:
+- Use `Partial<{...}>` to allow each agent to use a subset of tools
+- Use `ToolName` enum as keys for type safety
+- Use `ReturnType<typeof toolFactory>` for factory-created tools
+- Use `typeof tool` for direct tool objects
+- Verify with type check that it extends AI SDK's `ToolSet`
+
+##### 2. Agent Config with Generic Constraints
+
+Use proper generic constraints for type-safe agent configurations:
+
+```typescript
+// src/app/(study)/agents/baseAgentRequest.ts
+import { PrepareStepFunction, StepResult, ToolChoice } from "ai";
+import { StudyToolSet } from "@/app/(study)/tools";
+
+export interface AgentRequestConfig<TOOLS extends StudyToolSet = StudyToolSet> {
+  model: LLMModelName;
+  systemPrompt: string;
+  tools: TOOLS;
+  maxSteps?: number;
+  toolChoice?: ToolChoice<TOOLS>;
+
+  specialHandlers?: {
+    // Use AI SDK's built-in PrepareStepFunction type
+    customPrepareStep?: PrepareStepFunction<NoInfer<TOOLS>>;
+
+    // Custom handler with proper step result typing
+    customOnStepFinish?: (step: StepResult<TOOLS>, context: BaseStepContext) => Promise<void>;
+  };
+}
+```
+
+**Key points**:
+- `TOOLS extends StudyToolSet` ensures tools are subset of base tool set
+- `NoInfer<TOOLS>` prevents TypeScript from widening the type
+- Use AI SDK's `PrepareStepFunction` instead of custom interfaces
+- `StepResult<TOOLS>` gives type-safe access to tool results
+
+##### 3. Per-Agent Tool Type Definition
+
+Each agent config should define its specific tool set:
+
+```typescript
+// src/app/(study)/agents/configs/studyAgentConfig.ts
+
+// Infer exact tool types from build function
+type TOOLS = ReturnType<typeof buildStudyTools>;
+
+export async function createStudyAgentConfig(
+  params: StudyAgentConfigParams,
+): Promise<AgentRequestConfig<TOOLS>> {
+  const tools = buildStudyTools(params);
+
+  return {
+    model: "claude-sonnet-4",
+    systemPrompt,
+    tools,
+
+    specialHandlers: {
+      customPrepareStep: async ({ messages }) => {
+        // Type-safe tool name array - TypeScript knows all possible tool names
+        let activeTools: (keyof TOOLS)[] | undefined = undefined;
+
+        if (someCondition) {
+          activeTools = [ToolName.generateReport, ToolName.saveAnalyst];
+        }
+
+        return { messages, activeTools };
+      },
+    },
+  };
+}
+
+function buildStudyTools(params: BuildParams) {
+  return {
+    [ToolName.webSearch]: webSearchTool(params),
+    [ToolName.generateReport]: generateReportTool(params),
+    [ToolName.saveAnalyst]: saveAnalystTool(params),
+    // ...
+  };
+}
+```
+
+**Key points**:
+- Define `type TOOLS = ReturnType<typeof buildTools>` for exact type inference
+- `activeTools: (keyof TOOLS)[]` is fully type-safe
+- TypeScript will error if you reference a tool not in this agent's tool set
+
+##### 4. Type-Safe Tool Result Handling
+
+Handle tool results without using `any`:
+
+```typescript
+// ❌ WRONG: Using any
+const tool = step.toolResults.find(t => t?.toolName === ToolName.generateReport) as any;
+const token = tool.output.reportToken; // No type safety!
+
+// ✅ CORRECT: Using StaticToolResult with Pick
+import { StaticToolResult } from "ai";
+import { StudyToolSet } from "@/app/(study)/tools";
+
+const generateReportTool = step.toolResults.find(
+  (tool) =>
+    !tool.dynamic &&
+    tool.type === "tool-result" &&
+    tool.toolName === ToolName.generateReport,
+) as StaticToolResult<Pick<StudyToolSet, ToolName.generateReport>> | undefined;
+
+// Type guard for safe access
+if (generateReportTool && "output" in generateReportTool && generateReportTool.output) {
+  // ✅ Fully type-safe - TypeScript knows the exact output type
+  const reportToken = generateReportTool.output.reportToken ?? generateReportTool.input.reportToken;
+
+  await notifyReportCompletion({ reportToken, studyUserChatId, logger });
+}
+```
+
+**Key points**:
+- Use `StaticToolResult<Pick<ToolSet, ToolName.X>>` for non-dynamic tools
+- Check `!tool.dynamic && tool.type === "tool-result"` to ensure it's a static result
+- Use type guard `"output" in tool` before accessing output
+- TypeScript will provide autocomplete and type checking for tool input/output
+
+##### 5. Complete Example: Study Agent
+
+```typescript
+// Define tool set type
+type TOOLS = ReturnType<typeof buildStudyTools>;
+
+// Create config with proper typing
+export async function createStudyAgentConfig(
+  params: StudyAgentConfigParams,
+): Promise<AgentRequestConfig<TOOLS>> {
+  const tools = buildStudyTools(params);
+
+  return {
+    model: "claude-sonnet-4",
+    systemPrompt: studySystem({ locale: params.locale }),
+    tools,
+
+    specialHandlers: {
+      // Type-safe prepare step
+      customPrepareStep: async ({ messages }) => {
+        const toolUseCount = calculateToolUsage(messages);
+        let activeTools: (keyof TOOLS)[] | undefined = undefined;
+
+        // Restrict tools after report generation
+        if ((toolUseCount[ToolName.generateReport] ?? 0) > 0) {
+          activeTools = [
+            ToolName.generateReport,
+            ToolName.reasoningThinking,
+            ToolName.toolCallError,
+          ];
+        }
+
+        return { messages, activeTools };
+      },
+
+      // Type-safe step finish handler
+      customOnStepFinish: async (step) => {
+        // Type-safe tool result access
+        const saveAnalystTool = step.toolResults.find(
+          (tool) => !tool.dynamic &&
+                   tool.type === "tool-result" &&
+                   tool.toolName === ToolName.saveAnalyst,
+        ) as StaticToolResult<Pick<TOOLS, ToolName.saveAnalyst>> | undefined;
+
+        if (saveAnalystTool) {
+          await generateChatTitle(params.studyUserChatId);
+        }
+      },
+    },
+  };
+}
+```
+
 #### Token Usage Tracking
 
 ```typescript
@@ -689,3 +983,8 @@ const result = await streamText({
 8. **Type Safety**: Leverage Zod schemas for tool parameters
 9. **Step Control**: Use `stopWhen` for multi-step reasoning limits
 10. **File Attachments**: Process and include file attachments in messages
+11. **No Any Types**: Never use `any` - find proper types from AI SDK (`StaticToolResult`, `PrepareStepFunction`)
+12. **Static Imports Only**: All imports must be at file top - no `await import()` allowed
+13. **Tool Type Patterns**: Use `StaticToolResult<Pick<ToolSet, ToolName.X>>` for type-safe tool result handling
+14. **Generic Constraints**: Use `TOOLS extends BaseToolSet` with `NoInfer<TOOLS>` for proper type inference
+15. **Study Existing Patterns**: Search codebase for similar implementations before writing new code
