@@ -1,6 +1,6 @@
-import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { fetchDiscussionTimeline } from "@/app/(panel)/(page)/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { ToolUIPart } from "ai";
@@ -10,7 +10,7 @@ import useSWR from "swr";
 export const DiscussionChatConsole = ({
   toolInvocation,
 }: {
-  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.discussionChat>>;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.discussionChat>>;
 }) => {
   const { replay } = useStudyContext();
 

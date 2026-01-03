@@ -1,6 +1,5 @@
 import "server-only";
 
-import { ToolName } from "@/ai/tools/types";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/client";
@@ -425,7 +424,7 @@ function _calculateToolUseCount(dbMessages: ChatMessage[]) {
       ((message.parts ?? []) as ChatMessagePart[]).forEach((_part) => {
         const part = convertToV5MessagePart(_part);
         if (isToolUIPart(part) && part.state === "output-available") {
-          const toolName = getToolName(part) as ToolName;
+          const toolName = getToolName(part);
           count[toolName] = (count[toolName] || 0) + 1;
         }
         // if (_part.type === "tool-invocation") {
@@ -451,7 +450,7 @@ function _calculateToolUseCount(dbMessages: ChatMessage[]) {
       });
       return count;
     },
-    {} as Partial<Record<ToolName, number>>,
+    {} as Record<string, number>,
   );
   return toolUseCount;
 }

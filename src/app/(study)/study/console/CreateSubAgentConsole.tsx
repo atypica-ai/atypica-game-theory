@@ -1,7 +1,7 @@
-import { StudyUITools, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
-import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
+import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { ToolUIPart } from "ai";
@@ -11,7 +11,7 @@ import { StreamSteps } from "./StreamSteps";
 export const CreateSubAgentConsole = ({
   toolInvocation,
 }: {
-  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.createSubAgent>>;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.createSubAgent>>;
 }) => {
   const { studyUserChat } = useStudyContext();
   const subAgentChatToken = toolInvocation.input?.subAgentChatToken;

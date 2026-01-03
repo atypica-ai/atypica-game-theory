@@ -1,8 +1,8 @@
-import { ToolName } from "@/ai/tools/types";
 import {
   fetchAnalystReportsCountOfStudyUserChat,
   fetchAnalystReportsOfStudyUserChat,
 } from "@/app/(study)/study/actions";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -41,7 +41,7 @@ function ReportsCountBadge() {
   // Refresh when tool invocations complete
   useEffect(() => {
     if (
-      lastToolInvocation?.type === `tool-${ToolName.generateReport}` &&
+      lastToolInvocation?.type === `tool-${StudyToolName.generateReport}` &&
       lastToolInvocation.state === "output-available"
     ) {
       fetchReportCount();

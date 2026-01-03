@@ -1,7 +1,7 @@
-import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export const GenerateReportConsole = ({
   toolInvocation,
 }: {
-  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.generateReport>>;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.generateReport>>;
 }) => {
   const { replay } = useStudyContext();
   const t = useTranslations("StudyPage.ToolConsole");

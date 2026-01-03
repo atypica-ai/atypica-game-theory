@@ -6,7 +6,6 @@ import {
   convertToFlattenModelMessages,
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
-import { personaAgentSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initInterviewProjectStatReporter } from "@/ai/tools/stats";
 import { StatReporter } from "@/ai/tools/types";
@@ -15,6 +14,7 @@ import { interviewAgentSystemPrompt } from "@/app/(interviewProject)/prompt";
 import { interviewSessionTools } from "@/app/(interviewProject)/tools";
 import { InterviewToolName } from "@/app/(interviewProject)/tools/types";
 import { TInterviewMessageWithTool } from "@/app/(interviewProject)/types";
+import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";

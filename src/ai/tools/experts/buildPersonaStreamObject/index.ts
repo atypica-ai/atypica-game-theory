@@ -2,12 +2,12 @@ import "server-only";
 
 import { prepareMessagesForStreaming } from "@/ai/messageUtils";
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
-import { buildPersonaSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { scoutChatTools } from "@/ai/tools/experts/scoutTaskChat/types";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { createPersonaWithPostProcess } from "@/app/(persona)/lib";
+import { buildPersonaSystem } from "@/app/(study)/tools/buildPersona/prompt";
+import { scoutChatTools } from "@/app/(study)/tools/scoutTaskChat/types";
 import { prisma } from "@/prisma/prisma";
 import { streamObject, tool } from "ai";
 import {
@@ -17,6 +17,9 @@ import {
   personaBuildSchemaStreamObject,
 } from "./types";
 
+/**
+ * @deprecated
+ */
 export const buildPersonaStreamObjectTool = ({
   userId,
   locale,

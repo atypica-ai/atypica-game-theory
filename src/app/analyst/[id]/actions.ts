@@ -1,10 +1,9 @@
 "use server";
-import { prepareDBForInterview, runInterview } from "@/ai/tools/experts/interviewChat";
-
-import { generateReport } from "@/ai/tools/experts/generateReport";
-import { generateReportCoverSvg } from "@/ai/tools/experts/generateReport/coverSvg";
 import { StatReporter } from "@/ai/tools/types";
 import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
+import { generateReport } from "@/app/(study)/tools/generateReport";
+import { generateReportCoverSvg } from "@/app/(study)/tools/generateReport/coverSvg";
+import { prepareDBForInterview, runInterview } from "@/app/(study)/tools/interviewChat";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";

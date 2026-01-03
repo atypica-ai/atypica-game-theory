@@ -1,7 +1,7 @@
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { runBuildPersona } from "@/ai/tools/experts/buildPersona";
 import { StatReporter } from "@/ai/tools/types";
 import authOptions from "@/app/(auth)/authOptions";
+import { runBuildPersona } from "@/app/(study)/tools/buildPersona";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";

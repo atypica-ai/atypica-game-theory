@@ -1,5 +1,5 @@
-import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { fetchPersonasByScoutUserChatToken } from "@/app/(study)/study/actions";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import { FC, useCallback, useEffect, useState } from "react";
 type TPersonaDetail = ExtractServerActionData<typeof fetchPersonasByScoutUserChatToken>[number];
 
 export const BuildPersonaConsole: FC<{
-  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.buildPersona>>;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.buildPersona>>;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
   const scoutUserChatToken = toolInvocation.input?.scoutUserChatToken;

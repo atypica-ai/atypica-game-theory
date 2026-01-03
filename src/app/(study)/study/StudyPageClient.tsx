@@ -1,5 +1,5 @@
 "use client";
-import { TStudyMessageWithTool } from "@/ai/tools/types";
+import { TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/hooks/use-media-query";

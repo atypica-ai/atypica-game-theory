@@ -6,14 +6,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createTextEmbedding } from "@/ai/embedding";
 import { llm } from "@/ai/provider";
 import { WebSearchToolResult } from "@/ai/tools/experts/webSearch/types";
-import { SocialPostToolResult } from "@/ai/tools/social/types";
 import {
   dySearchTool,
   insSearchTool,
   tiktokSearchTool,
   twitterSearchTool,
   xhsSearchTool,
-} from "@/ai/tools/tools";
+} from "@/ai/tools/social";
+import { SocialPostToolResult } from "@/ai/tools/social/types";
 import { sendEmail } from "@/email/lib";
 import { proxiedFetch } from "@/lib/proxy/fetch";
 import { getRequestOrigin } from "@/lib/request/headers";

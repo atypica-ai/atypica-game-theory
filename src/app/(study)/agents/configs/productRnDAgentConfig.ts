@@ -1,12 +1,9 @@
-import { productRnDSystem } from "@/ai/prompt/study/productRnD";
-import {
-  audienceCallTool,
-  generateReportTool,
-  scoutSocialTrendsTool,
-  toolCallError,
-  webFetchTool,
-} from "@/ai/tools/tools";
-import { AgentToolConfigArgs, StatReporter, ToolName } from "@/ai/tools/types";
+import { toolCallError } from "@/ai/tools/error";
+import { webFetchTool } from "@/ai/tools/tools";
+import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
+import { productRnDSystem } from "@/app/(study)/prompt/productRnD";
+import { audienceCallTool, generateReportTool, scoutSocialTrendsTool } from "@/app/(study)/tools";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import type { Analyst, UserChatExtra } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -89,7 +86,7 @@ export async function createProductRnDAgentConfig(
         for (const message of messages) {
           if (message.role === "tool") {
             for (const part of message.content) {
-              if (part.toolName === ToolName.generateReport) {
+              if (part.toolName === StudyToolName.generateReport) {
                 reportGenerated = true;
                 break;
               }
@@ -99,7 +96,7 @@ export async function createProductRnDAgentConfig(
         }
 
         const activeTools: (keyof TOOLS)[] | undefined = reportGenerated
-          ? [ToolName.generateReport, ToolName.toolCallError]
+          ? [StudyToolName.generateReport, StudyToolName.toolCallError]
           : undefined;
 
         return { messages, activeTools };
@@ -122,10 +119,10 @@ function buildProductRnDTools(params: {
   const { studyUserChatId, userId, agentToolArgs } = params;
 
   return {
-    [ToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
-    [ToolName.audienceCall]: audienceCallTool({ ...agentToolArgs }),
-    [ToolName.scoutSocialTrends]: scoutSocialTrendsTool({ userId, ...agentToolArgs }),
-    [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.toolCallError]: toolCallError,
+    [StudyToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
+    [StudyToolName.audienceCall]: audienceCallTool({ ...agentToolArgs }),
+    [StudyToolName.scoutSocialTrends]: scoutSocialTrendsTool({ userId, ...agentToolArgs }),
+    [StudyToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.toolCallError]: toolCallError,
   };
 }

@@ -1,10 +1,10 @@
 import "server-only";
 
-import { personaAgentSystem } from "@/ai/prompt/personaAgent";
 import { StatReporter } from "@/ai/tools/types";
 import { buildDiscussionType } from "@/app/(panel)//discussionTypes/buildDiscussionType";
 import { DiscussionTimelineEvent, PersonaSession } from "@/app/(panel)//types";
 import { DiscussionTypeConfig } from "@/app/(panel)/discussionTypes";
+import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
 import { DiscussionTimelineExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";

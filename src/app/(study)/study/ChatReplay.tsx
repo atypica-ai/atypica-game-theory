@@ -1,5 +1,5 @@
-import { ToolName } from "@/ai/tools/types";
-import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
+import { StudyToolName } from "@/app/(study)/tools/types";
+import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
@@ -71,7 +71,7 @@ export function ChatReplay() {
         const part = message.parts[j];
         if (
           isToolUIPart(part) &&
-          part.type === `tool-${ToolName.generateReport}` &&
+          part.type === `tool-${StudyToolName.generateReport}` &&
           part.state === "output-available"
         ) {
           return part.toolCallId;

@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools/types";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 
 export async function noQuotaAgentRequest(
@@ -23,7 +23,7 @@ export async function noQuotaAgentRequest(
   //   system: studySystemNoQuota(),
   //   messages: coreMessages,
   //   tools: {
-  //     [ToolName.requestPayment]: requestPaymentTool,
+  //     [StudyToolName.requestPayment]: requestPaymentTool,
   //   },
   //   toolChoice: "required",
   //   maxSteps: 15,
@@ -41,7 +41,7 @@ export async function noQuotaAgentRequest(
   //     dataStream.write(
   //       formatDataStreamPart("tool_call", {
   //         toolCallId: "request-payment",
-  //         toolName: ToolName.requestPayment,
+  //         toolName: StudyToolName.requestPayment,
   //         args: {},
   //       }),
   //     );
@@ -52,11 +52,15 @@ export async function noQuotaAgentRequest(
   const stream = createUIMessageStream({
     execute({ writer }) {
       writer.write({ type: "start" });
-      writer.write({ type: "tool-input-start", toolCallId, toolName: ToolName.requestPayment });
+      writer.write({
+        type: "tool-input-start",
+        toolCallId,
+        toolName: StudyToolName.requestPayment,
+      });
       writer.write({
         type: "tool-input-available",
         toolCallId,
-        toolName: ToolName.requestPayment,
+        toolName: StudyToolName.requestPayment,
         input: {},
       });
       writer.write({ type: "finish" });

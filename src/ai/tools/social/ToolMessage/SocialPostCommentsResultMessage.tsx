@@ -1,7 +1,7 @@
-import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { proxiedImageLoader } from "@/lib/utils";
 import { ToolUIPart } from "ai";
 import Image from "next/image";
+import { SocialToolName, SocialUITools } from "../types";
 
 export const SocialPostCommentsResultMessage = ({
   toolInvocation,
@@ -9,12 +9,12 @@ export const SocialPostCommentsResultMessage = ({
   toolInvocation: Extract<
     ToolUIPart<
       Pick<
-        StudyUITools,
-        | ToolName.xhsNoteComments
-        | ToolName.dyPostComments
-        | ToolName.tiktokPostComments
-        | ToolName.insPostComments
-        | ToolName.twitterPostComments
+        SocialUITools,
+        | SocialToolName.xhsNoteComments
+        | SocialToolName.dyPostComments
+        | SocialToolName.tiktokPostComments
+        | SocialToolName.insPostComments
+        | SocialToolName.twitterPostComments
       >
     >,
     { state: "output-available" }

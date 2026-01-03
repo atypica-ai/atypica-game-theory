@@ -1,7 +1,7 @@
-import { StudyUITools, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
-import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
+import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { ToolUIPart } from "ai";
@@ -12,7 +12,7 @@ export const ScoutTaskChatConsole = ({
   toolInvocation,
 }: {
   toolInvocation: ToolUIPart<
-    Pick<StudyUITools, ToolName.scoutTaskChat | ToolName.scoutSocialTrends>
+    Pick<StudyUITools, StudyToolName.scoutTaskChat | StudyToolName.scoutSocialTrends>
   >;
 }) => {
   const { studyUserChat, replay } = useStudyContext();

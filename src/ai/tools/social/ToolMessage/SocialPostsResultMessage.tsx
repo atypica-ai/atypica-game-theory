@@ -1,7 +1,7 @@
-import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { cn, formatTokensNumber, proxiedImageLoader } from "@/lib/utils";
 import { ToolUIPart } from "ai";
 import Image from "next/image";
+import { SocialToolName, SocialUITools } from "../types";
 import { fixXHSImageSrc } from "./fix";
 
 export const SocialPostsResultMessage = ({
@@ -10,17 +10,17 @@ export const SocialPostsResultMessage = ({
   toolInvocation: Extract<
     ToolUIPart<
       Pick<
-        StudyUITools,
-        | ToolName.xhsSearch
-        | ToolName.dySearch
-        | ToolName.tiktokSearch
-        | ToolName.insSearch
-        | ToolName.xhsUserNotes
-        | ToolName.dyUserPosts
-        | ToolName.tiktokUserPosts
-        | ToolName.insUserPosts
-        | ToolName.twitterSearch
-        | ToolName.twitterUserPosts
+        SocialUITools,
+        | SocialToolName.xhsSearch
+        | SocialToolName.dySearch
+        | SocialToolName.tiktokSearch
+        | SocialToolName.insSearch
+        | SocialToolName.xhsUserNotes
+        | SocialToolName.dyUserPosts
+        | SocialToolName.tiktokUserPosts
+        | SocialToolName.insUserPosts
+        | SocialToolName.twitterSearch
+        | SocialToolName.twitterUserPosts
       >
     >,
     { state: "output-available" }

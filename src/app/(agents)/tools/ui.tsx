@@ -1,4 +1,4 @@
-import { TAddStudyUIToolResult } from "@/ai/tools/types";
+import { TAddStudyUIToolResult } from "@/app/(study)/tools/types";
 import { ToolUIPart } from "ai";
 import { LinkIcon } from "lucide-react";
 import Link from "next/link";

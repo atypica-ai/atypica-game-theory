@@ -4,11 +4,12 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { defaultProviderOptions, llm, type LLMModelName } from "@/ai/provider";
+import { handleToolCallError } from "@/ai/tools/error";
 import { getMcpClientManager } from "@/ai/tools/mcp/client";
-import { createSubAgentTool, handleToolCallError } from "@/ai/tools/tools";
-import { AgentToolConfigArgs, StatReporter, ToolName } from "@/ai/tools/types";
+import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
-import { StudyToolSet } from "@/app/(study)/tools";
+import { createSubAgentTool, StudyToolSet } from "@/app/(study)/tools";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
 import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
@@ -228,7 +229,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
       statReport,
       logger,
     };
-    finalTools[ToolName.createSubAgent] = createSubAgentTool({
+    finalTools[StudyToolName.createSubAgent] = createSubAgentTool({
       userId,
       clients: mcpClients,
       ...agentToolArgs,
@@ -440,8 +441,10 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
       // Handle generateReport completion (universal)
       const generateReportTool = step.toolResults.find(
         (tool) =>
-          !tool.dynamic && tool.type === "tool-result" && tool.toolName === ToolName.generateReport,
-      ) as StaticToolResult<Pick<StudyToolSet, ToolName.generateReport>> | undefined;
+          !tool.dynamic &&
+          tool.type === "tool-result" &&
+          tool.toolName === StudyToolName.generateReport,
+      ) as StaticToolResult<Pick<StudyToolSet, StudyToolName.generateReport>> | undefined;
 
       if (generateReportTool && "output" in generateReportTool && generateReportTool.output) {
         const reportToken =
@@ -465,8 +468,8 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         (tool) =>
           !tool.dynamic &&
           tool.type === "tool-result" &&
-          tool.toolName === ToolName.generatePodcast,
-      ) as StaticToolResult<Pick<StudyToolSet, ToolName.generatePodcast>> | undefined;
+          tool.toolName === StudyToolName.generatePodcast,
+      ) as StaticToolResult<Pick<StudyToolSet, StudyToolName.generatePodcast>> | undefined;
       if (generatePodcastTool) {
         trackEventServerSide({
           userId,
@@ -480,9 +483,12 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         (tool) =>
           !tool.dynamic &&
           tool.type === "tool-result" &&
-          (tool.toolName === ToolName.saveAnalyst || tool.toolName === ToolName.makeStudyPlan),
+          (tool.toolName === StudyToolName.saveAnalyst ||
+            tool.toolName === StudyToolName.makeStudyPlan),
       ) as
-        | StaticToolResult<Pick<StudyToolSet, ToolName.saveAnalyst | ToolName.makeStudyPlan>>
+        | StaticToolResult<
+            Pick<StudyToolSet, StudyToolName.saveAnalyst | StudyToolName.makeStudyPlan>
+          >
         | undefined;
       if (saveAnalystTool) {
         waitUntil(generateChatTitle(studyUserChatId));
@@ -491,8 +497,10 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
       // Handle planPodcast completion (universal - generate chat title)
       const planPodcastTool = step.toolResults.find(
         (tool) =>
-          !tool.dynamic && tool.type === "tool-result" && tool.toolName === ToolName.planPodcast,
-      ) as StaticToolResult<Pick<StudyToolSet, ToolName.planPodcast>> | undefined;
+          !tool.dynamic &&
+          tool.type === "tool-result" &&
+          tool.toolName === StudyToolName.planPodcast,
+      ) as StaticToolResult<Pick<StudyToolSet, StudyToolName.planPodcast>> | undefined;
       if (planPodcastTool) {
         waitUntil(generateChatTitle(studyUserChatId));
       }

@@ -3,9 +3,9 @@ import "server-only";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { parsePDFToText } from "@/ai/reader";
 import { initPersonaImportStatReporter } from "@/ai/tools/stats";
-import { savePersonaTool } from "@/ai/tools/tools";
-import { ToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { savePersonaTool } from "@/app/(study)/tools/savePersona";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
 import { s3SignedUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
@@ -347,14 +347,14 @@ async function buildPersonaAgentPrompt(
       messages: personaMessages,
 
       tools: {
-        [ToolName.savePersona]: savePersonaTool({
+        [StudyToolName.savePersona]: savePersonaTool({
           personaImportId: personaImport.id,
         }),
       },
 
       toolChoice: {
         type: "tool",
-        toolName: ToolName.savePersona,
+        toolName: StudyToolName.savePersona,
       },
 
       stopWhen: stepCountIs(1),

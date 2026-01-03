@@ -4,12 +4,12 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { personaAgentSystem } from "@/ai/prompt";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { fetchUserPersonaChatByToken } from "@/app/(persona)/actions";
+import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -101,11 +101,11 @@ export async function POST(req: Request) {
       mode: "MODE_DYNAMIC",
       dynamicThreshold: 0.3, // threshold 越小，使用搜索的可能性就越高
     }),
-    // [ToolName.dySearch]: dySearchTool,
-    // [ToolName.insSearch]: insSearchTool,
-    // [ToolName.tiktokSearch]: tiktokSearchTool,
-    // [ToolName.xhsSearch]: xhsSearchTool,  // 太贵了，先不用
-    // [ToolName.reasoningThinking]: reasoningThinkingTool(),
+    // [BasicToolName.dySearch]: dySearchTool,
+    // [BasicToolName.insSearch]: insSearchTool,
+    // [BasicToolName.tiktokSearch]: tiktokSearchTool,
+    // [BasicToolName.xhsSearch]: xhsSearchTool,  // 太贵了，先不用
+    // [BasicToolName.reasoningThinking]: reasoningThinkingTool(),
   };
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChat.id, {
     tools,

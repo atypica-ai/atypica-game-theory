@@ -1,4 +1,4 @@
-import { StudyUITools, ToolName } from "@/ai/tools/types";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
@@ -7,7 +7,7 @@ import { FC } from "react";
 import { Streamdown } from "streamdown";
 
 export const ReasoningThinkingConsole: FC<{
-  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.reasoningThinking>>;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.reasoningThinking>>;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
   return (

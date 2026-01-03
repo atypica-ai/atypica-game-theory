@@ -1,4 +1,4 @@
-import { StudyUITools, ToolName } from "@/ai/tools/types";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { ToolUIPart } from "ai";
 
 import {
@@ -14,7 +14,7 @@ import { FC } from "react";
 import { Streamdown } from "streamdown";
 
 export const WebSearchConsole: FC<{
-  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.webSearch>>;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.webSearch>>;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("Components.WebSearchResultMessage");
 

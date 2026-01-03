@@ -1,5 +1,5 @@
 "use server";
-import { generateReportCoverImage } from "@/ai/tools/experts/generateReport/coverImage";
+import { generateReportCoverImage } from "@/app/(study)/tools/generateReport/coverImage";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 // import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";

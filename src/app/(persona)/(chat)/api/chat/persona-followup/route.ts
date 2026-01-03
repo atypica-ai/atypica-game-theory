@@ -5,9 +5,9 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { reasoningThinkingTool } from "@/ai/tools/experts/reasoning";
 import { initPersonaImportStatReporter } from "@/ai/tools/stats";
-import { ToolName } from "@/ai/tools/types";
+import { reasoningThinkingTool } from "@/ai/tools/tools";
+import { BasicToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt";
 import { followUpInterviewTools } from "@/app/(persona)/tools";
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
   });
 
   const tools = {
-    [ToolName.reasoningThinking]: reasoningThinkingTool({
+    [BasicToolName.reasoningThinking]: reasoningThinkingTool({
       locale,
       abortSignal,
       statReport: () => Promise.resolve(), // No-op for follow-up interviews

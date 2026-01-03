@@ -1,5 +1,5 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
-import { StudyUITools, ToolName } from "@/ai/tools/types";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { parseAttachmentText } from "@/lib/attachments/processing";
 import { Analyst, AttachmentFileExtra, ChatMessageAttachment } from "@/prisma/client";
@@ -28,12 +28,12 @@ export function calculateToolUsage(modelMessages: ModelMessage[]) {
       (_count, message) => {
         const count = { ..._count };
         (message.content ?? []).forEach((part) => {
-          const toolName = part.toolName as ToolName;
+          const toolName = part.toolName as StudyToolName;
           count[toolName] = (count[toolName] || 0) + 1;
         });
         return count;
       },
-      {} as Partial<Record<ToolName, number>>,
+      {} as Partial<Record<StudyToolName, number>>,
     );
   return toolUseCount;
 }
@@ -95,7 +95,7 @@ export async function shouldDecidePersonaTier({
   // ToolUIPart<UIToolConfigs> 会根据 type 推断出 input 类型
   const toolPart: ToolUIPart<StudyUITools> = {
     toolCallId,
-    type: `tool-${ToolName.requestInteraction}`,
+    type: `tool-${StudyToolName.requestInteraction}`,
     input:
       locale === "zh-CN"
         ? {
@@ -133,11 +133,15 @@ export async function shouldDecidePersonaTier({
     execute({ writer }) {
       writer.write({ type: "start" }); // 这个是必须的，发送了才能让设置的 messageId 生效
       writer.write({ type: "start-step" });
-      writer.write({ type: "tool-input-start", toolCallId, toolName: ToolName.requestInteraction });
+      writer.write({
+        type: "tool-input-start",
+        toolCallId,
+        toolName: StudyToolName.requestInteraction,
+      });
       writer.write({
         type: "tool-input-available",
         toolCallId,
-        toolName: ToolName.requestInteraction,
+        toolName: StudyToolName.requestInteraction,
         input: toolPart.input,
       });
       writer.write({ type: "finish-step" });

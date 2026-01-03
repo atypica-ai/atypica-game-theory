@@ -1,5 +1,5 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
-import { StudyUITools, TStudyMessageWithTool } from "@/ai/tools/types";
+import { StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import ToolResultTable from "@/components/chat/ToolResultTable";
@@ -212,7 +212,7 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
     //     (part) =>
     //       !(
     //         part.type === "tool-invocation" &&
-    //         part.toolInvocation.toolName === ToolName.requestPayment
+    //         part.toolInvocation.toolName === StudyToolName.requestPayment
     //       ) && !(part.type === "text" && part.text.includes("免费研究额度已经用完")),
     //   );
     // }

@@ -1,6 +1,6 @@
-import { reportHTMLSystem } from "@/ai/prompt";
 import { fetchAnalystInterviews } from "@/app/(agents)/interview/actions";
 import { fetchAnalystPodcasts } from "@/app/(podcast)/actions";
+import { reportHTMLSystem } from "@/app/(study)/tools/generateReport/prompt";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { throwServerActionError } from "@/lib/serverAction";

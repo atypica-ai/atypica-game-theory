@@ -1,4 +1,7 @@
-import { studySystem } from "@/ai/prompt";
+import { toolCallError } from "@/ai/tools/error";
+import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
+import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
+import { studySystem } from "@/app/(study)/prompt/study";
 import {
   buildPersonaTool,
   discussionChatTool,
@@ -6,15 +9,11 @@ import {
   generateReportTool,
   interviewChatTool,
   planStudyTool,
-  reasoningThinkingTool,
   requestInteractionTool,
   scoutTaskChatTool,
   searchPersonasTool,
-  toolCallError,
-  webFetchTool,
-  webSearchTool,
-} from "@/ai/tools/tools";
-import { AgentToolConfigArgs, StatReporter, ToolName } from "@/ai/tools/types";
+} from "@/app/(study)/tools";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import type { Analyst, UserChatExtra } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -122,25 +121,25 @@ export async function createStudyAgentConfig(
 
         // After report/podcast generation, only allow specific tools
         if (
-          (toolUseCount[ToolName.generateReport] ?? 0) > 0 ||
-          (toolUseCount[ToolName.generatePodcast] ?? 0) > 0
+          (toolUseCount[StudyToolName.generateReport] ?? 0) > 0 ||
+          (toolUseCount[StudyToolName.generatePodcast] ?? 0) > 0
         ) {
           activeTools = [
-            ToolName.generateReport,
-            ToolName.generatePodcast,
-            ToolName.reasoningThinking,
-            ToolName.toolCallError,
+            StudyToolName.generateReport,
+            StudyToolName.generatePodcast,
+            StudyToolName.reasoningThinking,
+            StudyToolName.toolCallError,
           ];
         }
         // Limit webSearch usage
         else {
           if (
-            ((toolUseCount[ToolName.planStudy] ?? 0) < 1 &&
-              (toolUseCount[ToolName.webSearch] ?? 0) >= 1) ||
-            (toolUseCount[ToolName.webSearch] ?? 0) >= 3
+            ((toolUseCount[StudyToolName.planStudy] ?? 0) < 1 &&
+              (toolUseCount[StudyToolName.webSearch] ?? 0) >= 1) ||
+            (toolUseCount[StudyToolName.webSearch] ?? 0) >= 3
           ) {
             activeTools = (Object.keys(tools) as (keyof TOOLS)[]).filter(
-              (toolName) => toolName !== ToolName.webSearch,
+              (toolName) => toolName !== StudyToolName.webSearch,
             );
           }
         }
@@ -168,19 +167,23 @@ function buildStudyTools(params: {
   const { studyUserChatId, userId, agentToolArgs } = params;
 
   return {
-    [ToolName.requestInteraction]: requestInteractionTool,
-    [ToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
-    [ToolName.webSearch]: webSearchTool({ provider: "tavily", studyUserChatId, ...agentToolArgs }),
-    [ToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
-    [ToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
-    [ToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
-    [ToolName.buildPersona]: buildPersonaTool({ userId, ...agentToolArgs }),
-    [ToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
-    [ToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
-    [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.planStudy]: planStudyTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.toolCallError]: toolCallError,
+    [StudyToolName.requestInteraction]: requestInteractionTool,
+    [StudyToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
+    [StudyToolName.webSearch]: webSearchTool({
+      provider: "tavily",
+      studyUserChatId,
+      ...agentToolArgs,
+    }),
+    [StudyToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
+    [StudyToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
+    [StudyToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
+    [StudyToolName.buildPersona]: buildPersonaTool({ userId, ...agentToolArgs }),
+    [StudyToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
+    [StudyToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.planStudy]: planStudyTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.toolCallError]: toolCallError,
   };
 }
 
@@ -189,6 +192,6 @@ function buildStudyTools(params: {
  */
 function removeRequestInteraction(tools: ReturnType<typeof buildStudyTools>) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { [ToolName.requestInteraction]: _removed, ...rest } = tools;
+  const { [StudyToolName.requestInteraction]: _removed, ...rest } = tools;
   return rest;
 }

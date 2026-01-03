@@ -1,10 +1,10 @@
-import { StudyUITools, ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
-import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import {
   fetchAnalystByStudyUserChatToken,
   fetchAnalystInterviewForPersona,
 } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
+import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
@@ -18,14 +18,14 @@ import { StreamSteps } from "./StreamSteps";
 export const InterviewChatConsole = ({
   toolInvocation,
 }: {
-  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.interviewChat>>;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.interviewChat>>;
 }) => {
   const t = useTranslations("StudyPage.ToolConsole");
   const { studyUserChat } = useStudyContext();
   // streaming 中的 tool，input.personas 可能是 undefined，personas 里面的 item 也可能是 undefined, 所以要过滤下
   const personasArg = (toolInvocation.input?.personas ?? []).filter(
     (persona) => !!persona?.id,
-  ) as StudyUITools[ToolName.interviewChat]["input"]["personas"];
+  ) as StudyUITools[StudyToolName.interviewChat]["input"]["personas"];
 
   const [analyst, setAnalyst] =
     useState<ExtractServerActionData<typeof fetchAnalystByStudyUserChatToken>>();
@@ -111,7 +111,7 @@ const SingleInterviewChat = ({
 }: {
   analyst: Pick<Analyst, "id" | "role" | "topic">;
   personaId: number;
-  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.interviewChat>>;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.interviewChat>>;
 }) => {
   const t = useTranslations("StudyPage.ToolConsole");
   const { studyUserChat } = useStudyContext();

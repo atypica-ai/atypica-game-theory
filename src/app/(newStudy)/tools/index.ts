@@ -1,7 +1,7 @@
 import "server-only";
 
 import { webFetchTool } from "@/ai/tools/tools";
-import { PlainTextToolResult, ToolName } from "@/ai/tools/types";
+import { BasicToolName, PlainTextToolResult } from "@/ai/tools/types";
 import { tool } from "ai";
 import { Locale } from "next-intl";
 import { endInterviewInputSchema, endInterviewOutputSchema } from "./types";
@@ -23,5 +23,5 @@ export const newStudyTools = ({ locale }: { locale: Locale }) => ({
       };
     },
   }),
-  [ToolName.webFetch]: webFetchTool({ locale }),
+  [BasicToolName.webFetch]: webFetchTool({ locale }),
 });

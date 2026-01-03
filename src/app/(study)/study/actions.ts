@@ -4,7 +4,7 @@ import {
   convertDBMessageToAIMessage,
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
-import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
+import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
@@ -439,7 +439,10 @@ export async function fetchPersonasSearchInStudy({
   const personaIds = new Set<number>();
   for (const message of uiMessages) {
     for (const part of message.parts) {
-      if (part.type === `tool-${ToolName.searchPersonas}` && part.state === "output-available") {
+      if (
+        part.type === `tool-${StudyToolName.searchPersonas}` &&
+        part.state === "output-available"
+      ) {
         part.output.personas.forEach((persona) => personaIds.add(persona.personaId));
       }
     }

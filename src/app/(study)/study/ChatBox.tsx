@@ -3,10 +3,10 @@ import {
   CONTINUE_ASSISTANT_STEPS,
   prepareLastUIMessageForRequest,
 } from "@/ai/messageUtilsClient";
-import { ToolName, TStudyMessageWithTool } from "@/ai/tools/types";
-import { StudyToolUIPartDisplay } from "@/ai/tools/ui";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
+import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types";
+import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import { useTokensBalance } from "@/app/account/hooks";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
@@ -273,8 +273,8 @@ export function ChatBox() {
       if (
         isToolUIPart(lastPart) &&
         lastPart.state !== "output-available" &&
-        [ToolName.requestPayment, ToolName.requestInteraction].includes(
-          getToolName(lastPart) as ToolName,
+        [StudyToolName.requestPayment, StudyToolName.requestInteraction].includes(
+          getToolName(lastPart) as StudyToolName,
         )
       ) {
         waitForUser = true;
@@ -284,8 +284,8 @@ export function ChatBox() {
     const studyCompleted = !!messages.find((message) => {
       return !!message.parts?.find(
         (part) =>
-          (part.type === `tool-${ToolName.generateReport}` ||
-            part.type === `tool-${ToolName.generatePodcast}`) &&
+          (part.type === `tool-${StudyToolName.generateReport}` ||
+            part.type === `tool-${StudyToolName.generatePodcast}`) &&
           // "toolCallId" in part &&  // part.type === `tool-xxx` can infer toolInvocation type
           part.state === "output-available",
       );

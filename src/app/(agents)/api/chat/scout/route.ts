@@ -1,7 +1,7 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { runScoutTaskChatStream } from "@/ai/tools/experts/scoutTaskChat";
 import authOptions from "@/app/(auth)/authOptions";
+import { runScoutTaskChatStream } from "@/app/(study)/tools/scoutTaskChat";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { createUIMessageStream, createUIMessageStreamResponse, generateId } from "ai";

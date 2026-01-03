@@ -46,3 +46,54 @@ export type SocialPostCommentToolResult = {
   comments?: SocialPostComment[];
   plainText: string;
 };
+
+export enum SocialToolName {
+  xhsNoteComments = "xhsNoteComments",
+  xhsSearch = "xhsSearch",
+  xhsUserNotes = "xhsUserNotes",
+  dySearch = "dySearch",
+  dyPostComments = "dyPostComments",
+  dyUserPosts = "dyUserPosts",
+  tiktokSearch = "tiktokSearch",
+  tiktokPostComments = "tiktokPostComments",
+  tiktokUserPosts = "tiktokUserPosts",
+  insSearch = "insSearch",
+  insUserPosts = "insUserPosts",
+  insPostComments = "insPostComments",
+  twitterSearch = "twitterSearch",
+  twitterUserPosts = "twitterUserPosts",
+  twitterPostComments = "twitterPostComments",
+}
+
+// 因为很多前端组件用不到 tool 的 input，这里就定义一个简单的类型，以避免使用 unknown 或者 any
+type GenericInputType = Record<any, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+export type SocialUITools = {
+  [SocialToolName.xhsNoteComments]: {
+    input: GenericInputType;
+    output: SocialPostCommentToolResult;
+  };
+  [SocialToolName.xhsSearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.xhsUserNotes]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.dySearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.dyPostComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
+  [SocialToolName.dyUserPosts]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.tiktokSearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.tiktokPostComments]: {
+    input: GenericInputType;
+    output: SocialPostCommentToolResult;
+  };
+  [SocialToolName.tiktokUserPosts]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.insSearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.insUserPosts]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.insPostComments]: {
+    input: GenericInputType;
+    output: SocialPostCommentToolResult;
+  };
+  [SocialToolName.twitterSearch]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.twitterUserPosts]: { input: GenericInputType; output: SocialPostToolResult };
+  [SocialToolName.twitterPostComments]: {
+    input: GenericInputType;
+    output: SocialPostCommentToolResult;
+  };
+};

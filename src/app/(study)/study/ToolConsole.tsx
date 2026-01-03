@@ -1,11 +1,11 @@
-import { ToolName } from "@/ai/tools/types";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 import { useMemo } from "react";
 import { BuildPersonaConsole } from "./console/BuildPersonaConsole";
 import { CreateSubAgentConsole } from "./console/CreateSubAgentConsole";
+import { DiscussionChatConsole } from "./console/DiscussionChatConsole";
 import { GenerateReportConsole } from "./console/GenerateReportConsole";
 import { InterviewChatConsole } from "./console/InterviewChatConsole";
-import { DiscussionChatConsole } from "./console/DiscussionChatConsole";
 import { ReasoningThinkingConsole } from "./console/ReasoningThinkingConsole";
 import { ScoutTaskChatConsole } from "./console/ScoutTaskChatConsole";
 import { SearchPersonasConsole } from "./console/SearchPersonasConsole";
@@ -20,24 +20,24 @@ export function ToolConsole() {
   }, [viewToolInvocation, lastToolInvocation]);
 
   switch (activeTool?.type) {
-    case `tool-${ToolName.scoutTaskChat}`:
-    case `tool-${ToolName.scoutSocialTrends}`:
+    case `tool-${StudyToolName.scoutTaskChat}`:
+    case `tool-${StudyToolName.scoutSocialTrends}`:
       return <ScoutTaskChatConsole toolInvocation={activeTool} />;
-    case `tool-${ToolName.interviewChat}`:
+    case `tool-${StudyToolName.interviewChat}`:
       return <InterviewChatConsole toolInvocation={activeTool} />;
-    case `tool-${ToolName.discussionChat}`:
+    case `tool-${StudyToolName.discussionChat}`:
       return <DiscussionChatConsole toolInvocation={activeTool} />;
-    case `tool-${ToolName.reasoningThinking}`:
+    case `tool-${StudyToolName.reasoningThinking}`:
       return <ReasoningThinkingConsole toolInvocation={activeTool} />;
-    case `tool-${ToolName.generateReport}`:
+    case `tool-${StudyToolName.generateReport}`:
       return <GenerateReportConsole toolInvocation={activeTool} />;
-    case `tool-${ToolName.buildPersona}`:
+    case `tool-${StudyToolName.buildPersona}`:
       return <BuildPersonaConsole toolInvocation={activeTool} />;
-    case `tool-${ToolName.searchPersonas}`:
+    case `tool-${StudyToolName.searchPersonas}`:
       return <SearchPersonasConsole toolInvocation={activeTool} />;
-    case `tool-${ToolName.webSearch}`:
+    case `tool-${StudyToolName.webSearch}`:
       return <WebSearchConsole toolInvocation={activeTool} />;
-    case `tool-${ToolName.createSubAgent}`:
+    case `tool-${StudyToolName.createSubAgent}`:
       return <CreateSubAgentConsole toolInvocation={activeTool} />;
     default:
       return activeTool ? <ToolInvocationMessage toolInvocation={activeTool} /> : null;

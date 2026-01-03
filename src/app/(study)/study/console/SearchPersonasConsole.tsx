@@ -1,7 +1,7 @@
-import { TPersonaForStudy } from "@/ai/tools/experts/buildPersona/types";
-import { StudyUITools, ToolName } from "@/ai/tools/types";
 import { fetchPersonasSearchInStudy } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { TPersonaForStudy } from "@/app/(study)/tools/buildPersona/types";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -166,7 +166,7 @@ const PersonaGrids: FC<{
                   {promptPersona.tier >= 2 ? (
                     <Badge
                       variant="secondary"
-                      className="text-xs bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-700 border-violet-200 font-semibold dark:from-violet-950/50 dark:to-fuchsia-950/50 dark:text-violet-300 dark:border-violet-800/50"
+                      className="text-xs bg-linear-to-r from-violet-50 to-fuchsia-50 text-violet-700 border-violet-200 font-semibold dark:from-violet-950/50 dark:to-fuchsia-950/50 dark:text-violet-300 dark:border-violet-800/50"
                     >
                       <UserCheckIcon className="size-3 mr-1" />
                       {promptPersona.tier === 3
@@ -188,7 +188,7 @@ const PersonaGrids: FC<{
 };
 
 export const SearchPersonasConsole: FC<{
-  toolInvocation: ToolUIPart<Pick<StudyUITools, ToolName.searchPersonas>>;
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.searchPersonas>>;
 }> = ({ toolInvocation }) => {
   const t = useTranslations("StudyPage.ToolConsole");
 

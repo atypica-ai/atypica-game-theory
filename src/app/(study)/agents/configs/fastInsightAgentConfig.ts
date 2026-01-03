@@ -1,14 +1,10 @@
-import { fastInsightSystem } from "@/ai/prompt";
-import {
-  generatePodcastTool,
-  generateReportTool,
-  planPodcastTool,
-  toolCallError,
-  webFetchTool,
-  webSearchTool,
-} from "@/ai/tools/tools";
-import { AgentToolConfigArgs, StatReporter, ToolName } from "@/ai/tools/types";
+import { toolCallError } from "@/ai/tools/error";
+import { webFetchTool, webSearchTool } from "@/ai/tools/tools";
+import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
+import { fastInsightSystem } from "@/app/(study)/prompt/fastInsight";
+import { generatePodcastTool, generateReportTool, planPodcastTool } from "@/app/(study)/tools";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import type { Analyst, UserChatExtra } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -96,16 +92,20 @@ export async function createFastInsightAgentConfig(
 
         // After report/podcast generation, only allow specific tools
         if (
-          (toolUseCount[ToolName.generateReport] ?? 0) > 0 ||
-          (toolUseCount[ToolName.generatePodcast] ?? 0) > 0
+          (toolUseCount[StudyToolName.generateReport] ?? 0) > 0 ||
+          (toolUseCount[StudyToolName.generatePodcast] ?? 0) > 0
         ) {
-          activeTools = [ToolName.generateReport, ToolName.generatePodcast, ToolName.toolCallError];
+          activeTools = [
+            StudyToolName.generateReport,
+            StudyToolName.generatePodcast,
+            StudyToolName.toolCallError,
+          ];
         }
         // Limit webSearch usage (fast insight doesn't have planStudy)
         else {
-          if ((toolUseCount[ToolName.webSearch] ?? 0) >= 3) {
+          if ((toolUseCount[StudyToolName.webSearch] ?? 0) >= 3) {
             activeTools = (Object.keys(tools) as (keyof TOOLS)[]).filter(
-              (toolName) => toolName !== ToolName.webSearch,
+              (toolName) => toolName !== StudyToolName.webSearch,
             );
           }
         }
@@ -131,12 +131,12 @@ function buildFastInsightTools(params: {
   const { studyUserChatId, userId, agentToolArgs } = params;
 
   return {
-    [ToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
-    [ToolName.webSearch]: webSearchTool({ provider: "perplexity", ...agentToolArgs }), // Use perplexity
-    [ToolName.planPodcast]: planPodcastTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
-    [ToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
-    [ToolName.toolCallError]: toolCallError,
+    [StudyToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
+    [StudyToolName.webSearch]: webSearchTool({ provider: "perplexity", ...agentToolArgs }), // Use perplexity
+    [StudyToolName.planPodcast]: planPodcastTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
+    [StudyToolName.toolCallError]: toolCallError,
   };
 }

@@ -1,5 +1,5 @@
 "use client";
-import { StudyUITools, TStudyMessageWithTool } from "@/ai/tools/types";
+import { StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { UserChat } from "@/prisma/client";
 import { DynamicToolUIPart, ToolUIPart } from "ai";
 import { createContext, ReactNode, useCallback, useContext, useState } from "react";
@@ -12,7 +12,7 @@ type TStudyUserChat = Omit<UserChat, "kind"> & {
 
 // export type TLastToolInvocation = {
 //   toolCallId: string;
-//   toolName: string; // ToolName; 这里没必要用 ToolName 类型，简单一些
+//   toolName: string; // StudyToolName; 这里没必要用 StudyToolName 类型，简单一些
 //   state: ToolUIPart["state"];
 // };
 

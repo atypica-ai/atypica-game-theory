@@ -1,15 +1,11 @@
 import "server-only";
 
-import { planModeSystem } from "@/ai/prompt/study/planMode";
-import {
-  makeStudyPlanTool,
-  reasoningThinkingTool,
-  requestInteractionTool,
-  toolCallError,
-  webFetchTool,
-  webSearchTool,
-} from "@/ai/tools/tools";
-import { AgentToolConfigArgs, StatReporter, ToolName } from "@/ai/tools/types";
+import { toolCallError } from "@/ai/tools/error";
+import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
+import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
+import { planModeSystem } from "@/app/(study)/prompt/planMode";
+import { makeStudyPlanTool, requestInteractionTool } from "@/app/(study)/tools";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -70,11 +66,11 @@ export async function createPlanModeAgentConfig(
 
 function buildPlanModeTools(params: AgentToolConfigArgs) {
   return {
-    [ToolName.requestInteraction]: requestInteractionTool,
-    [ToolName.makeStudyPlan]: makeStudyPlanTool,
-    [ToolName.webSearch]: webSearchTool(params),
-    [ToolName.webFetch]: webFetchTool(params),
-    [ToolName.reasoningThinking]: reasoningThinkingTool(params),
-    [ToolName.toolCallError]: toolCallError,
+    [StudyToolName.requestInteraction]: requestInteractionTool,
+    [StudyToolName.makeStudyPlan]: makeStudyPlanTool,
+    [StudyToolName.webSearch]: webSearchTool(params),
+    [StudyToolName.webFetch]: webFetchTool(params),
+    [StudyToolName.reasoningThinking]: reasoningThinkingTool(params),
+    [StudyToolName.toolCallError]: toolCallError,
   };
 }

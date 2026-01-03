@@ -1,9 +1,9 @@
 import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { scoutSocialTrendsTool } from "@/ai/tools/experts/scoutSocialTrends";
 import { webSearchTool as createWebSearchTool } from "@/ai/tools/experts/webSearch";
 import { calculateStepTokensUsage, TReduceTokens } from "@/ai/usage";
+import { scoutSocialTrendsTool } from "@/app/(study)/tools";
 import { stepCountIs, streamText, ToolSet } from "ai";
 import { ExpertExecutor, ExpertStreamTextResult } from "../types";
 import trendExplorerSystemPrompt from "./prompt";

@@ -1,4 +1,4 @@
-import { ToolName } from "@/ai/tools/types";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -48,7 +48,7 @@ function ArtifactsCountBadge() {
   // Refresh when tool invocations complete
   useEffect(() => {
     if (
-      lastToolInvocation?.type === `tool-${ToolName.generateReport}` &&
+      lastToolInvocation?.type === `tool-${StudyToolName.generateReport}` &&
       lastToolInvocation.state === "output-available"
     ) {
       refreshArtifactsCount();

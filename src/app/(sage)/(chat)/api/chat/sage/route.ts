@@ -6,7 +6,7 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { reasoningThinkingTool } from "@/ai/tools/tools";
-import { StatReporter, ToolName } from "@/ai/tools/types";
+import { BasicToolName, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { sageChatSystemPrompt } from "@/app/(sage)/prompt/chat";
@@ -139,7 +139,7 @@ export async function POST(req: Request) {
       mode: "MODE_DYNAMIC",
       dynamicThreshold: 0.3,
     }),
-    [ToolName.reasoningThinking]: reasoningThinkingTool({
+    [BasicToolName.reasoningThinking]: reasoningThinkingTool({
       locale,
       abortSignal: mergedAbortSignal,
       statReport,
