@@ -36,12 +36,7 @@ import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
 import { buildReferenceStudyContext } from "./referenceContext";
-import {
-  outOfBalance,
-  setBedrockCache,
-  shouldDecidePersonaTier,
-  waitUntilAttachmentsProcessed,
-} from "./utils";
+import { outOfBalance, setBedrockCache, waitUntilAttachmentsProcessed } from "./utils";
 
 /**
  * Base context shared by all agent types
@@ -240,22 +235,26 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // =============================================================================
   // Phase 5: Universal Persona Tier Decision (for first-time users)
   // =============================================================================
-
-  // Check persona tier decision for first-time users (only if this is the first message)
-  if (coreMessages.length === 1 && coreMessages[0].role === "user") {
-    const shouldDecide = await shouldDecidePersonaTier({
-      locale,
-      userId,
-      studyUserChatId,
-      streamWriter,
-      streamingMessage,
-    });
-
-    if (shouldDecide) {
-      // Persona tier decision UI already sent, exit early
-      return;
-    }
-  }
+  //
+  // DEPRECATED: Moved to Study Agent prompt control
+  // Now Study Agent will use requestInteraction tool to ask about private persona usage
+  // when appropriate, rather than forcing it at the start of every study.
+  //
+  // // Check persona tier decision for first-time users (only if this is the first message)
+  // if (coreMessages.length === 1 && coreMessages[0].role === "user") {
+  //   const shouldDecide = await shouldDecidePersonaTier({
+  //     locale,
+  //     userId,
+  //     studyUserChatId,
+  //     streamWriter,
+  //     streamingMessage,
+  //   });
+  //
+  //   if (shouldDecide) {
+  //     // Persona tier decision UI already sent, exit early
+  //     return;
+  //   }
+  // }
 
   // =============================================================================
   // Phase 6: Build Model Messages

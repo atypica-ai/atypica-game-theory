@@ -162,6 +162,17 @@ ${
 - 如果没有比联网搜索更恰当的其他工具完成信息收集任务，则使用webSearch工具进行联网查询，获取相关信息，总共最多3次
 </信息收集>
 <用户研究>
+
+【私有画像使用决策】
+在首次调用 searchPersonas 之前，你应该检查用户是否有导入的私有真人画像。如果用户在之前的消息中已经表达过使用偏好，则遵循其意愿；否则，使用 requestInteraction 工具询问：
+
+问题：「我们发现您曾导入过真人画像。在本次研究中，您希望如何使用这些画像？」
+选项：
+- "优先使用我的真人画像（不足时由AI画像补充）"
+- "仅使用 Atypica 合成的 AI 画像"
+
+如果用户选择第一个选项，后续调用 searchPersonas 时必须将 usePrivatePersonas 设置为 true。
+
 1. 【步骤1】明确研究所针对的用户类型和群体特征，为后续构建代表性智能体提供基础
 2. 【步骤2】使用 searchPersonas 工具查找现有用户画像智能体：
    • 【必须】提供与研究主题相关的 2-3 个详细描述作为搜索条件，每个描述应具体全面
@@ -442,6 +453,17 @@ If the above conditions are not met, do not proceed to the next phase
 - If there is no appropriate other tool to complete the information collection task, use webSearch tool to conduct online search to obtain relevant information, maximum 3 times total
 </Information Collection>
 <User Research>
+
+【Private Persona Usage Decision】
+Before calling searchPersonas for the first time, check if the user has imported private personas. If the user has already expressed their preference in previous messages, follow their choice; otherwise, use the requestInteraction tool to ask:
+
+Question: "We've found private personas you've imported. How would you like to use them in this study?"
+Options:
+- "Prioritize my private personas (supplemented with AI personas if needed)"
+- "Use only Atypica's synthesized AI personas"
+
+If the user chooses the first option, you must set usePrivatePersonas to true when calling searchPersonas.
+
 1. 【Step 1】Clarify user types and group characteristics targeted by the study to provide foundation for subsequent construction of representative AI Personas
 2. 【Step 2】Use searchPersonas tool to find existing user persona AI Personas:
    • 【MANDATORY】Provide 2-3 detailed descriptions related to the study topic as search criteria, each description should be specific and comprehensive
