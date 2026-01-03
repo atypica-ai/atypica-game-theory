@@ -708,3 +708,81 @@ export async function fetchAnalystPodcastsCountOfStudyUserChat({
     data: count,
   };
 }
+
+/**
+ * Save analyst from plan mode
+ *
+ * Called by frontend after user confirms the research plan.
+ * Updates analyst record with locale, kind, role, and topic from the plan.
+ */
+export async function saveAnalystFromPlan({
+  userChatToken,
+  locale,
+  kind,
+  role,
+  topic,
+}: {
+  userChatToken: string;
+  locale: "zh-CN" | "en-US" | "misc";
+  kind: "productRnD" | "fastInsight" | "testing" | "insights" | "creation" | "planning" | "misc";
+  role: string;
+  topic: string;
+}): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    try {
+      // Find the userChat and verify ownership
+      const userChat = await prisma.userChat.findUnique({
+        where: {
+          token: userChatToken,
+          kind: "study",
+          userId: user.id,
+        },
+        select: {
+          id: true,
+          analyst: {
+            select: { id: true },
+          },
+        },
+      });
+
+      if (!userChat || !userChat.analyst) {
+        return {
+          success: false,
+          code: "not_found",
+          message: "Study session or analyst not found",
+        };
+      }
+
+      // Update analyst with plan data
+      await prisma.analyst.update({
+        where: { id: userChat.analyst.id },
+        data: {
+          locale,
+          kind,
+          role,
+          topic,
+        },
+      });
+
+      const logger = rootLogger.child({
+        userChatToken,
+        userId: user.id,
+        analystId: userChat.analyst.id,
+      });
+      logger.info({ msg: "Analyst saved from plan", kind, role });
+
+      return {
+        success: true,
+        data: undefined,
+      };
+    } catch (error) {
+      const logger = rootLogger.child({ userChatToken, userId: user.id });
+      logger.error({ msg: "Failed to save analyst from plan", error });
+      return {
+        success: false,
+        message: "Failed to save research plan",
+        code: "internal_server_error",
+      };
+    }
+  });
+}

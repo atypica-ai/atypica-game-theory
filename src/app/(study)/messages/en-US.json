@@ -51,7 +51,16 @@
       "startNewStudy": "Start New Study",
       "confirm": "Confirm",
       "referenceContext": "Reference Study",
-      "attachments": "Attachments"
+      "attachments": "Attachments",
+      "researchPlan": "Research Plan",
+      "researchPlanConfirmation": "Research Plan Confirmation",
+      "confirmAndStart": "Confirm and Start",
+      "confirming": "Confirming...",
+      "cancelResearch": "Cancel Research",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "researchPlanConfirmed": "Research plan confirmed, execution will begin",
+      "researchPlanCancelled": "User cancelled the research plan. Please ask the user why they cancelled and what adjustments they want, do NOT automatically re-plan."
     },
     "Feedback": {
       "title": "Was this study useful?",

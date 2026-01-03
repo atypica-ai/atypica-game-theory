@@ -51,7 +51,16 @@
       "startNewStudy": "开始新研究",
       "confirm": "确认",
       "referenceContext": "参考研究",
-      "attachments": "附件"
+      "attachments": "附件",
+      "researchPlan": "研究计划",
+      "researchPlanConfirmation": "研究计划确认",
+      "confirmAndStart": "确认并开始执行",
+      "confirming": "确认中...",
+      "cancelResearch": "取消研究",
+      "confirmed": "已确认",
+      "cancelled": "已取消",
+      "researchPlanConfirmed": "研究计划已确认，即将开始执行",
+      "researchPlanCancelled": "用户取消了研究计划。请询问用户为什么取消、希望如何调整，不要自动重新规划。"
     },
     "Feedback": {
       "title": "这个研究对您有用吗？",

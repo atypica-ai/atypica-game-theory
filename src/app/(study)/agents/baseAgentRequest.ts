@@ -475,11 +475,15 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         });
       }
 
-      // Handle saveAnalyst completion (universal - generate chat title)
+      // Handle saveAnalyst/makeStudyPlan completion (universal - generate chat title)
       const saveAnalystTool = step.toolResults.find(
         (tool) =>
-          !tool.dynamic && tool.type === "tool-result" && tool.toolName === ToolName.saveAnalyst,
-      ) as StaticToolResult<Pick<StudyToolSet, ToolName.saveAnalyst>> | undefined;
+          !tool.dynamic &&
+          tool.type === "tool-result" &&
+          (tool.toolName === ToolName.saveAnalyst || tool.toolName === ToolName.makeStudyPlan),
+      ) as
+        | StaticToolResult<Pick<StudyToolSet, ToolName.saveAnalyst | ToolName.makeStudyPlan>>
+        | undefined;
       if (saveAnalystTool) {
         waitUntil(generateChatTitle(studyUserChatId));
       }

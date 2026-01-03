@@ -12,7 +12,10 @@ import {
   SocialPostCommentsResultMessage,
   SocialPostsResultMessage,
 } from "@/ai/tools/social/ToolMessage";
-import { SaveAnalystToolResultMessage } from "@/ai/tools/system/ToolMessage";
+import {
+  MakeStudyPlanMessage,
+  SaveAnalystToolResultMessage,
+} from "@/ai/tools/system/ToolMessage";
 import {
   PlainTextUITools,
   TAddStudyUIToolResult,
@@ -59,6 +62,8 @@ export const StudyToolUIPartDisplay = ({
       );
     case `tool-${ToolName.requestPayment}`:
       return <RequestPaymentMessage toolInvocation={toolUIPart} addToolResult={addToolResult} />;
+    case `tool-${ToolName.makeStudyPlan}`:
+      return <MakeStudyPlanMessage toolInvocation={toolUIPart} addToolResult={addToolResult} />;
   }
 
   if (toolUIPart.state !== "output-available") {

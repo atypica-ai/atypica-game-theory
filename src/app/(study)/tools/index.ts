@@ -7,6 +7,7 @@ import {
   generatePodcastTool,
   generateReportTool,
   interviewChatTool,
+  makeStudyPlanTool,
   planPodcastTool,
   planStudyTool,
   reasoningThinkingTool,
@@ -22,6 +23,7 @@ import { ToolName } from "@/ai/tools/types";
 import { ToolSet } from "ai";
 
 export type StudyToolSet = Partial<{
+  [ToolName.makeStudyPlan]: typeof makeStudyPlanTool;
   [ToolName.requestInteraction]: typeof requestInteractionTool;
   [ToolName.webFetch]: ReturnType<typeof webFetchTool>;
   [ToolName.webSearch]: ReturnType<typeof webSearchTool>;

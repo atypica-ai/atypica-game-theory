@@ -2,9 +2,9 @@ import "server-only";
 
 import { planModeSystem } from "@/ai/prompt/study/planMode";
 import {
+  makeStudyPlanTool,
   reasoningThinkingTool,
   requestInteractionTool,
-  saveAnalystTool,
   toolCallError,
   webFetchTool,
   webSearchTool,
@@ -43,7 +43,7 @@ type TOOLS = ReturnType<typeof buildPlanModeTools>;
 export async function createPlanModeAgentConfig(
   params: PlanModeAgentConfigParams,
 ): Promise<AgentRequestConfig<TOOLS>> {
-  const { studyUserChatId, locale, logger, statReport, toolAbortController } = params;
+  const { locale, logger, statReport, toolAbortController } = params;
 
   // Build tools
   const agentToolArgs: AgentToolConfigArgs = {
@@ -53,7 +53,7 @@ export async function createPlanModeAgentConfig(
     logger,
   };
 
-  const tools = buildPlanModeTools({ studyUserChatId, ...agentToolArgs });
+  const tools = buildPlanModeTools(agentToolArgs);
 
   return {
     model: "claude-sonnet-4",
@@ -68,21 +68,13 @@ export async function createPlanModeAgentConfig(
   };
 }
 
-function buildPlanModeTools(params: {
-  studyUserChatId: number;
-  locale: Locale;
-  abortSignal: AbortSignal;
-  statReport: StatReporter;
-  logger: Logger;
-}) {
-  const { studyUserChatId, ...agentToolArgs } = params;
-
+function buildPlanModeTools(params: AgentToolConfigArgs) {
   return {
     [ToolName.requestInteraction]: requestInteractionTool,
-    [ToolName.webSearch]: webSearchTool(agentToolArgs),
-    [ToolName.webFetch]: webFetchTool(agentToolArgs),
-    [ToolName.reasoningThinking]: reasoningThinkingTool(agentToolArgs),
-    [ToolName.saveAnalyst]: saveAnalystTool({ studyUserChatId }),
+    [ToolName.makeStudyPlan]: makeStudyPlanTool,
+    [ToolName.webSearch]: webSearchTool(params),
+    [ToolName.webFetch]: webFetchTool(params),
+    [ToolName.reasoningThinking]: reasoningThinkingTool(params),
     [ToolName.toolCallError]: toolCallError,
   };
 }

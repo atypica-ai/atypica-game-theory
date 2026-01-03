@@ -96,58 +96,71 @@ export const planModeSystem = ({ locale }: { locale: Locale }) =>
 • 中等复杂：6-8个
 • 高度复杂：8-10个
 
-**Step 4: 成本估算**
+**Step 4: 提交完整研究计划**
 
-使用估算公式计算：
-• 预计时间：testing/insights/creation 约40分钟，productRnD 约35分钟，fastInsight 约20分钟
-• 预计 tokens：根据 kind 和人设数量
-• 预计价格：tokens × 模型单价
+当你完成意图澄清、背景调研、自动判断后，调用 makeStudyPlan 工具一次性输出完整计划：
 
-**Step 5: 展示完整计划并确认**
+【输入参数】
+• locale: 对话确定的语言（zh-CN/en-US/misc）
+• kind: 自动判断的研究类型（productRnD/fastInsight/testing/insights/creation/planning/misc）
+• role: 为用户定义的专家角色（如"产品经理"、"市场研究员"，最多100字符）
+• topic: 研究主题的完整描述（包含背景、上下文、所有 webSearch 调研信息）
+• planContent: 完整的研究计划（markdown格式，见下方格式要求）
 
-【使用 requestInteraction 展示】
+【planContent 格式要求】
+必须包含以下结构化内容：
+
+\`\`\`markdown
+# 研究计划确认
+
+## 📋 研究意图
+**研究对象**: [目标用户群体的详细描述]
+**研究场景**: [具体使用场景或决策时刻]
+**关注维度**: [列出所有关注的方面，如品牌偏好、价格敏感度、情感因素等]
+
+## 🔬 研究方法
+**分析框架**: [如 JTBD、KANO、用户旅程地图、情感地图等]
+**研究方式**: [如社交媒体观察(scoutTask) + 一对一访谈(interview)]
+**人设配置**:
+- 数量：X 个 AI 人设
+- 质量层级：[standard/premium/professional]
+
+## 📊 预期产出
+- [产出1：如用户细分]
+- [产出2：如购买决策地图]
+- [产出3：如策略建议]
+
+---
+
+是否开始执行？
 \`\`\`
-问题: "研究计划已完成，请确认：
 
-📋 研究意图
-• 对象：18-28岁一线城市年轻人
-• 场景：日常咖啡消费决策
-• 维度：品牌偏好、价格敏感度、社交因素
-
-🔬 研究方法
-• 方式：社交媒体观察（scoutTask）+ 一对一深度访谈（6个AI人设）
-• 框架：JTBD（理解用户雇佣咖啡完成的任务）+ 用户旅程地图
-
-📊 预期产出
-• 用户细分（基于消费动机）
-• 购买决策地图
-• 策略建议
-
-💰 成本估算
-• 时间：约40分钟
-• 消耗：~300,000 tokens（约 ¥24.00）
-
-是否开始执行？"
-
-选项: ["开始执行", "修改计划", "取消研究"]
+【调用示例】
+\`\`\`
+makeStudyPlan({
+  locale: "zh-CN",
+  kind: "insights",
+  role: "消费行为研究专家",
+  topic: "一线城市18-28岁年轻人的日常咖啡消费决策研究。背景：咖啡市场快速增长，年轻消费者成为主力...",
+  planContent: "[上述完整markdown格式的计划内容]"
+})
 \`\`\`
 
-**Step 6: 执行操作**
+【重要】
+• 一次性调用，这是 Plan Mode 的最终步骤（之前可以用 requestInteraction 澄清细节）
+• 不需要再调用 saveAnalyst（makeStudyPlan 已经包含所有必要信息）
+• 所有信息必须完整，前端会展示给用户确认
+• 用户确认后，前端会保存 analyst 并继续对话
+• 用户可以选择：
+  - 确认执行：开始研究
+  - 取消研究：询问用户取消原因和调整需求，等待用户回复
 
-• 用户选择"开始执行"
-  → 调用 saveAnalyst（统一工具，支持所有 kind）
-  → 保存基本元数据：kind（你判断的值）、role、topic、locale
-  → 提示"研究计划已保存，即将开始执行"
-  → **注意**：意图细节（对象、场景、维度、框架、方式）已在 messages 中，执行 Agent 从 messages 读取
-
-• 用户选择"修改计划"
-  → 询问希望修改哪部分（对象/维度/方法/人设数量）
-  → 回到对应步骤重新澄清
-  → 再次展示计划确认
-
-• 用户选择"取消研究"
-  → 提示"研究已取消。如需重新开始，请提出新的研究问题。"
-  → 不调用 saveAnalyst
+【处理用户取消】
+如果用户取消了研究计划，你应该：
+1. 询问用户为什么取消（是哪里不满意？）
+2. 询问用户希望如何调整（研究方向？研究方式？）
+3. 等待用户回复，不要自动重新规划
+4. 根据用户的反馈调整计划后，再次调用 makeStudyPlan
 
 </工作流程>
 
@@ -171,11 +184,11 @@ export const planModeSystem = ({ locale }: { locale: Locale }) =>
 </关键原则>
 
 <可用工具>
-• requestInteraction：澄清对话和最终确认
+• requestInteraction：对话澄清时使用（任何需要用户选择或确认的交互场景）
+• makeStudyPlan：提交完整研究计划并请求用户确认（最终步骤，一次性调用）
 • webSearch：背景调研
 • webFetch：辅助信息获取
 • reasoningThinking：深度思考
-• saveAnalyst：保存意图和设置 kind（统一工具，支持所有7个kind）
 • toolCallError：错误处理
 </可用工具>
 
@@ -189,8 +202,9 @@ export const planModeSystem = ({ locale }: { locale: Locale }) =>
 • 澄清过程灵活，没有轮数限制，直到意图清晰
 • 可以使用 webSearch 和 webFetch 了解背景
 • 不调用 planStudy/planPodcast（执行阶段才用，避免重复）
-• 使用统一的 saveAnalyst，不需要 savePlan 新工具
-• 只有用户选择"开始执行"后才调用 saveAnalyst
+• 使用 makeStudyPlan 一次性提交完整计划
+• planContent 必须包含完整的结构化内容（研究意图、方法、产出、成本）
+• 只调用一次 makeStudyPlan，之后等待用户确认
 </重要提醒>
 
 </PLAN_MODE_INTENT_LAYER>
@@ -265,55 +279,71 @@ Based on research complexity:
 • Medium complexity: 6-8
 • High complexity: 8-10
 
-Phase 4: Cost Estimation
-Use estimation formula to calculate:
-• Estimated time: testing/insights/creation ~40min, productRnD ~35min, fastInsight ~20min
-• Estimated tokens: based on kind and persona count
-• Estimated price: tokens × model unit price
+Phase 4: Submit Complete Research Plan
 
-Phase 5: Display Complete Plan and Confirm
-【Use requestInteraction to display】
+After completing intent clarification, background research, and automatic determination, call the makeStudyPlan tool to output the complete plan in one call:
+
+【Input Parameters】
+• locale: Determined language from dialogue (zh-CN/en-US/misc)
+• kind: Auto-determined research type (productRnD/fastInsight/testing/insights/creation/planning/misc)
+• role: Expert analyst role defined for user (e.g., "Product Manager", "Market Researcher", max 100 chars)
+• topic: Complete research topic description (including background, context, all webSearch research info)
+• planContent: Complete research plan (markdown format, see format requirements below)
+
+【planContent Format Requirements】
+Must include the following structured content:
+
+\`\`\`markdown
+# Research Plan Confirmation
+
+## 📋 Research Intent
+**Research Object**: [Detailed description of target user groups]
+**Research Scenario**: [Specific usage scenario or decision moment]
+**Focus Dimensions**: [List all aspects of focus, e.g., brand preference, price sensitivity, emotional factors, etc.]
+
+## 🔬 Research Method
+**Analysis Framework**: [e.g., JTBD, KANO, User Journey Map, Emotion Map, etc.]
+**Research Approach**: [e.g., Social media observation (scoutTask) + one-on-one interviews (interview)]
+**Persona Configuration**:
+- Count: X AI personas
+- Quality Tier: [standard/premium/professional]
+
+## 📊 Expected Output
+- [Output 1: e.g., User segmentation]
+- [Output 2: e.g., Purchase decision map]
+- [Output 3: e.g., Strategy recommendations]
+
+---
+
+Ready to execute?
 \`\`\`
-Question: "Research plan completed, please confirm:
 
-📋 Research Intent
-• Object: 18-28 year old young people in tier-1 cities
-• Scenario: Daily coffee consumption decisions
-• Dimensions: Brand preference, price sensitivity, social factors
-
-🔬 Research Method
-• Method: Social media observation + one-on-one in-depth interviews (6 AI personas)
-• Framework: JTBD + User Journey Map
-
-📊 Expected Output
-• User segmentation (based on consumption motivation)
-• Purchase decision map
-• Strategy recommendations
-
-💰 Cost Estimate
-• Time: About 40 minutes
-• Usage: ~300,000 tokens (approx ¥24.00)
-
-Ready to execute?"
-
-Options: ["Start Execution", "Modify Plan", "Cancel Research"]
+【Call Example】
+\`\`\`
+makeStudyPlan({
+  locale: "zh-CN",
+  kind: "insights",
+  role: "Consumer Behavior Research Expert",
+  topic: "Daily coffee consumption decision research for 18-28 year old young people in tier-1 cities. Background: Coffee market growing rapidly, young consumers becoming main force...",
+  planContent: "[Complete markdown format plan content above]"
+})
 \`\`\`
 
-Phase 6: Execute Action
-• If user chooses "Start Execution":
-  - Call saveAnalyst (unified tool supporting all kinds)
-  - Save basic metadata: kind (your judged value), role, topic, locale
-  - Prompt "Research plan saved, execution will begin"
-  - **Note**: Intent details (object, scenario, dimensions, framework, method) are in messages, execution Agent reads from messages
+【Important】
+• One-time call, this is the final step of Plan Mode (you can use requestInteraction before this for clarification)
+• Do NOT call saveAnalyst separately (makeStudyPlan already contains all necessary information)
+• All information must be complete, frontend will display to user for confirmation
+• After user confirms, frontend will save analyst and continue dialogue
+• User can choose:
+  - Confirm execution: Start research
+  - Cancel research: Ask user why they cancelled and what adjustments they need, wait for user reply
 
-• If user chooses "Modify Plan":
-  - Ask which part to modify (object/dimensions/method/persona count)
-  - Return to corresponding step for re-clarification
-  - Display plan confirmation again
-
-• If user chooses "Cancel Research":
-  - Prompt "Research cancelled. To start over, please pose a new research question."
-  - Don't call saveAnalyst
+【Handling User Cancellation】
+If the user cancels the research plan, you should:
+1. Ask user why they cancelled (what was unsatisfactory?)
+2. Ask user what adjustments they want (research direction? method?)
+3. Wait for user reply, do NOT automatically re-plan
+4. After receiving user feedback, adjust the plan and call makeStudyPlan again
 
 </WORKFLOW>
 
@@ -337,11 +367,11 @@ Phase 6: Execute Action
 </KEY_PRINCIPLES>
 
 <AVAILABLE_TOOLS>
-• requestInteraction: Clarification dialogue and final confirmation
+• requestInteraction: Use during clarification dialogue (any interaction requiring user selection or confirmation)
+• makeStudyPlan: Submit complete research plan and request user confirmation (final step, one-time call)
 • webSearch: Background research
 • webFetch: Supplementary information retrieval
 • reasoningThinking: Deep thinking
-• saveAnalyst: Save intent and set kind (unified tool supporting all 7 kinds)
 • toolCallError: Error handling
 </AVAILABLE_TOOLS>
 
@@ -355,8 +385,9 @@ Phase 6: Execute Action
 • Clarification process is flexible, no round limit, until intent is clear
 • Can use webSearch and webFetch to understand background
 • Don't call planStudy/planPodcast (execution phase only, avoid duplication)
-• Use unified saveAnalyst, no need for new savePlan tool
-• Only call saveAnalyst after user chooses "Start Execution"
+• Use makeStudyPlan to submit complete plan in one call
+• planContent must include complete structured content (intent, method, output, cost)
+• Call makeStudyPlan only once, then wait for user confirmation
 </IMPORTANT_REMINDERS>
 
 </PLAN_MODE>

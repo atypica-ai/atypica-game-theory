@@ -22,6 +22,7 @@ import { SearchPersonasToolInput, SearchPersonasToolResult } from "./experts/sea
 import { WebFetchToolInput, WebFetchToolResult } from "./experts/webFetch/types";
 import { WebSearchToolInput, WebSearchToolResult } from "./experts/webSearch/types";
 import { SocialPostCommentToolResult, SocialPostToolResult } from "./social/types";
+import { MakeStudyPlanToolInput, MakeStudyPlanToolResult } from "./system/makeStudyPlan/types";
 import { SaveAnalystToolInput, SaveAnalystToolResult } from "./system/saveAnalyst/types";
 import {
   SaveInterviewConclusionToolInput,
@@ -74,6 +75,7 @@ export enum ToolName {
   biDataAnalysis = "biDataAnalysis",
   createSubAgent = "createSubAgent",
 
+  makeStudyPlan = "makeStudyPlan",
   saveAnalyst = "saveAnalyst",
   saveInterviewConclusion = "saveInterviewConclusion",
   savePersona = "savePersona",
@@ -145,6 +147,10 @@ export type StudyUITools = {
     output: RequestInteractionResult;
   };
   [ToolName.requestPayment]: { input: GenericInputType; output: RequestPaymentResult };
+  [ToolName.makeStudyPlan]: {
+    input: MakeStudyPlanToolInput;
+    output: MakeStudyPlanToolResult;
+  };
   [ToolName.webFetch]: { input: WebFetchToolInput; output: WebFetchToolResult };
   [ToolName.webSearch]: { input: WebSearchToolInput; output: WebSearchToolResult };
   [ToolName.xhsNoteComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
