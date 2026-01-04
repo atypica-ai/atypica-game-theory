@@ -196,7 +196,7 @@ export async function fastInsightAgentRequest({
 
   let streamStartTime = Date.now();
   const streamTextResult = streamText({
-    model: llm("claude-sonnet-4"),
+    model: llm("claude-3-7-sonnet"),
     providerOptions: defaultProviderOptions,
     system: system,
     messages: modelMessages,

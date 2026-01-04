@@ -289,7 +289,7 @@ export async function studyAgentRequest({
   let streamStartTime = Date.now();
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
-    model: llm("claude-sonnet-4"),
+    model: llm("claude-3-7-sonnet"), // 4 的 tokens 会用完，这里用 3.7
     providerOptions: defaultProviderOptions,
     system: system,
     messages: modelMessages,
