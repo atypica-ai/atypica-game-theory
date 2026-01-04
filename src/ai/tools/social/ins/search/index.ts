@@ -58,7 +58,7 @@ async function insSearch({ keyword }: { keyword: string }) {
       const params = { keyword };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.TIKHUB_API_BASE_URL}/instagram/web_app/fetch_search_reels_by_keyword?${queryString}`,
+        `${process.env.TIKHUB_API_BASE_URL}/instagram/v2/search_reels?${queryString}`,
         { headers },
       );
       const res = await response.json();

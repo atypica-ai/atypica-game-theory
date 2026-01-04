@@ -58,7 +58,7 @@ async function insUserPosts({ userid }: { userid: string }) {
       const params = { user_id: userid };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.TIKHUB_API_BASE_URL}/instagram/web_app/fetch_user_posts_and_reels_by_user_id?${queryString}`,
+        `${process.env.TIKHUB_API_BASE_URL}/instagram/v2/fetch_user_reels?${queryString}`,
         { headers },
       );
       const res = await response.json();

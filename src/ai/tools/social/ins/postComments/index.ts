@@ -54,10 +54,13 @@ async function insPostComments({ postcode }: { postcode: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
-      const params = { url: `https://www.instagram.com/p/${postcode}/` };
+      const params = {
+        code_or_url: `https://www.instagram.com/p/${postcode}/`,
+        sort_by: "recent",
+      };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.TIKHUB_API_BASE_URL}/instagram/web_app/fetch_post_comments_by_url?${queryString}`,
+        `${process.env.TIKHUB_API_BASE_URL}/instagram/v2/fetch_post_comments?${queryString}`,
         { headers },
       );
       const res = await response.json();
