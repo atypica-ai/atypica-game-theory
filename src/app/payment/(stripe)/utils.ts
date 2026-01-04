@@ -154,6 +154,7 @@ export async function createPaymentRecord({
       amount: amount,
       currency: product.currency,
       status: status,
+      paidAt: status === PaymentStatus.succeeded ? new Date() : null,
       paymentMethod: paymentMethod,
       ...(stripeSession ? { stripeSession: stripeSession as unknown as InputJsonValue } : {}),
       ...(stripeInvoice

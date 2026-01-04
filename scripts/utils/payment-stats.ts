@@ -1,8 +1,5 @@
 /**
  * 注意
- *
- * ATP8291761052784856, ATP0591758826509871, ATP1081759826505964 三个订单没日期很奇怪，状态是 succeeded, 人工修复了数据
- *
  * 退款订单 ATP1021753148031772-1, 需要标记
  */
 
@@ -11,9 +8,9 @@
 import { TokensLogResourceType } from "@/tokens/types";
 import { loadEnvConfig } from "@next/env";
 import Stripe from "stripe";
-import "./mock-server-only";
+import "../mock-server-only";
 
-const dateBefore = new Date("2025-12-01T00:00:00+08:00"); // 注意，导出的 excel 文件里，days 的公式也需要改一下时间为本月 1 号
+const dateBefore = new Date("2026-01-01T00:00:00+08:00"); // 注意，导出的 excel 文件里，days 的公式也需要改一下时间为本月 1 号
 const pad12 = (n: number) => n.toLocaleString().padStart(12, " ");
 const fdate = (d: Date) =>
   new Intl.DateTimeFormat("zh-CN", {
