@@ -169,7 +169,13 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
   );
 }
 
-export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
+export async function resetTeamMonthlyTokens({
+  teamId,
+  forceReset = false,
+}: {
+  teamId: number;
+  forceReset?: boolean;
+}) {
   const logger = rootLogger.child({ api: "resetTeamMonthlyTokens" });
   const now = new Date();
 
@@ -177,8 +183,8 @@ export async function resetTeamMonthlyTokens({ teamId }: { teamId: number }) {
     where: { teamId },
   });
 
-  if (tokensAccount.monthlyResetAt && tokensAccount.monthlyResetAt > now) {
-    // 当前的 monthlyBalance 还在生效中，结束
+  // 如果不是强制重置，且当前 monthlyBalance 还在生效中，结束
+  if (!forceReset && tokensAccount.monthlyResetAt && tokensAccount.monthlyResetAt > now) {
     return;
   }
 

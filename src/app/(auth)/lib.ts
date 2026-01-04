@@ -421,10 +421,17 @@ export async function createAWSMarketplaceUserWithTeam({
         });
 
         if (subscription) {
-          await prisma.subscription.update({
-            where: { id: subscription.id },
-            data: { endsAt: expiresAt },
-          });
+          // 更新 Subscription.endsAt 和 TokensAccount.monthlyResetAt
+          await prisma.$transaction([
+            prisma.subscription.update({
+              where: { id: subscription.id },
+              data: { endsAt: expiresAt },
+            }),
+            prisma.tokensAccount.update({
+              where: { teamId: team.id },
+              data: { monthlyResetAt: expiresAt },
+            }),
+          ]);
           logger.info({
             msg: "Synced subscription expiration from AWS",
             userId: personalUser.id,
@@ -506,10 +513,17 @@ export async function createAWSMarketplaceUserWithTeam({
                 });
 
                 if (newSubscription) {
-                  await prisma.subscription.update({
-                    where: { id: newSubscription.id },
-                    data: { endsAt: expiresAt },
-                  });
+                  // 更新 Subscription.endsAt 和 TokensAccount.monthlyResetAt
+                  await prisma.$transaction([
+                    prisma.subscription.update({
+                      where: { id: newSubscription.id },
+                      data: { endsAt: expiresAt },
+                    }),
+                    prisma.tokensAccount.update({
+                      where: { teamId: team.id },
+                      data: { monthlyResetAt: expiresAt },
+                    }),
+                  ]);
                   logger.info({
                     msg: "Synced subscription expiration from AWS for concurrent registration",
                     userId: existing.user.id,

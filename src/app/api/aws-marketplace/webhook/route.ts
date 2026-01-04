@@ -111,14 +111,62 @@ export async function POST(req: NextRequest) {
           logger.info({ msg: "Processing entitlement-updated", customerIdentifier });
           const updatedSubscription = await checkCustomerSubscription(customerIdentifier);
 
+          // 提取 expiresAt（类型安全）
+          const expiresAt = (updatedSubscription as { active: true; expiresAt?: Date }).expiresAt;
+
+          // 1. 更新 AWSMarketplaceCustomer
           await prisma.aWSMarketplaceCustomer.update({
             where: { id: awsCustomer.id },
             data: {
               dimension: updatedSubscription.plan,
               quantity: updatedSubscription.quantity,
-              expiresAt: (updatedSubscription as { expiresAt?: Date | null }).expiresAt,
+              expiresAt,
             },
           });
+
+          // 2. 查找对应的 Team 和当前激活的 Subscription
+          const team = await prisma.team.findFirst({
+            where: { ownerUserId: awsCustomer.userId },
+            include: {
+              subscriptions: {
+                where: {
+                  plan: { in: ["team", "superteam"] },
+                  endsAt: { gt: new Date() },
+                },
+                orderBy: { endsAt: "desc" },
+              },
+            },
+          });
+
+          if (team && team.subscriptions.length > 0 && updatedSubscription.active && expiresAt) {
+            // 3. 更新 Subscription.endsAt
+            const currentSubscription = team.subscriptions[0];
+            await prisma.subscription.update({
+              where: { id: currentSubscription.id },
+              data: { endsAt: expiresAt },
+            });
+
+            // 4. 重置团队月度令牌（复用现有逻辑）
+            const { resetTeamMonthlyTokens } = await import("@/app/payment/monthlyTokens");
+            await resetTeamMonthlyTokens({
+              teamId: team.id,
+              forceReset: true, // 强制重置，因为刚续费
+            });
+
+            logger.info({
+              msg: "AWS subscription renewed and tokens reset",
+              customerIdentifier,
+              teamId: team.id,
+              newEndsAt: expiresAt,
+            });
+          } else {
+            logger.warn({
+              msg: "AWS subscription renewal: team or active subscription not found",
+              customerIdentifier,
+              teamId: team?.id,
+              subscriptionsCount: team?.subscriptions.length ?? 0,
+            });
+          }
 
           logger.info({ msg: "Entitlement-updated processed", customerIdentifier });
           break;
