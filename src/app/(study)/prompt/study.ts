@@ -185,6 +185,10 @@ ${
    • 使用 scoutTaskChat 时【必须】明确说明所需用户类型、特征和背景，指示如何组织信息并明确数据用途
    • 【执行规则】此步骤只执行一次，控制搜索次数（通常 1 次即可获得足够洞察）确保研究高效全面
    • 完成搜索后【必须】提供 scoutTaskChat 任务的 scoutUserChatToken 作为 buildPersona 参数
+   • 【使用 planStudy 的 Persona 规划】如果之前调用了 planStudy 并且其输出中包含了明确的 persona 需求描述（例如：需要什么样的用户、关注哪些维度、需要多少个 persona 等），你必须在调用 scoutTaskChat 和 buildPersona 时传递这些信息：
+     - 调用 scoutTaskChat 时：在 description 参数中明确说明 persona 需求（例如："寻找 25-35 岁职场新人，关注性价比和便利性，需要覆盖不同收入水平"）
+     - 调用 buildPersona 时：在 description 参数中传递相同的 persona 需求，确保构建的 persona 符合研究计划的要求（例如："根据研究计划，需要构建 5-6 个 persona，覆盖不同年龄段（25-30岁、30-35岁）和消费能力（月收入5k-10k、10k-20k）"）
+     - 如果 planStudy 没有明确的 persona 规划，description 参数可以省略或使用简单的研究目标描述
 4. 【步骤4】整合和筛选所有可用的 AI 人设：
    • 【整合来源】将通过 searchPersonas 获得的预构建 persona 和通过 buildPersona 新构建的 persona 进行整合
    • 【筛选标准】根据研究主题的相关性、代表性和多样性进行评估
@@ -476,6 +480,10 @@ If the user chooses the first option, you must set usePrivatePersonas to true wh
    • When using scoutTaskChat 【MANDATORY】clearly specify required user types, characteristics and background, indicate how to organize information and clarify data usage
    • 【EXECUTION RULE】This step is executed only once, control search frequency (usually 1 time can obtain sufficient insights) to ensure efficient and comprehensive study
    • After completing search 【MANDATORY】provide scoutUserChatToken from scoutTaskChat task as buildPersona parameter
+   • 【Using planStudy Persona Planning】If you previously called planStudy and its output contains explicit persona requirements (e.g., what kind of users needed, which dimensions to focus on, how many personas needed, etc.), you must pass this information when calling scoutTaskChat and buildPersona:
+     - When calling scoutTaskChat: Clearly specify persona requirements in the description parameter (Example: "Find 25-35 year old young professionals, focusing on cost-effectiveness and convenience, need to cover different income levels")
+     - When calling buildPersona: Pass the same persona requirements in the description parameter to ensure built personas align with research plan requirements (Example: "According to research plan, need to build 5-6 personas, covering different age groups (25-30, 30-35) and spending power (monthly income 5k-10k, 10k-20k)")
+     - If planStudy doesn't have explicit persona planning, the description parameter can be omitted or use a simple research objective description
 4. 【Step 4】Integrate and filter all available user persona AI Personas:
    • 【INTEGRATION SOURCES】Combine pre-built personas obtained through searchPersonas and newly constructed personas through buildPersona
    • 【FILTERING CRITERIA】Evaluate based on relevance to study topic, representativeness, and diversity

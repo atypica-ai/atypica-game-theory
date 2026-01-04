@@ -13,6 +13,12 @@ export const buildPersonaInputSchema = z.object({
     .describe(
       "Token from the completed user profile search task (scoutTaskChat). Must use the actual token from current research session - do not fabricate or reuse old tokens",
     ),
+  description: z
+    .string()
+    .optional()
+    .describe(
+      "Optional persona requirements from research plan (planStudy). If provided, should guide persona construction: target characteristics, demographics, key dimensions, quantity expectations, etc. This ensures built personas align with research objectives.",
+    ),
 });
 
 export type BuildPersonaToolInput = z.infer<typeof buildPersonaInputSchema>;

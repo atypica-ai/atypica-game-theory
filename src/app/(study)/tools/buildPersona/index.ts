@@ -34,14 +34,20 @@ export const buildPersonaTool = ({
   userId: number;
 } & AgentToolConfigArgs) =>
   tool({
-    description:
-      "Analyze social media data from user profile search tasks, create detailed user personas, and build AI agents that simulate realistic user behavior and decision-making patterns",
+    description: `Build AI personas from scout task results. Can optionally accept persona requirements from research plan to guide construction.
+
+When to use:
+- After scoutTaskChat has collected social media data
+- Use the token from the completed scout task
+- Optionally provide persona requirements if planStudy specified them
+
+The tool will create 3-5 personas based on collected data and requirements.`,
     inputSchema: buildPersonaInputSchema,
     outputSchema: buildPersonaOutputSchema,
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ scoutUserChatToken }): Promise<BuildPersonaToolResult> => {
+    execute: async ({ scoutUserChatToken, description }): Promise<BuildPersonaToolResult> => {
       const scoutUserChat = await prisma.userChat.findUnique({
         where: { token: scoutUserChatToken, kind: "scout", userId },
       });
@@ -66,6 +72,7 @@ export const buildPersonaTool = ({
           statReport,
           logger,
           noPersonaFallback,
+          description,
         });
         personas = (await prisma.persona.findMany({ where: { scoutUserChatId } })).map(
           (persona) => ({
@@ -128,10 +135,12 @@ export async function runBuildPersona({
   scoutUserChatId,
   streamWriter,
   noPersonaFallback,
+  description,
 }: {
   scoutUserChatId: number;
   streamWriter?: UIMessageStreamWriter;
   noPersonaFallback?: boolean;
+  description?: string;
 } & AgentToolConfigArgs) {
   const stopController = new AbortController();
   const mergedAbortSignal = AbortSignal.any([abortSignal, stopController.signal]);
@@ -147,7 +156,19 @@ export async function runBuildPersona({
       ...scoutChatTools({ locale, statReport, abortSignal, logger }),
     },
   });
-  const coreMessages = appendBuildPersonaPrologue(_coreMessages, locale);
+
+  // If description is provided, prepend it as the first user message
+  const messagesWithDescription = description
+    ? [
+        {
+          role: "user" as const,
+          content: [{ type: "text" as const, text: description }],
+        },
+        ..._coreMessages,
+      ]
+    : _coreMessages;
+
+  const coreMessages = appendBuildPersonaPrologue(messagesWithDescription, locale);
   // set prompt cache checkpoint for bedrock claude 3.7 sonnet
   const lastAssistantMessage = coreMessages.findLast((message) => message.role === "assistant");
   if (lastAssistantMessage) {

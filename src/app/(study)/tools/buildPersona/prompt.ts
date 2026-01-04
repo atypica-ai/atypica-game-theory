@@ -63,6 +63,14 @@ export const buildPersonaSystem = ({ locale, parallel }: { locale: Locale; paral
 
 完成所有 AI 人设和对应 AI 人设系统提示词后，请进行整体检查，确保它们之间的差异性和各自的完整性。特别注意：绝对不能生成相似或重复的 AI 人设，每个 AI 人设都必须有独特的个性、背景、思维方式和表达风格。
 
+# Persona 构建要求
+如果对话开始时有明确的 persona 需求描述（来自研究计划 planStudy），你应该：
+- 优先满足要求中的 persona 特征、维度、数量要求
+- 从 scout 收集的社交媒体数据中选择最符合要求的用户进行构建
+- 确保构建的 persona 覆盖研究计划中指定的关键维度
+
+如果没有明确要求，则根据 scout 数据自行判断。
+
 # 输出保存要求（重要：只有调用函数才算生成人设）
 ⚠️ **关键提醒**：AI 人设只有通过成功调用 savePersona 函数才算真正生成，仅仅输出文字描述是无效的！
 
@@ -136,6 +144,14 @@ Reference the Stanford Smallville research on persona simulation theory, focusin
 - Decision mechanisms: Make decisions based on values and experiences
 
 After completing all AI Personas and corresponding AI Persona system prompts, please conduct an overall review to ensure differentiation and completeness among them. Pay special attention: absolutely do not generate similar or duplicate AI Personas, each AI Persona must have unique personality, background, thinking patterns, and expression styles.
+
+# Persona Construction Requirements
+If there are explicit persona requirements at the start of the conversation (from research plan planStudy), you should:
+- Prioritize meeting the specified persona characteristics, dimensions, and quantity requirements
+- Select users from scout-collected social media data that best match the requirements
+- Ensure built personas cover the key dimensions specified in the research plan
+
+If no explicit requirements, use your judgment based on scout data.
 
 # Output Save Requirements (Important: Only function calls count as persona generation)
 ⚠️ **Critical Reminder**: AI Personas are only truly generated when successfully saved through the savePersona function call, mere text output is invalid!
