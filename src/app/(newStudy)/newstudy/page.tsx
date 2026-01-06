@@ -1,4 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { DefaultLayout } from "@/components/layout/DefaultLayout";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { NewStudyChatIntro } from "./NewStudyChatIntro";
@@ -24,8 +25,16 @@ export default async function NewStudyPage({
   }
 
   if (interview) {
-    return <NewStudyChatIntro />;
+    return (
+      <DefaultLayout header={true} fitToViewport={true}>
+        <NewStudyChatIntro />
+      </DefaultLayout>
+    );
   }
 
-  return <NewStudyClient initialBrief={brief} />;
+  return (
+    <DefaultLayout header={true} footer={true}>
+      <NewStudyClient initialBrief={brief} />
+    </DefaultLayout>
+  );
 }

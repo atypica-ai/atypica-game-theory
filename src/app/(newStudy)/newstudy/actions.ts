@@ -3,7 +3,6 @@
 import { llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { Locale } from "next-intl";
 import { unstable_cache } from "next/cache";
@@ -43,15 +42,17 @@ const generatedShortcutsSchema = z.object({
           .describe("Research category that best fits this study"),
       }),
     )
-    .length(4)
-    .describe("Generate exactly 4 diverse and inspiring research scenarios"),
+    .length(2)
+    .describe(
+      "Generate exactly 2 diverse and inspiring research scenarios for the target audience",
+    ),
 });
 
 /**
  * Internal implementation to generate AI shortcuts
  */
 async function _generateAIShortcutsImpl(batch: number, locale: Locale) {
-  rootLogger.info(`Generating ${batch} AI shortcuts for locale ${locale}`);
+  rootLogger.info(`Generating AI shortcuts for locale ${locale} ${batch}`);
 
   const systemPrompt =
     locale === "zh-CN"
@@ -88,9 +89,9 @@ async function _generateAIShortcutsImpl(batch: number, locale: Locale) {
    - 涵盖不同行业：消费品、科技、服务、文化、健康等
 
 6. **多样性和平衡**
-   - 4个卡片应该覆盖不同行业和研究类型
+   - 2个卡片应该针对目标角色的真实需求
    - 平衡新兴趋势和经典话题
-   - 既有 B2C 也可以有 B2B 场景
+   - 场景要符合该角色的工作场景和决策需求
 
 # 输出要求
 - Title 必须以一个相关的 emoji 开头
@@ -130,9 +131,9 @@ Help users quickly start valuable business research by providing carefully desig
    - Cover diverse industries: consumer goods, tech, services, culture, health, etc.
 
 6. **Diversity and Balance**
-   - 4 cards should cover different industries and research types
+   - 2 cards should address real needs of the target audience
    - Balance emerging trends with classic topics
-   - Include both B2C and possibly B2B scenarios
+   - Scenarios should fit the role's work context and decision-making needs
 
 # Output Requirements
 - Title must start with a relevant emoji
@@ -140,51 +141,100 @@ Help users quickly start valuable business research by providing carefully desig
 - Ensure tags and description research methods perfectly match
 - Title should be concise and powerful, emoji + 8-20 English words`;
 
+  // Define target audience for each batch
+  const audienceMap: Record<
+    number,
+    { zh: string; en: string; context: { zh: string; en: string } }
+  > = {
+    1: {
+      zh: "产品经理",
+      en: "Product Managers",
+      context: {
+        zh: "关注用户需求、产品功能、市场定位、竞品分析、用户体验优化",
+        en: "Focus on user needs, product features, market positioning, competitive analysis, UX optimization",
+      },
+    },
+    2: {
+      zh: "营销人员",
+      en: "Marketers",
+      context: {
+        zh: "关注品牌传播、营销策略、用户增长、内容营销、转化率优化",
+        en: "Focus on brand communication, marketing strategy, user growth, content marketing, conversion optimization",
+      },
+    },
+    3: {
+      zh: "创业者",
+      en: "Startup Owners",
+      context: {
+        zh: "关注市场机会、商业模式、用户痛点、融资故事、增长策略",
+        en: "Focus on market opportunities, business models, user pain points, funding stories, growth strategies",
+      },
+    },
+    4: {
+      zh: "创作者",
+      en: "Creators",
+      context: {
+        zh: "关注内容趋势、受众偏好、平台算法、变现方式、社区运营",
+        en: "Focus on content trends, audience preferences, platform algorithms, monetization, community management",
+      },
+    },
+    5: {
+      zh: "咨询顾问",
+      en: "Consultants",
+      context: {
+        zh: "关注行业洞察、战略咨询、客户需求、案例研究、解决方案",
+        en: "Focus on industry insights, strategic consulting, client needs, case studies, solutions",
+      },
+    },
+    6: {
+      zh: "KOL/网红",
+      en: "Influencers",
+      context: {
+        zh: "关注粉丝互动、内容传播、品牌合作、个人品牌、流量变现",
+        en: "Focus on fan engagement, content virality, brand partnerships, personal branding, monetization",
+      },
+    },
+  };
+
+  const audience = audienceMap[batch];
+  const targetAudience = locale === "zh-CN" ? audience.zh : audience.en;
+  const audienceContext = locale === "zh-CN" ? audience.context.zh : audience.context.en;
+
   const userPrompt =
     locale === "zh-CN"
-      ? `请生成 4 个高质量的研究场景快捷卡片（批次 ${batch}）。
+      ? `请为【${targetAudience}】生成 2 个高质量的研究场景快捷卡片（批次 ${batch}）。
+
+目标受众：${targetAudience}
+工作场景：${audienceContext}
 
 要求：
-1. 每个场景都要独特、有创意、有商业价值
+1. 每个场景都要针对${targetAudience}的真实工作需求和决策场景
 2. 描述要足够长（200-400字），包含具体品牌、场景、探索维度
 3. 确保 description 包含能触发 tags 中研究方法的关键词
-4. 4个场景要有多样性：不同行业、不同研究类型
+4. 2个场景要有差异性：不同的研究类型或行业角度
 
-可以探索的方向（不限于此）：
-- 新兴消费趋势（露营、飞盘、围炉煮茶）
-- 科技产品采用（AI工具、智能家居、电动车）
-- 代际差异研究（Z世代、银发族、职场人）
-- 生活方式变迁（远程办公、精致穷、松弛感）
-- 跨界创新机会（国货美妆、新茶饮、户外品牌）
-- 社交媒体趋势（小红书种草、抖音电商、B站文化）
+天马行空，但要贴近${targetAudience}的实际需求！`
+      : `Generate 2 high-quality research scenario shortcut cards for 【${targetAudience}】 (batch ${batch}).
 
-天马行空，但要有洞察价值！`
-      : `Please generate 4 high-quality research scenario shortcut cards (batch ${batch}).
+Target Audience: ${targetAudience}
+Work Context: ${audienceContext}
 
 Requirements:
-1. Each scenario should be unique, creative, and have business value
+1. Each scenario should address real work needs and decision-making contexts of ${targetAudience}
 2. Description should be long enough (100-200 words), including specific brands, scenarios, exploration dimensions
 3. Ensure description includes keywords that trigger the research methods in tags
-4. 4 scenarios should have diversity: different industries, different research types
+4. 2 scenarios should have diversity: different research types or industry angles
 
-Directions to explore (not limited to):
-- Emerging consumer trends (outdoor activities, wellness tech, sustainable living)
-- Technology adoption (AI tools, smart home, EV adoption)
-- Generational differences (Gen Z, Millennials, Boomers, professionals)
-- Lifestyle shifts (remote work, digital nomads, minimalism)
-- Cross-industry innovation (DTC brands, subscription services, creator economy)
-- Social media trends (TikTok commerce, Instagram communities, Twitter discourse)
-
-Be creative, but ensure valuable insights!`;
+Be creative, but stay relevant to ${targetAudience}'s actual needs!`;
 
   const result = await generateObject({
-    model: llm("gpt-5-mini"),
-    providerOptions: {
-      openai: {
-        reasoningSummary: "auto",
-        reasoningEffort: "minimal",
-      } satisfies OpenAIResponsesProviderOptions,
-    },
+    model: llm("claude-haiku-4-5"),
+    // providerOptions: {
+    //   openai: {
+    //     reasoningSummary: "auto",
+    //     reasoningEffort: "minimal",
+    //   } satisfies OpenAIResponsesProviderOptions,
+    // },
     schema: generatedShortcutsSchema,
     messages: [
       {
@@ -198,7 +248,7 @@ Be creative, but ensure valuable insights!`;
     ],
   });
 
-  rootLogger.info(`Generated ${result.object.shortcuts.length} AI shortcuts for locale ${locale}`);
+  rootLogger.info(`Generated AI shortcuts for locale ${locale} ${batch}`);
 
   return result.object.shortcuts;
 }
@@ -228,11 +278,13 @@ const getCachedAIShortcuts = unstable_cache(
 
 /**
  * Server action to generate AI-powered research shortcuts
- * @param batch - Batch number (1-3) to distinguish different sets
+ * @param batch - Batch number (1-6) for different target audiences:
+ *   1: Product Managers, 2: Marketers, 3: Startup Owners,
+ *   4: Creators, 5: Consultants, 6: Influencers
  * @param locale - Locale for language-specific content
  */
 export async function generateAIShortcuts(
-  batch: 1 | 2 | 3,
+  batch: 1 | 2 | 3 | 4 | 5 | 6,
   locale: Locale,
 ): Promise<ServerActionResult<StudyShortcut[]>> {
   try {
