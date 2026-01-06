@@ -4,22 +4,21 @@ import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
 import { createAWSMarketplaceUserWithTeam, recordLastLogin } from "@/app/(auth)/lib";
 import { encode } from "next-auth/jwt";
+import {
+  getAwsCredentials,
+  AWS_MARKETPLACE_CONFIG,
+} from "@/config/aws-marketplace";
 
 const logger = rootLogger.child({ module: "aws-marketplace-register" });
 
 const marketplaceClient = new MarketplaceMetering({
-  region: "us-east-1", // AWS Marketplace fixed region
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-  // 增加超时时间以应对网络不稳定
+  region: AWS_MARKETPLACE_CONFIG.REGION, // AWS Marketplace fixed region
+  credentials: getAwsCredentials(),
   requestHandler: {
-    requestTimeout: 30000, // 30秒
-    connectionTimeout: 10000, // 10秒
+    requestTimeout: AWS_MARKETPLACE_CONFIG.REQUEST_TIMEOUT,
+    connectionTimeout: AWS_MARKETPLACE_CONFIG.CONNECTION_TIMEOUT,
   },
-  // 最多重试2次
-  maxAttempts: 2,
+  maxAttempts: AWS_MARKETPLACE_CONFIG.MAX_RETRIES,
 });
 
 /**
@@ -45,10 +44,6 @@ function getBaseUrl(req: NextRequest): string {
   // Ultimate fallback to request URL
   return req.url;
 }
-
-// Cookie name for temporary customerIdentifier cache
-const AWS_CUSTOMER_COOKIE = "aws-marketplace-customer";
-const CACHE_MAX_AGE = 300; // 5 minutes
 
 /**
  * Extract token from request (query param or POST body)
@@ -81,18 +76,18 @@ async function extractToken(req: NextRequest): Promise<string | null> {
  * Get cached customerIdentifier from cookie
  */
 function getCachedCustomerIdentifier(req: NextRequest): string | null {
-  return req.cookies.get(AWS_CUSTOMER_COOKIE)?.value || null;
+  return req.cookies.get(AWS_MARKETPLACE_CONFIG.COOKIE_NAME)?.value || null;
 }
 
 /**
  * Set customerIdentifier cache in response (returns a response clone with the cookie set)
  */
 function setCustomerIdentifierCookie(response: NextResponse, customerIdentifier: string): NextResponse {
-  response.cookies.set(AWS_CUSTOMER_COOKIE, customerIdentifier, {
+  response.cookies.set(AWS_MARKETPLACE_CONFIG.COOKIE_NAME, customerIdentifier, {
     httpOnly: true,
     sameSite: "lax",
     path: "/api/aws-marketplace/register",
-    maxAge: CACHE_MAX_AGE,
+    maxAge: AWS_MARKETPLACE_CONFIG.COOKIE_MAX_AGE,
     secure: process.env.NODE_ENV === "production",
   });
   return response;
@@ -102,7 +97,7 @@ function setCustomerIdentifierCookie(response: NextResponse, customerIdentifier:
  * Clear customerIdentifier cache from response
  */
 function clearCustomerIdentifierCookie(response: NextResponse): NextResponse {
-  response.cookies.delete(AWS_CUSTOMER_COOKIE);
+  response.cookies.delete(AWS_MARKETPLACE_CONFIG.COOKIE_NAME);
   return response;
 }
 

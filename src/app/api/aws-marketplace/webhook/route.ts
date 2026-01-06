@@ -1,24 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/prisma";
 import { checkCustomerSubscription } from "@/lib/aws-marketplace/entitlement";
+import { parseAndVerifySNSBody, type ValidatedSNSMessage } from "@/lib/aws-marketplace/sns-validator";
 import { rootLogger } from "@/lib/logging";
+import { isActiveSubscription } from "@/lib/aws-marketplace/types";
 
 const logger = rootLogger.child({ module: "aws-marketplace-webhook" });
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  // Get raw body for signature verification
+  const rawBody = await req.text();
 
-  logger.info({ msg: "SNS webhook received", type: body.Type });
+  logger.info({ msg: "SNS webhook received" });
 
-  // 1. TODO: Verify SNS message signature (important for production!)
-  // Use @aws-sdk/sns-validator or similar library to verify signature
+  // Verify SNS message signature
+  let message: ValidatedSNSMessage;
+  try {
+    message = await parseAndVerifySNSBody(rawBody);
+    logger.info({
+      msg: "SNS message signature verified",
+      messageType: message.Type,
+      messageId: message.MessageId,
+    });
+  } catch (error) {
+    logger.error({
+      msg: "SNS message signature verification failed",
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return NextResponse.json(
+      { error: "Invalid SNS message signature" },
+      { status: 403 }
+    );
+  }
 
-  // 2. Handle SNS subscription confirmation
-  if (body.Type === "SubscriptionConfirmation") {
-    logger.info({ msg: "Processing subscription confirmation", subscribeURL: body.SubscribeURL });
+  // Handle SNS subscription confirmation
+  if (message.Type === "SubscriptionConfirmation") {
+    logger.info({
+      msg: "Processing subscription confirmation",
+      subscribeURL: message.SubscribeURL,
+    });
 
     try {
-      await fetch(body.SubscribeURL);
+      await fetch(message.SubscribeURL!);
       logger.info({ msg: "SNS subscription confirmed" });
       return NextResponse.json({ status: "confirmed" });
     } catch (error) {
@@ -30,12 +53,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 3. Handle subscription event notifications
-  if (body.Type === "Notification") {
-    const message = JSON.parse(body.Message);
-    const customerIdentifier = message["customer-identifier"];
-    const productCode = message["product-code"];
-    const action = message.action;
+  // Handle subscription event notifications
+  if (message.Type === "Notification") {
+    const notification = JSON.parse(message.Message);
+    const customerIdentifier = notification["customer-identifier"];
+    const productCode = notification["product-code"];
+    const action = notification.action;
 
     logger.info({
       msg: "Processing notification",
@@ -69,7 +92,7 @@ export async function POST(req: NextRequest) {
               subscribedAt: new Date(),
               dimension: subscription.plan,
               quantity: subscription.quantity,
-              expiresAt: (subscription as { expiresAt?: Date | null }).expiresAt,
+              expiresAt: subscription.expiresAt || null,
             },
           });
 
@@ -111,20 +134,17 @@ export async function POST(req: NextRequest) {
           logger.info({ msg: "Processing entitlement-updated", customerIdentifier });
           const updatedSubscription = await checkCustomerSubscription(customerIdentifier);
 
-          // 提取 expiresAt（类型安全）
-          const expiresAt = (updatedSubscription as { active: true; expiresAt?: Date }).expiresAt;
-
-          // 1. 更新 AWSMarketplaceCustomer
+          // Update customer record
           await prisma.aWSMarketplaceCustomer.update({
             where: { id: awsCustomer.id },
             data: {
               dimension: updatedSubscription.plan,
               quantity: updatedSubscription.quantity,
-              expiresAt,
+              expiresAt: updatedSubscription.expiresAt || null,
             },
           });
 
-          // 2. 查找对应的 Team 和当前激活的 Subscription
+          // Find team and active subscriptions
           const team = await prisma.team.findFirst({
             where: { ownerUserId: awsCustomer.userId },
             include: {
@@ -138,26 +158,27 @@ export async function POST(req: NextRequest) {
             },
           });
 
-          if (team && team.subscriptions.length > 0 && updatedSubscription.active && expiresAt) {
-            // 3. 更新 Subscription.endsAt
+          // Only process if subscription is active and has expiration date
+          if (isActiveSubscription(updatedSubscription) && team && team.subscriptions.length > 0) {
+            // Update subscription end date
             const currentSubscription = team.subscriptions[0];
             await prisma.subscription.update({
               where: { id: currentSubscription.id },
-              data: { endsAt: expiresAt },
+              data: { endsAt: updatedSubscription.expiresAt },
             });
 
-            // 4. 重置团队月度令牌（复用现有逻辑）
+            // Reset team monthly tokens
             const { resetTeamMonthlyTokens } = await import("@/app/payment/monthlyTokens");
             await resetTeamMonthlyTokens({
               teamId: team.id,
-              forceReset: true, // 强制重置，因为刚续费
+              forceReset: true, // Force reset since subscription renewed
             });
 
             logger.info({
               msg: "AWS subscription renewed and tokens reset",
               customerIdentifier,
               teamId: team.id,
-              newEndsAt: expiresAt,
+              newEndsAt: updatedSubscription.expiresAt,
             });
           } else {
             logger.warn({
@@ -165,6 +186,7 @@ export async function POST(req: NextRequest) {
               customerIdentifier,
               teamId: team?.id,
               subscriptionsCount: team?.subscriptions.length ?? 0,
+              isActive: isActiveSubscription(updatedSubscription),
             });
           }
 
@@ -181,7 +203,7 @@ export async function POST(req: NextRequest) {
         data: {
           customerId: awsCustomer.id,
           eventType: action,
-          eventData: message,
+          eventData: notification,
         },
       });
 
@@ -201,6 +223,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  logger.warn({ msg: "Unknown message type, ignored", type: body.Type });
+  logger.warn({ msg: "Unknown message type, ignored", type: message.Type });
   return NextResponse.json({ status: "ignored" });
 }

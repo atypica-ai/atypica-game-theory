@@ -286,9 +286,15 @@ importers:
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
+<<<<<<< HEAD
       shiki:
         specifier: ^3.20.0
         version: 3.20.0
+=======
+      sns-validator:
+        specifier: ^0.3.5
+        version: 0.3.5
+>>>>>>> b5e9d972 (security: implement SNS signature verification and improve code quality)
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -365,6 +371,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.7)
+      '@types/sns-validator':
+        specifier: ^0.3.3
+        version: 0.3.3
       '@vitejs/plugin-react':
         specifier: ^4.7.0
         version: 4.7.0(vite@7.2.6(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))
@@ -3423,6 +3432,9 @@ packages:
 
   '@types/react@19.2.7':
     resolution: {integrity: sha512-MWtvHrGZLFttgeEj28VXHxpmwYbor/ATPYbBfSFZEIRK0ecCFLl2Qo55z52Hss+UV9CRN7trSeq1zbgx7YDWWg==}
+
+  '@types/sns-validator@0.3.3':
+    resolution: {integrity: sha512-v/3bN5dak8aDXn7bgTGu+1oGc+PQCP0qnfzUM6gzo7FnxiW4wpppkaIptPhRhJaiDItbUDK+YA4yDQuVs5Cq1Q==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -6586,6 +6598,9 @@ packages:
   smol-toml@1.6.0:
     resolution: {integrity: sha512-4zemZi0HvTnYwLfrpk/CF9LOd9Lt87kAt50GnqhMpyF9U3poDAP2+iukq2bZsO/ufegbYehBkqINbsWxj4l4cw==}
     engines: {node: '>= 18'}
+
+  sns-validator@0.3.5:
+    resolution: {integrity: sha512-lapYNmezLsltnt2fcQyhmYnC41mYZ7EjU7f2oR/hrhpbD/LemryclRpApwxO84gOyDIQ7MWe/h4HvkdunFzSKg==}
 
   socket.io-client@4.8.1:
     resolution: {integrity: sha512-hJVXfu3E28NmzGk8o1sHhN3om52tRvwYeidbj7xKy2eIIse5IoKX3USlS6Tqt3BHAtflLIkCQBkzVrEEfWUyYQ==}
@@ -11000,6 +11015,8 @@ snapshots:
     dependencies:
       csstype: 3.2.3
 
+  '@types/sns-validator@0.3.3': {}
+
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
@@ -14933,7 +14950,11 @@ snapshots:
     dependencies:
       is-arrayish: 0.3.4
 
+<<<<<<< HEAD
   smol-toml@1.6.0: {}
+=======
+  sns-validator@0.3.5: {}
+>>>>>>> b5e9d972 (security: implement SNS signature verification and improve code quality)
 
   socket.io-client@4.8.1:
     dependencies:

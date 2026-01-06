@@ -1,15 +1,19 @@
 import { MarketplaceEntitlementService } from "@aws-sdk/client-marketplace-entitlement-service";
 import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
+import { getAwsCredentials, getProductCode, AWS_MARKETPLACE_CONFIG } from "@/config/aws-marketplace";
+import {
+  CustomerSubscription,
+  ActiveCustomerSubscription,
+  SubscriptionDimension,
+  isActiveSubscription,
+} from "@/lib/aws-marketplace/types";
 
 const logger = rootLogger.child({ module: "aws-marketplace-entitlement" });
 
 const entitlementClient = new MarketplaceEntitlementService({
-  region: "us-east-1",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
+  region: AWS_MARKETPLACE_CONFIG.REGION,
+  credentials: getAwsCredentials(),
 });
 
 /**
@@ -19,7 +23,7 @@ export async function getCustomerEntitlements(customerIdentifier: string) {
   logger.info({ msg: "Getting customer entitlements", customerIdentifier });
 
   const response = await entitlementClient.getEntitlements({
-    ProductCode: process.env.AWS_MARKETPLACE_PRODUCT_CODE!,
+    ProductCode: getProductCode(),
     Filter: {
       CUSTOMER_IDENTIFIER: [customerIdentifier],
     },
@@ -36,22 +40,31 @@ export async function getCustomerEntitlements(customerIdentifier: string) {
 
 /**
  * Check customer subscription status and entitlements
+ *
+ * @param customerIdentifier - AWS customer identifier
+ * @returns Customer subscription information
  */
-export async function checkCustomerSubscription(customerIdentifier: string) {
+export async function checkCustomerSubscription(
+  customerIdentifier: string
+): Promise<CustomerSubscription> {
   const entitlements = await getCustomerEntitlements(customerIdentifier);
 
   if (entitlements.length === 0) {
     logger.info({ msg: "No active entitlements", customerIdentifier });
-    return { active: false, plan: null, quantity: 0 };
+    return {
+      active: false,
+      plan: null,
+      quantity: AWS_MARKETPLACE_CONFIG.DEFAULT_QUANTITY,
+    };
   }
 
-  // Assuming dimension is "team_plan"
-  const teamPlan = entitlements.find((e) => e.Dimension === "team_plan");
+  // Find the team plan entitlement
+  const teamPlan = entitlements.find((e) => e.Dimension === AWS_MARKETPLACE_CONFIG.DEFAULT_DIMENSION);
 
-  const result = {
+  const result: CustomerSubscription = {
     active: true,
-    plan: teamPlan?.Dimension || null,
-    quantity: teamPlan?.Value?.IntegerValue || 3,
+    plan: (teamPlan?.Dimension as SubscriptionDimension) || null,
+    quantity: teamPlan?.Value?.IntegerValue || AWS_MARKETPLACE_CONFIG.DEFAULT_QUANTITY,
     expiresAt: teamPlan?.ExpirationDate,
   };
 
@@ -66,8 +79,13 @@ export async function checkCustomerSubscription(customerIdentifier: string) {
 
 /**
  * Sync customer subscription status to database
+ *
+ * @param customerIdentifier - AWS customer identifier
+ * @returns Updated customer subscription information
  */
-export async function syncCustomerSubscription(customerIdentifier: string) {
+export async function syncCustomerSubscription(
+  customerIdentifier: string
+): Promise<CustomerSubscription> {
   logger.info({ msg: "Syncing customer subscription", customerIdentifier });
 
   const subscription = await checkCustomerSubscription(customerIdentifier);
@@ -87,7 +105,7 @@ export async function syncCustomerSubscription(customerIdentifier: string) {
       status: subscription.active ? "active" : "expired",
       dimension: subscription.plan,
       quantity: subscription.quantity,
-      expiresAt: (subscription as { expiresAt?: Date | null }).expiresAt,
+      expiresAt: subscription.expiresAt || null,
     },
   });
 

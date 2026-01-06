@@ -2,6 +2,7 @@ import "server-only";
 
 import { manuallyAddTeamSubscription } from "@/app/payment/manualSubscription";
 import { createTeam } from "@/app/team/lib";
+import { AWS_MARKETPLACE_CONFIG } from "@/config/aws-marketplace";
 import { trackEventServerSide, trackUserServerSide } from "@/lib/analytics/server";
 import { getToltFromCookieStore } from "@/lib/analytics/tolt";
 import { trackToltSignup } from "@/lib/analytics/tolt/lib";
@@ -329,7 +330,7 @@ export async function DEPRECATED_upsertUserProfile({ userId }: { userId: number 
  * 特点：
  * - 邮箱格式：${customerIdentifier}@aws.atypica.ai
  * - 密码为空（无法普通登录，只能从AWS Portal进入）
- * - 自动创建 Team（seats: 3，最多3个成员）
+ * - 自动创建 Team（使用配置的 seats 数量）
  * - 使用 createTeam 函数复用现有逻辑
  * - 处理并发注册（通过唯一约束冲突检测）
  */
@@ -377,10 +378,10 @@ export async function createAWSMarketplaceUserWithTeam({
       ownerUser: personalUser,
     });
 
-    // 3. 更新 Team seats 为 3（AWS Team Plan）
+    // 3. 更新 Team seats 为配置的值（AWS Team Plan）
     await prisma.team.update({
       where: { id: team.id },
-      data: { seats: 3 },
+      data: { seats: AWS_MARKETPLACE_CONFIG.DEFAULT_QUANTITY },
     });
 
     // 4. 创建 AWSMarketplaceCustomer 记录
@@ -390,8 +391,8 @@ export async function createAWSMarketplaceUserWithTeam({
         customerIdentifier,
         productCode,
         status: "active",
-        dimension: "team_plan",
-        quantity: 3,
+        dimension: AWS_MARKETPLACE_CONFIG.DEFAULT_DIMENSION,
+        quantity: AWS_MARKETPLACE_CONFIG.DEFAULT_QUANTITY,
         subscribedAt: new Date(),
       },
     });
@@ -495,7 +496,7 @@ export async function createAWSMarketplaceUserWithTeam({
           if (!existingSubscription) {
             await manuallyAddTeamSubscription({
               teamId: team.id,
-              seats: 3,
+              seats: AWS_MARKETPLACE_CONFIG.DEFAULT_QUANTITY,
               plan: "team",
               startsAt: new Date(),
               months: 1,
