@@ -5,7 +5,8 @@
       "newStudyHint": "询问任何消费者决策问题——我们将访谈AI人设来揭示真实动机",
       "viewFeaturedStudies": "查看精选研究",
       "viewMyProjects": "查看我的项目",
-      "or": "或"
+      "or": "或",
+      "orStartFromScenarios": "或从这些场景快速开始"
     },
     "ShareReplayButton": {
       "shareReplay": "分享回放",

@@ -5,7 +5,8 @@
       "newStudyHint": "Ask about any consumer decision - we'll interview AI Personas to uncover the real motivations",
       "viewFeaturedStudies": "View Featured Studies",
       "viewMyProjects": "View My Projects",
-      "or": "or"
+      "or": "or",
+      "orStartFromScenarios": "Or start from these scenarios"
     },
     "ShareReplayButton": {
       "shareReplay": "Share Replay",
