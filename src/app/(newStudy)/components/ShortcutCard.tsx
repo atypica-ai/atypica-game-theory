@@ -2,35 +2,16 @@
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Locale } from "next-intl";
 import type { StudyShortcut } from "../config/shortcuts";
 
 interface ShortcutCardProps {
   shortcut: StudyShortcut;
-  locale: Locale;
   onClick: (description: string) => void;
 }
 
-// Helper function to filter tags by locale
-function filterTagsByLocale(tags: string[], locale: Locale): string[] {
-  const isChinese = (str: string) => /[\u4e00-\u9fa5]/.test(str);
-
-  return tags.filter((tag) => {
-    if (locale === "zh-CN") {
-      return isChinese(tag);
-    } else {
-      return !isChinese(tag);
-    }
-  });
-}
-
-export function ShortcutCard({ shortcut, locale, onClick }: ShortcutCardProps) {
-  const title = locale === "zh-CN" ? shortcut.title.zh : shortcut.title.en;
-  const description = locale === "zh-CN" ? shortcut.description.zh : shortcut.description.en;
-  const filteredTags = filterTagsByLocale(shortcut.tags, locale);
-
+export function ShortcutCard({ shortcut, onClick }: ShortcutCardProps) {
   const handleClick = () => {
-    onClick(description);
+    onClick(shortcut.description);
   };
 
   return (
@@ -49,15 +30,15 @@ export function ShortcutCard({ shortcut, locale, onClick }: ShortcutCardProps) {
       <div className="text-3xl">{shortcut.emoji}</div>
 
       {/* Title */}
-      <div className="font-medium text-sm line-clamp-2 shrink-0">{title}</div>
+      <div className="font-medium text-sm line-clamp-2 shrink-0">{shortcut.title}</div>
 
       {/* Description */}
-      <div className="text-xs text-muted-foreground line-clamp-3 flex-1">{description}</div>
+      <div className="text-xs text-muted-foreground line-clamp-3 flex-1">{shortcut.description}</div>
 
       {/* Tags */}
-      {filteredTags.length > 0 && (
+      {shortcut.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border/50 w-full">
-          {filteredTags.map((tag, index) => (
+          {shortcut.tags.map((tag, index) => (
             <Badge key={index} variant="secondary" className="text-xs px-1.5 py-0">
               {tag}
             </Badge>

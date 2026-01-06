@@ -1,60 +1,158 @@
 export interface StudyShortcut {
   id: string;
   emoji: string;
-  title: {
-    zh: string;
-    en: string;
-  };
-  description: {
-    zh: string;
-    en: string;
-  };
+  title: string;
+  description: string;
   tags: string[];
   category: string;
 }
 
-export const studyShortcuts: StudyShortcut[] = [
+// English shortcuts - independent cases for global markets
+export const studyShortcutsEN: StudyShortcut[] = [
+  // Product Testing & Comparison
+  {
+    id: "streaming-apps-comparison",
+    emoji: "📺",
+    title: "Netflix vs Disney+ vs HBO Max: Which wins Gen Z?",
+    description:
+      "8-person focus group comparing streaming platforms: content quality, UI/UX, pricing perception among 18-25 year olds",
+    tags: ["Focus Group", "Report"],
+    category: "product-testing",
+  },
+  {
+    id: "fitness-app-features",
+    emoji: "💪",
+    title: "What features make fitness apps sticky for busy professionals?",
+    description:
+      "Test 3 feature sets with working professionals, find what drives 30-day retention: gamification vs community vs AI coaching",
+    tags: ["Focus Group", "A/B Test"],
+    category: "product-testing",
+  },
+  {
+    id: "sustainable-fashion-positioning",
+    emoji: "👕",
+    title: "How should sustainable fashion brands position to Gen Z?",
+    description:
+      "Roundtable discussion exploring Gen Z attitudes: eco-consciousness vs affordability, brand authenticity, social proof",
+    tags: ["Roundtable", "Report"],
+    category: "product-testing",
+  },
+
+  // Social Media Insights & Personas
+  {
+    id: "tiktok-fitness-creators",
+    emoji: "🏋️",
+    title: "What fitness content goes viral on TikTok in 2025?",
+    description:
+      "Scout TikTok fitness creators, extract 3-5 creator personas (science-based, motivational, beginner-friendly), identify viral patterns",
+    tags: ["TikTok Scout", "Build Personas"],
+    category: "persona-building",
+  },
+  {
+    id: "instagram-skincare-community",
+    emoji: "✨",
+    title: "What do Instagram skincare enthusiasts really want?",
+    description:
+      "Analyze Instagram skincare discussions, build personas of clean beauty advocates, K-beauty fans, and dermatology followers",
+    tags: ["Instagram Scout", "Build Personas"],
+    category: "persona-building",
+  },
+  {
+    id: "twitter-ai-developers",
+    emoji: "🤖",
+    title: "How are developers talking about AI tools on Twitter?",
+    description:
+      "Scout Twitter AI dev community, extract attitudes from indie hackers, enterprise engineers, and AI researchers",
+    tags: ["Twitter Scout", "Build Personas", "Roundtable"],
+    category: "persona-building",
+  },
+
+  // Content Generation: Podcasts & Reports
+  {
+    id: "mental-health-podcast",
+    emoji: "🎙️",
+    title: "What mental health topics resonate with young professionals?",
+    description:
+      "Build personas from mental health discussions, generate a podcast on workplace burnout and coping strategies",
+    tags: ["Build Personas", "Podcast"],
+    category: "content-generation",
+  },
+  {
+    id: "ai-tools-trend-report",
+    emoji: "📊",
+    title: "Where is the AI productivity tools market heading in 2025?",
+    description:
+      "Research AI tools trends, roundtable with different user types (developers, designers, writers), generate market insight report",
+    tags: ["Expert Planning", "Focus Group", "Report"],
+    category: "content-generation",
+  },
+
+  // Deep Interviews
+  {
+    id: "ev-adoption-journey",
+    emoji: "🚗",
+    title: "Why did early adopters switch to electric vehicles?",
+    description:
+      "Deep interviews with 5-8 EV owners, reconstruct decision journey: concerns about range, charging infrastructure, turning points",
+    tags: ["Deep Interview", "Report"],
+    category: "deep-interview",
+  },
+  {
+    id: "remote-work-tools",
+    emoji: "💼",
+    title: "What makes remote workers stick to a collaboration tool?",
+    description:
+      "Interview remote workers about Slack vs Discord vs Notion: onboarding experience, daily habits, team dynamics",
+    tags: ["Deep Interview"],
+    category: "deep-interview",
+  },
+
+  // Market Analysis & Competitive
+  {
+    id: "coffee-chains-battle",
+    emoji: "☕",
+    title: "Starbucks vs local coffee shops: What drives loyalty?",
+    description:
+      "Focus group comparing Starbucks, Blue Bottle, local cafes: brand perception, experience value, community vs convenience",
+    tags: ["Focus Group", "Competitive Analysis"],
+    category: "market-analysis",
+  },
+  {
+    id: "wearables-market-gaps",
+    emoji: "⌚",
+    title: "What unmet needs exist in the smartwatch market?",
+    description:
+      "Search latest wearables trends, interview users, find innovation opportunities beyond Apple Watch, Garmin, Samsung",
+    tags: ["Web Search", "Deep Interview", "Report"],
+    category: "market-analysis",
+  },
+];
+
+// Chinese shortcuts - independent cases, can include Xiaohongshu/Douyin
+export const studyShortcutsZH: StudyShortcut[] = [
   // 产品测试 & 方案对比
   {
-    id: "iphone-vs-huawei",
-    emoji: "🎯",
-    title: {
-      zh: "iPhone vs 华为旗舰机焦点小组",
-      en: "iPhone vs Huawei Focus Group",
-    },
-    description: {
-      zh: "比较 iPhone vs 华为旗舰机，邀请 8 位不同年龄段用户进行焦点小组讨论，了解他们的选择理由",
-      en: "Compare iPhone vs Huawei flagship phones through focus group discussion with 8 users of different age groups",
-    },
-    tags: ["焦点小组", "生成报告", "Focus Group", "Report"],
+    id: "streaming-platform-comparison-zh",
+    emoji: "📺",
+    title: "爱优腾哪家会员最值得买？",
+    description: "8 人焦点小组对比爱奇艺、优酷、腾讯视频：内容质量、UI体验、价格认知，找到 18-30 岁用户的真实选择理由",
+    tags: ["焦点小组", "生成报告"],
     category: "product-testing",
   },
   {
-    id: "delivery-app-design",
-    emoji: "📱",
-    title: {
-      zh: "外卖 APP 首页设计 A/B 测试",
-      en: "Delivery App Homepage A/B Test",
-    },
-    description: {
-      zh: "测试 3 种外卖 APP 首页设计方案，让年轻白领评价哪个更符合他们的使用习惯",
-      en: "Test 3 delivery app homepage designs, have young professionals evaluate which best fits their usage habits",
-    },
-    tags: ["焦点小组", "方案测试", "Focus Group", "A/B Test"],
+    id: "fitness-app-retention-zh",
+    emoji: "💪",
+    title: "什么功能让健身 App 用户留下来？",
+    description: "测试 3 种功能组合，找到让上班族坚持 30 天的关键：游戏化 vs 社区 vs AI 私教",
+    tags: ["焦点小组", "方案测试"],
     category: "product-testing",
   },
   {
-    id: "coffee-brand-positioning",
-    emoji: "☕",
-    title: {
-      zh: "咖啡品牌定位圆桌讨论",
-      en: "Coffee Brand Positioning Roundtable",
-    },
-    description: {
-      zh: '新咖啡品牌定位策略：对比"精品咖啡"vs"平价连锁"，通过用户圆桌讨论收集意见',
-      en: 'Compare "Specialty Coffee" vs "Budget Chain" positioning strategies through user roundtable discussion',
-    },
-    tags: ["圆桌讨论", "生成报告", "Roundtable", "Report"],
+    id: "tea-brand-positioning-zh",
+    emoji: "🍵",
+    title: "新茶饮品牌如何在喜茶奈雪之外突围？",
+    description: "圆桌讨论探索 Z 世代态度：健康 vs 口感、品牌调性、社交属性，找到差异化定位机会",
+    tags: ["圆桌讨论", "生成报告"],
     category: "product-testing",
   },
 
@@ -62,133 +160,79 @@ export const studyShortcuts: StudyShortcut[] = [
   {
     id: "xiaohongshu-camping",
     emoji: "🏕️",
-    title: {
-      zh: "小红书露营爱好者画像",
-      en: "Xiaohongshu Camping Enthusiast Personas",
-    },
-    description: {
-      zh: "从小红书露营笔记中构建 3-5 个典型露营爱好者画像（精致露营派、硬核户外派、亲子露营派...）",
-      en: "Build 3-5 typical camping enthusiast personas from Xiaohongshu camping notes (Glamping, Hardcore, Family camping...)",
-    },
-    tags: ["小红书观察", "构建人设", "Xiaohongshu Scout", "Build Personas"],
+    title: "什么样的露营产品能在小红书爆火？",
+    description: "从小红书露营笔记中提取 3-5 种典型用户画像（精致露营派、硬核户外派、亲子派），发现他们的消费偏好和内容偏好",
+    tags: ["小红书观察", "构建人设"],
     category: "persona-building",
   },
   {
-    id: "zhihu-ai-tools",
-    emoji: "💻",
-    title: {
-      zh: "知乎程序员 AI 工具态度分析",
-      en: "Zhihu Programmers' AI Tools Attitude",
-    },
-    description: {
-      zh: "分析知乎程序员对 AI 编程工具的讨论，提取不同资历程序员的使用态度和画像",
-      en: "Analyze Zhihu programmers' discussions on AI coding tools, extract attitudes from different experience levels",
-    },
-    tags: ["知乎观察", "构建人设", "Zhihu Scout", "Build Personas"],
+    id: "douyin-beauty-trends",
+    emoji: "💄",
+    title: "抖音美妆博主的流量密码是什么？",
+    description: "观察抖音美妆内容，提取爆款博主画像（成分党、平价替代、高端测评），分析他们的内容策略和粉丝画像",
+    tags: ["抖音观察", "构建人设"],
     category: "persona-building",
   },
   {
-    id: "douban-movie-taste",
-    emoji: "🎬",
-    title: {
-      zh: "豆瓣文艺青年观影品味",
-      en: "Douban Art Film Enthusiasts' Taste",
-    },
-    description: {
-      zh: "从豆瓣观影小组提取文艺青年画像，研究他们的观影品味和推荐偏好",
-      en: "Extract art film enthusiast personas from Douban film groups, study their viewing preferences",
-    },
-    tags: ["豆瓣观察", "构建人设", "圆桌讨论", "Douban Scout", "Personas", "Roundtable"],
+    id: "xiaohongshu-travel",
+    emoji: "✈️",
+    title: "小红书旅游笔记什么内容最受欢迎？",
+    description: "从小红书旅游内容中提取用户偏好：City Walk、小众目的地、美食探店，构建不同类型旅行者画像",
+    tags: ["小红书观察", "构建人设", "圆桌讨论"],
     category: "persona-building",
   },
 
   // 内容生成：播客 & 报告
   {
-    id: "skincare-podcast",
+    id: "workplace-anxiety-podcast",
     emoji: "🎙️",
-    title: {
-      zh: "护肤指南播客节目",
-      en: "Skincare Guide Podcast",
-    },
-    description: {
-      zh: '基于小红书护肤讨论构建用户画像，然后生成一期"敏感肌护理指南"播客节目',
-      en: 'Build personas from Xiaohongshu skincare discussions, generate a "Sensitive Skin Care Guide" podcast episode',
-    },
-    tags: ["小红书观察", "构建人设", "播客生成", "Xiaohongshu Scout", "Personas", "Podcast"],
+    title: "职场年轻人最关心什么心理健康话题？",
+    description: "基于职场讨论构建年轻人画像，生成一期关于职场焦虑和应对策略的播客节目",
+    tags: ["构建人设", "播客生成"],
     category: "content-generation",
   },
   {
-    id: "coffee-trend-report",
+    id: "new-consumer-report",
     emoji: "📊",
-    title: {
-      zh: "咖啡消费趋势市场报告",
-      en: "Coffee Consumption Trend Report",
-    },
-    description: {
-      zh: "研究咖啡消费趋势，让不同类型的咖啡爱好者进行圆桌讨论，最后生成市场洞察报告",
-      en: "Research coffee consumption trends, roundtable with different coffee enthusiasts, generate market insight report",
-    },
-    tags: ["调研专家", "焦点小组", "生成报告", "Expert Planning", "Focus Group", "Report"],
+    title: "2025 年新消费品牌的机会在哪里？",
+    description: "研究新消费趋势，让不同消费群体（Z世代、新中产、银发族）进行圆桌讨论，生成市场洞察报告",
+    tags: ["调研专家", "焦点小组", "生成报告"],
     category: "content-generation",
   },
 
   // 深度访谈
   {
-    id: "tesla-owner-journey",
+    id: "ev-china-adoption",
     emoji: "🚗",
-    title: {
-      zh: "特斯拉车主决策旅程访谈",
-      en: "Tesla Owner Decision Journey Interview",
-    },
-    description: {
-      zh: "深度访谈 5-8 位特斯拉车主，了解他们从燃油车切换到电动车的完整决策旅程",
-      en: "Deep interviews with 5-8 Tesla owners about their complete decision journey from gas to electric vehicles",
-    },
-    tags: ["深度访谈", "生成报告", "Deep Interview", "Report"],
+    title: "为什么他们选择了国产电动车？",
+    description: "深度访谈 5-8 位比亚迪、小鹏、蔚来车主，还原完整决策旅程：顾虑、转折点、购后体验对比",
+    tags: ["深度访谈", "生成报告"],
     category: "deep-interview",
   },
   {
-    id: "gen-z-instant-food",
-    emoji: "🍱",
-    title: {
-      zh: "00 后独居青年预制菜态度",
-      en: "Gen Z Singles' Pre-made Food Attitude",
-    },
-    description: {
-      zh: "采访 00 后独居青年，挖掘他们对预制菜的真实态度和使用场景",
-      en: "Interview Gen Z singles living alone, uncover their real attitudes and usage scenarios for pre-made food",
-    },
-    tags: ["深度访谈", "Deep Interview"],
+    id: "gen-z-career-choice",
+    emoji: "💼",
+    title: "00 后为什么不想进大厂了？",
+    description: "采访年轻职场人，挖掘他们的职业选择逻辑：工作意义 vs 薪资、Work-Life Balance、职业发展路径",
+    tags: ["深度访谈"],
     category: "deep-interview",
   },
 
   // 市场分析 & 竞品
   {
-    id: "starbucks-luckin-comparison",
+    id: "coffee-chains-china",
     emoji: "☕",
-    title: {
-      zh: "星巴克 vs 瑞幸品牌认知对比",
-      en: "Starbucks vs Luckin Brand Perception",
-    },
-    description: {
-      zh: "对比星巴克、瑞幸、Manner 三个品牌：通过焦点小组了解用户对各品牌的认知差异",
-      en: "Compare Starbucks, Luckin, Manner: understand user perception differences through focus group",
-    },
-    tags: ["焦点小组", "竞品分析", "Focus Group", "Competitive Analysis"],
+    title: "星巴克 vs 瑞幸 vs Manner，谁抓住了年轻人？",
+    description: "焦点小组对比三个品牌，揭示用户认知差异：品牌形象、性价比、空间体验、社交价值",
+    tags: ["焦点小组", "竞品分析"],
     category: "market-analysis",
   },
   {
-    id: "smartwatch-market",
-    emoji: "⌚",
-    title: {
-      zh: "智能手表市场机会点分析",
-      en: "Smartwatch Market Opportunity Analysis",
-    },
-    description: {
-      zh: "搜索智能手表市场最新趋势，结合用户深度访谈，生成产品机会点分析报告",
-      en: "Search latest smartwatch market trends, combine with user interviews, generate product opportunity analysis report",
-    },
-    tags: ["联网搜索", "深度访谈", "生成报告", "Web Search", "Deep Interview", "Report"],
+    id: "smartphone-market-gaps",
+    emoji: "📱",
+    title: "手机市场还有哪些未被满足的需求？",
+    description: "搜索最新市场趋势，结合用户访谈，发现 iPhone、华为、小米之外的产品创新机会点",
+    tags: ["联网搜索", "深度访谈", "生成报告"],
     category: "market-analysis",
   },
 ];

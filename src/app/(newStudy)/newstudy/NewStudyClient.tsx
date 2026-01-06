@@ -5,7 +5,7 @@ import { trackEvent } from "@/lib/analytics/segment";
 import { CommandIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ShortcutsGrid } from "../components/ShortcutsGrid";
 import "./style.css";
 
@@ -18,6 +18,7 @@ export function NewStudyClient({
 }) {
   const t = useTranslations("StudyPage.NewStudy");
   const [brief, setBrief] = useState(initialBrief || "");
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     trackEvent("New Study Viewed");
@@ -25,10 +26,12 @@ export function NewStudyClient({
 
   const handleShortcutClick = (description: string) => {
     setBrief(description);
+    // Scroll the FitToViewport container to top
+    containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <FitToViewport className="hero-grid">
+    <FitToViewport ref={containerRef} className="hero-grid">
       <div className="relative w-2xl max-w-full mx-auto px-4 py-4">
         <div className="w-full flex items-center justify-center gap-2 mb-8 mt-12 sm:mt-24 text-2xl font-medium">
           <CommandIcon className="size-6" />
