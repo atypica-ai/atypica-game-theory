@@ -6,7 +6,8 @@
       "viewFeaturedStudies": "查看精选研究",
       "viewMyProjects": "查看我的项目",
       "or": "或",
-      "orStartFromScenarios": "或从这些场景快速开始"
+      "orStartFromScenarios": "或从这些场景快速开始",
+      "shortcutsCuratedBy": "研究场景由 atypica 选题智能体精选生成 · 每小时更新"
     },
     "ShareReplayButton": {
       "shareReplay": "分享回放",

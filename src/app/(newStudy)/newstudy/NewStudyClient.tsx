@@ -6,7 +6,7 @@ import { CommandIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ShortcutsGrid } from "../components/ShortcutsGrid";
+import { ShortcutsGrid } from "./components/ShortcutsGrid";
 import "./style.css";
 
 export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
@@ -63,6 +63,9 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
           <div className="h-px flex-1 bg-border max-w-24" />
         </div>
         <ShortcutsGrid onShortcutClick={handleShortcutClick} />
+        <div className="mt-8 text-center text-xs text-muted-foreground/60">
+          {t("shortcutsCuratedBy")}
+        </div>
       </div>
     </FitToViewport>
   );
