@@ -1,5 +1,5 @@
 "use client";
-import { NewStudyInputBox, TStudyType } from "@/app/(newStudy)/components/NewStudyInputBox";
+import { NewStudyInputBox } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { trackEvent } from "@/lib/analytics/segment";
 import { CommandIcon } from "lucide-react";
@@ -9,13 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { ShortcutsGrid } from "../components/ShortcutsGrid";
 import "./style.css";
 
-export function NewStudyClient({
-  initialBrief,
-  initialStudyType,
-}: {
-  initialBrief?: string;
-  initialStudyType?: TStudyType;
-}) {
+export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
   const t = useTranslations("StudyPage.NewStudy");
   const [brief, setBrief] = useState(initialBrief || "");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,7 +32,7 @@ export function NewStudyClient({
           <span>{t("startYourStudy")}</span>
         </div>
         <div className="w-full">
-          <NewStudyInputBox initialBrief={brief} initialStudyType={initialStudyType} />
+          <NewStudyInputBox initialBrief={brief} />
         </div>
         <div className="mt-8 text-center text-sm">
           <Link
@@ -60,7 +54,7 @@ export function NewStudyClient({
         <div className="mt-2 text-xs text-muted-foreground text-center">{t("newStudyHint")}</div>
       </div>
       {/* Shortcuts Grid */}
-      <div className="mt-16 container mx-auto mb-12 sm:mb-32">
+      <div className="mt-16 container px-4 mx-auto mb-12 sm:mb-32">
         <div className="flex items-center justify-center gap-4 mb-8">
           <div className="h-px flex-1 bg-border max-w-24" />
           <h2 className="text-lg font-medium text-center whitespace-nowrap">

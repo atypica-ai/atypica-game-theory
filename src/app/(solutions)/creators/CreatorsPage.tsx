@@ -92,7 +92,7 @@ export default function CreatorsPage() {
             <ScenarioCard
               question={t("UseCasesSection.scenario1.question")}
               toolLabel={t("UseCasesSection.scenario1.primaryTool.label")}
-              href={`/newstudy?brief=${encodeURIComponent(t("UseCasesSection.scenario1.question"))}&studyType=fast-insight`}
+              href={`/newstudy?brief=${encodeURIComponent(t("UseCasesSection.scenario1.question"))}`}
             />
             <ScenarioCard
               question={t("UseCasesSection.scenario2.question")}

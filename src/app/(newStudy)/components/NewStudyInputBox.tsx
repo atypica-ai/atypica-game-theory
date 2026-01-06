@@ -13,36 +13,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useDevice } from "@/hooks/use-device";
 import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { trackEvent } from "@/lib/analytics/segment";
 import { truncateForTitle } from "@/lib/textUtils";
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon, NotebookTextIcon, RotateCwIcon, SparklesIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JSX, useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-export type TStudyType = "general" | "product-rnd" | "fast-insight";
-
 export function NewStudyInputBox(args: {
   className?: string;
   initialBrief?: string;
-  initialStudyType?: TStudyType;
 }): JSX.Element;
 
 export function NewStudyInputBox(args: {
@@ -54,29 +40,20 @@ export function NewStudyInputBox(args: {
 export function NewStudyInputBox({
   className,
   initialBrief,
-  initialStudyType,
   referenceUserChatTokens,
 }: {
   className?: string;
   initialBrief?: string;
-  initialStudyType?: TStudyType;
   referenceUserChatTokens?: string[];
 }) {
-  const forceStudyType = referenceUserChatTokens?.length ? "general" : undefined;
 
-  const { status: sessionStatus, data: session } = useSession();
   const locale = useLocale();
   const t = useTranslations("Components.NewStudyInputBox");
   const router = useRouter();
   const { isMobile } = useDevice();
-  const isSM = useMediaQuery("sm");
   const [input, setInput] = useState("");
   const [partialTranscript, setPartialTranscript] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [studyType, setStudyType] = useState<TStudyType>(
-    forceStudyType ?? initialStudyType ?? "general",
-  );
-  const [showStudyTypeSelector, setShowStudyTypeSelector] = useState(false);
   const [referenceChatTitles, setReferenceChatTitles] = useState<
     { token: string; title: string }[]
   >([]);
@@ -115,24 +92,6 @@ export function NewStudyInputBox({
     [trackStudyBriefUpdated],
   );
 
-  // Check if user should see study type selector
-  useEffect(() => {
-    if (sessionStatus === "loading") {
-      setShowStudyTypeSelector(false);
-    } else if (!!forceStudyType) {
-      // 如果指定了固定研究类型，不显示研究类型选择器
-      setShowStudyTypeSelector(false);
-    } else {
-      // 🎉 这个 commit 里的修改，对 prompt cache 做了优化，现在可以对所有人开放了!
-      setShowStudyTypeSelector(true);
-    }
-    // // } else if (session?.user?.email?.endsWith("@tezign.com")) {
-    // //   setShowStudyTypeSelector(true);
-    // } else {
-    //   setShowStudyTypeSelector(false);
-    // }
-  }, [sessionStatus, session?.user?.email, forceStudyType]);
-
   // Load reference chat titles
   useEffect(() => {
     const loadReferenceChatTitles = async () => {
@@ -164,7 +123,6 @@ export function NewStudyInputBox({
         const result = await createStudyUserChat(
           { role: "user", content: input, attachments },
           extra,
-          studyType,
         );
         if (!result.success) {
           throw result;
@@ -176,7 +134,7 @@ export function NewStudyInputBox({
       }
       setIsLoading(false);
     },
-    [referenceUserChatTokens, studyType, input, router, uploadedFiles],
+    [referenceUserChatTokens, input, router, uploadedFiles],
   );
 
   return (
@@ -189,55 +147,8 @@ export function NewStudyInputBox({
         className,
       )}
     >
-      {/* Study Type Selector */}
-      <div className="h-12 p-2 border-b border-border flex items-center justify-between">
-        {showStudyTypeSelector ? (
-          isSM ? (
-            <RadioGroup
-              value={studyType}
-              onValueChange={(value) => setStudyType(value as TStudyType)}
-              className="flex gap-4 ml-1"
-            >
-              <div className="flex items-center">
-                <RadioGroupItem value="general" id="general" className="h-3 w-3 mr-0.5" />
-                <Label htmlFor="general" className="text-xs cursor-pointer p-1">
-                  {t("generalStudy")}
-                </Label>
-              </div>
-              <div className="flex items-center">
-                <RadioGroupItem value="product-rnd" id="product-rnd" className="h-3 w-3 mr-0.5" />
-                <Label htmlFor="product-rnd" className="text-xs cursor-pointer p-1">
-                  {t("productRnDStudy")}
-                </Label>
-              </div>
-              <div className="flex items-center">
-                <RadioGroupItem value="fast-insight" id="fast-insight" className="h-3 w-3 mr-0.5" />
-                <Label htmlFor="fast-insight" className="text-xs cursor-pointer p-1">
-                  {t("fastInsightStudy")}
-                </Label>
-              </div>
-            </RadioGroup>
-          ) : (
-            <Select value={studyType} onValueChange={(value) => setStudyType(value as TStudyType)}>
-              <SelectTrigger className="w-auto h-auto text-xs px-2 py-1 border-none bg-transparent shadow-none focus:ring-0 gap-1.5">
-                <SelectValue placeholder={t("studyType")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="general" className="text-xs">
-                  {t("generalStudy")}
-                </SelectItem>
-                <SelectItem value="product-rnd" className="text-xs">
-                  {t("productRnDStudy")}
-                </SelectItem>
-                <SelectItem value="fast-insight" className="text-xs">
-                  {t("fastInsightStudy")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          )
-        ) : (
-          <div></div>
-        )}
+      {/* Top toolbar */}
+      <div className="h-12 p-2 border-b border-border flex items-center justify-end">
         <Link
           href="/newstudy?interview=1"
           className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors group"
@@ -265,13 +176,7 @@ export function NewStudyInputBox({
         name="study-brief"
         value={input}
         onChange={(e) => setStudyBrief({ text: e.target.value })}
-        placeholder={
-          studyType === "product-rnd"
-            ? t("productRnDPlaceholder")
-            : studyType === "fast-insight"
-              ? t("fastInsightPlaceholder")
-              : t("placeholder")
-        }
+        placeholder={t("placeholder")}
         className={cn(
           "resize-none border-0 shadow-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60",
           "flex-1 min-h-48 sm:min-h-32 max-h-80 w-full px-4 scrollbar-thin",
@@ -364,7 +269,6 @@ export function NewStudyInputBox({
 export function NewStudyButton(args: {
   children?: React.ReactNode;
   initialBrief?: string;
-  initialStudyType?: TStudyType;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }): JSX.Element;
@@ -380,14 +284,12 @@ export function NewStudyButton(args: {
 export function NewStudyButton({
   children,
   initialBrief,
-  initialStudyType,
   referenceUserChatTokens,
   open,
   onOpenChange,
 }: {
   children?: React.ReactNode;
   initialBrief?: string;
-  initialStudyType?: TStudyType;
   referenceUserChatTokens?: string[];
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -425,11 +327,7 @@ export function NewStudyButton({
             referenceUserChatTokens={referenceUserChatTokens}
           />
         ) : (
-          <NewStudyInputBox
-            className="rounded-sm"
-            initialBrief={initialBrief}
-            initialStudyType={initialStudyType}
-          />
+          <NewStudyInputBox className="rounded-sm" initialBrief={initialBrief} />
         )}
       </DialogContent>
     </Dialog>

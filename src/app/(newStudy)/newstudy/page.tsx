@@ -8,13 +8,9 @@ import "./style.css";
 export default async function NewStudyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ interview?: "1"; brief?: string; studyType?: string }>;
+  searchParams: Promise<{ interview?: "1"; brief?: string }>;
 }) {
-  const { interview, brief, studyType: _studyType } = await searchParams;
-  const studyType =
-    _studyType === "general" || _studyType === "product-rnd" || _studyType === "fast-insight"
-      ? _studyType
-      : undefined;
+  const { interview, brief } = await searchParams;
 
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -22,7 +18,6 @@ export default async function NewStudyPage({
     const params = new URLSearchParams();
     if (interview) params.set("interview", interview);
     if (brief) params.set("brief", brief);
-    if (studyType) params.set("studyType", studyType);
     const queryString = params.toString();
     const callbackUrl = `/newstudy${queryString ? `?${queryString}` : ""}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
@@ -32,5 +27,5 @@ export default async function NewStudyPage({
     return <NewStudyChatIntro />;
   }
 
-  return <NewStudyClient initialBrief={brief} initialStudyType={studyType} />;
+  return <NewStudyClient initialBrief={brief} />;
 }
