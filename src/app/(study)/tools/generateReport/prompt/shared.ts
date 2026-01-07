@@ -34,6 +34,7 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 【视觉内容增强】
 - 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
 - 严格禁止：绘制人物、流程图、架构图、复杂的技术图表等
+- **严格禁止**：绝对禁止使用图片生成API生成任何图表、表格、数据可视化、统计图、流程图等需要基于真实数据的内容。图片生成API无法输入可信数据源，生成的图表会包含虚假数据，具有误导性。
 - 图片应该与研究发现紧密相关，用于具象化展示设计概念或产品方向
 - 每张图片都应有明确的说明文字，解释其与研究内容的关联性
 - 专注于简洁的设计元素展示，避免复杂图形
@@ -104,6 +105,7 @@ We study people, simulate people, and serve the understanding of people. So the 
 【Visual Content Enhancement】
 - Generate illustrations only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.
 - Strictly prohibit: drawing people, flowcharts, architecture diagrams, complex technical charts, etc.
+- **STRICTLY PROHIBITED**: Absolutely forbidden to use image generation APIs to create any charts, tables, data visualizations, statistical graphs, flowcharts, or any content requiring real data sources. Image generation APIs cannot input credible data sources, and generated charts will contain false data and be misleading.
 - Images should be closely related to research findings, used to visualize design concepts or product directions
 - Each image should have clear explanatory text explaining its relevance to research content
 - Focus on simple design element presentation, avoid complex graphics
