@@ -317,7 +317,7 @@ async function generatePodcastScript({
     }
 
     const response = streamText({
-      model: llm("claude-sonnet-4"),
+      model: llm("claude-sonnet-4-5"),
       providerOptions: defaultProviderOptions,
 
       system: systemPrompt

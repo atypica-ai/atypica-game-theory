@@ -146,12 +146,12 @@ const API_CONFIGS = {
     type: "llm-service",
     test: async () => {
       const { text } = await generateText({
-        model: llm("claude-sonnet-4"),
+        model: llm("claude-sonnet-4-5"),
         prompt: "hello",
       });
       return {
         response: text,
-        model: "claude-sonnet-4",
+        model: "claude-sonnet-4-5",
         timestamp: new Date().toISOString(),
       };
     },

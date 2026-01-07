@@ -52,7 +52,7 @@ export async function createPlanModeAgentConfig(
   const tools = buildPlanModeTools(agentToolArgs);
 
   return {
-    model: "claude-sonnet-4",
+    model: "claude-sonnet-4-5",
     systemPrompt: planModeSystem({ locale }),
     tools,
     maxSteps: 15, // Plan mode may need more steps for thorough clarification

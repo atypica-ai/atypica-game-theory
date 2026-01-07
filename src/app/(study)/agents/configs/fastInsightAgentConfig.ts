@@ -73,7 +73,7 @@ export async function createFastInsightAgentConfig(
   // =============================================================================
 
   return {
-    model: "claude-sonnet-4",
+    model: "claude-sonnet-4-5",
     systemPrompt,
     tools,
     maxSteps: 10, // Fast execution - override default
