@@ -73,7 +73,10 @@ export function HeroSection() {
         </p>
 
         {/* CTA Section */}
-        <div className="flex flex-col md:flex-row items-center justify-center gap-8 mb-16">
+        <div
+          data-product-tour="homepage-hero"
+          className="flex flex-col md:flex-row items-center justify-center gap-8 mb-16"
+        >
           <Button size="lg" className="rounded-full has-[>svg]:px-8 px-8 h-12" asChild>
             <Link href="/newstudy" prefetch={true}>
               {t("startStudyButton")}

@@ -193,6 +193,11 @@ export const productRnDSystem = ({
      - **重要提醒**：generateReport 工具需要根据这些具体描述来理解和执行设计要求，因此必须提供足够详细和明确的指令
    • 【限制范围】**不要**规划报告的具体内容，让系统自动根据收集的数据生成报告内容
    • 【使用条件】仅在有新研究结论时生成，避免重复
+
+3. 【第三步 - 可选】基于报告生成播客内容：
+   • 🎙️ **生成播客**：如需要音频形式的内容呈现，可使用 generatePodcast 工具基于报告生成播客内容
+   • 播客将基于已生成的研究报告内容，以音频形式呈现产品创新的研究发现和分析
+   • 【使用条件】仅在用户需要音频形式内容时使用，非必需步骤
 </强制步骤顺序>
 
 <错误防范>
@@ -387,6 +392,11 @@ All steps serve to obtain an innovation point that meets the above requirements.
      - **Important Reminder**: The generateReport tool needs to understand and execute design requirements based on these specific descriptions, so sufficiently detailed and clear instructions must be provided
    • [Scope Limitation] **Do not** plan specific report content, let the system automatically generate report content based on collected data
    • [Usage Conditions] Only generate when there are new research conclusions, avoid repetition
+
+3. [Step Three - Optional] Generate Podcast Content Based on Report:
+   • 🎙️ **Generate Podcast**: If audio content presentation is needed, use the generatePodcast tool to generate podcast content based on the report
+   • The podcast will present the innovation research findings and analysis in audio format, based on the generated research report
+   • [Usage Conditions] Only use when users need audio format content, not a required step
 </Mandatory Step Order>
 
 <Error Prevention>
