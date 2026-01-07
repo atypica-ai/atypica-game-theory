@@ -250,6 +250,7 @@ export async function generateReport({
       // study agent 已经使用了压缩信息的附件内容，
       // report 和 study agent 是同一个模型，如果不使用压缩的内容也会导致 token 太多而报错
       // 而且，现在其实报告生成不需要附件，可以暂时拿掉
+      // ⚠️ 如果这里要恢复，filename 得换一个，claude 模型对 name 有要求，只能是英文字母和数字
       // const fileParts: FilePart[] = await Promise.all(
       //   ((analyst.attachments ?? []) as ChatMessageAttachment[]).map(
       //     async ({ name, objectUrl, mimeType }) => {

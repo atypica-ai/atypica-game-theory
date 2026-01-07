@@ -5,20 +5,14 @@ import { StatReporter } from "@/ai/tools/types";
 import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { podcastMetadataSchema, podcastMetadataSystem } from "@/app/(podcast)/prompt/metadata";
 import { VALID_LOCALES } from "@/i18n/routing";
-import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
-import {
-  Analyst,
-  AnalystPodcast,
-  AnalystPodcastExtra,
-  ChatMessageAttachment,
-} from "@/prisma/client";
+import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
-import { FilePart, FinishReason, generateObject, ModelMessage, stepCountIs, streamText } from "ai";
+import { FinishReason, generateObject, ModelMessage, stepCountIs, streamText } from "ai";
 import { parseBuffer } from "music-metadata";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -62,19 +56,17 @@ export async function generatePodcast({
       ? (analyst.locale as Locale)
       : ((await detectInputLanguage({ text: analyst.brief })) as Locale);
 
-  // Initialize processing status
-  await prisma.$executeRaw`
-    UPDATE "AnalystPodcast"
-    SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+  await mergeExtra({
+    tableName: "AnalystPodcast",
+    id: podcast.id,
+    extra: {
       processing: {
         startsAt: Date.now(),
         scriptGeneration: false,
         audioGeneration: false,
       },
-    })}::jsonb,
-        "updatedAt" = NOW()
-    WHERE "id" = ${podcast.id}
-  `;
+    } satisfies AnalystPodcastExtra,
+  });
 
   // Fetch updated podcast with extra
   podcast = await prisma.analystPodcast
@@ -83,7 +75,6 @@ export async function generatePodcast({
 
   try {
     // Step 2: Generate script
-    logger.info("Starting script generation");
     const script = await generatePodcastScript({
       podcast,
       analyst,
@@ -93,18 +84,17 @@ export async function generatePodcast({
       logger,
     });
 
-    await prisma.$executeRaw`
-      UPDATE "AnalystPodcast"
-      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+    await mergeExtra({
+      tableName: "AnalystPodcast",
+      id: podcast.id,
+      extra: {
         processing: {
           startsAt: podcast.extra.processing ? podcast.extra.processing?.startsAt : Date.now(),
           scriptGeneration: true,
           audioGeneration: false,
         },
-      })}::jsonb,
-          "updatedAt" = NOW()
-      WHERE "id" = ${podcast.id}
-    `;
+      } satisfies AnalystPodcastExtra,
+    });
 
     // Fetch updated podcast with extra
     podcast = await prisma.analystPodcast
@@ -195,15 +185,14 @@ export async function generatePodcast({
     });
 
     // Mark as failed, preserving other extra fields using Raw SQL
-    await prisma.$executeRaw`
-      UPDATE "AnalystPodcast"
-      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+    await mergeExtra({
+      tableName: "AnalystPodcast",
+      id: podcast.id,
+      extra: {
         processing: false,
         error: error instanceof Error ? error.message : String(error),
-      })}::jsonb,
-          "updatedAt" = NOW()
-      WHERE "id" = ${podcast.id}
-    `;
+      } satisfies AnalystPodcastExtra,
+    });
   }
 }
 
@@ -276,15 +265,19 @@ async function generatePodcastScript({
     finishReason: FinishReason;
     content: string;
   }>(async (resolve, reject) => {
-    // 注意，这里不是 FileUIPart，是 ModelMessage 里的 FilePart
-    const fileParts: FilePart[] = await Promise.all(
-      ((analyst.attachments ?? []) as ChatMessageAttachment[]).map(
-        async ({ name, objectUrl, mimeType }) => {
-          const url = await fileUrlToDataUrl({ objectUrl, mimeType });
-          return { type: "file", filename: name, data: url, mediaType: mimeType };
-        },
-      ),
-    );
+    // study agent 已经使用了压缩信息的附件内容，
+    // report 和 study agent 是同一个模型，如果不使用压缩的内容也会导致 token 太多而报错
+    // 而且，现在其实报告生成不需要附件，可以暂时拿掉
+    // ⚠️ 注意，这里不是 FileUIPart，是 ModelMessage 里的 FilePart
+    // ⚠️ 如果这里要恢复，filename 得换一个，claude 模型对 name 有要求，只能是英文字母和数字
+    // const fileParts: FilePart[] = await Promise.all(
+    //   ((analyst.attachments ?? []) as ChatMessageAttachment[]).map(
+    //     async ({ name, objectUrl, mimeType }) => {
+    //       const url = await fileUrlToDataUrl({ objectUrl, mimeType });
+    //       return { type: "file", filename: name, data: url, mediaType: mimeType };
+    //     },
+    //   ),
+    // );
 
     // Create podcast script prompt content using the prologue function
     const podcastContent = podcastScriptPrologue({
@@ -296,7 +289,10 @@ async function generatePodcastScript({
     const messages: ModelMessage[] = [
       {
         role: "user",
-        content: [{ type: "text", text: podcastContent }, ...fileParts],
+        content: [
+          { type: "text", text: podcastContent },
+          // ...fileParts
+        ],
       },
     ];
 
