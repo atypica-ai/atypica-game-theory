@@ -772,7 +772,14 @@ export async function saveAnalystFromPlan({
         userId: user.id,
         analystId: userChat.analyst.id,
       });
-      logger.info({ msg: "Analyst saved from plan", kind, role });
+
+      logger.info({
+        msg: "Analyst saved from plan",
+        kind,
+        role,
+        locale,
+        topicPreview: topic.substring(0, 150),
+      });
 
       return {
         success: true,

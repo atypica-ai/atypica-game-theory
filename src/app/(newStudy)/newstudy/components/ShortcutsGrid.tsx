@@ -20,23 +20,13 @@ export function ShortcutsGrid({ onShortcutClick }: ShortcutsGridProps) {
     setShortcuts([]);
     setIsFetching(true);
 
-    // Fetch 6 batches in parallel for faster results
-    // Each batch generates 2 shortcuts for different audiences, total 12
-    // Batch 1: Product Managers, 2: Marketers, 3: Startup Owners,
-    // 4: Creators, 5: Consultants, 6: Influencers
-    const batches: Array<1 | 2 | 3 | 4 | 5 | 6> = [1, 2, 3, 4, 5, 6];
-    let completedBatches = 0;
-
-    batches.forEach((batch) => {
-      generateAIShortcuts(batch, locale).then((result) => {
-        if (result.success && result.data) {
-          setShortcuts((prev) => [...prev, ...result.data]);
-        }
-        completedBatches++;
-        if (completedBatches === batches.length) {
-          setIsFetching(false);
-        }
-      });
+    // Generate 12 shortcuts covering all 6 target audiences in one call
+    // Product Managers, Marketers, Startup Owners, Creators, Consultants, Influencers
+    generateAIShortcuts(locale).then((result) => {
+      if (result.success && result.data) {
+        setShortcuts(result.data);
+      }
+      setIsFetching(false);
     });
   }, [locale]);
 
@@ -44,7 +34,7 @@ export function ShortcutsGrid({ onShortcutClick }: ShortcutsGridProps) {
   if (isFetching && shortcuts.length === 0) {
     return (
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
           <div
             key={i}
             className="flex flex-col gap-4 p-4 rounded-lg border border-border bg-background min-h-[200px] animate-pulse"

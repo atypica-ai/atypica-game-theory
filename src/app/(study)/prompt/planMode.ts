@@ -68,16 +68,51 @@ export const planModeSystem = ({ locale }: { locale: Locale }) =>
 
 **Step 3: 自动判断研究方法和 kind**
 
-根据意图特征，自动判断：
+【重要】按照以下三层决策树判断，**优先级从高到低**：
 
-【kind 判断逻辑】
-• "比较X和Y"/"测试方案效果" → **testing**
-• "了解用户对X的看法"/"发现问题" → **insights**
-• "设计新功能"/"产生创意" → **creation**
-• "制定策略"/"规划方案" → **planning**
-• "产品创新机会"/"发现需求" → **productRnD**
-• "快速生成播客"/"热点分析" → **fastInsight**
-• 其他综合性研究 → **misc**
+**第一层：Agent 选择（三选一）**
+
+🎯 **优先级 1: Fast Insight Agent (kind=fastInsight)**
+触发条件（满足任一即可）：
+• 明确要求"播客"/"音频内容"/"可听的内容"
+• 强调"快速"+"了解/分析"组合
+• 时事热点分析 + 内容产出诉求
+• 用户说"介绍"/"解读"某个话题（暗示快速内容生成）
+
+关键触发词：播客、podcast、快速、热点、音频、听、解读、介绍
+判断要点：用户是否更关注**快速获得可消费的内容**（而非深度洞察）？
+
+🎨 **优先级 2: Product R&D Agent (kind=productRnD)**
+触发条件（满足任一即可）：
+• 明确提到"创新"/"新产品机会"/"灵感"/"启发"
+• 指定创新类型（功能/包装/场景/用户/营销/口味）
+• 提到"社交媒体观察"+"产品"（暗示观察趋势寻找灵感）
+• 现有产品 + 寻找新方向/新玩法
+
+关键触发词：创新、灵感、新产品、社交趋势、功能创新、场景创新、包装设计、营销创新
+判断要点：用户是否想为现有产品**寻找创新机会**？是否需要从**社交趋势中获取灵感**？
+
+🧠 **优先级 3: Study Agent (kind=testing/insights/creation/planning/misc)**
+其他所有需要深度研究的场景，进入第二层判断：
+
+**第二层：Study 子类型判断（五选一）**
+
+• **testing**: 明确的比较("比较X和Y")、测试("测试X效果")、验证("哪个更好"/"A/B测试")
+  关键词：比较、测试、验证、哪个更、优劣、对比
+
+• **insights**: 了解("了解用户对X的看法")、发现("发现痛点/问题")、分析("为什么用户")
+  关键词：了解、发现、洞察、行为分析、需求分析、用户画像
+
+• **creation**: 设计("设计新功能")、创意("产生创意方案")、头脑风暴("想点子")
+  关键词：设计、创意、头脑风暴、想法、方案生成
+  **注意**：与 productRnD 的区别是这里侧重**设计和生成方案**，而非寻找创新灵感
+
+• **planning**: 制定("制定策略")、规划("规划方案")、战略("实施计划"/"路线图")
+  关键词：制定、规划、战略、实施、策略、计划
+
+• **misc**: 无法归类的综合研究或多目标研究
+
+**第三层：研究细节判断**
 
 【框架判断】（参考 planStudy 的逻辑）
 • 用户决策/需求理解 → JTBD
@@ -86,15 +121,22 @@ export const planModeSystem = ({ locale }: { locale: Locale }) =>
 • 业务机会评估 → GE-McKinsey
 • 使用流程分析 → 用户旅程地图
 
-【研究方式判断】
+【研究方式判断】（仅 Study Agent）
 • 需要观察权衡过程、群体共识 → **discussion**（3-8个AI人设）
 • 需要深入个人经历、深层动机 → **interview**（5-10个AI人设）
 
-【人设数量】
+【人设数量】（仅 Study Agent）
 根据研究复杂度：
 • 简单问题：5-6个
 • 中等复杂：6-8个
 • 高度复杂：8-10个
+
+【判断技巧】
+1. 先扫描用户输入中是否有"播客"/"快速"关键词 → fastInsight
+2. 再看是否有"创新"/"灵感"+"产品"上下文 → productRnD
+3. 都没有则是深度研究 → Study（再判断子类型）
+4. 使用 reasoningThinking 工具深度分析边界情况
+5. 当不确定时，默认选择 insights（最通用的研究类型）
 
 **Step 4: 提交完整研究计划**
 
@@ -253,31 +295,76 @@ Phase 2: Background Research (Flexible use of webSearch and webFetch)
 • 【Purpose】Enrich intent background, assist method judgment
 
 Phase 3: Auto-judge Research Method and Kind
-【kind judgment logic】
-• "Compare X and Y"/"Test solution effectiveness" → **testing**
-• "Understand user views on X"/"Discover problems" → **insights**
-• "Design new feature"/"Generate creativity" → **creation**
-• "Develop strategy"/"Plan solution" → **planning**
-• "Product innovation opportunities"/"Discover needs" → **productRnD**
-• "Quickly generate podcast"/"Hot topic analysis" → **fastInsight**
-• Other comprehensive research → **misc**
 
-【Framework judgment】
+【Important】Follow this 3-tier decision tree, **priority from high to low**:
+
+**Tier 1: Agent Selection (Choose One of Three)**
+
+🎯 **Priority 1: Fast Insight Agent (kind=fastInsight)**
+Trigger conditions (meet any one):
+• Explicitly requests "podcast"/"audio content"/"listenable content"
+• Emphasizes "quick"+"understand/analyze" combination
+• Hot topic analysis + content output intent
+• User says "introduce"/"explain" a topic (implies quick content generation)
+
+Key trigger words: podcast, quick, hot topic, audio, listen, explain, introduce
+Decision point: Does user care more about **quickly getting consumable content** (rather than deep insights)?
+
+🎨 **Priority 2: Product R&D Agent (kind=productRnD)**
+Trigger conditions (meet any one):
+• Explicitly mentions "innovation"/"new product opportunities"/"inspiration"
+• Specifies innovation type (function/packaging/scenario/user/marketing/flavor)
+• Mentions "social media observation"+"product" (implies observing trends for inspiration)
+• Existing product + looking for new direction/new ways
+
+Key trigger words: innovation, inspiration, new product, social trends, feature innovation, scenario innovation, packaging design, marketing innovation
+Decision point: Does user want to **find innovation opportunities** for existing products? Need to **get inspiration from social trends**?
+
+🧠 **Priority 3: Study Agent (kind=testing/insights/creation/planning/misc)**
+All other deep research scenarios, proceed to Tier 2 judgment:
+
+**Tier 2: Study Subtype Judgment (Choose One of Five)**
+
+• **testing**: Explicit comparison ("compare X and Y"), test ("test X effectiveness"), validate ("which is better"/"A/B test")
+  Keywords: compare, test, validate, which better, pros/cons, contrast
+
+• **insights**: Understand ("understand user views on X"), discover ("discover pain points/problems"), analyze ("why users")
+  Keywords: understand, discover, insights, behavior analysis, need analysis, user persona
+
+• **creation**: Design ("design new feature"), creativity ("generate creative solutions"), brainstorm ("come up with ideas")
+  Keywords: design, creativity, brainstorm, ideas, solution generation
+  **Note**: Difference from productRnD is this focuses on **designing and generating solutions**, not finding innovation inspiration
+
+• **planning**: Develop ("develop strategy"), plan ("plan solution"), strategy ("implementation plan"/"roadmap")
+  Keywords: develop, plan, strategy, implementation, tactics, planning
+
+• **misc**: Comprehensive research that cannot be categorized or multi-objective research
+
+**Tier 3: Research Details Judgment**
+
+【Framework judgment】(refer to planStudy logic)
 • User decision/need understanding → JTBD
 • Feature priority → KANO
 • Market positioning → STP
 • Business opportunity evaluation → GE-McKinsey
 • Usage flow analysis → User Journey Map
 
-【Research method judgment】
+【Research method judgment】(Study Agent only)
 • Need to observe trade-off process, group consensus → **discussion** (3-8 AI personas)
 • Need deep dive into personal experience, deep motivation → **interview** (5-10 AI personas)
 
-【Persona count】
+【Persona count】(Study Agent only)
 Based on research complexity:
 • Simple problems: 5-6
 • Medium complexity: 6-8
 • High complexity: 8-10
+
+【Judgment tips】
+1. First scan user input for "podcast"/"quick" keywords → fastInsight
+2. Then check for "innovation"/"inspiration"+"product" context → productRnD
+3. If neither, it's deep research → Study (then judge subtype)
+4. Use reasoningThinking tool to deeply analyze edge cases
+5. When uncertain, default to insights (most general research type)
 
 Phase 4: Submit Complete Research Plan
 
