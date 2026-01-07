@@ -68,6 +68,7 @@ model Team {
   subscriptions Subscription[]
   teamConfigs   TeamConfig[]   @relation("TeamConfig")
   apiKeys       ApiKey[]       @relation("TeamApiKey")
+  memories      Memory[]       @relation("TeamMemory")
 }
 
 model User {
@@ -109,6 +110,7 @@ model User {
   userPersonaChatRelations       UserPersonaChatRelation[]
   interviewSessionsAsInterviewee InterviewSession[]
   apiKeys                        ApiKey[]                  @relation("UserApiKey")
+  memories                       Memory[]                  @relation("UserMemory")
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -752,4 +754,28 @@ model SageMemoryDocument {
 
   @@unique([sageId, version])
   @@index([sageId, version(sort: Desc)]) // Optimize for getting latest version
+}
+
+model Memory {
+  id      Int   @id @default(autoincrement())
+  // userId and teamId are mutually exclusive (but each user/team can have multiple versions)
+  userId  Int?
+  user    User? @relation("UserMemory", fields: [userId], references: [id], onDelete: Cascade)
+  teamId  Int?
+  team    Team? @relation("TeamMemory", fields: [teamId], references: [id], onDelete: Cascade)
+  version Int
+
+  core    String @default("") @db.Text // 核心记忆 (Markdown)
+  working Json   @default("[]") // 工作记忆 (来自对话的待整合知识)
+
+  changeNotes String @db.Text
+  extra       Json   @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([userId, version])
+  @@unique([teamId, version])
+  @@index([userId, version(sort: Desc)]) // Optimize for getting latest version
+  @@index([teamId, version(sort: Desc)]) // Optimize for getting latest version
 }
