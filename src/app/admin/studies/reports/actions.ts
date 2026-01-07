@@ -204,7 +204,7 @@ export async function adminGenerateScreenshotAction(
       ratio: "landscape",
       analyst: report.analyst,
       report,
-      locale: locale === "en-US" ? "en-US" : "en-US", // 中文现在容易出现乱码，暂时都用英文
+      locale,
       abortSignal,
       statReport,
       logger: rootLogger.child({ reportId, analystId: report.analyst.id }),

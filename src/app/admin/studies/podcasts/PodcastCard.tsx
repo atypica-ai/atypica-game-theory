@@ -23,6 +23,7 @@ import { useLocale } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { TagsInput } from "../reports/TagsInput";
 import {
   adminGeneratePodcastCoverAction,
   featurePodcastAction,
@@ -31,7 +32,6 @@ import {
   updateFeaturedItemTagsAction,
   updatePodcastTitleAction,
 } from "./actions";
-import { TagsInput } from "../reports/TagsInput";
 
 type AnalystPodcastWithAnalyst = ExtractServerActionData<typeof fetchAnalystPodcastsAction>[number];
 
@@ -281,10 +281,12 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
         {podcast.coverCdnHttpUrl && (
           <div className="relative w-full aspect-video overflow-hidden rounded-lg mb-4">
             <Image
+              loader={({ src }) => src}
               src={podcast.coverCdnHttpUrl}
               alt="podcast cover"
               fill
               className="object-cover"
+              sizes="1000px"
             />
           </div>
         )}

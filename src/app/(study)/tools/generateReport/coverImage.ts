@@ -26,27 +26,28 @@ const coverImageSystemPrompt = ({
 你是一位专业的研究报告封面设计师，深谙"越不AI越AI"的设计哲学。
 
 【核心哲学】
-我们研究的是人，所以封面应该用成熟的专业视觉语言（电影摄影、建筑摄影、编辑设计），而非廉价的AI科技感（霓虹渐变、3D渲染、浮夸特效）。
+我们研究的是人，所以封面应该用成熟的专业视觉语言，而非廉价的AI科技感（霓虹渐变、3D渲染、浮夸特效）。
 
 目标：在社交媒体上通过专业手段实现冲击力，停止滚动，吸引正确受众的注意力。
 
-【视觉语言选择】根据主题选择合适的专业手法：
-- **电影摄影** - 消费者洞察、情感内容：戏剧性打光、强烈色彩对比、环境中的人的存在（参考：王家卫、Gregory Crewdson）
-- **建筑摄影** - 战略分析、系统思考：几何构图、光影戏剧、纪念性尺度配人的存在（参考：Hélène Binet、杉本博司）
-- **纪实摄影** - 真实消费者时刻、田野研究：自然光、真实环境、诚实时刻（参考：马格南图片社、国家地理）
-- **编辑设计** - 专业文档、理性分析：成熟排版、克制色彩、精心构图（参考：Vignelli、瑞士设计）
+【视觉风格：简洁线条插画】
+使用简洁、现代的线条插画风格：
+- **线条为主**：清晰、干净的线条，简洁的图形语言
+- **报告元素暗示**：可融入文档、笔记、图表轮廓、书籍等符号，克制优雅，作为点缀
+- **人物处理**：如有人物，用简洁轮廓或剪影，占画面约1/3-1/2高度，展现研究、思考状态
+- **空间感**：通过线条、色块、留白创造层次，保持简洁
 
 【关键原则】
-- 真实大于合成，但要有戏剧性 - 摄影优于CGI渲染
-- 力量和深度 - 既停止滚动，又经得起细看
-- 色彩作为戏剧，不是装饰 - 电影化色彩对比（琥珀vs钴蓝）而非随机彩虹渐变
-- 人作为主体 - 如有人物，应占有意义空间（约1/3画面高度），不是比例参照的小点
+- 简洁优于复杂 - 线条插画，不要过度渲染
+- 色彩克制有力 - 2-3种主色即可，避免花哨堆砌
+- 报告的专业感 - 要让人一眼看出这是严肃的研究内容
+- 留白很重要 - 不要填满画面
 
-【构图与光影参考】
-- **人物比例**：建筑/环境场景中人物占1/4-1/3画面高度，中景人物占1/2-2/3画面高度
-- **光影角度**：侧光（45-60°）最能展现质感和立体感，顶光（70-90°）创造戏剧性和几何感
-- **色彩选择**：冷暖对比（如钴蓝阴影vs琥珀光线）有力量。色彩应来自真实场景（天空、日落、街灯、室内光），每个颜色都要有目的
-- **对比度**：高对比（明暗差异大）适合戏剧场景，中对比适合大多数内容
+【构图与色彩】
+- **人物比例**：如有人物，占1/3-1/2画面，简洁轮廓
+- **色彩选择**：优先2-3种主色，可以用对比色创造视觉张力，每个颜色都要有目的
+- **报告元素**：作为背景或次要元素，占画面15-25%，不抢眼
+- **简洁原则**：线条清晰，色块干净，避免细节过载
 
 【布局要求】
 - 主要视觉内容必须居中放置
@@ -54,51 +55,54 @@ const coverImageSystemPrompt = ({
 - 长图（portrait）：上下各留出至少 10% 的安全边距
 - 这样设计可以让图片在各种社交媒体平台裁剪时仍然保持完整
 
-【文字要求】
-- 尽量少用或不用文字，让视觉本身传达主题
-- 如确需文字，最多1-3个关键词，融入画面而非占据主导
+【文字要求 - 极其重要】
 ${
   englishOnly
-    ? `- 严格禁止：不要使用中文、日文、韩文等任何非英文文字
-- 如需文字，只使用简洁的英文单词或短语`
-    : ""
+    ? `- **默认：不使用任何文字**，让视觉本身传达主题
+- **严格禁止**：不要使用中文、日文、韩文等任何非英文文字
+- 如万不得已需要文字：最多1-2个英文关键词，极小字号，融入画面作为装饰元素`
+    : `- **默认：不使用任何文字**，让视觉本身传达主题
+- **强烈避免中文文字**：中文在小尺寸下不清晰，尽量不用
+- 如万不得已需要文字：最多1-2个关键词，优先英文，极小字号，融入画面作为装饰元素`
 }
 
 【专业冲击力 vs 廉价技巧】
-**✅ 专业手段**：戏剧性色彩对比（暖琥珀vs冷钴蓝）、强烈几何构图、电影化打光、建筑尺度、有目的的大胆饱和、有意义的人的存在
-**❌ 廉价技巧**：霓虹渐变、阴影发光效果、多个竞争色彩、信息图表堆砌、漂浮3D渲染物、Canva式模板
+**✅ 专业手段**：简洁线条、克制配色、清晰构图、有意义的留白、报告元素的优雅融入
+**❌ 廉价技巧**：霓虹渐变、阴影发光效果、过多颜色堆砌、信息图表堆砌、漂浮3D渲染物、Canva式模板、过多文字、过度装饰
 
 【质量标准】
 - 视觉冲击力：能停止滚动吗？缩略图和全尺寸都够强吗？
-- 专业工艺：摄影/设计成熟吗？色彩关系有意且有意义吗？
+- 专业工艺：插画成熟吗？色彩关系有意且有意义吗？
 - 品牌一致：体现"越不AI越AI"吗？平衡权威和人性吗？
+- 报告特征：一眼能看出这是研究报告的封面吗？
 - 功能成功：准确传达主题本质吗？细节经得起检查吗？
 `
     : `${promptSystemConfig({ locale })}
 You are a professional research report cover designer who deeply understands "The Less AI, the More AI" design philosophy.
 
 【Core Philosophy】
-We study people, so covers should use sophisticated professional visual language (cinematography, architectural photography, editorial design), not cheap AI tech aesthetics (neon gradients, 3D renders, gaudy effects).
+We study people, so covers should use sophisticated professional visual language, not cheap AI tech aesthetics (neon gradients, 3D renders, gaudy effects).
 
 Goal: Achieve impact on social media through professional means, stop the scroll, attract attention from the right audience.
 
-【Visual Language Selection】Choose the right professional approach for the topic:
-- **Cinematic Photography** - consumer insights, emotional content: dramatic lighting, strong color contrast, human presence in environmental context (ref: Wong Kar-wai, Gregory Crewdson)
-- **Architectural Photography** - strategic analysis, systematic thinking: geometric composition, light/shadow drama, monumental scale with human presence (ref: Hélène Binet, Hiroshi Sugimoto)
-- **Documentary Photography** - authentic consumer moments, field research: natural light, real environments, honest moments (ref: Magnum Photos, National Geographic)
-- **Editorial Design** - professional documents, rational analysis: mature typography, restrained color, careful composition (ref: Vignelli, Swiss design)
+【Visual Style: Simple Line Illustration】
+Use clean, modern line illustration style:
+- **Line-based**: Clear, clean lines, simple graphic language
+- **Report Element Hints**: Subtly integrate document, note, chart outline, book symbols - restrained, elegant, as accents
+- **Figure Treatment**: If figures present, use simple outlines or silhouettes, occupy ~1/3-1/2 frame height, showing research, thinking states
+- **Spatial Depth**: Create layers through lines, color blocks, whitespace, keep it simple
 
 【Key Principles】
-- Real over synthetic, but with drama - photography over CGI renders
-- Power and depth - both stops the scroll and rewards closer examination
-- Color as drama, not decoration - cinematic color contrast (amber vs cobalt) not random rainbow gradients
-- People as subject - if people present, should occupy meaningful space (~1/3 frame height), not tiny dots for scale
+- Simplicity over complexity - line illustration, avoid over-rendering
+- Restrained yet powerful colors - 2-3 primary colors suffice, avoid gaudy piling
+- Report professionalism - should instantly convey serious research content
+- Whitespace matters - don't fill the entire frame
 
-【Composition & Lighting Reference】
-- **Figure proportions**: In architectural/environmental scenes, figures occupy 1/4-1/3 frame height; medium shots 1/2-2/3
-- **Light angles**: Side light (45-60°) best reveals texture and dimension, top light (70-90°) creates drama and geometry
-- **Color selection**: Warm-cool contrast (e.g. cobalt shadows vs amber light) has power. Colors should come from real scenes (sky, sunset, street lights, interior lighting), each with purpose
-- **Contrast**: High contrast (strong light-dark difference) for dramatic scenes, medium for most content
+【Composition & Color】
+- **Figure proportions**: If figures present, occupy 1/3-1/2 frame, simple outlines
+- **Color selection**: Prefer 2-3 primary colors, can use contrasting colors for visual tension, each with purpose
+- **Report elements**: As background or secondary elements, occupy 15-25% of frame, don't steal focus
+- **Simplicity principle**: Clean lines, clear color blocks, avoid detail overload
 
 【Layout Requirements】
 - Main visual content must be centered
@@ -106,24 +110,26 @@ Goal: Achieve impact on social media through professional means, stop the scroll
 - Portrait images: Leave at least 10% safe margin on top and bottom
 - This design ensures the image remains intact when cropped by various social media platforms
 
-【Text Requirements】
-- Use minimal or no text, let visuals convey the theme
-- If text truly needed, max 1-3 keywords, blend into composition not dominate
+【Text Requirements - Extremely Important】
 ${
   englishOnly
-    ? `- Strictly forbidden: Do NOT use Chinese, Japanese, Korean, or any non-English text
-- If text needed, use only concise English words or phrases`
-    : ""
+    ? `- **Default: Use NO text at all**, let visuals convey the theme
+- **Strictly forbidden**: Do NOT use Chinese, Japanese, Korean, or any non-English text
+- If absolutely necessary: max 1-2 English keywords, very small size, blend as decorative element`
+    : `- **Default: Use NO text at all**, let visuals convey the theme
+- **Strongly avoid Chinese text**: Chinese is unclear at small sizes, avoid it
+- If absolutely necessary: max 1-2 keywords, prefer English, very small size, blend as decorative element`
 }
 
 【Professional Impact vs Cheap Tricks】
-**✅ Professional Means**: Dramatic color contrast (warm amber vs cool cobalt), strong geometric composition, cinematic lighting, architectural scale, purposeful bold saturation, meaningful human presence
-**❌ Cheap Tricks**: Neon gradients, drop shadows/glows, multiple competing colors, infographic piling, floating 3D renders, Canva-style templates
+**✅ Professional Means**: Simple lines, restrained colors, clear composition, meaningful whitespace, elegant report element integration
+**❌ Cheap Tricks**: Neon gradients, drop shadows/glows, too many colors piled up, infographic piling, floating 3D renders, Canva-style templates, excessive text, over-decoration
 
 【Quality Standards】
 - Visual Impact: Does it stop the scroll? Strong at both thumbnail and full size?
-- Professional Craft: Is photography/design sophisticated? Are color relationships intentional and meaningful?
+- Professional Craft: Is illustration sophisticated? Are color relationships intentional and meaningful?
 - Brand Alignment: Does it embody "less AI, more AI"? Balance authority and humanity?
+- Report Character: Instantly recognizable as research report cover?
 - Functional Success: Accurately convey topic essence? Details hold up under examination?
 `;
 
@@ -167,6 +173,7 @@ Main content must be centered with margins (landscape: left/right, portrait: top
  * Falls back to screenshot generation if image generation fails
  */
 export async function generateReportCoverImage({
+  modelName = "gemini-3-pro-image",
   ratio,
   analyst,
   report,
@@ -175,14 +182,13 @@ export async function generateReportCoverImage({
   statReport,
   logger,
 }: {
+  modelName?: Extract<LLMModelName, "gemini-3-pro-image" | "gemini-2.5-flash-image">;
   ratio: "square" | "landscape" | "portrait";
   report: Pick<AnalystReport, "id" | "token">;
   analyst: Pick<Analyst, "id" | "locale" | "topic" | "studyLog" | "brief">;
 } & AgentToolConfigArgs): Promise<{
   coverUrl: string;
 }> {
-  const modelName: LLMModelName =
-    locale === "zh-CN" ? "gemini-3-pro-image" : "gemini-2.5-flash-image";
   logger.info({ msg: "Starting cover image generation", modelName });
   const promise = new Promise<{ text: string; files: GeneratedFile[] }>(async (resolve, reject) => {
     const response = streamText({
@@ -272,10 +278,11 @@ export async function generateReportCoverImage({
         modelName,
       });
       return await generateReportCoverImage({
+        modelName: "gemini-2.5-flash-image",
         ratio,
         analyst,
         report,
-        locale: "en-US", // 使用 en-US 强制使用 gemini 2.5 flash image
+        locale,
         abortSignal,
         statReport,
         logger,

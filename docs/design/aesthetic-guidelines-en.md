@@ -60,11 +60,11 @@ Here's where many design guidelines get it wrong: they say "muted colors" and pe
 
 What we avoid is meaningless colorful accents—adding blue and orange to an infographic "to make it pop". Random rainbow gradients. Neon highlights with no purpose. Color as decoration.
 
-What we embrace is color as drama. Warm amber light against cool cobalt shadows. Deep cinematic color contrast that creates mood and separation. Bold saturation that serves a purpose—whether that's stopping the scroll on social media or creating emotional atmosphere.
+What we embrace is color as drama. Warm-cool contrast creates visual tension and separation. Bold saturation that serves a purpose—whether that's stopping the scroll on social media or creating emotional atmosphere.
 
-Think about color in film: science fiction's amber and teal contrasts, contemporary romance's warm peachy tones, art films' precise pastels. These use color boldly but with sophistication. The saturation is intentional, controlled, meaningful.
+Think about color in film: science fiction's warm-cool contrasts, contemporary romance's warm tones, art films' precise color palettes. These use color boldly but with sophistication. The saturation is intentional, controlled, meaningful.
 
-For social media covers, we need colors that demand attention. High saturation warm-cool contrasts. But achieved through lighting, through environmental color, through photographic reality—not through gradients and graphic overlays.
+For social media covers, we need colors that demand attention. Can use contrasting colors for visual impact. But achieved through restrained techniques—not through gradients and graphic overlays.
 
 For reports, we can be more restrained—black, white, gray, perhaps a single accent color. But even there, when color appears, it should have purpose and power.
 
@@ -80,6 +80,8 @@ Different content needs different approaches, but all choices return to one ques
 **Documentary Photography**: For authentic consumer moments, field research, human stories. Natural light, real environments, honest moments. References work by leading photojournalism institutions and anthropological field photography traditions. When authenticity and realism matter most.
 
 **Editorial Design**: For reports, presentations, professional documents. Sophisticated typography, restrained color, careful composition. References modernist design classics and European minimalist traditions. When we need consultancy-level precision.
+
+**Line Illustration**: For cover images, social media graphics, concise brand communication. Clean lines, restrained colors (2-3 primary colors), modern feel, ample whitespace. Suited for scenarios requiring quick information delivery and clarity at small sizes. Simplicity over complexity, avoid over-decoration.
 
 The key is choosing the right tool for each job while maintaining visual coherence across all touchpoints.
 
@@ -141,6 +143,33 @@ The key is choosing the right tool for each job while maintaining visual coheren
 - Medium contrast: Brightness difference 40-60%, for most content
 - Low contrast: Brightness difference <40%, only for specific emotional expression
 
+### Illustration Execution Guidelines
+
+**Line Quality**:
+- Clear, clean lines, avoid blurry or rough edges
+- Vary line weight for hierarchy, but don't overcomplicate
+- Geometric shapes should be precise yet retain hand-drawn feel
+
+**Color Principles**:
+- Prefer 2-3 primary colors, each with clear purpose
+- Can use contrasting colors to create visual tension (don't rigidly follow specific palettes)
+- Avoid: random rainbow gradients, too many colors piled up, meaningless decorative colors
+
+**Simplicity & Whitespace**:
+- Simplicity over complexity, don't fill the entire frame
+- Whitespace is part of the design, creates breathing room
+- Avoid over-decoration, information overload
+
+**Element Integration**:
+- Report covers: Can integrate document, note, chart outline symbols (occupy 15-25%, don't steal focus)
+- Podcast covers: Can integrate headphone, microphone, sound wave symbols (occupy 15-25%, don't steal focus)
+- Elements should be accents, not the main subject
+
+**Small Size Optimization**:
+- Core elements must be large enough to remain clear at 100x100px
+- Avoid crowded small elements
+- Test thumbnail effectiveness
+
 ### Image Technical Specifications
 
 **Output Dimensions**:
@@ -167,6 +196,7 @@ Consumer insights/brand stories → Cinematic photography language
 Strategic analysis/data reports → Architectural photography language
 Real stories/case studies → Documentary photography language
 Professional documents/presentations → Editorial design language
+Cover images/social media graphics → Line illustration language
 ```
 
 **Step 2: Choose Color Strategy**

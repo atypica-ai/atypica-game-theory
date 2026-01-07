@@ -298,10 +298,12 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                   {report.coverCdnHttpUrl && (
                     <div className="relative w-full aspect-video overflow-hidden rounded-lg mb-4">
                       <Image
+                        loader={({ src }) => src}
                         src={report.coverCdnHttpUrl}
                         alt="report cover"
                         fill
                         className="object-cover"
+                        sizes="1000px"
                       />
                     </div>
                   )}
