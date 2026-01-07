@@ -5,6 +5,7 @@
 ## 核心概念
 
 讨论类型的本质是**主持人的控场方式**，通过 `moderatorSystem` 定义：
+
 - 主持人角色和互动风格
 - 谁下一个发言、问什么问题
 - 控制程度：主动干预 vs. 自然流动
@@ -15,10 +16,11 @@
 ### `index.ts` - 单一数据源
 
 所有讨论类型在此注册：
+
 ```typescript
 const discussionTypeConfigs = {
-  default: defaultConfig,      // 焦点小组
-  debate: debateConfig,         // 辩论
+  default: defaultConfig, // 焦点小组
+  debate: debateConfig, // 辩论
   roundtable: roundtableConfig, // 圆桌
 } as const;
 ```
@@ -29,19 +31,19 @@ TypeScript 自动推导 `DiscussionType` 类型，添加新类型只需一行注
 
 ```typescript
 interface DiscussionTypeConfig {
-  moderatorSystem: (params: { locale: Locale }) => string;     // 主持人提示词 ⭐
-  panelSummarySystem: (params: { locale: Locale }) => string;  // 总结提示词
-  panelRules: (params: { locale: Locale }) => string;          // 参与规则
+  moderatorSystem: (params: { locale: Locale }) => string; // 主持人提示词 ⭐
+  panelSummarySystem: (params: { locale: Locale }) => string; // 总结提示词
+  panelRules: (params: { locale: Locale }) => string; // 参与规则
 }
 ```
 
 ## 预设类型
 
-| 类型 | 主持风格 | 控制程度 | 适用场景 |
-|------|---------|---------|---------|
-| `default` | 市场调研主持人 | 中等控制 | 市场研究、用户调研 |
-| `debate` | 中立裁判 | 公平控场 | 政策讨论、方案对比 |
-| `roundtable` | 促进者 | 低控制 | 专家交流、头脑风暴 |
+| 类型         | 主持风格       | 控制程度 | 适用场景           |
+| ------------ | -------------- | -------- | ------------------ |
+| `default`    | 市场调研主持人 | 中等控制 | 市场研究、用户调研 |
+| `debate`     | 中立裁判       | 公平控场 | 政策讨论、方案对比 |
+| `roundtable` | 促进者         | 低控制   | 专家交流、头脑风暴 |
 
 ## `buildDiscussionType` - 动态生成
 
@@ -84,12 +86,14 @@ interface DiscussionTypeConfig {
 ### 示例
 
 **用户指令**：
+
 ```
 讨论：远程工作是否应该成为强制要求？请以辩论形式进行，
 正方支持远程，反方支持办公室，主持人要确保双方充分交锋。
 ```
 
 **生成的 moderatorSystem**：
+
 ```
 角色：你是中立的辩论主持人，确保正反双方获得公平发言机会。
 

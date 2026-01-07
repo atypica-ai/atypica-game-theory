@@ -657,10 +657,12 @@ export const TermsEN: React.FC = () => {
             <p>
               For the purpose of this Agreement, the formulation, validity, interpretation,
               execution, modification, termination, and disputes arising from the aforementioned
-              matters shall be governed by the <strong>laws of the Hong Kong Special Administrative Region</strong>.
-              If any disputes arise between the parties regarding the content of this Agreement or its execution,
-              the parties shall try to resolve them through friendly negotiation. If negotiation fails,
-              either party may submit the dispute to the <strong>Hong Kong International Arbitration Centre</strong> for arbitration.
+              matters shall be governed by the{" "}
+              <strong>laws of the Hong Kong Special Administrative Region</strong>. If any disputes
+              arise between the parties regarding the content of this Agreement or its execution,
+              the parties shall try to resolve them through friendly negotiation. If negotiation
+              fails, either party may submit the dispute to the{" "}
+              <strong>Hong Kong International Arbitration Centre</strong> for arbitration.
             </p>
           </div>
         </section>

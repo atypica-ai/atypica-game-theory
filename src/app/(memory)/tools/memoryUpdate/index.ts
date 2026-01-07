@@ -22,6 +22,7 @@ export const memoryUpdateTool = () =>
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     execute: async ({ lineIndex, newLine }): Promise<MemoryUpdateToolResult> => {
       // Tool only validates and records the LLM's decision
       // Actual database operations are handled in updateMemory function

@@ -170,14 +170,14 @@ export function convertUrlsToMarkdownLinks(text: string): string {
   // 匹配各种可能的 Markdown 链接格式，包括格式错误的
   // 使用更宽松的匹配策略：先找到所有可能的 [text](url) 模式
   let cleanedText = text;
-  
+
   // 使用更宽松的正则，匹配可能包含各种字符的 Markdown 链接
   // 注意：对于格式错误的链接如 [url。](url`。)，需要匹配到真正的结束位置
   // 使用非贪婪匹配，但需要处理括号内可能包含的格式错误字符
   const markdownLinkPattern = /\[([^\]]*?)\]\(([^)]*?)\)/g;
   const matches: Array<{ fullMatch: string; url: string; linkText: string; index: number }> = [];
   let match;
-  
+
   // 收集所有匹配
   while ((match = markdownLinkPattern.exec(text)) !== null) {
     matches.push({
@@ -191,7 +191,7 @@ export function convertUrlsToMarkdownLinks(text: string): string {
   // 从后往前替换，避免索引偏移
   for (let i = matches.length - 1; i >= 0; i--) {
     const { fullMatch, url, linkText, index } = matches[i];
-    
+
     // 清理 URL：移除所有可能的格式错误字符
     // 1. 移除所有反引号
     let cleanUrl = url.replace(/`/g, "");
@@ -199,17 +199,19 @@ export function convertUrlsToMarkdownLinks(text: string): string {
     cleanUrl = cleanUrl.replace(/[。，,;:!?、。]+$/g, "").trim();
     // 3. 再次清理，确保没有残留的标点
     cleanUrl = cleanUrl.replace(/[。，,;:!?、。]+$/g, "").trim();
-    
+
     // 如果提取的 URL 看起来像是一个有效的 URL，替换为纯文本 URL
     if (cleanUrl && (cleanUrl.startsWith("http") || cleanUrl.startsWith("www."))) {
-      cleanedText = cleanedText.slice(0, index) + cleanUrl + cleanedText.slice(index + fullMatch.length);
+      cleanedText =
+        cleanedText.slice(0, index) + cleanUrl + cleanedText.slice(index + fullMatch.length);
     } else {
       // 如果提取的内容不是有效的 URL，尝试从链接文本中提取
       let urlFromText = linkText.replace(/`/g, "");
       urlFromText = urlFromText.replace(/[。，,;:!?、。]+$/g, "").trim();
       urlFromText = urlFromText.replace(/[。，,;:!?、。]+$/g, "").trim();
       if (urlFromText && (urlFromText.startsWith("http") || urlFromText.startsWith("www."))) {
-        cleanedText = cleanedText.slice(0, index) + urlFromText + cleanedText.slice(index + fullMatch.length);
+        cleanedText =
+          cleanedText.slice(0, index) + urlFromText + cleanedText.slice(index + fullMatch.length);
       } else {
         // 如果都无效，直接移除整个 Markdown 格式
         cleanedText = cleanedText.slice(0, index) + cleanedText.slice(index + fullMatch.length);

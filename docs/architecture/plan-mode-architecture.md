@@ -52,6 +52,7 @@ Router 判断 analyst.kind
 **职责**：意图澄清、自动判断、成本估算、用户审批
 
 **输出**：
+
 - messages + analyst (kind, role, topic, locale)
 
 **不调用**：planStudy/planPodcast（这些是执行 Agent 的工具）

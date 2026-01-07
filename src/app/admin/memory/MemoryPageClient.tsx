@@ -25,8 +25,7 @@ import { formatDate } from "@/lib/utils";
 import { ArrowLeftIcon, EditIcon, EyeIcon, RefreshCwIcon } from "lucide-react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { fetchMemoryVersions, reorganizeMemoryVersion, saveMemoryVersion } from "./actions";
 
 type MemoryVersion = ExtractServerActionData<typeof fetchMemoryVersions>[number];
@@ -37,7 +36,6 @@ interface MemoryPageClientProps {
 }
 
 export function MemoryPageClient({ userId, teamId }: MemoryPageClientProps) {
-  const router = useRouter();
   const locale = useLocale();
   const [versions, setVersions] = useState<MemoryVersion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,11 +47,7 @@ export function MemoryPageClient({ userId, teamId }: MemoryPageClientProps) {
   const [editChangeNotes, setEditChangeNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    loadVersions();
-  }, [userId, teamId]);
-
-  const loadVersions = async () => {
+  const loadVersions = useCallback(async () => {
     setIsLoading(true);
     setError("");
     const result = await fetchMemoryVersions({ userId, teamId });
@@ -63,7 +57,11 @@ export function MemoryPageClient({ userId, teamId }: MemoryPageClientProps) {
       setVersions(result.data);
     }
     setIsLoading(false);
-  };
+  }, [userId, teamId]);
+
+  useEffect(() => {
+    loadVersions();
+  }, [userId, teamId, loadVersions]);
 
   const handleView = (version: MemoryVersion) => {
     setSelectedVersion(version);

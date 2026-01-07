@@ -68,7 +68,7 @@ export const changelogDataZH: ChangelogSection[] = [
             title:
               '🎯 正式上线: <a href="https://atypica.ai/newstudy" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">产品研发流程 (Product R&D)</a>',
             description:
-              "全新的\"产品研发\"研究模板，专注于市场趋势、用户需求和创意生成。针对产品创新场景优化的研究工作流和报告结构。帮助团队快速验证产品想法和市场机会。",
+              '全新的"产品研发"研究模板，专注于市场趋势、用户需求和创意生成。针对产品创新场景优化的研究工作流和报告结构。帮助团队快速验证产品想法和市场机会。',
           },
         ],
       },
@@ -211,10 +211,7 @@ export const changelogDataZH: ChangelogSection[] = [
           },
           {
             title: "🎨 体验优化",
-            subitems: [
-              "语音输入速度和响应性优化",
-              "重设计人设导入流程，状态显示更清晰",
-            ],
+            subitems: ["语音输入速度和响应性优化", "重设计人设导入流程，状态显示更清晰"],
           },
         ],
       },
@@ -422,7 +419,7 @@ export const changelogDataZH: ChangelogSection[] = [
           {
             title: "💰 商业化: 支付功能 MVP",
             description:
-              "引入用户积分系统，并上线第一版支付功能（通过嘿店接口购买\"咖啡\"）。 引入 <code>Hello Agent</code>，通过对话进行企业用户留资。",
+              '引入用户积分系统，并上线第一版支付功能（通过嘿店接口购买"咖啡"）。 引入 <code>Hello Agent</code>，通过对话进行企业用户留资。',
           },
           {
             title: "✨ 新功能: 邀请码",
@@ -437,7 +434,7 @@ export const changelogDataZH: ChangelogSection[] = [
           {
             title: "✨ 核心重构: 统一对话界面",
             description:
-              "将分步式流程重构为统一的\"研究型对话\"界面，用户只需在输入框提问即可启动完整研究。引入 <code>Study Agent</code> 作为\"指挥官\"，负责规划任务、调度专业 Agents 并向用户汇报。",
+              '将分步式流程重构为统一的"研究型对话"界面，用户只需在输入框提问即可启动完整研究。引入 <code>Study Agent</code> 作为"指挥官"，负责规划任务、调度专业 Agents 并向用户汇报。',
           },
           {
             title: "🎨 界面与体验: 全新交互范式",
@@ -492,7 +489,7 @@ export const changelogDataZH: ChangelogSection[] = [
           {
             title: "✨ 核心功能: AI 用户画像生成",
             description:
-              "实现首个端到端流程：根据输入主题，从\"小红书\"数据中自动总结和归纳用户画像。<code>SavePersona</code> 工具首次成功将 AI 生成的画像存入数据库。",
+              '实现首个端到端流程：根据输入主题，从"小红书"数据中自动总结和归纳用户画像。<code>SavePersona</code> 工具首次成功将 AI 生成的画像存入数据库。',
           },
           {
             title: "🔧 技术栈",

@@ -10,17 +10,20 @@
 
 ```typescript
 // FocusedInterviewChat.tsx:216-264
-const handleTranscriptInternal = useCallback(async (text: string) => {
-  if (text.trim()) {
-    // 直接发送原始文本，不等待纠正
-    useChatRef.current.sendMessage({
-      text,  // 原始转录文本（可能有错误）
-      metadata: {
-        shouldCorrectUserMessage: true,  // 🎯 标记需要纠正
-      },
-    });
-  }
-}, [useChatRef]);
+const handleTranscriptInternal = useCallback(
+  async (text: string) => {
+    if (text.trim()) {
+      // 直接发送原始文本，不等待纠正
+      useChatRef.current.sendMessage({
+        text, // 原始转录文本（可能有错误）
+        metadata: {
+          shouldCorrectUserMessage: true, // 🎯 标记需要纠正
+        },
+      });
+    }
+  },
+  [useChatRef],
+);
 ```
 
 ### 2. 服务端接收并异步纠正
@@ -41,16 +44,17 @@ export async function POST(req: NextRequest) {
         messageId: newMessage.id,
         contextMessages: coreMessages.slice(-3, -1), // 前2条消息作为上下文
         locale,
-      }).catch(error => {
+      }).catch((error) => {
         chatLogger.error({ msg: "Voice correction failed", error: error.message });
-      })
+      }),
     );
   }
 
   // 立即开始 AI 响应流（不等待纠正完成）
   return streamText({
     model: llm(modelName),
-    system: newStudySystem({ locale }) +
+    system:
+      newStudySystem({ locale }) +
       // 🎯 AI 容错提示
       (locale === "zh-CN"
         ? "\n\n用户通过语音输入，可能存在语音识别错误，请理解其真实意图。"
@@ -78,15 +82,15 @@ export async function correctUserInputMessage({
 
   // 提取文本内容
   const originalText = message.parts
-    .filter(part => part.type === "text")
-    .map(part => part.text)
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
     .join("");
 
   // 调用 LLM 纠正
   const correctedText = await correctSpeechText(
     originalText,
     contextMessages, // 提供上下文增强准确度
-    locale
+    locale,
   );
 
   // 更新数据库
@@ -106,7 +110,7 @@ export async function correctUserInputMessage({
 通过 system prompt 告知 AI 输入来自语音，可能有识别错误：
 
 ```typescript
-system: "用户通过语音输入，可能存在语音识别错误，请理解其真实意图。"
+system: "用户通过语音输入，可能存在语音识别错误，请理解其真实意图。";
 ```
 
 - AI 会尝试理解意图，即使文本有误
@@ -151,7 +155,7 @@ after(correctUserInputMessage(...).catch(error => {
 
 ```typescript
 // 提取前2条消息作为纠正上下文
-contextMessages: coreMessages.slice(-3, -1)
+contextMessages: coreMessages.slice(-3, -1);
 ```
 
 **示例**：

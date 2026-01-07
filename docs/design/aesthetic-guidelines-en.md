@@ -2,7 +2,6 @@
 
 December 28, 2025
 
-
 ## Why We Design This Way
 
 atypica.AI uses AI to simulate consumers, compressing market research from weeks to minutes. But that description is misleading—it sounds like we're showing off technology, like speed itself is the value. That's not it.
@@ -12,7 +11,6 @@ What we actually do is help people understand people. How consumers think, how t
 So the core question of design becomes: how do we visually present a deep understanding of people?
 
 Right now every AI product in the market uses neon colors, 3D renders, and tech-gradient aesthetics to "look AI". It's instinctive, and it's lazy—if you're building an AI product, it should look futuristic, right? We chose the opposite direction.
-
 
 ### The Less AI, the More AI
 
@@ -24,7 +22,6 @@ When everyone else is showing off with cheap tech aesthetics, we use professiona
 
 The key insight: avoiding AI clichés doesn't mean being quiet and restrained. It means using sophisticated tools to create impact.
 
-
 ## Real Over Synthetic, But With Drama
 
 We study real consumers, not abstract data points. This means photography should prevail over 3D rendering, natural materials over artificial composites, human presence over abstract symbols.
@@ -32,7 +29,6 @@ We study real consumers, not abstract data points. This means photography should
 But "real" doesn't mean documentary realism only. A cinematic portrait with dramatic lighting is still real—the person exists, the light exists, the moment has truth even if it's staged. What we avoid is the synthetic feel of CGI renders, the plastic quality of stock infographics, the cheap composite of template designs.
 
 Think about the best cinematic photography—intensely stylized, dramatically lit, yet fundamentally about human emotion and presence. That's real. A floating 3D hologram surrounded by particle effects? That's synthetic garbage.
-
 
 ## Power and Depth
 
@@ -44,7 +40,6 @@ Depth means substance that rewards closer looking. Texture you can feel. Composi
 
 But power and depth together don't mean complexity. Sometimes the most powerful image is also the simplest—a single figure in vast architectural space, two colors in dramatic contrast, one beam of light cutting through shadow.
 
-
 ## Professional But Not Distant
 
 Our clients are decision-makers who need consulting-grade professionalism. But our research subjects are real people who need anthropological empathy. These two things don't conflict—they demand visual language that's both authoritative and human.
@@ -52,7 +47,6 @@ Our clients are decision-makers who need consulting-grade professionalism. But o
 Imagine top consultancy rigor shot by world-class photojournalists. Academic precision lit like a movie scene. Consultancy authority with editorial magazine aesthetics. This combination is difficult but necessary—it's exactly the tone atypica.AI should have.
 
 Professional doesn't mean sterile corporate templates. Human doesn't mean soft and fuzzy. We can be both powerful and empathetic, both dramatic and honest.
-
 
 ## Color as Drama, Not Decoration
 
@@ -67,7 +61,6 @@ Think about color in film: science fiction's warm-cool contrasts, contemporary r
 For social media covers, we need colors that demand attention. Can use contrasting colors for visual impact. But achieved through restrained techniques—not through gradients and graphic overlays.
 
 For reports, we can be more restrained—black, white, gray, perhaps a single accent color. But even there, when color appears, it should have purpose and power.
-
 
 ## Visual Language Spectrum
 
@@ -85,7 +78,6 @@ Different content needs different approaches, but all choices return to one ques
 
 The key is choosing the right tool for each job while maintaining visual coherence across all touchpoints.
 
-
 ## Concrete Execution Guidelines
 
 ### Composition Principles
@@ -93,16 +85,19 @@ The key is choosing the right tool for each job while maintaining visual coheren
 **Rule of thirds is a starting point, not an endpoint**: Place main elements at the one-third mark, but have a reason to break this rule. Off-center creates tension, but ensure the frame stays balanced.
 
 **Whitespace Allocation**:
+
 - Social media covers: Leave at least 10-15% safety margins
 - Report interior pages: Margins should occupy at least 12-15% of the page
 - Around individual elements: Maintain breathing room equal to at least 30% of the element's own width
 
 **Figure Position and Scale** (when people appear):
+
 - Architectural/environmental scenes: Figures occupy 1/4 to 1/3 of frame height, not less than 1/5
 - Medium shots: Figures occupy 1/2 to 2/3 of frame height
 - Avoid: Figures too small becoming decorative (unless the theme specifically requires conveying smallness)
 
 **Eye Direction**:
+
 - Figure's gaze should point toward negative space, creating narrative space
 - Geometric lines should converge or guide eyes to key areas
 - Light direction should reinforce compositional momentum
@@ -110,17 +105,20 @@ The key is choosing the right tool for each job while maintaining visual coheren
 ### Color Usage Details
 
 **Primary Color Schemes**:
+
 - Monochrome + accent: Large areas of neutrals as foundation, single purposeful color as emphasis
 - Contrast pairing: Warm and cool tones used in spatial separation (e.g., warm foreground, cool background)
 - Restrained palette: Choose limited colors (2-3 primary colors), each with clear purpose
 
 **Color Selection Principles**:
+
 - Every color must have a reason to exist, not just "to enrich the image"
 - High saturation can be used, but must serve to attract attention or convey emotion
 - Warm-cool contrast has more power than multi-color piling
 - Environmental and light source colors should come from real scenes (sky, sunset, street lights, interior lighting)
 
 **Forbidden Color Usage**:
+
 - Purposeless neon color piling (unless theme explicitly requires it)
 - Rainbow gradients (gradients with more than 3 highly saturated colors)
 - Meaningless colors added for "balance"
@@ -129,16 +127,19 @@ The key is choosing the right tool for each job while maintaining visual coheren
 ### Light and Shadow Treatment
 
 **Light Source Setup**:
+
 - Single key light: Create clear light-dark relationship, shadows occupy 30-50% of frame
 - Ambient + key light: Key creates directionality, ambient fills shadows without eliminating contrast
 - Avoid: Directionless uniform lighting
 
 **Light Angles**:
+
 - Side light (45-60 degrees): Best reveals texture and dimensionality
 - Top light (70-90 degrees): Creates drama and geometric quality
 - Backlight: For silhouettes and outlines, suitable for conceptual content
 
 **Light-Dark Contrast**:
+
 - High contrast: Brightness difference between lightest and darkest areas >60%, for dramatic scenes
 - Medium contrast: Brightness difference 40-60%, for most content
 - Low contrast: Brightness difference <40%, only for specific emotional expression
@@ -146,26 +147,31 @@ The key is choosing the right tool for each job while maintaining visual coheren
 ### Illustration Execution Guidelines
 
 **Line Quality**:
+
 - Clear, clean lines, avoid blurry or rough edges
 - Vary line weight for hierarchy, but don't overcomplicate
 - Geometric shapes should be precise yet retain hand-drawn feel
 
 **Color Principles**:
+
 - Prefer 2-3 primary colors, each with clear purpose
 - Can use contrasting colors to create visual tension (don't rigidly follow specific palettes)
 - Avoid: random rainbow gradients, too many colors piled up, meaningless decorative colors
 
 **Simplicity & Whitespace**:
+
 - Simplicity over complexity, don't fill the entire frame
 - Whitespace is part of the design, creates breathing room
 - Avoid over-decoration, information overload
 
 **Element Integration**:
+
 - Report covers: Can integrate document, note, chart outline symbols (occupy 15-25%, don't steal focus)
 - Podcast covers: Can integrate headphone, microphone, sound wave symbols (occupy 15-25%, don't steal focus)
 - Elements should be accents, not the main subject
 
 **Small Size Optimization**:
+
 - Core elements must be large enough to remain clear at 100x100px
 - Avoid crowded small elements
 - Test thumbnail effectiveness
@@ -173,17 +179,20 @@ The key is choosing the right tool for each job while maintaining visual coheren
 ### Image Technical Specifications
 
 **Output Dimensions**:
+
 - Social media covers (16:9): 1920x1080px minimum, 2560x1440px recommended
 - Square (1:1): 1080x1080px minimum, 2000x2000px recommended
 - Report illustrations: 300 DPI, minimum edge 2000px
 - Website hero images: 3840x2160px (4K) for key positions
 
 **File Formats**:
+
 - Photography: JPEG (quality 90-95%) or WebP
 - Transparency needed: PNG
 - Print use: TIFF or high-quality PDF
 
 **Compression Standards**:
+
 - Social media: File size <500KB, but don't sacrifice visible quality
 - Website use: <1MB, key images can go to 2MB
 - Print: No compression, maintain original quality
@@ -191,6 +200,7 @@ The key is choosing the right tool for each job while maintaining visual coheren
 ### Decision Flow
 
 **Step 1: Determine Content Type**
+
 ```
 Consumer insights/brand stories → Cinematic photography language
 Strategic analysis/data reports → Architectural photography language
@@ -200,6 +210,7 @@ Cover images/social media graphics → Line illustration language
 ```
 
 **Step 2: Choose Color Strategy**
+
 ```
 Need strong impact (social media) → High saturation contrast pairing
 Need professional authority (reports) → Black/white/gray + single accent
@@ -208,6 +219,7 @@ Need rational analysis → Cool-dominant tones
 ```
 
 **Step 3: Determine Figure Treatment**
+
 ```
 Theme about human behavior/emotion → Figures occupy 1/2-2/3 of frame
 Theme about environment/systems → Figures occupy 1/4-1/3 of frame
@@ -215,6 +227,7 @@ Theme about abstract concepts → Can have no figures or silhouettes
 ```
 
 **Step 4: Checklist**
+
 - [ ] Is the main subject clear? (Key info visible from 5 meters away)
 - [ ] Does color have purpose? (Can explain why each color is there)
 - [ ] Does composition have tension? (Not rigid centered symmetry)
@@ -227,6 +240,7 @@ Theme about abstract concepts → Can have no figures or silhouettes
 ### Common Scenario Applications
 
 **Scenario 1: Product Launch Social Media Image**
+
 - Visual language: Cinematic photography
 - Composition: Product/scene occupies 60-70% of frame, whitespace 30-40%
 - Color: Product environment's natural colors + single accent background
@@ -234,6 +248,7 @@ Theme about abstract concepts → Can have no figures or silhouettes
 - Figures: If any, occupy 1/3 of frame, interacting with product
 
 **Scenario 2: Market Research Report Cover**
+
 - Visual language: Architectural or documentary photography
 - Composition: Subject in lower 1/3 or left 1/3, abundant sky/whitespace
 - Color: Warm-cool contrast, restrained saturation
@@ -241,6 +256,7 @@ Theme about abstract concepts → Can have no figures or silhouettes
 - Figures: If any, occupy 1/4-1/3 of frame, showing contemplative or observational state
 
 **Scenario 3: Data Analysis Chart Page**
+
 - Visual language: Editorial design
 - Composition: Chart occupies 70% of page, whitespace 30% for annotations
 - Color: Black/white/gray + single data accent color
@@ -248,6 +264,7 @@ Theme about abstract concepts → Can have no figures or silhouettes
 - Focus: Build hierarchy through size and position, not color
 
 **Scenario 4: Podcast/Video Program Cover**
+
 - Visual language: Cinematic photography
 - Composition: Figures (if any) occupy 50-60% of frame, offset to one side
 - Color: Bold contrast, warm figures + cool background or vice versa
@@ -273,7 +290,6 @@ Test method: Without text, does the visual itself convey the right emotion/theme
 **5. Works at all sizes?**
 Test method: Shrink to 100x100px, are core elements still clear?
 
-
 ## People as Subject, Not Scale Reference
 
 When we say "the less AI, the more AI", we mean our visuals should center on understanding people. So people should be the subject, not an afterthought.
@@ -285,7 +301,6 @@ In architectural shots, the figure shouldn't be a tiny dot for scale. They shoul
 In cinematic shots, people can be silhouetted, partially obscured, in middle distance—but their presence should feel intentional and powerful, not incidental.
 
 The human figure reminds viewers what this is all about: understanding people.
-
 
 ## Social Media Demands Impact
 
@@ -303,7 +318,6 @@ The difference? Professional impact has substance. It holds up under scrutiny. C
 
 For cover images: compose with breathing room, use bold color relationships, ensure human presence if relevant, make sure the core visual reads clearly even at small size. But never sacrifice taste for clicks—the goal is attention from the right audience.
 
-
 ## What Bad Design Looks Like
 
 Infographic-style icon plus geometric shape piling—this is the most common mistake. People think this is "data visualization" but it's just mechanical assembly without thought or taste.
@@ -316,7 +330,6 @@ And those decorative elements added "to make it richer"—if an element serves n
 
 But also avoid the opposite extreme: overly timid design that's technically correct but has no presence, no power, no ability to engage.
 
-
 ## Report Design
 
 Research reports should have top consultancy professionalism with architectural photography's drama and documentary photography's humanity.
@@ -326,7 +339,6 @@ Research reports should have top consultancy professionalism with architectural 
 **Typography**: Establish hierarchy through weight progression—Regular to Bold. Size for importance. Whitespace for breathing room. Alignment for order. The best typography is invisible until you need to read it, then it's effortless.
 
 **Content**: Clear logical flow. Data visualization that's restrained but powerful. User interview quotes presented with dignity. Source citations clear and rigorous. The overall feel should be top consultancy meets anthropological field notes meets architectural photography book.
-
 
 ## Continuous Evolution
 
@@ -340,7 +352,6 @@ Build a case library. Record what worked and what failed. Why did this succeed? 
 
 The design guide itself should evolve. New visual language discoveries, new prohibited items identified, new judgment frameworks refined. This document isn't scripture, it's a working manual that deepens with our understanding.
 
-
 ## Quality Standards
 
 **Visual Impact**: Does it stop the scroll? Does it command attention? Does it have power and presence? Is the composition strong enough to work at both thumbnail and full size?
@@ -350,7 +361,6 @@ The design guide itself should evolve. New visual language discoveries, new proh
 **Brand Alignment**: Does it embody "less AI, more AI"? Does it balance authority and humanity? Is it recognizable as atypica without being formulaic? Does it serve understanding people?
 
 **Functional Success**: Does it accurately convey content essence? Is it appropriate for target audience? Does it work across platforms? Do details hold up under examination?
-
 
 ## In Closing
 

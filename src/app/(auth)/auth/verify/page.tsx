@@ -8,9 +8,6 @@ export default async function VerifyPage({
 }) {
   const { callbackUrl, email } = await searchParams;
   return (
-    <VerifyPageClient
-      callbackUrl={cleanAuthCallbackUrl(callbackUrl || "/")}
-      email={email || ""}
-    />
+    <VerifyPageClient callbackUrl={cleanAuthCallbackUrl(callbackUrl || "/")} email={email || ""} />
   );
 }

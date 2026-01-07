@@ -45,7 +45,7 @@ export const changelogDataEN: ChangelogSection[] = [
           {
             title: "🔬 Core Feature: Deep Research MCP Service",
             description:
-              'Implemented Deep Research functionality as an MCP (Model Context Protocol) service. Supports multiple research experts: Grok Expert, Trend Explorer, and more. Integrated Perplexity Sonar Pro for high-quality web searches. Provides standard MCP API interface for third-party integration with streaming output support.',
+              "Implemented Deep Research functionality as an MCP (Model Context Protocol) service. Supports multiple research experts: Grok Expert, Trend Explorer, and more. Integrated Perplexity Sonar Pro for high-quality web searches. Provides standard MCP API interface for third-party integration with streaming output support.",
           },
           {
             title:
@@ -194,8 +194,7 @@ export const changelogDataEN: ChangelogSection[] = [
           {
             title:
               '🚀 Full Launch: <a href="https://atypica.ai/interview" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Interview Project</a> & <a href="https://atypica.ai/persona" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">AI Persona Import</a>',
-            description:
-              'Both features now available to all plans (removed preview/beta status)',
+            description: "Both features now available to all plans (removed preview/beta status)",
             subitems: [
               '<a href="https://atypica.ai/pricing" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Free/Pro plans</a>: Access to limited features',
               '<a href="https://atypica.ai/pricing" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Max/Team plans</a>: Access to full functionality',
@@ -281,7 +280,7 @@ export const changelogDataEN: ChangelogSection[] = [
           {
             title: "🚀 Milestone: Atypica Global Launch",
             description:
-              'Completed the core database migration from China to the US region, laying the foundation for global services (2025-06-29). Launched the new <code>new-study-interview</code> feature, clarifying user research goals through an initial AI conversation. Published the first global launch announcement on Twitter, officially marking the product\'s entry into the international market.',
+              "Completed the core database migration from China to the US region, laying the foundation for global services (2025-06-29). Launched the new <code>new-study-interview</code> feature, clarifying user research goals through an initial AI conversation. Published the first global launch announcement on Twitter, officially marking the product's entry into the international market.",
           },
           {
             title:
@@ -427,8 +426,7 @@ export const changelogDataEN: ChangelogSection[] = [
           },
           {
             title: "✨ Feature: Invitation Codes",
-            description:
-              "Added an invitation code system for early user onboarding (2025-03-31).",
+            description: "Added an invitation code system for early user onboarding (2025-03-31).",
           },
         ],
       },
@@ -444,7 +442,7 @@ export const changelogDataEN: ChangelogSection[] = [
           {
             title: "🎨 UX: New Interaction Paradigm",
             description:
-              "Adopted a split-screen design (left: chat, right: <code>atypica llm console</code>) to provide real-time transparency into the AI's thought and execution process (2025-03-19). Implemented a \"Replay\" feature with shareable links (2025-03-22). Added \"Nerd Stats\" for tracking token and step consumption (2025-03-26). Added a <code>light/dark</code> theme toggle (2025-03-25). Generated the first <code>changelog</code> page automatically from <code>git log</code>.",
+              'Adopted a split-screen design (left: chat, right: <code>atypica llm console</code>) to provide real-time transparency into the AI\'s thought and execution process (2025-03-19). Implemented a "Replay" feature with shareable links (2025-03-22). Added "Nerd Stats" for tracking token and step consumption (2025-03-26). Added a <code>light/dark</code> theme toggle (2025-03-25). Generated the first <code>changelog</code> page automatically from <code>git log</code>.',
           },
         ],
       },
@@ -473,7 +471,7 @@ export const changelogDataEN: ChangelogSection[] = [
           {
             title: "🔧 Platform",
             description:
-              'Introduced user authentication (login/signup) and made research history private (2025-03-16). First deployment to an <code>AWS</code> cluster at <code>atypica.musedam.cc</code>, with <code>GitHub CI</code> for continuous integration.',
+              "Introduced user authentication (login/signup) and made research history private (2025-03-16). First deployment to an <code>AWS</code> cluster at <code>atypica.musedam.cc</code>, with <code>GitHub CI</code> for continuous integration.",
           },
         ],
       },

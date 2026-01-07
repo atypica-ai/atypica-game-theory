@@ -7,6 +7,7 @@ Our implementation uses Google's Gemini TTS API via direct REST API calls with `
 **API Endpoint**: `https://texttospeech.googleapis.com/v1/text:synthesize`
 
 **Current Usage**:
+
 - Single-speaker podcasts
 - English (en-US) locale
 - Orus voice model (Scott Galloway style)
@@ -38,6 +39,7 @@ GOOGLE_VERTEX_PROJECT=your-project-id
 Application Default Credentials (ADC) is the recommended authentication method. It works automatically in the following environments:
 
 1. **Local Development**: Using `gcloud` CLI
+
    ```bash
    gcloud auth application-default login
    ```
@@ -174,6 +176,7 @@ Audio segments (prologue, epilogue, silence) are cached in `src/app/(podcast)/li
 **Error**: `Could not load the default credentials`
 
 **Solutions**:
+
 1. Verify `GOOGLE_APPLICATION_CREDENTIALS` is set correctly
 2. Check the service account key file exists and is valid
 3. Ensure the service account has the required permissions
@@ -182,11 +185,13 @@ Audio segments (prologue, epilogue, silence) are cached in `src/app/(podcast)/li
 ### API Errors
 
 **Error**: `403 Forbidden`
+
 - Check project billing is enabled
 - Verify the Text-to-Speech API is enabled in your project
 - Confirm the service account has the `Cloud Text-to-Speech User` role
 
 **Error**: `400 Bad Request`
+
 - Verify the request body format matches the API specification
 - Check that text length doesn't exceed limits
 - Ensure the voice name and language code are compatible

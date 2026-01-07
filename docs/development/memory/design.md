@@ -16,6 +16,7 @@ This document describes the design and implementation of the user memory system 
 ### Phase 1: User-Level Memory Only
 
 We start with user-level memory only. Future phases may add:
+
 - Project-level memory
 - Team-level memory
 - Session-level memory
@@ -51,6 +52,7 @@ model Memory {
 ```
 
 **Schema Design Rationale:**
+
 - `userId`/`teamId`: Mutually exclusive, supports both user and team memory
 - `core`: Markdown text stored as TEXT (unlimited size in PostgreSQL)
 - `working`: JSON array for temporary knowledge from conversations
@@ -68,6 +70,7 @@ The system uses two mechanisms to manage memory content:
 **Purpose**: Add new information to memory incrementally
 
 **Process**:
+
 1. LLM agent analyzes conversation context
 2. Determines what new information should be remembered
 3. Formats it as a markdown line
@@ -75,14 +78,16 @@ The system uses two mechanisms to manage memory content:
 5. Calls `memoryUpdate` tool to insert the new line
 
 **Tool Specification**:
+
 ```typescript
 memoryUpdate({
-  lineIndex: number,  // 0-based index where to insert (0 = beginning, -1 = append)
-  newLine: string     // Markdown line to insert
-})
+  lineIndex: number, // 0-based index where to insert (0 = beginning, -1 = append)
+  newLine: string, // Markdown line to insert
+});
 ```
 
 **System Prompt for memoryUpdate Agent**:
+
 - Analyzes conversation to extract key information
 - Determines if information is worth remembering (preferences, facts, context)
 - Formats information concisely as markdown
@@ -96,6 +101,7 @@ memoryUpdate({
 **Trigger**: When `content.length > MEMORY_THRESHOLD` (e.g., 8000 characters)
 
 **Process**:
+
 1. System detects threshold exceeded
 2. Calls `memoryReorganize` agent
 3. Agent analyzes entire memory content
@@ -104,6 +110,7 @@ memoryUpdate({
 6. Updates database with new content and increments version
 
 **System Prompt for memoryReorganize Agent**:
+
 - Analyzes entire memory content
 - Identifies redundant or outdated information
 - Reorganizes into logical sections
@@ -116,6 +123,7 @@ memoryUpdate({
 **Location**: `src/app/(memory)/lib/updateMemory.ts`
 
 **Signature**:
+
 ```typescript
 async function updateMemory({
   userId?,
@@ -131,6 +139,7 @@ async function updateMemory({
 ```
 
 **Flow**:
+
 1. Get latest Memory version for user/team
 2. Check if `core.length > MEMORY_THRESHOLD`
 3. If threshold exceeded:
@@ -145,6 +154,7 @@ async function updateMemory({
 5. Log operation (fail gracefully on error)
 
 **Constants**:
+
 ```typescript
 const MEMORY_THRESHOLD = 8000; // characters
 const MEMORY_UPDATE_MODEL = "claude-haiku-4-5"; // Fast, cost-effective
@@ -160,6 +170,7 @@ const MEMORY_REORGANIZE_MODEL = "claude-sonnet-4-5"; // More capable for complex
 **Description**: Inserts a new line of information into user memory at a specific line index
 
 **Input Schema**:
+
 ```typescript
 {
   lineIndex: z.number().int().describe("0-based line index to insert after. Use -1 to append at end."),
@@ -168,13 +179,15 @@ const MEMORY_REORGANIZE_MODEL = "claude-sonnet-4-5"; // More capable for complex
 ```
 
 **Output Schema**:
+
 ```typescript
 {
-  plainText: string // Confirmation message
+  plainText: string; // Confirmation message
 }
 ```
 
 **Implementation**:
+
 1. Get latest Memory version for userId/teamId
 2. Split core into lines
 3. Validate lineIndex (must be -1 or between 0 and lines.length)
@@ -202,6 +215,7 @@ The memory system uses inline agent implementations within the `updateMemory()` 
 **Implementation**: Inside `updateMemoryContent()` function in `src/app/(memory)/lib/updateMemory.ts`
 
 **System Prompt**: `src/app/(memory)/prompt/memoryUpdate.ts`
+
 - Role: Memory extraction agent
 - Task: Extract key information from conversation that should be remembered
 - Guidelines:
@@ -220,6 +234,7 @@ The memory system uses inline agent implementations within the `updateMemory()` 
 **Implementation**: Inside `reorganizeMemoryContent()` function in `src/app/(memory)/lib/updateMemory.ts`
 
 **System Prompt**: `src/app/(memory)/prompt/memoryReorganize.ts`
+
 - Role: Memory organization specialist
 - Task: Reorganize memory content to be concise while preserving important information
 - Guidelines:
@@ -259,11 +274,13 @@ Memory content should be loaded and included in system prompts for relevant agen
 
 1. **Load Memory**: When starting a conversation, load user's/team's latest memory content using `loadUserMemory()` or `loadTeamMemory()`
 2. **Include in System Prompt**: Add memory section to system prompt:
+
    ```
    ## User Memory
 
    ${memory.core}
    ```
+
 3. **Update Memory**: Call `updateMemory()` function during conversations (typically non-blocking with `waitUntil()`)
 
 ### File Structure
@@ -327,4 +344,3 @@ src/app/(memory)/
 10. ✅ User capabilities page (view/edit memory)
 11. ✅ Admin memory management page
 12. 🔄 Future: Load and inject memory into agent system prompts
-

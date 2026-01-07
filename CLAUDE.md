@@ -242,7 +242,8 @@ const output = generateReportTool.output as any;
 
 // ✅ CORRECT: Use proper types from AI SDK
 const generateReportTool = step.toolResults.find(
-  (tool) => !tool.dynamic && tool.type === "tool-result" && tool.toolName === ToolName.generateReport,
+  (tool) =>
+    !tool.dynamic && tool.type === "tool-result" && tool.toolName === ToolName.generateReport,
 ) as StaticToolResult<Pick<StudyToolSet, ToolName.generateReport>> | undefined;
 
 if (generateReportTool && "output" in generateReportTool && generateReportTool.output) {
@@ -279,6 +280,7 @@ const data = someValue as StaticToolResult<PickedToolType>;
 ```
 
 **Rule**: "别 build 出问题就用 any 和 eslint disable" - Don't use `any` or eslint-disable when build fails. Instead, find the correct types from:
+
 - AI SDK type definitions (`StaticToolResult`, `PrepareStepFunction`, etc.)
 - Existing similar code patterns
 - Ask for clarification when genuinely unsure
@@ -303,6 +305,7 @@ grep -r "tool.toolName ===" src/app/(study)/agents/
 #### When You're Blocked by Type Errors
 
 **DO**:
+
 - Read the TypeScript error message carefully
 - Search for the type in AI SDK documentation or source
 - Look for similar code in the codebase
@@ -310,6 +313,7 @@ grep -r "tool.toolName ===" src/app/(study)/agents/
 - Ask the user for guidance
 
 **DON'T**:
+
 - Add `as any` to bypass the error
 - Use `// @ts-ignore` or `eslint-disable`
 - Make up types that "seem right"
@@ -762,6 +766,7 @@ type StudyToolSetCheck = StudyToolSet extends ToolSet ? true : false;
 ```
 
 **Key points**:
+
 - Use `Partial<{...}>` to allow each agent to use a subset of tools
 - Use `ToolName` enum as keys for type safety
 - Use `ReturnType<typeof toolFactory>` for factory-created tools
@@ -795,6 +800,7 @@ export interface AgentRequestConfig<TOOLS extends StudyToolSet = StudyToolSet> {
 ```
 
 **Key points**:
+
 - `TOOLS extends StudyToolSet` ensures tools are subset of base tool set
 - `NoInfer<TOOLS>` prevents TypeScript from widening the type
 - Use AI SDK's `PrepareStepFunction` instead of custom interfaces
@@ -846,6 +852,7 @@ function buildStudyTools(params: BuildParams) {
 ```
 
 **Key points**:
+
 - Define `type TOOLS = ReturnType<typeof buildTools>` for exact type inference
 - `activeTools: (keyof TOOLS)[]` is fully type-safe
 - TypeScript will error if you reference a tool not in this agent's tool set
@@ -856,7 +863,7 @@ Handle tool results without using `any`:
 
 ```typescript
 // ❌ WRONG: Using any
-const tool = step.toolResults.find(t => t?.toolName === ToolName.generateReport) as any;
+const tool = step.toolResults.find((t) => t?.toolName === ToolName.generateReport) as any;
 const token = tool.output.reportToken; // No type safety!
 
 // ✅ CORRECT: Using StaticToolResult with Pick
@@ -865,9 +872,7 @@ import { StudyToolSet } from "@/app/(study)/tools";
 
 const generateReportTool = step.toolResults.find(
   (tool) =>
-    !tool.dynamic &&
-    tool.type === "tool-result" &&
-    tool.toolName === ToolName.generateReport,
+    !tool.dynamic && tool.type === "tool-result" && tool.toolName === ToolName.generateReport,
 ) as StaticToolResult<Pick<StudyToolSet, ToolName.generateReport>> | undefined;
 
 // Type guard for safe access
@@ -880,6 +885,7 @@ if (generateReportTool && "output" in generateReportTool && generateReportTool.o
 ```
 
 **Key points**:
+
 - Use `StaticToolResult<Pick<ToolSet, ToolName.X>>` for non-dynamic tools
 - Check `!tool.dynamic && tool.type === "tool-result"` to ensure it's a static result
 - Use type guard `"output" in tool` before accessing output
@@ -924,9 +930,8 @@ export async function createStudyAgentConfig(
       customOnStepFinish: async (step) => {
         // Type-safe tool result access
         const saveAnalystTool = step.toolResults.find(
-          (tool) => !tool.dynamic &&
-                   tool.type === "tool-result" &&
-                   tool.toolName === ToolName.saveAnalyst,
+          (tool) =>
+            !tool.dynamic && tool.type === "tool-result" && tool.toolName === ToolName.saveAnalyst,
         ) as StaticToolResult<Pick<TOOLS, ToolName.saveAnalyst>> | undefined;
 
         if (saveAnalystTool) {

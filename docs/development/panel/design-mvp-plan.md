@@ -4,9 +4,9 @@
 >
 > This document contains idealized design proposals and best practice recommendations for panel discussion features, not the actual current implementation.
 >
-> **当前实现文档请查看**: [src/app/(panel)/README.md](../../../src/app/(panel)/README.md)
+> **当前实现文档请查看**: [src/app/(panel)/README.md](<../../../src/app/(panel)/README.md>)
 >
-> **Current implementation docs**: See [src/app/(panel)/README.md](../../../src/app/(panel)/README.md)
+> **Current implementation docs**: See [src/app/(panel)/README.md](<../../../src/app/(panel)/README.md>)
 
 ---
 
@@ -19,6 +19,7 @@ Excellent questions. Let me give you a comprehensive design framework for your M
 ## Problem 1: Persona Instructions for Authentic Discussion
 
 ### Core Challenge
+
 You need personas to behave like real panel participants: sometimes leading, sometimes following, sometimes disagreeing, showing genuine engagement—not just sequential monologues.
 
 ### Recommended Instruction Architecture
@@ -66,6 +67,7 @@ What's your contribution to this discussion right now?
 Modify the instruction based on **discussion phase**:
 
 **Opening Phase (First 2-3 rounds):**
+
 ```
 This is early in the discussion. Focus on introducing YOUR unique perspective.
 What's your initial take on [topic]?
@@ -73,6 +75,7 @@ Keep it concise - others will build on this.
 ```
 
 **Middle Phase (Rounds 4-8):**
+
 ```
 The discussion is developing. Now is the time to:
 - Agree or disagree with specific points others made
@@ -82,6 +85,7 @@ React to what's been said - don't just add new points in isolation.
 ```
 
 **Closing Phase (Final 2-3 rounds):**
+
 ```
 The discussion is reaching conclusion. Consider:
 - What's the strongest insight that's emerged?
@@ -107,6 +111,7 @@ Show authentic emotion in your response:
 ## Problem 2: Moderator Output & Synthesis Design
 
 ### Core Challenge
+
 The moderator needs to extract **actionable insights** that justify using the panel format. Simply summarizing what each persona said wastes the group dynamics value.
 
 ### Recommended Output Structure
@@ -167,7 +172,7 @@ Example:
 
 ### Why This Structure Works
 
-**Goes Beyond Summary**: Instead of "Persona 1 said X, Persona 2 said Y," it extracts *patterns*, *dynamics*, and *actionable tensions*.
+**Goes Beyond Summary**: Instead of "Persona 1 said X, Persona 2 said Y," it extracts _patterns_, _dynamics_, and _actionable tensions_.
 
 **Captures Panel-Specific Value**: Sections 2, 3, 4 leverage what ONLY group discussions reveal—disagreements, persuasion, emergence.
 
@@ -205,6 +210,7 @@ Generate the synthesis now.
 ## Problem 3: Turn-Taking Optimization
 
 ### Core Challenge
+
 Who speaks next dramatically affects discussion quality. Random order creates chaos; fixed order kills spontaneity; optimal order creates natural conversation flow.
 
 ### Recommended Approach: **Hybrid Relevance + Diversity System**
@@ -290,6 +296,7 @@ This adds one extra LLM call per turn but creates highly coherent conversation f
 ### My Recommendation for MVP: **Weighted Random (Option A)**
 
 **Rationale:**
+
 - Easy to implement (no complex semantic analysis needed)
 - Fast (no extra LLM calls)
 - Produces reasonably natural flow
@@ -325,21 +332,25 @@ This adds one extra LLM call per turn but creates highly coherent conversation f
 ### Optimal Panel Size & Length for MVP
 
 **Panel Size: 6-8 personas**
+
 - Fewer than 6: Not enough diversity for interesting debate
 - More than 8: Conversation becomes unwieldy, harder to track
 
 **Discussion Length: 3-4 rounds**
+
 - Round 1: Initial positions (all personas speak once)
 - Round 2-3: Debate and building (reactions, disagreements, synthesis)
 - Round 4: Closing reflections (optional, depends on topic complexity)
 
 **Total turns: 18-32 persona contributions**
+
 - Enough for patterns to emerge
 - Not so long that quality degrades or users lose patience
 
 ### Quality Control Mechanisms
 
 **Mid-Discussion Check (After Round 2):**
+
 ```
 Have meaningful disagreements emerged? Y/N
 Have at least 3 distinct perspectives appeared? Y/N
@@ -358,6 +369,7 @@ This prevents low-quality panels from completing without correction.
 ### MVP Success Metrics (What to Measure)
 
 **Conversation Quality Metrics:**
+
 1. **Reference Density**: What % of persona turns explicitly reference previous contributions?
    - Target: >60% (shows relational conversation vs. monologues)
 
@@ -370,9 +382,9 @@ This prevents low-quality panels from completing without correction.
 4. **Emergent Insight Count**: How many themes appeared that weren't in the initial question?
    - Target: 2-3 unexpected angles per panel
 
-**Output Quality Metrics:**
-5. **Actionability Score**: Can a marketing manager derive specific next steps?
-   - User survey: "Did this give you clear action items?" (1-5 scale)
+**Output Quality Metrics:** 5. **Actionability Score**: Can a marketing manager derive specific next steps?
+
+- User survey: "Did this give you clear action items?" (1-5 scale)
 
 6. **Time to Value**: How long from panel completion to usable insight?
    - Target: <5 minutes to read and extract key findings
@@ -380,17 +392,20 @@ This prevents low-quality panels from completing without correction.
 ### A/B Testing Opportunities
 
 **Test 1: Instruction Framing**
+
 - Version A: Simple instruction ("Share your view on [topic]")
 - Version B: Relational instruction (your recommended template)
 - Measure: Reference Density, User Satisfaction
 
 **Test 2: Turn-Taking Algorithm**
+
 - Version A: Fully random
 - Version B: Weighted random (your recommended)
 - Version C: Semantic similarity-based
 - Measure: Conversation flow quality (user rating), disagreement emergence
 
 **Test 3: Output Structure**
+
 - Version A: Simple summary (what each persona said)
 - Version B: Structured insight extraction (your 7-section template)
 - Measure: Actionability score, time to decision
@@ -400,16 +415,19 @@ This prevents low-quality panels from completing without correction.
 ## Critical MVP Features to Nail
 
 ### Must-Have (Tier 1):
+
 1. **Relational persona instructions** → Makes or breaks conversation quality
 2. **Structured moderator output** → Makes or breaks user value perception
 3. **Basic turn-taking fairness** → Prevents pathological cases
 
 ### Nice-to-Have (Tier 2, add post-MVP):
+
 4. **Phase-aware instructions** → Enhances naturalness but not essential
 5. **Semantic turn-taking** → Improves flow but weighted random is sufficient
 6. **Mid-discussion corrections** → Quality control but adds complexity
 
 ### Future Enhancements (Tier 3, post-launch):
+
 7. **User-directed probing** ("Ask Persona 3 to elaborate on pricing concerns")
 8. **Sentiment visualization** (show consensus/disagreement graphically)
 9. **Comparison mode** (run same panel with different persona mixes, compare outputs)
@@ -421,12 +439,14 @@ This prevents low-quality panels from completing without correction.
 **Scenario**: Marketing manager at snack company wants to test premium chocolate positioning.
 
 **Step 1: Setup**
+
 - User selects 8 personas from library (health-conscious millennials, budget shoppers, luxury seekers, etc.)
 - User inputs question: "Would you buy dark chocolate positioned as 'mindful indulgence' at $8 for 100g?"
 
 **Step 2: Panel Execution**
 
-*Round 1 (Opening):*
+_Round 1 (Opening):_
+
 - System selects Persona 1 randomly
 - Persona 1 (health-conscious): "I like the 'mindful' angle—dark chocolate has antioxidants, so if it's quality ingredients, I'm interested. But $8 feels steep."
 - System weights: P1=0.2 (just spoke), P3 (luxury seeker)=1.3 (contrasting view), others=1.0
@@ -434,12 +454,14 @@ This prevents low-quality panels from completing without correction.
 - Persona 3: "Honestly, $8 doesn't shock me if it's truly premium. I pay more for craft coffee daily. The word 'indulgence' resonates—I want to feel like I'm treating myself."
 - ... continues for all 8 personas ...
 
-*Round 2 (Debate):*
+_Round 2 (Debate):_
+
 - Persona 5 (budget shopper): "I hear what [Persona 3] is saying about treating yourself, but that's my entire weekly snack budget. The 'mindful' thing almost makes it worse—it's like you're judging me for wanting affordable chocolate."
 - Persona 3: "That's fair—I hadn't thought about it that way. Maybe there's a smaller size option? Like, $4 for 50g so it's accessible but still premium?"
 - ... debate continues with building and disagreement ...
 
-*Round 3 (Synthesis):*
+_Round 3 (Synthesis):_
+
 - Persona 7: "I'm seeing two different products here. For some of us [gestures to budget shoppers], this needs to be positioned as an occasional treat, not everyday. For others [gestures to luxury seekers], it's a routine upgrade. You might need different pack sizes for different use cases."
 - ... convergence toward nuanced understanding ...
 
@@ -475,6 +497,7 @@ Unexpected: Multiple personas suggested different PACK SIZES for different use c
 **Step 4: User Takeaway**
 
 Marketing manager reads this in 3 minutes, immediately sees:
+
 - The positioning works conceptually ✓
 - But needs 2-SKU strategy (new insight)
 - And segment-specific messaging (actionable)
@@ -490,6 +513,7 @@ Marketing manager reads this in 3 minutes, immediately sees:
 ### Build This First (Minimum Viable Panel):
 
 **Architecture:**
+
 1. **Persona Instructions**: Relational template with 5 response modes
 2. **Turn-Taking**: Weighted random with mention-boost and recency-penalty
 3. **Moderator Output**: 7-section structured synthesis template
@@ -497,11 +521,13 @@ Marketing manager reads this in 3 minutes, immediately sees:
 5. **Discussion Length**: 3 rounds minimum (18-24 turns)
 
 **Implementation Priority:**
+
 - Week 1: Persona relational instructions + basic turn-taking
 - Week 2: Moderator structured output template
 - Week 3: Testing with real marketing users, measuring reference density and actionability
 
 **Success Criteria:**
+
 - 60%+ of turns reference previous contributions
 - Users rate actionability >4/5
 - At least 2 emergent insights per panel

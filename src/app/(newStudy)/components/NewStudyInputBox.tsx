@@ -26,10 +26,7 @@ import { useRouter } from "next/navigation";
 import { JSX, useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-export function NewStudyInputBox(args: {
-  className?: string;
-  initialBrief?: string;
-}): JSX.Element;
+export function NewStudyInputBox(args: { className?: string; initialBrief?: string }): JSX.Element;
 
 export function NewStudyInputBox(args: {
   className?: string;
@@ -46,7 +43,6 @@ export function NewStudyInputBox({
   initialBrief?: string;
   referenceUserChatTokens?: string[];
 }) {
-
   const locale = useLocale();
   const t = useTranslations("Components.NewStudyInputBox");
   const router = useRouter();

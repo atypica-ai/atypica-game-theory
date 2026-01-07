@@ -21,6 +21,7 @@
 用户常说："想了解年轻人对咖啡的偏好"
 
 但这不够具体：
+
 - 哪个年龄段的年轻人？
 - 关注哪些维度？价格？品牌？场景？
 - 用什么方法？观察？访谈？问卷？
@@ -36,12 +37,14 @@
 ### 问题2：Context 很难管理
 
 做一次研究会产生大量 Context：
+
 - 社交媒体观察结果（几百条内容）
 - 用户画像（Persona）
 - 历史研究模板
 - 中间推理过程
 
 这些 Context：
+
 - 有些是长期的（Persona 库）
 - 有些是临时的（当前对话）
 - 需要被过滤（噪音很多）
@@ -57,6 +60,7 @@
 ### 问题3：Agent 需要持续调整方向
 
 做研究不是线性流程：
+
 - 观察 → 发现矛盾信号 → 需要深度访谈
 - 某个数据源无效 → 需要换方向
 - 洞察已经清晰 → 应该停止探索
@@ -69,6 +73,7 @@
 **我们的尝试**：
 
 分成两个 Agent：
+
 - **Reasoning Agent**：做判断和决策
 - **Execute Agent**：执行具体任务
 
@@ -77,6 +82,7 @@ Reasoning Agent 负责准备 Context、判断下一步、调整方向。
 ### 问题4：经验难以复用
 
 每次研究都会积累经验：
+
 - 某个领域的用户画像
 - 某个平台的观察方法
 - 某种问题的访谈框架
@@ -151,6 +157,7 @@ Memory 学习、Assets 新增、Skills 优化。下次更高效。
 #### 2. Reasoning Agent 开始推理
 
 推理 Agent 规划执行路径，准备 Context：
+
 - 加载 scoutTaskChat skill（社交媒体观察）
 - 准备 system prompt 和相关 tools
 - 从 Persona 库检索相关用户画像
@@ -159,6 +166,7 @@ Memory 学习、Assets 新增、Skills 优化。下次更高效。
 #### 3. Execute Agent 执行
 
 执行 Agent 根据准备好的 Context 工作：
+
 - Scout 在小红书/抖音观察用户讨论
 - 收集 120+ 条内容，识别关键模式
 - 触发 reasoningThinking 深度分析
@@ -167,6 +175,7 @@ Memory 学习、Assets 新增、Skills 优化。下次更高效。
 #### 4. Context 持续整理
 
 推理 Agent 根据执行结果调整策略：
+
 - 矛盾信号？加载 interview skill，深度访谈验证
 - 信息不足？调整 scout 观察维度
 - 洞察清晰？加载 reportGen skill，生成报告
@@ -176,6 +185,7 @@ Memory 学习、Assets 新增、Skills 优化。下次更高效。
 #### 5. 资产沉淀
 
 研究完成后，新资产进入 DAM 系统：
+
 - 新 Persona 自动入库（Z世代咖啡消费者画像）
 - 研究意图模板化（可复用于茶饮、奶茶研究）
 - Knowledge Gaps 记录（微博该人群讨论少）
@@ -212,17 +222,20 @@ Memory 学习、Assets 新增、Skills 优化。下次更高效。
 ```
 
 **左侧：外部基础设施**
+
 - LLM（GPT-4、Claude 等）
 - MCP Servers（社交媒体数据、市场报告、CRM 数据）
 - APIs
 
 **中间：核心流程**
+
 - Intent Layer：需求 + Context → 可执行意图
 - Reasoning Agent：持续推理决策
 - Execute Agent：执行任务
 - Outcome：交付结果
 
 **右侧：Context System（DAM）**
+
 - Memory：团队记忆（工作风格、判断标准）
 - Assets：企业数据（财报、产品信息、内容、历史研究）
 - Skills：方法论（研究框架、访谈方式）
@@ -234,6 +247,7 @@ Reasoning 和 Execute 持续与 Context System 交互：获取记忆、访问数
 **作用**：把模糊输入变成可执行意图
 
 **具体做法**：
+
 - 解析用户输入
 - 匹配团队历史（类似研究、相关 Persona）
 - 生成结构化的研究意图
@@ -245,10 +259,12 @@ Reasoning 和 Execute 持续与 Context System 交互：获取记忆、访问数
 **作用**：管理各种 Context 资产
 
 **两个维度**：
+
 - **Build Time**：长期资产（Persona 库、研究模板、Skills）
 - **Runtime**：会话 Context（对话历史、观察结果、推理记录）
 
 **核心能力**：
+
 - 语义索引（不只是关键词）
 - 动态过滤（去噪）
 - 关联推荐（找相关资产）
@@ -258,6 +274,7 @@ Reasoning 和 Execute 持续与 Context System 交互：获取记忆、访问数
 **作用**：持续推理和决策
 
 **具体工作**：
+
 - 规划执行路径
 - 准备 Context（为 Execute Agent 准备 prompts、tools、skills）
 - 判断何时调整方向
@@ -299,11 +316,13 @@ Issues:                         Benefits:
 ### 4. Execute Agent + Skills
 
 **Execute Agent**：
+
 - 足够通用的执行器
 - 完全依赖 Reasoning Agent 准备的 Context
 - 动态加载 Skills
 
 **Skills**（atypica 的具体 Skills）：
+
 - scoutTaskChat：社交媒体观察
 - interviewChat：用户访谈
 - buildPersona：生成用户画像

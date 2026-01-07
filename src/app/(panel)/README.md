@@ -26,6 +26,7 @@ const { timelineEvents, summary } = await runPersonaDiscussion({
 ```
 
 **调用方**：
+
 - `src/ai/tools/experts/discussionChat/` - AI 工具调用（主要入口）
 - `src/app/admin/panel/` - 管理后台测试
 
@@ -34,6 +35,7 @@ const { timelineEvents, summary } = await runPersonaDiscussion({
 详见：[discussionTypes/README.md](./discussionTypes/README.md)
 
 讨论类型定义了主持人的控场方式，包括：
+
 - 预设类型：焦点小组、辩论、圆桌
 - 动态生成：根据用户指令自动生成讨论风格
 
@@ -48,6 +50,7 @@ const { timelineEvents, summary } = await runPersonaDiscussion({
 **入口函数**: `runPersonaDiscussion()`
 
 **流程**:
+
 ```
 1. buildDiscussionType(instruction)     → 动态生成讨论类型配置
 2. savePersonaPanel(userId, personaIds) → 保存 PersonaPanel
@@ -61,6 +64,7 @@ const { timelineEvents, summary } = await runPersonaDiscussion({
 ```
 
 **关键点**:
+
 - 每轮更新都立即保存数据库（实时持久化）
 - 主持人控制发言顺序和问题方向
 - 默认 20 轮讨论（可通过 maxRounds 参数调整）
@@ -73,11 +77,13 @@ const { timelineEvents, summary } = await runPersonaDiscussion({
 **核心函数**: `selectNextSpeakerModerator()`
 
 **策略**: 主持人使用 LLM 分析时间线，决定：
+
 - 谁下一个发言（`selectedPersonaId`）
 - 问什么问题（`nextQuestion`）
 - 为什么选他（`reasoning`）
 
 **工具调用**:
+
 ```typescript
 const selectSpeakerTool = tool({
   inputSchema: z.object({
@@ -104,12 +110,12 @@ const selectSpeakerTool = tool({
 
 2. **`generateSummaryAndMinutes()`** - 并行生成总结和纪要
    - 内部调用 `generateModeratorSummary()`: 主持人视角的总结
-     * 面向研究目标，提炼关键洞察
+     - 面向研究目标，提炼关键洞察
    - 内部调用 `generateDiscussionMinutes()`: 结构化纪要
-     * 使用 `prompt/minutes.ts` 的 system prompt
-     * 无损记录：按时间顺序记录所有发言
-     * 保留具体细节（产品名、品牌名等）
-     * 记录参与者互动关系（同意/反对）
+     - 使用 `prompt/minutes.ts` 的 system prompt
+     - 无损记录：按时间顺序记录所有发言
+     - 保留具体细节（产品名、品牌名等）
+     - 记录参与者互动关系（同意/反对）
 
 ---
 

@@ -17,4 +17,3 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function AffiliatePage() {
   return <Affiliate />;
 }
-

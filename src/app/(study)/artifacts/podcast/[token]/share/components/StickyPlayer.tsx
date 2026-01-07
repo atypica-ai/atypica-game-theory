@@ -144,11 +144,14 @@ export function StickyPlayer({
       setIsPlaying(false);
     } else {
       setIsLoading(true);
-      audio.play().then(() => {
-        setIsPlaying(true);
-      }).catch(() => {
-        setIsLoading(false);
-      });
+      audio
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+        })
+        .catch(() => {
+          setIsLoading(false);
+        });
     }
   }, [isPlaying]);
 

@@ -106,10 +106,7 @@ export function PodcastTestPageClient() {
 
             <div className="space-y-2">
               <Label htmlFor="podcastKind">Podcast Type</Label>
-              <Select
-                value={podcastKind}
-                onValueChange={(v) => setPodcastKind(v as PodcastKind)}
-              >
+              <Select value={podcastKind} onValueChange={(v) => setPodcastKind(v as PodcastKind)}>
                 <SelectTrigger id="podcastKind">
                   <SelectValue />
                 </SelectTrigger>
@@ -117,9 +114,7 @@ export function PodcastTestPageClient() {
                   <SelectItem value={PodcastKind.opinionOriented}>
                     Opinion Oriented (Solo)
                   </SelectItem>
-                  <SelectItem value={PodcastKind.fastInsight}>
-                    Fast Insight (Solo)
-                  </SelectItem>
+                  <SelectItem value={PodcastKind.fastInsight}>Fast Insight (Solo)</SelectItem>
                   <SelectItem value={PodcastKind.deepDive}>Deep Dive (Duo)</SelectItem>
                   <SelectItem value={PodcastKind.debate}>Debate (Duo)</SelectItem>
                 </SelectContent>

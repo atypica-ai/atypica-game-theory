@@ -613,14 +613,14 @@ export async function fetchAnalystReportsOfStudyUserChat({
 
   const reportsWithCoverUrls = await Promise.all(
     reports.map(async (report) => {
-    const { extra, ...rest } = report;
-    const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
-    if (objectUrl) {
+      const { extra, ...rest } = report;
+      const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
+      if (objectUrl) {
         const coverCdnHttpUrl = await getS3SignedCdnUrl(objectUrl);
-      return { ...rest, coverCdnHttpUrl };
-    } else {
-      return { ...rest, coverCdnHttpUrl: undefined };
-    }
+        return { ...rest, coverCdnHttpUrl };
+      } else {
+        return { ...rest, coverCdnHttpUrl: undefined };
+      }
     }),
   );
 

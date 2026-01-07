@@ -5,7 +5,9 @@ import z from "zod/v3";
 export const makeStudyPlanInputSchema = z.object({
   locale: z
     .enum(["zh-CN", "en-US", "misc"])
-    .describe("Content language: 'zh-CN' for Chinese, 'en-US' for English, 'misc' for unclear/mixed languages"),
+    .describe(
+      "Content language: 'zh-CN' for Chinese, 'en-US' for English, 'misc' for unclear/mixed languages",
+    ),
 
   kind: z
     .enum(["productRnD", "fastInsight", "testing", "insights", "creation", "planning", "misc"])

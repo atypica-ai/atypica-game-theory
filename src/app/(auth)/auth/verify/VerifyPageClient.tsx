@@ -8,13 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { resendVerificationCodeAction, verifyCodeAction } from "./actions";
 
-export function VerifyPageClient({
-  callbackUrl,
-  email,
-}: {
-  callbackUrl: string;
-  email: string;
-}) {
+export function VerifyPageClient({ callbackUrl, email }: { callbackUrl: string; email: string }) {
   const router = useRouter();
   const t = useTranslations("Auth.Verify");
   const [verificationCode, setVerificationCode] = useState("");
