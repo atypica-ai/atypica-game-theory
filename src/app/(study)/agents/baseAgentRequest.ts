@@ -8,6 +8,7 @@ import { handleToolCallError } from "@/ai/tools/error";
 import { getMcpClientManager } from "@/ai/tools/mcp/client";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { createSubAgentTool, StudyToolSet } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
@@ -257,7 +258,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // }
 
   // =============================================================================
-  // Phase 6: Build Model Messages
+  // Phase 5: Build Model Messages
   // =============================================================================
 
   let modelMessages: ModelMessage[] = [...coreMessages];
@@ -313,6 +314,19 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         ...modelMessages,
       ];
     }
+  }
+
+  // =============================================================================
+  // Phase 6: Update and Load User Memories
+  // =============================================================================
+
+  const userMemory = await loadUserMemory(userId);
+  if (userMemory) {
+    const text =
+      locale === "zh-CN"
+        ? `<UserMemory>\n${userMemory}\n</UserMemory>\n[HINT] 请参考以上用户记忆来理解用户背景和偏好，以便提供更个性化的研究建议。`
+        : `<UserMemory>\n${userMemory}\n</UserMemory>\n[HINT] Please refer to the above user memory to understand the user's background and preferences for more personalized research suggestions.`;
+    modelMessages = [{ role: "user", content: [{ type: "text", text }] }, ...modelMessages];
   }
 
   // =============================================================================
@@ -493,7 +507,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
       }
 
       // Handle saveAnalyst/makeStudyPlan completion (universal - generate chat title)
-      const saveAnalystTool = step.toolResults.find(
+      const saveAnalystOrMakeStudyPlanTool = step.toolResults.find(
         (tool) =>
           !tool.dynamic &&
           tool.type === "tool-result" &&
@@ -504,18 +518,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
             Pick<StudyToolSet, StudyToolName.saveAnalyst | StudyToolName.makeStudyPlan>
           >
         | undefined;
-      if (saveAnalystTool) {
-        waitUntil(generateChatTitle(studyUserChatId));
-      }
-
-      // Handle planPodcast completion (universal - generate chat title)
-      const planPodcastTool = step.toolResults.find(
-        (tool) =>
-          !tool.dynamic &&
-          tool.type === "tool-result" &&
-          tool.toolName === StudyToolName.planPodcast,
-      ) as StaticToolResult<Pick<StudyToolSet, StudyToolName.planPodcast>> | undefined;
-      if (planPodcastTool) {
+      if (saveAnalystOrMakeStudyPlanTool) {
         waitUntil(generateChatTitle(studyUserChatId));
       }
 
