@@ -86,7 +86,8 @@
       "teamManagement": "Team Management",
       "teamInfo": "Team Info",
       "teamApiKeys": "API Keys",
-      "apiKeys": "API Keys"
+      "apiKeys": "API Keys",
+      "capabilities": "Capabilities"
     },
     "profile": {
       "title": "Profile Settings",
@@ -158,6 +159,28 @@
         "loadError": "Failed to load API keys",
         "generateError": "Failed to generate API key",
         "revokeError": "Failed to delete API key"
+      }
+    },
+    "capabilities": {
+      "title": "Capabilities",
+      "description": "Manage your account capabilities and preferences",
+      "memory": {
+        "title": "Memory",
+        "description": "Here's what atypica.AI remembers about you! This summary is regenerated each night and does not include projects, which have their own specific memory.",
+        "noMemory": "No memory found. Memory will be created when first updated.",
+        "dialogTitle": "Manage memory",
+        "dialogDescription": "Here's what atypica.AI remembers about you! This summary is regenerated each night and does not include projects, which have their own specific memory.",
+        "lastUpdated": "Last updated",
+        "memoryContent": "Memory Content",
+        "noMemoryContent": "No memory content yet.",
+        "editPlaceholder": "Tell atypica.AI what to remember or update...",
+        "editHint": "Press Cmd/Ctrl + Enter to submit, Esc to cancel",
+        "cancel": "Cancel",
+        "submit": "Submit",
+        "submitting": "Updating...",
+        "emptyRequest": "Request cannot be empty",
+        "updateSuccess": "Memory update requested successfully",
+        "updateError": "Failed to update memory"
       }
     }
   }

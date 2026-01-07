@@ -19,6 +19,7 @@ import {
   KeyIcon,
   MenuIcon,
   SettingsIcon,
+  SparklesIcon,
   User2Icon,
   UsersIcon,
   WalletIcon,
@@ -126,6 +127,11 @@ export default function AccountSidebar() {
         label: t("paymentHistory"),
         href: "/account/payment",
         icon: <CreditCardIcon className="mr-2 h-4 w-4" />,
+      },
+      {
+        label: t("capabilities"),
+        href: "/account/capabilities",
+        icon: <SparklesIcon className="mr-2 h-4 w-4" />,
       },
     ];
 

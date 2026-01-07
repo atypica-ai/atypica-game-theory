@@ -86,7 +86,8 @@
       "teamManagement": "团队管理",
       "teamInfo": "团队信息",
       "teamApiKeys": "API Keys",
-      "apiKeys": "API Keys"
+      "apiKeys": "API Keys",
+      "capabilities": "功能设置"
     },
     "profile": {
       "title": "个人资料设置",
@@ -158,6 +159,28 @@
         "loadError": "加载 API Keys 失败",
         "generateError": "生成 API Key 失败",
         "revokeError": "删除 API Key 失败"
+      }
+    },
+    "capabilities": {
+      "title": "功能设置",
+      "description": "管理您的账户功能和偏好设置",
+      "memory": {
+        "title": "记忆",
+        "description": "这是 atypica.AI 记住的关于您的信息！此摘要每晚重新生成，不包括项目，项目有自己的特定记忆。",
+        "noMemory": "未找到记忆。首次更新时将创建记忆。",
+        "dialogTitle": "管理记忆",
+        "dialogDescription": "这是 atypica.AI 记住的关于您的信息！此摘要每晚重新生成，不包括项目，项目有自己的特定记忆。",
+        "lastUpdated": "最后更新",
+        "memoryContent": "记忆内容",
+        "noMemoryContent": "暂无记忆内容。",
+        "editPlaceholder": "告诉 atypica.AI 要记住或更新什么...",
+        "editHint": "按 Cmd/Ctrl + Enter 提交，Esc 取消",
+        "cancel": "取消",
+        "submit": "提交",
+        "submitting": "更新中...",
+        "emptyRequest": "请求不能为空",
+        "updateSuccess": "记忆更新请求已提交",
+        "updateError": "更新记忆失败"
       }
     }
   }

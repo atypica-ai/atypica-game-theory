@@ -27,6 +27,7 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { AdminRole } from "@/prisma/client";
 import {
+  BrainIcon,
   CheckIcon,
   CoinsIcon,
   CopyIcon,
@@ -37,6 +38,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -320,6 +322,7 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
               <TableHead>Last Login</TableHead>
               <TableHead>Onboarding</TableHead>
               <TableHead>Acquisition</TableHead>
+              <TableHead>Memory</TableHead>
               <TableHead>Actions</TableHead>
               <TableHead>Delete</TableHead>
               {/*<TableHead>Created At</TableHead>*/}
@@ -493,6 +496,14 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                       </>
                     );
                   })(user.profile?.extra ?? {})}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-sm">
+                  <Link href={`/admin/memory?userId=${user.id}`}>
+                    <Button variant="outline" size="sm" className="h-6 text-xs">
+                      <BrainIcon className="size-3 mr-1" />
+                      Memory
+                    </Button>
+                  </Link>
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-sm space-y-2">
                   <div>
