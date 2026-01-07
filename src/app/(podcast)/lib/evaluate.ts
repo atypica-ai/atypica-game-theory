@@ -18,7 +18,6 @@ import { prisma } from "@/prisma/prisma";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { generatePodcast } from "./generation";
-import { notifyPodcastReady } from "./notify";
 
 const PODCAST_KIND_DETERMINATION_SYSTEM = `
 You are an expert podcast producer. Your task is to determine the best podcast format for a research topic based on its content and nature.
@@ -172,11 +171,12 @@ export async function determineKindAndGeneratePodcast({
     .findUniqueOrThrow({ where: { id: podcast.id } })
     .then(({ extra, ...analyst }) => ({ ...analyst, extra: extra as AnalystPodcastExtra }));
 
-  await notifyPodcastReady({
-    analystId: analyst.id,
-    podcast: { token: podcast.token },
-    logger,
-  });
+  // 目前通过 intercom 发送
+  // await notifyPodcastReady({
+  //   analystId: analyst.id,
+  //   podcast: { token: podcast.token },
+  //   logger,
+  // });
 
   return podcast;
 }
@@ -342,9 +342,10 @@ export async function evaluateAndGeneratePodcast({
 
   logger.info({ msg: "Podcast generated after evaluation", podcastId: podcast.id });
 
-  await notifyPodcastReady({
-    analystId: analyst.id,
-    podcast: { token: podcast.token },
-    logger,
-  });
+  // 目前通过 intercom 发送
+  // await notifyPodcastReady({
+  //   analystId: analyst.id,
+  //   podcast: { token: podcast.token },
+  //   logger,
+  // });
 }

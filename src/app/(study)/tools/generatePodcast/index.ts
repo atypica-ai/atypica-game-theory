@@ -2,7 +2,6 @@ import "server-only";
 
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { generatePodcast } from "@/app/(podcast)/lib/generation";
-import { notifyPodcastReady } from "@/app/(podcast)/lib/notify";
 import { PodcastKind } from "@/app/(podcast)/types";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { AnalystPodcastExtra } from "@/prisma/client";
@@ -122,13 +121,6 @@ export const generatePodcastTool = ({
           ...podcast,
           extra: extra as AnalystPodcastExtra,
         }));
-
-      // Notify that podcast is ready
-      await notifyPodcastReady({
-        analystId: analyst.id,
-        podcast: { token: podcast.token },
-        logger,
-      });
 
       return {
         podcastToken: podcast.token,

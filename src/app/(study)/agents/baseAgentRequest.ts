@@ -34,7 +34,7 @@ import {
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
-import { notifyReportCompletion, notifyStudyInterruption } from "./notify";
+import { notifyStudyInterruption } from "./notify";
 import { buildReferenceStudyContext } from "./referenceContext";
 import { outOfBalance, setBedrockCache, waitUntilAttachmentsProcessed } from "./utils";
 
@@ -449,15 +449,19 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         const reportToken =
           generateReportTool.output.reportToken ?? generateReportTool.input.reportToken;
         if (reportToken) {
-          notifyReportCompletion({
-            reportToken,
-            studyUserChatId,
-            logger,
-          }).catch(() => {}); // Don't await, don't block
+          // notifyReportCompletion({
+          //   reportToken,
+          //   studyUserChatId,
+          //   logger,
+          // }).catch(() => {}); // Don't await, don't block
+          // 通过 intercom 发送邮件
           trackEventServerSide({
             userId,
             event: "Study Session Completed",
-            properties: { userChatId: studyUserChatId },
+            properties: {
+              userChatId: studyUserChatId,
+              reportToken: reportToken,
+            },
           });
         }
       }
@@ -470,10 +474,21 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
           tool.toolName === StudyToolName.generatePodcast,
       ) as StaticToolResult<Pick<StudyToolSet, StudyToolName.generatePodcast>> | undefined;
       if (generatePodcastTool) {
+        const podcastToken =
+          generatePodcastTool.output.podcastToken ?? generatePodcastTool.input.podcastToken;
+        // notifyPodcastReady({
+        //   analystId: analyst.id,
+        //   podcast: { token: podcastToken },
+        //   logger,
+        // }).catch(() => {}); // Don't await, don't block
+        // 通过 intercom 发送邮件
         trackEventServerSide({
           userId,
           event: "Study Session Completed",
-          properties: { userChatId: studyUserChatId },
+          properties: {
+            userChatId: studyUserChatId,
+            podcastToken,
+          },
         });
       }
 
