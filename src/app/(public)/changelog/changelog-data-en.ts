@@ -15,6 +15,49 @@ export interface ChangelogSection {
 
 export const changelogDataEN: ChangelogSection[] = [
   {
+    title: "v2.3.x: Intelligent Memory & Intent Understanding",
+    versions: [
+      {
+        version: "v2.3.0",
+        date: "2026-01-08",
+        items: [
+          {
+            title:
+              '🧠 Major Feature: <a href="https://atypica.ai/account/capabilities" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">User Memory System</a>',
+            description:
+              "Established persistent memory system where AI automatically remembers user preferences, habits, and contextual information for personalized service. Two-layer memory architecture (Core Memory + Working Memory) with intelligent reorganization and compression. New user capabilities page to view and edit personal memory anytime. Supports both user-level and team-level memory management. As conversations grow, AI understanding deepens without requiring repeated explanations.",
+          },
+          {
+            title: "🎯 Major Feature: Intelligent Research Planning (Plan Mode)",
+            description:
+              "Brand new research initiation experience: AI automatically understands your needs, determines the most suitable research type (Product Testing/Market Insights/Content Creation/Strategic Planning, etc.), and displays a complete research plan. Confirm with one click to start, no repeated back-and-forth needed. Added AI-generated research scenario shortcuts tailored to your role (Product Manager, Marketer, Startup Owner, Creator, Consultant, Influencer) to inspire your research direction. All research types now support advanced features like referencing existing research, uploading files, and MCP tool integration. Upgraded to Claude Sonnet 4.5 model for more accurate understanding and faster response.",
+          },
+          {
+            title: "🎨 Design & Experience Optimization",
+            description:
+              'Added design philosophy documentation: "The Less AI, The More AI" core principle. Optimized report and podcast generation prompts to emphasize research findings over methodology. Cover generation shifted from fixed style to dynamic selection. Instagram migrated to v2 API. Notification system migrated to Intercom event tracking.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "v2.2.x: Group Research & Discussion Mode",
+    versions: [
+      {
+        version: "v2.2.0",
+        date: "2025-12-27",
+        items: [
+          {
+            title: "💬 Major Feature: discussionChat Discussion Mode",
+            description:
+              "Added discussionChat as alternative to interviewChat, supporting group discussion scenarios. discussionChat for viewpoint collision and solution testing (3-8 participants), interviewChat for deep personal insights (5-10 participants). AI automatically selects the most appropriate research method during planning phase based on objectives. Completed studyLog architecture migration from database fields to message-driven architecture, where all research content flows through messages for unified flexibility.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     title: "v2.1.x: AI Research Platform & Developer Tools",
     versions: [
       {

@@ -2,6 +2,44 @@
 
 ---
 
+## v2.3.x: Intelligent Memory & Intent Understanding
+
+### `v2.3.0` — _2026-01-08_
+
+- **🧠 Major Feature: User Memory System**
+  - Established persistent memory system where AI automatically remembers user preferences, habits, and contextual information for personalized service.
+  - Two-layer memory architecture (Core Memory + Working Memory) with intelligent reorganization and compression.
+  - New user capabilities page (/account/capabilities) to view and edit personal memory anytime.
+  - Supports both user-level and team-level memory management.
+  - As conversations grow, AI understanding deepens without requiring repeated explanations.
+- **🎯 Major Feature: Intelligent Research Planning (Plan Mode)**
+  - Brand new research initiation experience: AI automatically understands your needs and determines the most suitable research type.
+  - Displays complete research plan, confirm with one click to start, no repeated back-and-forth needed.
+  - Added AI-generated research scenario shortcuts tailored to your role to inspire research direction.
+  - All research types now support advanced features like referencing existing research, uploading files, and MCP tool integration.
+  - Upgraded to Claude Sonnet 4.5 model for more accurate understanding and faster response.
+- **🎨 Design & Experience Optimization**
+  - Added design philosophy documentation: "The Less AI, The More AI" core principle.
+  - Optimized report and podcast generation prompts to emphasize research findings over methodology.
+  - Cover generation shifted from fixed style to dynamic selection.
+  - Instagram migrated to v2 API, notification system migrated to Intercom event tracking.
+
+---
+
+## v2.2.x: Group Research & Discussion Mode
+
+### `v2.2.0` — _2025-12-27_
+
+- **💬 Major Feature: discussionChat Discussion Mode**
+  - Added discussionChat as alternative to interviewChat, supporting group discussion scenarios.
+  - discussionChat for viewpoint collision and solution testing (3-8 participants).
+  - interviewChat for deep personal insights (5-10 participants).
+  - AI automatically selects the most appropriate research method during planning phase based on objectives.
+  - Completed studyLog architecture migration from database fields to message-driven architecture.
+  - All research content flows through messages for unified flexibility.
+
+---
+
 ## v11.x: AI Research Platform & Developer Tools
 
 ### `v11.3.0` — _2025-12-11_

@@ -15,6 +15,49 @@ export interface ChangelogSection {
 
 export const changelogDataZH: ChangelogSection[] = [
   {
+    title: "v2.3.x: 智能记忆与意图理解",
+    versions: [
+      {
+        version: "v2.3.0",
+        date: "2026-01-08",
+        items: [
+          {
+            title:
+              '🧠 重磅功能: <a href="https://atypica.ai/account/capabilities" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">用户记忆系统</a>',
+            description:
+              "为用户建立持久化记忆系统，AI 自动记住用户偏好、习惯和上下文信息，提供个性化服务。双层记忆架构（核心记忆 + 工作记忆），支持智能重组和压缩。新增用户能力页面，随时查看和编辑个人记忆。支持用户级和团队级记忆管理。随对话增多，AI 理解越深入，无需重复说明基本信息。",
+          },
+          {
+            title: "🎯 重磅功能: 智能研究规划 (Plan Mode)",
+            description:
+              "全新研究启动体验：AI 自动理解你的需求，判断最适合的研究类型（产品测试/市场洞察/内容创作/战略规划等），并展示完整的研究计划。一键确认即可开始，无需反复沟通。新增 AI 生成的研究场景快捷方式，按你的角色（产品经理、营销人员、创业者、创作者、咨询师、博主）推荐研究方向，灵感即用。所有研究类型现在都支持参考已有研究、上传文件、MCP 工具集成等高级功能。升级到 Claude Sonnet 4.5 模型，理解更准确，响应更快。",
+          },
+          {
+            title: "🎨 设计与体验优化",
+            description:
+              '添加设计哲学文档："越不 AI 越 AI" 核心理念。优化报告和播客生成 prompts，强调研究发现而非方法论。封面生成从固定风格转向动态选择。Instagram 迁移到 v2 API。通知系统迁移到 Intercom 事件追踪。',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "v2.2.x: 群体研究与讨论模式",
+    versions: [
+      {
+        version: "v2.2.0",
+        date: "2025-12-27",
+        items: [
+          {
+            title: "💬 重磅功能: discussionChat 讨论模式",
+            description:
+              "新增 discussionChat 作为 interviewChat 的替代方案，支持群体讨论场景。discussionChat 适用于观点碰撞、方案测试（3-8 人），interviewChat 适用于深度个人洞察（5-10 人）。AI 在 plan 阶段根据研究目标自动选择最合适的研究方法。完成 studyLog 架构迁移，从数据库字段迁移到消息驱动架构，所有研究内容通过消息流转，统一灵活。",
+          },
+        ],
+      },
+    ],
+  },
+  {
     title: "v2.1.x: AI 研究平台化与开发者工具",
     versions: [
       {
