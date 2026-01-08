@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { AvatarUpload } from "./AvatarUpload";
 import { EditProfileDialog } from "./EditProfileDialog";
+import { ExportSkillButton } from "./ExportSkillButton";
 import { SageShareButton } from "./SageShareButton";
 
 interface SageIdentityCardProps {
@@ -83,12 +84,20 @@ export function SageIdentityCard({ sage, variant = "sidebar" }: SageIdentityCard
               aria-label={isExpanded ? t("collapse") : t("expand")}
             />
           ) : (
-            <SageShareButton
-              sageToken={sage.token}
-              variant="ghost"
-              size="sm"
-              className="h-7 text-xs"
-            />
+            <div className="flex gap-1">
+              <ExportSkillButton
+                sageToken={sage.token}
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+              />
+              <SageShareButton
+                sageToken={sage.token}
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+              />
+            </div>
           )}
         </div>
 
@@ -130,26 +139,36 @@ export function SageIdentityCard({ sage, variant = "sidebar" }: SageIdentityCard
             </div>
 
             {/* Action Buttons */}
-            <div className={cn("flex gap-2", isCollapsible ? "pt-1" : "pt-0")}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 h-8 text-xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowEditDialog(true);
-                }}
-              >
-                <Edit2Icon className="size-3.5" />
-                {t("editProfile")}
-              </Button>
-              {isCollapsible && (
-                <SageShareButton
-                  sageToken={sage.token}
+            <div className={cn("flex flex-col gap-2", isCollapsible ? "pt-1" : "pt-0")}>
+              <div className="flex gap-2">
+                <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 text-xs"
-                />
+                  className="flex-1 h-8 text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowEditDialog(true);
+                  }}
+                >
+                  <Edit2Icon className="size-3.5" />
+                  {t("editProfile")}
+                </Button>
+              </div>
+              {isCollapsible && (
+                <div className="flex gap-2">
+                  <ExportSkillButton
+                    sageToken={sage.token}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-8 text-xs"
+                  />
+                  <SageShareButton
+                    sageToken={sage.token}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-8 text-xs"
+                  />
+                </div>
               )}
             </div>
           </div>

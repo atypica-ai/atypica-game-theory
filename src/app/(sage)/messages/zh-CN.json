@@ -213,6 +213,22 @@
       "closeButton": "关闭",
       "openButton": "打开主页"
     },
+    "ExportSkillButton": {
+      "title": "导出为 Claude Skill",
+      "description": "将此专家导出为 Claude Skill 文件（.skill 格式），可以在 Claude Desktop 或 Claude.ai 中直接安装使用",
+      "exportButton": "导出技能",
+      "downloadButton": "下载 .skill 文件",
+      "cancelButton": "取消",
+      "exporting": "打包中...",
+      "exportSuccess": ".skill 文件已下载",
+      "exportError": "导出失败，请稍后重试",
+      "fileFormat": ".skill 格式（ZIP 压缩包）",
+      "fileFormatDesc": "包含 SKILL.md 和所有知识资源",
+      "howToUse": "如何使用：",
+      "step1": "下载 .skill 文件到本地",
+      "step2": "在 Claude Desktop 或 Claude.ai 中安装",
+      "step3": "在对话中直接调用专家能力"
+    },
     "SourcesPage": {
       "title": "知识源",
       "description": "管理构成专家知识库的文档和资料"

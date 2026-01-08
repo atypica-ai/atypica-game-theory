@@ -76,6 +76,7 @@
     "https-proxy-agent": "^5.0.1",
     "js-cookie": "^3.0.5",
     "js-yaml": "^4.1.1",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.479.0",
     "music-metadata": "^11.10.3",
     "next": "^15.5.9",

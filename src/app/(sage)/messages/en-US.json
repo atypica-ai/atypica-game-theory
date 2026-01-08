@@ -213,6 +213,22 @@
       "closeButton": "Close",
       "openButton": "Open Profile"
     },
+    "ExportSkillButton": {
+      "title": "Export as Claude Skill",
+      "description": "Export this expert as a Claude Skill file (.skill format) that can be installed directly in Claude Desktop or Claude.ai",
+      "exportButton": "Export Skill",
+      "downloadButton": "Download .skill File",
+      "cancelButton": "Cancel",
+      "exporting": "Packaging...",
+      "exportSuccess": ".skill file downloaded successfully",
+      "exportError": "Export failed. Please try again later",
+      "fileFormat": ".skill format (ZIP archive)",
+      "fileFormatDesc": "Contains SKILL.md and all knowledge resources",
+      "howToUse": "How to use:",
+      "step1": "Download the .skill file to your local machine",
+      "step2": "Install in Claude Desktop or Claude.ai",
+      "step3": "Invoke the expert's capabilities directly in your conversations"
+    },
     "SourcesPage": {
       "title": "Knowledge Sources",
       "description": "Manage documents and materials that form the expert's knowledge base"
