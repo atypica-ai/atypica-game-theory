@@ -3,11 +3,42 @@ import type { BlogArticleExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { unstable_cache } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
 const PAGE_SIZE = 10;
+
+/**
+ * Cache blog list with pagination
+ * - Function parameters automatically become part of cache key
+ * - Actual cache key: ["blog-list", locale, page]
+ * - Different parameter combinations have independent cache entries
+ * - Cache time: 1 day (86400 seconds)
+ */
+const getCachedBlogList = unstable_cache(
+  async (locale: string, page: number) => {
+    const totalCount = await prisma.blogArticle.count({
+      where: { locale },
+    });
+
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+    const articles = await prisma.blogArticle.findMany({
+      where: { locale },
+      orderBy: { publishedAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    });
+
+    return { articles, totalCount, totalPages };
+  },
+  ["blog-list"],
+  {
+    revalidate: 86400, // 1 day cache
+    tags: ["blog-list"],
+  },
+);
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -33,20 +64,7 @@ export default async function BlogPage({
   const params = await searchParams;
   const currentPage = Math.max(1, parseInt(params.page || "1", 10));
 
-  // Fetch total count for pagination
-  const totalCount = await prisma.blogArticle.count({
-    where: { locale },
-  });
-
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-
-  // Fetch articles from database based on locale with pagination
-  const articles = await prisma.blogArticle.findMany({
-    where: { locale },
-    orderBy: { publishedAt: "desc" },
-    skip: (currentPage - 1) * PAGE_SIZE,
-    take: PAGE_SIZE,
-  });
+  const { articles, totalPages } = await getCachedBlogList(locale, currentPage);
 
   const title = locale === "zh-CN" ? "博客" : "Blog";
   const subtitle =

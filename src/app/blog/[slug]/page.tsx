@@ -3,10 +3,30 @@ import type { BlogArticleExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { unstable_cache } from "next/cache";
 import { notFound } from "next/navigation";
 import { Streamdown } from "streamdown";
 
-export const dynamic = "force-dynamic";
+/**
+ * Cache blog article by locale and slug
+ * - Function parameters automatically become part of cache key
+ * - Actual cache key: ["blog-article", locale, slug]
+ * - Different locale/slug combinations have independent cache entries
+ * - Cache time: 1 day (86400 seconds)
+ */
+const getCachedBlogArticle = unstable_cache(
+  async (locale: string, slug: string) => {
+    const article = await prisma.blogArticle.findUnique({
+      where: { locale_slug: { locale, slug } },
+    });
+    return article;
+  },
+  ["blog-article"],
+  {
+    revalidate: 86400, // 1 day cache
+    tags: ["blog-article"],
+  },
+);
 
 // Generate metadata for each blog post
 export async function generateMetadata({
@@ -17,9 +37,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = await getLocale();
 
-  const article = await prisma.blogArticle.findUnique({
-    where: { locale_slug: { locale, slug } },
-  });
+  const article = await getCachedBlogArticle(locale, slug);
 
   if (!article) {
     return {
@@ -43,7 +61,6 @@ export async function generateMetadata({
     openGraph: {
       ...baseMetadata.openGraph,
       type: "article",
-      publishedTime: article.publishedAt?.toISOString(),
     },
   };
 }
@@ -53,9 +70,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const locale = await getLocale();
 
-  const article = await prisma.blogArticle.findUnique({
-    where: { locale_slug: { locale, slug } },
-  });
+  const article = await getCachedBlogArticle(locale, slug);
 
   if (!article) {
     notFound();
@@ -65,7 +80,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const readOnSubstack = locale === "zh-CN" ? "在 Substack 上阅读 →" : "Read on Substack →";
 
   return (
-    <article className="mx-auto max-w-4xl px-4 py-8">
+    <article className="mx-auto max-w-4xl w-full px-4 py-8">
       <header className="mb-8">
         <h1 className="mb-4 text-4xl font-bold">{article.title}</h1>
         {article.publishedAt && (
@@ -82,7 +97,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         )}
       </header>
 
-      <div className="prose prose-zinc dark:prose-invert max-w-none">
+      <div className="prose prose-zinc dark:prose-invert">
         <Streamdown>{article.content}</Streamdown>
       </div>
 
