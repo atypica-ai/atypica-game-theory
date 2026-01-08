@@ -44,12 +44,31 @@ atypica.AI is a business research AI agent framework that uses multi-agent colla
 
 ### Core Multi-Agent System
 
-The system uses specialized AI agents that collaborate on research tasks:
+The system采用统一 Agent 架构，支持多种研究类型和持久化记忆：
 
-1. **Study Agent** (`src/app/(study)/`) - Orchestrates research workflows and guides users
-2. **Scout Agent** (`src/app/(newStudy)/`) - Observes social media to understand user groups through qualitative observation, uses reasoningThinking for social psychological analysis
-3. **Interviewer Agent** (`src/app/(interviewProject)/`) - Conducts professional interviews
-4. **Persona Agent** (`src/app/(persona)/`) - Simulates user responses and provides feedback
+**统一执行架构** (`src/app/(study)/agents/`):
+- **baseAgentRequest.ts** - 统一的 Agent 执行器（删除 1,211 行重复代码）
+- **configs/** - 各类 Agent 配置（planModeAgentConfig, studyAgentConfig, fastInsightAgentConfig, productRnDAgentConfig）
+
+**核心 Agent 类型**:
+1. **Plan Mode Agent** - 意图澄清层：自动判断研究类型，展示完整计划，一键确认开始
+2. **Study Agent** - 综合研究：testing/insights/creation/planning/misc 五种研究类型
+3. **Fast Insight Agent** - 快速洞察：专注播客内容生成的自动化工作流
+4. **Product R&D Agent** - 产品研发：市场趋势、用户需求、创意生成
+5. **Scout Agent** (`src/app/(newStudy)/`) - 社交媒体观察，通过定性分析理解用户群体
+6. **Interviewer Agent** (`src/app/(interviewProject)/`) - 专业访谈系统
+7. **Persona Agent** (`src/app/(persona)/`) - 用户画像模拟和反馈
+
+**Memory System** (`src/app/(memory)/`):
+- 用户和团队级的持久化记忆
+- 双层架构：核心记忆（core）+ 工作记忆（working）
+- 自动提取、重组和压缩
+- AI 无需重复询问，理解越来越深入
+
+**架构特点**:
+- 消息驱动：所有研究内容通过消息流转，统一灵活
+- 推理-执行分离：Plan Mode 决策"做什么"，执行 Agent 规划"怎么做"
+- 功能统一：所有 Agent 支持参考研究、文件附件、MCP 集成、团队提示词
 
 ### Project Structure
 
@@ -83,21 +102,41 @@ src/
 
 ### Key AI Tools
 
-The system provides specialized AI tools located in `src/ai/tools/`:
+The system provides specialized AI tools in two main locations:
 
-- **reasoningThinking** - Deep analysis and reasoning; used by Scout after 5 observations to synthesize social psychological insights
-- **interview** - Automated interview management
-- **scoutTaskChat** - Social media observation and persona building through qualitative analysis (executes in 3 phases: observation → reasoning → validation)
-- **generateReport** - Research report generation
+**Study Tools** (`src/app/(study)/tools/`):
+- **makeStudyPlan** - Plan Mode:展示完整研究计划，一键确认开始
+- **saveAnalyst** - 统一的研究意图保存（支持 7 种 kind）
+- **planStudy/planPodcast** - 研究和播客的战术规划
+- **interviewChat** - 一对一深度访谈（5-10人）
+- **discussionChat** - 群体讨论模式（3-8人，观点碰撞）
+- **scoutTaskChat** - 社交媒体观察和人设构建（3阶段：观察 → 推理 → 验证）
+- **generateReport/generatePodcast** - 研究报告和播客生成
+- **buildPersona/searchPersonas** - AI 人设构建和搜索
+- **requestInteraction** - 通用用户交互工具
+
+**通用工具** (`src/ai/tools/`):
+- **reasoningThinking** - 深度分析和推理（Scout 在 5 次观察后触发）
+- **webSearch/webFetch** - 网络搜索和内容提取
+- **experts/** - 专家系统（报告生成、播客制作等）
+- **social/** - 社交媒体数据源集成
+- **mcp/** - MCP 协议集成，支持团队自定义工具
 
 ### Database Schema
 
 Core entities include:
 
 - **User/Team** - User management with team support
+- **Memory** - 持久化记忆系统（用户级和团队级）
+  - `core`: Markdown 格式的核心记忆
+  - `working`: JSON 格式的工作记忆
+  - `version`: 版本管理，支持重组历史追溯
+  - 支持智能重组：超过阈值自动压缩和去重
 - **Persona** - AI personas with vector embeddings for similarity search
 - **UserChat** - Conversation sessions with different kinds (scout, study, interview, etc.)
 - **Analyst** - Research analysts conducting studies
+  - `kind`: 研究类型（productRnD, fastInsight, testing, insights, creation, planning, misc）
+  - `studyLog`: 从消息自动生成的研究日志
 - **InterviewProject/Session** - Interview simulation system
 - **TokensAccount** - Usage tracking and billing
 - **Subscription/PaymentRecord** - Subscription and payment management
