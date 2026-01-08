@@ -280,6 +280,12 @@ export enum FeaturedItemResourceType {
   AnalystPodcast = "AnalystPodcast",
 }
 
+export type BlogArticleExtra = Partial<{
+  contentType: "html" | "markdown";
+  coverObjectUrl: string;
+  originalUrl: string; // Substack 原文链接
+}>;
+
 export type PersonaPanelExtra = never; // 这个现在暂时没用到
 
 export type DiscussionTimelineExtra = Partial<{

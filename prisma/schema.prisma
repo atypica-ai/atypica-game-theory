@@ -779,3 +779,19 @@ model Memory {
   @@index([userId, version(sort: Desc)]) // Optimize for getting latest version
   @@index([teamId, version(sort: Desc)]) // Optimize for getting latest version
 }
+
+model BlogArticle {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(255)
+  content     String    @db.Text
+  slug        String    @db.VarChar(255)
+  publishedAt DateTime? @db.Timestamptz(6)
+  locale      String    @db.VarChar(16)
+  extra       Json      @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([locale, slug])
+  @@index([locale, publishedAt])
+}
