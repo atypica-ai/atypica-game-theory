@@ -6,16 +6,7 @@ import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Streamdown } from "streamdown";
 
-// Generate static params for all blog posts
-export async function generateStaticParams() {
-  const articles = await prisma.blogArticle.findMany({
-    select: { slug: true, locale: true },
-  });
-
-  // Group by slug to avoid duplicates
-  const uniqueSlugs = [...new Set(articles.map((a) => a.slug))];
-  return uniqueSlugs.map((slug) => ({ slug }));
-}
+export const dynamic = "force-dynamic";
 
 // Generate metadata for each blog post
 export async function generateMetadata({

@@ -6,6 +6,7 @@ import { getLocale } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
 const PAGE_SIZE = 10;
 
 export async function generateMetadata(): Promise<Metadata> {
