@@ -3,6 +3,7 @@ import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools, TAddStudyUIToolResult } from "@/app/(study)/tools/types";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics/segment";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
 import { CheckCircle2Icon, FileTextIcon, XCircleIcon } from "lucide-react";
@@ -36,6 +37,14 @@ export const MakeStudyPlanMessage = <
     }
 
     setIsSubmitting(true);
+
+    try {
+      trackEvent("Study Plan Confirmed", { userChatId: studyUserChat.id });
+      if (typeof window !== "undefined" && typeof window.gtag !== "undefined") {
+        window.gtag("event", "Study Plan Confirmed", { userChatId: studyUserChat.id });
+      }
+    } catch {}
+
     try {
       // Call server action to save analyst
       const result = await saveAnalystFromPlan({

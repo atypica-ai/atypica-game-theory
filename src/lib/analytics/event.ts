@@ -38,11 +38,16 @@ export type TAnalyticsEvent = {
     attachments?: number;
     references?: number;
   };
+  "Study Plan Confirmed": {
+    userChatId: number;
+  };
   /**
    * 报告或播客生成后上报
    */
   "Study Session Completed": {
     userChatId: number;
+    reportToken?: string;
+    podcastToken?: string;
   };
   /**
    * 点击或者复制了回放/报告/播客的分享链接，或者下载
