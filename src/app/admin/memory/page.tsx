@@ -1,3 +1,4 @@
+import { parseServerSearchParams } from "@/hooks/use-list-query-params.server";
 import { MemoryPageClient } from "./MemoryPageClient";
 
 interface MemoryPageProps {
@@ -6,8 +7,7 @@ interface MemoryPageProps {
 
 export default async function MemoryPage({ searchParams }: MemoryPageProps) {
   const params = await searchParams;
-  const userId = params.userId ? parseInt(String(params.userId), 10) : undefined;
-  const teamId = params.teamId ? parseInt(String(params.teamId), 10) : undefined;
+  const initialSearchParams = parseServerSearchParams(params);
 
-  return <MemoryPageClient userId={userId} teamId={teamId} />;
+  return <MemoryPageClient initialSearchParams={initialSearchParams} />;
 }

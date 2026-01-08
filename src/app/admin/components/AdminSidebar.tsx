@@ -6,6 +6,7 @@ import { AdminRole } from "@/prisma/client";
 import {
   AlertTriangleIcon,
   BarChartIcon,
+  BrainIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   CreditCardIcon,
@@ -128,6 +129,12 @@ export default function AdminSidebar({ adminRole, permissions = [] }: AdminSideb
             label: "Teams",
             href: "/admin/teams",
             icon: <UsersIcon className="mr-2 h-4 w-4" />,
+            permission: AdminPermission.MANAGE_USERS,
+          },
+          {
+            label: "Memory",
+            href: "/admin/memory",
+            icon: <BrainIcon className="mr-2 h-4 w-4" />,
             permission: AdminPermission.MANAGE_USERS,
           },
           {

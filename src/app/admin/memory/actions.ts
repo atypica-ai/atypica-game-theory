@@ -5,8 +5,100 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
+import type { Prisma } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { revalidatePath } from "next/cache";
+
+/**
+ * Fetch all memories with user/team information and pagination support.
+ */
+export async function fetchAllMemories(
+  page: number = 1,
+  pageSize: number = 10,
+  searchQuery?: string,
+): Promise<
+  ServerActionResult<
+    {
+      id: number;
+      version: number;
+      core: string;
+      changeNotes: string;
+      createdAt: Date;
+      updatedAt: Date;
+      userId: number | null;
+      teamId: number | null;
+      userEmail: string | null;
+      teamName: string | null;
+    }[]
+  >
+> {
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+
+  const skip = (page - 1) * pageSize;
+
+  // Build where condition
+  const where: Prisma.MemoryWhereInput = {};
+
+  // Add search condition if provided (search by user email or team name)
+  if (searchQuery) {
+    where.OR = [
+      { user: { email: { contains: searchQuery } } },
+      { team: { name: { contains: searchQuery } } },
+    ];
+  }
+
+  const [memories, totalCount] = await Promise.all([
+    prisma.memory.findMany({
+      where,
+      orderBy: [{ userId: "asc" }, { teamId: "asc" }, { version: "desc" }],
+      skip,
+      take: pageSize,
+      select: {
+        id: true,
+        version: true,
+        core: true,
+        changeNotes: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        teamId: true,
+        user: {
+          select: {
+            email: true,
+          },
+        },
+        team: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
+    prisma.memory.count({ where }),
+  ]);
+
+  return {
+    success: true,
+    data: memories.map((m) => ({
+      id: m.id,
+      version: m.version,
+      core: m.core,
+      changeNotes: m.changeNotes,
+      createdAt: m.createdAt,
+      updatedAt: m.updatedAt,
+      userId: m.userId,
+      teamId: m.teamId,
+      userEmail: m.user?.email ?? null,
+      teamName: m.team?.name ?? null,
+    })),
+    pagination: {
+      page,
+      pageSize,
+      totalCount,
+      totalPages: Math.ceil(totalCount / pageSize),
+    },
+  };
+}
 
 /**
  * Fetch all memory versions for a user or team.
