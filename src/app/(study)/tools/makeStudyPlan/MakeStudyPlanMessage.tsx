@@ -41,7 +41,8 @@ export const MakeStudyPlanMessage = <
     try {
       trackEvent("Study Plan Confirmed", { userChatId: studyUserChat.id });
       if (typeof window !== "undefined" && typeof window.gtag !== "undefined") {
-        window.gtag("event", "Study Plan Confirmed", { userChatId: studyUserChat.id });
+        // ga event name 不能有空格
+        window.gtag("event", "study_plan_confirmed", { userChatId: studyUserChat.id });
       }
     } catch {}
 
