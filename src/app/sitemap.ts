@@ -4,7 +4,6 @@ import { prisma } from "@/prisma/prisma";
 import { MetadataRoute } from "next";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
-import { getSubstackPosts } from "./blog/lib";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +74,31 @@ const getFeaturedPodcastEpisodes = unstable_cache(
     });
   },
   ["sitemap-featured-podcasts"],
+  {
+    revalidate: 86400, // 1 day cache
+  },
+);
+
+// Cache blog articles for 1 day
+const getBlogArticles = unstable_cache(
+  async () => {
+    const articles = await prisma.blogArticle.findMany({
+      select: {
+        slug: true,
+        updatedAt: true,
+      },
+      orderBy: {
+        publishedAt: "desc",
+      },
+      distinct: ["slug"], // Get unique slugs (handles both en-US and zh-CN)
+    });
+
+    return articles.map((article) => ({
+      slug: article.slug,
+      updatedAt: article.updatedAt,
+    }));
+  },
+  ["sitemap-blog-articles"],
   {
     revalidate: 86400, // 1 day cache
   },
@@ -179,10 +203,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const [reportResults, podcastEpisodes, blogPosts] = await Promise.all([
+    const [reportResults, podcastEpisodes, blogArticles] = await Promise.all([
       getFeaturedReports(locale),
       getFeaturedPodcastEpisodes(locale),
-      getSubstackPosts(),
+      getBlogArticles(),
     ]);
 
     const reportRoutes: MetadataRoute.Sitemap = reportResults.map(({ url, updatedAt }) => ({
@@ -199,9 +223,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    const blogRoutes: MetadataRoute.Sitemap = blogPosts.map((post) => ({
-      url: `${siteOrigin}/blog/${post.slug}`,
-      lastModified: post.pubDate ? new Date(post.pubDate) : new Date(),
+    const blogRoutes: MetadataRoute.Sitemap = blogArticles.map(({ slug, updatedAt }) => ({
+      url: `${siteOrigin}/blog/${slug}`,
+      lastModified: updatedAt,
       changeFrequency: "weekly",
       priority: 0.6,
     }));
