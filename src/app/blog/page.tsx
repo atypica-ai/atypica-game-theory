@@ -1,9 +1,12 @@
 import { generatePageMetadata } from "@/lib/request/metadata";
+import type { BlogArticleExtra } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import Image from "next/image";
 import Link from "next/link";
-import { getSubstackPosts } from "./lib";
+
+const PAGE_SIZE = 10;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -20,9 +23,29 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function BlogPage() {
-  const posts = await getSubstackPosts();
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const locale = await getLocale();
+  const params = await searchParams;
+  const currentPage = Math.max(1, parseInt(params.page || "1", 10));
+
+  // Fetch total count for pagination
+  const totalCount = await prisma.blogArticle.count({
+    where: { locale },
+  });
+
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+  // Fetch articles from database based on locale with pagination
+  const articles = await prisma.blogArticle.findMany({
+    where: { locale },
+    orderBy: { publishedAt: "desc" },
+    skip: (currentPage - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
+  });
 
   const title = locale === "zh-CN" ? "博客" : "Blog";
   const subtitle =
@@ -40,58 +63,107 @@ export default async function BlogPage() {
       </header>
 
       <div className="grid gap-8">
-        {posts.map((post) => (
-          <article key={post.slug} className="group border-b pb-8 last:border-b-0">
-            <Link href={`/blog/${post.slug}`} className="block">
-              <div className="grid gap-6 md:grid-cols-[300px_1fr] items-start">
-                {post.coverImage && (
+        {articles.map((article) => {
+          const extra = article.extra as BlogArticleExtra;
+          const coverImage = extra?.coverObjectUrl;
+
+          return (
+            <article key={article.id} className="group border-b pb-8 last:border-b-0">
+              <Link href={`/blog/${article.slug}`} className="block">
+                <div className="grid gap-6 md:grid-cols-[300px_1fr] items-start">
                   <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                    <Image
-                      src={post.coverImage}
-                      alt={post.title || "Blog post cover"}
-                      fill
-                      className="object-cover transition-transform group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 300px"
-                    />
+                    {coverImage && /(jpg|jpeg|png|gif|webp)$/.test(coverImage) && (
+                      <Image
+                        src={coverImage}
+                        alt={article.title || "Blog post cover"}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, 300px"
+                      />
+                    )}
                   </div>
-                )}
 
-                <div className="space-y-3">
-                  <h2 className="text-2xl font-semibold group-hover:text-primary transition-colors">
-                    {post.title}
-                  </h2>
-
-                  {post.pubDate && (
-                    <time className="text-sm text-muted-foreground">
-                      {new Date(post.pubDate).toLocaleDateString(
-                        locale === "zh-CN" ? "zh-CN" : "en-US",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        },
-                      )}
-                    </time>
-                  )}
-
-                  {post.excerpt && (
-                    <p className="text-muted-foreground line-clamp-3">{post.excerpt}</p>
-                  )}
-
-                  <span className="inline-block text-sm text-primary group-hover:underline">
-                    {readMore}
-                  </span>
+                  <div className="space-y-3">
+                    <h2 className="text-2xl font-semibold group-hover:text-primary transition-colors">
+                      {article.title}
+                    </h2>
+                    {article.publishedAt && (
+                      <time className="text-sm text-muted-foreground">
+                        {new Date(article.publishedAt).toLocaleDateString(
+                          locale === "zh-CN" ? "zh-CN" : "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          },
+                        )}
+                      </time>
+                    )}
+                    <span className="ml-2 inline-block text-sm text-primary group-hover:underline">
+                      {readMore}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </article>
-        ))}
+              </Link>
+            </article>
+          );
+        })}
 
-        {posts.length === 0 && <p className="text-center text-muted-foreground py-12">{noPosts}</p>}
+        {articles.length === 0 && (
+          <p className="text-center text-muted-foreground py-12">{noPosts}</p>
+        )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-12 flex justify-center gap-2">
+          {currentPage > 1 && (
+            <Link
+              href={`/blog?page=${currentPage - 1}`}
+              className="px-4 py-2 rounded-md border hover:bg-accent"
+            >
+              {locale === "zh-CN" ? "上一页" : "Previous"}
+            </Link>
+          )}
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+            // Show first, last, current, and adjacent pages
+            if (
+              page === 1 ||
+              page === totalPages ||
+              (page >= currentPage - 1 && page <= currentPage + 1)
+            ) {
+              return (
+                <Link
+                  key={page}
+                  href={`/blog?page=${page}`}
+                  className={`px-4 py-2 rounded-md border ${
+                    page === currentPage ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+                  }`}
+                >
+                  {page}
+                </Link>
+              );
+            } else if (page === currentPage - 2 || page === currentPage + 2) {
+              return (
+                <span key={page} className="px-2 py-2">
+                  ...
+                </span>
+              );
+            }
+            return null;
+          })}
+
+          {currentPage < totalPages && (
+            <Link
+              href={`/blog?page=${currentPage + 1}`}
+              className="px-4 py-2 rounded-md border hover:bg-accent"
+            >
+              {locale === "zh-CN" ? "下一页" : "Next"}
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }
-
-// Revalidate every hour
-export const revalidate = 3600;
