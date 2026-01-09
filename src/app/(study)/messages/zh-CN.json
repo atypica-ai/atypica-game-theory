@@ -31,7 +31,10 @@
       "openInstructions": "您也可以点击下方的\"打开\"按钮在新标签页中查看。",
       "closeButton": "关闭",
       "openButton": "打开",
-      "copySuccess": "链接已复制到剪贴板"
+      "copySuccess": "链接已复制到剪贴板",
+      "shareToX": "分享到 X",
+      "shareToXWithTitle": "{title} - 查看我在 @atypica_AI 生成的研究报告",
+      "shareToXDefault": "查看我在 @atypica_AI 生成的研究报告"
     },
     "AnalystPodcastShareButton": {
       "listenPodcast": "收听播客",
@@ -41,7 +44,10 @@
       "openInstructions": "您也可以点击下方的\"打开\"按钮在新标签页中收听。",
       "closeButton": "关闭",
       "openButton": "打开",
-      "copySuccess": "链接已复制到剪贴板"
+      "copySuccess": "链接已复制到剪贴板",
+      "shareToX": "分享到 X",
+      "shareToXWithTitle": "{title} - 收听我在 @atypica_AI 生成的研究播客",
+      "shareToXDefault": "收听我在 @atypica_AI 生成的研究播客"
     },
     "ChatBox": {
       "placeholder": "提出后续问题或回复",

@@ -31,7 +31,10 @@
       "openInstructions": "You can also click the \"Open\" button below to view in a new tab.",
       "closeButton": "Close",
       "openButton": "Open",
-      "copySuccess": "Link copied to clipboard"
+      "copySuccess": "Link copied to clipboard",
+      "shareToX": "Share to X",
+      "shareToXWithTitle": "{title} - Check out my research report on @atypica_AI",
+      "shareToXDefault": "Check out my research report on @atypica_AI"
     },
     "AnalystPodcastShareButton": {
       "listenPodcast": "Listen Podcast",
@@ -41,7 +44,10 @@
       "openInstructions": "You can also click the \"Open\" button below to listen in a new tab.",
       "closeButton": "Close",
       "openButton": "Open",
-      "copySuccess": "Link copied to clipboard"
+      "copySuccess": "Link copied to clipboard",
+      "shareToX": "Share to X",
+      "shareToXWithTitle": "{title} - Listen to my research podcast on @atypica_AI",
+      "shareToXDefault": "Listen to my research podcast on @atypica_AI"
     },
     "ChatBox": {
       "placeholder": "Ask a follow-up question or reply",
