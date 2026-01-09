@@ -13,7 +13,11 @@ export const requestInteractionInputSchema = z.object({
     .positive()
     .optional()
     .describe(
-      "Controls selection mode: 1 = single choice (mutually exclusive options, user must pick one), 2+ = multiple choice with limit, undefined = unlimited multiple choice. IMPORTANT: Use maxSelect=1 for mutually exclusive options like 'Yes/No/Cancel' or 'Start/Modify/Cancel'.",
+      "Controls selection mode:\n" +
+        "• maxSelect=1: Single choice for mutually exclusive options (e.g., 'Yes/No', 'Start/Modify/Cancel', age ranges like '18-22/23-28/29-35')\n" +
+        "• maxSelect=2+: Multiple choice with limit (e.g., maxSelect=3 for 'Select up to 3 priorities')\n" +
+        "• maxSelect=undefined (or omit): Unlimited multiple choice for combinable options (e.g., 'Which features interest you?', 'Select all dimensions that apply')\n" +
+        "Choose based on whether options are mutually exclusive (use 1) or can be combined (use undefined or 2+).",
     ),
 });
 

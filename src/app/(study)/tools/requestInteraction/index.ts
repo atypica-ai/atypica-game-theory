@@ -6,7 +6,7 @@ import { requestInteractionInputSchema, requestInteractionOutputSchema } from ".
 
 export const requestInteractionTool = tool({
   description:
-    "Present multiple-choice questions to users for collecting specific feedback, preferences, or decisions during research workflow. Supports single or multiple selection via maxSelect parameter.",
+    "Present a single multiple-choice question to user for collecting specific feedback, preferences, or decisions during research workflow. Supports single or multiple selection via maxSelect parameter. Only ask one question at a time.",
   inputSchema: requestInteractionInputSchema,
   outputSchema: requestInteractionOutputSchema,
   toModelOutput: (result: PlainTextToolResult) => {
