@@ -1,6 +1,7 @@
 "use server";
 
 import authOptions from "@/app/(auth)/authOptions";
+import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { ResearchTemplateExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -91,7 +92,10 @@ export async function getResearchTemplates(): Promise<
 
     return { success: true, data: shortcuts };
   } catch (error) {
-    console.error("Failed to load templates:", error);
+    rootLogger.error({
+      msg: "Failed to load research templates:",
+      error: error instanceof Error ? error.message : String(error),
+    });
     return {
       success: false,
       message: "Failed to load research templates",
@@ -104,29 +108,28 @@ export async function getResearchTemplates(): Promise<
  * 记录模板使用统计
  *
  * 当用户基于模板发起研究时调用
+ * 使用原子性的 SQL 递增操作，避免并发问题
  *
  * @param templateId - 模板 ID
  */
 export async function trackTemplateUsage(templateId: number): Promise<void> {
   try {
-    const template = await prisma.researchTemplate.findUnique({
-      where: { id: templateId },
-    });
-
-    if (template) {
-      const extra = template.extra as ResearchTemplateExtra;
-      await prisma.researchTemplate.update({
-        where: { id: templateId },
-        data: {
-          extra: {
-            ...extra,
-            useCount: (extra.useCount || 0) + 1,
-          },
-        },
-      });
-    }
+    // 使用 raw SQL 原子性地递增 useCount
+    await prisma.$executeRaw`
+      UPDATE "ResearchTemplate"
+      SET extra = jsonb_set(
+            COALESCE(extra, '{}'::jsonb),
+            '{useCount}',
+            to_jsonb(COALESCE((extra->>'useCount')::int, 0) + 1)
+          ),
+          "updatedAt" = NOW()
+      WHERE id = ${templateId}
+    `;
   } catch (error) {
-    console.error("Failed to track template usage:", error);
+    rootLogger.error({
+      msg: "Failed to track template usage:",
+      error: error instanceof Error ? error.message : String(error),
+    });
     // 不抛出错误，避免影响主流程
   }
 }
