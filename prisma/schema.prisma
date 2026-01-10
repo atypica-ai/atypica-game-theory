@@ -63,12 +63,13 @@ model Team {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  tokensAccount TokensAccount?
-  tokensLogs    TokensLog[]
-  subscriptions Subscription[]
-  teamConfigs   TeamConfig[]   @relation("TeamConfig")
-  apiKeys       ApiKey[]       @relation("TeamApiKey")
-  memories      Memory[]       @relation("TeamMemory")
+  tokensAccount     TokensAccount?
+  tokensLogs        TokensLog[]
+  subscriptions     Subscription[]
+  teamConfigs       TeamConfig[]       @relation("TeamConfig")
+  apiKeys           ApiKey[]           @relation("TeamApiKey")
+  memories          Memory[]           @relation("TeamMemory")
+  researchTemplates ResearchTemplate[] @relation("TeamResearchTemplates")
 }
 
 model User {
@@ -111,6 +112,7 @@ model User {
   interviewSessionsAsInterviewee InterviewSession[]
   apiKeys                        ApiKey[]                  @relation("UserApiKey")
   memories                       Memory[]                  @relation("UserMemory")
+  researchTemplates              ResearchTemplate[]        @relation("UserResearchTemplates")
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -794,4 +796,28 @@ model BlogArticle {
 
   @@unique([locale, slug])
   @@index([locale, publishedAt])
+}
+
+model ResearchTemplate {
+  id Int @id @default(autoincrement())
+
+  // 核心字段
+  title       String @db.VarChar(255)
+  description String @db.Text
+  locale      String @db.VarChar(16)
+
+  // 所有权（null = 公共模板，非 null = 个人/团队模板）
+  userId Int?
+  user   User? @relation("UserResearchTemplates", fields: [userId], references: [id], onDelete: Cascade)
+  teamId Int?
+  team   Team? @relation("TeamResearchTemplates", fields: [teamId], references: [id], onDelete: Cascade)
+
+  // 扩展字段（tags, category, useCount 等）
+  extra Json @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([locale, userId])
+  @@index([locale, teamId])
 }

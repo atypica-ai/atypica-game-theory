@@ -103,6 +103,7 @@ export type UserChatExtra = Partial<{
   };
   error: string;
   referenceUserChats: string[]; // List of chat tokens used as context
+  researchTemplateId: number; // Research template used to initiate this chat
   // study user chat 专用
   newStudyUserChatToken: string;
   briefUserChatId: number;
@@ -284,6 +285,12 @@ export type BlogArticleExtra = Partial<{
   contentType: "html" | "markdown";
   coverObjectUrl: string;
   originalUrl: string; // Substack 原文链接
+}>;
+
+export type ResearchTemplateExtra = Partial<{
+  useCount: number; // 使用次数统计
+  tags: string[]; // Research method tags
+  category: string; // Research category
 }>;
 
 export type PersonaPanelExtra = never; // 这个现在暂时没用到
