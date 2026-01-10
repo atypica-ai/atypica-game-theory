@@ -88,7 +88,7 @@ export default function GlobalFooter({ className }: { className?: string }) {
         </section>
 
         {/* Columns */}
-        <section className="md:ml-auto flex items-start justify-start gap-8 sm:gap-20 sm:mr-20 xl:mr-0">
+        <section className="md:ml-auto grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 sm:mr-20 xl:mr-0">
           {/* Product Column */}
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-foreground">{t("product")}</h4>
@@ -106,22 +106,22 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 {t("pricing")}
               </Link>
               <Link
-                href="/affiliate"
+                href="/newstudy"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t("affiliate")}
+                {t("marketResearch")}
               </Link>
               <Link
-                href="/docs/api"
+                href="/persona"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t("apiDocs")}
+                {t("personaImport")}
               </Link>
               <Link
-                href="/persona-simulation"
+                href="/interview"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t("personaSimulation")}
+                {t("interviewProject")}
               </Link>
               <Link
                 href="/insight-radio"
@@ -130,16 +130,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 {t("insightRadio")}
               </Link>
               <Link
-                href="/changelog"
+                href="https://skill0.atypica.ai"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t("changelog")}
-              </Link>
-              <Link
-                href="/glossary"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("glossary")}
+                {t("skill0")}
               </Link>
             </div>
           </div>
@@ -184,36 +180,48 @@ export default function GlobalFooter({ className }: { className?: string }) {
               >
                 {t("solutionsForConsultants")}
               </Link>
-            </div>
-          </div>
-
-          {/* Company Column */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium text-foreground">{t("company")}</h4>
-            <div className="space-y-3 text-sm">
-              {/* <Link
-                href="/status"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Status
-              </Link> */}
               <Link
                 href="/enterprise"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("enterpriseReady")}
               </Link>
+            </div>
+          </div>
+
+          {/* Resources Column */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium text-foreground">{t("resources")}</h4>
+            <div className="space-y-3 text-sm">
+              <Link
+                href="/persona-simulation"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("personaSimulation")}
+              </Link>
+              <Link
+                href="/docs/api"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("apiDocs")}
+              </Link>
+              <Link
+                href="/glossary"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("glossary")}
+              </Link>
+              <Link
+                href="/changelog"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("changelog")}
+              </Link>
               <Link
                 href="/blog"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("blog")}
-              </Link>
-              <Link
-                href="/join-us"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("joinUs")}
               </Link>
               <Link
                 href="/deck/about"
@@ -226,6 +234,25 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("deck")}
+              </Link>
+            </div>
+          </div>
+
+          {/* Company Column */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium text-foreground">{t("company")}</h4>
+            <div className="space-y-3 text-sm">
+              <Link
+                href="/join-us"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("joinUs")}
+              </Link>
+              <Link
+                href="/affiliate"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("affiliate")}
               </Link>
               <Link
                 href="/terms"
