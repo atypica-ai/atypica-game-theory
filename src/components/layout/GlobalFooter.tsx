@@ -124,6 +124,12 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 {t("interviewProject")}
               </Link>
               <Link
+                href="/sage"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("aiSage")}
+              </Link>
+              <Link
                 href="/insight-radio"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >

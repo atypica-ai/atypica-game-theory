@@ -171,6 +171,7 @@ const GlobalHeaderMenusDesktop = () => {
       <MenuLink href="/newstudy">{t("marketResearch")}</MenuLink>
       <MenuLink href="/persona">{t("personaImport")}</MenuLink>
       <MenuLink href="/interview">{t("interviewProject")}</MenuLink>
+      <MenuLink href="/sage">{t("aiSage")}</MenuLink>
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-1 p-1 text-sm font-normal hover:text-foreground/80 whitespace-nowrap outline-none">
           {t("solutions")}
@@ -470,6 +471,9 @@ const GlobalHeaderDrawer = React.memo(function GlobalHeaderDrawer({
               </DrawerLink>
               <DrawerLink href="/interview" icon={MicIcon}>
                 {t("interviewProject")}
+              </DrawerLink>
+              <DrawerLink href="/sage" icon={UserIcon}>
+                {t("aiSage")}
               </DrawerLink>
               {/* Solutions expandable menu */}
               <div>

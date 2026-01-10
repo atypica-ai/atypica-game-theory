@@ -154,6 +154,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${siteOrigin}/sage`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
       url: `${siteOrigin}/about`,
       changeFrequency: "monthly",
       priority: 0.6,
