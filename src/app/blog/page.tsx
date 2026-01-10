@@ -18,14 +18,21 @@ const PAGE_SIZE = 10;
  */
 const getCachedBlogList = unstable_cache(
   async (locale: string, page: number) => {
+    const where = {
+      locale,
+      publishedAt: {
+        not: null,
+      },
+    };
+
     const totalCount = await prisma.blogArticle.count({
-      where: { locale },
+      where,
     });
 
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
     const articles = await prisma.blogArticle.findMany({
-      where: { locale },
+      where,
       orderBy: { publishedAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,

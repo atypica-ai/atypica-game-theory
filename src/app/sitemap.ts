@@ -40,6 +40,7 @@ const getFeaturedReports = unstable_cache(
   ["sitemap-featured-reports"],
   {
     revalidate: 86400, // 1 day cache
+    tags: ["sitemap-featured-reports"],
   },
 );
 
@@ -76,6 +77,7 @@ const getFeaturedPodcastEpisodes = unstable_cache(
   ["sitemap-featured-podcasts"],
   {
     revalidate: 86400, // 1 day cache
+    tags: ["sitemap-featured-podcasts"],
   },
 );
 
@@ -83,8 +85,14 @@ const getFeaturedPodcastEpisodes = unstable_cache(
 const getBlogArticles = unstable_cache(
   async () => {
     const articles = await prisma.blogArticle.findMany({
+      where: {
+        publishedAt: {
+          not: null,
+        },
+      },
       select: {
         slug: true,
+        publishedAt: true,
         updatedAt: true,
       },
       orderBy: {
@@ -95,7 +103,7 @@ const getBlogArticles = unstable_cache(
 
     return articles.map((article) => ({
       slug: article.slug,
-      updatedAt: article.updatedAt,
+      lastModified: article.publishedAt ?? article.updatedAt,
     }));
   },
   ["sitemap-blog-articles"],
@@ -112,91 +120,126 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: siteOrigin,
-      lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,
     },
     {
       url: `${siteOrigin}/pricing`,
-      lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${siteOrigin}/featured-studies`,
-      lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/insight-radio`,
-      lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/newstudy`,
-      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/persona`,
-      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/interview`,
-      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.7,
     },
-    // {
-    //   url: `${siteOrigin}/status`,
-    //   lastModified: new Date(),
-    //   changeFrequency: "daily",
-    //   priority: 0.5,
-    // },
     {
       url: `${siteOrigin}/about`,
-      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.6,
     },
     {
       url: `${siteOrigin}/changelog`,
-      lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.5,
     },
     {
       url: `${siteOrigin}/persona-simulation`,
-      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.6,
     },
     {
       url: `${siteOrigin}/affiliate`,
-      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.6,
     },
     {
+      url: `${siteOrigin}/enterprise`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${siteOrigin}/privacy`,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${siteOrigin}/terms`,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${siteOrigin}/glossary`,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${siteOrigin}/docs/api`,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${siteOrigin}/solutions/startup-owners`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${siteOrigin}/solutions/product-managers`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${siteOrigin}/solutions/marketers`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${siteOrigin}/solutions/influencers`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${siteOrigin}/solutions/creators`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${siteOrigin}/solutions/consultants`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
       url: `${siteOrigin}/auth/signin`,
-      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.3,
     },
     {
       url: `${siteOrigin}/auth/signup`,
-      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.3,
     },
     {
       url: `${siteOrigin}/blog`,
-      lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.7,
     },
@@ -223,9 +266,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    const blogRoutes: MetadataRoute.Sitemap = blogArticles.map(({ slug, updatedAt }) => ({
+    const blogRoutes: MetadataRoute.Sitemap = blogArticles.map(({ slug, lastModified }) => ({
       url: `${siteOrigin}/blog/${slug}`,
-      lastModified: updatedAt,
+      lastModified,
       changeFrequency: "weekly",
       priority: 0.6,
     }));
