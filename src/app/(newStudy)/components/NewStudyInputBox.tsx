@@ -1,5 +1,6 @@
 "use client";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
+import { trackTemplateUsage } from "@/app/(newStudy)/newstudy/actions";
 import { createStudyUserChat } from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
@@ -26,22 +27,29 @@ import { useRouter } from "next/navigation";
 import { JSX, useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-export function NewStudyInputBox(args: { className?: string; initialBrief?: string }): JSX.Element;
+export function NewStudyInputBox(args: {
+  className?: string;
+  initialBrief?: string;
+  templateId?: number;
+}): JSX.Element;
 
 export function NewStudyInputBox(args: {
   className?: string;
   initialBrief?: string;
   referenceUserChatTokens: string[];
+  templateId?: number;
 }): JSX.Element;
 
 export function NewStudyInputBox({
   className,
   initialBrief,
   referenceUserChatTokens,
+  templateId,
 }: {
   className?: string;
   initialBrief?: string;
   referenceUserChatTokens?: string[];
+  templateId?: number;
 }) {
   const locale = useLocale();
   const t = useTranslations("Components.NewStudyInputBox");
@@ -113,24 +121,31 @@ export function NewStudyInputBox({
           mimeType: file.mimeType,
           size: file.size,
         }));
-        const extra = referenceUserChatTokens
-          ? { referenceUserChats: referenceUserChatTokens }
-          : undefined;
+        const extra = {
+          ...(referenceUserChatTokens ? { referenceUserChats: referenceUserChatTokens } : {}),
+          ...(templateId ? { researchTemplateId: templateId } : {}),
+        };
         const result = await createStudyUserChat(
           { role: "user", content: input, attachments },
-          extra,
+          Object.keys(extra).length > 0 ? extra : undefined,
         );
         if (!result.success) {
           throw result;
         }
         const chat = result.data;
+
+        // Track template usage if templateId is provided
+        if (templateId) {
+          trackTemplateUsage(templateId);
+        }
+
         router.push(`/study/${chat.token}`);
       } catch (error) {
         console.log("Error saving input:", (error as Error).message);
       }
       setIsLoading(false);
     },
-    [referenceUserChatTokens, input, router, uploadedFiles],
+    [referenceUserChatTokens, templateId, input, router, uploadedFiles],
   );
 
   return (

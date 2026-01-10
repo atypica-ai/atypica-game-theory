@@ -11,13 +11,15 @@ import "./style.css";
 export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
   const t = useTranslations("StudyPage.NewStudy");
   const [brief, setBrief] = useState(initialBrief || "");
+  const [templateId, setTemplateId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     trackEvent("New Study Viewed");
   }, []);
 
-  const handleShortcutClick = (description: string) => {
+  const handleShortcutClick = (description: string, templateId?: number) => {
     setBrief(description);
+    setTemplateId(templateId);
     // Scroll the FitToViewport container to top
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -30,7 +32,7 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
           <span>{t("startYourStudy")}</span>
         </div>
         <div className="w-full">
-          <NewStudyInputBox initialBrief={brief} />
+          <NewStudyInputBox initialBrief={brief} templateId={templateId} />
         </div>
         <div className="mt-8 text-center text-sm">
           <Link

@@ -1,34 +1,26 @@
 "use client";
-import type { Locale } from "next-intl";
-import { useLocale } from "next-intl";
 import { useEffect, useState } from "react";
-import { generateAIShortcuts } from "../actions";
+import { getResearchTemplates } from "../actions";
 import { StudyShortcut } from "../config/shortcuts";
 import { ShortcutCard } from "./ShortcutCard";
 
 interface ShortcutsGridProps {
-  onShortcutClick: (description: string) => void;
+  onShortcutClick: (description: string, templateId?: number) => void;
 }
 
 export function ShortcutsGrid({ onShortcutClick }: ShortcutsGridProps) {
-  const locale = useLocale() as Locale;
-  const [shortcuts, setShortcuts] = useState<StudyShortcut[]>([]);
+  const [shortcuts, setShortcuts] = useState<Array<StudyShortcut & { id: number }>>([]);
   const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
-    // Reset shortcuts when locale changes
-    setShortcuts([]);
-    setIsFetching(true);
-
-    // Generate 12 shortcuts covering all 6 target audiences in one call
-    // Product Managers, Marketers, Startup Owners, Creators, Consultants, Influencers
-    generateAIShortcuts(locale).then((result) => {
+    // Fetch templates from database (public + personal if logged in)
+    getResearchTemplates().then((result) => {
       if (result.success && result.data) {
         setShortcuts(result.data);
       }
       setIsFetching(false);
     });
-  }, [locale]);
+  }, []);
 
   // Show loading state when fetching and list is empty
   if (isFetching && shortcuts.length === 0) {
@@ -54,8 +46,12 @@ export function ShortcutsGrid({ onShortcutClick }: ShortcutsGridProps) {
 
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {shortcuts.map((shortcut, index) => (
-        <ShortcutCard key={index} shortcut={shortcut} onClick={onShortcutClick} />
+      {shortcuts.map((shortcut) => (
+        <ShortcutCard
+          key={shortcut.id}
+          shortcut={shortcut}
+          onClick={(description) => onShortcutClick(description, shortcut.id)}
+        />
       ))}
     </div>
   );
