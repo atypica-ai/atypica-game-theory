@@ -43,6 +43,7 @@ export const generatePodcastTool = ({
           analyst: {
             select: {
               id: true,
+              userId: true,
               topic: true,
               brief: true,
               studyLog: true,

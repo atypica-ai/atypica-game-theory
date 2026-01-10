@@ -3,13 +3,71 @@ import "server-only";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { updateMemory } from "@/app/(memory)/lib/updateMemory";
 import { generateRecommendedQuestions } from "@/app/(study)/study/StudyNextSteps/lib";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import { Analyst } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { waitUntil } from "@vercel/functions";
 import { ModelMessage, streamText } from "ai";
+import { Logger } from "pino";
 import { studyLogSystem } from "./prompt";
+
+function updateMemoryAfterStudyCompletion({
+  userId,
+  modelMessages,
+  studyLog,
+  logger,
+}: {
+  userId: number;
+  modelMessages: ModelMessage[];
+  studyLog: string;
+  logger: Logger;
+}) {
+  const filteredUserMessages: ModelMessage[] = modelMessages.flatMap((message) => {
+    if (message.role === "user") {
+      return [message] as ModelMessage[];
+    } else if (message.role === "assistant" && Array.isArray(message.content)) {
+      const content = message.content.filter(
+        (content) =>
+          (content.type === "tool-call" || content.type === "tool-result") &&
+          content.toolName === StudyToolName.requestInteraction,
+      );
+      return content.length ? ([{ ...message, content }] as ModelMessage[]) : [];
+    } else if (message.role === "tool") {
+      const content = message.content.filter(
+        (content) => content.toolName === StudyToolName.requestInteraction,
+      );
+      return content.length ? ([{ ...message, content }] as ModelMessage[]) : [];
+    } else {
+      return [];
+    }
+  });
+
+  waitUntil(
+    updateMemory({
+      userId,
+      conversationContext: [
+        ...filteredUserMessages,
+        {
+          role: "assistant",
+          content: [
+            { type: "text", text: "Study Log Generated" },
+            { type: "text", text: studyLog },
+          ],
+        },
+      ],
+      logger: logger.child({ operation: "updateMemory after studyLog" }),
+    }).catch((error) => {
+      logger.error({
+        msg: "Failed to update user memory after studyLog",
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }),
+  );
+  logger.info("Triggered memory update after studyLog completion");
+}
 
 export async function generateAndSaveStudyLog({
   analyst,
@@ -19,7 +77,7 @@ export async function generateAndSaveStudyLog({
   statReport,
   logger,
 }: {
-  analyst: Pick<Analyst, "id">;
+  analyst: Pick<Analyst, "id" | "userId">;
   messages: ModelMessage[];
 } & AgentToolConfigArgs): Promise<{ studyLog: string }> {
   const systemPrompt = studyLogSystem({ locale });
@@ -96,6 +154,14 @@ export async function generateAndSaveStudyLog({
           }),
         );
         logger.info("Triggered recommended questions generation after studyLog completion");
+
+        // Update user memory after study completion, 在研究完成后更新用户记忆，不需要 await
+        updateMemoryAfterStudyCompletion({
+          userId: analyst.userId,
+          modelMessages: messages,
+          studyLog,
+          logger,
+        });
 
         resolve({ studyLog });
       },

@@ -2,13 +2,13 @@ import "server-only";
 
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { prisma } from "@/prisma/prisma";
-import { generateText, ModelMessage } from "ai";
+import { generateText, ModelMessage, stepCountIs } from "ai";
 import { Logger } from "pino";
 import { memoryReorganizeSystemPrompt } from "../prompt/memoryReorganize";
 import { memoryUpdateSystemPrompt } from "../prompt/memoryUpdate";
 import { memoryNoUpdateTool } from "../tools/memoryNoUpdate";
 import { memoryUpdateTool } from "../tools/memoryUpdate";
-import type { MemoryUpdateToolInput } from "../tools/memoryUpdate/types";
+import { MemoryUpdateToolInput } from "../tools/memoryUpdate/types";
 import { isMemoryThresholdMet } from "./utils";
 
 const MEMORY_UPDATE_MODEL: LLMModelName = "claude-haiku-4-5";
@@ -193,7 +193,7 @@ async function updateMemoryContent(
     },
   ];
 
-  // Call memory update agent
+  // Call memory update agent (allow multiple tool calls)
   const result = await generateText({
     model: llm(MEMORY_UPDATE_MODEL),
     providerOptions: defaultProviderOptions,
@@ -204,11 +204,13 @@ async function updateMemoryContent(
     system: memoryUpdateSystemPrompt,
     messages,
     toolChoice: "required",
+    stopWhen: stepCountIs(5), // Allow up to 5 tool calls for extracting multiple memory items
   });
 
-  // Extract tool input
-  const toolResults = result.toolResults;
-  const memoryUpdateResult = toolResults?.find((r) => r.toolName === "memoryUpdate");
+  // Extract tool results
+  // const toolResults = result.toolResults; // ⚠️ toolResults 只是最后一步的，不能这么取，得是遍历 steps
+  const toolResults = result.steps.flatMap((step) => step.toolResults ?? []);
+  const memoryUpdateResults = toolResults?.filter((r) => r.toolName === "memoryUpdate");
   const memoryNoUpdateResult = toolResults?.find((r) => r.toolName === "memoryNoUpdate");
 
   // If no update is needed, return current content unchanged
@@ -219,49 +221,32 @@ async function updateMemoryContent(
     return currentContent;
   }
 
-  if (!memoryUpdateResult) {
+  if (!memoryUpdateResults || memoryUpdateResults.length === 0) {
     throw new Error(
       `Memory update agent did not call the required tool. Text output: ${result.text.substring(0, 200)}`,
     );
   }
 
-  // Get the tool input (LLM's decision)
-  const toolInput = memoryUpdateResult.input as MemoryUpdateToolInput;
-  const { lineIndex, newLine } = toolInput;
-
   logger.info({
-    msg: "Memory update tool called",
-    lineIndex,
-    newLinePreview: newLine.substring(0, 50),
+    msg: "Memory update tools called",
+    count: memoryUpdateResults.length,
   });
 
-  // Apply transformation: insert new line at specified index
-  let updatedContent: string;
+  // Apply all memory updates sequentially
+  let updatedContent = currentContent;
 
-  if (currentContent.length === 0) {
-    // Empty memory: just set to newLine
-    updatedContent = newLine;
-  } else {
-    // Non-empty memory: insert at specified line index
-    const lines = currentContent.split("\n");
+  for (const memoryUpdateResult of memoryUpdateResults) {
+    const toolInput = memoryUpdateResult.input as MemoryUpdateToolInput;
+    const { lineIndex, newLine } = toolInput;
 
-    // Validate lineIndex
-    if (lineIndex < -1 || lineIndex >= lines.length) {
-      throw new Error(
-        `Invalid lineIndex: ${lineIndex}. Must be -1 (append) or between 0 and ${lines.length - 1}.`,
-      );
-    }
+    logger.info({
+      msg: "Applying memory update",
+      lineIndex,
+      newLinePreview: newLine.substring(0, 50),
+    });
 
-    // Insert new line
-    if (lineIndex === -1) {
-      // Append at end
-      lines.push(newLine);
-    } else {
-      // Insert after specified line
-      lines.splice(lineIndex + 1, 0, newLine);
-    }
-
-    updatedContent = lines.join("\n");
+    // Apply transformation: insert new line at specified index
+    updatedContent = applyMemoryUpdate(updatedContent, lineIndex, newLine);
   }
 
   // Report token usage
@@ -273,4 +258,36 @@ async function updateMemoryContent(
   });
 
   return updatedContent;
+}
+
+/**
+ * Apply a single memory update to the content.
+ * Pure function: takes current content, line index, and new line, returns updated content.
+ */
+function applyMemoryUpdate(currentContent: string, lineIndex: number, newLine: string): string {
+  if (currentContent.length === 0) {
+    // Empty memory: just set to newLine
+    return newLine;
+  }
+
+  // Non-empty memory: insert at specified line index
+  const lines = currentContent.split("\n");
+
+  // Validate lineIndex
+  if (lineIndex < -1 || lineIndex >= lines.length) {
+    throw new Error(
+      `Invalid lineIndex: ${lineIndex}. Must be -1 (append) or between 0 and ${lines.length - 1}.`,
+    );
+  }
+
+  // Insert new line
+  if (lineIndex === -1) {
+    // Append at end
+    lines.push(newLine);
+  } else {
+    // Insert after specified line
+    lines.splice(lineIndex + 1, 0, newLine);
+  }
+
+  return lines.join("\n");
 }

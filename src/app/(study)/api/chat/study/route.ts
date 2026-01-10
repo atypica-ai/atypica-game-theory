@@ -2,7 +2,6 @@ import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import authOptions from "@/app/(auth)/authOptions";
-import { updateMemory } from "@/app/(memory)/lib/updateMemory";
 import { executeBaseAgentRequest } from "@/app/(study)/agents/baseAgentRequest";
 import { createFastInsightAgentConfig } from "@/app/(study)/agents/configs/fastInsightAgentConfig";
 import { createPlanModeAgentConfig } from "@/app/(study)/agents/configs/planModeAgentConfig";
@@ -15,9 +14,7 @@ import { detectInputLanguage } from "@/lib/textUtils";
 import { AnalystKind, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
-import { waitUntil } from "@vercel/functions";
 import {
-  convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateId,
@@ -87,22 +84,6 @@ export async function POST(req: Request) {
       id: newMessage.id ?? generateId(),
     },
   });
-
-  // Update user memory with each user input (before we add memory message)
-  if (newMessage.role === "user") {
-    waitUntil(
-      updateMemory({
-        userId,
-        conversationContext: convertToModelMessages([newMessage]),
-        logger: logger.child({ operation: "updateMemory" }),
-      }).catch((error) => {
-        logger.error({
-          msg: "Failed to update user memory",
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }),
-    );
-  }
 
   // 首先遵循用户的输入语言，然后，如果 analyst 语言已经定了，默认使用 analyst 的语言
   const locale: Locale = await detectInputLanguage({

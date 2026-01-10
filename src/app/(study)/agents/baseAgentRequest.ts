@@ -9,6 +9,7 @@ import { getMcpClientManager } from "@/ai/tools/mcp/client";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { loadUserMemory } from "@/app/(memory)/lib/loadMemory";
+import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { createSubAgentTool, StudyToolSet } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
@@ -322,10 +323,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
 
   const userMemory = await loadUserMemory(userId);
   if (userMemory) {
-    const text =
-      locale === "zh-CN"
-        ? `<UserMemory>\n${userMemory}\n</UserMemory>\n[HINT] 请参考以上用户记忆来理解用户背景和偏好，以便提供更个性化的研究建议。`
-        : `<UserMemory>\n${userMemory}\n</UserMemory>\n[HINT] Please refer to the above user memory to understand the user's background and preferences for more personalized research suggestions.`;
+    const text = buildMemoryUsagePrompt({ userMemory, locale });
     modelMessages = [{ role: "user", content: [{ type: "text", text }] }, ...modelMessages];
   }
 
