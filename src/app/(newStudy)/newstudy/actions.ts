@@ -21,36 +21,29 @@ import { StudyShortcut } from "./config/shortcuts";
  */
 const getCachedTemplates = unstable_cache(
   async (locale: Locale, userId: number | undefined) => {
-    const templates = await prisma.researchTemplate.findMany({
-      where: {
-        locale,
-        OR: [
-          // 公共模板
-          { userId: null, teamId: null },
-          // 个人模板
-          ...(userId ? [{ userId }] : []),
-        ],
-      },
-    });
+    // 分别查询个人模板和公共模板，确保个人模板优先
+    const [personalTemplates, publicTemplates] = await Promise.all([
+      // 个人模板
+      userId
+        ? prisma.researchTemplate.findMany({
+            where: { locale, userId },
+            orderBy: { createdAt: "desc" },
+            take: 12, // 最多取 12 个个人模板
+          })
+        : Promise.resolve([]),
+      // 公共模板
+      prisma.researchTemplate.findMany({
+        where: { locale, userId: null, teamId: null },
+        orderBy: { createdAt: "desc" },
+        take: 12, // 最多取 12 个公共模板
+      }),
+    ]);
 
-    // 按使用次数排序（个人模板优先）
-    const sorted = templates
-      .sort((a, b) => {
-        // 个人模板优先
-        if (a.userId && !b.userId) return -1;
-        if (!a.userId && b.userId) return 1;
-
-        // 同类型按 useCount 排序
-        const aExtra = a.extra as ResearchTemplateExtra;
-        const bExtra = b.extra as ResearchTemplateExtra;
-        const aUseCount = aExtra.useCount || 0;
-        const bUseCount = bExtra.useCount || 0;
-        return bUseCount - aUseCount;
-      })
-      .slice(0, 12);
+    // 合并：个人模板 + 公共模板，限制总数 12 个
+    const templates = [...personalTemplates, ...publicTemplates].slice(0, 12);
 
     // 转换为前端格式，包含 id
-    return sorted.map((t) => {
+    return templates.map((t) => {
       const extra = t.extra as ResearchTemplateExtra;
       return {
         id: t.id,
@@ -74,7 +67,7 @@ const getCachedTemplates = unstable_cache(
  * 展示逻辑：
  * - 个人模板优先展示
  * - 公共模板补足到 12 个
- * - 按使用次数排序
+ * - 按创建时间倒序排序（最新优先）
  * - 缓存 1 小时
  *
  * @returns 研究模板列表（包含 id）

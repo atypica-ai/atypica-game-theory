@@ -19,7 +19,8 @@ function validateInternalAuth(request: NextRequest): boolean {
  * {
  *   "locale": "zh-CN" | "en-US",  // 默认: zh-CN
  *   "replaceExisting": boolean,   // 是否替换现有模板，默认: false
- *   "dryRun": boolean             // 测试模式，不实际保存，默认: false
+ *   "dryRun": boolean,            // 测试模式，不实际保存，默认: false
+ *   "count": number               // 生成模板数量，默认: 12
  * }
  */
 export async function POST(request: NextRequest) {
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
     const locale = (body.locale as Locale | undefined) || VALID_LOCALES[0];
     const replaceExisting = body.replaceExisting === true;
     const dryRun = body.dryRun === true;
+    const count = typeof body.count === "number" && body.count > 0 ? body.count : 12;
 
     // Validate locale
     if (!VALID_LOCALES.includes(locale)) {
@@ -51,10 +53,11 @@ export async function POST(request: NextRequest) {
       locale,
       replaceExisting,
       dryRun,
+      count,
     });
 
     // Call business logic from lib
-    const result = await generatePublicTemplates(locale, replaceExisting, dryRun);
+    const result = await generatePublicTemplates(locale, replaceExisting, dryRun, count);
 
     // DryRun mode: return generated templates without saving
     if (dryRun && typeof result !== "number") {
@@ -71,13 +74,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Normal mode: return count
-    const count = typeof result === "number" ? result : result.count;
+    const resultCount = typeof result === "number" ? result : result.count;
     return NextResponse.json({
       success: true,
       locale,
-      count,
+      count: resultCount,
       replaceExisting,
-      message: `Successfully generated and saved ${count} templates`,
+      message: `Successfully generated and saved ${resultCount} templates`,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

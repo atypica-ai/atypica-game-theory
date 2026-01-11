@@ -8,6 +8,7 @@ import { ResearchTemplateExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateObject } from "ai";
 import { Locale } from "next-intl";
+import { revalidateTag } from "next/cache";
 import { generatedShortcutsSchema } from "./schema";
 
 type GenerateResult =
@@ -20,9 +21,11 @@ type GenerateResult =
 /**
  * Internal function to generate AI shortcuts
  * Used by generatePublicTemplates to create research templates
+ * @param locale - Language locale
+ * @param count - Number of shortcuts to generate (default: 12)
  */
-async function generateAIShortcutsWithAI(locale: Locale): Promise<StudyShortcut[]> {
-  rootLogger.info({ msg: "Generating AI shortcuts with AI", locale });
+async function generateAIShortcutsWithAI(locale: Locale, count = 12): Promise<StudyShortcut[]> {
+  rootLogger.info({ msg: "Generating AI shortcuts with AI", locale, count });
 
   const systemPrompt =
     locale === "zh-CN"
@@ -82,11 +85,11 @@ async function generateAIShortcutsWithAI(locale: Locale): Promise<StudyShortcut[
    - 涵盖不同行业：消费品、科技、服务、文化、健康等
 
 7. **多样性和平衡**
-   - 12个卡片必须覆盖所有六个目标角色（产品经理、营销人员、创业者、创作者、咨询顾问、KOL/网红），每个角色至少1个
+   - 卡片必须覆盖所有六个目标角色（产品经理、营销人员、创业者、创作者、咨询顾问、KOL/网红），每个角色至少1个
    - **输出类型平衡**：避免全是"生成报告"，应该包含：
-     * 3-4个"播客生成"场景（快速洞察/热点分析/趋势解读）
-     * 6-7个"生成报告"场景（深度研究/用户访谈/焦点小组）
-     * 1-2个其他类型（人设构建/竞品分析等）
+     * 约25-33%的"播客生成"场景（快速洞察/热点分析/趋势解读）
+     * 约50-58%的"生成报告"场景（深度研究/用户访谈/焦点小组）
+     * 约8-17%的其他类型（人设构建/竞品分析等）
    - 剩余卡片自由发散，探索不同行业、新兴趋势、跨界结合
    - 平衡新兴趋势和经典话题
    - 每个场景要符合目标角色的工作场景和决策需求
@@ -155,11 +158,11 @@ Help users quickly start valuable business research by providing carefully desig
    - Cover diverse industries: consumer goods, tech, services, culture, health, etc.
 
 7. **Diversity and Balance**
-   - 12 cards MUST cover all 6 target audiences (Product Managers, Marketers, Startup Owners, Creators, Consultants, Influencers) with at least 1 each
+   - Cards MUST cover all 6 target audiences (Product Managers, Marketers, Startup Owners, Creators, Consultants, Influencers) with at least 1 each
    - **Output type balance**: Avoid all "Report" outputs. Should include:
-     * 3-4 "Podcast Generation" scenarios (quick insights/hot topic analysis/trend explanations)
-     * 6-7 "Report" scenarios (deep research/user interviews/focus groups)
-     * 1-2 other types (persona building/competitive analysis etc.)
+     * Approximately 25-33% "Podcast Generation" scenarios (quick insights/hot topic analysis/trend explanations)
+     * Approximately 50-58% "Report" scenarios (deep research/user interviews/focus groups)
+     * Approximately 8-17% other types (persona building/competitive analysis etc.)
    - Remaining cards can freely explore diverse industries, emerging trends, cross-sector combinations
    - Balance emerging trends with classic topics
    - Each scenario should fit the target role's work context and decision-making needs
@@ -238,9 +241,14 @@ Help users quickly start valuable business research by providing carefully desig
           .map((a) => `• ${a.en}: ${a.context.en}`)
           .join("\n");
 
+  // Calculate output type distribution
+  const podcastCount = Math.round(count * 0.3);
+  const reportCount = Math.round(count * 0.55);
+  const otherCount = count - podcastCount - reportCount;
+
   const userPrompt =
     locale === "zh-CN"
-      ? `请生成 12 个高质量的研究场景快捷卡片。
+      ? `请生成 ${count} 个高质量的研究场景快捷卡片。
 
 目标受众（必须覆盖所有6个角色，每个至少1个）：
 ${allAudiencesContext}
@@ -248,9 +256,9 @@ ${allAudiencesContext}
 要求：
 1. **覆盖所有角色**：产品经理、营销人员、创业者、创作者、咨询顾问、KOL/网红，每个角色至少1个场景
 2. **输出类型平衡**：
-   - 3-4个场景以"播客生成"结尾（适合快速洞察、热点解读、趋势分析）
-   - 6-7个场景以"生成报告"结尾（适合深度研究、用户访谈、焦点小组）
-   - 1-2个场景可以用其他输出类型
+   - 约${podcastCount}个场景以"播客生成"结尾（适合快速洞察、热点解读、趋势分析）
+   - 约${reportCount}个场景以"生成报告"结尾（适合深度研究、用户访谈、焦点小组）
+   - 约${otherCount}个场景可以用其他输出类型
 3. **剩余场景自由发散**：可以探索不同行业、新兴趋势、跨界结合，不必拘泥于6个角色
 4. **标题自然直接**：**绝不使用**"产品经理专题："、"营销人员专题："这类格式，用自然的研究主题描述
 5. **描述丰富**：每个 description 必须 200-400 字，包含具体品牌、场景、探索维度
@@ -267,7 +275,7 @@ ${allAudiencesContext}
 **标题示例（错误，不要模仿）**：
 - 🎯 产品经理专题：功能创新研究
 - 📱 营销人员专题：转化率提升`
-      : `Generate 12 high-quality research scenario shortcut cards.
+      : `Generate ${count} high-quality research scenario shortcut cards.
 
 Target Audiences (MUST cover all 6 roles with at least 1 each):
 ${allAudiencesContext}
@@ -275,9 +283,9 @@ ${allAudiencesContext}
 Requirements:
 1. **Cover all roles**: Product Managers, Marketers, Startup Owners, Creators, Consultants, Influencers - at least 1 scenario for each
 2. **Output type balance**:
-   - 3-4 scenarios ending with "Podcast Generation" (suitable for quick insights, hot topic analysis, trend explanations)
-   - 6-7 scenarios ending with "Report" (suitable for deep research, user interviews, focus groups)
-   - 1-2 scenarios can use other output types
+   - Approximately ${podcastCount} scenarios ending with "Podcast Generation" (suitable for quick insights, hot topic analysis, trend explanations)
+   - Approximately ${reportCount} scenarios ending with "Report" (suitable for deep research, user interviews, focus groups)
+   - Approximately ${otherCount} scenarios can use other output types
 3. **Freely explore with remaining scenarios**: Can explore diverse industries, emerging trends, cross-sector combinations beyond the 6 roles
 4. **Natural and direct titles**: **NEVER use** formats like "For Product Managers:", "Marketers Special:". Use natural research topic descriptions
 5. **Rich descriptions**: Each description must be 100-200 words, including specific brands, scenarios, exploration dimensions
@@ -319,16 +327,18 @@ Be creative but ensure each scenario has clear business value and research signi
  * @param locale - 语言
  * @param replaceExisting - 是否删除现有公共模板
  * @param dryRun - 测试模式，生成但不保存到数据库
+ * @param count - 生成模板数量（默认: 12）
  * @returns 生成的模板数量（dryRun 时返回生成的数据）
  */
 export async function generatePublicTemplates(
   locale: Locale,
   replaceExisting = false,
   dryRun = false,
+  count = 12,
 ): Promise<GenerateResult> {
-  const logger = rootLogger.child({ fn: "generatePublicTemplates", locale });
+  const logger = rootLogger.child({ fn: "generatePublicTemplates", locale, count });
 
-  logger.info({ msg: "Starting to generate public templates", replaceExisting });
+  logger.info({ msg: "Starting to generate public templates", replaceExisting, count });
 
   try {
     // 如果需要，删除现有公共模板
@@ -344,7 +354,7 @@ export async function generatePublicTemplates(
     }
 
     // 调用 AI 生成
-    const shortcuts = await generateAIShortcutsWithAI(locale);
+    const shortcuts = await generateAIShortcutsWithAI(locale, count);
 
     // DryRun 模式：生成但不保存
     if (dryRun) {
@@ -379,6 +389,9 @@ export async function generatePublicTemplates(
 
     logger.info({ msg: "Successfully generated public templates", count: templates.length });
 
+    // 清除缓存，让新模板立即在前端可见
+    revalidateTag("research-templates");
+
     return templates.length;
   } catch (error) {
     logger.error({
@@ -396,10 +409,15 @@ export async function generatePublicTemplates(
  *
  * @param userId - 用户 ID
  * @param locale - 语言
+ * @param count - 生成模板数量（默认: 根据数据丰富程度自动调整 6-12 个）
  * @returns 生成的模板数量
  */
-export async function generatePersonalTemplates(userId: number, locale: Locale): Promise<number> {
-  const logger = rootLogger.child({ fn: "generatePersonalTemplates", userId, locale });
+export async function generatePersonalTemplates(
+  userId: number,
+  locale: Locale,
+  count?: number,
+): Promise<number> {
+  const logger = rootLogger.child({ fn: "generatePersonalTemplates", userId, locale, count });
 
   logger.info({ msg: "Starting to generate personal templates" });
 
@@ -426,10 +444,18 @@ export async function generatePersonalTemplates(userId: number, locale: Locale):
       studyCount: recentStudies.length,
     });
 
-    // 3. 构建 AI prompt
+    // 3. 根据用户数据丰富程度自动调整数量（如果未指定）
+    if (!count) {
+      const hasRichData = memoryCore && memoryCore.length > 500;
+      const hasRichHistory = recentStudies.length >= 5;
+      count = hasRichData || hasRichHistory ? 12 : 6;
+      logger.info({ msg: "Auto-adjusted template count", count, hasRichData, hasRichHistory });
+    }
+
+    // 4. 构建 AI prompt
     const systemPrompt =
       locale === "zh-CN"
-        ? `你是 atypica.AI 的个性化研究助手。基于用户的记忆和研究历史，生成 6-12 个高度个性化的研究场景模板。
+        ? `你是 atypica.AI 的个性化研究助手。基于用户的记忆和研究历史，生成 ${count} 个高度个性化的研究场景模板。
 
 ## 用户背景
 
@@ -444,15 +470,15 @@ ${recentStudies.map((s) => `- ${s.topic}\n  类型: ${s.kind}\n  摘要: ${s.stu
 1. **高度个性化**：基于用户的实际兴趣、行业、研究方向
 2. **延续性**：可以是用户过往研究的延伸或深化
 3. **实用性**：解决用户真实的业务问题
-4. **数量**：生成 6-12 个模板（根据用户数据丰富程度调整）
+4. **数量**：生成 ${count} 个模板
 5. **格式**：与公共模板格式一致（title, description, tags, category）
 
 注意：
-- 如果用户记忆较少，生成 6 个通用但相关的模板
-- 如果用户有丰富研究历史，生成 12 个高度定制的模板
+- 基于用户实际背景生成个性化模板
 - 避免重复用户已做过的研究
+- 确保每个模板都有实用价值
 `
-        : `You are atypica.AI's personalized research assistant. Generate 6-12 highly personalized research scenario templates based on user's memory and research history.
+        : `You are atypica.AI's personalized research assistant. Generate ${count} highly personalized research scenario templates based on user's memory and research history.
 
 ## User Background
 
@@ -467,13 +493,13 @@ ${recentStudies.map((s) => `- ${s.topic}\n  Type: ${s.kind}\n  Summary: ${s.stud
 1. **Highly Personalized**: Based on user's actual interests, industry, research directions
 2. **Continuity**: Can be extensions or deepening of past research
 3. **Practical**: Solve real business problems for the user
-4. **Quantity**: Generate 6-12 templates (adjust based on data richness)
+4. **Quantity**: Generate ${count} templates
 5. **Format**: Same as public templates (title, description, tags, category)
 
 Note:
-- If user has limited memory, generate 6 generic but relevant templates
-- If user has rich research history, generate 12 highly customized templates
+- Generate personalized templates based on user's actual background
 - Avoid duplicating completed research
+- Ensure each template has practical value
 `;
 
     // 4. 调用 AI 生成（复用公共模板的 schema）
@@ -511,6 +537,9 @@ Note:
     );
 
     logger.info({ msg: "Successfully generated personal templates", count: templates.length });
+
+    // 清除缓存，让新模板立即在前端可见
+    revalidateTag("research-templates");
 
     return templates.length;
   } catch (error) {

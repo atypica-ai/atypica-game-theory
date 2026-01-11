@@ -24,8 +24,11 @@
 ```typescript
 import { generatePersonalTemplates, checkAndGeneratePersonalTemplates } from "@/app/(newStudy)/lib/template";
 
-// 直接生成个人模板
+// 直接生成个人模板（自动判断数量 6-12）
 await generatePersonalTemplates(userId, locale);
+
+// 指定生成数量
+await generatePersonalTemplates(userId, locale, 10);
 
 // 或检查条件后自动生成
 await checkAndGeneratePersonalTemplates(userId, locale);
@@ -40,6 +43,7 @@ await checkAndGeneratePersonalTemplates(userId, locale);
 | `locale` | `"zh-CN"` \| `"en-US"` | `"zh-CN"` | 生成模板的语言 |
 | `replaceExisting` | `boolean` | `false` | 是否删除现有公共模板后重新生成 |
 | `dryRun` | `boolean` | `false` | 测试模式，生成但不保存到数据库 |
+| `count` | `number` | `12` | 生成模板数量 |
 
 ### 个人模板生成条件
 
@@ -97,6 +101,19 @@ curl -X POST \
   http://localhost:3000/api/internal/generate-research-templates
 ```
 
+### 指定生成数量
+
+```bash
+curl -X POST \
+  -H "x-internal-secret: ${INTERNAL_API_SECRET}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "locale": "zh-CN",
+    "count": 20
+  }' \
+  http://localhost:3000/api/internal/generate-research-templates
+```
+
 ### 响应示例（正常模式）
 
 ```json
@@ -145,9 +162,10 @@ config();
 
 const userId = 123; // 替换为实际用户 ID
 const locale = "zh-CN";
+const count = 10; // 可选：指定数量
 
-generatePersonalTemplates(userId, locale)
-  .then((count) => console.log(`✅ Generated ${count} personal templates`))
+generatePersonalTemplates(userId, locale, count)
+  .then((resultCount) => console.log(`✅ Generated ${resultCount} personal templates`))
   .catch(console.error);
 ```
 

@@ -36,6 +36,6 @@ export const generatedShortcutsSchema = z.object({
       }),
     )
     .describe(
-      "Generate 6-12 diverse and inspiring research scenarios based on the given context and requirements. The exact number and focus should align with the instructions in the system prompt.",
+      "Generate diverse and inspiring research scenarios based on the given context and requirements. The exact number and focus should align with the instructions in the system prompt (typically 6-20 templates).",
     ),
 });
