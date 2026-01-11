@@ -27,7 +27,11 @@ function updateMemoryAfterStudyCompletion({
 }) {
   const filteredUserMessages: ModelMessage[] = modelMessages.flatMap((message) => {
     if (message.role === "user") {
-      return [message] as ModelMessage[];
+      const content =
+        typeof message.content === "string"
+          ? [{ type: "text", text: message.content }]
+          : message.content.filter((content) => content.type === "text");
+      return content.length ? ([{ ...message, content }] as ModelMessage[]) : [];
     } else if (message.role === "assistant" && Array.isArray(message.content)) {
       const content = message.content.filter(
         (content) =>
