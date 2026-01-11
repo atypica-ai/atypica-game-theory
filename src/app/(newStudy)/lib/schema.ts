@@ -24,15 +24,6 @@ export const generatedShortcutsSchema = z.object({
           .describe(
             "2-3 research method tags that describe the research workflow. Must match the language of the content (Chinese tags for Chinese scenarios, English tags for English scenarios). The last tag should usually be the final output type.",
           ),
-        category: z
-          .enum([
-            "product-testing",
-            "persona-building",
-            "content-generation",
-            "deep-interview",
-            "market-analysis",
-          ])
-          .describe("Research category that best fits this study"),
       }),
     )
     .describe(

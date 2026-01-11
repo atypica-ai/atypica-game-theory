@@ -380,7 +380,6 @@ export async function generatePublicTemplates(
             teamId: null,
             extra: {
               tags: shortcut.tags,
-              category: shortcut.category,
             } satisfies ResearchTemplateExtra,
           },
         }),
@@ -529,7 +528,6 @@ Note:
             userId,
             extra: {
               tags: shortcut.tags,
-              category: shortcut.category,
             } satisfies ResearchTemplateExtra,
           },
         }),

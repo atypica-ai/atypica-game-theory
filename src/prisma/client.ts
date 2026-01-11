@@ -290,7 +290,6 @@ export type BlogArticleExtra = Partial<{
 export type ResearchTemplateExtra = Partial<{
   useCount: number; // 使用次数统计
   tags: string[]; // Research method tags
-  category: string; // Research category
 }>;
 
 export type PersonaPanelExtra = never; // 这个现在暂时没用到

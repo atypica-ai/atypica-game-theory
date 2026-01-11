@@ -50,7 +50,6 @@ const getCachedTemplates = unstable_cache(
         title: t.title,
         description: t.description,
         tags: extra.tags || [],
-        category: extra.category || "market-analysis",
       };
     });
   },
