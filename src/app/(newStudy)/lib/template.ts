@@ -79,12 +79,35 @@ async function generateAIShortcutsWithAI(locale: Locale, count = 12): Promise<St
    - 箭头流程让用户明白这是自动化的流程，不是需要选择的功能
    - 用具体品牌名（星巴克、Keep、特斯拉）让场景更真实
 
-6. **天马行空但有价值**
-   - 可以探索新兴趋势、跨界结合、未被充分研究的领域
-   - 确保每个场景都有商业价值和研究意义
-   - 涵盖不同行业：消费品、科技、服务、文化、健康等
+6. **创意标准（核心要求！）**
 
-7. **多样性和平衡**
+   ❌ **严格避免这些烂大街的话题**：
+   - 咖啡/奶茶消费、健身/运动、短视频/直播、AI工具、电动车、在线教育、互联网医疗、游戏付费、美妆网红
+   - 任何"用户留存"、"转化率优化"、"增长黑客"这类套话主题
+   - 过于热门的赛道和老生常谈的痛点
+
+   ✅ **创意原则**（每个模板必须满足至少1个）：
+
+   1. **反直觉视角**：挑战常识，探索反向操作的价值
+   2. **文化现象**：捕捉正在发生但未被充分商业化的社会趋势
+   3. **小众深度**：垂直细分领域，虽然小众但有深度和价值
+   4. **边缘新兴**：刚刚萌芽的趋势，主流还没关注到
+   5. **跨界融合**：不同领域的方法论迁移和创新
+   6. **价值观冲突**：社会议题中的矛盾和两难困境
+   7. **被忽视的 B2B**：专业领域、企业服务、职业人群
+
+   **创意自检**：
+   - 如果这个主题在知乎/36氪/虎嗅上已经有100篇文章 → 不要
+   - 如果用户看到会说"又是这个..." → 不要
+   - 如果这是咨询公司PPT里的常规案例 → 不要
+   - 如果让你眼前一亮、想说"这个角度有意思" → 就是它
+
+7. **行业和角色的真实多样性**
+   - 不要全是消费品和互联网公司
+   - 覆盖：文化创意、专业服务、社会议题、垂直社区
+   - 每个目标角色的场景要真实反映他们的工作困境，不是空洞套话
+
+8. **多样性和平衡**
    - 卡片必须覆盖所有六个目标角色（产品经理、营销人员、创业者、创作者、咨询顾问、KOL/网红），每个角色至少1个
    - **输出类型平衡**：避免全是"生成报告"，应该包含：
      * 约25-33%的"播客生成"场景（快速洞察/热点分析/趋势解读）
@@ -152,12 +175,35 @@ Help users quickly start valuable business research by providing carefully desig
    - Arrow flow shows users this is an automated process, not functions to choose from
    - Use specific brand names (Starbucks, Peloton, Tesla) to make scenarios real
 
-6. **Creative Yet Valuable**
-   - Explore emerging trends, cross-industry combinations, under-researched areas
-   - Ensure each scenario has business value and research significance
-   - Cover diverse industries: consumer goods, tech, services, culture, health, etc.
+6. **Creativity Standards (Core Requirement!)**
 
-7. **Diversity and Balance**
+   ❌ **Strictly Avoid These Overdone Topics**:
+   - Coffee/tea consumption, fitness/gym, short videos/streaming, AI tools, electric vehicles, online education, telehealth, in-game purchases, beauty influencers
+   - Any "user retention", "conversion optimization", "growth hacking" cliché themes
+   - Overly popular sectors and tired pain points
+
+   ✅ **Creativity Principles** (Each template must satisfy at least 1):
+
+   1. **Counter-Intuitive**: Challenge conventions, explore value in reverse operations
+   2. **Cultural Phenomena**: Capture emerging social trends not yet commercialized
+   3. **Niche Depth**: Vertical niches that are small but deep and valuable
+   4. **Emerging Edge**: Just-budding trends mainstream hasn't noticed yet
+   5. **Cross-Disciplinary**: Methodology migration and innovation across fields
+   6. **Value Conflicts**: Social dilemmas and contradictions
+   7. **Overlooked B2B**: Professional fields, enterprise services, career groups
+
+   **Creativity Self-Check**:
+   - If this topic has 100+ articles on Medium/TechCrunch → Don't use it
+   - If users would say "not this again..." → Don't use it
+   - If this is a standard consulting firm case study → Don't use it
+   - If it makes you think "this angle is interesting" → That's it
+
+7. **True Industry and Role Diversity**
+   - Not all consumer goods and internet companies
+   - Cover: creative culture, professional services, social issues, vertical communities
+   - Each target role's scenario should reflect real work challenges, not empty buzzwords
+
+8. **Diversity and Balance**
    - Cards MUST cover all 6 target audiences (Product Managers, Marketers, Startup Owners, Creators, Consultants, Influencers) with at least 1 each
    - **Output type balance**: Avoid all "Report" outputs. Should include:
      * Approximately 25-33% "Podcast Generation" scenarios (quick insights/hot topic analysis/trend explanations)
@@ -259,22 +305,13 @@ ${allAudiencesContext}
    - 约${podcastCount}个场景以"播客生成"结尾（适合快速洞察、热点解读、趋势分析）
    - 约${reportCount}个场景以"生成报告"结尾（适合深度研究、用户访谈、焦点小组）
    - 约${otherCount}个场景可以用其他输出类型
-3. **剩余场景自由发散**：可以探索不同行业、新兴趋势、跨界结合，不必拘泥于6个角色
-4. **标题自然直接**：**绝不使用**"产品经理专题："、"营销人员专题："这类格式，用自然的研究主题描述
-5. **描述丰富**：每个 description 必须 200-400 字，包含具体品牌、场景、探索维度
-6. **触发词匹配**：确保 description 包含能触发 tags 中研究方法和 Agent 类型的关键词
-7. **场景多样性**：涵盖不同的研究类型（快速洞察/产品创新/深度研究）、行业（消费/科技/文化/健康等）
+3. **严格遵守创意标准**：重新阅读 systemPrompt 中的"创意标准"部分，确保每个主题都满足创意原则
+4. **避免禁止话题**：咖啡、健身、短视频、AI工具、电动车等烂大街的话题绝对不能出现
+5. **标题自然直接**：**绝不使用**"产品经理专题："、"营销人员专题："这类格式
+6. **描述丰富**：每个 description 必须 200-400 字，包含具体品牌、场景、探索维度
+7. **触发词匹配**：确保 description 包含能触发 tags 中研究方法和 Agent 类型的关键词
 
-天马行空，但每个场景都要有明确的商业价值和研究意义！
-
-**标题示例（正确）**：
-- 🏕️ 露营装备的使用场景创新
-- ☕ 一线城市白领的咖啡消费决策
-- 🎮 游戏内购的心理触发机制
-
-**标题示例（错误，不要模仿）**：
-- 🎯 产品经理专题：功能创新研究
-- 📱 营销人员专题：转化率提升`
+发挥你的创意，每个主题都要让人眼前一亮！`
       : `Generate ${count} high-quality research scenario shortcut cards.
 
 Target Audiences (MUST cover all 6 roles with at least 1 each):
@@ -286,25 +323,16 @@ Requirements:
    - Approximately ${podcastCount} scenarios ending with "Podcast Generation" (suitable for quick insights, hot topic analysis, trend explanations)
    - Approximately ${reportCount} scenarios ending with "Report" (suitable for deep research, user interviews, focus groups)
    - Approximately ${otherCount} scenarios can use other output types
-3. **Freely explore with remaining scenarios**: Can explore diverse industries, emerging trends, cross-sector combinations beyond the 6 roles
-4. **Natural and direct titles**: **NEVER use** formats like "For Product Managers:", "Marketers Special:". Use natural research topic descriptions
-5. **Rich descriptions**: Each description must be 100-200 words, including specific brands, scenarios, exploration dimensions
-6. **Keyword matching**: Ensure description includes trigger keywords for research methods in tags and Agent types
-7. **Scenario diversity**: Cover different research types (quick insights/product innovation/deep research), industries (consumer/tech/culture/health etc.)
+3. **Strictly follow creativity standards**: Re-read the "Creativity Standards" section in systemPrompt and ensure each topic meets creativity principles
+4. **Avoid forbidden topics**: Coffee, fitness, short videos, AI tools, electric vehicles - absolutely no overdone topics
+5. **Natural and direct titles**: **NEVER use** formats like "For Product Managers:", "Marketers Special:"
+6. **Rich descriptions**: Each description must be 100-200 words, including specific brands, scenarios, exploration dimensions
+7. **Keyword matching**: Ensure description includes trigger keywords for research methods in tags and Agent types
 
-Be creative but ensure each scenario has clear business value and research significance!
-
-**Title examples (correct)**:
-- 🏕️ Camping Gear Usage Innovation
-- ☕ Coffee Consumption Decisions in Tier-1 Cities
-- 🎮 Psychological Triggers in Game Purchases
-
-**Title examples (wrong, don't imitate)**:
-- 🎯 Product Manager Special: Feature Innovation
-- 📱 For Marketers: Conversion Rate Boost`;
+Be creative and make each topic eye-catching!`;
 
   const result = await generateObject({
-    model: llm("claude-sonnet-4-5"),
+    model: llm("gpt-5-mini"),
     schema: generatedShortcutsSchema,
     messages: [
       { role: "system", content: systemPrompt },
