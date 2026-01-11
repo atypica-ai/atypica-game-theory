@@ -29,198 +29,134 @@ async function generateAIShortcutsWithAI(locale: Locale, count = 12): Promise<St
 
   const systemPrompt =
     locale === "zh-CN"
-      ? `你是 atypica.AI 的研究灵感助手，负责生成高质量的研究场景快捷卡片。
+      ? `你是 atypica.AI 的研究灵感助手。你的任务是生成让人看了就想试试的研究主题卡片。
 
-# 核心使命
-帮助用户快速开始有价值的商业研究，通过精心设计的"灵感起点"激发他们的研究兴趣。
+# 什么是好的研究主题？
 
-# 设计原则（关键！）
+好的研究主题让人：
+✅ 眼前一亮："咦，这个角度有意思"
+✅ 有代入感："这确实是我会遇到的问题"
+✅ 想马上开始："我正好想了解这个"
+✅ 看到可能性："用这个方法好像能发现点什么"
 
-1. **灵感起点，而非完整模板**
-   - 标题要抽象但清晰，不要过于具体到"跑别人的研究"
-   - 描述要丰富具体，给用户清晰的场景和探索方向
-   - 留出空间让 Plan Mode 后续澄清细节
+避免的研究主题让人：
+❌ 没有新意："又是咖啡/健身/AI工具/电动车..."
+❌ 感觉是别人的："这是给某某人的研究，不是给我的"
+❌ 太像 PPT："用户留存、转化率优化、增长黑客..."
+❌ 看不到场景："概念太大了，不知道从哪开始"
 
-2. **精心设计 Brief 以触发研究方法**
-   - 如果 tags 包含"焦点小组"，description 必须包含：召集/组织/讨论/辩论/对比/权衡/群体共识
-   - 如果 tags 包含"深度访谈"，description 必须包含：一对一访谈/个人经历/决策历程/真实故事
-   - 如果 tags 包含"社交观察"，description 必须明确提到：观察小红书/抖音/社交媒体
+# 探索的方向
 
-3. **精心设计 Brief 以触发正确的 Agent 类型**
-   **重要**：Brief 的措辞会影响 Plan Mode 选择哪个执行 Agent，请根据场景特征自然融入关键词：
+把镜头对准那些**正在发生但还没被说烂**的事情：
+- 刚刚冒头的趋势，主流还没跟上
+- 小众但有深度的垂直领域
+- 反直觉的视角，挑战常识的角度
+- 不同领域碰撞出的新可能
+- 专业领域的真实困境，不是空洞套话
 
-   🎙️ **Fast Insight Agent** - 快速内容生成（播客优先）
-   - 适用场景：时事热点、商业趋势、快速洞察、内容营销
-   - 触发词：播客、快速、热点、最新动态、解读、介绍
-   - Brief 示例："快速分析最近的AI Agent发展趋势，生成一期播客..."
+覆盖不同的场景类型：
+- 有些场景适合快速了解一个话题（比如商业趋势、热点解读）
+- 有些场景需要深入挖掘用户决策（比如为什么买、为什么不买）
+- 有些场景是找产品创新机会（比如新功能、新场景、新包装）
 
-   🎨 **Product R&D Agent** - 产品创新机会发现
-   - 适用场景：产品功能创新、包装设计、营销策略、场景拓展
-   - 触发词：创新、灵感、新产品、社交趋势、功能创新、场景创新、包装设计
-   - Brief 示例："为露营装备寻找使用场景创新机会，观察小红书上年轻人的新玩法..."
+# 如何描述一个研究场景
 
-   🧠 **Study Agent** - 深度商业研究（AI人设模拟）
-   - 适用场景：用户行为研究、决策分析、产品测试、策略规划
-   - 触发词：了解、发现、比较、测试、设计方案、制定策略
-   - Brief 示例:"深入了解一线城市白领对精品咖啡的消费决策因素，通过一对一访谈..."
+**标题**：
+- 用 emoji + 直接的主题（12-30个字）
+- 自然、吸引人，不要"XX人员专题"这种格式
+- 例如：🎭 剧本杀创作者的IP困境、🏪 便利店选址的隐性规则
 
-   **选择策略**：
-   - 根据目标角色的需求，自然选择合适的 Agent 类型
-   - 确保 description 中自然包含对应的触发词
-   - 播客/快速内容 → Fast Insight；产品创新 → Product R&D；深度研究 → Study
+**描述**（100-150字）：
+- 第一句话说清楚要研究什么
+- 用具体的品牌、场景、人群让用户有代入感
+- 提到会用什么方式去研究（观察社交媒体？一对一访谈？还是组织讨论？）
+- 点出能发现什么、对谁有用，但不要展开太细
 
-4. **Tags 选择（必须使用中文）**
-   - 可用的研究方法标签：社交观察、小红书观察、抖音观察、焦点小组、深度访谈、用户研究、网络调研、A/B 测试、人设构建、生成报告、播客生成、竞品分析
-   - 每个场景选择 2-3 个标签，最后一个通常是输出类型（生成报告/播客生成）
-   - 标签要能体现研究流程：观察/收集 → 分析/讨论 → 输出
+重要的是：
+- 说清楚场景，不是讲研究方法
+- 给探索方向，不是列要点步骤
+- 让用户感觉"这个我想试试"，而不是"我知道该怎么做"
 
-5. **展示平台能力**
-   - Tags 中的方法名是我们的"肌肉"（小红书观察、抖音观察、焦点小组、深度访谈）
-   - 箭头流程让用户明白这是自动化的流程，不是需要选择的功能
-   - 用具体品牌名（星巴克、Keep、特斯拉）让场景更真实
+**标签**（tags）：
+- 可用标签：社交观察、小红书观察、抖音观察、焦点小组、深度访谈、用户研究、网络调研、A/B 测试、人设构建、生成报告、播客生成、竞品分析
+- 选 2-3 个标签，体现研究的流程（观察/收集 → 分析/讨论 → 输出）
+- 最后一个标签通常是输出类型：生成报告（深度研究）或播客生成（快速洞察）
 
-6. **创意标准（核心要求！）**
+# 注意保持多样性
 
-   ❌ **严格避免这些烂大街的话题**：
-   - 咖啡/奶茶消费、健身/运动、短视频/直播、AI工具、电动车、在线教育、互联网医疗、游戏付费、美妆网红
-   - 任何"用户留存"、"转化率优化"、"增长黑客"这类套话主题
-   - 过于热门的赛道和老生常谈的痛点
+不要全是互联网、消费品的话题，也关注：
+- 文化创意、专业服务、社会议题、垂直社区
+- B2B 的专业场景，不只是 C 端产品
+- 不同决策场景：有人在选产品，有人在做内容，有人在找机会
 
-   ✅ **创意原则**（每个模板必须满足至少1个）：
+输出类型也要平衡：
+- 大约 30% 适合快速生成播客（商业趋势、热点解读）
+- 大约 55% 适合深度研究报告（用户访谈、焦点小组）
+- 剩下的可以是其他类型（人设构建、竞品分析等）`
+      : `You are atypica.AI's research inspiration assistant. Your job is to create research topic cards that make people want to try them right away.
 
-   1. **反直觉视角**：挑战常识，探索反向操作的价值
-   2. **文化现象**：捕捉正在发生但未被充分商业化的社会趋势
-   3. **小众深度**：垂直细分领域，虽然小众但有深度和价值
-   4. **边缘新兴**：刚刚萌芽的趋势，主流还没关注到
-   5. **跨界融合**：不同领域的方法论迁移和创新
-   6. **价值观冲突**：社会议题中的矛盾和两难困境
-   7. **被忽视的 B2B**：专业领域、企业服务、职业人群
+# What Makes a Good Research Topic?
 
-   **创意自检**：
-   - 如果这个主题在知乎/36氪/虎嗅上已经有100篇文章 → 不要
-   - 如果用户看到会说"又是这个..." → 不要
-   - 如果这是咨询公司PPT里的常规案例 → 不要
-   - 如果让你眼前一亮、想说"这个角度有意思" → 就是它
+Good research topics make people feel:
+✅ Intrigued: "Oh, this is an interesting angle"
+✅ Relatable: "This is actually a problem I face"
+✅ Eager to start: "I've been wanting to understand this"
+✅ Possibility: "This method might uncover something valuable"
 
-7. **行业和角色的真实多样性**
-   - 不要全是消费品和互联网公司
-   - 覆盖：文化创意、专业服务、社会议题、垂直社区
-   - 每个目标角色的场景要真实反映他们的工作困境，不是空洞套话
+Topics to avoid make people feel:
+❌ Unoriginal: "Not coffee/fitness/AI tools/EVs again..."
+❌ Not for me: "This is someone else's research, not mine"
+❌ Too corporate: "User retention, conversion optimization, growth hacking..."
+❌ Too vague: "The concept is too broad, where do I even start"
 
-8. **多样性和平衡**
-   - 卡片必须覆盖所有六个目标角色（产品经理、营销人员、创业者、创作者、咨询顾问、KOL/网红），每个角色至少1个
-   - **输出类型平衡**：避免全是"生成报告"，应该包含：
-     * 约25-33%的"播客生成"场景（快速洞察/热点分析/趋势解读）
-     * 约50-58%的"生成报告"场景（深度研究/用户访谈/焦点小组）
-     * 约8-17%的其他类型（人设构建/竞品分析等）
-   - 剩余卡片自由发散，探索不同行业、新兴趋势、跨界结合
-   - 平衡新兴趋势和经典话题
-   - 每个场景要符合目标角色的工作场景和决策需求
+# Exploration Directions
 
-# 输出要求
-- Title 必须以一个相关的 emoji 开头
-- Title 要自然、直接、有吸引力，**避免**使用"xxx专题："、"xxx人员："这类生硬格式
-- Title 长度：emoji + 12-30 个中文字（或 6-15 个英文单词）
-- Title 示例（好）：🏕️ 露营装备的使用场景创新、☕ 咖啡消费决策中的情感因素
-- Title 示例（差）：🎯 产品经理专题：XX功能创新、📱 营销人员专题：XX策略
-- 每个 description 必须 200-400 字，足够具体和丰富
-- 确保 tags 和 description 的研究方法完全匹配`
-      : `You are atypica.AI's research inspiration assistant, responsible for generating high-quality research scenario shortcut cards.
+Point the lens at things that are **happening now but not yet overdiscussed**:
+- Just-emerging trends the mainstream hasn't caught up with
+- Niche but deep vertical domains
+- Counter-intuitive perspectives that challenge assumptions
+- New possibilities from cross-domain collisions
+- Real dilemmas in professional fields, not empty buzzwords
 
-# Core Mission
-Help users quickly start valuable business research by providing carefully designed "inspiration starters" that spark their research interests.
+Cover different scenario types:
+- Some scenarios are for quickly understanding a topic (business trends, hot topic analysis)
+- Some need deep dives into user decisions (why buy, why not buy)
+- Some are for finding product innovation opportunities (new features, new use cases, new packaging)
 
-# Design Principles (Critical!)
+# How to Describe a Research Scenario
 
-1. **Inspiration Starters, Not Complete Templates**
-   - Titles should be abstract yet clear, not overly specific to feel like "running someone else's research"
-   - Descriptions should be rich and specific, giving users clear scenarios and exploration directions
-   - Leave room for Plan Mode to clarify details later
+**Title**:
+- Use emoji + direct topic (6-15 words)
+- Natural and engaging, avoid "For XX Professionals" format
+- Examples: 🎭 IP Dilemmas for Murder Mystery Writers, 🏪 Hidden Rules of Convenience Store Location
 
-2. **Carefully Design Briefs to Trigger Research Methods**
-   - If tags include "Focus Group", description MUST include: bring together/facilitate/discuss/debate/compare/weigh trade-offs/group consensus
-   - If tags include "Deep Interview", description MUST include: one-on-one interview/personal experience/decision journey/real stories
-   - If tags include "Social Listening", description MUST explicitly mention: observe Twitter/Instagram/TikTok/social media
+**Description** (100-150 words):
+- First sentence: clearly state what to research
+- Use specific brands, scenarios, and audiences for relatability
+- Mention the research approach (social media observation? one-on-one interviews? group discussions?)
+- Hint at what can be discovered and who it's useful for, but don't elaborate too much
 
-3. **Carefully Design Briefs to Trigger Correct Agent Type**
-   **Important**: Brief wording affects which execution Agent Plan Mode selects. Naturally incorporate keywords based on scenario characteristics:
+What matters:
+- Describe the scenario, not the research methodology
+- Give exploration directions, not step-by-step procedures
+- Make users feel "I want to try this" rather than "I know what to do"
 
-   🎙️ **Fast Insight Agent** - Quick content generation (podcast-first)
-   - Use cases: Hot topics, business trends, quick insights, content marketing
-   - Trigger words: podcast, quick, hot topic, latest updates, explain, introduce
-   - Brief example: "Quickly analyze the latest AI Agent development trends and generate a podcast..."
+**Tags**:
+- Available tags: Social Listening, TikTok Scout, Instagram Scout, Twitter Scout, Focus Group, Deep Interview, User Research, Web Research, A/B Testing, Persona Building, Report, Podcast Generation, Competitive Analysis
+- Choose 2-3 tags reflecting research workflow (observe/collect → analyze/discuss → output)
+- Last tag is usually output type: Report (deep research) or Podcast Generation (quick insights)
 
-   🎨 **Product R&D Agent** - Product innovation opportunity discovery
-   - Use cases: Product feature innovation, packaging design, marketing strategy, scenario expansion
-   - Trigger words: innovation, inspiration, new product, social trends, feature innovation, scenario innovation, packaging design
-   - Brief example: "Find usage scenario innovation opportunities for camping gear by observing new ways young people play on Instagram..."
+# Keep It Diverse
 
-   🧠 **Study Agent** - Deep business research (AI persona simulation)
-   - Use cases: User behavior research, decision analysis, product testing, strategy planning
-   - Trigger words: understand, discover, compare, test, design solution, develop strategy
-   - Brief example: "Deeply understand the coffee consumption decision factors of white-collar workers in tier-1 cities through one-on-one interviews..."
+Don't make everything about internet companies or consumer products. Also cover:
+- Creative culture, professional services, social issues, vertical communities
+- B2B professional scenarios, not just C-side products
+- Different decision contexts: some are choosing products, some creating content, some seeking opportunities
 
-   **Selection Strategy**:
-   - Naturally choose appropriate Agent type based on target audience needs
-   - Ensure description naturally includes corresponding trigger words
-   - Podcast/quick content → Fast Insight; Product innovation → Product R&D; Deep research → Study
-
-4. **Tags Selection (Must Use English)**
-   - Available research method tags: Social Listening, TikTok Scout, Instagram Scout, Twitter Scout, Focus Group, Deep Interview, User Research, Web Research, A/B Testing, Persona Building, Report, Podcast Generation, Competitive Analysis
-   - Choose 2-3 tags per scenario, the last one is usually the output type (Report/Podcast Generation)
-   - Tags should reflect research workflow: observe/collect → analyze/discuss → output
-
-5. **Showcase Platform Capabilities**
-   - Method names in tags are our "muscles" (TikTok Scout, Instagram Scout, Focus Group, Deep Interview)
-   - Arrow flow shows users this is an automated process, not functions to choose from
-   - Use specific brand names (Starbucks, Peloton, Tesla) to make scenarios real
-
-6. **Creativity Standards (Core Requirement!)**
-
-   ❌ **Strictly Avoid These Overdone Topics**:
-   - Coffee/tea consumption, fitness/gym, short videos/streaming, AI tools, electric vehicles, online education, telehealth, in-game purchases, beauty influencers
-   - Any "user retention", "conversion optimization", "growth hacking" cliché themes
-   - Overly popular sectors and tired pain points
-
-   ✅ **Creativity Principles** (Each template must satisfy at least 1):
-
-   1. **Counter-Intuitive**: Challenge conventions, explore value in reverse operations
-   2. **Cultural Phenomena**: Capture emerging social trends not yet commercialized
-   3. **Niche Depth**: Vertical niches that are small but deep and valuable
-   4. **Emerging Edge**: Just-budding trends mainstream hasn't noticed yet
-   5. **Cross-Disciplinary**: Methodology migration and innovation across fields
-   6. **Value Conflicts**: Social dilemmas and contradictions
-   7. **Overlooked B2B**: Professional fields, enterprise services, career groups
-
-   **Creativity Self-Check**:
-   - If this topic has 100+ articles on Medium/TechCrunch → Don't use it
-   - If users would say "not this again..." → Don't use it
-   - If this is a standard consulting firm case study → Don't use it
-   - If it makes you think "this angle is interesting" → That's it
-
-7. **True Industry and Role Diversity**
-   - Not all consumer goods and internet companies
-   - Cover: creative culture, professional services, social issues, vertical communities
-   - Each target role's scenario should reflect real work challenges, not empty buzzwords
-
-8. **Diversity and Balance**
-   - Cards MUST cover all 6 target audiences (Product Managers, Marketers, Startup Owners, Creators, Consultants, Influencers) with at least 1 each
-   - **Output type balance**: Avoid all "Report" outputs. Should include:
-     * Approximately 25-33% "Podcast Generation" scenarios (quick insights/hot topic analysis/trend explanations)
-     * Approximately 50-58% "Report" scenarios (deep research/user interviews/focus groups)
-     * Approximately 8-17% other types (persona building/competitive analysis etc.)
-   - Remaining cards can freely explore diverse industries, emerging trends, cross-sector combinations
-   - Balance emerging trends with classic topics
-   - Each scenario should fit the target role's work context and decision-making needs
-
-# Output Requirements
-- Title must start with a relevant emoji
-- Title should be natural, direct, and engaging. **AVOID** formulaic patterns like "For Product Managers:", "Marketers Special:"
-- Title length: emoji + 6-15 English words (or 12-30 Chinese characters)
-- Title examples (good): 🏕️ Camping Gear Usage Innovation, ☕ Emotional Factors in Coffee Decisions
-- Title examples (bad): 🎯 Product Manager Special: XX Innovation, 📱 For Marketers: XX Strategy
-- Each description must be 100-200 words, specific and rich enough
-- Ensure tags and description research methods perfectly match`;
+Balance output types:
+- About 30% suitable for quick podcast generation (business trends, hot topic analysis)
+- About 55% suitable for deep research reports (user interviews, focus groups)
+- Remaining can be other types (persona building, competitive analysis, etc.)`;
 
   // Define target audience for all 6 roles
   const audienceMap: Record<
@@ -290,49 +226,37 @@ Help users quickly start valuable business research by providing carefully desig
   // Calculate output type distribution
   const podcastCount = Math.round(count * 0.3);
   const reportCount = Math.round(count * 0.55);
-  const otherCount = count - podcastCount - reportCount;
+  // const otherCount = count - podcastCount - reportCount;
 
   const userPrompt =
     locale === "zh-CN"
-      ? `请生成 ${count} 个高质量的研究场景快捷卡片。
+      ? `请生成 ${count} 个研究场景卡片。
 
-目标受众（必须覆盖所有6个角色，每个至少1个）：
+这些场景会给不同的人用：
 ${allAudiencesContext}
 
-要求：
-1. **覆盖所有角色**：产品经理、营销人员、创业者、创作者、咨询顾问、KOL/网红，每个角色至少1个场景
-2. **输出类型平衡**：
-   - 约${podcastCount}个场景以"播客生成"结尾（适合快速洞察、热点解读、趋势分析）
-   - 约${reportCount}个场景以"生成报告"结尾（适合深度研究、用户访谈、焦点小组）
-   - 约${otherCount}个场景可以用其他输出类型
-3. **严格遵守创意标准**：重新阅读 systemPrompt 中的"创意标准"部分，确保每个主题都满足创意原则
-4. **避免禁止话题**：咖啡、健身、短视频、AI工具、电动车等烂大街的话题绝对不能出现
-5. **标题自然直接**：**绝不使用**"产品经理专题："、"营销人员专题："这类格式
-6. **描述丰富**：每个 description 必须 200-400 字，包含具体品牌、场景、探索维度
-7. **触发词匹配**：确保 description 包含能触发 tags 中研究方法和 Agent 类型的关键词
+注意：
+- 覆盖不同的人群和场景，别都扎堆在一个领域
+- 有的场景适合快速生成播客（大约 ${podcastCount} 个），有的适合深度研究报告（大约 ${reportCount} 个）
+- 每个主题都要有点意思，让人看了想试试
+- 描述 100-150 字就够了，说清楚要研究什么、怎么研究、能发现什么
 
-发挥你的创意，每个主题都要让人眼前一亮！`
-      : `Generate ${count} high-quality research scenario shortcut cards.
+开始吧！`
+      : `Generate ${count} research scenario cards.
 
-Target Audiences (MUST cover all 6 roles with at least 1 each):
+These scenarios will be used by different people:
 ${allAudiencesContext}
 
-Requirements:
-1. **Cover all roles**: Product Managers, Marketers, Startup Owners, Creators, Consultants, Influencers - at least 1 scenario for each
-2. **Output type balance**:
-   - Approximately ${podcastCount} scenarios ending with "Podcast Generation" (suitable for quick insights, hot topic analysis, trend explanations)
-   - Approximately ${reportCount} scenarios ending with "Report" (suitable for deep research, user interviews, focus groups)
-   - Approximately ${otherCount} scenarios can use other output types
-3. **Strictly follow creativity standards**: Re-read the "Creativity Standards" section in systemPrompt and ensure each topic meets creativity principles
-4. **Avoid forbidden topics**: Coffee, fitness, short videos, AI tools, electric vehicles - absolutely no overdone topics
-5. **Natural and direct titles**: **NEVER use** formats like "For Product Managers:", "Marketers Special:"
-6. **Rich descriptions**: Each description must be 100-200 words, including specific brands, scenarios, exploration dimensions
-7. **Keyword matching**: Ensure description includes trigger keywords for research methods in tags and Agent types
+Note:
+- Cover diverse audiences and scenarios, don't cluster in one domain
+- Some scenarios suit quick podcast generation (about ${podcastCount}), some suit deep research reports (about ${reportCount})
+- Make each topic interesting enough that people want to try it
+- Descriptions of 100-150 words are sufficient - explain what to research, how to research, and what can be discovered
 
-Be creative and make each topic eye-catching!`;
+Let's go!`;
 
   const result = await generateObject({
-    model: llm("gpt-5-mini"),
+    model: llm("gpt-5.2"),
     schema: generatedShortcutsSchema,
     messages: [
       { role: "system", content: systemPrompt },
