@@ -91,14 +91,14 @@ export default async function BlogPage({
       <div className="grid gap-8">
         {articles.map((article) => {
           const extra = article.extra as BlogArticleExtra;
-          const coverImage = extra?.coverObjectUrl;
+          const coverImage = extra?.coverSrc;
 
           return (
             <article key={article.id} className="group border-b pb-8 last:border-b-0">
               <Link href={`/blog/${article.slug}`} className="block">
                 <div className="grid gap-6 md:grid-cols-[300px_1fr] items-start">
                   <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                    {coverImage && /(jpg|jpeg|png|gif|webp)$/.test(coverImage) && (
+                    {coverImage && /(jpg|jpeg|png|gif|webp)$/.test(coverImage.split("?")[0]) && (
                       <Image
                         src={coverImage}
                         alt={article.title || "Blog post cover"}

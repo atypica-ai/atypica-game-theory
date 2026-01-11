@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         // Create English version (original HTML content)
         const enExtra: BlogArticleExtra = {
           contentType: "html",
-          coverObjectUrl: post.coverImage,
+          coverSrc: post.coverImage,
           originalUrl: post.link,
         };
 
@@ -102,7 +102,7 @@ ${post.content}`,
         // Create Chinese version
         const zhExtra: BlogArticleExtra = {
           contentType: "markdown",
-          coverObjectUrl: post.coverImage,
+          coverSrc: post.coverImage,
           originalUrl: post.link,
         };
 

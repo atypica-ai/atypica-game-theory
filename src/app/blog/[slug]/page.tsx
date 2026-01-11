@@ -49,7 +49,7 @@ export async function generateMetadata({
 
   const baseMetadata = generatePageMetadata({
     title: article.title,
-    image: extra?.coverObjectUrl,
+    image: extra?.coverSrc,
     locale,
   });
 

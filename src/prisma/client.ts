@@ -283,7 +283,7 @@ export enum FeaturedItemResourceType {
 
 export type BlogArticleExtra = Partial<{
   contentType: "html" | "markdown";
-  coverObjectUrl: string;
+  coverSrc: string;
   originalUrl: string; // Substack 原文链接
 }>;
 

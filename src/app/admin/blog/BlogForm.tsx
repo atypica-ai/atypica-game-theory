@@ -36,7 +36,7 @@ export function BlogForm({ article }: BlogFormProps) {
     contentType: ((article?.extra as BlogArticleExtra)?.contentType || "html") as
       | "html"
       | "markdown",
-    coverObjectUrl: (article?.extra as BlogArticleExtra)?.coverObjectUrl || "",
+    coverSrc: (article?.extra as BlogArticleExtra)?.coverSrc || "",
     originalUrl: (article?.extra as BlogArticleExtra)?.originalUrl || "",
   });
 
@@ -47,7 +47,7 @@ export function BlogForm({ article }: BlogFormProps) {
     try {
       const extra: BlogArticleExtra = {
         contentType: formData.contentType,
-        coverObjectUrl: formData.coverObjectUrl || undefined,
+        coverSrc: formData.coverSrc || undefined,
         originalUrl: formData.originalUrl || undefined,
       };
 
@@ -103,7 +103,10 @@ export function BlogForm({ article }: BlogFormProps) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="locale">Locale</Label>
-          <Select value={formData.locale} onValueChange={(value) => setFormData({ ...formData, locale: value })}>
+          <Select
+            value={formData.locale}
+            onValueChange={(value) => setFormData({ ...formData, locale: value })}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -147,8 +150,8 @@ export function BlogForm({ article }: BlogFormProps) {
         <Label htmlFor="coverObjectUrl">Cover Image URL</Label>
         <Input
           id="coverObjectUrl"
-          value={formData.coverObjectUrl}
-          onChange={(e) => setFormData({ ...formData, coverObjectUrl: e.target.value })}
+          value={formData.coverSrc}
+          onChange={(e) => setFormData({ ...formData, coverSrc: e.target.value })}
         />
       </div>
 
