@@ -1,28 +1,27 @@
 # Interview vs Discussion: Which One Should You Use?
 
-This document provides an objective comparison of Interview Chat and Discussion Chat, two core research tools in atypica.AI, covering their differences, use cases, and capabilities.
+This document provides an objective comparison of Interview Chat (in-depth interviews) and Discussion Chat (group discussions), two core research tools in atypica.AI. Learn about their differences, use cases, and capabilities to choose the best method for your research.
 
 ---
 
-## Core Differences
+## Core Differences at a Glance
 
 | Dimension | Interview Chat (In-Depth Interview) | Discussion Chat (Group Discussion) |
 |------|--------------------------|--------------------------|
 | **Objective** | Understand individual "why" behind motivations | Observe opinion clashes and consensus formation |
 | **Participant Count** | 5-10 people (parallel 1-on-1 interviews) | 3-8 people (group simultaneous interaction) |
 | **AI Role** | Consulting advisor with deep probing | Moderator facilitating discussion |
-| **Conversation Structure** | Single-threaded: interviewer ↔ interviewee | Multi-agent parallel: interviewees interact |
+| **Conversation Structure** | Single-threaded: interviewer ↔ interviewee | Multi-party interaction with opinion collision |
 | **Probing Method** | "5 Whys" technique, layer by layer | Guide opposing views to clash: "Why do you disagree?" |
 | **Output Content** | Individual deep insights + verbatim quotes | Multi-perspective comparison + conflict points + consensus areas |
-| **Duration Control** | 7 rounds per person (~10-15 minutes) | Flexible until opinions fully clash |
-| **Completion Signal** | AI calls `saveInterviewConclusion` | Discussion naturally ends with summary |
-| **Tracking Method** | Individual `analystInterviewId` per interview | Unified `timelineToken` tracks entire process |
+| **Duration Control** | ~10-15 minutes per person | Flexible until opinions fully clash |
+| **Typical Duration** | ~50-70 minutes (5 parallel interviews) | ~30-40 minutes (group discussion) |
 
 ---
 
 ## Use Case Comparison
 
-### Interview Chat is Best For
+### When to Use Interview Chat?
 
 ✅ **Exploratory Research**
 - When you don't know the answer and need to dig into "why"
@@ -44,7 +43,7 @@ This document provides an objective comparison of Interview Chat and Discussion 
 - Need to understand key elements influencing purchase decisions
 - Example: Why does the $18-22 price range make users "hesitant"?
 
-### Discussion Chat is Best For
+### When to Use Discussion Chat?
 
 ✅ **Comparative Validation**
 - Need to compare real reactions to different options
@@ -68,125 +67,9 @@ This document provides an objective comparison of Interview Chat and Discussion 
 
 ---
 
-## Technical Implementation Differences
-
-### Interview Chat Technical Implementation
-
-**Conversation Mode**:
-- Single-threaded: interviewer ↔ interviewee
-- Parallel execution: simultaneous independent interviews with 5-10 interviewees
-- Message conversion: interviewer's assistant messages become interviewee's user messages
-
-**Core Tools**:
-- `reasoningThinking`: Deep analysis and reasoning
-- `saveInterviewConclusion`: Save interview summary (auto-triggered)
-- `googleSearch` (interviewee): Supplementary information retrieval
-
-**Interview Control**:
-- Message limit: 14 messages (total for both parties)
-- Timeout: 10 minutes
-- Forced termination: Force call `saveInterviewConclusion` when message limit reached
-
-**Data Persistence**:
-```typescript
-analystInterview {
-  id: analystInterviewId
-  analystId: Research ID
-  personaId: Interviewee ID
-  instruction: Interview requirements
-  conclusion: Interview summary (markdown format)
-  interviewUserChatId: Conversation record ID
-}
-```
-
-**Model Selection**:
-- Interviewer: Claude 3.7 Sonnet / Gemini 2.5 Flash
-- Interviewee: Gemini 2.5 Flash (with Google Search grounding support)
-
-### Discussion Chat Technical Implementation
-
-**Conversation Mode**:
-- Multi-agent parallel: moderator + 3-8 interviewees
-- Group interaction: interviewees observe each other's statements
-- Turn control: moderator decides speaking order and discussion pace
-
-**Discussion Types** (3 presets):
-1. **Default (Focus Group)**: Consensus building, finding common ground
-2. **Debate**: Debate mode, emphasizing opposing views
-3. **Roundtable**: Equal exchange and open dialogue
-
-**Data Tracking**:
-```typescript
-discussionTimeline {
-  token: timelineToken
-  instruction: Discussion directive
-  events: []  // Real-time updated discussion event stream
-  summary: Discussion summary
-  minutes: Meeting minutes
-  extra: {}
-}
-```
-
-**Real-Time Updates**:
-- Frontend polls for progress using `timelineToken`
-- Each statement auto-saved to `events` array
-- `summary` and `minutes` generated after discussion ends
-
-**Model Selection**:
-- Moderator: Claude 3.7 Sonnet / GPT-4.1 Mini
-- Interviewees: Gemini 2.5 Flash
-
----
-
-## Output Content Comparison
-
-### Interview Chat Output
-
-**Interview Summary for Each Interviewee** (markdown format):
-```markdown
-## Interview Summary
-[Overall impression and key findings]
-
-## Key Findings
-- Finding 1
-- Finding 2
-- ...
-
-## User Profile
-[Interviewee characteristics and typical behavior patterns]
-
-## Memorable Dialogue Excerpts
-> Interviewer: Why does "weird" make you hesitate?
-> Linda: Because I need a "lifeline," not an "experiment."
-```
-
-**Unified Interview Summary** (all interviewees):
-- Generated by GPT-4.1 Mini
-- Covers main perspectives, behavior patterns, and decision factors across all participants
-- Highlights important findings and patterns
-
-### Discussion Chat Output
-
-**Discussion Summary** (summary):
-- Core viewpoint aggregation
-- Key moments of opinion collision
-- Consensus reached and unresolved controversial points
-
-**Meeting Minutes** (minutes):
-- Complete speaking order and content
-- Each participant's stance evolution
-- Moderator's guidance strategy
-
-**Event Stream** (timeline events):
-- Real-time recording of each statement
-- Full discussion process traceable
-- Supports real-time frontend display
-
----
-
 ## What We Can Do
 
-### Interview Chat
+### Interview Chat Core Capabilities
 
 ✅ **AI-Facilitated Deep Interviews**
 - Infinite "why" probing until reaching root motivation
@@ -200,15 +83,15 @@ discussionTimeline {
 
 ✅ **Complete Conversation Traceability**
 - Every conclusion traceable to specific dialogue excerpts
-- Complete interview records preserved (interviewUserChatId)
-- Full interview review available
+- Complete interview records preserved
+- Full interview review available anytime
 
 ✅ **Automatic Summarization and Distillation**
 - AI auto-identifies key findings and user profiles
 - Extracts memorable dialogue excerpts as evidence
 - Generates structured interview summaries
 
-### Discussion Chat
+### Discussion Chat Core Capabilities
 
 ✅ **AI Assembles Users with Specific Stances**
 - Actively select personas with different viewpoints to participate
@@ -226,15 +109,15 @@ discussionTimeline {
 - Track opinion evolution during discussion
 
 ✅ **Real-Time Discussion Tracking**
-- Frontend can view discussion progress in real-time
-- Access event stream via `timelineToken`
+- View discussion progress in real-time
+- Access complete event stream records
 - Support discussion process replay
 
 ---
 
 ## What We Cannot Do
 
-### Technical Limitations (Physically impossible or ineffective)
+### Capability Boundaries: Technical Limitations
 
 #### Interview Chat
 
@@ -270,7 +153,7 @@ discussionTimeline {
   - Sensitive topics requiring professional moderation skills (e.g., politics, religion)
 - **Applicable Scenarios**: Suitable for relatively simple product/service discussions, not for highly politicized or interest-complex scenarios
 
-### Strategic Choices (Can do but deliberately don't)
+### Capability Boundaries: Strategic Choices
 
 #### Interview Chat
 
@@ -387,38 +270,67 @@ discussionTimeline {
 
 ---
 
-## Technical Details Quick Reference
+## More Real-World Cases
 
-### Code Implementation Locations
+### Case 1: SaaS Product Pricing Strategy
 
-- **Interview Chat**:
-  - Tool definition: `src/app/(study)/tools/interviewChat/index.ts`
-  - Prompt: `src/app/(study)/tools/interviewChat/prompt.ts`
-  - Interview summary save: `src/app/(study)/tools/interviewChat/saveInterviewConclusion/index.ts`
+**Research Objective**: A project management tool needs to determine subscription pricing strategy, uncertain whether users prefer monthly or annual payments, and where price sensitivity points are.
 
-- **Discussion Chat**:
-  - Tool definition: `src/app/(study)/tools/discussionChat/index.ts`
-  - Discussion types: `src/app/(panel)/discussionTypes/index.ts`
-  - Execution logic: `src/app/(panel)/lib/index.ts`
+**Research Approach**:
+1. **Interview Chat**: Deep interviews with 8 decision-makers from different company sizes
+   - Dig into decision factors: budget cycles, ROI evaluation standards, procurement processes
+   - Identify price sensitivity points: what price triggers "immediate purchase" vs "hesitation"
+   - Understand payment preference motivations: monthly flexibility vs annual discount appeal
 
-### Key Parameters
+2. **Discussion Chat**: Assemble 5 decision-makers for group discussion
+   - Compare monthly vs annual payment real reactions
+   - Observe pricing view differences across company sizes
+   - Identify consensus: core value points everyone agrees on
 
-**Interview Chat**:
-```typescript
-{
-  personas: { id: number, name: string }[]  // 5-10 people
-  instruction: string  // Interview requirements
-}
-```
+**Research Findings**:
+- Consensus: Powerful features aren't key, "team collaboration efficiency improvement" is decision core
+- Divergence: Small companies prefer monthly flexibility, medium companies value annual discounts more
+- Key Insight: Price itself isn't the issue, "trial period experience" is conversion key
 
-**Discussion Chat**:
-```typescript
-{
-  instruction: string  // Discussion directive
-  personaIds: number[]  // 3-8 people
-  timelineToken: string  // Auto-generated for tracking
-}
-```
+### Case 2: Fitness App New Feature Testing
+
+**Research Objective**: A fitness app plans to launch "AI Personal Trainer" feature, needs to understand user acceptance and expectations of "AI guidance."
+
+**Research Approach**:
+1. **Interview Chat**: Deep interviews with 7 users of different fitness levels
+   - Understand user real needs and pain points for "personal trainers"
+   - Explore user concerns and expectations about "AI replacing human coaches"
+   - Dig into what situations make users trust AI guidance
+
+2. **Discussion Chat**: Assemble 6 users for discussion
+   - Compare "beginner users vs experienced users" views on AI trainers
+   - Observe opinion evolution during discussion: anyone shift from skeptical to accepting?
+   - Identify most controversial feature points
+
+**Research Findings**:
+- Consensus: Users universally recognize "movement correction" as core need
+- Divergence: Beginners trust AI more, experienced users more skeptical of AI professionalism
+- Key Insight: Users don't reject AI, they worry "AI doesn't understand my body condition"
+
+### Case 3: E-commerce Platform Membership System Redesign
+
+**Research Objective**: An e-commerce platform plans to redesign membership system, from "single membership" to "tiered membership," needs to understand user acceptance.
+
+**Research Approach**:
+1. **Interview Chat**: Deep interviews with 10 users of different consumption habits
+   - Understand user satisfaction and pain points with current membership system
+   - Explore user understanding and expectations of "tiered membership"
+   - Dig into what benefits users willing to pay more for
+
+2. **Discussion Chat**: Assemble 8 users for discussion
+   - Compare "high-frequency users vs low-frequency users" views on tiered membership
+   - Observe discussion consensus: which benefits are "must-have," which are "nice-to-have"
+   - Identify controversy points: is price tiering reasonable?
+
+**Research Findings**:
+- Consensus: Users accept "tiering" concept, but premise is "basic benefits cannot shrink"
+- Divergence: High-frequency users willing to pay for "priority customer service," low-frequency users don't care
+- Key Insight: Users' biggest worry isn't "tiering," it's "being downgraded"
 
 ---
 
@@ -430,42 +342,53 @@ discussionTimeline {
 - Interview: Understand each person's deep motivations
 - Discussion: Observe opinion collision among these people
 
-### Q2: Is the "7 rounds of conversation" limit for Interview too short?
+**Recommendation**: Do Interview first to understand individuals, then Discussion to observe group dynamics.
 
-**Design Rationale**:
-- 7 rounds (14 messages total for both parties) is about 10-15 minutes
-- Beyond this length, interviewees may fatigue, information quality declines
-- If deeper dive needed, can re-initiate Interview with specific users after report generation
+### Q2: Can Interview duration be customized?
+
+**Currently not supported**. Each interview is ~10-15 minutes, an optimized duration:
+- Too short: Can't reach deep motivations
+- Too long: Interviewees fatigue, information quality declines
+
+If deeper dive needed, you can re-initiate Interview with specific users after report generation.
 
 ### Q3: How does Discussion ensure users with different stances all participate?
 
-**Moderator Strategy**:
-- AI moderator actively calls on people to speak
-- Identifies "silent ones" and invites expression
+**AI moderator actively controls**:
+- Actively calls on people to speak, invites "silent ones" to express
 - Controls "chatterboxes" to ensure balanced participation
+- Identifies opinion conflicts and actively guides deep discussion
 
-### Q4: How is the quality of Interview-generated summaries?
+### Q4: What's the difference between Interview and Discussion outputs?
 
-**Quality Assurance**:
-- Unified summary generated by GPT-4.1 Mini
-- Based on all interview conclusions (markdown format)
-- Highlights important findings and patterns with structured presentation
+**Interview Output**:
+- Independent interview summary per interviewee (3000+ words)
+- Memorable dialogue excerpts as evidence
+- Structured user profiles and key findings
 
-### Q5: Is there delay in Discussion's real-time tracking?
+**Discussion Output**:
+- Discussion summary: core viewpoint aggregation, key opinion collision moments
+- Meeting minutes: complete speaking order and content
+- Consensus and divergence checklist: auto-identified consensus areas and controversy points
 
-**Delay Situation**:
-- Frontend polls using `timelineToken` (refresh every ~1-2 seconds)
-- Discussion events saved to database in real-time
-- May have 1-3 second delay, but doesn't affect overall experience
+### Q5: When must you use real human interviews instead of Interview Chat?
+
+**Real human interviews recommended for**:
+- Deep emotional insights: brand emotional connections, lifestyle exploration
+- Complex psychological analysis: deep psychological trauma, emotional disorders
+- High-stakes decisions: major product redesigns, brand repositioning
+- Sensitive topics: politics, religion, personal privacy
+
+**Interview Chat suitable for**:
+- Exploratory research and preliminary insights
+- Quick hypothesis validation
+- Large-scale user research (5-10 parallel interviews)
+- Product feature testing and pricing strategy
 
 ---
 
 ## Document Version
 
-- **Version**: v1.0
+- **Version**: v2.0
 - **Last Updated**: 2026-01-15
 - **Maintained by**: atypica.AI Product Team
-- **Data Sources**:
-  - Code implementation: `src/app/(study)/tools/interviewChat/`, `src/app/(study)/tools/discussionChat/`
-  - User research journey: `docs/product/user-research-journey.md`
-  - Prompt design: `src/app/(study)/tools/interviewChat/prompt.ts`

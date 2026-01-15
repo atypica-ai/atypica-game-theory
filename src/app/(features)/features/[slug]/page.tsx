@@ -1,11 +1,11 @@
 import { generatePageMetadata } from "@/lib/request/metadata";
+import { promises as fs } from "fs";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { promises as fs } from "fs";
 import path from "path";
 import { Streamdown } from "streamdown";
-import { getDocBySlug, docs } from "../docs-config";
+import { docs, getDocBySlug } from "../docs-config";
 
 // Generate static params for all docs
 export function generateStaticParams() {

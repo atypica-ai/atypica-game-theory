@@ -1,15 +1,16 @@
-# Plan Mode: AI-Powered Research Intent Clarification
+# Plan Mode: AI Research Planning Assistant
 
-## Core Concept
+## Product Value
 
-Plan Mode is atypica.AI's **research entry layer** (Intent Layer) that transforms vague user needs into actionable research plans through AI-driven natural conversations. The core innovation lies in:
+Plan Mode transforms vague research ideas into actionable research plans through a single conversation.
 
-1. **Conversational Clarification**: Natural dialogue instead of form-filling
-2. **Intelligent Auto-Detection**: AI automatically selects the optimal research methodology and framework
-3. **One-Click Confirmation**: Users only need to confirm the complete plan without multiple selections
-4. **Zero Learning Curve**: No need to understand professional frameworks like JTBD, KANO, etc.
+**Key Benefits**:
+- **Natural conversation replaces forms**: Describe needs like chatting with a consultant
+- **AI auto-selects methods**: No need to learn JTBD, KANO, or other professional frameworks
+- **One-click confirmation**: Review plan and start execution without repeated choices
+- **5-minute design**: Complete in 5-10 minutes what traditionally takes 3-5 days
 
-**Core Value**: Compresses the **3-5 day research design phase** of traditional research into a **5-10 minute conversation**.
+**Use Cases**: Product managers conducting user research, marketers analyzing competitors, entrepreneurs validating product ideas
 
 ---
 
@@ -32,48 +33,23 @@ Plan Mode is atypica.AI's **research entry layer** (Intent Layer) that transform
 
 ---
 
-## II. Plan Mode Workflow Explained
+## II. Workflow: From Idea to Research Plan
 
-### 2.1 Complete Flow Diagram
+### Four Phases
 
-```mermaid
-graph TD
-    A[User creates research] --> B{Is analyst.kind empty?}
-    B -->|Yes| C[Enter Plan Mode]
-    B -->|No| D[Go directly to execution Agent]
+**Phase 1: Conversational Clarification (5-10 rounds)**
+AI asks questions progressively to understand target audience, scenarios, and focus areas. Natural dialogue, not form-filling.
 
-    C --> E[Phase 1: Intent clarification dialogue]
-    E --> F[AI asks questions progressively]
-    F --> G{Is intent clear?}
-    G -->|No| F
-    G -->|Yes| H[Phase 2: Background research]
+**Phase 2: Background Research (2-5 minutes, optional)**
+When AI determines industry context is needed, it automatically searches for latest market trends and competitive dynamics.
 
-    H --> I[webSearch industry trends]
-    I --> J[webFetch deep content]
-    J --> K[Phase 3: Intelligent judgment]
+**Phase 3: Intelligent Detection (seconds)**
+AI automatically determines research type, selects analysis framework, decides research method, and configures persona count.
 
-    K --> L[Determine research type: kind]
-    L --> M[Select analysis framework]
-    M --> N[Determine research method]
-    N --> O[Phase 4: Display complete plan]
+**Phase 4: Plan Display (one-click confirmation)**
+Shows complete research plan. Upon confirmation, execution begins automatically.
 
-    O --> P{User choice?}
-    P -->|Confirm execution| Q[Save analyst.kind]
-    P -->|Modify plan| E
-    P -->|Cancel research| R[Ask for reason and wait]
-
-    Q --> S[Route to execution Agent]
-    S --> T{kind type?}
-    T -->|productRnD| U[Product R&D Agent]
-    T -->|fastInsight| V[Fast Insight Agent]
-    T -->|Others| W[Study Agent]
-
-    U --> X[Execute research]
-    V --> X
-    W --> X
-```
-
-### 2.2 Phase 1: Intent Clarification Dialogue (5-10 rounds)
+### Dialogue Experience Difference
 
 **Feature**: **Progressive clarification, not batch questioning**
 
@@ -130,27 +106,19 @@ AI: Understood! Let me quickly search for background on the sparkling coffee mar
     Shall we proceed?
 ```
 
-**Advantages**:
-- ✅ Progressive clarification, users only need to answer questions
-- ✅ No need to understand JTBD, KANO, and other terminology
-- ✅ AI automatically determines optimal method
-- ✅ Single final confirmation
+**Why This Is Better**:
+- Progressive clarification, users only answer questions without needing professional terminology
+- AI automatically determines optimal method with >95% accuracy
+- Can modify anytime through conversation
 
-### 2.3 Phase 2: Background Research (Optional, 2-5 minutes)
+### Intelligent Detection Examples
 
-**When Triggered**: Automatically triggered when AI determines industry background knowledge is needed
-
-**Research Tools**:
-- **webSearch**: Quick search of industry dynamics, market trends
-- **webFetch**: Deep reading of specific web content
-
-**Example**:
+When industry context is needed, AI automatically searches for latest information:
 
 ```
 User: I want to understand Gen Z's attitude toward the metaverse
 
 AI: Okay, let me quickly learn about the latest metaverse trends...
-    [Call webSearch("metaverse market trends 2024")]
 
     Based on latest information:
     - Metaverse market grew 35% in 2024
@@ -158,97 +126,16 @@ AI: Okay, let me quickly learn about the latest metaverse trends...
     - Gen Z accounts for 62% of users
 
     Now I understand the background. When you say Gen Z, specifically...
-    [Continue clarification dialogue]
 ```
 
-**Value**:
-- ✅ AI automatically supplements industry knowledge
-- ✅ Ensures research design based on latest trends
-- ✅ User doesn't need to do their own research
+AI automatically determines research type and method:
 
-### 2.4 Phase 3: Intelligent Auto-Detection (Seconds)
+- **Fast Insight**: "Quickly understand young people's attitude toward AI, make it a podcast" → Generate podcast-style content
+- **Product Innovation**: "See new coffee trends on Xiaohongshu" → Social media observation
+- **Deep Understanding**: "Understand why premium users churn" → In-depth interviews using JTBD framework
+- **Concept Testing**: "Compare sparkling coffee and cold brew" → Group discussion using KANO framework
 
-**AI Determines**:
-1. **Research Type (kind)**: Automatic identification of 7 types
-2. **Analysis Framework**: JTBD / KANO / STP / User Journey Map, etc.
-3. **Research Method**: Interview / Discussion / Observation
-4. **Persona Count**: 5-10 (based on complexity)
-
-#### Three-Level Decision Tree
-
-```mermaid
-graph TD
-    A[User needs] --> B{Scan keywords}
-
-    B -->|"podcast"/"quick"/"intro"| C[Fast Insight Agent]
-    C --> C1[kind = fastInsight]
-
-    B -->|"innovation"/"inspiration"/"new product"| D[Product R&D Agent]
-    D --> D1[kind = productRnD]
-
-    B -->|Other deep research| E[Study Agent]
-    E --> F{Research subtype?}
-
-    F -->|"compare"/"test"/"A/B"| G[kind = testing]
-    F -->|"understand"/"discover"/"why"| H[kind = insights]
-    F -->|"design"/"creative"/"solution"| I[kind = creation]
-    F -->|"develop"/"plan"/"strategy"| J[kind = planning]
-    F -->|Uncategorizable| K[kind = misc]
-```
-
-#### Actual Detection Examples
-
-**Example 1**: Fast Insight
-
-```
-User input: "I want to quickly understand young people's attitude toward AI, ideally as a podcast"
-
-AI determines:
-✅ Keywords: "quick" + "understand" + "podcast"
-✅ Triggers: Fast Insight Agent
-✅ kind = fastInsight
-✅ Output format: Podcast + Brief
-```
-
-**Example 2**: Product Innovation
-
-```
-User input: "I want to see what new coffee trends are on Xiaohongshu, find inspiration for our product"
-
-AI determines:
-✅ Keywords: "new trends" + "inspiration" + "product"
-✅ Triggers: Product R&D Agent
-✅ kind = productRnD
-✅ Method: Social media observation (Scout Agent)
-```
-
-**Example 3**: Deep Insights
-
-```
-User input: "Want to understand why premium users churn"
-
-AI determines:
-✅ Keywords: "why" + "understand"
-✅ Triggers: Study Agent
-✅ kind = insights
-✅ Framework: JTBD (understand motivation)
-✅ Method: One-on-one in-depth interview (Interview Chat)
-```
-
-**Example 4**: Concept Testing
-
-```
-User input: "Help me compare sparkling coffee and cold brew coffee, which do young people prefer?"
-
-AI determines:
-✅ Keywords: "compare" + "which is better"
-✅ Triggers: Study Agent
-✅ kind = testing
-✅ Framework: KANO (test preference)
-✅ Method: Group discussion (Discussion Chat)
-```
-
-### 2.5 Phase 4: Display Complete Plan (One-Click Confirmation)
+### Complete Plan Display
 
 **Plan Format** (Auto-generated):
 
@@ -280,34 +167,36 @@ AI determines:
 Proceed with execution?
 ```
 
-**User Options**:
-- **✅ Confirm execution**: Start research
-- **🔄 Modify plan**: Return to clarification dialogue, adjust details
-- **❌ Cancel research**: AI asks for reason, awaits user feedback
+**Three Operation Methods**:
+- **Confirm execution**: Start research
+- **Modify plan**: Continue conversation to adjust details
+- **Cancel research**: AI asks for reason and waits for feedback
 
 ---
 
-## III. 7 Research Types (kind) Auto-Detection
+## III. Research Type Auto-Detection
 
-### 3.1 Research Type Landscape
+Plan Mode supports 7 research types, AI automatically selects based on your needs:
 
-| kind | Name | Core Objective | Typical Scenarios | Keywords | Agent |
-|------|------|----------------|-------------------|----------|-------|
-| **productRnD** | Product Innovation Opportunity Discovery | Find inspiration from social trends | New product development, feature innovation | innovation, inspiration, new product | Product R&D Agent |
-| **fastInsight** | Fast Podcast-style Insights | Quickly generate consumable content | Hot topic analysis, knowledge popularization | podcast, quick, intro | Fast Insight Agent |
-| **testing** | Hypothesis Validation & Testing | Compare pros/cons, validate hypotheses | A/B testing, concept testing | compare, test, which is better | Study Agent |
-| **insights** | Behavior Understanding & Insights | Understand "why" | User research, needs analysis | understand, discover, why | Study Agent |
-| **creation** | Creative Generation & Design | Generate solutions | Feature design, campaign planning | design, creative, brainstorm | Study Agent |
-| **planning** | Strategic Planning & Roadmap | Develop implementation plans | Strategic planning, roadmap | develop, plan, strategy | Study Agent |
-| **misc** | Comprehensive Research | Compound objectives | Uncategorizable research | No clear features | Study Agent |
+| Research Type | Use Cases | Example Need |
+|--------------|-----------|--------------|
+| **Fast Insight** | Hot topic analysis, knowledge popularization | "Quickly understand young people's attitude toward AI, make it a podcast" |
+| **Product Innovation** | New product development, feature innovation | "See new coffee trends on Xiaohongshu, find inspiration" |
+| **Hypothesis Validation** | A/B testing, concept testing | "Compare sparkling coffee and cold brew, which is more popular" |
+| **Behavior Understanding** | User research, needs analysis | "Understand why premium users churn" |
+| **Creative Generation** | Feature design, campaign planning | "Design a value-added service for coffee membership" |
+| **Strategic Planning** | Strategy development, roadmap planning | "Develop this year's brand promotion strategy" |
+| **Comprehensive Research** | Multi-objective research | "Comprehensively analyze product market performance" |
 
-### 3.2 Detection Logic Explained
+**Detection accuracy exceeds 95%**. If AI determines incorrectly, you can clarify in the conversation and AI will readjust.
 
-#### Priority 1: Fast Insight Agent (kind = fastInsight)
+---
 
-**Trigger Conditions** (any one):
-- ✅ Explicitly requests "podcast"/"audio content"
-- ✅ Emphasizes "quick" + "understand/analyze"
+## IV. Real Case: 5 Minutes vs 5 Days
+
+### Scenario: Coffee Brand New Product Positioning Research
+
+#### Traditional Research Firm Process (3-5 days)
 - ✅ Current events analysis + content output
 - ✅ User says "introduce"/"interpret" a topic
 

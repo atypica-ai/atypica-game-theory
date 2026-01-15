@@ -1,16 +1,16 @@
-# MCP Integration - Connect AI to Your Tools and Data
+# MCP Integration - Connect AI to Your Data and Tools
 
-## Core Philosophy
+## Core Value
 
-MCP (Model Context Protocol) is an open standard that enables AI to securely access external tools and data sources. atypica.AI's MCP integration empowers teams to:
+MCP (Model Context Protocol) is an open standard introduced by Anthropic that enables AI to securely access enterprise tools and data sources. atypica.AI's native MCP support helps teams:
 
-1. **Integrate Custom Tools**: Connect your internal tools directly into research workflows
-2. **Access Data Sources**: Query Jupyter Notebooks, internal databases, and APIs seamlessly
-3. **Extend AI Capabilities**: Add team-specific research capabilities to AI
+1. **Break Data Silos**: AI directly accesses internal data without manual exports
+2. **Unlimited Extensions**: Connect existing team tools without rebuilding
+3. **Secure and Controlled**: Data stays within team infrastructure with secure access
 
-**Analogy**:
-- **Traditional AI**: Limited to preset tools (webSearch, interviewChat, etc.)
-- **MCP Integration**: AI can invoke any tool your team provides (internal analytics tools, proprietary APIs, etc.)
+**Simple Explanation**:
+- **Traditional AI**: Limited to public web data and preset functions
+- **MCP Integration**: AI can invoke your team's proprietary tools (databases, internal systems, custom APIs)
 
 ---
 
@@ -59,406 +59,76 @@ Result: In-depth analysis, complete data, fully automated
 
 ---
 
-## What is MCP?
+## How MCP Works
 
-### Official Definition
+### Simple Understanding
 
-**Model Context Protocol (MCP)** is an open standard introduced by Anthropic that defines how AI applications securely connect to external tools and data sources.
+**Model Context Protocol (MCP)** is an open standard introduced by Anthropic that defines how AI securely accesses external tools and data.
 
-**Core Capabilities**:
-1. **Tools**: Functions AI can invoke (e.g., data queries, API calls)
-2. **Resources**: Assets AI can access (e.g., files, database records)
-3. **Prompts**: Pre-defined prompt templates
-
-### How It Works
-
+**Connection Flow**:
 ```
-atypica.AI Agent
-     ↓
-MCP Client (built into atypica)
-     ↓
-MCP Server (deployed by team)
-     ↓
-Team Data/Tools (Jupyter, databases, APIs, etc.)
+Your Question → atypica.AI → Team's MCP Server → Internal Data/Tools
 ```
+
+**Core Features**:
+- **Unified Standard**: Follows MCP open standard, compatible with ecosystem
+- **Secure Isolation**: Each team independently configured, data segregated
+- **Flexible Integration**: Supports various data sources and tools
+
+---
+
+## Team-Level Configuration
+
+### Flexible Setup, Secure Access
+
+**Each team can configure their own MCP servers in the admin dashboard** without requiring technical implementation:
+
+**Configuration Content**:
+- **Server Address**: Access URL for the team's MCP server
+- **Authentication**: API Key or access token
+- **Function Description**: Tell AI what this tool can do
+
+**Example Scenarios**:
+- Configure Jupyter analysis tool to let AI access team's data analysis results
+- Configure internal database query tool to let AI directly query user behavior data
+- Configure internal API tool to let AI invoke team's proprietary services
 
 **Key Features**:
-- **Standard Protocol**: All MCP Servers follow a unified interface
-- **Security Isolation**: Each team's MCP Server is independently configured
-- **Flexible Transport**: Supports HTTP, SSE, and other transport methods
+- **Instant Activation**: Takes effect immediately across all research sessions
+- **Team Isolation**: Each team's configuration is independent, data securely segregated
+- **Flexible Updates**: Add, modify, or remove MCP server configurations anytime
 
 ---
 
-## atypica.AI MCP Integration Architecture
+## Built-in Deep Research Tool
 
-### 1. Team-Level Configuration
+atypica.AI provides a built-in **DeepResearch** MCP server for teams to quickly experience MCP integration capabilities.
 
-**Each team can configure their own MCP servers**:
+### Core Capabilities
 
-**Configuration Format**:
-```json
-{
-  "JupyterDataMCP": {
-    "type": "http",
-    "url": "https://your-server.com/mcp",
-    "headers": {
-      "Authorization": "Bearer your-token"
-    },
-    "prompt": "Jupyter data analysis tool that accesses all team Notebooks"
-  },
-  "InternalDatabaseMCP": {
-    "type": "sse",
-    "url": "https://db-server.com/mcp",
-    "headers": {
-      "X-API-Key": "your-api-key"
-    },
-    "prompt": "Internal database query tool supporting user behavior and transaction data queries"
-  }
-}
-```
+**DeepResearch** is a deep research tool that executes complex multi-step research tasks:
 
-**Configuration Location**:
-- **Database**: `TeamConfig` table, `name = "mcp"`
-- **Management UI**: Team admin dashboard → MCP Configuration
-
----
-
-### 2. Client Management (MCPClientManager)
-
-**MCPClientManager** manages team MCP clients:
-
-**Features**:
-```typescript
-// src/ai/tools/mcp/client.ts
-export class MCPClientManager {
-  // 1. Lazy loading: Load team config only on first access
-  async getClientsForTeam(teamId: number): Promise<MCPClient[]>
-
-  // 2. Caching: Cache in memory after loading to avoid repeated loads
-  private teamClientsCache: Map<number, MCPClient[]>
-
-  // 3. Hot reload: Automatically reload when config updates
-  async reloadTeamClients(teamId: number): Promise<void>
-
-  // 4. Metadata: Get tools, resources, and prompts from all MCP Servers
-  async getAllMetadataForTeam(teamId: number): Promise<MCPMetadata[]>
-}
-```
+**Key Features**:
+- **Deep Analysis**: Integrated with Grok model for in-depth insights
+- **Real-time Feedback**: Live progress updates during research
+- **Secure Access**: Supports API Key authentication
 
 **Usage**:
-```typescript
-// Automatically load team's MCP tools in baseAgentRequest
-const manager = getMcpClientManager();
-const mcpClients = teamId
-  ? await manager.getClientsForTeam(teamId)
-  : [];
-
-// Load all MCP tools
-const mcpToolsArray = await Promise.all(
-  mcpClients.map((client) => client.getTools())
-);
-
-// Merge into Agent toolset
-const allTools = {
-  ...config.tools,           // atypica built-in tools
-  ...Object.assign({}, ...mcpToolsArray),  // Team MCP tools
-};
-```
+Teams can configure DeepResearch as an MCP tool for AI to invoke automatically during research
 
 ---
 
-### 3. Universal Integration (baseAgentRequest)
+## Use Case Examples
 
-**MCP tools are automatically available in all Agents**:
+### Scenario 1: Access Jupyter Data Analysis
 
-**File Location**: `src/app/(study)/agents/baseAgentRequest.ts`
+**Business Need**: Team's data analysts store research results in Jupyter Notebooks, and want AI to directly reference these analysis outputs.
 
-**Integration Flow**:
-```typescript
-// Phase 4: Universal MCP and Team System Prompt
-// =============================================================================
+**Solution**: Deploy a Jupyter MCP server to let AI directly read analysis results, charts, and conclusions from Notebooks.
 
-// 1. Load team's MCP clients
-const manager = getMcpClientManager();
-const mcpClients = baseContext.teamId
-  ? await manager.getClientsForTeam(baseContext.teamId)
-  : [];
+**Configuration**: Configure Jupyter MCP server address and access credentials in team admin dashboard.
 
-logger.info({
-  msg: "Loaded MCP clients",
-  mcpClients: mcpClients.length,
-  teamId: baseContext.teamId,
-});
-
-// 2. Load all MCP tools
-const mcpToolsArray = await Promise.all(
-  mcpClients.map((client) => client.getTools())
-);
-
-// 3. Load all MCP prompt contents
-const mcpPromptContents = await Promise.all(
-  mcpClients.map((client) => client.getPromptContents())
-);
-
-// 4. Merge MCP prompts into system prompt
-let finalSystemPrompt = config.systemPrompt;
-if (mcpPromptContents.length > 0) {
-  const mcpPromptsSection = mcpPromptContents
-    .filter((content) => content.length > 0)
-    .join("\n\n---\n\n");
-
-  if (mcpPromptsSection) {
-    finalSystemPrompt = `${config.systemPrompt}\n\n---\n\n${mcpPromptsSection}`;
-  }
-}
-
-// 5. Merge MCP tools into Agent toolset
-const allTools = {
-  ...config.tools,
-  ...Object.assign({}, ...mcpToolsArray),
-};
-
-// 6. Execute Agent (MCP tools automatically available)
-const response = streamText({
-  model: llm(config.model),
-  system: finalSystemPrompt,
-  tools: allTools,  // Includes built-in tools + MCP tools
-  messages: cachedCoreMessages,
-  // ...
-});
-```
-
-**Key Features**:
-- **Auto-Loading**: No manual configuration needed, baseAgentRequest automatically loads team's MCP tools
-- **Universal Availability**: All Agent types (Study, Fast Insight, Product R&D) support MCP tools
-- **Prompt Enhancement**: MCP Server prompts automatically append to system prompt
-- **Tool Merging**: MCP tools and built-in tools seamlessly merge
-
----
-
-## Built-in MCP Server: DeepResearch
-
-atypica.AI provides a built-in MCP Server - **DeepResearch** - for teams to quickly experience MCP integration.
-
-### Features
-
-**DeepResearch** is a deep research tool integrated with the Grok model:
-
-**Endpoint**: `/mcp/deepResearch`
-
-**Tools**:
-- `atypica_deep_research`: Execute deep research tasks
-
-**Features**:
-1. **Streaming Output**: Supports SSE (Server-Sent Events) real-time streaming
-2. **Progress Notifications**: Real-time research progress feedback
-3. **Dual Authentication**: API Key authentication + internal service authentication
-
----
-
-### Authentication Methods
-
-#### 1. API Key Authentication (Recommended)
-
-**Use Case**: External teams calling DeepResearch MCP
-
-**Get API Key**:
-1. Log into atypica.AI
-2. Navigate to Account Settings → API Keys
-3. Generate personal API Key (format: `atypica_xxxxx`)
-
-**Request Example**:
-```bash
-curl -X POST https://atypica.ai/mcp/deepResearch \
-  -H "Authorization: Bearer atypica_xxxxx" \
-  -H "Accept: text/event-stream" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "method": "tools/call",
-    "params": {
-      "name": "atypica_deep_research",
-      "arguments": {
-        "query": "Analyze AI applications in business research",
-        "expert": "auto"
-      }
-    },
-    "id": 1
-  }'
-```
-
----
-
-#### 2. Internal Service Authentication
-
-**Use Case**: Internal atypica service-to-service calls
-
-**Authentication Method**:
-- Header 1: `x-internal-secret` = Environment variable `INTERNAL_API_SECRET`
-- Header 2: `x-user-id` = User ID (integer)
-
-**Request Example**:
-```bash
-curl -X POST https://atypica.ai/mcp/deepResearch \
-  -H "x-internal-secret: your-internal-secret" \
-  -H "x-user-id: 123" \
-  -H "Accept: text/event-stream" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "method": "tools/call",
-    "params": {
-      "name": "atypica_deep_research",
-      "arguments": {
-        "query": "Analyze market trends"
-      }
-    },
-    "id": 1
-  }'
-```
-
----
-
-### Streaming Output (SSE)
-
-**Enable Streaming**:
-- Header: `Accept: text/event-stream`
-- Response Format: SSE (Server-Sent Events)
-
-**SSE Event Types**:
-```
-event: message
-data: {"progress": 0.1, "message": "Starting research..."}
-
-event: message
-data: {"progress": 0.5, "message": "Searching for relevant information..."}
-
-event: message
-data: {"progress": 1.0, "message": "Research complete", "result": "..."}
-
-event: done
-data: {}
-```
-
-**Disable Streaming**:
-- URL Parameter: `?sse=0`
-- Response Format: JSON (complete result returned at once)
-
----
-
-## How Teams Integrate Custom MCP
-
-### Scenario 1: Accessing Jupyter Notebooks
-
-**Need**: Team has extensive data analysis results stored in Jupyter Notebooks, and wants AI to directly access these results.
-
-**Solution**:
-
-#### Step 1: Deploy JupyterDataMCP Server
-
-```python
-# jupyter_mcp_server.py
-from fastapi import FastAPI, Header
-from pydantic import BaseModel
-
-app = FastAPI()
-
-class MCPRequest(BaseModel):
-    jsonrpc: str
-    method: str
-    params: dict
-    id: int
-
-@app.post("/mcp")
-async def mcp_endpoint(
-    request: MCPRequest,
-    authorization: str = Header(None)
-):
-    # Authentication check
-    if not authorization or not authorization.startswith("Bearer "):
-        return {"error": "Unauthorized"}
-
-    token = authorization.replace("Bearer ", "")
-    if token != "your-secret-token":
-        return {"error": "Invalid token"}
-
-    # Handle tool calls
-    if request.method == "tools/call":
-        tool_name = request.params["name"]
-        arguments = request.params["arguments"]
-
-        if tool_name == "query_notebook":
-            notebook_path = arguments["notebook_path"]
-            # Read Jupyter Notebook
-            result = read_jupyter_notebook(notebook_path)
-            return {
-                "jsonrpc": "2.0",
-                "result": {"content": [{"type": "text", "text": result}]},
-                "id": request.id
-            }
-
-    # List available tools
-    if request.method == "tools/list":
-        return {
-            "jsonrpc": "2.0",
-            "result": {
-                "tools": [{
-                    "name": "query_notebook",
-                    "description": "Query data analysis results from Jupyter Notebooks",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "notebook_path": {
-                                "type": "string",
-                                "description": "Notebook file path"
-                            }
-                        },
-                        "required": ["notebook_path"]
-                    }
-                }]
-            },
-            "id": request.id
-        }
-
-def read_jupyter_notebook(path: str) -> str:
-    # Read and parse Jupyter Notebook
-    import nbformat
-    with open(path, 'r') as f:
-        nb = nbformat.read(f, as_version=4)
-
-    # Extract all outputs
-    results = []
-    for cell in nb.cells:
-        if cell.cell_type == 'code' and cell.outputs:
-            for output in cell.outputs:
-                if 'text' in output:
-                    results.append(output['text'])
-
-    return "\n\n".join(results)
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-```
-
-#### Step 2: Configure MCP Server
-
-In atypica.AI team admin dashboard:
-
-```json
-{
-  "JupyterDataMCP": {
-    "type": "http",
-    "url": "https://your-server.com/mcp",
-    "headers": {
-      "Authorization": "Bearer your-secret-token"
-    },
-    "prompt": "Jupyter data analysis tool. Can query team's Jupyter Notebooks to retrieve analysis results, visualizations, and statistical information."
-  }
-}
-```
-
-#### Step 3: Usage
+**Real Usage**:
 
 ```
 User (on atypica.AI): "Analyze user retention rate, reference notebooks/retention_analysis.ipynb"
@@ -488,117 +158,15 @@ Recommendations:
 
 ---
 
-### Scenario 2: Accessing Internal Database
+### Scenario 2: Query Internal Database
 
-**Need**: Directly query internal PostgreSQL database for user behavior data.
+**Business Need**: Business teams need quick access to user behavior data, transaction data, and other internal data for analysis.
 
-**Solution**:
+**Solution**: Deploy a database MCP server to let AI securely query internal databases (read-only queries supported).
 
-#### Step 1: Deploy DatabaseMCP Server
+**Configuration**: Configure database MCP server address and access credentials in team admin dashboard.
 
-```typescript
-// database_mcp_server.ts
-import express from 'express';
-import { Pool } from 'pg';
-
-const app = express();
-app.use(express.json());
-
-const pool = new Pool({
-  host: 'localhost',
-  database: 'your_db',
-  user: 'your_user',
-  password: 'your_password',
-});
-
-app.post('/mcp', async (req, res) => {
-  const { method, params, id } = req.body;
-
-  // Authentication check
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.json({ error: 'Unauthorized' });
-  }
-
-  // List tools
-  if (method === 'tools/list') {
-    return res.json({
-      jsonrpc: '2.0',
-      result: {
-        tools: [{
-          name: 'query_user_behavior',
-          description: 'Query user behavior data',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              sql: { type: 'string', description: 'SQL query statement' },
-              limit: { type: 'number', description: 'Result row limit', default: 100 }
-            },
-            required: ['sql']
-          }
-        }]
-      },
-      id
-    });
-  }
-
-  // Execute query
-  if (method === 'tools/call' && params.name === 'query_user_behavior') {
-    const { sql, limit = 100 } = params.arguments;
-
-    try {
-      // Safety check: Only allow SELECT statements
-      if (!sql.trim().toLowerCase().startsWith('select')) {
-        return res.json({
-          jsonrpc: '2.0',
-          error: { message: 'Only SELECT queries supported' },
-          id
-        });
-      }
-
-      const result = await pool.query(`${sql} LIMIT ${limit}`);
-
-      return res.json({
-        jsonrpc: '2.0',
-        result: {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(result.rows, null, 2)
-          }]
-        },
-        id
-      });
-    } catch (error) {
-      return res.json({
-        jsonrpc: '2.0',
-        error: { message: error.message },
-        id
-      });
-    }
-  }
-});
-
-app.listen(8000, () => {
-  console.log('DatabaseMCP Server running on port 8000');
-});
-```
-
-#### Step 2: Configure MCP Server
-
-```json
-{
-  "InternalDatabaseMCP": {
-    "type": "http",
-    "url": "https://db-server.com/mcp",
-    "headers": {
-      "Authorization": "Bearer your-db-token"
-    },
-    "prompt": "Internal database query tool. Execute SQL queries to retrieve user behavior data, transaction data, etc. Only SELECT queries supported, automatically limited to 100 rows."
-  }
-}
-```
-
-#### Step 3: Usage
+**Real Usage**:
 
 ```
 User: "Query active users in the last 7 days"
@@ -623,61 +191,32 @@ Recommend focusing on mobile user experience optimization."
 
 ---
 
-## MCP Tool Visibility
+## How AI Intelligently Invokes Tools
 
-### How Does AI Know About MCP Tools?
+### Automatic Recognition and Invocation
 
-**1. Tool List**
+When AI starts research, it automatically recognizes all available tools:
 
-When AI starts research, it sees all available tools:
+**Tool Recognition**:
+- AI can see all MCP tools configured by the team
+- Each tool has clear functional descriptions
+- AI automatically selects appropriate tools based on user needs
 
-```
-Available Tools:
-- webSearch (built-in): Web search
-- interviewChat (built-in): One-on-one deep interview
-- query_notebook (MCP): Query Jupyter Notebooks
-- query_user_behavior (MCP): Query user behavior data
-- ...
-```
-
-**2. Tool Descriptions**
-
-Each MCP tool has detailed descriptions:
-
-```
-query_notebook:
-  Description: Query data analysis results from Jupyter Notebooks
-  Parameters:
-    - notebook_path: Notebook file path (required)
-```
-
-**3. MCP Server Prompts**
-
-MCP Server's `prompt` field appends to system prompt:
-
-```
-System Prompt:
-You are atypica.AI, a business research assistant...
-
-[MCP Server Prompts]
-Jupyter data analysis tool. Can query team's Jupyter Notebooks to retrieve analysis results, visualizations, and statistical information.
-
-Internal database query tool. Execute SQL queries to retrieve user behavior data, transaction data, etc. Only SELECT queries supported.
-```
-
-**AI Decision Process**:
+**Intelligent Decision**:
 ```
 User: "Analyze user retention rate"
 
-AI Reasoning:
-1. Need user behavior data
-2. Review available tools:
-   - webSearch: Not suitable (need internal data)
-   - query_user_behavior: ✅ Suitable (can query internal data)
-3. Decide to use query_user_behavior tool
-4. Construct SQL query
-5. Execute and analyze results
+AI Automatic Reasoning:
+1. Identifies need for internal user data
+2. Discovers team has database query tool configured
+3. Automatically invokes that tool to fetch data
+4. Provides analysis based on real data
 ```
+
+**Key Advantages**:
+- No need for users to manually specify tools
+- AI automatically selects the most suitable data source
+- Team members simply ask questions naturally
 
 ---
 
@@ -730,187 +269,76 @@ AI Reasoning:
 
 ---
 
-## Best Practices
+## Configuration Recommendations
 
-### 1. MCP Server Design
+### Tool Naming Guidelines
 
-**Recommended Architecture**:
-```
-atypica.AI
-    ↓
-MCP Gateway (auth, routing)
-    ↓
-    ├→ JupyterMCP (read Notebooks)
-    ├→ DatabaseMCP (query database)
-    └→ APIMCP (call internal APIs)
-```
+**Clear and Meaningful Names**:
+- ✅ Good naming: `query_user_behavior` (query user behavior), `get_notebook_results` (get notebook results)
+- ❌ Bad naming: `tool1` (meaningless), `data` (too vague)
 
-**Key Principles**:
-- **Single Responsibility**: Each MCP Server focuses on one type of functionality
-- **Security First**: Strict authentication, limit query permissions
-- **Performance Optimization**: Cache frequently-used data, limit return data size
-- **Error Handling**: Friendly error messages to help AI understand issues
+### Function Description Essentials
 
----
+**Clear Function Descriptions**:
+- Explain the tool's purpose and use cases
+- Describe what data can be retrieved
+- Note any limitations (e.g., read-only, data volume limits)
 
-### 2. Tool Naming
+### Security Recommendations
 
-**Recommended Naming**:
-```
-✅ Good naming:
-- query_user_behavior (verb+object)
-- get_notebook_results (clear action)
-- search_internal_docs (clear scope)
+**Permission Control**:
+- Grant only necessary data access permissions
+- Implement sensitive data masking
+- Configure access tokens and rotate regularly
 
-❌ Bad naming:
-- tool1 (meaningless)
-- data (too vague)
-- query (unclear what's being queried)
-```
+**Data Security**:
+- Data transmitted through encrypted channels
+- Team data mutually isolated
+- Support audit log tracking
 
 ---
 
-### 3. Tool Descriptions
+## Frequently Asked Questions
 
-**Recommended Format**:
-```
-✅ Good description:
-"Query data analysis results from Jupyter Notebooks. Can extract code outputs, visualizations, and statistical information. Supported Notebook path format: notebooks/xxx.ipynb"
+### Q: Why aren't MCP tools being invoked?
 
-❌ Bad description:
-"Query Notebook" (too brief, AI doesn't know how to use)
-```
+**Check Points**:
+- Confirm user belongs to a team with MCP configured
+- Verify configuration is saved correctly
+- Ensure tool description is clear for AI to understand use case
 
-**Essential Elements**:
-1. Functionality (what it does)
-2. Use cases (when to use it)
-3. Parameter instructions (how to use it)
-4. Limitations (what it cannot do)
+### Q: How to ensure data security?
 
----
+**Security Mechanisms**:
+- All access requires authentication
+- Data transmission encrypted
+- Team-level isolation, data segregated
+- Support read-only permission configuration
 
-### 4. Security Best Practices
+### Q: What types of tools can be integrated?
 
-**1. Principle of Least Privilege**
-```python
-# ✅ Only allow SELECT queries
-if not sql.lower().startswith('select'):
-    raise PermissionError("Only SELECT queries supported")
-
-# ✅ Limit returned rows
-result = await pool.query(f"{sql} LIMIT 100")
-
-# ❌ No permission checks
-result = await pool.query(sql)  # Dangerous! Could execute DELETE/UPDATE
-```
-
-**2. Layered Authentication**
-```
-Layer 1: API Key auth (verify caller identity)
-Layer 2: Tool-level permissions (verify tool access)
-Layer 3: Data-level permissions (verify data access)
-```
-
-**3. Sensitive Data Masking**
-```python
-# ✅ Mask sensitive fields
-result = [{
-    'user_id': row['user_id'],
-    'email': mask_email(row['email']),  # Masked
-    'behavior': row['behavior']
-} for row in result.rows]
-
-# ❌ Directly return sensitive data
-return result.rows  # May contain email, phone, etc.
-```
+**Supported Types**:
+- Data analysis tools (Jupyter, data visualization)
+- Database queries (PostgreSQL, MySQL, MongoDB)
+- Internal APIs and services
+- Documentation systems (Notion, Confluence)
+- Project management tools (Jira, Linear)
 
 ---
 
-## Troubleshooting
+## Future Plans
 
-### Issue 1: MCP Tools Not Being Invoked
+### Coming Soon
 
-**Symptom**: AI doesn't use team's configured MCP tools
+1. **Visual Configuration Interface** - Graphical configuration and testing of MCP tools
+2. **More Built-in Tools** - MCP integration for common tools like Notion, Slack, GitHub
+3. **MCP Template Marketplace** - One-click deployment of common MCP server configurations
 
-**Troubleshooting Steps**:
-1. **Check Team ID**: Ensure user belongs to a team with MCP configured
-2. **Check Configuration**: Review MCP config in team admin dashboard
-3. **Check Authentication**: Test if MCP Server endpoint is accessible
-4. **Check Tool Description**: Ensure tool description is clear and AI understands use case
+### Long-term Vision
 
-**Verification Command**:
-```bash
-# Test MCP Server connection
-curl -X POST https://your-server.com/mcp \
-  -H "Authorization: Bearer your-token" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "method": "tools/list",
-    "id": 1
-  }'
-```
-
----
-
-### Issue 2: Authentication Failure
-
-**Symptom**: `{"error": "Unauthorized"}`
-
-**Troubleshooting Steps**:
-1. **API Key Format**: Ensure format is `atypica_xxxxx`
-2. **Header Format**: Ensure format is `Authorization: Bearer atypica_xxxxx`
-3. **API Key Validity**: Check if API Key is expired or deleted
-4. **Internal Auth**: Check `x-internal-secret` and `x-user-id` are correct
-
----
-
-### Issue 3: Tool Call Timeout
-
-**Symptom**: MCP tool call times out, AI shows error
-
-**Solutions**:
-1. **Optimize Queries**: Reduce data processing time
-2. **Increase Timeout**: Configure longer timeout
-3. **Async Processing**: Switch to async mode for long-running tasks
-4. **Cache Results**: Cache frequently-used query results
-
----
-
-## Future Roadmap
-
-### Near-Term Improvements (within 3 months)
-
-1. **Visual Configuration Interface**
-   - Graphical MCP Server configuration
-   - Test tool invocations
-   - View call logs
-
-2. **More Built-in MCP Servers**
-   - NotionMCP: Access Notion documents
-   - SlackMCP: Query Slack messages
-   - GitHubMCP: Query code and issues
-
-3. **MCP Marketplace**
-   - Public MCP Server templates
-   - One-click deployment of common MCP Servers
-
-### Mid-Term Improvements (within 6 months)
-
-1. **MCP Server SDKs**
-   - Python SDK
-   - Node.js SDK
-   - Go SDK
-
-2. **Advanced Authentication**
-   - OAuth 2.0 support
-   - SAML support
-   - Fine-grained permission control
-
-3. **Monitoring and Logging**
-   - MCP call logs
-   - Performance monitoring
-   - Error tracking
+1. **Developer Toolkits** - Multi-language SDKs to simplify MCP server development
+2. **Advanced Permission Management** - More granular access control
+3. **Usage Analytics** - MCP tool invocation statistics and performance monitoring
 
 ---
 
@@ -958,9 +386,3 @@ Memory System (Persistent Memory)
 - **Memory System**: Remembers MCP tool usage preferences
 
 ---
-
-**Related Documentation**:
-- [Reference Research + File Attachments](./reference-attachments.md) - Learn how to upload external materials
-- [Fast Insight Agent](./fast-insight-agent.md) - Learn about rapid insight research
-- [Memory System](./memory-system.md) - Learn about persistent memory
-- [MCP Official Documentation](https://spec.modelcontextprotocol.io/) - Learn about MCP standard protocol

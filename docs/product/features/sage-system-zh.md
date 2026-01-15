@@ -850,34 +850,21 @@ SageKnowledgeGap ──> SageInterview  [可选关联,解决方式]
 SageInterview ──> SageMemoryDocument [创建新版本]
 ```
 
-**Memory Document 版本控制**:
-```typescript
-{
-  version: number,          // 自增版本号
-  content: string,          // Markdown 格式的记忆文档
-  source: "initial" | "interview" | "manual",
-  description: string,      // 变更说明
-  createdAt: DateTime,
-}
-```
+**Memory Document 版本管理**:
+- 每个版本自动编号(v1, v2, v3...)
+- Markdown 格式的结构化文档
+- 记录变更来源(初始创建/访谈补充/手动编辑)
+- 详细的变更说明
+- 完整的创建时间记录
 
-**Knowledge Gap 追溯**:
-```typescript
-{
-  title: string,
-  description: string,
-  severity: "critical" | "important" | "nice-to-have",
-  status: "pending" | "resolved",
-  source: {
-    type: "analysis" | "conversation" | "system_suggestion",
-    chatId?: number,        // conversation 类型时关联对话
-  },
-  resolvedBy?: {
-    type: "interview" | "manual",
-    interviewId?: number,   // interview 类型时关联访谈
-  },
-}
-```
+**Knowledge Gap 追溯信息**:
+- 标题和详细描述
+- 严重程度级别(Critical/Important/Nice-to-have)
+- 当前状态(待解决/已解决)
+- 知识盲点来源(初始分析/对话发现/系统建议)
+- 关联的对话记录(如果来自对话)
+- 解决方式记录(通过访谈/手动标记)
+- 关联的访谈记录(如果通过访谈解决)
 
 ---
 
@@ -983,9 +970,3 @@ Memory System(持久化记忆)
 - **MCP 集成**: Sage 未来可调用 MCP 工具,扩展专家能力
 
 ---
-
-**相关文档**:
-- [参考研究 + 文件附件](./reference-attachments.md) - 了解如何上传资料
-- [Memory System 机制](./memory-system.md) - 了解用户级持久化记忆
-- [MCP 集成能力](./mcp-integration.md) - 了解工具扩展
-- [NotebookLM vs Sage](https://notebooklm.google/) - 对比Google的方案

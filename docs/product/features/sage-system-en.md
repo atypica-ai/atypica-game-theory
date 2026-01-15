@@ -865,34 +865,21 @@ SageKnowledgeGap ──> SageInterview  [Optional association, resolution method
 SageInterview ──> SageMemoryDocument [Creates new version]
 ```
 
-**Memory Document Version Control**:
-```typescript
-{
-  version: number,          // Auto-incrementing version number
-  content: string,          // Memory document in Markdown format
-  source: "initial" | "interview" | "manual",
-  description: string,      // Change description
-  createdAt: DateTime,
-}
-```
+**Memory Document Version Management**:
+- Each version automatically numbered (v1, v2, v3...)
+- Structured documents in Markdown format
+- Records change source (initial creation/interview supplement/manual edit)
+- Detailed change descriptions
+- Complete creation timestamp records
 
-**Knowledge Gap Traceability**:
-```typescript
-{
-  title: string,
-  description: string,
-  severity: "critical" | "important" | "nice-to-have",
-  status: "pending" | "resolved",
-  source: {
-    type: "analysis" | "conversation" | "system_suggestion",
-    chatId?: number,        // Associated conversation for conversation type
-  },
-  resolvedBy?: {
-    type: "interview" | "manual",
-    interviewId?: number,   // Associated interview for interview type
-  },
-}
-```
+**Knowledge Gap Traceability Information**:
+- Title and detailed description
+- Severity level (Critical/Important/Nice-to-have)
+- Current status (Pending/Resolved)
+- Gap source (initial analysis/conversation discovery/system suggestion)
+- Associated conversation records (if from dialogue)
+- Resolution method records (via interview/manually marked)
+- Associated interview records (if resolved via interview)
 
 ---
 
@@ -998,9 +985,3 @@ Memory System (persistent memory)
 - **MCP Integration**: Sage can call MCP tools in the future, expanding expert capabilities
 
 ---
-
-**Related Documentation**:
-- [Reference Research + File Attachments](./reference-attachments.md) - Learn how to upload materials
-- [Memory System Mechanism](./memory-system.md) - Learn about user-level persistent memory
-- [MCP Integration Capabilities](./mcp-integration.md) - Learn about tool extensions
-- [NotebookLM vs Sage](https://notebooklm.google/) - Compare with Google's solution

@@ -1,12 +1,11 @@
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
 import Link from "next/link";
-import { categoryLabels, docs, getDocsByCategory, type DocCategory } from "./docs-config";
+import { categoryLabels, getDocsByCategory, type DocCategory } from "./docs-config";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const t = await getTranslations("metadata");
 
   return generatePageMetadata({
     title: locale === "zh-CN" ? "产品文档" : "Product Documentation",
@@ -27,9 +26,7 @@ export default async function FeaturesIndexPage() {
   return (
     <div className="mx-auto max-w-6xl w-full px-4 py-8">
       <header className="mb-12">
-        <h1 className="mb-4 text-4xl font-bold">
-          {isZh ? "产品文档" : "Product Documentation"}
-        </h1>
+        <h1 className="mb-4 text-4xl font-bold">{isZh ? "产品文档" : "Product Documentation"}</h1>
         <p className="text-lg text-muted-foreground">
           {isZh
             ? "深入了解 atypica.AI 的功能特性、竞品对比和使用指南"
