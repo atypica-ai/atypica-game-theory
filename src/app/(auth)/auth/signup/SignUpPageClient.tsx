@@ -2,11 +2,13 @@
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@radix-ui/react-dropdown-menu";
 import { Eye, EyeOff, Shield, ShieldCheck, ShieldX } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signUp } from "./actions";
 
 export function SignUpPageClient({ callbackUrl }: { callbackUrl: string }) {
@@ -19,6 +21,13 @@ export function SignUpPageClient({ callbackUrl }: { callbackUrl: string }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isWechat, setIsWechat] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsWechat(window.navigator.userAgent.toLowerCase().includes("micromessenger"));
+    }
+  }, []);
 
   // Password strength calculation
   const getPasswordStrength = (password: string) => {
@@ -233,6 +242,32 @@ export function SignUpPageClient({ callbackUrl }: { callbackUrl: string }) {
           >
             {isLoading ? t("submittingButton") : t("submitButton")}
           </Button>
+
+          {!isWechat && (
+            <>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <Separator className="w-full" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    {t("orContinueWith")}
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full h-10"
+                onClick={() => {
+                  window.open("https://signin.aws.amazon.com/console", "_blank");
+                }}
+                type="button"
+              >
+                <Image src="/_public/icon-aws.png" alt="AWS" width={20} height={20} />
+                <span>{t("signInWithAWS")}</span>
+              </Button>
+            </>
+          )}
         </form>
 
         <div className="mt-6 text-center text-sm">

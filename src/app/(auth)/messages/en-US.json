@@ -43,7 +43,9 @@
       "agreementText": "By continuing, you agree to the",
       "termsOfService": "Terms of Service",
       "and": "and",
-      "privacyPolicy": "Privacy Policy"
+      "privacyPolicy": "Privacy Policy",
+      "orContinueWith": "Or continue with",
+      "signInWithAWS": "Sign in with AWS"
     },
     "Verify": {
       "title": "Verify Your Email",
