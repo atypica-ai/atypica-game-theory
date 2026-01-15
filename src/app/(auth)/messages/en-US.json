@@ -14,7 +14,8 @@
       "noAccountText": "Don't have an account?",
       "signUpLink": "Sign up now",
       "orContinueWith": "Or continue with",
-      "signInWithGoogle": "Sign in with Google"
+      "signInWithGoogle": "Sign in with Google",
+      "signInWithAWS": "Sign in with AWS"
     },
     "SignUp": {
       "title": "Sign Up",

@@ -144,6 +144,17 @@ export function SignInPageClient({ callbackUrl }: { callbackUrl: string }) {
                   <Image src="/_public/icon-google.png" alt="Google" width={20} height={20} />
                   <span>{t("signInWithGoogle")}</span>
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full h-10"
+                  onClick={() => {
+                    window.open('https://signin.aws.amazon.com/console', '_blank');
+                  }}
+                  type="button"
+                >
+                  <Image src="/_public/icon-aws.png" alt="AWS" width={20} height={20} />
+                  <span>{t("signInWithAWS")}</span>
+                </Button>
               </>
             )}
           </form>

@@ -14,7 +14,8 @@
       "noAccountText": "还没有账号？",
       "signUpLink": "立即注册",
       "orContinueWith": "或者通过以下方式",
-      "signInWithGoogle": "谷歌账号登录"
+      "signInWithGoogle": "谷歌账号登录",
+      "signInWithAWS": "AWS账号登录"
     },
     "SignUp": {
       "title": "注册",
