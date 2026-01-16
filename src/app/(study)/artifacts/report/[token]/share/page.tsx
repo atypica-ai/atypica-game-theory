@@ -98,12 +98,25 @@ async function ReportSharePage({ reportToken }: { reportToken: string }) {
   if (!report.analyst?.studyUserChat?.token) notFound();
 
   const studyReplayUrl = `/study/${report.analyst.studyUserChat.token}/share?replay=1`;
+
+  // Extract structured data for SEO
+  let coverImageUrl: string | undefined;
+  const reportCoverObjectUrl = (report.extra as AnalystReportExtra)?.coverObjectUrl;
+  if (reportCoverObjectUrl) {
+    coverImageUrl = await getS3SignedCdnUrl(reportCoverObjectUrl);
+  }
+
   return (
     <ReportSharePageClient
       reportToken={reportToken}
       studyTitle={report.analyst.studyUserChat.title}
       studyReplayUrl={studyReplayUrl}
       onePageHtml={report.onePageHtml}
+      structuredData={{
+        title: report.analyst.studyUserChat.title,
+        description: report.analyst.topic,
+        coverImageUrl,
+      }}
     />
   );
 }

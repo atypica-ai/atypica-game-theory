@@ -516,6 +516,8 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
             Pick<StudyToolSet, StudyToolName.saveAnalyst | StudyToolName.makeStudyPlan>
           >
         | undefined;
+      // 因为 makeStudyPlan 是没有 execute 的，所以不会出现在 step.toolResults 里，所以，其实这里是不会执行的 ...
+      // 现在改到了 saveAnalystFromPlan 里面再执行一次
       if (saveAnalystOrMakeStudyPlanTool) {
         waitUntil(generateChatTitle(studyUserChatId));
       }

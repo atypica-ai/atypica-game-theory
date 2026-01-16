@@ -56,7 +56,14 @@ async function InterviewReportSharePage({ reportToken }: { reportToken: string }
   });
   if (!report) notFound();
   return (
-    <InterviewReportSharePageClient reportToken={reportToken} onePageHtml={report.onePageHtml} />
+    <InterviewReportSharePageClient
+      reportToken={reportToken}
+      onePageHtml={report.onePageHtml}
+      structuredData={{
+        title: report.project.brief,
+        description: report.project.brief,
+      }}
+    />
   );
 }
 

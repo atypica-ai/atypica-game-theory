@@ -10,9 +10,14 @@ import { toast } from "sonner";
 export default function InterviewReportSharePageClient({
   reportToken,
   onePageHtml,
+  structuredData,
 }: {
   reportToken: string;
   onePageHtml: string;
+  structuredData?: {
+    title: string;
+    description: string;
+  };
 }) {
   const t = useTranslations("InterviewProject.reportShare");
   const pathname = usePathname();
@@ -22,7 +27,6 @@ export default function InterviewReportSharePageClient({
   const [ratio, setRatio] = useState(100);
   const [iframeHeight, setIframeHeight] = useState<number | undefined>(undefined);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const reportUrl = useMemo(() => {
     return `/artifacts/interview-report/${reportToken}/raw`;
   }, [reportToken]);
@@ -78,6 +82,29 @@ export default function InterviewReportSharePageClient({
 
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
+      {/* JSON-LD structured data for SEO */}
+      {structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Report",
+              headline: structuredData.title,
+              description: structuredData.description,
+              author: {
+                "@type": "Organization",
+                name: "atypica.AI",
+                url: "https://www.atypica.ai",
+              },
+            }),
+          }}
+        />
+      )}
+
+      {/* Hidden HTML content for SEO crawlers */}
+      <article hidden dangerouslySetInnerHTML={{ __html: onePageHtml }} />
+
       <GlobalHeader className="h-12">
         <div className="flex items-center gap-1 sm:gap-2">
           <Button
@@ -103,8 +130,8 @@ export default function InterviewReportSharePageClient({
         )}
 
         <iframe
-          // src={reportUrl}
-          srcDoc={onePageHtml}
+          src={reportUrl}
+          // srcDoc={onePageHtml}  // 微信里有问题，需要研究下有原因
           className="flex-1 border-none"
           style={{
             width: ratio < 100 ? "800px" : "100%",

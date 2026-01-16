@@ -33,11 +33,17 @@ export default function ReportSharePageClient({
   studyReplayUrl,
   studyTitle,
   onePageHtml,
+  structuredData,
 }: {
   reportToken: string;
   studyReplayUrl: string;
   studyTitle: string;
   onePageHtml: string;
+  structuredData?: {
+    title: string;
+    description: string;
+    coverImageUrl?: string;
+  };
 }) {
   const locale = useLocale();
   const t = useTranslations("ReportSharePage");
@@ -47,7 +53,6 @@ export default function ReportSharePageClient({
   const [ratio, setRatio] = useState(100);
   const [iframeHeight, setIframeHeight] = useState<number | undefined>(undefined);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const reportUrl = useMemo(() => {
     return `/artifacts/report/${reportToken}/raw`;
   }, [reportToken]);
@@ -108,6 +113,30 @@ export default function ReportSharePageClient({
 
   return (
     <div className="h-dvh flex flex-col items-stretch justify-start bg-muted/20">
+      {/* JSON-LD structured data for SEO */}
+      {structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Report",
+              headline: structuredData.title,
+              description: structuredData.description,
+              ...(structuredData.coverImageUrl && { image: structuredData.coverImageUrl }),
+              author: {
+                "@type": "Organization",
+                name: "atypica.AI",
+                url: "https://www.atypica.ai",
+              },
+            }),
+          }}
+        />
+      )}
+
+      {/* Hidden HTML content for SEO crawlers */}
+      <article hidden dangerouslySetInnerHTML={{ __html: onePageHtml }} />
+
       <SharePageHeader copyShareLink={copyShareLink} />
 
       <div className="flex-1 w-full relative overflow-hidden" ref={containerRef}>
@@ -121,8 +150,8 @@ export default function ReportSharePageClient({
         )}
 
         <iframe
-          // src={reportUrl}
-          srcDoc={onePageHtml}
+          src={reportUrl}
+          // srcDoc={onePageHtml}  // 微信里有问题，需要研究下有原因
           className="flex-1 border-none"
           style={{
             width: ratio < 100 ? "800px" : "100%",

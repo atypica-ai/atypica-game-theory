@@ -12,7 +12,7 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
-import { createUserChat } from "@/lib/userChat/lib";
+import { createUserChat, generateChatTitle } from "@/lib/userChat/lib";
 import {
   Analyst,
   AnalystExtra,
@@ -27,6 +27,7 @@ import {
   UserChatExtra,
 } from "@/prisma/client";
 import { prisma, prismaRO } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { FileUIPart, generateId, UIMessage } from "ai";
 
 export async function createStudyUserChat(
@@ -755,6 +756,9 @@ export async function saveAnalystFromPlan({
           message: "Study session or analyst not found",
         };
       }
+
+      // 见 baseAgentRequest 的 onStepFinish 方法里的描述
+      waitUntil(generateChatTitle(userChat.id));
 
       // Update analyst with plan data
       await prisma.analyst.update({
