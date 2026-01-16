@@ -6,6 +6,7 @@ import publicMessages from "../app/(public)/messages/zh-CN.json";
 import sageMessages from "../app/(sage)/messages/zh-CN.json";
 import solutionsMessages from "../app/(solutions)/messages/zh-CN.json";
 import studyMessages from "../app/(study)/messages/zh-CN.json";
+import universalMessages from "../app/(universal)/messages/zh-CN.json";
 import accountMessages from "../app/account/messages/zh-CN.json";
 import teamMessages from "../app/team/messages/zh-CN.json";
 import { VALID_LOCALES } from "./routing";
@@ -23,6 +24,7 @@ declare module "next-intl" {
       typeof publicMessages &
       typeof solutionsMessages &
       typeof accountMessages &
-      typeof teamMessages;
+      typeof teamMessages &
+      typeof universalMessages;
   }
 }

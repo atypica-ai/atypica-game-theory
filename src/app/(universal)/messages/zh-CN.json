@@ -1,0 +1,27 @@
+{
+  "universal": {
+    "metadata": {
+      "title": "通用助手",
+      "description": "灵活的 AI 助手，支持专业技能"
+    },
+    "title": "通用助手",
+    "subtitle": "由你的技能驱动的灵活 AI 助手",
+    "uploadSkill": "上传技能",
+    "uploading": "上传中...",
+    "newChat": "新对话",
+    "mySkills": "我的技能",
+    "loading": "加载中...",
+    "noSkills": "还没有上传技能",
+    "uploadFirstSkill": "上传第一个技能",
+    "recentChats": "最近对话",
+    "noChats": "还没有对话记录",
+    "startFirstChat": "开始第一次对话",
+    "uploadSuccess": "上传成功",
+    "skillUploaded": "技能 '{name}' 上传成功",
+    "uploadError": "上传失败",
+    "invalidFileType": "请上传 .skill 文件",
+    "newChatPrompt": "想聊些什么？",
+    "createChatError": "创建对话失败",
+    "inputPlaceholder": "输入消息...（Shift+Enter 换行）"
+  }
+}

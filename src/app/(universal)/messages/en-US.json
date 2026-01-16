@@ -1,0 +1,27 @@
+{
+  "universal": {
+    "metadata": {
+      "title": "Universal Agent",
+      "description": "Flexible AI assistant with specialized skills"
+    },
+    "title": "Universal Agent",
+    "subtitle": "Flexible AI assistant powered by your skills",
+    "uploadSkill": "Upload Skill",
+    "uploading": "Uploading...",
+    "newChat": "New Chat",
+    "mySkills": "My Skills",
+    "loading": "Loading...",
+    "noSkills": "No skills uploaded yet",
+    "uploadFirstSkill": "Upload Your First Skill",
+    "recentChats": "Recent Chats",
+    "noChats": "No conversations yet",
+    "startFirstChat": "Start Your First Chat",
+    "uploadSuccess": "Success",
+    "skillUploaded": "Skill '{name}' uploaded successfully",
+    "uploadError": "Upload Failed",
+    "invalidFileType": "Please upload a .skill file",
+    "newChatPrompt": "What would you like to talk about?",
+    "createChatError": "Failed to create chat",
+    "inputPlaceholder": "Type your message... (Shift+Enter for new line)"
+  }
+}
