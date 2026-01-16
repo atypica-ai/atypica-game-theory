@@ -299,6 +299,16 @@ export type DiscussionTimelineExtra = Partial<{
   moderatorSystem: string; // Moderator system prompt
 }>;
 
+export type AgentSkillExtra = Partial<{
+  // 来源信息
+  source: "upload" | "sage"; // 技能来源
+  sourceId: number; // 如果来自 Sage，记录 Sage ID
+
+  // 本地缓存路径（运行时计算，不持久化到数据库）
+  // 格式: /tmp/skills/{userId}/{skillName} 或 {cwd}/skills/{userId}/{skillName}
+  // localPath: string; // 注释：可以通过 userId 和 name 构建，无需存储
+}>;
+
 // Removed
 // export type ProductExtra = Partial<{
 //   stripePriceId: string;

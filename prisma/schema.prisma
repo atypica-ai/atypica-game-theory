@@ -113,6 +113,7 @@ model User {
   apiKeys                        ApiKey[]                  @relation("UserApiKey")
   memories                       Memory[]                  @relation("UserMemory")
   researchTemplates              ResearchTemplate[]        @relation("UserResearchTemplates")
+  agentSkills                    AgentSkill[]              @relation("UserAgentSkills")
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -153,6 +154,21 @@ model VerificationCode {
 
   createdAt DateTime  @default(now()) @db.Timestamptz(6)
   expiresAt DateTime? @db.Timestamptz(6)
+}
+
+model AgentSkill {
+  id          Int    @id @default(autoincrement())
+  userId      Int
+  user        User   @relation("UserAgentSkills", fields: [userId], references: [id], onDelete: Cascade)
+  name        String @db.VarChar(255)
+  description String @db.Text
+  objectUrl   String @db.VarChar(255)
+  extra       Json   @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([userId, name])
 }
 
 model Persona {
@@ -280,6 +296,7 @@ enum UserChatKind {
   interview
   interviewSession
   sageSession
+  universal
   misc
 }
 
