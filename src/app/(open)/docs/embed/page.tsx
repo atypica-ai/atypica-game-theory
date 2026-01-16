@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function EmbedDocsPage() {
   const headersList = await headers();
-  const host = headersList.get("host") || "atypica.musedam.cc";
+  const host = headersList.get("host") || "atypica.ai";
   const protocol = host.includes("localhost") ? "http" : "https";
   const baseAppURL = `${protocol}://${host}`;
 

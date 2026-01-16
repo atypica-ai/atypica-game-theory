@@ -19,7 +19,7 @@
 ```html
 <iframe
   id="atypica-iframe"
-  src="https://atypica.musedam.cc/auth/impersonation-login?token=xxxxxx"
+  src="https://atypica.ai/auth/impersonation-login?token=xxxxxx"
   width="100%"
   height="800px"
   frameborder="0"
@@ -116,7 +116,7 @@ iframe.contentWindow.postMessage(
 {
   source: "atypica",
   type: "href",
-  href: "https://atypica.musedam.cc/study/xxx",
+  href: "https://atypica.ai/study/xxx",
   timestamp: "2024-01-01T12:00:00.000Z"
 }
 ```
@@ -187,7 +187,7 @@ iframe.contentWindow.postMessage(
 ### 流程说明
 
 1. **设置自动登录 iframe**
-   - 使用自动登录 URL 设置 iframe：`https://atypica.musedam.cc/auth/impersonation-login?token=xxxxxx`
+   - 使用自动登录 URL 设置 iframe：`https://atypica.ai/auth/impersonation-login?token=xxxxxx`
    - 用户会自动登录到指定账号
 
 2. **监听页面变化**
@@ -302,7 +302,7 @@ function fetchReports() {
 
     <iframe
       id="atypica-iframe"
-      src="https://atypica.musedam.cc/auth/impersonation-login?token=your-impersonation-token"
+      src="https://atypica.ai/auth/impersonation-login?token=your-impersonation-token"
       width="100%"
       height="600px"
     >
@@ -586,7 +586,7 @@ A: 确保使用 postMessage API，不要尝试直接访问 iframe 内容。
 使用自动登录功能可以让用户无需手动登录即可使用嵌入的应用：
 
 1. **获取登录令牌**: 从系统管理员处获取 impersonation token
-2. **设置 iframe URL**: 使用 `https://atypica.musedam.cc/auth/impersonation-login?token=xxxxx`
+2. **设置 iframe URL**: 使用 `https://atypica.ai/auth/impersonation-login?token=xxxxx`
 3. **自动跳转**: 用户将自动登录并跳转到首页
 
 ## 联系我们

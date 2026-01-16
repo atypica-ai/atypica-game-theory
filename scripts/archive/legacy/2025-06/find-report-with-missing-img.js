@@ -41,9 +41,9 @@ main();
 /*
 # Array of URLs
 urls=(
-    "https://atypica.musedam.cc/artifacts/report/jnk3TatEvvXfKLU2/raw?regenerateImages=1"
-    "https://atypica.musedam.cc/artifacts/report/63Cma4YtJCGM3RrN/raw?regenerateImages=1"
-    "https://atypica.musedam.cc/artifacts/report/nFa9dkieTjJ4mwkd/raw?regenerateImages=1"
+    "https://atypica.ai/artifacts/report/jnk3TatEvvXfKLU2/raw?regenerateImages=1"
+    "https://atypica.ai/artifacts/report/63Cma4YtJCGM3RrN/raw?regenerateImages=1"
+    "https://atypica.ai/artifacts/report/nFa9dkieTjJ4mwkd/raw?regenerateImages=1"
 )
 
 # Function to access URL
