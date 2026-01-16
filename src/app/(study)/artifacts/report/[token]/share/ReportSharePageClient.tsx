@@ -1,6 +1,7 @@
 "use client";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
+import { stripHtmlForSEO } from "@/lib/htmlUtils";
 import { truncateForTitle } from "@/lib/textUtils";
 import { cn } from "@/lib/utils";
 import { Loader2Icon, Play, Share2 } from "lucide-react";
@@ -135,7 +136,7 @@ export default function ReportSharePageClient({
       )}
 
       {/* Hidden HTML content for SEO crawlers */}
-      <article hidden dangerouslySetInnerHTML={{ __html: onePageHtml }} />
+      <article hidden dangerouslySetInnerHTML={{ __html: stripHtmlForSEO(onePageHtml) }} />
 
       <SharePageHeader copyShareLink={copyShareLink} />
 

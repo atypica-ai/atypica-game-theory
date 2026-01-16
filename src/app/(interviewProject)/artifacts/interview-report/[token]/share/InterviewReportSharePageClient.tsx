@@ -1,6 +1,7 @@
 "use client";
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
+import { stripHtmlForSEO } from "@/lib/htmlUtils";
 import { Loader2Icon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
@@ -103,7 +104,7 @@ export default function InterviewReportSharePageClient({
       )}
 
       {/* Hidden HTML content for SEO crawlers */}
-      <article hidden dangerouslySetInnerHTML={{ __html: onePageHtml }} />
+      <article hidden dangerouslySetInnerHTML={{ __html: stripHtmlForSEO(onePageHtml) }} />
 
       <GlobalHeader className="h-12">
         <div className="flex items-center gap-1 sm:gap-2">
