@@ -1,4 +1,5 @@
-import { TMessageWithPlainTextTool } from "@/ai/tools/types";
+import { UIDataTypes, UIMessage } from "ai";
+import { ExportFolderInput, ExportFolderOutput } from "./exportFolder/types";
 
 /**
  * Universal Agent Tool Names
@@ -12,9 +13,13 @@ export enum UniversalToolName {
   webSearch = "webSearch",
   webFetch = "webFetch",
 
-  // Skill filesystem (in-memory)
+  // bash-tool: Skill filesystem operations (in-memory sandbox)
+  bash = "bash",
   readFile = "readFile",
-  listFiles = "listFiles",
+  writeFile = "writeFile",
+
+  // Export sandbox files
+  exportFolder = "exportFolder",
 
   // Skill management
   listSkills = "listSkills",
@@ -23,4 +28,13 @@ export enum UniversalToolName {
   toolCallError = "toolCallError",
 }
 
-export type TUniversalMessageWithTool = TMessageWithPlainTextTool;
+/**
+ * Universal Agent UI Tools
+ * Maps tool names to their input/output types for UI rendering
+ */
+export type UniversalUITools = {
+  [UniversalToolName.exportFolder]: { input: ExportFolderInput; output: ExportFolderOutput };
+  // Add other tools here as needed
+};
+
+export type TUniversalMessageWithTool = UIMessage<unknown, UIDataTypes, UniversalUITools>;

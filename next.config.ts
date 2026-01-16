@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
       // Ensure WebSocket library is handled correctly on server side
       config.externals = config.externals || [];
       config.externals.push("ws");
+      // Externalize just-bash and its native dependencies (bash-tool itself should be bundled)
+      config.externals.push("just-bash");
+      config.externals.push("@mongodb-js/zstd");
+      config.externals.push("node-liblzma");
+      config.externals.push("sql.js");
     }
     return config;
   },

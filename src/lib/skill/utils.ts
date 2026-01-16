@@ -8,3 +8,11 @@ import path from "path";
 export function getSkillLocalPath(userId: number, skillName: string): string {
   return path.join(process.cwd(), ".next", "cache", "skills", `user-${userId}`, skillName);
 }
+
+/**
+ * 构建用户导出文件的目录路径
+ * 缓存在 .next/cache/skills/user-{userId}/.exports 目录
+ */
+export function getExportsPath(userId: number): string {
+  return path.join(process.cwd(), ".next", "cache", "skills", `user-${userId}`, ".exports");
+}

@@ -12,12 +12,16 @@ import authOptions from "@/app/(auth)/authOptions";
 import { loadTeamMemory, loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { buildUniversalSystemPrompt } from "@/app/(universal)/prompt";
-import { buildUniversalTools } from "@/app/(universal)/tools";
+import { buildUniversalTools, UniversalToolSet } from "@/app/(universal)/tools";
+import { exportFolderTool } from "@/app/(universal)/tools/exportFolder";
+import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { rootLogger } from "@/lib/logging";
+import { loadAllSkillsToMemory } from "@/lib/skill/loadToMemory";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
+import { createBashTool } from "bash-tool";
 import { getServerSession } from "next-auth/next";
 import type { Locale } from "next-intl";
 import { NextResponse } from "next/server";
@@ -103,15 +107,51 @@ export async function POST(req: Request) {
   const memoryUsagePrompt = buildMemoryUsagePrompt({ userMemory: memory, locale });
   const systemPrompt = `${baseSystemPrompt}\n\n${memoryUsagePrompt}`;
 
-  // Build tools
+  // Build base tools (without bash-tool)
   const abortController = new AbortController();
-  const tools = buildUniversalTools({
+  const baseTools = buildUniversalTools({
     userId,
     locale,
     abortSignal: abortController.signal,
     statReport,
     logger,
   });
+
+  // Load all skills to memory and create bash-tool sandbox
+  const skills = await prisma.agentSkill.findMany({
+    where: { userId },
+    select: { id: true, name: true },
+  });
+
+  const skillFiles = await loadAllSkillsToMemory(skills);
+
+  const { tools: bashTools, sandbox } = await createBashTool({
+    files: skillFiles,
+    onBeforeBashCall: ({ command }) => {
+      // Block script execution - just-bash already doesn't support it, but add extra safeguard
+      if (command.match(/python|node|php|ruby|perl|java|go run|\.\/[\w-]+\.sh/i)) {
+        logger.warn({
+          msg: "Blocked script execution attempt",
+          command,
+        });
+        return {
+          command:
+            "echo 'Error: Script execution is not supported. Use bash commands only (ls, cat, grep, find, head, tail, etc.)'",
+        };
+      }
+      // Log bash commands for debugging
+      logger.debug({ msg: "Executing bash command", command });
+    },
+  });
+
+  // Merge tools
+  const tools: UniversalToolSet = {
+    ...baseTools,
+    [UniversalToolName.bash]: bashTools.bash,
+    [UniversalToolName.readFile]: bashTools.readFile,
+    [UniversalToolName.writeFile]: bashTools.writeFile,
+    [UniversalToolName.exportFolder]: exportFolderTool({ sandbox, userId }),
+  };
 
   // Load messages
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(universalChatId, {
