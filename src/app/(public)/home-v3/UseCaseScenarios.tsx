@@ -3,7 +3,7 @@ import { PlayIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
-import { reginalS3Origin } from "./actions";
+import { getS3CDNOrigin } from "./actions";
 
 const useCases = [
   {
@@ -38,7 +38,7 @@ export function UseCaseScenarios() {
   const [activeVideoTitle, setActiveVideoTitle] = useState<string | null>(null);
 
   useEffect(() => {
-    reginalS3Origin().then((origin) => {
+    getS3CDNOrigin().then((origin) => {
       setS3Origin(origin);
     });
   }, []);

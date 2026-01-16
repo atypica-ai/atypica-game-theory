@@ -1,4 +1,5 @@
 "use client";
+import { getS3CDNUrl } from "@/app/(public)/home-v3/actions";
 import { useDeckScale } from "@/app/deck/hooks/useDeckScale";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { useDevice } from "@/hooks/use-device";
@@ -35,6 +36,8 @@ const slideNotes: { [key: number]: string } = {
 
 export function AboutEN({ showPresenterNotes = false }: { showPresenterNotes?: boolean }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [posterSrc, setPosterSrc] = useState<string | null>(null);
   const { deckStyles } = useDeckScale({ deckWidth: 1200 });
   const { isMobile } = useDevice();
 
@@ -70,6 +73,15 @@ export function AboutEN({ showPresenterNotes = false }: { showPresenterNotes?: b
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [goToNextSlide, goToPrevSlide]);
+
+  useEffect(() => {
+    getS3CDNUrl("atypica/public/atypica-promo-20250627.mp4").then((res) => {
+      setVideoSrc(res);
+    });
+    getS3CDNUrl("atypica/public/atypica-promo-video-poster-20250624.jpeg").then((res) => {
+      setPosterSrc(res);
+    });
+  }, []);
 
   const renderSlide = () => {
     switch (currentSlide) {
@@ -112,7 +124,7 @@ export class ResearchAgent {
               <p className="text-lg md:text-xl font-light leading-relaxed text-zinc-300 opacity-80 mb-4">
                 Using &ldquo;Language Models&rdquo; to Model the &ldquo;Subjective World&rdquo;
               </p>
-              <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-[#1bff1b] to-transparent mx-auto shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-20 h-0.5 bg-linear-to-r from-transparent via-[#1bff1b] to-transparent mx-auto shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             <div className="max-w-4xl bg-zinc-800/70 backdrop-blur-sm border border-zinc-600 rounded-lg p-8 relative z-10">
@@ -159,7 +171,7 @@ simulation.run(complexProblem);`}
               <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_15px_rgba(27,255,27,0.25)]">
                 &ldquo;Complex Problems&rdquo;
               </h2>
-              <div className="w-16 h-0.5 mt-4 bg-gradient-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-16 h-0.5 mt-4 bg-linear-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto relative z-10">
@@ -179,7 +191,7 @@ simulation.run(complexProblem);`}
                 </p>
               </div>
 
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-zinc-600 p-6 rounded-lg text-center shadow-xl">
+              <div className="bg-linear-to-r from-[#1e1e1e] to-[#2a2a2a] border border-zinc-600 p-6 rounded-lg text-center shadow-xl">
                 <p className="text-base md:text-lg font-medium leading-relaxed text-[#1bff1b]">
                   Atypica.AI starts with simulating consumer behavior and decisions
                 </p>
@@ -218,7 +230,7 @@ const llmModels = {
               <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_15px_rgba(27,255,27,0.25)]">
                 Modeling Methods
               </h2>
-              <div className="w-16 h-0.5 mt-4 bg-gradient-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-16 h-0.5 mt-4 bg-linear-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto relative z-10">
@@ -292,7 +304,7 @@ class SubjectiveAgent {
               <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-[#1bff1b] shadow-[0_0_15px_rgba(27,255,27,0.25)]">
                 (ABM)
               </h2>
-              <div className="w-16 h-0.5 mt-4 bg-gradient-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
+              <div className="w-16 h-0.5 mt-4 bg-linear-to-r from-[#1bff1b] to-transparent shadow-[0_0_8px_rgba(27,255,27,0.35)]"></div>
             </div>
 
             <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto space-y-8 relative z-10">
@@ -307,7 +319,7 @@ class SubjectiveAgent {
                 </p>
               </div>
 
-              <div className="bg-gradient-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-8 rounded-xl text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
+              <div className="bg-linear-to-r from-[#1e1e1e] to-[#2a2a2a] border border-[#1bff1b] p-8 rounded-xl text-center shadow-[0_0_30px_rgba(27,255,27,0.15)]">
                 <p className="text-3xl md:text-4xl font-bold mb-4 text-[#1bff1b] shadow-[0_0_20px_rgba(27,255,27,0.35)]">
                   &ldquo;Subjective World Modeling&rdquo;
                 </p>
@@ -409,14 +421,28 @@ class SubjectiveAgent {
             <div className="w-full max-w-5xl">
               <div className="bg-zinc-900 rounded-lg overflow-hidden">
                 <div className="aspect-video">
-                  <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-4xl mb-4">🎥</div>
-                      <p className="text-sm font-light text-zinc-300 opacity-60">
-                        Product demo video loading...
-                      </p>
+                  {videoSrc && posterSrc ? (
+                    <video
+                      key={videoSrc}
+                      poster={posterSrc}
+                      className="w-full h-full object-cover"
+                      controls
+                      loop
+                      playsInline
+                    >
+                      <source src={videoSrc} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <div className="w-full h-full bg-zinc-700 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">🎥</div>
+                        <p className="text-sm font-light text-zinc-300 opacity-60">
+                          Product demo video loading...
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -732,14 +758,14 @@ class SubjectiveAgent {
                 <h3 className="text-lg font-semibold text-zinc-300 mb-3">Key Issues</h3>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 shrink-0"></div>
                     <p className="text-zinc-300 text-sm">
                       Personal info and personality tests are{" "}
                       <span className="font-semibold">static data</span>
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 shrink-0"></div>
                     <p className="text-zinc-300 text-sm">
                       Behavioral data is dynamic but hard to understand
                       <span className="font-semibold">
@@ -750,7 +776,7 @@ class SubjectiveAgent {
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 shrink-0"></div>
                     <p className="text-zinc-300 text-sm">
                       For example: what <span className="font-semibold">part of a product</span>{" "}
                       they like,
@@ -831,15 +857,15 @@ class SubjectiveAgent {
                       </h4>
                       <div className="space-y-2 text-sm text-zinc-300">
                         <div className="flex items-start gap-2">
-                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 shrink-0"></span>
                           <span>Question breakdown and search strategy formulation</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 shrink-0"></span>
                           <span>Social media posts and replies collection</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 shrink-0"></span>
                           <span>Corpus input and consumer model generation</span>
                         </div>
                       </div>
@@ -1675,7 +1701,7 @@ class SubjectiveAgent {
     <FitToViewport className="bg-[#0a0a0a] relative flex flex-col items-center justify-center">
       <div className="p-4" style={deckStyles}>
         <div
-          className="w-full max-w-7xl aspect-[16/10] bg-[#121212] relative flex flex-col shadow-2xl border border-zinc-600"
+          className="w-full max-w-7xl aspect-16/10 bg-[#121212] relative flex flex-col shadow-2xl border border-zinc-600"
           key={currentSlide}
         >
           {showPresenterNotes && slideNotes[currentSlide] && (

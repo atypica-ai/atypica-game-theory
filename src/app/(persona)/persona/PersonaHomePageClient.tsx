@@ -1,6 +1,6 @@
 "use client";
 import { createPersonaImport } from "@/app/(persona)/actions";
-import { reginalS3Url } from "@/app/(public)/home-v3/actions";
+import { getS3CDNUrl } from "@/app/(public)/home-v3/actions";
 import { HeroVideo } from "@/app/(public)/home-v3/HeroVideo";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export default function PersonaImportClient({ isUploadEnabled }: PersonaImportCl
 
   useEffect(() => {
     trackEvent("New Persona Viewed");
-    reginalS3Url("atypica/public/atypica-promo-ai-persona-20250917.mp4").then((res) => {
+    getS3CDNUrl("atypica/public/atypica-promo-ai-persona-20250917.mp4").then((res) => {
       setVideoSrc(res);
     });
   }, []);

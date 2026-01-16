@@ -1,5 +1,5 @@
 "use client";
-import { reginalS3Url } from "@/app/(public)/home-v3/actions";
+import { getS3CDNUrl } from "@/app/(public)/home-v3/actions";
 import { useDeckScale } from "@/app/deck/hooks/useDeckScale";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { useDevice } from "@/hooks/use-device";
@@ -76,10 +76,10 @@ export function AboutZH({ showPresenterNotes = false }: { showPresenterNotes?: b
   }, [goToNextSlide, goToPrevSlide]);
 
   useEffect(() => {
-    reginalS3Url("atypica/public/atypica-promo-20250627.mp4").then((res) => {
+    getS3CDNUrl("atypica/public/atypica-promo-20250627.mp4").then((res) => {
       setVideoSrc(res);
     });
-    reginalS3Url("atypica/public/atypica-promo-video-poster-20250624.jpeg").then((res) => {
+    getS3CDNUrl("atypica/public/atypica-promo-video-poster-20250624.jpeg").then((res) => {
       setPosterSrc(res);
     });
   }, []);
@@ -744,13 +744,13 @@ class SubjectiveAgent {
                 <h3 className="text-lg font-semibold text-zinc-300 mb-3">关键问题</h3>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 shrink-0"></div>
                     <p className="text-zinc-300 text-sm">
                       个人信息、性格测试都是<span className="font-semibold">静态数据</span>
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 shrink-0"></div>
                     <p className="text-zinc-300 text-sm">
                       行为数据虽然是动态的，但难以了解
                       <span className="font-semibold">&ldquo;what&rdquo;和&ldquo;why&rdquo;</span>
@@ -758,7 +758,7 @@ class SubjectiveAgent {
                     </p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full mt-1.5 shrink-0"></div>
                     <p className="text-zinc-300 text-sm">
                       比如：喜欢一个产品的<span className="font-semibold">什么部分</span>，
                       <span className="font-semibold">为什么</span>喜欢一个产品等
@@ -837,15 +837,15 @@ class SubjectiveAgent {
                       <h4 className="text-base font-semibold text-[#1bff1b] mb-3">数据处理流程</h4>
                       <div className="space-y-2 text-sm text-zinc-300">
                         <div className="flex items-start gap-2">
-                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 shrink-0"></span>
                           <span>问题拆解与搜索策略制定</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 shrink-0"></span>
                           <span>社交媒体发帖与回帖收集</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 flex-shrink-0"></span>
+                          <span className="w-2 h-2 bg-[#1bff1b] rounded-full mt-1.5 shrink-0"></span>
                           <span>语料输入与消费者模型生成</span>
                         </div>
                       </div>
@@ -1608,7 +1608,7 @@ class SubjectiveAgent {
       <div className="p-4" style={deckStyles}>
         {/* PPT Container with responsive aspect ratio */}
         <div
-          className="w-full max-w-6xl aspect-[16/9] bg-[#121212] relative flex flex-col shadow-2xl border border-zinc-600"
+          className="w-full max-w-6xl aspect-video bg-[#121212] relative flex flex-col shadow-2xl border border-zinc-600"
           key={currentSlide}
         >
           {/* 演讲稿提示按钮 - 只有 Tezign 用户可见 */}

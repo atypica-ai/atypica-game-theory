@@ -1,5 +1,5 @@
 "use client";
-import { reginalS3Url } from "@/app/(public)/home-v3/actions";
+import { getS3CDNUrl } from "@/app/(public)/home-v3/actions";
 import { HeroVideo } from "@/app/(public)/home-v3/HeroVideo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ export default function InterviewProjectHomePageClient() {
   const [videoSrc, setVideoSrc] = useState<string | undefined>();
 
   useEffect(() => {
-    reginalS3Url("atypica/public/atypica-promo-ai-interview-20250921.mp4").then((res) => {
+    getS3CDNUrl("atypica/public/atypica-promo-ai-interview-20250921.mp4").then((res) => {
       setVideoSrc(res);
     });
   }, []);

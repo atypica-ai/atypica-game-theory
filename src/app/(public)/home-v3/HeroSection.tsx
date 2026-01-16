@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { HeroVideo } from "./HeroVideo";
-import { reginalS3Url } from "./actions";
+import { getS3CDNUrl } from "./actions";
 
 const testimonials = [
   {
@@ -48,10 +48,10 @@ export function HeroSection() {
   const [posterSrc, setPosterSrc] = useState<string | undefined>();
 
   useEffect(() => {
-    reginalS3Url("atypica/public/atypica-promo-20250627.mp4").then((res) => {
+    getS3CDNUrl("atypica/public/atypica-promo-20250627.mp4").then((res) => {
       setVideoSrc(res);
     });
-    reginalS3Url("atypica/public/atypica-promo-video-poster-20250624.jpeg").then((res) => {
+    getS3CDNUrl("atypica/public/atypica-promo-video-poster-20250624.jpeg").then((res) => {
       setPosterSrc(res);
     });
   }, []);

@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronRightIcon, Volume2Icon } from "lucide-react";
+import { ChevronRightIcon, Volume2Icon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -26,6 +26,7 @@ export function InsightRadioCard() {
   const t = useTranslations("HomePageV3.HeroSection.insightRadio");
   const [podcast, setPodcast] = useState<FeaturedPodcast | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(true);
   const locale = useLocale();
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export function InsightRadioCard() {
       });
   }, [locale]);
 
-  if (loading) {
+  if (loading || !isVisible) {
     return null;
   }
 
@@ -66,7 +67,15 @@ export function InsightRadioCard() {
           <div className="w-8 h-8 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
             <Volume2Icon className="w-4 h-4 text-white" />
           </div>
-          <h3 className="text-sm font-semibold text-foreground">{t("title")}</h3>
+          <h3 className="text-sm font-semibold text-foreground flex-1">{t("title")}</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 hover:bg-muted"
+            onClick={() => setIsVisible(false)}
+          >
+            <XIcon className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Podcast Info */}
@@ -123,7 +132,7 @@ export function InsightRadioCard() {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             <Button size="sm" className="h-9 w-9 rounded-full p-0" asChild>
               <Link href={podcast.url} target="_blank">
                 <Volume2Icon className="w-4 h-4" />
@@ -133,6 +142,14 @@ export function InsightRadioCard() {
               <Link href="/insight-radio" prefetch={true}>
                 <ChevronRightIcon className="w-4 h-4" />
               </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 w-9 rounded-full p-0"
+              onClick={() => setIsVisible(false)}
+            >
+              <XIcon className="w-4 h-4" />
             </Button>
           </div>
         </div>
