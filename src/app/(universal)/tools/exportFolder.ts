@@ -19,12 +19,12 @@ export const exportFolderTool = ({ sandbox, userId }: { sandbox: Sandbox; userId
     inputSchema: exportFolderInputSchema,
     execute: async ({ folderPath }) => {
       try {
-        // Normalize folder path
-        const normalizedPath = folderPath.startsWith("/") ? folderPath : `/${folderPath}`;
+        // Use path as-is (supports both absolute and relative paths)
+        // Relative paths are resolved from sandbox's current working directory
 
         // List all files in the folder using find command
         const findResult = await sandbox.executeCommand(
-          `find ${normalizedPath} -type f 2>/dev/null || echo ""`,
+          `find ${folderPath} -type f 2>/dev/null || echo ""`,
         );
 
         if (findResult.exitCode !== 0 || !findResult.stdout.trim()) {
@@ -59,10 +59,16 @@ export const exportFolderTool = ({ sandbox, userId }: { sandbox: Sandbox; userId
         for (const filePath of filePaths) {
           try {
             const content = await sandbox.readFile(filePath);
-            // Remove leading slash and folder prefix for clean zip structure
-            const relativePath = filePath.startsWith(normalizedPath)
-              ? filePath.slice(normalizedPath.length + 1)
-              : filePath.slice(1);
+            // Remove folder prefix for clean zip structure
+            // find returns paths like "folder/file.txt" or "/abs/path/folder/file.txt"
+            // We want to strip the folder prefix to get "file.txt"
+            let relativePath = filePath;
+            if (filePath.startsWith(folderPath + "/")) {
+              relativePath = filePath.slice(folderPath.length + 1);
+            } else if (filePath.startsWith("/") && folderPath.startsWith("/")) {
+              // Both absolute paths
+              relativePath = filePath.slice(folderPath.length + 1);
+            }
             zip.file(relativePath, content);
           } catch (error) {
             console.warn(`Failed to read file ${filePath}:`, error);

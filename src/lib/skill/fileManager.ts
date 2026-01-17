@@ -81,14 +81,14 @@ export async function ensureSkillAvailable(skillId: number): Promise<string> {
 }
 
 /**
- * 清理本地 skills 缓存（可在启动时或定期调用）
+ * 清理本地 sandbox 缓存（可在启动时或定期调用）
  */
 export async function cleanupSkillsCache(): Promise<void> {
-  const skillsDir = path.join(process.cwd(), ".next", "cache", "skills");
+  const sandboxDir = path.join(process.cwd(), ".next", "cache", "sandbox");
 
   try {
-    await fs.rm(skillsDir, { recursive: true, force: true });
-    rootLogger.info("[Skill] Cleaned up local cache");
+    await fs.rm(sandboxDir, { recursive: true, force: true });
+    rootLogger.info("[Skill] Cleaned up local sandbox cache");
   } catch (error) {
     rootLogger.error({
       error: error instanceof Error ? error.message : String(error),

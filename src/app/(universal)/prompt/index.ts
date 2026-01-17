@@ -176,12 +176,14 @@ You have an in-memory sandbox containing all skill files. Use bash commands to e
 **Available bash commands**:
 - ls, cat, head, tail, grep, find, wc, sort, uniq, etc.
 - ⚠️ Script execution not supported (python, node, php, etc.)
+- ⚠️ Compression commands not supported (tar -z, gzip, bzip2, etc.)
 
 **Important Notes:**
 - The skill's description is key to knowing when to use it
 - After loading a skill, fully embody that role
 - Skill instructions are self-contained - trust their guidance
-- Use exportFolder when users want to save or download their work`
+- **For downloading files**: ALWAYS use exportFolder tool instead of tar/zip commands
+- exportFolder creates a zip file that users can download via browser`
     : `You currently have no skills available. Users can upload .skill files to add specialized capabilities.
 
 Use the list_skills tool to check if new skills have been added.`

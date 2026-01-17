@@ -50,9 +50,13 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Copy docs directory for runtime access (required for features pages)
 COPY --from=builder --chown=nextjs:nodejs /app/docs ./docs
 
-# Note: Native compression modules (@mongodb-js/zstd, node-liblzma) are optional
-# They are marked as externals in next.config.ts but just-bash can work without them
-# If compression is needed in production, copy them from pnpm store:
+# Note: Native compression modules (@mongodb-js/zstd, node-liblzma) are NOT copied
+# Reasons:
+# - exportFolder tool uses jszip (pure JS, no native dependencies)
+# - Users download files via exportFolder, not tar/gzip in sandbox
+# - Avoids "Cannot find module '@mongodb-js/zstd'" error when using tar -z
+#
+# If you need compression commands (tar -z, gzip) inside sandbox, uncomment:
 # COPY --from=deps /app/node_modules/.pnpm/@mongodb-js+zstd@*/node_modules/@mongodb-js ./node_modules/@mongodb-js
 # COPY --from=deps /app/node_modules/.pnpm/node-liblzma@*/node_modules/node-liblzma ./node_modules/node-liblzma
 

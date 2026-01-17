@@ -18,7 +18,7 @@ my-skill/
 
 **使用流程**：
 1. 用户上传 `.skill` 文件（zip 格式）
-2. 系统解压到 `.next/cache/skills/user-{id}/skill-name/`
+2. 系统解压到 `.next/cache/sandbox/user/{id}/skills/{skillName}/`
 3. Agent 通过 `listSkills` 工具查看可用 skills
 4. Agent 通过 `readFile` 或 `bash` 命令加载 Skill 内容
 5. Agent 按照 Skill 指令执行任务
@@ -36,6 +36,7 @@ my-skill/
 **安全限制**：
 - ✅ 支持：bash 命令（ls, cat, grep, find, head, tail 等）
 - ❌ 禁止：脚本执行（python, node, php 等）
+- ❌ 禁止：压缩命令（tar -z, gzip, bzip2 等）- 会触发原生模块加载失败
 
 ### 3. 文件导出和下载
 
@@ -58,7 +59,7 @@ Agent 可以将内存沙箱中的文件打包下载。
 ┌─────────────────────────────────────────────────────────┐
 │ 3. 系统打包并保存到磁盘                                  │
 │    内存 sandbox → JSZip 打包 →                          │
-│    .next/cache/skills/user-{id}/.exports/{token}.zip   │
+│    .next/cache/sandbox/user/{id}/exports/{token}.zip   │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
@@ -185,8 +186,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 **说明**：
 - bash-tool 和 just-bash 的代码已经打包在 `.next/standalone` 中
 - 原生压缩模块 (`@mongodb-js/zstd`, `node-liblzma`) 是可选依赖
-- just-bash 可以在没有它们的情况下正常工作（会使用纯 JS 实现，性能略低）
-- 如果生产环境需要压缩性能，取消注释上面的 COPY 行
+- **当前配置不复制原生模块**，因为：
+  - exportFolder 使用 jszip（纯 JS，无原生依赖）
+  - 用户通过 exportFolder 下载文件，不需要在 sandbox 中使用 tar/gzip
+  - 避免了 "Cannot find module '@mongodb-js/zstd'" 错误
+- 如果需要支持 sandbox 内的压缩命令（tar -z 等），取消注释上面的 COPY 行
 
 ### 常见问题
 
@@ -200,19 +204,29 @@ A: 检查 next.config.ts 的 webpack 配置，确保 bash-tool 和 just-bash 没
 A: 确保添加了 IgnorePlugin 来忽略 worker.js。
 
 **Q: 原生压缩模块真的可选吗？**
-A: 是的。just-bash 会自动 fallback 到纯 JavaScript 实现。除非你的 skill 文件非常大需要压缩，否则不需要这些模块。
+A: 是的。just-bash 会自动 fallback 到纯 JavaScript 实现。当前配置下，用户通过 exportFolder（使用 jszip）下载文件，不需要原生压缩模块。
+
+**Q: 遇到 "Cannot find module '@mongodb-js/zstd'" 错误？**
+A: 这是因为在 sandbox 中使用了压缩命令（如 `tar -czf`）。解决方案：
+  - **推荐**：使用 `exportFolder` 工具代替 tar 命令
+  - 如果必须支持 tar，在 Dockerfile 中取消注释复制原生模块的代码
+
+**Q: sandbox 中不能使用 tar 命令吗？**
+A: 可以使用 `tar -cf`（无压缩），但不能使用 `tar -czf` 或 `tar -cjf`（带压缩）。压缩功能需要原生模块，当前配置下不可用。建议使用 exportFolder 工具。
 
 ## 文件存储路径
 
 ```
-.next/cache/skills/
-├── user-{id}/
-│   ├── skill-name-1/          # Skill 文件
-│   │   ├── SKILL.md
-│   │   └── references/
-│   ├── skill-name-2/
-│   └── .exports/              # 导出文件（临时）
-│       └── {token}.zip
+.next/cache/sandbox/
+└── user/
+    └── {userId}/
+        ├── skills/              # Skill 文件
+        │   ├── skill-name-1/
+        │   │   ├── SKILL.md
+        │   │   └── references/
+        │   └── skill-name-2/
+        └── exports/             # 导出文件（临时）
+            └── {token}.zip
 ```
 
 ## 与其他 Agent 的区别
