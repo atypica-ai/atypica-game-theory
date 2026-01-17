@@ -25,6 +25,24 @@ import { Locale } from "next-intl";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
+  // MOCK: 临时测试用
+  const MOCK_ENABLED = false;
+  if (MOCK_ENABLED) {
+    const stream = createUIMessageStream({
+      async execute({ writer }) {
+        writer.write({ type: "start" });
+        writer.write({ type: "text-start", id: "mock-id" });
+        let count = 0;
+        while (true) {
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+          count++;
+          writer.write({ type: "text-delta", id: "mock-id", delta: count.toString().repeat(10) + " " });
+        }
+      },
+    });
+    return createUIMessageStreamResponse({ stream });
+  }
+
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

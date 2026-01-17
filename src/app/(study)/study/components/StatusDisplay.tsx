@@ -110,6 +110,7 @@ export function CancelButton({
 export function StatusDisplay({
   status,
   backgroundToken,
+  errorMessage,
 }: {
   status:
     | "background"
@@ -120,6 +121,7 @@ export function StatusDisplay({
     | "error"
     | "ready";
   backgroundToken: string | null;
+  errorMessage: string | null;
 }) {
   const t = useTranslations("StudyPage.StatusDisplay");
   const [elapsedTime, setElapsedTime] = useState<number>(0);
@@ -158,7 +160,8 @@ export function StatusDisplay({
       case "waitForUser":
         return t("waitForUser");
       case "error":
-        return t("error");
+        // return t("error");
+        return null; // 不显示文本，直接显示重试按钮
       case "ready":
         return t("ready");
       default:
@@ -168,8 +171,32 @@ export function StatusDisplay({
 
   if (!status) return null;
 
-  return (
-    <div className="flex flex-wrap items-center gap-2 px-2 text-primary">
+  return status === "error" ? (
+    <div className="flex flex-col items-center justify-center gap-2">
+      {errorMessage && /network|load|加载|网络/i.test(errorMessage) ? (
+        <div className="text-xs text-muted-foreground">{t("networkError")}</div>
+      ) : (
+        <div className="text-xs mx-32 line-clamp-2 text-destructive max-h-8 leading-4 text-center">
+          {errorMessage}
+        </div>
+      )}
+      <Button
+        variant="secondary"
+        size="sm"
+        className="h-7 text-xs"
+        onClick={() => window.location.reload()}
+      >
+        <RefreshCcwIcon className="size-3.5" />
+        {t("reload")}
+      </Button>
+    </div>
+  ) : (
+    <div
+      className={cn(
+        "px-4 py-2 rounded-full shadow bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/90",
+        "flex flex-wrap items-center gap-2 text-primary",
+      )}
+    >
       <div className="text-xs tracking-wider font-medium">{getStatusMessage(status)}</div>
       {status === "outOfQuota" && (
         <Button variant="ghost" size="sm" className="text-xs h-7" asChild>
@@ -187,14 +214,6 @@ export function StatusDisplay({
           <span className="animate-bounce">·</span>
           <span className="animate-bounce [animation-delay:0.2s]">·</span>
           <span className="animate-bounce [animation-delay:0.4s]">·</span>
-        </div>
-      )}
-      {status === "error" && (
-        <div
-          className="p-1 hover:opacity-70 cursor-pointer"
-          onClick={() => window.location.reload()}
-        >
-          <RefreshCcwIcon className="size-4" />
         </div>
       )}
     </div>

@@ -108,7 +108,7 @@ export function ChatBox() {
     // maxSteps: 15,  // 后端 chat api 设置了 maxSteps 并且会控制，这里不能再设置，会覆盖后端的配置！
     // body: { ...extraRequestPayload }, v5 现在放在 sendMessage 里直接提交
     onError(error) {
-      if (/network error/.test(error?.message)) {
+      if (/|network|load|加载|网络/.test(error?.message)) {
         // 这里应该不会无限循环，因为 onError 的时候肯定是 assistant 消息在回复，所以 reload 以后最后一条消息不会是 user，也就不会立即开始 chat
         location.reload();
       }
@@ -419,14 +419,11 @@ export function ChatBox() {
             // "max-lg:items-start max-lg:mb-1.5",
           )}
         >
-          {error && (
-            <div className="text-destructive text-xs mx-32 mb-2 line-clamp-1 text-center">
-              {error?.message?.toString() || error.toString()}
-            </div>
-          )}
-          <div className="px-2 py-2 rounded-full shadow bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/90">
-            <StatusDisplay status={uiStatus} backgroundToken={backgroundToken} />
-          </div>
+          <StatusDisplay
+            status={uiStatus}
+            backgroundToken={backgroundToken}
+            errorMessage={error ? error?.message?.toString() || error.toString() : null}
+          />
           {/*<div className="absolute right-0 bottom-0 px-1 py-1 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
             <NerdStats />
           </div>*/}
