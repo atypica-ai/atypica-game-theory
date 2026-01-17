@@ -129,15 +129,78 @@ Agent：
 
 ### Webpack 配置
 
+**重要**：bash-tool 和 just-bash 的配置比较复杂，因为涉及原生模块打包问题。
+
 ```typescript
 // next.config.ts
-config.externals.push("just-bash");         // 内存沙箱
-config.externals.push("@mongodb-js/zstd");  // 原生压缩模块
-config.externals.push("node-liblzma");      // 原生压缩模块
-config.externals.push("sql.js");            // SQLite
+webpack: (config, { isServer, webpack }) => {
+  if (isServer) {
+    // 只 externalize 原生二进制模块（C++ 编译的 .node 文件）
+    config.externals.push("@mongodb-js/zstd");
+    config.externals.push("node-liblzma");
+
+    // 忽略 just-bash 的 worker.js（浏览器用的，Node.js 不需要）
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^\.\/worker\.js$/,
+        contextRegExp: /just-bash/,
+      })
+    );
+  }
+  return config;
+}
 ```
 
-这些模块不被 webpack 打包，运行时从 node_modules 加载。
+**工作原理**：
+- ✅ **bash-tool 和 just-bash** 的 JavaScript 代码被 webpack 完全打包到 `.next/standalone`
+- ✅ **原生二进制模块** (@mongodb-js/zstd, node-liblzma) 被标记为 external（可选，有 JS fallback）
+- ✅ **worker.js** 被忽略（仅浏览器需要，Node.js 环境不需要）
+
+**为什么这样配置**：
+1. `just-bash` 包含动态 require 和原生模块引用，需要用 IgnorePlugin 处理
+2. 原生 .node 文件（C++ 模块）webpack 无法处理，标记为 external
+3. worker.js 是 Web Worker，在 Node.js 环境中不存在，必须忽略
+4. **不需要 `outputFileTracingIncludes`** - 所有 JS 代码已打包，原生模块可选
+
+## Docker 部署
+
+### 关键配置
+
+Docker 部署时，standalone 模式不会自动包含 externalized 的原生模块，需要特殊处理。
+
+#### Dockerfile 配置
+
+```dockerfile
+# Automatically leverage output traces to reduce image size
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# 原生压缩模块是 optional dependencies
+# just-bash 可以在没有它们的情况下工作（性能略低）
+# 如果需要，从 pnpm store 复制：
+# COPY --from=deps /app/node_modules/.pnpm/@mongodb-js+zstd@*/node_modules/@mongodb-js ./node_modules/@mongodb-js
+# COPY --from=deps /app/node_modules/.pnpm/node-liblzma@*/node_modules/node-liblzma ./node_modules/node-liblzma
+```
+
+**说明**：
+- bash-tool 和 just-bash 的代码已经打包在 `.next/standalone` 中
+- 原生压缩模块 (`@mongodb-js/zstd`, `node-liblzma`) 是可选依赖
+- just-bash 可以在没有它们的情况下正常工作（会使用纯 JS 实现，性能略低）
+- 如果生产环境需要压缩性能，取消注释上面的 COPY 行
+
+### 常见问题
+
+**Q: 为什么不直接复制整个 node_modules？**
+A: 会增加镜像大小（几百 MB）。当前方案只需要复制原生模块（几 MB），其他代码都已打包。
+
+**Q: 遇到 "just-bash is not installed" 错误？**
+A: 检查 next.config.ts 的 webpack 配置，确保 bash-tool 和 just-bash 没有被 externalize。
+
+**Q: 遇到 "Module not found: Can't resolve './worker.js'" 错误？**
+A: 确保添加了 IgnorePlugin 来忽略 worker.js。
+
+**Q: 原生压缩模块真的可选吗？**
+A: 是的。just-bash 会自动 fallback 到纯 JavaScript 实现。除非你的 skill 文件非常大需要压缩，否则不需要这些模块。
 
 ## 文件存储路径
 

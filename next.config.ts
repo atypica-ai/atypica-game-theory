@@ -8,16 +8,24 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/(features)/features/[slug]": ["./docs/**/*"],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
     if (isServer) {
       // Ensure WebSocket library is handled correctly on server side
       config.externals = config.externals || [];
       config.externals.push("ws");
-      // Externalize just-bash and its native dependencies (bash-tool itself should be bundled)
-      config.externals.push("just-bash");
+
+      // Externalize only the native binary modules that cannot be bundled
       config.externals.push("@mongodb-js/zstd");
       config.externals.push("node-liblzma");
-      config.externals.push("sql.js");
+
+      // Ignore missing worker.js in just-bash (it's for browser, not needed in Node.js)
+      config.plugins = config.plugins || [];
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^\.\/worker\.js$/,
+          contextRegExp: /just-bash/,
+        }),
+      );
     }
     return config;
   },
