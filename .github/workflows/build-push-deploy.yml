@@ -136,10 +136,10 @@ jobs:
           chmod 600 $HOME/.kube/config
           export KUBECONFIG=$HOME/.kube/config
 
-          # Update deployment in China region
+          # Update deployment in China region (use Azure Registry)
           kubectl config use-context muse-aws-cn-prod
           kubectl set image deployment/atypica-llm-app atypica-llm-app=musecr.azurecr.cn/bmrlab/atypica-llm-app:${{ env.VERSION }} --namespace bmrlab
 
-          # Update deployment in US region
+          # Update deployment in US region (use GitHub Registry)
           kubectl config use-context muse-aws-us-prod
-          kubectl set image deployment/atypica-llm-app atypica-llm-app=musecr.azurecr.cn/bmrlab/atypica-llm-app:${{ env.VERSION }} --namespace bmrlab
+          kubectl set image deployment/atypica-llm-app atypica-llm-app=ghcr.io/bmrlab/atypica-llm-app:${{ env.VERSION }} --namespace bmrlab
