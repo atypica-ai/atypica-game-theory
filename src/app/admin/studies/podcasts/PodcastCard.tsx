@@ -173,7 +173,8 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
     } catch (err) {
       onError((err as Error).message);
     } finally {
-      setGeneratingCover(false);
+      // 不需要去掉，因为是异步的
+      // setGeneratingCover(false);
     }
   };
 

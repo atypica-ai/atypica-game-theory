@@ -113,19 +113,16 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
     setGeneratingScreenshots((prev) => new Set(prev).add(reportId));
     try {
       const result = await adminGenerateScreenshotAction(reportId);
-      if (!result.success) {
-        setError(result.message);
-      } else {
-        await fetchData(); // Refresh the list
-      }
+      if (!result.success) throw result;
     } catch (err) {
       setError((err as Error).message);
     } finally {
-      setGeneratingScreenshots((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(reportId);
-        return newSet;
-      });
+      // 不需要去掉，因为是异步的
+      // setGeneratingScreenshots((prev) => {
+      //   const newSet = new Set(prev);
+      //   newSet.delete(reportId);
+      //   return newSet;
+      // });
     }
   };
 
