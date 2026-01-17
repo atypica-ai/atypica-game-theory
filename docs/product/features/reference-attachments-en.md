@@ -1,483 +1,742 @@
-# Reference Studies + File Attachments - AI That Remembers Every Research
+# Reference & Attachments: Research Continuity
 
-## Why Do You Need These Features?
-
-When conducting research, have you encountered these problems:
-
-- **Repetitive Work**: Every new research requires re-investigating basic information, wasting time
-- **Context Loss**: AI doesn't remember previous findings, unable to dive deeper
-- **Material Utilization Challenges**: You have reports and data in hand, but can only copy-paste, time-consuming and laborious
-
-atypica.AI solves these problems through two powerful features:
-
-1. **Reference Studies**: AI remembers all your previous research and can build directly on old findings
-2. **File Attachments**: Upload PDF reports, Excel data, product screenshots—AI automatically understands and integrates them into analysis
-
-These features make research **accumulable, reusable, and deep**, rather than starting from scratch every time.
+**One-line summary**: Link historical research + upload documents, AI continues deep diving based on existing insights.
 
 ---
 
-## Comparison: With vs Without Reference Studies + File Attachments
+## Why Do You Need Reference & Attachments?
 
-| **Scenario** | **Traditional Approach** | **Using Reference Studies + File Attachments** |
-|---------|-------------|----------------------|
-| **Research Continuity** | Start from zero every time, AI doesn't remember previous findings | AI automatically remembers all research, maintains context |
-| **Material Utilization** | Manual copy-paste of document content | Direct upload of PDF/images, AI auto-understands |
-| **Research Depth** | Surface-level analysis (re-researching basics) | Deep analysis (build on existing findings, jump to core issues) |
-| **Time Efficiency** | Slow (repetitive work + manual organization) | Fast (auto-load background + auto-process files) |
-| **Knowledge Accumulation** | Isolated research reports | Reusable research assets |
+### The Fragmentation Problem of Traditional Research
 
-### Real Case: Research "2025 Electric Vehicle Market"
+**Problem 1: Research Lacks Continuity**
 
-**Traditional Approach** (30 minutes):
-```
-1st Research: "2025 Electric Vehicle Market Trends"
-→ AI starts from zero, webSearch collects basics: market size, key players, policies
-→ 10 minutes to generate report
+**Scenario**:
+- Week 1: Completed market trend analysis
+- Week 4: Want to do product validation
+- But AI doesn't remember Week 1's analysis results
+- Need to re-explain background information
 
-2nd Research: "Analyze EV user pain points"
-→ AI starts from zero again, webSearch re-collects basics
-→ Another 10 minutes re-researching market background
-→ Another 10 minutes analyzing pain points
-```
-
-**Using Reference Studies + File Attachments** (10 minutes):
-```
-1st Research: "2025 Electric Vehicle Market Trends"
-→ 10 minutes to generate report (Research A)
-
-2nd Research: "Analyze user pain points in depth"
-→ [Reference: Research A] + [Attachments: McKinsey_Report.pdf, iResearch_Report.pdf]
-→ AI already knows market background (no re-research needed)
-→ Directly combines uploaded reports to analyze pain points
-→ 5 minutes to generate deep analysis
-```
-
-**Efficiency Gain**: Save 50% time, 2x deeper insights
+**Result**:
+- Waste time repeating context
+- Unable to build on previous findings
+- Research becomes fragmented, lacks continuity
 
 ---
 
-## Feature 1: Reference Studies
+**Problem 2: External Documents Are Hard to Utilize**
 
-### What Does This Feature Do?
+**Scenario**:
+- You have competitor analysis reports (PDF)
+- You have product prototypes
+- You have user feedback in Excel
+- Want AI to conduct research based on these materials
+- But requires manual organization and input
 
-**Simply put**: AI remembers the process and findings of every research you conduct, and you can directly reference them in new research to avoid repetitive work.
+**Result**:
+- Spend a lot of time organizing materials
+- AI may not understand completely
+- Low efficiency
 
-**Analogy**:
-- **Traditional Approach**: Writing every paper from Chapter 1, repeatedly introducing background
-- **Reference Studies**: Directly citing previous chapters, "Based on previous research, we found...", quickly entering core arguments
+---
 
-### How It Works
+### The Solution: Reference & Attachments
 
-After each research session completes, atypica.AI automatically generates a "research log" that records:
-- What the research topic was
-- What content was investigated
-- What conclusions were reached
+**Reference Studies**:
+- Link previous research projects
+- AI automatically reads complete research logs
+- Build upon existing findings
+- Form research chains, not isolated projects
 
-In new research, you can choose to reference previous studies, and AI will automatically load all background knowledge from those sessions, then continue deeper based on this known information.
+**File Attachments**:
+- Upload relevant documents (PDF, images, Excel...)
+- AI automatically extracts content
+- Conduct research and analysis based on documents
+- No manual organization needed
 
-### Use Cases
+**Core Value**:
+- ✅ Research can accumulate, forming knowledge networks
+- ✅ External materials easily integrated
+- ✅ From fragmented → systematic research
+- ✅ 50%+ efficiency boost
 
-#### ✅ Best Suited Scenarios
+---
 
-**1. Progressive Deep-Dive Research**
+## Reference Study: Research Continuity
+
+### What is Reference Study?
+
+**Definition**:
+- In a new research session, link one or more historical research projects
+- AI automatically reads the complete content of historical research (questions, findings, conclusions)
+- New research can build upon historical findings for deeper investigation
+
+**vs. Memory System**:
+- Memory System: Remembers your background, preferences, research direction
+- Reference Study: Specifically links complete content of a particular research session
+
+**Applicable Scenarios**:
+- Progressive research: First do market analysis, then product validation
+- Deep investigation: Based on initial findings, research a specific niche direction
+- Comparative validation: Compare research results from different time periods
+
+---
+
+### Real Case Study: Bubble Coffee from 0 to 1
+
+**Research 1: Market Opportunity Analysis (Week 1)**
+
+Task: "Does bubble coffee have market opportunity?"
+
+Research Content:
+- Scout Agent observes social media discussions
+- Analyzes coffee market trends
+- Identifies potential user groups
+
+**Core Findings**:
+1. Market has opportunity; young people interested in "refreshing coffee"
+2. Target users: Urban women aged 25-35
+3. Main motivation: Not caffeine, but "relaxed experience"
+4. Price acceptance: $25-30/cup
+
+**Output**: Research report + research log
+
+---
+
+**Research 2: Product Positioning Validation (Week 3)**
+
+Task: "Based on market opportunity, validate product positioning"
+
+**Key Action**: Link Research 1
+
+AI automatically reads Research 1 content:
+- Target users: Urban women aged 25-35
+- Core need: "Relaxed experience" not caffeine
+- Price acceptance: $25-30
+
+Research Content:
+- Discussion test of 3 product positioning directions
+- Interview deep validation of most popular positioning
+
+**Core Findings**:
+- Most popular positioning: "Relaxed atmosphere afternoon tea substitute"
+- Users like "refreshing", "not too sweet", "suitable for social occasions"
+- Emotional value > functionality (caffeine boost)
+
+**Value**:
+- No need to re-explain "who is the target user"
+- AI automatically designs Discussion topics based on Research 1 findings
+- Research is coherent, not starting from zero
+
+---
+
+**Research 3: Packaging Design Testing (Week 5)**
+
+Task: "Test 3 packaging designs; see which attracts target users most"
+
+**Key Actions**:
+- Link Research 1 and Research 2
+- Upload 3 packaging design drafts (images)
+
+AI automatically reads:
+- Research 1: Target users urban women 25-35, price $25-30
+- Research 2: Positioning "relaxed atmosphere afternoon tea substitute", users value "refreshing" and "social occasions"
+
+Research Content:
+- Discussion discusses 3 packaging designs
+- AI focuses on based on existing insights:
+  - Which design better fits "relaxed atmosphere"
+  - Which design makes users feel "suitable for social occasions"
+  - Which design is worth $25-30
+
+**Core Findings**:
+- Design B most popular
+- Reason: Simple and refreshing, suitable for sharing on social media (social occasions)
+- Design A too corporate, Design C too flashy
+
+**Value**:
+- AI understands complete context (target users + positioning + price)
+- Test questions more precise
+- Research results directly applicable
+
+---
+
+**Research 4: Pricing Strategy Optimization (Week 7)**
+
+Task: "Validate optimal pricing"
+
+**Key Action**: Link Research 1, 2, 3
+
+AI automatically reads:
+- Research 1: Initial price acceptance $25-30
+- Research 2: Positioning "relaxed atmosphere", high emotional value
+- Research 3: Sophisticated packaging design
+
+Research Content:
+- Interview deep-dive on pricing sensitivity
+- AI focuses on: "Based on packaging design B and 'relaxed atmosphere' positioning, how much would you pay?"
+
+**Core Findings**:
+- Optimal pricing: $28
+- Users think $25 "too cheap, doesn't feel sophisticated enough"
+- $30 "a bit pricey, exceeds mental budget"
+- $28 "reasonable, matches product positioning"
+
+**Value**:
+- Pricing research based on complete context (product positioning + packaging design)
+- Not asking in isolation "how much would you pay"
+- Research results more accurate
+
+---
+
+**4 Research Sessions Form Complete Chain**:
+
 ```
-Research A: Macro market analysis → Research B: User pain points (reference A) → Research C: Product solutions (reference A+B)
+Research 1 (Market Opportunity)
+    ↓ Based on findings
+Research 2 (Product Positioning)
+    ↓ Based on positioning
+Research 3 (Packaging Design)
+    ↓ Based on design and positioning
+Research 4 (Pricing Strategy)
+    ↓
+Complete Product Solution
 ```
 
-**2. Cross-Time Comparison**
-```
-Research A: 2024 Q4 trends → Research B: 2025 Q1 trends comparison (reference A, auto-compare changes)
-```
+**vs. Fragmented Research**:
+- If 4 research sessions were independent, AI would need to repeatedly ask about background
+- Each time would need to re-explain "who is the target user", "what's the product positioning"
+- Low efficiency, poor research quality
 
-**3. Multi-Dimensional Analysis**
-```
-Research A: Product feature analysis
-Research B: User pain point analysis
-Research C: Improvement plan (reference A+B, combine features and pain points for solutions)
-```
-
-**4. Team Collaboration**
-```
-Member A: Market research → Member B: Competitive analysis (reference A) → Member C: Product positioning (reference A+B)
-```
-
-#### ❌ Not Suited Scenarios
-
-- **Unrelated new research**: EV research vs coffee industry (no relation)
-- **Outdated research**: 2023 data has limited value for 2025 research
-- **Contradictory conclusions**: Two studies with opposite conclusions will confuse AI
-
-### Best Practices
-
-**Recommended Usage**:
-
-**Scenario: Product Innovation Research**
-```
-Step 1: Macro market research
-"Research 2025 AI assistant market trends"
-→ Generate Research A (market size, players, trends)
-
-Step 2: Competitive analysis (reference Research A)
-"Based on previous research, analyze differences between ChatGPT, Claude, Gemini"
-[Reference: Research A]
-→ AI already knows market background, directly enters competitive analysis
-
-Step 3: Product positioning (reference Research A + B)
-"Based on market and competitive analysis, provide product positioning"
-[Reference: Research A, Research B]
-→ AI combines market and competitors for positioning strategy
-```
-
-**Advantages**:
-- Each research stands on previous shoulders
-- Avoid re-researching basic information
+**vs. Reference Study**:
+- 4 research sessions form knowledge chain
+- Each research builds on previous findings
 - Research depth progressively increases
-
-### Capabilities and Limitations
-
-**What It Can Do**:
-- Automatically remember all your research
-- Avoid re-investigating known information
-- Reference multiple studies simultaneously (up to 5)
-- Team members can reference each other's research
-
-**What It Cannot Do**:
-- Cannot reference others' research (privacy protection)
-- Referenced content is static (doesn't update in real-time)
-- Cannot reference only part of a study (all or nothing)
+- Final output is complete, systematic product solution
 
 ---
 
-## Feature 2: File Attachments
-
-### What Does This Feature Do?
-
-**Simply put**: Upload PDF reports, Excel data, product screenshots—AI automatically extracts and understands content, integrating it into research analysis.
-
-**Analogy**:
-- **Traditional Approach**: Manual copy-paste of document content, 100-page report can only use a few paragraphs
-- **File Attachments**: Direct upload of PDF, AI auto-extracts all key content
+## File Attachments: Document Integration
 
 ### Supported File Types
 
-#### 1. Image Files (up to 5)
+**Document Types**:
+- PDF: Competitor analysis reports, industry reports, user feedback...
+- TXT/Markdown: Text materials
+- CSV/Excel: Data tables
+- Images: Product prototypes, design drafts, competitor screenshots...
+- Maximum 10MB/file
 
-**Supported Formats**: JPEG, PNG, GIF, WebP, BMP, SVG
-
-**Use Cases**:
-- **Product Screenshots**: App interfaces, web design, feature comparisons
-- **Data Charts**: Market trend charts, user research result charts
-- **Competitive Analysis**: Competitor product screenshots, design comparisons
-- **User Feedback**: Social media comment screenshots, user feedback images
-
-#### 2. Document Files (up to 3)
-
-**Supported Formats**: PDF, TXT, CSV
-
-**Use Cases**:
-- **Industry Reports**: McKinsey, iResearch, Gartner consulting reports
-- **Internal Documents**: Company strategy, product requirements, meeting minutes
-- **Data Files**: User research data (CSV tables)
-- **Research Papers**: Academic papers, technical white papers
-
-### File Limitations
-
-- **Single File**: Maximum 3MB
-- **Images**: Maximum 5 images
-- **Documents**: Maximum 3 documents
-- **Total Size**: Maximum 50MB
-
-### Document Processing Flow
-
-After uploading documents, AI automatically:
-1. **Extract Text**: Extract all text content from PDF
-2. **Smart Compression**: Retain all key information (data, insights, conclusions), remove redundancy
-3. **Integrate Analysis**: Incorporate document content into research, combine with other information for analysis
-
-**Processing Time**:
-- Small documents (< 20 pages): 1-2 minutes
-- Medium documents (20-50 pages): 2-3 minutes
-- Large documents (50-100 pages): 3-5 minutes
-
-### Real Cases
-
-#### Case 1: Product Design Analysis + Screenshots
-
-**User Uploads**:
-- App homepage screenshot
-- Competitor homepage screenshot
-- User feedback screenshot
-
-**AI Analysis**:
-```
-Image 1: Our Product
-- Top search bar takes 15%
-- Middle carousel takes 30%
-- Bottom 8 feature entries, tightly arranged
-- Overall high information density, visually crowded
-
-Image 2: Competitor Product
-- Simple navigation
-- Large image + title takes 50%
-- 2-3 core feature entries
-- Ample white space, visually clean
-
-Image 3: User Feedback
-- "Homepage too messy, don't know where to start"
-- "Too many features, can't find what I want"
-
-Comprehensive Analysis:
-Design Issues: Information density too high, visual hierarchy unclear
-Improvement Recommendations:
-1. Streamline feature entries: 8 → 3-4
-2. Strengthen visual hierarchy: increase core feature area proportion
-3. Add white space: improve breathing room
-```
-
-#### Case 2: Industry Research + PDF Reports
-
-**User Uploads**:
-- McKinsey EV Report (50 pages)
-- iResearch Consumer Survey (80 pages)
-
-**AI Processing** (5 minutes):
-- Auto-extract all text from 130 pages of PDF
-- Smart compression, retain all key data and insights
-- Synthesize both reports, analyze market opportunities
-
-**Analysis Results**:
-```
-Extract from McKinsey Report:
-- Market size: 2025 8M units (+35%)
-- Fastest growth: mid-low end market (+58%)
-- Key trend: intelligence
-
-Extract from iResearch Report:
-- Core pain points: range anxiety (63%), charging inconvenience (51%)
-- Willingness to pay: 72% willing to pay 10-20% more for intelligence
-
-Comprehensive Analysis → Three Market Opportunities:
-1. Mid-low end market (value models + basic intelligence)
-2. Intelligence upgrade (L2+ autonomous driving + smart infotainment)
-3. Charging experience optimization (fast charging network + convenience services)
-```
-
-### Capabilities and Limitations
-
-**What It Can Do**:
-- Auto-extract PDF/image content
-- Smart compress documents, retain key information
-- Understand multiple files simultaneously (up to 5 images + 3 documents)
-- Cross-file analysis and synthesis
-
-**What It Cannot Do**:
-- Not support Word/Excel/PPT (need to convert to PDF/CSV first)
-- Not support encrypted PDF
-- Scanned PDF (pure images) has low recognition rate
-- Very large documents (> 200 pages) may lose some information
+**File Quantity**:
+- Multiple files can be uploaded per research session
+- Recommended not to exceed 10 (too many affects AI understanding efficiency)
 
 ---
 
-## Combined Use: Reference Studies + File Attachments
+### Use Case 1: Research Based on Competitor Reports
 
-### Scenario 1: Progressive Research Based on Reports
+**Need**:
+- Have a 50-page competitor analysis PDF
+- Want AI to find differentiation opportunities based on this report
 
-```
-Step 1: Upload industry report
-"Based on this McKinsey report, analyze 2025 EV market"
-[Attachment: McKinsey_Report.pdf]
-→ Generate Research A
+**Traditional Method**:
+1. Read 50-page report (1-2 hours)
+2. Manually organize competitor features
+3. Input to AI
+4. Ask AI to analyze differentiation opportunities
 
-Step 2: Deep dive
-"Analyze user pain points in depth. I found iResearch report too."
-[Reference: Research A]
-[Attachment: iResearch_Report.pdf]
-→ AI already knows McKinsey report content (from Research A)
-→ Newly extracts iResearch report content
-→ Synthesizes both reports for deep pain point analysis
+**Using File Attachments**:
+1. Upload PDF
+2. Ask AI: "Based on this competitor report, how should our product differentiate?"
+3. AI automatically:
+   - Reads PDF
+   - Extracts competitor features
+   - Discussion/Interview tests differentiation directions
+   - Outputs recommendations
 
-Step 3: Product solution design
-"Design product solution. Here are competitor screenshots."
-[Reference: Research A, Research B]
-[Attachments: Competitor_Screenshot_1.png, Competitor_Screenshot_2.png]
-→ AI already knows market background and user pain points
-→ Newly analyzes competitor screenshots
-→ Synthesizes for product solution design
-```
+**Case Study**:
+> Upload competitor analysis PDF for coffee brand
+>
+> **You**: "Based on this report, how should bubble coffee differentiate?"
+>
+> **AI Auto-Extracts Competitor Features**:
+> - Starbucks: Convenient, stable, but "unremarkable"
+> - Specialty coffee: Quality, professional, but "too expensive", "not relaxing"
+> - Luckin: Value for money, but "too commercial"
+>
+> **AI Initiates Discussion**:
+> "Discussion topic: Bubble coffee differentiation
+> - Direction A: More distinctive than Starbucks
+> - Direction B: More relaxing than specialty coffee
+> - Direction C: More emotional value than Luckin"
+>
+> **Output**:
+> Based on Discussion results, recommend differentiation positioning:
+> "Relaxing × Distinctive × Emotional Value"
+> - vs Starbucks: More distinctive (bubble + emotional label)
+> - vs Specialty coffee: More relaxing (not pursuing professionalism, pursuing experience)
+> - vs Luckin: More emotional value (not work scenario, relaxation scenario)
 
-### Scenario 2: Team Collaboration Research
-
-```
-Member A: Market Research
-[Attachments: Industry_Report_1.pdf, Industry_Report_2.pdf]
-→ Generate Research A
-
-Member B: Competitive Analysis
-[Reference: Research A]
-[Attachments: Competitor_Screenshot_1.png, Competitor_Screenshot_2.png]
-→ Generate Research B
-
-Member C: Product Positioning
-[Reference: Research A, Research B]
-[Attachments: User_Research_Data.csv]
-→ Generate Research C
-```
-
----
-
-## Best Practices
-
-### 1. File Naming Conventions
-
-**Recommended Naming**:
-```
-✅ Good naming:
-- McKinsey_EV_Report_2025.pdf
-- iResearch_Consumer_Survey_2024Q4.pdf
-- Competitor_A_Homepage_Screenshot_20250115.png
-
-❌ Poor naming:
-- Report.pdf
-- Screenshot1.png
-- download(1).pdf
-```
-
-**Naming Rules**:
-- Include source (e.g., "McKinsey")
-- Include content (e.g., "Market Report")
-- Include time (e.g., "2025")
-
-### 2. File Selection Strategy
-
-**Images**:
-- ✅ Clear screenshots (1920x1080+)
-- ✅ Complete interfaces (no cropping)
-- ✅ Structured charts (with titles, legends)
-- ❌ Blurry photos
-- ❌ Phone photos of screens
-
-**Documents**:
-- ✅ Formal industry reports
-- ✅ Structured documents (with chapters, headings)
-- ✅ Text-based PDFs (text can be copied)
-- ❌ Scanned PDFs (pure images)
-- ❌ Encrypted PDFs
-- ❌ Very large documents (> 200 pages)
-
-### 3. Upload Timing
-
-**Best Timing**: Upload at research start
-```
-✅ Recommended:
-"Based on this report, analyze market trends"
-[Attachment: Industry_Report.pdf]
-→ AI understands document content from the start
-
-❌ Not Recommended:
-"Analyze market trends" (AI starts research)
-→ 10 minutes later: "Oh right, I have a report"
-→ AI needs to restart
-```
+**Value**:
+- Save 1-2 hours reading time
+- AI automatically extracts key information
+- Conduct research directly from report, seamless integration
 
 ---
 
-## FAQ
+### Use Case 2: Prototype Testing
 
-### 1. What's the difference between Reference Studies and File Attachments?
+**Need**:
+- Designer created 3 product prototypes
+- Want to quickly test user reactions
 
-- **Reference Studies**: Your previous research completed in atypica.AI
-- **File Attachments**: External materials you upload (reports, screenshots, etc.)
+**Using File Attachments**:
+1. Upload 3 prototype images
+2. Ask AI: "Test these 3 prototypes; which do users prefer?"
+3. AI automatically:
+   - Show 3 images to AI personas
+   - Discussion discusses which is more usable, better looking
+   - Collect feedback
 
-**Analogy**:
-- Reference Studies = Your previous paper drafts
-- File Attachments = Reference materials you've collected
+**Case Study**:
+> Upload 3 registration flow prototype images
+>
+> **AI Initiates Discussion**:
+> "Show 3 registration flow prototypes (Image A, B, C); discuss:
+> 1. Which is easiest to understand?
+> 2. Which flow is smoothest?
+> 3. Any confusion or obstacles?"
+>
+> **Discussion Results**:
+> - Image A: Simple but lacks guidance; users don't know next step
+> - Image B: Clear guidance, but too many steps; feels tedious
+> - Image C: Balanced; clear guidance and simplified steps
+>
+> **Output**:
+> Recommend using Image C, with optimizations:
+> 1. Add "Complete registration in just 2 minutes" prompt at first step
+> 2. Add progress bar at second step
+> 3. Put social login button at top
 
-### 2. Can I use both features together?
+**Value**:
+- Quickly test prototypes without waiting for real users
+- AI personas provide detailed feedback
+- Can test multiple versions for rapid iteration
 
-**Yes!** This is the most powerful combination:
+---
 
+### Use Case 3: User Feedback Analysis
+
+**Need**:
+- Customer service collected 200 user feedback items (Excel)
+- Want to know what users care about most
+
+**Using File Attachments**:
+1. Upload Excel file
+2. Ask AI: "Analyze user feedback; identify most common issues and needs"
+3. AI automatically:
+   - Reads Excel
+   - Categorizes and counts
+   - Extracts high-frequency keywords
+   - Summarizes core issues
+
+**Case Study**:
+> Upload user feedback Excel (200 items)
+>
+> **AI Analysis**:
+> **High-Frequency Issues (50+ occurrences)**:
+> 1. "Can't find a feature" (78 times)
+>    - Specifically: Settings page, export data, history
+> 2. "Slow loading speed" (65 times)
+>    - Mainly on mobile
+> 3. "Don't know how to use" (52 times)
+>    - Mostly new users; lack of guidance
+>
+> **Positive Feedback (30+ occurrences)**:
+> 1. "Feature very useful" (45 times)
+> 2. "Interface simple" (38 times)
+>
+> **Recommendations**:
+> 1. Optimize feature entry points (solve "can't find" issue)
+> 2. Optimize mobile performance (solve "slow loading")
+> 3. Add new user onboarding (solve "don't know how to use")
+
+**Value**:
+- Save manual analysis time (traditional requires 3-5 hours)
+- AI auto-categorizes and counts
+- Quickly discover core issues
+
+---
+
+### Use Case 4: Research Material Integration
+
+**Need**:
+- Have multiple materials:
+  - Industry report PDF
+  - Competitor analysis Excel
+  - User interview notes TXT
+  - Product roadmap PPT screenshots
+- Want AI to integrate these materials for comprehensive analysis
+
+**Using File Attachments**:
+1. Upload all files at once
+2. Ask AI: "Based on these materials, where is our product opportunity?"
+3. AI automatically:
+   - Reads all files
+   - Integrates information
+   - Discovers connections and opportunities
+   - Outputs comprehensive analysis
+
+**Case Study**:
+> Upload 4 files:
+> - Health Food Industry Report.pdf
+> - Competitor Analysis.xlsx
+> - User Interview Notes.txt
+> - Product Roadmap.png
+>
+> **AI Integrated Analysis**:
+> **Market Opportunity** (Industry Report):
+> - Health food market growing 15% annually
+> - Emotional value becoming new selling point
+>
+> **Competitor Gap** (Competitor Analysis):
+> - Competitor A: Healthy but boring
+> - Competitor B: Tasty but not healthy enough
+> - Gap: Healthy + Fun (emotional value)
+>
+> **User Needs** (Interview Notes):
+> - Want to "enjoy eating without guilt"
+> - Care about "emotional healing"
+>
+> **Product Positioning Recommendation**:
+> Based on above analysis, recommend positioning:
+> "Tasty Healthy Snack + Emotional Healing"
+> - Fills competitor gap
+> - Matches market trend
+> - Meets user needs
+
+**Value**:
+- Auto-integrate multiple materials
+- Discover cross-file connections
+- Quickly form comprehensive insights
+
+---
+
+## Combined Use: Reference & Attachments
+
+### Best Practice: Continuous Research + External Materials
+
+**Scenario**: Brand wants to reposition product
+
+**Research 1: Market Analysis**
+- Upload industry report PDF
+- Scout Agent observes social media
+- Integrate analysis of market trends
+
+**Core Findings**:
+- Emotional value becomes new trend
+- Young people pursue "healing feeling"
+
+---
+
+**Research 2: Competitor Analysis**
+- Link Research 1 (market trends)
+- Upload competitor analysis Excel
+- Discussion discusses differentiation directions
+
+**Core Findings**:
+- Competitors all playing "health" card
+- "Emotional healing" is gap
+
+---
+
+**Research 3: User Validation**
+- Link Research 1 + Research 2
+- Interview validates "emotional healing" positioning
+- Deep understanding of user motivation
+
+**Core Findings**:
+- Users willing to pay premium for "healing feeling"
+- Want packaging design "sophisticated + warm"
+
+---
+
+**Research 4: Packaging Testing**
+- Link Research 3 (user expectations for packaging)
+- Upload 3 packaging design drafts
+- Discussion collects feedback
+
+**Core Findings**:
+- Design B best fits "sophisticated + warm"
+- Recommend adding emotional label
+
+---
+
+**Form Complete Research Chain**:
 ```
-Research A: Market Research
-[Attachments: Industry_Report_1.pdf, Industry_Report_2.pdf]
-
-Research B: Competitive Analysis
-[Reference: Research A] + [Attachments: Competitor_Screenshot.png, Competitor_Report.pdf]
-→ AI already knows market background + newly analyzes competitors
+Research 1 (Market Analysis + Industry Report)
+    ↓
+Research 2 (Competitor Analysis + Competitor Excel)
+    ↓
+Research 3 (User Validation)
+    ↓
+Research 4 (Packaging Testing + Design Drafts)
+    ↓
+Complete Brand Positioning Solution
 ```
 
-### 3. How long does document processing take?
+**Value**:
+- Research is coherent, not fragmented
+- External materials seamlessly integrated
+- Form systematic insights
+- 50%+ efficiency boost
 
-- Small documents (< 20 pages): 1-2 minutes
-- Medium documents (20-50 pages): 2-3 minutes
-- Large documents (50-100 pages): 3-5 minutes
+---
 
-Processing happens in the background, you can continue inputting research questions.
+## Reference & Attachments vs. Other Methods
 
-### 4. Why compress documents?
+### vs. Manual Material Organization
 
-**Reasons**:
-- AI context windows are limited
-- Improve understanding efficiency
-- Reduce costs
+| Dimension | Reference & Attachments | Manual Organization |
+|-----------|------------------------|-------------------|
+| **Efficiency** | ✅ AI auto-extracts, seconds | ❌ Requires 1-3 hours reading/organizing |
+| **Accuracy** | ✅ No missed key information | ⚠️ May miss or misunderstand |
+| **Research Continuity** | ✅ Auto-link historical research | ❌ Need manual review and explanation |
+| **File Support** | ✅ PDF/Excel/Images auto-recognized | ❌ Need convert to text |
 
-**Results**:
-- 100-page PDF → 82% compression
-- Retain 100% key information (data, insights, conclusions)
+---
 
-### 5. Can I upload Word/Excel/PPT files?
+### vs. Starting Each Research Fresh
 
-**Currently not supported**, workarounds:
-- Word → Export as PDF
-- Excel → Export as CSV
-- PPT → Export as PDF
+| Dimension | Reference & Attachments | Starting Fresh |
+|-----------|------------------------|----------------|
+| **Research Depth** | ✅ Build on historical findings | ❌ Shallow, can't go deep |
+| **Research Efficiency** | ✅ No repeated context | ❌ Repeat explanation each time |
+| **Knowledge Accumulation** | ✅ Form research chains | ❌ Fragmented, no accumulation |
+| **Output Quality** | ✅ Systematic, complete | ⚠️ Isolated, incomplete |
 
-### 6. Is there a limit on number of Reference Studies?
+---
 
-**Maximum 5**
+## Common Questions
 
-**Best Practices**:
-- Reference 1-2 (most common)
-- Reference 3-4 (multi-dimensional analysis)
-- Avoid 5+ (context overload)
+### Q1: How many historical research can I link?
+
+**Recommended 1-3**:
+- Too many affects AI understanding efficiency
+- Choose most relevant research to link
+
+**If need more**:
+- Can first summarize multiple research into one
+- Or use Memory System (automatically remembers all research)
+
+---
+
+### Q2: Are uploaded files permanently saved?
+
+**Saved but can delete**:
+- Files saved in your account
+- Can delete anytime
+- Deletion doesn't affect completed research results
+
+**Privacy Protection**:
+- Files encrypted and stored
+- Only you can access
+- Not visible to other users
+
+---
+
+### Q3: Can AI fully understand uploaded files?
+
+**Mostly yes, but with limitations**:
+
+**Can Understand**:
+- Pure text PDF (AI can read text)
+- Excel tables (AI understands data structure)
+- Text in images (OCR recognition)
+- Markdown/TXT text
+
+**Limited Understanding**:
+- Complex charts (AI may not fully understand)
+- Handwritten notes (low recognition accuracy)
+- Very specialized terminology (may need supplementary explanation)
+
+**Recommendation**:
+- After uploading, ask AI: "Did you understand the core content of this file?"
+- AI will summarize its understanding
+- If discrepancy, provide additional explanation
+
+---
+
+### Q4: What's the difference between Reference Study and Memory System?
+
+**Reference Study**:
+- Link complete content of specific research session
+- Best for: Progressive research, deep investigation
+- Requires manual linking
+
+**Memory System**:
+- Automatically remembers your background, preferences, research direction
+- Best for: Long-term use, auto-accumulation
+- No manual operation needed
+
+**Combined Use**:
+- Memory System: Remember "who you are, who are your target users"
+- Reference Study: Specific research findings and conclusions
+- Both together make research more efficient
+
+---
+
+### Q5: Can I edit uploaded files?
+
+**Cannot edit directly, but can re-upload**:
+1. Delete old file
+2. Upload new file
+3. AI will re-analyze based on new file
+
+**Recommendation**:
+- If file updated, re-upload
+- Keep file current
+
+---
+
+### Q6: For uploaded images, can AI understand design?
+
+**Yes, but with limits**:
+
+**AI Can Understand**:
+- Layout structure (whether clear)
+- Color style (minimal, flashy, corporate, etc.)
+- Text content (button copy, titles, etc.)
+- Overall feeling (professional, cute, premium, etc.)
+
+**AI Understanding Limited**:
+- Fine design details (font choice, spacing micro-adjustments)
+- Brand consistency (whether matches brand tone)
+- Emotional resonance (whether truly "healing")
+
+**Recommendation**:
+- Can let AI do initial screening
+- But final decision still needs human judgment
+
+---
+
+### Q7: File too large, upload fails?
+
+**Single file limit 10MB**:
+
+**Solutions**:
+1. **PDF Compression**: Use PDF compression tool
+2. **Image Compression**: Lower image resolution
+3. **Split Files**: If Excel, split into multiple files to upload
+4. **Extract Core Content**: Only upload most relevant parts
+
+**Recommendation**:
+- Prioritize uploading core materials
+- Don't upload redundant content
+
+---
+
+### Q8: Can I add files mid-research?
+
+**Yes**:
+- Upload new files anytime during research
+- AI will auto-read and integrate into research
+
+**Scenario**:
+- Research halfway through, realize need more materials
+- Upload directly; AI uses immediately
+
+---
+
+## Practical Recommendations
+
+### 1. Plan Research Path, Gradually Deepen
+
+**Recommended Order**:
+1. 1st Research: Initial market/user understanding
+2. 2nd Research: Link 1st, deepen specific direction
+3. 3rd Research: Link both previous, validate specific solution
+
+**Avoid**:
+- Research all problems at once
+- Jumping research, lacking continuity
+
+---
+
+### 2. Selective File Upload
+
+**Upload Core Materials**:
+- Competitor reports, industry reports
+- Product prototypes, design drafts
+- User feedback, interview notes
+
+**Avoid Uploading**:
+- Redundant materials
+- Unrelated content
+- Outdated materials
+
+**Reason**:
+- Too many files affect AI understanding efficiency
+- Quality over quantity
+
+---
+
+### 3. Verify AI Understanding
+
+**After Each File Upload**:
+- Ask AI: "Did you understand this file's core content?"
+- AI will summarize its understanding
+- If discrepancy, provide supplement
+
+**Value**:
+- Ensure AI understands correctly
+- Avoid basing research on wrong understanding
+
+---
+
+### 4. Periodically Clean Up Outdated Research
+
+**Recommendation**: Every 3-6 months
+
+**Clean Up Content**:
+- Research no longer relevant
+- Based on outdated assumptions
+- Replaced by new research
+
+**Value**:
+- Keep research library clean
+- Avoid AI linking to outdated research
 
 ---
 
 ## Summary
 
-**Reference Studies + File Attachments** are core capabilities of atypica.AI, making your research:
+**Reference & Attachments Core Value**:
+1. **Research Continuity**: Build on historical findings for deeper investigation; form knowledge chains
+2. **Document Integration**: External materials seamlessly integrated; AI auto-extracts content
+3. **Systematic Research**: From fragmented → systematic; research deeper
+4. **Efficiency Boost**: No repeated context; save 50%+ time
 
-### Core Value
+**Applicable Scenarios**:
+- Progressive research: Market analysis → product validation → packaging testing...
+- Deep investigation: Based on initial findings, research specific niche direction
+- Material Analysis: Conduct research based on competitor reports, user feedback etc.
+- Prototype Testing: Upload design drafts, quickly collect feedback
 
-1. **Continuous Accumulation**
-   - Every research is remembered, referenceable by future research
-   - Forms reusable research assets
+**vs. Other Methods**:
+- vs Manual organization: 10x efficiency boost; no missed key information
+- vs Starting fresh: Progressive research depth; knowledge accumulation not fragmentation
 
-2. **Deep Integration**
-   - Auto-extract PDF/image content
-   - Cross-file analysis and synthesis
+**Best Practices**:
+- Plan research path, gradually deepen
+- Selectively upload core materials
+- Verify AI understanding
+- Periodically clean outdated research
 
-3. **Efficiency Gains**
-   - Avoid redundant research
-   - No manual excerpting
-   - Jump to core issues
+**Combined Use**:
+- Reference Study + Memory System: Research continuity + auto-memory
+- File Attachments + Reference Study: External materials + historical research → comprehensive insights
+- Maximize effectiveness
 
-### Use Cases
+---
 
-**Reference Studies**:
-- Progressive deep-dive research
-- Cross-time comparison research
-- Multi-dimensional comprehensive analysis
-- Team collaboration research
-
-**File Attachments**:
-- Industry report analysis
-- Product design analysis
-- User research data
-- Internal document integration
-
-### Relationship with Other Features
-
-```
-Plan Mode (Intent Clarification) → Reference Studies + File Attachments (Background Loading) → Execute Research → Memory System (Memory)
-```
+**Document Version**: v2.0 | 2026-01-15 | Pure User Perspective

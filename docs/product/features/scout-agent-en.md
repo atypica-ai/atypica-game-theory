@@ -1,343 +1,434 @@
 # Scout Agent: Deep Social Media Observation
 
-Like an anthropologist conducting field research, deeply understand a group's lifestyle, values, and mindset.
+**One-sentence summary**: Observe social media content across 3 phases to build authentic user personas and behavioral patterns for your target audience.
 
 ---
 
-## What is Scout Agent?
+## Core Value
 
-Scout Agent is atypica.AI's social media observation intelligence agent. Instead of simply collecting data and statistics, it **works like an anthropologist conducting field research**, using immersive observation of social media content to understand what people truly think, feel, and what motivates their behavior.
+### 1. Based on Real Content, Not Imagination
 
-**Core Philosophy**:
-> Not answering "how many people mentioned this topic," but answering "why do they think, speak, and act this way."
+**vs. Asking AI Directly**:
+- Direct question: "What kind of coffee do Gen Z like?"
+- AI answer: Generic answer based on training data, may be out of touch with reality
 
----
-
-## Scout vs Traditional Social Listening Tools
-
-| Dimension | Scout Agent | Traditional Social Listening |
-|------|------------|-----------------|
-| **Objective** | Understand group social psychology and cultural traits | Monitor brand mentions and sentiment analysis |
-| **Method** | Anthropologist-style field research | Large-scale data scraping and statistics |
-| **Focus** | "Why do they think, speak, and act this way" | "How many brand mentions, positive or negative" |
-| **Output** | Social psychology analysis + AI personas for interviews | Data reports + sentiment trend charts |
-| **Data Sources** | 5 core platforms, deep observation | 1M+ websites, broad coverage |
-| **Workflow** | 3 phases: observe → reason → validate | Continuous monitoring + real-time alerts |
-| **Final Product** | Real AI personas usable for interviews | Brand monitoring reports |
-
-**Simply put**:
-- Traditional tools answer "what happened" (how many brand mentions)
-- Scout answers "why it happened" (the group's values and psychological motivations)
+**Scout Agent**:
+- Observes real discussions on Xiaohongshu/Bilibili
+- Analyzes content users actually publish
+- Discovers latest trends and authentic attitudes
 
 ---
 
-## Workflow: Three Phases
+### 2. Three-Phase Workflow: Observe → Reason → Verify
 
-### Phase 1: Immersive Observation (No Rush to Conclusions)
+**Phase 1: Observation (5 rounds)**
+- Analyze social media content
+- Extract user behavioral characteristics
+- Record key discussion points
 
-In this phase, AI acts like an anthropologist arriving at a new community - browse and observe extensively first, without rushing to summarize.
+**Phase 2: Reasoning (Auto-triggered)**
+- Triggered automatically after 5 observations
+- Deep analysis and hypothesis formation
+- Generate preliminary user persona
 
-**What AI Focuses On**:
-- Interesting, resonant, conflicting content
-- Linguistic subtleties: tone, word choice, expression habits
-- Recurring themes, emotions, value expressions
-
-**Observation Platforms**:
-- Chinese environment: Xiaohongshu (XHS), Douyin
-- International environment: Instagram, TikTok, Twitter
-
-**Real Case - Sparkling Coffee Research**:
-```
-1st Observation: XHS search "working women coffee energy"
-- Finding: Massive volume of "3pm lifeline coffee" content
-- Language: Users repeatedly use "lifeline," "emergency," "wake up"
-- Emotion: Repeated mentions of "sugar anxiety"
-
-2nd Observation: XHS search "zero sugar drinks healthy"
-- Finding: Users highly sensitive but skeptical about "zero sugar"
-- Tone: Both "seeking comfort" and "self-doubt"
-- Keywords: "Are sweeteners safe," "Really zero calories"
-
-3rd Observation: Douyin search "sparkling water coffee"
-- Finding: Curiosity about sparkling + coffee combination
-- Comments: "Will it taste weird," "Want to try but afraid to waste"
-- Note: Aesthetics and social posting frequently appear
-
-4th Observation: Instagram search "sparkling coffee"
-- Finding: Similar foreign products emphasize "energizing"
-- Visual: Lean toward "refreshing," "vibrant" feeling
-- Difference: Users focus more on "taste" than "health"
-
-5th Observation: XHS search "convenience store new coffee"
-- Finding: Strong willingness to try new, but price-sensitive
-- Price: $18-22 is a "hesitation zone"
-- Repurchase: Depends on "taste" rather than concept
-```
-
-### Phase 2: Deep Understanding (Forced Pause to Think)
-
-After observing a certain amount, the system forces AI to pause and think deeply: What value conflicts and psychological motivations do these phenomena reflect?
-
-This phase stops collecting new information and focuses on social psychology analysis of observed phenomena.
-
-**Sparkling Coffee Case Reasoning Process**:
-
-AI's Question:
-> "These people repeatedly use 'lifeline' and 'emergency' to express afternoon energy needs while being skeptical and anxious about 'zero sugar.' What value conflicts does this reflect? Why do they want to try new things yet fear 'wasting money'?"
-
-AI's Analysis Conclusions:
-
-**1. Identity Anxiety vs Self-Management Conflict**
-- "Lifeline" reflects helplessness under workplace pressure
-- "Zero sugar" anxiety stems from compulsive need for body management
-- They try to regain control through "healthy choices"
-
-**2. Innovation Desire vs Risk Aversion Balance**
-- Curiosity drives experimentation, but "fear of waste" reflects consumer rationalization
-- $18-22 isn't "can't afford," but "is it worth it" judgment
-- Need "reasons" to convince themselves: aesthetics, social posting, friend recommendations
-
-**3. Group Identity vs Individual Expression Tension**
-- "Showing off" on social media seeks recognition
-- But they resist being "marketed to" or "paying IQ tax" labels
-- Products need balance between "trendy" and "practical"
-
-### Phase 3: Continue Observation Validation
-
-With insights from phase 2, AI continues observing social media content to validate or revise previous understanding, focusing on contradictory, unexpected, complex manifestations.
-
-**Sparkling Coffee Case Validation Process**:
-```
-6th Observation: XHS search "afternoon tea check-in office"
-→ Validate: Social motivation indeed exists, "check-in" is important driver
-
-7th Observation: XHS search "sweetener anxiety truth"
-→ Validate: Health anxiety deeper than expected, needs more transparency
-
-8th Observation: XHS search "coffee alternative value"
-→ Validate: Price sensitivity point is "is it worth" not "can afford"
-```
-
-After multiple rounds of observation and validation, a deep understanding of this group is formed.
+**Phase 3: Verification (Continue observing)**
+- Continue observing with hypotheses in mind
+- Refine and perfect understanding
+- Output final persona
 
 ---
 
-## Scout's Four Observation Dimensions
+### 3. Output High-Quality AI Personas
 
-### 1. Lifestyle Observation
-- How do they describe their daily lives? What tone do they use?
-- What value pursuits do their shared life moments reveal?
-- In what contexts do they express joy, anxiety, anticipation?
-
-### 2. Social Interaction Observation
-- How do they interact with others on social media?
-- How do they respond to different viewpoints? Inclusive, confrontational, or avoidant?
-- How do they express resonance in comments? What discourse style?
-
-### 3. Values and Identity Observation
-- What value ordering do they reveal in consumption decisions?
-- How do they balance ideal vs reality conflicts?
-- What content triggers their strong emotional resonance?
-
-### 4. Expression and Language Observation
-- What vocabulary and sentence patterns do they habitually use?
-- Are their expressions direct, euphemistic, or specific rhetorical style?
-- How do they use slang, memes, emojis?
+**Ready for Downstream Research**:
+- Auto-generate Tier2 high-quality personas
+- Include complete persona backgrounds
+- Can be used for Interview/Discussion
 
 ---
 
-## Final Output: AI Personas for Interviews
+## Real Case Study: Sparkling Coffee Target User Research
 
-Scout's final output isn't data reports, but **AI personas you can directly talk to**.
+### Task
 
-Based on observation results, Scout builds 3-5 typical user AI personas, including:
-- Social psychology characteristics
-- Behavior patterns and decision logic
-- Language style and expression habits
-- Value conflicts
-
-**Sparkling Coffee Case AI Persona Output**:
-
-**Linda - Lifeline Coffee Dependent** (40%)
-- Age: 28, operations role
-- Typical behavior: Daily 3pm crash, high energy boost requirements
-- Language style: "lifeline," "emergency," "no mood for risks"
-- Value conflict: workplace pressure vs health anxiety
-- Decision logic: efficacy promise > health concept, needs "worth it" reason
-
-**Emma - Health Anxious** (35%)
-- Age: 31, internet product manager
-- Typical behavior: Carefully checks ingredient list before purchase
-- Language style: "Are sweeteners safe," "I still need to check ingredients"
-- Value conflict: enjoyment desire vs body management anxiety
-- Decision logic: ingredient transparency > brand story, needs "peace of mind" reason
-
-**Chloe - Social Trendsetter** (25%)
-- Age: 26, fashion industry
-- Typical behavior: Wants to try new products, likes sharing on social media
-- Language style: "If the bottle looks good, I might buy it for photos"
-- Value conflict: novelty pursuit vs practicality consideration
-- Decision logic: aesthetics and social value > efficacy, needs "worth posting" reason
-
-These AI personas can be directly used for subsequent in-depth interviews to test product concepts, pricing strategies, marketing messages, etc.
+"Observe Xiaohongshu/Weibo discussions about sparkling coffee to understand target audience characteristics"
 
 ---
 
-## What Scout Can Do
+### Phase 1: Observation (5 rounds)
 
-### ✅ Deeply Understand Target Group Social Psychology
+**Observation 1**:
+- Search "sparkling coffee" on Xiaohongshu
+- Findings:
+  - Young women posting coffee photos
+  - Emphasis on "looks great" and "photogenic"
+  - Mentions "not too sweet, healthier than milk tea"
 
-Not telling you "70% of people like this product," but telling you "why this group would like or dislike it, what their value conflicts are, how they affect their decisions."
+**Observation 2**:
+- Weibo topic #Sparkling Coffee
+- Findings:
+  - Taste discussions ("refreshing", "bubbly sensation")
+  - Price feedback ("¥30 is expensive", "¥20 acceptable")
+  - Purchase scenarios ("afternoon tea", "while shopping")
 
-**Use Cases**:
-- New product concept validation (e.g., sparkling coffee)
-- Target user group insights (e.g., working women's afternoon tea needs)
-- Brand positioning and marketing message testing
-
-### ✅ Cover 5 Mainstream Social Platforms
-
-Simultaneously observe Xiaohongshu, Douyin, Instagram, TikTok, Twitter - not simple keyword searches, but understanding context, emotion, and cultural differences.
-
-**Intelligent Platform Selection**:
-- AI automatically judges if the question is global or localized
-- Global issues (e.g., "Gen Z attitude toward metaverse"): covers Chinese and English platforms
-- Localized issues (e.g., "Beijing working women coffee habits"): only covers relevant market platforms
-
-### ✅ Build AI Personas You Can Talk To
-
-Based on real social media observation, build typical user AI personas that can be directly used for subsequent in-depth interviews, concept testing, user feedback simulation.
-
-**Difference from Traditional User Profiles**:
-- Traditional profiles: Static demographic characteristics (age, gender, income)
-- Scout AI personas: Dynamic psychological characteristics and behavior patterns, can dialogue and interact
+**Observation 3-5**:
+- Continue observing different platforms and topics
+- Extract more user characteristics
 
 ---
 
-## What Scout Cannot Do
+### Phase 2: Reasoning (Auto-triggered)
 
-### ❌ Cannot Replace Quantitative Large-Sample Research
+**AI automatically reasons after 5 observations**:
 
-**Reason**:
-- Scout observes 30-50 posts, cannot achieve statistical significance
-- Does not provide precise percentages, trend charts, data reports
-
-**When to Use Traditional Social Listening Tools**:
-- Brand monitoring and crisis warning
-- Precise market share and competitive analysis
-- Large-scale sentiment trend tracking
-
-**Scout's Positioning**:
-- Used for exploratory research and deep understanding
-- Complements quantitative research, provides "why" insights
-- Builds AI personas usable for subsequent validation
-
-### ❌ Cannot Real-Time Monitor and Alert
-
-**Reason**:
-- Scout is one-time observation task, not continuous monitoring
-- No real-time alert mechanism
-
-**When to Use Traditional Monitoring Tools**:
-- Brand crisis monitoring
-- Negative sentiment real-time warning
-- Continuous competitor dynamics tracking
-
-### ❌ Does Not Cover All Social Platforms
-
-**Reason**:
-- Only covers 5 core platforms (XHS, Douyin, Instagram, TikTok, Twitter)
-- No Facebook, LinkedIn, YouTube, Bilibili, Zhihu, etc.
-
-**Design Philosophy**:
-- Focus on depth rather than breadth
-- 5 platforms sufficient to cover mainstream consumer social behavior
+**Initial Hypotheses**:
+1. **Core demographic**: 25-32 year old first-tier city women
+2. **Main motivations**:
+   - Not for energy boost (rarely mention "work", "late nights")
+   - Rather for "special experiences" ("want to try something new")
+   - Value visual presentation ("looks great" appears frequently)
+3. **Price sensitivity**:
+   - ¥20-30 acceptable
+   - Over ¥30 feels expensive
+4. **Purchase occasions**:
+   - Afternoon tea time
+   - Shopping/social gatherings
+   - Not daily commute
 
 ---
 
-## Integration with Other Features
+### Phase 3: Verification (Continue observing)
 
-### Complete Research Workflow: Scout → Persona Building → In-depth Interview
+**Continue observing with hypotheses**:
 
-**Step 1 - Scout Observation** (2-3 hours):
-- Observe social media, understand group characteristics
-- Output: Social psychology analysis + 3-5 AI personas
+**Verification Question 1**: "Do they really value visual presentation?"
+- Observation: 60%+ of content includes product photos
+- Result: ✅ Confirmed
 
-**Step 2 - In-depth Interview** (3-4 hours):
-- Use built AI personas for in-depth interviews
-- Validate Scout observation conclusions
-- Test specific product concepts, pricing, marketing messages
+**Verification Question 2**: "Do they really not care about energy boost?"
+- Observation: Less than 10% mention energy boost effects
+- Result: ✅ Confirmed
 
-**Step 3 - Generate Research Report**:
-- Integrate social media observations and interview insights
-- Generate actionable product or marketing recommendations
-
-**Advantages**:
-- From "understanding what kind of people" to "understanding why they decide this way"
-- Traceable insight chain: social media observation → social psychology analysis → in-depth interview
-- All AI personas based on real social media data, not imaginary
+**Verification Question 3**: "Is price sensitivity really ¥20-30?"
+- Observation: Extensive discussions of ¥25-28 products
+- Result: ✅ Confirmed, even refined to ¥25-28
 
 ---
 
-## Frequently Asked Questions
+### Final Output
 
-### Q1: Is Scout observation content real-time?
+**Target Audience Persona**:
 
-**Answer**:
-- **Partially real-time**: Search results based on platform's current data
-- **Has delay**: Social platforms may have hours to days delay
-- **Not historical retrospection**: Focuses on current user psychology and behavior patterns
+**Demographics**:
+- Age: 25-32 years old
+- Gender: Primarily female (about 80%)
+- Location: First-tier cities
+- Income: Upper-middle income (¥8K-20K monthly)
+
+**Psychological Traits**:
+- Willing to try new products
+- Value quality of life
+- Care about product aesthetics
+- Enjoy sharing on social media
+
+**Behavioral Patterns**:
+- Purchase occasions: Afternoon tea, shopping
+- Decision factors: Aesthetics > Taste > Health
+- Price acceptance: ¥25-28 optimal, hesitates over ¥30
+- Repurchase intent: Will repurchase if good taste, but not essential
+
+**Pain Points**:
+- Concern: "What if the bubbles are too strong?"
+- Concern: "What if it doesn't taste like coffee?"
+- Desire: "Hope the packaging looks good"
+
+**Can Directly Be Used For**:
+- Follow-up Interview deep dives
+- Discussion group interactions
+- Auto-generated Tier2 AI personas
+
+---
+
+## 4 Use Cases for Scout Agent
+
+### Use Case 1: Understanding Users Before Entering New Market
+
+**Need**:
+- Want to enter a new market
+- Don't understand target users
+- Need to quickly build understanding
+
+**Scout Value**:
+- Quickly understand authentic user characteristics
+- Discover market opportunities
+- Avoid decision-making based on imagination
+
+**Example**:
+> "Want to make camping gear, but don't understand camping enthusiasts"
+>
+> Scout Agent observes 10 rounds → discovers 3 user groups:
+> - Premium campers (pursue quality and ambiance)
+> - Value seekers (focus on practicality and price)
+> - Family campers (prioritize safety and convenience)
+
+---
+
+### Use Case 2: Discover Emerging Consumption Trends
+
+**Need**:
+- Want to know latest industry trends
+- Unsatisfied with industry reports alone
+- Want to hear authentic user voices
+
+**Scout Value**:
+- Based on real social content
+- Discover details missing in reports
+- Real-time observation of latest changes
+
+**Example**:
+> "What are the new trends in healthy food market for 2026?"
+>
+> Scout Agent observes → discovers:
+> - "Functional foods" discussion surging (sleep aid, liver support, anti-anxiety)
+> - "Emotional value" becoming new selling point ("comfort snacks")
+> - Clear demand for "personalization"
+
+---
+
+### Use Case 3: Brand Positioning Research
+
+**Need**:
+- Want to reposition brand
+- Don't know how users perceive brand
+- Need to understand authentic user attitude
+
+**Scout Value**:
+- Observe organic user discussions
+- Discover brand perception issues
+- Find positioning opportunities
+
+**Example**:
+> "Observe how users discuss our brand"
+>
+> Scout Agent discovers:
+> - Young moms: perceive as "reliable but boring"
+> - Gen Z: perceive as "healthy but outdated"
+> - Positioning opportunity: "Health × Aesthetics"
+
+---
+
+### Use Case 4: Build High-Quality AI Personas
+
+**Need**:
+- Need to run Interview/Discussion next
+- Need high-quality AI personas
+- Don't want to use low-quality hastily-generated personas
+
+**Scout Value**:
+- Auto-generate Tier2 personas
+- Based on authentic user characteristics
+- Can directly use for follow-up research
+
+**Example**:
+> Scout observes 10 rounds → auto-generates 3 Tier2 personas
+> → directly use for Discussion to test product concept
+> → saves persona-building time, increases research quality
+
+---
+
+## Scout Agent vs Other Methods
+
+| Dimension | Scout Agent | Ask AI Directly | Traditional Survey | Social Listening Tool |
+|-----------|------------|-----------------|-------------------|----------------------|
+| **Data Source** | Real social content | AI training data | User responses | Keyword statistics |
+| **Timeliness** | Real-time latest | May be outdated | Depends on timeline | Real-time |
+| **Depth** | Deep analysis | Generic/shallow | Shallow data | Lacks insights |
+| **Cost** | Subscription | Subscription | $3K-10K | $500-2K/month |
+| **Time** | 1-2 days | Instant | 2-4 weeks | Instant but needs analysis |
+| **Output** | User personas + AI personas | Generic answers | Statistical data | Data reports |
+
+**Key Differences**:
+- Scout Agent is not just data collection, it's **understanding** users
+- Output is not just statistics, it's **insights**
+- Can be directly used for downstream research, not isolated
+
+---
+
+## FAQ
+
+### Q1: What platforms does Scout Agent observe?
+
+**Supported platforms**:
+- Xiaohongshu (Little Red Book)
+- Weibo
+- Bilibili
+- Douyin (TikTok China)
+- X (Twitter)
+- Reddit
+- Other public social platforms
+
+**Selection guidance**:
+- Young female consumers → Xiaohongshu
+- Tech products → Weibo/Bilibili/X
+- Gen Z → Douyin/Bilibili
+- International market → X/Reddit
+
+---
+
+### Q2: How many observation rounds are needed?
+
+**Minimum 5 rounds**:
+- First 5 rounds: Initial observation
+- After round 5: Auto-trigger reasoning
+- Continue: Verification and refinement
+
+**Recommended 10-15 rounds**:
+- More comprehensive understanding
+- More accurate persona
+- Discover more details
+
+**Avoid too many**:
+- Beyond 20 rounds shows diminishing returns
+- Wastes time and cost
+
+---
+
+### Q3: Can I specify observing specific user groups?
+
+**Yes**:
+- Set filtering conditions
+- Example: "25-35 year old women discussing healthy snacks"
+- Scout will focus on this group
 
 **Recommendation**:
-- For understanding current trends, Scout is timely enough
-- For historical comparative analysis, recommend supplementing traditional social listening tools
-
-### Q2: Is Scout observing 30-50 posts too few?
-
-**Answer**:
-- **Not statistical research**: Scout's goal isn't "X% of people think this way"
-- **Is qualitative understanding**: 30-50 posts sufficient to identify language patterns, value conflicts, group identity
-- **Comparison**: Anthropologists doing field research don't need thousands of samples either
-
-**Quality Assurance**:
-- AI persona consistency approaches human baseline level
-- Sufficient to build representative AI personas for subsequent interviews
-- If higher confidence needed, can further validate through interviews
-
-### Q3: How does Scout avoid observation bias?
-
-**Answer**:
-- **Multi-platform cross-validation**: Simultaneously observe multiple platforms, identify differences
-- **Explicit and implicit expression**: Not just "I like X," also see tone, word choice, contradictory statements
-- **Three-phase validation**: observe → reason → continue observation validation
-
-**Limitation**:
-- Acknowledge social media users ≠ all target users
-- Recommendation: Scout for exploratory research, high-stakes decisions need supplementary real human research
-
-### Q4: How long does Scout observation take?
-
-**Answer**:
-- **Typical duration**: 2-4 hours
-- **Depends on**: Question complexity and required observation depth
-- **Can interrupt**: Supports background running, no need to wait throughout
-
-### Q5: Scout cost comparison with traditional market research?
-
-**Answer**:
-- **Traditional research**: $50k-100k, 2-3 weeks
-- **Scout**: Charged by token usage, completed in 2-4 hours
-- **Value**: Quickly gain deep insights, can iterate and validate multiple times
-
-**Recommendation**:
-- Use Scout in early exploration phase, rapid iteration
-- Supplement with traditional research before major decisions, increase confidence
-- Combine both for depth and breadth
+- Don't filter too narrowly (insufficient content)
+- Don't filter too broadly (too much noise)
 
 ---
 
-## Document Version
+### Q4: How good are Scout-generated personas?
 
-- **Version**: v2.0 (Product-focused refactored version)
-- **Last Updated**: 2026-01-15
-- **Maintained by**: atypica.AI Product Team
-- **Target Audience**: Product managers, market researchers, business decision-makers
+**Quality Level**:
+- Auto-generate Tier2 personas
+- Consistency ~85%
+- Close to human baseline 81%
+
+**vs. Hastily-generated**:
+- Hastily-generated (Tier0): Low consistency, shallow feedback
+- Scout-generated (Tier2): High consistency, authentic feedback
+
+**Recommendation**:
+- Use Scout-generated personas for important research
+- Can use hastily-generated for quick validation
+
+---
+
+### Q5: How reliable are Scout's discovered trends?
+
+**Reliability**:
+- ✅ Based on authentic user content
+- ✅ Multi-round cross-verification
+- ⚠️ Still qualitative research, not statistical significance
+
+**Applicable Scenarios**:
+- ✅ Quickly identify trend direction
+- ✅ Understand user attitudes and motivations
+- ❌ Cannot replace large-scale quantitative research
+
+---
+
+### Q6: Can I observe competitor users?
+
+**Yes**:
+- Observe users discussing competitors
+- Understand competitor user characteristics
+- Discover differentiation opportunities
+
+**Example**:
+> "Observe users discussing Starbucks"
+>
+> Scout discovers:
+> - Frequent words: "convenient", "stable", "nothing special"
+> - Opportunity: Users think Starbucks "lacks surprise"
+> - Positioning direction: "Coffee experience with character"
+
+---
+
+## Practical Recommendations
+
+### 1. Scout First, Then Interview
+
+**Recommended Process**:
+1. Scout observes 10 rounds → generate user persona
+2. Select AI personas based on persona
+3. Interview deep dives for verification
+
+**Value**:
+- Scout ensures right direction
+- Interview dives deeper based on authentic users
+- Avoid "interviewing thin air"
+
+---
+
+### 2. Don't Over-rely on Single Platform
+
+**Recommendation**:
+- Observe 2-3 platforms
+- Cross-verify findings
+- Avoid platform bias
+
+**Example**:
+- Xiaohongshu + Weibo + Bilibili
+- See consistent trends → high credibility
+- See contradictions → needs further verification
+
+---
+
+### 3. Focus on "Why" Not "What"
+
+**Common Mistake**:
+- Only record "users like A"
+- Don't dig deeper "why they like A"
+
+**Correct Approach**:
+- Ask "why" when observing
+- Analyze underlying motivations
+- Output insights not phenomena
+
+---
+
+### 4. Re-observe Periodically
+
+**Markets Change**:
+- Re-run Scout 3-6 months later
+- Discover trend changes
+- Adjust strategy timely
+
+**Value**:
+- Avoid decisions based on outdated knowledge
+- Capture emerging opportunities
+
+---
+
+## Summary
+
+**Scout Agent Core Value**:
+1. **Authenticity**: Based on real social content, not imagination
+2. **Depth**: Not just statistics, but understanding users
+3. **Usability**: Auto-generate high-quality AI personas for direct downstream use
+
+**Applicable Scenarios**:
+- Understanding users before entering new market
+- Discovering emerging consumption trends
+- Brand positioning research
+- Building high-quality AI personas
+
+**Best Practices**:
+- Recommended 10-15 observation rounds
+- Observe 2-3 platforms for cross-verification
+- Scout first, then Interview
+- Re-observe periodically (every 3-6 months)
+
+---
+
+**Document Version**: v2.0 | 2026-01-15 | User-Centric Perspective

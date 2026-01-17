@@ -1,467 +1,809 @@
-# AI Persona Tier System: Finding the Right Research Subjects
+# AI Persona System: Three-Tier Persona Framework
 
-## Core Philosophy
-
-atypica.AI's AI Persona system is built on **Consistency Science**, creating the industry's first **four-tier Persona library**. We use humans as our benchmark: people show 81% consistency when answering the same questions two weeks apart, which we set as our 100-point baseline. Information density from different data sources determines AI simulation quality, and our 7-dimension scoring system automatically categorizes 300,000+ Personas.
+**One-sentence summary**: 300K+ AI persona library, from basic AI to human-level simulation, ensuring research quality.
 
 ---
 
-## I. Four-Tier Comparison: Choose the Right Agent
+## Why Do We Need an AI Persona System?
 
-| Dimension | Tier 1<br>High-Quality Synthetic Agents | Tier 2<br>Human-Simulated Agents | Tier 3<br>Private Agents |
-|------|------------------------|---------------------|------------------|
-| **Positioning** | Deep social media observation | Deep interview-grade personality simulation | Built from proprietary data |
-| **Consistency Score** | 62-77 (4-5 dimensions) | 79-85 (6-7 dimensions) | Depends on data quality |
-| **vs. Humans** | Approaches real humans (98%) | Exceeds human average (105%) | Varies by data |
-| **Data Sources** | Platform-specific deep analysis | 1-hour deep interview (~5,000 words) | User-imported interview/CRM data |
-| **Library Size** | ~200K (public) | ~100K (public) | User-exclusive (private) |
-| **Search Visibility** | ✅ All users | ✅ All users | ❌ Owner only |
-| **Typical Use Cases** | Market trend exploration | Deep user insights | Enterprise customer research |
-| **Creation Method** | Scout Agent 15 social media observations | atypica team deep interviews | User-uploaded PDF/CSV |
-| **Interview Performance** | Coherent opinions, shows attitude | Deep motivations, authentic emotions | Depends on source data |
-| **Personality Stability** | ⭐⭐⭐ Medium | ⭐⭐⭐⭐⭐ Strong | ⭐~⭐⭐⭐⭐⭐ Varies |
+### Problem: Low-Quality Personas Lead to Meaningless Feedback
 
-**Note**: Tier 0 (Basic Synthetic Agents) is not publicly available due to insufficient information and low consistency (<62 points), which may mislead research conclusions.
+**Scenario A: Using Low-Quality Personas**
+
+User: "Test this product concept and see if users like it"
+
+AI responds with temporarily generated personas:
+- Persona 1: "This product is good, I'll buy it"
+- Persona 2: "Not bad, creative"
+- Persona 3: "Pretty good"
+
+**Problems**:
+- Feedback too generic, lacking specific reasons
+- Unable to follow up with "why do you like it"
+- Feels like "AI hallucination", not authentic
 
 ---
 
-## II. Consistency Scoring: A Scientific Standard
+**Scenario B: Using High-Quality Personas**
 
-### 2.1 Human Baseline: The 81% Truth
+User: "Test this product concept and see if users like it"
 
-**Experimental Design**: Real people answer 50 questions about values and behavioral preferences, then answer the same questions two weeks later (without being told), and we calculate consistency.
+AI responds with Tier 2 personas:
+- Persona 1 (28-year-old female office worker, monthly income $2.5K): "The price is a bit high, my budget for this type of product is usually $50, but this costs $80"
+- Persona 2 (32-year-old entrepreneur, efficiency-focused): "Nice features, but I'm more concerned about integration with my existing tools"
+- Persona 3 (25-year-old Gen Z, appearance-conscious): "The packaging isn't attractive enough, I wouldn't share photos of it"
 
-**Result**: Humans average **81% consistency**, which we define as our **100-point standard**.
+**Value**:
+- Specific feedback with details
+- Can follow up and dig deeper
+- Close to real human insights
+
+---
+
+## Three-Tier Quality System
+
+### Tier 0: Temporary Generation
+
+**Characteristics**:
+- Quantity: Unlimited (instant generation)
+- Quality: Low
+- Consistency: < 60% (far below human 81% baseline)
+- Construction method: Temporary AI generation
+
+**Use cases**:
+- Quick idea validation
+- Extremely limited budget
+- No need for deep insights
+
+**Limitations**:
+- Shallow feedback, lacking details
+- Poor consistency, different results on repeated tests
+- Not suitable for critical decisions
+- **Note**: Not publicly available due to insufficient quality that may mislead research conclusions
+
+---
+
+### Tier 1: Basic Personas
+
+**Characteristics**:
+- Quantity: ~300K
+- Quality: Medium
+- Consistency: 70-75% (approximately 90% of human 81% baseline)
+- Construction method: Basic 7-dimension data
+
+**7-Dimension Data**:
+1. **Demographics**: Age, gender, income, occupation, education
+2. **Geographic**: City, living environment
+3. **Psychological**: Values, lifestyle, motivations, fears
+4. **Behavioral**: Consumption habits, decision patterns, brand preferences
+5. **Needs & Pain Points**: Concerns, unmet needs
+6. **Tech Acceptance**: Openness to new products
+7. **Social Relations**: Family structure, social circles, group belonging
+
+**Use cases**:
+- Regular business research
+- Product concept testing
+- Market positioning research
+- Market trend exploration
+- Creative inspiration (Discussion Chat)
+
+**Value**:
+- Much more authentic than Tier 0
+- Covers diverse populations
+- Cost-effective
+
+**Data sources**:
+- Deep social media observation (Scout Agent 15 tool calls)
+- CDP (Customer Data Platform)
+- Personality test results
+
+---
+
+### Tier 2: Human-Level Simulation
+
+**Characteristics**:
+- Quantity: ~10K
+- Quality: High
+- Consistency: 85% (exceeds human 81% baseline)
+- Construction method: Deep data + social observation
+
+**What is 85% Consistency?**
+
+**Testing method**:
+- Ask the same Tier 2 persona the same question 10 times
+- 85% of the time, core viewpoint remains consistent
+
+**Comparison**:
+- Tier 2 persona: 85% consistency (exceeds human baseline at 105%)
+- Human baseline: 81% consistency (100-point standard)
+- Tier 1 persona: 70-75% consistency (90% human level)
+- Tier 0 persona: < 60% consistency (< 77% human level)
+
+**Example test**:
+
+Question: "Would you buy this $80 healthy snack?"
+
+**Tier 2 persona (Zhang Li, 28-year-old office worker) 10 responses**:
+- 8 times: "Too expensive, my usual snack budget is $30-50"
+- 1 time: "Maybe for special occasions"
+- 1 time: "Depends on taste, if it's really good I might accept the price"
+
+**Core viewpoint consistent**: Price exceeds budget, won't buy daily
+
+**Human baseline (81%)**:
+Humans aren't 100% consistent either, as mood, environment, and expression vary, but core viewpoints remain 81% consistent.
+
+**Tier 2 persona (85%)**:
+Already exceeds human baseline, suitable for critical business decisions.
+
+---
+
+**Use cases**:
+- Critical product decisions
+- Brand repositioning
+- High-value project validation
+- Research requiring deep insights
+- Deep user insights (understanding "why")
+- Emotional resonance testing
+- Substitute for real human interviews
+
+**Value**:
+- Close to human performance
+- High credibility
+- Can guide major decisions
+- Exceeds human baseline (85% vs 81%)
+- No social pressure, more authentic responses
+- Can be interviewed repeatedly, no "fatigue" or "changing answers"
+
+**Data sources**:
+- 1-hour deep interview (5000 words)
+- 30+ deep social media observations
+
+**Limitations**:
+- Cannot replace innovative need discovery (based on existing data)
+- Not suitable for extremely niche groups (may not exist in library)
+
+---
+
+### Tier 3: Private Personas
+
+**Characteristics**:
+- Quantity: User-defined
+- Quality: Depends on data completeness
+- Consistency: Depends on imported data quality
+- Construction method: User manual creation or import
+
+**Use cases**:
+- Specific projects requiring specific personas
+- Teams with existing user profile data
+- Need to simulate specific real users
+- Enterprise customer research
+- Internal training
+- Sensitive data research
+- Continuous tracking
+
+**Construction methods**:
+1. **Manual creation**: Fine-tune each dimension
+2. **Data import**: Import from CRM/user research
+3. **Based on real people**: Simulate specific real users
+
+**Value**:
+- Fully meets project needs
+- Can be continuously reused
+- Team private, data secure
+
+**Privacy protection**:
+- Data stored in user-exclusive partition, completely invisible to other users
+- Does not participate in public library search index
+- Will not be used by AI for training or recommendation to other users
+- Users can delete anytime, data immediately physically destroyed
+
+**Consistency score**:
+- Import deep interview records (5000 words) → can reach 85 points (equivalent to Tier 2)
+- Import CRM purchase records → approximately 70-75 points (Tier 1 level)
+- Import only basic information → approximately 55-60 points (Tier 0 level)
+
+---
+
+## Deep Dive: Consistency Science
+
+### Human Baseline: The 81% Truth
+
+**Experimental design**: Have real people answer 50 value/behavioral preference questions, then answer again two weeks later (without notification), calculate consistency.
+
+**Result**: Human average consistency is **81%**, which we define as the **100-point standard**.
 
 This means:
-- **85-point AI Persona** is more stable than average humans (exceeds human baseline)
-- **79-point AI Persona** approaches real human performance (98% of human level)
-- **62-point AI Persona** has only 76% of real human stability
+- **85-point AI Persona** is more stable than average humans (exceeds human baseline at 105%)
+- **79-point AI Persona** approaches real human performance (98% human level)
+- **70-75 point AI Persona** is approximately 90% of human stability
+- **62-point AI Persona** is only 76% of human stability
 
-### 2.2 Data Source vs. Consistency Score
+### Data Sources and Consistency Scores
 
-| Data Source | Atypica Consistency Score | Corresponding Tier | Typical Data Volume |
-|--------|-------------------|-----------|-----------|
-| Personal Information | 55 | Tier 0 | Name, age, city, occupation |
-| Personality Tests | 64 | Tier 0-1 | 120-300 test questions |
-| Consumer Data Platforms | 73 | Tier 1 | Purchase history, behavioral traces |
-| Social Media (Broad) | 75 | Tier 1 | 100-200 content items |
-| Social Media (Targeted) | **79** | **Tier 1** | 15 tool calls, ~3,000 words observation |
-| Deep Interviews | **85** | **Tier 2** | ~5,000 words transcript |
-| Real Humans | 100 (81% baseline) | - | - |
+| Data Source | Atypica Consistency Score | Corresponding Tier | Human Baseline Comparison | Typical Data Volume |
+|------------|--------------------------|-------------------|-------------------------|---------------------|
+| Personal info | 55 points | Tier 0 | 68% | Name, age, city, occupation |
+| Personality tests | 64 points | Tier 0-1 | 79% | 120-300 test questions |
+| Consumer Data Platform (CDP) | **73 points** | Tier 1 | 90% | Purchase history, behavioral traces |
+| Social media (broad observation) | 75 points | Tier 1 | 93% | 100-200 content views |
+| Social media (targeted observation) | **79 points** | **Tier 1** | 98% | 15 tool calls, 3000-word observation |
+| Deep interview | **85 points** | **Tier 2** | 105% | 5000-word interview record |
+| Real human | 100 points (81% baseline) | - | 100% | - |
 
-**Key Findings**:
-- **79 points is the threshold**: Scout Agent achieves **98% of human baseline** through 15 deep social media observations
-- **85 points is the ceiling**: Deep interview-level data exceeds average human consistency
-- **Volume ≠ Quality**: Massive CDP data (73 points) underperforms targeted social observation (79 points)—information density is key
+**Key findings**:
+- **79 points is the threshold**: Scout Agent through 15 deep social media observations can reach 98% human baseline
+- **85 points is the ceiling**: Deep interview-level data can exceed human average consistency
+- **Data quantity ≠ quality**: Massive CDP data (73 points) is inferior to targeted social observation (79 points), the key is information density
 
-### 2.3 Seven-Dimension Scoring System
+### Why is 85 Points the Ceiling?
 
-Each Persona is automatically evaluated across **7 key dimensions**:
-
-1. **demographic**: Age, gender, occupation, income, education
-2. **geographic**: City, region, living environment
-3. **psychological**: Values, personality, motivations, fears
-4. **behavioral**: Daily habits, decision-making style, brand preferences
-5. **needsPainPoints**: Unmet needs, frustrations, expectations
-6. **techAcceptance**: Attitude toward new technologies/products
-7. **socialRelations**: Social circles, influencers, group belonging
-
-**Tiering Logic**:
-- Total score ≥ 6 → Tier 2 (Human-Simulated Agents)
-- Total score 4-5 → Tier 1 (High-Quality Synthetic Agents)
-- Total score < 4 → Tier 0 (not publicly available)
-- User import → Tier 3 (Private Agents)
+- Humans themselves have only 81% consistency (affected by emotions, environment, expression)
+- If AI Persona exceeds 85%, it appears "too mechanical"
+- 85% is the optimal balance point between "authenticity" and "consistency"
 
 ---
 
-## III. Use Cases and Selection Guide
+## Persona Quality Comparison
 
-### 3.1 Tier 1: High-Quality Synthetic Agents
-
-**Ideal Scenarios**:
-- ✅ **Market Trend Exploration**: Quickly understand overall attitudes of platform user groups
-- ✅ **Creative Inspiration**: Use Discussion Chat to spark idea collisions among 5-8 different profiles
-- ✅ **Concept Testing**: Rapidly validate product direction with 30-50 Personas
-- ✅ **Content Creation**: Find "target audience profiles" for KOL videos/podcasts
-
-**Typical Case Study**:
-> **Research Question**: How receptive are Xiaohongshu users to "AI portrait" products?
->
-> **Process**: Use Scout Agent to observe 5 Xiaohongshu "photography bloggers," auto-generate 5 Tier 1 Personas, use Discussion Chat for group discussion, get real attitude distribution within 30 minutes.
->
-> **Results**: Found high-frequency photography users have high acceptance (95%) for "AI-assisted retouching" but resistance (30%) to "fully AI-generated" photos—the key concern is "losing creative control."
-
-**Limitations**:
-- ❌ Not suitable for deep motivation exploration (e.g., "why never shop online")
-- ❌ Not suitable for emotionally sensitive topics (medical decisions, financial distress)
-
-### 3.2 Tier 2: Human-Simulated Agents
-
-**Ideal Scenarios**:
-- ✅ **Deep User Insights**: Understand the "why" behind behaviors (motivations, fears, value conflicts)
-- ✅ **Critical Decision Validation**: Product pricing, core feature trade-offs, brand positioning
-- ✅ **Emotional Resonance Testing**: Whether ad creatives or brand stories can touch target users
-- ✅ **Real Interview Substitutes**: When real people are unreachable (competitor users, sensitive groups)
-
-**Typical Case Study**:
-> **Research Question**: Why do high-income women still feel anxious after buying "luxury skincare"?
->
-> **Process**: Search 100K Tier 2 library for "30-40 years old, 500K+ annual income, heavy skincare users," filter to 8 matching Personas, use Interview Chat for 1-on-1 deep interviews.
->
-> **Key Insights**:
-> - **Surface**: Pursuing "active ingredients" and "scientific formulas"
-> - **Deep Motivation**: Gaining **social discourse power** and **identity recognition** through "professional skincare knowledge"
-> - **Anxiety Source**: Fear of appearing "not professional enough" to peers, not product efficacy concerns
-> - **Product Implications**: Marketing should shift from "ingredient education" to "circle identity"
-
-**Advantages**:
-- 💎 **Exceeds Human Baseline**: 85-point consistency is more stable than average humans (81%)
-- 💎 **No Social Pressure**: Respondents "let their guard down," answering more truthfully
-- 💎 **Repeatable Interviews**: Same Persona can be interviewed multiple times without "fatigue" or "changing story"
-
-**Limitations**:
-- ❌ Cannot replace **innovative need discovery** (Personas are based on existing data, can't predict entirely new needs)
-- ❌ Not suitable for **extremely niche groups** (may not exist in library)
-
-### 3.3 Tier 3: Private Agents
-
-**Ideal Scenarios**:
-- ✅ **Enterprise Customer Research**: Import CRM data to build "VIP customer digital twins"
-- ✅ **Internal Training**: Convert sales expert interviews to AI Personas for new employee consultation
-- ✅ **Sensitive Data Research**: Medical, financial domains where data cannot be leaked
-- ✅ **Continuous Tracking**: Long-term multiple interviews with same users (user journey research)
-
-**Typical Case Study**:
-> **Enterprise Scenario**: Luxury brand researching VIP customer purchase decisions
->
-> **Process**: Export "purchase history + customer service dialogue records" for Top 100 CRM customers, use Persona Import to upload, auto-generate 100 Tier 3 Personas, batch interview to discover common patterns.
->
-> **Key Findings**: 3 critical moments in high-value customer purchase decisions: social feedback after "showing off" purchases, "exclusive service" experience from store staff, "scarcity anxiety" from brand limited editions.
-
-**Privacy Protection**:
-- 🔒 Data stored in user-exclusive partition, **completely invisible** to other users
-- 🔒 Does not participate in public library search index
-- 🔒 Never used by AI for training or recommendations to other users
-- 🔒 Users can delete anytime, data immediately physically destroyed
+| Dimension | Tier 0 | Tier 1 | Tier 2 | Tier 3 | Real Human |
+|-----------|--------|--------|--------|--------|------------|
+| **Consistency** | < 60% | 70-75% | 85% | Depends on data | 81% |
+| **vs Human** | < 77% | ~90% | 105% | Depends on data | 100% |
+| **Feedback depth** | Shallow | Medium | Deep | Depends on data | Deepest |
+| **Follow-up ability** | Poor | Medium | Good | Depends on data | Best |
+| **Cost** | Free | Low | Medium | Low (self-built) | High ($200/person) |
+| **Time** | Instant | Instant | Instant | Needs building | 2-4 weeks recruitment |
+| **Quantity** | Unlimited | 300K+ | 10K+ | Custom | Limited by budget |
 
 ---
 
-## IV. Real Case Study: Quality Leap from Tier 1 to Tier 2
+## Real Case Study
 
-### Case: Researching "Why Young People Don't Want to Get Married"
+### Case: Testing "Bubble Coffee" Product Concept
 
-#### Phase 1: Using Tier 1 Personas (Social Media Observation)
+**Using Tier 0 personas (temporary generation)**:
 
-**Search Criteria**: `25-30 years old, in relationships, but explicitly states doesn't want marriage`
+Interviewed 5 people, feedback:
+- Persona 1: "This product is good"
+- Persona 2: "I might buy it"
+- Persona 3: "Quite creative"
+- Persona 4: "Sounds good"
+- Persona 5: "I like trying new products"
 
-**Discussion Chat**: 8-person group discussion "Why don't you want to get married?"
-
-**Analysis Results**:
-- High-frequency words: `Economic pressure` (7 people) > `Loss of freedom` (5 people) > `Don't believe in marriage` (3 people)
-- Typical viewpoint: "Marriage means buying a house, both of us saving together isn't enough"
-
-**Limitations**: Responses stay at **surface reasons** (economic, freedom), cannot deeply understand **underlying motivations**.
-
----
-
-#### Phase 2: Using Tier 2 Personas (Deep Interview-Grade)
-
-**Interview Chat Deep Interview**: 1-on-1 interview, using "five whys" probing
-
-**Typical Dialogue Excerpt**:
-
-> **AI**: You mentioned "economic pressure" as a reason for not wanting marriage, can you be specific?
->
-> **Persona (Ms. Lin, 28)**: It's about buying a house. We both earn 40K monthly, but Beijing houses cost 5M, down payment alone is 1.5M.
->
-> **AI**: If you didn't buy a house and just rented while married, would you consider it?
->
-> **Persona**: (Pause) I think... still wouldn't.
->
-> **AI**: Why not?
->
-> **Persona**: Because my parents would think I'm a failure. Their generation, marriage means having a house. If I rent while married, they'd think I married poorly, would lose face in front of relatives. I'm their only daughter, they have high expectations for me.
-
-**Deep Insights**:
-- **Surface reason**: Economic pressure (can't afford house)
-- **True motivation**: **Intergenerational value conflict** + **Filial piety cultural pressure**
-- **Emotional core**: **Guilt** and **helplessness** about "disappointing parents"
-- **Key discovery**: Young people don't "not want marriage," but **cannot simultaneously satisfy self and parents' expectations**
-
-**Product Implications**:
-- ❌ Traditional solution: Offer "low down payment marriage loans" (treats symptoms not root)
-- ✅ Better solution: Services helping young people "communicate generational differences" with parents
+**Problems**:
+- Feedback too generic, cannot guide decisions
+- Follow-up "why" questions get vague answers
+- Feels inauthentic
 
 ---
 
-#### Comparison Summary
+**Using Tier 2 personas (human-level simulation)**:
 
-| Dimension | Tier 1 Results | Tier 2 Results |
-|------|------------|------------|
-| **Response Depth** | Surface reasons (economic, freedom) | Deep motivations (generational conflict, guilt) |
-| **Emotional Details** | Vaguely mentions "anxiety" | Specifically describes "imagining mom's disappointed look" |
-| **Product Implications** | Lower economic barriers | Resolve psychological conflicts |
-| **Insight Quality** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+Interviewed 5 people, feedback:
 
-**Key Conclusion**:
-- **Tier 1 fits "what"** (phenomenon description)
-- **Tier 2 fits "why"** (deep motivations)
-- For critical decisions (product positioning, brand strategy), **must use Tier 2**
+**Persona 1 (Zhang Li, 28-year-old female office worker, monthly income $2.5K)**:
+"Bubble coffee sounds refreshing. I usually buy coffee or milk tea at 3 PM, but milk tea is too sweet and regular coffee is too bitter. The refreshing sensation of bubble coffee should be nice. However, I worry the bubbles might be too strong and affect the coffee taste. For pricing, ¥25-30 ($3.5-4) is acceptable, but over ¥35 ($5) feels expensive. The packaging must look good for me to take photos and share on social media."
 
----
+**Follow-up**: "When would you choose it over regular coffee?"
+**Answer**: "Not for caffeine boost, but when I want something special to relax. Like Friday afternoon after completing a week's work, to reward myself. Or when shopping with friends, wanting to try something new."
 
-## V. Best Practices: How to Use the Persona Tier System Effectively
+**Persona 2 (Li Ming, 32-year-old entrepreneur, efficiency-focused)**:
+"I'm not very interested in bubble coffee. I drink coffee mainly for work productivity, don't really care about taste innovation. Plus I worry the bubbles would make me burp, affecting my work state. If you want to target this market, I suggest focusing on young women, not workaholics like me."
 
-### 5.1 Tier Selection Decision Tree
+**Persona 3 (Wang Yue, 25-year-old Gen Z, appearance-focused)**:
+"Wow, bubble coffee sounds interesting! I'd definitely try it, especially if the packaging design is nice. I recently saw many people on social media posting bubble drinks, seems perfect for photos. Price around ¥30 ($4) is acceptable, after all it's a new product. But if it doesn't taste good I won't repurchase."
 
-**Question 1**: What type is your research question?
+**Persona 4 (Chen Si, 30-year-old health-conscious)**:
+"I'd pay attention to bubble coffee ingredients. If it's real coffee with natural bubbles, I'd consider buying. But if there are many additives and artificial flavors, I won't buy. For pricing, if ingredients are good, ¥35-40 ($5-5.5) is acceptable. The specialty coffee I buy now also costs around ¥30 ($4)."
 
-- **A. Trend Exploration** (e.g., "Gen Z attitudes toward metaverse")
-  - → Use **Tier 1**, quickly cover diverse profiles
-  - Tools: `searchPersonas` + `discussionChat` (3-8 person discussion)
-
-- **B. Motivation Understanding** (e.g., "Why high-end users churn")
-  - → Use **Tier 2**, dig into individual motivations
-  - Tools: `searchPersonas` + `interviewChat` (1-on-1 interview)
-
-- **C. Enterprise Customer Research** (e.g., "VIP customer needs")
-  - → Use **Tier 3**, import CRM data
-  - Tools: `Persona Import` + `Follow-up Interview`
-
-**Question 2**: How many Personas do you need?
-
-- **3-8**: Idea collision, suitable for Discussion Chat
-- **5-15**: Deep interviews, suitable for Interview Chat
-- **30-50**: Scale validation, suitable for batch interviews
-
-**Question 3**: What's your time and budget?
-
-| Time | Budget | Recommended Approach |
-|------|------|---------|
-| **Urgent (1-2 days)** | Low | Tier 1 batch discussion |
-| **Urgent (1-2 days)** | Medium | Tier 2 rapid interview (5-8 people) |
-| **Regular (1 week)** | Medium | Tier 2 deep interview (10-15 people) |
-| **Ample (2-4 weeks)** | High | Scout Agent + Tier 2 + real human validation |
-
-### 5.2 Quality Checklist
-
-After conducting research with Personas, use this checklist to verify result quality:
-
-#### ✅ Tier 1 Quality Check
-- [ ] Does it cover **diversity** of target group? (At least 3-5 different profiles)
-- [ ] Are responses **internally consistent**? (No contradictions across multiple questions)
-- [ ] Do viewpoints have **specific details**? (Not generic)
-- [ ] If responses too shallow, consider **upgrading to Tier 2**
-
-#### ✅ Tier 2 Quality Check
-- [ ] Did it uncover **deep motivations**? (Not just surface reasons)
-- [ ] Are there **emotional details**? (Specific worries, expectations, contradictions)
-- [ ] Can it explain **behavioral logic**? (Why they made these choices)
-- [ ] If still insufficient, consider **real human interview validation**
-
-### 5.3 Common Mistakes and How to Avoid Them
-
-#### Mistake 1: Using Tier 1 as Tier 2
-**Symptom**: Using social media observation Personas for deep motivation interviews, finding shallow responses.
-
-**Solution**:
-- First use Tier 1 for **hypothesis generation** (what are possible reasons)
-- Then use Tier 2 for **motivation validation** (which reason is the true driver)
-
-#### Mistake 2: Blindly Pursuing Persona Quantity
-**Symptom**: Searching 50 Personas, interviewing all, resulting in redundant information.
-
-**Solution**:
-- **Initial screening**: First search 30-50, sort by similarity
-- **Clustering**: Manually categorize into 3-5 typical profiles
-- **Deep interviews**: Only conduct deep interviews with typical profiles
-
-#### Mistake 3: Ignoring Persona Time Sensitivity
-**Symptom**: Using Personas built in 2022 to research 2024 market.
-
-**Solution**:
-- For **rapidly changing fields** (like tech products), prioritize Personas built in **last 6 months**
-- For **stable fields** (like basic needs), can use Personas from **last 2 years**
-
-#### Mistake 4: Treating AI Personas as "Truth"
-**Symptom**: AI Persona says "users dislike XX," so immediately cut the feature.
-
-**Solution**:
-- **Small sample validation**: Test AI Persona conclusions with 5-10 real people
-- **A/B testing**: Validate hypotheses with real data after launch
+**Persona 5 (Zhao Xin, 27-year-old office worker, budget-limited)**:
+"Bubble coffee sounds good, but I'd worry about price. My usual coffee budget is ¥15-20 ($2-3), if bubble coffee costs ¥30+ ($4+), I probably won't buy often. Occasional trial is fine, but won't become a daily choice. Unless there are promotional deals, like second cup half price, then I'd consider buying regularly."
 
 ---
 
-## VI. Frequently Asked Questions (FAQ)
+**Comparison results**:
 
-### Q1: Is the consistency score gap between Tier 1 and Tier 2 significant?
+| Dimension | Tier 0 | Tier 2 |
+|-----------|--------|--------|
+| **Feedback depth** | Surface, no details | Deep, with specific scenarios and reasons |
+| **Follow-up ability** | Poor, vague after follow-up | Good, can follow up deeply |
+| **Insight value** | Low, cannot guide decisions | High, clearly guides positioning and pricing |
+| **Authenticity** | Like AI hallucination | Close to real human |
 
-**A**: The gap is substantial.
-- **Tier 1 (79 points)**: Equivalent to **98%** of human baseline, suitable for "attitude exploration"
-- **Tier 2 (85 points)**: **Exceeds human baseline** (81%), suitable for "motivation understanding"
+**Decisions based on Tier 2 feedback**:
+- **Positioning**: Social beverage (not energy drink)
+- **Target users**: 25-30 year-old female office workers and Gen Z
+- **Pricing**: ¥25-30 ($3.5-4) (sweet spot)
+- **Packaging**: Youth-oriented design, emphasizing bubble sensation and photo-worthy attributes
+- **Marketing**: Social media seeding, emphasizing "novelty" and "social attributes"
+
+---
+
+## Three Persona Construction Methods
+
+### Method 1: Scout Agent Auto-Generation
+
+**Process**:
+1. Scout Agent observes social media 10-15 rounds
+2. Extracts real user characteristics (7-dimension data)
+3. Auto-generates Tier 1/Tier 2 high-quality personas
+
+**Value**:
+- Based on real users, not imagination
+- Auto-generated, no manual work
+- High quality, 79-85% consistency
+
+**Use cases**:
+- Before entering new market
+- Don't understand target users
+- Need to quickly build high-quality persona library
+
+**Case**:
+> Scout observes "Xiaohongshu users discussing bubble coffee" 10 rounds
+> → Auto-generates 3 types of Tier 2 personas:
+> - Type 1: 25-30 year-old female office workers, focus on appearance and social
+> - Type 2: 28-35 year-old health-conscious, care about ingredients and calories
+> - Type 3: 22-28 year-old Gen Z, pursuing novelty
+>
+> → Directly used for Discussion to test product positioning
+
+**Note**:
+- 15 tool calls typically generate Tier 1 (79 points)
+- 30+ tool calls may reach Tier 2 (85 points)
+- 99% of Scout observation results are Tier 1
+
+---
+
+### Method 2: Import Real Data
+
+**Process**:
+1. Team has existing user profile data (Excel/CSV/PDF)
+2. Import to atypica.AI
+3. System automatically converts to Tier 3 personas
+
+**Data requirements**:
+- Basic info: Age, gender, occupation, income
+- Optional info: Consumption habits, values, pain points
+
+**Value**:
+- Leverage existing data assets
+- No need to build from scratch
+- Can be continuously reused
+
+**Use cases**:
+- Team has done user research
+- Has CRM user data
+- Need to simulate existing customers
+
+**Case**:
+> A brand has 500 user profiles (from past research)
+> → Import to atypica.AI
+> → Generate 500 Tier 3 personas
+> → Used for testing new product concepts
+> → Saves time rebuilding personas
+
+**Quality tips**:
+- System automatically analyzes data completeness
+- Prompts "missing dimensions"
+- Suggests initiating Follow-up Interview to supplement information
+
+---
+
+### Method 3: Manual Creation
+
+**Process**:
+1. Create new persona in system
+2. Fill in 7-dimension information
+3. Save as Tier 3 private persona
+
+**Use cases**:
+- Need to simulate specific real users
+- Very precise data
+- Long-term projects need stable personas
+
+**Case**:
+> A consulting project needs to simulate client's core users
+> → Manually create 5 Tier 3 personas
+> → Based on detailed user profiles provided by client
+> → Use these 5 personas throughout project
+> → Ensure research consistency
+
+---
+
+## Appendix: 7-Dimension Scoring Detailed
+
+### Scoring System
+
+Each dimension scored 0-1 point, total 0-7 points:
+
+| Dimension | 0 Points | 1 Point | Example |
+|-----------|----------|---------|---------|
+| **Demographics** | No data | Complete (age/gender/occupation/income/education) | 28-year-old female, internet product manager, monthly income $2.5K, bachelor's |
+| **Geographic** | No data | Complete (city/living environment) | Shanghai, renting in Xuhui District, 1-hour commute |
+| **Psychological** | No data | Complete (values/lifestyle/motivations/fears) | Values quality of life, willing to pay for good products, likes trying new things, worries about wasting money |
+| **Behavioral** | No data | Complete (consumption habits/decision patterns/brand preferences) | Mainly online shopping, likes reading reviews, compares multiple brands, trusts Xiaohongshu recommendations |
+| **Needs & Pain Points** | No data | Complete (needs and concerns/unmet needs) | Busy with work no time to shop, worries about buying inferior products, hopes for quick decisions |
+| **Tech Acceptance** | No data | Complete (openness to new products) | Early adopter, willing to try new apps, interested in AI products |
+| **Social Relations** | No data | Complete (family/social circles/group belonging) | Single, friend circle mostly similar-age office workers, often shop and dine together |
+
+### Total Score and Tier Relationship
+
+- **0-3 points**: Tier 0 (temporary generation, low quality, not publicly available)
+- **4-5 points**: Tier 1 (basic persona, medium quality, 70-75% consistency)
+- **6-7 points**: Tier 2 (human-level simulation, high quality, 85% consistency)
+- **Tier 3**: User-defined, depends on input data completeness
+
+### Acquisition Difficulty by Dimension
+
+| Dimension | Social Media Accessible | CDP Accessible | Needs Deep Interview |
+|-----------|------------------------|----------------|---------------------|
+| Demographics | ✅ | ✅ | ✅ |
+| Geographic | ✅ | ✅ | ✅ |
+| Psychological | ⚠️ | ❌ | ✅ |
+| Behavioral | ✅ | ✅ | ✅ |
+| Needs & Pain Points | ⚠️ | ❌ | ✅ |
+| Tech Acceptance | ⚠️ | ⚠️ | ✅ |
+| Social Relations | ⚠️ | ❌ | ✅ |
+
+**Legend**:
+- ✅ Full coverage
+- ⚠️ Partial coverage (may lack details)
+- ❌ Mostly missing
+
+**Key findings**:
+- Tier 1 (4-5 points) can be built through social media + CDP
+- Tier 2 (6-7 points) needs deep interviews to supplement psychological/pain points/social dimensions
+
+---
+
+## FAQ
+
+### Q1: How to Choose the Right Tier?
+
+**Decision tree**:
+
+```
+How important is your research project?
+├─ Very important (critical product decisions) → Tier 2
+├─ Important (regular business research) → Tier 1
+└─ Not very important (quick idea validation) → Tier 1 (not recommended Tier 0)
+
+What's your budget?
+├─ Sufficient → Tier 2
+├─ Medium → Tier 1
+└─ Limited → Tier 1
+
+How deep insights do you need?
+├─ Deep insights (understand "why") → Tier 2
+├─ Medium depth (understand "what") → Tier 1
+└─ Shallow validation → Tier 1
+```
+
+**Recommendations**:
+- Use **Tier 1** in most cases (best cost-performance)
+- Use **Tier 2** for critical decisions (quality assurance)
+- **Not recommended to use Tier 0** (insufficient quality)
+
+---
+
+### Q2: Why Are There Only 10K+ Tier 2 Personas?
+
+**Reasons**:
+- Tier 2 needs deep data construction (5000-word interviews or 30+ observations)
+- Mainly generated through atypica team deep interviews
+- Takes time to accumulate
+
+**But sufficient for use**:
+- Covers major population types
+- Can quickly generate new Tier 2 personas through Scout (30+ calls)
+- Users can create Tier 3 to supplement
+
+---
+
+### Q3: Can Tier 1 Be Upgraded to Tier 2?
+
+**Cannot directly upgrade**, but can:
+1. Use Scout Agent to continue observation (needs 30+ tool calls)
+2. System automatically re-scores
+3. Or import deep interview data to create new Tier 3
+
+**Note**:
+- Users cannot directly operate public library Personas
+- For customization, use Tier 3 to import your own data
+
+---
+
+### Q4: Can Tier 3 Personas Be Shared with Team?
+
+**Yes (in roadmap)**:
+- Currently Tier 3 Personas only visible to creator
+- Future plans support team-level Tier 3 (Team Personas)
+- Fine-grained permission control (only admins can edit)
+
+---
+
+### Q5: Do Personas Become Outdated?
+
+**Yes**:
+- User psychology and behavior change over time
+- Market trends change
+
+**Recommendations**:
+- **Tier 1**: For rapidly changing fields, prioritize Personas built within 6 months
+- **Tier 2**: For stable fields, can use Personas from past 2 years
+- **Tier 3**: Manually update based on real user changes
+
+---
+
+### Q6: How to Verify Persona Quality?
+
+**Method 1: Consistency test**
+- Ask same question 10 times
+- Check if core viewpoint remains consistent
+- Tier 2 should be ≥ 85%
+
+**Method 2: Compare with real people**
+- Ask same questions to real people and AI personas
+- Compare feedback depth and authenticity
+
+**Method 3: Actual usage effect**
+- Make decisions based on AI persona feedback
+- Verify if decisions were correct afterwards
+
+---
+
+### Q7: Can Different Tiers Be Mixed?
+
+**Yes**:
+- Can use different Tiers in same research
+- Example: Use Tier 1 for quick screening, Tier 2 for deep verification
+
+**Recommendations**:
+- Don't mix in same Interview/Discussion
+- Will cause inconsistent feedback quality
+
+---
+
+### Q8: Is the Consistency Score Gap Between Tier 1 and Tier 2 Significant?
+
+**Significant difference**:
+- **Tier 1 (70-75 points)**: Equivalent to 90% of human baseline, suitable for "attitude exploration"
+- **Tier 2 (85 points)**: Exceeds human baseline (105%), suitable for "motivation understanding"
 
 **Analogy**:
-- Tier 1 is like a "3-month friend": You know what they like, but not why
-- Tier 2 is like a "3-year close friend": You understand their values, fears, contradictions
-
-### Q2: Why isn't Tier 0 available to users?
-
-**A**: **Quality over quantity**. Low-quality Personas lead to misleading conclusions, time waste, and trust damage. We'd rather have a smaller library than compromise on Persona reliability.
-
-### Q3: What's the consistency score for Tier 3?
-
-**A**: **Depends on imported data quality**.
-- If importing **deep interview transcripts** (5,000 words) → Can reach **85 points** (equivalent to Tier 2)
-- If importing **CRM purchase records** → About **70-75 points** (Tier 1 level)
-- If only importing **basic information forms** → About **55-60 points** (Tier 0 level)
-
-AI automatically analyzes data completeness and prompts for "missing dimensions," suggesting Follow-up Interview to supplement.
-
-### Q4: Can Scout Agent build Tier 2 Personas?
-
-**A**: **Theoretically yes, practically very difficult**. Requires 30+ tool calls, must cover all 7 dimensions, needs 500+ tokens of deep text. 99% of Scout observations result in Tier 1.
-
-For key user groups (like "new energy vehicle owners," "medical beauty users"), atypica team conducts proactive 1-hour real interviews, converts to Tier 2 Personas, adds to public library.
-
-### Q5: Can Tier 1 be upgraded to Tier 2?
-
-**A**: **Yes, but requires supplementary data**.
-
-- **Method 1**: Continue Scout observation (30+ calls), AI will automatically re-score
-- **Method 2**: Manual supplement (atypica team only), conduct real interview then merge data
-
-Users cannot directly operate public library Personas. If customization needed, use **Tier 3 to import own data**.
-
-### Q6: Can Tier 3 Personas be shared with team?
-
-**A**: **Yes, but requires permission design** (in roadmap). Current Tier 3 Personas visible only to creator. Future plans support team-level Tier 3 (Team Personas) and fine-grained permission control.
+- Tier 1 like "friend known for 3 months": Know what they like, but not why
+- Tier 2 like "close friend known for 3 years": Understand their values, fears, contradictions
 
 ---
 
-## VII. Competitive Comparison: Why atypica's Tier System is Unique
+### Q9: Why Is Tier 0 Not Available to Users?
+
+**Quality over quantity**:
+- Low-quality Personas lead to misleading conclusions
+- Waste time
+- Damage trust
+- Rather have smaller inventory than compromise on reliability of each Persona
+
+---
+
+### Q10: Can Scout Agent Build Tier 2 Personas?
+
+**Theoretically yes, practically difficult**:
+- Needs 30+ tool calls
+- Cover all 7 dimensions
+- 500+ tokens deep text
+- 99% of Scout observation results are Tier 1
+
+For key user groups (like "EV owners", "medical aesthetics users"), atypica team proactively conducts 1-hour real human interviews, converts to Tier 2 Personas and adds to public library.
+
+---
+
+## Appendix: Competitor Comparison
 
 ### vs. Traditional Persona Tools (e.g., HubSpot, Xtensio)
 
 | Dimension | Traditional Tools | atypica.AI |
-|------|---------|-----------|
-| **Creation Method** | Manual form filling | AI auto-observes social media or imports data |
-| **Quality Standards** | No standards (based on experience) | 7-dimension auto-scoring, quantifiable consistency |
-| **Tier System** | ❌ No tiers | ✅ 4-tier system (Tier 0-3) |
-| **Interactivity** | ❌ Static documents | ✅ Deep interview capable (7 dialogue rounds) |
-| **Scale** | Usually 5-10 | 300K+ public library + private user libraries |
+|-----------|------------------|------------|
+| **Construction method** | Manual form filling | AI auto-observes social media or imports data |
+| **Quality standards** | No standards (based on experience) | 7-dimension auto-scoring, quantifiable consistency |
+| **Tiering system** | ❌ No tiers | ✅ 4-level tiers (Tier 0-3) |
+| **Interactivity** | ❌ Static documents | ✅ Deep interviews (7-round conversations) |
+| **Scale** | Usually 5-10 | 300K+ public library + user private library |
 
-**Conclusion**: Traditional tools are "static documents," atypica is "interactive digital people."
+**Conclusion**: Traditional tools are "static documents", atypica is "interactive digital humans".
+
+---
 
 ### vs. Synthetic Data Platforms (e.g., Gretel, Mostly AI)
 
 | Dimension | Synthetic Data Platforms | atypica.AI |
-|------|------------|-----------|
-| **Use Case** | Privacy-preserving dataset generation | User insights and research |
-| **Quality Assessment** | Statistical distribution similarity | **Consistency score** (benchmarked to human baseline) |
+|-----------|-------------------------|------------|
+| **Application** | Privacy-protected dataset generation | User insights and research |
+| **Quality assessment** | Statistical distribution similarity | **Consistency score** (benchmarked to human baseline) |
 | **Explainability** | ❌ Black box | ✅ 7-dimension transparent scoring |
-| **Usage Method** | Export datasets (CSV/JSON) | Direct interview (Interview Chat) |
+| **Usage** | Export dataset (CSV/JSON) | Direct interviews (Interview Chat) |
 
-**Conclusion**: Synthetic data platforms focus on "data compliance," atypica focuses on "insight quality."
+**Conclusion**: Synthetic data platforms focus on "data compliance", atypica focuses on "insight quality".
+
+---
 
 ### vs. AI Chatbots (e.g., Character.AI, Replika)
 
 | Dimension | AI Chatbots | atypica.AI |
-|------|------------|-----------|
+|-----------|------------|------------|
 | **Goal** | Entertainment, companionship | Business research |
-| **Quality Standards** | Entertaining, empathetic | **Consistency, authenticity** |
-| **Data Sources** | User-defined personality | Real social media or interview data |
-| **Validation Mechanism** | ❌ No validation | ✅ Human baseline benchmarking |
+| **Quality standards** | Fun, empathy | **Consistency, authenticity** |
+| **Data source** | User-defined personality | Real social media or interview data |
+| **Verification mechanism** | ❌ No verification | ✅ Human baseline benchmarking |
 
-**Conclusion**: AI chatbots are "virtual friends," atypica is "research subjects."
+**Conclusion**: AI chatbots are "virtual friends", atypica is "research subjects".
+
+---
 
 ### atypica.AI's Core Differentiation
 
-1. **Scientific Quality Standard**
-   - Not "feels like a real person," but "quantified consistency 79-85 points"
+1. **Scientific quality metrics**
+   - Not "feels like real human", but "quantified consistency 79-85 points"
    - Benchmarked to human baseline (81%), verifiable
 
-2. **Transparent Tier System**
-   - Not "one-size-fits-all," but "select Tier based on needs"
-   - Users clearly know each Persona's capability boundaries
+2. **Transparent tiering system**
+   - Not "one-size-fits-all", but "choose Tier as needed"
+   - Users clearly know capability boundaries of each Persona
 
-3. **Hybrid Public-Private Architecture**
-   - Public + private library, flexible combination
-
----
-
-## VIII. Summary: How to Use the Persona Tier System Effectively
-
-### Core Principles
-
-1. **Tiers Are Complementary, Not Replacements**
-   - Tier 1: Rapid exploration (attitudes, preferences)
-   - Tier 2: Deep understanding (motivations, conflicts)
-   - Tier 3: Custom research (enterprise customers, sensitive data)
-
-2. **Quality Over Quantity**
-   - 10 Tier 2 Personas > 100 Tier 0 Personas
-   - 1 deep interview > 10 shallow questionnaires
-
-3. **AI-Assisted, Human-Validated**
-   - Use Personas to rapidly iterate hypotheses
-   - Use real humans to test critical decisions
-
-### Implementation Path
-
-**Beginners**:
-1. Start with **Tier 1 + Discussion Chat** to quickly understand domain
-2. After discovering key insights, upgrade to **Tier 2 + Interview Chat**
-3. Conduct **small sample real human validation** on core conclusions
-
-**Advanced Users**:
-1. Combine **Plan Mode** to auto-determine research type
-2. Use **Scout Agent** to supplement missing profiles from library
-3. Use **Tier 3** to import enterprise proprietary data
-4. Batch interviews + auto-generate reports
+3. **Public-private hybrid architecture**
+   - Public library (300K+) + private library (user-defined)
+   - Flexible combination
 
 ---
 
-## Appendix: Quick Reference
+## Best Practices
 
-### Tier Selection Quick Reference
+### 1. Beginner Recommendation: Start with Tier 1, Use Tier 2 for Critical Moments
+
+**Reasons**:
+- Tier 1 cost-effective
+- Quality sufficient for regular research
+- Budget-saving
+
+**When to upgrade to Tier 2**:
+- Need to report to boss/client
+- Final validation before product launch
+- Brand repositioning
+
+---
+
+### 2. Use Scout to Generate High-Quality Personas
+
+**Best practice**:
+1. Use Scout to observe 10-15 rounds before research
+2. Auto-generate Tier 1/2 personas
+3. Directly use for Interview/Discussion
+4. Ensure research quality
+
+---
+
+### 3. Build Team Tier 3 Persona Library
+
+**Long-term value**:
+- Shared across all projects
+- Continuous accumulation and optimization
+- Improve research consistency
+
+**Recommendations**:
+- Save key personas after each project
+- Regularly update persona data
+- Team sharing and reuse
+
+---
+
+### 4. Don't Over-Rely on Tier 0
+
+**Common mistakes**:
+- Use all Tier 0 to save money
+- Results in poor feedback quality
+- Make wrong decisions based on low-quality feedback
+
+**Correct approach**:
+- Tier 0 not publicly available (system blocked)
+- Use Tier 1/2 for formal research
+
+---
+
+### 5. Quality Checklist
+
+#### Tier 1 Quality Check
+- [ ] Does it cover target group diversity? (at least 3-5 different profiles)
+- [ ] Are answers consistent? (no contradictions in multiple questions)
+- [ ] Do viewpoints have specific details? (not generic)
+- [ ] If answers too shallow, consider upgrading to Tier 2
+
+#### Tier 2 Quality Check
+- [ ] Does it uncover deep motivations? (not just surface reasons)
+- [ ] Are there emotional details? (specific worries, expectations, contradictions)
+- [ ] Can it explain behavioral logic? (why make such choices)
+- [ ] If still insufficient, consider real human interview validation
+
+---
+
+### 6. Common Mistakes and How to Avoid Them
+
+#### Mistake 1: Using Tier 1 as Tier 2
+**Symptom**: Using social media-observed Personas for deep motivation interviews, finding shallow answers.
+
+**Solution**:
+- Use Tier 1 for hypothesis generation (what are possible reasons)
+- Use Tier 2 for motivation verification (which reason is the real driver)
+
+#### Mistake 2: Blindly Pursuing Persona Quantity
+**Symptom**: Search 50 Personas, interview all, result is redundant information.
+
+**Solution**:
+- **Initial screening**: First search 30-50, sort by similarity
+- **Clustering**: Manually summarize 3-5 typical profiles
+- **Deep interviews**: Only conduct deep interviews on typical profiles
+
+#### Mistake 3: Ignoring Persona Timeliness
+**Symptom**: Using Personas built in 2022 to research 2024 market.
+
+**Solution**:
+- For rapidly changing fields (like tech products), prioritize Personas built within 6 months
+- For stable fields (like basic needs), can use Personas from past 2 years
+
+#### Mistake 4: Treating AI Persona as "Truth"
+**Symptom**: AI Persona says "users don't like XX", directly cut the feature.
+
+**Solution**:
+- **Small sample validation**: Test AI Persona conclusions with 5-10 real people
+- **A/B testing**: Validate hypothesis with real data after launch
+
+---
+
+## Quick Reference
+
+### Tier Selection Quick Guide
 
 | Research Question | Recommended Tier | Tool Combination | Time |
-|---------|----------|---------|------|
-| What does this group like? | Tier 1 | searchPersonas + discussionChat | 1 hour |
-| Why do they like/dislike it? | Tier 2 | searchPersonas + interviewChat | 3-5 hours |
+|------------------|-----------------|------------------|------|
+| What do these people like? | Tier 1 | searchPersonas + discussionChat | 1 hour |
+| Why like/dislike? | Tier 2 | searchPersonas + interviewChat | 3-5 hours |
 | VIP customer needs analysis | Tier 3 | Persona Import + Follow-up | 1-2 days |
-| Rapid concept validation | Tier 1 | Batch discussionChat | 2-4 hours |
-| Product positioning decision | Tier 2 | Deep interviewChat + real validation | 3-5 days |
+| Quick concept validation | Tier 1 | Batch discussionChat | 2-4 hours |
+| Product positioning decisions | Tier 2 | Deep interviewChat + real human validation | 3-5 days |
 
-### Consistency Score Quick Reference
+### Consistency Score Quick Guide
 
-| Score | Tier | Human Comparison | Use Cases |
-|------|------|---------|---------|
+| Score | Tier | Human Comparison | Use Case |
+|-------|------|-----------------|----------|
 | 85 | Tier 2 | Exceeds human (105%) | Critical decisions, deep motivations |
-| 79 | Tier 1 | Approaches human (98%) | Trend exploration, attitude research |
-| 73 | Threshold | Below human (90%) | Reference only |
-| <62 | Tier 0 | Far below human (<77%) | Not recommended |
-
-### Data Dimension Quick Reference
-
-| Dimension | Tier 0 | Tier 1 | Tier 2 | Source |
-|------|--------|--------|--------|------|
-| demographic | ✅ | ✅ | ✅ | Obtainable from social media |
-| geographic | ✅ | ✅ | ✅ | Obtainable from social media |
-| psychological | ❌ | ⚠️ | ✅ | Requires deep interview |
-| behavioral | ⚠️ | ✅ | ✅ | Obtainable from social media |
-| needsPainPoints | ❌ | ⚠️ | ✅ | Requires deep interview |
-| techAcceptance | ❌ | ⚠️ | ✅ | Requires deep interview |
-| socialRelations | ❌ | ❌ | ✅ | Requires deep interview |
-
-**Legend**:
-- ✅ Fully covered
-- ⚠️ Partially covered (may lack details)
-- ❌ Mostly missing
+| 79 | Tier 1 | Close to human (98%) | Trend exploration, attitude research |
+| 73 | Boundary | Below human (90%) | Reference only |
+| <60 | Tier 0 | Far below human (<77%) | Not recommended |
 
 ---
 
-**Document Version**: v2.0
-**Last Updated**: 2024-01-15
-**Maintained by**: atypica.AI Product Team
+## Summary
+
+**AI Persona System Core Value**:
+1. **Quality tiering**: From Tier 0 to Tier 3, meeting different needs
+2. **Human-level simulation**: Tier 2 consistency 85%, exceeds human 81%
+3. **Flexible construction**: Scout generation, data import, manual creation
+4. **Scientific metrics**: Benchmarked to human baseline (81%), verifiable
+
+**Selection recommendations**:
+- **Regular research**: Tier 1 (cost-effective)
+- **Critical decisions**: Tier 2 (quality assurance)
+- **Not recommended**: Tier 0 (insufficient quality)
+- **Specific projects**: Tier 3 (fully customized)
+
+**Best practices**:
+- Use Scout to generate high-quality personas
+- Build team Tier 3 persona library
+- Use Tier 2 for critical research
+- Don't over-rely on Tier 0
+- Use Tier 1 for hypothesis generation, Tier 2 for motivation verification
+- Small sample real human validation for key conclusions
+
+---
+
+**Document version**: v3.0 | 2026-01-17 | Merged version: New structure + Old technical details
