@@ -16,6 +16,9 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "puppeteer"
-    ]
+    ],
+    "overrides": {
+      "qs@<6.14.1": ">=6.14.1"
+    }
   }
 }
