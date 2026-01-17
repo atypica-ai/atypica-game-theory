@@ -1,4 +1,4 @@
-export type DocCategory = "features" | "competitors";
+export type DocCategory = "features" | "competitors" | "guides";
 
 export interface Doc {
   slug: string;
@@ -69,15 +69,15 @@ export const docs: Doc[] = [
     filePathEn: "docs/product/features/memory-system-en.md",
   },
   {
-    slug: "fast-insight",
+    slug: "fast-insight-agent",
     titleZh: "Fast Insight：播客优先自动化",
     titleEn: "Fast Insight: Podcast-First Automation",
     category: "features",
     descriptionZh: "从研究需求到播客内容，一条龙自动化，数小时完成",
     descriptionEn:
       "End-to-end automation from research needs to podcast content, completed in hours",
-    filePathZh: "docs/product/features/fast-insight-zh.md",
-    filePathEn: "docs/product/features/fast-insight-en.md",
+    filePathZh: "docs/product/features/fast-insight-agent-zh.md",
+    filePathEn: "docs/product/features/fast-insight-agent-en.md",
   },
   {
     slug: "product-rnd-agent",
@@ -153,8 +153,7 @@ export const docs: Doc[] = [
     titleEn: "atypica vs UserTesting",
     category: "competitors",
     descriptionZh: "真人测试平台 vs AI 研究加速器，节省 80-85% 成本",
-    descriptionEn:
-      "Real human testing platform vs AI research accelerator, save 80-85% cost",
+    descriptionEn: "Real human testing platform vs AI research accelerator, save 80-85% cost",
     filePathZh: "docs/product/competitors/atypica-vs-usertesting-zh.md",
     filePathEn: "docs/product/competitors/atypica-vs-usertesting-en.md",
   },
@@ -197,16 +196,29 @@ export const docs: Doc[] = [
     titleEn: "atypica vs Traditional Research",
     category: "competitors",
     descriptionZh: "AI 模拟 vs 真人招募，数小时 vs 数周",
-    descriptionEn:
-      "AI simulation vs human recruitment, hours vs weeks",
+    descriptionEn: "AI simulation vs human recruitment, hours vs weeks",
     filePathZh: "docs/product/competitors/atypica-vs-traditional-research-zh.md",
     filePathEn: "docs/product/competitors/atypica-vs-traditional-research-en.md",
+  },
+
+  // Guides
+  {
+    slug: "getting-started",
+    titleZh: "atypica.AI 用户研究旅程",
+    titleEn: "atypica.AI User Research Journey",
+    category: "guides",
+    descriptionZh: "通过气泡咖啡案例，完整展示用户如何使用 atypica.AI 完成商业研究的全过程",
+    descriptionEn:
+      "Complete demonstration of how users conduct business research with atypica.AI through a real-world scenario",
+    filePathZh: "docs/product/guides/getting-started-zh.md",
+    filePathEn: "docs/product/guides/getting-started-en.md",
   },
 ];
 
 export const categoryLabels: Record<DocCategory, { zh: string; en: string }> = {
   features: { zh: "功能特性", en: "Features" },
   competitors: { zh: "竞品对比", en: "Competitors" },
+  guides: { zh: "使用指南", en: "Guides" },
 };
 
 export function getDocBySlug(slug: string): Doc | undefined {
