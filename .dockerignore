@@ -47,7 +47,7 @@ README.md
 LICENSE
 *.md
 .github
-docs
+# docs - required for features pages (must be included in Docker build)
 tests
 __tests__
 test
