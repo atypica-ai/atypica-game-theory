@@ -98,7 +98,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       </header>
 
       <div className="prose prose-zinc dark:prose-invert">
-        <Streamdown>{article.content}</Streamdown>
+        <Streamdown
+          mode="static" // static 模式可以大大提升渲染速度
+          parseIncompleteMarkdown={false}
+          isAnimating={false}
+          cdnUrl={null}
+        >
+          {article.content}
+        </Streamdown>
       </div>
 
       {extra?.originalUrl && (

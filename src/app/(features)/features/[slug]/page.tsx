@@ -67,7 +67,14 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
     <div className="mx-auto max-w-5xl w-full px-4 py-8">
       {/* Article */}
       <article className="prose prose-zinc dark:prose-invert max-w-none prose-headings:scroll-mt-20">
-        <Streamdown>{content}</Streamdown>
+        <Streamdown
+          mode="static" // static 模式可以大大提升渲染速度
+          parseIncompleteMarkdown={false}
+          isAnimating={false}
+          cdnUrl={null}
+        >
+          {content}
+        </Streamdown>
       </article>
 
       {/* Footer */}
