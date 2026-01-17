@@ -91,10 +91,9 @@ ${
    \`\`\`
 
 6. **导出文件夹为 zip**：
-   \`\`\`bash
-   exportFolder({ folderPath: "skill-name" })
-   \`\`\`
-   用户可以下载包含所有文件的 zip 压缩包
+   - 先检查文件夹是否存在：\`ls -la folder-name\`
+   - 再导出：\`exportFolder({ folderPath: "folder-name" })\`
+   - 用户可以下载包含所有文件的 zip 压缩包
 
 **可用的 bash 命令**：
 - ls, cat, head, tail, grep, find, wc, sort, uniq 等
@@ -168,10 +167,9 @@ You have an in-memory sandbox containing all skill files. Use bash commands to e
    \`\`\`
 
 6. **Export folder as zip**:
-   \`\`\`bash
-   exportFolder({ folderPath: "skill-name" })
-   \`\`\`
-   Users can download a zip archive containing all files
+   - First check if folder exists: \`ls -la folder-name\`
+   - Then export: \`exportFolder({ folderPath: "folder-name" })\`
+   - Users can download a zip archive containing all files
 
 **Available bash commands**:
 - ls, cat, head, tail, grep, find, wc, sort, uniq, etc.

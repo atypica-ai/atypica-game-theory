@@ -28,7 +28,7 @@ export const exportFolderTool = ({ sandbox, userId }: { sandbox: Sandbox; userId
         );
 
         if (findResult.exitCode !== 0 || !findResult.stdout.trim()) {
-          const message = `Folder "${folderPath}" not found or is empty`;
+          const message = `Folder "${folderPath}" not found or is empty. Use 'ls' to see available folders in current directory, or 'pwd' to check current working directory.`;
           return {
             success: false,
             message,
@@ -43,7 +43,7 @@ export const exportFolderTool = ({ sandbox, userId }: { sandbox: Sandbox; userId
           .map((line) => line.trim());
 
         if (filePaths.length === 0) {
-          const message = `No files found in folder "${folderPath}"`;
+          const message = `No files found in folder "${folderPath}". The folder exists but contains no files.`;
           return {
             success: false,
             message,
