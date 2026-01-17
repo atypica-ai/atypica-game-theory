@@ -1,4 +1,4 @@
-export type DocCategory = "features" | "competitors" | "guides";
+export type DocCategory = "features" | "competitors";
 
 export interface Doc {
   slug: string;
@@ -69,15 +69,26 @@ export const docs: Doc[] = [
     filePathEn: "docs/product/features/memory-system-en.md",
   },
   {
-    slug: "fast-insight-agent",
-    titleZh: "Fast Insight Agent：快速洞察生成",
-    titleEn: "Fast Insight Agent: Rapid Insight Generation",
+    slug: "fast-insight",
+    titleZh: "Fast Insight：播客优先自动化",
+    titleEn: "Fast Insight: Podcast-First Automation",
     category: "features",
-    descriptionZh: "播客驱动的快速研究工作流，30分钟生成深度洞察报告",
+    descriptionZh: "从研究需求到播客内容，一条龙自动化，数小时完成",
     descriptionEn:
-      "Podcast-driven rapid research workflow generating deep insight reports in 30 minutes",
-    filePathZh: "docs/product/features/fast-insight-agent-zh.md",
-    filePathEn: "docs/product/features/fast-insight-agent-en.md",
+      "End-to-end automation from research needs to podcast content, completed in hours",
+    filePathZh: "docs/product/features/fast-insight-zh.md",
+    filePathEn: "docs/product/features/fast-insight-en.md",
+  },
+  {
+    slug: "product-rnd-agent",
+    titleZh: "Product R&D Agent：产品研发智能体",
+    titleEn: "Product R&D Agent: Product Development Intelligence",
+    category: "features",
+    descriptionZh: "从市场趋势到用户需求，为产品创新提供全方位研究支持",
+    descriptionEn:
+      "Comprehensive research support for product innovation, from market trends to user needs",
+    filePathZh: "docs/product/features/product-rnd-agent-zh.md",
+    filePathEn: "docs/product/features/product-rnd-agent-en.md",
   },
   {
     slug: "reference-attachments",
@@ -115,57 +126,87 @@ export const docs: Doc[] = [
 
   // Competitor Comparisons
   {
-    slug: "atypica-vs-traditional-research",
-    titleZh: "atypica vs 传统调研公司",
-    titleEn: "atypica vs Traditional Research Agencies",
-    category: "competitors",
-    descriptionZh: "对比 atypica.AI 与传统调研公司在速度、成本、洞察深度等维度的差异",
-    descriptionEn:
-      "Compare atypica.AI with traditional research agencies in speed, cost, and insight depth",
-    filePathZh: "docs/product/competitors/atypica-vs-traditional-research-zh.md",
-    filePathEn: "docs/product/competitors/atypica-vs-traditional-research-en.md",
-  },
-  {
     slug: "atypica-vs-listen-labs",
     titleZh: "atypica vs Listen Labs",
     titleEn: "atypica vs Listen Labs",
     category: "competitors",
-    descriptionZh: "对比 atypica.AI 与 Listen Labs 的产品定位、功能特性和技术优势",
+    descriptionZh: "AI 访谈工具 vs 多场景研究平台，都使用 AI 模拟用户进行研究",
     descriptionEn:
-      "Compare atypica.AI with Listen Labs in product positioning, features, and technical advantages",
+      "AI interview tool vs multi-scenario research platform, both using AI to simulate users",
     filePathZh: "docs/product/competitors/atypica-vs-listen-labs-zh.md",
     filePathEn: "docs/product/competitors/atypica-vs-listen-labs-en.md",
   },
-
-  // Guides
   {
-    slug: "marketing-workflow",
-    titleZh: "产品营销内容生产工作流",
-    titleEn: "Product Marketing Content Production Workflow",
-    category: "guides",
-    descriptionZh: "从代码到产品理解，再到客观文档和营销内容的完整工作流",
+    slug: "atypica-vs-claude-projects",
+    titleZh: "atypica vs Claude Projects",
+    titleEn: "atypica vs Claude Projects",
+    category: "competitors",
+    descriptionZh: "通用知识助手 vs 商业研究智能体，同样基于 Claude 但定位不同",
     descriptionEn:
-      "Complete workflow from code to product understanding, objective documentation, and marketing content",
-    filePathZh: "docs/product/marketing-workflow-zh.md",
-    filePathEn: "docs/product/marketing-workflow-en.md",
+      "General knowledge assistant vs business research agent, both built on Claude but different positioning",
+    filePathZh: "docs/product/competitors/atypica-vs-claude-projects-zh.md",
+    filePathEn: "docs/product/competitors/atypica-vs-claude-projects-en.md",
   },
   {
-    slug: "user-research-journey",
-    titleZh: "用户研究完整旅程",
-    titleEn: "Complete User Research Journey",
-    category: "guides",
-    descriptionZh: "从意图澄清到最终报告，完整的 atypica.AI 用户研究流程示例",
+    slug: "atypica-vs-usertesting",
+    titleZh: "atypica vs UserTesting",
+    titleEn: "atypica vs UserTesting",
+    category: "competitors",
+    descriptionZh: "真人测试平台 vs AI 研究加速器，节省 80-85% 成本",
     descriptionEn:
-      "Complete atypica.AI user research process example from intent clarification to final report",
-    filePathZh: "docs/product/user-research-journey-zh.md",
-    filePathEn: "docs/product/user-research-journey-en.md",
+      "Real human testing platform vs AI research accelerator, save 80-85% cost",
+    filePathZh: "docs/product/competitors/atypica-vs-usertesting-zh.md",
+    filePathEn: "docs/product/competitors/atypica-vs-usertesting-en.md",
+  },
+  {
+    slug: "atypica-vs-surveymonkey",
+    titleZh: "atypica vs SurveyMonkey",
+    titleEn: "atypica vs SurveyMonkey",
+    category: "competitors",
+    descriptionZh: "量化问卷调研 vs 质性对话研究，理解'为什么' vs '多少人'",
+    descriptionEn:
+      "Quantitative survey research vs qualitative conversational research, 'why' vs 'how many'",
+    filePathZh: "docs/product/competitors/atypica-vs-surveymonkey-zh.md",
+    filePathEn: "docs/product/competitors/atypica-vs-surveymonkey-en.md",
+  },
+  {
+    slug: "atypica-vs-notebooklm",
+    titleZh: "atypica vs NotebookLM",
+    titleEn: "atypica vs NotebookLM",
+    category: "competitors",
+    descriptionZh: "文档播客生成 vs 研究+播客平台，被动转化 vs 主动研究",
+    descriptionEn:
+      "Document-to-podcast generation vs research + podcast platform, passive conversion vs active research",
+    filePathZh: "docs/product/competitors/atypica-vs-notebooklm-zh.md",
+    filePathEn: "docs/product/competitors/atypica-vs-notebooklm-en.md",
+  },
+  {
+    slug: "atypica-vs-otter-ai",
+    titleZh: "atypica vs Otter.ai",
+    titleEn: "atypica vs Otter.ai",
+    category: "competitors",
+    descriptionZh: "会议转录 vs 用户研究，记录'说了什么' vs 理解'为什么'",
+    descriptionEn:
+      "Meeting transcription vs user research, recording 'what was said' vs understanding 'why'",
+    filePathZh: "docs/product/competitors/atypica-vs-otter-ai-zh.md",
+    filePathEn: "docs/product/competitors/atypica-vs-otter-ai-en.md",
+  },
+  {
+    slug: "atypica-vs-traditional-research",
+    titleZh: "atypica vs 传统调研方法",
+    titleEn: "atypica vs Traditional Research",
+    category: "competitors",
+    descriptionZh: "AI 模拟 vs 真人招募，数小时 vs 数周",
+    descriptionEn:
+      "AI simulation vs human recruitment, hours vs weeks",
+    filePathZh: "docs/product/competitors/atypica-vs-traditional-research-zh.md",
+    filePathEn: "docs/product/competitors/atypica-vs-traditional-research-en.md",
   },
 ];
 
 export const categoryLabels: Record<DocCategory, { zh: string; en: string }> = {
   features: { zh: "功能特性", en: "Features" },
   competitors: { zh: "竞品对比", en: "Competitors" },
-  guides: { zh: "使用指南", en: "Guides" },
 };
 
 export function getDocBySlug(slug: string): Doc | undefined {
