@@ -17,6 +17,7 @@ import { exportFolderTool } from "@/app/(universal)/tools/exportFolder";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { loadAllSkillsToMemory } from "@/lib/skill/loadToMemory";
+import { loadUserWorkspace, saveUserWorkspace } from "@/lib/skill/workspace";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
@@ -123,10 +124,21 @@ export async function POST(req: Request) {
     select: { id: true, name: true },
   });
 
+  // Load both skills and user workspace
   const skillFiles = await loadAllSkillsToMemory(skills);
+  const workspaceFiles = await loadUserWorkspace(userId);
+
+  // Add "skills/" prefix to skill files for proper isolation
+  const skillFilesWithPrefix: Record<string, string> = {};
+  for (const [path, content] of Object.entries(skillFiles)) {
+    skillFilesWithPrefix[`skills/${path}`] = content;
+  }
 
   const { tools: bashTools, sandbox } = await createBashTool({
-    files: skillFiles,
+    files: {
+      ...workspaceFiles, // Workspace files in root directory
+      ...skillFilesWithPrefix, // Skills in skills/ subdirectory
+    },
     onBeforeBashCall: ({ command }) => {
       // Block script execution - just-bash already doesn't support it, but add extra safeguard
       if (command.match(/python|node|php|ruby|perl|java|go run|\.\/[\w-]+\.sh/i)) {
@@ -188,6 +200,10 @@ export async function POST(req: Request) {
         userId,
         ...extra,
       });
+    },
+    onFinish: async () => {
+      // Save workspace when streaming is complete
+      await saveUserWorkspace(userId, sandbox);
     },
     onError: ({ error }) => {
       logger.error({

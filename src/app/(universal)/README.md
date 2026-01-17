@@ -23,15 +23,20 @@ my-skill/
 4. Agent 通过 `readFile` 或 `bash` 命令加载 Skill 内容
 5. Agent 按照 Skill 指令执行任务
 
-### 2. 文件操作（In-Memory Sandbox）
+### 2. 文件操作（Persistent Sandbox）
 
-基于 `bash-tool` 和 `just-bash`，提供内存沙箱环境。
+基于 `bash-tool` 和 `just-bash`，提供持久化沙箱环境。
 
 **可用工具**：
 - `bash` - 执行 bash 命令（ls, cat, grep, find 等）
 - `readFile` - 读取文件内容
-- `writeFile` - 创建/修改文件（仅内存，请求结束后销毁）
+- `writeFile` - 创建/修改文件（**持久化保存**）
 - `exportFolder` - 导出文件夹为 zip 供下载
+
+**持久化机制**：
+- 每次请求开始时，从磁盘加载用户工作区到内存沙箱
+- 请求结束时，将沙箱中的文件同步回磁盘
+- 用户创建的文件在会话之间保持，不会丢失
 
 **安全限制**：
 - ✅ 支持：bash 命令（ls, cat, grep, find, head, tail 等）
@@ -87,8 +92,8 @@ Agent 可以将内存沙箱中的文件打包下载。
 用户：用 ai-product-growth skill 帮我分析一下产品增长策略
 
 Agent：
-  bash: ls -la  # 查看可用 skills
-  readFile({ path: "ai-product-growth/SKILL.md" })  # 加载 skill
+  bash: ls -la skills/  # 查看可用 skills
+  readFile({ path: "skills/ai-product-growth/SKILL.md" })  # 加载 skill
   [按照 Skill 指令执行分析...]
 ```
 
@@ -220,14 +225,22 @@ A: 可以使用 `tar -cf`（无压缩），但不能使用 `tar -czf` 或 `tar -
 .next/cache/sandbox/
 └── user/
     └── {userId}/
-        ├── skills/              # Skill 文件
+        ├── skills/              # Skill 文件（从 S3，相对只读）
         │   ├── skill-name-1/
         │   │   ├── SKILL.md
         │   │   └── references/
         │   └── skill-name-2/
+        ├── workspace/           # 用户工作区（持久化，可读写）
+        │   ├── test-skill/
+        │   └── my-project/
         └── exports/             # 导出文件（临时）
             └── {token}.zip
 ```
+
+**目录说明**：
+- `skills/` - 用户上传的 skill 文件，从 S3 下载，相对只读
+- `workspace/` - 用户的工作区，持久化保存，可以创建项目、文件等
+- `exports/` - 临时导出文件，下载后自动删除
 
 ## 与其他 Agent 的区别
 

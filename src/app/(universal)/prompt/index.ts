@@ -33,7 +33,7 @@ ${skills
     (skill) => `<skill>
 <name>${skill.name}</name>
 <description>${skill.description}</description>
-<location>${skill.name}/SKILL.md</location>
+<location>skills/${skill.name}/SKILL.md</location>
 </skill>`,
   )
   .join("\n")}
@@ -62,38 +62,49 @@ ${
 
 **如何使用 Skills：**
 
-你有一个内存沙箱，包含所有 skills 的文件。使用 bash 命令探索和操作：
+你有一个持久化沙箱，包含两个区域：
+- \`skills/\` - 所有 skills 的文件（相对只读）
+- 根目录 - 你的工作区（可以创建和修改文件）
+
+使用 bash 命令探索和操作：
 
 1. **查看所有 skills**：
    \`\`\`bash
-   for dir in */; do echo "=== \${dir%/} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done
+   ls -la skills/
    \`\`\`
+   或查看详情：\`for dir in skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
 
 2. **加载特定 skill**：
    \`\`\`bash
-   readFile({ path: "skill-name/SKILL.md" })
+   readFile({ path: "skills/skill-name/SKILL.md" })
    \`\`\`
-   或使用 bash: \`cat skill-name/SKILL.md\`
+   或使用 bash: \`cat skills/skill-name/SKILL.md\`
 
 3. **查看 skill 的文件结构**：
    \`\`\`bash
-   ls -la skill-name/
+   ls -la skills/skill-name/
    \`\`\`
 
 4. **读取参考资料**：
    \`\`\`bash
-   cat skill-name/references/core-memory.md
+   cat skills/skill-name/references/core-memory.md
    \`\`\`
 
-5. **创建或修改文件**（仅内存中）：
+5. **创建或修改文件**（持久化保存）：
    \`\`\`bash
-   writeFile({ path: "notes.md", content: "..." })
+   writeFile({ path: "my-project/index.js", content: "..." })
    \`\`\`
+   注意：在根目录创建，不要在 skills/ 目录下创建
 
 6. **导出文件夹为 zip**：
    - 先检查文件夹是否存在：\`ls -la folder-name\`
    - 再导出：\`exportFolder({ folderPath: "folder-name" })\`
    - 用户可以下载包含所有文件的 zip 压缩包
+
+**工作区持久化**：
+- 你在根目录创建的所有文件都会自动保存
+- 下次对话时，这些文件会自动加载回来
+- skills/ 目录下的文件是只读的，不要尝试修改
 
 **可用的 bash 命令**：
 - ls, cat, head, tail, grep, find, wc, sort, uniq 等
@@ -138,38 +149,49 @@ ${
 
 **How to Use Skills:**
 
-You have an in-memory sandbox containing all skill files. Use bash commands to explore and operate:
+You have a persistent sandbox with two areas:
+- \`skills/\` - All skill files (read-only)
+- Root directory - Your workspace (can create and modify files)
+
+Use bash commands to explore and operate:
 
 1. **View all skills**:
    \`\`\`bash
-   for dir in */; do echo "=== \${dir%/} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done
+   ls -la skills/
    \`\`\`
+   Or view details: \`for dir in skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
 
 2. **Load a specific skill**:
    \`\`\`bash
-   readFile({ path: "skill-name/SKILL.md" })
+   readFile({ path: "skills/skill-name/SKILL.md" })
    \`\`\`
-   Or use bash: \`cat skill-name/SKILL.md\`
+   Or use bash: \`cat skills/skill-name/SKILL.md\`
 
 3. **View skill file structure**:
    \`\`\`bash
-   ls -la skill-name/
+   ls -la skills/skill-name/
    \`\`\`
 
 4. **Read reference materials**:
    \`\`\`bash
-   cat skill-name/references/core-memory.md
+   cat skills/skill-name/references/core-memory.md
    \`\`\`
 
-5. **Create or modify files** (in memory only):
+5. **Create or modify files** (persisted):
    \`\`\`bash
-   writeFile({ path: "notes.md", content: "..." })
+   writeFile({ path: "my-project/index.js", content: "..." })
    \`\`\`
+   Note: Create in root directory, not under skills/
 
 6. **Export folder as zip**:
    - First check if folder exists: \`ls -la folder-name\`
    - Then export: \`exportFolder({ folderPath: "folder-name" })\`
    - Users can download a zip archive containing all files
+
+**Workspace Persistence**:
+- All files you create in root directory are automatically saved
+- Next conversation, these files will be loaded back
+- Files under skills/ are read-only, don't try to modify them
 
 **Available bash commands**:
 - ls, cat, head, tail, grep, find, wc, sort, uniq, etc.

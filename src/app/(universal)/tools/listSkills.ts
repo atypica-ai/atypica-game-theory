@@ -37,7 +37,7 @@ Returns a list of skills with their names and descriptions. Use this to discover
         skills: skills.map((skill) => ({
           name: skill.name,
           description: skill.description,
-          path: `${skill.name}/SKILL.md`,
+          path: `skills/${skill.name}/SKILL.md`,
         })),
       };
     },
