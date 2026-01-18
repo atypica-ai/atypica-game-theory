@@ -2,6 +2,54 @@
 
 通用 AI Agent 系统，支持 Skill 扩展和持久化文件操作。
 
+## 开发状态
+
+**最后更新**: 2025-01-18
+
+### 最近架构优化
+
+**移除 exportFolder 工具** - 简化了 Agent 工作流和下载机制：
+- Agent 不再需要调用导出工具，只管创建文件
+- 每个 step 完成后自动同步文件到磁盘
+- 用户通过文件面板 UI 浏览和下载所有文件
+- 无临时文件，从磁盘实时打包
+
+### 已修复的关键问题
+
+1. **sandbox.readFile 路径问题** (2025-01-18)
+   - 症状: `Error: ENOENT: no such file or directory, open 'workspace/hello.txt'`
+   - 原因: bash-tool 的 readFile 需要绝对路径，不会自动使用 destination
+   - 解决: 添加 `SANDBOX_HOME = "/home/agent"` 常量，拼接完整路径
+
+2. **下载文件名错误** (2025-01-18)
+   - 症状: 下载 workspace 文件夹时文件名变成 `.zip`
+   - 原因: `path.basename("")` 返回空导致
+   - 解决: 直接从 `folderPath.split('/').pop()` 获取文件夹名
+
+### 关键常量和路径
+
+```typescript
+// Sandbox 工作目录
+SANDBOX_HOME = "/home/agent"
+
+// 文件路径示例
+sandbox:  /home/agent/workspace/hello.txt
+磁盘:     .next/cache/sandbox/user/{userId}/workspace/hello.txt
+
+// 读取文件 - 必须使用绝对路径
+sandbox.readFile(`${SANDBOX_HOME}/workspace/hello.txt`)
+
+// bash 命令 - 使用相对路径（相对于 SANDBOX_HOME）
+sandbox.executeCommand("cat workspace/hello.txt")
+```
+
+### Debug 技巧
+
+- 检查 sandbox 文件: `sandbox.executeCommand("ls -laR workspace/")`
+- 检查磁盘文件: `.next/cache/sandbox/user/{userId}/workspace/`
+- 查看同步日志: 搜索 `[Workspace]`
+- 常见问题: 文件找不到 → 检查是否在 workspace/ 下，查看同步日志的 savedCount
+
 ## 核心特性
 
 ### 1. Skill 系统
@@ -288,7 +336,25 @@ A: 可以使用 `tar -cf`（无压缩），但不能使用 `tar -czf` 或 `tar -
 | **导出下载** | ✅ | ❌ |
 | **研究工具** | 基础（webSearch） | 完整（interview, report 等） |
 
-## 未来考虑
+## 待改进和技术债务
 
-- **AgentFS**：如果需要跨会话的持久化文件系统、版本控制、审计日志，可以考虑集成 [AgentFS](https://github.com/tursodatabase/agentfs)
-- **MCP 集成**：团队可以通过 MCP 协议添加自定义工具
+### 文件面板增强
+- [ ] 搜索功能 - 按文件名搜索
+- [ ] 文件预览 - 文本文件、图片预览
+- [ ] 文件操作 - 删除、重命名
+- [ ] 批量下载 - 多选文件/文件夹
+
+### Skill 系统
+- [ ] Skill 模板库
+- [ ] Skill 验证（上传时检查格式）
+- [ ] Skill 版本管理
+
+### 性能优化
+- [ ] 文件列表虚拟滚动（大量文件时）
+- [ ] 智能同步策略（只同步变化的文件）
+- [ ] 流式 zip 打包（大文件夹）
+
+### 长期探索
+- **AgentFS**: 跨会话持久化、版本控制、审计日志
+- **MCP 集成**: 团队自定义工具
+- **代码执行**: 支持 python/node（沙箱化）
