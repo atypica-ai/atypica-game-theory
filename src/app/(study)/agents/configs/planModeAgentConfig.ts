@@ -1,11 +1,12 @@
 import "server-only";
 
 import { toolCallError } from "@/ai/tools/error";
-import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
+import { webFetchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { planModeSystem } from "@/app/(study)/prompt/planMode";
 import { makeStudyPlanTool, requestInteractionTool } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
+import { BedrockProviderOptions } from "@ai-sdk/amazon-bedrock";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -30,7 +31,7 @@ type TOOLS = ReturnType<typeof buildPlanModeTools>;
  *
  * Plan Mode (Intent Layer) features:
  * - Conversational intent clarification (flexible rounds)
- * - Background research (flexible webSearch/webFetch usage)
+ * - Background research (webFetch for intelligent search/URL fetching)
  * - Auto-judge research kind and framework
  * - Cost estimation
  * - User confirmation via requestInteraction
@@ -53,10 +54,18 @@ export async function createPlanModeAgentConfig(
 
   return {
     model: "claude-sonnet-4-5",
+    providerOptions: {
+      bedrock: {
+        reasoningConfig: {
+          type: "enabled",
+          maxReasoningEffort: "medium",
+          budgetTokens: 1024,
+        },
+      } satisfies BedrockProviderOptions,
+    },
     systemPrompt: planModeSystem({ locale }),
     tools,
-    maxSteps: 15, // Plan mode may need more steps for thorough clarification
-
+    maxSteps: 5, // Plan mode may need more steps for thorough clarification
     specialHandlers: {
       // No customPrepareStep needed - tools are freely available
       // No custom onStepFinish needed - saveAnalyst tool handles the transition to execution phase
@@ -68,9 +77,8 @@ function buildPlanModeTools(params: AgentToolConfigArgs) {
   return {
     [StudyToolName.requestInteraction]: requestInteractionTool,
     [StudyToolName.makeStudyPlan]: makeStudyPlanTool,
-    [StudyToolName.webSearch]: webSearchTool(params),
     [StudyToolName.webFetch]: webFetchTool(params),
-    [StudyToolName.reasoningThinking]: reasoningThinkingTool(params),
+    // [StudyToolName.reasoningThinking]: reasoningThinkingTool(params),  // 这个不需要了，因为开启了 reasoningConfig
     [StudyToolName.toolCallError]: toolCallError,
   };
 }
