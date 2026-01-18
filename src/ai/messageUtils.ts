@@ -20,7 +20,6 @@ import {
   UIMessage,
 } from "ai";
 import { Logger } from "pino";
-import { isSystemMessage } from "./messageUtilsClient";
 import { convertToV5MessagePart } from "./v4";
 
 // 事实上，bedrock 虽然支持很多文件格式，但 gpt 和 gemini 只支持 pdf，所以这样 fix 也没用，只能限制上传的文件类型
@@ -232,57 +231,110 @@ export const persistentAIMessageToDB = async ({
   } = message;
 
   // attachments 统一保存到 message 的 attachments 字段上，从 parts 里移除
-  const partsExcludeFiles = parts.filter((part) => part.type !== "file");
-
-  const dataToPersist = {
-    role,
-    parts: partsExcludeFiles as InputJsonValue,
-    extra: extra as InputJsonValue,
-    ...(attachments ? { attachments } : undefined),
-  };
-
-  if (role === "user") {
-    const lastUserMessage = await tx.chatMessage.findFirst({
-      where: { userChatId },
-      orderBy: { id: "desc" },
-    });
-    if (lastUserMessage?.role === "user") {
-      // 如果最后一条消息是 user，则覆盖，但如果消息是 [READY] 或者 [CONTINUE] 这种，则不覆盖，直接忽略
-      if (parts[0] && parts[0].type === "text" && isSystemMessage(parts[0].text)) {
-        return;
-      } else {
-        await tx.chatMessage.update({
-          where: { id: lastUserMessage.id },
-          data: {
-            messageId,
-            // createdAt, // 同时也覆盖 createdAt
-            ...dataToPersist,
-          },
-        });
-        // 结束，不再继续
-        return;
-      }
-    }
-  }
-
-  const compatibleContent =
+  const newPartsExcludeFiles = parts.filter((part) => part.type !== "file");
+  // content 字段在 v5 中其实没用了，但是兼容下，先保存，之后需要去掉
+  const compatibleContent = (parts: UIMessage["parts"]) =>
     parts
       .map((part) => (part.type === "text" || part.type === "reasoning" ? part.text : ""))
       .filter((text) => text.trim().length > 0)
       .join("\n") || "[EMPTY]";
-  await tx.chatMessage.upsert({
-    where: { userChatId, messageId },
-    create: {
-      userChatId,
-      messageId,
-      content: compatibleContent, // content 字段在 v5 中其实没用了，但是兼容下，先保存，之后需要去掉
-      // createdAt,
-      ...dataToPersist,
-    },
-    update: {
-      ...dataToPersist,
-    },
+
+  const lastMessage = await tx.chatMessage.findFirst({
+    where: { userChatId },
+    orderBy: { id: "desc" },
   });
+
+  if (role === "user") {
+    if (lastMessage?.role === "user") {
+      // 如果最后一条消息是 user，则追加进去，而不是覆盖
+      const partsToUpdate = convertDBMessageToAIMessage(lastMessage).parts;
+      for (const newPart of newPartsExcludeFiles) {
+        // 重复的忽略
+        const lastPart = partsToUpdate.at(-1);
+        if (
+          lastPart?.type === "text" &&
+          newPart.type === "text" &&
+          lastPart.text === newPart.text
+        ) {
+          continue;
+        }
+        partsToUpdate.push(newPart);
+      }
+      await tx.chatMessage.update({
+        where: { id: lastMessage.id },
+        data: {
+          messageId,
+          // createdAt, // 同时也覆盖 createdAt
+          content: compatibleContent(partsToUpdate),
+          parts: partsToUpdate as InputJsonValue,
+          extra: extra as InputJsonValue,
+          ...(attachments ? { attachments } : undefined),
+        },
+      });
+      // if (parts[0] && parts[0].type === "text" && isSystemMessage(parts[0].text)) {
+      //   // 但如果当前消息是 [READY] 或者 [CONTINUE] 这种，则不覆盖，直接忽略
+      // }
+    } else {
+      // 否则新增一条消息
+      await tx.chatMessage.create({
+        data: {
+          userChatId,
+          messageId,
+          role,
+          content: compatibleContent(newPartsExcludeFiles),
+          parts: newPartsExcludeFiles as InputJsonValue,
+          extra: extra as InputJsonValue,
+          ...(attachments ? { attachments } : undefined),
+        },
+      });
+    }
+  } else if (role === "assistant") {
+    if (lastMessage?.role === "assistant") {
+      // 如果最后一条消息是 user，则追加进去，而不是覆盖
+      const partsToUpdate = convertDBMessageToAIMessage(lastMessage).parts;
+      for (const newPart of newPartsExcludeFiles) {
+        if (isToolOrDynamicToolUIPart(newPart)) {
+          // 这种情况应该是 addToolResult，需要替换已有的 tool call
+          const index = partsToUpdate.findIndex(
+            (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === newPart.toolCallId,
+          );
+          if (index !== -1) {
+            partsToUpdate[index] = newPart;
+          } else {
+            partsToUpdate.push(newPart);
+          }
+        } else {
+          partsToUpdate.push(newPart);
+        }
+      }
+      await tx.chatMessage.update({
+        where: { id: lastMessage.id },
+        data: {
+          messageId,
+          // createdAt, // 同时也覆盖 createdAt
+          content: compatibleContent(partsToUpdate),
+          parts: partsToUpdate as InputJsonValue,
+          extra: extra as InputJsonValue,
+          ...(attachments ? { attachments } : undefined),
+        },
+      });
+    } else {
+      // 否则新增一条消息
+      await tx.chatMessage.create({
+        data: {
+          userChatId,
+          messageId,
+          role,
+          content: compatibleContent(newPartsExcludeFiles),
+          parts: newPartsExcludeFiles as InputJsonValue,
+          extra: extra as InputJsonValue,
+          ...(attachments ? { attachments } : undefined),
+        },
+      });
+    }
+  } else {
+    // 如果是 system 消息，应该抛出异常
+  }
 };
 
 export const createDebouncePersistentMessage = (
