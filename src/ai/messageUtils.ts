@@ -535,24 +535,48 @@ export function convertToFlattenModelMessages(
     ignoreIncompleteToolCalls?: boolean;
   },
 ): ModelMessage[] {
-  const flattenMessages: Array<Omit<UIMessage, "id">> = [];
-  let lastMessage: Omit<UIMessage, "id">;
-  for (const { parts, role, metadata } of messages) {
-    lastMessage = { role, metadata, parts: [] };
+  // const flattenMessages: Array<Omit<UIMessage, "id">> = [];
+  // let lastMessage: Omit<UIMessage, "id">;
+  // for (const { parts, role, metadata } of messages) {
+  //   lastMessage = { role, metadata, parts: [] };
+  //   for (const part of parts) {
+  //     if (!isToolOrDynamicToolUIPart(part)) {
+  //       lastMessage.parts.push(part);
+  //     } else {
+  //       flattenMessages.push(lastMessage);
+  //       flattenMessages.push({ role, metadata, parts: [part] });
+  //       lastMessage = { role, metadata, parts: [] };
+  //     }
+  //   }
+  //   if (lastMessage.parts.length > 0) {
+  //     flattenMessages.push(lastMessage);
+  //   }
+  // }
+  // const coreMessages = convertToModelMessages(flattenMessages, options);
+
+  // 👀 update 2026-01-18:
+  // https://github.com/vercel/ai/issues/8516#issuecomment-3651551098
+  // 通过在两个 tool call 之间插入 step-start，可以让 tool-call 和 tool-result 消息配对，实现和上面注释掉的代码一样效果
+  const fixedMessages = messages.map(({ parts, ...message }) => {
+    const fixedParts: typeof parts = [{ type: "step-start" }];
     for (const part of parts) {
-      if (!isToolOrDynamicToolUIPart(part)) {
-        lastMessage.parts.push(part);
-      } else {
-        flattenMessages.push(lastMessage);
-        flattenMessages.push({ role, metadata, parts: [part] });
-        lastMessage = { role, metadata, parts: [] };
+      if (part.type === "step-start") {
+        continue;
+      }
+      fixedParts.push(part);
+      if (isToolOrDynamicToolUIPart(part)) {
+        fixedParts.push({ type: "step-start" });
       }
     }
-    if (lastMessage.parts.length > 0) {
-      flattenMessages.push(lastMessage);
+    if (fixedParts.at(-1)?.type === "step-start") {
+      fixedParts.pop();
     }
-  }
-  const coreMessages = convertToModelMessages(flattenMessages, options);
+    return {
+      ...message,
+      parts: fixedParts,
+    };
+  });
+  const coreMessages = convertToModelMessages(fixedMessages, options);
   return coreMessages;
 }
 
