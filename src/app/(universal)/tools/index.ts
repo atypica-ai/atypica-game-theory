@@ -5,7 +5,6 @@ import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/t
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { Tool, ToolSet } from "ai";
-import { exportFolderTool } from "./exportFolder";
 import { listSkillsTool } from "./listSkills";
 
 /**
@@ -28,7 +27,6 @@ export type UniversalToolSet = Partial<{
   [UniversalToolName.bash]: Tool<{ command: string }, CommandResult>;
   [UniversalToolName.readFile]: Tool<{ path: string }, { content: string }>;
   [UniversalToolName.writeFile]: Tool<{ path: string; content: string }, { success: boolean }>;
-  [UniversalToolName.exportFolder]: ReturnType<typeof exportFolderTool>;
   [UniversalToolName.listSkills]: ReturnType<typeof listSkillsTool>;
   [UniversalToolName.toolCallError]: typeof toolCallError;
 }>;

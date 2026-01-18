@@ -1,5 +1,3 @@
-import { ExportFolderResultMessage } from "./ExportFolderResultMessage";
-import { UniversalToolName } from "./types";
 import { TUniversalMessageWithTool } from "./types";
 
 /**
@@ -19,12 +17,6 @@ export function UniversalToolUIPartDisplay({
   // Only show custom UI for tools with output available
   if (toolUIPart.state !== "output-available") return null;
 
-  // Render specific tool UI based on tool type
-  switch (toolUIPart.type) {
-    case `tool-${UniversalToolName.exportFolder}`:
-      return <ExportFolderResultMessage toolInvocation={toolUIPart} />;
-    default:
-      // For other tools, return null to show default text display
-      return null;
-  }
+  // Currently no custom UI for any tools, showing default text display
+  return null;
 }

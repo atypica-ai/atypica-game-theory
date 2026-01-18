@@ -13,7 +13,6 @@ import { loadTeamMemory, loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { buildUniversalSystemPrompt } from "@/app/(universal)/prompt";
 import { buildUniversalTools, UniversalToolSet } from "@/app/(universal)/tools";
-import { exportFolderTool } from "@/app/(universal)/tools/exportFolder";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { loadAllSkillsToMemory } from "@/lib/skill/loadToMemory";
@@ -128,7 +127,12 @@ export async function POST(req: Request) {
   const skillFiles = await loadAllSkillsToMemory(skills);
   const workspaceFiles = await loadUserWorkspace(userId);
 
-  // Add "skills/" prefix to skill files for proper isolation
+  // Add "workspace/" prefix to workspace files and "skills/" prefix to skill files
+  const workspaceFilesWithPrefix: Record<string, string> = {};
+  for (const [path, content] of Object.entries(workspaceFiles)) {
+    workspaceFilesWithPrefix[`workspace/${path}`] = content;
+  }
+
   const skillFilesWithPrefix: Record<string, string> = {};
   for (const [path, content] of Object.entries(skillFiles)) {
     skillFilesWithPrefix[`skills/${path}`] = content;
@@ -136,9 +140,10 @@ export async function POST(req: Request) {
 
   const { tools: bashTools, sandbox } = await createBashTool({
     files: {
-      ...workspaceFiles, // Workspace files in root directory
+      ...workspaceFilesWithPrefix, // Workspace files in workspace/ subdirectory
       ...skillFilesWithPrefix, // Skills in skills/ subdirectory
     },
+    destination: "/home/agent", // Set working directory and file destination
     onBeforeBashCall: ({ command }) => {
       // Block script execution - just-bash already doesn't support it, but add extra safeguard
       if (command.match(/python|node|php|ruby|perl|java|go run|\.\/[\w-]+\.sh/i)) {
@@ -162,7 +167,6 @@ export async function POST(req: Request) {
     [UniversalToolName.bash]: bashTools.bash,
     [UniversalToolName.readFile]: bashTools.readFile,
     [UniversalToolName.writeFile]: bashTools.writeFile,
-    [UniversalToolName.exportFolder]: exportFolderTool({ sandbox, userId }),
   };
 
   // Load messages
@@ -200,6 +204,9 @@ export async function POST(req: Request) {
         userId,
         ...extra,
       });
+
+      // Sync workspace to disk after each step
+      await saveUserWorkspace(userId, sandbox);
     },
     onFinish: async () => {
       // Save workspace when streaming is complete

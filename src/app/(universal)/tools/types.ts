@@ -1,5 +1,4 @@
 import { UIDataTypes, UIMessage } from "ai";
-import { ExportFolderInput, ExportFolderOutput } from "./exportFolder/types";
 
 /**
  * Universal Agent Tool Names
@@ -18,9 +17,6 @@ export enum UniversalToolName {
   readFile = "readFile",
   writeFile = "writeFile",
 
-  // Export sandbox files
-  exportFolder = "exportFolder",
-
   // Skill management
   listSkills = "listSkills",
 
@@ -31,10 +27,8 @@ export enum UniversalToolName {
 /**
  * Universal Agent UI Tools
  * Maps tool names to their input/output types for UI rendering
+ * Currently empty - use Record<string, never> instead of {}
  */
-export type UniversalUITools = {
-  [UniversalToolName.exportFolder]: { input: ExportFolderInput; output: ExportFolderOutput };
-  // Add other tools here as needed
-};
+export type UniversalUITools = Record<string, never>;
 
 export type TUniversalMessageWithTool = UIMessage<unknown, UIDataTypes, UniversalUITools>;

@@ -62,28 +62,32 @@ ${
 
 **如何使用 Skills：**
 
-你有一个持久化沙箱，包含两个区域：
-- \`skills/\` - 所有 skills 的文件（相对只读）
-- 根目录 - 你的工作区（可以创建和修改文件）
+你的工作环境：
+\`\`\`
+/home/agent/
+├── workspace/    # 你的工作区（可读写，持久化）
+└── skills/       # 专家技能库（只读）
+\`\`\`
 
 使用 bash 命令探索和操作：
 
-1. **查看所有 skills**：
+1. **查看环境结构**：
+   \`\`\`bash
+   ls -la /home/agent
+   \`\`\`
+   输出：workspace/ skills/
+
+2. **查看所有 skills**：
    \`\`\`bash
    ls -la skills/
    \`\`\`
    或查看详情：\`for dir in skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
 
-2. **加载特定 skill**：
+3. **加载特定 skill**：
    \`\`\`bash
    readFile({ path: "skills/skill-name/SKILL.md" })
    \`\`\`
    或使用 bash: \`cat skills/skill-name/SKILL.md\`
-
-3. **查看 skill 的文件结构**：
-   \`\`\`bash
-   ls -la skills/skill-name/
-   \`\`\`
 
 4. **读取参考资料**：
    \`\`\`bash
@@ -92,19 +96,15 @@ ${
 
 5. **创建或修改文件**（持久化保存）：
    \`\`\`bash
-   writeFile({ path: "my-project/index.js", content: "..." })
+   writeFile({ path: "workspace/my-project/index.js", content: "..." })
    \`\`\`
-   注意：在根目录创建，不要在 skills/ 目录下创建
-
-6. **导出文件夹为 zip**：
-   - 先检查文件夹是否存在：\`ls -la folder-name\`
-   - 再导出：\`exportFolder({ folderPath: "folder-name" })\`
-   - 用户可以下载包含所有文件的 zip 压缩包
+   ⚠️ **重要**：所有工作文件必须在 workspace/ 目录下创建
 
 **工作区持久化**：
-- 你在根目录创建的所有文件都会自动保存
+- workspace/ 目录下的所有文件会自动保存
 - 下次对话时，这些文件会自动加载回来
 - skills/ 目录下的文件是只读的，不要尝试修改
+- ⚠️ 只有 workspace/ 和 skills/ 目录，不要在其他地方创建文件
 
 **可用的 bash 命令**：
 - ls, cat, head, tail, grep, find, wc, sort, uniq 等
@@ -113,8 +113,7 @@ ${
 **重要提示：**
 - Skill 的 description 是判断何时使用的关键
 - 加载 skill 后，你需要完全进入该角色
-- Skill 中的指示是自包含的，信任它们的指导
-- 当用户想要保存或下载工作成果时，使用 exportFolder 工具`
+- Skill 中的指示是自包含的，信任它们的指导`
     : `你目前没有可用的 skills。用户可以上传 .skill 文件来添加专业能力。
 
 使用 list_skills 工具查看是否有新的 skills 可用。`
@@ -149,28 +148,32 @@ ${
 
 **How to Use Skills:**
 
-You have a persistent sandbox with two areas:
-- \`skills/\` - All skill files (read-only)
-- Root directory - Your workspace (can create and modify files)
+Your working environment:
+\`\`\`
+/home/agent/
+├── workspace/    # Your workspace (read-write, persistent)
+└── skills/       # Expert skill library (read-only)
+\`\`\`
 
 Use bash commands to explore and operate:
 
-1. **View all skills**:
+1. **View environment structure**:
+   \`\`\`bash
+   ls -la /home/agent
+   \`\`\`
+   Output: workspace/ skills/
+
+2. **View all skills**:
    \`\`\`bash
    ls -la skills/
    \`\`\`
    Or view details: \`for dir in skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
 
-2. **Load a specific skill**:
+3. **Load a specific skill**:
    \`\`\`bash
    readFile({ path: "skills/skill-name/SKILL.md" })
    \`\`\`
    Or use bash: \`cat skills/skill-name/SKILL.md\`
-
-3. **View skill file structure**:
-   \`\`\`bash
-   ls -la skills/skill-name/
-   \`\`\`
 
 4. **Read reference materials**:
    \`\`\`bash
@@ -179,19 +182,15 @@ Use bash commands to explore and operate:
 
 5. **Create or modify files** (persisted):
    \`\`\`bash
-   writeFile({ path: "my-project/index.js", content: "..." })
+   writeFile({ path: "workspace/my-project/index.js", content: "..." })
    \`\`\`
-   Note: Create in root directory, not under skills/
-
-6. **Export folder as zip**:
-   - First check if folder exists: \`ls -la folder-name\`
-   - Then export: \`exportFolder({ folderPath: "folder-name" })\`
-   - Users can download a zip archive containing all files
+   ⚠️ **Important**: All work files must be created under workspace/ directory
 
 **Workspace Persistence**:
-- All files you create in root directory are automatically saved
+- All files under workspace/ are automatically saved
 - Next conversation, these files will be loaded back
 - Files under skills/ are read-only, don't try to modify them
+- ⚠️ Only workspace/ and skills/ directories exist, don't create files elsewhere
 
 **Available bash commands**:
 - ls, cat, head, tail, grep, find, wc, sort, uniq, etc.
@@ -201,9 +200,7 @@ Use bash commands to explore and operate:
 **Important Notes:**
 - The skill's description is key to knowing when to use it
 - After loading a skill, fully embody that role
-- Skill instructions are self-contained - trust their guidance
-- **For downloading files**: ALWAYS use exportFolder tool instead of tar/zip commands
-- exportFolder creates a zip file that users can download via browser`
+- Skill instructions are self-contained - trust their guidance`
     : `You currently have no skills available. Users can upload .skill files to add specialized capabilities.
 
 Use the list_skills tool to check if new skills have been added.`

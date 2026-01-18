@@ -1,6 +1,6 @@
 # Universal Agent
 
-通用 AI Agent 系统，支持 Skill 扩展和文件操作能力。
+通用 AI Agent 系统，支持 Skill 扩展和持久化文件操作。
 
 ## 核心特性
 
@@ -20,69 +20,84 @@ my-skill/
 1. 用户上传 `.skill` 文件（zip 格式）
 2. 系统解压到 `.next/cache/sandbox/user/{id}/skills/{skillName}/`
 3. Agent 通过 `listSkills` 工具查看可用 skills
-4. Agent 通过 `readFile` 或 `bash` 命令加载 Skill 内容
+4. Agent 使用 `readFile` 或 `bash` 命令加载 Skill 内容
 5. Agent 按照 Skill 指令执行任务
 
-### 2. 文件操作（Persistent Sandbox）
+### 2. Sandbox 文件系统
 
-基于 `bash-tool` 和 `just-bash`，提供持久化沙箱环境。
+Agent 工作在一个持久化的虚拟文件系统中：
+
+```
+/home/agent/
+├── workspace/    # 用户工作区（可读写，持久化）
+│   ├── my-project/
+│   └── my-skill/
+└── skills/       # Skill 库（只读）
+    ├── expert-a/
+    └── expert-b/
+```
 
 **可用工具**：
-- `bash` - 执行 bash 命令（ls, cat, grep, find 等）
+- `bash` - 执行 bash 命令（ls, cat, grep, find, pwd, cd 等）
 - `readFile` - 读取文件内容
-- `writeFile` - 创建/修改文件（**持久化保存**）
-- `exportFolder` - 导出文件夹为 zip 供下载
+- `writeFile` - 创建/修改文件（**只能在 workspace/ 下**）
 
 **持久化机制**：
-- 每次请求开始时，从磁盘加载用户工作区到内存沙箱
-- 请求结束时，将沙箱中的文件同步回磁盘
-- 用户创建的文件在会话之间保持，不会丢失
+- 请求开始：从磁盘加载 workspace/ 文件到 sandbox
+- Agent 工作：所有操作在 sandbox 内存中进行
+- 每个 step 完成：自动同步所有改动到磁盘（实时持久化）
+- 请求结束：最终同步确保所有文件已保存
+- workspace/ 文件跨会话持久化，skills/ 每次从源重新加载
 
 **安全限制**：
-- ✅ 支持：bash 命令（ls, cat, grep, find, head, tail 等）
+- ✅ 支持：bash 命令（ls, cat, grep, find, head, tail, pwd, cd 等）
 - ❌ 禁止：脚本执行（python, node, php 等）
-- ❌ 禁止：压缩命令（tar -z, gzip, bzip2 等）- 会触发原生模块加载失败
+- ❌ 禁止：压缩命令（tar -z, gzip, bzip2 等）
 
-### 3. 文件导出和下载
+### 3. 文件面板和下载
 
-Agent 可以将内存沙箱中的文件打包下载。
+用户通过文件面板浏览和下载 workspace 中的文件。
 
-**完整流程**：
+**使用流程**：
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ 1. Agent 在内存沙箱中创建/修改文件                        │
-│    writeFile({ path: "project/app.js", content: "..." })│
-│    writeFile({ path: "project/README.md", content: "..."})│
+│ 1. Agent 创建/修改文件                                   │
+│    writeFile({ path: "workspace/project/app.js", ... }) │
+│    writeFile({ path: "workspace/project/README.md", ...})│
+│    → 每个 step 完成后自动同步到磁盘                      │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 2. Agent 调用导出工具                                    │
-│    exportFolder({ folderPath: "project" })              │
+│ 2. 用户打开文件面板                                      │
+│    点击右上角文件夹图标 → 查看所有文件                   │
+│    文件树结构展示，支持展开/折叠                          │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 3. 系统打包并保存到磁盘                                  │
-│    内存 sandbox → JSZip 打包 →                          │
-│    .next/cache/sandbox/user/{id}/exports/{token}.zip   │
+│ 3. 用户点击下载按钮                                      │
+│    文件 → GET /api/export?filePath=workspace/app.js     │
+│    文件夹 → GET /api/export?folderPath=workspace/project│
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 4. 前端显示下载按钮                                      │
-│    用户点击 → GET /api/download/{token}                 │
+│ 4. 服务端处理下载请求                                    │
+│    单个文件 → 直接返回文件（原始格式）                   │
+│    文件夹 → JSZip 实时打包 → 返回 zip                   │
 └─────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────┐
-│ 5. 浏览器下载 zip 文件                                   │
-│    下载后服务端自动删除临时文件                          │
+│ 5. 浏览器下载文件                                        │
+│    无临时文件，不需要清理                               │
 └─────────────────────────────────────────────────────────┘
 ```
 
-**关键点**：
-- 内存沙箱在请求结束后销毁，但 zip 文件已持久化到磁盘
-- 下载是新的 HTTP 请求，从磁盘读取 zip 文件
-- 一次性下载（下载后自动删除）
-- 需要用户认证，只能下载自己的文件
+**关键特性**：
+- Agent 不需要主动触发导出，只管创建文件
+- 文件自动实时同步到磁盘（每个 step 完成后）
+- 文件面板显示完整的文件树结构
+- 支持下载单个文件（原始格式）或文件夹（zip 打包）
+- 按需打包，无临时文件，无缓存问题
 
 ## 使用示例
 
@@ -103,29 +118,52 @@ Agent：
 用户：帮我创建一个 React 项目模板
 
 Agent：
-  writeFile({ path: "my-react-app/package.json", content: "..." })
-  writeFile({ path: "my-react-app/src/App.jsx", content: "..." })
-  writeFile({ path: "my-react-app/src/index.js", content: "..." })
-  writeFile({ path: "my-react-app/README.md", content: "..." })
-  bash: ls -la my-react-app  # 验证文件
-  exportFolder({ folderPath: "my-react-app" })
+  writeFile({ path: "workspace/my-react-app/package.json", content: "..." })
+  writeFile({ path: "workspace/my-react-app/src/App.jsx", content: "..." })
+  writeFile({ path: "workspace/my-react-app/src/index.js", content: "..." })
+  writeFile({ path: "workspace/my-react-app/README.md", content: "..." })
+  bash: ls -la workspace/my-react-app  # 验证文件
 
-→ 用户看到下载按钮，点击下载 zip 文件
+  已创建 React 项目，文件已保存到 workspace。
+
+用户：打开文件面板 → 看到 my-react-app 文件夹 → 点击下载按钮
+→ 下载 my-react-app.zip
+```
+
+### 示例 3：跨会话工作
+
+```
+第一次对话：
+用户：创建一个 TODO 应用
+Agent：writeFile({ path: "workspace/todo-app/index.html", ... })
+       writeFile({ path: "workspace/todo-app/app.js", ... })
+
+第二次对话（新会话）：
+用户：给 TODO 应用加个暗黑模式
+Agent：bash: ls -la workspace/  # 文件还在！
+       readFile({ path: "workspace/todo-app/app.js" })
+       writeFile({ path: "workspace/todo-app/app.js", ... })  # 修改现有文件
 ```
 
 ## 技术架构
 
 ### 核心组件
 
-- **Agent 配置**：`src/app/(universal)/agents/universalAgentConfig.ts`
+- **System Prompt**：`src/app/(universal)/prompt/index.ts`
 - **工具集**：`src/app/(universal)/tools/`
   - `bash`, `readFile`, `writeFile` - bash-tool 提供
-  - `exportFolder` - 自定义导出工具
   - `listSkills` - Skill 列表查询
 - **API**：`src/app/(universal)/api/`
-  - `chat/universal/route.ts` - 聊天流式响应
-  - `download/[token]/route.ts` - 文件下载
+  - `chat/universal/route.ts` - 聊天流式响应（含自动同步）
+  - `export/route.ts` - 文件/文件夹下载（支持单文件和 zip）
 - **UI**：`src/app/(universal)/universal/[token]/`
+  - `UniversalChatPageClient.tsx` - 聊天主界面
+  - `components/WorkspaceFilesPanel.tsx` - 文件面板
+- **Workspace**：`src/lib/skill/workspace.ts`
+  - `loadUserWorkspace` - 加载持久化文件
+  - `saveUserWorkspace` - 同步文件到磁盘（每个 step 自动调用）
+- **Server Actions**：`src/app/(universal)/actions.ts`
+  - `listWorkspaceFiles` - 获取文件列表
 
 ### 依赖
 
@@ -209,15 +247,15 @@ A: 检查 next.config.ts 的 webpack 配置，确保 bash-tool 和 just-bash 没
 A: 确保添加了 IgnorePlugin 来忽略 worker.js。
 
 **Q: 原生压缩模块真的可选吗？**
-A: 是的。just-bash 会自动 fallback 到纯 JavaScript 实现。当前配置下，用户通过 exportFolder（使用 jszip）下载文件，不需要原生压缩模块。
+A: 是的。just-bash 会自动 fallback 到纯 JavaScript 实现。当前配置下，用户通过文件面板下载（使用 jszip），不需要原生压缩模块。
 
 **Q: 遇到 "Cannot find module '@mongodb-js/zstd'" 错误？**
 A: 这是因为在 sandbox 中使用了压缩命令（如 `tar -czf`）。解决方案：
-  - **推荐**：使用 `exportFolder` 工具代替 tar 命令
+  - **推荐**：不需要在 sandbox 中压缩，文件会自动同步到磁盘，用户通过文件面板下载
   - 如果必须支持 tar，在 Dockerfile 中取消注释复制原生模块的代码
 
 **Q: sandbox 中不能使用 tar 命令吗？**
-A: 可以使用 `tar -cf`（无压缩），但不能使用 `tar -czf` 或 `tar -cjf`（带压缩）。压缩功能需要原生模块，当前配置下不可用。建议使用 exportFolder 工具。
+A: 可以使用 `tar -cf`（无压缩），但不能使用 `tar -czf` 或 `tar -cjf`（带压缩）。压缩功能需要原生模块，当前配置下不可用。Agent 创建的文件会自动同步，用户通过文件面板下载即可。
 
 ## 文件存储路径
 
@@ -230,17 +268,15 @@ A: 可以使用 `tar -cf`（无压缩），但不能使用 `tar -czf` 或 `tar -
         │   │   ├── SKILL.md
         │   │   └── references/
         │   └── skill-name-2/
-        ├── workspace/           # 用户工作区（持久化，可读写）
-        │   ├── test-skill/
-        │   └── my-project/
-        └── exports/             # 导出文件（临时）
-            └── {token}.zip
+        └── workspace/           # 用户工作区（持久化，可读写）
+            ├── test-skill/
+            └── my-project/
 ```
 
 **目录说明**：
 - `skills/` - 用户上传的 skill 文件，从 S3 下载，相对只读
 - `workspace/` - 用户的工作区，持久化保存，可以创建项目、文件等
-- `exports/` - 临时导出文件，下载后自动删除
+- 下载时从磁盘实时打包，无临时文件
 
 ## 与其他 Agent 的区别
 

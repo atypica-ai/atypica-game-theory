@@ -19,22 +19,6 @@ export function getSkillLocalPath(userId: number, skillName: string): string {
 }
 
 /**
- * 构建用户导出文件的目录路径
- * 缓存在 .next/cache/sandbox/user/{userId}/exports 目录
- */
-export function getExportsPath(userId: number): string {
-  return path.join(
-    process.cwd(),
-    ".next",
-    "cache",
-    "sandbox",
-    "user",
-    String(userId),
-    "exports",
-  );
-}
-
-/**
  * 构建用户工作区的目录路径
  * 缓存在 .next/cache/sandbox/user/{userId}/workspace 目录
  * 用于持久化用户在 sandbox 中创建的文件

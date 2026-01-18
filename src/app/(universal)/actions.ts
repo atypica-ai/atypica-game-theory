@@ -3,9 +3,12 @@
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { getWorkspacePath } from "@/lib/skill/utils";
 import type { AgentSkillExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import fs from "fs/promises";
 import JSZip from "jszip";
+import path from "path";
 
 /**
  * Parse YAML frontmatter from markdown content
@@ -199,5 +202,69 @@ export async function deleteSkillAction(skillId: number): Promise<ServerActionRe
       success: true,
       data: undefined,
     };
+  });
+}
+
+export interface WorkspaceFile {
+  path: string; // Relative path like "my-project/index.js"
+  name: string;
+  type: "file" | "directory";
+  size?: number;
+}
+
+/**
+ * List all files in user's workspace
+ */
+export async function listWorkspaceFiles(): Promise<ServerActionResult<WorkspaceFile[]>> {
+  return withAuth(async (user) => {
+    try {
+      const workspacePath = getWorkspacePath(user.id);
+      const files: WorkspaceFile[] = [];
+
+      async function scanDirectory(dir: string, relativePath = "") {
+        try {
+          const entries = await fs.readdir(dir, { withFileTypes: true });
+
+          for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            const relPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+
+            if (entry.isDirectory()) {
+              files.push({
+                path: relPath,
+                name: entry.name,
+                type: "directory",
+              });
+              await scanDirectory(fullPath, relPath);
+            } else if (entry.isFile()) {
+              const stats = await fs.stat(fullPath);
+              files.push({
+                path: relPath,
+                name: entry.name,
+                type: "file",
+                size: stats.size,
+              });
+            }
+          }
+        } catch (error) {
+          // Ignore errors for individual files
+          console.error("Error reading directory:", error);
+        }
+      }
+
+      await scanDirectory(workspacePath);
+
+      return {
+        success: true,
+        data: files,
+      };
+    } catch (error) {
+      console.error("Failed to list workspace files:", error);
+      return {
+        success: false,
+        message: "Failed to list workspace files",
+        code: "internal_server_error",
+      };
+    }
   });
 }

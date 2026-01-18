@@ -1,8 +1,11 @@
+import { rootLogger } from "@/lib/logging";
+import type { Sandbox } from "bash-tool";
 import fs from "fs/promises";
 import path from "path";
-import type { Sandbox } from "bash-tool";
 import { getWorkspacePath } from "./utils";
-import { rootLogger } from "@/lib/logging";
+
+// Sandbox 内部的工作目录（与 createBashTool 的 destination 保持一致）
+const SANDBOX_HOME = "/home/agent";
 
 /**
  * 递归加载目录的所有文件到内存
@@ -47,14 +50,26 @@ async function loadDirectoryToMemory(
 }
 
 /**
+ * 确保用户工作区目录存在
+ * @param userId - 用户 ID
+ */
+export async function ensureWorkspaceExists(userId: number): Promise<void> {
+  const workspacePath = getWorkspacePath(userId);
+  await fs.mkdir(workspacePath, { recursive: true });
+}
+
+/**
  * 加载用户工作区的所有文件到内存
  * @param userId - 用户 ID
  * @returns files 对象，键是虚拟路径（如 "my-project/index.js"），值是文件内容
  */
 export async function loadUserWorkspace(userId: number): Promise<Record<string, string>> {
   const workspacePath = getWorkspacePath(userId);
-  const files: Record<string, string> = {};
 
+  // Ensure workspace directory exists
+  await ensureWorkspaceExists(userId);
+
+  const files: Record<string, string> = {};
   await loadDirectoryToMemory(workspacePath, "", files);
 
   rootLogger.info({
@@ -75,9 +90,9 @@ export async function saveUserWorkspace(userId: number, sandbox: Sandbox): Promi
   const workspacePath = getWorkspacePath(userId);
 
   try {
-    // 使用 find 命令获取所有文件列表（排除 skills 目录）
+    // 使用 find 命令获取 workspace/ 目录下的所有文件
     const findResult = await sandbox.executeCommand(
-      `find . -type f ! -path "./skills/*" ! -path "./.skills/*" 2>/dev/null || echo ""`,
+      `find workspace -type f 2>/dev/null || echo ""`,
     );
 
     if (findResult.exitCode !== 0 || !findResult.stdout.trim()) {
@@ -91,7 +106,7 @@ export async function saveUserWorkspace(userId: number, sandbox: Sandbox): Promi
     const filePaths = findResult.stdout
       .split("\n")
       .filter((line) => line.trim() !== "")
-      .map((line) => line.trim().replace(/^\.\//, "")); // Remove leading ./
+      .map((line) => line.trim());
 
     // 清空现有 workspace（完全同步）
     await fs.rm(workspacePath, { recursive: true, force: true });
@@ -101,11 +116,17 @@ export async function saveUserWorkspace(userId: number, sandbox: Sandbox): Promi
     let savedCount = 0;
     for (const filePath of filePaths) {
       try {
-        const content = await sandbox.readFile(filePath);
-        const fullPath = path.join(workspacePath, filePath);
+        // sandbox.readFile 需要绝对路径（从 SANDBOX_HOME 开始）
+        const absolutePathInSandbox = `${SANDBOX_HOME}/${filePath}`;
+        const content = await sandbox.readFile(absolutePathInSandbox);
+
+        // Remove "workspace/" prefix for disk storage
+        const relativePath = filePath.replace(/^workspace\//, "");
+        const fullPath = path.join(workspacePath, relativePath);
+        const dirPath = path.dirname(fullPath);
 
         // 创建父目录
-        await fs.mkdir(path.dirname(fullPath), { recursive: true });
+        await fs.mkdir(dirPath, { recursive: true });
 
         // 写入文件
         await fs.writeFile(fullPath, content);
@@ -114,7 +135,12 @@ export async function saveUserWorkspace(userId: number, sandbox: Sandbox): Promi
         rootLogger.warn({
           msg: "[Workspace] Failed to save file",
           filePath,
+          absolutePathInSandbox: `${SANDBOX_HOME}/${filePath}`,
+          relativePath: filePath.replace(/^workspace\//, ""),
+          fullPath: path.join(workspacePath, filePath.replace(/^workspace\//, "")),
+          workspacePath,
           error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
         });
       }
     }

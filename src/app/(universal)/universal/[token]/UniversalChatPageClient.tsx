@@ -2,14 +2,17 @@
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 import { TUniversalMessageWithTool } from "@/app/(universal)/tools/types";
 import { UniversalToolUIPartDisplay } from "@/app/(universal)/tools/ui";
+import { WorkspaceFilesPanel } from "@/app/(universal)/universal/components/WorkspaceFilesPanel";
 import { UserChatSession } from "@/components/chat/UserChatSession";
+import { Button } from "@/components/ui/button";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { FolderOpenIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export function UniversalChatPageClient({
   userChat,
@@ -61,11 +64,28 @@ export function UniversalChatPageClient({
     }
   }, [initialMessages]);
 
+  // Files panel state
+  const [filesPanelOpen, setFilesPanelOpen] = useState(false);
+
   return (
     <FitToViewport className="flex flex-col overflow-hidden">
       {/* Chat Header */}
-      <div className="w-full mt-2 px-3 py-3 max-w-4xl mx-auto">
-        <h1 className="font-medium text-sm text-center">{userChat.title || "Universal Agent"}</h1>
+      <div className="w-full mt-2 px-3 py-3 max-w-4xl mx-auto flex items-center justify-between">
+        <div className="flex-1" />
+        <h1 className="font-medium text-sm text-center flex-1">
+          {userChat.title || "Universal Agent"}
+        </h1>
+        <div className="flex-1 flex justify-end">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setFilesPanelOpen(true)}
+            className="size-8"
+            title="View workspace files"
+          >
+            <FolderOpenIcon className="size-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Centered Chat Area */}
@@ -84,6 +104,9 @@ export function UniversalChatPageClient({
           acceptAttachments={false}
         />
       </div>
+
+      {/* Workspace Files Panel */}
+      <WorkspaceFilesPanel open={filesPanelOpen} onOpenChange={setFilesPanelOpen} />
     </FitToViewport>
   );
 }
