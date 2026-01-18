@@ -21,6 +21,7 @@ import type { Analyst, UserChatExtra } from "@/prisma/client";
 import { waitUntil } from "@vercel/functions";
 import {
   ImagePart,
+  JSONValue,
   ModelMessage,
   PrepareStepFunction,
   smoothStream,
@@ -80,6 +81,7 @@ export interface BaseAgentContext {
 export interface AgentRequestConfig<TOOLS extends StudyToolSet = StudyToolSet> {
   // Core streaming configuration
   model: LLMModelName;
+  providerOptions?: Record<string, Record<string, JSONValue>>;
   systemPrompt: string;
   tools: TOOLS;
   maxSteps?: number; // Default: 30
@@ -341,7 +343,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   const streamTextResult = streamText<TOOLS>({
     // Core configuration
     model: llm(config.model),
-    providerOptions: defaultProviderOptions,
+    providerOptions: config.providerOptions ?? defaultProviderOptions,
     system: finalSystemPrompt, // Use final system prompt (with team prompt appended)
     messages: modelMessages,
     tools: finalTools, // Use final tools (with createSubAgent if MCP available)
@@ -421,6 +423,8 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
 
       logger.info({
         msg: "baseAgentRequest onStepFinish",
+        reasoning: step.reasoning.length,
+        text: step.text.length,
         toolCalls,
         usage: extra.usage,
         cache: extra.cache,

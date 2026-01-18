@@ -1,5 +1,6 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
+import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import ToolArgsTable, { ExpandableText } from "@/components/chat/ToolArgsTable";
 import ToolResultTable from "@/components/chat/ToolResultTable";
@@ -15,15 +16,7 @@ import {
 import { motion } from "framer-motion";
 import { BotIcon, ChevronRight, EyeIcon, LoaderIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import {
-  PropsWithChildren,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Streamdown } from "streamdown";
 import { useStudyContext } from "./hooks/StudyContext";
 
@@ -121,14 +114,6 @@ const ToolInvocationMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
   );
 };
 
-const PlainText = ({ children }: PropsWithChildren) => {
-  return children ? (
-    <div className="text-sm">
-      <Streamdown>{children as string}</Streamdown>
-    </div>
-  ) : null;
-};
-
 export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
   message: { role, parts },
   renderToolUIPart,
@@ -221,9 +206,28 @@ export const SingleMessage = <UI_MESSAGE extends TStudyMessageWithTool>({
       <div className="flex flex-col gap-4">
         {parts.map((part, i) => {
           if (part.type === "text") {
-            return <PlainText key={i}>{part.text}</PlainText>;
+            return (
+              <div className="text-sm" key={i}>
+                <Streamdown
+                  mode={part.state === "streaming" ? "streaming" : "static"}
+                  isAnimating={part.state === "streaming"}
+                >
+                  {part.text}
+                </Streamdown>
+              </div>
+            );
           } else if (part.type === "reasoning") {
-            return <PlainText key={i}>{part.text}</PlainText>;
+            return (
+              <Reasoning
+                key={i}
+                className="w-full"
+                isStreaming={part.state == "streaming"}
+                defaultOpen={part.state == "streaming"}
+              >
+                <ReasoningTrigger />
+                <ReasoningContent>{part.text}</ReasoningContent>
+              </Reasoning>
+            );
             // } else if (part.type === "source") {
             //   return <PlainText key={i}>{JSON.stringify(part.source)}</PlainText>;
           } else if (part.type === "dynamic-tool") {
