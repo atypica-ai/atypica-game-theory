@@ -36,7 +36,11 @@ export async function POST(req: Request) {
         while (true) {
           await new Promise((resolve) => setTimeout(resolve, 5000));
           count++;
-          writer.write({ type: "text-delta", id: "mock-id", delta: count.toString().repeat(10) + " " });
+          writer.write({
+            type: "text-delta",
+            id: "mock-id",
+            delta: count.toString().repeat(10) + " ",
+          });
         }
       },
     });

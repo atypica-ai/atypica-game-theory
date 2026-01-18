@@ -108,7 +108,7 @@ export function ChatBox() {
     // maxSteps: 15,  // 后端 chat api 设置了 maxSteps 并且会控制，这里不能再设置，会覆盖后端的配置！
     // body: { ...extraRequestPayload }, v5 现在放在 sendMessage 里直接提交
     onError(error) {
-      if (/|network|load|加载|网络/.test(error?.message)) {
+      if (/network|load|加载|网络/.test(error?.message)) {
         // 这里应该不会无限循环，因为 onError 的时候肯定是 assistant 消息在回复，所以 reload 以后最后一条消息不会是 user，也就不会立即开始 chat
         location.reload();
       }

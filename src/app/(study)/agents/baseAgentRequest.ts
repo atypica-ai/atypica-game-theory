@@ -18,6 +18,8 @@ import { trackEventServerSide } from "@/lib/analytics/server";
 import { generateChatTitle, setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import type { Analyst, UserChatExtra } from "@/prisma/client";
+import { BedrockProviderOptions } from "@ai-sdk/amazon-bedrock";
+import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import { waitUntil } from "@vercel/functions";
 import {
   ImagePart,
@@ -336,14 +338,36 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
 
   // =============================================================================
-  // Phase 8: streamText Configuration
+  // Phase 8: Provider Options
+  // =============================================================================
+
+  const providerOptions: typeof config.providerOptions =
+    config.providerOptions ?? defaultProviderOptions;
+  if (providerOptions && modelMessages.at(-1)?.role !== "user") {
+    // 如果是 assistant 消息继续，在开启 thinking 的时候，claude 会要求最后一个 block 是 thinking 开头，但是没搞明白消息组织形式应该是怎样的，所以，暂时就关闭。
+    if (providerOptions["bedrock"]) {
+      providerOptions["bedrock"] = {
+        ...providerOptions["bedrock"],
+        reasoningConfig: { type: "disabled" },
+      } satisfies BedrockProviderOptions;
+    }
+    if (providerOptions["anthropic"]) {
+      providerOptions["anthropic"] = {
+        ...providerOptions["anthropic"],
+        thinking: { type: "disabled" },
+      } satisfies AnthropicProviderOptions;
+    }
+  }
+
+  // =============================================================================
+  // Phase 9: streamText Configuration
   // =============================================================================
 
   let streamStartTime = Date.now();
   const streamTextResult = streamText<TOOLS>({
     // Core configuration
     model: llm(config.model),
-    providerOptions: config.providerOptions ?? defaultProviderOptions,
+    providerOptions,
     system: finalSystemPrompt, // Use final system prompt (with team prompt appended)
     messages: modelMessages,
     tools: finalTools, // Use final tools (with createSubAgent if MCP available)
