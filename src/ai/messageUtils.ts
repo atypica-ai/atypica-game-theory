@@ -20,6 +20,7 @@ import {
   UIMessage,
 } from "ai";
 import { Logger } from "pino";
+import { isSystemMessage } from "./messageUtilsClient";
 import { convertToV5MessagePart } from "./v4";
 
 // 事实上，bedrock 虽然支持很多文件格式，但 gpt 和 gemini 只支持 pdf，所以这样 fix 也没用，只能限制上传的文件类型
@@ -206,16 +207,23 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
  * 重要：这是唯一会保存 ChatMessage 的地方，这一点要始终遵循，确保保存 ChatMessage 的规则一致
  */
 export const persistentAIMessageToDB = async ({
+  // mode,
   userChatId,
   message,
   attachments,
   tx,
 }: {
+  // mode: "override" | "append"; // 前端发送上来的消息，addToolResult 和 user message 都只有最后一个 part，所以是 append
   userChatId: number;
   message: UIMessage;
   attachments?: ChatMessageAttachment[]; // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChat 里直接实现了
   tx?: Omit<typeof prisma, ITXClientDenyList>;
 }) => {
+  // 很奇怪，现在 addToolResult 不再是只有最后一个 part 了，而是完整 message
+  // 可能是因为 convertToFlattenModelMessages update 2026-01-18 修复的关系
+  // 所以，恢复每次都是覆盖 parts ⚠️
+  const mode: "override" | "append" = "override";
+
   if (!tx) {
     tx = prisma;
   }
@@ -244,9 +252,37 @@ export const persistentAIMessageToDB = async ({
     orderBy: { id: "desc" },
   });
 
-  if (role === "user") {
-    if (lastMessage?.role === "user") {
-      // 如果最后一条消息是 user，则追加进去，而不是覆盖
+  // 如果最后一条消息的 role 和新增的不同，直接新增一条消息
+  if (!lastMessage || role !== lastMessage.role) {
+    await tx.chatMessage.create({
+      data: {
+        userChatId,
+        messageId,
+        role,
+        content: compatibleContent(newPartsExcludeFiles),
+        parts: newPartsExcludeFiles as InputJsonValue,
+        extra: extra as InputJsonValue,
+        ...(attachments ? { attachments } : undefined),
+      },
+    });
+  } else if (role === "user") {
+    // 追加或者覆盖 user 消息
+    if (mode === "override") {
+      if (!(parts[0] && parts[0].type === "text" && isSystemMessage(parts[0].text))) {
+        // 但如果当前消息是 [READY] 或者 [CONTINUE] 这种，则不覆盖，直接忽略
+        await tx.chatMessage.update({
+          where: { id: lastMessage.id },
+          data: {
+            messageId,
+            // createdAt, // 同时也覆盖 createdAt
+            content: compatibleContent(newPartsExcludeFiles),
+            parts: newPartsExcludeFiles as InputJsonValue,
+            extra: extra as InputJsonValue,
+            ...(attachments ? { attachments } : undefined),
+          },
+        });
+      }
+    } else if (mode === "append") {
       const partsToUpdate = convertDBMessageToAIMessage(lastMessage).parts;
       for (const newPart of newPartsExcludeFiles) {
         // 重复的忽略
@@ -271,26 +307,22 @@ export const persistentAIMessageToDB = async ({
           ...(attachments ? { attachments } : undefined),
         },
       });
-      // if (parts[0] && parts[0].type === "text" && isSystemMessage(parts[0].text)) {
-      //   // 但如果当前消息是 [READY] 或者 [CONTINUE] 这种，则不覆盖，直接忽略
-      // }
-    } else {
-      // 否则新增一条消息
-      await tx.chatMessage.create({
+    }
+  } else if (role === "assistant") {
+    // 追加或者覆盖 assistant 消息
+    if (mode === "override") {
+      await tx.chatMessage.update({
+        where: { id: lastMessage.id },
         data: {
-          userChatId,
           messageId,
-          role,
+          // createdAt, // 同时也覆盖 createdAt
           content: compatibleContent(newPartsExcludeFiles),
           parts: newPartsExcludeFiles as InputJsonValue,
           extra: extra as InputJsonValue,
           ...(attachments ? { attachments } : undefined),
         },
       });
-    }
-  } else if (role === "assistant") {
-    if (lastMessage?.role === "assistant") {
-      // 如果最后一条消息是 user，则追加进去，而不是覆盖
+    } else if (mode === "append") {
       const partsToUpdate = convertDBMessageToAIMessage(lastMessage).parts;
       for (const newPart of newPartsExcludeFiles) {
         if (isToolOrDynamicToolUIPart(newPart)) {
@@ -314,19 +346,6 @@ export const persistentAIMessageToDB = async ({
           // createdAt, // 同时也覆盖 createdAt
           content: compatibleContent(partsToUpdate),
           parts: partsToUpdate as InputJsonValue,
-          extra: extra as InputJsonValue,
-          ...(attachments ? { attachments } : undefined),
-        },
-      });
-    } else {
-      // 否则新增一条消息
-      await tx.chatMessage.create({
-        data: {
-          userChatId,
-          messageId,
-          role,
-          content: compatibleContent(newPartsExcludeFiles),
-          parts: newPartsExcludeFiles as InputJsonValue,
           extra: extra as InputJsonValue,
           ...(attachments ? { attachments } : undefined),
         },
