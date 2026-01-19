@@ -4,6 +4,7 @@ import { prisma } from "@/prisma/prisma";
 import { MetadataRoute } from "next";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
+import { docs } from "@/app/(features)/features/docs-config";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ const getFeaturedReports = unstable_cache(
       orderBy: {
         createdAt: "desc",
       },
-      take: 100,
+      take: 200,
     });
 
     return featuredItems.map((item) => {
@@ -59,7 +60,7 @@ const getFeaturedPodcastEpisodes = unstable_cache(
       orderBy: {
         createdAt: "desc",
       },
-      take: 100,
+      take: 200,
     });
 
     return featuredItems.map((item) => {
@@ -248,6 +249,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.7,
     },
+    {
+      url: `${siteOrigin}/features`,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
   ];
 
   try {
@@ -278,7 +284,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    return [...staticRoutes, ...reportRoutes, ...podcastRoutes, ...blogRoutes];
+    // Generate feature doc routes
+    const featureRoutes: MetadataRoute.Sitemap = docs.map(({ slug }) => ({
+      url: `${siteOrigin}/features/${slug}`,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+
+    return [...staticRoutes, ...reportRoutes, ...podcastRoutes, ...blogRoutes, ...featureRoutes];
   } catch (error) {
     console.error("Error generating sitemap:", error);
     // Return static routes if database query fails
