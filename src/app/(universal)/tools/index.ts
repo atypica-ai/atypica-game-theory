@@ -2,7 +2,8 @@ import "server-only";
 
 import { toolCallError } from "@/ai/tools/error";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
-import { AgentToolConfigArgs } from "@/ai/tools/types";
+import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
+import { discussionChatTool, searchPersonasTool } from "@/app/(study)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { Tool, ToolSet } from "ai";
 import { listSkillsTool } from "./listSkills";
@@ -28,29 +29,15 @@ export type UniversalToolSet = Partial<{
   [UniversalToolName.readFile]: Tool<{ path: string }, { content: string }>;
   [UniversalToolName.writeFile]: Tool<{ path: string; content: string }, { success: boolean }>;
   [UniversalToolName.listSkills]: ReturnType<typeof listSkillsTool>;
+  [UniversalToolName.searchPersonas]: ReturnType<typeof searchPersonasTool>;
+  [UniversalToolName.discussionChat]: ReturnType<typeof discussionChatTool>;
+  // [UniversalToolName.interviewChat]: ReturnType<typeof interviewChatTool>;
+  [UniversalToolName.deepResearch]: ReturnType<typeof deepResearchTool>;
   [UniversalToolName.toolCallError]: typeof toolCallError;
 }>;
 
 // Type check to ensure it conforms to AI SDK's ToolSet
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type UniversalToolSetCheck = UniversalToolSet extends ToolSet ? true : false;
-
-/**
- * Build tool set for Universal Agent (without bash-tool, those are added separately)
- */
-export function buildUniversalTools(
-  params: { userId: number } & AgentToolConfigArgs,
-): Omit<UniversalToolSet, UniversalToolName.bash | UniversalToolName.readFile | UniversalToolName.writeFile> {
-  const { userId, locale, abortSignal, statReport, logger } = params;
-  const agentToolArgs: AgentToolConfigArgs = { locale, abortSignal, statReport, logger };
-
-  return {
-    [UniversalToolName.reasoningThinking]: reasoningThinkingTool(agentToolArgs),
-    [UniversalToolName.webSearch]: webSearchTool({ ...agentToolArgs }),
-    [UniversalToolName.webFetch]: webFetchTool({ locale }),
-    [UniversalToolName.listSkills]: listSkillsTool({ userId }),
-    [UniversalToolName.toolCallError]: toolCallError,
-  };
-}
 
 export { listSkillsTool };

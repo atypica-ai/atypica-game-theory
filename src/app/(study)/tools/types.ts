@@ -47,7 +47,6 @@ export enum StudyToolName {
   buildPersona = "buildPersona",
   scoutSocialTrends = "scoutSocialTrends",
   audienceCall = "audienceCall",
-  biDataAnalysis = "biDataAnalysis",
   createSubAgent = "createSubAgent",
 
   makeStudyPlan = "makeStudyPlan",

@@ -5,14 +5,19 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { handleToolCallError } from "@/ai/tools/error";
+import { handleToolCallError, toolCallError } from "@/ai/tools/error";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import { reasoningThinkingTool, webFetchTool } from "@/ai/tools/tools";
+import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
+import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
 import { loadTeamMemory, loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
+import { setBedrockCache } from "@/app/(study)/agents/utils";
+import { discussionChatTool, searchPersonasTool } from "@/app/(study)/tools";
 import { buildUniversalSystemPrompt } from "@/app/(universal)/prompt";
-import { buildUniversalTools, UniversalToolSet } from "@/app/(universal)/tools";
+import { listSkillsTool, UniversalToolSet } from "@/app/(universal)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { loadAllSkillsToMemory } from "@/lib/skill/loadToMemory";
@@ -109,13 +114,6 @@ export async function POST(req: Request) {
 
   // Build base tools (without bash-tool)
   const abortController = new AbortController();
-  const baseTools = buildUniversalTools({
-    userId,
-    locale,
-    abortSignal: abortController.signal,
-    statReport,
-    logger,
-  });
 
   // Load all skills to memory and create bash-tool sandbox
   const skills = await prisma.agentSkill.findMany({
@@ -161,12 +159,32 @@ export async function POST(req: Request) {
     },
   });
 
+  const agentToolArgs: AgentToolConfigArgs = {
+    locale,
+    abortSignal: abortController.signal,
+    statReport,
+    logger,
+  };
+
   // Merge tools
   const tools: UniversalToolSet = {
-    ...baseTools,
+    [UniversalToolName.reasoningThinking]: reasoningThinkingTool(agentToolArgs),
+    // [UniversalToolName.webSearch]: webSearchTool({ ...agentToolArgs }),
+    [UniversalToolName.webFetch]: webFetchTool({ locale }),
+
+    // bash and skills
+    [UniversalToolName.listSkills]: listSkillsTool({ userId }),
     [UniversalToolName.bash]: bashTools.bash,
     [UniversalToolName.readFile]: bashTools.readFile,
     [UniversalToolName.writeFile]: bashTools.writeFile,
+
+    // study agent
+    [UniversalToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
+    [UniversalToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
+    // [UniversalToolName.interviewChat]: interviewChatTool({ userId, ...agentToolArgs }), // 因为需要 analyst, 暂时还无法使用
+    [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
+
+    [UniversalToolName.toolCallError]: toolCallError,
   };
 
   // Load messages
@@ -177,11 +195,18 @@ export async function POST(req: Request) {
   // Stream text
   const result = streamText({
     model: llm("claude-sonnet-4-5"),
-    ...defaultProviderOptions,
+    providerOptions: defaultProviderOptions,
     system: systemPrompt,
     messages: coreMessages,
     tools,
-    stopWhen: stepCountIs(50),
+    stopWhen: stepCountIs(15),
+    prepareStep: async (options) => {
+      const { messages: currentMessages } = options;
+      const messages = setBedrockCache("claude-sonnet-4-5", [...currentMessages]);
+      return {
+        messages,
+      };
+    },
     experimental_repairToolCall: handleToolCallError,
     experimental_transform: smoothStream({
       delayInMs: 30,

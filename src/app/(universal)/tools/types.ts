@@ -20,6 +20,14 @@ export enum UniversalToolName {
   // Skill management
   listSkills = "listSkills",
 
+  // Study agent
+  searchPersonas = "searchPersonas",
+  // interviewChat = "interviewChat",
+  discussionChat = "discussionChat",
+  // generateReport = "generateReport",
+  // generatePodcast = "generatePodcast",
+  deepResearch = "deepResearch",
+
   // Error handling
   toolCallError = "toolCallError",
 }
