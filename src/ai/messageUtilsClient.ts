@@ -1,5 +1,5 @@
 import { ChatMessageAttachment } from "@/prisma/client";
-import { isToolUIPart, UIDataTypes, UIMessage, UIMessagePart, UITools } from "ai";
+import { UIDataTypes, UIMessage, UIMessagePart, UITools } from "ai";
 import { z } from "zod/v3";
 
 export const CONTINUE_ASSISTANT_STEPS = "[CONTINUE ASSISTANT STEPS]";
@@ -73,8 +73,10 @@ export function prepareLastUIMessageForRequest<T extends UIMessage>(messages: T[
   const lastMessage = messages[messages.length - 1];
   if (lastMessage.role === "user" || lastMessage.role === "assistant") {
     const { id, role, parts: allParts, metadata } = lastMessage;
-    const parts = allParts.filter((part) => part.type == "text" || isToolUIPart(part));
-    return { id, role, parts, metadata: metadata as T["metadata"] };
+    // ⚠️ 这是个严重的 bug，模型会返回 text 以外的类型的，比如 reasoning，因为 persistentAIMessageToDB 是覆盖 parts，
+    // 这里不应该过滤，因为这里是一条返回所有 parts 的 message，而不只是一个 tool result part
+    // const parts = allParts.filter((part) => part.type == "text" || isToolUIPart(part));
+    return { id, role, parts: allParts, metadata: metadata as T["metadata"] };
   } else {
     throw new Error("Invalid message role");
   }

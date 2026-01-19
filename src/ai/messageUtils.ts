@@ -221,7 +221,12 @@ export const persistentAIMessageToDB = async ({
 }) => {
   // 很奇怪，现在 addToolResult 不再是只有最后一个 part 了，而是完整 message
   // 可能是因为 convertToFlattenModelMessages update 2026-01-18 修复的关系
-  // 所以，恢复每次都是覆盖 parts ⚠️
+  //
+  // update: 找到原因了，是因为 prepareLastUIMessageForRequest 方法之前在前端过滤了
+  //   const parts = allParts.filter((part) => part.type == "text" || isToolUIPart(part));
+  // 让我误以为，addToolResult 只会发送最后一个 part，其实是可以过滤了 reasoning part 又正好没有 text part，
+  // 导致模型回复了 reasoning 消息在 addToolResult 以后只发回 tool 消息 ...
+  // 所以，恢复，这里应该永远都是 override 的逻辑，不可能存在 append 的逻辑
   const mode: "override" | "append" = "override";
 
   if (!tx) {
