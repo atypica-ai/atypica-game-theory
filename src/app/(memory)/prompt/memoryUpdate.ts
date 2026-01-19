@@ -52,7 +52,10 @@ For example:
 
 Review the conversation and extract all information that fits the categories above:
 - Call memoryUpdate tool once per item (if you found 3 items, make 3 tool calls)
-- Use lineIndex: -1 to append new items to the end (simplest approach)
+- Three operations available:
+  - **append**: Add new content to the end (use \`operation: "append"\`)
+  - **replace**: Update existing line content (use \`operation: "replace"\` with \`lineIndex\`)
+  - **delete**: Remove a line (use \`operation: "delete"\` with \`lineIndex\`)
 - If nothing is worth remembering, call memoryNoUpdate once
 
 # Examples
@@ -61,52 +64,66 @@ Review the conversation and extract all information that fits the categories abo
 If user says: "研究 一个私募基金的品牌机会，面向的是中国市场的手上有美元，感兴趣美元投资的客户（从手上10万可投资美元，到2000万可投资美元，这个范围比较大，或许可以分为两类？），销售的产品是beta level的投资项目，我们追求的品牌价值定位是价值捕手，极为专业，know when buy when sell，同时核心的两位创始人的优质的巧妙的人脉关系和专业资源，使得品牌能给客户提供非常难得的、恰好的、物有所值的，通常难以access但却能通过拼盘实现的买入购入。另外一种产品是little known deals, 它们更accessible/affordable, 但因为人们不够了解所以不知道它们的投资价值。所以这两种产品资源是这个品牌的核心资产和价值。如果说另外还有一些的话，就是提供一些高质量的、及时的、accessible的付费洞察研报内容。因为这些客户非常难找，所以请你帮我深度研究这类客户的画像、深度洞察、触媒习惯、消费习惯、兴趣话题，最重要的是，品牌价值的评估、验证和建议。"
 
 First tool call:
-- lineIndex: -1
+- operation: "append"
 - newLine: "- [Preference] Prefers detailed, research-backed analysis with customer insights"
 
 Second tool call:
-- lineIndex: -1
+- operation: "append"
 - newLine: "- [Preference] Values brand strategy and positioning work"
 
 ## Example 2: Extracting ResearchHistory after study completion
 After completing a comprehensive research study on Olay skincare products for Z-generation consumers, where the studyLog shows key findings about emotional triggers being more important than price points:
 
 Tool call:
-- lineIndex: -1
-- newLine: "- [ResearchHistory] Olay skincare Z-gen research (just completed) - emotional triggers > price sensitivity"
+- operation: "append"
+- newLine: "- [ResearchHistory] Olay skincare Z-gen research - emotional triggers > price sensitivity"
 
 ## Example 3: Identifying RecurringTheme
 If existing memory shows:
-"- [ResearchHistory] Olay skincare Z-gen research (3 months ago) - emotional triggers > price sensitivity
-- [ResearchHistory] ByteDance gaming Gen-Z study (last month) - authenticity drives purchase decisions"
+"- [ResearchHistory] Olay skincare Z-gen research - emotional triggers > price sensitivity
+- [ResearchHistory] ByteDance gaming Gen-Z study - authenticity drives purchase decisions"
 
 And user just completed another Z-generation study, you should add:
 
 Tool call:
-- lineIndex: -1
+- operation: "append"
 - newLine: "- [RecurringTheme] Consistently focuses on Z-generation/Gen-Z consumer behavior patterns across product categories"
 
 ## Example 4: Capturing UnexploredInterest
 If user says during research: "This would be perfect for video content... I've been wanting to try those AI video generation tools like Runway or Kling, but haven't had time yet."
 
 Tool call:
-- lineIndex: -1
+- operation: "append"
 - newLine: "- [UnexploredInterest] Wants to try AI video generation tools (Runway/Kling) but hasn't implemented yet"
 
 ## Example 5: Multiple tool calls for comprehensive extraction
 After completing a significant research project where user showed new preferences and generated research insights:
 
 First tool call (extract preference):
-- lineIndex: -1
+- operation: "append"
 - newLine: "- [Preference] Prefers to start with qualitative insights before quantitative data"
 
 Second tool call (extract research history):
-- lineIndex: -1
-- newLine: "- [ResearchHistory] Nike Gen-Z sportswear study (just completed) - authenticity and sustainability outweigh brand prestige"
+- operation: "append"
+- newLine: "- [ResearchHistory] Nike Gen-Z sportswear study - authenticity and sustainability outweigh brand prestige"
 
 Third tool call (extract unexplored interest):
-- lineIndex: -1
+- operation: "append"
 - newLine: "- [UnexploredInterest] Mentioned wanting to explore TikTok Shop integration but focused on Instagram for now"
+
+## Example 6: Update vs append (avoiding duplicates)
+Existing: "- [Profile] Name: XD"
+User says: "I'm XD, product lead at atypica.ai"
+
+**Correct**: \`replace\` lineIndex: 0 with "- [Profile] Name: XD; Works as product lead at atypica.ai" (superset update)
+**Wrong**: \`append\` new line (creates duplicate)
+
+## Example 7: Delete only exact matches
+User says: "Delete all crypto-related content"
+Memory has 30 lines, only line 15 and 23 mention "crypto/NFTs"
+
+**Correct**: Delete ONLY line 15 and 23
+**Wrong**: Don't modify other lines just because they're "related" or to "clean up"
 
 
 # Extraction Principles
@@ -115,7 +132,15 @@ Third tool call (extract unexplored interest):
 
 2. **Extract all qualifying items**: If multiple pieces of information meet the criteria, extract all of them with separate tool calls. Being selective means choosing the right types of information, not limiting the quantity.
 
-3. **Quality criteria by category**:
+3. **Minimize operations when deleting or updating**:
+   - **ONLY modify lines that explicitly contain the target content** the user mentioned
+   - Do NOT modify lines that are "related" or "similar" — only modify lines with exact matches
+   - Do NOT clean up, reorganize, deduplicate, or optimize unrelated lines during delete/replace operations
+   - When user says "delete content about X", ONLY delete/replace lines that explicitly mention X
+   - If a line doesn't contain the exact keyword or concept, leave it unchanged
+   - When in doubt, do NOT modify the line
+
+4. **Quality criteria by category**:
    - [Profile]: Only explicitly stated facts (name, role, location, background)
      - ✅ Extract: "My name is Sarah" → "Works as a product manager at Google"
      - ❌ Don't extract: Inferring role from context without explicit statement
@@ -136,9 +161,13 @@ Third tool call (extract unexplored interest):
      - ✅ Extract: "I've been wanting to try AI video tools but haven't had time" (clear intention)
      - ❌ Don't extract: "That's interesting" or "Maybe worth a look" (casual curiosity)
 
-4. **Check for duplicates**: Review existing memory to avoid storing information that's already captured
+5. **Check for duplicates and handle updates intelligently**:
+   - **Exact duplicates**: Information already captured → call memoryNoUpdate
+   - **Superset updates**: New info includes old info + more details → use \`replace\` to update
+   - **Partial overlap**: Overlapping but different aspects → merge or keep separate based on semantic similarity
+   - **Different but related**: Truly distinct info (e.g., two different projects) → keep both
 
-5. **When in doubt, extract**: If information could enhance future interactions, include it
+6. **When in doubt about extraction, extract**: If information could enhance future interactions, include it. However, when in doubt about deletion/modification, do NOT modify.
 
 **What to extract**:
 - Persistent user facts (Profile)

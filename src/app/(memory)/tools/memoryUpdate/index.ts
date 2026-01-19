@@ -16,18 +16,28 @@ import {
 export const memoryUpdateTool = () =>
   tool({
     description:
-      "Insert new content into memory at a specific line index. Use this to add persistent facts, preferences, or context.",
+      "Manage memory content with three operations: 'append' to add new content at end, 'replace' to update existing line, 'delete' to remove a line. Use this to maintain persistent facts, preferences, or context.",
     inputSchema: memoryUpdateInputSchema,
     outputSchema: memoryUpdateOutputSchema,
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    execute: async ({ lineIndex, newLine }): Promise<MemoryUpdateToolResult> => {
+    execute: async ({ operation, lineIndex, newLine }): Promise<MemoryUpdateToolResult> => {
       // Tool only validates and records the LLM's decision
       // Actual database operations are handled in updateMemory function
-      return {
-        plainText: `Memory update instruction recorded: insert at line ${lineIndex === -1 ? "end" : lineIndex + 1}`,
-      };
+      let message = "";
+      switch (operation) {
+        case "append":
+          message = "Memory update instruction recorded: append to end";
+          break;
+        case "replace":
+          message = `Memory update instruction recorded: replace line ${lineIndex}`;
+          break;
+        case "delete":
+          message = `Memory update instruction recorded: delete line ${lineIndex}`;
+          break;
+      }
+      return { plainText: message };
     },
   });

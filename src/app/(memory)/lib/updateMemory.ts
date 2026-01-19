@@ -11,7 +11,7 @@ import { memoryUpdateTool } from "../tools/memoryUpdate";
 import { MemoryUpdateToolInput } from "../tools/memoryUpdate/types";
 import { isMemoryThresholdMet } from "./utils";
 
-const MEMORY_UPDATE_MODEL: LLMModelName = "claude-haiku-4-5";
+const MEMORY_UPDATE_MODEL: LLMModelName = "claude-sonnet-4-5";
 const MEMORY_REORGANIZE_MODEL: LLMModelName = "claude-sonnet-4-5";
 
 /**
@@ -237,17 +237,24 @@ async function updateMemoryContent(
 
   for (const memoryUpdateResult of memoryUpdateResults) {
     const toolInput = memoryUpdateResult.input as MemoryUpdateToolInput;
-    const { lineIndex, newLine } = toolInput;
+    const { operation, lineIndex, newLine } = toolInput;
 
     logger.info({
       msg: "Applying memory update",
+      operation,
       lineIndex,
-      newLinePreview: newLine.substring(0, 50),
+      newLinePreview: newLine?.substring(0, 50),
     });
 
-    // Apply transformation: insert new line at specified index
-    updatedContent = applyMemoryUpdate(updatedContent, lineIndex, newLine);
+    // Apply transformation based on operation type
+    updatedContent = applyMemoryUpdate(updatedContent, operation, lineIndex, newLine);
   }
+
+  // Clean up [DELETED] markers before returning
+  const cleaned = updatedContent
+    .split("\n")
+    .filter((line) => line.trim() !== "- [DELETED]")
+    .join("\n");
 
   // Report token usage
   const tokens = result.usage.totalTokens || 0;
@@ -255,38 +262,67 @@ async function updateMemoryContent(
     msg: "Memory update agent completed",
     tokens,
     usage: result.usage,
+    deletedLines: updatedContent.split("\n").length - cleaned.split("\n").length,
   });
 
-  return updatedContent;
+  return cleaned;
 }
 
 /**
  * Apply a single memory update to the content.
- * Pure function: takes current content, line index, and new line, returns updated content.
+ * Pure function: takes current content, operation type, line index, and new line, returns updated content.
  */
-function applyMemoryUpdate(currentContent: string, lineIndex: number, newLine: string): string {
+function applyMemoryUpdate(
+  currentContent: string,
+  operation: "append" | "replace" | "delete",
+  lineIndex: number | undefined,
+  newLine: string | undefined,
+): string {
   if (currentContent.length === 0) {
-    // Empty memory: just set to newLine
+    // Empty memory: only append is valid
+    if (operation !== "append" || !newLine) {
+      throw new Error("Empty memory can only be initialized with append operation");
+    }
     return newLine;
   }
 
-  // Non-empty memory: insert at specified line index
   const lines = currentContent.split("\n");
 
-  // Validate lineIndex
-  if (lineIndex < -1 || lineIndex >= lines.length) {
-    throw new Error(
-      `Invalid lineIndex: ${lineIndex}. Must be -1 (append) or between 0 and ${lines.length - 1}.`,
-    );
-  }
+  switch (operation) {
+    case "append": {
+      if (!newLine) {
+        throw new Error("newLine is required for append operation");
+      }
+      lines.push(newLine);
+      break;
+    }
 
-  // Insert new line
-  if (lineIndex === -1) {
-    // Append at end
-    lines.push(newLine);
-  } else {
-    // Insert after specified line
-    lines.splice(lineIndex + 1, 0, newLine);
+    case "replace": {
+      if (lineIndex === undefined || lineIndex < 0 || lineIndex >= lines.length) {
+        throw new Error(
+          `Invalid lineIndex for replace: ${lineIndex}. Must be between 0 and ${lines.length - 1}.`,
+        );
+      }
+      if (!newLine) {
+        throw new Error("newLine is required for replace operation");
+      }
+      lines[lineIndex] = newLine;
+      break;
+    }
+
+    case "delete": {
+      if (lineIndex === undefined || lineIndex < 0 || lineIndex >= lines.length) {
+        throw new Error(
+          `Invalid lineIndex for delete: ${lineIndex}. Must be between 0 and ${lines.length - 1}.`,
+        );
+      }
+      // Mark line as deleted instead of removing it (to preserve line indices during batch operations)
+      lines[lineIndex] = "- [DELETED]";
+      break;
+    }
+
+    default:
+      throw new Error(`Unknown operation: ${operation}`);
   }
 
   return lines.join("\n");
