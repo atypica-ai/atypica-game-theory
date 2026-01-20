@@ -177,6 +177,40 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     tools: config.tools,
   });
 
+  const providerOptions: NonNullable<typeof config.providerOptions> =
+    config.providerOptions ?? defaultProviderOptions;
+  {
+    // const lastMessage = modelMessages.at(-1);
+    // 不能通过后面的 modelMessages 判断，因为是要看 final assistant turn，也就是多个 assistant parts 在一起是一个 turn
+    // 正好 streamingMessage 就是 final assistant turn
+    // https://platform.claude.com/docs/en/build-with-claude/extended-thinking
+    const firstPart = streamingMessage.parts.filter((part) => part.type !== "step-start").at(0);
+    if (firstPart?.type === "reasoning") {
+      providerOptions["bedrock"] = {
+        ...providerOptions["bedrock"],
+        reasoningConfig: { type: "enabled", budgetTokens: 1024 },
+      } satisfies BedrockProviderOptions;
+      providerOptions["anthropic"] = {
+        ...providerOptions["anthropic"],
+        thinking: { type: "enabled", budgetTokens: 1024 },
+      } satisfies AnthropicProviderOptions;
+    } else {
+      // 如果是 assistant 消息继续，在开启 thinking 的时候，claude 会要求最后一个 block 是 thinking 开头，但是没搞明白消息组织形式应该是怎样的，所以，暂时就关闭。
+      if (providerOptions["bedrock"]) {
+        providerOptions["bedrock"] = {
+          ...providerOptions["bedrock"],
+          reasoningConfig: { type: "disabled" },
+        } satisfies BedrockProviderOptions;
+      }
+      if (providerOptions["anthropic"]) {
+        providerOptions["anthropic"] = {
+          ...providerOptions["anthropic"],
+          thinking: { type: "disabled" },
+        } satisfies AnthropicProviderOptions;
+      }
+    }
+  }
+
   // =============================================================================
   // Phase 3: Universal Attachment Processing
   // =============================================================================
@@ -338,48 +372,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
 
   // =============================================================================
-  // Phase 8: Provider Options
-  // =============================================================================
-
-  const providerOptions: typeof config.providerOptions =
-    config.providerOptions ?? defaultProviderOptions;
-  {
-    const lastMessage = modelMessages.at(-1);
-    if (providerOptions && lastMessage?.role === "assistant") {
-      const firstPart = Array.isArray(lastMessage.content) ? lastMessage.content.at(0) : undefined;
-      if (firstPart?.type === "reasoning") {
-        if (providerOptions["bedrock"]) {
-          providerOptions["bedrock"] = {
-            ...providerOptions["bedrock"],
-            reasoningConfig: { type: "enabled", budgetTokens: 1024 },
-          } satisfies BedrockProviderOptions;
-        }
-        if (providerOptions["anthropic"]) {
-          providerOptions["anthropic"] = {
-            ...providerOptions["anthropic"],
-            thinking: { type: "enabled", budgetTokens: 1024 },
-          } satisfies AnthropicProviderOptions;
-        }
-      } else {
-        // 如果是 assistant 消息继续，在开启 thinking 的时候，claude 会要求最后一个 block 是 thinking 开头，但是没搞明白消息组织形式应该是怎样的，所以，暂时就关闭。
-        if (providerOptions["bedrock"]) {
-          providerOptions["bedrock"] = {
-            ...providerOptions["bedrock"],
-            reasoningConfig: { type: "disabled" },
-          } satisfies BedrockProviderOptions;
-        }
-        if (providerOptions["anthropic"]) {
-          providerOptions["anthropic"] = {
-            ...providerOptions["anthropic"],
-            thinking: { type: "disabled" },
-          } satisfies AnthropicProviderOptions;
-        }
-      }
-    }
-  }
-
-  // =============================================================================
-  // Phase 9: streamText Configuration
+  // Phase 8: streamText Configuration
   // =============================================================================
 
   let streamStartTime = Date.now();
