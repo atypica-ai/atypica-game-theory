@@ -4,9 +4,9 @@ import { TUniversalMessageWithTool } from "@/app/(universal)/tools/types";
 import { UniversalToolUIPartDisplay } from "@/app/(universal)/tools/ui";
 import { WorkspaceFilesPanel } from "@/app/(universal)/universal/components/WorkspaceFilesPanel";
 import { UserChatSession } from "@/components/chat/UserChatSession";
-import { Button } from "@/components/ui/button";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
+import { Button } from "@/components/ui/button";
 import { UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
@@ -72,9 +72,7 @@ export function UniversalChatPageClient({
       {/* Chat Header */}
       <div className="w-full mt-2 px-3 py-3 max-w-4xl mx-auto flex items-center justify-between">
         <div className="flex-1" />
-        <h1 className="font-medium text-sm text-center flex-1">
-          {userChat.title || "Universal Agent"}
-        </h1>
+        <h1 className="font-medium text-sm text-center flex-1">{userChat.title || "GEA"}</h1>
         <div className="flex-1 flex justify-end">
           <Button
             variant="ghost"
@@ -91,7 +89,7 @@ export function UniversalChatPageClient({
       {/* Centered Chat Area */}
       <div className="flex-1 overflow-hidden w-full max-w-4xl mx-auto flex flex-col">
         <UserChatSession
-          nickname={{ assistant: "Universal Agent", user: session?.user?.email ?? "You" }}
+          nickname={{ assistant: "GEA", user: session?.user?.email ?? "You" }}
           avatar={{
             assistant: <HippyGhostAvatar className="size-8" seed={0} />,
             user: session?.user ? (

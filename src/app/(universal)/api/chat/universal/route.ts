@@ -11,7 +11,6 @@ import { reasoningThinkingTool, webFetchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
-import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
 import { loadTeamMemory, loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { setBedrockCache } from "@/app/(study)/agents/utils";
@@ -182,7 +181,7 @@ export async function POST(req: Request) {
     [UniversalToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
     [UniversalToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
     // [UniversalToolName.interviewChat]: interviewChatTool({ userId, ...agentToolArgs }), // 因为需要 analyst, 暂时还无法使用
-    [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
+    // [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
 
     [UniversalToolName.toolCallError]: toolCallError,
   };
