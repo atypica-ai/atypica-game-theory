@@ -1,5 +1,5 @@
 import { StatReporter } from "@/ai/tools/types";
-import { LanguageModelUsage, StepResult, TextStreamPart, ToolSet } from "ai";
+import { LanguageModelUsage, StepResult, ToolSet, UIMessageStreamWriter } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 
@@ -29,5 +29,8 @@ export type ExpertExecutor = (args: {
   logger: Logger;
   statReport: StatReporter;
   abortSignal: AbortSignal;
-  forwardStreamChunk?: (chunk: TextStreamPart<ToolSet>) => void;
+  // UI 流式输出（仅 UI 模式）
+  streamWriter?: UIMessageStreamWriter;
+  streamingMessageId?: string; // 用于 generateMessageId（UI 模式需要）
+  onStepFinish?: (step: StepResult<ToolSet>) => Promise<void>; // 每个 step 完成时的回调，外部负责 append 和保存
 }) => Promise<ExpertStreamTextResult>;

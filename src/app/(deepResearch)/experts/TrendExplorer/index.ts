@@ -17,7 +17,10 @@ export const trendExplorerExpert: ExpertExecutor = async ({
   logger,
   statReport,
   abortSignal,
-  forwardStreamChunk,
+  // UI 流式输出
+  streamWriter,
+  streamingMessageId,
+  onStepFinish: onStepFinishCallback,
 }) => {
   // Create web search tool with perplexity provider for DeepResearch context
   const webSearchTool = createWebSearchTool({
@@ -75,29 +78,43 @@ export const trendExplorerExpert: ExpertExecutor = async ({
         }
         // When nothing is returned, the default settings from the main config are used.
       },
-      onChunk: async ({ chunk }) => {
-        if (forwardStreamChunk) {
-          forwardStreamChunk(chunk);
+      onStepFinish: async (step) => {
+        // 统计 token
+        const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
+        await statReport("tokens", tokens, {
+          reportedBy: "deepResearch trendExplorer",
+          ...extra,
+        });
+
+        logger.info({
+          msg: "TrendExplorer step finished",
+          toolCalls: step.toolCalls.map((c) => c.toolName),
+          usage: extra.usage,
+        });
+
+        // 调用外部的 callback，传递 step（外部负责 append 和保存）
+        if (onStepFinishCallback) {
+          await onStepFinishCallback(step);
         }
       },
       onError: async ({ error }) => {
         logger.error(`trendExplorerExpert streamText onError: ${(error as Error).message}`);
         reject(error);
       },
-      onFinish: async ({ text, usage, providerMetadata, sources }) => {
+      onFinish: async ({ text, usage, sources }) => {
         logger.info("trendExplorerExpert streamText onFinish");
-        const { tokens, extra } = calculateStepTokensUsage(
-          { usage, providerMetadata },
-          { reduceTokens },
-        );
-        await statReport("tokens", tokens, {
-          reportedBy: "deepResearch tool",
-          expert: "TrendExplorer",
-          ...extra,
-        });
         resolve({ text, usage, sources });
       },
     });
+
+    // UI 模式：桥接 streamWriter
+    if (streamWriter && streamingMessageId) {
+      streamWriter.merge(
+        response.toUIMessageStream({
+          generateMessageId: () => streamingMessageId,
+        }),
+      );
+    }
 
     response
       .consumeStream()

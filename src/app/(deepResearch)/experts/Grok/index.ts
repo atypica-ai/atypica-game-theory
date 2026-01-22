@@ -14,7 +14,10 @@ export const grokExpert: ExpertExecutor = async ({
   logger,
   statReport,
   abortSignal,
-  forwardStreamChunk,
+  // UI 流式输出
+  streamWriter,
+  streamingMessageId,
+  onStepFinish: onStepFinishCallback,
 }): Promise<ExpertStreamTextResult> => {
   // Build tools object with error handling
   const allTools: ToolSet = {
@@ -61,9 +64,23 @@ export const grokExpert: ExpertExecutor = async ({
         }
         // When nothing is returned, the default settings from the main config are used.
       },
-      onChunk: async ({ chunk }) => {
-        if (forwardStreamChunk) {
-          forwardStreamChunk(chunk);
+      onStepFinish: async (step) => {
+        // 统计 token
+        const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
+        await statReport("tokens", tokens, {
+          reportedBy: "deepResearch grok",
+          ...extra,
+        });
+
+        logger.info({
+          msg: "Grok step finished",
+          toolCalls: step.toolCalls.map((c) => c.toolName),
+          usage: extra.usage,
+        });
+
+        // 调用外部的 callback，传递 step（外部负责 append 和保存）
+        if (onStepFinishCallback) {
+          await onStepFinishCallback(step);
         }
       },
       onError: async ({ error }) => {
@@ -76,17 +93,8 @@ export const grokExpert: ExpertExecutor = async ({
         logger.error(`grokExpert streamText onError: ${(error as Error).message}`);
         reject(error);
       },
-      onFinish: async ({ text, steps, usage, providerMetadata, sources }) => {
+      onFinish: async ({ text, steps, usage, sources }) => {
         logger.info("grokExpert streamText onFinish");
-        const { tokens, extra } = calculateStepTokensUsage(
-          { usage, providerMetadata },
-          { reduceTokens },
-        );
-        await statReport("tokens", tokens, {
-          reportedBy: "deepResearch tool",
-          expert: "Grok",
-          ...extra,
-        });
         // Use the last step's text instead of accumulated text to avoid duplication
         // The accumulated text may include duplicate content from multiple steps
         const finalText = steps.length > 0 ? steps[steps.length - 1].text : text;
@@ -98,6 +106,15 @@ export const grokExpert: ExpertExecutor = async ({
         resolve({ text: deduplicated, usage, sources });
       },
     });
+
+    // UI 模式：桥接 streamWriter
+    if (streamWriter && streamingMessageId) {
+      streamWriter.merge(
+        response.toUIMessageStream({
+          generateMessageId: () => streamingMessageId,
+        }),
+      );
+    }
 
     response
       .consumeStream()

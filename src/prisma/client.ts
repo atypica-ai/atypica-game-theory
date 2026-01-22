@@ -107,6 +107,8 @@ export type UserChatExtra = Partial<{
   // study user chat 专用
   newStudyUserChatToken: string;
   briefUserChatId: number;
+  // deepResearch 专用
+  deepResearchExpert: "grok" | "trendExplorer"; // ExpertName enum (resolved, no "auto")
 }>; // & Record<string, string | number>
 
 // for extra field on ChatStatistics and UserTokensLog

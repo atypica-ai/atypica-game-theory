@@ -1,13 +1,17 @@
 import "server-only";
 
-import { persistentAIMessageToDB } from "@/ai/messageUtils";
+import {
+  appendStepToStreamingMessage,
+  persistentAIMessageToDB,
+  prepareMessagesForStreaming,
+} from "@/ai/messageUtils";
 import { AgentToolConfigArgs, PlainTextToolResult, StatReporter } from "@/ai/tools/types";
 import { StreamChunkCallback } from "@/lib/mcp/types";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { generateId, TextStreamPart, tool, ToolSet } from "ai";
+import { generateId, StepResult, tool, ToolSet } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { resolveExpert } from "./experts";
@@ -84,6 +88,55 @@ async function executeDeepResearch({
 
     toolLogger.info({ expert: resolvedExpert, msg: "Starting deep research with streaming" });
 
+    // 准备 streamingMessage（使用 prepareMessagesForStreaming 保持架构一致）
+    const { streamingMessage } = await prepareMessagesForStreaming(userChatId, {
+      tools: {} as ToolSet, // DeepResearch 的 tools 在 expert 内部，这里传空对象
+    });
+
+    // 准备 onStepFinish callback
+    const onStepFinish = async (step: StepResult<ToolSet>) => {
+      // 1. 在外部累积 step 到 streamingMessage
+      appendStepToStreamingMessage(streamingMessage, step);
+
+      // 2. 立即保存消息
+      await prisma.$transaction(async (tx) => {
+        // Verify backgroundToken matches before saving
+        await tx.userChat.findUniqueOrThrow({
+          where: { id: userChatId, backgroundToken },
+        });
+        await persistentAIMessageToDB({
+          userChatId,
+          message: streamingMessage,
+          tx,
+        });
+      });
+
+      // 3. MCP 模式：发送 notification
+      if (onStreamChunk) {
+        // 提取所有 text parts 并发送
+        const textParts = streamingMessage.parts
+          .filter((part) => part.type === "text")
+          .map((part) => (part.type === "text" ? part.text : ""))
+          .join("\n");
+
+        if (textParts) {
+          const sendNotification = onStreamChunk({
+            type: "text-delta",
+            id: streamingMessage.id,
+            text: textParts,
+          }).catch((error) => {
+            toolLogger.error(`${resolvedExpert} onStepFinish notification error: ${error.message}`);
+          });
+          waitUntil(
+            Promise.race([
+              new Promise<null>((resolve) => setTimeout(() => resolve(null), 30 * 1000)),
+              sendNotification,
+            ]),
+          );
+        }
+      }
+    };
+
     const {
       text: resultText,
       usage,
@@ -95,20 +148,8 @@ async function executeDeepResearch({
       logger: toolLogger,
       statReport,
       abortSignal,
-      forwardStreamChunk: onStreamChunk
-        ? (chunk: TextStreamPart<ToolSet>) => {
-            waitUntil(
-              Promise.race([
-                new Promise<null>((resolve) => setTimeout(() => resolve(null), 30 * 1000)),
-                onStreamChunk(chunk).catch((error) => {
-                  logger.error(
-                    `${resolvedExpert} streamText onStreamChunk error: ${error.message}`,
-                  );
-                }),
-              ]),
-            );
-          }
-        : undefined,
+      streamingMessageId: streamingMessage.id,
+      onStepFinish,
     });
 
     const finalResult = resultText;
@@ -122,22 +163,7 @@ async function executeDeepResearch({
       "Deep research completed",
     );
 
-    // Save assistant response with backgroundToken verification
-    await prisma.$transaction(async (tx) => {
-      // Verify backgroundToken matches before saving
-      await tx.userChat.findUniqueOrThrow({
-        where: { id: userChatId, backgroundToken },
-      });
-      await persistentAIMessageToDB({
-        userChatId,
-        message: {
-          id: generateId(),
-          role: "assistant",
-          parts: [{ type: "text", text: finalResult }],
-        },
-        tx,
-      });
-    });
+    // ⚠️ 不需要再次保存 assistant 消息，已经在 onStepFinish 里保存了
 
     // Clear backgroundToken at the end
     try {
