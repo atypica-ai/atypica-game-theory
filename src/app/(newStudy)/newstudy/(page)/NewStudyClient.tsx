@@ -5,7 +5,7 @@ import { CommandIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ShortcutsGrid } from "./components/ShortcutsGrid";
+import { ShortcutsGrid } from "../components/ShortcutsGrid";
 import "./style.css";
 
 export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
