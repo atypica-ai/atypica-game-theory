@@ -1,6 +1,6 @@
 import {
-  appendChunkToStreamingMessage,
-  createDebouncePersistentMessage,
+  appendStepToStreamingMessage,
+  persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { defaultProviderOptions, llm, type LLMModelName } from "@/ai/provider";
@@ -32,7 +32,6 @@ import {
   StepResult,
   streamText,
   TextPart,
-  TextStreamPart,
   ToolChoice,
   UIMessageStreamWriter,
 } from "ai";
@@ -158,11 +157,12 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   await setUserChatError(studyUserChatId, null);
 
   // Create debounced message persistence (5s debounce)
-  const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
-    studyUserChatId,
-    5000,
-    logger,
-  );
+  // ⚠️ 现在改用 onStepFinish 保存
+  // const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
+  //   studyUserChatId,
+  //   5000,
+  //   logger,
+  // );
 
   // Note: toolAbortController and studyAbortController are received from baseContext.
   // They must be created at the call site to ensure the same instances are shared
@@ -436,22 +436,32 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     /**
      * onChunk: Incremental message persistence with debouncing
      */
-    onChunk: async ({ chunk }: { chunk: TextStreamPart<TOOLS> }) => {
-      appendChunkToStreamingMessage(streamingMessage, chunk);
-      await debouncePersistentMessage(streamingMessage, {
-        immediate:
-          chunk.type !== "text-delta" &&
-          chunk.type !== "reasoning-delta" &&
-          chunk.type !== "tool-input-delta",
-      });
-    },
+    // onChunk: async ({ chunk }: { chunk: TextStreamPart<TOOLS> }) => {
+    //   // ⚠️ 现在改用 onStepFinish 保存
+    //   appendChunkToStreamingMessage(streamingMessage, chunk);
+    //   await debouncePersistentMessage(streamingMessage, {
+    //     immediate:
+    //       chunk.type !== "text-delta" &&
+    //       chunk.type !== "reasoning-delta" &&
+    //       chunk.type !== "tool-input-delta",
+    //   });
+    // },
 
     /**
      * onStepFinish: Immediate persistence + stats reporting + balance check + universal notifications + custom logic
      */
     onStepFinish: async (step: StepResult<TOOLS>) => {
       // Immediate persistence (critical for message consistency)
-      await immediatePersistentMessage();
+      // ⚠️ 现在改用 onStepFinish 保存
+      // await immediatePersistentMessage();
+
+      appendStepToStreamingMessage(streamingMessage, step);
+      if (streamingMessage.parts?.length) {
+        await persistentAIMessageToDB({
+          userChatId: studyUserChatId,
+          message: streamingMessage,
+        });
+      }
 
       // Extract tool calls and usage stats
       const toolCalls = step.toolCalls.map((call) => call?.toolName ?? "unknown");

@@ -1,10 +1,9 @@
 import "server-only";
 
 import {
-  appendChunkToStreamingMessage,
+  appendStepToStreamingMessage,
   convertDBMessageToAIMessage,
   convertStepsToAIMessage,
-  createDebouncePersistentMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
@@ -24,7 +23,6 @@ import {
   smoothStream,
   stepCountIs,
   streamText,
-  TextStreamPart,
   tool,
   ToolChoice,
   ToolSet,
@@ -225,8 +223,11 @@ async function runScoutSocialTrendsStream({
       toolChoice = "required";
       maxSteps = 1;
     }
-    const { debouncePersistentMessage, immediatePersistentMessage } =
-      createDebouncePersistentMessage(scoutUserChatId, 5000, logger); // 5000 debounce
+
+    // ⚠️ 改用 onStepFinish 里面保存
+    // const { debouncePersistentMessage, immediatePersistentMessage } =
+    //   createDebouncePersistentMessage(scoutUserChatId, 5000, logger); // 5000 debounce
+
     const streamTextPromise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
       const response = streamText({
         model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
@@ -257,24 +258,35 @@ async function runScoutSocialTrendsStream({
           chunking: /[\u4E00-\u9FFF]|\S+\s+/,
         }),
 
-        onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
-          appendChunkToStreamingMessage(streamingMessage, chunk);
-          await debouncePersistentMessage(streamingMessage, {
-            immediate:
-              chunk.type !== "text-delta" &&
-              chunk.type !== "reasoning-delta" &&
-              chunk.type !== "tool-input-delta",
-            // 只在 text-delta 类型的时候才 debounce，靠谱点。see https://github.com/bmrlab/atypica-llm-app/issues/40
-            // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
-          });
-        },
+        // ⚠️ 改用 onStepFinish 里面保存
+        // onChunk: async ({ chunk }: { chunk: TextStreamPart<typeof allTools> }) => {
+        //   appendChunkToStreamingMessage(streamingMessage, chunk);
+        //   await debouncePersistentMessage(streamingMessage, {
+        //     immediate:
+        //       chunk.type !== "text-delta" &&
+        //       chunk.type !== "reasoning-delta" &&
+        //       chunk.type !== "tool-input-delta",
+        //     // 只在 text-delta 类型的时候才 debounce，靠谱点。see https://github.com/bmrlab/atypica-llm-app/issues/40
+        //     // immediate: chunk.type === "tool-call" || chunk.type === "tool-result",
+        //   });
+        // },
 
         onStepFinish: async (step) => {
-          await immediatePersistentMessage();
+          // ⚠️ 现在改用 onStepFinish 里面保存，下面这一行是搭配 debouncePersistentMessage 使用的
+          // await immediatePersistentMessage();
           // 注意，stepFinish 一定要保存，并且强制 immediate:true
           // 有时候 llm 返回的消息很少，前面 onChunk 的 persistent 还在 debounce 的时候，后面 user 的 continue 消息已经保存了，这就会导致
           // - assistant 消息还来不及 create，新的 user 消息会覆盖前一条 user 消息
           // - assistant 消息还不完整，新一轮对话拿到的 messages 不完整
+
+          appendStepToStreamingMessage(streamingMessage, step);
+          if (streamingMessage.parts?.length) {
+            await persistentAIMessageToDB({
+              userChatId: scoutUserChatId,
+              message: streamingMessage,
+            });
+          }
+
           const toolCalls = step.toolCalls.map((call) => call.toolName);
           const { tokens, extra } = calculateStepTokensUsage(step, { reduceTokens });
           logger.info({
