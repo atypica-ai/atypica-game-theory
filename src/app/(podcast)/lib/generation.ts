@@ -221,46 +221,6 @@ async function generatePodcastScript({
     throw new Error("Podcast kind determination is missing");
   }
 
-  let script = podcast.script || ""; // If podcast has content, continue from existing script
-
-  const throttleSaveScript = (() => {
-    let timerId: NodeJS.Timeout | null = null;
-
-    return async (
-      podcastId: number,
-      script: string,
-      { immediate }: { immediate?: boolean } = {},
-    ) => {
-      if (immediate) {
-        if (timerId) {
-          clearTimeout(timerId);
-          timerId = null;
-        }
-        saveNow();
-        return;
-      }
-
-      if (!timerId) {
-        timerId = setTimeout(() => {
-          timerId = null;
-          saveNow();
-        }, 15000); // 15 second throttle
-      }
-
-      async function saveNow() {
-        try {
-          await prisma.analystPodcast.update({
-            where: { id: podcastId },
-            data: { script },
-          });
-          logger.info("Podcast script persisted successfully");
-        } catch (error) {
-          logger.error(`Error persisting podcast script: ${(error as Error).message}`);
-        }
-      }
-    };
-  })();
-
   const streamTextPromise = new Promise<{
     finishReason: FinishReason;
     content: string;
@@ -296,10 +256,11 @@ async function generatePodcastScript({
       },
     ];
 
-    if (script) {
+    // If podcast has content, continue from existing script
+    if (podcast.script) {
       messages.push({
         role: "assistant",
-        content: [{ type: "text", text: script }],
+        content: [{ type: "text", text: podcast.script }],
       });
       messages.push({
         role: "user",
@@ -327,18 +288,14 @@ async function generatePodcastScript({
       stopWhen: stepCountIs(1),
       maxOutputTokens: 30000,
 
-      onChunk: async ({ chunk }) => {
-        if (chunk.type === "text-delta") {
-          script += chunk.text.toString();
-          await throttleSaveScript(podcast.id, script);
-        }
-      },
+      // onChunk: async ({ chunk }) => {
+      //   if (chunk.type === "text-delta") {
+      //     script += chunk.text.toString();
+      //     await throttleSaveScript(podcast.id, script);
+      //   }
+      // },
 
       onFinish: async ({ finishReason, text, usage }) => {
-        resolve({
-          finishReason: finishReason,
-          content: text,
-        });
         logger.info({ msg: "Script generation completed", finishReason, usage });
         const totalTokens =
           (usage.outputTokens ?? 0) * 3 + (usage.inputTokens ?? 0) || (usage.totalTokens ?? 0);
@@ -349,6 +306,10 @@ async function generatePodcastScript({
             usage,
           });
         }
+        resolve({
+          finishReason: finishReason,
+          content: text,
+        });
       },
 
       onError: async ({ error }) => {
@@ -368,12 +329,22 @@ async function generatePodcastScript({
       .catch((error) => reject(error));
   });
 
-  const { finishReason } = await streamTextPromise;
+  const { finishReason, content: script } = await streamTextPromise;
 
   // Note: Prologue and epilogue are now handled as pre-recorded audio chunks
   // in the audio generation pipeline, not as text in the script.
   // Save final script immediately
-  await throttleSaveScript(podcast.id, script, { immediate: true });
+  // await throttleSaveScript(podcast.id, script, { immediate: true });
+  try {
+    await prisma.analystPodcast.update({
+      where: { id: podcast.id },
+      data: { script },
+    });
+    logger.info("Podcast script persisted successfully");
+  } catch (error) {
+    logger.error(`Error persisting podcast script: ${(error as Error).message}`);
+    throw error;
+  }
 
   if (finishReason === "length") {
     logger.warn("Podcast script generation hit length limit but completed");
