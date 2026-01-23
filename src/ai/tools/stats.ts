@@ -2,8 +2,26 @@ import { prisma } from "@/prisma/prisma";
 import { consumeUserTokens } from "@/tokens/lib";
 import { TokensLogResourceType } from "@/tokens/types";
 import { InputJsonValue } from "@prisma/client/runtime/client";
+import { after } from "next/server";
 import { Logger } from "pino";
 import { StatReporter } from "./types";
+
+function backgroundStatReport(statReport: StatReporter, logger: Logger) {
+  const func: StatReporter = async (...args) => {
+    after(async () => {
+      try {
+        await statReport(...args);
+      } catch (error) {
+        logger.error({
+          msg: "Background stat report failed",
+          error: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+      }
+    });
+  };
+  return func;
+}
 
 export const initStudyStatReporter = ({
   userId,
@@ -34,7 +52,9 @@ export const initStudyStatReporter = ({
       });
     }
   };
-  return { statReport };
+  return {
+    statReport: backgroundStatReport(statReport, logger),
+  };
 };
 
 export const initGenericUserChatStatReporter = ({
@@ -66,7 +86,9 @@ export const initGenericUserChatStatReporter = ({
       });
     }
   };
-  return { statReport };
+  return {
+    statReport: backgroundStatReport(statReport, logger),
+  };
 };
 
 export const initInterviewProjectStatReporter = ({
@@ -102,7 +124,9 @@ export const initInterviewProjectStatReporter = ({
       });
     }
   };
-  return { statReport };
+  return {
+    statReport: backgroundStatReport(statReport, logger),
+  };
 };
 
 export const initPersonaImportStatReporter = ({
@@ -138,5 +162,7 @@ export const initPersonaImportStatReporter = ({
       });
     }
   };
-  return { statReport };
+  return {
+    statReport: backgroundStatReport(statReport, logger),
+  };
 };
