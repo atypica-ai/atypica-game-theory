@@ -19,11 +19,18 @@ async function main() {
   logger.info("Starting user memory backfill...");
 
   // Step 1: Find users without memory (no Memory record OR core is empty)
+  // AND at least one analyst with studyLog
   const usersWithoutMemory = await prisma.$queryRaw<{ id: number }[]>`
     SELECT u.id
     FROM "User" u
     LEFT JOIN "Memory" m ON m."userId" = u.id
-    WHERE m.id IS NULL OR m.core = ''
+    WHERE (m.id IS NULL OR m.core = '')
+    AND EXISTS (
+      SELECT 1 FROM "Analyst" a
+      WHERE a."userId" = u.id
+      AND a."studyLog" != ''
+      AND a."studyUserChatId" IS NOT NULL
+    )
     GROUP BY u.id
   `;
 
@@ -35,75 +42,113 @@ async function main() {
   let processedCount = 0;
   let skippedCount = 0;
 
-  for (const { id: userId } of usersWithoutMemory) {
-    logger.info({ msg: "Processing user", userId });
+  // Process users in batches of 10 concurrently
+  const batchSize = 10;
+  for (let i = 0; i < usersWithoutMemory.length; i += batchSize) {
+    const batch = usersWithoutMemory.slice(i, i + batchSize);
+    logger.info({
+      msg: "Processing batch",
+      batchNumber: Math.floor(i / batchSize) + 1,
+      batchSize: batch.length,
+      progress: `${i + batch.length}/${usersWithoutMemory.length}`,
+    });
 
-    try {
-      // Step 2: Get latest 3 analysts with studyLog for this user
-      const analysts = await prisma.analyst.findMany({
-        where: {
-          userId,
-          studyLog: { not: "" },
-          studyUserChatId: { not: null },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 3,
-        select: {
-          id: true,
-          studyLog: true,
-          studyUserChatId: true,
-        },
-      });
+    const results = await Promise.allSettled(
+      batch.map(async ({ id: userId }) => {
+        logger.info({ msg: "Processing user", userId });
 
-      if (analysts.length === 0) {
-        logger.info({
-          msg: "No analysts with studyLog found, skipping user",
-          userId,
+        // Step 2: Get latest 3 analysts with studyLog for this user
+        const analysts = await prisma.analyst.findMany({
+          where: {
+            userId,
+            studyLog: { not: "" },
+            studyUserChatId: { not: null },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 3,
+          select: {
+            id: true,
+            studyLog: true,
+            studyUserChatId: true,
+          },
         });
-        skippedCount++;
-        continue;
+
+        if (analysts.length === 0) {
+          logger.info({
+            msg: "No analysts with studyLog found, skipping user",
+            userId,
+          });
+          return { status: "skipped", userId };
+        }
+
+        logger.info({
+          msg: "Found analysts with studyLog",
+          userId,
+          analystCount: analysts.length,
+          analystIds: analysts.map((a) => a.id),
+        });
+
+        // Step 3-7: Process each analyst's messages and update memory
+        for (const analyst of analysts) {
+          await processAnalystForMemory({ userId, analyst });
+        }
+
+        // Output final memory after processing all analysts
+        const finalMemory = await prisma.memory.findFirst({
+          where: { userId },
+          orderBy: { version: "desc" },
+          select: { core: true, version: true },
+        });
+
+        console.log("\n" + "=".repeat(80));
+        console.log(`USER ${userId} - FINAL MEMORY (version ${finalMemory?.version ?? 0}):`);
+        console.log("=".repeat(80));
+        console.log(finalMemory?.core || "(empty)");
+        console.log("=".repeat(80) + "\n");
+
+        logger.info({
+          msg: "Successfully processed user",
+          userId,
+          analystCount: analysts.length,
+          memoryVersion: finalMemory?.version,
+          memoryLength: finalMemory?.core.length ?? 0,
+        });
+
+        return {
+          status: "processed",
+          userId,
+          analystCount: analysts.length,
+          memoryVersion: finalMemory?.version,
+        };
+      }),
+    );
+
+    // Count results
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        if (result.value.status === "processed") {
+          processedCount++;
+        } else if (result.value.status === "skipped") {
+          skippedCount++;
+        }
+      } else {
+        logger.error({
+          msg: "Failed to process user in batch",
+          error: result.reason instanceof Error ? result.reason.message : String(result.reason),
+        });
       }
-
-      logger.info({
-        msg: "Found analysts with studyLog",
-        userId,
-        analystCount: analysts.length,
-        analystIds: analysts.map((a) => a.id),
-      });
-
-      // Step 3-7: Process each analyst's messages and update memory
-      for (const analyst of analysts) {
-        await processAnalystForMemory({ userId, analyst });
-      }
-
-      // Output final memory after processing all analysts
-      const finalMemory = await prisma.memory.findFirst({
-        where: { userId },
-        orderBy: { version: "desc" },
-        select: { core: true, version: true },
-      });
-
-      console.log("\n" + "=".repeat(80));
-      console.log(`USER ${userId} - FINAL MEMORY (version ${finalMemory?.version ?? 0}):`);
-      console.log("=".repeat(80));
-      console.log(finalMemory?.core || "(empty)");
-      console.log("=".repeat(80) + "\n");
-
-      processedCount++;
-      logger.info({
-        msg: "Successfully processed user",
-        userId,
-        analystCount: analysts.length,
-        memoryVersion: finalMemory?.version,
-        memoryLength: finalMemory?.core.length ?? 0,
-      });
-    } catch (error) {
-      logger.error({
-        msg: "Failed to process user",
-        userId,
-        error: error instanceof Error ? error.message : String(error),
-      });
     }
+
+    logger.info({
+      msg: "Batch completed",
+      batchNumber: Math.floor(i / batchSize) + 1,
+      processedInBatch: results.filter(
+        (r) => r.status === "fulfilled" && r.value.status === "processed",
+      ).length,
+      skippedInBatch: results.filter((r) => r.status === "fulfilled" && r.value.status === "skipped")
+        .length,
+      failedInBatch: results.filter((r) => r.status === "rejected").length,
+    });
   }
 
   logger.info({
