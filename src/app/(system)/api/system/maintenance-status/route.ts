@@ -1,5 +1,6 @@
 import { prismaRO } from "@/prisma/prisma";
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 
 // Type definitions for maintenance config
 interface MaintenanceConfig {
@@ -14,8 +15,9 @@ interface MaintenanceConfig {
 // System config key for maintenance settings
 const MAINTENANCE_CONFIG_KEY = "maintenance_settings";
 
-export async function GET() {
-  try {
+// Cache the maintenance status check for 5 minutes
+const getCachedMaintenanceStatus = unstable_cache(
+  async () => {
     const now = new Date();
 
     // Get maintenance config
@@ -24,21 +26,21 @@ export async function GET() {
     });
 
     if (!configRecord) {
-      return NextResponse.json({
+      return {
         isInMaintenance: false,
         showNotification: false,
         maintenanceData: null,
-      });
+      };
     }
 
     const config = configRecord.value as unknown as MaintenanceConfig;
 
     if (!config.isActive) {
-      return NextResponse.json({
+      return {
         isInMaintenance: false,
         showNotification: false,
         maintenanceData: null,
-      });
+      };
     }
 
     const startTime = new Date(config.startTime);
@@ -51,18 +53,30 @@ export async function GET() {
     // Check if notification should be shown (after notification time but before maintenance ends)
     const showNotification = now >= notificationTime && now <= endTime;
 
-    return NextResponse.json({
+    return {
       isInMaintenance,
       showNotification,
       maintenanceData:
         isInMaintenance || showNotification
           ? {
-              startTime,
-              endTime,
+              startTime: startTime.toISOString(),
+              endTime: endTime.toISOString(),
               message: config.maintenanceMessage,
             }
           : null,
-    });
+    };
+  },
+  ["maintenance-status"],
+  {
+    revalidate: 300, // 5 minutes in seconds
+    tags: ["maintenance-status"],
+  },
+);
+
+export async function GET() {
+  try {
+    const status = await getCachedMaintenanceStatus();
+    return NextResponse.json(status);
   } catch (error) {
     console.error("Error checking maintenance status:", error);
     return NextResponse.json(

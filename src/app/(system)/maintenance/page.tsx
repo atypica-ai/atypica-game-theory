@@ -1,5 +1,4 @@
 "use client";
-import { checkMaintenanceStatus } from "@/app/admin/maintenance/actions";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { WrenchIcon } from "lucide-react";
@@ -7,22 +6,31 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type TMaintenanceStatus = NonNullable<
-  Awaited<ReturnType<typeof checkMaintenanceStatus>>
->["maintenanceData"];
+type TMaintenanceData = {
+  startTime: string;
+  endTime: string;
+  message: string;
+} | null;
 
 export default function MaintenancePage() {
-  // const { maintenanceData } = await checkMaintenanceStatus();
-  const [maintenanceData, setMaintenanceData] = useState<TMaintenanceStatus | null>(null);
-  // const t = await getTranslations("Maintenance");
+  const [maintenanceData, setMaintenanceData] = useState<TMaintenanceData>(null);
   const t = useTranslations("Maintenance");
   const locale = useLocale();
 
   // 在前端取，前端渲染，以获得正确的时区
   useEffect(() => {
-    checkMaintenanceStatus().then(({ maintenanceData }) => {
-      setMaintenanceData(maintenanceData);
-    });
+    fetch("/api/system/maintenance-status")
+      .then((res) => res.json())
+      .then(({ maintenanceData }) => {
+        if (maintenanceData) {
+          setMaintenanceData(maintenanceData);
+        } else {
+          window.location.replace("/"); // Redirect to homepage if no maintenance data is found
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch maintenance status:", error);
+      });
   }, []);
 
   // if (!maintenanceData) {
@@ -38,10 +46,11 @@ export default function MaintenancePage() {
       <p className="text-muted-foreground mb-8">{maintenanceData.message || t("description")}</p>
       <div className="mb-8 text-sm border rounded-md p-4 bg-muted/20">
         <p className="text-muted-foreground">
-          <strong>{t("start")}</strong> {formatDate(maintenanceData.startTime, locale)}
+          <strong>{t("start")}</strong> {formatDate(new Date(maintenanceData.startTime), locale)}
         </p>
         <p className="text-muted-foreground">
-          <strong>{t("expectedCompletion")}</strong> {formatDate(maintenanceData.endTime, locale)}
+          <strong>{t("expectedCompletion")}</strong>{" "}
+          {formatDate(new Date(maintenanceData.endTime), locale)}
         </p>
       </div>
       <Button variant="outline" asChild>

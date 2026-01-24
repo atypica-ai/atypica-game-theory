@@ -1,5 +1,4 @@
 "use client";
-import { checkMaintenanceStatus } from "@/app/admin/maintenance/actions";
 import { cn, formatDate } from "@/lib/utils";
 import { AlertCircleIcon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -13,7 +12,7 @@ export function MaintenanceNotification() {
   const [maintenanceInfo, setMaintenanceInfo] = useState<{
     showNotification: boolean;
     isInMaintenance: boolean;
-    maintenanceData: { startTime: Date; endTime: Date; message: string } | null;
+    maintenanceData: { startTime: string; endTime: string; message: string } | null;
   }>({
     showNotification: false,
     isInMaintenance: false,
@@ -25,8 +24,11 @@ export function MaintenanceNotification() {
   useEffect(() => {
     const checkMaintenance = async () => {
       try {
-        const result = await checkMaintenanceStatus();
-        setMaintenanceInfo(result);
+        const response = await fetch("/api/system/maintenance-status");
+        if (response.ok) {
+          const result = await response.json();
+          setMaintenanceInfo(result);
+        }
         setIsLoaded(true);
       } catch (error) {
         console.error("Failed to check maintenance status:", error);
@@ -63,8 +65,8 @@ export function MaintenanceNotification() {
           <span className="font-medium">{t("scheduledMaintenance")} </span>
           {maintenanceInfo.maintenanceData
             ? t("maintenancePeriod", {
-                startTime: formatDate(maintenanceInfo.maintenanceData.startTime, locale),
-                endTime: formatDate(maintenanceInfo.maintenanceData.endTime, locale),
+                startTime: formatDate(new Date(maintenanceInfo.maintenanceData.startTime), locale),
+                endTime: formatDate(new Date(maintenanceInfo.maintenanceData.endTime), locale),
               })
             : ""}
         </p>
