@@ -22,20 +22,21 @@ const log: Prisma.LogLevel[] =
 function getPoolConfig() {
   return {
     max: parseInt(process.env.DB_POOL_MAX || "20", 10),
-    min: parseInt(process.env.DB_POOL_MIN || "2", 10),
-    idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT_MS || "30000", 10),
+    min: parseInt(process.env.DB_POOL_MIN || "5", 10),
     connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT_MS || "10000", 10),
+    idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT_MS || "30000", 10),
     keepAliveInitialDelayMillis: parseInt(
       process.env.DB_KEEP_ALIVE_INITIAL_DELAY_MS || "10000",
       10,
     ),
+    maxUses: parseInt(process.env.DB_POOL_MAX_USES || "7500", 10),
   };
 }
 
 // 创建连接池配置
 function createPool(connectionString?: string, isReadOnly = false) {
   if (IS_NEXT_BUILD_PHASE) {
-    return new Pool();
+    return { pool: new Pool(), monitoringInterval: undefined };
   }
 
   if (!connectionString) {
@@ -49,12 +50,15 @@ function createPool(connectionString?: string, isReadOnly = false) {
     // 连接池配置（可通过环境变量自定义）
     max: poolConfig.max, // 最大连接数 (DB_POOL_MAX)
     min: poolConfig.min, // 最小连接数 (DB_POOL_MIN)
-    idleTimeoutMillis: poolConfig.idleTimeoutMillis, // 空闲连接超时 (DB_IDLE_TIMEOUT_MS)
     connectionTimeoutMillis: poolConfig.connectionTimeoutMillis, // 连接超时 (DB_CONNECTION_TIMEOUT_MS)
+    idleTimeoutMillis: poolConfig.idleTimeoutMillis, // 空闲连接超时 (DB_IDLE_TIMEOUT_MS)
 
     // 启用连接保活，防止长时间空闲连接被数据库关闭
     keepAlive: true,
     keepAliveInitialDelayMillis: poolConfig.keepAliveInitialDelayMillis, // (DB_KEEP_ALIVE_INITIAL_DELAY_MS)
+
+    // 长时间运行的数据库连接可能会遇到内存泄漏、事务未正确回滚、临时表残留等，使用一定次数以后回收
+    maxUses: poolConfig.maxUses,
 
     // 错误处理
     allowExitOnIdle: false,
@@ -76,6 +80,58 @@ function createPool(connectionString?: string, isReadOnly = false) {
     });
   });
 
+  // ✅ 添加更详细的监控
+  pool.on("acquire", () => {
+    const stats = {
+      total: pool.totalCount,
+      idle: pool.idleCount,
+      waiting: pool.waitingCount,
+    };
+
+    rootLogger.debug({
+      msg: "Connection acquired from pool",
+      ro: isReadOnly,
+      stats,
+    });
+
+    // ⚠️ 警告：如果没有空闲连接且有等待队列
+    if (stats.idle === 0 && stats.waiting > 0) {
+      rootLogger.warn({
+        msg: "⚠️ Connection pool exhausted!",
+        ro: isReadOnly,
+        stats,
+        // 这个警告说明你的连接池太小或有连接泄漏
+      });
+    }
+  });
+
+  pool.on("remove", () => {
+    rootLogger.debug({
+      msg: "Connection removed from pool",
+      ro: isReadOnly,
+      total: pool.totalCount,
+    });
+  });
+
+  // ✅ 定期报告连接池状态（可选，用于生产监控）
+  let monitoringInterval: NodeJS.Timeout | undefined = undefined;
+  if (process.env.NODE_ENV === "production") {
+    monitoringInterval = setInterval(() => {
+      const stats = {
+        total: pool.totalCount,
+        idle: pool.idleCount,
+        waiting: pool.waitingCount,
+      };
+      if (stats.waiting > 0 || stats.idle === 0) {
+        rootLogger.warn({
+          msg: "Connection pool status check",
+          ro: isReadOnly,
+          stats,
+        });
+      }
+    }, 30000); // 每 30 秒检查一次
+  }
+
   rootLogger[process.env.NODE_ENV === "production" ? "info" : "debug"]({
     msg: `Created PostgreSQL connection pool`,
     ro: isReadOnly,
@@ -87,7 +143,7 @@ function createPool(connectionString?: string, isReadOnly = false) {
     },
   });
 
-  return pool;
+  return { pool, monitoringInterval };
 }
 
 // 使用 Pool 创建 Prisma 客户端
@@ -116,20 +172,29 @@ const globalForPrisma = globalThis as unknown as {
         prismaRO: PrismaClient;
         pool: Pool;
         poolRO: Pool;
+        monitoringIntervals: NodeJS.Timeout[];
       }
     | undefined;
 };
 
 // 创建或重用 Pool 和 PrismaClient 实例（单例模式）
 if (!globalForPrisma.__prismaInstances__) {
-  const pool = createPool(process.env.DATABASE_URL, false);
-  const poolRO = createPool(process.env.DATABASE_RO_URL || process.env.DATABASE_URL, true);
+  const { pool, monitoringInterval: mainInterval } = createPool(process.env.DATABASE_URL, false);
+  const { pool: poolRO, monitoringInterval: roInterval } = createPool(
+    process.env.DATABASE_RO_URL || process.env.DATABASE_URL,
+    true,
+  );
+
+  const monitoringIntervals: NodeJS.Timeout[] = [];
+  if (mainInterval) monitoringIntervals.push(mainInterval);
+  if (roInterval) monitoringIntervals.push(roInterval);
 
   globalForPrisma.__prismaInstances__ = {
     pool,
     poolRO,
     prisma: createPrismaWithPool(pool, false),
     prismaRO: createPrismaWithPool(poolRO, true),
+    monitoringIntervals,
   };
 }
 
@@ -156,6 +221,10 @@ if (!IS_NEXT_BUILD_PHASE && process.env.NODE_ENV === "production") {
   const gracefulShutdown = async (signal: string) => {
     rootLogger.info({ msg: `Received ${signal}, closing database connections...` });
     try {
+      // 清理监控 intervals
+      const { monitoringIntervals } = globalForPrisma.__prismaInstances__!;
+      monitoringIntervals.forEach((intervalId) => clearInterval(intervalId));
+
       // 先断开 Prisma 客户端
       await Promise.all([prisma.$disconnect(), prismaRO.$disconnect()]);
 
