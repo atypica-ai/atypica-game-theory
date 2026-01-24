@@ -104,7 +104,7 @@ export async function createStudyUserChat(
           role,
           parts: [{ type: "text", text: content }],
         },
-        attachments, // attachments 单独保存
+        // attachments, // attachments 只保存在 analyst 上，然后在 baseAgentRequest 中提前处理好了以后，插入 messages 中
         tx,
       });
       await tx.analyst.create({
