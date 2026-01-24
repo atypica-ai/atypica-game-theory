@@ -9,6 +9,8 @@ import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { Analyst, AnalystKind, AnalystReport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { FinishReason, ModelMessage, stepCountIs, streamText, tool } from "ai";
+import { promises as fs } from "fs";
+import { getReportCacheDir, getReportCacheFilePath } from "../../artifacts/lib/reportCache";
 import { generateReportCoverImage } from "./coverImage";
 import {
   generateReportInputSchema,
@@ -202,20 +204,18 @@ export async function generateReport({
 } & AgentToolConfigArgs) {
   let onePageHtml = report.onePageHtml; // 如果 report 有内容，就继续使用 report 的 onePageHtml
 
-  const throttleSaveHTML = (() => {
+  const throttleSaveToFile = (() => {
     let timerId: NodeJS.Timeout | null = null;
+    const cacheDir = getReportCacheDir(analyst.userId, report.token);
+    const htmlFilePath = getReportCacheFilePath(analyst.userId, report.token);
 
-    return async (
-      reportId: number,
-      onePageHtml: string,
-      { immediate }: { immediate?: boolean } = {},
-    ) => {
+    return async (html: string, { immediate }: { immediate?: boolean } = {}) => {
       if (immediate) {
         if (timerId) {
           clearTimeout(timerId);
           timerId = null;
         }
-        saveNow();
+        await saveNow();
         return;
       }
 
@@ -223,19 +223,19 @@ export async function generateReport({
         timerId = setTimeout(() => {
           timerId = null;
           saveNow();
-        }, 5000); // 5秒节流
+        }, 5000); // 5 second throttle
       }
 
       async function saveNow() {
         try {
-          const report = await prisma.analystReport.update({
-            where: { id: reportId },
-            data: { onePageHtml: cleanHtmlFromMarkdown(onePageHtml) },
-          });
-          await triggerImagegenInReport(onePageHtml, report.token);
-          logger.info("HTML persisted successfully");
+          await fs.mkdir(cacheDir, { recursive: true });
+          await fs.writeFile(htmlFilePath, html, "utf-8");
+          logger.info("HTML persisted to local cache successfully");
         } catch (error) {
-          logger.error(`Error persisting HTML: ${(error as Error).message}`);
+          logger.error({
+            msg: "Error persisting HTML to cache",
+            error: (error as Error).message,
+          });
         }
       }
     };
@@ -311,7 +311,7 @@ export async function generateReport({
         onChunk: async ({ chunk }) => {
           if (chunk.type === "text-delta") {
             onePageHtml += chunk.text.toString();
-            await throttleSaveHTML(report.id, onePageHtml);
+            await throttleSaveToFile(onePageHtml);
           }
         },
 
@@ -364,8 +364,8 @@ export async function generateReport({
     });
 
     const { finishReason } = await streamTextPromise;
-    // finish 了以后，再保存一次
-    await throttleSaveHTML(report.id, onePageHtml, { immediate: true });
+    // Save final version to file
+    await throttleSaveToFile(onePageHtml, { immediate: true });
 
     if (finishReason === "length") {
       continue;
@@ -373,10 +373,41 @@ export async function generateReport({
       modelName = "claude-3-7-sonnet";
       continue;
     } else {
-      await prisma.analystReport.update({
-        where: { id: report.id },
-        data: { generatedAt: new Date() },
-      });
+      try {
+        // Read from cache file
+        const cleanedHtml = cleanHtmlFromMarkdown(onePageHtml);
+        // Single database save
+        await prisma.analystReport.update({
+          where: { id: report.id },
+          data: {
+            onePageHtml: cleanedHtml,
+            generatedAt: new Date(),
+          },
+        });
+        // Trigger image generation once with final HTML
+        await triggerImagegenInReport(cleanedHtml, report.token);
+        logger.info("Report saved to database successfully");
+      } catch (error) {
+        logger.error({
+          msg: "Error saving report to database",
+          error: (error as Error).message,
+        });
+        throw error;
+      } finally {
+        // Cleanup temp file after generation complete
+        try {
+          const cacheDir = getReportCacheDir(analyst.userId, report.token);
+          const htmlFilePath = getReportCacheFilePath(analyst.userId, report.token);
+          await fs.unlink(htmlFilePath);
+          await fs.rmdir(cacheDir);
+          logger.info("Cleaned up cache directory");
+        } catch (error) {
+          logger.warn({
+            msg: "Failed to cleanup cache directory",
+            error: (error as Error).message,
+          });
+        }
+      }
       break;
     }
   }
