@@ -2,7 +2,6 @@ import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
-import { ExtractServerActionData } from "@/lib/serverAction";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -18,9 +17,12 @@ export const GenerateReportResultMessage = ({
 }) => {
   const { replay } = useStudyContext();
   const t = useTranslations("Components.GenerateReportResultMessage");
-  const [report, setReport] = useState<ExtractServerActionData<
-    typeof fetchAnalystReportByToken
-  > | null>(null);
+  const [report, setReport] = useState<{
+    token: string;
+    coverCdnHttpUrl?: string;
+  }>({
+    token: toolInvocation.output.reportToken ?? toolInvocation.input.reportToken,
+  });
 
   useEffect(() => {
     const reportToken = toolInvocation.output.reportToken;

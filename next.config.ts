@@ -72,6 +72,8 @@ const nextConfig: NextConfig = {
     //     ? process.env.SERVER_ACTIONS_ALLOWED_ORIGINS.split(",")
     //     : [],
     // },
+    // see https://nextjs.org/docs/app/guides/memory-usage#preloading-entries
+    // preloadEntriesOnStart: false,
   },
   async rewrites() {
     return [

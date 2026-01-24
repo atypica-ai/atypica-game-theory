@@ -108,10 +108,12 @@ export async function generateChatTitle(userChatId: number): Promise<string> {
     )
     .join("");
 
-  const locale =
+  const locale: Locale =
     analyst?.locale && VALID_LOCALES.includes(analyst.locale as Locale)
       ? (analyst.locale as Locale)
-      : await getLocale();
+      : "en-US";
+  // 因为这个方法一般都在 waitUntil 里执行，waitUntil 里面不能访问 request headers，可能会导致 getLocale 失效
+  // : await getLocale();
 
   const { text } = await generateText({
     model: llm("gpt-5-nano"),
