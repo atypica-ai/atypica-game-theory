@@ -2,6 +2,7 @@ import "server-only";
 
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
+import { rootLogger } from "@/lib/logging";
 import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { InputJsonValue, ITXClientDenyList } from "@prisma/client/runtime/client";
@@ -81,53 +82,134 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
   streamingMessage: Omit<UIMessage, "role">,
   step: StepResult<T>,
 ) {
-  //⚠️  step.content 是上一个 step 的内容，不要用
-
   const parts = streamingMessage.parts ?? [];
-  // const contents = streamingMessage.content ? [streamingMessage.content] : [];
 
-  if (step.reasoningText) {
-    parts.push({ type: "reasoning", text: step.reasoningText });
-  }
-
-  const stepText = step.text.trim() || (step.toolResults.length > 0 ? "[tool-result]" : "[text]"); // 确保 content 一定有内容
-  // contents.push(stepText);
-  parts.push({ type: "text", text: stepText });
-
-  // 不管是哪个 step，都有可能有 toolCalls，所以要放在外面。
-  // 另外，text part 要放在 toolCalls part 的前面，规则是这样的，先文本再执行。
-  for (const toolCall of step.toolCalls) {
-    let toolPart: ToolUIPart | DynamicToolUIPart;
-    if (toolCall.dynamic) {
-      toolPart = {
-        type: "dynamic-tool",
-        toolName: toolCall.toolName,
-        state: "input-available",
-        input: toolCall.input,
-        toolCallId: toolCall.toolCallId,
-      };
+  for (const content of step.content) {
+    if (content.type === "reasoning") {
+      parts.push({
+        type: content.type,
+        text: content.text,
+        // 格外要注意，claude 模型的 extended thinking 有 signature，这个一定要带回去，不然无法被识别为是一个 reasoning block
+        providerMetadata: content.providerMetadata,
+      });
+    } else if (content.type === "text") {
+      parts.push({
+        type: content.type,
+        text: content.text,
+        providerMetadata: content.providerMetadata,
+      });
+    } else if (content.type === "source") {
+      if (content.sourceType === "url") {
+        parts.push({
+          type: "source-url",
+          sourceId: content.id,
+          url: content.url,
+          title: content.title,
+          providerMetadata: content.providerMetadata,
+        });
+      } else if (content.sourceType === "document") {
+        parts.push({
+          type: "source-document",
+          sourceId: content.id,
+          filename: content.filename,
+          title: content.title,
+          mediaType: content.mediaType,
+          providerMetadata: content.providerMetadata,
+        });
+      }
+    } else if (content.type === "tool-call") {
+      // tool part 不需要 providerMetadata
+      let toolPart: ToolUIPart | DynamicToolUIPart;
+      if (content.dynamic) {
+        toolPart = {
+          type: "dynamic-tool",
+          toolName: content.toolName,
+          state: "input-available",
+          input: content.input,
+          toolCallId: content.toolCallId,
+        };
+      } else {
+        toolPart = {
+          type: `tool-${content.toolName}`,
+          state: "input-available",
+          input: content.input,
+          toolCallId: content.toolCallId,
+        };
+      }
+      parts.push(toolPart);
+    } else if (content.type === "tool-error") {
+      const toolPartIndex = parts.findIndex(
+        (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === content.toolCallId,
+      );
+      if (toolPartIndex) {
+        parts[toolPartIndex] = {
+          ...parts[toolPartIndex],
+          state: "output-error",
+          errorText: content.error instanceof Error ? content.error.message : `${content.error}`,
+        } as ToolUIPart | DynamicToolUIPart;
+      }
+    } else if (content.type === "tool-result") {
+      const toolPartIndex = parts.findIndex(
+        (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === content.toolCallId,
+      );
+      if (toolPartIndex) {
+        parts[toolPartIndex] = {
+          ...parts[toolPartIndex],
+          state: "output-available",
+          output: content.output,
+        } as ToolUIPart | DynamicToolUIPart;
+      }
     } else {
-      toolPart = {
-        type: `tool-${toolCall.toolName}`,
-        state: "input-available",
-        input: toolCall.input,
-        toolCallId: toolCall.toolCallId,
-      };
+      // 目前暂时不支持
+      // content.type === "file"
+      rootLogger.error(
+        `appendStepToStreamingMessage received unsupported content type: ${content.type}`,
+      );
     }
-    const toolResult = step.toolResults.find((r) => r.toolCallId === toolCall.toolCallId);
-    if (toolResult) {
-      toolPart = {
-        ...toolPart,
-        state: "output-available",
-        input: toolResult.input,
-        toolCallId: toolCall.toolCallId,
-        output: toolResult.output,
-      };
-    }
-    parts.push(toolPart);
   }
-  // streamingMessage.content = contents.join("\n").trimStart();
+
   streamingMessage.parts = parts;
+
+  // if (step.reasoningText) {
+  //   parts.push({ type: "reasoning", text: step.reasoningText });
+  // }
+  // const stepText = step.text.trim() || (step.toolResults.length > 0 ? "[tool-result]" : "[text]"); // 确保 content 一定有内容
+  // // contents.push(stepText);
+  // parts.push({ type: "text", text: stepText });
+  // // 不管是哪个 step，都有可能有 toolCalls，所以要放在外面。
+  // // 另外，text part 要放在 toolCalls part 的前面，规则是这样的，先文本再执行。
+  // for (const toolCall of step.toolCalls) {
+  //   let toolPart: ToolUIPart | DynamicToolUIPart;
+  //   if (toolCall.dynamic) {
+  //     toolPart = {
+  //       type: "dynamic-tool",
+  //       toolName: toolCall.toolName,
+  //       state: "input-available",
+  //       input: toolCall.input,
+  //       toolCallId: toolCall.toolCallId,
+  //     };
+  //   } else {
+  //     toolPart = {
+  //       type: `tool-${toolCall.toolName}`,
+  //       state: "input-available",
+  //       input: toolCall.input,
+  //       toolCallId: toolCall.toolCallId,
+  //     };
+  //   }
+  //   const toolResult = step.toolResults.find((r) => r.toolCallId === toolCall.toolCallId);
+  //   if (toolResult) {
+  //     toolPart = {
+  //       ...toolPart,
+  //       state: "output-available",
+  //       input: toolResult.input,
+  //       toolCallId: toolCall.toolCallId,
+  //       output: toolResult.output,
+  //     };
+  //   }
+  //   parts.push(toolPart);
+  // }
+  // //streamingMessage.content = contents.join("\n").trimStart();
+  // streamingMessage.parts = parts;
 }
 
 export function appendChunkToStreamingMessage<T extends ToolSet>(
@@ -143,6 +225,7 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
       parts.push({ type: "text", text: chunk.text });
     } else {
       lastPart.text += chunk.text;
+      lastPart.providerMetadata = chunk.providerMetadata;
     }
   } else if (chunk.type === "reasoning-delta") {
     const parts = streamingMessage.parts;
@@ -151,6 +234,7 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
       parts.push({ type: "reasoning", text: chunk.text });
     } else {
       lastPart.text += chunk.text;
+      lastPart.providerMetadata = chunk.providerMetadata; // 格外要注意，claude 模型的 extended thinking 有 signature，这个一定要带回去，不然无法被识别为是一个 reasoning block
     }
   } else if (chunk.type === "tool-call") {
     // see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-input-streaming
@@ -162,6 +246,7 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
       toolCallId: chunk.toolCallId,
       input: chunk.input,
       state: "input-available",
+      // tool part 不需要 providerMetadata
     });
   } else if (chunk.type === "tool-result") {
     // streamingMessage.content += "";

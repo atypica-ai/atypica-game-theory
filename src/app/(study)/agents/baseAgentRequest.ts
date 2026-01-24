@@ -26,6 +26,7 @@ import {
   JSONValue,
   ModelMessage,
   PrepareStepFunction,
+  ReasoningUIPart,
   smoothStream,
   StaticToolResult,
   stepCountIs,
@@ -184,8 +185,22 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     // 不能通过后面的 modelMessages 判断，因为是要看 final assistant turn，也就是多个 assistant parts 在一起是一个 turn
     // 正好 streamingMessage 就是 final assistant turn
     // https://platform.claude.com/docs/en/build-with-claude/extended-thinking
+    // ⚠️ 注意 claude 要求 reasoning part 里面的 signature 一起传回去，不然不能被认为是一个 reasoning block
+    // 旧的消息都没有 providerMetadata, 那就直接禁用 thinking 了, 新的有, 在 appendStepToStreamingMessage 里修复并保存了
+    const reasoningSignatureValie = (part: ReasoningUIPart) => {
+      if (
+        part.providerMetadata &&
+        "bedrock" in part.providerMetadata && // 目前主要模型就是 bedrock, 所以这里只考虑 bedrock
+        "signature" in part.providerMetadata["bedrock"]
+      ) {
+        return true;
+      }
+      return false;
+    };
     const firstPart = streamingMessage.parts.filter((part) => part.type !== "step-start").at(0);
-    if (firstPart?.type === "reasoning") {
+    if (!firstPart) {
+      // 保持原配置
+    } else if (firstPart.type === "reasoning" && reasoningSignatureValie(firstPart)) {
       providerOptions["bedrock"] = {
         ...providerOptions["bedrock"],
         reasoningConfig: { type: "enabled", budgetTokens: 1024 },
