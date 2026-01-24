@@ -345,19 +345,30 @@ Return only the corrected text without explanations or markup.
       return part;
     });
 
-    await prisma.chatMessage.update({
-      where: { messageId: dbMessage.messageId },
-      data: {
-        parts: updatedParts as unknown as InputJsonValue,
-        content: correctedText, // 更新 legacy content 字段
-        extra: {
-          ...(typeof dbMessage.extra === "object" && dbMessage.extra !== null
-            ? dbMessage.extra
-            : {}),
-          originalText, // 保存原始文本用于审计
+    await prisma.chatMessage
+      .update({
+        where: { messageId: dbMessage.messageId },
+        data: {
+          parts: updatedParts as unknown as InputJsonValue,
+          content: correctedText, // 更新 legacy content 字段
+          extra: {
+            ...(typeof dbMessage.extra === "object" && dbMessage.extra !== null
+              ? dbMessage.extra
+              : {}),
+            originalText, // 保存原始文本用于审计
+          },
         },
-      },
-    });
+      })
+      .catch((error) => {
+        logger.error({
+          msg: "Failed to update corrected message",
+          messageId: dbMessage.messageId,
+          error: error instanceof Error ? error.message : String(error),
+          correctedTextPreview: correctedText.slice(0, 200),
+          originalTextPreview: originalText.slice(0, 200),
+        });
+        throw error;
+      });
 
     logger.info({
       msg: "User message corrected successfully",
