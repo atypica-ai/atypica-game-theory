@@ -1,23 +1,17 @@
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
-import { Analyst, Persona } from "@/prisma/client";
+import { Persona } from "@/prisma/client";
 import { Locale } from "next-intl";
 
 export const interviewerSystem = ({
-  analyst,
   instruction,
   locale,
 }: {
-  analyst: Analyst;
   instruction: string;
   locale: Locale;
 }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
-你是${analyst.role}，你的任务是进行一次深入的消费者访谈，遵循专业的访谈方法学。我希望你能以对话式、富有同理心且引人入胜的方式提出问题，挖掘受访者的真实想法和深层需求。
-
-<访谈主题>
-${analyst.topic}
-</访谈主题>
+你是一位专业的访谈员，你的任务是进行一次深入的访谈，遵循专业的访谈方法学。我希望你能以对话式、富有同理心且引人入胜的方式提出问题，挖掘受访者的真实想法和深层需求。
 
 <访谈要求>
 ${instruction}
@@ -62,11 +56,7 @@ ${instruction}
 记住，你的目标是收集深度洞察而非表面信息，请灵活运用上述方法，创造专业而自然的访谈体验。
 `
     : `${promptSystemConfig({ locale })}
-You are a ${analyst.role}, and your task is to conduct an in-depth consumer interview following professional interview methodology. I need you to ask questions in a conversational, empathetic, and engaging manner to uncover the interviewee's genuine thoughts and deep-seated needs.
-
-<Interview Topic>
-${analyst.topic}
-</Interview Topic>
+You are a professional interviewer, and your task is to conduct an in-depth interview following professional interview methodology. I need you to ask questions in a conversational, empathetic, and engaging manner to uncover the interviewee's genuine thoughts and deep-seated needs.
 
 <Interview Requirements>
 ${instruction}
@@ -111,27 +101,17 @@ At the end of the interview, you must:
 Remember, your goal is to collect deep insights rather than surface-level information. Please flexibly apply the above methods to create a professional yet natural interview experience.
 `;
 
-export const interviewerPrologue = ({ analyst, locale }: { analyst: Analyst; locale: Locale }) =>
+export const interviewerPrologue = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
-您好！我是${analyst.role}，很高兴今天能有机会与您交流。
-
-我们今天的话题是关于：
-<主题>
-${analyst.topic}
-</主题>
+您好！很高兴今天能有机会与您交流。
 
 这次对话旨在了解您的真实体验和想法，没有对错之分，您分享的每一个观点对我们都非常宝贵。整个过程会像朋友间的自然交流，大约持续10-15分钟。
 
 在我们开始前，请您简单介绍一下自己（如您的职业、兴趣或与今天话题相关的经历）。这有助于我更好地理解您的背景和观点。
 `
     : `${promptSystemConfig({ locale })}
-Hello! I'm a ${analyst.role}, and I'm delighted to have this opportunity to chat with you today.
-
-Our topic for today is about:
-<Topic>
-${analyst.topic}
-</Topic>
+Hello! I'm delighted to have this opportunity to chat with you today.
 
 This conversation aims to understand your authentic experiences and thoughts. There are no right or wrong answers—every perspective you share is incredibly valuable to us. The entire process will feel like a natural conversation between friends, lasting about 10-15 minutes.
 

@@ -102,6 +102,10 @@ export type UserChatExtra = Partial<{
     submittedAt: string;
   };
   error: string;
+  /**
+   * @todo 以下信息需要复制到 context 字段里去
+   */
+  // studyUserChat 专用
   referenceUserChats: string[]; // List of chat tokens used as context
   researchTemplateId: number; // Research template used to initiate this chat
   // study user chat 专用

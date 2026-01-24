@@ -14,7 +14,7 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import type { Analyst, UserChatExtra } from "@/prisma/client";
+import type { Analyst, ChatMessageAttachment, UserChatExtra } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -54,6 +54,7 @@ export async function createStudyAgentConfig(
 ): Promise<AgentRequestConfig<TOOLS>> {
   const {
     studyUserChatId,
+    analyst,
     userId,
     locale,
     logger,
@@ -84,6 +85,7 @@ export async function createStudyAgentConfig(
 
   const allTools = buildStudyTools({
     studyUserChatId,
+    analyst,
     userId,
     agentToolArgs,
   });
@@ -160,11 +162,12 @@ export async function createStudyAgentConfig(
  * Note: createSubAgent tool is added dynamically in base if MCP clients are available
  */
 function buildStudyTools(params: {
+  analyst: Pick<Analyst, "id" | "attachments">;
   studyUserChatId: number;
   userId: number;
   agentToolArgs: AgentToolConfigArgs;
 }) {
-  const { studyUserChatId, userId, agentToolArgs } = params;
+  const { studyUserChatId, analyst, userId, agentToolArgs } = params;
 
   return {
     [StudyToolName.requestInteraction]: requestInteractionTool,
@@ -178,7 +181,12 @@ function buildStudyTools(params: {
     [StudyToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
     [StudyToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
     [StudyToolName.buildPersona]: buildPersonaTool({ userId, ...agentToolArgs }),
-    [StudyToolName.interviewChat]: interviewChatTool({ userId, studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.interviewChat]: interviewChatTool({
+      userId,
+      userChatId: studyUserChatId,
+      attachments: analyst.attachments as ChatMessageAttachment[],
+      ...agentToolArgs,
+    }),
     [StudyToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
     [StudyToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
     [StudyToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),

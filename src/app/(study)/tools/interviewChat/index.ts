@@ -16,8 +16,11 @@ import { reasoningThinkingTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
+import { UserChatContext } from "@/app/(study)/context/types";
+import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
+import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -50,16 +53,20 @@ type TReduceTokens = {
   ratio: number;
 } | null;
 
+const mergeIds = (ids1: number[], ids2: number[]) => Array.from(new Set([...ids1, ...ids2]));
+
 export const interviewChatTool = ({
   userId,
-  studyUserChatId,
+  userChatId,
+  attachments,
   locale,
   abortSignal,
   statReport,
   logger,
 }: {
   userId: number;
-  studyUserChatId: number;
+  userChatId: number;
+  attachments: ChatMessageAttachment[]; // 让 personas 看附件内容
 } & AgentToolConfigArgs) =>
   tool({
     description:
@@ -70,14 +77,60 @@ export const interviewChatTool = ({
       return { type: "text", value: result.plainText };
     },
     execute: async ({ personas, instruction }): Promise<InterviewChatResult> => {
-      const { analyst } = await prisma.userChat.findUniqueOrThrow({
-        where: { id: studyUserChatId, kind: "study" },
-        select: { analyst: { select: { id: true } } },
+      // 第一步，先把 analyst 上的研究都转移到每个 userChat 上下文里面唯一的一个用于 1v1 访谈的 persona panel
+      const { analyst, context } = await prisma.userChat.findUniqueOrThrow({
+        where: { id: userChatId, kind: "study" },
+        select: {
+          analyst: { select: { id: true } },
+          context: true,
+          extra: true,
+        },
       });
-      if (!analyst) {
-        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
+      let analystId: number | undefined = analyst?.id;
+      let interviewPersonaPanelId = (context as UserChatContext).interviewPersonaPanelId;
+      if (!interviewPersonaPanelId) {
+        const interviews = analystId
+          ? await prisma.analystInterview.findMany({
+              where: { analystId },
+              select: { id: true, personaId: true },
+            })
+          : [];
+        const personaPanel = await prisma.personaPanel.create({
+          data: {
+            userId,
+            personaIds: mergeIds(
+              interviews.map((i) => i.personaId),
+              personas.map((p) => p.id),
+            ),
+          },
+        });
+        interviewPersonaPanelId = personaPanel.id;
+        await mergeUserChatContext({
+          id: userChatId,
+          context: { interviewPersonaPanelId },
+        });
+        await prisma.analystInterview.updateMany({
+          where: { id: { in: interviews.map((i) => i.id) } },
+          data: { personaPanelId: interviewPersonaPanelId },
+        });
+      } else {
+        const personaPanel = await prisma.personaPanel.findUniqueOrThrow({
+          where: { id: interviewPersonaPanelId },
+        });
+        await prisma.personaPanel.update({
+          where: { id: interviewPersonaPanelId },
+          data: {
+            userId,
+            personaIds: mergeIds(
+              personaPanel.personaIds as number[],
+              personas.map((p) => p.id),
+            ),
+          },
+        });
       }
-      const analystId = analyst.id;
+      analystId = undefined;
+      // 之后的代码里，只使用 interview PersonaPanel, 不再使用 analyyst
+
       const single = async ({
         id: personaId,
         name,
@@ -86,8 +139,11 @@ export const interviewChatTool = ({
         name: string;
       }): Promise<{ name: string; issue: string } | { name: string; conclusion: string }> => {
         try {
-          const interview = await prisma.analystInterview.findUnique({
-            where: { analystId_personaId: { analystId, personaId } },
+          const interview = await prisma.analystInterview.findFirst({
+            where: {
+              personaPanelId: interviewPersonaPanelId,
+              personaId,
+            },
           });
           // 不重复访谈
           if (interview?.conclusion) {
@@ -96,14 +152,13 @@ export const interviewChatTool = ({
               conclusion: interview.conclusion,
             };
           }
-          const { analystInterviewId, interviewUserChatId, prompt, attachments } =
-            await prepareDBForInterview({
-              userId,
-              personaId,
-              analystId,
-              instruction,
-              locale,
-            });
+          const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
+            userId,
+            personaId,
+            interviewPersonaPanelId,
+            instruction,
+            locale,
+          });
           const interviewLog = logger.child({ interviewUserChatId, analystInterviewId });
           const mergedAbortSignal = AbortSignal.any([
             abortSignal,
@@ -195,40 +250,38 @@ async function generateInterviewSummary(
 export async function prepareDBForInterview({
   userId,
   personaId,
-  analystId,
+  interviewPersonaPanelId,
   instruction,
   locale,
 }: {
   userId: number;
   personaId: number;
-  analystId: number;
+  interviewPersonaPanelId: number;
   instruction: string;
   locale: Locale;
 }) {
-  const [persona, analyst] = await Promise.all([
-    prisma.persona.findUniqueOrThrow({ where: { id: personaId } }),
-    prisma.analyst.findUniqueOrThrow({ where: { id: analystId } }),
-  ]);
+  const persona = await prisma.persona.findUniqueOrThrow({ where: { id: personaId } });
   const personaPrompt = personaAgentSystem({ persona, locale });
-  const interviewerPrompt = interviewerSystem({ analyst, instruction, locale });
-  const interviewerProloguePrompt = interviewerPrologue({ analyst, locale });
+  const interviewerPrompt = interviewerSystem({ instruction, locale });
+  const interviewerProloguePrompt = interviewerPrologue({ locale });
   const interviewerAttachmentPrompt = interviewerAttachment({ persona, locale });
-  const attachments = analyst.attachments
-    ? (analyst.attachments as ChatMessageAttachment[])
-    : undefined;
   const conclusion = ""; // conclusion 被用于判断是否结束，开始前一定要清空
-  const interview = await prisma.analystInterview.upsert({
-    where: {
-      analystId_personaId: { analystId, personaId },
+  const interview = await prisma.analystInterview.create({
+    data: {
+      personaPanelId: interviewPersonaPanelId,
+      personaId,
+      instruction,
+      conclusion,
     },
-    update: { instruction, conclusion },
-    create: { analystId, personaId, instruction, conclusion },
   });
   let interviewUserChatId = interview.interviewUserChatId;
   if (!interviewUserChatId) {
     const interviewUserChat = await createUserChat({
       userId,
-      title: analyst.topic.substring(0, 50),
+      title: truncateForTitle(`${persona.name} - ${instruction}`, {
+        maxDisplayWidth: 60,
+        suffix: "",
+      }),
       kind: "interview",
     });
     interviewUserChatId = interviewUserChat.id;
@@ -251,7 +304,6 @@ export async function prepareDBForInterview({
       interviewerProloguePrompt,
       interviewerAttachmentPrompt,
     },
-    attachments,
   };
 }
 

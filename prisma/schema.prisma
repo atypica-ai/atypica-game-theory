@@ -273,23 +273,6 @@ model AnalystPodcast {
   @@index([analystId])
 }
 
-model AnalystInterview {
-  id                  Int       @id @default(autoincrement())
-  analystId           Int       @db.Integer
-  analyst             Analyst   @relation(fields: [analystId], references: [id])
-  personaId           Int       @db.Integer
-  persona             Persona   @relation(fields: [personaId], references: [id])
-  instruction         String    @db.Text
-  conclusion          String    @db.Text
-  interviewUserChatId Int?      @unique @db.Integer
-  interviewUserChat   UserChat? @relation(fields: [interviewUserChatId], references: [id])
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@unique([analystId, personaId])
-}
-
 enum UserChatKind {
   scout
   study
@@ -308,6 +291,7 @@ model UserChat {
   title           String       @db.VarChar(255)
   kind            UserChatKind
   backgroundToken String?      @db.VarChar(255)
+  context         Json         @default("{}")
   extra           Json         @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -653,8 +637,26 @@ model PersonaPanel {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   discussionTimelines DiscussionTimeline[]
+  analystInterviews   AnalystInterview[]
 
   @@index([userId])
+}
+
+model AnalystInterview {
+  id                  Int           @id @default(autoincrement())
+  analystId           Int?          @db.Integer
+  analyst             Analyst?      @relation(fields: [analystId], references: [id])
+  personaPanelId      Int?
+  personaPanel        PersonaPanel? @relation(fields: [personaPanelId], references: [id], onDelete: SetNull)
+  personaId           Int           @db.Integer
+  persona             Persona       @relation(fields: [personaId], references: [id])
+  instruction         String        @db.Text
+  conclusion          String        @db.Text
+  interviewUserChatId Int?          @unique @db.Integer
+  interviewUserChat   UserChat?     @relation(fields: [interviewUserChatId], references: [id])
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model DiscussionTimeline {
