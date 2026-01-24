@@ -23,7 +23,7 @@ export type IssueStudiesSearchParams = {
 };
 
 interface IssueStudiesPageClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function IssueStudiesPageClient({ initialSearchParams }: IssueStudiesPageClientProps) {

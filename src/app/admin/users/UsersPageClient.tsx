@@ -72,7 +72,7 @@ export type UsersSearchParams = {
 };
 
 interface UsersPageClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {

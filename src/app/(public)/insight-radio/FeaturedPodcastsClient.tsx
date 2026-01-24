@@ -17,7 +17,7 @@ type FeaturedPodcastItem = ExtractServerActionData<typeof fetchFeaturedPodcasts>
 export function FeaturedPodcastsClient({
   initialSearchParams,
 }: {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }) {
   const locale = useLocale();
   const t = useTranslations("FeaturedPodcastsPage");

@@ -4,8 +4,8 @@
  */
 export function parseServerSearchParams(searchParams: {
   [key: string]: string | string[] | undefined;
-}): Record<string, string | number> {
-  const result: Record<string, string | number> = {};
+}): Record<string, string | number | boolean> {
+  const result: Record<string, string | number | boolean> = {};
 
   for (const [key, rawValue] of Object.entries(searchParams)) {
     if (rawValue !== undefined) {
@@ -14,6 +14,10 @@ export function parseServerSearchParams(searchParams: {
       // Try to parse as number if it looks like a number
       if (value && /^\d+$/.test(value)) {
         result[key] = parseInt(value, 10);
+      } else if (value === "true") {
+        result[key] = true;
+      } else if (value === "false") {
+        result[key] = false;
       } else if (value) {
         result[key] = value;
       }

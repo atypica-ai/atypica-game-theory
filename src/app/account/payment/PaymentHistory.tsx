@@ -18,7 +18,7 @@ import Link from "next/link";
 import useSWR from "swr";
 
 interface PaymentHistoryClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function PaymentHistory({ initialSearchParams }: PaymentHistoryClientProps) {

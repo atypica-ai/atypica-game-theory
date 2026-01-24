@@ -29,7 +29,7 @@ import Link from "next/link";
 import useSWR from "swr";
 
 interface TokensHistoryProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 type TokensHistoryItem = TokensLog & { consumedBy?: string; noCharge?: "true" | "false" | null };

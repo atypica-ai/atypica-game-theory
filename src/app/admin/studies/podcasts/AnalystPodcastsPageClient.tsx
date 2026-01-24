@@ -30,7 +30,7 @@ export type AnalystPodcastsSearchParams = {
 };
 
 interface AnalystPodcastsPageClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function AnalystPodcastsPageClient({ initialSearchParams }: AnalystPodcastsPageClientProps) {

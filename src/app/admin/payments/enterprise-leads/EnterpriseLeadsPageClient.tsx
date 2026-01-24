@@ -26,7 +26,7 @@ export type EnterpriseLeadsSearchParams = {
 export function EnterpriseLeadsPageClient({
   initialSearchParams,
 }: {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }) {
   const { status } = useSession();
   const locale = useLocale();

@@ -78,7 +78,7 @@ export function AdminStudiesPageClient({
   initialSearchParams,
   defaultPodcastPrompt,
 }: {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
   defaultPodcastPrompt: string;
 }) {
   const { status } = useSession();

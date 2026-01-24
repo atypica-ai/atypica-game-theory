@@ -52,7 +52,7 @@ export type TeamsSearchParams = {
 };
 
 interface TeamsPageClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {

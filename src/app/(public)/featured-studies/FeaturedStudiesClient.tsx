@@ -19,7 +19,7 @@ type TReports = ExtractServerActionData<typeof fetchPublicFeaturedItems>;
 export default function FeaturedStudiesClient({
   initialSearchParams,
 }: {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }) {
   const locale = useLocale();
   const t = useTranslations("FeaturedStudiesPage");

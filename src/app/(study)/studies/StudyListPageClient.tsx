@@ -15,7 +15,7 @@ import { StudyCard } from "./StudyCard";
 export function StudyListPageClient({
   initialSearchParams,
 }: {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }) {
   const t = useTranslations("StudyListPage");
   const inputRef = useRef<HTMLInputElement>(null);

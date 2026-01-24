@@ -54,7 +54,7 @@ export type AnalystReportsSearchParams = {
 };
 
 interface AnalystReportsPageClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function AnalystReportsPageClient({ initialSearchParams }: AnalystReportsPageClientProps) {

@@ -47,7 +47,7 @@ export default function PersonasList({
   initialParams,
 }: {
   scoutUserChat?: UserChat;
-  initialParams: Record<string, string | number>;
+  initialParams: Record<string, string | number | boolean>;
 }) {
   const router = useRouter();
   const [selectedPersona, setSelectedPersona] = useState<TAdminPersona | null>(null);

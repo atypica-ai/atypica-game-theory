@@ -23,7 +23,7 @@ export type PersonasSearchParams = {
 };
 
 interface PersonasPageClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function PersonasPageClient({ initialSearchParams }: PersonasPageClientProps) {

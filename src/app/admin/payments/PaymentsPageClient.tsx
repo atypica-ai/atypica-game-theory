@@ -29,7 +29,7 @@ export type PaymentsSearchParams = {
 };
 
 interface PaymentsPageClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function PaymentsPageClient({ initialSearchParams }: PaymentsPageClientProps) {

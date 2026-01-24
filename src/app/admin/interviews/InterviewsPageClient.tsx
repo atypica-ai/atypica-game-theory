@@ -35,7 +35,7 @@ export type InterviewsSearchParams = {
 };
 
 interface InterviewsPageClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function InterviewsPageClient({ initialSearchParams }: InterviewsPageClientProps) {

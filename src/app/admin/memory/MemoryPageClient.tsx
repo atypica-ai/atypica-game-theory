@@ -44,7 +44,7 @@ export type MemorySearchParams = {
 };
 
 interface MemoryPageClientProps {
-  initialSearchParams: Record<string, string | number>;
+  initialSearchParams: Record<string, string | number | boolean>;
 }
 
 export function MemoryPageClient({ initialSearchParams }: MemoryPageClientProps) {
