@@ -1,6 +1,7 @@
 import { proxiedImageCdnUrl, proxiedObjectCdnUrl } from "@/app/(system)/cdn/lib";
 import { truncateByDisplayWidth } from "@/lib/textUtils";
 import { fetchFeaturedPodcasts } from "../actions";
+import { getLocalizedConfig, getPodcastConfig } from "./podcastConfig";
 
 export const dynamic = "force-dynamic";
 
@@ -10,21 +11,36 @@ export const dynamic = "force-dynamic";
  *
  * Query parameters:
  * - locale: "en-US" or "zh-CN" (default: "en-US")
+ * - tag: Podcast channel tag (default: "podcastRSS")
+ * - platform: Platform type (youtube | xiaoyuzhou | spotify | apple)
  */
 export async function GET(request: Request) {
   // const baseUrl = await getRequestOrigin();
   const baseUrl = "https://atypica.ai";
 
-  // Parse locale from query parameter
+  // Parse query parameters
   const url = new URL(request.url);
   const localeParam = url.searchParams.get("locale");
   const platform = url.searchParams.get("platform"); // youtube | xiaoyuzhou | spotify | apple
+  const tag = url.searchParams.get("tag") || "podcastRSS"; // Default to "podcastRSS"
   const locale = localeParam === "zh-CN" ? "zh-CN" : "en-US"; // Default to en-US
 
-  // Fetch podcasts with podcastRSS tag filter
+  // Get podcast configuration (throws error if tag not configured)
+  let podcastConfig;
+  try {
+    podcastConfig = getPodcastConfig(tag);
+  } catch (error) {
+    return new Response(error instanceof Error ? error.message : "Invalid podcast tag", {
+      status: 400,
+    });
+  }
+
+  const config = getLocalizedConfig(podcastConfig, locale);
+
+  // Fetch podcasts with tag filter
   const result = await fetchFeaturedPodcasts({
     locale,
-    tag: "podcastRSS",
+    tag: podcastConfig.tag,
     pageSize: 100,
   });
 
@@ -70,17 +86,7 @@ export async function GET(request: Request) {
 
   // Set language code for RSS feed
   const languageCode = locale === "zh-CN" ? "zh" : "en";
-  const title = "Atypica Insight Radio";
-  const description =
-    locale === "zh-CN"
-      ? `在信息爆炸的时代，Atypica.AI 让商业研究不仅能“看”，还能“听”。我们把传统的市场和商业调研，变成一场充满洞察力的音频之旅——随时随地，轻松获得新观点。每一期节目都带来鲜活的案例、趋势与视角，帮助你听见消费者，读懂市场。想让你的研究和观点也被世界听见？快来 Atypica.AI，一键生成属于你的研究与播客。`
-      : "In an age of information overload, atypica.AI makes research reports something you can not only read, but listen to. We turn traditional market research into an insightful audio journey you can enjoy anytime and anywhere. Each episode brings fresh ideas and perspectives to help you hear the consumers, and understand the market. 💡 And if you'd like, you can also create your own research reports and podcasts with atypica.AI. We can't wait to hear your voice too.";
-  const author = "atypica.AI";
-  const email = "hi@atypica.ai";
-  const logoSrc =
-    locale === "zh-CN"
-      ? "https://bmrlab-prod.s3.cn-north-1.amazonaws.com.cn/atypica/public/atypica-insight-podcast-logo-20251118.jpg"
-      : "https://bmrlab-prod.s3.us-east-1.amazonaws.com/atypica/public/atypica-insight-podcast-logo-20251118.jpg";
+  const { title, description, author, email, logoSrc, categories, explicit, type } = config;
 
   // Generate RSS XML
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
@@ -97,17 +103,23 @@ export async function GET(request: Request) {
 
     <itunes:author>${author}</itunes:author>
     <itunes:summary>${description}</itunes:summary>
-    <itunes:type>episodic</itunes:type>
+    <itunes:type>${type}</itunes:type>
     <itunes:owner>
       <itunes:name>${author}</itunes:name>
       <itunes:email>${email}</itunes:email>
     </itunes:owner>
     <itunes:image href="${logoSrc}"/>
-    <itunes:category text="Business">
-      <itunes:category text="Management"/>
-    </itunes:category>
-    <itunes:category text="Technology"/>
-    <itunes:explicit>false</itunes:explicit>
+    ${categories
+      .map((category) => {
+        if (category.subcategory) {
+          return `<itunes:category text="${category.text}">
+      <itunes:category text="${category.subcategory}"/>
+    </itunes:category>`;
+        }
+        return `<itunes:category text="${category.text}"/>`;
+      })
+      .join("\n    ")}
+    <itunes:explicit>${explicit}</itunes:explicit>
 
     ${validPodcasts
       .map((item, index) => {
@@ -151,7 +163,7 @@ export async function GET(request: Request) {
       <itunes:summary><![CDATA[${formattedDescription}]]></itunes:summary>
       <itunes:episodeType>${episodeType}</itunes:episodeType>
       <itunes:episode>${validPodcasts.length - index}</itunes:episode>${duration ? `\n      <itunes:duration>${formatDuration(duration)}</itunes:duration>` : ""}${coverImageUrl ? `\n      <itunes:image href="${escapeXml(coverImageUrl)}"/>` : ""}
-      <itunes:explicit>false</itunes:explicit>
+      <itunes:explicit>${explicit}</itunes:explicit>
     </item>`;
       })
       .join("\n")}

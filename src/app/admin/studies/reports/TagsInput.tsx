@@ -35,7 +35,7 @@ const ROLE_TAGS = [
   "productManagers",
 ];
 
-const PODCAST_TAGS = ["podcastRSS"];
+const PODCAST_TAGS = ["podcastRSS", "atypicaBet"];
 
 const AVAILABLE_TAGS = [...ANALYST_KIND_TAGS, ...ROLE_TAGS, ...PODCAST_TAGS];
 
