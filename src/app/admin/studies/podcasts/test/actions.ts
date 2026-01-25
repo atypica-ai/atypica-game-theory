@@ -37,16 +37,7 @@ export async function generatePodcastAudioFromScriptAction({
     method: "generatePodcastAudioFromScriptAction",
   });
 
-  try {
-    await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
-  } catch (error) {
-    logger.error({
-      msg: "Admin auth check failed",
-      error: error instanceof Error ? error.message : String(error),
-    });
-    // checkAdminAuth throws forbidden() which is handled by Next.js
-    throw error;
-  }
+  const { id: adminUserId } = await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   if (!script || !script.trim()) {
     return {
@@ -82,26 +73,9 @@ export async function generatePodcastAudioFromScriptAction({
     });
 
     if (!testAnalyst) {
-      // Find any admin user to use as owner
-      const adminUser = await prisma.user.findFirst({
-        where: {
-          adminUser: {
-            isNot: null,
-          },
-        },
-      });
-
-      if (!adminUser) {
-        return {
-          success: false,
-          message: "No admin user found to create test analyst",
-          code: "internal_server_error",
-        };
-      }
-
       // Create a test UserChat for the analyst (required for share page)
       const testUserChat = await createUserChat({
-        userId: adminUser.id,
+        userId: adminUserId,
         kind: "study",
         title: "[TEST] Podcast Audio Test Study",
       });
@@ -109,7 +83,7 @@ export async function generatePodcastAudioFromScriptAction({
       // Create the test analyst with the UserChat linked
       testAnalyst = await prisma.analyst.create({
         data: {
-          userId: adminUser.id,
+          userId: adminUserId,
           studyUserChatId: testUserChat.id,
           topic: "[TEST] Podcast Audio Test Analyst",
           brief: "Test analyst for podcast audio generation testing",
@@ -144,6 +118,7 @@ export async function generatePodcastAudioFromScriptAction({
     const podcast = await prisma.analystPodcast
       .create({
         data: {
+          userId: adminUserId,
           analystId: testAnalyst.id,
           token: podcastToken,
           instruction: "[TEST] Script-based audio generation",

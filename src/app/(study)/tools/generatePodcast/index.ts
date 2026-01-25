@@ -4,7 +4,9 @@ import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { PodcastKind } from "@/app/(podcast)/types";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
-import { AnalystPodcastExtra } from "@/prisma/client";
+import { UserChatContext } from "@/app/(study)/context/types";
+import { mergeUserChatContext } from "@/app/(study)/context/utils";
+import { AnalystKind, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import {
@@ -14,13 +16,15 @@ import {
 } from "./types";
 
 export const generatePodcastTool = ({
-  studyUserChatId,
+  userId,
+  userChatId,
   locale,
   abortSignal,
   statReport,
   logger: _logger,
 }: {
-  studyUserChatId: number;
+  userId: number;
+  userChatId: number;
 } & AgentToolConfigArgs) =>
   tool({
     description:
@@ -38,52 +42,43 @@ export const generatePodcastTool = ({
 
       // Get analyst to access topic, studyLog, and kind
       const userChat = await prisma.userChat.findUniqueOrThrow({
-        where: { id: studyUserChatId, kind: "study" },
+        where: { id: userChatId, kind: "study" },
         select: {
+          title: true,
+          token: true,
           analyst: {
-            select: {
-              id: true,
-              userId: true,
-              topic: true,
-              brief: true,
-              studyLog: true,
-              kind: true,
-            },
+            select: { studyLog: true, topic: true, kind: true },
           },
+          context: true,
         },
       });
 
-      let analyst = userChat.analyst;
-
-      if (!analyst) {
-        throw new Error("Analyst does not exist for this study");
-      }
+      let studyLog = userChat.analyst?.studyLog ?? "";
 
       // 如果 studyLog 没有生成过，先生成，podcast 的内容主要来自 studyLog
-      if (analyst.studyLog) {
+      if (studyLog) {
         logger.info("generatePodcast: studyLog found in Analyst");
       } else {
         logger.info("studyLog not found in Analyst, generating studyLog");
-        const { studyLog } = await generateAndSaveStudyLog({
-          analyst,
+        const result = await generateAndSaveStudyLog({
+          userId,
+          userChatId,
           messages,
           locale,
           abortSignal,
           statReport,
           logger,
         });
-        // 更新 analyst 对象上的 studyLog
-        analyst = {
-          ...analyst,
-          studyLog,
-        };
+        studyLog = result.studyLog;
       }
 
       // Determine podcast kind based on analyst kind
       const podcastKind =
-        analyst.kind === "fastInsight" ? PodcastKind.fastInsight : PodcastKind.opinionOriented;
+        userChat.analyst?.kind === AnalystKind.fastInsight
+          ? PodcastKind.fastInsight
+          : PodcastKind.opinionOriented;
       const kindReason =
-        analyst.kind === "fastInsight"
+        userChat.analyst?.kind === AnalystKind.fastInsight
           ? "Fast insight study - using fastInsight podcast type"
           : "Fixed to opinionOriented for study";
 
@@ -91,11 +86,12 @@ export const generatePodcastTool = ({
       let podcast = await prisma.analystPodcast
         .create({
           data: {
-            analystId: analyst.id,
+            userId,
             token: podcastToken,
             instruction: "",
             script: "",
             extra: {
+              userChatToken: userChat.token,
               kindDetermination: {
                 kind: podcastKind,
                 reason: kindReason,
@@ -110,6 +106,8 @@ export const generatePodcastTool = ({
 
       // Generate podcast with fixed opinionOriented kind
       await generatePodcast({
+        locale,
+        studyLog,
         podcast,
         abortSignal,
         statReport,
@@ -122,6 +120,16 @@ export const generatePodcastTool = ({
           ...podcast,
           extra: extra as AnalystPodcastExtra,
         }));
+
+      // Save podcast token to context
+      const context = (userChat.context || {}) as UserChatContext;
+      const existingTokens = context.podcastTokens || [];
+      await mergeUserChatContext({
+        id: userChatId,
+        context: {
+          podcastTokens: Array.from(new Set([...existingTokens, podcast.token])),
+        },
+      });
 
       return {
         podcastToken: podcast.token,

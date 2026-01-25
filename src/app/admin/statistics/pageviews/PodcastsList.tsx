@@ -59,9 +59,9 @@ export function PodcastsList({ data, isLoading }: PodcastsListProps) {
             <TableRow key={`${pageView.pagePath}-${index}`}>
               <TableCell className="font-medium">{index + 1}</TableCell>
               <TableCell className="whitespace-normal">
-                <div className="flex items-start space-x-3 max-w-[30rem] xl:max-w-[60rem] overflow-hidden">
+                <div className="flex items-start space-x-3 max-w-120 xl:max-w-240 overflow-hidden">
                   {/* Audio Icon/Badge */}
-                  <div className="flex-shrink-0 pt-1">
+                  <div className="shrink-0 pt-1">
                     <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
                       🎙️ Podcast
                     </span>
@@ -109,9 +109,7 @@ export function PodcastsList({ data, isLoading }: PodcastsListProps) {
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  <p className="text-sm truncate">
-                    {pageView.podcast?.analyst?.user?.email || "N/A"}
-                  </p>
+                  <p className="text-sm truncate">{pageView.podcast?.user?.email || "N/A"}</p>
                   <p className="text-xs text-muted-foreground">
                     {pageView.podcast ? formatDate(pageView.podcast.createdAt, locale) : "N/A"}
                   </p>

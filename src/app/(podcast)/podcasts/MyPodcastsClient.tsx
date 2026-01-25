@@ -209,19 +209,16 @@ export default function MyPodcastsClient() {
                     {/* Title */}
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="text-lg font-semibold line-clamp-2 leading-6 text-zinc-900 dark:text-zinc-100">
-                        {podcast.extra.metadata?.title || podcast.analyst.studyUserChat.title}
+                        {podcast.extra.metadata?.title}
                       </h3>
-                      <Link
-                        href={`/study/${podcast.analyst.studyUserChat.token}/share`}
-                        target="_blank"
-                      >
+                      <Link href={`/study/${podcast.extra.userChatToken}/share`} target="_blank">
                         <SquareArrowOutUpRightIcon className="size-4 mt-1" />
                       </Link>
                     </div>
 
                     {/* Description */}
                     <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed">
-                      {podcast.analyst.topic}
+                      {podcast.extra.metadata?.showNotes}
                     </p>
 
                     {/* Stats section */}

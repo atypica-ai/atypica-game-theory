@@ -35,16 +35,16 @@ export async function generateMetadata({
   const locale = await getLocale();
   const { token: podcastToken } = await params;
 
-  const { podcast, analyst, studyUserChat } = await getCachedPodcastData(podcastToken);
+  const { podcast } = await getCachedPodcastData(podcastToken);
 
   const title =
     "🎙️ " +
-    truncateForTitle(podcast.extra.metadata?.title || studyUserChat.title, {
+    truncateForTitle(podcast.extra.metadata?.title || "", {
       maxDisplayWidth: 100,
       suffix: "...",
     });
 
-  const description = truncateForTitle(analyst.topic, {
+  const description = truncateForTitle(podcast.extra.metadata?.showNotes || "", {
     maxDisplayWidth: 300,
     suffix: "...",
   }).replace(/[\n\r]/g, " ");
@@ -58,17 +58,15 @@ export async function generateMetadata({
 }
 
 async function PodcastSharePage({ podcastToken }: { podcastToken: string }) {
-  const { podcast, analyst, studyUserChat, coverCdnHttpUrl } =
-    await getCachedPodcastData(podcastToken);
+  const { podcast, coverCdnHttpUrl } = await getCachedPodcastData(podcastToken);
 
-  const title = podcast.extra.metadata?.title || studyUserChat.title;
+  const title = podcast.extra.metadata?.title || "";
 
   return (
     <PodcastSharePageClient
       podcast={podcast}
-      analyst={analyst}
       title={title}
-      studyUserChatToken={studyUserChat.token}
+      studyUserChatToken={podcast.extra.userChatToken}
       coverCdnHttpUrl={coverCdnHttpUrl}
     />
   );

@@ -130,11 +130,11 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
       const result = await featurePodcastAction(podcast.id);
       if (result.success) {
         // When featuring, set tags to analyst.kind; when unfeaturing, clear tags
-        const tags = !podcast.isFeatured ? podcast.analyst.kind || "" : "";
+        // const tags = !podcast.isFeatured ? podcast.analyst.kind || "" : "";
         onUpdate({
           ...podcast,
           isFeatured: !podcast.isFeatured,
-          tags,
+          // tags,
         });
       } else {
         onError(result.message);
@@ -394,7 +394,7 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
         {/* Meta Information */}
         <div className="space-y-1 text-sm text-muted-foreground border-t pt-3">
           <p>
-            <span className="text-xs">User:</span> {podcast.analyst.user?.email || "N/A"}
+            <span className="text-xs">User:</span> {podcast.user?.email || "N/A"}
           </p>
           <p>
             <span className="text-xs">Token:</span>{" "}
@@ -420,7 +420,7 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
 
         <div className="w-full flex gap-2 items-center justify-between flex-wrap">
           <div className="flex items-center">
-            <span
+            {/*<span
               className={`px-2 py-1 text-xs font-semibold rounded-full ${
                 podcast.analyst.kind === "testing"
                   ? "bg-blue-100 text-blue-800"
@@ -436,7 +436,7 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
               }`}
             >
               {podcast.analyst.kind || "N/A"}
-            </span>
+            </span>*/}
           </div>
           <Button variant="outline" size="sm" asChild>
             <Link

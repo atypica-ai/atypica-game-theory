@@ -2,21 +2,18 @@ import "server-only";
 
 import { llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
-import { podcastEvaluationSystem } from "@/app/(podcast)/prompt/evaluation";
 import {
-  PodcastEvaluationScores,
   PodcastKind,
   PodcastKindDetermination,
-  podcastEvaluationScoresSchema,
   podcastKindDeterminationSchema,
 } from "@/app/(podcast)/types";
-import { fetchActiveSubscription } from "@/app/account/lib";
 import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
-import type { Analyst, AnalystExtra, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
+import type { AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateObject } from "ai";
+import { Locale } from "next-intl";
 import { generatePodcast } from "./generation";
 
 const PODCAST_KIND_DETERMINATION_SYSTEM = `
@@ -68,16 +65,14 @@ You are an expert podcast producer. Your task is to determine the best podcast f
 You must choose either "${PodcastKind.deepDive}" or "${PodcastKind.opinionOriented}". Strongly prefer ${PodcastKind.opinionOriented} unless the research is purely exploratory. Provide clear, specific reasoning for your choice based on the research content, conclusions, and the value it provides to listeners.
 `;
 
-async function determinePodcastKind(
-  analyst: Pick<Analyst, "id" | "topic" | "brief" | "studyLog">,
-): Promise<PodcastKindDetermination> {
+async function determinePodcastKind({
+  studyLog,
+}: {
+  studyLog: string;
+}): Promise<PodcastKindDetermination> {
   const determinationPrompt = `Please determine the best podcast format for this research:
 
-**Topic**: ${analyst.topic || "Not specified"}
-
-**Brief**: ${analyst.brief || "No brief available"}
-
-**Study Log**: ${analyst.studyLog || "No study log available"}
+**Study Log**: ${studyLog}
 
 Based on the research content, conclusions, and the value it provides to listeners, determine whether this should be a "${PodcastKind.deepDive}" or "${PodcastKind.opinionOriented}" podcast. Provide clear, specific reasoning for your choice.`;
 
@@ -99,7 +94,6 @@ Based on the research content, conclusions, and the value it provides to listene
 
   rootLogger.info({
     msg: "determinePodcastKind completed",
-    analystId: analyst.id,
     kind: result.object.kind,
     reason: result.object.reason,
   });
@@ -107,32 +101,37 @@ Based on the research content, conclusions, and the value it provides to listene
   return result.object;
 }
 
+/**
+ * 这个方法现在没用到，但其实要用上更好
+ */
 export async function determineKindAndGeneratePodcast({
-  analystId,
+  userId,
+  locale,
+  studyLog,
+  userChatToken,
   instruction,
   abortSignal,
   statReport,
 }: {
-  analystId: number;
+  userId: number;
+  locale: Locale;
+  studyLog: string;
+  userChatToken: string;
   instruction?: string;
   abortSignal: AbortSignal;
   statReport: StatReporter;
 }): Promise<AnalystPodcast> {
-  const logger = rootLogger.child({ method: "determineKindAndGeneratePodcast", analystId });
-
-  // Fetch analyst
-  const analyst = await prisma.analyst.findUniqueOrThrow({
-    where: { id: analystId },
-  });
+  const logger = rootLogger.child({ method: "determineKindAndGeneratePodcast" });
 
   // Create podcast record
   let podcast = await prisma.analystPodcast
     .create({
       data: {
-        analystId,
+        userId,
         token: generateToken(),
         instruction: instruction || "",
         script: "",
+        extra: { userChatToken } satisfies AnalystPodcastExtra,
       },
     })
     .then(({ extra, ...analyst }) => ({
@@ -142,7 +141,7 @@ export async function determineKindAndGeneratePodcast({
 
   // Step 1: Determine podcast kind
   logger.info("Determining podcast kind");
-  const kindDetermination = await determinePodcastKind(analyst);
+  const kindDetermination = await determinePodcastKind({ studyLog });
   logger.info({
     msg: "Podcast kind determined",
     kind: kindDetermination.kind,
@@ -161,6 +160,8 @@ export async function determineKindAndGeneratePodcast({
 
   // Step 2: Generate podcast with the determined kind (no systemPrompt for auto-determined podcasts)
   await generatePodcast({
+    locale,
+    studyLog,
     podcast,
     abortSignal,
     statReport,
@@ -179,173 +180,4 @@ export async function determineKindAndGeneratePodcast({
   // });
 
   return podcast;
-}
-
-async function evaluateAnalystForPodcast(
-  analyst: Pick<Analyst, "id" | "topic" | "brief" | "studyLog">,
-  scoreThreshold: number,
-): Promise<{
-  scores: PodcastEvaluationScores;
-  shouldSelect: boolean;
-}> {
-  if (!analyst) {
-    throw new Error("No analyst provided for evaluation");
-  }
-
-  if (scoreThreshold < 0 || scoreThreshold > 1) {
-    throw new Error("Score threshold must be between 0 and 1");
-  }
-
-  const evaluationPrompt = `Please evaluate this research using the rubric scoring system:
-
-**Topic**: ${analyst.topic || "Not specified"}
-
-**Brief**: ${analyst.brief || "No brief available"}
-
-**Study Log**: ${analyst.studyLog || "No study log available"}
-
-Score each of the 8 criteria according to the rubric (0-4 points each). Provide specific reasoning for each score based on the content provided.`;
-
-  const result = await generateObject({
-    model: llm("gpt-5-mini"),
-    providerOptions: {
-      openai: {
-        // ...defaultProviderOptions.openai,
-        reasoningSummary: "auto",
-        reasoningEffort: "minimal",
-      } satisfies OpenAIResponsesProviderOptions,
-    },
-    system: podcastEvaluationSystem,
-    prompt: evaluationPrompt,
-    schema: podcastEvaluationScoresSchema,
-    schemaName: "PodcastEvaluation",
-    schemaDescription: "Detailed rubric-based evaluation for podcast suitability",
-    maxRetries: 2,
-  });
-
-  const scores = result.object;
-  const totalScore =
-    scores.topicRelevanceNews.score +
-    scores.topicRelevanceAudience.score +
-    scores.surpriseContradiction.score +
-    scores.surpriseApproach.score +
-    scores.qualityLogic.score +
-    scores.qualityEvidence.score +
-    scores.insightDifficulty.score +
-    scores.insightPractical.score;
-
-  const maxScore = 32;
-  const thresholdScore = maxScore * scoreThreshold;
-  const shouldSelect = totalScore > thresholdScore;
-
-  rootLogger.info({
-    msg: "evaluateAnalystForPodcast generateObject completed",
-    analystId: analyst.id,
-    totalScore,
-    thresholdScore,
-  });
-
-  return { scores, shouldSelect };
-}
-
-export async function evaluateAndGeneratePodcast({
-  analystId,
-  scoreThreshold,
-  dryRun = false,
-}: {
-  analystId: number;
-  scoreThreshold: number; // 0 ~ 1
-  dryRun?: boolean;
-}): Promise<void> {
-  const logger = rootLogger.child({ method: "evaluateAndGeneratePodcast", analystId, dryRun });
-
-  const analyst = await prisma.analyst
-    .findUniqueOrThrow({ where: { id: analystId } })
-    .then(({ extra, ...analyst }) => ({ ...analyst, extra: extra as AnalystExtra }));
-
-  // step 0: check if user has active subscription, podcast 功能还处于 preview 状态，暂时只给付费用户使用
-  const { activeSubscription } = await fetchActiveSubscription({
-    userId: analyst.userId,
-  });
-  if (!activeSubscription) {
-    logger.info("User does not have active subscription, skipping podcast generation");
-    return;
-  }
-
-  if (!dryRun) {
-    await prisma.$executeRaw`
-        UPDATE "Analyst"
-        SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({ podcastEvaluation: { processing: true } })}::jsonb,
-            "updatedAt" = NOW()
-        WHERE "id" = ${analyst.id}
-      `;
-  }
-
-  // step 1: evaluate analyst for podcast
-  const { scores, shouldSelect } = await evaluateAnalystForPodcast(analyst, scoreThreshold);
-
-  if (!dryRun) {
-    await prisma.$executeRaw`
-        UPDATE "Analyst"
-        SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({ podcastEvaluation: scores })}::jsonb,
-            "updatedAt" = NOW()
-        WHERE "id" = ${analyst.id}
-      `;
-  }
-
-  if (!shouldSelect) {
-    logger.info("Analyst evaluateAnalystForPodcast below threshold, not generating podcast");
-    return;
-  }
-
-  logger.info("Analyst evaluateAnalystForPodcast passed threshold, generating podcast");
-
-  if (dryRun) {
-    // Dry run enabled, skipping podcast generation
-    return;
-  }
-
-  const statReport: StatReporter = async (dimension, value, extra) => {
-    logger.info({
-      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
-      extra,
-    });
-  };
-  const abortController = new AbortController();
-
-  const podcast = await prisma.analystPodcast
-    .create({
-      data: {
-        analystId,
-        token: generateToken(),
-        instruction: "",
-        script: "",
-        extra: {
-          kindDetermination: {
-            kind: PodcastKind.deepDive,
-            reason: "Evaluation passed threshold",
-          },
-        } as AnalystPodcastExtra,
-      },
-    })
-    .then(({ extra, ...analyst }) => ({
-      ...analyst,
-      extra: extra as AnalystPodcastExtra,
-    }));
-
-  // step 2: generate podcast
-  await generatePodcast({
-    podcast,
-    abortSignal: abortController.signal,
-    statReport: statReport,
-  });
-
-  logger.info({ msg: "Podcast generated after evaluation", podcastId: podcast.id });
-
-  // 目前通过 intercom 发送
-  // await notifyPodcastReady({
-  //   analystId: analyst.id,
-  //   podcast: { token: podcast.token },
-  //   logger,
-  // });
 }

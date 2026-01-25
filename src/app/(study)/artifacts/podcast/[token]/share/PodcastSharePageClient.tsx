@@ -2,7 +2,7 @@
 import GlobalHeader from "@/components/layout/GlobalHeader";
 import { Button } from "@/components/ui/button";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
-import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
+import { AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { DownloadIcon, Share2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -50,7 +50,6 @@ function SharePageHeader({
 
 export default function PodcastSharePageClient({
   podcast,
-  // analyst,
   title,
   studyUserChatToken,
   coverCdnHttpUrl,
@@ -58,9 +57,8 @@ export default function PodcastSharePageClient({
   podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl"> & {
     extra: AnalystPodcastExtra;
   };
-  analyst: Pick<Analyst, "id" | "topic">;
   title: string;
-  studyUserChatToken: string;
+  studyUserChatToken?: string;
   coverCdnHttpUrl?: string;
 }) {
   const t = useTranslations("PodcastSharePage");
@@ -110,7 +108,7 @@ export default function PodcastSharePageClient({
       <div className="flex-1 overflow-y-auto scrollbar-thin pb-64">
         <div className="max-w-4xl mx-auto px-4 py-6 sm:py-12 space-y-6">
           {/* Podcast Cover Image */}
-          {coverCdnHttpUrl && (
+          {coverCdnHttpUrl && studyUserChatToken ? (
             <Link
               href={`/study/${studyUserChatToken}/share?reply=1`}
               target="_blank"
@@ -120,7 +118,7 @@ export default function PodcastSharePageClient({
                 <Image src={coverCdnHttpUrl} alt="Podcast cover" fill className="object-cover" />
               </div>
             </Link>
-          )}
+          ) : null}
 
           {/* Podcast Script */}
           {podcast.script && (
@@ -145,7 +143,9 @@ export default function PodcastSharePageClient({
         <StickyPlayer
           podcastAudioSrc={podcastAudioSrc}
           title={title}
-          studyReplayUrl={`/study/${studyUserChatToken}/share?replay=1`}
+          studyReplayUrl={
+            studyUserChatToken ? `/study/${studyUserChatToken}/share?replay=1` : undefined
+          }
           moreInsightRadioUrl="/insight-radio"
           autoPlay={true}
         />

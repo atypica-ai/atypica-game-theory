@@ -3,13 +3,11 @@ import { generatePodcastCoverImage } from "@/app/(podcast)/lib/coverImage";
 import { generatePodcastMetadata } from "@/app/(podcast)/lib/generation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { VALID_LOCALES } from "@/i18n/routing";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import {
-  Analyst,
   AnalystPodcast,
   AnalystPodcastExtra,
   FeaturedItemExtra,
@@ -20,8 +18,6 @@ import { AnalystPodcastWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
-import { Locale } from "next-intl";
-import { getLocale } from "next-intl/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 // Get all analyst podcasts with pagination
@@ -33,9 +29,7 @@ export async function fetchAnalystPodcastsAction(
 ): Promise<
   ServerActionResult<
     (AnalystPodcast & {
-      analyst: Analyst & {
-        user: Pick<User, "email"> | null;
-      };
+      user: Pick<User, "email"> | null;
       isFeatured?: boolean;
       tags?: string;
       coverCdnHttpUrl?: string;
@@ -88,13 +82,9 @@ export async function fetchAnalystPodcastsAction(
   const analystPodcasts = await prisma.analystPodcast.findMany({
     where,
     include: {
-      analyst: {
-        include: {
-          user: {
-            select: {
-              email: true,
-            },
-          },
+      user: {
+        select: {
+          email: true,
         },
       },
     },
@@ -227,8 +217,10 @@ export async function generatePodcastMetadataAction(
   }
 
   try {
-    // Detect locale from analyst brief or use default
-    const locale = (await detectInputLanguage({ text: podcast.analyst.brief })) as Locale;
+    // Detect locale from script
+    const locale = await detectInputLanguage({
+      text: podcast.script,
+    });
 
     const logger = rootLogger.child({
       podcastId: podcast.id,
@@ -298,15 +290,6 @@ export async function featurePodcastAction(podcastId: number): Promise<ServerAct
     };
   }
 
-  // Check if analyst has valid locale
-  if (!podcast.analyst.locale || !VALID_LOCALES.includes(podcast.analyst.locale as Locale)) {
-    return {
-      success: false,
-      message: "Analyst locale is not valid. Cannot feature this podcast.",
-      code: "forbidden",
-    };
-  }
-
   // Check if already featured
   const existingFeatured = await prisma.featuredItem.findFirst({
     where: {
@@ -324,19 +307,22 @@ export async function featurePodcastAction(podcastId: number): Promise<ServerAct
     // Add to featured - copy info from extra.metadata
     const extra = podcast.extra as AnalystPodcastExtra;
     const metadata = extra?.metadata;
+    const locale = await detectInputLanguage({
+      text: podcast.script,
+    });
 
     await prisma.featuredItem.create({
       data: {
         resourceType: FeaturedItemResourceType.AnalystPodcast,
         resourceId: podcastId,
-        locale: podcast.analyst.locale as Locale,
+        locale,
         extra: {
           title: metadata?.title || "",
           description: metadata?.showNotes || "",
           coverObjectUrl: metadata?.coverObjectUrl || "",
           url: `/artifacts/podcast/${podcast.token}/share`,
-          category: podcast.analyst.kind || undefined, // 保留字段但不使用
-          tags: podcast.analyst.kind || "", // 默认写入 kind 作为 tags
+          // category: podcast.analyst.kind || undefined, // 保留字段但不使用
+          // tags: podcast.analyst.kind || "", // 默认写入 kind 作为 tags
         } satisfies FeaturedItemExtra,
       },
     });
@@ -406,18 +392,9 @@ export async function adminGeneratePodcastCoverAction(
       id: true,
       token: true,
       script: true,
-      analyst: {
-        select: {
-          id: true,
-          locale: true,
-          topic: true,
-          studyLog: true,
-          brief: true,
-        },
-      },
     },
   })) as Pick<AnalystPodcast, "id" | "token" | "script"> & {
-    analyst: Pick<Analyst, "id" | "locale" | "topic" | "studyLog" | "brief">;
+    //
   };
 
   if (!podcast.script) {
@@ -428,13 +405,9 @@ export async function adminGeneratePodcastCoverAction(
     };
   }
 
-  // Determine locale from analyst or use default
-  const locale: Locale =
-    podcast.analyst.locale === "zh-CN"
-      ? "zh-CN"
-      : podcast.analyst.locale === "en-US"
-        ? "en-US"
-        : await getLocale();
+  // ⚠️ 重新生成封面的时候，直接使用 report 上的 description
+  const studyLog = podcast.script;
+  const locale = await detectInputLanguage({ text: studyLog });
 
   // Empty stat reporter for admin (free generation)
   const statReport = async () => {};
@@ -443,13 +416,12 @@ export async function adminGeneratePodcastCoverAction(
   waitUntil(
     generatePodcastCoverImage({
       ratio: "landscape",
-      analyst: podcast.analyst,
+      studyLog,
       podcast,
-      script: podcast.script,
       locale,
       abortSignal,
       statReport,
-      logger: rootLogger.child({ podcastId, analystId: podcast.analyst.id }),
+      logger: rootLogger.child({ podcastId }),
     }).catch(() => {}),
   );
 

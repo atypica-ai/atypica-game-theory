@@ -21,24 +21,13 @@ export async function fetchMyPodcasts(): Promise<
       | "updatedAt"
     > & {
       extra: AnalystPodcastExtra;
-      analyst: {
-        id: number;
-        topic: string;
-        studyUserChat: {
-          title: string;
-          token: string;
-        };
-      };
     })[]
   >
 > {
   return withAuth(async (user) => {
     const podcasts = await prisma.analystPodcast.findMany({
       where: {
-        analyst: {
-          userId: user.id,
-          studyUserChatId: { not: null },
-        },
+        userId: user.id,
       },
       select: {
         id: true,
@@ -50,18 +39,6 @@ export async function fetchMyPodcasts(): Promise<
         createdAt: true,
         updatedAt: true,
         extra: true,
-        analyst: {
-          select: {
-            id: true,
-            topic: true,
-            studyUserChat: {
-              select: {
-                title: true,
-                token: true,
-              },
-            },
-          },
-        },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -71,13 +48,6 @@ export async function fetchMyPodcasts(): Promise<
       data: podcasts.map((podcast) => ({
         ...podcast,
         extra: (podcast.extra || {}) as AnalystPodcastExtra,
-        analyst: {
-          ...podcast.analyst,
-          studyUserChat: {
-            title: podcast.analyst.studyUserChat?.title || "",
-            token: podcast.analyst.studyUserChat?.token || "",
-          },
-        },
       })),
     };
   });

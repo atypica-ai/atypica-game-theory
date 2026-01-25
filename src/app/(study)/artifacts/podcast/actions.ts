@@ -1,7 +1,7 @@
 "use server";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystPodcast, AnalystPodcastExtra, UserChat } from "@/prisma/client";
+import { AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 
 export async function fetchPodcastByToken(podcastToken: string): Promise<
@@ -9,8 +9,6 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
     podcast: Pick<AnalystPodcast, "id" | "token" | "script" | "objectUrl" | "generatedAt"> & {
       extra: AnalystPodcastExtra;
     };
-    analyst: Pick<Analyst, "id" | "topic">;
-    studyUserChat: Pick<UserChat, "token" | "title">;
     coverCdnHttpUrl?: string;
   }>
 > {
@@ -43,27 +41,6 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
     };
   }
 
-  const analyst = await prismaRO.analyst.findUnique({
-    where: {
-      id: podcast.analystId,
-    },
-    select: {
-      id: true,
-      topic: true,
-      studyUserChat: {
-        select: { token: true, title: true },
-      },
-    },
-  });
-
-  if (!analyst?.studyUserChat?.token) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Study not found.",
-    };
-  }
-
   // Use podcast's own cover image
   const coverObjectUrl = (podcast.extra as AnalystPodcastExtra).metadata?.coverObjectUrl;
   const coverCdnHttpUrl = coverObjectUrl ? await getS3SignedCdnUrl(coverObjectUrl) : undefined;
@@ -78,14 +55,6 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
         objectUrl: podcast.objectUrl,
         generatedAt: podcast.generatedAt,
         extra: podcast.extra as AnalystPodcastExtra,
-      },
-      analyst: {
-        id: analyst.id,
-        topic: analyst.topic,
-      },
-      studyUserChat: {
-        token: analyst.studyUserChat.token,
-        title: analyst.studyUserChat.title,
       },
       coverCdnHttpUrl,
     },

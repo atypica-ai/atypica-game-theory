@@ -4,7 +4,7 @@ import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { llm, LLMModelName } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { uploadToS3 } from "@/lib/attachments/s3";
-import { Analyst, AnalystPodcast } from "@/prisma/client";
+import { AnalystPodcast } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import { GeneratedFile, stepCountIs, streamText } from "ai";
@@ -144,29 +144,29 @@ ${
  */
 function podcastCoverImageProloguePrompt({
   locale,
-  analyst,
+  studyLog,
 }: {
   locale: Locale;
-  analyst: Pick<Analyst, "locale" | "topic" | "studyLog" | "brief">;
+  studyLog: string;
 }): string {
-  const { topic } = analyst;
-
   return locale === "zh-CN"
     ? `
-请为以下主题生成一张专业的播客封面图：
+请为以下研究生成一张专业的播客封面图：
 
-【主题】
-${topic}
+<studyLog>
+${studyLog.slice(0, 3000)}
+</studyLog>
 
 请创作一张既有美学质量又在社交媒体上具有吸引力的封面图。
 根据主题选择最合适的视觉形式和风格，少用或不用文字。
 主要内容必须居中，根据图片比例留出适当边距。
 `
     : `
-Please generate a professional podcast cover image for the following topic:
+Please generate a professional podcast cover image for the following study:
 
-【Topic】
-${topic}
+<studyLog>
+${studyLog.slice(0, 3000)}
+</studyLog>
 
 Create a cover image with both aesthetic quality and social media appeal.
 Choose the most appropriate visual form and style based on the topic, minimal or no text.
@@ -181,9 +181,9 @@ Main content must be centered with appropriate margins based on the image ratio.
 export async function generatePodcastCoverImage({
   modelName = "gemini-3-pro-image",
   ratio,
-  analyst,
+  studyLog,
   podcast,
-  script,
+  // script,
   locale,
   abortSignal,
   statReport,
@@ -192,8 +192,8 @@ export async function generatePodcastCoverImage({
   modelName?: Extract<LLMModelName, "gemini-3-pro-image" | "gemini-2.5-flash-image">;
   ratio: "square" | "landscape" | "portrait";
   podcast: Pick<AnalystPodcast, "id" | "token">;
-  analyst: Pick<Analyst, "id" | "locale" | "topic" | "studyLog" | "brief">;
-  script: string;
+  studyLog: string;
+  // script: string;
 } & AgentToolConfigArgs): Promise<{
   coverObjectUrl: string;
 }> {
@@ -215,7 +215,7 @@ export async function generatePodcastCoverImage({
         locale,
         englishOnly: modelName !== "gemini-3-pro-image",
       }),
-      prompt: podcastCoverImageProloguePrompt({ locale, analyst }),
+      prompt: podcastCoverImageProloguePrompt({ locale, studyLog }),
       abortSignal,
       stopWhen: stepCountIs(5),
       maxRetries: 3,
@@ -247,7 +247,6 @@ export async function generatePodcastCoverImage({
           const tokens = 10000 * files.length;
           await statReport("tokens", tokens, {
             reportedBy: "podcast cover image",
-            analystId: analyst.id,
           });
         }
         resolve({ text, files });
@@ -286,9 +285,9 @@ export async function generatePodcastCoverImage({
       return await generatePodcastCoverImage({
         modelName: "gemini-2.5-flash-image",
         ratio,
-        analyst,
+        studyLog,
         podcast,
-        script,
+        // script,
         locale,
         abortSignal,
         statReport,

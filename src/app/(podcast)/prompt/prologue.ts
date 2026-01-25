@@ -1,30 +1,22 @@
-import { Analyst } from "@/prisma/client";
 import { Locale } from "next-intl";
 
 export const podcastScriptPrologue = ({
   locale,
-  analyst,
+  studyLog,
   instruction,
 }: {
   locale: Locale;
-  analyst: Pick<Analyst, "brief" | "topic" | "studyLog">;
+  studyLog: string;
   instruction?: string;
 }) =>
   locale === "zh-CN"
     ? `
 # 播客脚本生成请求
 
-<用户简述>
-${analyst.brief}
-</用户简述>
-
-<研究主题>
-${analyst.topic}
-</研究主题>
-
-<研究内容>
-${analyst.studyLog}
-</研究内容>
+研究过程：
+<studyLog>
+${studyLog}
+</studyLog>
 
   ${
     instruction
@@ -43,17 +35,10 @@ ${instruction}
     : `
 # Podcast Script Generation Request
 
-<User Brief>
-${analyst.brief}
-</User Brief>
-
-<Research Topic>
-${analyst.topic}
-</Research Topic>
-
-<Research Content>
-${analyst.studyLog}
-</Research Content>
+Study process:
+<studyLog>
+${studyLog}
+</studyLog>
 
 ${
   instruction

@@ -4,11 +4,9 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { podcastScriptPrologue, podcastScriptSystem } from "@/app/(podcast)/prompt";
 import { podcastMetadataSchema, podcastMetadataSystem } from "@/app/(podcast)/prompt/metadata";
-import { VALID_LOCALES } from "@/i18n/routing";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
-import { detectInputLanguage } from "@/lib/textUtils";
-import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
+import { AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
@@ -25,36 +23,24 @@ import { getTTSClient, selectTTSEngine } from "./selectEngine";
  * Updates processing status throughout the pipeline
  */
 export async function generatePodcast({
+  locale,
+  studyLog,
   podcast,
   abortSignal,
   statReport,
 }: {
+  locale: Locale;
+  studyLog: string;
   podcast: Omit<AnalystPodcast, "extra"> & { extra: AnalystPodcastExtra };
   abortSignal: AbortSignal;
   statReport: StatReporter;
 }): Promise<void> {
   const logger = rootLogger.child({
-    analystId: podcast.analystId,
     podcastId: podcast.id,
     method: "generatePodcast",
   });
 
   logger.info("Starting unified podcast generation");
-
-  // Step 1: Get analyst and create podcast record
-  const analyst = await prisma.analyst.findUnique({
-    where: { id: podcast.analystId },
-  });
-
-  if (!analyst) {
-    throw new Error("Analyst not found");
-  }
-
-  // Setup locale
-  const locale: Locale =
-    analyst.locale && VALID_LOCALES.includes(analyst.locale as Locale)
-      ? (analyst.locale as Locale)
-      : ((await detectInputLanguage({ text: analyst.brief })) as Locale);
 
   await mergeExtra({
     tableName: "AnalystPodcast",
@@ -77,7 +63,7 @@ export async function generatePodcast({
     // Step 2: Generate script
     const script = await generatePodcastScript({
       podcast,
-      analyst,
+      studyLog,
       locale,
       abortSignal,
       statReport,
@@ -101,6 +87,9 @@ export async function generatePodcast({
       .findUniqueOrThrow({ where: { id: podcast.id } })
       .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
 
+    /**
+     * @todo 这里其实应该用 ./evaluate.ts 里面的 determineKindAndGeneratePodcast 方法
+     */
     // Step 3: Determine hostCount based on podcastType
     const podcastKind = podcast.extra.kindDetermination?.kind;
     if (!podcastKind) {
@@ -136,9 +125,9 @@ export async function generatePodcast({
         }),
         generatePodcastCoverImage({
           ratio: "landscape",
-          analyst,
+          studyLog,
           podcast,
-          script,
+          // script,
           locale,
           abortSignal,
           statReport,
@@ -198,15 +187,15 @@ export async function generatePodcast({
 
 // Internal function for podcast script generation
 async function generatePodcastScript({
+  studyLog,
   podcast,
-  analyst,
   locale,
   abortSignal,
   statReport,
   logger,
 }: {
+  studyLog: string;
   podcast: Omit<AnalystPodcast, "extra"> & { extra: AnalystPodcastExtra };
-  analyst: Analyst;
   locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
@@ -242,7 +231,7 @@ async function generatePodcastScript({
     // Create podcast script prompt content using the prologue function
     const podcastContent = podcastScriptPrologue({
       locale,
-      analyst,
+      studyLog,
       instruction: podcast.instruction,
     });
 
