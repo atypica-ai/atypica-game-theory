@@ -44,9 +44,13 @@ async function getReportHtml(reportToken: string): Promise<string> {
   if (analystReport.generatedAt) {
     return cleanHtmlFromMarkdown(analystReport.onePageHtml);
   }
+  // if userId is null, fallback to database
+  if (!analystReport.userId) {
+    return cleanHtmlFromMarkdown(analystReport.onePageHtml);
+  }
 
   // If report is generating, read from cache file
-  const cachePath = getReportCacheFilePath(analystReport.analyst.userId, reportToken);
+  const cachePath = getReportCacheFilePath(analystReport.userId, reportToken);
   try {
     const html = await fs.readFile(cachePath, "utf-8");
     return cleanHtmlFromMarkdown(html);

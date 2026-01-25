@@ -14,7 +14,7 @@ export const reportHTMLSystem = ({
   analystKind,
 }: {
   locale: Locale;
-  analystKind: AnalystKind;
+  analystKind?: AnalystKind | string;
 }) => {
   switch (analystKind) {
     case AnalystKind.testing:
@@ -37,27 +37,20 @@ export const reportHTMLSystem = ({
 
 export const reportHTMLPrologue = ({
   locale,
-  analyst,
+  studyLog,
   instruction,
   lastReport,
 }: {
   locale: Locale;
-  analyst: Pick<Analyst, "role" | "brief" | "studyLog">;
+  studyLog: string;
   instruction: string;
   lastReport?: Pick<AnalystReport, "onePageHtml">;
 }) =>
   locale === "zh-CN"
     ? `
-我的角色是<role>${analyst.role}</role>
-
-原始研究需求：
-<brief>
-${analyst.brief}
-</brief>
-
 研究过程：
 <studyLog>
-${analyst.studyLog}
+${studyLog}
 </studyLog>
 
 ${
@@ -89,16 +82,9 @@ ${instruction}
 请直接输出完整HTML代码，从<!DOCTYPE html>开始，不要包含任何解释、前言或markdown标记。
 `
     : `
-My role is <role>${analyst.role}</role>
-
-Original study brief:
-<brief>
-${analyst.brief}
-</brief>
-
 Study process:
 <studyLog>
-${analyst.studyLog}
+${studyLog}
 </studyLog>
 
 ${

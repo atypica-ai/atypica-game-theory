@@ -4,13 +4,11 @@ import { generateReportCoverImage } from "@/app/(study)/tools/generateReport/cov
 // import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { VALID_LOCALES } from "@/i18n/routing";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { truncateForTitle } from "@/lib/textUtils";
+import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import {
-  Analyst,
   AnalystReport,
   AnalystReportExtra,
   FeaturedItemExtra,
@@ -20,8 +18,6 @@ import {
 import { AnalystReportWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { Locale } from "next-intl";
-import { getLocale } from "next-intl/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
 // Get all analyst reports with pagination
@@ -33,9 +29,7 @@ export async function fetchAnalystReportsAction(
 ): Promise<
   ServerActionResult<
     (AnalystReport & {
-      analyst: Analyst & {
-        user: Pick<User, "email"> | null;
-      };
+      user: Pick<User, "email"> | null;
       coverCdnHttpUrl?: string;
       isFeatured?: boolean;
       tags?: string;
@@ -88,13 +82,9 @@ export async function fetchAnalystReportsAction(
   const analystReports = await prisma.analystReport.findMany({
     where,
     include: {
-      analyst: {
-        include: {
-          user: {
-            select: {
-              email: true,
-            },
-          },
+      user: {
+        select: {
+          email: true,
         },
       },
     },
@@ -170,44 +160,36 @@ export async function adminGenerateScreenshotAction(
     select: {
       id: true,
       token: true,
-      analyst: {
-        select: {
-          id: true,
-          locale: true,
-          topic: true,
-          studyLog: true,
-          brief: true,
-        },
-      },
-      // extra: true,
+      extra: true,
     },
   })) as Pick<AnalystReport, "id" | "token"> & {
-    // extra: AnalystReportExtra;
-    analyst: Pick<Analyst, "id" | "locale" | "topic" | "studyLog" | "brief">;
+    extra: AnalystReportExtra;
   };
-
-  // Determine locale from analyst or use default
-  const locale: Locale =
-    report.analyst.locale === "zh-CN"
-      ? "zh-CN"
-      : report.analyst.locale === "en-US"
-        ? "en-US"
-        : await getLocale();
 
   // Empty stat reporter for admin (free generation)
   const statReport = async () => {};
   const abortSignal = AbortSignal.timeout(300_000); // 5 minutes timeout
 
   // const { coverUrl } = await generateReportScreenshot(report);
+  // ⚠️ 重新生成封面的时候，直接使用 report 上的 description
+  const studyLog =
+    (report.extra as AnalystReportExtra).description || (report.extra as AnalystReportExtra).title;
+  if (!studyLog) {
+    return {
+      success: false,
+      message: "Missing report description or title",
+    };
+  }
+  const locale = await detectInputLanguage({ text: studyLog });
   waitUntil(
     generateReportCoverImage({
       ratio: "landscape",
-      analyst: report.analyst,
+      studyLog,
       report,
       locale,
       abortSignal,
       statReport,
-      logger: rootLogger.child({ reportId, analystId: report.analyst.id }),
+      logger: rootLogger.child({ reportId }),
     }).catch(() => {}),
   );
 
@@ -248,15 +230,6 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
     };
   }
 
-  // Check if analyst has valid locale
-  if (!report.analyst.locale || !VALID_LOCALES.includes(report.analyst.locale as Locale)) {
-    return {
-      success: false,
-      message: "Analyst locale is not valid. Cannot feature this report.",
-      code: "forbidden",
-    };
-  }
-
   // Check if already featured
   const existingFeatured = await prisma.featuredItem.findFirst({
     where: {
@@ -273,24 +246,33 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
   } else {
     // Add to featured - copy info from report
     const extra = report.extra as AnalystReportExtra;
-    const title = report.analyst.studyUserChat?.title || "";
-    const description = truncateForTitle(report.analyst.topic, {
+    if (!extra.title || !extra.description) {
+      return {
+        success: false,
+        message: "Missing title or description",
+      };
+    }
+    const title = extra?.title || "";
+    const description = truncateForTitle(extra.description || "", {
       maxDisplayWidth: 200,
       suffix: "...",
+    });
+    const locale = await detectInputLanguage({
+      text: `${title}\n${description}`,
     });
 
     await prisma.featuredItem.create({
       data: {
         resourceType: FeaturedItemResourceType.AnalystReport,
         resourceId: reportId,
-        locale: report.analyst.locale as Locale,
+        locale,
         extra: {
           title,
           description,
           coverObjectUrl: extra?.coverObjectUrl || "",
           url: `/artifacts/report/${report.token}/share`,
-          category: report.analyst.kind || undefined, // 保留字段但不使用
-          tags: report.analyst.kind || "", // 默认写入 kind 作为 tags
+          // category: report.analyst.kind || undefined, // 保留字段但不使用
+          // tags: report.analyst.kind || "", // 默认写入 kind 作为 tags
         } satisfies FeaturedItemExtra,
       },
     });

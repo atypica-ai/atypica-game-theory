@@ -73,11 +73,11 @@ export async function generateMetadata({
 
   const title =
     "📝 " +
-    truncateForTitle(report.analyst.studyUserChat?.title || report.analyst.brief, {
+    truncateForTitle((report.extra as AnalystReportExtra).title || "", {
       maxDisplayWidth: 100,
       suffix: "...",
     });
-  const description = truncateForTitle(report.analyst.topic, {
+  const description = truncateForTitle((report.extra as AnalystReportExtra).description || "", {
     maxDisplayWidth: 300,
     suffix: "...",
   }).replace(/[\n\r]/g, " ");
@@ -95,9 +95,11 @@ async function ReportSharePage({ reportToken }: { reportToken: string }) {
   // 使用同一个缓存查询 - 会命中缓存，不会重复数据库请求
   const report = await getCachedReportData(reportToken);
   if (!report) notFound();
-  if (!report.analyst?.studyUserChat?.token) notFound();
 
-  const studyReplayUrl = `/study/${report.analyst.studyUserChat.token}/share?replay=1`;
+  const extra = report.extra as AnalystReportExtra;
+  const studyReplayUrl = extra.userChatToken
+    ? `/study/${extra.userChatToken}/share?replay=1`
+    : undefined;
 
   // Extract structured data for SEO
   let coverImageUrl: string | undefined;
@@ -109,12 +111,12 @@ async function ReportSharePage({ reportToken }: { reportToken: string }) {
   return (
     <ReportSharePageClient
       reportToken={reportToken}
-      studyTitle={report.analyst.studyUserChat.title}
+      studyTitle={extra.title || ""}
       studyReplayUrl={studyReplayUrl}
       onePageHtml={report.onePageHtml}
       structuredData={{
-        title: report.analyst.studyUserChat.title,
-        description: report.analyst.topic,
+        title: extra.title || "",
+        description: extra.description || "",
         coverImageUrl,
       }}
     />

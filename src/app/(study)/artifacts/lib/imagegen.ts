@@ -5,7 +5,7 @@ import { initStudyStatReporter } from "@/ai/tools/stats";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { ImageGenerationExtra } from "@/prisma/client";
+import { AnalystReportExtra, ImageGenerationExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { experimental_generateImage as generateImage } from "ai";
@@ -76,22 +76,27 @@ async function backgroundGenerateImage({
   const report = await prisma.analystReport.findUniqueOrThrow({
     where: { token: reportToken },
     select: {
-      analyst: {
-        select: {
-          id: true,
-          userId: true,
-          studyUserChat: { select: { id: true, token: true } },
-        },
-      },
+      token: true,
+      extra: true,
     },
   });
-  if (!report.analyst.studyUserChat) {
-    rootLogger.error(`Failed to find studyUserChat for analyst ${report.analyst.id}`);
+  const userChatToken = (report.extra as AnalystReportExtra).userChatToken;
+  if (!userChatToken) {
+    rootLogger.error(`Failed to find userChatToken for report ${report.token}`);
     return new Response("Something went wrong", { status: 500 });
   }
+  const userChat = await prisma.userChat.findUniqueOrThrow({
+    where: { token: userChatToken },
+    select: {
+      userId: true,
+      id: true,
+      token: true,
+    },
+  });
+
   const logger = rootLogger.child({
-    studyUserChatId: report.analyst.studyUserChat.id,
-    studyUserChatToken: report.analyst.studyUserChat.token,
+    studyUserChatId: userChat.id,
+    studyUserChatToken: userChat.token,
   });
 
   // 图片没有生成过，需要检查必要的权限，有权限以后可以接下来插入数据库条目
@@ -114,8 +119,8 @@ async function backgroundGenerateImage({
   });
   const genLog = rootLogger.child({ promptHash, imageGenerationId: id });
   const { statReport } = initStudyStatReporter({
-    userId: report.analyst.userId,
-    studyUserChatId: report.analyst.studyUserChat.id,
+    userId: userChat.userId,
+    studyUserChatId: userChat.id,
     logger,
   });
 

@@ -15,23 +15,17 @@ export async function generateReportPDFAction(reportToken: string): Promise<{
       where: { token: reportToken },
       select: {
         id: true,
+        userId: true,
         token: true,
         onePageHtml: true,
         extra: true,
-        analyst: {
-          select: {
-            id: true,
-            topic: true,
-            userId: true,
-          },
-        },
       },
     });
-    if (report.analyst.userId !== user.id) {
+    if (report.userId !== user.id) {
       forbidden();
     }
 
-    const topic = report.analyst.topic
+    const topic = ((report.extra as AnalystReportExtra).description ?? "")
       .replace(/\s+/g, " ")
       .replace(/[<>:"/\\|?*]/g, "")
       .replace(/\./g, "");
@@ -53,6 +47,7 @@ export async function generateReportPDFAction(reportToken: string): Promise<{
       pdfUrl,
     } = await generateReportPDF({
       ...report,
+      userId: report.userId,
       extra: report.extra as AnalystReportExtra,
     });
 

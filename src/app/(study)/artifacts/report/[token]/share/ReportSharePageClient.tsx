@@ -37,7 +37,7 @@ export default function ReportSharePageClient({
   structuredData,
 }: {
   reportToken: string;
-  studyReplayUrl: string;
+  studyReplayUrl?: string;
   studyTitle: string;
   onePageHtml: string;
   structuredData?: {
@@ -176,17 +176,19 @@ export default function ReportSharePageClient({
           })}
           {locale === "zh-CN" ? "，内容由AI生成。" : ""}
         </div>
-        <Button
-          variant="default"
-          size="sm"
-          className="h-8 px-3 has-[>svg]:px-3 text-xs shrink-0"
-          asChild
-        >
-          <Link href={studyReplayUrl}>
-            <Play className="size-3.5" />
-            <span>{t("viewReplay")}</span>
-          </Link>
-        </Button>
+        {studyReplayUrl ? (
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8 px-3 has-[>svg]:px-3 text-xs shrink-0"
+            asChild
+          >
+            <Link href={studyReplayUrl}>
+              <Play className="size-3.5" />
+              <span>{t("viewReplay")}</span>
+            </Link>
+          </Button>
+        ) : null}
       </footer>
     </div>
   );

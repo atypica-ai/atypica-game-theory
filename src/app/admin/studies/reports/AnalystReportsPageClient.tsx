@@ -2,14 +2,7 @@
 import { PaginationInfo } from "@/app/admin/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
@@ -17,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
+import { AnalystReportExtra } from "@/prisma/client";
 import {
   CameraIcon,
   ChevronDown,
@@ -162,8 +156,12 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
           prev.map((report) => {
             if (report.id === reportId) {
               // When featuring, set tags to analyst.kind; when unfeaturing, clear tags
-              const tags = !isFeatured ? report.analyst.kind || "" : "";
-              return { ...report, isFeatured: !isFeatured, tags };
+              // const tags = !isFeatured ? report.analyst.kind || "" : "";
+              return {
+                ...report,
+                isFeatured: !isFeatured,
+                // tags,
+              };
             }
             return report;
           }),
@@ -267,7 +265,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                     <div className="flex-1 min-w-0">
                       <div className="leading-normal truncate font-semibold">
                         <span className="text-xs text-muted-foreground font-normal">Brief: </span>
-                        {report.analyst.brief || "Untitled Report"}
+                        {(report.extra as AnalystReportExtra).title || "Untitled Report"}
                       </div>
                     </div>
                     <button
@@ -285,10 +283,6 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                       />
                     </button>
                   </CardTitle>
-                  <CardDescription>
-                    <span className="text-xs text-muted-foreground">Role: </span>
-                    {report.analyst.role}
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {/* Cover Image */}
@@ -359,7 +353,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                         expandedTopics.has(report.id) ? "whitespace-pre-wrap" : "line-clamp-2"
                       }`}
                     >
-                      {report.analyst.topic}
+                      {(report.extra as AnalystReportExtra).description}
                     </p>
                   </div>
 
@@ -403,7 +397,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                   <div className="flex items-start justify-between gap-4 border-t pt-3">
                     <div className="shrink-0 space-y-1 text-sm text-muted-foreground">
                       <p>
-                        <span className="text-xs">User:</span> {report.analyst.user?.email || "N/A"}
+                        <span className="text-xs">User:</span> {report.user?.email || "N/A"}
                       </p>
                       <p>
                         <span className="text-xs">Token:</span>{" "}
@@ -450,7 +444,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
 
                   <div className="w-full flex gap-2 items-center justify-between flex-wrap">
                     <div className="flex items-center">
-                      <span
+                      {/*<span
                         className={`px-2 py-1 text-xs font-semibold rounded-full ${
                           report.analyst.kind === "testing"
                             ? "bg-blue-100 text-blue-800"
@@ -466,7 +460,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                         }`}
                       >
                         {report.analyst.kind || "N/A"}
-                      </span>
+                      </span>*/}
                     </div>
                     <Button variant="outline" size="sm" asChild>
                       <Link

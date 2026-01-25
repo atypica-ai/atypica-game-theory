@@ -6,7 +6,9 @@ import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { reportHTMLPrologue, reportHTMLSystem } from "./prompt";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
-import { Analyst, AnalystKind, AnalystReport } from "@/prisma/client";
+import { UserChatContext } from "@/app/(study)/context/types";
+import { mergeUserChatContext } from "@/app/(study)/context/utils";
+import { AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { FinishReason, ModelMessage, stepCountIs, streamText, tool } from "ai";
 import { promises as fs } from "fs";
@@ -34,13 +36,15 @@ function cleanHtmlFromMarkdown(html: string): string {
 }
 
 export const generateReportTool = ({
-  studyUserChatId,
+  userId,
+  userChatId,
   locale,
   abortSignal,
   statReport,
   logger,
 }: {
-  studyUserChatId: number;
+  userId: number;
+  userChatId: number;
 } & AgentToolConfigArgs) =>
   tool({
     description:
@@ -54,26 +58,35 @@ export const generateReportTool = ({
       { instruction, /*regenerate,*/ reportToken },
       { messages },
     ): Promise<GenerateReportResult> => {
-      const studyUserChat = await prisma.userChat.findUniqueOrThrow({
-        where: { id: studyUserChatId, kind: "study" },
+      const userChat = await prisma.userChat.findUniqueOrThrow({
+        where: { id: userChatId, kind: "study" },
         select: {
-          analyst: true,
+          title: true,
+          token: true,
+          analyst: {
+            select: { studyLog: true, topic: true, kind: true },
+          },
+          context: true,
         },
       });
-      if (!studyUserChat.analyst) {
-        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
-      }
-      const analystId = studyUserChat.analyst.id;
+
+      let studyLog = userChat.analyst?.studyLog ?? "";
+
       // if (await prisma.analystReport.findUnique({ where: { token: reportToken } })) {
       //   return {
       //     plainText: `为调研主题 ${analystId} 生成报告失败：你提供的 reportToken ${reportToken} 已经存在，无法使用，请重试。你可以忽略提供这个字段，系统会自动生成 token。`,
       //   };
       // }
-      const reportLogger = logger.child({ analystId, reportToken });
+      const reportLogger = logger.child({ reportToken });
       let report: AnalystReport;
       let lastReport: AnalystReport | undefined =
         (await prisma.analystReport.findFirst({
-          where: { analystId },
+          where: {
+            userId, // 过滤一下当前用户的
+            token: {
+              in: (userChat.context as UserChatContext).reportTokens ?? [],
+            },
+          },
           orderBy: { createdAt: "desc" },
         })) ?? undefined;
       let hint = "";
@@ -84,48 +97,66 @@ export const generateReportTool = ({
       //   };
       // }
       if (lastReport && !lastReport.generatedAt) {
-        // 复用这个没完成的 report 记录，并覆盖 token，原来的 token 没用了，因为报告都没生成完
+        // 复用这个没完成的 report 记录，并覆盖 token，原来的 token 没用了，因为报告都没生成完, extra 也完全覆盖
         hint = `Continuing from previous incomplete report (${lastReport.token}).`;
         report = await prisma.analystReport.update({
           where: { id: lastReport.id },
-          data: { token: reportToken, instruction },
+          data: {
+            userId,
+            token: reportToken,
+            instruction,
+            extra: {
+              title: userChat.title,
+              description: userChat?.analyst?.topic ?? "",
+              userChatToken: userChat.token,
+            } satisfies AnalystReportExtra,
+          },
         });
         lastReport = undefined;
       } else {
         report = await prisma.analystReport.create({
-          data: { analystId, instruction, token: reportToken, coverSvg: "", onePageHtml: "" },
+          data: {
+            userId,
+            instruction,
+            token: reportToken,
+            coverSvg: "",
+            onePageHtml: "",
+            extra: {
+              title: userChat.title,
+              description: userChat?.analyst?.topic ?? "",
+              userChatToken: userChat.token,
+            } satisfies AnalystReportExtra,
+          },
         });
       }
 
-      let analyst = studyUserChat.analyst;
       // 如果 studyLog 没有生成过，先生成，report 的内容主要来自 studyLog
-      if (analyst.studyLog) {
+      if (studyLog) {
         logger.info("generateReport: studyLog found in Analyst");
       } else {
         logger.info("studyLog not found in Analyst, generating studyLog");
         try {
-          const { studyLog } = await generateAndSaveStudyLog({
-            analyst,
+          const result = await generateAndSaveStudyLog({
+            userId,
+            userChatId,
             messages,
             locale,
             abortSignal,
             statReport,
             logger,
           });
-          // ⚠️ IMPROVE THIS，更新 analyst 对象上的 studyLog，不从数据库读取
-          analyst = {
-            ...analyst,
-            studyLog,
-          };
+          studyLog = result.studyLog;
         } catch (error) {
-          logger.error(`Error generating study process for analyst ${analyst.id}: ${error}`);
+          logger.error(`Error generating studyLog: ${error}`);
           throw error;
         }
       }
 
       await Promise.all([
         generateReport({
-          analyst,
+          analystKind: userChat.analyst?.kind ?? undefined,
+          studyLog,
+          userId,
           report,
           lastReport,
           instruction,
@@ -139,12 +170,12 @@ export const generateReportTool = ({
             report = await prisma.analystReport.findUniqueOrThrow({ where: { id: report.id } });
           })
           .catch((error) => {
-            reportLogger.error(`Error generating report for analyst ${analystId}: ${error}`);
+            reportLogger.error(`Error generating report for userChat ${userChatId}: ${error}`);
             throw error;
           }),
         generateReportCoverImage({
           ratio: "landscape",
-          analyst,
+          studyLog,
           report,
           locale,
           abortSignal: AbortSignal.any([abortSignal, AbortSignal.timeout(180 * 1000)]), // 3 minutes timeout
@@ -178,6 +209,16 @@ export const generateReportTool = ({
         // }),
       ]);
 
+      // Save report token to context
+      const context = (userChat.context || {}) as UserChatContext;
+      const existingTokens = context.reportTokens || [];
+      await mergeUserChatContext({
+        id: userChatId,
+        context: {
+          reportTokens: Array.from(new Set([...existingTokens, report.token])),
+        },
+      });
+
       return {
         reportToken: report.token,
         plainText: `Report successfully generated. ${hint}`,
@@ -185,8 +226,10 @@ export const generateReportTool = ({
     },
   });
 
-export async function generateReport({
-  analyst,
+async function generateReport({
+  analystKind,
+  studyLog,
+  userId,
   report,
   lastReport,
   instruction,
@@ -196,7 +239,9 @@ export async function generateReport({
   logger,
   systemPrompt,
 }: {
-  analyst: Analyst;
+  analystKind?: string;
+  studyLog: string;
+  userId: number;
   report: AnalystReport;
   lastReport?: AnalystReport;
   instruction: string;
@@ -206,8 +251,8 @@ export async function generateReport({
 
   const throttleSaveToFile = (() => {
     let timerId: NodeJS.Timeout | null = null;
-    const cacheDir = getReportCacheDir(analyst.userId, report.token);
-    const htmlFilePath = getReportCacheFilePath(analyst.userId, report.token);
+    const cacheDir = getReportCacheDir(userId, report.token);
+    const htmlFilePath = getReportCacheFilePath(userId, report.token);
 
     return async (html: string, { immediate }: { immediate?: boolean } = {}) => {
       if (immediate) {
@@ -265,7 +310,7 @@ export async function generateReport({
           content: [
             {
               type: "text",
-              text: reportHTMLPrologue({ locale, analyst, instruction, lastReport }),
+              text: reportHTMLPrologue({ locale, studyLog, instruction, lastReport }),
             },
             // ...fileParts,
           ],
@@ -301,7 +346,7 @@ export async function generateReport({
           ? systemPrompt
           : reportHTMLSystem({
               locale,
-              analystKind: (analyst.kind as AnalystKind) || AnalystKind.misc,
+              analystKind,
             }),
 
         messages,
@@ -396,8 +441,8 @@ export async function generateReport({
       } finally {
         // Cleanup temp file after generation complete
         try {
-          const cacheDir = getReportCacheDir(analyst.userId, report.token);
-          const htmlFilePath = getReportCacheFilePath(analyst.userId, report.token);
+          const cacheDir = getReportCacheDir(userId, report.token);
+          const htmlFilePath = getReportCacheFilePath(userId, report.token);
           await fs.unlink(htmlFilePath);
           await fs.rmdir(cacheDir);
           logger.info("Cleaned up cache directory");

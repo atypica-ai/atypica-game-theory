@@ -9,11 +9,7 @@ import { createHash } from "node:crypto";
 export async function generateReportPDF(report: {
   id: number;
   token: string;
-  analyst: {
-    userId: number;
-    id: number;
-    topic: string;
-  };
+  userId: number;
   extra: AnalystReportExtra;
   onePageHtml: string;
 }): Promise<{
