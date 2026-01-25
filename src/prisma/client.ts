@@ -81,6 +81,7 @@ export type AnalystReportExtra = Partial<{
   title: string;
   description: string;
   userChatToken: string;
+  analystKind: string; //AnalystKind;
   coverObjectUrl: string;
   // s3SignedCoverObjectUrl: string | null;
   // s3SignedCoverObjectUrlExpiresAt: number | null; // timestamp millis

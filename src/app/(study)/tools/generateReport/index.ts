@@ -70,6 +70,11 @@ export const generateReportTool = ({
         },
       });
 
+      /**
+       * @todo 需要从 messages 里面获取 kind
+       */
+      const analystKind = userChat.analyst?.kind ?? undefined;
+
       let studyLog = userChat.analyst?.studyLog ?? "";
 
       // if (await prisma.analystReport.findUnique({ where: { token: reportToken } })) {
@@ -109,6 +114,7 @@ export const generateReportTool = ({
               title: userChat.title,
               description: userChat?.analyst?.topic ?? "",
               userChatToken: userChat.token,
+              analystKind,
             } satisfies AnalystReportExtra,
           },
         });
@@ -125,6 +131,7 @@ export const generateReportTool = ({
               title: userChat.title,
               description: userChat?.analyst?.topic ?? "",
               userChatToken: userChat.token,
+              analystKind,
             } satisfies AnalystReportExtra,
           },
         });
@@ -154,7 +161,7 @@ export const generateReportTool = ({
 
       await Promise.all([
         generateReport({
-          analystKind: userChat.analyst?.kind ?? undefined,
+          analystKind,
           studyLog,
           userId,
           report,

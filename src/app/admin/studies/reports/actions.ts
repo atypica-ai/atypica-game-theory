@@ -272,7 +272,7 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
           coverObjectUrl: extra?.coverObjectUrl || "",
           url: `/artifacts/report/${report.token}/share`,
           // category: report.analyst.kind || undefined, // 保留字段但不使用
-          // tags: report.analyst.kind || "", // 默认写入 kind 作为 tags
+          tags: (report.extra as AnalystReportExtra).analystKind || "", // 默认写入 kind 作为 tags
         } satisfies FeaturedItemExtra,
       },
     });
