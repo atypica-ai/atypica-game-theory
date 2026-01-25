@@ -1,4 +1,4 @@
-import { trackUserServerSide } from "@/lib/analytics/server";
+import { trackUserServerSideSync } from "@/lib/analytics/server";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -126,14 +126,14 @@ export async function POST(request: NextRequest) {
     let errorCount = 0;
     const errors: Array<{ userId: number; error: string }> = [];
 
-    // 遍历每个用户，调用 trackUserServerSide
+    // 遍历每个用户，调用 trackUserServerSideSync（同步版本）
     for (const user of users) {
       try {
-        trackUserServerSide({ userId: user.id, traitTypes });
+        await trackUserServerSideSync({ userId: user.id, traitTypes });
         successCount++;
         logger.debug({ msg: `Successfully tracked user`, userId: user.id });
 
-        // 等待 300ms
+        // 等待 300ms（流控）
         await new Promise((resolve) => setTimeout(resolve, 300));
       } catch (error) {
         errorCount++;

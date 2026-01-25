@@ -423,3 +423,32 @@ export function trackUserServerSide(args: {
       }),
   );
 }
+
+/**
+ * 同步版本的 trackUserServerSide，用于批量 track 场景
+ *
+ * ⚠️ 只在 batch API 等需要流控的场景使用，普通业务逻辑请使用 trackUserServerSide
+ *
+ * 区别：
+ * - trackUserServerSide: 使用 after() 延迟执行，不阻塞响应，适合普通业务流程
+ * - trackUserServerSideSync: 同步执行，等待完成，适合批量处理（避免 after() 累积导致瞬时并发）
+ */
+export async function trackUserServerSideSync(args: {
+  userId: number;
+  traitTypes: UserTraitType[] | "all";
+}): Promise<void> {
+  try {
+    await _trackUserServerSide(args);
+    rootLogger.info(
+      { userId: args.userId, traitTypes: args.traitTypes },
+      `Successfully tracked user`,
+    );
+  } catch (error) {
+    rootLogger.error({
+      msg: `Failed to track user: ${(error as Error).message}`,
+      stack: (error as Error).stack,
+      userId: args.userId,
+      traitTypes: args.traitTypes,
+    });
+  }
+}

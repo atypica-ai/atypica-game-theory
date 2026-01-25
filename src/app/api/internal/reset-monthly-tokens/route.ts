@@ -1,5 +1,5 @@
 import { resetTeamMonthlyTokens, resetUserMonthlyTokens } from "@/app/payment/monthlyTokens";
-import { trackUserServerSide } from "@/lib/analytics/server";
+import { trackUserServerSideSync } from "@/lib/analytics/server";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
           await resetTeamMonthlyTokens({ teamId });
         } else if (userId) {
           await resetUserMonthlyTokens({ userId });
-          // track user
-          trackUserServerSide({ userId, traitTypes: ["revenue"] });
+          // track user (同步版本，避免 after() 累积)
+          await trackUserServerSideSync({ userId, traitTypes: ["revenue"] });
         }
         successCount++;
         logger.debug(`Successfully reset monthly tokens, user=${userId} team=${teamId}`);
