@@ -26,9 +26,11 @@ import {
   UserChat,
   UserChatExtra,
 } from "@/prisma/client";
+import { AnalystInterviewWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { FileUIPart, generateId, UIMessage } from "ai";
+import { UserChatContext } from "../context/types";
 
 export async function createStudyUserChat(
   {
@@ -334,20 +336,19 @@ export async function fetchAnalystInterviewForPersona({
       },
     },
   });
-  if (!studyUserChat?.analyst) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "User chat not found or analyst not found",
-    };
-  }
-  const interview = await prisma.analystInterview.findUnique({
-    where: {
-      analystId_personaId: {
-        analystId: studyUserChat.analyst.id,
-        personaId: forPersonaId,
-      },
-    },
+  const analystId = studyUserChat?.analyst?.id;
+  const personaPanelId = (studyUserChat?.context as UserChatContext | undefined)
+    ?.interviewPersonaPanelId;
+  const where: AnalystInterviewWhereInput = {
+    personaId: forPersonaId,
+    OR: [
+      ...(analystId ? [{ analystId }] : []), // legacy
+      ...(personaPanelId ? [{ personaPanelId }] : []), // new
+    ],
+  };
+
+  const interview = await prisma.analystInterview.findFirst({
+    where,
     select: {
       id: true,
       conclusion: true,

@@ -24,12 +24,6 @@ async function InterviewAgentPage({ userChatId }: { userChatId: number }) {
       interviewUserChatId: userChat.id,
     },
     select: {
-      analyst: {
-        select: {
-          id: true,
-          role: true,
-        },
-      },
       persona: {
         select: {
           id: true,
@@ -43,9 +37,9 @@ async function InterviewAgentPage({ userChatId }: { userChatId: number }) {
     <AgentChatPage
       userChatToken={userChat.token}
       chatTitle={userChat.title}
-      nickname={{ user: interview.analyst.role, assistant: interview.persona.name }}
+      nickname={{ user: "Inteviewer", assistant: interview.persona.name }}
       avatar={{
-        user: <HippyGhostAvatar className="size-8" seed={interview.analyst.id} />,
+        user: <HippyGhostAvatar className="size-8" seed={"Interviewer"} />,
         assistant: <HippyGhostAvatar className="size-8" seed={interview.persona.id} />,
       }}
       initialMessages={userChat.messages as TSimpleAgentMessageWithTool[]}

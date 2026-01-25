@@ -123,6 +123,7 @@ export async function fetchDeepResearchUserChatAction(userChatToken: string): Pr
           token: userChat.token,
           title: userChat.title,
           kind: "misc",
+          context: userChat.context,
           extra: userChat.extra,
           createdAt: userChat.createdAt,
           updatedAt: userChat.updatedAt,
