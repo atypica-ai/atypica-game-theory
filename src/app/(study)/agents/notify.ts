@@ -2,7 +2,8 @@ import { sendReportCompletionEmail } from "@/email/reportCompletion";
 import { sendStudyInterruptionEmail } from "@/email/studyInterruption";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { truncateForTitle } from "@/lib/textUtils";
+import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
+import { AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -23,9 +24,7 @@ export async function notifyReportCompletion({
         token: reportToken,
       },
       select: {
-        analyst: {
-          select: { topic: true, locale: true },
-        },
+        extra: true,
       },
     }),
     prisma.userChat.findUnique({
@@ -38,7 +37,6 @@ export async function notifyReportCompletion({
         user: {
           select: { email: true, id: true },
         },
-        title: true,
       },
     }),
   ]);
@@ -54,16 +52,20 @@ export async function notifyReportCompletion({
     // TODO: team user 没有邮箱，需要取出 personalUser 的 邮箱，目前先跳过
     return;
   }
-  const locale =
-    report.analyst.locale && VALID_LOCALES.includes(report.analyst.locale as Locale)
-      ? (report.analyst.locale as Locale)
-      : await getLocale();
+
+  const extra = report.extra as AnalystReportExtra;
+  const title = extra?.title || "";
+  const description = truncateForTitle(extra.description || "", {
+    maxDisplayWidth: 200,
+    suffix: "...",
+  });
+  const locale = await detectInputLanguage({
+    text: `${title}\n${description}`,
+  });
+
   await sendReportCompletionEmail({
     email: studyUserChat.user.email,
-    title: truncateForTitle(studyUserChat.title, {
-      maxDisplayWidth: 100,
-      suffix: "...",
-    }),
+    title,
     studyUrl: `${siteOrigin}/study/${studyUserChat.token}`,
     locale,
   });

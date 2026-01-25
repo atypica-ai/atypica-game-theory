@@ -188,8 +188,16 @@ function buildStudyTools(params: {
       ...agentToolArgs,
     }),
     [StudyToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
-    [StudyToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
-    [StudyToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.generateReport]: generateReportTool({
+      userId,
+      userChatId: studyUserChatId,
+      ...agentToolArgs,
+    }),
+    [StudyToolName.generatePodcast]: generatePodcastTool({
+      userId,
+      userChatId: studyUserChatId,
+      ...agentToolArgs,
+    }),
     [StudyToolName.planStudy]: planStudyTool({ studyUserChatId, ...agentToolArgs }),
     [StudyToolName.toolCallError]: toolCallError,
   };

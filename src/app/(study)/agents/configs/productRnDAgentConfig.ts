@@ -125,8 +125,16 @@ function buildProductRnDTools(params: {
     [StudyToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
     [StudyToolName.audienceCall]: audienceCallTool({ ...agentToolArgs }),
     [StudyToolName.scoutSocialTrends]: scoutSocialTrendsTool({ userId, ...agentToolArgs }),
-    [StudyToolName.generatePodcast]: generatePodcastTool({ studyUserChatId, ...agentToolArgs }),
-    [StudyToolName.generateReport]: generateReportTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.generatePodcast]: generatePodcastTool({
+      userId,
+      userChatId: studyUserChatId,
+      ...agentToolArgs,
+    }),
+    [StudyToolName.generateReport]: generateReportTool({
+      userId,
+      userChatId: studyUserChatId,
+      ...agentToolArgs,
+    }),
     [StudyToolName.toolCallError]: toolCallError,
   };
 }

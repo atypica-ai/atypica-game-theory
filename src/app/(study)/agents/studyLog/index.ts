@@ -6,7 +6,6 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import { updateMemory } from "@/app/(memory)/lib/updateMemory";
 import { generateRecommendedQuestions } from "@/app/(study)/study/StudyNextSteps/lib";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import { Analyst } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { waitUntil } from "@vercel/functions";
@@ -74,14 +73,16 @@ function updateMemoryAfterStudyCompletion({
 }
 
 export async function generateAndSaveStudyLog({
-  analyst,
+  userId,
+  userChatId,
   messages,
   locale,
   abortSignal,
   statReport,
   logger,
 }: {
-  analyst: Pick<Analyst, "id" | "userId">;
+  userId: number;
+  userChatId: number;
   messages: ModelMessage[];
 } & AgentToolConfigArgs): Promise<{ studyLog: string }> {
   const systemPrompt = studyLogSystem({ locale });
@@ -143,16 +144,20 @@ export async function generateAndSaveStudyLog({
         if (statReport) {
           await statReport("tokens", tokens, { reportedBy: "studyLog tool", ...extra });
         }
-        await prisma.analyst.update({
-          where: { id: analyst.id },
-          data: { studyLog: studyLog },
+        // ⚠️ 通过 userChatId 来更新，使用 updateMany，如果 userChat 没关联 analyst，也不会报错
+        await prisma.analyst.updateMany({
+          where: {
+            studyUserChatId: userChatId,
+          },
+          data: { studyLog },
         });
 
         // Trigger recommended questions generation in background after studyLog is complete
         // 在 studyLog 完成后，在后台触发推荐问题生成
         waitUntil(
           generateRecommendedQuestions({
-            analystId: analyst.id,
+            studyLog,
+            userChatId,
             locale,
             forceRegenerate: false,
           }),
@@ -161,7 +166,7 @@ export async function generateAndSaveStudyLog({
 
         // Update user memory after study completion, 在研究完成后更新用户记忆，不需要 await
         updateMemoryAfterStudyCompletion({
-          userId: analyst.userId,
+          userId,
           modelMessages: messages,
           studyLog,
           logger,

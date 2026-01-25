@@ -2,8 +2,9 @@ import "server-only";
 
 import { llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
-import { AnalystExtra } from "@/prisma/client";
+import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { generateObject } from "ai";
 import { Locale } from "next-intl";
 import { z } from "zod";
@@ -38,45 +39,47 @@ const recommendedQuestionsSchema = z.object({
  * 此函数在后台运行，即使请求断开也会继续执行
  */
 export async function generateRecommendedQuestions({
-  analystId,
+  userChatId,
+  studyLog,
   locale,
   forceRegenerate = false,
 }: {
-  analystId: number;
+  userChatId: number;
+  studyLog: string;
   locale: Locale;
   forceRegenerate?: boolean;
 }): Promise<{ success: boolean; questions?: Array<{ title: string; brief: string }> }> {
-  const logger = rootLogger.child({ analystId, task: "generateRecommendedQuestions" });
+  const logger = rootLogger.child({ userChatId, task: "generateRecommendedQuestions" });
 
   try {
     // Get analyst data
-    const analyst = await prisma.analyst.findUnique({
-      where: { id: analystId },
+    const userChat = await prisma.userChat.findUnique({
+      where: { id: userChatId },
     });
 
-    if (!analyst) {
-      logger.error("Analyst not found");
+    if (!userChat) {
+      logger.error("UserChat not found");
       return { success: false };
     }
 
-    const analystExtra = analyst.extra as AnalystExtra;
+    const userChatExtra = userChat.extra as UserChatExtra;
 
     // If not forcing regenerate and we have cached questions without processing, return early
     if (
       !forceRegenerate &&
-      analystExtra.recommendedStudies?.questions &&
-      !analystExtra.recommendedStudies.processing
+      userChatExtra.recommendedStudies?.questions &&
+      !userChatExtra.recommendedStudies.processing
     ) {
       logger.info("Using cached questions");
       return {
         success: true,
-        questions: analystExtra.recommendedStudies.questions,
+        questions: userChatExtra.recommendedStudies.questions,
       };
     }
 
     // Check if already processing (with timeout check - 10 minutes)
-    if (analystExtra.recommendedStudies?.processing) {
-      const processingStartTime = parseInt(analystExtra.recommendedStudies.processing, 10);
+    if (userChatExtra.recommendedStudies?.processing) {
+      const processingStartTime = parseInt(userChatExtra.recommendedStudies.processing, 10);
       const now = Date.now();
       const tenMinutes = 10 * 60 * 1000;
 
@@ -91,16 +94,15 @@ export async function generateRecommendedQuestions({
     }
 
     // Set processing status with current timestamp
-    // Use || operator to safely merge extra field without overwriting other values
-    await prisma.$executeRaw`
-      UPDATE "Analyst"
-      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+    await mergeExtra({
+      tableName: "UserChat",
+      id: userChat.id,
+      extra: {
         recommendedStudies: {
           processing: Date.now().toString(),
         },
-      })}::jsonb
-      WHERE "id" = ${analystId}
-    `;
+      } satisfies UserChatExtra,
+    });
 
     // Generate new questions using AI
     const systemPrompt =
@@ -118,18 +120,16 @@ Each research question should include:
 
     const userPrompt =
       locale === "zh-CN"
-        ? `<研究信息>
-<简述>${analyst.brief}</简述>
-<主题>${analyst.topic.slice(0, 2000)}</主题>
-<研究日志>${analyst.studyLog.slice(0, 10000)}</研究日志>
-</研究信息>
+        ? `
+<studyLog>
+${studyLog.slice(0, 10000)}
+</studyLog>
 
 请生成2个后续研究问题，每个包含 title 和 brief。`
-        : `<study_information>
-<brief>${analyst.brief}</brief>
-<topic>${analyst.topic.slice(0, 2000)}</topic>
-<study_log>${analyst.studyLog.slice(0, 10000)}</study_log>
-</study_information>
+        : `
+<studyLog>
+${studyLog.slice(0, 10000)}
+</studyLog>
 
 Please generate 2 follow-up research questions, each with title and brief.`;
 
@@ -150,20 +150,19 @@ Please generate 2 follow-up research questions, each with title and brief.`;
 
     const questions = result.object.questions;
 
-    // Cache the questions and remove processing flag
-    // Use || operator to safely merge, only including the fields we want
-    await prisma.$executeRaw`
-      UPDATE "Analyst"
-      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+    // Save questions and remove processing flag
+    await mergeExtra({
+      tableName: "UserChat",
+      id: userChat.id,
+      extra: {
         recommendedStudies: {
           questions,
           generatedAt: new Date().toISOString(),
         },
-      })}::jsonb
-      WHERE "id" = ${analystId}
-    `;
+      } satisfies UserChatExtra,
+    });
 
-    logger.info(`Successfully generated recommended questions for analyst ${analystId}`);
+    logger.info(`Successfully generated recommended questions for userChat ${userChat.id}`);
 
     return {
       success: true,
@@ -176,9 +175,9 @@ Please generate 2 follow-up research questions, each with title and brief.`;
     try {
       // Use #- operator to remove the nested processing key
       await prisma.$executeRaw`
-        UPDATE "Analyst"
+        UPDATE "UserChat"
         SET "extra" = "extra" #- '{recommendedStudies,processing}'
-        WHERE "id" = ${analystId}
+        WHERE "id" = ${userChatId}
       `;
     } catch (cleanupError) {
       logger.error(`Failed to clear processing flag: ${(cleanupError as Error).message}`);

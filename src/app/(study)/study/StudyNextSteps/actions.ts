@@ -3,7 +3,7 @@
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystExtra } from "@/prisma/client";
+import { AnalystExtra, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
@@ -31,23 +31,14 @@ export async function generateRecommendedQuestionsAction(
   >
 > {
   try {
-    // Get analyst data via studyUserChat
-    const studyUserChat = await prisma.userChat.findUnique({
+    const userChat = await prisma.userChat.findUnique({
       where: { token: studyUserChatToken, kind: "study" },
       include: {
         analyst: true,
       },
     });
 
-    if (!studyUserChat?.analyst) {
-      return {
-        success: false,
-        code: "not_found",
-        message: "Analyst not found for this study",
-      };
-    }
-
-    if (!studyUserChat.analyst.studyLog) {
+    if (!userChat?.analyst?.studyLog) {
       return {
         success: true,
         data: {
@@ -56,36 +47,37 @@ export async function generateRecommendedQuestionsAction(
       };
     }
 
-    const logger = rootLogger.child({ studyUserChatId: studyUserChat.id, studyUserChatToken });
-    const { analyst } = studyUserChat;
+    const logger = rootLogger.child({ studyUserChatId: userChat.id, studyUserChatToken });
+
+    const studyLog = userChat.analyst.studyLog;
 
     // Determine locale
     const locale: Locale =
-      analyst.locale && VALID_LOCALES.includes(analyst.locale as Locale)
-        ? (analyst.locale as Locale)
+      userChat.analyst.locale && VALID_LOCALES.includes(userChat.analyst.locale as Locale)
+        ? (userChat.analyst.locale as Locale)
         : await getLocale();
 
     // Check if we already have cached questions in analyst.extra
-    let analystExtra = analyst.extra as AnalystExtra;
+    let userChatExtra = userChat.extra as UserChatExtra;
 
     // If not forcing regenerate and we have cached questions, return them
     if (
       !forceRegenerate &&
-      analystExtra.recommendedStudies?.questions &&
-      !analystExtra.recommendedStudies.processing
+      userChatExtra.recommendedStudies?.questions &&
+      !userChatExtra.recommendedStudies.processing
     ) {
       return {
         success: true,
         data: {
           availableForNextSteps: true,
-          questions: analystExtra.recommendedStudies.questions,
+          questions: userChatExtra.recommendedStudies.questions,
         },
       };
     }
 
     // Check if already processing (with timeout check - 10 minutes)
-    if (analystExtra.recommendedStudies?.processing) {
-      const processingStartTime = parseInt(analystExtra.recommendedStudies.processing, 10);
+    if (userChatExtra.recommendedStudies?.processing) {
+      const processingStartTime = parseInt(userChatExtra.recommendedStudies.processing, 10);
       const now = Date.now();
       const tenMinutes = 10 * 60 * 1000;
 
@@ -97,7 +89,8 @@ export async function generateRecommendedQuestionsAction(
         logger.info("Processing timeout or force regenerate, triggering new generation");
         waitUntil(
           generateRecommendedQuestions({
-            analystId: analyst.id,
+            studyLog,
+            userChatId: userChat.id,
             locale,
             forceRegenerate: true,
           }),
@@ -105,10 +98,11 @@ export async function generateRecommendedQuestionsAction(
       }
     } else {
       // Not processing, trigger background generation
-      logger.info(`Triggering background generation for analyst ${analyst.id}`);
+      logger.info(`Triggering background generation for userChat ${userChat.id}`);
       waitUntil(
         generateRecommendedQuestions({
-          analystId: analyst.id,
+          studyLog,
+          userChatId: userChat.id,
           locale,
           forceRegenerate,
         }),
@@ -122,27 +116,27 @@ export async function generateRecommendedQuestionsAction(
     for (let i = 0; i < maxPolls; i++) {
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
 
-      const updatedAnalyst = await prisma.analyst.findUnique({
-        where: { id: analyst.id },
+      const updatedUserChat = await prisma.userChat.findUnique({
+        where: { id: userChat.id },
       });
 
-      if (!updatedAnalyst) {
+      if (!updatedUserChat) {
         break;
       }
 
-      analystExtra = updatedAnalyst.extra as AnalystExtra;
+      userChatExtra = updatedUserChat.extra as AnalystExtra;
 
       // If questions are ready and not processing, return them
       if (
-        analystExtra.recommendedStudies?.questions &&
-        !analystExtra.recommendedStudies.processing
+        userChatExtra.recommendedStudies?.questions &&
+        !userChatExtra.recommendedStudies.processing
       ) {
         logger.info("Questions generated successfully");
         return {
           success: true,
           data: {
             availableForNextSteps: true,
-            questions: analystExtra.recommendedStudies.questions,
+            questions: userChatExtra.recommendedStudies.questions,
           },
         };
       }
