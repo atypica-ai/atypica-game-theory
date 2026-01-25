@@ -11,7 +11,7 @@ export async function mergeUserChatContext({
 }) {
   await prisma.$executeRaw`
     UPDATE "UserChat"
-    SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({ ...context })}::jsonb,
+    SET "context" = COALESCE("context", '{}') || ${JSON.stringify({ ...context })}::jsonb,
         "updatedAt" = NOW()
     WHERE "id" = ${id}
   `;
