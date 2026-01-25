@@ -1,28 +1,12 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
-import { StatReporter } from "@/ai/tools/types";
-import { determineKindAndGeneratePodcast } from "@/app/(podcast)/lib/evaluate";
-import { generatePodcast } from "@/app/(podcast)/lib/generation";
-import { PodcastKind } from "@/app/(podcast)/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateChatTitle } from "@/lib/userChat/lib";
-import { generateToken } from "@/lib/utils";
-import {
-  Analyst,
-  AnalystKind,
-  AnalystPodcast,
-  AnalystPodcastExtra,
-  AnalystReport,
-  User,
-  UserChat,
-} from "@/prisma/client";
+import { Analyst, AnalystKind, User, UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { waitUntil } from "@vercel/functions";
 import { UIMessage } from "ai";
-import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 
 // Get all analysts
@@ -36,8 +20,6 @@ export async function fetchAnalysts(
     (Analyst & {
       user: Pick<User, "email"> | null;
       studyUserChat: Pick<UserChat, "token" | "title" | "extra"> | null;
-      reports: Pick<AnalystReport, "id" | "token" | "createdAt" | "generatedAt">[];
-      podcasts: Pick<AnalystPodcast, "id" | "token" | "createdAt" | "generatedAt">[];
     })[]
   >
 > {
@@ -106,73 +88,10 @@ export async function fetchAnalysts(
 
   const totalCount = await prisma.analyst.count({ where });
 
-  // Extract analyst IDs for batch queries
-  const analystIds = analysts.map((a) => a.id);
-
-  // Step 2: Batch fetch reports and podcasts in parallel (2 queries instead of 2N)
-  const [allReports, allPodcasts] = await Promise.all([
-    prisma.analystReport.findMany({
-      where: {
-        analystId: { in: analystIds },
-      },
-      select: {
-        id: true,
-        token: true,
-        createdAt: true,
-        generatedAt: true,
-        analystId: true,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.analystPodcast.findMany({
-      where: {
-        analystId: { in: analystIds },
-      },
-      select: {
-        id: true,
-        token: true,
-        createdAt: true,
-        generatedAt: true,
-        analystId: true,
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
-
-  // Step 3: Group data by analystId for O(1) lookup
-  const reportsMap = new Map<
-    number,
-    Pick<AnalystReport, "id" | "token" | "createdAt" | "generatedAt">[]
-  >();
-  const podcastsMap = new Map<
-    number,
-    Pick<AnalystPodcast, "id" | "token" | "createdAt" | "generatedAt">[]
-  >();
-
-  allReports.forEach((report) => {
-    const { analystId, ...reportData } = report;
-    if (!reportsMap.has(analystId)) {
-      reportsMap.set(analystId, []);
-    }
-    reportsMap.get(analystId)!.push(reportData);
-  });
-
-  allPodcasts.forEach((podcast) => {
-    const { analystId, ...podcastData } = podcast;
-    if (!podcastsMap.has(analystId)) {
-      podcastsMap.set(analystId, []);
-    }
-    podcastsMap.get(analystId)!.push(podcastData);
-  });
-
   // Step 4: Combine data
   return {
     success: true,
-    data: analysts.map((analyst) => ({
-      ...analyst,
-      reports: reportsMap.get(analyst.id) || [],
-      podcasts: podcastsMap.get(analyst.id) || [],
-    })),
+    data: analysts,
     pagination: {
       page,
       pageSize,
@@ -221,81 +140,4 @@ export async function fetchBriefChatMessages(
     success: true,
     data: briefChat.messages.map(convertDBMessageToAIMessage),
   };
-}
-
-// Admin version of generatePodcastAction - bypasses user ownership check
-export async function determineKindAndGeneratePodcastAdminAction({
-  analystId,
-  systemPrompt,
-  podcastKind,
-}: {
-  analystId: number;
-  systemPrompt?: string;
-  podcastKind: "auto" | PodcastKind;
-}): Promise<void> {
-  await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
-
-  // Get the analyst (no user ownership check needed for admin)
-  const analyst = await prisma.analyst.findUnique({
-    where: { id: analystId },
-  });
-
-  if (!analyst) {
-    throw new Error("Analyst not found");
-  }
-
-  const statReport: StatReporter = (async (dimension, value, extra) => {
-    rootLogger.info({
-      msg: `[LIMITED FREE] statReport: ${dimension}=${value}`,
-      extra,
-      analystId: analystId,
-      note: "Podcast generation is currently free - tokens not deducted",
-    });
-  }) as StatReporter;
-
-  const abortSignal = new AbortController().signal;
-
-  // Start podcast generation in background
-  if (podcastKind === "auto") {
-    // Auto-determine podcast kind
-    waitUntil(
-      determineKindAndGeneratePodcast({
-        analystId: analystId,
-        abortSignal,
-        statReport,
-      }),
-    );
-  } else {
-    const podcast = await prisma.analystPodcast
-      .create({
-        data: {
-          analystId,
-          token: generateToken(),
-          instruction: "",
-          script: "",
-          extra: {
-            kindDetermination: {
-              kind: podcastKind,
-              reason: "Manual selection",
-              systemPrompt,
-            },
-          } as AnalystPodcastExtra,
-        },
-      })
-      .then(({ extra, ...analyst }) => ({
-        ...analyst,
-        extra: extra as AnalystPodcastExtra,
-      }));
-
-    // Manual podcast kind selection
-    waitUntil(
-      generatePodcast({
-        podcast,
-        abortSignal,
-        statReport,
-      }),
-    );
-  }
-
-  revalidatePath("/admin/studies");
 }

@@ -58,10 +58,10 @@ export function StudiesList({ data, isLoading }: StudiesListProps) {
             <TableRow key={`${pageView.pagePath}-${index}`}>
               <TableCell className="font-medium">{index + 1}</TableCell>
               <TableCell className="whitespace-normal">
-                <div className="flex items-start space-x-3 max-w-[30rem] xl:max-w-[60rem] overflow-hidden">
+                <div className="flex items-start space-x-3 max-w-120 xl:max-w-240 overflow-hidden">
                   {/* Kind Badge */}
-                  <div className="flex-shrink-0 pt-1">
-                    <span
+                  <div className="shrink-0 pt-1">
+                    {/*<span
                       className={`px-3 py-1 text-xs font-semibold rounded-full ${
                         pageView.study?.analyst?.kind === "testing"
                           ? "bg-blue-100 text-blue-800"
@@ -79,7 +79,7 @@ export function StudiesList({ data, isLoading }: StudiesListProps) {
                       }`}
                     >
                       {pageView.study?.analyst?.kind || "N/A"}
-                    </span>
+                    </span>*/}
                   </div>
 
                   {/* Text Content */}
@@ -97,9 +97,9 @@ export function StudiesList({ data, isLoading }: StudiesListProps) {
                           </p>
                         </Link>
                         {/* Topic - Not clickable */}
-                        <p className="text-xs text-muted-foreground line-clamp-2">
+                        {/*<p className="text-xs text-muted-foreground line-clamp-2">
                           {pageView.study.analyst?.topic}
-                        </p>
+                        </p>*/}
                         {/* Path - Not clickable */}
                         <p className="text-xs text-muted-foreground font-mono truncate">
                           {pageView.pagePath}
@@ -119,9 +119,7 @@ export function StudiesList({ data, isLoading }: StudiesListProps) {
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  <p className="text-sm truncate">
-                    {pageView.study?.analyst?.user?.email || "N/A"}
-                  </p>
+                  <p className="text-sm truncate">{pageView.study?.user?.email || "N/A"}</p>
                   <p className="text-xs text-muted-foreground">
                     {pageView.study ? formatDate(pageView.study.createdAt, locale) : "N/A"}
                   </p>

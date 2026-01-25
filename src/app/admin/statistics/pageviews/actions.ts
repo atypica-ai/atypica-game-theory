@@ -8,40 +8,25 @@ import {
 } from "@/lib/analytics/google/reporter";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ServerActionResult } from "@/lib/serverAction";
-import {
-  Analyst,
-  AnalystPodcast,
-  AnalystReport,
-  AnalystReportExtra,
-  User,
-  UserChat,
-} from "@/prisma/client";
+import { AnalystPodcast, AnalystReport, AnalystReportExtra, User, UserChat } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 
 export interface PageViewWithReport extends PageViewsReport {
   report?: AnalystReport & {
-    analyst: Analyst & {
-      user: Pick<User, "email"> | null;
-    };
+    user: Pick<User, "email"> | null;
     coverUrl?: string;
   };
 }
 
 export interface PageViewWithStudy extends PageViewsReport {
   study?: UserChat & {
-    analyst:
-      | (Analyst & {
-          user: Pick<User, "email"> | null;
-        })
-      | null;
+    user: Pick<User, "email"> | null;
   };
 }
 
 export interface PageViewWithPodcast extends PageViewsReport {
   podcast?: Pick<AnalystPodcast, "id" | "token" | "script" | "extra" | "createdAt"> & {
-    analyst: Analyst & {
-      user: Pick<User, "email"> | null;
-    };
+    user: Pick<User, "email"> | null;
   };
 }
 
@@ -102,13 +87,9 @@ export async function fetchTopPageViewsAction(
         },
       },
       include: {
-        analyst: {
-          include: {
-            user: {
-              select: {
-                email: true,
-              },
-            },
+        user: {
+          select: {
+            email: true,
           },
         },
       },
@@ -135,7 +116,6 @@ export async function fetchTopPageViewsAction(
       const match = pageView.pagePath.match(/\/artifacts\/report\/([^\/]+)\/share/);
       const token = match ? match[1] : null;
       const report = token ? reportMap.get(token) : undefined;
-
       return {
         ...pageView,
         report,
@@ -212,13 +192,9 @@ export async function fetchTopStudyPageViewsAction(
         },
       },
       include: {
-        analyst: {
-          include: {
-            user: {
-              select: {
-                email: true,
-              },
-            },
+        user: {
+          select: {
+            email: true,
           },
         },
       },
@@ -232,7 +208,6 @@ export async function fetchTopStudyPageViewsAction(
       const match = pageView.pagePath.match(/\/study\/([^\/]+)\/share/);
       const token = match ? match[1] : null;
       const study = token ? studyMap.get(token) : undefined;
-
       return {
         ...pageView,
         study,
@@ -314,13 +289,9 @@ export async function fetchTopPodcastPageViewsAction(
         script: true,
         extra: true,
         createdAt: true,
-        analyst: {
-          include: {
-            user: {
-              select: {
-                email: true,
-              },
-            },
+        user: {
+          select: {
+            email: true,
           },
         },
       },
@@ -334,7 +305,6 @@ export async function fetchTopPodcastPageViewsAction(
       const match = pageView.pagePath.match(/\/artifacts\/podcast\/([^\/]+)\/share/);
       const token = match ? match[1] : null;
       const podcast = token ? podcastMap.get(token) : undefined;
-
       return {
         ...pageView,
         podcast,

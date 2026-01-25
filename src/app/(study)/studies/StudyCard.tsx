@@ -22,7 +22,7 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
   const getStudyStatus = () => {
     if (studyUserChat.backgroundToken) {
       return "backgroundRunning";
-    } else if (analyst?.reports && analyst.reports.length > 0) {
+    } else if (studyUserChat.context.reportTokens?.length) {
       return "reportGenerated";
     } else {
       return "notCompleted";
@@ -31,12 +31,12 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
 
   const status = getStudyStatus();
   const hasStats =
-    (analyst?.reports && analyst.reports.length > 0) ||
-    (analyst?.podcasts && analyst.podcasts.length > 0) ||
+    studyUserChat.context.reportTokens?.length ||
+    studyUserChat.context.podcastTokens?.length ||
     (analyst?.attachments && analyst.attachments.length > 0);
 
   return (
-    <Card className="flex flex-col h-full border border-zinc-200 dark:border-zinc-700 shadow-sm bg-gradient-to-br from-white to-zinc-50/50 dark:from-zinc-800 dark:to-zinc-700/50">
+    <Card className="flex flex-col h-full border border-zinc-200 dark:border-zinc-700 shadow-sm bg-linear-to-br from-white to-zinc-50/50 dark:from-zinc-800 dark:to-zinc-700/50">
       <CardHeader>
         {/* Header with avatar and meta info */}
         <div className="flex items-start justify-between">
@@ -82,32 +82,32 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
         {/* Stats section */}
         {hasStats && (
           <div className="p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg flex items-center justify-start gap-4">
-            {analyst?.reports && analyst.reports.length > 0 && (
+            {studyUserChat.context.reportTokens?.length ? (
               <ReportsListPanel studyUserChatToken={studyUserChat.token} download={true}>
                 <div className="flex items-center gap-1.5 text-sm cursor-pointer ">
                   <FileTextIcon className="h-4 w-4" />
                   <span className="font-medium">
-                    {t("stats.reports", { count: analyst.reports.length })}
+                    {t("stats.reports", { count: studyUserChat.context.reportTokens.length })}
                   </span>
                 </div>
               </ReportsListPanel>
-            )}
-            {analyst?.podcasts && analyst.podcasts.length > 0 && (
+            ) : null}
+            {studyUserChat.context.podcastTokens?.length ? (
               <PodcastsListPanel studyUserChatToken={studyUserChat.token}>
                 <div className="flex items-center gap-1.5 text-sm text-violet-600 dark:text-violet-400 cursor-pointer">
                   <MicIcon className="h-4 w-4" />
                   <span className="font-medium">
-                    {t("stats.podcasts", { count: analyst.podcasts.length })}
+                    {t("stats.podcasts", { count: studyUserChat.context.podcastTokens.length })}
                   </span>
                 </div>
               </PodcastsListPanel>
-            )}
-            {analyst?.attachments && analyst.attachments.length > 0 && (
+            ) : null}
+            {analyst?.attachments && analyst.attachments.length > 0 ? (
               <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
                 <PaperclipIcon className="h-3.5 w-3.5" />
                 <span>{t("stats.attachments", { count: analyst.attachments.length })}</span>
               </div>
-            )}
+            ) : null}
           </div>
         )}
         {/*{analyst?.attachments && analyst.attachments.length > 0 && (

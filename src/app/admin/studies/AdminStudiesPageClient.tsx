@@ -1,8 +1,5 @@
 "use client";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
-import { PodcastKind } from "@/app/(podcast)/types";
-import PodcastsListPanel from "@/app/(study)/study/components/PodcastsListPanel";
-import ReportsListPanel from "@/app/(study)/study/components/ReportsListPanel";
 import { PaginationInfo } from "@/app/admin/types";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
@@ -32,9 +29,6 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
-  FileTextIcon,
-  MicIcon,
-  PlusIcon,
   RefreshCcwIcon,
   SearchIcon,
   ThumbsDownIcon,
@@ -45,13 +39,7 @@ import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import {
-  determineKindAndGeneratePodcastAdminAction,
-  fetchAnalysts,
-  fetchBriefChatMessages,
-  generateChatTitleAction,
-} from "./actions";
-import { PodcastPromptDialog } from "./PodcastPromptDialog";
+import { fetchAnalysts, fetchBriefChatMessages, generateChatTitleAction } from "./actions";
 
 type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];
 
@@ -76,10 +64,8 @@ export type AdminStudiesSearchParams = {
 
 export function AdminStudiesPageClient({
   initialSearchParams,
-  defaultPodcastPrompt,
 }: {
   initialSearchParams: Record<string, string | number | boolean>;
-  defaultPodcastPrompt: string;
 }) {
   const { status } = useSession();
   const locale = useLocale();
@@ -94,9 +80,6 @@ export function AdminStudiesPageClient({
   const [briefMessages, setBriefMessages] = useState<TMessageWithPlainTextTool[]>([]);
   const [loadingBrief, setLoadingBrief] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [podcastPromptDialogOpen, setPodcastPromptDialogOpen] = useState<{
-    analyst: AnalystWithFeature;
-  } | null>(null);
 
   // Use search params hook for URL synchronization
   const {
@@ -107,22 +90,6 @@ export function AdminStudiesPageClient({
     params: SearchParamsConfig,
     initialValues: initialSearchParams,
   });
-
-  // Helper function to format counts with generating status
-  const formatCountWithStatus = (
-    items: { generatedAt: Date | null }[],
-    type: "reports" | "podcasts",
-  ) => {
-    const all = items.length;
-    const generating = items.filter((item) => item.generatedAt === null).length;
-    let text = "";
-    text += `${all} ${type}`;
-    if (generating > 0) {
-      if (all > 0) text += " ";
-      text += `(${generating} generating)`;
-    }
-    return text;
-  };
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -199,27 +166,6 @@ export function AdminStudiesPageClient({
       inputRef.current.value = "";
     }
     setParams({ search: "", kind: "all", page: 1 });
-  };
-
-  const openPodcastPromptDialog = useCallback((analyst: AnalystWithFeature) => {
-    setPodcastPromptDialogOpen({ analyst });
-  }, []);
-
-  const handleGeneratePodcast = async (
-    analyst: AnalystWithFeature,
-    params: { podcastKind: "auto" | PodcastKind; systemPrompt?: string },
-  ) => {
-    try {
-      await determineKindAndGeneratePodcastAdminAction({
-        analystId: analyst.id,
-        podcastKind: params.podcastKind,
-        systemPrompt: params.systemPrompt,
-      });
-      await fetchData();
-      setPodcastPromptDialogOpen(null);
-    } catch (error) {
-      console.error("Failed to generate podcast:", error);
-    }
   };
 
   const handleShowBrief = async (analyst: AnalystWithFeature) => {
@@ -350,7 +296,7 @@ export function AdminStudiesPageClient({
                         {analyst.studyUserChat?.title || "Untitled Study"}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       {(() => {
                         const extra = analyst.studyUserChat?.extra as UserChatExtra;
                         const briefUserChatId = extra?.briefUserChatId;
@@ -438,62 +384,6 @@ export function AdminStudiesPageClient({
                     >
                       {analyst.studyLog || "No study log available"}
                     </p>
-                  </div>
-
-                  {/* Stats section */}
-                  <div className="mb-4 p-3 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg space-y-2">
-                    {(() => {
-                      const reportsText = analyst.reports
-                        ? formatCountWithStatus(analyst.reports, "reports")
-                        : null;
-                      const podcastsText = analyst.podcasts
-                        ? formatCountWithStatus(analyst.podcasts, "podcasts")
-                        : null;
-
-                      return analyst.studyUserChat ? (
-                        <>
-                          {/* Reports row */}
-                          <div className="flex items-center">
-                            <ReportsListPanel
-                              studyUserChatToken={analyst.studyUserChat.token}
-                              download={true}
-                            >
-                              <div className="flex items-center gap-1.5 text-sm cursor-pointer">
-                                <FileTextIcon className="h-4 w-4" />
-                                <span className="font-normal">{reportsText}</span>
-                              </div>
-                            </ReportsListPanel>
-                          </div>
-
-                          {/* Podcasts row with generate button */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <PodcastsListPanel studyUserChatToken={analyst.studyUserChat.token}>
-                                <div className="flex items-center gap-1.5 text-sm cursor-pointer">
-                                  <MicIcon className="h-4 w-4 shrink-0" />
-                                  <span className="font-normal">{podcastsText}</span>
-                                </div>
-                              </PodcastsListPanel>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openPodcastPromptDialog(analyst)}
-                            >
-                              <PlusIcon className="h-3 w-3" />
-                              Generate
-                            </Button>
-                          </div>
-
-                          {/* Show message when no reports and no podcasts */}
-                          {!reportsText && !podcastsText && (
-                            <div className="text-sm text-muted-foreground">
-                              No reports or podcasts yet
-                            </div>
-                          )}
-                        </>
-                      ) : null;
-                    })()}
                   </div>
 
                   {/* Feedback Stats */}
@@ -607,23 +497,6 @@ export function AdminStudiesPageClient({
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Podcast Prompt Dialog */}
-      <PodcastPromptDialog
-        open={!!podcastPromptDialogOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setPodcastPromptDialogOpen(null);
-          }
-        }}
-        analyst={podcastPromptDialogOpen?.analyst || null}
-        defaultPrompt={defaultPodcastPrompt}
-        onConfirm={(params) => {
-          if (podcastPromptDialogOpen?.analyst) {
-            handleGeneratePodcast(podcastPromptDialogOpen.analyst, params);
-          }
-        }}
-      />
 
       {pagination && pagination.totalPages > 1 && (
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">

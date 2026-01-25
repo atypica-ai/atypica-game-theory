@@ -534,11 +534,7 @@ export async function userStopBackgroundStudyAction(
 
 export async function fetchAnalystReportByToken(token: string): Promise<
   ServerActionResult<
-    Pick<
-      AnalystReport,
-      "id" | "token" | "analystId" | "generatedAt" | "createdAt" | "updatedAt"
-    > & {
-      analyst: Analyst;
+    Pick<AnalystReport, "id" | "token" | "generatedAt" | "createdAt" | "updatedAt"> & {
       coverCdnHttpUrl?: string;
     }
   >
@@ -548,8 +544,6 @@ export async function fetchAnalystReportByToken(token: string): Promise<
     select: {
       id: true,
       token: true,
-      analystId: true,
-      analyst: true,
       extra: true,
       generatedAt: true,
       createdAt: true,

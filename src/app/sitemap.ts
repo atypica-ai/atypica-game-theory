@@ -1,10 +1,10 @@
+import { docs } from "@/app/(features)/features/docs-config";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { MetadataRoute } from "next";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
-import { docs } from "@/app/(features)/features/docs-config";
 
 export const dynamic = "force-dynamic";
 
