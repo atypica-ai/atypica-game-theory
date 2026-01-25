@@ -3,8 +3,6 @@
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
-import { ServerActionResult } from "@/lib/serverAction";
-import { Analyst, AnalystPodcast, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { determineKindAndGeneratePodcast } from "./lib/evaluate";
@@ -12,55 +10,6 @@ import { determineKindAndGeneratePodcast } from "./lib/evaluate";
 // ========================================
 // SERVER ACTIONS (WITH AUTH)
 // ========================================
-
-// Server action: Fetch analyst podcasts with auth
-export async function fetchAnalystPodcasts({ analystId }: { analystId: number }): Promise<
-  ServerActionResult<
-    (Pick<
-      AnalystPodcast,
-      | "id"
-      | "token"
-      | "analystId"
-      | "script"
-      | "objectUrl"
-      | "generatedAt"
-      | "createdAt"
-      | "updatedAt"
-    > & {
-      analyst: Analyst;
-      extra: AnalystPodcastExtra;
-    })[]
-  >
-> {
-  return withAuth(async (user) => {
-    const podcasts = await prisma.analystPodcast.findMany({
-      where: {
-        analystId,
-        analyst: { userId: user.id },
-      },
-      select: {
-        id: true,
-        token: true,
-        analystId: true,
-        analyst: true,
-        script: true,
-        objectUrl: true,
-        generatedAt: true,
-        createdAt: true,
-        updatedAt: true,
-        extra: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    return {
-      success: true,
-      data: podcasts.map((podcast) => ({
-        ...podcast,
-        extra: (podcast.extra || {}) as AnalystPodcastExtra,
-      })),
-    };
-  });
-}
 
 // Server action: Generate complete podcast (script + audio) with auth and background processing
 export async function determineKindAndGeneratePodcastAction({

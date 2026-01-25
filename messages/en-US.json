@@ -15,55 +15,6 @@
     "noStudies": "No studies found in this category.",
     "viewStudy": "View Study"
   },
-  "AnalystListPage": {
-    "researchTopics": "Research Topics",
-    "createNewTopic": "Create New Topic",
-    "createMobile": "New Topic",
-    "topicDialog": {
-      "title": "Create New Topic",
-      "role": "Role",
-      "rolePlaceholder": "e.g., Brand Strategist",
-      "topic": "Research Topic",
-      "topicPlaceholder": "Please enter your research topic...",
-      "create": "Create"
-    },
-    "guide": {
-      "title": "Usage Guide",
-      "tip1": "Create a research topic to conduct user interviews using AI",
-      "tip2": "Click on a card to view interview subjects, content, and full reports"
-    },
-    "kinds": {
-      "testing": "Testing",
-      "planning": "Planning",
-      "insights": "Insights",
-      "creation": "Creation",
-      "productRnD": "Product R&D",
-      "fastInsight": "Fast Insight",
-      "misc": "Misc"
-    }
-  },
-  "AnalystPage": {
-    "guide": {
-      "title": "Usage Guide",
-      "tip1": "Add more interview subjects to gain more comprehensive insights",
-      "tip2": "Select individual interviews one by one, or use \"Start All Interviews\" to begin in batch",
-      "tip3": "Generate reports at any time during interviews, or generate a final report after all interviews are completed"
-    },
-    "topicCard": {
-      "researchTopic": "Research Topic",
-      "generateReport": "Generate Report"
-    },
-    "interviewSection": {
-      "title": "Interview Subjects",
-      "startAllInterviews": "Start All Interviews",
-      "addInterviewPersona": "Add Interview Persona"
-    },
-    "InterviewCard": {
-      "interviewing": "Interviewing",
-      "concluded": "Concluded",
-      "viewInterview": "View Interview"
-    }
-  },
   "ScoutPage": {
     "title": "Find Target Users",
     "viewPersonas": "View personas found in this search",
