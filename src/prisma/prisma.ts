@@ -12,6 +12,7 @@ import { Prisma, PrismaClient } from "./generated/client";
 
 // 通过打印 process.env 看到的，不一定是稳定的判断方式
 const IS_NEXT_BUILD_PHASE = process.env.NEXT_PHASE === "phase-production-build";
+const prismaLogger = rootLogger.child({ module: "prisma" });
 
 const log: Prisma.LogLevel[] =
   process.env.LOG_LEVEL?.toLowerCase() === "debug"
@@ -66,18 +67,32 @@ function createPool(connectionString?: string, isReadOnly = false) {
 
   // 监听连接池错误，帮助诊断连接问题
   pool.on("error", (err) => {
-    rootLogger.error({
+    prismaLogger.error({
       msg: "PostgreSQL pool error",
       error: err.message,
       ro: isReadOnly,
     });
   });
 
-  pool.on("connect", () => {
-    rootLogger.debug({
-      msg: "PostgreSQL pool connected",
-      ro: isReadOnly,
-    });
+  pool.on("connect", async (client) => {
+    try {
+      // 🔒 强制回滚超过 15 秒未提交的事务（防止连接泄漏）
+      await client.query("SET idle_in_transaction_session_timeout = '15s'");
+
+      // 🔒 查询超时 30 秒（防止慢查询占住连接）
+      await client.query("SET statement_timeout = '30s'");
+
+      prismaLogger.info({
+        msg: "PostgreSQL connection initialized with safety timeouts",
+        ro: isReadOnly,
+      });
+    } catch (err) {
+      prismaLogger.error({
+        msg: "Failed to set connection parameters",
+        error: err instanceof Error ? err.message : String(err),
+        ro: isReadOnly,
+      });
+    }
   });
 
   // ✅ 添加更详细的监控
@@ -88,7 +103,7 @@ function createPool(connectionString?: string, isReadOnly = false) {
       waiting: pool.waitingCount,
     };
 
-    rootLogger.debug({
+    prismaLogger.info({
       msg: "Connection acquired from pool",
       ro: isReadOnly,
       stats,
@@ -96,7 +111,7 @@ function createPool(connectionString?: string, isReadOnly = false) {
 
     // ⚠️ 警告：如果没有空闲连接且有等待队列
     if (stats.idle === 0 && stats.waiting > 0) {
-      rootLogger.warn({
+      prismaLogger.warn({
         msg: "⚠️ Connection pool exhausted!",
         ro: isReadOnly,
         stats,
@@ -106,7 +121,7 @@ function createPool(connectionString?: string, isReadOnly = false) {
   });
 
   pool.on("remove", () => {
-    rootLogger.debug({
+    prismaLogger.info({
       msg: "Connection removed from pool",
       ro: isReadOnly,
       total: pool.totalCount,
@@ -123,7 +138,7 @@ function createPool(connectionString?: string, isReadOnly = false) {
         waiting: pool.waitingCount,
       };
       if (stats.waiting > 0 || stats.idle === 0) {
-        rootLogger.warn({
+        prismaLogger.warn({
           msg: "Connection pool status check",
           ro: isReadOnly,
           stats,
@@ -132,7 +147,7 @@ function createPool(connectionString?: string, isReadOnly = false) {
     }, 30000); // 每 30 秒检查一次
   }
 
-  rootLogger[process.env.NODE_ENV === "production" ? "info" : "debug"]({
+  prismaLogger[process.env.NODE_ENV === "production" ? "info" : "debug"]({
     msg: `Created PostgreSQL connection pool`,
     ro: isReadOnly,
     config: {
@@ -155,7 +170,7 @@ function createPrismaWithPool(pool: Pool, isReadOnly: boolean) {
   });
 
   client.$on("error", (e) => {
-    rootLogger.error({
+    prismaLogger.error({
       msg: `Prisma${isReadOnly ? " RO" : ""} Error: ${e.message}`,
       target: e.target,
       ro: isReadOnly,
@@ -219,7 +234,7 @@ export function getPoolStats() {
 // 优雅关闭：在生产环境中，确保进程退出时正确断开数据库连接
 if (!IS_NEXT_BUILD_PHASE && process.env.NODE_ENV === "production") {
   const gracefulShutdown = async (signal: string) => {
-    rootLogger.info({ msg: `Received ${signal}, closing database connections...` });
+    prismaLogger.info({ msg: `Received ${signal}, closing database connections...` });
     try {
       // 清理监控 intervals
       const { monitoringIntervals } = globalForPrisma.__prismaInstances__!;
@@ -231,10 +246,10 @@ if (!IS_NEXT_BUILD_PHASE && process.env.NODE_ENV === "production") {
       // 再关闭底层连接池
       await Promise.all([pool.end(), poolRO.end()]);
 
-      rootLogger.info({ msg: "Database connections closed" });
+      prismaLogger.info({ msg: "Database connections closed" });
       process.exit(0);
     } catch (error) {
-      rootLogger.error({
+      prismaLogger.error({
         msg: "Error during graceful shutdown",
         error: error instanceof Error ? error.message : String(error),
       });
