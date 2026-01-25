@@ -1,5 +1,8 @@
 export type UserChatContext = Partial<{
   interviewPersonaPanelId: number;
+  // Report and Podcast tokens (array, multiple allowed)
+  reportTokens: string[];
+  podcastTokens: string[];
   /**
    * @todo 以下字段现在没用，需要从 extra 里面复制过来
    */

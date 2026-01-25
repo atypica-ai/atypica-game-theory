@@ -78,6 +78,9 @@ export type UserLastLogin = Partial<{
 }>;
 
 export type AnalystReportExtra = Partial<{
+  title: string;
+  description: string;
+  userChatToken: string;
   coverObjectUrl: string;
   // s3SignedCoverObjectUrl: string | null;
   // s3SignedCoverObjectUrlExpiresAt: number | null; // timestamp millis
@@ -102,6 +105,15 @@ export type UserChatExtra = Partial<{
     submittedAt: string;
   };
   error: string;
+  // 下一步操作建议
+  recommendedStudies: {
+    questions?: Array<{
+      title: string;
+      brief: string;
+    }>;
+    generatedAt?: string;
+    processing?: string; // 存储开始时间戳 Date.now().toString()
+  };
   /**
    * @todo 以下信息需要复制到 context 字段里去
    */
@@ -202,6 +214,8 @@ export type InterviewReportExtra = Partial<{
 }>;
 
 export type AnalystPodcastExtra = Partial<{
+  userChatToken: string;
+
   metadata: {
     title?: string;
     mimeType?: string; // 默认是 audio/mpeg，但是还是保存下来
@@ -239,7 +253,6 @@ export type AnalystPodcastExtra = Partial<{
 // 研究开始前的额外信息，都存 UserChatExtra，是发起研究或者需求相关对的
 // 研究结束后的额外信息，都存 AnalystExtra，是产物或者下一步动作相关
 export type AnalystExtra = Partial<{
-  podcastEvaluation: { processing?: boolean } & Record<string, unknown>;
   recommendedStudies: {
     questions: Array<{
       title: string;

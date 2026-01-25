@@ -106,14 +106,16 @@ model User {
   interviewProjects InterviewProject[]
   sages             Sage[]
   sageChats         SageChat[]
+  apiKeys           ApiKey[]           @relation("UserApiKey")
+  memories          Memory[]           @relation("UserMemory")
+  researchTemplates ResearchTemplate[] @relation("UserResearchTemplates")
+  agentSkills       AgentSkill[]       @relation("UserAgentSkills")
+  analystPodcasts   AnalystPodcast[]
+  analystReports    AnalystReport[]
 
   // relations
   userPersonaChatRelations       UserPersonaChatRelation[]
   interviewSessionsAsInterviewee InterviewSession[]
-  apiKeys                        ApiKey[]                  @relation("UserApiKey")
-  memories                       Memory[]                  @relation("UserMemory")
-  researchTemplates              ResearchTemplate[]        @relation("UserResearchTemplates")
-  agentSkills                    AgentSkill[]              @relation("UserAgentSkills")
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -242,8 +244,10 @@ model FeaturedItem {
 model AnalystReport {
   id          Int       @id @default(autoincrement())
   token       String    @unique @db.VarChar(64)
-  analystId   Int       @db.Integer
-  analyst     Analyst   @relation(fields: [analystId], references: [id])
+  userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  analystId   Int?      @db.Integer
+  analyst     Analyst?  @relation(fields: [analystId], references: [id])
   instruction String    @db.Text
   coverSvg    String    @db.Text
   onePageHtml String    @db.Text
@@ -259,8 +263,10 @@ model AnalystReport {
 model AnalystPodcast {
   id          Int       @id @default(autoincrement())
   token       String    @unique @db.VarChar(64)
-  analystId   Int       @db.Integer
-  analyst     Analyst   @relation(fields: [analystId], references: [id])
+  userId      Int?
+  user        User?     @relation(fields: [userId], references: [id])
+  analystId   Int?      @db.Integer
+  analyst     Analyst?  @relation(fields: [analystId], references: [id])
   instruction String    @db.Text
   script      String    @db.Text
   objectUrl   String?   @db.VarChar(255)
