@@ -1,6 +1,7 @@
 import { toolCallError } from "@/ai/tools/error";
 import { webFetchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
+import { UserChatContext } from "@/app/(study)/context/types";
 import { productRnDSystem } from "@/app/(study)/prompt/productRnD";
 import {
   audienceCallTool,
@@ -9,7 +10,7 @@ import {
   scoutSocialTrendsTool,
 } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import type { Analyst, UserChatExtra } from "@/prisma/client";
+import type { Analyst } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -22,7 +23,7 @@ export interface ProductRnDAgentConfigParams {
   userId: number;
   studyUserChatId: number;
   analyst: Analyst;
-  userChatExtra: UserChatExtra;
+  userChatContext: UserChatContext;
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;

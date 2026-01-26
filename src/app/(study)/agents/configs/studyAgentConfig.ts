@@ -1,6 +1,7 @@
 import { toolCallError } from "@/ai/tools/error";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
+import { UserChatContext } from "@/app/(study)/context/types";
 import { studySystem } from "@/app/(study)/prompt/study";
 import {
   buildPersonaTool,
@@ -14,7 +15,7 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import type { Analyst, ChatMessageAttachment, UserChatExtra } from "@/prisma/client";
+import type { Analyst, ChatMessageAttachment } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -27,7 +28,7 @@ export interface StudyAgentConfigParams {
   userId: number;
   studyUserChatId: number;
   analyst: Analyst;
-  userChatExtra: UserChatExtra;
+  userChatContext: UserChatContext;
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
@@ -58,7 +59,7 @@ export async function createStudyAgentConfig(
     userId,
     locale,
     logger,
-    userChatExtra,
+    userChatContext,
     statReport,
     toolAbortController,
   } = params;
@@ -68,7 +69,7 @@ export async function createStudyAgentConfig(
   // =============================================================================
 
   const briefStatus: "CLARIFIED" | "DRAFT" =
-    userChatExtra?.briefUserChatId || userChatExtra?.referenceUserChats?.length
+    userChatContext?.briefUserChatId || userChatContext?.referenceUserChats?.length
       ? "CLARIFIED"
       : "DRAFT";
 

@@ -5,10 +5,13 @@ import { createStudyUserChat } from "@/app/(study)/study/actions";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
-import { UserChat, UserChatExtra } from "@/prisma/client";
+import { UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { generateId } from "ai";
 import { getTranslations } from "next-intl/server";
+import { UserChatContext } from "../(study)/context/types";
+import { mergeUserChatContext } from "../(study)/context/utils";
 
 export async function createNewStudyChat(): Promise<
   ServerActionResult<Omit<UserChat, "kind"> & { kind: "misc" }>
@@ -58,32 +61,35 @@ export async function continueToStudyUserChat(
       return { success: false, message: t("chatNotFound") };
     }
 
-    const extra = userChat.extra as UserChatExtra;
-    if (extra?.newStudyUserChatToken && typeof extra.newStudyUserChatToken === "string") {
-      return { success: true, data: { token: extra.newStudyUserChatToken } };
+    const userChatContext = userChat.context as UserChatContext;
+    if (
+      userChatContext?.newStudyUserChatToken &&
+      typeof userChatContext.newStudyUserChatToken === "string"
+    ) {
+      return { success: true, data: { token: userChatContext.newStudyUserChatToken } };
     }
 
     // Since we are creating a new study, the initial message should be from the 'user'
-    const createResult = await createStudyUserChat(
-      { role: "user", content: studyBrief },
-      { briefUserChatId: userChat.id },
-    );
-
+    const createResult = await createStudyUserChat({ role: "user", content: studyBrief });
     if (!createResult.success) {
       return createResult;
     }
 
     const newStudyChat = createResult.data;
-
-    // 使用 || 操作符安全地更新 extra 字段，避免覆盖其他值
-    await prisma.$executeRaw`
-      UPDATE "UserChat"
-      SET "extra" = COALESCE("extra", '{}') || ${JSON.stringify({
+    await mergeUserChatContext({
+      id: newStudyChat.id,
+      context: {
+        briefUserChatId: userChat.id,
+      },
+    });
+    await mergeExtra({
+      tableName: "UserChat",
+      id: userChat.id,
+      extra: {
         newStudyUserChatId: newStudyChat.id,
         newStudyUserChatToken: newStudyChat.token,
-      })}::jsonb
-      WHERE "id" = ${userChatId}
-    `;
+      },
+    });
 
     return { success: true, data: { token: newStudyChat.token } };
   });

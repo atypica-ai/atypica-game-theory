@@ -32,11 +32,11 @@ export type TAnalyticsEvent = {
    */
   "Study Session Started": {
     userChatId: number;
-    studyType: string;
+    // studyType: string;
     brief: string;
-    interview?: boolean;
+    // interview?: boolean;
     attachments?: number;
-    references?: number;
+    // references?: number;
   };
   "Study Plan Confirmed": {
     userChatId: number;

@@ -1,6 +1,7 @@
 "use server";
-
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
+import { UserChatContext } from "@/app/(study)/context/types";
+import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { checkTezignAuth } from "@/app/admin/actions";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -13,6 +14,7 @@ import { ExpertName } from "../experts/types";
 
 type DeepResearchUserChat = Omit<UserChat, "kind"> & {
   kind: "misc";
+  context: UserChatContext;
   messages?: UIMessage[];
 };
 
@@ -48,8 +50,15 @@ export async function createDeepResearchUserChatAction({
         suffix: "...",
       }),
       kind: "misc",
+    });
+
+    const context: UserChatContext = {
       // Store resolved expert in extra field (no "auto")
-      extra: { deepResearchExpert: resolvedExpert },
+      deepResearchExpert: resolvedExpert,
+    };
+    await mergeUserChatContext({
+      id: userChat.id,
+      context: context,
     });
 
     // Persist initial message
@@ -62,6 +71,7 @@ export async function createDeepResearchUserChatAction({
       success: true,
       data: {
         ...userChat,
+        context,
         kind: "misc",
         messages: [message],
       },
@@ -123,7 +133,7 @@ export async function fetchDeepResearchUserChatAction(userChatToken: string): Pr
           token: userChat.token,
           title: userChat.title,
           kind: "misc",
-          context: userChat.context,
+          context: userChat.context as UserChatContext,
           extra: userChat.extra,
           createdAt: userChat.createdAt,
           updatedAt: userChat.updatedAt,
@@ -169,14 +179,15 @@ export async function fetchDeepResearchHistoryAction({
         title: true,
         updatedAt: true,
         extra: true,
+        context: true,
       },
     });
 
     // Filter to only DeepResearch sessions (those with deepResearchExpert in extra)
     const deepResearchSessions = userChats
       .filter((chat) => {
-        const extra = chat.extra as { deepResearchExpert?: string };
-        return extra?.deepResearchExpert !== undefined;
+        const userChatContext = chat.context as UserChatContext;
+        return userChatContext?.deepResearchExpert !== undefined;
       })
       .map((chat) => ({
         id: chat.id,

@@ -8,6 +8,7 @@ import { createPlanModeAgentConfig } from "@/app/(study)/agents/configs/planMode
 import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/productRnDAgentConfig";
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
 import { noQuotaAgentRequest } from "@/app/(study)/agents/noQuotaAgentRequest";
+import { UserChatContext } from "@/app/(study)/context/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -163,7 +164,7 @@ export async function POST(req: Request) {
       teamId,
       studyUserChatId,
       analyst: userChat.analyst,
-      userChatExtra: userChat.extra as UserChatExtra,
+      userChatContext: userChat.context as UserChatContext,
       locale,
       logger,
       statReport,

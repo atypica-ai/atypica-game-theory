@@ -19,7 +19,7 @@ export async function fetchAnalysts(
   ServerActionResult<
     (Analyst & {
       user: Pick<User, "email"> | null;
-      studyUserChat: Pick<UserChat, "token" | "title" | "extra"> | null;
+      studyUserChat: Pick<UserChat, "token" | "title" | "extra" | "context"> | null;
     })[]
   >
 > {
@@ -73,6 +73,7 @@ export async function fetchAnalysts(
           token: true,
           title: true,
           extra: true,
+          context: true,
         },
       },
       user: {

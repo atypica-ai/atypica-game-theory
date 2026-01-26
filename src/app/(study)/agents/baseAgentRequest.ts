@@ -17,7 +17,7 @@ import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
 import { generateChatTitle, setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
-import type { Analyst, UserChatExtra } from "@/prisma/client";
+import type { Analyst } from "@/prisma/client";
 import { BedrockProviderOptions } from "@ai-sdk/amazon-bedrock";
 import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import { waitUntil } from "@vercel/functions";
@@ -38,6 +38,7 @@ import {
 } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
+import { UserChatContext } from "../context/types";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyStudyInterruption } from "./notify";
 import { buildReferenceStudyContext } from "./referenceContext";
@@ -55,8 +56,7 @@ export interface BaseAgentContext {
   teamId: number | null;
   studyUserChatId: number;
   analyst: Analyst;
-  userChatExtra: UserChatExtra;
-
+  userChatContext: UserChatContext;
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
@@ -141,7 +141,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   const {
     userId,
     studyUserChatId,
-    userChatExtra,
+    userChatContext,
     analyst,
     locale,
     logger,
@@ -353,9 +353,9 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   }
 
   // Prepend reference study context (universal)
-  if (userChatExtra?.referenceUserChats) {
+  if (userChatContext?.referenceUserChats) {
     const referenceStudyContext = await buildReferenceStudyContext({
-      referenceTokens: userChatExtra.referenceUserChats,
+      referenceTokens: userChatContext.referenceUserChats,
       userId,
       locale,
     });

@@ -16,7 +16,6 @@ import { createUserChat, generateChatTitle } from "@/lib/userChat/lib";
 import {
   Analyst,
   AnalystExtra,
-  AnalystKind,
   AnalystPodcast,
   AnalystPodcastExtra,
   AnalystReport,
@@ -43,9 +42,9 @@ export async function createStudyUserChat(
     attachments?: ChatMessageAttachment[];
   },
   // 任何额外要存储的信息
-  extra?: Pick<UserChatExtra, "briefUserChatId" | "referenceUserChats">,
-  // 其他的研究类型也通过这个方法统一创建
-  studyType: "general" | "product-rnd" | "fast-insight" = "general",
+  extra?: UserChatExtra,
+  // // 其他的研究类型也通过这个方法统一创建
+  // studyType: "general" | "product-rnd" | "fast-insight" = "general",
 ): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
   return withAuth(async (user) => {
     // Validate file upload limits
@@ -113,12 +112,14 @@ export async function createStudyUserChat(
         data: {
           userId: user.id,
           studyUserChatId: userChat.id,
-          kind:
-            studyType === "product-rnd"
-              ? AnalystKind.productRnD
-              : studyType === "fast-insight"
-                ? AnalystKind.fastInsight
-                : null,
+          // kind:
+          //   studyType === "product-rnd"
+          //     ? AnalystKind.productRnD
+          //     : studyType === "fast-insight"
+          //       ? AnalystKind.fastInsight
+          //       : null,
+          // 现在不再是提前选择研究类型了，所以一开始都是 null
+          kind: null,
           brief: content, // 用户的第一条消息作为 brief
           locale,
           role: "",
@@ -135,12 +136,12 @@ export async function createStudyUserChat(
       userId: user.id,
       event: "Study Session Started",
       properties: {
-        studyType,
+        // studyType,
         userChatId: userChat.id,
         brief: truncateForTitle(content, { maxDisplayWidth: 30, suffix: "..." }),
-        interview: !!extra?.briefUserChatId,
+        // interview: !!extra?.briefUserChatId,
         attachments: attachments?.length,
-        references: extra?.referenceUserChats?.length,
+        // references: extra?.referenceUserChats?.length,
       },
     });
 

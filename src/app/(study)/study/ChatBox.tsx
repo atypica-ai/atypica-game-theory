@@ -5,6 +5,7 @@ import {
 } from "@/ai/messageUtilsClient";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
+import { UserChatContext } from "@/app/(study)/context/types";
 import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import { useTokensBalance } from "@/app/account/hooks";
@@ -15,7 +16,6 @@ import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
-import { UserChatExtra } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import {
   DefaultChatTransport,
@@ -61,7 +61,7 @@ export function ChatBox() {
       token: studyUserChatToken,
       messages: initialMessages,
       backgroundToken: initialBackgroundToken,
-      extra,
+      context: userChatContext,
     },
   } = useStudyContext();
 
@@ -71,8 +71,8 @@ export function ChatBox() {
 
   useEffect(() => {
     const loadReferenceChatTitles = async () => {
-      const extraData = extra as UserChatExtra;
-      const referenceTokens = extraData?.referenceUserChats;
+      const contextData = userChatContext as UserChatContext;
+      const referenceTokens = contextData?.referenceUserChats;
       if (referenceTokens && referenceTokens.length > 0) {
         const result = await fetchChatTitlesByTokens(referenceTokens);
         if (result.success) {
@@ -81,7 +81,7 @@ export function ChatBox() {
       }
     };
     loadReferenceChatTitles();
-  }, [extra]);
+  }, [userChatContext]);
 
   const extraRequestPayload = useMemo(
     () => ({ userChatToken: studyUserChatToken }),

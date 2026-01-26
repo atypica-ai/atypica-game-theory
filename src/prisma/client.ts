@@ -106,7 +106,7 @@ export type UserChatExtra = Partial<{
     submittedAt: string;
   };
   error: string;
-  // 下一步操作建议
+  // 下一步操作建议（从 Analyst.extra 迁移过来）
   recommendedStudies: {
     questions?: Array<{
       title: string;
@@ -116,16 +116,15 @@ export type UserChatExtra = Partial<{
     processing?: string; // 存储开始时间戳 Date.now().toString()
   };
   /**
-   * @todo 以下信息需要复制到 context 字段里去
+   * @deprecated 以下字段已迁移到 UserChat.context
+   * 迁移脚本: scripts/archive/legacy/2026-01/migrate-to-context-driven.sql (迁移 8)
+   * 请改用 UserChatContext 中的对应字段
    */
-  // studyUserChat 专用
-  referenceUserChats: string[]; // List of chat tokens used as context
-  researchTemplateId: number; // Research template used to initiate this chat
-  // study user chat 专用
-  newStudyUserChatToken: string;
-  briefUserChatId: number;
-  // deepResearch 专用
-  deepResearchExpert: "grok" | "trendExplorer"; // ExpertName enum (resolved, no "auto")
+  // referenceUserChats: string[]; // 已迁移到 context.referenceUserChats
+  // researchTemplateId: number; // 已迁移到 context.researchTemplateId
+  // newStudyUserChatToken: string; // 已迁移到 context.newStudyUserChatToken
+  // briefUserChatId: number; // 已迁移到 context.briefUserChatId
+  // deepResearchExpert: "grok" | "trendExplorer"; // 已迁移到 context.deepResearchExpert
 }>; // & Record<string, string | number>
 
 // for extra field on ChatStatistics and UserTokensLog
@@ -254,14 +253,19 @@ export type AnalystPodcastExtra = Partial<{
 // 研究开始前的额外信息，都存 UserChatExtra，是发起研究或者需求相关对的
 // 研究结束后的额外信息，都存 AnalystExtra，是产物或者下一步动作相关
 export type AnalystExtra = Partial<{
-  recommendedStudies: {
-    questions: Array<{
-      title: string;
-      brief: string;
-    }>;
-    generatedAt?: string;
-    processing?: string; // 存储开始时间戳 Date.now().toString()
-  };
+  /**
+   * @deprecated 已迁移到 UserChat.extra
+   * 使用 UserChatExtra.recommendedStudies 代替
+   * 迁移脚本: scripts/archive/legacy/2026-01/migrate-to-context-driven.sql (迁移 7)
+   */
+  // recommendedStudies: {
+  //   questions: Array<{
+  //     title: string;
+  //     brief: string;
+  //   }>;
+  //   generatedAt?: string;
+  //   processing?: string; // 存储开始时间戳 Date.now().toString()
+  // };
 }>;
 
 export type SubscriptionExtra = Partial<{
