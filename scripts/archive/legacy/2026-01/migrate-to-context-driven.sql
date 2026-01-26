@@ -21,7 +21,7 @@
 
 -- 为所有还没有 analystKind 的报告添加
 UPDATE "AnalystReport"
-SET "extra" = COALESCE("extra", '{}'::jsonb) ||
+SET "extra" = COALESCE("AnalystReport"."extra", '{}'::jsonb) ||
   jsonb_build_object('analystKind', a.kind)
 FROM "Analyst" a
 WHERE "AnalystReport"."analystId" = a.id
@@ -164,7 +164,7 @@ WHERE "UserChat".kind = 'study'
 -- ============================================================================
 
 UPDATE "AnalystReport"
-SET "extra" = COALESCE("extra", '{}'::jsonb) ||
+SET "extra" = COALESCE("AnalystReport"."extra", '{}'::jsonb) ||
   jsonb_build_object(
     'title', uc.title,
     'description', COALESCE(a.topic, ''),
@@ -196,7 +196,7 @@ WHERE "AnalystReport"."analystId" = a.id
 -- ============================================================================
 
 UPDATE "AnalystPodcast"
-SET "extra" = COALESCE("extra", '{}'::jsonb) ||
+SET "extra" = COALESCE("AnalystPodcast"."extra", '{}'::jsonb) ||
   jsonb_build_object('userChatToken', uc.token)
 FROM "Analyst" a
 JOIN "UserChat" uc ON uc.id = a."studyUserChatId"
@@ -224,7 +224,7 @@ WHERE "AnalystPodcast"."analystId" = a.id
 
 -- 第一阶段: 复制 recommendedStudies 到 UserChat.extra
 UPDATE "UserChat"
-SET "extra" = COALESCE("extra", '{}'::jsonb) ||
+SET "extra" = COALESCE("UserChat"."extra", '{}'::jsonb) ||
   jsonb_build_object(
     'recommendedStudies',
     a."extra"->'recommendedStudies'
