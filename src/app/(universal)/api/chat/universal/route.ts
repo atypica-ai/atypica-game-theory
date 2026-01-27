@@ -14,7 +14,13 @@ import authOptions from "@/app/(auth)/authOptions";
 import { loadTeamMemory, loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { setBedrockCache } from "@/app/(study)/agents/utils";
-import { discussionChatTool, searchPersonasTool } from "@/app/(study)/tools";
+import {
+  discussionChatTool,
+  generatePodcastTool,
+  generateReportTool,
+  interviewChatTool,
+  searchPersonasTool,
+} from "@/app/(study)/tools";
 import { buildUniversalSystemPrompt } from "@/app/(universal)/prompt";
 import { listSkillsTool, UniversalToolSet } from "@/app/(universal)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
@@ -180,7 +186,21 @@ export async function POST(req: Request) {
     // study agent
     [UniversalToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
     [UniversalToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
-    // [UniversalToolName.interviewChat]: interviewChatTool({ userId, ...agentToolArgs }), // 因为需要 analyst, 暂时还无法使用
+    [UniversalToolName.interviewChat]: interviewChatTool({
+      userId,
+      userChatId: universalChatId,
+      ...agentToolArgs,
+    }),
+    [UniversalToolName.generateReport]: generateReportTool({
+      userId,
+      userChatId: universalChatId,
+      ...agentToolArgs,
+    }),
+    [UniversalToolName.generatePodcast]: generatePodcastTool({
+      userId,
+      userChatId: universalChatId,
+      ...agentToolArgs,
+    }),
     // [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
 
     [UniversalToolName.toolCallError]: toolCallError,

@@ -337,11 +337,6 @@ export async function fetchAnalystInterviewForPersona({
 > {
   const studyUserChat = await prisma.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
-    include: {
-      analyst: {
-        select: { id: true },
-      },
-    },
   });
   // const analystId = studyUserChat?.analyst?.id;
   const personaPanelId = (studyUserChat?.context as UserChatContext | undefined)

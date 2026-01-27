@@ -66,7 +66,7 @@ export const interviewChatTool = ({
 }: {
   userId: number;
   userChatId: number;
-  attachments: ChatMessageAttachment[]; // 让 personas 看附件内容
+  attachments?: ChatMessageAttachment[]; // 让 personas 看附件内容
 } & AgentToolConfigArgs) =>
   tool({
     description:

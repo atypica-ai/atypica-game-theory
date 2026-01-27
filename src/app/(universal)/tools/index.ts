@@ -3,7 +3,13 @@ import "server-only";
 import { toolCallError } from "@/ai/tools/error";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
-import { discussionChatTool, searchPersonasTool } from "@/app/(study)/tools";
+import {
+  discussionChatTool,
+  generatePodcastTool,
+  generateReportTool,
+  interviewChatTool,
+  searchPersonasTool,
+} from "@/app/(study)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { Tool, ToolSet } from "ai";
 import { listSkillsTool } from "./listSkills";
@@ -31,8 +37,10 @@ export type UniversalToolSet = Partial<{
   [UniversalToolName.listSkills]: ReturnType<typeof listSkillsTool>;
   [UniversalToolName.searchPersonas]: ReturnType<typeof searchPersonasTool>;
   [UniversalToolName.discussionChat]: ReturnType<typeof discussionChatTool>;
-  // [UniversalToolName.interviewChat]: ReturnType<typeof interviewChatTool>;
+  [UniversalToolName.interviewChat]: ReturnType<typeof interviewChatTool>;
   [UniversalToolName.deepResearch]: ReturnType<typeof deepResearchTool>;
+  [UniversalToolName.generateReport]: ReturnType<typeof generateReportTool>;
+  [UniversalToolName.generatePodcast]: ReturnType<typeof generatePodcastTool>;
   [UniversalToolName.toolCallError]: typeof toolCallError;
 }>;
 

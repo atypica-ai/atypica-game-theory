@@ -22,10 +22,10 @@ export enum UniversalToolName {
 
   // Study agent
   searchPersonas = "searchPersonas",
-  // interviewChat = "interviewChat",
+  interviewChat = "interviewChat",
   discussionChat = "discussionChat",
-  // generateReport = "generateReport",
-  // generatePodcast = "generatePodcast",
+  generateReport = "generateReport",
+  generatePodcast = "generatePodcast",
   deepResearch = "deepResearch",
 
   // Error handling
