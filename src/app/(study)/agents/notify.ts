@@ -30,7 +30,7 @@ export async function notifyReportCompletion({
     prisma.userChat.findUnique({
       where: {
         id: studyUserChatId,
-        kind: "study",
+        // kind: "study", // 因为有 universal agent, 现在不过滤了
       },
       select: {
         token: true,
@@ -86,7 +86,7 @@ export async function _notifyStudyInterruption({
   const studyUserChat = await prisma.userChat.findUnique({
     where: {
       id: studyUserChatId,
-      kind: "study",
+      // kind: "study", // 因为有 universal agent, 现在不过滤了
     },
     select: {
       token: true,

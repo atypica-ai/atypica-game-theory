@@ -60,7 +60,7 @@ export async function fetchTokenConsumption(
     FROM "ChatStatistics" as cs
     INNER JOIN "UserChat" as uc ON uc.id = cs."userChatId"
     INNER JOIN "User" as u ON u.id = uc."userId"
-    WHERE cs."dimension" = 'tokens' and uc."kind" = 'study' and (u.email LIKE ${"%" + searchQuery + "%"} or uc.token = ${searchQuery})
+    WHERE cs."dimension" = 'tokens' and uc."kind" in ('study', 'universal') and (u.email LIKE ${"%" + searchQuery + "%"} or uc.token = ${searchQuery})
     GROUP BY uc.id, uc.token, uc.title, uc."userId", u.name, u.email, cs.extra->>'reportedBy'
     ORDER BY uc.id DESC, "tokens" DESC
     LIMIT ${pageSize * 10}
@@ -88,7 +88,7 @@ export async function fetchTokenConsumption(
     FROM "ChatStatistics" as cs
     INNER JOIN "UserChat" as uc ON uc.id = cs."userChatId"
     INNER JOIN "User" as u ON u.id = uc."userId"
-    WHERE cs."dimension" = 'tokens' and uc."kind" = 'study'
+    WHERE cs."dimension" = 'tokens' and uc."kind" in ('study', 'universal')
     GROUP BY uc.id, uc.token, uc.title, uc."userId", u.name, u.email, cs.extra->>'reportedBy'
     ORDER BY uc.id DESC, "tokens" DESC
     LIMIT ${pageSize * 10}
@@ -141,7 +141,7 @@ export async function fetchTokenConsumption(
   const countResult = await prismaRO.userChat.count({
     where: searchQuery
       ? {
-          kind: "study",
+          kind: { in: ["study", "universal"] },
           OR: [
             {
               user: {
@@ -152,7 +152,7 @@ export async function fetchTokenConsumption(
           ],
         }
       : {
-          kind: "study",
+          kind: { in: ["study", "universal"] },
         },
   });
 

@@ -59,7 +59,10 @@ export const generateReportTool = ({
       { messages },
     ): Promise<GenerateReportResult> => {
       const userChat = await prisma.userChat.findUniqueOrThrow({
-        where: { id: userChatId, kind: "study" },
+        where: {
+          id: userChatId,
+          // kind: "study", // 因为有 universal agent, 现在不过滤了
+        },
         select: {
           title: true,
           token: true,

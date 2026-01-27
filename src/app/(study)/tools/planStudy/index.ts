@@ -97,7 +97,10 @@ export const planStudyTool = ({
         ...toolCallConfigArgs,
       });
       const { analyst } = await prisma.userChat.findUniqueOrThrow({
-        where: { id: studyUserChatId, kind: "study" },
+        where: {
+          id: studyUserChatId,
+          // kind: "study", // 因为有 universal agent, 现在不过滤了
+        },
         select: {
           analyst: {
             select: {

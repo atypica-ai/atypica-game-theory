@@ -22,7 +22,7 @@ export async function buildReferenceStudyContext({
     where: {
       token: { in: referenceTokens },
       userId,
-      kind: "study",
+      // kind: "study", // 因为有 universal agent, 现在不过滤了
     },
     include: {
       analyst: {

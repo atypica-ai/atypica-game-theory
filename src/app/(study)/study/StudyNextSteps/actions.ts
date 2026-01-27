@@ -32,7 +32,10 @@ export async function generateRecommendedQuestionsAction(
 > {
   try {
     const userChat = await prisma.userChat.findUnique({
-      where: { token: studyUserChatToken, kind: "study" },
+      where: {
+        token: studyUserChatToken,
+        // kind: "study", // 因为有 universal agent, 现在不过滤了
+      },
       include: {
         analyst: true,
       },
@@ -184,7 +187,7 @@ export async function startNewResearchAction(question: string) {
 //   studyUserChatToken: string,
 // ): Promise<ServerActionResult<{ available: boolean }>> {
 //   const studyUserChat = await prisma.userChat.findUnique({
-//     where: { token: studyUserChatToken, kind: "study" },
+//     where: { token: studyUserChatToken },
 //     select: {
 //       analyst: {
 //         select: {

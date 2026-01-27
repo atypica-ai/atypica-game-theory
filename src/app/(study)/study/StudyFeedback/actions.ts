@@ -11,7 +11,11 @@ export async function fetchStudyFeedback(
 ): Promise<ServerActionResult<{ rating: "useful" | "not_useful"; submittedAt: string } | null>> {
   return withAuth(async (user) => {
     const userChat = await prisma.userChat.findUnique({
-      where: { id: studyUserChatId, userId: user.id, kind: "study" },
+      where: {
+        id: studyUserChatId,
+        userId: user.id,
+        // kind: "study", // 因为有 universal agent, 现在不过滤了
+      },
       select: { extra: true },
     });
 
@@ -43,7 +47,11 @@ export async function submitStudyFeedback(
   return withAuth(async (user) => {
     // Check if user owns this study
     const userChat = await prisma.userChat.findUnique({
-      where: { id: studyUserChatId, userId: user.id, kind: "study" },
+      where: {
+        id: studyUserChatId,
+        userId: user.id,
+        // kind: "study", // 因为有 universal agent, 现在不过滤了
+      },
     });
 
     if (!userChat) {

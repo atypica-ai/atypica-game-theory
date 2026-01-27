@@ -79,7 +79,10 @@ export const interviewChatTool = ({
     execute: async ({ personas, instruction }): Promise<InterviewChatResult> => {
       // 第一步，先把 analyst 上的研究都转移到每个 userChat 上下文里面唯一的一个用于 1v1 访谈的 persona panel
       const { context } = await prisma.userChat.findUniqueOrThrow({
-        where: { id: userChatId, kind: "study" },
+        where: {
+          id: userChatId,
+          // kind: "study", // 因为有 universal agent, 现在不过滤了
+        },
         select: {
           context: true,
           extra: true,
