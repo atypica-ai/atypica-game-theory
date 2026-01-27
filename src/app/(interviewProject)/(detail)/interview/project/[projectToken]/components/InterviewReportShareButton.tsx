@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ClipboardCopyIcon, EyeIcon, FileDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 export function InterviewReportShareButton({
@@ -29,9 +29,15 @@ export function InterviewReportShareButton({
   const t = useTranslations("InterviewProject.InterviewReportShareButton");
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const fullUrl = `${window.location.origin}${publicReportUrl}`;
+  const [fullUrl, setFullUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fullUrl = `${window.location.origin}${publicReportUrl}`;
+    setFullUrl(fullUrl);
+  }, [publicReportUrl]);
 
   const handleCopyUrl = useCallback(() => {
+    if (!fullUrl) return;
     navigator.clipboard.writeText(fullUrl);
     toast.success(t("copySuccess"));
   }, [t, fullUrl]);
@@ -102,7 +108,9 @@ export function InterviewReportShareButton({
               {isPending ? t("generatingPDF") : t("downloadPDF")}
             </Button>
           )}
-          <Button onClick={() => window.open(fullUrl, "_blank")}>{t("openButton")}</Button>
+          <Button onClick={() => fullUrl && window.open(fullUrl, "_blank")}>
+            {t("openButton")}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

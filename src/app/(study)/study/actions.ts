@@ -36,10 +36,12 @@ export async function createStudyUserChat(
     role,
     content,
     attachments,
+    context,
   }: {
     role: "user" | "assistant";
     content: string;
     attachments?: ChatMessageAttachment[];
+    context?: UserChatContext;
   },
   // 任何额外要存储的信息
   extra?: UserChatExtra,
@@ -95,8 +97,9 @@ export async function createStudyUserChat(
           suffix: "...",
         }),
         kind: "study",
-        tx,
         extra,
+        context,
+        tx,
       });
       await persistentAIMessageToDB({
         userChatId: userChat.id,
@@ -129,6 +132,13 @@ export async function createStudyUserChat(
           attachments: attachments,
         },
       });
+      // 这样不行，因为是在 tx 里，mergeUserChatContext 里用了 prisma, 执行的时候这里 tx 还没结束，所以啥也没更新
+      // if (context) {
+      //   await mergeUserChatContext({
+      //     id: userChat.id,
+      //     context,
+      //   });
+      // }
       return userChat;
     });
 
@@ -588,11 +598,19 @@ export async function fetchAnalystReportsOfStudyUserChat({
     })[]
   >
 > {
+  const userChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken },
+  });
+  const reportTokens = (userChat?.context as UserChatContext | undefined)?.reportTokens;
+  if (!reportTokens) {
+    return {
+      success: false,
+      message: "User chat not found or reportTokens context is missing",
+    };
+  }
   const reports = await prismaRO.analystReport.findMany({
     where: {
-      analyst: {
-        studyUserChat: { token: studyUserChatToken, kind: "study" },
-      },
+      token: { in: reportTokens },
       generatedAt: { not: null },
     },
     select: {
@@ -641,11 +659,19 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
     })[]
   >
 > {
+  const userChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken },
+  });
+  const podcastTokens = (userChat?.context as UserChatContext | undefined)?.podcastTokens;
+  if (!podcastTokens) {
+    return {
+      success: false,
+      message: "User chat not found or podcastTokens context is missing",
+    };
+  }
   const podcasts = await prismaRO.analystPodcast.findMany({
     where: {
-      analyst: {
-        studyUserChat: { token: studyUserChatToken, kind: "study" },
-      },
+      token: { in: podcastTokens },
       // Include both generated and generating podcasts
       // generatedAt: { not: null },
     },
@@ -675,17 +701,12 @@ export async function fetchAnalystReportsCountOfStudyUserChat({
 }: {
   studyUserChatToken: string;
 }): Promise<ServerActionResult<number>> {
-  const count = await prisma.analystReport.count({
-    where: {
-      analyst: {
-        studyUserChat: { token: studyUserChatToken, kind: "study" },
-      },
-      generatedAt: { not: null },
-    },
+  const userChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken },
   });
   return {
     success: true,
-    data: count,
+    data: (userChat?.context as UserChatContext | undefined)?.reportTokens?.length ?? 0,
   };
 }
 
@@ -694,18 +715,12 @@ export async function fetchAnalystPodcastsCountOfStudyUserChat({
 }: {
   studyUserChatToken: string;
 }): Promise<ServerActionResult<number>> {
-  const count = await prisma.analystPodcast.count({
-    where: {
-      analyst: {
-        studyUserChat: { token: studyUserChatToken, kind: "study" },
-      },
-      // Include both generated and generating podcasts
-      // generatedAt: { not: null },
-    },
+  const userChat = await prisma.userChat.findUnique({
+    where: { token: studyUserChatToken },
   });
   return {
     success: true,
-    data: count,
+    data: (userChat?.context as UserChatContext | undefined)?.podcastTokens?.length ?? 0,
   };
 }
 

@@ -1,5 +1,6 @@
-import { prisma } from "@/prisma/prisma";
 import "server-only";
+
+import { prisma } from "@/prisma/prisma";
 import { UserChatContext } from "./types";
 
 export async function mergeUserChatContext({

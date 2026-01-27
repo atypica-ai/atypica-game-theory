@@ -1,8 +1,6 @@
 "use client";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
 import { trackTemplateUsage } from "@/app/(newStudy)/newstudy/actions";
-import { UserChatContext } from "@/app/(study)/context/types";
-import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { createStudyUserChat } from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
@@ -123,18 +121,19 @@ export function NewStudyInputBox({
           mimeType: file.mimeType,
           size: file.size,
         }));
-        const result = await createStudyUserChat({ role: "user", content: input, attachments });
+        const result = await createStudyUserChat({
+          role: "user",
+          content: input,
+          attachments,
+          context: {
+            ...(referenceUserChatTokens ? { referenceUserChats: referenceUserChatTokens } : {}),
+            ...(templateId ? { researchTemplateId: templateId } : {}),
+          },
+        });
         if (!result.success) {
           throw result;
         }
         const userChat = result.data;
-        await mergeUserChatContext({
-          id: userChat.id,
-          context: {
-            ...(referenceUserChatTokens ? { referenceUserChats: referenceUserChatTokens } : {}),
-            ...(templateId ? { researchTemplateId: templateId } : {}),
-          } satisfies UserChatContext,
-        });
 
         // Track template usage if templateId is provided
         if (templateId) {

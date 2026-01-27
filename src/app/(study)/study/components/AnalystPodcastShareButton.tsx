@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics/segment";
 import { ClipboardCopyIcon, PlayIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function AnalystPodcastShareButton({
@@ -28,24 +28,28 @@ export function AnalystPodcastShareButton({
   const publicPodcastUrl = `/artifacts/podcast/${podcastToken}/share?utm_source=podcast&utm_medium=share`;
   const t = useTranslations("StudyPage.AnalystPodcastShareButton");
   const [open, setOpen] = useState(false);
-  const fullUrl = `${window.location.origin}${publicPodcastUrl}`;
+  const [fullUrl, setFullUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fullUrl = `${window.location.origin}${publicPodcastUrl}`;
+    setFullUrl(fullUrl);
+  }, [publicPodcastUrl]);
 
   const handleCopyUrl = useCallback(() => {
+    if (!fullUrl) return;
     navigator.clipboard.writeText(fullUrl);
     toast.success(t("copySuccess"));
     trackEvent("Study Artifact Exported", { intent: "share", type: "podcast", url: fullUrl });
   }, [t, fullUrl]);
 
   const handleShareToX = useCallback(() => {
+    if (!fullUrl) return;
     // 构造分享文本
     const shareText = title ? t("shareToXWithTitle", { title }) : t("shareToXDefault");
-
     // 构造 Twitter Intent URL
     const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(fullUrl)}`;
-
     // 在新标签页中打开
     window.open(twitterUrl, "_blank");
-
     // 追踪事件
     trackEvent("Study Artifact Exported", { intent: "share", type: "podcast", url: fullUrl });
   }, [t, title, fullUrl]);
@@ -92,6 +96,7 @@ export function AnalystPodcastShareButton({
           </Button>
           <Button
             onClick={() => {
+              if (!fullUrl) return;
               window.open(fullUrl, "_blank");
               trackEvent("Study Artifact Exported", {
                 intent: "visit",

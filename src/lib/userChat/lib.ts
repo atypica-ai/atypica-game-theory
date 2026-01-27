@@ -2,6 +2,7 @@ import "server-only";
 
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { llm } from "@/ai/provider";
+import { UserChatContext } from "@/app/(study)/context/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/request/headers";
@@ -22,14 +23,16 @@ export async function createUserChat<TKind extends UserChatKind>({
   token,
   title,
   tx,
+  context,
   extra: _extra,
 }: {
   userId: number;
   kind: TKind;
   token?: string;
   title: string;
-  tx?: Omit<typeof prisma, ITXClientDenyList>;
+  context?: UserChatContext;
   extra?: UserChatExtra;
+  tx?: Omit<typeof prisma, ITXClientDenyList>;
 }): Promise<Omit<UserChat, "kind" | "extra"> & { kind: TKind; extra: UserChatExtra }> {
   if (!tx) {
     tx = prisma;
@@ -47,7 +50,14 @@ export async function createUserChat<TKind extends UserChatKind>({
     ...{ clientIp, userAgent, geo, locale: await getLocale() }, // 发起 chat 时候的客户端信息，不用于后续逻辑判断
   };
   const userChat = await tx.userChat.create({
-    data: { userId, title, kind, token, extra },
+    data: {
+      userId,
+      title,
+      kind,
+      token,
+      context,
+      extra,
+    },
   });
   return {
     ...userChat,

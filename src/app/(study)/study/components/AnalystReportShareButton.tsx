@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics/segment";
 import { ClipboardCopyIcon, EyeIcon, FileDownIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 export function AnalystReportShareButton({
@@ -32,24 +32,28 @@ export function AnalystReportShareButton({
   const t = useTranslations("StudyPage.AnalystReportShareButton");
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const fullUrl = `${window.location.origin}${publicReportUrl}`;
+  const [fullUrl, setFullUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fullUrl = `${window.location.origin}${publicReportUrl}`;
+    setFullUrl(fullUrl);
+  }, [publicReportUrl]);
 
   const handleCopyUrl = useCallback(() => {
+    if (!fullUrl) return;
     navigator.clipboard.writeText(fullUrl);
     toast.success(t("copySuccess"));
     trackEvent("Study Artifact Exported", { intent: "share", type: "report", url: fullUrl });
   }, [t, fullUrl]);
 
   const handleShareToX = useCallback(() => {
+    if (!fullUrl) return;
     // 构造分享文本
     const shareText = title ? t("shareToXWithTitle", { title }) : t("shareToXDefault");
-
     // 构造 Twitter Intent URL
     const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(fullUrl)}`;
-
     // 在新标签页中打开
     window.open(twitterUrl, "_blank");
-
     // 追踪事件
     trackEvent("Study Artifact Exported", { intent: "share", type: "report", url: fullUrl });
   }, [t, title, fullUrl]);
@@ -134,6 +138,7 @@ export function AnalystReportShareButton({
           )}
           <Button
             onClick={() => {
+              if (!fullUrl) return;
               window.open(fullUrl, "_blank");
               trackEvent("Study Artifact Exported", {
                 intent: "visit",
