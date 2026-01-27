@@ -15,7 +15,6 @@ import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { createUserChat, generateChatTitle } from "@/lib/userChat/lib";
 import {
   Analyst,
-  AnalystExtra,
   AnalystPodcast,
   AnalystPodcastExtra,
   AnalystReport,
@@ -259,7 +258,7 @@ export async function fetchAnalystByStudyUserChatToken({
   studyUserChatToken,
 }: {
   studyUserChatToken: string;
-}): Promise<ServerActionResult<Omit<Analyst, "extra"> & { extra: AnalystExtra }>> {
+}): Promise<ServerActionResult<Analyst>> {
   const studyUserChat = await prisma.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
     include: {
@@ -275,10 +274,7 @@ export async function fetchAnalystByStudyUserChatToken({
   }
   return {
     success: true,
-    data: {
-      ...studyUserChat.analyst,
-      extra: studyUserChat.analyst.extra as AnalystExtra,
-    },
+    data: studyUserChat.analyst,
   };
 }
 
@@ -590,10 +586,7 @@ export async function fetchAnalystReportsOfStudyUserChat({
   includeOnePageHtml?: boolean;
 }): Promise<
   ServerActionResult<
-    (Pick<
-      AnalystReport,
-      "id" | "token" | "analystId" | "generatedAt" | "createdAt" | "updatedAt"
-    > & {
+    (Pick<AnalystReport, "id" | "token" | "generatedAt" | "createdAt" | "updatedAt"> & {
       coverCdnHttpUrl?: string;
     })[]
   >
@@ -616,7 +609,6 @@ export async function fetchAnalystReportsOfStudyUserChat({
     select: {
       id: true,
       token: true,
-      analystId: true,
       extra: true,
       generatedAt: true,
       createdAt: true,
@@ -651,10 +643,7 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
   studyUserChatToken: string;
 }): Promise<
   ServerActionResult<
-    (Pick<
-      AnalystPodcast,
-      "id" | "token" | "analystId" | "script" | "generatedAt" | "createdAt" | "updatedAt"
-    > & {
+    (Pick<AnalystPodcast, "id" | "token" | "script" | "generatedAt" | "createdAt" | "updatedAt"> & {
       extra: AnalystPodcastExtra;
     })[]
   >
@@ -678,7 +667,6 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
     select: {
       id: true,
       token: true,
-      analystId: true,
       script: true,
       generatedAt: true,
       createdAt: true,

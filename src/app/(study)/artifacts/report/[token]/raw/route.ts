@@ -37,7 +37,6 @@ function cleanHtmlFromMarkdown(html: string): string {
 async function getReportHtml(reportToken: string): Promise<string> {
   const analystReport = await prismaRO.analystReport.findUniqueOrThrow({
     where: { token: reportToken },
-    include: { analyst: true },
   });
 
   // If report is complete, read from database

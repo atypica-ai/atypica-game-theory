@@ -119,7 +119,6 @@ export async function generatePodcastAudioFromScriptAction({
       .create({
         data: {
           userId: adminUserId,
-          analystId: testAnalyst.id,
           token: podcastToken,
           instruction: "[TEST] Script-based audio generation",
           script: script.trim(),

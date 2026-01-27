@@ -11,14 +11,7 @@ export async function fetchMyPodcasts(): Promise<
   ServerActionResult<
     (Pick<
       AnalystPodcast,
-      | "id"
-      | "token"
-      | "analystId"
-      | "script"
-      | "objectUrl"
-      | "generatedAt"
-      | "createdAt"
-      | "updatedAt"
+      "id" | "token" | "script" | "objectUrl" | "generatedAt" | "createdAt" | "updatedAt"
     > & {
       extra: AnalystPodcastExtra;
     })[]
@@ -32,7 +25,6 @@ export async function fetchMyPodcasts(): Promise<
       select: {
         id: true,
         token: true,
-        analystId: true,
         script: true,
         objectUrl: true,
         generatedAt: true,

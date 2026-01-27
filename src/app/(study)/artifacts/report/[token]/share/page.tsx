@@ -32,18 +32,6 @@ const getCachedReportData = unstable_cache(
       select: {
         id: true,
         token: true,
-        analyst: {
-          select: {
-            brief: true,
-            topic: true,
-            studyUserChat: {
-              select: {
-                token: true,
-                title: true,
-              },
-            },
-          },
-        },
         onePageHtml: true,
         extra: true,
       },

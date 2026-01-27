@@ -43,9 +43,8 @@ export async function fetchAnalystReportsAction(
     ? {
         OR: [
           { token: { contains: searchQuery } },
-          { analyst: { topic: { contains: searchQuery } } },
-          { analyst: { brief: { contains: searchQuery } } },
-          { analyst: { user: { email: { contains: searchQuery } } } },
+          { user: { email: { contains: searchQuery } } },
+          // 目前暂时不支持关键词搜索，得改成 raw sql 搜索 extra 中的 title
         ],
       }
     : {};
@@ -206,20 +205,6 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
 
   const report = await prisma.analystReport.findUnique({
     where: { id: reportId },
-    include: {
-      analyst: {
-        select: {
-          locale: true,
-          kind: true,
-          topic: true,
-          studyUserChat: {
-            select: {
-              title: true,
-            },
-          },
-        },
-      },
-    },
   });
 
   if (!report) {

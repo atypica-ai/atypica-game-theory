@@ -252,21 +252,21 @@ export type AnalystPodcastExtra = Partial<{
 // AnalystExtra 和 UserChatExtra 的关系是：
 // 研究开始前的额外信息，都存 UserChatExtra，是发起研究或者需求相关对的
 // 研究结束后的额外信息，都存 AnalystExtra，是产物或者下一步动作相关
-export type AnalystExtra = Partial<{
-  /**
-   * @deprecated 已迁移到 UserChat.extra
-   * 使用 UserChatExtra.recommendedStudies 代替
-   * 迁移脚本: scripts/archive/legacy/2026-01/migrate-to-context-driven.sql (迁移 7)
-   */
-  // recommendedStudies: {
-  //   questions: Array<{
-  //     title: string;
-  //     brief: string;
-  //   }>;
-  //   generatedAt?: string;
-  //   processing?: string; // 存储开始时间戳 Date.now().toString()
-  // };
-}>;
+// export type AnalystExtra = Partial<{
+//   /**
+//    * @deprecated 已迁移到 UserChat.extra
+//    * 使用 UserChatExtra.recommendedStudies 代替
+//    * 迁移脚本: scripts/archive/legacy/2026-01/migrate-to-context-driven.sql (迁移 7)
+//    */
+//   // recommendedStudies: {
+//   //   questions: Array<{
+//   //     title: string;
+//   //     brief: string;
+//   //   }>;
+//   //   generatedAt?: string;
+//   //   processing?: string; // 存储开始时间戳 Date.now().toString()
+//   // };
+// }>;
 
 export type SubscriptionExtra = Partial<{
   seats: number;

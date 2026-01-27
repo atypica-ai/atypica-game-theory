@@ -21,7 +21,6 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
       objectUrl: true,
       generatedAt: true,
       extra: true,
-      analystId: true,
     },
   });
 

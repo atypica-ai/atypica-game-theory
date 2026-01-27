@@ -43,9 +43,8 @@ export async function fetchAnalystPodcastsAction(
     ? {
         OR: [
           { token: { contains: searchQuery } },
-          { analyst: { topic: { contains: searchQuery } } },
-          { analyst: { brief: { contains: searchQuery } } },
-          { analyst: { user: { email: { contains: searchQuery } } } },
+          { user: { email: { contains: searchQuery } } },
+          // 目前暂时不支持关键词搜索，得改成 raw sql 搜索 extra 中的 title
         ],
       }
     : {};
@@ -195,9 +194,6 @@ export async function generatePodcastMetadataAction(
 
   const podcast = await prisma.analystPodcast.findUnique({
     where: { id: podcastId },
-    include: {
-      analyst: true,
-    },
   });
 
   if (!podcast) {
@@ -272,14 +268,6 @@ export async function featurePodcastAction(podcastId: number): Promise<ServerAct
 
   const podcast = await prisma.analystPodcast.findUnique({
     where: { id: podcastId },
-    include: {
-      analyst: {
-        select: {
-          locale: true,
-          kind: true,
-        },
-      },
-    },
   });
 
   if (!podcast) {

@@ -3,7 +3,7 @@
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystExtra, UserChatExtra } from "@/prisma/client";
+import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
@@ -124,7 +124,7 @@ export async function generateRecommendedQuestionsAction(
         break;
       }
 
-      userChatExtra = updatedUserChat.extra as AnalystExtra;
+      userChatExtra = updatedUserChat.extra as UserChatExtra;
 
       // If questions are ready and not processing, return them
       if (

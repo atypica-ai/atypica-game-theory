@@ -211,7 +211,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
             type="text"
             defaultValue={searchQuery}
             ref={inputRef}
-            placeholder="Search by token, topic, or email..."
+            placeholder="Search by token, topic, or email... (升级中, 这几天暂时不支持关键词搜索)"
             className="pl-8"
           />
         </div>
