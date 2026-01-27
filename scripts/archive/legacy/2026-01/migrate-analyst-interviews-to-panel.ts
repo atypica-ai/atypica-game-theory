@@ -9,7 +9,7 @@ import { loadEnvConfig } from "@next/env";
 import { UserChatContext } from "../../../../src/app/(study)/context/types";
 import "../../../mock-server-only";
 
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 50;
 
 async function main() {
   console.log("🚀 Starting Analyst interviews to PersonaPanel migration\n");
@@ -61,15 +61,13 @@ async function main() {
       `\n📦 Processing batch ${batchNum}/${totalBatches} (analysts ${i + 1}-${Math.min(i + BATCH_SIZE, analysts.length)})`,
     );
 
-    for (const analyst of batch) {
-      processed++;
-
-      try {
+    // Process batch in parallel
+    const results = await Promise.allSettled(
+      batch.map(async (analyst) => {
         // Check if analyst has study user chat
         if (!analyst.studyUserChat) {
           console.log(`  ⏭️  Analyst ${analyst.id}: No study user chat, skipping`);
-          skipped++;
-          continue;
+          return { status: "skipped" as const, reason: "no_study_chat" };
         }
 
         const studyUserChat = analyst.studyUserChat;
@@ -80,8 +78,7 @@ async function main() {
           console.log(
             `  ✓  Analyst ${analyst.id}: Already has PersonaPanel ${context.interviewPersonaPanelId}, skipping`,
           );
-          skipped++;
-          continue;
+          return { status: "skipped" as const, reason: "already_migrated" };
         }
 
         // Find all interviews for this analyst
@@ -96,8 +93,7 @@ async function main() {
         // If no interviews, skip
         if (interviews.length === 0) {
           console.log(`  ⏭️  Analyst ${analyst.id}: No interviews, skipping`);
-          skipped++;
-          continue;
+          return { status: "skipped" as const, reason: "no_interviews" };
         }
 
         // Collect unique personaIds
@@ -156,12 +152,22 @@ async function main() {
           );
         }
 
-        migrated++;
-      } catch (error) {
+        return { status: "migrated" as const };
+      }),
+    );
+
+    // Aggregate results
+    for (const result of results) {
+      processed++;
+      if (result.status === "fulfilled") {
+        if (result.value.status === "migrated") {
+          migrated++;
+        } else {
+          skipped++;
+        }
+      } else {
         errors++;
-        console.error(
-          `  ❌ Analyst ${analyst.id}: Error - ${error instanceof Error ? error.message : String(error)}`,
-        );
+        console.error(`  ❌ Error - ${result.reason}`);
       }
     }
 

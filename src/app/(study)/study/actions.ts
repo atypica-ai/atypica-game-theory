@@ -343,15 +343,23 @@ export async function fetchAnalystInterviewForPersona({
       },
     },
   });
-  const analystId = studyUserChat?.analyst?.id;
+  // const analystId = studyUserChat?.analyst?.id;
   const personaPanelId = (studyUserChat?.context as UserChatContext | undefined)
     ?.interviewPersonaPanelId;
+  if (!personaPanelId) {
+    return {
+      success: false,
+      code: "not_found",
+      message: "Persona panel is missing",
+    };
+  }
   const where: AnalystInterviewWhereInput = {
     personaId: forPersonaId,
-    OR: [
-      ...(analystId ? [{ analystId }] : []), // legacy
-      ...(personaPanelId ? [{ personaPanelId }] : []), // new
-    ],
+    personaPanelId,
+    // OR: [
+    //   ...(analystId ? [{ analystId }] : []), // legacy
+    //   ...(personaPanelId ? [{ personaPanelId }] : []), // new
+    // ],
   };
 
   const interview = await prisma.analystInterview.findFirst({

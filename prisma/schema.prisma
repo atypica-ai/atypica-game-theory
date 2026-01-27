@@ -221,10 +221,6 @@ model Analyst {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  interviews AnalystInterview[]
-  reports    AnalystReport[]
-  podcasts   AnalystPodcast[]
-
   @@index([userId])
 }
 
@@ -244,10 +240,8 @@ model FeaturedItem {
 model AnalystReport {
   id          Int       @id @default(autoincrement())
   token       String    @unique @db.VarChar(64)
-  userId      Int?
-  user        User?     @relation(fields: [userId], references: [id])
-  analystId   Int?      @db.Integer
-  analyst     Analyst?  @relation(fields: [analystId], references: [id])
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
   instruction String    @db.Text
   coverSvg    String    @db.Text
   onePageHtml String    @db.Text
@@ -257,16 +251,14 @@ model AnalystReport {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  @@index([analystId])
+  analystId Int? @db.Integer // legacy field, remove after 2.15
 }
 
 model AnalystPodcast {
   id          Int       @id @default(autoincrement())
   token       String    @unique @db.VarChar(64)
-  userId      Int?
-  user        User?     @relation(fields: [userId], references: [id])
-  analystId   Int?      @db.Integer
-  analyst     Analyst?  @relation(fields: [analystId], references: [id])
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
   instruction String    @db.Text
   script      String    @db.Text
   objectUrl   String?   @db.VarChar(255)
@@ -276,7 +268,7 @@ model AnalystPodcast {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  @@index([analystId])
+  analystId Int? @db.Integer // legacy field, remove after 2.15
 }
 
 enum UserChatKind {
@@ -650,8 +642,6 @@ model PersonaPanel {
 
 model AnalystInterview {
   id                  Int           @id @default(autoincrement())
-  analystId           Int?          @db.Integer
-  analyst             Analyst?      @relation(fields: [analystId], references: [id])
   personaPanelId      Int?
   personaPanel        PersonaPanel? @relation(fields: [personaPanelId], references: [id], onDelete: SetNull)
   personaId           Int           @db.Integer
@@ -663,6 +653,10 @@ model AnalystInterview {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  analystId Int? @db.Integer // legacy field, remove after 2.15
+
+  @@index([personaPanelId])
 }
 
 model DiscussionTimeline {

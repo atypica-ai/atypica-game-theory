@@ -78,40 +78,25 @@ export const interviewChatTool = ({
     },
     execute: async ({ personas, instruction }): Promise<InterviewChatResult> => {
       // 第一步，先把 analyst 上的研究都转移到每个 userChat 上下文里面唯一的一个用于 1v1 访谈的 persona panel
-      const { analyst, context } = await prisma.userChat.findUniqueOrThrow({
+      const { context } = await prisma.userChat.findUniqueOrThrow({
         where: { id: userChatId, kind: "study" },
         select: {
-          analyst: { select: { id: true } },
           context: true,
           extra: true,
         },
       });
-      let analystId: number | undefined = analyst?.id;
       let interviewPersonaPanelId = (context as UserChatContext).interviewPersonaPanelId;
       if (!interviewPersonaPanelId) {
-        const interviews = analystId
-          ? await prisma.analystInterview.findMany({
-              where: { analystId },
-              select: { id: true, personaId: true },
-            })
-          : [];
         const personaPanel = await prisma.personaPanel.create({
           data: {
             userId,
-            personaIds: mergeIds(
-              interviews.map((i) => i.personaId),
-              personas.map((p) => p.id),
-            ),
+            personaIds: personas.map((p) => p.id),
           },
         });
         interviewPersonaPanelId = personaPanel.id;
         await mergeUserChatContext({
           id: userChatId,
           context: { interviewPersonaPanelId },
-        });
-        await prisma.analystInterview.updateMany({
-          where: { id: { in: interviews.map((i) => i.id) } },
-          data: { personaPanelId: interviewPersonaPanelId },
         });
       } else {
         const personaPanel = await prisma.personaPanel.findUniqueOrThrow({
@@ -128,8 +113,6 @@ export const interviewChatTool = ({
           },
         });
       }
-      analystId = undefined;
-      // 之后的代码里，只使用 interview PersonaPanel, 不再使用 analyyst
 
       const single = async ({
         id: personaId,
