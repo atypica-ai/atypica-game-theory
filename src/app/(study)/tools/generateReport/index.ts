@@ -137,6 +137,16 @@ export const generateReportTool = ({
         });
       }
 
+      // Save report token to context
+      const context = (userChat.context || {}) as UserChatContext;
+      const existingTokens = context.reportTokens || [];
+      await mergeUserChatContext({
+        id: userChatId,
+        context: {
+          reportTokens: Array.from(new Set([...existingTokens, report.token])),
+        },
+      });
+
       // 如果 studyLog 没有生成过，先生成，report 的内容主要来自 studyLog
       if (studyLog) {
         logger.info("generateReport: studyLog found in Analyst");
@@ -215,16 +225,6 @@ export const generateReportTool = ({
         //   reportLogger.error(`Error generating cover for analyst ${analystId}: ${error}`); // cover 生成失败就算了
         // }),
       ]);
-
-      // Save report token to context
-      const context = (userChat.context || {}) as UserChatContext;
-      const existingTokens = context.reportTokens || [];
-      await mergeUserChatContext({
-        id: userChatId,
-        context: {
-          reportTokens: Array.from(new Set([...existingTokens, report.token])),
-        },
-      });
 
       return {
         reportToken: report.token,

@@ -8,6 +8,9 @@ import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
 
+/**
+ * @deprecated 包含 podcast.analystId 的关系，如果要继续使用，需要修改
+ */
 export async function notifyPodcastReady({
   analystId,
   podcast,
