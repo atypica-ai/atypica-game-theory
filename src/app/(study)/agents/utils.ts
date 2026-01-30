@@ -118,6 +118,7 @@ export async function shouldDecidePersonaTier({
   };
   streamingMessage.parts.push(toolPart);
   await persistentAIMessageToDB({
+    mode: "override",
     userChatId: studyUserChatId,
     message: streamingMessage,
   });

@@ -80,16 +80,19 @@ export async function POST(req: Request) {
 
   // Persist new message to database
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId: universalChatId,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
   });
 
   // Detect input language
   const locale: Locale = await detectInputLanguage({
-    text: newMessage.parts.map((part) => (part.type === "text" ? part.text : "")).join(""),
+    text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
   });
 
   // Get user and team info
@@ -236,6 +239,7 @@ export async function POST(req: Request) {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length) {
         await persistentAIMessageToDB({
+          mode: "override",
           userChatId: universalChatId,
           message: streamingMessage,
         });

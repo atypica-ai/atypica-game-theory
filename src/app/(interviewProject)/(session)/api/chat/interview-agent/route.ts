@@ -60,10 +60,13 @@ export async function POST(req: Request) {
 
   // Save the latest user message to database
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
   });
 
@@ -107,7 +110,9 @@ export async function POST(req: Request) {
         statReport,
         logger: chatLogger,
         abortSignal: mergedAbortSignal,
-        newMessage,
+        // Type cast: ClientMessagePayload uses generic UITools, but runHumanInterview
+        // expects specific TInterviewUITools. Runtime value is correct, TS just can't infer it.
+        newMessage: newMessage as Parameters<typeof runHumanInterview>[0]["newMessage"],
         interviewSession,
         streamWriter: writer,
       });

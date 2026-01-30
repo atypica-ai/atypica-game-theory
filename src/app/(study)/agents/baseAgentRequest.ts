@@ -473,6 +473,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length) {
         await persistentAIMessageToDB({
+          mode: "override",
           userChatId: studyUserChatId,
           message: streamingMessage,
         });

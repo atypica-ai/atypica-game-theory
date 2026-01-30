@@ -45,10 +45,13 @@ export async function POST(req: Request) {
   const userChatId = userChat.id;
   const locale = await getLocale();
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
   });
 
@@ -79,6 +82,7 @@ export async function POST(req: Request) {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length) {
         await persistentAIMessageToDB({
+          mode: "override",
           userChatId,
           message: streamingMessage,
         });

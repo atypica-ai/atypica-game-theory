@@ -21,7 +21,12 @@ export const clientMessagePayloadSchema = z.object({
     role: z.enum(["user", "assistant"]),
     // parts: z.custom<UIMessagePart<UIDataTypes, UITools>[]>(() => true),
     lastPart: z.custom<UIMessagePart<UIDataTypes, UITools>>(() => true),
-    metadata: z.custom<unknown | { shouldCorrectUserMessage?: boolean }>(() => true).optional(),
+    metadata: z
+      .object({
+        shouldCorrectUserMessage: z.boolean().optional(),
+      })
+      .passthrough()
+      .optional(),
   }),
   userChatToken: z.string(),
   attachments: z
@@ -80,7 +85,7 @@ export function prepareLastUIMessageForRequest<T extends UIMessage>(messages: T[
       id,
       role,
       lastPart,
-      metadata,
+      metadata: metadata as ClientMessagePayload["message"]["metadata"],
     } satisfies ClientMessagePayload["message"];
   } else {
     throw new Error("Invalid message role");

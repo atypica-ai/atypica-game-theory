@@ -19,7 +19,8 @@
       "Bash(wc:*)",
       "Bash(head:*)",
       "Bash(tree:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npx tsc --noEmit)"
     ],
     "deny": [],
     "ask": []

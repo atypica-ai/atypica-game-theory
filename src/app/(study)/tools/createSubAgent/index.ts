@@ -496,6 +496,7 @@ export const createSubAgentTool = ({
 
       // Insert initial user message
       await persistentAIMessageToDB({
+        mode: "append",
         userChatId: subAgentChatId,
         message: {
           id: generateId(),
@@ -543,6 +544,7 @@ export const createSubAgentTool = ({
             : `**Tool Selection Complete**\n\nSelected the following MCP servers to complete this task:\n${selectedMcpNames.map((name, idx) => `${idx + 1}. ${name}`).join("\n")}\n\nStarting task execution...`;
 
         await persistentAIMessageToDB({
+          mode: "append",
           userChatId: subAgentChatId,
           message: {
             id: generateId(),

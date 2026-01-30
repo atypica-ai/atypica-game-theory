@@ -29,6 +29,7 @@ export async function createHelloUserChatAction({
       kind: "misc",
     });
     await persistentAIMessageToDB({
+      mode: "append",
       userChatId: userChat.id,
       message,
     });

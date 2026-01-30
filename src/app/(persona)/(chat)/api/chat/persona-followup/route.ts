@@ -67,10 +67,13 @@ export async function POST(req: NextRequest) {
 
   // Save the user message
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId: userChat.id,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
   });
 
@@ -80,9 +83,7 @@ export async function POST(req: NextRequest) {
 
   // 动态检测用户输入的语言，先检测用户输入的语言，默认使用用户导入的访谈文件的语言 (context 内容)
   const locale = await detectInputLanguage({
-    text: newMessage.parts // 所有 text parts 的文本合在一起检测
-      .map((part) => (part.type === "text" ? part.text : ""))
-      .join(""),
+    text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
     fallbackLocale: await detectInputLanguage({
       text: personaImport.context,
     }),
@@ -162,6 +163,7 @@ export async function POST(req: NextRequest) {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length) {
         await persistentAIMessageToDB({
+          mode: "override",
           userChatId: userChat.id,
           message: streamingMessage,
         });

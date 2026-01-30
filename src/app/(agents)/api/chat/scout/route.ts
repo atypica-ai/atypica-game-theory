@@ -39,10 +39,13 @@ export async function POST(req: Request) {
   }
   const scoutUserChatId = userChat.id;
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId: scoutUserChatId,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
   });
   const scoutLog = rootLogger.child({ scoutUserChatId: scoutUserChatId });

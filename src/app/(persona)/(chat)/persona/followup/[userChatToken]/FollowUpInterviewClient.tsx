@@ -34,10 +34,10 @@ export default function FollowUpInterviewClient({
     transport: new DefaultChatTransport<PERSONA_UI_MESSAGE>({
       api: "/api/chat/persona-followup",
       prepareSendMessagesRequest({ id, messages }) {
-        const { id: messageId, role, parts, metadata } = prepareLastUIMessageForRequest(messages);
+        const { id: messageId, role, lastPart, metadata } = prepareLastUIMessageForRequest(messages);
         const body: ClientMessagePayload = {
           id,
-          message: { id: messageId, role, parts, metadata },
+          message: { id: messageId, role, lastPart, metadata },
           ...extraRequestPayload,
         };
         return { body };

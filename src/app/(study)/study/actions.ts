@@ -101,6 +101,7 @@ export async function createStudyUserChat(
         tx,
       });
       await persistentAIMessageToDB({
+        mode: "append",
         userChatId: userChat.id,
         message: {
           id: generateId(),

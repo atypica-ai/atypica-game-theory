@@ -573,6 +573,7 @@ async function saveMessage({
         where: { id: interviewUserChatId, kind: "interview", backgroundToken },
       });
       await persistentAIMessageToDB({
+        mode: "append",
         userChatId: interviewUserChatId,
         message,
         tx,

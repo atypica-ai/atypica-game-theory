@@ -212,6 +212,7 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
     }
 
     await persistentAIMessageToDB({
+      mode: "append",
       userChatId: studyUserChatId,
       message: {
         id: generateId(),

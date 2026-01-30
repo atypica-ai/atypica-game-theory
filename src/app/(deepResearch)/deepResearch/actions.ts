@@ -63,6 +63,7 @@ export async function createDeepResearchUserChatAction({
 
     // Persist initial message
     await persistentAIMessageToDB({
+      mode: "append",
       userChatId: userChat.id,
       message,
     });

@@ -47,9 +47,7 @@ export async function POST(req: NextRequest) {
 
   // 动态检测用户输入的语言
   const locale = await detectInputLanguage({
-    text: newMessage.parts // 所有 text parts 的文本合在一起检测
-      .map((part) => (part.type === "text" ? part.text : ""))
-      .join(""),
+    text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
   });
 
   // Verify user has access to this chat
@@ -69,10 +67,13 @@ export async function POST(req: NextRequest) {
 
   // Persist the new message
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
   });
 
@@ -192,6 +193,7 @@ export async function POST(req: NextRequest) {
         //   .map((part) => (part.type === "text" ? part.text : "")).join("").trim()
       ) {
         await persistentAIMessageToDB({
+          mode: "override",
           userChatId,
           message: streamingMessage,
         });

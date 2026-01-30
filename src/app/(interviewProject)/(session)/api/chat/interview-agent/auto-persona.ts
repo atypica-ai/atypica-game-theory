@@ -63,7 +63,7 @@ async function saveMessage({
       await tx.userChat.findUniqueOrThrow({
         where: { id: userChatId, kind: "interviewSession", backgroundToken },
       });
-      await persistentAIMessageToDB({ userChatId, message, tx });
+      await persistentAIMessageToDB({ mode: "append", userChatId, message, tx }); // 其实这里 override 也 ok，但是，append 也没问题
     });
   } catch (error) {
     logger.error(

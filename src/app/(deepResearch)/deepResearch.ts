@@ -74,6 +74,7 @@ async function executeDeepResearch({
         where: { id: userChatId, backgroundToken },
       });
       await persistentAIMessageToDB({
+        mode: "append",
         userChatId,
         message: {
           id: generateId(),
@@ -105,6 +106,7 @@ async function executeDeepResearch({
           where: { id: userChatId, backgroundToken },
         });
         await persistentAIMessageToDB({
+          mode: "override",
           userChatId,
           message: streamingMessage,
           tx,

@@ -135,17 +135,20 @@ export async function POST(req: Request) {
 
   // Save the latest user message to database
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId: userChat.id,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
     attachments: newAttachments,
   });
 
   // Detect user input language, fallback to sage's locale
   const locale = await detectInputLanguage({
-    text: newMessage.parts.map((part) => (part.type === "text" ? part.text : "")).join(""),
+    text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
     fallbackLocale: VALID_LOCALES.includes(sage.locale as Locale)
       ? (sage.locale as Locale)
       : await getLocale(),
@@ -269,6 +272,7 @@ export async function POST(req: Request) {
       appendStepToStreamingMessage(streamingMessage, step);
       if (streamingMessage.parts?.length) {
         await persistentAIMessageToDB({
+          mode: "override",
           userChatId: userChat.id,
           message: streamingMessage,
         });

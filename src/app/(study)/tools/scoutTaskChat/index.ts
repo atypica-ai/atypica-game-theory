@@ -131,6 +131,7 @@ export const scoutTaskChatTool = ({
       const scoutLog = logger.child({ scoutUserChatId, scoutUserChatToken });
       // 插入一条新的消息
       await persistentAIMessageToDB({
+        mode: "append",
         userChatId: scoutUserChatId,
         message: {
           id: generateId(),
@@ -337,6 +338,7 @@ export async function runScoutTaskChatStream({
         appendStepToStreamingMessage(streamingMessage, step);
         if (streamingMessage.parts?.length) {
           await persistentAIMessageToDB({
+            mode: "override",
             userChatId: scoutUserChatId,
             message: streamingMessage,
           });

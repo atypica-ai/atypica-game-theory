@@ -68,16 +68,16 @@ export async function POST(req: Request) {
 
   // Persist new user message
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
   });
-  const query = newMessage.parts
-    .filter((part) => part.type === "text")
-    .map((part) => part.text || "")
-    .join("\n");
+  const query = newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "";
   logger.info({ msg: "Starting DeepResearch stream", expert, userChatId });
 
   // Create streaming response
@@ -95,6 +95,7 @@ export async function POST(req: Request) {
 
         // 2. 立即保存消息
         await persistentAIMessageToDB({
+          mode: "override",
           userChatId,
           message: streamingMessage,
         });

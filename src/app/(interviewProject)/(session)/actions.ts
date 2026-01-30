@@ -217,16 +217,19 @@ export async function manuallyEndHumanInterviewSession({
 
     const newMessage: ClientMessagePayload["message"] = {
       role: "user",
-      parts: [{ type: "text", text: "[CONTINUE]" }],
+      lastPart: { type: "text", text: "[CONTINUE]" },
     };
     const systemHint = "Please call endInterview tool immediately.";
 
     // Save the latest user message to database
     await persistentAIMessageToDB({
+      mode: "append",
       userChatId,
       message: {
-        ...newMessage,
         id: generateId(),
+        role: newMessage.role,
+        parts: [newMessage.lastPart],
+        metadata: newMessage.metadata,
       },
     });
 
@@ -237,7 +240,9 @@ export async function manuallyEndHumanInterviewSession({
         statReport,
         logger: chatLogger,
         abortSignal,
-        newMessage,
+        // Type cast: ClientMessagePayload uses generic UITools, but runHumanInterview
+        // expects specific TInterviewUITools. Runtime value is correct, TS just can't infer it.
+        newMessage: newMessage as Parameters<typeof runHumanInterview>[0]["newMessage"],
         systemHint,
         interviewSession: {
           interviewSessionId,

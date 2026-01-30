@@ -97,6 +97,7 @@ export const scoutSocialTrendsTool = ({
       const scoutLog = logger.child({ scoutUserChatId, scoutUserChatToken });
       // 插入一条新的消息
       await persistentAIMessageToDB({
+        mode: "append",
         userChatId: scoutUserChatId,
         message: {
           id: generateId(),
@@ -282,6 +283,7 @@ async function runScoutSocialTrendsStream({
           appendStepToStreamingMessage(streamingMessage, step);
           if (streamingMessage.parts?.length) {
             await persistentAIMessageToDB({
+              mode: "override",
               userChatId: scoutUserChatId,
               message: streamingMessage,
             });
@@ -362,6 +364,7 @@ async function runScoutSocialTrendsStream({
 
     // 开始一轮新的搜索，插入一条新消息，下一次循环开始的时候会从数据库里读取新的 messages 记录
     await persistentAIMessageToDB({
+      mode: "append",
       userChatId: scoutUserChatId,
       message: {
         id: generateId(),

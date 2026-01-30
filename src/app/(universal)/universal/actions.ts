@@ -34,6 +34,7 @@ export async function createUniversalUserChat({
       });
 
       await persistentAIMessageToDB({
+        mode: "append",
         userChatId: userChat.id,
         message: {
           id: generateId(),

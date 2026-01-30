@@ -77,19 +77,20 @@ export async function POST(req: Request) {
 
   // Save the latest user message to database
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId: userChat.id,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
     attachments: newAttachments,
   });
 
   // 动态检测用户输入的语言，先检测用户输入的语言，默认使用 persona 自身的语言
   const locale = await detectInputLanguage({
-    text: newMessage.parts // 所有 text parts 的文本合在一起检测
-      .map((part) => (part.type === "text" ? part.text : ""))
-      .join(""),
+    text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
     fallbackLocale:
       persona.locale && VALID_LOCALES.includes(persona.locale as Locale)
         ? (persona.locale as Locale)
@@ -148,6 +149,7 @@ export async function POST(req: Request) {
         //   .map((part) => (part.type === "text" ? part.text : "")).join("").trim()
       ) {
         await persistentAIMessageToDB({
+          mode: "override",
           userChatId: userChat.id,
           message: streamingMessage,
         });

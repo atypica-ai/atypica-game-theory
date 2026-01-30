@@ -3,7 +3,6 @@ import {
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
-import { ClientMessagePayload } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
@@ -103,7 +102,12 @@ export async function runHumanInterview({
   statReport: StatReporter;
   logger: Logger;
   abortSignal: AbortSignal;
-  newMessage: ClientMessagePayload["message"];
+  newMessage: {
+    id?: string;
+    role: "user" | "assistant";
+    lastPart: TInterviewMessageWithTool["parts"][number];
+    metadata?: { shouldCorrectUserMessage?: boolean };
+  };
   interviewSession: {
     interviewSessionId: number;
     extra: InterviewSessionExtra;
@@ -120,11 +124,7 @@ export async function runHumanInterview({
 
   // 动态检测用户输入的语言
   // Special handling for [READY] message: use preferredLanguage directly
-  const userMessageText = newMessage.parts
-    .filter((part) => part.type === "text")
-    .map((part) => (part.type === "text" ? part.text : ""))
-    .join("")
-    .trim();
+  const userMessageText = newMessage.lastPart.type === "text" ? newMessage.lastPart.text.trim() : "";
 
   const locale =
     userMessageText === "[READY]"
@@ -135,7 +135,7 @@ export async function runHumanInterview({
         : "en-US"
       : // For normal messages, detect language
         await detectInputLanguage({
-          text: newMessage.parts.map((part) => (part.type === "text" ? part.text : "")).join(""),
+          text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
           fallbackLocale:
             sessionExtra.preferredLanguage &&
             VALID_LOCALES.includes(sessionExtra.preferredLanguage as Locale)
@@ -149,7 +149,7 @@ export async function runHumanInterview({
 
   let hintFromSelectedQuestion = "";
   if (newMessage.role === "assistant") {
-    const lastPart = (newMessage as TInterviewMessageWithTool).parts.at(-1);
+    const lastPart = newMessage.lastPart;
     if (
       lastPart?.type === `tool-${InterviewToolName.selectQuestion}` &&
       lastPart.state === "output-available"
@@ -288,6 +288,7 @@ export async function runHumanInterview({
         appendStepToStreamingMessage(streamingMessage, step);
         if (streamingMessage.parts?.length) {
           await persistentAIMessageToDB({
+            mode: "override",
             userChatId,
             message: streamingMessage,
           });

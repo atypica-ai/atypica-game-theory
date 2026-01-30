@@ -208,6 +208,7 @@ export async function createFollowUpInterviewChat(
       });
 
       await persistentAIMessageToDB({
+        mode: "append",
         userChatId: userChat.id,
         message: {
           id: generateId(),

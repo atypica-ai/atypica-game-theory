@@ -26,6 +26,7 @@ export async function createNewStudyChat(): Promise<
         tx,
       });
       await persistentAIMessageToDB({
+        mode: "append",
         userChatId: userChat.id,
         message: {
           id: generateId(),

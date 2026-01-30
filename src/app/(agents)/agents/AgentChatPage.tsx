@@ -38,10 +38,10 @@ export function AgentChatPage<UI_MESSAGE extends TMessageWithPlainTextTool<Simpl
       api: useChatAPI,
       prepareSendMessagesRequest: persistMessages
         ? ({ messages, id }) => {
-            const { id: messageId, role, parts } = prepareLastUIMessageForRequest(messages);
+            const { id: messageId, role, lastPart } = prepareLastUIMessageForRequest(messages);
             const body: ClientMessagePayload = {
               id,
-              message: { id: messageId, role, parts },
+              message: { id: messageId, role, lastPart },
               ...extraRequestPayload,
             };
             return { body };

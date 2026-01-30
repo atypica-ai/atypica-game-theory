@@ -58,6 +58,7 @@ export async function createScoutUserChatAction({
       kind: "scout",
     });
     await persistentAIMessageToDB({
+      mode: "append",
       userChatId: userChat.id,
       message,
     });

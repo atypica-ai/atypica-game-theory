@@ -144,10 +144,10 @@ export function InterviewSessionChatClient({
     transport: new DefaultChatTransport<INTERVIEW_UI_MESSAGE>({
       api: "/api/chat/interview-agent",
       prepareSendMessagesRequest({ messages, id }) {
-        const { id: messageId, role, parts, metadata } = prepareLastUIMessageForRequest(messages);
+        const { id: messageId, role, lastPart, metadata } = prepareLastUIMessageForRequest(messages);
         const body: ClientMessagePayload = {
           id,
-          message: { id: messageId, role, parts, metadata },
+          message: { id: messageId, role, lastPart, metadata },
           ...extraRequestPayload,
         };
         return { body };
