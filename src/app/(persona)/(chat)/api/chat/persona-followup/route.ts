@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
   // Generate response from LLM
   const streamTextResult = streamText({
     model: llm("gpt-4.1-mini"),
-    providerOptions: defaultProviderOptions,
+    providerOptions: defaultProviderOptions(),
     system:
       systemPrompt +
       // 这个提示永远都可以加着，所以无需判断 shouldCorrectUserMessage 是否有设置，这样最大化 prompt cache 的利用

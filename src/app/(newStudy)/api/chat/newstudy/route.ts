@@ -4,7 +4,7 @@ import {
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
+import { llm, LLMModelName } from "@/ai/provider";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
@@ -142,7 +142,6 @@ export async function POST(req: NextRequest) {
   const streamTextResult = streamText({
     model: llm(modelName),
     providerOptions: {
-      ...defaultProviderOptions,
       openai: {
         reasoningSummary: "auto", // 'auto' | 'detailed'
         reasoningEffort: "low", // 'minimal' | 'low' | 'medium' | 'high' 使用 web_search_preview 的时候, 不能为 minimal

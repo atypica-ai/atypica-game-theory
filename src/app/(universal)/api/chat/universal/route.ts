@@ -217,7 +217,7 @@ export async function POST(req: Request) {
   // Stream text
   const result = streamText({
     model: llm("claude-sonnet-4-5"),
-    providerOptions: defaultProviderOptions,
+    providerOptions: defaultProviderOptions(),
     system: systemPrompt,
     messages: coreMessages,
     tools,

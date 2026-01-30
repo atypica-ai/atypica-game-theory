@@ -22,7 +22,7 @@ export async function generateReportCoverSvg({
 } & AgentToolConfigArgs) {
   const response = streamText({
     model: llm("claude-3-7-sonnet"),
-    providerOptions: defaultProviderOptions,
+    providerOptions: defaultProviderOptions(),
     system: reportCoverSystem({ locale }),
     messages: [
       {

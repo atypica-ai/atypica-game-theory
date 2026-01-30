@@ -230,7 +230,7 @@ async function attachmentToContextWithLLM(
   await new Promise((resolve, reject) => {
     const response = streamText({
       model: llm("gemini-2.5-flash"),
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
 
       system: parseAttachmentPrompt({
         locale,
@@ -338,7 +338,7 @@ async function buildPersonaAgentPrompt(
   await new Promise((resolve, reject) => {
     const response = streamText({
       model: llm("claude-sonnet-4"),
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
 
       system: personaGenerationPrompt({
         locale,

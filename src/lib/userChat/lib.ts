@@ -129,7 +129,6 @@ export async function generateChatTitle(userChatId: number): Promise<string> {
     model: llm("gpt-5-nano"),
     providerOptions: {
       openai: {
-        // ...defaultProviderOptions.openai,
         reasoningSummary: "auto",
         reasoningEffort: "minimal",
       } satisfies OpenAIResponsesProviderOptions,
@@ -334,7 +333,6 @@ Return only the corrected text without explanations or markup.
       // temperature: 0.1,
       providerOptions: {
         openai: {
-          // ...defaultProviderOptions.openai,
           reasoningSummary: "auto", // 'auto' | 'detailed'
           reasoningEffort: "minimal", // 'minimal' | 'low' | 'medium' | 'high'
         } satisfies OpenAIResponsesProviderOptions,

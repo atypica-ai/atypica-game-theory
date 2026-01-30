@@ -134,21 +134,38 @@ const xai = createXai({
 //   }
 // };
 
-export const defaultProviderOptions = {
-  // 这个只是给 litellm 的 openai provider 用的，直连模型的情况下不需要
-  // 目前用了 openai-compatible 上的 includeUsage 参数，这里就不需要配置了
-  // openai: {
-  //   stream_options: { include_usage: true },
-  //   // IMPORTANT: litellm 不支持这个 bedrock 的参数输入，但是在 litellm model 配置里设置了，它会发给 bedrock api
-  //   // anthropic_beta: ["token-efficient-tools-2025-02-19"],
-  // },
-  // google: {
-  //   // Options are nested under 'google' for Vertex provider
-  //   thinkingConfig: {
-  //     includeThoughts: false,
-  //     // thinkingBudget: 2048, // Optional
-  //   },
-  // } satisfies GoogleGenerativeAIProviderOptions,
+// export const defaultProviderOptions = {
+//   // 这个只是给 litellm 的 openai provider 用的，直连模型的情况下不需要
+//   // 目前用了 openai-compatible 上的 includeUsage 参数，这里就不需要配置了
+//   // openai: {
+//   //   stream_options: { include_usage: true },
+//   //   // IMPORTANT: litellm 不支持这个 bedrock 的参数输入，但是在 litellm model 配置里设置了，它会发给 bedrock api
+//   //   // anthropic_beta: ["token-efficient-tools-2025-02-19"],
+//   // },
+//   // google: {
+//   //   // Options are nested under 'google' for Vertex provider
+//   //   thinkingConfig: {
+//   //     includeThoughts: false,
+//   //     // thinkingBudget: 2048, // Optional
+//   //   },
+//   // } satisfies GoogleGenerativeAIProviderOptions,
+// };
+
+/**
+ * 为了彻底避免全局变量污染
+ * const providerOptions = defaultProviderOptions
+ * or
+ * { providerOptions: defaultProviderOptions() }
+ * 以后修改 providerOptions
+ *
+ * 索性使用 function
+ *
+ * @param llm 根据不同 llm 返回不同默认配置，暂时不使用，但之后可以考虑实现，比如 gpt-5.2 和 claude sonnet 都有一些默认的 reasoning 设置
+ */
+export const defaultProviderOptions = (
+  llm?: LLMModelName, // eslint-disable-line @typescript-eslint/no-unused-vars
+) => {
+  return {};
 };
 
 export type LLMModelName =

@@ -25,7 +25,7 @@ async function planStudy({
   return new Promise(async (resolve, reject) => {
     const response = streamText({
       model: llm("gemini-2.5-pro"),
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
       tools: {
         google_search: google.tools.googleSearch({
           mode: "MODE_DYNAMIC",

@@ -224,7 +224,7 @@ async function generateInterviewSummary(
 
   const summary = await generateText({
     model: llm("gpt-4.1-mini"),
-    providerOptions: defaultProviderOptions,
+    providerOptions: defaultProviderOptions(),
     system: systemPrompt,
     messages: [{ role: "user" as const, content: `${conclusionsText}\n\n${summaryTask}` }],
     maxOutputTokens: 2000,
@@ -391,7 +391,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
         : // gpt-4.1 系列都不支持 pdf，目前只有 gemini 和 claude 支持
           llm("claude-3-7-sonnet"),
 
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
 
       // maxRetries: 0, // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       system: interviewerPrompt,
@@ -490,7 +490,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
       // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
       model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
 
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
       system: personaPrompt,
 
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点

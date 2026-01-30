@@ -141,7 +141,7 @@ export async function reorganizeMemoryContent(
 
   const result = await generateText({
     model: llm(MEMORY_REORGANIZE_MODEL),
-    providerOptions: defaultProviderOptions,
+    providerOptions: defaultProviderOptions(),
     system: memoryReorganizeSystemPrompt,
     messages: [
       {
@@ -196,7 +196,7 @@ async function updateMemoryContent(
   // Call memory update agent (allow multiple tool calls)
   const result = await generateText({
     model: llm(MEMORY_UPDATE_MODEL),
-    providerOptions: defaultProviderOptions,
+    providerOptions: defaultProviderOptions(),
     tools: {
       memoryUpdate: memoryUpdateTool(),
       memoryNoUpdate: memoryNoUpdateTool(),

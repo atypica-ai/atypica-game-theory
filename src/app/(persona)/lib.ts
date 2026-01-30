@@ -118,7 +118,7 @@ export async function scorePersona(persona: Persona) {
     const locale = (persona.locale as Locale) ?? (await getLocale());
     const result = await generateObject({
       model: llm("gpt-4.1-mini"),
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
       system: personaScoringPrompt({ locale }),
       schema: personaScoringSchema,
       messages: [

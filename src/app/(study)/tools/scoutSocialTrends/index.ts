@@ -234,7 +234,7 @@ async function runScoutSocialTrendsStream({
         model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
 
         // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
-        providerOptions: defaultProviderOptions,
+        providerOptions: defaultProviderOptions(),
 
         system: systemPrompt,
         temperature: 0.5,
@@ -441,7 +441,7 @@ async function runScoutSocialTrendsSummarize({
       model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
 
       // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
 
       system: summarizationSystemPrompt,
       temperature: 0.5,

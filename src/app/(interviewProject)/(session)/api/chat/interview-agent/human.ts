@@ -124,7 +124,8 @@ export async function runHumanInterview({
 
   // 动态检测用户输入的语言
   // Special handling for [READY] message: use preferredLanguage directly
-  const userMessageText = newMessage.lastPart.type === "text" ? newMessage.lastPart.text.trim() : "";
+  const userMessageText =
+    newMessage.lastPart.type === "text" ? newMessage.lastPart.text.trim() : "";
 
   const locale =
     userMessageText === "[READY]"
@@ -211,7 +212,7 @@ export async function runHumanInterview({
       // model: llm("claude-haiku-4-5"),
       model: llm("claude-sonnet-4-5"),
 
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
 
       system:
         systemPrompt +

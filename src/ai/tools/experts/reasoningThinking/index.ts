@@ -30,7 +30,7 @@ export const reasoningThinkingTool = ({
           const response = streamText({
             // model: llm("o3-mini"),
             model: llm("gemini-2.5-pro"),
-            providerOptions: defaultProviderOptions,
+            providerOptions: defaultProviderOptions(),
             tools: {
               google_search: google.tools.googleSearch({
                 mode: "MODE_DYNAMIC",

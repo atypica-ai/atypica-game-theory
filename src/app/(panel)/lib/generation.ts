@@ -70,7 +70,7 @@ export async function generatePersonaReply({
 
   const { usage, providerMetadata, text } = await generateText({
     model: reduceTokens ? llm(reduceTokens.model) : llm("claude-sonnet-4"),
-    providerOptions: defaultProviderOptions,
+    providerOptions: defaultProviderOptions(),
     system: personaSession.systemPrompt,
     messages: modelMessages,
     tools,

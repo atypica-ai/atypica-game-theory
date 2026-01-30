@@ -179,7 +179,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   });
 
   let providerOptions: NonNullable<typeof config.providerOptions> =
-    config.providerOptions ?? defaultProviderOptions;
+    config.providerOptions ?? defaultProviderOptions();
   {
     // const lastMessage = modelMessages.at(-1);
     // 不能通过后面的 modelMessages 判断，因为是要看 final assistant turn，也就是多个 assistant parts 在一起是一个 turn

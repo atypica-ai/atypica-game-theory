@@ -1,6 +1,6 @@
 import "server-only";
 
-import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
+import { llm, LLMModelName } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { reportHTMLPrologue, reportHTMLSystem } from "./prompt";
@@ -344,7 +344,6 @@ async function generateReport({
       const response = streamText({
         model: llm(modelName),
         providerOptions: {
-          ...defaultProviderOptions,
           // bedrock: {
           //   reasoningConfig: {
           //     type: "disabled",

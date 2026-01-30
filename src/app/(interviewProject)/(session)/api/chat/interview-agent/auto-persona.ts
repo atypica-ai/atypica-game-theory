@@ -295,7 +295,7 @@ async function generatePersonaResponse({
   const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({
       model: llm(modelName),
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
       tools: {
         google_search: google.tools.googleSearch({
           mode: "MODE_DYNAMIC",
@@ -373,7 +373,6 @@ async function generateInterviewerResponse({
     const streamTextPromise = streamText({
       model: llm(modelName),
       providerOptions: {
-        ...defaultProviderOptions,
         anthropic: {
           thinking: {
             type: "disabled",

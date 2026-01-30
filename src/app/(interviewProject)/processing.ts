@@ -53,7 +53,7 @@ export async function processInterviewQuestionOptimization(projectId: number): P
       const response = streamText({
         model: llm("claude-3-7-sonnet"),
 
-        providerOptions: defaultProviderOptions,
+        providerOptions: defaultProviderOptions(),
 
         system: interviewQuestionRefinementPrompt({ locale }),
         messages: messages,

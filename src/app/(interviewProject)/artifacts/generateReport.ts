@@ -243,7 +243,7 @@ export async function generateInterviewReportContent({
       // 当访谈有 100 左右时，claude 的 input token context 不够，需要用 gemini
       model: llm("gemini-2.5-pro"),
       // model: llm("gpt-5.2"),
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
       system: isFirstBatch
         ? interviewReportSystemPrompt({ locale })
         : interviewReportAppendSystemPrompt({ locale }),

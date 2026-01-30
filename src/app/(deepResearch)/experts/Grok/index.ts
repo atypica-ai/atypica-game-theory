@@ -37,7 +37,7 @@ export const grokExpert: ExpertExecutor = async ({
     const response = streamText({
       model: llm("grok-4-1-fast-non-reasoning"),
       system: grokSystemPrompt({ locale }),
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
       tools: allTools,
       toolChoice: "auto",
       messages: [

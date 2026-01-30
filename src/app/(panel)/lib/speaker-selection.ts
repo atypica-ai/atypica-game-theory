@@ -127,7 +127,7 @@ export async function selectNextSpeakerModerator({
   try {
     const result = await generateObject({
       model: llm("claude-sonnet-4"),
-      providerOptions: defaultProviderOptions,
+      providerOptions: defaultProviderOptions(),
       system: moderatorSystem({ locale }),
       schema: selectNextSpeakerSchema,
       messages: modelMessages,

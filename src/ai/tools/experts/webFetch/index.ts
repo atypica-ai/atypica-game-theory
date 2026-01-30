@@ -1,4 +1,4 @@
-import { defaultProviderOptions, llm } from "@/ai/provider";
+import { llm } from "@/ai/provider";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { GoogleGenerativeAIProviderOptions, google } from "@ai-sdk/google";
 import { generateText, stepCountIs, tool } from "ai";
@@ -39,7 +39,6 @@ export const webFetchTool = ({ locale }: { locale: Locale }) =>
       const { text } = await generateText({
         model: llm("gemini-2.5-flash"),
         providerOptions: {
-          ...defaultProviderOptions,
           google: {
             // thinkingConfig: { includeThoughts: true, thinkingLevel: "low" },  // 2.5 flash 不支持
           } satisfies GoogleGenerativeAIProviderOptions,

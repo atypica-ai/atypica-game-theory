@@ -157,7 +157,7 @@ export async function POST(req: Request) {
   const streamTextResult = streamText({
     // model: llm("claude-sonnet-4"),
     model: llm("gemini-2.5-flash"),
-    providerOptions: defaultProviderOptions,
+    providerOptions: defaultProviderOptions(),
 
     system: sageChatSystemPrompt({
       sage: {
