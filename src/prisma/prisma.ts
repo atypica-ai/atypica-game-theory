@@ -76,11 +76,13 @@ function createPool(connectionString?: string, isReadOnly = false) {
 
   pool.on("connect", async (client) => {
     try {
-      // 🔒 强制回滚超过 15 秒未提交的事务（防止连接泄漏）
-      await client.query("SET idle_in_transaction_session_timeout = '15s'");
+      // 🔒 事务空闲超时：防止事务开启后长时间无操作导致的连接泄漏
+      // 30秒足够应对高并发时的 event loop 延迟，同时避免误杀正常事务
+      await client.query("SET idle_in_transaction_session_timeout = '30s'");
 
-      // 🔒 查询超时 30 秒（防止慢查询占住连接）
-      await client.query("SET statement_timeout = '30s'");
+      // 🔒 查询超时：防止慢查询长时间占用连接
+      // 60秒足够处理向量相似度搜索、复杂聚合等合理的慢查询
+      await client.query("SET statement_timeout = '60s'");
 
       prismaLogger.info({
         msg: "PostgreSQL connection initialized with safety timeouts",
@@ -103,7 +105,8 @@ function createPool(connectionString?: string, isReadOnly = false) {
       waiting: pool.waitingCount,
     };
 
-    prismaLogger.info({
+    // 使用 debug 级别避免高频日志影响性能（每次数据库操作都会触发）
+    prismaLogger.debug({
       msg: "Connection acquired from pool",
       ro: isReadOnly,
       stats,
@@ -121,7 +124,8 @@ function createPool(connectionString?: string, isReadOnly = false) {
   });
 
   pool.on("remove", () => {
-    prismaLogger.info({
+    // 使用 debug 级别避免高频日志影响性能
+    prismaLogger.debug({
       msg: "Connection removed from pool",
       ro: isReadOnly,
       total: pool.totalCount,

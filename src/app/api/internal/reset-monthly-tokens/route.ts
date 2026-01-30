@@ -60,30 +60,58 @@ export async function POST(request: NextRequest) {
     let errorCount = 0;
     const errors: Array<{ userId: number | null; teamId: number | null; error: string }> = [];
 
-    // 遍历每个用户，调用 resetUserMonthlyTokens
-    for (const tokensAccount of accountsToReset) {
-      const { userId, teamId } = tokensAccount;
-      try {
-        if (teamId) {
-          await resetTeamMonthlyTokens({ teamId });
-        } else if (userId) {
-          await resetUserMonthlyTokens({ userId });
-          // track user (同步版本，避免 after() 累积)
-          await trackUserServerSideSync({ userId, traitTypes: ["revenue"] });
+    // 批量并发处理，避免串行导致超时
+    // 并发数限制为 10，在速度和连接池压力间取得平衡
+    // 假设 200 个用户，每个 2 秒：串行需要 400 秒（超时），并发只需 40 秒
+    const BATCH_SIZE = 10;
+
+    for (let i = 0; i < accountsToReset.length; i += BATCH_SIZE) {
+      const batch = accountsToReset.slice(i, i + BATCH_SIZE);
+      const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+      const totalBatches = Math.ceil(accountsToReset.length / BATCH_SIZE);
+
+      logger.info(`Processing batch ${batchNum}/${totalBatches} (${batch.length} accounts)`);
+
+      const batchResults = await Promise.allSettled(
+        batch.map(async (tokensAccount) => {
+          const { userId, teamId } = tokensAccount;
+          if (teamId) {
+            await resetTeamMonthlyTokens({ teamId });
+          } else if (userId) {
+            await resetUserMonthlyTokens({ userId });
+            // track user (同步版本，避免 after() 累积)
+            await trackUserServerSideSync({ userId, traitTypes: ["revenue"] });
+          }
+          return { userId, teamId };
+        }),
+      );
+
+      // 处理批次结果
+      for (let j = 0; j < batchResults.length; j++) {
+        const result = batchResults[j];
+        const { userId, teamId } = batch[j];
+
+        if (result.status === "fulfilled") {
+          successCount++;
+          logger.debug(`Successfully reset monthly tokens, user=${userId} team=${teamId}`);
+        } else {
+          errorCount++;
+          const errorMessage =
+            result.reason instanceof Error ? result.reason.message : "Unknown error";
+          errors.push({
+            userId,
+            teamId,
+            error: errorMessage,
+          });
+          logger.error(
+            `Failed to reset monthly tokens for user=${userId} team=${teamId}: ${errorMessage}`,
+          );
         }
-        successCount++;
-        logger.debug(`Successfully reset monthly tokens, user=${userId} team=${teamId}`);
-      } catch (error) {
-        errorCount++;
-        const errorMessage = error instanceof Error ? error.message : "Unknown error";
-        errors.push({
-          userId,
-          teamId,
-          error: errorMessage,
-        });
-        logger.error(
-          `Failed to reset monthly tokens for user=${userId} team=${teamId}: ${errorMessage}`,
-        );
+      }
+
+      // 批次间短暂延迟，避免瞬时压力（可选）
+      if (i + BATCH_SIZE < accountsToReset.length) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
 
