@@ -21,7 +21,6 @@ import {
   UIMessage,
 } from "ai";
 import { Logger } from "pino";
-import { isSystemMessage } from "./messageUtilsClient";
 import { convertToV5MessagePart } from "./v4";
 
 // 事实上，bedrock 虽然支持很多文件格式，但 gpt 和 gemini 只支持 pdf，所以这样 fix 也没用，只能限制上传的文件类型
@@ -292,13 +291,13 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
  * 重要：这是唯一会保存 ChatMessage 的地方，这一点要始终遵循，确保保存 ChatMessage 的规则一致
  */
 export const persistentAIMessageToDB = async ({
-  // mode,
+  mode,
   userChatId,
   message,
   attachments,
   tx,
 }: {
-  // mode: "override" | "append"; // 前端发送上来的消息，addToolResult 和 user message 都只有最后一个 part，所以是 append
+  mode: "override" | "append"; // 前端发送上来的消息，addToolResult 和 user message 都只有最后一个 part，所以是 append
   userChatId: number;
   message: UIMessage;
   attachments?: ChatMessageAttachment[]; // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChat 里直接实现了
@@ -312,7 +311,9 @@ export const persistentAIMessageToDB = async ({
   // 让我误以为，addToolResult 只会发送最后一个 part，其实是可以过滤了 reasoning part 又正好没有 text part，
   // 导致模型回复了 reasoning 消息在 addToolResult 以后只发回 tool 消息 ...
   // 所以，恢复，这里应该永远都是 override 的逻辑，不可能存在 append 的逻辑
-  const mode: "override" | "append" = "override";
+  // const mode: "override" | "append" = "override";
+
+  // 更新：现在为了更好的类型校验 （assistant 消息可能有很长的 parts，每次传递所有 parts总会出问题），所以还是恢复 append 模式，见 ClientMessagePayload
 
   if (!tx) {
     tx = prisma;
@@ -368,144 +369,110 @@ export const persistentAIMessageToDB = async ({
         });
         throw error;
       });
-  } else if (role === "user") {
-    // 追加或者覆盖 user 消息
-    if (mode === "override") {
-      if (!(parts[0] && parts[0].type === "text" && isSystemMessage(parts[0].text))) {
-        // 但如果当前消息是 [READY] 或者 [CONTINUE] 这种，则不覆盖，直接忽略
-        await tx.chatMessage
-          .update({
-            where: { id: lastMessage.id },
-            data: {
-              messageId,
-              // createdAt, // 同时也覆盖 createdAt
-              content: compatibleContent(newPartsExcludeFiles),
-              parts: newPartsExcludeFiles as InputJsonValue,
-              extra: extra as InputJsonValue,
-              ...(attachments ? { attachments } : undefined),
-            },
-          })
-          .catch((error) => {
-            rootLogger.error({
-              msg: "Failed to update chatMessage (user override)",
-              messageId,
-              userChatId,
-              dbMessageId: lastMessage.id,
-              error: error instanceof Error ? error.message : String(error),
-              partsPreview: JSON.stringify(newPartsExcludeFiles).slice(0, 500),
-              extraPreview: JSON.stringify(extra).slice(0, 200),
-            });
-            throw error;
-          });
-      }
-    } else if (mode === "append") {
-      const partsToUpdate = convertDBMessageToAIMessage(lastMessage).parts;
-      for (const newPart of newPartsExcludeFiles) {
-        // 重复的忽略
-        const lastPart = partsToUpdate.at(-1);
-        if (
-          lastPart?.type === "text" &&
-          newPart.type === "text" &&
-          lastPart.text === newPart.text
-        ) {
-          continue;
-        }
-        partsToUpdate.push(newPart);
-      }
-      await tx.chatMessage
-        .update({
-          where: { id: lastMessage.id },
-          data: {
-            messageId,
-            // createdAt, // 同时也覆盖 createdAt
-            content: compatibleContent(partsToUpdate),
-            parts: partsToUpdate as InputJsonValue,
-            extra: extra as InputJsonValue,
-            ...(attachments ? { attachments } : undefined),
-          },
-        })
-        .catch((error) => {
-          rootLogger.error({
-            msg: "Failed to update chatMessage (user append)",
-            messageId,
-            userChatId,
-            dbMessageId: lastMessage.id,
-            error: error instanceof Error ? error.message : String(error),
-            partsPreview: JSON.stringify(partsToUpdate).slice(0, 500),
-            extraPreview: JSON.stringify(extra).slice(0, 200),
-          });
-          throw error;
+  } else if (mode === "override") {
+    // if (!(parts[0] && parts[0].type === "text" && isSystemMessage(parts[0].text))) {
+    // 但如果当前消息是 [READY] 或者 [CONTINUE] 这种，则不覆盖，直接忽略
+    await tx.chatMessage
+      .update({
+        where: { id: lastMessage.id },
+        data: {
+          messageId,
+          // createdAt, // 同时也覆盖 createdAt
+          content: compatibleContent(newPartsExcludeFiles),
+          parts: newPartsExcludeFiles as InputJsonValue,
+          extra: extra as InputJsonValue,
+          ...(attachments ? { attachments } : undefined),
+        },
+      })
+      .catch((error) => {
+        rootLogger.error({
+          msg: "Failed to update chatMessage (override)",
+          messageId,
+          userChatId,
+          dbMessageId: lastMessage.id,
+          error: error instanceof Error ? error.message : String(error),
+          partsPreview: JSON.stringify(newPartsExcludeFiles).slice(0, 500),
+          extraPreview: JSON.stringify(extra).slice(0, 200),
         });
+        throw error;
+      });
+  } else if (role === "user" && mode === "append") {
+    // 追加 user 消息
+    const partsToUpdate = convertDBMessageToAIMessage(lastMessage).parts;
+    for (const newPart of newPartsExcludeFiles) {
+      // 重复的忽略
+      const lastPart = partsToUpdate.at(-1);
+      if (lastPart?.type === "text" && newPart.type === "text" && lastPart.text === newPart.text) {
+        continue;
+      }
+      partsToUpdate.push(newPart);
     }
-  } else if (role === "assistant") {
-    // 追加或者覆盖 assistant 消息
-    if (mode === "override") {
-      await tx.chatMessage
-        .update({
-          where: { id: lastMessage.id },
-          data: {
-            messageId,
-            // createdAt, // 同时也覆盖 createdAt
-            content: compatibleContent(newPartsExcludeFiles),
-            parts: newPartsExcludeFiles as InputJsonValue,
-            extra: extra as InputJsonValue,
-            ...(attachments ? { attachments } : undefined),
-          },
-        })
-        .catch((error) => {
-          rootLogger.error({
-            msg: "Failed to update chatMessage (assistant override)",
-            messageId,
-            userChatId,
-            dbMessageId: lastMessage.id,
-            error: error instanceof Error ? error.message : String(error),
-            partsPreview: JSON.stringify(newPartsExcludeFiles).slice(0, 500),
-            extraPreview: JSON.stringify(extra).slice(0, 200),
-          });
-          throw error;
+    await tx.chatMessage
+      .update({
+        where: { id: lastMessage.id },
+        data: {
+          messageId,
+          // createdAt, // 同时也覆盖 createdAt
+          content: compatibleContent(partsToUpdate),
+          parts: partsToUpdate as InputJsonValue,
+          extra: extra as InputJsonValue,
+          ...(attachments ? { attachments } : undefined),
+        },
+      })
+      .catch((error) => {
+        rootLogger.error({
+          msg: "Failed to update chatMessage (user append)",
+          messageId,
+          userChatId,
+          dbMessageId: lastMessage.id,
+          error: error instanceof Error ? error.message : String(error),
+          partsPreview: JSON.stringify(partsToUpdate).slice(0, 500),
+          extraPreview: JSON.stringify(extra).slice(0, 200),
         });
-    } else if (mode === "append") {
-      const partsToUpdate = convertDBMessageToAIMessage(lastMessage).parts;
-      for (const newPart of newPartsExcludeFiles) {
-        if (isToolOrDynamicToolUIPart(newPart)) {
-          // 这种情况应该是 addToolResult，需要替换已有的 tool call
-          const index = partsToUpdate.findIndex(
-            (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === newPart.toolCallId,
-          );
-          if (index !== -1) {
-            partsToUpdate[index] = newPart;
-          } else {
-            partsToUpdate.push(newPart);
-          }
+        throw error;
+      });
+  } else if (role === "assistant" && mode === "append") {
+    // 追加 assistant 消息
+    const partsToUpdate = convertDBMessageToAIMessage(lastMessage).parts;
+    for (const newPart of newPartsExcludeFiles) {
+      if (isToolOrDynamicToolUIPart(newPart)) {
+        // 这种情况应该是 addToolResult，需要替换已有的 tool call
+        const index = partsToUpdate.findIndex(
+          (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === newPart.toolCallId,
+        );
+        if (index !== -1) {
+          partsToUpdate[index] = newPart;
         } else {
           partsToUpdate.push(newPart);
         }
+      } else {
+        partsToUpdate.push(newPart);
       }
-      await tx.chatMessage
-        .update({
-          where: { id: lastMessage.id },
-          data: {
-            messageId,
-            // createdAt, // 同时也覆盖 createdAt
-            content: compatibleContent(partsToUpdate),
-            parts: partsToUpdate as InputJsonValue,
-            extra: extra as InputJsonValue,
-            ...(attachments ? { attachments } : undefined),
-          },
-        })
-        .catch((error) => {
-          rootLogger.error({
-            msg: "Failed to update chatMessage (assistant append)",
-            messageId,
-            userChatId,
-            dbMessageId: lastMessage.id,
-            error: error instanceof Error ? error.message : String(error),
-            partsPreview: JSON.stringify(partsToUpdate).slice(0, 500),
-            extraPreview: JSON.stringify(extra).slice(0, 200),
-          });
-          throw error;
-        });
     }
+    await tx.chatMessage
+      .update({
+        where: { id: lastMessage.id },
+        data: {
+          messageId,
+          // createdAt, // 同时也覆盖 createdAt
+          content: compatibleContent(partsToUpdate),
+          parts: partsToUpdate as InputJsonValue,
+          extra: extra as InputJsonValue,
+          ...(attachments ? { attachments } : undefined),
+        },
+      })
+      .catch((error) => {
+        rootLogger.error({
+          msg: "Failed to update chatMessage (assistant append)",
+          messageId,
+          userChatId,
+          dbMessageId: lastMessage.id,
+          error: error instanceof Error ? error.message : String(error),
+          partsPreview: JSON.stringify(partsToUpdate).slice(0, 500),
+          extraPreview: JSON.stringify(extra).slice(0, 200),
+        });
+        throw error;
+      });
   } else {
     // 如果是 system 消息，应该抛出异常
   }
@@ -527,7 +494,11 @@ export const createDebouncePersistentMessage = (
     }
     func = async () => {
       try {
-        await persistentAIMessageToDB({ userChatId, message });
+        await persistentAIMessageToDB({
+          mode: "override",
+          userChatId,
+          message,
+        });
         logger.info(`Message ${message.id} persisted successfully`);
       } catch (error) {
         logger.info(`Error persisting message ${message.id}: ${(error as Error).message}`);

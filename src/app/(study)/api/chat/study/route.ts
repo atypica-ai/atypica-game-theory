@@ -101,18 +101,19 @@ export async function POST(req: Request) {
   // 如果是 user message，会新建一条，
   // 如果是 assistant message，一般是 addToolResult 的结果，这时候 messageId 已存在，则更新 tool 的交互结果
   await persistentAIMessageToDB({
+    mode: "append",
     userChatId: studyUserChatId,
     message: {
-      ...newMessage,
       id: newMessage.id ?? generateId(),
+      role: newMessage.role,
+      parts: [newMessage.lastPart],
+      metadata: newMessage.metadata,
     },
   });
 
   // 首先遵循用户的输入语言，然后，如果 analyst 语言已经定了，默认使用 analyst 的语言
   const locale: Locale = await detectInputLanguage({
-    text: newMessage.parts // 所有 text parts 的文本合在一起检测
-      .map((part) => (part.type === "text" ? part.text : ""))
-      .join(""),
+    text: [newMessage.lastPart].map((part) => (part.type === "text" ? part.text : "")).join(""),
     fallbackLocale:
       userChat.analyst.locale && VALID_LOCALES.includes(userChat.analyst.locale as Locale)
         ? (userChat.analyst.locale as Locale)

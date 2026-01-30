@@ -19,12 +19,9 @@ export const clientMessagePayloadSchema = z.object({
   message: z.object({
     id: z.string().optional(),
     role: z.enum(["user", "assistant"]),
-    parts: z.custom<UIMessagePart<UIDataTypes, UITools>[]>(() => true),
-    metadata: z
-      .object({
-        shouldCorrectUserMessage: z.boolean().optional(), // 语音输入需要后台优化
-      })
-      .optional(),
+    // parts: z.custom<UIMessagePart<UIDataTypes, UITools>[]>(() => true),
+    lastPart: z.custom<UIMessagePart<UIDataTypes, UITools>>(() => true),
+    metadata: z.custom<unknown | { shouldCorrectUserMessage?: boolean }>(() => true).optional(),
   }),
   userChatToken: z.string(),
   attachments: z
@@ -38,7 +35,6 @@ export const clientMessagePayloadSchema = z.object({
         })
         .transform((v) => v as ChatMessageAttachment),
     )
-
     .optional(),
 });
 
@@ -76,7 +72,16 @@ export function prepareLastUIMessageForRequest<T extends UIMessage>(messages: T[
     // ⚠️ 这是个严重的 bug，模型会返回 text 以外的类型的，比如 reasoning，因为 persistentAIMessageToDB 是覆盖 parts，
     // 这里不应该过滤，因为这里是一条返回所有 parts 的 message，而不只是一个 tool result part
     // const parts = allParts.filter((part) => part.type == "text" || isToolUIPart(part));
-    return { id, role, parts: allParts, metadata: metadata as T["metadata"] };
+    // return { id, role, parts: allParts, metadata: metadata as T["metadata"] };
+    // 以上都忽略，为了更靠谱的类型验证，现在 ClientMessagePayload 严格要求前端只能发送最后一个 part，后端从数据库取了以后合并
+    const lastPart = allParts.at(-1);
+    if (!lastPart) throw new Error("Last part is undefined");
+    return {
+      id,
+      role,
+      lastPart,
+      metadata,
+    } satisfies ClientMessagePayload["message"];
   } else {
     throw new Error("Invalid message role");
   }
