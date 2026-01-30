@@ -178,7 +178,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     tools: config.tools,
   });
 
-  const providerOptions: NonNullable<typeof config.providerOptions> =
+  let providerOptions: NonNullable<typeof config.providerOptions> =
     config.providerOptions ?? defaultProviderOptions;
   {
     // const lastMessage = modelMessages.at(-1);
@@ -201,27 +201,41 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     if (!firstPart) {
       // 保持原配置
     } else if (firstPart.type === "reasoning" && reasoningSignatureValie(firstPart)) {
-      providerOptions["bedrock"] = {
-        ...providerOptions["bedrock"],
-        reasoningConfig: { type: "enabled", budgetTokens: 1024 },
-      } satisfies BedrockProviderOptions;
-      providerOptions["anthropic"] = {
-        ...providerOptions["anthropic"],
-        thinking: { type: "enabled", budgetTokens: 1024 },
-      } satisfies AnthropicProviderOptions;
+      // providerOptions["bedrock"] = {
+      //   ...providerOptions["bedrock"],
+      //   reasoningConfig: { type: "enabled", budgetTokens: 1024 },
+      // } satisfies BedrockProviderOptions;
+      // ⚠️ 一定要赋值而不是上面这样直接修改，不然会导致全局变量 defaultProviderOptions 被修改掉 ！！！
+      providerOptions = {
+        ...providerOptions,
+        bedrock: {
+          ...providerOptions["bedrock"],
+          reasoningConfig: { type: "enabled", budgetTokens: 1024 },
+        } satisfies BedrockProviderOptions,
+        anthropic: {
+          ...providerOptions["anthropic"],
+          thinking: { type: "enabled", budgetTokens: 1024 },
+        } satisfies AnthropicProviderOptions,
+      };
     } else {
       // 如果是 assistant 消息继续，在开启 thinking 的时候，claude 会要求最后一个 block 是 thinking 开头，但是没搞明白消息组织形式应该是怎样的，所以，暂时就关闭。
       if (providerOptions["bedrock"]) {
-        providerOptions["bedrock"] = {
-          ...providerOptions["bedrock"],
-          reasoningConfig: { type: "disabled" },
-        } satisfies BedrockProviderOptions;
+        providerOptions = {
+          ...providerOptions,
+          bedrock: {
+            ...providerOptions["bedrock"],
+            reasoningConfig: { type: "disabled" },
+          } satisfies BedrockProviderOptions,
+        };
       }
       if (providerOptions["anthropic"]) {
-        providerOptions["anthropic"] = {
-          ...providerOptions["anthropic"],
-          thinking: { type: "disabled" },
-        } satisfies AnthropicProviderOptions;
+        providerOptions = {
+          ...providerOptions,
+          anthropic: {
+            ...providerOptions["anthropic"],
+            thinking: { type: "disabled" },
+          } satisfies AnthropicProviderOptions,
+        };
       }
     }
   }
