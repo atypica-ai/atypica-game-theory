@@ -55,31 +55,43 @@ function parseDYSearchResult(result: {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function dySearchTikhub({ keyword }: { keyword: string }) {
   for (let i = 0; i < 3; i++) {
     try {
-      const headers = { Authorization: `Bearer ${process.env.BY_API_TOKEN!}` };
-      const params = { keyword };
-      const queryString = new URLSearchParams(params).toString();
+      const headers = {
+        Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}`,
+        "Content-Type": "application/json",
+      };
+      const body = {
+        keyword,
+        cursor: 0,
+        sort_type: "0",
+        publish_time: "0",
+        filter_duration: "0",
+        content_type: "0",
+        search_id: "",
+        backtrace: "",
+      };
       const response = await fetch(
-        `${process.env.BY_API_BASE_URL}/douyin/video/search/raw?${queryString}`,
-        { headers },
+        `${process.env.TIKHUB_API_BASE_URL}/douyin/search/fetch_general_search_v3`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body),
+        },
       );
       const res = await response.json();
-      toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
-      if (res.code === 0) {
-        const result = parseDYSearchResult(res.result);
+      toolLog.info({ msg: `Response text: ${JSON.stringify(res).slice(0, 100)}` });
+      if (res.code === 200 && res.data?.status_code === 0) {
+        const result = parseDYSearchResult(res.data);
         return result;
       } else {
-        toolLog.warn(`Failed to fetch DY posts, retrying... ${i + 1}`);
-        // 2005 错误是 超过所允许的访问间隔
-        const seconds = res.code === 2005 ? Math.floor(Math.random() * 20) + 10 : 3;
-        await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+        toolLog.warn({ msg: `Failed to fetch DY posts, retrying... ${i + 1}` });
+        await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
         continue;
       }
     } catch (error) {
-      toolLog.warn(`Error fetching DY posts: ${(error as Error).message}`);
+      toolLog.warn({ msg: `Error fetching DY posts: ${(error as Error).message}` });
     }
   }
   return {
@@ -88,47 +100,8 @@ async function dySearchTikhub({ keyword }: { keyword: string }) {
   };
 }
 
-async function dySearchSX({ keyword }: { keyword: string }) {
-  for (let i = 0; i < 3; i++) {
-    try {
-      const params = {
-        token: process.env.SX_API_TOKEN!,
-        keyword,
-        sortType: "_0",
-        publishTime: "_0",
-        duration: "_0",
-        page: "1",
-      };
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(
-        `${process.env.SX_API_BASE_URL}/douyin/search-video/v4?${queryString}`,
-      );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data: { code: number; data: any } = await response.json();
-      toolLog.info(`Response text: ${JSON.stringify(data).slice(0, 100)}`);
-      if (data.code === 0 && data.data) {
-        const result = parseDYSearchResult({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          data: data.data.business_data?.map((item: any) => item.data),
-        });
-        return result;
-      } else {
-        toolLog.warn(`Failed to fetch DY posts, retrying... ${i + 1}`);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        continue;
-      }
-    } catch (error) {
-      toolLog.warn(`Error fetching DY posts: ${(error as Error).message}`);
-    }
-  }
-  return {
-    notes: [],
-    plainText: "Failed to fetch DY posts after 3 retries",
-  };
-}
-
 export const dySearchTool = tool({
-  description: "在抖音上搜索内容，可以搜索特定的主题，也可以搜索一个品牌",
+  description: "Search for content on Douyin, including specific topics or brands",
   inputSchema: dySearchInputSchema,
   outputSchema: dySearchOutputSchema,
   // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
@@ -136,8 +109,7 @@ export const dySearchTool = tool({
     return { type: "text", value: result.plainText };
   },
   execute: async ({ keyword }) => {
-    // const result = await dySearchTikhub({ keyword });
-    const result = await dySearchSX({ keyword });
+    const result = await dySearchTikhub({ keyword });
     return result;
   },
 });

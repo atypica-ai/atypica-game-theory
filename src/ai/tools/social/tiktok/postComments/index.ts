@@ -14,19 +14,21 @@ const toolLog = rootLogger.child({
   tool: "tiktokPostComments",
 });
 
-function parseXHSNoteComments(result: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  comments: any[];
+function parseTikTokPostComments(result: {
+  data: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    comments: any[];
+  };
 }): TikTokPostCommentsResult {
   // 只取前十条
-  const topComments = (result?.comments ?? []).slice(0, 10);
+  const topComments = (result?.data?.comments ?? []).slice(0, 10);
   const comments = topComments.map((comment) => {
     return {
       id: comment.cid,
       content: comment.text,
       user: {
-        userid: comment.user?.uid,
-        secret_userid: comment.user?.sec_uid,
+        userid: comment.user?.uid || comment.user?.id,
+        secret_userid: comment.user?.sec_uid || comment.user?.secUid,
         nickname: comment.user?.nickname,
         image: tryFindValidImage(comment.user?.avatar_thumb?.url_list),
       },
@@ -54,16 +56,16 @@ async function tiktokPostComments({ postid }: { postid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
-      const params = { aweme_id: postid, cursor: "0", count: "10" };
+      const params = { aweme_id: postid, count: "10" };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.TIKHUB_API_BASE_URL}/tiktok/app/v3/fetch_video_comments?${queryString}`,
+        `${process.env.TIKHUB_API_BASE_URL}/tiktok/web/fetch_post_comment?${queryString}`,
         { headers },
       );
       const res = await response.json();
       toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
       if (res.code === 200) {
-        const result = parseXHSNoteComments(res.data);
+        const result = parseTikTokPostComments(res);
         return result;
       } else {
         toolLog.warn(`Failed to fetch TikTok post comments, retrying... ${i + 1}`);

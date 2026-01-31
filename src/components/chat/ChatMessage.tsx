@@ -1,5 +1,6 @@
 import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
+import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import { cn } from "@/lib/utils";
 import { isToolUIPart } from "ai";
 import { motion } from "framer-motion";
@@ -59,22 +60,36 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
           if (part.type === "text") {
             return !isSystemMessage(part.text) ? (
               <div key={i} className="text-sm">
-                <Streamdown>{part.text}</Streamdown>
+                <Streamdown
+                  mode={part.state === "streaming" ? "streaming" : "static"}
+                  isAnimating={part.state === "streaming"}
+                >
+                  {part.text}
+                </Streamdown>
               </div>
             ) : null;
           } else if (part.type === "reasoning") {
             return (
-              <div
+              // <div
+              //   key={i}
+              //   className="border-l-2 border-blue-400/40 bg-blue-50/50 dark:bg-blue-950/20 pl-3 pr-3 py-2 rounded-r-md"
+              // >
+              //   <div className="flex items-start gap-2">
+              //     <span className="text-blue-500 dark:text-blue-400 text-base">💭</span>
+              //     <div className="flex-1 text-xs text-blue-900/80 dark:text-blue-100/80 italic">
+              //       <Streamdown>{part.text}</Streamdown>
+              //     </div>
+              //   </div>
+              // </div>
+              <Reasoning
                 key={i}
-                className="border-l-2 border-blue-400/40 bg-blue-50/50 dark:bg-blue-950/20 pl-3 pr-3 py-2 rounded-r-md"
+                className="w-full"
+                isStreaming={part.state == "streaming"}
+                defaultOpen={part.state == "streaming"}
               >
-                <div className="flex items-start gap-2">
-                  <span className="text-blue-500 dark:text-blue-400 text-base">💭</span>
-                  <div className="flex-1 text-xs text-blue-900/80 dark:text-blue-100/80 italic">
-                    <Streamdown>{part.text}</Streamdown>
-                  </div>
-                </div>
-              </div>
+                <ReasoningTrigger />
+                <ReasoningContent>{part.text}</ReasoningContent>
+              </Reasoning>
             );
           } else if (part.type === "dynamic-tool") {
             // 通过 MCP 添加的 Tools 会是 dynamic-tools
