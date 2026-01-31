@@ -13,14 +13,14 @@ const toolLog = rootLogger.child({
   tool: "xhsNoteComments",
 });
 
-function parseXHSNoteComments(result: {
+function parseXHSNoteComments(data: {
   data: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     comments: any[];
   };
 }): XHSNoteCommentsResult {
   // 只取前十条
-  const topComments = (result?.data?.comments ?? []).slice(0, 10);
+  const topComments = (data?.data?.comments ?? []).slice(0, 10);
   const comments = topComments.map((comment) => {
     return {
       id: comment.id,
@@ -49,24 +49,25 @@ function parseXHSNoteComments(result: {
   };
 }
 
-async function xhsNoteCommentsTikhub({ noteid }: { noteid: string }) {
+async function xhsNoteComments({ noteid }: { noteid: string }) {
   for (let i = 0; i < 3; i++) {
     try {
-      const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
-      const params = { note_id: noteid };
+      const params = {
+        token: process.env.SX_API_TOKEN!,
+        noteId: noteid,
+      };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.TIKHUB_API_BASE_URL}/xiaohongshu/web/get_note_comments?${queryString}`,
-        { headers },
+        `${process.env.SX_API_BASE_URL}/xiaohongshu/get-note-comment/v2?${queryString}`,
       );
-      const res = await response.json();
-      toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
-      if (res.code === 200 && res.data?.code === 0) {
-        const result = parseXHSNoteComments(res.data);
+      const data = await response.json();
+      toolLog.info(`Response text: ${JSON.stringify(data).slice(0, 100)}`);
+      if (data.code === 0) {
+        const result = parseXHSNoteComments(data);
         return result;
       } else {
         toolLog.warn(`Failed to fetch XHS note comments, retrying... ${i + 1}`);
-        await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
     } catch (error) {
@@ -80,14 +81,14 @@ async function xhsNoteCommentsTikhub({ noteid }: { noteid: string }) {
 }
 
 export const xhsNoteCommentsTool = tool({
-  description: "Get comments for a specific Xiaohongshu note",
+  description: "获取小红书特定帖子的评论",
   inputSchema: xhsNoteCommentsInputSchema,
   outputSchema: xhsNoteCommentsOutputSchema,
   toModelOutput: (result: PlainTextToolResult) => {
     return { type: "text", value: result.plainText };
   },
   execute: async ({ noteid }) => {
-    const result = await xhsNoteCommentsTikhub({ noteid });
+    const result = await xhsNoteComments({ noteid });
     return result;
   },
 });

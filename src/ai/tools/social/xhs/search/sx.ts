@@ -9,20 +9,16 @@ const toolLog = rootLogger.child({
   tool: "xhsSearch",
 });
 
-function parseXHSSearchResult(result: {
-  data: {
-    items: {
-      model_type: string;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      note: any;
-    }[];
-  };
+function parseXHSSearchResult(data: {
+  items: {
+    model_type: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    note: any;
+  }[];
 }): XHSSearchResult {
   const notes: XHSSearchResult["notes"] = [];
   // 过滤并取前十条
-  const topNotes = (result.data?.items ?? [])
-    .filter((item) => item.model_type === "note")
-    .slice(0, 10);
+  const topNotes = (data?.items ?? []).filter((item) => item.model_type === "note").slice(0, 10);
   topNotes.forEach(({ note }) => {
     // Extract the first image URL from the images_list structure
     const firstImageUrl = note.images_list?.[0]?.url;
@@ -60,24 +56,29 @@ function parseXHSSearchResult(result: {
   };
 }
 
-async function xhsSearchTikhub({ keyword }: { keyword: string }) {
+async function xhsSearch({ keyword }: { keyword: string }) {
   for (let i = 0; i < 3; i++) {
     try {
-      const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
-      const params = { keyword, page: "1", sort: "general", noteType: "_0" };
+      const params = {
+        token: process.env.SX_API_TOKEN!,
+        keyword,
+        page: "1",
+        sort: "general",
+        noteType: "_0",
+      };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.TIKHUB_API_BASE_URL}/xiaohongshu/web/search_notes?${queryString}`,
-        { headers },
+        `${process.env.SX_API_BASE_URL}/xiaohongshu/search-note/v3?${queryString}`,
       );
-      const res = await response.json();
-      toolLog.info(`Response text: ${JSON.stringify(res).slice(0, 100)}`);
-      if (res.code === 200 && res.data?.code === 0) {
-        const result = parseXHSSearchResult(res.data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: { code: number; data: any } = await response.json();
+      toolLog.info(`Response text: ${JSON.stringify(data).slice(0, 100)}`);
+      if (data.code === 0 && data.data) {
+        const result = parseXHSSearchResult(data.data);
         return result;
       } else {
         toolLog.warn(`Failed to fetch XHS posts, retrying... ${i + 1}`);
-        await new Promise((resolve) => setTimeout(resolve, 3 * 1000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
     } catch (error) {
@@ -91,7 +92,7 @@ async function xhsSearchTikhub({ keyword }: { keyword: string }) {
 }
 
 export const xhsSearchTool = tool({
-  description: "Search for notes on Xiaohongshu, you can search for specific topics or a brand",
+  description: "在小红书上搜索笔记，可以搜索特定的主题，也可以搜索一个品牌",
   inputSchema: xhsSearchInputSchema,
   outputSchema: xhsSearchOutputSchema,
   // 这个方法返回的结果会发给 LLM 用来生成回复，只需要把 LLM 能够使用的文本给它就行，节省很多 tokens
@@ -99,7 +100,7 @@ export const xhsSearchTool = tool({
     return { type: "text", value: result.plainText };
   },
   execute: async ({ keyword }) => {
-    const result = await xhsSearchTikhub({ keyword });
+    const result = await xhsSearch({ keyword });
     return result;
   },
 });
