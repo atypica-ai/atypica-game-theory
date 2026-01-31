@@ -1,6 +1,6 @@
 "use client";
 import {
-  createStudyUserChat,
+  createStudyUserChatAction,
   fetchAnalystReportsOfStudyUserChat,
 } from "@/app/(study)/study/actions";
 import { useSession } from "next-auth/react";
@@ -78,7 +78,7 @@ export function Embed() {
             .catch((error) => console.error(error));
         }
         if (event.data.action === "createStudyUserChat") {
-          createStudyUserChat({
+          createStudyUserChatAction({
             role: "user",
             content: event.data.args.content,
           })

@@ -300,7 +300,7 @@ export const persistentAIMessageToDB = async ({
   mode: "override" | "append"; // 前端发送上来的消息，addToolResult 和 user message 都只有最后一个 part，所以是 append
   userChatId: number;
   message: UIMessage;
-  attachments?: ChatMessageAttachment[]; // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChat 里直接实现了
+  attachments?: ChatMessageAttachment[]; // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChatAction 里直接实现了
   tx?: Omit<typeof prisma, ITXClientDenyList>;
 }) => {
   // 很奇怪，现在 addToolResult 不再是只有最后一个 part 了，而是完整 message

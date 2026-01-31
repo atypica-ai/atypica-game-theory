@@ -1,18 +1,13 @@
 "use server";
-import {
-  convertDBMessagesToAIMessages,
-  convertDBMessageToAIMessage,
-  persistentAIMessageToDB,
-} from "@/ai/messageUtils";
+import { convertDBMessagesToAIMessages, convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
-import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
-import { createUserChat, generateChatTitle } from "@/lib/userChat/lib";
+import { truncateForTitle } from "@/lib/textUtils";
+import { generateChatTitle } from "@/lib/userChat/lib";
 import {
   Analyst,
   AnalystPodcast,
@@ -27,10 +22,11 @@ import {
 import { AnalystInterviewWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { FileUIPart, generateId, UIMessage } from "ai";
+import { FileUIPart, UIMessage } from "ai";
 import { UserChatContext } from "../context/types";
+import { createStudyUserChat } from "./lib";
 
-export async function createStudyUserChat(
+export async function createStudyUserChatAction(
   {
     role,
     content,
@@ -44,124 +40,39 @@ export async function createStudyUserChat(
   },
   // 任何额外要存储的信息
   extra?: UserChatExtra,
-  // // 其他的研究类型也通过这个方法统一创建
-  // studyType: "general" | "product-rnd" | "fast-insight" = "general",
 ): Promise<ServerActionResult<Omit<UserChat, "kind"> & { kind: "study" }>> {
   return withAuth(async (user) => {
-    // Validate file upload limits
-    if (attachments && attachments.length > 0) {
-      const fileInfos = attachments.map((att) => ({
-        name: att.name,
-        size: att.size,
-        mimeType: att.mimeType,
-        url: "", // Not needed for validation
-        objectUrl: att.objectUrl,
-      }));
-
-      const { images, documents } = categorizeFiles(fileInfos);
-
-      if (images.length > FILE_UPLOAD_LIMITS.MAX_IMAGES) {
-        return {
-          success: false,
-          message: `Maximum ${FILE_UPLOAD_LIMITS.MAX_IMAGES} images allowed`,
-        };
-      }
-
-      if (documents.length > FILE_UPLOAD_LIMITS.MAX_DOCUMENTS) {
-        return {
-          success: false,
-          message: `Maximum ${FILE_UPLOAD_LIMITS.MAX_DOCUMENTS} documents allowed`,
-        };
-      }
-
-      const totalSize = attachments.reduce((acc, att) => acc + att.size, 0);
-      if (totalSize > FILE_UPLOAD_LIMITS.MAX_TOTAL_SIZE) {
-        return {
-          success: false,
-          message: "Total file size limit exceeded",
-        };
-      }
-    }
-
-    // 根据用户输入决定模型的默认语言
-    const locale = await detectInputLanguage({
-      text: content,
-    });
-
-    const userChat = await prisma.$transaction(async (tx) => {
-      const userChat = await createUserChat({
+    try {
+      const userChat = await createStudyUserChat({
         userId: user.id,
-        title: truncateForTitle(content, {
-          maxDisplayWidth: 100,
-          suffix: "...",
-        }),
-        kind: "study",
-        extra,
+        role,
+        content,
+        attachments,
         context,
-        tx,
+        extra,
       });
-      await persistentAIMessageToDB({
-        mode: "append",
-        userChatId: userChat.id,
-        message: {
-          id: generateId(),
-          role,
-          parts: [{ type: "text", text: content }],
-        },
-        // attachments, // attachments 只保存在 analyst 上，然后在 baseAgentRequest 中提前处理好了以后，插入 messages 中
-        tx,
-      });
-      await tx.analyst.create({
-        data: {
-          userId: user.id,
-          studyUserChatId: userChat.id,
-          // kind:
-          //   studyType === "product-rnd"
-          //     ? AnalystKind.productRnD
-          //     : studyType === "fast-insight"
-          //       ? AnalystKind.fastInsight
-          //       : null,
-          // 现在不再是提前选择研究类型了，所以一开始都是 null
-          kind: null,
-          brief: content, // 用户的第一条消息作为 brief
-          locale,
-          role: "",
-          topic: "",
-          studySummary: "",
-          studyLog: "",
-          attachments: attachments,
+
+      trackEventServerSide({
+        userId: user.id,
+        event: "Study Session Started",
+        properties: {
+          userChatId: userChat.id,
+          brief: truncateForTitle(content, { maxDisplayWidth: 30, suffix: "..." }),
+          attachments: attachments?.length,
         },
       });
-      // 这样不行，因为是在 tx 里，mergeUserChatContext 里用了 prisma, 执行的时候这里 tx 还没结束，所以啥也没更新
-      // if (context) {
-      //   await mergeUserChatContext({
-      //     id: userChat.id,
-      //     context,
-      //   });
-      // }
-      return userChat;
-    });
 
-    trackEventServerSide({
-      userId: user.id,
-      event: "Study Session Started",
-      properties: {
-        // studyType,
-        userChatId: userChat.id,
-        brief: truncateForTitle(content, { maxDisplayWidth: 30, suffix: "..." }),
-        // interview: !!extra?.briefUserChatId,
-        attachments: attachments?.length,
-        // references: extra?.referenceUserChats?.length,
-      },
-    });
-
-    return {
-      success: true,
-      data: {
-        ...userChat,
-        kind: "study",
-      },
-    };
+      return {
+        success: true,
+        data: userChat,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    }
   });
 }
 

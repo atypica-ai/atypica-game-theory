@@ -1,7 +1,7 @@
 "use client";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
 import { trackTemplateUsage } from "@/app/(newStudy)/newstudy/actions";
-import { createStudyUserChat } from "@/app/(study)/study/actions";
+import { createStudyUserChatAction } from "@/app/(study)/study/actions";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { FileUploadStatus } from "@/components/chat/FileUploadStatus";
@@ -121,7 +121,7 @@ export function NewStudyInputBox({
           mimeType: file.mimeType,
           size: file.size,
         }));
-        const result = await createStudyUserChat({
+        const result = await createStudyUserChatAction({
           role: "user",
           content: input,
           attachments,

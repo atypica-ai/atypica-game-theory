@@ -1,7 +1,7 @@
 "use server";
 
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
-import { createStudyUserChat } from "@/app/(study)/study/actions";
+import { createStudyUserChatAction } from "@/app/(study)/study/actions";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
@@ -71,7 +71,7 @@ export async function continueToStudyUserChat(
     }
 
     // Since we are creating a new study, the initial message should be from the 'user'
-    const createResult = await createStudyUserChat({ role: "user", content: studyBrief });
+    const createResult = await createStudyUserChatAction({ role: "user", content: studyBrief });
     if (!createResult.success) {
       return createResult;
     }
