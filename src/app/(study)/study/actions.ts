@@ -7,7 +7,6 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
-import { generateChatTitle } from "@/lib/userChat/lib";
 import {
   Analyst,
   AnalystPodcast,
@@ -21,7 +20,6 @@ import {
 } from "@/prisma/client";
 import { AnalystInterviewWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
-import { waitUntil } from "@vercel/functions";
 import { FileUIPart, UIMessage } from "ai";
 import { UserChatContext } from "../context/types";
 import { createStudyUserChat } from "./lib";
@@ -625,92 +623,4 @@ export async function fetchAnalystPodcastsCountOfStudyUserChat({
     success: true,
     data: (userChat?.context as UserChatContext | undefined)?.podcastTokens?.length ?? 0,
   };
-}
-
-/**
- * Save analyst from plan mode
- *
- * Called by frontend after user confirms the research plan.
- * Updates analyst record with locale, kind, role, and topic from the plan.
- */
-export async function saveAnalystFromPlan({
-  userChatToken,
-  locale,
-  kind,
-  role,
-  topic,
-}: {
-  userChatToken: string;
-  locale: "zh-CN" | "en-US" | "misc";
-  kind: "productRnD" | "fastInsight" | "testing" | "insights" | "creation" | "planning" | "misc";
-  role: string;
-  topic: string;
-}): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    try {
-      // Find the userChat and verify ownership
-      const userChat = await prisma.userChat.findUnique({
-        where: {
-          token: userChatToken,
-          kind: "study",
-          userId: user.id,
-        },
-        select: {
-          id: true,
-          analyst: {
-            select: { id: true },
-          },
-        },
-      });
-
-      if (!userChat || !userChat.analyst) {
-        return {
-          success: false,
-          code: "not_found",
-          message: "Study session or analyst not found",
-        };
-      }
-
-      // 见 baseAgentRequest 的 onStepFinish 方法里的描述
-      waitUntil(generateChatTitle(userChat.id));
-
-      // Update analyst with plan data
-      await prisma.analyst.update({
-        where: { id: userChat.analyst.id },
-        data: {
-          locale,
-          kind,
-          role,
-          topic,
-        },
-      });
-
-      const logger = rootLogger.child({
-        userChatToken,
-        userId: user.id,
-        analystId: userChat.analyst.id,
-      });
-
-      logger.info({
-        msg: "Analyst saved from plan",
-        kind,
-        role,
-        locale,
-        topicPreview: topic.substring(0, 150),
-      });
-
-      return {
-        success: true,
-        data: undefined,
-      };
-    } catch (error) {
-      const logger = rootLogger.child({ userChatToken, userId: user.id });
-      logger.error({ msg: "Failed to save analyst from plan", error });
-      return {
-        success: false,
-        message: "Failed to save research plan",
-        code: "internal_server_error",
-      };
-    }
-  });
 }

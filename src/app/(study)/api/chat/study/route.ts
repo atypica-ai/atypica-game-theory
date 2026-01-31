@@ -9,6 +9,8 @@ import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/produc
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
 import { noQuotaAgentRequest } from "@/app/(study)/agents/noQuotaAgentRequest";
 import { UserChatContext } from "@/app/(study)/context/types";
+import { saveAnalystFromPlan } from "@/app/(study)/study/lib";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -19,6 +21,7 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateId,
+  ToolUIPart,
   UIMessageStreamWriter,
 } from "ai";
 import { getServerSession } from "next-auth/next";
@@ -68,6 +71,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error }, { status: 400 });
   }
   const { message: newMessage, userChatToken } = parseResult.data;
+
+  // 这个要在 prisma.userChat.findUnique 之前执行，因为会更新 analyst.kind
+  if (
+    newMessage.lastPart.type === `tool-${StudyToolName.makeStudyPlan}` &&
+    newMessage.lastPart.state === "output-available" &&
+    newMessage.lastPart.input
+  ) {
+    const toolPart = newMessage.lastPart as Extract<
+      ToolUIPart<Pick<StudyUITools, StudyToolName.makeStudyPlan>>,
+      { state: "output-available" }
+    >;
+    await saveAnalystFromPlan({
+      userId,
+      userChatToken,
+      ...toolPart.input,
+    });
+  }
 
   // 找到有效的 userChat，并确保有权限
   const userChat = await prisma.userChat.findUnique({

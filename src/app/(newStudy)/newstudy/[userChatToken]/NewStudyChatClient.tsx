@@ -54,15 +54,13 @@ export function NewStudyChatClient({
     transport: new DefaultChatTransport<NEW_STUDY_UI_MESSAGE>({
       api: `/api/chat/newstudy`,
       prepareSendMessagesRequest({ id, messages }) {
-        const { id: messageId, role, lastPart, metadata } = prepareLastUIMessageForRequest(messages);
+        const message = prepareLastUIMessageForRequest(messages);
         setTimeout(() => {
-          trackStudyBriefUpdated(
-            lastPart.type === "text" ? lastPart.text : "",
-          );
+          trackStudyBriefUpdated(message.lastPart.type === "text" ? message.lastPart.text : "");
         }, 100);
         const body: ClientMessagePayload = {
           id,
-          message: { id: messageId, role, lastPart, metadata },
+          message,
           ...extraRequestPayload,
         };
         return { body };

@@ -37,10 +37,10 @@ export function SageChatClient({
     transport: new DefaultChatTransport({
       api: "/api/chat/sage",
       prepareSendMessagesRequest({ id, messages, body: extraBody }) {
-        const { id: messageId, role, lastPart } = prepareLastUIMessageForRequest(messages);
+        const message = prepareLastUIMessageForRequest(messages);
         const body: ClientMessagePayload = {
           id,
-          message: { id: messageId, role, lastPart },
+          message,
           ...extraRequestPayload,
         };
         if (extraBody && "attachments" in extraBody) {

@@ -329,6 +329,8 @@ export const persistentAIMessageToDB = async ({
     ...extra
   } = message;
 
+  const logger = rootLogger.child({ messageId, userChatId });
+
   // attachments 统一保存到 message 的 attachments 字段上，从 parts 里移除
   const newPartsExcludeFiles = parts.filter((part) => part.type !== "file");
   // content 字段在 v5 中其实没用了，但是兼容下，先保存，之后需要去掉
@@ -358,14 +360,9 @@ export const persistentAIMessageToDB = async ({
         },
       })
       .catch((error) => {
-        rootLogger.error({
+        logger.error({
           msg: "Failed to create chatMessage",
-          messageId,
-          userChatId,
-          role,
           error: error instanceof Error ? error.message : String(error),
-          partsPreview: JSON.stringify(newPartsExcludeFiles).slice(0, 500),
-          extraPreview: JSON.stringify(extra).slice(0, 200),
         });
         throw error;
       });
@@ -377,7 +374,6 @@ export const persistentAIMessageToDB = async ({
         where: { id: lastMessage.id },
         data: {
           messageId,
-          // createdAt, // 同时也覆盖 createdAt
           content: compatibleContent(newPartsExcludeFiles),
           parts: newPartsExcludeFiles as InputJsonValue,
           extra: extra as InputJsonValue,
@@ -385,14 +381,9 @@ export const persistentAIMessageToDB = async ({
         },
       })
       .catch((error) => {
-        rootLogger.error({
+        logger.error({
           msg: "Failed to update chatMessage (override)",
-          messageId,
-          userChatId,
-          dbMessageId: lastMessage.id,
           error: error instanceof Error ? error.message : String(error),
-          partsPreview: JSON.stringify(newPartsExcludeFiles).slice(0, 500),
-          extraPreview: JSON.stringify(extra).slice(0, 200),
         });
         throw error;
       });
@@ -412,7 +403,6 @@ export const persistentAIMessageToDB = async ({
         where: { id: lastMessage.id },
         data: {
           messageId,
-          // createdAt, // 同时也覆盖 createdAt
           content: compatibleContent(partsToUpdate),
           parts: partsToUpdate as InputJsonValue,
           extra: extra as InputJsonValue,
@@ -420,14 +410,9 @@ export const persistentAIMessageToDB = async ({
         },
       })
       .catch((error) => {
-        rootLogger.error({
+        logger.error({
           msg: "Failed to update chatMessage (user append)",
-          messageId,
-          userChatId,
-          dbMessageId: lastMessage.id,
           error: error instanceof Error ? error.message : String(error),
-          partsPreview: JSON.stringify(partsToUpdate).slice(0, 500),
-          extraPreview: JSON.stringify(extra).slice(0, 200),
         });
         throw error;
       });
@@ -436,12 +421,22 @@ export const persistentAIMessageToDB = async ({
     const partsToUpdate = convertDBMessageToAIMessage(lastMessage).parts;
     for (const newPart of newPartsExcludeFiles) {
       if (isToolOrDynamicToolUIPart(newPart)) {
-        // 这种情况应该是 addToolResult，需要替换已有的 tool call
+        // 这种情况应该是 addToolResult，需要更新已有的 tool call
         const index = partsToUpdate.findIndex(
           (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === newPart.toolCallId,
         );
         if (index !== -1) {
-          partsToUpdate[index] = newPart;
+          const oldPart = partsToUpdate[index] as ToolUIPart | DynamicToolUIPart;
+          if (oldPart.state === "input-available" && newPart.state === "output-available") {
+            // 这种情况特殊处理，只覆盖状态，确保前端发送的时候如果不小心损坏了 part 的数据也没关系
+            partsToUpdate[index] = {
+              ...oldPart,
+              state: newPart.state,
+              output: newPart.output,
+            } as typeof newPart;
+          } else {
+            partsToUpdate[index] = newPart;
+          }
         } else {
           partsToUpdate.push(newPart);
         }
@@ -454,7 +449,6 @@ export const persistentAIMessageToDB = async ({
         where: { id: lastMessage.id },
         data: {
           messageId,
-          // createdAt, // 同时也覆盖 createdAt
           content: compatibleContent(partsToUpdate),
           parts: partsToUpdate as InputJsonValue,
           extra: extra as InputJsonValue,
@@ -462,14 +456,9 @@ export const persistentAIMessageToDB = async ({
         },
       })
       .catch((error) => {
-        rootLogger.error({
+        logger.error({
           msg: "Failed to update chatMessage (assistant append)",
-          messageId,
-          userChatId,
-          dbMessageId: lastMessage.id,
           error: error instanceof Error ? error.message : String(error),
-          partsPreview: JSON.stringify(partsToUpdate).slice(0, 500),
-          extraPreview: JSON.stringify(extra).slice(0, 200),
         });
         throw error;
       });

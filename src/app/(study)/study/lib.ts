@@ -3,10 +3,12 @@ import "server-only";
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
+import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
-import { createUserChat } from "@/lib/userChat/lib";
+import { createUserChat, generateChatTitle } from "@/lib/userChat/lib";
 import { ChatMessageAttachment, UserChat, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
 
 /**
@@ -104,4 +106,81 @@ export async function createStudyUserChat({
     ...userChat,
     kind: "study",
   };
+}
+
+export async function saveAnalystFromPlan({
+  userId,
+  userChatToken,
+  locale,
+  kind,
+  role,
+  topic,
+}: {
+  userId: number;
+  userChatToken: string;
+  locale: "zh-CN" | "en-US" | "misc";
+  kind: "productRnD" | "fastInsight" | "testing" | "insights" | "creation" | "planning" | "misc";
+  role: string;
+  topic: string;
+}) {
+  try {
+    // Find the userChat and verify ownership
+    const userChat = await prisma.userChat.findUnique({
+      where: {
+        token: userChatToken,
+        kind: "study",
+        userId,
+      },
+      select: {
+        id: true,
+        analyst: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!userChat || !userChat.analyst) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "Study session or analyst not found",
+      };
+    }
+
+    // 见 baseAgentRequest 的 onStepFinish 方法里的描述
+    waitUntil(generateChatTitle(userChat.id));
+
+    // Update analyst with plan data
+    await prisma.analyst.update({
+      where: { id: userChat.analyst.id },
+      data: {
+        locale,
+        kind,
+        role,
+        topic,
+      },
+    });
+
+    const logger = rootLogger.child({
+      userChatToken,
+      userId,
+      analystId: userChat.analyst.id,
+    });
+
+    logger.info({
+      msg: "Analyst saved from plan",
+      kind,
+      role,
+      locale,
+      topicPreview: topic.substring(0, 150),
+    });
+  } catch (error) {
+    const logger = rootLogger.child({ userChatToken, userId });
+    logger.error({ msg: "Failed to save analyst from plan", error });
+    return {
+      success: false,
+      message: "Failed to save research plan",
+      code: "internal_server_error",
+    };
+  }
 }

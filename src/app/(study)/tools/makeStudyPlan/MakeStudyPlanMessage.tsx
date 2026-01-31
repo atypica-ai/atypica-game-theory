@@ -1,4 +1,3 @@
-import { saveAnalystFromPlan } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools, TAddStudyUIToolResult } from "@/app/(study)/tools/types";
 import { LoadingPulse } from "@/components/LoadingPulse";
@@ -26,10 +25,6 @@ export const MakeStudyPlanMessage = <
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const planContent = toolInvocation.input?.planContent ?? "";
-  const locale = toolInvocation.input?.locale ?? "zh-CN";
-  const kind = toolInvocation.input?.kind ?? "misc";
-  const role = toolInvocation.input?.role ?? "";
-  const topic = toolInvocation.input?.topic ?? "";
 
   const handleConfirm = useCallback(async () => {
     if (toolInvocation.state !== "input-available" || !addToolResult || !studyUserChat) {
@@ -47,17 +42,6 @@ export const MakeStudyPlanMessage = <
     } catch {}
 
     try {
-      // Call server action to save analyst
-      const result = await saveAnalystFromPlan({
-        userChatToken: studyUserChat.token,
-        locale,
-        kind,
-        role,
-        topic,
-      });
-
-      if (!result.success) throw result;
-
       // Send addToolResult to continue the conversation
       addToolResult({
         tool: StudyToolName.makeStudyPlan,
@@ -67,23 +51,12 @@ export const MakeStudyPlanMessage = <
           plainText: t("researchPlanConfirmed"),
         },
       });
-
       setIsSubmitting(false);
     } catch (error) {
       toast.error(`Error confirming plan: ${(error as Error).message}`);
       setIsSubmitting(false);
     }
-  }, [
-    toolInvocation.state,
-    toolInvocation.toolCallId,
-    addToolResult,
-    studyUserChat,
-    locale,
-    kind,
-    role,
-    topic,
-    t,
-  ]);
+  }, [toolInvocation.state, toolInvocation.toolCallId, addToolResult, studyUserChat, t]);
 
   const handleCancel = useCallback(() => {
     if (toolInvocation.state === "input-available" && addToolResult) {

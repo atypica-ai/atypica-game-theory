@@ -117,10 +117,10 @@ export function ChatBox() {
       api: "/api/chat/study",
       // see https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot-message-persistence#sending-only-the-last-message
       prepareSendMessagesRequest({ messages, id }) {
-        const { id: messageId, role, lastPart } = prepareLastUIMessageForRequest(messages);
+        const message = prepareLastUIMessageForRequest(messages);
         const body: ClientMessagePayload = {
           id,
-          message: { id: messageId, role, lastPart },
+          message,
           ...extraRequestPayload,
         };
         // useChat 上的 id 也在参数里，不过这里没用到，只是 debug 一下
