@@ -30,7 +30,7 @@ export const searchPersonasTool = ({
     execute: async ({ searchQueries, usePrivatePersonas }): Promise<SearchPersonasToolResult> => {
       const searchResults = await Promise.all(
         searchQueries.map((searchQuery) =>
-          searchPersonas({ locale, searchQuery, logger, userId, usePrivatePersonas }),
+          searchPersonasInTool({ locale, searchQuery, logger, userId, usePrivatePersonas }),
         ),
       );
       let personas: TPersonaForStudy[] = [];
@@ -68,7 +68,7 @@ export const searchPersonasTool = ({
     },
   });
 
-async function searchPersonas({
+export async function searchPersonasInTool({
   locale,
   searchQuery,
   logger,

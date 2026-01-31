@@ -2,12 +2,12 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { runWithMcpRequestContext } from "@/lib/mcp";
-import { authenticateMcpRequest, getMcpCorsHeaders, createMcpOptionsHandler } from "@/lib/mcp/auth";
+import { authenticateMcpRequest, createMcpOptionsHandler, getMcpCorsHeaders } from "@/lib/mcp/auth";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { NextRequest } from "next/server";
-import { getDeepResearchMcpServer } from "../mcpServer";
+import { getStudyMcpServer } from "./mcpServer";
 
-const logger = rootLogger.child({ api: "deep-research-mcp" });
+const logger = rootLogger.child({ api: "study-mcp" });
 const CORS_HEADERS = getMcpCorsHeaders();
 
 /**
@@ -17,76 +17,55 @@ export const OPTIONS = createMcpOptionsHandler();
 
 /**
  * MCP Server API Route Handler with Streaming Support
- *
- * Architecture:
- * - Stateless design: Creates a new transport per request for high concurrency
- * - The MCP server instance is reused across requests
- * - Supports SSE streaming for real-time tool output (text deltas, sources, etc.)
- * - Uses StreamableHTTPServerTransport for MCP protocol compliance
- *
- * Streaming Flow:
- * 1. Client sends JSON-RPC request via POST
- * 2. Transport opens SSE stream (Content-Type: text/event-stream)
- * 3. Tool execution streams chunks via notifications/tools/stream
- * 4. Final result sent as JSON-RPC response
- * 5. SSE stream closes
- *
- * Supports:
- * - POST: JSON-RPC messages with SSE streaming response
- * - GET: Standalone SSE stream (for server-initiated notifications)
- * - DELETE: Session termination (no-op in stateless mode)
  */
 export async function POST(req: NextRequest) {
-  // Authenticate first
-  const authResult = await authenticateMcpRequest(req, "deep-research-mcp");
+  logger.info({ msg: "Received MCP POST request", url: req.url });
+
+  const authResult = await authenticateMcpRequest(req, "study-mcp");
   if (!authResult.success) {
+    logger.warn({ msg: "Authentication failed" });
     return authResult.errorResponse;
   }
   const { userId } = authResult;
+  logger.info({ msg: "Authentication successful", userId });
 
   try {
-    // Determine if client wants streaming (SSE) or JSON response
     const acceptHeader = req.headers.get("accept") || "";
     let wantsSSE = acceptHeader.includes("text/event-stream");
-    /**
-     * @todo 这个做法不好，但是现在有些客户端无法读取，可能是当前版本的 MCP 没兼容旧的格式
-     * 那些客户端也没法强制修改 accept header, 所以只能加一个 search 参数，在安装的时候指定禁用 sse
-     */
+
     if (req.nextUrl.searchParams.get("sse") === "0") {
       wantsSSE = false;
     }
 
-    // Create a new transport for each request (stateless design)
+    logger.debug({ msg: "Transport mode determined", wantsSSE });
+
+    // Create transport for each request (stateless design)
     const transport = new WebStandardStreamableHTTPServerTransport({
-      sessionIdGenerator: undefined, // Stateless mode - no session management
-      enableJsonResponse: !wantsSSE, // Use JSON response if client doesn't want SSE
+      sessionIdGenerator: undefined, // Stateless mode
+      enableJsonResponse: !wantsSSE,
     });
 
-    // Clean up transport when request closes
     req.signal.addEventListener("abort", () => {
       transport.close().catch((err) => {
         logger.error({ msg: "Error closing transport on abort", error: (err as Error).message });
       });
     });
 
-    // Get the reusable server instance
-    const server = getDeepResearchMcpServer();
-
-    // Connect server to transport
+    const server = getStudyMcpServer();
     await server.connect(transport);
+    logger.debug({ msg: "Server connected to transport" });
 
     // Parse request body
     const body = await req.json().catch(() => ({}));
-
     logger.debug({
       msg: "Request body parsed",
-      method: Array.isArray(body) ? "batch" : body.method,
       hasBody: Object.keys(body).length > 0,
+      method: body.method,
     });
 
-    // Handle the MCP request within the request context
-    // This ensures tool handlers can access userId via AsyncLocalStorage
+    // Handle request within context (for userId access in tools)
     const response = await runWithMcpRequestContext({ userId }, async () => {
+      // Use Web Standard Request/Response directly
       return await transport.handleRequest(req, { parsedBody: body });
     });
 
@@ -121,12 +100,10 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * Handle GET requests for standalone SSE stream (server-to-client notifications)
- * This allows the server to push notifications without a request-response cycle
+ * Handle GET requests for standalone SSE stream
  */
 export async function GET(req: NextRequest) {
-  // Authenticate first
-  const authResult = await authenticateMcpRequest(req, "deep-research-mcp");
+  const authResult = await authenticateMcpRequest(req, "study-mcp");
   if (!authResult.success) {
     return authResult.errorResponse;
   }
@@ -135,7 +112,7 @@ export async function GET(req: NextRequest) {
   try {
     const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
-      enableJsonResponse: false, // Always use SSE for GET
+      enableJsonResponse: false, // Always SSE for GET
     });
 
     req.signal.addEventListener("abort", () => {
@@ -144,7 +121,7 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    const server = getDeepResearchMcpServer();
+    const server = getStudyMcpServer();
     await server.connect(transport);
 
     const response = await runWithMcpRequestContext({ userId }, async () => {
@@ -173,11 +150,9 @@ export async function GET(req: NextRequest) {
 
 /**
  * Handle DELETE requests for session termination
- * In stateless mode, this is a no-op but we implement it for protocol compliance
  */
 export async function DELETE(req: NextRequest) {
-  // Authenticate first
-  const authResult = await authenticateMcpRequest(req, "deep-research-mcp");
+  const authResult = await authenticateMcpRequest(req, "study-mcp");
   if (!authResult.success) {
     return authResult.errorResponse;
   }

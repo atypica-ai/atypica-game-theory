@@ -70,6 +70,7 @@ export function createMcpServerResponse(): {
 
     writeHead(code: number, headersArg?: Record<string, string>) {
       statusCode = code;
+      logger.debug({ msg: "ServerResponse.writeHead called", statusCode: code, headerCount: headersArg ? Object.keys(headersArg).length : 0 });
       if (headersArg) {
         Object.entries(headersArg).forEach(([key, value]) => {
           headers[key.toLowerCase()] = value;
@@ -85,10 +86,14 @@ export function createMcpServerResponse(): {
     },
 
     write(chunk: Uint8Array | string): boolean {
-      if (!controller) return false;
+      if (!controller) {
+        logger.warn({ msg: "ServerResponse.write called but controller is null" });
+        return false;
+      }
 
       try {
         const data = typeof chunk === "string" ? encoder.encode(chunk) : chunk;
+        logger.debug({ msg: "ServerResponse.write called", chunkSize: data.length, isString: typeof chunk === "string" });
         controller.enqueue(data);
         return true;
       } catch (error) {

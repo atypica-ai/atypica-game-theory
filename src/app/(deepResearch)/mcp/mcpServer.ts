@@ -26,10 +26,19 @@ import { getLocale } from "next-intl/server";
  * This server instance is reusable and stateless - create new transport per request
  */
 export function createDeepResearchMcpServer(): McpServer {
-  const server = new McpServer({
-    name: "atypica-deep-research-mcp",
-    version: "1.0.0",
-  });
+  const server = new McpServer(
+    {
+      name: "atypica-deep-research-mcp",
+      version: "1.0.0",
+    },
+    {
+      capabilities: {
+        tools: {
+          listChanged: true,
+        },
+      },
+    },
+  );
 
   const deepResearchToolName = "atypica_deep_research";
 
@@ -81,10 +90,12 @@ export function createDeepResearchMcpServer(): McpServer {
         });
       };
 
-      logger.debug(
-        { requestId: extra.requestId, hasProgressToken: !!progressToken, userId },
-        "Executing deep research with streaming",
-      );
+      logger.debug({
+        msg: "Executing deep research with streaming",
+        requestId: extra.requestId,
+        hasProgressToken: !!progressToken,
+        userId,
+      });
 
       // Create streaming callback using SDK's sendNotification and progressToken
       // This uses the SDK's built-in progress notification mechanism
@@ -143,7 +154,7 @@ export function createDeepResearchMcpServer(): McpServer {
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      rootLogger.error({ error: errorMessage }, "Deep research tool execution failed");
+      rootLogger.error({ msg: "Deep research tool execution failed", error: errorMessage });
       return {
         content: [{ type: "text", text: `Error performing deep research: ${errorMessage}` }],
         isError: true,
