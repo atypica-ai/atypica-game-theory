@@ -17,7 +17,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
   matcher: [
-    "/((?!api|cdn/proxy-image|cdn/proxy-object|_next/static|_next/image|_public|_pages|favicon.ico|manifest.json|sitemap.xml|robots.txt|llm.txt).*)",
+    "/((?!api|mcp|cdn/proxy-image|cdn/proxy-object|_next/static|_next/image|_public|_pages|favicon.ico|manifest.json|sitemap.xml|robots.txt|llm.txt).*)",
   ],
 };
 
