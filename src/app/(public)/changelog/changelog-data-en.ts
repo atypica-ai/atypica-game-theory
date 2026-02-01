@@ -15,6 +15,64 @@ export interface ChangelogSection {
 
 export const changelogDataEN: ChangelogSection[] = [
   {
+    title: "v2.4.x: Open Platform & Agent Ecosystem",
+    versions: [
+      {
+        version: "v2.4.0",
+        date: "2026-01-31",
+        items: [
+          {
+            title: "🤖 Major Feature: Universal Agent",
+            description:
+              "Brand new universal agent system integrated with Claude Skills framework. Supports code execution and file management with persistent workspace. Install and manage custom Skills to infinitely extend AI capabilities. AI can now not only conduct research but also help with various automation tasks.",
+          },
+          {
+            title: "🔌 Developer Feature: MCP (Model Context Protocol) Integration",
+            description:
+              "Launched complete MCP Study API with 9 core research tools. Developers can integrate atypica's research capabilities into their applications through standard MCP protocol. Added atypica-research skill for using research features through MCP clients like Claude Desktop.",
+          },
+          {
+            title: "🏢 Enterprise Feature: AWS Marketplace Integration",
+            description:
+              "Full AWS Marketplace integration allowing enterprise customers to subscribe directly through AWS accounts. Supports automatic registration, login, and subscription management to simplify enterprise procurement.",
+          },
+          {
+            title:
+              '🎯 Research Enhancement: <a href="https://atypica.ai/study" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">AI Research Template System</a>',
+            description:
+              "New database-driven research template system where AI recommends research scenarios based on your role. Supports dynamic generation and auto-refresh of templates to help you quickly start research.",
+          },
+          {
+            title:
+              '🧠 Expert Evolution: <a href="https://atypica.ai/sage" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Export Sage as Claude Skill</a>',
+            description:
+              "Sage AI experts can now be exported as Claude Skills, allowing your custom experts to serve you in more scenarios. Sage is now officially featured in site navigation for easier discovery and access.",
+          },
+          {
+            title: "💭 Research Transparency: Extended Thinking Display",
+            description:
+              "View AI's deep reasoning process during research to understand how AI thinks and reaches conclusions. Makes research more transparent and helps you understand AI's decision logic.",
+          },
+          {
+            title: "🧠 Memory System Enhancement",
+            description:
+              "Memory system now supports delete and replace operations for more precise personal information management. Optimized memory triggers: automatically updates memory after research completion without manual intervention. Added quality gates to ensure high-quality and relevant memory content.",
+          },
+          {
+            title: "📱 Sharing Feature: Twitter/X Integration",
+            description:
+              "Research reports and podcasts can be shared to Twitter/X with one click. Optimized report page SEO and WeChat sharing compatibility for smoother sharing experience.",
+          },
+          {
+            title: "📚 Content Development",
+            description:
+              "Added bilingual product documentation system to help users better understand product features. Admin dashboard now includes blog management interface supporting content creation and publishing. Enhanced About page showcasing complete product features and technical evolution.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     title: "v2.3.x: Intelligent Memory & Intent Understanding",
     versions: [
       {

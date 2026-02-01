@@ -15,6 +15,64 @@ export interface ChangelogSection {
 
 export const changelogDataZH: ChangelogSection[] = [
   {
+    title: "v2.4.x: 开放平台与智能体生态",
+    versions: [
+      {
+        version: "v2.4.0",
+        date: "2026-01-31",
+        items: [
+          {
+            title: "🤖 重磅功能: Universal Agent (通用智能体)",
+            description:
+              "全新的通用智能体系统，集成 Claude Skills 框架。支持代码执行和文件管理，提供持久化工作空间。可以安装和管理自定义 Skills，无限扩展 AI 能力。让 AI 不仅能做研究，还能帮你执行各种自动化任务。",
+          },
+          {
+            title: "🔌 开发者功能: MCP (Model Context Protocol) 集成",
+            description:
+              "推出完整的 MCP Study API，提供 9 个核心研究工具。开发者可以通过标准 MCP 协议将 atypica 的研究能力集成到自己的应用中。新增 atypica-research skill，支持通过 Claude Desktop 等 MCP 客户端使用研究功能。",
+          },
+          {
+            title: "🏢 企业功能: AWS Marketplace 集成",
+            description:
+              "完整集成 AWS Marketplace，企业用户可以通过 AWS 账户直接订阅。支持自动注册、登录和订阅管理，简化企业采购流程。",
+          },
+          {
+            title:
+              '🎯 研究增强: <a href="https://atypica.ai/study" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">AI 研究模板系统</a>',
+            description:
+              "新增数据库驱动的研究模板系统，AI 根据你的角色自动推荐研究场景。支持动态生成和自动刷新模板，帮助你快速启动研究。",
+          },
+          {
+            title:
+              '🧠 专家进化: <a href="https://atypica.ai/sage" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Sage 导出为 Claude Skill</a>',
+            description:
+              "Sage AI 专家现在可以导出为 Claude Skill，让你的专属专家在更多场景中为你服务。Sage 在网站导航中正式展示，更容易被发现和使用。",
+          },
+          {
+            title: "💭 研究透明度: Extended Thinking (深度推理) 显示",
+            description:
+              "研究过程中可以看到 AI 的深度推理过程，了解 AI 是如何思考和得出结论的。让研究过程更透明，帮助你理解 AI 的决策逻辑。",
+          },
+          {
+            title: "🧠 记忆系统增强",
+            description:
+              "记忆系统支持删除和替换操作，更精确地管理你的个人信息。优化记忆触发机制：研究完成后自动更新记忆，无需手动操作。增加质量门槛，确保记忆内容的高质量和相关性。",
+          },
+          {
+            title: "📱 分享功能: Twitter/X 集成",
+            description:
+              "研究报告和播客可以一键分享到 Twitter/X。优化报告页面的 SEO 和微信分享兼容性，让分享更流畅。",
+          },
+          {
+            title: "📚 内容建设",
+            description:
+              "新增双语产品文档系统，帮助用户更好地了解产品功能。管理后台新增博客管理界面，支持内容创作和发布。About 页面增强，展示完整的产品功能和技术演进。",
+          },
+        ],
+      },
+    ],
+  },
+  {
     title: "v2.3.x: 智能记忆与意图理解",
     versions: [
       {
