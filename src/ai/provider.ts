@@ -184,6 +184,7 @@ export type LLMModelName =
   | "claude-sonnet-4"
   | "claude-sonnet-4-5"
   | "claude-haiku-4-5"
+  | "minimax-m2.1"
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
   | "gemini-3-flash"
@@ -224,6 +225,7 @@ export function llm(modelName: LLMModelName) {
       case "claude-3-7-sonnet":
       case "claude-sonnet-4":
       case "claude-sonnet-4-5":
+      case "minimax-m2.1":
         if (process.env.AWS_BEDROCK_ACCESS_KEY_ID) {
           break;
         } else {
@@ -290,6 +292,8 @@ export function llm(modelName: LLMModelName) {
       return bedrock("us.anthropic.claude-sonnet-4-20250514-v1:0");
     case "claude-sonnet-4-5":
       return bedrock("global.anthropic.claude-sonnet-4-5-20250929-v1:0");
+    case "minimax-m2.1":
+      return bedrock("minimax.minimax-m2");
     // case "gemini-2.5-flash":
     //   return google("gemini-2.5-flash-preview-04-17");
     // case "gemini-2.5-pro":

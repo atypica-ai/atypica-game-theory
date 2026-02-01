@@ -109,6 +109,7 @@ export async function createStudyAgentConfig(
 
   return {
     model: "claude-sonnet-4-5",
+    // model: "minimax-m2.1",
     systemPrompt,
     tools,
 

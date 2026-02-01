@@ -176,6 +176,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // Prepare streaming messages
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(studyUserChatId, {
     tools: config.tools,
+    modelName: config.model,
   });
 
   let providerOptions: NonNullable<typeof config.providerOptions> =

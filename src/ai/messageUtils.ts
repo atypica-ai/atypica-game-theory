@@ -21,6 +21,7 @@ import {
   UIMessage,
 } from "ai";
 import { Logger } from "pino";
+import { LLMModelName } from "./provider";
 import { convertToV5MessagePart } from "./v4";
 
 // 事实上，bedrock 虽然支持很多文件格式，但 gpt 和 gemini 只支持 pdf，所以这样 fix 也没用，只能限制上传的文件类型
@@ -651,9 +652,11 @@ export async function prepareMessagesForStreaming(
   {
     checkpointId,
     tools,
+    // modelName,
   }: {
     checkpointId?: number; // 给 LLM 的消息从 id > checkpointId 开始取，这里不是 messageId 而是 ChatMessage 的数据库 id，并且 id 是递增的
     tools: ToolSet; // tools 必须提供，这样在转成 ModelMessage 的时候，会调用 tool 上的 toModelOutput 方法，只把 PlainText 部分传给 LLM
+    modelName?: LLMModelName;
   },
 ) {
   const dbMessages = await prisma.chatMessage.findMany({
@@ -690,6 +693,20 @@ export async function prepareMessagesForStreaming(
     tools,
     // ignoreIncompleteToolCalls: true,
   });
+
+  // 有些模型不支持 reasoning 的 signature，比如 minimax, 需要去掉,
+  // 不过, 现在研究过程其实是固定了模型, 所以暂时也没这个问题, 这个先取消
+  // if (!modelName?.startsWith("claude") || !modelName?.startsWith("gemini")) {
+  //   coreMessages = coreMessages.map((message) => {
+  //     if (typeof message.content === "string") return message;
+  //     const content = message.content.map((part) => {
+  //       if (part.type !== "reasoning") return part;
+  //       return { type: "reasoning", text: part.text };
+  //     });
+  //     return { ...message, content } as ModelMessage;
+  //   });
+  // }
+
   return {
     coreMessages,
     streamingMessage,
