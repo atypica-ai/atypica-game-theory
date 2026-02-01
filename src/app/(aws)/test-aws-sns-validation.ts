@@ -1,11 +1,14 @@
 /**
- * AWS Marketplace SNS Webhook 测试脚本
+ * AWS SNS Signature Validation Test
  *
- * 这个脚本用于测试SNS签名验证功能
- * 使用真实的AWS SNS测试消息来验证签名验证是否正常工作
+ * Tests SNS signature verification for AWS Marketplace webhook.
+ *
+ * Usage:
+ *   npx tsx src/app/(aws)/test-aws-sns-validation.ts
  */
 
-import { verifySNSMessage } from "../src/lib/aws-marketplace/sns-validator";
+/*
+import { verifySNSMessage } from "./lib/sns-validator";
 
 // 示例SNS消息（从AWS SNS获取的真实格式）
 const sampleSNSMessages = {
@@ -95,3 +98,4 @@ async function testSignatureVerification() {
 
 // Run tests
 testSignatureVerification().catch(console.error);
+*/

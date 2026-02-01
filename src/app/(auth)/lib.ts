@@ -2,7 +2,7 @@ import "server-only";
 
 import { manuallyAddTeamSubscription } from "@/app/payment/manualSubscription";
 import { createTeam } from "@/app/team/lib";
-import { AWS_MARKETPLACE_CONFIG } from "@/config/aws-marketplace";
+import { AWS_MARKETPLACE_CONFIG } from "@/app/(aws)/config";
 import { trackEventServerSide, trackUserServerSide } from "@/lib/analytics/server";
 import { getToltFromCookieStore } from "@/lib/analytics/tolt";
 import { trackToltSignup } from "@/lib/analytics/tolt/lib";
@@ -411,7 +411,7 @@ export async function createAWSMarketplaceUserWithTeam({
     });
 
     // 7. 从 AWS Entitlement API 同步订阅过期时间
-    const { checkCustomerSubscription } = await import("@/lib/aws-marketplace/entitlement");
+    const { checkCustomerSubscription } = await import("@/app/(aws)/lib/entitlement");
     const awsSubscription = await checkCustomerSubscription(customerIdentifier);
 
     if (awsSubscription.active) {
@@ -503,7 +503,7 @@ export async function createAWSMarketplaceUserWithTeam({
             });
 
             // 从 AWS Entitlement API 同步订阅过期时间
-            const { checkCustomerSubscription } = await import("@/lib/aws-marketplace/entitlement");
+            const { checkCustomerSubscription } = await import("@/app/(aws)/lib/entitlement");
             const awsSubscription = await checkCustomerSubscription(customerIdentifier);
 
             if (awsSubscription.active) {

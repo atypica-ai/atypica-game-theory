@@ -7,7 +7,7 @@ import { encode } from "next-auth/jwt";
 import {
   getAwsCredentials,
   AWS_MARKETPLACE_CONFIG,
-} from "@/config/aws-marketplace";
+} from "@/app/(aws)/config";
 
 const logger = rootLogger.child({ module: "aws-marketplace-register" });
 

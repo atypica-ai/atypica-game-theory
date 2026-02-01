@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/prisma";
-import { checkCustomerSubscription } from "@/lib/aws-marketplace/entitlement";
-import { parseAndVerifySNSBody, type ValidatedSNSMessage } from "@/lib/aws-marketplace/sns-validator";
+import { checkCustomerSubscription } from "@/app/(aws)/lib/entitlement";
+import { parseAndVerifySNSBody, type ValidatedSNSMessage } from "@/app/(aws)/lib/sns-validator";
 import { rootLogger } from "@/lib/logging";
-import { isActiveSubscription } from "@/lib/aws-marketplace/types";
+import { isActiveSubscription } from "@/app/(aws)/lib/types";
 
 const logger = rootLogger.child({ module: "aws-marketplace-webhook" });
 

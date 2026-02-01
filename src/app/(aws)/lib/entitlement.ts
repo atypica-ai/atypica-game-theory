@@ -1,13 +1,13 @@
 import { MarketplaceEntitlementService } from "@aws-sdk/client-marketplace-entitlement-service";
 import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
-import { getAwsCredentials, getProductCode, AWS_MARKETPLACE_CONFIG } from "@/config/aws-marketplace";
+import { getAwsCredentials, getProductCode, AWS_MARKETPLACE_CONFIG } from "@/app/(aws)/config";
 import {
   CustomerSubscription,
   ActiveCustomerSubscription,
   SubscriptionDimension,
   isActiveSubscription,
-} from "@/lib/aws-marketplace/types";
+} from "@/app/(aws)/lib/types";
 
 const logger = rootLogger.child({ module: "aws-marketplace-entitlement" });
 
