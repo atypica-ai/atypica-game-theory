@@ -16,7 +16,7 @@ import {
   User,
 } from "@/prisma/client";
 import { AnalystReportWhereInput } from "@/prisma/models";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { revalidatePath, revalidateTag } from "next/cache";
 
@@ -51,7 +51,7 @@ export async function fetchAnalystReportsAction(
 
   // Get featured report IDs if featuredOnly filter is active
   if (featuredOnly) {
-    const featuredItems = await prisma.featuredItem.findMany({
+    const featuredItems = await prismaRO.featuredItem.findMany({
       where: {
         resourceType: FeaturedItemResourceType.AnalystReport,
       },
@@ -78,7 +78,7 @@ export async function fetchAnalystReportsAction(
     where.id = { in: featuredReportIds };
   }
 
-  const analystReports = await prisma.analystReport.findMany({
+  const analystReports = await prismaRO.analystReport.findMany({
     where,
     include: {
       user: {
@@ -92,11 +92,11 @@ export async function fetchAnalystReportsAction(
     take: pageSize,
   });
 
-  const totalCount = await prisma.analystReport.count({ where });
+  const totalCount = await prismaRO.analystReport.count({ where });
 
   // Check featured status for each report and get tags
   const reportIds = analystReports.map((r) => r.id);
-  const featuredItems = await prisma.featuredItem.findMany({
+  const featuredItems = await prismaRO.featuredItem.findMany({
     where: {
       resourceType: FeaturedItemResourceType.AnalystReport,
       resourceId: { in: reportIds },

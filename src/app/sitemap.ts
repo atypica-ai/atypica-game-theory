@@ -1,7 +1,7 @@
 import { docs } from "@/app/(features)/features/docs-config";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { MetadataRoute } from "next";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 // Cache featured reports for 1 day
 const getFeaturedReports = unstable_cache(
   async (locale: string) => {
-    const featuredItems = await prisma.featuredItem.findMany({
+    const featuredItems = await prismaRO.featuredItem.findMany({
       where: {
         resourceType: FeaturedItemResourceType.AnalystReport,
         locale,
@@ -48,7 +48,7 @@ const getFeaturedReports = unstable_cache(
 // Cache featured podcast episodes for 1 day
 const getFeaturedPodcastEpisodes = unstable_cache(
   async (locale: string) => {
-    const featuredItems = await prisma.featuredItem.findMany({
+    const featuredItems = await prismaRO.featuredItem.findMany({
       where: {
         resourceType: FeaturedItemResourceType.AnalystPodcast,
         locale,
@@ -85,7 +85,7 @@ const getFeaturedPodcastEpisodes = unstable_cache(
 // Cache blog articles for 1 day
 const getBlogArticles = unstable_cache(
   async () => {
-    const articles = await prisma.blogArticle.findMany({
+    const articles = await prismaRO.blogArticle.findMany({
       where: {
         publishedAt: {
           not: null,

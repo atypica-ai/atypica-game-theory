@@ -5,7 +5,7 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { reasoningPrologue, reasoningSystem } from "@/ai/tools/experts/reasoningThinking/prompt";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { streamText, tool, UserModelMessage } from "ai";
 import { Locale } from "next-intl";
@@ -153,7 +153,7 @@ export const audienceCallTool = (toolCallConfigArgs: AgentToolConfigArgs) =>
 
 async function searchPersonas(locale: Locale, searchQuery: string) {
   const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
-  const personas = await prisma.$queryRaw<TPersonaForStudy[]>`
+  const personas = await prismaRO.$queryRaw<TPersonaForStudy[]>`
 SELECT
   "id" as "personaId",
   "name",

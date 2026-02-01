@@ -14,7 +14,7 @@ import {
   InterviewSessionExtra,
   User,
 } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { getUserTokens } from "@/tokens/lib";
 import { waitUntil } from "@vercel/functions";
@@ -62,7 +62,7 @@ export async function fetchUserInterviewProjects(): Promise<
   >
 > {
   return withAuth(async (user) => {
-    const projects = await prisma.interviewProject.findMany({
+    const projects = await prismaRO.interviewProject.findMany({
       where: { userId: user.id },
       include: {
         sessions: {
@@ -440,7 +440,7 @@ export async function fetchInterviewSessionChat({
   }>
 > {
   return withAuth(async (user) => {
-    const userChat = await prisma.userChat.findUnique({
+    const userChat = await prismaRO.userChat.findUnique({
       where: {
         token: userChatToken,
         kind: "interviewSession",
@@ -523,7 +523,7 @@ export async function generateInterviewReport(
 > {
   return withAuth(async (user) => {
     // Verify project ownership
-    const project = await prisma.interviewProject
+    const project = await prismaRO.interviewProject
       .findUniqueOrThrow({
         where: { id: projectId, userId: user.id },
         select: { id: true, userId: true, brief: true },
@@ -533,13 +533,13 @@ export async function generateInterviewReport(
     // Get completed session IDs using raw SQL for efficient filtering
     // extra->>'ongoing' IS NULL 需要，如果 ongoing key 不存在，会导致 extra->>'ongoing' != 'true' 不成立
     const completedSessionIds = includePersonaSessions
-      ? await prisma.$queryRaw<{ id: number }[]>`
+      ? await prismaRO.$queryRaw<{ id: number }[]>`
           SELECT id FROM "InterviewSession"
           WHERE "projectId" = ${project.id}
           AND (extra->>'ongoing' IS NULL OR extra->>'ongoing' != 'true')
           AND title IS NOT NULL AND title != ''
         `
-      : await prisma.$queryRaw<{ id: number }[]>`
+      : await prismaRO.$queryRaw<{ id: number }[]>`
           SELECT id FROM "InterviewSession"
           WHERE "projectId" = ${project.id}
           AND "intervieweeUserId" IS NOT NULL
@@ -547,7 +547,7 @@ export async function generateInterviewReport(
           AND title IS NOT NULL AND title != ''
         `;
 
-    const sessions = await prisma.interviewSession.findMany({
+    const sessions = await prismaRO.interviewSession.findMany({
       where: {
         id: { in: completedSessionIds.map((s) => s.id) },
       },

@@ -85,7 +85,7 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
     }
   >
 > {
-  const userChat = await prisma.userChat.findUnique({
+  const userChat = await prismaRO.userChat.findUnique({
     where: { token, kind },
     include: {
       messages: { orderBy: { id: "asc" } },
@@ -114,7 +114,7 @@ export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
   studyUserChatToken: string,
   kind: Tkind,
 ): Promise<ServerActionResult<{ backgroundToken: string | null; chatMessageUpdatedAt: Date }>> {
-  const userChat = await prisma.userChat.findUnique({
+  const userChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken, kind },
     select: {
       backgroundToken: true,
@@ -169,7 +169,7 @@ export async function fetchAnalystByStudyUserChatToken({
 }: {
   studyUserChatToken: string;
 }): Promise<ServerActionResult<Analyst>> {
-  const studyUserChat = await prisma.userChat.findUnique({
+  const studyUserChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
     include: {
       analyst: true,
@@ -193,7 +193,7 @@ export async function fetchAttachmentsByStudyUserChatToken({
 }: {
   studyUserChatToken: string;
 }): Promise<ServerActionResult<FileUIPart[]>> {
-  const studyUserChat = await prisma.userChat.findUnique({
+  const studyUserChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
     include: {
       analyst: true,
@@ -245,7 +245,7 @@ export async function fetchAnalystInterviewForPersona({
     };
   }>
 > {
-  const studyUserChat = await prisma.userChat.findUnique({
+  const studyUserChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
   });
   // const analystId = studyUserChat?.analyst?.id;
@@ -267,7 +267,7 @@ export async function fetchAnalystInterviewForPersona({
     // ],
   };
 
-  const interview = await prisma.analystInterview.findFirst({
+  const interview = await prismaRO.analystInterview.findFirst({
     where,
     select: {
       id: true,
@@ -337,7 +337,7 @@ export async function fetchPersonasSearchInStudy({
     })[]
   >
 > {
-  const studyUserChat = await prisma.userChat.findUnique({
+  const studyUserChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
     select: {
       messages: {
@@ -377,7 +377,7 @@ export async function fetchPersonasSearchInStudy({
     ids = Array.from(personaIds);
   }
 
-  const personas = await prisma.persona.findMany({
+  const personas = await prismaRO.persona.findMany({
     where: {
       id: { in: ids },
     },
@@ -412,7 +412,7 @@ export async function fetchPersonasByScoutUserChatToken({
     })[]
   >
 > {
-  const personas = await prisma.persona.findMany({
+  const personas = await prismaRO.persona.findMany({
     where: {
       scoutUserChat: {
         token: scoutUserChatToken,
@@ -459,7 +459,7 @@ export async function fetchAnalystReportByToken(token: string): Promise<
     }
   >
 > {
-  const report = await prisma.analystReport.findUnique({
+  const report = await prismaRO.analystReport.findUnique({
     where: { token },
     select: {
       id: true,
@@ -504,7 +504,7 @@ export async function fetchAnalystReportsOfStudyUserChat({
     })[]
   >
 > {
-  const userChat = await prisma.userChat.findUnique({
+  const userChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken },
   });
   const reportTokens = (userChat?.context as UserChatContext | undefined)?.reportTokens;
@@ -561,7 +561,7 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
     })[]
   >
 > {
-  const userChat = await prisma.userChat.findUnique({
+  const userChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken },
   });
   const podcastTokens = (userChat?.context as UserChatContext | undefined)?.podcastTokens;
@@ -602,7 +602,7 @@ export async function fetchAnalystReportsCountOfStudyUserChat({
 }: {
   studyUserChatToken: string;
 }): Promise<ServerActionResult<number>> {
-  const userChat = await prisma.userChat.findUnique({
+  const userChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken },
   });
   return {
@@ -616,7 +616,7 @@ export async function fetchAnalystPodcastsCountOfStudyUserChat({
 }: {
   studyUserChatToken: string;
 }): Promise<ServerActionResult<number>> {
-  const userChat = await prisma.userChat.findUnique({
+  const userChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken },
   });
   return {

@@ -3,7 +3,7 @@ import { createTextEmbedding } from "@/ai/embedding";
 import authOptions from "@/app/(auth)/authOptions";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Persona } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -46,7 +46,7 @@ export async function fetchPersonas({
     };
 
     const [personas, totalCount] = await Promise.all([
-      prisma.persona.findMany({
+      prismaRO.persona.findMany({
         where,
         orderBy: {
           id: "desc",
@@ -62,7 +62,7 @@ export async function fetchPersonas({
         skip,
         take: pageSize,
       }),
-      prisma.persona.count({ where }),
+      prismaRO.persona.count({ where }),
     ]);
 
     return {
@@ -87,7 +87,7 @@ export async function fetchPersonas({
   if (searchQuery && searchQuery.trim()) {
     try {
       const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
-      const personas = await prisma.$queryRaw<TPersona[]>`
+      const personas = await prismaRO.$queryRaw<TPersona[]>`
         SELECT token, name, source, prompt, tags, tier
         FROM "Persona"
         WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9 AND locale = ${locale} AND tier = ANY(${[1, 2]})
@@ -95,7 +95,7 @@ export async function fetchPersonas({
         LIMIT ${pageSize}
         OFFSET ${skip}
       `;
-      const totalCountResult = await prisma.$queryRaw<{ count: number }[]>`
+      const totalCountResult = await prismaRO.$queryRaw<{ count: number }[]>`
         SELECT COUNT(*) as count
         FROM "Persona"
         WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9 AND locale = ${locale} AND tier = ANY(${[1, 2]})
@@ -132,7 +132,7 @@ export async function fetchPersonas({
   };
   // Regular search (no query or fallback from vector search error)
   const [personas, totalCount] = await Promise.all([
-    prisma.persona.findMany({
+    prismaRO.persona.findMany({
       where,
       orderBy: {
         id: "desc",
@@ -148,7 +148,7 @@ export async function fetchPersonas({
       skip,
       take: pageSize,
     }),
-    prisma.persona.count({ where }),
+    prismaRO.persona.count({ where }),
   ]);
 
   return {

@@ -7,7 +7,7 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 
 type TPersona = Pick<Persona, "name" | "source" | "prompt" | "locale" | "tier"> & {
   token: string;
@@ -17,7 +17,7 @@ type TPersona = Pick<Persona, "name" | "source" | "prompt" | "locale" | "tier"> 
 export async function rescorePersona(personaToken: string): Promise<ServerActionResult<void>> {
   await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
 
-  const persona = await prisma.persona.findUniqueOrThrow({
+  const persona = await prismaRO.persona.findUniqueOrThrow({
     where: { token: personaToken },
   });
 
@@ -72,7 +72,7 @@ export async function fetchAdminPersonas({
   if (searchQuery && searchQuery.trim()) {
     try {
       const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
-      const personas = await prisma.$queryRaw<TPersonaWithImport[]>`
+      const personas = await prismaRO.$queryRaw<TPersonaWithImport[]>`
         SELECT
           p.token, p.name, p.source, p.prompt, p.tags, p.locale, p.tier, p.locale,
           pi.id as "personaImportId",
@@ -90,7 +90,7 @@ export async function fetchAdminPersonas({
         LIMIT ${pageSize}
         OFFSET ${skip}
       `;
-      const totalCountResult = await prisma.$queryRaw<{ count: number }[]>`
+      const totalCountResult = await prismaRO.$queryRaw<{ count: number }[]>`
         SELECT COUNT(*) as count
         FROM "Persona" p
         WHERE p."embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
@@ -148,7 +148,7 @@ export async function fetchAdminPersonas({
 
   // Regular search (no query or fallback from vector search error)
   const [personas, totalCount] = await Promise.all([
-    prisma.persona.findMany({
+    prismaRO.persona.findMany({
       where,
       orderBy: {
         createdAt: "desc",
@@ -178,7 +178,7 @@ export async function fetchAdminPersonas({
       skip,
       take: pageSize,
     }),
-    prisma.persona.count({ where }),
+    prismaRO.persona.count({ where }),
   ]);
 
   return {
@@ -217,7 +217,7 @@ export async function fetchPersonaImportDetails(personaImportId: number): Promis
 > {
   await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
 
-  const personaImport = await prisma.personaImport.findUnique({
+  const personaImport = await prismaRO.personaImport.findUnique({
     where: { id: personaImportId },
     include: {
       user: {

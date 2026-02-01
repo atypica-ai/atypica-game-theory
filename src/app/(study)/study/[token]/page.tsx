@@ -1,4 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { fetchUserChatByToken } from "@/app/(study)/study/actions";
 import { StudyPageClient } from "@/app/(study)/study/StudyPageClient";
 import { Forbidden } from "@/components/Forbidden";
 import { DefaultLayout } from "@/components/layout/DefaultLayout";
@@ -10,7 +11,6 @@ import { getLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Metadata } from "next/types";
 import { Suspense } from "react";
-import { fetchUserChatByToken } from "../actions";
 
 // generateMetadata 需要访问数据库
 export const dynamic = "force-dynamic";

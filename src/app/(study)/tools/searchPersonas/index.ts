@@ -2,7 +2,7 @@ import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { tool } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -86,13 +86,13 @@ export async function searchPersonasInTool({
     let personas = [] as TPersonaForStudy[];
     if (usePrivatePersonas) {
       const personaIds = (
-        await prisma.persona.findMany({
+        await prismaRO.persona.findMany({
           where: { personaImport: { userId } },
           select: { id: true },
         })
       ).map(({ id }) => id);
       console.log(personaIds);
-      personas = await prisma.$queryRaw<TPersonaForStudy[]>`
+      personas = await prismaRO.$queryRaw<TPersonaForStudy[]>`
 SELECT
   "id" as "personaId",
   "name",
@@ -105,7 +105,7 @@ ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
 LIMIT 5
 `;
     } else {
-      personas = await prisma.$queryRaw<TPersonaForStudy[]>`
+      personas = await prismaRO.$queryRaw<TPersonaForStudy[]>`
 SELECT
   "id" as "personaId",
   "name",

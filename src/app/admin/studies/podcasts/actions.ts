@@ -15,7 +15,7 @@ import {
   User,
 } from "@/prisma/client";
 import { AnalystPodcastWhereInput } from "@/prisma/models";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
 import { revalidatePath, revalidateTag } from "next/cache";
@@ -51,7 +51,7 @@ export async function fetchAnalystPodcastsAction(
 
   // Get featured podcast IDs if featuredOnly filter is active
   if (featuredOnly) {
-    const featuredItems = await prisma.featuredItem.findMany({
+    const featuredItems = await prismaRO.featuredItem.findMany({
       where: {
         resourceType: FeaturedItemResourceType.AnalystPodcast,
       },
@@ -78,7 +78,7 @@ export async function fetchAnalystPodcastsAction(
     where.id = { in: featuredPodcastIds };
   }
 
-  const analystPodcasts = await prisma.analystPodcast.findMany({
+  const analystPodcasts = await prismaRO.analystPodcast.findMany({
     where,
     include: {
       user: {
@@ -92,11 +92,11 @@ export async function fetchAnalystPodcastsAction(
     take: pageSize,
   });
 
-  const totalCount = await prisma.analystPodcast.count({ where });
+  const totalCount = await prismaRO.analystPodcast.count({ where });
 
   // Check featured status for each podcast and get tags
   const podcastIds = analystPodcasts.map((p) => p.id);
-  const featuredItems = await prisma.featuredItem.findMany({
+  const featuredItems = await prismaRO.featuredItem.findMany({
     where: {
       resourceType: FeaturedItemResourceType.AnalystPodcast,
       resourceId: { in: podcastIds },

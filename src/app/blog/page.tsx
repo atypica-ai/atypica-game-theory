@@ -1,6 +1,6 @@
 import { generatePageMetadata } from "@/lib/request/metadata";
 import type { BlogArticleExtra } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
@@ -25,13 +25,13 @@ const getCachedBlogList = unstable_cache(
       },
     };
 
-    const totalCount = await prisma.blogArticle.count({
+    const totalCount = await prismaRO.blogArticle.count({
       where,
     });
 
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-    const articles = await prisma.blogArticle.findMany({
+    const articles = await prismaRO.blogArticle.findMany({
       where,
       orderBy: { publishedAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,

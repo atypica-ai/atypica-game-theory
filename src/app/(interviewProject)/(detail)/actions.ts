@@ -16,7 +16,7 @@ import {
   UserChat,
 } from "@/prisma/client";
 import { InterviewSessionWhereInput } from "@/prisma/models";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { isToolOrDynamicToolUIPart } from "ai";
 import { notFound } from "next/navigation";
@@ -140,7 +140,7 @@ export async function fetchInterviewSessionStatsByProjectToken({
   }>
 > {
   return withAuth(async () => {
-    const { sessions } = await prisma.interviewProject
+    const { sessions } = await prismaRO.interviewProject
       .findUniqueOrThrow({
         // where: { id: projectId, userId: user.id },
         where: { token: projectToken },
@@ -237,7 +237,7 @@ export async function fetchInterviewSessionsByProjectToken({
 > {
   return withAuth(async () => {
     // First verify the project belongs to the user
-    const project = await prisma.interviewProject.findUnique({
+    const project = await prismaRO.interviewProject.findUnique({
       // where: { id: projectId, userId: user.id },
       where: { token: projectToken },
       select: { id: true },
@@ -260,7 +260,7 @@ export async function fetchInterviewSessionsByProjectToken({
     if (filter === "completed") {
       // Get completed sessions (where extra.ongoing is false or null) - paginated
       const [countAndIds] = await Promise.all([
-        prisma.$queryRaw<Array<{ id: number; total_count: bigint }>>`
+        prismaRO.$queryRaw<Array<{ id: number; total_count: bigint }>>`
           SELECT
             id,
             COUNT(*) OVER() as total_count
@@ -279,7 +279,7 @@ export async function fetchInterviewSessionsByProjectToken({
     } else if (filter === "incomplete") {
       // Get incomplete sessions (where extra.ongoing is true) - paginated
       const [countAndIds] = await Promise.all([
-        prisma.$queryRaw<Array<{ id: number; total_count: bigint }>>`
+        prismaRO.$queryRaw<Array<{ id: number; total_count: bigint }>>`
           SELECT
             id,
             COUNT(*) OVER() as total_count
@@ -305,14 +305,14 @@ export async function fetchInterviewSessionsByProjectToken({
       } satisfies InterviewSessionWhereInput;
 
       const [sessions, count] = await Promise.all([
-        prisma.interviewSession.findMany({
+        prismaRO.interviewSession.findMany({
           where: whereCondition,
           select: { id: true },
           orderBy: { id: "desc" },
           skip,
           take: pageSize,
         }),
-        prisma.interviewSession.count({ where: whereCondition }),
+        prismaRO.interviewSession.count({ where: whereCondition }),
       ]);
 
       sessionIds = sessions.map((r) => r.id);
@@ -322,7 +322,7 @@ export async function fetchInterviewSessionsByProjectToken({
     // Fetch full session data for the filtered IDs, maintaining order
     const sessions =
       sessionIds.length > 0
-        ? await prisma.interviewSession.findMany({
+        ? await prismaRO.interviewSession.findMany({
             where: { id: { in: sessionIds } },
             select: {
               id: true,
@@ -425,13 +425,13 @@ export async function fetchInterviewReportsByProjectToken({
 > {
   return withAuth(async () => {
     // Ensure project belongs to user
-    const project = await prisma.interviewProject
+    const project = await prismaRO.interviewProject
       .findUniqueOrThrow({
         // where: { id: projectId, userId: user.id },
         where: { token: projectToken },
       })
       .catch(() => notFound());
-    const reports = await prisma.interviewReport.findMany({
+    const reports = await prismaRO.interviewReport.findMany({
       where: {
         projectId: project.id,
       },
