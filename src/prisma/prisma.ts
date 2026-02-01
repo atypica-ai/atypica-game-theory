@@ -112,8 +112,13 @@ function createPool(connectionString?: string, isReadOnly = false) {
       stats,
     });
 
-    // ⚠️ 警告：如果没有空闲连接且有等待队列
-    if (stats.idle === 0 && stats.waiting > 0) {
+    // ⚠️ 警告：连接池耗尽（优化条件避免启动时误报）
+    // 1. 跳过初始化期间（total < min 说明还在创建最小连接数）
+    // 2. 等待队列需要足够长（waiting > 2，避免瞬时单个请求误报）
+    const isInitializing = stats.total < poolConfig.min;
+    const hasSignificantWaiting = stats.waiting > 2;
+
+    if (!isInitializing && stats.idle === 0 && hasSignificantWaiting) {
       prismaLogger.warn({
         msg: "⚠️ Connection pool exhausted!",
         ro: isReadOnly,
@@ -141,7 +146,10 @@ function createPool(connectionString?: string, isReadOnly = false) {
         idle: pool.idleCount,
         waiting: pool.waitingCount,
       };
-      if (stats.waiting > 0 || stats.idle === 0) {
+      // 只在真正有问题时警告：等待队列较长，或同时没有空闲且有等待
+      const hasIssue = stats.waiting > 2 || (stats.idle === 0 && stats.waiting > 0);
+
+      if (hasIssue) {
         prismaLogger.warn({
           msg: "Connection pool status check",
           ro: isReadOnly,
