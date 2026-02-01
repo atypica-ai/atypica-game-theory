@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
+import { getRequestOrigin } from "@/lib/request/headers";
 import { AWS_MARKETPLACE_CONFIG } from "@/app/(aws)/config";
 import { createAWSMarketplaceUserWithTeam } from "@/app/(aws)/lib/auth";
 import {
@@ -13,30 +14,6 @@ import {
 } from "@/app/(aws)/lib/register";
 
 const logger = rootLogger.child({ module: "aws-marketplace-register" });
-
-/**
- * Get the base URL from the request (preserving the original host from frp/proxy)
- */
-function getBaseUrl(req: NextRequest): string {
-  // Try to get the original host from forwarded headers (frp, proxy, etc.)
-  const forwardedHost = req.headers.get("x-forwarded-host");
-  const forwardedProto = req.headers.get("x-forwarded-proto") || "https";
-
-  if (forwardedHost) {
-    return `${forwardedProto}://${forwardedHost}`;
-  }
-
-  // Fallback to host header
-  const host = req.headers.get("host");
-  if (host) {
-    // Determine protocol from x-forwarded-proto or default to https for production-like setups
-    const proto = req.headers.get("x-forwarded-proto") || (host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https");
-    return `${proto}://${host}`;
-  }
-
-  // Ultimate fallback to request URL
-  return req.url;
-}
 
 /**
  * Extract token from request (query param or POST body)
@@ -126,7 +103,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       } catch (error) {
         const { isTokenError, errorCode } = handleTokenError(error);
         if (isTokenError) {
-          return NextResponse.redirect(new URL(`/error?code=${errorCode}`, getBaseUrl(req)));
+          return NextResponse.redirect(new URL(`/error?code=${errorCode}`, await getRequestOrigin()));
         }
         throw error; // Re-throw other errors
       }
@@ -152,7 +129,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
         const errorUrl = validation.status
           ? `/error?code=${validation.error}&status=${validation.status}`
           : `/error?code=${validation.error}`;
-        const errorResponse = NextResponse.redirect(new URL(errorUrl, getBaseUrl(req)));
+        const errorResponse = NextResponse.redirect(new URL(errorUrl, await getRequestOrigin()));
         return clearCustomerIdentifierCookie(errorResponse);
       }
 
@@ -164,7 +141,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
         redirectUrl: "/account",
         sessionToken,
         userId: teamUser.id,
-        baseUrl: getBaseUrl(req),
+        baseUrl: await getRequestOrigin(),
       });
 
       // Clear the temporary cache since user is now logged in
@@ -185,7 +162,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
           customerIdentifier,
         });
         return NextResponse.redirect(
-          new URL("/error?code=aws_registration_error", getBaseUrl(req))
+          new URL("/error?code=aws_registration_error", await getRequestOrigin())
         );
       }
 
@@ -195,7 +172,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       } catch (error) {
         logger.error({ msg: "Failed to resolve productCode for new customer", error });
         return NextResponse.redirect(
-          new URL("/error?code=aws_registration_error", getBaseUrl(req))
+          new URL("/error?code=aws_registration_error", await getRequestOrigin())
         );
       }
     }
@@ -220,7 +197,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       redirectUrl: "/account",
       sessionToken,
       userId: teamUser.id,
-      baseUrl: getBaseUrl(req),
+      baseUrl: await getRequestOrigin(),
     });
 
     // Cache customerIdentifier temporarily in case user refreshes
@@ -238,7 +215,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
     // Check for network errors
     if (isNetworkError(error)) {
       return NextResponse.redirect(
-        new URL("/error?code=aws_network_error", getBaseUrl(req))
+        new URL("/error?code=aws_network_error", await getRequestOrigin())
       );
     }
 

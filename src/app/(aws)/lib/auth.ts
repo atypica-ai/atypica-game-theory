@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
 import { createTeam } from "@/app/team/lib";
+import { createPersonalUser } from "@/app/(auth)/lib";
 import { manuallyAddTeamSubscription } from "@/app/payment/manualSubscription";
 import { AWS_MARKETPLACE_CONFIG } from "../config";
 import { syncAwsSubscriptionExpiration } from "./subscription";
@@ -36,27 +37,14 @@ export async function createAWSMarketplaceUserWithTeam({
   teamUser: User;
 }> {
   const email = `${customerIdentifier}@aws.atypica.ai`;
-  const name = customerIdentifier;
 
   try {
-    // 1. Create personal user (no tokensAccount - AWS users use team tokens)
-    const personalUser = await prisma.$transaction(async (tx) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _, ...user } = await tx.user.create({
-        data: {
-          name,
-          email,
-          password: "", // Empty password - cannot login normally
-          emailVerified: new Date(), // Skip email verification
-        },
-      });
-
-      // Create user profile
-      await tx.userProfile.create({
-        data: { userId: user.id },
-      });
-
-      return user;
+    // 1. Create personal user (with tokensAccount and signup tokens, same as normal registration)
+    const personalUser = await createPersonalUser({
+      email,
+      password: undefined, // No password - cannot login via email/password
+      emailVerified: new Date(), // Skip email verification
+      grantSignupTokens: true, // Grant signup tokens like normal users
     });
 
     // 2. Create team and team member user
