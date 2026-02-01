@@ -75,18 +75,19 @@ export async function POST(req: Request) {
   // 这个要在 prisma.userChat.findUnique 之前执行，因为会更新 analyst.kind
   if (
     newMessage.lastPart.type === `tool-${StudyToolName.makeStudyPlan}` &&
-    newMessage.lastPart.state === "output-available" &&
-    newMessage.lastPart.input
+    newMessage.lastPart.state === "output-available"
   ) {
     const toolPart = newMessage.lastPart as Extract<
       ToolUIPart<Pick<StudyUITools, StudyToolName.makeStudyPlan>>,
       { state: "output-available" }
     >;
-    await saveAnalystFromPlan({
-      userId,
-      userChatToken,
-      ...toolPart.input,
-    });
+    if (toolPart.input && toolPart.output.confirmed) {
+      await saveAnalystFromPlan({
+        userId,
+        userChatToken,
+        ...toolPart.input,
+      });
+    }
   }
 
   // 找到有效的 userChat，并确保有权限

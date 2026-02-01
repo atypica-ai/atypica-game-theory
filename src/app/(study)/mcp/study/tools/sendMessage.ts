@@ -9,6 +9,8 @@ import { createPlanModeAgentConfig } from "@/app/(study)/agents/configs/planMode
 import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/productRnDAgentConfig";
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
 import { UserChatContext } from "@/app/(study)/context/types";
+import { saveAnalystFromPlan } from "@/app/(study)/study/lib";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
@@ -22,7 +24,7 @@ import {
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-import { generateId, UIMessageStreamWriter } from "ai";
+import { generateId, ToolUIPart } from "ai";
 import { Locale } from "next-intl";
 
 // Use the same schema as the API route
@@ -39,7 +41,7 @@ export async function handleSendMessage(
       throw new Error("Missing userId in request context");
     }
 
-    const { userChatToken, message, attachments } = args;
+    const { userChatToken, message: newMessage, attachments } = args;
     const userId = context.userId;
 
     const logger = rootLogger.child({
@@ -48,6 +50,24 @@ export async function handleSendMessage(
       userId,
       userChatToken,
     });
+
+    // 这个要在 prisma.userChat.findUnique 之前执行，因为会更新 analyst.kind
+    if (
+      newMessage.lastPart.type === `tool-${StudyToolName.makeStudyPlan}` &&
+      newMessage.lastPart.state === "output-available"
+    ) {
+      const toolPart = newMessage.lastPart as Extract<
+        ToolUIPart<Pick<StudyUITools, StudyToolName.makeStudyPlan>>,
+        { state: "output-available" }
+      >;
+      if (toolPart.input && toolPart.output.confirmed) {
+        await saveAnalystFromPlan({
+          userId,
+          userChatToken,
+          ...toolPart.input,
+        });
+      }
+    }
 
     // Verify ownership and fetch full userChat - same logic as route.ts
     const userChat = await prisma.userChat.findUnique({
@@ -72,15 +92,15 @@ export async function handleSendMessage(
     // Save message - same logic as route.ts
     // If message.id exists, it updates existing message with tool result
     // If message.id is undefined, it creates new message
-    const messageId = message.id ?? generateId();
+    const messageId = newMessage.id ?? generateId();
     await persistentAIMessageToDB({
       mode: "append",
       userChatId: studyUserChatId,
       message: {
         id: messageId,
-        role: message.role,
-        parts: [message.lastPart],
-        metadata: message.metadata,
+        role: newMessage.role,
+        parts: [newMessage.lastPart],
+        metadata: newMessage.metadata,
       },
       attachments,
     });
@@ -88,7 +108,7 @@ export async function handleSendMessage(
     logger.info({
       msg: "Message saved via MCP",
       messageId,
-      role: message.role,
+      role: newMessage.role,
       hasAttachments: !!attachments?.length,
     });
 
@@ -98,7 +118,7 @@ export async function handleSendMessage(
 
     // Detect locale - same logic as route.ts
     const locale: Locale = await detectInputLanguage({
-      text: [message.lastPart].map((part) => (part.type === "text" ? part.text : "")).join(""),
+      text: [newMessage.lastPart].map((part) => (part.type === "text" ? part.text : "")).join(""),
       fallbackLocale:
         userChat.analyst.locale && VALID_LOCALES.includes(userChat.analyst.locale as Locale)
           ? (userChat.analyst.locale as Locale)
@@ -124,7 +144,7 @@ export async function handleSendMessage(
         ],
         structuredContent: {
           messageId,
-          role: message.role,
+          role: newMessage.role,
           status: "saved_no_ai",
           reason: "quota_exceeded",
         },
@@ -155,26 +175,22 @@ export async function handleSendMessage(
       studyAbortController,
     };
 
-    // Create dummy streamWriter for MCP (no streaming needed)
-    const dummyWriter: UIMessageStreamWriter = {
-      write: () => {}, // Do nothing
-    } as unknown as UIMessageStreamWriter;
-
     try {
       // Execute agent based on analyst.kind - same logic as route.ts
+      // No streamWriter needed for MCP (synchronous execution)
       if (!userChat.analyst.kind) {
         // Plan Mode - Intent Layer for research planning
         const config = await createPlanModeAgentConfig(agentContext);
-        await executeBaseAgentRequest(agentContext, config, dummyWriter);
+        await executeBaseAgentRequest(agentContext, config);
       } else if (userChat.analyst.kind === AnalystKind.productRnD) {
         const config = await createProductRnDAgentConfig(agentContext);
-        await executeBaseAgentRequest(agentContext, config, dummyWriter);
+        await executeBaseAgentRequest(agentContext, config);
       } else if (userChat.analyst.kind === AnalystKind.fastInsight) {
         const config = await createFastInsightAgentConfig(agentContext);
-        await executeBaseAgentRequest(agentContext, config, dummyWriter);
+        await executeBaseAgentRequest(agentContext, config);
       } else {
         const config = await createStudyAgentConfig(agentContext);
-        await executeBaseAgentRequest(agentContext, config, dummyWriter);
+        await executeBaseAgentRequest(agentContext, config);
       }
 
       logger.info({
@@ -192,7 +208,7 @@ export async function handleSendMessage(
         ],
         structuredContent: {
           messageId,
-          role: message.role,
+          role: newMessage.role,
           status: "completed",
           attachmentCount: attachments?.length ?? 0,
         },
@@ -215,7 +231,7 @@ export async function handleSendMessage(
         ],
         structuredContent: {
           messageId,
-          role: message.role,
+          role: newMessage.role,
           status: "ai_failed",
           error: aiErrorMessage,
         },

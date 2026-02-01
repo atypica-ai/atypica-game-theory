@@ -6,8 +6,6 @@ import {
   handleCreateStudy,
   sendMessageInputSchema,
   handleSendMessage,
-  getStatusInputSchema,
-  handleGetStatus,
   listStudiesInputSchema,
   handleListStudies,
   getMessagesInputSchema,
@@ -62,15 +60,6 @@ export function createStudyMcpServer(): McpServer {
     handleSendMessage,
   );
 
-  server.registerTool(
-    "atypica_study_get_status",
-    {
-      title: "Get Study Status",
-      description: "Get current status and progress of a study session",
-      inputSchema: getStatusInputSchema,
-    },
-    handleGetStatus,
-  );
 
   server.registerTool(
     "atypica_study_list",

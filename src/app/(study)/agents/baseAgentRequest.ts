@@ -136,7 +136,7 @@ export interface BaseStepContext {
 export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = StudyToolSet>(
   baseContext: BaseAgentContext,
   config: AgentRequestConfig<TOOLS>,
-  streamWriter: UIMessageStreamWriter,
+  streamWriter?: UIMessageStreamWriter,
 ) {
   const {
     userId,
@@ -678,7 +678,8 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // Phase 10: Return Stream (Universal: always use merge)
   // =============================================================================
 
-  streamWriter.merge(
+  // Only merge if streamWriter is provided (for non-MCP scenarios)
+  streamWriter?.merge(
     streamTextResult.toUIMessageStream({
       generateMessageId: () => streamingMessage.id,
     }),

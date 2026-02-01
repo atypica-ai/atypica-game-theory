@@ -1,6 +1,5 @@
 export * from "./createStudy";
 export * from "./sendMessage";
-export * from "./getStatus";
 export * from "./listStudies";
 export * from "./getMessages";
 export * from "./getReport";

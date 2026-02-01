@@ -32,10 +32,10 @@ export async function handleGetMessages(
     const { userChatToken, afterMessageId, limit } = args;
     const userId = context.userId;
 
-    // Verify ownership
+    // Verify ownership and check background status
     const userChat = await prisma.userChat.findUnique({
       where: { token: userChatToken, kind: "study" },
-      select: { id: true, userId: true },
+      select: { id: true, userId: true, backgroundToken: true },
     });
 
     if (!userChat) {
@@ -45,6 +45,9 @@ export async function handleGetMessages(
     if (userChat.userId !== userId) {
       throw new Error("Unauthorized: Study does not belong to user");
     }
+
+    // Check if research is running in background
+    const isRunning = !!userChat.backgroundToken;
 
     // Build query
     const whereClause = {
@@ -82,6 +85,7 @@ export async function handleGetMessages(
     return {
       content: [{ type: "text", text: messagesText || "No messages found" }],
       structuredContent: {
+        isRunning,
         messages: messages.map((msg) => ({
           messageId: msg.id,
           role: msg.role,
