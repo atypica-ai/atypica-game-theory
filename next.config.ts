@@ -59,14 +59,13 @@ const nextConfig: NextConfig = {
     // loader: "custom",
     // loaderFile: "./lib/imageLoader",
   },
-  // Allow cross-origin requests from development domain and AWS Marketplace
+  // Allow cross-origin requests from development domain
+  allowedDevOrigins: process.env.SERVER_ACTIONS_ALLOWED_ORIGINS
+    ? process.env.SERVER_ACTIONS_ALLOWED_ORIGINS.split(",")
+    : [],
   experimental: {
     // see https://nextjs.org/docs/app/api-reference/functions/forbidden
     authInterrupts: true,
-    serverActions:{
-      allowedOrigins:["aws.amazon.com","console.aws.amazon.com",
-        "us-east-1.console.aws.amazon.com",]
-    }
     // 这个暂时不需要，通过 proxy 改写了 host 和 origin
     // serverActions: {
     //   allowedOrigins: process.env.SERVER_ACTIONS_ALLOWED_ORIGINS
