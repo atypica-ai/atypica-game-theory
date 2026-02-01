@@ -1,8 +1,12 @@
+import "server-only";
+
 /**
  * AWS Marketplace Configuration
  *
  * This module contains all configuration constants and validation for AWS Marketplace integration.
  */
+
+export const AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN = "aws.atypica.ai";
 
 // Required environment variables
 const AWS_ENV_VARS = {
@@ -46,9 +50,7 @@ export function validateAwsEnvVars(): void {
   }
 
   if (missingVars.length > 0) {
-    throw new Error(
-      `Missing required AWS environment variables: ${missingVars.join(", ")}`
-    );
+    throw new Error(`Missing required AWS environment variables: ${missingVars.join(", ")}`);
   }
 }
 

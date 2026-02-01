@@ -72,10 +72,12 @@ export async function validateExistingCustomer({
   awsCustomer: NonNullable<
     Awaited<ReturnType<typeof prisma.aWSMarketplaceCustomer.findUnique>>
   > & {
-    user: { id: number };
+    user: User;
   };
   customerIdentifier: string;
-}): Promise<{ team: Team; teamUser: User } | { error: string; status?: string }> {
+}): Promise<
+  { personalUser: Pick<User, "id">; team: Team; teamUser: User } | { error: string; status?: string }
+> {
   // Check subscription status
   if (awsCustomer.status !== "active") {
     logger.warn({
@@ -120,18 +122,21 @@ export async function validateExistingCustomer({
     return { error: "aws_data_inconsistency" };
   }
 
-  return { team, teamUser };
+  return { personalUser: awsCustomer.user, team, teamUser };
 }
 
 /**
- * Create session token for user
+ * Create session token for AWS Personal User
+ * AWS users login as Personal User (not Team Member)
  */
-export async function createSessionToken(teamUser: User, team: Team): Promise<string> {
+export async function createSessionToken(
+  personalUser: Pick<User, "id">,
+): Promise<string> {
   return encode({
     token: {
-      id: teamUser.id,
-      _ut: 1,
-      _tid: team.id,
+      id: personalUser.id,
+      _ut: 0, // 0 = Personal User
+      _tid: undefined,
     },
     secret: process.env.AUTH_SECRET || "",
   });

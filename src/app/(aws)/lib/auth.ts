@@ -1,13 +1,13 @@
 import "server-only";
 
-import { prisma } from "@/prisma/prisma";
-import { rootLogger } from "@/lib/logging";
-import { createTeam } from "@/app/team/lib";
 import { createPersonalUser } from "@/app/(auth)/lib";
+import { AWS_MARKETPLACE_CONFIG, AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN } from "@/app/(aws)/config";
 import { manuallyAddTeamSubscription } from "@/app/payment/manualSubscription";
-import { AWS_MARKETPLACE_CONFIG } from "../config";
-import { syncAwsSubscriptionExpiration } from "./subscription";
+import { createTeam } from "@/app/team/lib";
+import { rootLogger } from "@/lib/logging";
 import type { Team, User } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
+import { syncAwsSubscriptionExpiration } from "./subscription";
 
 const logger = rootLogger.child({ module: "aws-marketplace-auth" });
 
@@ -36,7 +36,7 @@ export async function createAWSMarketplaceUserWithTeam({
   team: Team;
   teamUser: User;
 }> {
-  const email = `${customerIdentifier}@aws.atypica.ai`;
+  const email = `${customerIdentifier}@${AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN}`;
 
   try {
     // 1. Create personal user (with tokensAccount and signup tokens, same as normal registration)

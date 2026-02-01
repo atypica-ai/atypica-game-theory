@@ -133,14 +133,14 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
         return clearCustomerIdentifierCookie(errorResponse);
       }
 
-      const { team, teamUser } = validation;
+      const { personalUser } = validation;
 
-      // Create session and redirect
-      const sessionToken = await createSessionToken(teamUser, team);
+      // Create session and redirect (login as Personal User)
+      const sessionToken = await createSessionToken(personalUser);
       const response = setSessionAndRedirect({
         redirectUrl: "/account",
         sessionToken,
-        userId: teamUser.id,
+        userId: personalUser.id,
         baseUrl: await getRequestOrigin(),
       });
 
@@ -191,12 +191,12 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       teamId: team.id,
     });
 
-    // Step 5: Set session and redirect to account
-    const sessionToken = await createSessionToken(teamUser, team);
+    // Step 5: Set session and redirect to account (login as Personal User)
+    const sessionToken = await createSessionToken(personalUser);
     let response = setSessionAndRedirect({
       redirectUrl: "/account",
       sessionToken,
-      userId: teamUser.id,
+      userId: personalUser.id,
       baseUrl: await getRequestOrigin(),
     });
 
