@@ -162,7 +162,7 @@ export async function waitUntilAttachmentsProcessed({
 }: {
   analyst: Analyst;
   locale: Locale;
-  streamWriter: UIMessageStreamWriter;
+  streamWriter?: UIMessageStreamWriter;
   streamingMessage: UIMessage;
 }): Promise<
   ({ type: "image"; mimeType: string; dataUrl: string } | { type: "text"; text: string })[]
@@ -271,7 +271,7 @@ export async function waitUntilAttachmentsProcessed({
       },
     });
 
-    streamWriter.merge(stream);
+    streamWriter?.merge(stream);
   });
 
   // 等待处理完成
