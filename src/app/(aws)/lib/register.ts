@@ -1,23 +1,36 @@
 import "server-only";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { MarketplaceMetering } from "@aws-sdk/client-marketplace-metering";
 import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
 import { encode } from "next-auth/jwt";
 import { getAwsCredentials, AWS_MARKETPLACE_CONFIG } from "../config";
+import { recordAndTrackLastLogin } from "@/app/(auth)/lib";
+import type { User, Team } from "@/prisma/client";
 
 const logger = rootLogger.child({ module: "aws-marketplace-register" });
 
-const marketplaceClient = new MarketplaceMetering({
-  region: AWS_MARKETPLACE_CONFIG.REGION,
-  credentials: getAwsCredentials(),
-  requestHandler: {
-    requestTimeout: AWS_MARKETPLACE_CONFIG.REQUEST_TIMEOUT,
-    connectionTimeout: AWS_MARKETPLACE_CONFIG.CONNECTION_TIMEOUT,
-  },
-  maxAttempts: AWS_MARKETPLACE_CONFIG.MAX_RETRIES,
-});
+/**
+ * Lazy initialization of AWS Marketplace Metering client
+ * Only creates the client when first accessed, avoiding env var validation during build
+ */
+let marketplaceClientInstance: MarketplaceMetering | null = null;
+
+function getMarketplaceClient(): MarketplaceMetering {
+  if (!marketplaceClientInstance) {
+    marketplaceClientInstance = new MarketplaceMetering({
+      region: AWS_MARKETPLACE_CONFIG.REGION,
+      credentials: getAwsCredentials(),
+      requestHandler: {
+        requestTimeout: AWS_MARKETPLACE_CONFIG.REQUEST_TIMEOUT,
+        connectionTimeout: AWS_MARKETPLACE_CONFIG.CONNECTION_TIMEOUT,
+      },
+      maxAttempts: AWS_MARKETPLACE_CONFIG.MAX_RETRIES,
+    });
+  }
+  return marketplaceClientInstance;
+}
 
 /**
  * Resolve customer identifier from AWS registration token
@@ -28,7 +41,7 @@ export async function resolveCustomer(token: string): Promise<{
 }> {
   logger.info({ msg: "Resolving AWS Marketplace customer", token });
 
-  const response = await marketplaceClient.resolveCustomer({
+  const response = await getMarketplaceClient().resolveCustomer({
     RegistrationToken: token,
   });
 
@@ -56,11 +69,13 @@ export async function validateExistingCustomer({
   awsCustomer,
   customerIdentifier,
 }: {
-  awsCustomer: Awaited<
-    ReturnType<typeof prisma.aWSMarketplaceCustomer.findUnique>
-  > & { user: any };
+  awsCustomer: NonNullable<
+    Awaited<ReturnType<typeof prisma.aWSMarketplaceCustomer.findUnique>>
+  > & {
+    user: { id: number };
+  };
   customerIdentifier: string;
-}): Promise<{ team: any; teamUser: any } | { error: string; status?: string }> {
+}): Promise<{ team: Team; teamUser: User } | { error: string; status?: string }> {
   // Check subscription status
   if (awsCustomer.status !== "active") {
     logger.warn({
@@ -111,11 +126,11 @@ export async function validateExistingCustomer({
 /**
  * Create session token for user
  */
-export async function createSessionToken(teamUser: any, team: any): Promise<string> {
+export async function createSessionToken(teamUser: User, team: Team): Promise<string> {
   return encode({
     token: {
-      id: teamUser.id.toString(),
-      _ut: 1, // 1 = TeamMember
+      id: teamUser.id,
+      _ut: 1,
       _tid: team.id,
     },
     secret: process.env.AUTH_SECRET || "",
@@ -128,14 +143,12 @@ export async function createSessionToken(teamUser: any, team: any): Promise<stri
 export function setSessionAndRedirect({
   redirectUrl,
   sessionToken,
-  teamUserId,
-  provider,
+  userId,
   baseUrl,
 }: {
   redirectUrl: string;
   sessionToken: string;
-  teamUserId: number;
-  provider: string;
+  userId: number;
   baseUrl: string;
 }): NextResponse {
   const response = NextResponse.redirect(new URL(redirectUrl, baseUrl));
@@ -147,7 +160,7 @@ export function setSessionAndRedirect({
     secure: true,
   });
 
-  recordLastLogin({ userId: teamUserId, provider: "aws-marketplace" });
+  recordAndTrackLastLogin({ userId, provider: "aws-marketplace" });
 
   return response;
 }

@@ -31,7 +31,8 @@ export interface ValidatedSNSMessage {
   SigningCertURL: string;
   SubscribeURL?: string;
   Token?: string;
-  [key: string]: any;
+  UnsubscribeURL?: string;
+  [key: string]: string | undefined;
 }
 
 /**
@@ -62,7 +63,7 @@ export async function verifySNSMessage(
   return new Promise((resolve, reject) => {
     try {
       // Parse the raw body
-      let message: any;
+      let message: unknown;
       try {
         message = JSON.parse(rawBody);
       } catch (parseError) {
@@ -71,26 +72,35 @@ export async function verifySNSMessage(
         return;
       }
 
+      // Type guard to check if message is an object
+      if (!message || typeof message !== "object") {
+        logger.error({ msg: "SNS message is not an object" });
+        reject(new Error("Invalid SNS message format"));
+        return;
+      }
+
+      const msg = message as Record<string, unknown>;
+
       // Basic validation: check required fields
-      if (!message.Type) {
+      if (!msg.Type || typeof msg.Type !== "string") {
         logger.error({ msg: "SNS message missing Type field" });
         reject(new Error("SNS message missing Type field"));
         return;
       }
 
-      if (!message.SignatureVersion) {
+      if (!msg.SignatureVersion || typeof msg.SignatureVersion !== "string") {
         logger.error({ msg: "SNS message missing SignatureVersion" });
         reject(new Error("SNS message missing SignatureVersion"));
         return;
       }
 
-      if (!message.Signature) {
+      if (!msg.Signature || typeof msg.Signature !== "string") {
         logger.error({ msg: "SNS message missing Signature" });
         reject(new Error("SNS message missing Signature"));
         return;
       }
 
-      if (!message.SigningCertURL) {
+      if (!msg.SigningCertURL || typeof msg.SigningCertURL !== "string") {
         logger.error({ msg: "SNS message missing SigningCertURL" });
         reject(new Error("SNS message missing SigningCertURL"));
         return;
@@ -98,7 +108,7 @@ export async function verifySNSMessage(
 
       // Validate the signing certificate URL
       try {
-        const certURL = new URL(message.SigningCertURL);
+        const certURL = new URL(msg.SigningCertURL);
         const isValidAWSHost =
           certURL.hostname.endsWith(".amazonaws.com") &&
           (certURL.hostname.startsWith("sns.") ||
@@ -119,24 +129,27 @@ export async function verifySNSMessage(
       }
 
       // Use the AWS SNS message validator to verify the signature
-      validator.validate(message, (err: Error | null, validatedMessage: any) => {
+      validator.validate(msg as Record<string, unknown>, (err: Error | null, validatedMessage: unknown) => {
         if (err) {
           logger.error({
             msg: "SNS message signature validation failed",
             error: err.message,
-            messageType: message.Type,
+            messageType: msg.Type,
           });
           reject(new Error(`SNS message signature validation failed: ${err.message}`));
           return;
         }
 
+        // Type assertion after validation
+        const validated = validatedMessage as ValidatedSNSMessage;
+
         logger.info({
           msg: "SNS message validated successfully",
-          messageType: validatedMessage.Type,
-          messageId: validatedMessage.MessageId,
+          messageType: validated.Type,
+          messageId: validated.MessageId,
         });
 
-        resolve(validatedMessage as ValidatedSNSMessage);
+        resolve(validated);
       });
     } catch (error) {
       logger.error({

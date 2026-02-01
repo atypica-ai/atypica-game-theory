@@ -16,9 +16,20 @@ export async function updateName(
   values: z.infer<typeof nameFormSchema>,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
+    // Get user with personalUserId field
+    const currentUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { id: true, personalUserId: true },
+    });
+
+    if (!currentUser) {
+      return { success: false, message: "User not found." };
+    }
+
     // 检查是否是 AWS Marketplace 用户
+    const personalUserId = currentUser.personalUserId || currentUser.id;
     const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
-      where: { userId: user.personalUserId || user.id },
+      where: { userId: personalUserId },
       select: { id: true },
     });
 
@@ -56,9 +67,20 @@ export async function changePassword(
   values: z.infer<typeof passwordFormSchema>,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
+    // Get user with personalUserId field
+    const currentUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { id: true, personalUserId: true },
+    });
+
+    if (!currentUser) {
+      return { success: false, message: "User not found." };
+    }
+
     // 检查是否是 AWS Marketplace 用户
+    const personalUserId = currentUser.personalUserId || currentUser.id;
     const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
-      where: { userId: user.personalUserId || user.id },
+      where: { userId: personalUserId },
       select: { id: true },
     });
 

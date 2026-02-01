@@ -163,8 +163,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       const response = setSessionAndRedirect({
         redirectUrl: "/account",
         sessionToken,
-        teamUserId: teamUser.id,
-        provider: "aws-marketplace",
+        userId: teamUser.id,
         baseUrl: getBaseUrl(req),
       });
 
@@ -220,8 +219,7 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
     let response = setSessionAndRedirect({
       redirectUrl: "/account",
       sessionToken,
-      teamUserId: teamUser.id,
-      provider: "aws-marketplace",
+      userId: teamUser.id,
       baseUrl: getBaseUrl(req),
     });
 

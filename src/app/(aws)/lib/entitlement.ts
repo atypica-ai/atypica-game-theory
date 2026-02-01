@@ -4,17 +4,26 @@ import { rootLogger } from "@/lib/logging";
 import { getAwsCredentials, getProductCode, AWS_MARKETPLACE_CONFIG } from "@/app/(aws)/config";
 import {
   CustomerSubscription,
-  ActiveCustomerSubscription,
   SubscriptionDimension,
-  isActiveSubscription,
 } from "@/app/(aws)/lib/types";
 
 const logger = rootLogger.child({ module: "aws-marketplace-entitlement" });
 
-const entitlementClient = new MarketplaceEntitlementService({
-  region: AWS_MARKETPLACE_CONFIG.REGION,
-  credentials: getAwsCredentials(),
-});
+/**
+ * Lazy initialization of AWS Entitlement Service client
+ * Only creates the client when first accessed, avoiding env var validation during build
+ */
+let entitlementClientInstance: MarketplaceEntitlementService | null = null;
+
+function getEntitlementClient(): MarketplaceEntitlementService {
+  if (!entitlementClientInstance) {
+    entitlementClientInstance = new MarketplaceEntitlementService({
+      region: AWS_MARKETPLACE_CONFIG.REGION,
+      credentials: getAwsCredentials(),
+    });
+  }
+  return entitlementClientInstance;
+}
 
 /**
  * Get all entitlements for a customer
@@ -22,7 +31,7 @@ const entitlementClient = new MarketplaceEntitlementService({
 export async function getCustomerEntitlements(customerIdentifier: string) {
   logger.info({ msg: "Getting customer entitlements", customerIdentifier });
 
-  const response = await entitlementClient.getEntitlements({
+  const response = await getEntitlementClient().getEntitlements({
     ProductCode: getProductCode(),
     Filter: {
       CUSTOMER_IDENTIFIER: [customerIdentifier],

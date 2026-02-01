@@ -84,7 +84,7 @@ export interface SNSNotificationPayload {
   "customer-identifier": string;
   "product-code": string;
   action: "subscribe-success" | "unsubscribe-pending" | "unsubscribe-success" | "entitlement-updated";
-  [key: string]: any;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 /**
