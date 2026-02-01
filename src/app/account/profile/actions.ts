@@ -1,4 +1,5 @@
 "use server";
+import { AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN } from "@/app/(aws)/config";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { User } from "@/prisma/client";
@@ -16,27 +17,12 @@ export async function updateName(
   values: z.infer<typeof nameFormSchema>,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    // Get user with personalUserId field
-    const currentUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { id: true, personalUserId: true },
-    });
-
-    if (!currentUser) {
-      return { success: false, message: "User not found." };
+    if (user.email.endsWith(AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN)) {
+      return {
+        success: false,
+        message: "AWS Marketplace users cannot change their name.",
+      };
     }
-
-    // 检查是否是 AWS Marketplace 用户
-    const personalUserId = currentUser.personalUserId || currentUser.id;
-    const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
-      where: { userId: personalUserId },
-      select: { id: true },
-    });
-
-    if (awsUser) {
-      return { success: false, message: "AWS Marketplace users cannot change their name." };
-    }
-
     try {
       // Validate input using the schema
       const validatedData = nameFormSchema.parse(values);
@@ -67,27 +53,12 @@ export async function changePassword(
   values: z.infer<typeof passwordFormSchema>,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    // Get user with personalUserId field
-    const currentUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { id: true, personalUserId: true },
-    });
-
-    if (!currentUser) {
-      return { success: false, message: "User not found." };
+    if (user.email.endsWith(AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN)) {
+      return {
+        success: false,
+        message: "AWS Marketplace users cannot change their password.",
+      };
     }
-
-    // 检查是否是 AWS Marketplace 用户
-    const personalUserId = currentUser.personalUserId || currentUser.id;
-    const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
-      where: { userId: personalUserId },
-      select: { id: true },
-    });
-
-    if (awsUser) {
-      return { success: false, message: "AWS Marketplace users cannot change their password." };
-    }
-
     try {
       // Validate input using the schema
       const validatedData = passwordFormSchema.parse(values);
@@ -107,13 +78,14 @@ export async function getCurrentUser(): Promise<
   ServerActionResult<Pick<User, "id" | "name" | "email"> & { isAwsUser: boolean }>
 > {
   return withAuth(async (user) => {
+    const isAwsUser = user.email.endsWith(AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN);
+
     const currentUser = await prisma.user.findUnique({
       where: { id: user.id },
       select: {
         id: true,
         name: true,
         email: true,
-        personalUserId: true,
       },
     });
 
@@ -121,19 +93,12 @@ export async function getCurrentUser(): Promise<
       return { success: false, message: "User not found." };
     }
 
-    // 检查是否是 AWS Marketplace 用户
-    const personalUserId = currentUser.personalUserId || currentUser.id;
-    const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
-      where: { userId: personalUserId },
-      select: { id: true },
-    });
-
     return {
       success: true,
       data: {
         ...currentUser,
-        isAwsUser: !!awsUser
-      }
+        isAwsUser,
+      },
     };
   });
 }

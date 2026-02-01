@@ -139,6 +139,7 @@
     "Actions": {
       "createTeam": {
         "forbidden": "Only individual users can create teams",
+        "awsUserForbidden": "AWS Marketplace users cannot create new teams",
         "nameExists": "Team name already exists",
         "maxTeams": "Maximum number of teams reached",
         "failed": "Failed to create team"

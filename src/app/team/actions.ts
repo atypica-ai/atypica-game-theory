@@ -1,4 +1,5 @@
 "use server";
+import { AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN } from "@/app/(aws)/config";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -26,6 +27,15 @@ export async function createTeamAction({ name: teamName }: { name: string }): Pr
         return {
           success: false,
           message: t("createTeam.forbidden"),
+          code: "forbidden",
+        };
+      }
+
+      // AWS Marketplace users cannot create teams
+      if (user.email.endsWith(AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN)) {
+        return {
+          success: false,
+          message: t("createTeam.awsUserForbidden"),
           code: "forbidden",
         };
       }
@@ -217,7 +227,6 @@ export async function getUserTeamStatusAction(): Promise<
     teamRole: "owner" | "member" | "removed" | null;
     canSwitchIdentity: boolean;
     teamName: string | null;
-    isAwsUser: boolean;
   }>
 > {
   const t = await getTranslations("Team.Actions");
@@ -230,7 +239,6 @@ export async function getUserTeamStatusAction(): Promise<
         teamRole: null,
         canSwitchIdentity: false,
         teamName: null,
-        isAwsUser: false,
       },
     };
   }
@@ -248,14 +256,6 @@ export async function getUserTeamStatusAction(): Promise<
     let teamRole: "owner" | "member" | "removed" | null = null;
     let canSwitchIdentity = false;
     let teamName: string | null = null;
-
-    // 检查是否为 AWS Marketplace 用户
-    const personalUserId = currentUser.personalUserId || currentUser.id;
-    const awsUser = await prisma.aWSMarketplaceCustomer.findUnique({
-      where: { userId: personalUserId },
-      select: { id: true },
-    });
-    const isAwsUser = !!awsUser;
 
     // 检查是否为个人用户
     if (!currentUser.teamIdAsMember) {
@@ -293,7 +293,6 @@ export async function getUserTeamStatusAction(): Promise<
         teamRole,
         canSwitchIdentity,
         teamName,
-        isAwsUser,
       },
     };
   } catch (error) {

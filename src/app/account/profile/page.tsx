@@ -160,9 +160,7 @@ export default function ProfilePage() {
           {/* AWS User Notice */}
           {isAwsUser && (
             <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
-              <p className="text-sm text-amber-900">
-                {t("awsUserNotice")}
-              </p>
+              <p className="text-sm text-amber-900">{t("awsUserNotice")}</p>
             </div>
           )}
 

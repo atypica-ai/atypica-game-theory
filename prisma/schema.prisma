@@ -850,15 +850,15 @@ model AWSMarketplaceCustomer {
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // AWS customer identifiers
-  customerIdentifier String @unique // AWS customer ID
-  productCode        String // AWS product code
+  customerIdentifier String @unique @db.VarChar(255) // AWS customer ID
+  productCode        String @db.VarChar(255) // AWS product code
 
   // Subscription status
   status String @default("pending") // pending, active, cancelled, expired
 
   // Subscription details
-  dimension String? // Subscription dimension/plan (e.g., "team_plan")
-  quantity  Int     @default(3) // Number of allowed users (e.g., 3)
+  dimension String? @db.VarChar(64) // Subscription dimension/plan (e.g., "team_plan")
+  quantity  Int? // Number of allowed users (e.g., 3)
 
   // Time information
   subscribedAt DateTime? @db.Timestamptz(6)
@@ -879,10 +879,11 @@ model AWSMarketplaceEvent {
   customerId Int
   customer   AWSMarketplaceCustomer @relation(fields: [customerId], references: [id])
 
-  eventType String // subscribe-success, unsubscribe-success, etc.
-  eventData Json // Complete SNS message
+  eventType String @db.VarChar(64) // subscribe-success, unsubscribe-success, etc.
+  eventData Json   @default("{}") // Complete SNS message
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@index([customerId])
   @@index([eventType])

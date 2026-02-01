@@ -1,4 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
+import { AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN } from "@/app/(aws)/config";
 import {
   createPaymentStripeSession,
   createSubscriptionStripeSession,
@@ -15,6 +16,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
+
+  // Block AWS Marketplace users from purchasing
+  if (session.user.email.endsWith(AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN)) {
+    return NextResponse.json(
+      { error: "AWS Marketplace users cannot purchase subscriptions" },
+      { status: 403 },
+    );
+  }
   try {
     const formData = await req.formData();
     const parseResult = stripeSessionCreatePayloadSchema.safeParse(Object.fromEntries(formData));
