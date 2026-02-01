@@ -90,9 +90,11 @@ AWS_MARKETPLACE_CONFIG = {
 ## Environment Variables
 
 Required:
-- `AWS_ACCESS_KEY_ID` - AWS IAM access key
-- `AWS_SECRET_ACCESS_KEY` - AWS IAM secret key
+- `AWS_MARKETPLACE_ACCESS_KEY_ID` - AWS IAM access key for Marketplace
+- `AWS_MARKETPLACE_SECRET_ACCESS_KEY` - AWS IAM secret key for Marketplace
 - `AWS_MARKETPLACE_PRODUCT_CODE` - Product code from AWS Marketplace
+
+**Note**: Use dedicated environment variables (prefixed with `AWS_MARKETPLACE_`) to avoid conflicts with other AWS SDK integrations that may use the default `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
 
 ## Database Schema
 

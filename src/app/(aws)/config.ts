@@ -6,8 +6,8 @@
 
 // Required environment variables
 const AWS_ENV_VARS = {
-  ACCESS_KEY_ID: "AWS_ACCESS_KEY_ID",
-  SECRET_ACCESS_KEY: "AWS_SECRET_ACCESS_KEY",
+  ACCESS_KEY_ID: "AWS_MARKETPLACE_ACCESS_KEY_ID",
+  SECRET_ACCESS_KEY: "AWS_MARKETPLACE_SECRET_ACCESS_KEY",
   PRODUCT_CODE: "AWS_MARKETPLACE_PRODUCT_CODE",
 } as const;
 
@@ -62,8 +62,8 @@ export function getAwsCredentials() {
   validateAwsEnvVars();
 
   return {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.AWS_MARKETPLACE_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_MARKETPLACE_SECRET_ACCESS_KEY!,
   };
 }
 

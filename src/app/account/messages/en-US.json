@@ -117,7 +117,8 @@
       "nameUpdateError": "Failed to update name",
       "passwordUpdateSuccess": "Password updated successfully",
       "passwordUpdateError": "Failed to update password",
-      "passwordMismatch": "Passwords do not match"
+      "passwordMismatch": "Passwords do not match",
+      "awsUserNotice": "You are accessing via AWS Marketplace and cannot modify your username or password. To change account information, please manage your subscription through AWS Marketplace."
     },
     "ApiKeyPage": {
       "title": "API Keys",

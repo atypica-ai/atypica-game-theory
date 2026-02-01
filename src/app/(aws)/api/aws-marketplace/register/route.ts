@@ -1,25 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MarketplaceMetering } from "@aws-sdk/client-marketplace-metering";
 import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
-import { createAWSMarketplaceUserWithTeam, recordLastLogin } from "@/app/(auth)/lib";
-import { encode } from "next-auth/jwt";
+import { AWS_MARKETPLACE_CONFIG } from "@/app/(aws)/config";
+import { createAWSMarketplaceUserWithTeam } from "@/app/(aws)/lib/auth";
 import {
-  getAwsCredentials,
-  AWS_MARKETPLACE_CONFIG,
-} from "@/app/(aws)/config";
+  resolveCustomer,
+  validateExistingCustomer,
+  createSessionToken,
+  setSessionAndRedirect,
+  handleTokenError,
+  isNetworkError,
+} from "@/app/(aws)/lib/register";
 
 const logger = rootLogger.child({ module: "aws-marketplace-register" });
-
-const marketplaceClient = new MarketplaceMetering({
-  region: AWS_MARKETPLACE_CONFIG.REGION, // AWS Marketplace fixed region
-  credentials: getAwsCredentials(),
-  requestHandler: {
-    requestTimeout: AWS_MARKETPLACE_CONFIG.REQUEST_TIMEOUT,
-    connectionTimeout: AWS_MARKETPLACE_CONFIG.CONNECTION_TIMEOUT,
-  },
-  maxAttempts: AWS_MARKETPLACE_CONFIG.MAX_RETRIES,
-});
 
 /**
  * Get the base URL from the request (preserving the original host from frp/proxy)
@@ -127,40 +120,14 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       }
 
       try {
-        logger.info({ msg: "Resolving AWS Marketplace customer", token });
-        const response = await marketplaceClient.resolveCustomer({
-          RegistrationToken: token,
-        });
-
-        customerIdentifier = response.CustomerIdentifier || null;
-        productCode = response.ProductCode || null;
-
-        if (!customerIdentifier || !productCode) {
-          logger.error({ msg: "Invalid AWS response", response });
-          throw new Error("Invalid AWS response");
-        }
-
-        logger.info({
-          msg: "AWS customer resolved",
-          customerIdentifier,
-          productCode,
-        });
+        const result = await resolveCustomer(token);
+        customerIdentifier = result.customerIdentifier;
+        productCode = result.productCode;
       } catch (error) {
-        // resolveCustomer failed - check if token was already used
-        const errorMessage = error instanceof Error ? error.message : String(error);
-
-        if (errorMessage.includes("Token is not valid") ||
-            errorMessage.includes("Expired") ||
-            errorMessage.includes("InvalidRegistrationToken")) {
-          logger.warn({
-            msg: "Registration token already used or expired",
-            error: errorMessage,
-          });
-          return NextResponse.redirect(
-            new URL("/error?code=aws_token_used", getBaseUrl(req))
-          );
+        const { isTokenError, errorCode } = handleTokenError(error);
+        if (isTokenError) {
+          return NextResponse.redirect(new URL(`/error?code=${errorCode}`, getBaseUrl(req)));
         }
-
         throw error; // Re-throw other errors
       }
     }
@@ -172,90 +139,37 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
     });
 
     if (awsCustomer) {
-      // Existing customer - log in and redirect to home
+      // Existing customer - validate and log in
       logger.info({
         msg: "Existing AWS customer found, logging in",
         userId: awsCustomer.userId,
         customerIdentifier,
       });
 
-      // Check subscription status
-      if (awsCustomer.status !== "active") {
-        logger.warn({
-          msg: "AWS subscription not active",
-          customerIdentifier,
-          status: awsCustomer.status,
-        });
-        const errorResponse = NextResponse.redirect(
-          new URL(`/error?code=aws_subscription_inactive&status=${awsCustomer.status}`, getBaseUrl(req))
-        );
+      const validation = await validateExistingCustomer({ awsCustomer, customerIdentifier });
+
+      if ("error" in validation) {
+        const errorUrl = validation.status
+          ? `/error?code=${validation.error}&status=${validation.status}`
+          : `/error?code=${validation.error}`;
+        const errorResponse = NextResponse.redirect(new URL(errorUrl, getBaseUrl(req)));
         return clearCustomerIdentifierCookie(errorResponse);
       }
 
-      // Check if subscription expired
-      if (awsCustomer.expiresAt && awsCustomer.expiresAt < new Date()) {
-        logger.warn({
-          msg: "AWS subscription expired",
-          customerIdentifier,
-          expiresAt: awsCustomer.expiresAt,
-        });
-        const errorResponse = NextResponse.redirect(
-          new URL("/error?code=aws_subscription_expired", getBaseUrl(req))
-        );
-        return clearCustomerIdentifierCookie(errorResponse);
-      }
+      const { team, teamUser } = validation;
 
-      // Find the team owned by this AWS customer
-      const team = await prisma.team.findFirst({
-        where: { ownerUserId: awsCustomer.user.id },
+      // Create session and redirect
+      const sessionToken = await createSessionToken(teamUser, team);
+      const response = setSessionAndRedirect({
+        redirectUrl: "/account",
+        sessionToken,
+        teamUserId: teamUser.id,
+        provider: "aws-marketplace",
+        baseUrl: getBaseUrl(req),
       });
-
-      // Find the team member user linked to the personal user and team
-      const teamUser = await prisma.user.findFirst({
-        where: {
-          personalUserId: awsCustomer.user.id,
-          teamIdAsMember: team?.id,
-        },
-      });
-
-      if (!team || !teamUser) {
-        logger.error({
-          msg: "AWS customer exists but team/teamUser not found",
-          customerIdentifier,
-          userId: awsCustomer.user.id,
-          team,
-          teamUser,
-        });
-        const errorResponse = NextResponse.redirect(
-          new URL("/error?code=aws_data_inconsistency", getBaseUrl(req))
-        );
-        return clearCustomerIdentifierCookie(errorResponse);
-      }
-
-      // Subscription is valid, set session and redirect to account
-      const redirectResponse = NextResponse.redirect(new URL("/account", getBaseUrl(req)));
-
-      // Create JWT token for TEAM USER (not personal user)
-      const sessionToken = await encode({
-        token: {
-          id: teamUser.id.toString(), // Use id (not sub) for NextAuth compatibility
-          _ut: 1, // 1 = TeamMember
-          _tid: team.id, // Team ID
-        },
-        secret: process.env.AUTH_SECRET || "",
-      });
-
-      redirectResponse.cookies.set("next-auth.session-token", sessionToken, {
-        httpOnly: true,
-        sameSite: "none",
-        path: "/",
-        secure: true,
-      });
-
-      recordLastLogin({ userId: teamUser.id, provider: "aws-marketplace" });
 
       // Clear the temporary cache since user is now logged in
-      return clearCustomerIdentifierCookie(redirectResponse);
+      return clearCustomerIdentifierCookie(response);
     }
 
     // Step 4: New customer - create user and team
@@ -264,72 +178,58 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       customerIdentifier,
     });
 
-    // productCode might be null if using cached customerIdentifier
-    // If null, we need to get it from the token
-    if (!productCode && !token) {
-      logger.error({
-        msg: "Cannot create new user: no productCode and no token available",
-        customerIdentifier,
-      });
-      return NextResponse.redirect(
-        new URL("/error?code=aws_registration_error", getBaseUrl(req))
-      );
-    }
-
+    // Ensure we have productCode for new customer
     if (!productCode) {
-      // Try to get productCode from token
-      try {
-        const response = await marketplaceClient.resolveCustomer({
-          RegistrationToken: token,
+      if (!token) {
+        logger.error({
+          msg: "Cannot create new user: no productCode and no token available",
+          customerIdentifier,
         });
-        productCode = response.ProductCode || null;
-      } catch {
-        // If we can't get productCode, use a default or error
-        logger.error({ msg: "Failed to resolve productCode for new customer" });
+        return NextResponse.redirect(
+          new URL("/error?code=aws_registration_error", getBaseUrl(req))
+        );
+      }
+
+      try {
+        const result = await resolveCustomer(token);
+        productCode = result.productCode;
+      } catch (error) {
+        logger.error({ msg: "Failed to resolve productCode for new customer", error });
         return NextResponse.redirect(
           new URL("/error?code=aws_registration_error", getBaseUrl(req))
         );
       }
     }
 
+    // Step 4: Create new user and team
     const { personalUser, team, teamUser } = await createAWSMarketplaceUserWithTeam({
       customerIdentifier,
       productCode,
     });
 
-    // Step 5: Set session and redirect to account
-    const redirectResponse = NextResponse.redirect(new URL("/account", getBaseUrl(req)));
-
-    // Cache customerIdentifier in case user refreshes before session is fully established
-    setCustomerIdentifierCookie(redirectResponse, customerIdentifier);
-
-    // Create JWT token for TEAM USER (not personal user)
-    const sessionToken = await encode({
-      token: {
-        id: teamUser.id.toString(), // Use id (not sub) for NextAuth compatibility
-        _ut: 1, // 1 = TeamMember
-        _tid: team.id, // Team ID
-      },
-      secret: process.env.AUTH_SECRET || "",
-    });
-
-    redirectResponse.cookies.set("next-auth.session-token", sessionToken, {
-      httpOnly: true,
-      sameSite: "none",
-      path: "/",
-      secure: true,
-    });
-
     logger.info({
-      msg: "AWS user registered and logged in",
+      msg: "AWS user registered successfully",
       userId: personalUser.id,
       teamUserId: teamUser.id,
       customerIdentifier,
       teamId: team.id,
     });
 
+    // Step 5: Set session and redirect to account
+    const sessionToken = await createSessionToken(teamUser, team);
+    let response = setSessionAndRedirect({
+      redirectUrl: "/account",
+      sessionToken,
+      teamUserId: teamUser.id,
+      provider: "aws-marketplace",
+      baseUrl: getBaseUrl(req),
+    });
+
+    // Cache customerIdentifier temporarily in case user refreshes
+    response = setCustomerIdentifierCookie(response, customerIdentifier);
+
     // Clear the temporary cache since registration is complete
-    return clearCustomerIdentifierCookie(redirectResponse);
+    return clearCustomerIdentifierCookie(response);
   } catch (error) {
     logger.error({
       msg: "AWS Marketplace registration error",
@@ -337,17 +237,8 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       stack: error instanceof Error ? error.stack : undefined,
     });
 
-    // 检测网络连接错误
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const isNetworkError =
-      errorMessage.includes("socket disconnected") ||
-      errorMessage.includes("TLS") ||
-      errorMessage.includes("ECONNREFUSED") ||
-      errorMessage.includes("ETIMEDOUT") ||
-      errorMessage.includes("timeout");
-
-    if (isNetworkError) {
-      // 网络错误，重定向到友好错误页面
+    // Check for network errors
+    if (isNetworkError(error)) {
       return NextResponse.redirect(
         new URL("/error?code=aws_network_error", getBaseUrl(req))
       );

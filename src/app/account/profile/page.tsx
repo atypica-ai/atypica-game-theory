@@ -161,8 +161,7 @@ export default function ProfilePage() {
           {isAwsUser && (
             <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
               <p className="text-sm text-amber-900">
-                您是通过 AWS Marketplace 访问的用户，无法修改用户名和密码。
-                如需更改账户信息，请通过 AWS Marketplace 管理您的订阅。
+                {t("awsUserNotice")}
               </p>
             </div>
           )}

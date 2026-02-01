@@ -288,7 +288,7 @@ const authOptions: NextAuthOptions = {
           throw new Error("SUBSCRIPTION_EXPIRED");
         }
 
-        recordLastLogin({
+        recordAndTrackLastLogin({
           userId: awsCustomer.user.id,
           provider: "aws-marketplace",
         });

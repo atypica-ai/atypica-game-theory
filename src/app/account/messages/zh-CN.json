@@ -117,7 +117,8 @@
       "nameUpdateError": "名称更新失败",
       "passwordUpdateSuccess": "密码更新成功",
       "passwordUpdateError": "密码更新失败",
-      "passwordMismatch": "密码不匹配"
+      "passwordMismatch": "密码不匹配",
+      "awsUserNotice": "您是通过 AWS Marketplace 访问的用户，无法修改用户名和密码。如需更改账户信息，请通过 AWS Marketplace 管理您的订阅。"
     },
     "ApiKeyPage": {
       "title": "API Keys",

@@ -1,0 +1,176 @@
+import "server-only";
+
+import { prisma } from "@/prisma/prisma";
+import { rootLogger } from "@/lib/logging";
+import { createTeam } from "@/app/team/lib";
+import { manuallyAddTeamSubscription } from "@/app/payment/manualSubscription";
+import { AWS_MARKETPLACE_CONFIG } from "../config";
+import { syncAwsSubscriptionExpiration } from "./subscription";
+import type { Team, User } from "@/prisma/client";
+
+const logger = rootLogger.child({ module: "aws-marketplace-auth" });
+
+/**
+ * Create AWS Marketplace user with team
+ *
+ * Creates a complete AWS Marketplace user setup:
+ * - Personal user with empty password (cannot login via email/password)
+ * - Team owned by the personal user
+ * - Team member user for actual usage
+ * - AWS customer record in database
+ * - Initial subscription (1 month, team plan)
+ *
+ * @param customerIdentifier - AWS customer identifier
+ * @param productCode - AWS Marketplace product code
+ * @returns { personalUser, team, teamUser }
+ */
+export async function createAWSMarketplaceUserWithTeam({
+  customerIdentifier,
+  productCode,
+}: {
+  customerIdentifier: string;
+  productCode: string;
+}): Promise<{
+  personalUser: Omit<User, "password">;
+  team: Team;
+  teamUser: User;
+}> {
+  const email = `${customerIdentifier}@aws.atypica.ai`;
+  const name = customerIdentifier;
+
+  try {
+    // 1. Create personal user (no tokensAccount - AWS users use team tokens)
+    const personalUser = await prisma.$transaction(async (tx) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _, ...user } = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: "", // Empty password - cannot login normally
+          emailVerified: new Date(), // Skip email verification
+        },
+      });
+
+      // Create user profile
+      await tx.userProfile.create({
+        data: { userId: user.id },
+      });
+
+      return user;
+    });
+
+    // 2. Create team and team member user
+    const { team, teamUser } = await createTeam({
+      name: "", // AWS teams start with no name
+      ownerUser: personalUser,
+    });
+
+    // 3. Update team seats to AWS config value
+    await prisma.team.update({
+      where: { id: team.id },
+      data: { seats: AWS_MARKETPLACE_CONFIG.DEFAULT_QUANTITY },
+    });
+
+    // 4. Create AWS Marketplace customer record
+    await prisma.aWSMarketplaceCustomer.create({
+      data: {
+        userId: personalUser.id,
+        customerIdentifier,
+        productCode,
+        status: "active",
+        dimension: AWS_MARKETPLACE_CONFIG.DEFAULT_DIMENSION,
+        quantity: AWS_MARKETPLACE_CONFIG.DEFAULT_QUANTITY,
+        subscribedAt: new Date(),
+      },
+    });
+
+    // 5. Create team subscription (1 month, team plan, 3 seats)
+    await manuallyAddTeamSubscription({
+      teamId: team.id,
+      seats: 3,
+      plan: "team",
+      startsAt: new Date(),
+      months: 1,
+    });
+
+    // 6. Sync subscription expiration from AWS Entitlement API
+    await syncAwsSubscriptionExpiration({
+      customerIdentifier,
+      teamId: team.id,
+    });
+
+    logger.info({
+      msg: "AWS Marketplace user and team created",
+      userId: personalUser.id,
+      customerIdentifier,
+      teamId: team.id,
+      teamUserId: teamUser.id,
+    });
+
+    return { personalUser, team, teamUser };
+  } catch (error) {
+    // Handle concurrent registration (unique constraint violation)
+    if ((error as { code?: string }).code === "P2002") {
+      logger.warn({
+        msg: "Concurrent AWS registration detected, fetching existing user",
+        customerIdentifier,
+      });
+
+      const existing = await prisma.aWSMarketplaceCustomer.findUnique({
+        where: { customerIdentifier },
+        include: { user: true },
+      });
+
+      if (existing) {
+        const team = await prisma.team.findFirst({
+          where: { ownerUserId: existing.user.id },
+        });
+
+        const teamUser = await prisma.user.findFirst({
+          where: {
+            personalUserId: existing.user.id,
+            teamIdAsMember: team?.id,
+          },
+        });
+
+        if (team && teamUser) {
+          logger.info({
+            msg: "Returning existing AWS user from concurrent registration",
+            userId: existing.user.id,
+            customerIdentifier,
+            teamUserId: teamUser.id,
+          });
+
+          // Check if subscription exists, create if not
+          const existingSubscription = await prisma.subscription.findFirst({
+            where: { teamId: team.id },
+          });
+
+          if (!existingSubscription) {
+            await manuallyAddTeamSubscription({
+              teamId: team.id,
+              seats: AWS_MARKETPLACE_CONFIG.DEFAULT_QUANTITY,
+              plan: "team",
+              startsAt: new Date(),
+              months: 1,
+            });
+
+            await syncAwsSubscriptionExpiration({
+              customerIdentifier,
+              teamId: team.id,
+            });
+
+            logger.info({
+              msg: "Created subscription for existing AWS user",
+              userId: existing.user.id,
+              teamId: team.id,
+            });
+          }
+
+          return { personalUser: existing.user, team, teamUser };
+        }
+      }
+    }
+    throw error;
+  }
+}
