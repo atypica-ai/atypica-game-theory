@@ -77,7 +77,8 @@ export async function createProductRnDAgentConfig(
   // =============================================================================
 
   return {
-    model: "claude-3-7-sonnet", // Use advanced model
+    // model: "claude-sonnet-4-5",
+    model: "minimax-m2.1",
     systemPrompt,
     tools,
 

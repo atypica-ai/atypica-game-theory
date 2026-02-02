@@ -187,8 +187,9 @@ export type LLMModelName =
   | "minimax-m2.1"
   | "gemini-2.5-flash"
   | "gemini-2.5-pro"
-  | "gemini-3-flash"
   | "gemini-2.5-flash-image"
+  | "gemini-3-flash"
+  | "gemini-3-pro"
   | "gemini-3-pro-image"
   | "grok-4-1-fast-non-reasoning"
   | "grok-4-1-fast-reasoning"
@@ -234,7 +235,9 @@ export function llm(modelName: LLMModelName) {
       case "claude-haiku-4-5":
       case "gemini-2.5-flash":
       case "gemini-2.5-pro":
+      case "gemini-2.5-flash-image":
       case "gemini-3-flash":
+      case "gemini-3-pro":
       case "gemini-3-pro-image":
         if (process.env.GOOGLE_VERTEX_PRIVATE_KEY) {
           break;
@@ -304,10 +307,12 @@ export function llm(modelName: LLMModelName) {
       return vertex("gemini-2.5-flash");
     case "gemini-2.5-pro":
       return vertex("gemini-2.5-pro");
-    case "gemini-3-flash":
-      return vertexGlobal("gemini-3-flash-preview");
     case "gemini-2.5-flash-image":
       return vertexGlobal("gemini-2.5-flash-image");
+    case "gemini-3-flash":
+      return vertexGlobal("gemini-3-flash-preview");
+    case "gemini-3-pro":
+      return vertexGlobal("gemini-3-pro-preview");
     case "gemini-3-pro-image":
       return vertexGlobal("gemini-3-pro-image-preview");
     case "grok-4-1-fast-non-reasoning":

@@ -64,10 +64,16 @@ async function xhsSearchTikhub({ keyword }: { keyword: string }) {
   for (let i = 0; i < 3; i++) {
     try {
       const headers = { Authorization: `Bearer ${process.env.TIKHUB_API_TOKEN!}` };
-      const params = { keyword, page: "1", sort: "general", noteType: "_0" };
+      const params = {
+        keyword,
+        page: "1",
+        sort_type: "general",
+        filter_note_type: "普通笔记",
+        filter_note_time: "一周内",
+      };
       const queryString = new URLSearchParams(params).toString();
       const response = await fetch(
-        `${process.env.TIKHUB_API_BASE_URL}/xiaohongshu/web/search_notes?${queryString}`,
+        `${process.env.TIKHUB_API_BASE_URL}/xiaohongshu/app/search_notes?${queryString}`,
         { headers },
       );
       const res = await response.json();

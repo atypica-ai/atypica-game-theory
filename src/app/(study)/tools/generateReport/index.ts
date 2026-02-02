@@ -296,7 +296,8 @@ async function generateReport({
     };
   })();
 
-  let modelName: LLMModelName = "claude-sonnet-4-5";
+  // let modelName: LLMModelName = "claude-sonnet-4-5";
+  let modelName: LLMModelName = "gemini-3-pro";
   while (true) {
     const streamTextPromise = new Promise<{
       finishReason: FinishReason | "Too many tokens";

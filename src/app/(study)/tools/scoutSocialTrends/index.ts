@@ -231,7 +231,7 @@ async function runScoutSocialTrendsStream({
 
     const streamTextPromise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
       const response = streamText({
-        model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
+        model: reduceTokens ? llm(reduceTokens.model) : llm("claude-sonnet-4-5"),
 
         // model: llm("claude-3-7-sonnet-beta")  // 这个模型不大好用，savePersona 总是返回一半输入
         providerOptions: defaultProviderOptions(),
