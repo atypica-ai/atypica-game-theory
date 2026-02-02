@@ -3,7 +3,7 @@ import "server-only";
 import {
   convertDBMessageToAIMessage,
   convertStepsToAIMessage,
-  convertToFlattenModelMessages,
+  fixAndConvertToModelMessages,
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import { defaultProviderOptions, llm } from "@/ai/provider";
@@ -304,7 +304,8 @@ async function generatePersonaResponse({
       },
 
       system: systemPrompt,
-      messages: convertToFlattenModelMessages(messages, {
+      messages: fixAndConvertToModelMessages(messages, {
+        modelName,
         tools: {},
       }),
       stopWhen: stepCountIs(1),
@@ -386,7 +387,8 @@ async function generateInterviewerResponse({
       },
 
       system: systemPrompt,
-      messages: convertToFlattenModelMessages(messages, {
+      messages: fixAndConvertToModelMessages(messages, {
+        modelName,
         tools,
       }),
 

@@ -2,7 +2,7 @@ import "server-only";
 
 import {
   convertStepsToAIMessage,
-  convertToFlattenModelMessages,
+  fixAndConvertToModelMessages,
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
@@ -368,7 +368,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
     }),
     [StudyToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
   };
-  const coreMessages = convertToFlattenModelMessages(messages, {
+  const coreMessages = fixAndConvertToModelMessages(messages, {
     tools,
   });
   let toolChoice: ToolChoice<typeof tools> = "auto";
@@ -496,7 +496,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       temperature: 0.3,
 
-      messages: convertToFlattenModelMessages(messages, {
+      messages: fixAndConvertToModelMessages(messages, {
         tools,
       }),
 

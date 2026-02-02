@@ -24,22 +24,6 @@ import { Logger } from "pino";
 import { LLMModelName } from "./provider";
 import { convertToV5MessagePart } from "./v4";
 
-// 事实上，bedrock 虽然支持很多文件格式，但 gpt 和 gemini 只支持 pdf，所以这样 fix 也没用，只能限制上传的文件类型
-// https://github.com/vercel/ai/blob/2669f00b8e9acf8352bd07d930fbd181e5219500/packages/amazon-bedrock/src/convert-to-bedrock-chat-messages.ts#L114
-// function mimeTypeToAISDKContentType(mimeType: string): string {
-//   const convert: Record<string, string> = {
-//     "image/svg+xml": "image/svg",
-//     "application/msword": "application/doc",
-//     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "application/docx",
-//     "application/vnd.ms-excel": "application/xls",
-//     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "application/xlsx",
-//     "application/vnd.ms-powerpoint": "application/ppt",
-//     "application/vnd.openxmlformats-officedocument.presentationml.presentation": "application/pptx",
-//     "text/plain": "application/txt",
-//   };
-//   return convert[mimeType] || mimeType;
-// }
-
 export function convertStepsToAIMessage<T extends ToolSet>(
   steps: StepResult<T>[],
 ): Omit<UIMessage, "role"> {
@@ -169,47 +153,6 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
   }
 
   streamingMessage.parts = parts;
-
-  // if (step.reasoningText) {
-  //   parts.push({ type: "reasoning", text: step.reasoningText });
-  // }
-  // const stepText = step.text.trim() || (step.toolResults.length > 0 ? "[tool-result]" : "[text]"); // 确保 content 一定有内容
-  // // contents.push(stepText);
-  // parts.push({ type: "text", text: stepText });
-  // // 不管是哪个 step，都有可能有 toolCalls，所以要放在外面。
-  // // 另外，text part 要放在 toolCalls part 的前面，规则是这样的，先文本再执行。
-  // for (const toolCall of step.toolCalls) {
-  //   let toolPart: ToolUIPart | DynamicToolUIPart;
-  //   if (toolCall.dynamic) {
-  //     toolPart = {
-  //       type: "dynamic-tool",
-  //       toolName: toolCall.toolName,
-  //       state: "input-available",
-  //       input: toolCall.input,
-  //       toolCallId: toolCall.toolCallId,
-  //     };
-  //   } else {
-  //     toolPart = {
-  //       type: `tool-${toolCall.toolName}`,
-  //       state: "input-available",
-  //       input: toolCall.input,
-  //       toolCallId: toolCall.toolCallId,
-  //     };
-  //   }
-  //   const toolResult = step.toolResults.find((r) => r.toolCallId === toolCall.toolCallId);
-  //   if (toolResult) {
-  //     toolPart = {
-  //       ...toolPart,
-  //       state: "output-available",
-  //       input: toolResult.input,
-  //       toolCallId: toolCall.toolCallId,
-  //       output: toolResult.output,
-  //     };
-  //   }
-  //   parts.push(toolPart);
-  // }
-  // //streamingMessage.content = contents.join("\n").trimStart();
-  // streamingMessage.parts = parts;
 }
 
 export function appendChunkToStreamingMessage<T extends ToolSet>(
@@ -281,15 +224,17 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
         errorText: chunk.error instanceof Error ? chunk.error.message : `${chunk.error}`,
       };
     }
+  } else {
+    // 其他类型的现在遇不到，不用处理
   }
-
-  // 其他类型的现在遇不到，不用处理
 }
 
 /**
  * v4 AI message 上面的 experimental_attachments 会被忽略，使用 attachments
  * v5 AI message 的 parts 里，type: file 的部分会被忽略，使用 attachments
- * 重要：这是唯一会保存 ChatMessage 的地方，这一点要始终遵循，确保保存 ChatMessage 的规则一致
+ * ⚠️ 重要：这是唯一会保存 ChatMessage 的地方，这一点要始终遵循，确保保存 ChatMessage 的规则一致
+ * ⚠️ 这里之前遇到个很致命的问题，但是彻底修复了，见 https://github.com/bmrlab/atypica-llm-app/issues/274
+ * 更新：现在为了更好的类型校验 （assistant 消息可能有很长的 parts，每次传递所有 parts总会出问题），所以还是恢复 append 模式，见 ClientMessagePayload
  */
 export const persistentAIMessageToDB = async ({
   mode,
@@ -304,32 +249,9 @@ export const persistentAIMessageToDB = async ({
   attachments?: ChatMessageAttachment[]; // 暂时还没地方用到，现在唯一存储 attachments 的地方，在 createStudyUserChatAction 里直接实现了
   tx?: Omit<typeof prisma, ITXClientDenyList>;
 }) => {
-  // 很奇怪，现在 addToolResult 不再是只有最后一个 part 了，而是完整 message
-  // 可能是因为 convertToFlattenModelMessages update 2026-01-18 修复的关系
-  //
-  // update: 找到原因了，是因为 prepareLastUIMessageForRequest 方法之前在前端过滤了
-  //   const parts = allParts.filter((part) => part.type == "text" || isToolUIPart(part));
-  // 让我误以为，addToolResult 只会发送最后一个 part，其实是可以过滤了 reasoning part 又正好没有 text part，
-  // 导致模型回复了 reasoning 消息在 addToolResult 以后只发回 tool 消息 ...
-  // 所以，恢复，这里应该永远都是 override 的逻辑，不可能存在 append 的逻辑
-  // const mode: "override" | "append" = "override";
-
-  // 更新：现在为了更好的类型校验 （assistant 消息可能有很长的 parts，每次传递所有 parts总会出问题），所以还是恢复 append 模式，见 ClientMessagePayload
-
-  if (!tx) {
-    tx = prisma;
-  }
-
-  const {
-    id: messageId,
-    role,
-    // content
-    parts,
-    // createdAt,
-    // experimental_attachments, // v4 字段 忽略，用不到，不用保存，而且里面会有 base64 file content, 保存下来太大了
-    ...extra
-  } = message;
-
+  if (!tx) tx = prisma;
+  // experimental_attachments, // v4 字段 忽略，用不到，不用保存，而且里面会有 base64 file content, 保存下来太大了
+  const { id: messageId, role, parts, ...extra } = message;
   const logger = rootLogger.child({ messageId, userChatId });
 
   // attachments 统一保存到 message 的 attachments 字段上，从 parts 里移除
@@ -614,26 +536,6 @@ function _calculateToolUseCount(dbMessages: ChatMessage[]) {
           const toolName = getToolName(part);
           count[toolName] = (count[toolName] || 0) + 1;
         }
-        // if (_part.type === "tool-invocation") {
-        //   // v4 message
-        //   const part = _part as unknown as Extract<V4MessagePart, { type: "tool-invocation" }>;
-        //   if (part.toolInvocation.state === "result") {
-        //     const toolName = part.toolInvocation.toolName as ToolName;
-        //     count[toolName] = (count[toolName] || 0) + 1;
-        //   }
-        // } else if (_part.type.startsWith("tool-")) {
-        //   // v5 message, see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-part-type-changes-uimessage
-        //   const part = _part as unknown as Extract<
-        //     UIMessage["parts"][number],
-        //     { type: `tool-${string}` }
-        //   >;
-        //   // aka: const part = part as unknown as { type: `tool-${string}` } & UIToolInvocation<Tool>;
-        //   // aka: const part = part as unknown as ToolUIPart // better
-        //   if (part.state === "output-available") {
-        //     const toolName = part.type.slice(5) as ToolName;
-        //     count[toolName] = (count[toolName] || 0) + 1;
-        //   }
-        // }
       });
       return count;
     },
@@ -652,7 +554,7 @@ export async function prepareMessagesForStreaming(
   {
     checkpointId,
     tools,
-    // modelName,
+    modelName,
   }: {
     checkpointId?: number; // 给 LLM 的消息从 id > checkpointId 开始取，这里不是 messageId 而是 ChatMessage 的数据库 id，并且 id 是递增的
     tools: ToolSet; // tools 必须提供，这样在转成 ModelMessage 的时候，会调用 tool 上的 toModelOutput 方法，只把 PlainText 部分传给 LLM
@@ -665,7 +567,7 @@ export async function prepareMessagesForStreaming(
   });
   // 使用 fixChatMessages 之前的统计数据，因为 fixChatMessages 会把没完成的 tool calls 变成完成
   const toolUseCount = _calculateToolUseCount(dbMessages);
-  const aiMessages = fixChatMessages(await convertDBMessagesToAIMessages(dbMessages)); // 传给 LLM 的时候需要修复
+  const aiMessages = await convertDBMessagesToAIMessages(dbMessages);
   let streamingMessage: Omit<UIMessage, "role"> & {
     role: "assistant";
   };
@@ -679,7 +581,6 @@ export async function prepareMessagesForStreaming(
   } else {
     streamingMessage = {
       id: generateId(),
-      // content: "",
       parts: [],
       role: "assistant",
     };
@@ -689,23 +590,11 @@ export async function prepareMessagesForStreaming(
   // 这样 LLM 才能理解，否则直接把 aiMessages 给 LLM 它会认为 tool 没执行 ...
   // 不知道之前没有一条条保存信息的时候，vercel ai sdk 是哪个阶段处理的，现在一定要人工转一次
   // ⚠️ tools 必须提供，这样在转成 ModelMessage 的时候，会调用 tool 上的 toModelOutput 方法，只把 PlainText 部分传给 LLM
-  const coreMessages = convertToFlattenModelMessages(aiMessages, {
+  const coreMessages = fixAndConvertToModelMessages(aiMessages, {
+    modelName,
     tools,
     // ignoreIncompleteToolCalls: true,
   });
-
-  // 有些模型不支持 reasoning 的 signature，比如 minimax, 需要去掉,
-  // 不过, 现在研究过程其实是固定了模型, 所以暂时也没这个问题, 这个先取消
-  // if (!modelName?.startsWith("claude") || !modelName?.startsWith("gemini")) {
-  //   coreMessages = coreMessages.map((message) => {
-  //     if (typeof message.content === "string") return message;
-  //     const content = message.content.map((part) => {
-  //       if (part.type !== "reasoning") return part;
-  //       return { type: "reasoning", text: part.text };
-  //     });
-  //     return { ...message, content } as ModelMessage;
-  //   });
-  // }
 
   return {
     coreMessages,
@@ -731,60 +620,20 @@ export async function prepareMessagesForStreaming(
  * convertToFlattenModelMessages 的实现是先把 UIMessage 拆了，一旦遇到 ToolUIPart 就拆到单独的一个 UIMessage 里
  * 这样 convertToModelMessages 的时候，tool-call 和 tool-result 就一定是连续的了
  */
-export function convertToFlattenModelMessages(
+export function fixAndConvertToModelMessages(
   messages: Array<Omit<UIMessage, "id">>,
-  options: {
+  {
+    modelName,
+    ...options
+  }: {
+    modelName?: LLMModelName;
     tools: ToolSet;
     ignoreIncompleteToolCalls?: boolean;
   },
 ): ModelMessage[] {
-  // const flattenMessages: Array<Omit<UIMessage, "id">> = [];
-  // let lastMessage: Omit<UIMessage, "id">;
-  // for (const { parts, role, metadata } of messages) {
-  //   lastMessage = { role, metadata, parts: [] };
-  //   for (const part of parts) {
-  //     if (!isToolOrDynamicToolUIPart(part)) {
-  //       lastMessage.parts.push(part);
-  //     } else {
-  //       flattenMessages.push(lastMessage);
-  //       flattenMessages.push({ role, metadata, parts: [part] });
-  //       lastMessage = { role, metadata, parts: [] };
-  //     }
-  //   }
-  //   if (lastMessage.parts.length > 0) {
-  //     flattenMessages.push(lastMessage);
-  //   }
-  // }
-  // const coreMessages = convertToModelMessages(flattenMessages, options);
+  let fixedMessages: typeof messages;
 
-  // 👀 update 2026-01-18:
-  // https://github.com/vercel/ai/issues/8516#issuecomment-3651551098
-  // 通过在两个 tool call 之间插入 step-start，可以让 tool-call 和 tool-result 消息配对，实现和上面注释掉的代码一样效果
-  const fixedMessages = messages.map(({ parts, ...message }) => {
-    const fixedParts: typeof parts = [{ type: "step-start" }];
-    for (const part of parts) {
-      if (part.type === "step-start") {
-        continue;
-      }
-      fixedParts.push(part);
-      if (isToolOrDynamicToolUIPart(part)) {
-        fixedParts.push({ type: "step-start" });
-      }
-    }
-    if (fixedParts.at(-1)?.type === "step-start") {
-      fixedParts.pop();
-    }
-    return {
-      ...message,
-      parts: fixedParts,
-    };
-  });
-  const coreMessages = convertToModelMessages(fixedMessages, options);
-  return coreMessages;
-}
-
-function fixChatMessages(messages: UIMessage[]): UIMessage[] {
-  let fixed: UIMessage[] = messages.map((message) => {
+  fixedMessages = messages.map((message) => {
     if (!message.parts) {
       return message;
     }
@@ -813,32 +662,68 @@ function fixChatMessages(messages: UIMessage[]): UIMessage[] {
     return { ...message, parts };
   });
 
-  // 删除所有空的消息，llm 会报错
-  fixed = fixed.filter((message) => {
+  fixedMessages = fixedMessages.filter((message) => {
+    // 删除所有空的消息，llm 会报错
     if (!message.parts?.length /* && !message.content.trim() */) {
       return false;
     }
     return true;
   });
 
-  // if (
-  //   fixed.length > 1 &&
-  //   fixed[fixed.length - 2].role === "user" &&
-  //   fixed[fixed.length - 1].role === "user"
-  // ) {
-  //   // 如果最后 2 条都是 user，一定是之前聊了一半挂了，丢掉最后一条
-  //   fixed = fixed.slice(0, -1);
+  // const flattenMessages: Array<Omit<UIMessage, "id">> = [];
+  // let lastMessage: Omit<UIMessage, "id">;
+  // for (const { parts, role, metadata } of messages) {
+  //   lastMessage = { role, metadata, parts: [] };
+  //   for (const part of parts) {
+  //     if (!isToolOrDynamicToolUIPart(part)) {
+  //       lastMessage.parts.push(part);
+  //     } else {
+  //       flattenMessages.push(lastMessage);
+  //       flattenMessages.push({ role, metadata, parts: [part] });
+  //       lastMessage = { role, metadata, parts: [] };
+  //     }
+  //   }
+  //   if (lastMessage.parts.length > 0) {
+  //     flattenMessages.push(lastMessage);
+  //   }
   // }
+  // const coreMessages = convertToModelMessages(flattenMessages, options);
+  // 👀 update 2026-01-18:
+  // https://github.com/vercel/ai/issues/8516#issuecomment-3651551098
+  // 通过在两个 tool call 之间插入 step-start，可以让 tool-call 和 tool-result 消息配对，实现和上面注释掉的代码一样效果
+  fixedMessages = fixedMessages.map(({ parts, ...message }) => {
+    const fixedParts: typeof parts = [{ type: "step-start" }];
+    for (const part of parts) {
+      if (part.type === "step-start") {
+        continue;
+      }
+      fixedParts.push(part);
+      if (isToolOrDynamicToolUIPart(part)) {
+        fixedParts.push({ type: "step-start" });
+      }
+    }
+    if (fixedParts.at(-1)?.type === "step-start") {
+      fixedParts.pop();
+    }
+    return {
+      ...message,
+      parts: fixedParts,
+    };
+  });
 
-  // if (
-  //   fixed.length > 1 &&
-  //   fixed[fixed.length - 1].role === "assistant" &&
-  //   !fixed[fixed.length - 1].parts?.length &&
-  //   !fixed[fixed.length - 1].content.trim()
-  // ) {
-  //   // Bedrock 不支持最后一条空的 assistant 消息
-  //   fixed = fixed.slice(0, -1);
-  // }
+  let coreMessages = convertToModelMessages(fixedMessages, options);
 
-  return fixed;
+  // 有些模型不支持 reasoning 的 signature (存在 content[].providerOptions 里)，比如 minimax, 需要去掉
+  if (!modelName?.startsWith("claude") && !modelName?.startsWith("gemini")) {
+    coreMessages = coreMessages.map((message) => {
+      if (typeof message.content === "string") return message;
+      const content = message.content.map((part) => {
+        if (part.type !== "reasoning") return part;
+        return { type: "reasoning", text: part.text };
+      });
+      return { ...message, content } as ModelMessage;
+    });
+  }
+
+  return coreMessages;
 }

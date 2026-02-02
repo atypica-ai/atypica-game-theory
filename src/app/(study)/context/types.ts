@@ -1,8 +1,6 @@
-import { LLMModelName } from "@/ai/provider";
 import { ExpertName } from "@/app/(deepResearch)/experts/types";
 
 export type UserChatContext = Partial<{
-  modelName: LLMModelName;
   // Report and Podcast tokens (array, multiple allowed)
   reportTokens: string[];
   podcastTokens: string[];

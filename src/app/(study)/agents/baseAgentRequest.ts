@@ -188,7 +188,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     // https://platform.claude.com/docs/en/build-with-claude/extended-thinking
     // ⚠️ 注意 claude 要求 reasoning part 里面的 signature 一起传回去，不然不能被认为是一个 reasoning block
     // 旧的消息都没有 providerMetadata, 那就直接禁用 thinking 了, 新的有, 在 appendStepToStreamingMessage 里修复并保存了
-    const reasoningSignatureValie = (part: ReasoningUIPart) => {
+    const reasoningSignatureValid = (part: ReasoningUIPart) => {
       if (
         part.providerMetadata &&
         "bedrock" in part.providerMetadata && // 目前主要模型就是 bedrock, 所以这里只考虑 bedrock
@@ -201,7 +201,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     const firstPart = streamingMessage.parts.filter((part) => part.type !== "step-start").at(0);
     if (!firstPart) {
       // 保持原配置
-    } else if (firstPart.type === "reasoning" && reasoningSignatureValie(firstPart)) {
+    } else if (firstPart.type === "reasoning" && reasoningSignatureValid(firstPart)) {
       // providerOptions["bedrock"] = {
       //   ...providerOptions["bedrock"],
       //   reasoningConfig: { type: "enabled", budgetTokens: 1024 },
