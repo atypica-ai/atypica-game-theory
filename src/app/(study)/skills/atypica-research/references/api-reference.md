@@ -233,6 +233,7 @@ List user's historical study sessions.
       topic: string,
       hasReport: boolean,
       hasPodcast: boolean,
+      replayUrl: string,  // Full URL to replay the study: https://atypica.ai/study/{token}/share?replay=1
       createdAt: string,  // ISO 8601
       updatedAt: string
     }>,
@@ -270,6 +271,7 @@ Retrieve generated research report.
     description: string,
     content: string,        // HTML format
     coverUrl?: string,      // Signed CDN URL (1 hour expiry)
+    shareUrl: string,       // Full shareable URL: https://atypica.ai/artifacts/report/{token}/share
     generatedAt: string,    // ISO 8601
     createdAt: string,
     updatedAt: string
@@ -307,6 +309,7 @@ Retrieve generated podcast content.
       mimeType: string,     // e.g., "audio/mpeg"
       showNotes: string
     },
+    shareUrl: string,       // Full shareable URL: https://atypica.ai/artifacts/podcast/{token}/share
     generatedAt: string,    // ISO 8601
     createdAt: string,
     updatedAt: string

@@ -34,26 +34,19 @@ If the user doesn't have an atypica.ai account, direct them to **https://atypica
 
 ### Step 3: Install MCP server
 
-**For Claude Code (CLI)**:
+Add the MCP server to your AI assistant's configuration. The exact method varies by tool:
+
+**Example command (syntax varies by MCP client)**:
 
 ```bash
-claude mcp add --transport http atypica-research https://atypica.ai/mcp/study \
+# Generic example - adjust for your specific MCP client
+mcp add --transport http atypica-research https://atypica.ai/mcp/study \
   --header "Authorization: Bearer YOUR_API_KEY_HERE"
 ```
 
-**For Claude Desktop**:
+**For MCP clients supporting JSON config**:
 
-1. Open Claude Desktop
-2. Go to **Settings > Connectors**
-3. Click **Add Remote Server**
-4. Enter:
-   - Name: `atypica-research`
-   - URL: `https://atypica.ai/mcp/study`
-   - Authentication: Bearer token with API key
-
-**Alternative for Claude Desktop (JSON config)**:
-
-If the user prefers editing config manually, they can use `mcp-remote` as a proxy:
+If your client uses JSON configuration, you can use `mcp-remote` as a proxy:
 
 ```json
 {
@@ -71,11 +64,11 @@ If the user prefers editing config manually, they can use `mcp-remote` as a prox
 }
 ```
 
-Config location: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+Refer to your AI assistant's documentation for the exact configuration location and syntax.
 
 ### Step 4: Restart and verify
 
-1. **Restart Claude Desktop** (if using Desktop)
+1. **Restart your AI assistant** to load the new MCP server
 2. Verify tools are available: Check for tools starting with `atypica_`
 
 ## Quick Start
