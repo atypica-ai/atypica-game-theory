@@ -5,12 +5,12 @@
 
 // pnpm tsx scripts/payment-stats.ts > payment-stats.csv
 
-import { TokensLogResourceType } from "@/tokens/types";
 import { loadEnvConfig } from "@next/env";
 import Stripe from "stripe";
+import { TokensLogResourceType } from "../../src/tokens/types";
 import "../mock-server-only";
 
-const dateBefore = new Date("2026-01-01T00:00:00+08:00"); // 注意，导出的 excel 文件里，days 的公式也需要改一下时间为本月 1 号
+const dateBefore = new Date("2026-02-01T00:00:00+08:00"); // 注意，导出的 excel 文件里，days 的公式也需要改一下时间为本月 1 号
 const pad12 = (n: number) => n.toLocaleString().padStart(12, " ");
 const fdate = (d: Date) =>
   new Intl.DateTimeFormat("zh-CN", {
@@ -22,7 +22,7 @@ const fdate = (d: Date) =>
 
 async function main() {
   loadEnvConfig(process.cwd());
-  const { prisma } = await import("@/prisma/prisma");
+  const { prisma } = await import("../../src/prisma/prisma");
   const users = await prisma.user.findMany({
     where: {
       paymentRecords: {

@@ -82,7 +82,7 @@ export interface BaseAgentContext {
  */
 export interface AgentRequestConfig<TOOLS extends StudyToolSet = StudyToolSet> {
   // Core streaming configuration
-  model: LLMModelName;
+  modelName: LLMModelName;
   providerOptions?: Record<string, Record<string, JSONValue>>;
   systemPrompt: string;
   tools: TOOLS;
@@ -176,7 +176,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // Prepare streaming messages
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(studyUserChatId, {
     tools: config.tools,
-    modelName: config.model,
+    modelName: config.modelName,
   });
 
   let providerOptions: NonNullable<typeof config.providerOptions> =
@@ -408,7 +408,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   let streamStartTime = Date.now();
   const streamTextResult = streamText<TOOLS>({
     // Core configuration
-    model: llm(config.model),
+    model: llm(config.modelName),
     providerOptions,
     system: finalSystemPrompt, // Use final system prompt (with team prompt appended)
     messages: modelMessages,
@@ -442,14 +442,20 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         ? await config.specialHandlers.customPrepareStep(options)
         : undefined;
 
-      // Apply Bedrock cache for prompt caching
-      const messages = config.model.startsWith("claude-")
-        ? setBedrockCache(config.model as `claude-${string}`, [...currentMessages])
+      // Determine which model to use (custom model or default config model)
+      const effectiveModel = customResult?.model ?? llm(config.modelName);
+      // Apply Bedrock cache for prompt caching (only for claude models)
+      const messages = (typeof effectiveModel === "string"
+        ? effectiveModel
+        : effectiveModel.modelId
+      )?.includes("claude")
+        ? setBedrockCache("claude-xxx", [...currentMessages])
         : [...currentMessages];
 
       return {
         messages,
         activeTools: customResult?.activeTools,
+        model: customResult?.model,
       };
     },
 
@@ -481,6 +487,9 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
      * onStepFinish: Immediate persistence + stats reporting + balance check + universal notifications + custom logic
      */
     onStepFinish: async (step: StepResult<TOOLS>) => {
+      // Provider's raw model ID (e.g., "global.anthropic.claude-sonnet-4-5-xxx")
+      const modelId = step.response.modelId;
+
       // Immediate persistence (critical for message consistency)
       // ⚠️ 现在改用 onStepFinish 保存
       // await immediatePersistentMessage();
@@ -496,7 +505,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
 
       // Extract tool calls and usage stats
       const toolCalls = step.toolCalls.map((call) => call?.toolName ?? "unknown");
-      const { tokens, extra } = calculateStepTokensUsage(step);
+      const { tokens, extra } = calculateStepTokensUsage(step, { modelId });
 
       logger.info({
         msg: "baseAgentRequest onStepFinish",
@@ -512,7 +521,6 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         const reportedBy = "agent chat";
         const seconds = Math.floor((Date.now() - streamStartTime) / 1000);
         streamStartTime = Date.now(); // Reset for next step
-
         await Promise.all([
           statReport("duration", seconds, { reportedBy }),
           statReport("steps", toolCalls.length, { reportedBy, toolCalls }),

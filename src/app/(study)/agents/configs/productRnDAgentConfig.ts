@@ -78,7 +78,7 @@ export async function createProductRnDAgentConfig(
 
   return {
     // model: "claude-sonnet-4-5",
-    model: "minimax-m2.1",
+    modelName: "minimax-m2.1",
     systemPrompt,
     tools,
 
@@ -87,9 +87,10 @@ export async function createProductRnDAgentConfig(
        * customPrepareStep: Dynamic tool control
        * - Restrict tools after report/podcast generation
        */
-      customPrepareStep: async ({ messages }) => {
+      customPrepareStep: async ({ messages, model: _model }) => {
         const toolUseCount = calculateToolUsage(messages);
         let activeTools: (keyof TOOLS)[] | undefined = undefined;
+        const model = _model;
 
         // After report/podcast generation, only allow specific tools
         if (
@@ -103,7 +104,7 @@ export async function createProductRnDAgentConfig(
           ];
         }
 
-        return { messages, activeTools };
+        return { messages, activeTools, model };
       },
 
       // Note: customOnStepFinish removed - all notifications handled universally in base

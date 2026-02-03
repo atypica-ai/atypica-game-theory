@@ -1,3 +1,4 @@
+import { llm } from "@/ai/provider";
 import { toolCallError } from "@/ai/tools/error";
 import { webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
@@ -74,7 +75,7 @@ export async function createFastInsightAgentConfig(
   // =============================================================================
 
   return {
-    model: "claude-sonnet-4-5",
+    modelName: "claude-sonnet-4-5",
     systemPrompt,
     tools,
     maxSteps: 10, // Fast execution - override default
@@ -87,9 +88,10 @@ export async function createFastInsightAgentConfig(
        * - Restrict tools after report/podcast generation
        * - Limit webSearch usage (max 3 times)
        */
-      customPrepareStep: async ({ messages }) => {
+      customPrepareStep: async ({ messages, model: _model }) => {
         const toolUseCount = calculateToolUsage(messages);
         let activeTools: (keyof TOOLS)[] | undefined = undefined;
+        let model = _model;
 
         // After report/podcast generation, only allow specific tools
         if (
@@ -101,9 +103,10 @@ export async function createFastInsightAgentConfig(
             StudyToolName.generatePodcast,
             StudyToolName.toolCallError,
           ];
-        }
-        // Limit webSearch usage (fast insight doesn't have planStudy)
-        else {
+          // 报告生成以后，就换成 minimax 模型，以减少消耗
+          model = llm("minimax-m2.1");
+        } else {
+          // Limit webSearch usage (fast insight doesn't have planStudy)
           if ((toolUseCount[StudyToolName.webSearch] ?? 0) >= 3) {
             activeTools = (Object.keys(tools) as (keyof TOOLS)[]).filter(
               (toolName) => toolName !== StudyToolName.webSearch,
@@ -111,7 +114,7 @@ export async function createFastInsightAgentConfig(
           }
         }
 
-        return { messages, activeTools };
+        return { messages, activeTools, model };
       },
 
       // Note: customOnStepFinish removed - all notifications handled universally in base

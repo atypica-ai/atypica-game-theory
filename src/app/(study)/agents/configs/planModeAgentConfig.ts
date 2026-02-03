@@ -53,7 +53,7 @@ export async function createPlanModeAgentConfig(
   const tools = buildPlanModeTools(agentToolArgs);
 
   return {
-    model: "claude-sonnet-4-5",
+    modelName: "claude-sonnet-4-5",
     providerOptions: {
       bedrock: {
         reasoningConfig: {
