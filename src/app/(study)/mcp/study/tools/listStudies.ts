@@ -75,6 +75,7 @@ export async function handleListStudies(
         topic: study.analyst?.topic || "",
         hasReport: (ctx.reportTokens?.length ?? 0) > 0,
         hasPodcast: (ctx.podcastTokens?.length ?? 0) > 0,
+        replayUrl: `https://atypica.ai/study/${study.token}/share?replay=1`,
         createdAt: study.createdAt.toISOString(),
         updatedAt: study.updatedAt.toISOString(),
       };

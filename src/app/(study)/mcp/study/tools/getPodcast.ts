@@ -84,6 +84,7 @@ export async function handleGetPodcast(
         audioUrl,
         coverUrl,
         metadata,
+        shareUrl: `https://atypica.ai/artifacts/podcast/${podcast.token}/share`,
         generatedAt: podcast.generatedAt?.toISOString(),
         createdAt: podcast.createdAt.toISOString(),
         updatedAt: podcast.updatedAt.toISOString(),

@@ -83,6 +83,7 @@ export async function handleGetReport(
         description,
         content: report.onePageHtml,
         coverUrl,
+        shareUrl: `https://atypica.ai/artifacts/report/${report.token}/share`,
         generatedAt: report.generatedAt.toISOString(),
         createdAt: report.createdAt.toISOString(),
         updatedAt: report.updatedAt.toISOString(),
