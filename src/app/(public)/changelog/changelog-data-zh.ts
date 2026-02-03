@@ -22,14 +22,10 @@ export const changelogDataZH: ChangelogSection[] = [
         date: "2026-01-31",
         items: [
           {
-            title: "🤖 重磅功能: Universal Agent (通用智能体)",
+            title:
+              '🔌 开发者功能: <a href="https://atypica.ai/docs/mcp" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">MCP 与 Skills 集成</a>',
             description:
-              "全新的通用智能体系统，集成 Claude Skills 框架。支持代码执行和文件管理，提供持久化工作空间。可以安装和管理自定义 Skills，无限扩展 AI 能力。让 AI 不仅能做研究，还能帮你执行各种自动化任务。",
-          },
-          {
-            title: "🔌 开发者功能: MCP (Model Context Protocol) 集成",
-            description:
-              "推出完整的 MCP Study API，提供 9 个核心研究工具。开发者可以通过标准 MCP 协议将 atypica 的研究能力集成到自己的应用中。新增 atypica-research skill，支持通过 Claude Desktop 等 MCP 客户端使用研究功能。",
+              '推出完整的 MCP Study API，提供 9 个核心研究工具。开发者可以通过标准 MCP 协议将 atypica 的研究能力集成到自己的应用中。新增 <code>atypica-research</code> skill，支持通过 Claude Desktop 等 MCP 客户端使用研究功能。访问 <a href="https://skill0.io" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">skill0.io</a> 下载 skills。详见 <a href="https://atypica.ai/docs/mcp" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">MCP 文档</a>了解配置和使用方法。',
           },
           {
             title: "🏢 企业功能: AWS Marketplace 集成",

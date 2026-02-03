@@ -42,6 +42,18 @@ const docSections: DocSection[] = [
       { label: "Troubleshooting", href: "#troubleshooting" },
     ],
   },
+  {
+    title: "MCP & Skills",
+    href: "/docs/mcp",
+    items: [
+      { label: "Overview", href: "#overview", primary: true },
+      { label: "MCP Server", href: "#mcp-server", primary: true },
+      { label: "Agent Skill", href: "#agent-skill", primary: true },
+      { label: "Research Types", href: "#research-types", primary: true },
+      { label: "API Reference", href: "#api-reference" },
+      { label: "Support", href: "#support" },
+    ],
+  },
 ];
 
 export function DocsSidebar() {

@@ -22,14 +22,10 @@ export const changelogDataEN: ChangelogSection[] = [
         date: "2026-01-31",
         items: [
           {
-            title: "🤖 Major Feature: Universal Agent",
+            title:
+              '🔌 Developer Feature: <a href="https://atypica.ai/docs/mcp" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">MCP & Skills Integration</a>',
             description:
-              "Brand new universal agent system integrated with Claude Skills framework. Supports code execution and file management with persistent workspace. Install and manage custom Skills to infinitely extend AI capabilities. AI can now not only conduct research but also help with various automation tasks.",
-          },
-          {
-            title: "🔌 Developer Feature: MCP (Model Context Protocol) Integration",
-            description:
-              "Launched complete MCP Study API with 9 core research tools. Developers can integrate atypica's research capabilities into their applications through standard MCP protocol. Added atypica-research skill for using research features through MCP clients like Claude Desktop.",
+              'Launched complete MCP Study API with 9 core research tools. Developers can integrate atypica\'s research capabilities into their applications through standard MCP protocol. Added <code>atypica-research</code> skill for using research features through MCP clients like Claude Desktop. Download skills from <a href="https://skill0.io" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">skill0.io</a>. See <a href="https://atypica.ai/docs/mcp" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">MCP documentation</a> for setup and usage.',
           },
           {
             title: "🏢 Enterprise Feature: AWS Marketplace Integration",

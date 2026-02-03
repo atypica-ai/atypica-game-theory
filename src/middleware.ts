@@ -183,7 +183,7 @@ export async function middleware(req: NextRequest) {
 
   // Handle locale-aware static pages
   const path = req.nextUrl.pathname;
-  if (path === "/about.html" || path === "/persona-simulation" || path === "/changelog.html") {
+  if (path === "/about.html" || path === "/persona-simulation") {
     const url = req.nextUrl.clone();
     if (path === "/about.html") {
       url.pathname = locale === "zh-CN" ? "/_pages/about-zh.html" : "/_pages/about-en.html";
@@ -192,8 +192,6 @@ export async function middleware(req: NextRequest) {
         locale === "zh-CN"
           ? "/_pages/persona-simulation-zh.html"
           : "/_pages/persona-simulation-en.html";
-    } else if (path === "/changelog.html") {
-      url.pathname = locale === "zh-CN" ? "/_pages/changelog-zh.html" : "/_pages/changelog-en.html";
     }
     return NextResponse.rewrite(url);
   }
