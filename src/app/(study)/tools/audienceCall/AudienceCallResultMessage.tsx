@@ -1,5 +1,6 @@
 "use client";
 
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { useFormatContent } from "@/app/api/format-content";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
@@ -18,8 +19,11 @@ export const AudienceCallResultMessage = ({
 }) => {
   const tReasoning = useTranslations("Components.ReasoningThinkingResultMessage");
   const t = useTranslations("Components.AudienceCallResultMessage");
+  const { replay } = useStudyContext();
 
-  const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent();
+  const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent({
+    live: !replay,
+  });
 
   useEffect(() => {
     const plainText = toolInvocation.output.plainText;

@@ -6,6 +6,13 @@ import { DefaultChatTransport } from "ai";
 import { useCallback, useMemo, useRef } from "react";
 
 export interface UseFormatContentOptions {
+  /**
+   * Whether to force live generation (bypass cache)
+   * - true: Always generate new content
+   * - false: Try to use cached content first
+   * Default: false
+   */
+  live?: boolean;
   onComplete?: (html: string) => void;
   onError?: (error: Error) => void;
 }
@@ -23,8 +30,12 @@ export interface UseFormatContentResult {
  * Uses AI SDK's useChat for proper streaming
  */
 export function useFormatContent(options: UseFormatContentOptions = {}): UseFormatContentResult {
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
+  const { live = false, ...restOptions } = options;
+  const optionsRef = useRef(restOptions);
+  optionsRef.current = restOptions;
+
+  // Build API URL with live query parameter
+  const apiUrl = `/api/format-content${live ? "?live=true" : ""}`;
 
   const {
     messages,
@@ -35,7 +46,7 @@ export function useFormatContent(options: UseFormatContentOptions = {}): UseForm
   } = useChat({
     experimental_throttle: 3000,
     transport: new DefaultChatTransport({
-      api: "/api/format-content",
+      api: apiUrl,
       prepareSendMessagesRequest({ messages }) {
         const message = prepareLastUIMessageForRequest(messages);
         return {

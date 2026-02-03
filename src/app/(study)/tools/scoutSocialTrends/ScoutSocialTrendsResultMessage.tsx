@@ -1,5 +1,6 @@
 "use client";
 
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { useFormatContent } from "@/app/api/format-content";
 import { ToolUIPart } from "ai";
@@ -16,9 +17,12 @@ export const ScoutSocialTrendsResultMessage = ({
   >;
 }) => {
   const t = useTranslations("Components.ScoutSocialTrendsResultMessage");
+  const { replay } = useStudyContext();
 
   // Format the output as HTML
-  const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent();
+  const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent({
+    live: !replay,
+  });
 
   useEffect(() => {
     const summary = toolInvocation.output.summary;

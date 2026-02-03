@@ -1,5 +1,6 @@
 "use client";
 
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { useFormatContent } from "@/app/api/format-content";
 import { ToolUIPart } from "ai";
@@ -16,7 +17,10 @@ export const PlanPodcastResultMessage = ({
   >;
 }) => {
   const t = useTranslations("Components.PlanPodcastResultMessage");
-  const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent();
+  const { replay } = useStudyContext();
+  const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent({
+    live: !replay,
+  });
 
   useEffect(() => {
     const plainText = toolInvocation.output.plainText;
