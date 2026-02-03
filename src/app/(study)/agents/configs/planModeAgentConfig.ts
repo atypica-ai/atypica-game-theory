@@ -66,6 +66,8 @@ export async function createPlanModeAgentConfig(
     systemPrompt: planModeSystem({ locale }),
     tools,
     maxSteps: 5, // Plan mode may need more steps for thorough clarification
+    maxTokens: 1500, // 限制输出长度（约 500-750 字），对话需要自然但简洁
+
     specialHandlers: {
       // No customPrepareStep needed - tools are freely available
       // No custom onStepFinish needed - saveAnalyst tool handles the transition to execution phase

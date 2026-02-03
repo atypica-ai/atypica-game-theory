@@ -79,6 +79,7 @@ export async function createFastInsightAgentConfig(
     systemPrompt,
     tools,
     maxSteps: 10, // Fast execution - override default
+    maxTokens: 1200, // 限制输出长度（约 400-600 字），Fast Insight 最简洁
 
     specialHandlers: {
       // Note: beforeStreamText removed - attachment processing handled universally in base

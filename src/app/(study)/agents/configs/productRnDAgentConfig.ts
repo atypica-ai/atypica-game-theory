@@ -81,6 +81,7 @@ export async function createProductRnDAgentConfig(
     modelName: "minimax-m2.1",
     systemPrompt,
     tools,
+    maxTokens: 1500, // 限制输出长度（约 500-750 字），工具输出会自动展示
 
     specialHandlers: {
       /**
