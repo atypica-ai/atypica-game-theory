@@ -6,17 +6,22 @@ import {
 } from "@/ai/tools/social/ToolMessage";
 import { PlainTextUITools } from "@/ai/tools/types";
 import { RequestPaymentMessage } from "@/ai/tools/user/payment/RequestPaymentMessage";
+import { DeepResearchResultMessage } from "@/app/(deepResearch)/ui/DeepResearchResultMessage";
 import { RequestInteractionMessage } from "@/app/(study)/tools/requestInteraction/RequestInteractionMessage";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { ToolUIPart } from "ai";
 import { Streamdown } from "streamdown";
+import { AudienceCallResultMessage } from "./audienceCall/AudienceCallResultMessage";
 import { BuildPersonaResultMessage } from "./buildPersona/BuildPersonaResultMessage";
 import { DiscussionChatResultMessage } from "./discussionChat/DiscussionChatResultMessage";
 import { GeneratePodcastResultMessage } from "./generatePodcast/GeneratePodcastResultMessage";
 import { GenerateReportResultMessage } from "./generateReport/GenerateReportResultMessage";
 import { InterviewChatResultMessage } from "./interviewChat/InterviewChatResultMessage";
 import { MakeStudyPlanMessage } from "./makeStudyPlan/MakeStudyPlanMessage";
+import { PlanPodcastResultMessage } from "./planPodcast/PlanPodcastResultMessage";
+import { PlanStudyResultMessage } from "./planStudy/PlanStudyResultMessage";
 import { SaveAnalystToolResultMessage } from "./saveAnalyst/SaveAnalystToolResultMessage";
+import { ScoutSocialTrendsResultMessage } from "./scoutSocialTrends/ScoutSocialTrendsResultMessage";
 import { ScoutTaskChatResultMessage } from "./scoutTaskChat/ScoutTaskChatResultMessage";
 import { SearchPersonasResultMessage } from "./searchPersonas/SearchPersonasResultMessage";
 import { TAddStudyUIToolResult, TStudyMessageWithTool } from "./types";
@@ -76,8 +81,6 @@ export const StudyToolUIPartDisplay = ({
       return <GeneratePodcastResultMessage toolInvocation={toolUIPart} />;
     case `tool-${StudyToolName.scoutTaskChat}`:
       return <ScoutTaskChatResultMessage toolInvocation={toolUIPart} />;
-    case `tool-${StudyToolName.audienceCall}`:
-      return <ReasoningThinkingResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${StudyToolName.buildPersona}`:
       return <BuildPersonaResultMessage toolInvocation={toolUIPart} />;
@@ -91,11 +94,20 @@ export const StudyToolUIPartDisplay = ({
     case `tool-${StudyToolName.saveAnalyst}`:
       return <SaveAnalystToolResultMessage toolInvocation={toolUIPart} />;
 
+    case `tool-${StudyToolName.audienceCall}`:
+      return <AudienceCallResultMessage toolInvocation={toolUIPart} />;
+
     case `tool-${StudyToolName.scoutSocialTrends}`:
-    case `tool-${StudyToolName.createSubAgent}`:
+      return <ScoutSocialTrendsResultMessage toolInvocation={toolUIPart} />;
+
     case `tool-${StudyToolName.planStudy}`:
+      return <PlanStudyResultMessage toolInvocation={toolUIPart} />;
     case `tool-${StudyToolName.planPodcast}`:
+      return <PlanPodcastResultMessage toolInvocation={toolUIPart} />;
     case `tool-${StudyToolName.deepResearch}`:
+      return <DeepResearchResultMessage toolInvocation={toolUIPart} />;
+
+    case `tool-${StudyToolName.createSubAgent}`:
       return <PlainTextToolResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${StudyToolName.xhsSearch}`:

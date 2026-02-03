@@ -3,19 +3,17 @@
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { useFormatContent } from "@/app/api/format-content";
 import { ToolUIPart } from "ai";
-import { LoaderIcon, MessageSquareIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { LoaderIcon, SearchIcon } from "lucide-react";
 import { useEffect } from "react";
 
-export const InterviewChatResultMessage = ({
+export const DeepResearchResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<StudyUITools, StudyToolName.interviewChat>>,
+    ToolUIPart<Pick<StudyUITools, StudyToolName.deepResearch>>,
     { state: "output-available" }
   >;
 }) => {
-  const t = useTranslations("Components.InterviewChatResultMessage");
   const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent();
 
   useEffect(() => {
@@ -29,21 +27,21 @@ export const InterviewChatResultMessage = ({
   return (
     <div className="p-3 text-foreground bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
       <div className="mb-3 flex items-center gap-2">
-        <MessageSquareIcon className="size-4 shrink-0" />
-        <div className="font-semibold text-sm">{t("title")}</div>
+        <SearchIcon className="size-4 shrink-0" />
+        <div className="font-semibold text-sm">深度研究</div>
       </div>
 
       <div className="text-xs">
         {isFormatting && (
           <div className="flex items-center gap-2 text-blue-600 mb-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
             <LoaderIcon className="animate-spin" size={14} />
-            <span>{t("formatting")}</span>
+            <span>正在格式化研究结果...</span>
           </div>
         )}
 
         {formattedHtml ? (
           <div
-            className="formatted-interview-summary prose prose-sm max-w-none dark:prose-invert"
+            className="formatted-deep-research prose prose-sm max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: formattedHtml }}
           />
         ) : (

@@ -275,6 +275,31 @@
     "ReasoningThinkingResultMessage": {
       "deepThinking": "Deep Thinking"
     },
+    "ScoutSocialTrendsResultMessage": {
+      "title": "Social Media Trends Research",
+      "formatting": "Formatting research results...",
+      "platforms": "Platforms",
+      "searches": "Searches"
+    },
+    "PlanPodcastResultMessage": {
+      "title": "Podcast Plan",
+      "formatting": "Formatting plan..."
+    },
+    "PlanStudyResultMessage": {
+      "title": "Study Plan",
+      "formatting": "Formatting plan..."
+    },
+    "DiscussionChatResultMessage": {
+      "title": "Discussion Summary",
+      "formatting": "Formatting summary..."
+    },
+    "InterviewChatResultMessage": {
+      "title": "Interview Summary",
+      "formatting": "Formatting summary..."
+    },
+    "AudienceCallResultMessage": {
+      "formatting": "Formatting content..."
+    },
     "SelectPersonaDialog": {
       "title": "Select Interview Subjects",
       "cancel": "Cancel",

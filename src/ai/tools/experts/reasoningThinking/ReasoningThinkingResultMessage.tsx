@@ -1,5 +1,4 @@
 import { BasicToolName, BasicUITools } from "@/ai/tools/types";
-import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { ToolUIPart } from "ai";
 import { BrainIcon } from "lucide-react";
@@ -10,10 +9,7 @@ export const ReasoningThinkingResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<
-      Pick<BasicUITools, BasicToolName.reasoningThinking> &
-        Pick<StudyUITools, StudyToolName.audienceCall> // audienceCall 简单复用一下这个组件，之后需要优化，这样复用不好
-    >,
+    ToolUIPart<Pick<BasicUITools, BasicToolName.reasoningThinking>>,
     { state: "output-available" }
   >;
 }) => {

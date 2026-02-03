@@ -3,19 +3,19 @@
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { useFormatContent } from "@/app/api/format-content";
 import { ToolUIPart } from "ai";
-import { LoaderIcon, MessageSquareIcon } from "lucide-react";
+import { ClipboardListIcon, LoaderIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
-export const InterviewChatResultMessage = ({
+export const PlanStudyResultMessage = ({
   toolInvocation,
 }: {
   toolInvocation: Extract<
-    ToolUIPart<Pick<StudyUITools, StudyToolName.interviewChat>>,
+    ToolUIPart<Pick<StudyUITools, StudyToolName.planStudy>>,
     { state: "output-available" }
   >;
 }) => {
-  const t = useTranslations("Components.InterviewChatResultMessage");
+  const t = useTranslations("Components.PlanStudyResultMessage");
   const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent();
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export const InterviewChatResultMessage = ({
   return (
     <div className="p-3 text-foreground bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
       <div className="mb-3 flex items-center gap-2">
-        <MessageSquareIcon className="size-4 shrink-0" />
+        <ClipboardListIcon className="size-4 shrink-0" />
         <div className="font-semibold text-sm">{t("title")}</div>
       </div>
 
@@ -43,7 +43,7 @@ export const InterviewChatResultMessage = ({
 
         {formattedHtml ? (
           <div
-            className="formatted-interview-summary prose prose-sm max-w-none dark:prose-invert"
+            className="formatted-study-plan prose prose-sm max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: formattedHtml }}
           />
         ) : (
