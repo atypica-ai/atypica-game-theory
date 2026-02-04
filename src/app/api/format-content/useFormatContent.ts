@@ -22,6 +22,7 @@ export interface UseFormatContentResult {
   isLoading: boolean;
   error: Error | null;
   formatContent: (content: string) => Promise<void>;
+  stop: () => void;
   reset: () => void;
 }
 
@@ -41,6 +42,7 @@ export function useFormatContent(options: UseFormatContentOptions = {}): UseForm
     messages,
     sendMessage,
     setMessages,
+    stop,
     status,
     error: chatError,
   } = useChat({
@@ -80,14 +82,17 @@ export function useFormatContent(options: UseFormatContentOptions = {}): UseForm
     return "";
   }, [messages]);
 
-  const isLoading = status === "streaming";
+  const isLoading = status === "streaming" || status === "submitted";
 
   const formatContent = useCallback(
     async (content: string) => {
-      setMessages([]);
+      // 防止并发调用：如果正在处理中，忽略新的调用
+      if (status === "streaming" || status === "submitted") {
+        return;
+      }
       await sendMessage({ text: content });
     },
-    [sendMessage, setMessages],
+    [sendMessage, status],
   );
 
   const reset = useCallback(() => {
@@ -99,6 +104,7 @@ export function useFormatContent(options: UseFormatContentOptions = {}): UseForm
     isLoading,
     error: chatError ?? null,
     formatContent,
+    stop,
     reset,
   };
 }

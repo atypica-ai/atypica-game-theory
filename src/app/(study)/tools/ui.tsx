@@ -14,7 +14,7 @@ import { useFormatContent } from "@/app/api/format-content/useFormatContent";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
 import { LoaderIcon } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
 import { BuildPersonaResultMessage } from "./buildPersona/BuildPersonaResultMessage";
 import { GeneratePodcastResultMessage } from "./generatePodcast/GeneratePodcastResultMessage";
@@ -43,20 +43,33 @@ export const FormattedContentToolResultMessage = ({
   toolInvocation: Extract<ToolUIPart<PlainTextUITools>, { state: "output-available" }>;
 }) => {
   const { replay } = useStudyContext();
+  const hasCalledRef = useRef(false);
 
   const {
     formattedHtml,
     isLoading: isFormatting,
     formatContent,
+    stop,
   } = useFormatContent({
     live: !replay,
   });
 
   useEffect(() => {
+    // 防止 React Strict Mode 重复调用
+    if (hasCalledRef.current) {
+      return;
+    }
+
     const plainText = toolInvocation.output.plainText;
     if (plainText) {
+      hasCalledRef.current = true;
       formatContent(plainText);
     }
+
+    return () => {
+      // cleanup 时停止正在进行的请求
+      stop();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toolInvocation.toolCallId]);
 

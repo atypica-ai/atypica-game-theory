@@ -305,7 +305,6 @@ async function generatePersonaResponse({
 
       system: systemPrompt,
       messages: fixAndConvertToModelMessages(messages, {
-        modelName,
         tools: {},
       }),
       stopWhen: stepCountIs(1),
@@ -388,7 +387,6 @@ async function generateInterviewerResponse({
 
       system: systemPrompt,
       messages: fixAndConvertToModelMessages(messages, {
-        modelName,
         tools,
       }),
 

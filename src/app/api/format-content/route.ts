@@ -73,11 +73,11 @@ export async function POST(req: Request) {
           logger.info({ msg: "Processing by another instance, waiting...", attempt: attempt + 1 });
           await new Promise((resolve) => setTimeout(resolve, 5000));
           continue;
-        } else if (result.status === "cached" && result.formattedHtml) {
+        } else if (result.status === "cached") {
           // formatContentCore found cache - write it to stream and finish
           writer.write({ type: "start" });
           writer.write({ type: "text-start", id: contentHash });
-          writer.write({ type: "text-delta", id: contentHash, delta: result.formattedHtml });
+          writer.write({ type: "text-delta", id: contentHash, delta: result.formattedHtml ?? "" });
           writer.write({ type: "text-end", id: contentHash });
           writer.write({ type: "finish" });
           return;
