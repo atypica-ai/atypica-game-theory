@@ -23,6 +23,11 @@ import {
 import { Logger } from "pino";
 import { convertToV5MessagePart } from "./v4";
 
+/**
+ * 注意，这个方法可能是不完整的，比如忽略了 reasoning，
+ * 要考虑改成 appendStepToStreamingMessage 一样，使用 step.content
+ * 其实，这个方法改成循环调用 appendStepToStreamingMessage 好像就行了
+ */
 export function convertStepsToAIMessage<T extends ToolSet>(
   steps: StepResult<T>[],
 ): Omit<UIMessage, "role"> {
@@ -130,6 +135,27 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
           state: "output-error",
           errorText: content.error instanceof Error ? content.error.message : `${content.error}`,
         } as ToolUIPart | DynamicToolUIPart;
+      } else {
+        let toolPart: ToolUIPart | DynamicToolUIPart;
+        if (content.dynamic) {
+          toolPart = {
+            type: "dynamic-tool",
+            toolName: content.toolName,
+            state: "output-error",
+            input: content.input,
+            errorText: content.error instanceof Error ? content.error.message : `${content.error}`,
+            toolCallId: content.toolCallId,
+          };
+        } else {
+          toolPart = {
+            type: `tool-${content.toolName}`,
+            state: "output-error",
+            input: content.input,
+            errorText: content.error instanceof Error ? content.error.message : `${content.error}`,
+            toolCallId: content.toolCallId,
+          };
+        }
+        parts.push(toolPart);
       }
     } else if (content.type === "tool-result") {
       const toolPartIndex = parts.findIndex(
@@ -141,6 +167,27 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
           state: "output-available",
           output: content.output,
         } as ToolUIPart | DynamicToolUIPart;
+      } else {
+        let toolPart: ToolUIPart | DynamicToolUIPart;
+        if (content.dynamic) {
+          toolPart = {
+            type: "dynamic-tool",
+            toolName: content.toolName,
+            state: "output-available",
+            output: content.output,
+            input: content.input,
+            toolCallId: content.toolCallId,
+          };
+        } else {
+          toolPart = {
+            type: `tool-${content.toolName}`,
+            state: "output-available",
+            output: content.output,
+            input: content.input,
+            toolCallId: content.toolCallId,
+          };
+        }
+        parts.push(toolPart);
       }
     } else {
       // 目前暂时不支持
