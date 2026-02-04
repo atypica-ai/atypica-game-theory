@@ -18,7 +18,6 @@ export type PlanPodcastToolInput = z.infer<typeof planPodcastInputSchema>;
 
 export const planPodcastOutputSchema = z.object({
   reasoning: z.string(),
-  text: z.string(),
   plainText: z.string(),
 });
 

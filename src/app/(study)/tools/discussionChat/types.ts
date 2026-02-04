@@ -24,7 +24,6 @@ export const discussionChatInputSchema = z.object({
 export type DiscussionChatToolInput = z.infer<typeof discussionChatInputSchema>;
 
 export const discussionChatOutputSchema = z.object({
-  summary: z.string().describe("Detailed summary."),
   timelineToken: z.string().describe("Database record token for loading timeline data"),
   plainText: z.string().describe("Tool output text for LLM reading"),
 });

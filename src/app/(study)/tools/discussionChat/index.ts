@@ -63,7 +63,6 @@ export const discussionChatTool = ({
             : `Discussion completed. ${personaIds.length} participants discussed.\n\nDiscussion Summary:\n${summary}`;
 
         return {
-          summary,
           timelineToken: discussionTimeline.token,
           plainText,
         };

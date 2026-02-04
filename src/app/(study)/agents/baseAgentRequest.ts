@@ -12,6 +12,7 @@ import { loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { createSubAgentTool, StudyToolSet } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
+import { formatContentCore } from "@/app/api/format-content";
 import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
 import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
@@ -20,7 +21,6 @@ import { safeAbort } from "@/lib/utils";
 import type { Analyst } from "@/prisma/client";
 import { BedrockProviderOptions } from "@ai-sdk/amazon-bedrock";
 import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
-import { waitUntil } from "@vercel/functions";
 import {
   ImagePart,
   JSONValue,
@@ -37,6 +37,7 @@ import {
   UIMessageStreamWriter,
 } from "ai";
 import { Locale } from "next-intl";
+import { after } from "next/server";
 import { Logger } from "pino";
 import { UserChatContext } from "../context/types";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
@@ -528,12 +529,6 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         ]);
       }
 
-      // Check user balance and abort if necessary
-      if (await outOfBalance({ userId })) {
-        logger.warn("User out of balance, aborting agent");
-        safeAbort(studyAbortController);
-      }
-
       // =============================================================================
       // Universal Tool Completion Handlers
       // =============================================================================
@@ -608,7 +603,11 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
       // 因为 makeStudyPlan 是没有 execute 的，所以不会出现在 step.toolResults 里，所以，其实这里是不会执行的 ...
       // 现在改到了 saveAnalystFromPlan 里面再执行一次
       if (saveAnalystOrMakeStudyPlanTool) {
-        waitUntil(generateChatTitle(studyUserChatId));
+        after(
+          generateChatTitle(studyUserChatId).catch((error) => {
+            logger.error(`Failed to generate chat title: ${error.message}`);
+          }),
+        );
       }
 
       // Execute custom onStepFinish logic
@@ -619,6 +618,42 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
           logger,
           streamStartTime,
         });
+      }
+
+      const promises = step.toolResults.map(async (toolResult) => {
+        let text: string | undefined = undefined;
+        if (
+          toolResult.toolName === StudyToolName.audienceCall ||
+          toolResult.toolName === StudyToolName.scoutSocialTrends ||
+          toolResult.toolName === StudyToolName.discussionChat ||
+          toolResult.toolName === StudyToolName.interviewChat ||
+          toolResult.toolName === StudyToolName.planPodcast ||
+          toolResult.toolName === StudyToolName.planStudy ||
+          toolResult.toolName === StudyToolName.deepResearch
+        ) {
+          text = (toolResult as StaticToolResult<StudyToolSet>)?.output?.plainText;
+        }
+        if (text) {
+          await formatContentCore({
+            content: text,
+            locale,
+            userId,
+            triggeredBy: "backend",
+            live: true,
+          });
+        }
+      });
+
+      after(
+        Promise.allSettled(promises).catch((error) => {
+          logger.error(`Failed to format content, ${error.message}`);
+        }),
+      );
+
+      // Check user balance and abort if necessary
+      if (await outOfBalance({ userId })) {
+        logger.warn("User out of balance, aborting agent");
+        safeAbort(studyAbortController);
       }
     },
 

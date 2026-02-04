@@ -18,7 +18,6 @@ export type PlanStudyToolInput = z.infer<typeof planStudyInputSchema>;
 
 export const planStudyOutputSchema = z.object({
   reasoning: z.string(),
-  text: z.string(),
   plainText: z.string(),
 });
 

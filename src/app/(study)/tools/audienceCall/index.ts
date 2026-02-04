@@ -76,7 +76,6 @@ async function audienceCall({
         }
         resolve({
           reasoning: result.reasoningText ?? "",
-          text,
           plainText: text,
         });
       },

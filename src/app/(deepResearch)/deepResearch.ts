@@ -177,7 +177,7 @@ async function executeDeepResearch({
       toolLogger.error({ error: (error as Error).message }, "Error clearing backgroundToken");
     }
     return {
-      result: finalResult,
+      // result: finalResult,
       plainText: finalResult,
     };
   } catch (error) {

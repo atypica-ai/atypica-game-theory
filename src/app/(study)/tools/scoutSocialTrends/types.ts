@@ -21,7 +21,6 @@ export type ScoutSocialTrendsToolInput = z.infer<typeof scoutSocialTrendsInputSc
 
 export const scoutSocialTrendsOutputSchema = z.object({
   stats: z.record(z.string(), z.number()).optional().describe("Platform usage statistics"),
-  summary: z.string(),
   plainText: z.string(),
 });
 

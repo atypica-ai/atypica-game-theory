@@ -59,7 +59,6 @@ async function planStudy({
         }
         resolve({
           reasoning: reasoningText,
-          text,
           plainText: text,
         });
       },
@@ -121,7 +120,7 @@ export const planStudyTool = ({
           topic:
             analyst.topic +
             (toolCallConfigArgs.locale === "zh-CN" ? "\n\n研究计划：\n" : "\n\nStudy Plan: \n") +
-            result.text,
+            result.plainText,
         },
       });
       return result;

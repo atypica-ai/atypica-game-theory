@@ -149,7 +149,7 @@ export function createDeepResearchMcpServer(): McpServer {
       }
       // Return final complete result
       return {
-        content: [{ type: "text", text: result.result }],
+        content: [{ type: "text", text: result.plainText }],
         structuredContent: result,
       };
     } catch (error) {

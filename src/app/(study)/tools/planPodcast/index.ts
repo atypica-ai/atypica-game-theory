@@ -54,7 +54,6 @@ async function planPodcast({
         }
         resolve({
           reasoning: reasoningText,
-          text,
           plainText: text,
         });
       },
@@ -92,12 +91,7 @@ export const planPodcastTool = ({
         question,
         ...toolCallConfigArgs,
       });
-
       // Return planning result; analyst updates will be handled by lead agent in onStepFinish
-      return {
-        reasoning: planResult.reasoning,
-        text: planResult.text,
-        plainText: `Podcast planning completed successfully. ${planResult.plainText}`,
-      };
+      return planResult;
     },
   });

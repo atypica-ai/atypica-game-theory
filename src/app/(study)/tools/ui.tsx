@@ -1,3 +1,4 @@
+"use client";
 import { ReasoningThinkingResultMessage } from "@/ai/tools/experts/reasoningThinking/ReasoningThinkingResultMessage";
 import { WebSearchResultMessage } from "@/ai/tools/experts/webSearch/WebSearchResultMessage";
 import {
@@ -6,22 +7,20 @@ import {
 } from "@/ai/tools/social/ToolMessage";
 import { PlainTextUITools } from "@/ai/tools/types";
 import { RequestPaymentMessage } from "@/ai/tools/user/payment/RequestPaymentMessage";
-import { DeepResearchResultMessage } from "@/app/(deepResearch)/ui/DeepResearchResultMessage";
+import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { RequestInteractionMessage } from "@/app/(study)/tools/requestInteraction/RequestInteractionMessage";
 import { StudyToolName } from "@/app/(study)/tools/types";
+import { useFormatContent } from "@/app/api/format-content/useFormatContent";
+import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
+import { LoaderIcon } from "lucide-react";
+import { useEffect } from "react";
 import { Streamdown } from "streamdown";
-import { AudienceCallResultMessage } from "./audienceCall/AudienceCallResultMessage";
 import { BuildPersonaResultMessage } from "./buildPersona/BuildPersonaResultMessage";
-import { DiscussionChatResultMessage } from "./discussionChat/DiscussionChatResultMessage";
 import { GeneratePodcastResultMessage } from "./generatePodcast/GeneratePodcastResultMessage";
 import { GenerateReportResultMessage } from "./generateReport/GenerateReportResultMessage";
-import { InterviewChatResultMessage } from "./interviewChat/InterviewChatResultMessage";
 import { MakeStudyPlanMessage } from "./makeStudyPlan/MakeStudyPlanMessage";
-import { PlanPodcastResultMessage } from "./planPodcast/PlanPodcastResultMessage";
-import { PlanStudyResultMessage } from "./planStudy/PlanStudyResultMessage";
 import { SaveAnalystToolResultMessage } from "./saveAnalyst/SaveAnalystToolResultMessage";
-import { ScoutSocialTrendsResultMessage } from "./scoutSocialTrends/ScoutSocialTrendsResultMessage";
 import { ScoutTaskChatResultMessage } from "./scoutTaskChat/ScoutTaskChatResultMessage";
 import { SearchPersonasResultMessage } from "./searchPersonas/SearchPersonasResultMessage";
 import { TAddStudyUIToolResult, TStudyMessageWithTool } from "./types";
@@ -34,6 +33,66 @@ export const PlainTextToolResultMessage = ({
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-xs">
       <Streamdown>{toolInvocation.output.plainText}</Streamdown>
+    </div>
+  );
+};
+
+export const FormattedContentToolResultMessage = ({
+  toolInvocation,
+}: {
+  toolInvocation: Extract<ToolUIPart<PlainTextUITools>, { state: "output-available" }>;
+}) => {
+  const { replay } = useStudyContext();
+
+  const {
+    formattedHtml,
+    isLoading: isFormatting,
+    formatContent,
+  } = useFormatContent({
+    live: !replay,
+  });
+
+  useEffect(() => {
+    const plainText = toolInvocation.output.plainText;
+    if (plainText) {
+      formatContent(plainText);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toolInvocation.toolCallId]);
+
+  return (
+    <div
+      className={cn(
+        "p-2 rounded-lg border border-zinc-100 dark:border-zinc-700",
+        "text-xs space-y-2",
+      )}
+    >
+      <div className="">
+        {/* Formatted HTML Content */}
+        {isFormatting && (
+          <div className="flex items-center gap-2 text-blue-600">
+            <LoaderIcon className="animate-spin" size={14} />
+            <span>formatting</span>
+          </div>
+        )}
+        {formattedHtml ? (
+          <div
+            className="formatted-audience-feedback prose prose-sm max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: formattedHtml }}
+          />
+        ) : (
+          !isFormatting && (
+            <Streamdown
+              mode="static" // static 模式可以大大提升渲染速度
+              parseIncompleteMarkdown={false}
+              isAnimating={false}
+              cdnUrl={null}
+            >
+              {toolInvocation.output.plainText}
+            </Streamdown>
+          )
+        )}
+      </div>
     </div>
   );
 };
@@ -81,31 +140,21 @@ export const StudyToolUIPartDisplay = ({
       return <GeneratePodcastResultMessage toolInvocation={toolUIPart} />;
     case `tool-${StudyToolName.scoutTaskChat}`:
       return <ScoutTaskChatResultMessage toolInvocation={toolUIPart} />;
-
     case `tool-${StudyToolName.buildPersona}`:
       return <BuildPersonaResultMessage toolInvocation={toolUIPart} />;
     case `tool-${StudyToolName.searchPersonas}`:
       return <SearchPersonasResultMessage toolInvocation={toolUIPart} />;
-    case `tool-${StudyToolName.interviewChat}`:
-      return <InterviewChatResultMessage toolInvocation={toolUIPart} />;
-    case `tool-${StudyToolName.discussionChat}`:
-      return <DiscussionChatResultMessage toolInvocation={toolUIPart} />;
-
     case `tool-${StudyToolName.saveAnalyst}`:
       return <SaveAnalystToolResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${StudyToolName.audienceCall}`:
-      return <AudienceCallResultMessage toolInvocation={toolUIPart} />;
-
     case `tool-${StudyToolName.scoutSocialTrends}`:
-      return <ScoutSocialTrendsResultMessage toolInvocation={toolUIPart} />;
-
     case `tool-${StudyToolName.planStudy}`:
-      return <PlanStudyResultMessage toolInvocation={toolUIPart} />;
     case `tool-${StudyToolName.planPodcast}`:
-      return <PlanPodcastResultMessage toolInvocation={toolUIPart} />;
     case `tool-${StudyToolName.deepResearch}`:
-      return <DeepResearchResultMessage toolInvocation={toolUIPart} />;
+    case `tool-${StudyToolName.interviewChat}`:
+    case `tool-${StudyToolName.discussionChat}`:
+      return <FormattedContentToolResultMessage toolInvocation={toolUIPart} />;
 
     case `tool-${StudyToolName.createSubAgent}`:
       return <PlainTextToolResultMessage toolInvocation={toolUIPart} />;

@@ -275,31 +275,6 @@
     "ReasoningThinkingResultMessage": {
       "deepThinking": "深度思考"
     },
-    "ScoutSocialTrendsResultMessage": {
-      "title": "社交媒体趋势研究",
-      "formatting": "正在格式化研究结果...",
-      "platforms": "平台",
-      "searches": "搜索"
-    },
-    "PlanPodcastResultMessage": {
-      "title": "播客计划",
-      "formatting": "正在格式化计划..."
-    },
-    "PlanStudyResultMessage": {
-      "title": "研究计划",
-      "formatting": "正在格式化计划..."
-    },
-    "DiscussionChatResultMessage": {
-      "title": "讨论总结",
-      "formatting": "正在格式化总结..."
-    },
-    "InterviewChatResultMessage": {
-      "title": "访谈总结",
-      "formatting": "正在格式化总结..."
-    },
-    "AudienceCallResultMessage": {
-      "formatting": "正在格式化内容..."
-    },
     "SelectPersonaDialog": {
       "title": "选择访谈对象",
       "cancel": "取消",

@@ -12,7 +12,7 @@ export const deepResearchInputSchema = z.object({
 });
 
 export const deepResearchOutputSchema = z.object({
-  result: z.string().describe("The deep research result"),
+  // result: z.string().describe("The deep research result"),
   plainText: z.string(),
 });
 

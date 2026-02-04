@@ -149,7 +149,6 @@ export const scoutSocialTrendsTool = ({
       );
       return {
         stats,
-        summary,
         plainText: `${summary}\n\nSocial media research completed successfully.\n\nPlatform Coverage:\n${JSON.stringify(stats)}`,
       };
     },
