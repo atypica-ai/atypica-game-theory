@@ -1,23 +1,12 @@
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
-import { defaultProviderOptions, llm } from "@/ai/provider";
-import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
-import {
-  createUIMessageStream,
-  createUIMessageStreamResponse,
-  stepCountIs,
-  streamText,
-} from "ai";
+import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
-import { after, NextResponse } from "next/server";
-import {
-  generateContentHash,
-  readCachedContent,
-  writeCachedContent,
-} from "./cache";
-import { getFormatContentSystemPrompt } from "./prompt";
+import { NextResponse } from "next/server";
+import { generateContentHash } from "./cache";
+import { formatContentCore } from "./core";
 
 /**
  * POST /api/format-content
@@ -65,94 +54,51 @@ export async function POST(req: Request) {
   const content = lastPart.text;
   logger.info({ msg: "Formatting content", contentLength: content.length, live });
 
-  // Generate content hash
-  const contentHash = generateContentHash(content);
-
-  // Always try to read from cache first
-  const cached = await readCachedContent(userId, contentHash);
-  if (cached) {
-    logger.info({ msg: "Returning cached content", hash: contentHash, live });
-
-    // Return cached content as a stream
-    const stream = createUIMessageStream({
-      async execute({ writer }) {
-        writer.write({ type: "start" });
-        writer.write({ type: "text-start", id: contentHash });
-        writer.write({ type: "text-delta", id: contentHash, delta: cached.formattedHtml });
-        writer.write({ type: "text-end", id: contentHash });
-        writer.write({ type: "finish" });
-      },
-    });
-
-    return createUIMessageStreamResponse({ stream });
-  }
-
-  // If cache miss and not live mode, return empty stream (will fallback to plain text)
-  if (!live) {
-    logger.info({ msg: "Cache miss in replay mode, returning empty response", hash: contentHash });
-
-    // Return empty stream so frontend will fallback to plain text
-    const stream = createUIMessageStream({
-      async execute({ writer }) {
-        writer.write({ type: "start" });
-        writer.write({ type: "finish" });
-      },
-    });
-
-    return createUIMessageStreamResponse({ stream });
-  }
-
   // Get locale from server
   const locale = await getLocale();
+  const contentHash = generateContentHash(content);
 
-  // Get system prompt
-  const systemPrompt = getFormatContentSystemPrompt(locale);
-
-  // Build user message
-  const userMessage =
-    locale === "zh-CN"
-      ? `请将以下内容格式化为结构化的 HTML：
-
-${content}`
-      : `Please format the following content into structured HTML:
-
-${content}`;
-
-  // Generate new content
-  const result = streamText({
-    model: llm("claude-sonnet-4-5"),
-    providerOptions: defaultProviderOptions(),
-    system: systemPrompt,
-    messages: [
-      {
-        role: "user",
-        content: userMessage,
-      },
-    ],
-    maxOutputTokens: 8000,
-    stopWhen: stepCountIs(1),
-    onFinish: async ({ usage, providerMetadata, text }) => {
-      logger.info({ msg: "Format content completed", usage });
-      const totalTokens = calculateStepTokensUsage({ usage, providerMetadata }).tokens;
-      logger.info({ msg: "Token usage", totalTokens });
-
-      // TODO: Deduct tokens from user account (for live mode)
-      // if (live) {
-      //   await deductTokens(userId, totalTokens);
-      // }
-
-      // Cache the result
-      await writeCachedContent(userId, contentHash, {
-        originalText: content,
-        formattedHtml: text,
-      });
-    },
-    onError: ({ error }) => {
-      logger.error({ msg: "Format content error", error: (error as Error).message });
+  // Unified stream - all logic in one place
+  const stream = createUIMessageStream({
+    async execute({ writer }) {
+      const maxAttempts = 60; // 5 minutes = 300s = 60 * 5 second interval
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        // Call formatContentCore
+        const result = await formatContentCore(
+          { content, locale, userId, triggeredBy: "frontend", live },
+          writer,
+        );
+        if (result.status === "processing") {
+          // Another instance is processing, wait and retry
+          logger.info({ msg: "Processing by another instance, waiting...", attempt: attempt + 1 });
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+          continue;
+        } else if (result.status === "cached" && result.formattedHtml) {
+          // formatContentCore found cache - write it to stream and finish
+          writer.write({ type: "start" });
+          writer.write({ type: "text-start", id: contentHash });
+          writer.write({ type: "text-delta", id: contentHash, delta: result.formattedHtml });
+          writer.write({ type: "text-end", id: contentHash });
+          writer.write({ type: "finish" });
+          return;
+        } else if (result.status === "failed") {
+          // Error occurred, write empty finish
+          logger.error({ msg: "Format content failed", error: result.error });
+          writer.write({ type: "start" });
+          writer.write({ type: "finish" });
+          return;
+        } else {
+          // result.status === "generated"
+          // formatContentCore already wrote to stream via writer, we're done
+          return;
+        }
+      }
+      // Timeout - give up
+      logger.warn({ msg: "Timeout waiting for processing completion", hash: contentHash });
+      writer.write({ type: "start" });
+      writer.write({ type: "finish" });
     },
   });
 
-  after(result.consumeStream());
-
-  return result.toUIMessageStreamResponse();
+  return createUIMessageStreamResponse({ stream });
 }

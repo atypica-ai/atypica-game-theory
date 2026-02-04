@@ -34,11 +34,27 @@ export function getCacheFilePath(userId: number, hash: string): string {
 }
 
 /**
+ * Get processing status file path
+ */
+export function getProcessingFilePath(userId: number, hash: string): string {
+  return path.join(getFormatContentCachePath(userId), `${hash}.processing.json`);
+}
+
+/**
  * Cached format content data
  */
 export interface CachedFormatContent {
   originalText: string;
   formattedHtml: string;
+}
+
+/**
+ * Processing status data
+ */
+export interface ProcessingStatus {
+  status: "processing";
+  startedAt: string;
+  triggeredBy: "frontend" | "backend";
 }
 
 /**
@@ -60,25 +76,14 @@ export async function readCachedContent(
     const filePath = getCacheFilePath(userId, hash);
     const content = await fs.readFile(filePath, "utf-8");
     const parsed = JSON.parse(content) as CachedFormatContent;
-
-    rootLogger.info({
-      msg: "Format content cache hit",
-      userId,
-      hash,
-    });
-
+    rootLogger.info({ msg: "Format content cache hit", userId, hash });
     return parsed;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       // File doesn't exist - cache miss
-      rootLogger.debug({
-        msg: "Format content cache miss",
-        userId,
-        hash,
-      });
+      rootLogger.debug({ msg: "Format content cache miss", userId, hash });
       return null;
     }
-
     // Other errors
     rootLogger.warn({
       msg: "Failed to read format content cache",
@@ -112,6 +117,108 @@ export async function writeCachedContent(
   } catch (error) {
     rootLogger.error({
       msg: "Failed to write format content cache",
+      userId,
+      hash,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+/**
+ * Write processing status
+ */
+export async function writeProcessingStatus(
+  userId: number,
+  hash: string,
+  data: { triggeredBy: "frontend" | "backend" },
+): Promise<void> {
+  try {
+    await ensureCacheDirectoryExists(userId);
+
+    const filePath = getProcessingFilePath(userId, hash);
+    const status: ProcessingStatus = {
+      status: "processing",
+      startedAt: new Date().toISOString(),
+      triggeredBy: data.triggeredBy,
+    };
+
+    await fs.writeFile(filePath, JSON.stringify(status, null, 2), "utf-8");
+
+    rootLogger.info({
+      msg: "Processing status written",
+      userId,
+      hash,
+      triggeredBy: data.triggeredBy,
+    });
+  } catch (error) {
+    rootLogger.error({
+      msg: "Failed to write processing status",
+      userId,
+      hash,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+/**
+ * Read processing status
+ */
+export async function readProcessingStatus(
+  userId: number,
+  hash: string,
+): Promise<ProcessingStatus | null> {
+  try {
+    const filePath = getProcessingFilePath(userId, hash);
+    const content = await fs.readFile(filePath, "utf-8");
+    const parsed = JSON.parse(content) as ProcessingStatus;
+
+    // Check if processing is stale (older than 5 minutes)
+    const startedAt = new Date(parsed.startedAt);
+    const now = new Date();
+    const ageMinutes = (now.getTime() - startedAt.getTime()) / 1000 / 60;
+
+    if (ageMinutes > 5) {
+      // Stale processing file, clean it up
+      rootLogger.warn({
+        msg: "Found stale processing file, cleaning up",
+        userId,
+        hash,
+        ageMinutes,
+      });
+      await deleteProcessingStatus(userId, hash);
+      return null;
+    }
+
+    return parsed;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return null;
+    }
+    rootLogger.warn({
+      msg: "Failed to read processing status",
+      userId,
+      hash,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+/**
+ * Delete processing status file
+ */
+export async function deleteProcessingStatus(userId: number, hash: string): Promise<void> {
+  try {
+    const filePath = getProcessingFilePath(userId, hash);
+    await fs.unlink(filePath);
+    rootLogger.debug({ msg: "Processing status deleted", userId, hash });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      // File doesn't exist, ignore
+      return;
+    }
+    rootLogger.warn({
+      msg: "Failed to delete processing status",
       userId,
       hash,
       error: error instanceof Error ? error.message : String(error),

@@ -1,7 +1,7 @@
 "use client";
 
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
-import { useFormatContent } from "@/app/api/format-content";
+import { useFormatContent } from "@/app/api/format-content/useFormatContent";
 import { ToolUIPart } from "ai";
 import { LoaderIcon, SearchIcon } from "lucide-react";
 import { useEffect } from "react";

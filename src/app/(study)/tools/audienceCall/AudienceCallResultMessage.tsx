@@ -2,7 +2,7 @@
 
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
-import { useFormatContent } from "@/app/api/format-content";
+import { useFormatContent } from "@/app/api/format-content/useFormatContent";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { ToolUIPart } from "ai";
 import { BrainIcon, LoaderIcon } from "lucide-react";
@@ -21,7 +21,11 @@ export const AudienceCallResultMessage = ({
   const t = useTranslations("Components.AudienceCallResultMessage");
   const { replay } = useStudyContext();
 
-  const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent({
+  const {
+    formattedHtml,
+    isLoading: isFormatting,
+    formatContent,
+  } = useFormatContent({
     live: !replay,
   });
 

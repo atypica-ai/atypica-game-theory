@@ -2,7 +2,7 @@
 
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
-import { useFormatContent } from "@/app/api/format-content";
+import { useFormatContent } from "@/app/api/format-content/useFormatContent";
 import { ToolUIPart } from "ai";
 import { ClipboardListIcon, LoaderIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -21,7 +21,11 @@ export const PlanStudyResultMessage = ({
 
   // If replay mode, don't generate new content (use cache only)
   // If not replay mode, generate new content (live mode)
-  const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent({
+  const {
+    formattedHtml,
+    isLoading: isFormatting,
+    formatContent,
+  } = useFormatContent({
     live: !replay,
   });
 

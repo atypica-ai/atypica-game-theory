@@ -27,7 +27,7 @@ export interface UseFormatContentResult {
 
 /**
  * React hook for formatting content using the /api/format-content endpoint
- * Uses AI SDK's useChat for proper streaming
+ * Simplified version - backend handles all complexity (cache, processing wait, generation)
  */
 export function useFormatContent(options: UseFormatContentOptions = {}): UseFormatContentResult {
   const { live = false, ...restOptions } = options;

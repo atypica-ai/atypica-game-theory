@@ -2,7 +2,7 @@
 
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import { useFormatContent } from "@/app/api/format-content";
+import { useFormatContent } from "@/app/api/format-content/useFormatContent";
 import { ToolUIPart } from "ai";
 import { LoaderIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -24,7 +24,11 @@ export const DiscussionChatResultMessage = ({
 }) => {
   const t = useTranslations("Components.DiscussionChatResultMessage");
   const { replay } = useStudyContext();
-  const { formattedHtml, isLoading: isFormatting, formatContent } = useFormatContent({
+  const {
+    formattedHtml,
+    isLoading: isFormatting,
+    formatContent,
+  } = useFormatContent({
     live: !replay,
   });
 
