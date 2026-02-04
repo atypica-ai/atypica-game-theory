@@ -19,14 +19,11 @@ import { trackEventServerSide } from "@/lib/analytics/server";
 import { generateChatTitle, setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
 import type { Analyst } from "@/prisma/client";
-import { BedrockProviderOptions } from "@ai-sdk/amazon-bedrock";
-import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import {
   ImagePart,
   JSONValue,
   ModelMessage,
   PrepareStepFunction,
-  ReasoningUIPart,
   smoothStream,
   StaticToolResult,
   stepCountIs,
@@ -43,7 +40,12 @@ import { UserChatContext } from "../context/types";
 import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyStudyInterruption } from "./notify";
 import { buildReferenceStudyContext } from "./referenceContext";
-import { outOfBalance, setBedrockCache, waitUntilAttachmentsProcessed } from "./utils";
+import {
+  fixReasoningPartsInModelMessages,
+  outOfBalance,
+  setBedrockCache,
+  waitUntilAttachmentsProcessed,
+} from "./utils";
 
 /**
  * Base context shared by all agent types
@@ -175,71 +177,32 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // =============================================================================
 
   // Prepare streaming messages
-  const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(studyUserChatId, {
-    tools: config.tools,
-    modelName: config.modelName,
-  });
+  const { coreMessages, streamingMessage, toolUseCount } = await prepareMessagesForStreaming(
+    studyUserChatId,
+    { tools: config.tools },
+  );
 
+  let modelName = config.modelName;
+  let modelMessages: ModelMessage[] = [...coreMessages];
+  if (
+    (toolUseCount[StudyToolName.generateReport] ?? 0) > 0 ||
+    (toolUseCount[StudyToolName.generatePodcast] ?? 0) > 0
+  ) {
+    // 报告生成以后，就换成 minimax 模型，以减少消耗
+    modelName = "minimax-m2.1";
+  }
   let providerOptions: NonNullable<typeof config.providerOptions> =
     config.providerOptions ?? defaultProviderOptions();
+
   {
-    // const lastMessage = modelMessages.at(-1);
-    // 不能通过后面的 modelMessages 判断，因为是要看 final assistant turn，也就是多个 assistant parts 在一起是一个 turn
-    // 正好 streamingMessage 就是 final assistant turn
-    // https://platform.claude.com/docs/en/build-with-claude/extended-thinking
-    // ⚠️ 注意 claude 要求 reasoning part 里面的 signature 一起传回去，不然不能被认为是一个 reasoning block
-    // 旧的消息都没有 providerMetadata, 那就直接禁用 thinking 了, 新的有, 在 appendStepToStreamingMessage 里修复并保存了
-    const reasoningSignatureValid = (part: ReasoningUIPart) => {
-      if (
-        part.providerMetadata &&
-        "bedrock" in part.providerMetadata && // 目前主要模型就是 bedrock, 所以这里只考虑 bedrock
-        "signature" in part.providerMetadata["bedrock"]
-      ) {
-        return true;
-      }
-      return false;
-    };
-    const firstPart = streamingMessage.parts.filter((part) => part.type !== "step-start").at(0);
-    if (!firstPart) {
-      // 保持原配置
-    } else if (firstPart.type === "reasoning" && reasoningSignatureValid(firstPart)) {
-      // providerOptions["bedrock"] = {
-      //   ...providerOptions["bedrock"],
-      //   reasoningConfig: { type: "enabled", budgetTokens: 1024 },
-      // } satisfies BedrockProviderOptions;
-      // ⚠️ 一定要赋值而不是上面这样直接修改，不然会导致全局变量 defaultProviderOptions 被修改掉 ！！！
-      providerOptions = {
-        ...providerOptions,
-        bedrock: {
-          ...providerOptions["bedrock"],
-          reasoningConfig: { type: "enabled", budgetTokens: 1024 },
-        } satisfies BedrockProviderOptions,
-        anthropic: {
-          ...providerOptions["anthropic"],
-          thinking: { type: "enabled", budgetTokens: 1024 },
-        } satisfies AnthropicProviderOptions,
-      };
-    } else {
-      // 如果是 assistant 消息继续，在开启 thinking 的时候，claude 会要求最后一个 block 是 thinking 开头，但是没搞明白消息组织形式应该是怎样的，所以，暂时就关闭。
-      if (providerOptions["bedrock"]) {
-        providerOptions = {
-          ...providerOptions,
-          bedrock: {
-            ...providerOptions["bedrock"],
-            reasoningConfig: { type: "disabled" },
-          } satisfies BedrockProviderOptions,
-        };
-      }
-      if (providerOptions["anthropic"]) {
-        providerOptions = {
-          ...providerOptions,
-          anthropic: {
-            ...providerOptions["anthropic"],
-            thinking: { type: "disabled" },
-          } satisfies AnthropicProviderOptions,
-        };
-      }
-    }
+    const fixed = fixReasoningPartsInModelMessages({
+      providerOptions,
+      modelMessages,
+      modelName,
+      streamingMessage,
+    });
+    modelMessages = fixed.modelMessages;
+    providerOptions = fixed.providerOptions;
   }
 
   // =============================================================================
@@ -312,7 +275,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // when appropriate, rather than forcing it at the start of every study.
   //
   // // Check persona tier decision for first-time users (only if this is the first message)
-  // if (coreMessages.length === 1 && coreMessages[0].role === "user") {
+  // if (modelMessages.length === 1 && modelMessages[0].role === "user") {
   //   const shouldDecide = await shouldDecidePersonaTier({
   //     locale,
   //     userId,
@@ -330,8 +293,6 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // =============================================================================
   // Phase 5: Build Model Messages
   // =============================================================================
-
-  let modelMessages: ModelMessage[] = [...coreMessages];
 
   // Prepend attachments (universal)
   if (parsedAttachments.length) {
@@ -409,7 +370,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   let streamStartTime = Date.now();
   const streamTextResult = streamText<TOOLS>({
     // Core configuration
-    model: llm(config.modelName),
+    model: llm(modelName),
     providerOptions,
     system: finalSystemPrompt, // Use final system prompt (with team prompt appended)
     messages: modelMessages,
@@ -444,7 +405,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         : undefined;
 
       // Determine which model to use (custom model or default config model)
-      const effectiveModel = customResult?.model ?? llm(config.modelName);
+      const effectiveModel = customResult?.model ?? llm(modelName);
       // Apply Bedrock cache for prompt caching (only for claude models)
       const messages = (typeof effectiveModel === "string"
         ? effectiveModel

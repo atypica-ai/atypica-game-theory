@@ -21,7 +21,6 @@ import {
   UIMessage,
 } from "ai";
 import { Logger } from "pino";
-import { LLMModelName } from "./provider";
 import { convertToV5MessagePart } from "./v4";
 
 export function convertStepsToAIMessage<T extends ToolSet>(
@@ -554,11 +553,9 @@ export async function prepareMessagesForStreaming(
   {
     checkpointId,
     tools,
-    modelName,
   }: {
     checkpointId?: number; // 给 LLM 的消息从 id > checkpointId 开始取，这里不是 messageId 而是 ChatMessage 的数据库 id，并且 id 是递增的
     tools: ToolSet; // tools 必须提供，这样在转成 ModelMessage 的时候，会调用 tool 上的 toModelOutput 方法，只把 PlainText 部分传给 LLM
-    modelName?: LLMModelName;
   },
 ) {
   const dbMessages = await prisma.chatMessage.findMany({
@@ -591,7 +588,6 @@ export async function prepareMessagesForStreaming(
   // 不知道之前没有一条条保存信息的时候，vercel ai sdk 是哪个阶段处理的，现在一定要人工转一次
   // ⚠️ tools 必须提供，这样在转成 ModelMessage 的时候，会调用 tool 上的 toModelOutput 方法，只把 PlainText 部分传给 LLM
   const coreMessages = fixAndConvertToModelMessages(aiMessages, {
-    modelName,
     tools,
     // ignoreIncompleteToolCalls: true,
   });
@@ -622,11 +618,7 @@ export async function prepareMessagesForStreaming(
  */
 export function fixAndConvertToModelMessages(
   messages: Array<Omit<UIMessage, "id">>,
-  {
-    modelName,
-    ...options
-  }: {
-    modelName?: LLMModelName;
+  options: {
     tools: ToolSet;
     ignoreIncompleteToolCalls?: boolean;
   },
@@ -711,19 +703,7 @@ export function fixAndConvertToModelMessages(
     };
   });
 
-  let coreMessages = convertToModelMessages(fixedMessages, options);
+  const modelMessages = convertToModelMessages(fixedMessages, options);
 
-  // 有些模型不支持 reasoning 的 signature (存在 content[].providerOptions 里)，比如 minimax, 需要去掉
-  if (!modelName?.startsWith("claude") && !modelName?.startsWith("gemini")) {
-    coreMessages = coreMessages.map((message) => {
-      if (typeof message.content === "string") return message;
-      const content = message.content.map((part) => {
-        if (part.type !== "reasoning") return part;
-        return { type: "reasoning", text: part.text };
-      });
-      return { ...message, content } as ModelMessage;
-    });
-  }
-
-  return coreMessages;
+  return modelMessages;
 }

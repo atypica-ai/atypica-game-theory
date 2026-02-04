@@ -1,15 +1,19 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
+import { LLMModelName } from "@/ai/provider";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { parseAttachmentText } from "@/lib/attachments/processing";
 import { Analyst, AttachmentFileExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
+import { BedrockProviderOptions } from "@ai-sdk/amazon-bedrock";
 import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import {
   createUIMessageStream,
   generateId,
+  JSONValue,
   ModelMessage,
+  ReasoningUIPart,
   ToolUIPart,
   UIMessage,
   UIMessageStreamWriter,
@@ -304,4 +308,95 @@ export async function waitUntilAttachmentsProcessed({
       }
     }),
   );
+}
+
+/**
+ * 有些模型不支持 reasoning 的 signature (存在 content[].providerOptions 里)，比如 minimax, 需要去掉
+ */
+export function fixReasoningPartsInModelMessages({
+  modelName,
+  modelMessages,
+  providerOptions,
+  streamingMessage,
+}: {
+  modelName: LLMModelName;
+  modelMessages: ModelMessage[];
+  providerOptions: Record<string, Record<string, JSONValue>>;
+  streamingMessage: Omit<UIMessage, "role">;
+}): {
+  modelMessages: ModelMessage[];
+  providerOptions: Record<string, Record<string, JSONValue>>;
+} {
+  // 有些模型不支持 reasoning 的 signature (存在 content[].providerOptions 里)，比如 minimax, 需要去掉
+  if (!modelName?.startsWith("claude") && !modelName?.startsWith("gemini")) {
+    modelMessages = modelMessages.map((message) => {
+      if (typeof message.content === "string") return message;
+      const content = message.content.map((part) => {
+        if (part.type !== "reasoning") return part;
+        return { type: "reasoning", text: part.text };
+      });
+      return { ...message, content } as ModelMessage;
+    });
+  }
+
+  // const lastMessage = modelMessages.at(-1);
+  // 不能通过后面的 modelMessages 判断，因为是要看 final assistant turn，也就是多个 assistant parts 在一起是一个 turn
+  // 正好 streamingMessage 就是 final assistant turn
+  // https://platform.claude.com/docs/en/build-with-claude/extended-thinking
+  // ⚠️ 注意 claude 要求 reasoning part 里面的 signature 一起传回去，不然不能被认为是一个 reasoning block
+  // 旧的消息都没有 providerMetadata, 那就直接禁用 thinking 了, 新的有, 在 appendStepToStreamingMessage 里修复并保存了
+  const reasoningSignatureValid = (part: ReasoningUIPart) => {
+    if (
+      part.providerMetadata &&
+      "bedrock" in part.providerMetadata && // 目前主要模型就是 bedrock, 所以这里只考虑 bedrock
+      "signature" in part.providerMetadata["bedrock"]
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  const firstPart = streamingMessage.parts.filter((part) => part.type !== "step-start").at(0);
+  if (!firstPart) {
+    // 保持原配置
+  } else if (firstPart.type === "reasoning" && reasoningSignatureValid(firstPart)) {
+    // providerOptions["bedrock"] = {
+    //   ...providerOptions["bedrock"],
+    //   reasoningConfig: { type: "enabled", budgetTokens: 1024 },
+    // } satisfies BedrockProviderOptions;
+    // ⚠️ 一定要赋值而不是上面这样直接修改，不然会导致全局变量 defaultProviderOptions 被修改掉 ！！！
+    providerOptions = {
+      ...providerOptions,
+      bedrock: {
+        ...providerOptions["bedrock"],
+        reasoningConfig: { type: "enabled", budgetTokens: 1024 },
+      } satisfies BedrockProviderOptions,
+      anthropic: {
+        ...providerOptions["anthropic"],
+        thinking: { type: "enabled", budgetTokens: 1024 },
+      } satisfies AnthropicProviderOptions,
+    };
+  } else {
+    // 如果是 assistant 消息继续，在开启 thinking 的时候，claude 会要求最后一个 block 是 thinking 开头，但是没搞明白消息组织形式应该是怎样的，所以，暂时就关闭。
+    if (providerOptions["bedrock"]) {
+      providerOptions = {
+        ...providerOptions,
+        bedrock: {
+          ...providerOptions["bedrock"],
+          reasoningConfig: { type: "disabled" },
+        } satisfies BedrockProviderOptions,
+      };
+    }
+    if (providerOptions["anthropic"]) {
+      providerOptions = {
+        ...providerOptions,
+        anthropic: {
+          ...providerOptions["anthropic"],
+          thinking: { type: "disabled" },
+        } satisfies AnthropicProviderOptions,
+      };
+    }
+  }
+
+  return { modelMessages, providerOptions };
 }

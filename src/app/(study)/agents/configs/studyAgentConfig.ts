@@ -1,4 +1,3 @@
-import { llm } from "@/ai/provider";
 import { toolCallError } from "@/ai/tools/error";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
@@ -121,10 +120,12 @@ export async function createStudyAgentConfig(
        * - Restrict tools after report/podcast generation
        * - Limit webSearch usage (max 3 times, or 1 time if planStudy not called)
        */
-      customPrepareStep: async ({ messages, model: _model }) => {
-        const toolUseCount = calculateToolUsage(messages);
+      customPrepareStep: async ({ messages: _messages, model: _model }) => {
+        const modelMessages = _messages;
+        const model = _model;
+
+        const toolUseCount = calculateToolUsage(modelMessages);
         let activeTools: (keyof TOOLS)[] | undefined = undefined;
-        let model = _model;
 
         // After report/podcast generation, only allow specific tools
         if (
@@ -137,8 +138,6 @@ export async function createStudyAgentConfig(
             StudyToolName.reasoningThinking,
             StudyToolName.toolCallError,
           ];
-          // 报告生成以后，就换成 minimax 模型，以减少消耗
-          model = llm("minimax-m2.1");
         } else {
           // Limit webSearch usage
           if (
@@ -152,7 +151,7 @@ export async function createStudyAgentConfig(
           }
         }
 
-        return { messages, activeTools, model };
+        return { messages: modelMessages, activeTools, model };
       },
 
       // Note: customOnStepFinish removed - all notifications handled universally in base
