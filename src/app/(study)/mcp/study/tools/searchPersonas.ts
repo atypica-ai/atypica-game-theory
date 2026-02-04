@@ -1,17 +1,17 @@
 import "server-only";
 
+import { searchPersonasInTool } from "@/app/(study)/tools/searchPersonas";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
-import { prisma } from "@/prisma/prisma";
-import { searchPersonasInTool } from "@/app/(study)/tools/searchPersonas";
+import { prismaRO } from "@/prisma/prisma";
+import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
   CallToolResult,
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
-import { z } from "zod";
 import { getLocale } from "next-intl/server";
+import { z } from "zod";
 
 export const searchPersonasInputSchema = z.object({
   query: z.string().optional().describe("Search query for persona name or source"),
@@ -56,7 +56,7 @@ export async function handleSearchPersonas(
       allPersonas = result.personas;
     } else {
       // No query: fetch all user's personas directly
-      const personas = await prisma.persona.findMany({
+      const personas = await prismaRO.persona.findMany({
         where: {
           personaImport: { userId },
           ...(tier !== undefined ? { tier } : {}),
@@ -80,7 +80,7 @@ export async function handleSearchPersonas(
 
     // Apply tier filter if specified
     if (tier !== undefined) {
-      const personasWithTier = await prisma.persona.findMany({
+      const personasWithTier = await prismaRO.persona.findMany({
         where: {
           id: { in: allPersonas.map((p) => p.personaId) },
           tier,
@@ -103,7 +103,7 @@ export async function handleSearchPersonas(
     }
 
     // Get full persona details with tier for result
-    const personasWithDetails = await prisma.persona.findMany({
+    const personasWithDetails = await prismaRO.persona.findMany({
       where: {
         id: { in: allPersonas.map((p) => p.personaId) },
       },

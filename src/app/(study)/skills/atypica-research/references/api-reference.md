@@ -164,8 +164,7 @@ Retrieve conversation history from study session.
 ```typescript
 {
   userChatToken: string,
-  afterMessageId?: string,  // Optional: only get messages after this ID
-  limit?: number            // Default 50, max 100
+  tail?: number  // Optional: Max parts to return (from tail, most recent parts across all messages)
 }
 ```
 
@@ -197,11 +196,13 @@ Retrieve conversation history from study session.
 
 **CRITICAL**: Scan `parts` array for tool calls with `state === "input-available"` - these require user interaction.
 
+**Note on `tail` parameter**: When specified, returns only the last N parts across all messages. For example, if `tail: 5`, you might get 2 messages where the first has partial parts and the second has all parts, totaling 5 parts. This is useful for getting recent context without fetching the entire conversation.
+
 **Example**:
 ```json
 {
   "userChatToken": "abc123",
-  "limit": 50
+  "tail": 10  // Get last 10 parts across all messages
 }
 ```
 

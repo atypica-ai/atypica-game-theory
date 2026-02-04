@@ -2,13 +2,13 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
+import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
   CallToolResult,
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { z } from "zod";
 
 export const listStudiesInputSchema = z.object({
@@ -41,8 +41,8 @@ export async function handleListStudies(
     };
 
     const [totalCount, studies] = await Promise.all([
-      prisma.userChat.count({ where }),
-      prisma.userChat.findMany({
+      prismaRO.userChat.count({ where }),
+      prismaRO.userChat.findMany({
         where,
         select: {
           id: true,

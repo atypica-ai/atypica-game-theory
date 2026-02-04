@@ -144,11 +144,12 @@ if (reportTool?.output?.reportToken) {
 - Returns: `{ messageId, role, status, attachmentCount }`
 
 **atypica_study_get_messages** - Retrieve conversation history and execution status
-- Input: `{ userChatToken, afterMessageId?, limit? }`
+- Input: `{ userChatToken, tail? }`
 - Returns: `{ isRunning, messages: [{ messageId, role, parts, createdAt }] }`
 - **Critical**:
   - `isRunning: true` → AI is executing, wait and poll again later
   - `isRunning: false` → Can interact, check for pending tool calls in `parts`
+  - `tail` (optional): Limit to last N parts across all messages
 
 **atypica_study_list** - List historical research sessions
 - Input: `{ kind?, page?, pageSize? }`

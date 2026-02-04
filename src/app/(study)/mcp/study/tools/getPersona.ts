@@ -2,13 +2,13 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
-import { prisma } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
+import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
   CallToolResult,
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { z } from "zod";
 
 export const getPersonaInputSchema = z.object({
@@ -29,7 +29,7 @@ export async function handleGetPersona(
     const { personaId } = args;
     const userId = context.userId;
 
-    const persona = await prisma.persona.findUnique({
+    const persona = await prismaRO.persona.findUnique({
       where: { id: personaId },
       select: {
         id: true,
@@ -60,7 +60,10 @@ export async function handleGetPersona(
 
     return {
       content: [
-        { type: "text", text: `Persona: ${persona.name}\nSource: ${persona.source}\nTier: ${persona.tier}` },
+        {
+          type: "text",
+          text: `Persona: ${persona.name}\nSource: ${persona.source}\nTier: ${persona.tier}`,
+        },
       ],
       structuredContent: {
         personaId: persona.id,

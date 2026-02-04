@@ -1,21 +1,25 @@
 import "server-only";
 
+import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
-import { prisma } from "@/prisma/prisma";
-import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
+import { prismaRO } from "@/prisma/prisma";
+import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
   CallToolResult,
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { z } from "zod";
 
 export const getMessagesInputSchema = z.object({
   userChatToken: z.string().describe("The study session token"),
-  afterMessageId: z.string().optional().describe("Get messages after this message ID"),
-  limit: z.number().int().min(1).max(100).default(50).describe("Max messages to return"),
+  tail: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Max parts to return (from tail, most recent parts across all messages)"),
 });
 
 export async function handleGetMessages(
@@ -29,11 +33,11 @@ export async function handleGetMessages(
       throw new Error("Missing userId in request context");
     }
 
-    const { userChatToken, afterMessageId, limit } = args;
+    const { userChatToken, tail } = args;
     const userId = context.userId;
 
     // Verify ownership and check background status
-    const userChat = await prisma.userChat.findUnique({
+    const userChat = await prismaRO.userChat.findUnique({
       where: { token: userChatToken, kind: "study" },
       select: { id: true, userId: true, backgroundToken: true },
     });
@@ -49,38 +53,54 @@ export async function handleGetMessages(
     // Check if research is running in background
     const isRunning = !!userChat.backgroundToken;
 
-    // Build query
-    const whereClause = {
-      userChatId: userChat.id,
-      ...(afterMessageId
-        ? {
-            id: {
-              gt: (
-                await prisma.chatMessage.findUnique({
-                  where: { messageId: afterMessageId },
-                  select: { id: true },
-                })
-              )?.id,
-            },
-          }
-        : {}),
-    };
-
-    const dbMessages = await prisma.chatMessage.findMany({
-      where: whereClause,
+    // Query all messages for this study
+    const dbMessages = await prismaRO.chatMessage.findMany({
+      where: { userChatId: userChat.id },
       orderBy: { id: "asc" },
-      take: limit,
     });
 
     // Use convertDBMessagesToAIMessages for proper format conversion
-    const messages = await convertDBMessagesToAIMessages(dbMessages);
+    let messages = await convertDBMessagesToAIMessages(dbMessages);
 
-    const messagesText = messages
+    // Apply tail logic: keep last N parts across all messages
+    if (tail !== undefined) {
+      let remaining = tail;
+      const result = [];
+      // Traverse messages from end to start
+      for (let i = messages.length - 1; i >= 0; i--) {
+        const msg = messages[i];
+        const partsCount = msg.parts.length;
+
+        if (remaining <= 0) break;
+
+        if (remaining >= partsCount) {
+          // Keep all parts from this message
+          result.unshift(msg);
+          remaining -= partsCount;
+        } else {
+          // Keep only the last 'remaining' parts from this message
+          result.unshift({
+            ...msg,
+            parts: msg.parts.slice(-remaining),
+          });
+          break;
+        }
+      }
+      messages = result;
+    }
+
+    let messagesText = messages
       .map((msg) => {
         const textParts = msg.parts.filter((p) => p.type === "text").map((p) => p.text);
         return `[${msg.role}] ${textParts.join("")}`;
       })
       .join("\n");
+
+    // Limit text length to avoid overwhelming the AI
+    const maxLength = 3000;
+    if (messagesText.length > maxLength) {
+      messagesText = "...\n" + messagesText.slice(-maxLength);
+    }
 
     return {
       content: [{ type: "text", text: messagesText || "No messages found" }],

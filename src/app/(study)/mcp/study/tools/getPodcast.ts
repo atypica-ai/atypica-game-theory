@@ -1,16 +1,16 @@
 import "server-only";
 
+import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
-import { prisma } from "@/prisma/prisma";
 import { AnalystPodcastExtra } from "@/prisma/client";
+import { prismaRO } from "@/prisma/prisma";
+import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
   CallToolResult,
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { z } from "zod";
 
 export const getPodcastInputSchema = z.object({
@@ -32,7 +32,7 @@ export async function handleGetPodcast(
     const userId = context.userId;
 
     // Fetch podcast from database
-    const podcast = await prisma.analystPodcast.findUnique({
+    const podcast = await prismaRO.analystPodcast.findUnique({
       where: { token },
       select: {
         id: true,
