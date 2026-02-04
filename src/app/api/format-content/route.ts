@@ -83,7 +83,8 @@ export async function POST(req: Request) {
           return;
         } else if (result.status === "failed") {
           // Error occurred, write empty finish
-          logger.error({ msg: "Format content failed", error: result.error });
+          // 不需要 .error 其实，没有就是没有，当 live 是 false，之前也没生成过，也会到这里
+          logger.warn({ msg: "Format content failed", error: result.error });
           writer.write({ type: "start" });
           writer.write({ type: "finish" });
           return;
