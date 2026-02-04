@@ -1,0 +1,126 @@
+# =====================================================
+# Publish atypica-research Skill
+# =====================================================
+#
+# 这个 workflow 会自动将 skill 文件同步到独立仓库
+#
+# 配置步骤：
+#
+# 1. 创建 Fine-grained Personal Access Token (推荐)
+#    - 访问: https://github.com/settings/personal-access-tokens/new
+#    - Token name: atypica-skill-publish
+#    - Expiration: 选择你需要的期限
+#    - Repository access: 选择 "Only select repositories"
+#      → 在下拉菜单选择: bmrlab/atypica-research-skill
+#    - Permissions → Repository permissions:
+#      → Contents: Read and write ✅
+#    - 点击 Generate token，复制生成的 token (github_pat_xxxx...)
+#
+#    如果使用 Classic Token (不推荐):
+#    - 访问: https://github.com/settings/tokens/new
+#    - Scopes: 勾选 "repo"
+#
+# 2. 添加 Secret 到主仓库
+#    - 访问: https://github.com/bmrlab/atypica-llm-app/settings/secrets/actions
+#    - 点击 "New repository secret"
+#    - Name: SKILL_REPO_TOKEN
+#    - Value: 粘贴刚才的 token
+#    - 点击 "Add secret"
+#
+# 3. 创建目标仓库 (如果还没有)
+#    - 在 GitHub 创建: https://github.com/bmrlab/atypica-research-skill
+#    - 设置为 Public
+#    - 不要勾选 "Initialize with README"
+#
+# 4. 首次手动初始化 (只需一次)
+#    ```bash
+#    git clone git@github.com:bmrlab/atypica-research-skill.git
+#    cd atypica-research-skill
+#    cp -r ../atypica-llm-app/src/app/(study)/skills/atypica-research/* .
+#    git add .
+#    git commit -m "Initial commit"
+#    git push origin main
+#    ```
+#
+# 之后，每次修改主仓库的 skill 文件并推送到 main，都会自动同步
+#
+# =====================================================
+
+name: Publish atypica-research Skill
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/app/(study)/skills/atypica-research/**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clone skill repo
+        env:
+          SKILL_REPO_TOKEN: ${{ secrets.SKILL_REPO_TOKEN }}
+        run: |
+          # 使用 PAT 克隆目标仓库
+          git clone https://x-access-token:${SKILL_REPO_TOKEN}@github.com/bmrlab/atypica-research-skill.git skill-repo
+
+      - name: Sync skill files
+        run: |
+          # 复制所有 skill 文件到目标仓库
+          cp -r "src/app/(study)/skills/atypica-research/"* skill-repo/
+
+          # 生成同步信息文件
+          cd skill-repo
+
+          SYNC_DATE=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          SYNC_COMMIT_SHORT=${GITHUB_SHA:0:7}
+          SYNC_COMMIT_FULL=${{ github.sha }}
+          SYNC_ACTOR=${{ github.actor }}
+
+          cat > SYNC_INFO.md << SYNCEOF
+          # Sync Information
+
+          This repository is auto-synced from [atypica-llm-app](https://github.com/bmrlab/atypica-llm-app).
+
+          - **Last sync**: ${SYNC_DATE}
+          - **Source commit**: [\`${SYNC_COMMIT_SHORT}\`](https://github.com/bmrlab/atypica-llm-app/commit/${SYNC_COMMIT_FULL})
+          - **Triggered by**: ${SYNC_ACTOR}
+
+          ## Do not edit files directly in this repository
+
+          All changes should be made in the main repository under:
+          \`src/app/(study)/skills/atypica-research/\`
+          SYNCEOF
+
+      - name: Commit and push to skill repo
+        working-directory: skill-repo
+        run: |
+          # 配置 git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 添加所有更改
+          git add .
+
+          # 检查是否有更改
+          if git diff --staged --quiet; then
+            echo "✅ No changes to publish"
+            exit 0
+          fi
+
+          # 提交并推送
+          echo "📦 Publishing changes to skill repo..."
+          git commit -m "Auto-sync from atypica-llm-app@${GITHUB_SHA:0:7}
+
+          Source: https://github.com/bmrlab/atypica-llm-app/commit/${{ github.sha }}
+          Triggered by: ${{ github.actor }}"
+
+          git push origin main
+
+          echo "✅ Successfully published to atypica-research-skill"
