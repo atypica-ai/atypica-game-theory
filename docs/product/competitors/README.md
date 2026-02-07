@@ -1,215 +1,185 @@
-# atypica.AI Competitor Comparison Documents | atypica.AI 竞品对比文档
+# atypica.AI 竞品对比分析
 
-> 📖 **Languages Available | 语言版本**: All documents are available in both **English** and **Chinese (中文)**
-
-本目录包含 atypica.AI 与各类竞品的详细对比分析。
-
-This directory contains detailed competitive analysis comparing atypica.AI with various competitors.
+**一句话总结**：atypica.AI 是唯一专注主观商业要素研究的多智能体平台，通过 AI 人设建模理解消费者情感、市场认知和决策偏好，而非通用对话或单点分析工具。
 
 ---
 
-## 🌍 Document Language Guide | 文档语言指南
+## 竞品分级
 
-### Naming Convention | 命名规则
-
-- **English version | 英文版**: `vs-CompanyName-v3.md`
-- **Chinese version | 中文版**: `vs-CompanyName-v3-zh.md`
-
-**Example | 示例**:
-- `vs-Wynter-v3.md` (English)
-- `vs-Wynter-v3-zh.md` (中文)
-
-### Quick Navigation | 快速导航
-
-- 🇺🇸 [English Summary](./SUMMARY-v3.md) - Complete overview with decision tree
-- 🇨🇳 [中文总结](./SUMMARY-v3-zh.md) - 完整竞品对比总结（快速导航+决策树）
+- **P0 级（直接竞品）**：Listen Labs - AI 用户研究工具，功能高度重叠
+- **P1 级（功能竞品）**：Claude Projects、UserTesting、SurveyMonkey、NotebookLM - 部分场景重叠
+- **P2 级（其他对比）**：Otter.ai、传统调研方法 - 场景差异较大
 
 ---
 
-## 📁 Folder Structure | 文件夹结构
+## 核心对比表
 
-### 1. traditional/ - Traditional Research & Consulting Firms | 传统调研与咨询公司
-
-Traditional market research, user research, and strategic consulting firms.
-
-传统市场调研、用户研究和战略咨询公司的对比。
-
-**Characteristics | 特点**：
-- Human interviews | 真人访谈为主
-- Long cycle (2-8 weeks) | 时间周期长（2-8周）
-- High cost (tens to hundreds of thousands) | 成本高（数万到数十万）
-- Deep expertise for high-risk decisions | 深度专业，适合高风险决策
-
-**Companies Included | 包含公司**：
-- Strategic Consulting | 战略咨询：McKinsey, BCG, Bain, Roland Berger | 麦肯锡、BCG、贝恩、罗兰贝格
-- Market Research | 市场研究：Ipsos, Nielsen, Kantar, GfK | 益普索、尼尔森、凯度、GfK
-- Tech Research | 技术研究：Forrester, Gartner, IDC
-- China Market | 中国市场：CSM/CTR | 索福瑞
+| 维度 | atypica.AI | Listen Labs | Claude Projects | 传统调研工具 |
+|------|-----------|-------------|-----------------|-------------|
+| **研究方法** | AI 人设模拟交互 | AI 访谈 | 文档对话 | 真人调研 |
+| **研究场景** | ✅ 7 种（访谈/讨论/观察/播客等） | ⚠️ 仅访谈 | ❌ 不涉及 | ✅ 全场景 |
+| **人设体系** | ✅ 30 万+ Tier1/2 | ⚠️ 用户自定义 | ❌ 无 | ✅ 真人 |
+| **意图澄清** | ✅ Plan Mode | ❌ 无 | ❌ 无 | ✅ 人工咨询 |
+| **持久记忆** | ✅ 用户+团队级 | ❌ 无 | ⚠️ 项目级 | ❌ 无 |
+| **自定义工具** | ✅ MCP 集成 | ❌ 未知 | ❌ 无 | ❌ 无 |
+| **成本** | $20-200/月 | 按项目计费 | $20/月 | $5,000-20,000/项目 |
+| **交付速度** | 2-3 天 | 24 小时 | N/A | 4-8 周 |
+| **目标用户** | 产品经理/品牌策划/创业者 | 产品经理 | 知识工作者 | 企业研究团队 |
 
 ---
 
-### 2. ai-products/ - AI-Powered User Research Products | AI驱动的用户研究产品
+## P0 级：Listen Labs
 
-Emerging products using AI technology for user research and market analysis.
+**定位**：AI 访谈工具 vs. 多场景研究平台
 
-使用AI技术进行用户研究、市场调研的新兴产品。
+### 关键差异
 
-**Characteristics | 特点**：
-- AI-simulated/synthetic users | AI模拟/合成用户
-- Fast execution (hours to days) | 快速执行（小时-天）
-- Lower cost (subscription model) | 成本较低（订阅制）
-- Suitable for rapid validation | 适合快速验证和探索
+| 功能 | Listen Labs | atypica.AI | 差异说明 |
+|------|------------|-----------|---------|
+| **研究场景** | 仅访谈 | 访谈+讨论+观察+播客 | atypica 4x 场景覆盖 |
+| **意图澄清** | ❌ 无 | ✅ Plan Mode | atypica 自动设计研究方案 |
+| **人设库** | 用户自定义 | 30 万+ 预建库 | atypica 100x 规模 |
+| **人设质量** | 未知 | 4 级 Tier（79-85分） | atypica 质量分级体系 |
+| **持久记忆** | ❌ 无 | ✅ Memory System | atypica 越用越懂 |
+| **社交观察** | ❌ 无 | ✅ Scout Agent | atypica 独有 |
+| **定价模式** | 按项目 | 订阅制 | atypica 更灵活 |
 
-**Sub-categories | 子分类**：
+**适用场景对比**：
+- **Listen Labs**：需要快速用户访谈，预算有限的小型研究
+- **atypica.AI**：全场景用户研究，从社交观察到深度访谈的完整闭环
 
-#### 2.1 Real User Panel Platforms | 真人Panel平台
-- Wynter (B2B message testing | B2B消息测试)
-- UserTesting (Live video testing giant | 真人测试巨头)
-- Maze (Product testing platform | 产品测试平台)
-- Sprig (In-product research | 产品内研究)
-
-#### 2.2 AI Synthetic Users/Synthetic Audiences | AI合成用户
-- Synthetic Users (Product testing | 产品测试)
-- Deepsona (Predictive research | 预测性研究)
-- Yabble (Virtual Audiences | 虚拟受众)
-- PersonaPanels (Synthetic respondents | 合成应答者)
-- And more... | 等等...
-
-#### 2.3 Research Management & Analysis Tools | 研究管理与分析工具
-- Dovetail (Insights management | 洞察管理平台)
-- Qualtrics (Enterprise survey platform | 企业级调研平台)
-
-#### 2.4 Virtual Focus Groups | 虚拟焦点小组
-- Roundtable (Virtual discussion platform | 虚拟讨论平台)
-
-#### 2.5 Persona Generation Tools | Persona生成工具
-- Delve AI (Persona generator | Persona生成器)
-- And more... | 等等...
-
-#### 2.6 Deep Research Tools | Deep Research工具
-- Gemini Deep Research (Google)
-- Perplexity (Deep search | 深度搜索)
+**核心差异**：Listen Labs 是"访谈工具"，atypica.AI 是"研究平台"。
 
 ---
 
-## 📊 Comparison Dimensions | 对比维度
+## P1 级：功能竞品
 
-Each comparison document includes the following dimensions:
+### Claude Projects
 
-每个对比文档包含以下维度：
+**定位**：通用知识管理助手 vs. 商业研究智能体
 
-### Core Differences | 核心差异
-- Product positioning | 产品定位
-- Core capabilities | 核心能力
-- Data sources | 数据来源
-- AI involvement | AI程度
-- Use cases | 适用场景
+| 功能 | Claude Projects | atypica.AI | 差异说明 |
+|------|----------------|-----------|---------|
+| **研究对象** | 文档/代码 | 消费者心理+行为 | Projects 处理已有信息，atypica 模拟消费者 |
+| **人设系统** | ❌ 无 | ✅ 30 万+ AI 人设 | atypica 可模拟目标用户群体交互 |
+| **多智能体** | ❌ 单助手 | ✅ 7 种专业 Agent | Interview/Scout/Sage 等不同研究方式 |
+| **研究工具** | ❌ 无 | ✅ 10+ 研究工具 | planStudy/generateReport/discussionChat 等 |
 
-### Comparison Table | 对比表格
-- Time cost | 时间成本
-- Monetary cost | 金钱成本
-- User type (real/AI) | 用户类型（真人/AI）
-- Research depth | 研究深度
-- Scale limitations | 规模限制
-
-### Usage Recommendations | 使用场景建议
-- When to use competitors | 什么时候用竞品
-- When to use atypica | 什么时候用atypica
-- Combined usage strategies | 组合使用策略
-
-### Common Questions | 常见问题
-- Price comparison | 价格对比
-- Feature differences | 功能差异
-- Applicable scenarios | 适用场景
+**为什么用户会比较**：同样基于 Claude，但 Projects 定位通用助手，atypica.AI 专为商业研究优化。
 
 ---
 
-## 🎯 Document List | 文档列表
+### 其他功能竞品矩阵
 
-### Traditional Firms | 传统机构 (12 documents)
+### 录音转录类（4 款）
 
-**Strategic Consulting | 战略咨询**:
-- 🇺🇸/🇨🇳 `vs-McKinsey-v3.md` / `vs-McKinsey-v3-zh.md` - McKinsey | 麦肯锡
-- 🇺🇸/🇨🇳 `vs-BCG-v3.md` / `vs-BCG-v3-zh.md` - Boston Consulting Group | 波士顿咨询
-- 🇺🇸/🇨🇳 `vs-Bain-v3.md` / `vs-Bain-v3-zh.md` - Bain | 贝恩
-- 🇺🇸/🇨🇳 `vs-RolandBerger-v3.md` / `vs-RolandBerger-v3-zh.md` - Roland Berger | 罗兰贝格
+| 工具 | 核心功能 | 局限性 | atypica.AI 差异 |
+|------|---------|--------|----------------|
+| **Descript** | 视频剪辑+转录 | 不分析内容语义 | atypica 自动提取洞察并生成报告 |
+| **Otter.ai** | 会议记录+摘要 | 不理解用户动机 | atypica 通过 AI 人设理解消费者心理 |
+| **Fireflies.ai** | 录音分析+集成 | CRM 数据为主 | atypica 专注主观要素非客观数据 |
+| **Grain** | 销售会议复盘 | B2B 销售场景 | atypica 覆盖产品/品牌/创新等场景 |
 
-**Market Research | 市场研究**:
-- 🇺🇸/🇨🇳 `vs-Ipsos-v3.md` / `vs-Ipsos-v3-zh.md` - Ipsos | 益普索
-- 🇺🇸/🇨🇳 `vs-Nielsen-v3.md` / `vs-Nielsen-v3-zh.md` - Nielsen | 尼尔森
-- 🇺🇸/🇨🇳 `vs-Kantar-v3.md` / `vs-Kantar-v3-zh.md` - Kantar | 凯度
-- 🇺🇸/🇨🇳 `vs-GfK-v3.md` / `vs-GfK-v3-zh.md` - GfK
+**共同特点**：处理已有录音/文字，输出转录和关键词，**不涉及**消费者模拟和主观要素研究。
 
-**Technology Research | 技术研究**:
-- 🇺🇸/🇨🇳 `vs-Forrester-v3.md` / `vs-Forrester-v3-zh.md` - Forrester
-- 🇺🇸/🇨🇳 `vs-Gartner-v3.md` / `vs-Gartner-v3-zh.md` - Gartner
-- 🇺🇸/🇨🇳 `vs-IDC-v3.md` / `vs-IDC-v3-zh.md` - IDC
+### 播客制作类（1 款）
 
-**China Market | 中国市场**:
-- 🇺🇸/🇨🇳 `vs-CTR-v3.md` / `vs-CTR-v3-zh.md` - CSM/CTR | 索福瑞
+| 工具 | 核心功能 | 局限性 | atypica.AI 差异 |
+|------|---------|--------|----------------|
+| **Riverside.fm** | 远程录制+剪辑 | 需人工策划内容 | atypica Fast Insight 自动从研究生成播客脚本 |
 
-### AI Products | AI产品 (15 documents)
+**差异**：Riverside 是录制工具，atypica 是内容生产系统（研究 → 报告 → 播客一条龙）。
 
-**Real User Panels | 真人Panel**:
-- 🇺🇸/🇨🇳 `vs-Wynter-v3.md` / `vs-Wynter-v3-zh.md` - Wynter
-- 🇺🇸/🇨🇳 `vs-UserTesting-v3.md` / `vs-UserTesting-v3-zh.md` - UserTesting
-- 🇺🇸/🇨🇳 `vs-Maze-v3.md` / `vs-Maze-v3-zh.md` - Maze
-- 🇺🇸/🇨🇳 `vs-Sprig-v3.md` / `vs-Sprig-v3-zh.md` - Sprig
+### 问卷调研类（2 款）
 
-**AI Synthetic Users | AI合成用户**:
-- 🇺🇸/🇨🇳 `vs-SyntheticUsers-v3.md` / `vs-SyntheticUsers-v3-zh.md` - Synthetic Users
-- 🇺🇸/🇨🇳 `vs-Deepsona-v3.md` / `vs-Deepsona-v3-zh.md` - Deepsona
-- 🇺🇸/🇨🇳 `vs-Yabble-v3.md` / `vs-Yabble-v3-zh.md` - Yabble
-- 🇺🇸/🇨🇳 `vs-PersonaPanels-v3.md` / `vs-PersonaPanels-v3-zh.md` - PersonaPanels
-- 🇺🇸/🇨🇳 `vs-AIPersonaTools-v3.md` / `vs-AIPersonaTools-v3-zh.md` - AI Persona Tools (Overview | 通用对比)
-- 🇺🇸/🇨🇳 `vs-SyntheticResearchTools-v3.md` / `vs-SyntheticResearchTools-v3-zh.md` - Synthetic Research Tools (Overview | 通用对比)
+| 工具 | 核心功能 | 局限性 | atypica.AI 差异 |
+|------|---------|--------|----------------|
+| **SurveyMonkey** | 问卷设计+统计 | 依赖真人填写，成本高时间长 | atypica 用 AI 人设模拟，数小时完成 |
+| **Qualtrics** | 企业级研究平台 | 复杂昂贵（$1500+/年） | atypica $20-200/月，快速迭代 |
 
-**Research Management | 研究管理**:
-- 🇺🇸/🇨🇳 `vs-Dovetail-v3.md` / `vs-Dovetail-v3-zh.md` - Dovetail
-- 🇺🇸/🇨🇳 `vs-Qualtrics-v3.md` / `vs-Qualtrics-v3-zh.md` - Qualtrics
-- 🇺🇸/🇨🇳 `vs-Roundtable-v3.md` / `vs-Roundtable-v3-zh.md` - Roundtable
+**共同特点**：依赖真人样本（招募成本、时间成本、样本偏差），atypica 通过 30 万+ AI 人设库绕过此问题。
 
-**Other Tools | 其他工具**:
-- 🇺🇸/🇨🇳 `vs-Perplexity-v3.md` / `vs-Perplexity-v3-zh.md` - Perplexity
-- 🇺🇸/🇨🇳 `vs-DelveAI-v3.md` / `vs-DelveAI-v3-zh.md` - Delve AI
+### 用户测试类（3 款）
 
-### Summary Documents | 总结文档 (1 document)
+| 工具 | 核心功能 | 局限性 | atypica.AI 差异 |
+|------|---------|--------|----------------|
+| **UserTesting** | 真人录屏测试 | $49/测试，需等待招募 | atypica Interview/Discussion 即时反馈 |
+| **Dovetail** | 用户研究管理 | 整理工具非生成工具 | atypica 从零生成洞察而非整理已有数据 |
+| **Maze** | 原型测试+分析 | 仅测试可用性非需求洞察 | atypica 探索用户深层动机和未表达需求 |
 
-- 🇺🇸 `SUMMARY-v3.md` - Complete competitive analysis summary with decision tree
-- 🇨🇳 `SUMMARY-v3-zh.md` - 完整竞品对比总结（快速导航+决策树）
+**共同特点**：测试已有产品/原型，atypica 可在产品概念阶段就验证市场需求。
 
 ---
 
-## 📈 Completion Status | 生成状态
+## P2 级：新兴 AI 工具
 
-### ✅ Completed (28 documents × 2 languages = 56 files) | 已完成（28篇 × 2语言 = 56个文件）
+| 工具 | 核心能力 | 是否竞争 | 原因 |
+|------|---------|---------|------|
+| **ChatGPT Research Preview** | 深度网络搜索+推理 | ⚠️ 潜在 | 若 OpenAI 加入人设模拟能力可能竞争 |
+| **Perplexity Pages** | 信息聚合+报告生成 | ❌ 否 | 基于公开信息非消费者洞察 |
+| **NotebookLM** | 文档问答+播客生成 | ⚠️ 功能重叠 | 播客能力相似，但缺少研究框架 |
+| **Custom GPTs** | 自定义 AI 助手 | ❌ 否 | 用户需自行设计，无人设库和记忆系统 |
+| **Claude Code** | 代码辅助开发 | ❌ 否 | 完全不同领域 |
 
-**All documents are based on real research and industry insights**
-
-**所有文档基于真实调研和行业洞察**
-
-- ✅ **15 AI Products** in English + Chinese | **15篇AI产品** 英文+中文
-- ✅ **12 Traditional Firms** in English + Chinese | **12篇传统机构** 英文+中文
-- ✅ **1 Summary** in English + Chinese | **1篇总结** 英文+中文
-
-Each document is ~800 words, professionally written with:
-- Real pricing data | 真实价格数据
-- Case studies | 案例研究
-- Strategic recommendations | 战略建议
-- Decision frameworks | 决策框架
+**关键观察**：
+- **NotebookLM**：播客生成能力最接近，但仅处理已有文档，无法进行主观要素研究
+- **ChatGPT Research**：若未来加入"角色扮演+持久记忆"可能成为竞品
+- **其他工具**：信息检索为主，未触及商业研究的核心方法论
 
 ---
 
-## 🔗 Related Documents | 相关文档
+## atypica.AI 差异化总结
 
-- [Product Challenge Questions | 产品挑战问题](../) - All product Q&A | 所有产品问答
-- [Plan Mode Questions | Plan Mode问题](../plan-mode/) - Including Gemini comparison | 包含Gemini对比
-- [Complete Workflow | 完整工作流程](../../../COMPLETE_WORKFLOW.md)
-- [Article Generation Guide | 文章生成优化指南](../../../OPTIMIZED_ARTICLE_WORKFLOW.md)
+### 1. 独特的研究对象
+- **传统工具**：分析客观数据（转录、点击、问卷数字）
+- **atypica.AI**：理解主观要素（情感、认知、决策偏好）
+
+### 2. 独特的研究方法
+- **传统工具**：依赖真人参与（成本高、周期长、样本少）
+- **atypica.AI**：AI 人设模拟（数小时完成、覆盖多样性、快速迭代）
+
+### 3. 独特的技术架构
+- **多智能体系统**：7 种 Agent 覆盖不同研究场景（访谈/讨论/观察/规划/创新）
+- **人设品质体系**：30 万+ Tier1/2 人设，7 维度评分，85 点一致性
+- **持久记忆**：用户级+团队级记忆，越用越懂
+- **可扩展性**：MCP 协议接入团队自定义工具
+
+### 4. 独特的应用场景
+- **产品创新**：从创意到验证一站式（产品 R&D Agent）
+- **品牌定位**：理解目标用户心理图谱（Scout Agent）
+- **市场洞察**：快速生成播客和报告（Fast Insight）
+- **专家构建**：可进化的领域智能体（Sage）
+
+### 5. 成本和效率优势
+- **传统调研**：$5,000-50,000/项目，2-8 周
+- **atypica.AI**：$20-200/月订阅，数小时完成
 
 ---
 
-**Document Version | 文档版本**: v2.0 (Bilingual | 双语版)
-**Created | 创建日期**: 2026-01-30
-**Updated | 更新日期**: 2026-02-03
-**Maintained by | 维护者**: atypica.AI Product Team | atypica.AI产品团队
+## 竞争壁垒
+
+1. **人设库规模**：30 万+ AI 人设（Tier1）+ 1 万+ 高质量人设（Tier2），新进入者需数年积累
+2. **多智能体框架**：7 种专业 Agent，每个都有独立系统提示和工具链，非简单 prompt 工程
+3. **记忆系统**：双层架构（Core + Working）+ 自动重组，需深度工程
+4. **领域专注**：2 年商业研究场景积累，理解真实用户工作流
+
+---
+
+## 目标市场定位
+
+**不与以下工具直接竞争**：
+- 通用对话 AI（ChatGPT/Claude）- 它们是底层能力提供者
+- 企业级研究平台（Qualtrics）- 服务大企业标准化流程
+- 录音转录工具（Otter/Descript）- 处理已有数据
+
+**服务的独特市场**：
+- 需要快速验证商业想法的**创业者**
+- 需要理解消费者心理的**产品经理**
+- 需要品牌定位洞察的**营销策划**
+- 需要创新灵感的**战略顾问**
+
+这些用户的共同特点：**需要理解"人"而非"数据"，需要快速迭代而非长周期调研**。
+
+---
+
+**文档版本**：v1.0 | 2026-01-15 | 基于代码库分析
