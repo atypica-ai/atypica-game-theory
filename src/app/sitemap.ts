@@ -1,4 +1,6 @@
-import { docs } from "@/app/(features)/features/docs-config";
+import { docs as featureDocs } from "@/app/(docs)/features/docs-config";
+import { docs as faqDocs } from "@/app/(docs)/faq/docs-config";
+import { docs as guideDocs } from "@/app/(docs)/guides/docs-config";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
@@ -254,6 +256,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     },
+    {
+      url: `${siteOrigin}/faq`,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${siteOrigin}/guides`,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
   ];
 
   try {
@@ -284,14 +296,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    // Generate feature doc routes
-    const featureRoutes: MetadataRoute.Sitemap = docs.map(({ slug }) => ({
+    // Generate feature, FAQ, and guide doc routes
+    const featureRoutes: MetadataRoute.Sitemap = featureDocs.map(({ slug }) => ({
       url: `${siteOrigin}/features/${slug}`,
       changeFrequency: "weekly",
       priority: 0.6,
     }));
 
-    return [...staticRoutes, ...reportRoutes, ...podcastRoutes, ...blogRoutes, ...featureRoutes];
+    const faqRoutes: MetadataRoute.Sitemap = faqDocs.map(({ slug }) => ({
+      url: `${siteOrigin}/faq/${slug}`,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+
+    const guideRoutes: MetadataRoute.Sitemap = guideDocs.map(({ slug }) => ({
+      url: `${siteOrigin}/guides/${slug}`,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+
+    return [
+      ...staticRoutes,
+      ...reportRoutes,
+      ...podcastRoutes,
+      ...blogRoutes,
+      ...featureRoutes,
+      ...faqRoutes,
+      ...guideRoutes,
+    ];
   } catch (error) {
     console.error("Error generating sitemap:", error);
     // Return static routes if database query fails

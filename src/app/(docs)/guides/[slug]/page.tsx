@@ -5,16 +5,18 @@ import { getLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import path from "path";
 import { Streamdown } from "streamdown";
-import { docs, getDocBySlug } from "../docs-config";
+import { getDocBySlug, getDocsByCategory } from "../../types";
+import { docs } from "../docs-config";
 
-// Generate static params for all docs
+// Generate static params for all guide docs
 export function generateStaticParams() {
-  return docs.map((doc) => ({
+  const guides = getDocsByCategory(docs, "guide");
+  return guides.map((doc) => ({
     slug: doc.slug,
   }));
 }
 
-// Generate metadata for each doc
+// Generate metadata for each guide
 export async function generateMetadata({
   params,
 }: {
@@ -24,11 +26,11 @@ export async function generateMetadata({
   const locale = await getLocale();
   const isZh = locale === "zh-CN";
 
-  const doc = getDocBySlug(slug);
+  const doc = getDocBySlug(docs, slug);
 
-  if (!doc) {
+  if (!doc || doc.category !== "guide") {
     return {
-      title: "Document Not Found",
+      title: "Guide Not Found",
     };
   }
 
@@ -39,15 +41,15 @@ export async function generateMetadata({
   });
 }
 
-// Doc page component
-export default async function DocPage({ params }: { params: Promise<{ slug: string }> }) {
+// Guide page component
+export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const locale = await getLocale();
   const isZh = locale === "zh-CN";
 
-  const doc = getDocBySlug(slug);
+  const doc = getDocBySlug(docs, slug);
 
-  if (!doc) {
+  if (!doc || doc.category !== "guide") {
     notFound();
   }
 

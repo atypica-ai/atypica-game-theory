@@ -2,7 +2,8 @@ import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import Link from "next/link";
-import { categoryLabels, getDocsByCategory, type DocCategory } from "./docs-config";
+import { categoryLabels, getDocsByCategory, type DocCategory } from "../types";
+import { docs } from "./docs-config";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -21,7 +22,7 @@ export default async function FeaturesIndexPage() {
   const locale = await getLocale();
   const isZh = locale === "zh-CN";
 
-  const categories: DocCategory[] = ["features", "competitors", "guides"];
+  const categories: DocCategory[] = ["feature", "competitor"];
 
   return (
     <div className="mx-auto max-w-6xl w-full px-4 py-8">
@@ -36,7 +37,7 @@ export default async function FeaturesIndexPage() {
 
       <div className="space-y-12">
         {categories.map((category) => {
-          const categoryDocs = getDocsByCategory(category);
+          const categoryDocs = getDocsByCategory(docs, category);
           if (categoryDocs.length === 0) return null;
 
           return (

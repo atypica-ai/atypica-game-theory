@@ -4,9 +4,11 @@ import createNextIntlPlugin from "next-intl/plugin";
 const nextConfig: NextConfig = {
   output: "standalone",
   devIndicators: false,
-  // Include docs in standalone output for features pages
+  // Include docs in standalone output for documentation pages
   outputFileTracingIncludes: {
-    "/(features)/features/[slug]": ["./docs/**/*"],
+    "/(docs)/features/[slug]": ["./docs/**/*"],
+    "/(docs)/faq/[slug]": ["./docs/**/*"],
+    "/(docs)/guides/[slug]": ["./docs/**/*"],
   },
   webpack: (config, { isServer, webpack }) => {
     if (isServer) {
