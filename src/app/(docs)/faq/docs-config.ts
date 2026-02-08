@@ -12,9 +12,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/plan-mode/comparison-with-gemini-deepresearch.zh.md",
-    filePathEn: "docs/product/faq/plan-mode/comparison-with-gemini-deepresearch.en.md",
-    directory: "plan-mode",
+    filePathZh: "docs/product/faq/research/comparison-with-gemini-deepresearch.zh.md",
+    filePathEn: "docs/product/faq/research/comparison-with-gemini-deepresearch.en.md",
   },
   {
     slug: "research-framework-model",
@@ -25,9 +24,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/plan-mode/research-framework-model.zh.md",
-    filePathEn: "docs/product/faq/plan-mode/research-framework-model.en.md",
-    directory: "plan-mode",
+    filePathZh: "docs/product/faq/research/research-framework-model.zh.md",
+    filePathEn: "docs/product/faq/research/research-framework-model.en.md",
   },
   // scout-agent (1)
   {
@@ -39,9 +37,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/scout-agent/how-social-scanning-helps.zh.md",
-    filePathEn: "docs/product/faq/scout-agent/how-social-scanning-helps.en.md",
-    directory: "scout-agent",
+    filePathZh: "docs/product/faq/research/how-social-scanning-helps.zh.md",
+    filePathEn: "docs/product/faq/research/how-social-scanning-helps.en.md",
   },
   // memory-system (1)
   {
@@ -51,9 +48,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/memory-system/competitor-homogenization-issue.zh.md",
-    filePathEn: "docs/product/faq/memory-system/competitor-homogenization-issue.en.md",
-    directory: "memory-system",
+    filePathZh: "docs/product/faq/research/competitor-homogenization-issue.zh.md",
+    filePathEn: "docs/product/faq/research/competitor-homogenization-issue.en.md",
   },
   // ai-persona (9)
   {
@@ -63,9 +59,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/ai-persona/how-300k-personas-built.zh.md",
-    filePathEn: "docs/product/faq/ai-persona/how-300k-personas-built.en.md",
-    directory: "ai-persona",
+    filePathZh: "docs/product/faq/persona/how-300k-personas-built.zh.md",
+    filePathEn: "docs/product/faq/persona/how-300k-personas-built.en.md",
   },
   {
     slug: "are-personas-too-similar",
@@ -74,9 +69,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/ai-persona/are-personas-too-similar.zh.md",
-    filePathEn: "docs/product/faq/ai-persona/are-personas-too-similar.en.md",
-    directory: "ai-persona",
+    filePathZh: "docs/product/faq/persona/are-personas-too-similar.zh.md",
+    filePathEn: "docs/product/faq/persona/are-personas-too-similar.en.md",
   },
   {
     slug: "cost-comparison",
@@ -85,9 +79,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/ai-persona/cost-comparison.zh.md",
-    filePathEn: "docs/product/faq/ai-persona/cost-comparison.en.md",
-    directory: "ai-persona",
+    filePathZh: "docs/product/faq/persona/cost-comparison.zh.md",
+    filePathEn: "docs/product/faq/persona/cost-comparison.en.md",
   },
   {
     slug: "difference-from-chatgpt",
@@ -97,9 +90,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/ai-persona/difference-from-chatgpt.zh.md",
-    filePathEn: "docs/product/faq/ai-persona/difference-from-chatgpt.en.md",
-    directory: "ai-persona",
+    filePathZh: "docs/product/faq/persona/difference-from-chatgpt.zh.md",
+    filePathEn: "docs/product/faq/persona/difference-from-chatgpt.en.md",
   },
   {
     slug: "gap-from-real-people",
@@ -108,9 +100,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/ai-persona/gap-from-real-people.zh.md",
-    filePathEn: "docs/product/faq/ai-persona/gap-from-real-people.en.md",
-    directory: "ai-persona",
+    filePathZh: "docs/product/faq/persona/gap-from-real-people.zh.md",
+    filePathEn: "docs/product/faq/persona/gap-from-real-people.en.md",
   },
   {
     slug: "niche-traditional-industries",
@@ -120,9 +111,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/ai-persona/niche-traditional-industries.zh.md",
-    filePathEn: "docs/product/faq/ai-persona/niche-traditional-industries.en.md",
-    directory: "ai-persona",
+    filePathZh: "docs/product/faq/persona/niche-traditional-industries.zh.md",
+    filePathEn: "docs/product/faq/persona/niche-traditional-industries.en.md",
   },
   {
     slug: "only-correct-answers",
@@ -131,9 +121,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/ai-persona/only-correct-answers.zh.md",
-    filePathEn: "docs/product/faq/ai-persona/only-correct-answers.en.md",
-    directory: "ai-persona",
+    filePathZh: "docs/product/faq/persona/only-correct-answers.zh.md",
+    filePathEn: "docs/product/faq/persona/only-correct-answers.en.md",
   },
   {
     slug: "reusability-guarantee",
@@ -143,9 +132,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/ai-persona/reusability-guarantee.zh.md",
-    filePathEn: "docs/product/faq/ai-persona/reusability-guarantee.en.md",
-    directory: "ai-persona",
+    filePathZh: "docs/product/faq/persona/reusability-guarantee.zh.md",
+    filePathEn: "docs/product/faq/persona/reusability-guarantee.en.md",
   },
   {
     slug: "why-not-use-real-people",
@@ -154,9 +142,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/ai-persona/why-not-use-real-people.zh.md",
-    filePathEn: "docs/product/faq/ai-persona/why-not-use-real-people.en.md",
-    directory: "ai-persona",
+    filePathZh: "docs/product/faq/persona/why-not-use-real-people.zh.md",
+    filePathEn: "docs/product/faq/persona/why-not-use-real-people.en.md",
   },
   // interview-discussion (4)
   {
@@ -168,9 +155,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/interview-discussion/ai-interview-vs-survey.zh.md",
-    filePathEn: "docs/product/faq/interview-discussion/ai-interview-vs-survey.en.md",
-    directory: "interview-discussion",
+    filePathZh: "docs/product/faq/interview/ai-interview-vs-survey.zh.md",
+    filePathEn: "docs/product/faq/interview/ai-interview-vs-survey.en.md",
   },
   {
     slug: "ai-use-case-advantages",
@@ -179,9 +165,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/interview-discussion/ai-use-case-advantages.zh.md",
-    filePathEn: "docs/product/faq/interview-discussion/ai-use-case-advantages.en.md",
-    directory: "interview-discussion",
+    filePathZh: "docs/product/faq/interview/ai-use-case-advantages.zh.md",
+    filePathEn: "docs/product/faq/interview/ai-use-case-advantages.en.md",
   },
   {
     slug: "competitor-homogenization",
@@ -191,9 +176,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/interview-discussion/competitor-homogenization.zh.md",
-    filePathEn: "docs/product/faq/interview-discussion/competitor-homogenization.en.md",
-    directory: "interview-discussion",
+    filePathZh: "docs/product/faq/interview/competitor-homogenization.zh.md",
+    filePathEn: "docs/product/faq/interview/competitor-homogenization.en.md",
   },
   {
     slug: "when-use-ai-not-real-people",
@@ -202,9 +186,8 @@ export const docs: Doc[] = [
     category: "faq",
     descriptionZh: "",
     descriptionEn: "",
-    filePathZh: "docs/product/faq/interview-discussion/when-use-ai-not-real-people.zh.md",
-    filePathEn: "docs/product/faq/interview-discussion/when-use-ai-not-real-people.en.md",
-    directory: "interview-discussion",
+    filePathZh: "docs/product/faq/interview/when-use-ai-not-real-people.zh.md",
+    filePathEn: "docs/product/faq/interview/when-use-ai-not-real-people.en.md",
   },
   // general (2)
   {
@@ -216,7 +199,6 @@ export const docs: Doc[] = [
     descriptionEn: "",
     filePathZh: "docs/product/faq/general/ai-recommendation-liability.zh.md",
     filePathEn: "docs/product/faq/general/ai-recommendation-liability.en.md",
-    directory: "general",
   },
   {
     slug: "real-profit-case-studies",
@@ -227,6 +209,5 @@ export const docs: Doc[] = [
     descriptionEn: "",
     filePathZh: "docs/product/faq/general/real-profit-case-studies.zh.md",
     filePathEn: "docs/product/faq/general/real-profit-case-studies.en.md",
-    directory: "general",
   },
 ];

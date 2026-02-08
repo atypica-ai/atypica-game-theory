@@ -11,7 +11,6 @@ export interface Doc {
   descriptionEn: string;
   filePathZh: string;
   filePathEn: string;
-  directory?: string; // For FAQ and guides: 'plan-mode', 'ai-persona', 'scout-agent', etc.
 }
 
 export const categoryLabels: Record<DocCategory, { zh: string; en: string }> = {

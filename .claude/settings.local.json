@@ -8,6 +8,7 @@
       "Bash(git show:*)",
       "Bash(git log:*)",
       "Bash(git grep:*)",
+      "Bash(git mv:*)",
       "Bash(gh api:*)",
       "Bash(gh pr diff:*)",
       "Bash(gh pr view:*)",

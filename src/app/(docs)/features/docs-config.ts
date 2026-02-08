@@ -122,8 +122,8 @@ export const docs: Doc[] = [
     descriptionZh: "AI 访谈工具 vs 多场景研究平台，都使用 AI 模拟用户进行研究",
     descriptionEn:
       "AI interview tool vs multi-scenario research platform, both using AI to simulate users",
-    filePathZh: "docs/product/competitors/ai-products/vs-listen-labs.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-listen-labs.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-listen-labs.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-listen-labs.en.md",
   },
   {
     slug: "atypica-vs-claude-projects",
@@ -133,8 +133,8 @@ export const docs: Doc[] = [
     descriptionZh: "通用知识助手 vs 商业研究智能体，同样基于 Claude 但定位不同",
     descriptionEn:
       "General knowledge assistant vs business research agent, both built on Claude but different positioning",
-    filePathZh: "docs/product/competitors/ai-products/vs-claude-projects.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-claude-projects.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-claude-projects.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-claude-projects.en.md",
   },
   {
     slug: "atypica-vs-usertesting",
@@ -143,8 +143,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "真人测试平台 vs AI 研究加速器，节省 80-85% 成本",
     descriptionEn: "Real human testing platform vs AI research accelerator, save 80-85% cost",
-    filePathZh: "docs/product/competitors/ai-products/vs-usertesting-2.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-usertesting-2.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-usertesting.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-usertesting.en.md",
   },
   {
     slug: "atypica-vs-surveymonkey",
@@ -154,8 +154,8 @@ export const docs: Doc[] = [
     descriptionZh: "量化问卷调研 vs 质性对话研究，理解'为什么' vs '多少人'",
     descriptionEn:
       "Quantitative survey research vs qualitative conversational research, 'why' vs 'how many'",
-    filePathZh: "docs/product/competitors/ai-products/vs-surveymonkey.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-surveymonkey.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-surveymonkey.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-surveymonkey.en.md",
   },
   {
     slug: "atypica-vs-notebooklm",
@@ -165,8 +165,8 @@ export const docs: Doc[] = [
     descriptionZh: "文档播客生成 vs 研究+播客平台，被动转化 vs 主动研究",
     descriptionEn:
       "Document-to-podcast generation vs research + podcast platform, passive conversion vs active research",
-    filePathZh: "docs/product/competitors/ai-products/vs-notebooklm.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-notebooklm.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-notebooklm.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-notebooklm.en.md",
   },
   {
     slug: "atypica-vs-otter-ai",
@@ -176,8 +176,8 @@ export const docs: Doc[] = [
     descriptionZh: "会议转录 vs 用户研究，记录'说了什么' vs 理解'为什么'",
     descriptionEn:
       "Meeting transcription vs user research, recording 'what was said' vs understanding 'why'",
-    filePathZh: "docs/product/competitors/ai-products/vs-otter-ai.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-otter-ai.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-otter-ai.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-otter-ai.en.md",
   },
   {
     slug: "atypica-vs-traditional-research",
@@ -186,8 +186,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI 模拟 vs 真人招募，数小时 vs 数周",
     descriptionEn: "AI simulation vs human recruitment, hours vs weeks",
-    filePathZh: "docs/product/competitors/ai-products/vs-traditional-research.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-traditional-research.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-traditional-research.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-traditional-research.en.md",
   },
   {
     slug: "atypica-vs-deepsona",
@@ -196,8 +196,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "全场景用户研究平台 vs 预测性市场研究工具",
     descriptionEn: "Full-scenario research vs predictive modeling",
-    filePathZh: "docs/product/competitors/ai-products/vs-deepsona.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-deepsona.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-deepsona.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-deepsona.en.md",
   },
   {
     slug: "atypica-vs-maze",
@@ -206,8 +206,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "深度洞察和战略 vs 原型测试和热图",
     descriptionEn: "User insights vs product discovery",
-    filePathZh: "docs/product/competitors/ai-products/vs-maze.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-maze.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-maze.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-maze.en.md",
   },
   {
     slug: "atypica-vs-roundtable",
@@ -216,8 +216,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "用户研究平台 vs 问卷防欺诈工具",
     descriptionEn: "User research platform vs survey fraud prevention",
-    filePathZh: "docs/product/competitors/ai-products/vs-roundtable.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-roundtable.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-roundtable.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-roundtable.en.md",
   },
   {
     slug: "atypica-vs-sprig",
@@ -226,8 +226,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "全场景研究 vs 产品体验反馈",
     descriptionEn: "Full-scenario research vs product experience feedback",
-    filePathZh: "docs/product/competitors/ai-products/vs-sprig.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-sprig.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-sprig.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-sprig.en.md",
   },
   {
     slug: "atypica-vs-yabble",
@@ -236,8 +236,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "全场景研究 vs Virtual Audiences问卷",
     descriptionEn: "Full-scenario research vs virtual audiences surveys",
-    filePathZh: "docs/product/competitors/ai-products/vs-yabble.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-yabble.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-yabble.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-yabble.en.md",
   },
   {
     slug: "atypica-vs-persona-panels",
@@ -246,8 +246,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究平台 vs 合成受访者面板",
     descriptionEn: "AI research platform vs synthetic respondent panels",
-    filePathZh: "docs/product/competitors/ai-products/vs-persona-panels.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-persona-panels.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-persona-panels.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-persona-panels.en.md",
   },
   {
     slug: "atypica-vs-perplexity",
@@ -256,8 +256,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "用户研究平台 vs AI深度搜索引擎",
     descriptionEn: "User research platform vs AI deep search engine",
-    filePathZh: "docs/product/competitors/ai-products/vs-perplexity.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-perplexity.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-perplexity.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-perplexity.en.md",
   },
   {
     slug: "atypica-vs-wynter",
@@ -266,8 +266,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "深度用户研究 vs 消息测试",
     descriptionEn: "Deep user research vs message testing",
-    filePathZh: "docs/product/competitors/ai-products/vs-wynter.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-wynter.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-wynter.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-wynter.en.md",
   },
   {
     slug: "atypica-vs-synthetic-research-tools",
@@ -276,8 +276,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "全场景研究 vs 自动化测试",
     descriptionEn: "Full-scenario research vs automated testing",
-    filePathZh: "docs/product/competitors/ai-products/vs-synthetic-research-tools.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-synthetic-research-tools.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-synthetic-research-tools.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-synthetic-research-tools.en.md",
   },
   {
     slug: "atypica-vs-qualtrics",
@@ -286,8 +286,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI用户研究 vs 企业级调研平台",
     descriptionEn: "AI user research vs enterprise research platform",
-    filePathZh: "docs/product/competitors/ai-products/vs-qualtrics.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-qualtrics.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-qualtrics.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-qualtrics.en.md",
   },
   {
     slug: "atypica-vs-delve-ai",
@@ -296,8 +296,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "用户研究平台 vs Persona生成工具",
     descriptionEn: "User research platform vs persona generation tool",
-    filePathZh: "docs/product/competitors/ai-products/vs-delve-ai.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-delve-ai.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-delve-ai.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-delve-ai.en.md",
   },
   {
     slug: "atypica-vs-synthetic-users",
@@ -306,8 +306,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "用户研究 vs 产品测试",
     descriptionEn: "User research vs product testing",
-    filePathZh: "docs/product/competitors/ai-products/vs-synthetic-users.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-synthetic-users.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-synthetic-users.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-synthetic-users.en.md",
   },
   {
     slug: "atypica-vs-user-testing",
@@ -316,8 +316,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "用户研究平台 vs 真人视频测试",
     descriptionEn: "User research platform vs real-person video testing",
-    filePathZh: "docs/product/competitors/ai-products/vs-user-testing.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-user-testing.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-user-testing.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-user-testing.en.md",
   },
   {
     slug: "atypica-vs-ai-persona-tools",
@@ -326,8 +326,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "全场景研究 vs Persona生成器",
     descriptionEn: "Full-scenario research vs persona generators",
-    filePathZh: "docs/product/competitors/ai-products/vs-ai-persona-tools.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-ai-persona-tools.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-ai-persona-tools.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-ai-persona-tools.en.md",
   },
   {
     slug: "atypica-vs-dovetail",
@@ -336,8 +336,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "用户研究平台 vs 洞察管理工具",
     descriptionEn: "User research platform vs insights management tool",
-    filePathZh: "docs/product/competitors/ai-products/vs-dovetail.zh.md",
-    filePathEn: "docs/product/competitors/ai-products/vs-dovetail.en.md",
+    filePathZh: "docs/product/competitors/ai-products/atypica-vs-dovetail.zh.md",
+    filePathEn: "docs/product/competitors/ai-products/atypica-vs-dovetail.en.md",
   },
 
   // Competitor Comparisons - Traditional (12)
@@ -348,8 +348,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 顶级战略咨询",
     descriptionEn: "AI research tool vs top-tier strategy consulting",
-    filePathZh: "docs/product/competitors/traditional/vs-mckinsey.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-mckinsey.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-mckinsey.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-mckinsey.en.md",
   },
   {
     slug: "atypica-vs-bcg",
@@ -358,8 +358,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI用户研究 vs 战略咨询",
     descriptionEn: "AI user research vs strategy consulting",
-    filePathZh: "docs/product/competitors/traditional/vs-bcg.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-bcg.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-bcg.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-bcg.en.md",
   },
   {
     slug: "atypica-vs-bain",
@@ -368,8 +368,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 顶级战略咨询",
     descriptionEn: "AI research tool vs top-tier strategy consulting",
-    filePathZh: "docs/product/competitors/traditional/vs-bain.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-bain.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-bain.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-bain.en.md",
   },
   {
     slug: "atypica-vs-nielsen",
@@ -378,8 +378,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 消费数据巨头",
     descriptionEn: "AI research tool vs consumer data giant",
-    filePathZh: "docs/product/competitors/traditional/vs-nielsen.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-nielsen.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-nielsen.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-nielsen.en.md",
   },
   {
     slug: "atypica-vs-kantar",
@@ -388,8 +388,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 全球洞察巨头",
     descriptionEn: "AI research tool vs global insights giant",
-    filePathZh: "docs/product/competitors/traditional/vs-kantar.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-kantar.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-kantar.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-kantar.en.md",
   },
   {
     slug: "atypica-vs-ipsos",
@@ -398,8 +398,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 全球研究巨头",
     descriptionEn: "AI research tool vs global research giant",
-    filePathZh: "docs/product/competitors/traditional/vs-ipsos.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-ipsos.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-ipsos.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-ipsos.en.md",
   },
   {
     slug: "atypica-vs-gfk",
@@ -408,8 +408,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 德国市场研究巨头",
     descriptionEn: "AI research tool vs German market research giant",
-    filePathZh: "docs/product/competitors/traditional/vs-gfk.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-gfk.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-gfk.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-gfk.en.md",
   },
   {
     slug: "atypica-vs-gartner",
@@ -418,8 +418,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 技术研究分析",
     descriptionEn: "AI research tool vs technology research and analysis",
-    filePathZh: "docs/product/competitors/traditional/vs-gartner.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-gartner.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-gartner.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-gartner.en.md",
   },
   {
     slug: "atypica-vs-forrester",
@@ -428,8 +428,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 技术研究咨询",
     descriptionEn: "AI research tool vs technology research and consulting",
-    filePathZh: "docs/product/competitors/traditional/vs-forrester.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-forrester.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-forrester.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-forrester.en.md",
   },
   {
     slug: "atypica-vs-idc",
@@ -438,8 +438,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs IT市场研究",
     descriptionEn: "AI research tool vs IT market research",
-    filePathZh: "docs/product/competitors/traditional/vs-idc.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-idc.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-idc.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-idc.en.md",
   },
   {
     slug: "atypica-vs-roland-berger",
@@ -448,8 +448,8 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 欧洲战略咨询",
     descriptionEn: "AI research tool vs European strategy consulting",
-    filePathZh: "docs/product/competitors/traditional/vs-roland-berger.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-roland-berger.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-roland-berger.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-roland-berger.en.md",
   },
   {
     slug: "atypica-vs-ctr",
@@ -458,7 +458,7 @@ export const docs: Doc[] = [
     category: "competitor",
     descriptionZh: "AI研究工具 vs 中国媒体测量",
     descriptionEn: "AI research tool vs China media measurement",
-    filePathZh: "docs/product/competitors/traditional/vs-ctr.zh.md",
-    filePathEn: "docs/product/competitors/traditional/vs-ctr.en.md",
+    filePathZh: "docs/product/competitors/traditional/atypica-vs-ctr.zh.md",
+    filePathEn: "docs/product/competitors/traditional/atypica-vs-ctr.en.md",
   },
 ];

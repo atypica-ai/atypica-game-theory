@@ -6,61 +6,67 @@ export const displayCategoryMapping: Record<
   {
     labelZh: string;
     labelEn: string;
-    directories: string[];
   }
 > = {
   research: {
     labelZh: "市场研究",
     labelEn: "Market Research",
-    directories: ["plan-mode", "scout-agent", "memory-system"],
   },
   persona: {
     labelZh: "AI 人设",
     labelEn: "AI Persona",
-    directories: ["ai-persona"],
   },
   interview: {
     labelZh: "访谈项目",
     labelEn: "Interview Project",
-    directories: ["interview-discussion"],
   },
   sage: {
     labelZh: "AI Sage",
     labelEn: "AI Sage",
-    directories: ["sage-system"],
   },
   general: {
     labelZh: "通用",
     labelEn: "General",
-    directories: ["general"],
   },
 };
+
+// Extract display category from file path
+function getDisplayCategoryFromPath(filePath: string): DisplayCategory | null {
+  // Extract directory name from path like "docs/product/faq/research/..."
+  const match = filePath.match(/\/(faq|guides?)\/(research|persona|interview|sage|general)\//);
+  return match ? (match[2] as DisplayCategory) : null;
+}
 
 // Helper functions for FAQ and guides
 export function getDocsByDisplayCategory(
   docs: Doc[],
   displayCategory: DisplayCategory,
 ): Doc[] {
-  const directories = displayCategoryMapping[displayCategory].directories;
-  return docs.filter(
-    (doc) =>
-      (doc.category === "faq" || doc.category === "guide") &&
-      doc.directory &&
-      directories.includes(doc.directory),
-  );
+  return docs.filter((doc) => {
+    if (doc.category !== "faq" && doc.category !== "guide") return false;
+    const category = getDisplayCategoryFromPath(doc.filePathZh || doc.filePathEn);
+    return category === displayCategory;
+  });
 }
 
 export function groupDocsByDisplayCategory(
   docs: Doc[],
   category: "faq" | "guide",
 ): Record<DisplayCategory, Doc[]> {
-  const result = {} as Record<DisplayCategory, Doc[]>;
+  const result = {
+    research: [],
+    persona: [],
+    interview: [],
+    sage: [],
+    general: [],
+  } as Record<DisplayCategory, Doc[]>;
 
-  (Object.keys(displayCategoryMapping) as DisplayCategory[]).forEach((displayCat) => {
-    const directories = displayCategoryMapping[displayCat].directories;
-    result[displayCat] = docs.filter(
-      (doc) => doc.category === category && doc.directory && directories.includes(doc.directory),
-    );
+  docs.forEach((doc) => {
+    if (doc.category !== category) return;
+    const displayCat = getDisplayCategoryFromPath(doc.filePathZh || doc.filePathEn);
+    if (displayCat && result[displayCat]) {
+      result[displayCat].push(doc);
+    }
   });
 
   return result;
