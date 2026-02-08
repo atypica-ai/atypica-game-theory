@@ -1,4 +1,4 @@
-# atypica vs Kantar：AI研究工具 vs 全球洞察巨头
+# atypica vs Kantar
 
 ## 一句话说清区别
 

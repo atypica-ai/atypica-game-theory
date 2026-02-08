@@ -1,4 +1,4 @@
-# atypica vs UserTesting：用户研究平台 vs 真人视频测试
+# atypica vs UserTesting
 
 ## 一句话说清区别
 

@@ -1,4 +1,4 @@
-# atypica vs 索福瑞/CTR：AI研究工具 vs 中国媒体测量
+# atypica vs 索福瑞/CTR
 
 ## 一句话说清区别
 

@@ -1,5 +1,5 @@
-import { docs as featureDocs } from "@/app/(docs)/features/docs-config";
 import { docs as faqDocs } from "@/app/(docs)/faq/docs-config";
+import { docs as featureDocs } from "@/app/(docs)/features/docs-config";
 import { docs as guideDocs } from "@/app/(docs)/guides/docs-config";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
@@ -143,22 +143,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${siteOrigin}/newstudy`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/persona`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/interview`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/sage`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
@@ -208,32 +208,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${siteOrigin}/solutions/startup-owners`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/solutions/product-managers`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/solutions/marketers`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/solutions/influencers`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/solutions/creators`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: `${siteOrigin}/solutions/consultants`,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.7,
     },
     {
@@ -278,40 +278,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const reportRoutes: MetadataRoute.Sitemap = reportResults.map(({ url, updatedAt }) => ({
       url: `${siteOrigin}${url}`,
       lastModified: updatedAt,
-      changeFrequency: "daily",
+      changeFrequency: "monthly",
       priority: 0.6,
     }));
 
     const podcastRoutes: MetadataRoute.Sitemap = podcastEpisodes.map(({ url, updatedAt }) => ({
       url: `${siteOrigin}${url}`,
       lastModified: updatedAt,
-      changeFrequency: "daily",
+      changeFrequency: "monthly",
       priority: 0.6,
     }));
 
     const blogRoutes: MetadataRoute.Sitemap = blogArticles.map(({ slug, lastModified }) => ({
       url: `${siteOrigin}/blog/${slug}`,
       lastModified,
-      changeFrequency: "weekly",
+      changeFrequency: "monthly",
       priority: 0.6,
     }));
 
     // Generate feature, FAQ, and guide doc routes
     const featureRoutes: MetadataRoute.Sitemap = featureDocs.map(({ slug }) => ({
       url: `${siteOrigin}/features/${slug}`,
-      changeFrequency: "weekly",
+      changeFrequency: "monthly",
       priority: 0.6,
     }));
 
     const faqRoutes: MetadataRoute.Sitemap = faqDocs.map(({ slug }) => ({
       url: `${siteOrigin}/faq/${slug}`,
-      changeFrequency: "weekly",
+      changeFrequency: "monthly",
       priority: 0.6,
     }));
 
     const guideRoutes: MetadataRoute.Sitemap = guideDocs.map(({ slug }) => ({
       url: `${siteOrigin}/guides/${slug}`,
-      changeFrequency: "weekly",
+      changeFrequency: "monthly",
       priority: 0.6,
     }));
 

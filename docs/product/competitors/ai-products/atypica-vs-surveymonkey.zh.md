@@ -1,4 +1,4 @@
-# atypica.AI vs SurveyMonkey：AI 对话 vs 问卷调研
+# atypica.AI vs SurveyMonkey
 
 **一句话总结**：SurveyMonkey 设计问卷收集真人填写数据，atypica.AI 用 AI 对话深挖用户动机——SurveyMonkey 是"问卷工具"，atypica.AI 是"对话研究平台"。
 

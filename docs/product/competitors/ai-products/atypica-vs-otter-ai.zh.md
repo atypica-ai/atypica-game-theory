@@ -1,4 +1,4 @@
-# atypica.AI vs Otter.ai：主观洞察 vs 客观记录
+# atypica.AI vs Otter.ai
 
 **一句话总结**：Otter.ai 记录和转录"说了什么"，atypica.AI 理解和分析"为什么这么说"——Otter 是"会议记录员"，atypica.AI 是"用户研究员"。
 

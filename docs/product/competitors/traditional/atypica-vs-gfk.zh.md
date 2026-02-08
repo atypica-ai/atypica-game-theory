@@ -1,4 +1,4 @@
-# atypica vs GfK：AI研究工具 vs 德国市场研究巨头
+# atypica vs GfK
 
 ## 一句话说清区别
 

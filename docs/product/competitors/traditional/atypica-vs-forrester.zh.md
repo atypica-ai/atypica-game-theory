@@ -1,4 +1,4 @@
-# atypica vs Forrester：AI研究工具 vs 技术研究咨询
+# atypica vs Forrester
 
 ## 一句话说清区别
 

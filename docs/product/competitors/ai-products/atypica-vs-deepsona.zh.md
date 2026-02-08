@@ -1,4 +1,4 @@
-# atypica vs Deepsona：全场景研究 vs 预测性建模
+# atypica vs Deepsona
 
 ## 一句话说清区别
 

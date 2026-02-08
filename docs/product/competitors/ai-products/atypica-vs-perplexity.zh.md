@@ -1,4 +1,4 @@
-# atypica vs Perplexity：用户研究平台 vs AI深度搜索引擎
+# atypica vs Perplexity
 
 ## 一句话说清区别
 

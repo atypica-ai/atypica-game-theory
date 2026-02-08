@@ -1,4 +1,4 @@
-# atypica vs Bain：AI研究工具 vs 顶级战略咨询
+# atypica vs Bain
 
 ## 一句话说清区别
 

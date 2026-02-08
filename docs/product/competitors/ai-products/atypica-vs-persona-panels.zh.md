@@ -1,4 +1,4 @@
-# atypica vs PersonaPanels：AI研究平台 vs 合成受访者面板
+# atypica vs PersonaPanels
 
 ## 一句话说清区别
 

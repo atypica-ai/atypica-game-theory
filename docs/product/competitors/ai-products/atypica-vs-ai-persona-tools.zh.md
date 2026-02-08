@@ -1,4 +1,4 @@
-# atypica vs AI Persona工具：全场景研究 vs Persona生成器
+# atypica vs AI Persona工具
 
 ## 一句话说清区别
 

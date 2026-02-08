@@ -1,4 +1,4 @@
-# atypica.AI vs Listen Labs：AI 驱动的用户研究平台对比
+# atypica.AI vs Listen Labs
 
 ## 核心定位差异
 

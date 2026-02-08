@@ -1,4 +1,4 @@
-# atypica vs Maze：用户洞察平台 vs 产品发现平台
+# atypica vs Maze
 
 ## 一句话说清区别
 

@@ -200,6 +200,24 @@ export default function GlobalFooter({ className }: { className?: string }) {
             <h4 className="text-sm font-medium text-foreground">{t("resources")}</h4>
             <div className="space-y-3 text-sm">
               <Link
+                href="/features"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("productDocs")}
+              </Link>
+              <Link
+                href="/faq"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("faq")}
+              </Link>
+              <Link
+                href="/guides"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("userGuides")}
+              </Link>
+              <Link
                 href="/persona-simulation"
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -229,18 +247,6 @@ export default function GlobalFooter({ className }: { className?: string }) {
               >
                 {t("blog")}
               </Link>
-              <Link
-                href="/deck/about"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("overview")}
-              </Link>
-              <Link
-                href="/deck/pitch"
-                className="block text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t("deck")}
-              </Link>
             </div>
           </div>
 
@@ -259,6 +265,18 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 className="block text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t("affiliate")}
+              </Link>
+              <Link
+                href="/deck/about"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("overview")}
+              </Link>
+              <Link
+                href="/deck/pitch"
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("deck")}
               </Link>
               <Link
                 href="/terms"

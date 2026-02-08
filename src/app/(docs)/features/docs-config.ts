@@ -116,7 +116,7 @@ export const docs: Doc[] = [
   // Competitor Comparisons - AI Products (22)
   {
     slug: "atypica-vs-listen-labs",
-    titleZh: "atypica.AI vs Listen Labs：AI 驱动的用户研究平台对比",
+    titleZh: "atypica.AI vs Listen Labs",
     titleEn: "atypica.AI vs Listen Labs",
     category: "competitor",
     descriptionZh: "AI 访谈工具 vs 多场景研究平台，都使用 AI 模拟用户进行研究",
@@ -127,7 +127,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-claude-projects",
-    titleZh: "atypica.AI vs Claude Projects：商业研究智能体 vs 通用知识助手",
+    titleZh: "atypica.AI vs Claude Projects",
     titleEn: "atypica.AI vs Claude Projects",
     category: "competitor",
     descriptionZh: "通用知识助手 vs 商业研究智能体，同样基于 Claude 但定位不同",
@@ -138,7 +138,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-usertesting",
-    titleZh: "atypica.AI vs UserTesting：AI 模拟 vs 真人测试",
+    titleZh: "atypica.AI vs UserTesting",
     titleEn: "atypica.AI vs UserTesting",
     category: "competitor",
     descriptionZh: "真人测试平台 vs AI 研究加速器，节省 80-85% 成本",
@@ -148,7 +148,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-surveymonkey",
-    titleZh: "atypica.AI vs SurveyMonkey：AI 对话 vs 问卷调研",
+    titleZh: "atypica.AI vs SurveyMonkey",
     titleEn: "atypica.AI vs SurveyMonkey",
     category: "competitor",
     descriptionZh: "量化问卷调研 vs 质性对话研究，理解'为什么' vs '多少人'",
@@ -159,7 +159,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-notebooklm",
-    titleZh: "atypica.AI vs NotebookLM：主动研究 vs 被动播客",
+    titleZh: "atypica.AI vs NotebookLM",
     titleEn: "atypica.AI vs NotebookLM",
     category: "competitor",
     descriptionZh: "文档播客生成 vs 研究+播客平台，被动转化 vs 主动研究",
@@ -170,7 +170,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-otter-ai",
-    titleZh: "atypica.AI vs Otter.ai：主观洞察 vs 客观记录",
+    titleZh: "atypica.AI vs Otter.ai",
     titleEn: "atypica.AI vs Otter.ai",
     category: "competitor",
     descriptionZh: "会议转录 vs 用户研究，记录'说了什么' vs 理解'为什么'",
@@ -181,7 +181,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-traditional-research",
-    titleZh: "atypica.AI vs 传统调研公司：全面对比",
+    titleZh: "atypica.AI vs 传统调研公司",
     titleEn: "atypica.AI vs Traditional Research",
     category: "competitor",
     descriptionZh: "AI 模拟 vs 真人招募，数小时 vs 数周",
@@ -191,7 +191,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-deepsona",
-    titleZh: "atypica vs Deepsona：全场景研究 vs 预测性建模",
+    titleZh: "atypica vs Deepsona",
     titleEn: "atypica vs Deepsona",
     category: "competitor",
     descriptionZh: "全场景用户研究平台 vs 预测性市场研究工具",
@@ -201,7 +201,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-maze",
-    titleZh: "atypica vs Maze：用户洞察平台 vs 产品发现平台",
+    titleZh: "atypica vs Maze",
     titleEn: "atypica vs Maze",
     category: "competitor",
     descriptionZh: "深度洞察和战略 vs 原型测试和热图",
@@ -211,7 +211,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-roundtable",
-    titleZh: "atypica vs Roundtable：用户研究平台 vs 问卷防欺诈工具",
+    titleZh: "atypica vs Roundtable",
     titleEn: "atypica vs Roundtable",
     category: "competitor",
     descriptionZh: "用户研究平台 vs 问卷防欺诈工具",
@@ -221,7 +221,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-sprig",
-    titleZh: "atypica vs Sprig：全场景研究 vs 产品体验反馈",
+    titleZh: "atypica vs Sprig",
     titleEn: "atypica vs Sprig",
     category: "competitor",
     descriptionZh: "全场景研究 vs 产品体验反馈",
@@ -231,7 +231,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-yabble",
-    titleZh: "atypica vs Yabble：全场景研究 vs Virtual Audiences问卷",
+    titleZh: "atypica vs Yabble",
     titleEn: "atypica vs Yabble",
     category: "competitor",
     descriptionZh: "全场景研究 vs Virtual Audiences问卷",
@@ -241,7 +241,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-persona-panels",
-    titleZh: "atypica vs PersonaPanels：AI研究平台 vs 合成受访者面板",
+    titleZh: "atypica vs PersonaPanels",
     titleEn: "atypica vs PersonaPanels",
     category: "competitor",
     descriptionZh: "AI研究平台 vs 合成受访者面板",
@@ -251,7 +251,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-perplexity",
-    titleZh: "atypica vs Perplexity：用户研究平台 vs AI深度搜索引擎",
+    titleZh: "atypica vs Perplexity",
     titleEn: "atypica vs Perplexity",
     category: "competitor",
     descriptionZh: "用户研究平台 vs AI深度搜索引擎",
@@ -261,7 +261,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-wynter",
-    titleZh: "atypica vs Wynter：深度用户研究 vs 消息测试",
+    titleZh: "atypica vs Wynter",
     titleEn: "atypica vs Wynter",
     category: "competitor",
     descriptionZh: "深度用户研究 vs 消息测试",
@@ -271,7 +271,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-synthetic-research-tools",
-    titleZh: "atypica vs 合成研究工具：全场景研究 vs 自动化测试",
+    titleZh: "atypica vs 合成研究工具",
     titleEn: "atypica vs Synthetic Research Tools",
     category: "competitor",
     descriptionZh: "全场景研究 vs 自动化测试",
@@ -281,7 +281,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-qualtrics",
-    titleZh: "atypica vs Qualtrics：AI用户研究 vs 企业级调研平台",
+    titleZh: "atypica vs Qualtrics",
     titleEn: "atypica vs Qualtrics",
     category: "competitor",
     descriptionZh: "AI用户研究 vs 企业级调研平台",
@@ -291,7 +291,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-delve-ai",
-    titleZh: "atypica vs Delve AI：用户研究平台 vs Persona生成工具",
+    titleZh: "atypica vs Delve AI",
     titleEn: "atypica vs Delve AI",
     category: "competitor",
     descriptionZh: "用户研究平台 vs Persona生成工具",
@@ -301,7 +301,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-synthetic-users",
-    titleZh: "atypica vs Synthetic Users：用户研究 vs 产品测试",
+    titleZh: "atypica vs Synthetic Users",
     titleEn: "atypica vs Synthetic Users",
     category: "competitor",
     descriptionZh: "用户研究 vs 产品测试",
@@ -311,7 +311,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-user-testing",
-    titleZh: "atypica vs UserTesting：用户研究平台 vs 真人视频测试",
+    titleZh: "atypica vs UserTesting",
     titleEn: "atypica vs UserTesting",
     category: "competitor",
     descriptionZh: "用户研究平台 vs 真人视频测试",
@@ -321,7 +321,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-ai-persona-tools",
-    titleZh: "atypica vs AI Persona工具：全场景研究 vs Persona生成器",
+    titleZh: "atypica vs AI Persona工具",
     titleEn: "atypica vs AI Persona Tools",
     category: "competitor",
     descriptionZh: "全场景研究 vs Persona生成器",
@@ -331,7 +331,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-dovetail",
-    titleZh: "atypica vs Dovetail：用户研究平台 vs 洞察管理工具",
+    titleZh: "atypica vs Dovetail",
     titleEn: "atypica vs Dovetail",
     category: "competitor",
     descriptionZh: "用户研究平台 vs 洞察管理工具",
@@ -343,7 +343,7 @@ export const docs: Doc[] = [
   // Competitor Comparisons - Traditional (12)
   {
     slug: "atypica-vs-mckinsey",
-    titleZh: "atypica vs McKinsey：AI研究工具 vs 顶级战略咨询",
+    titleZh: "atypica vs McKinsey",
     titleEn: "atypica vs McKinsey",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 顶级战略咨询",
@@ -353,7 +353,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-bcg",
-    titleZh: "atypica vs BCG：AI用户研究 vs 战略咨询",
+    titleZh: "atypica vs BCG",
     titleEn: "atypica vs BCG",
     category: "competitor",
     descriptionZh: "AI用户研究 vs 战略咨询",
@@ -363,7 +363,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-bain",
-    titleZh: "atypica vs Bain：AI研究工具 vs 顶级战略咨询",
+    titleZh: "atypica vs Bain",
     titleEn: "atypica vs Bain",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 顶级战略咨询",
@@ -373,7 +373,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-nielsen",
-    titleZh: "atypica vs Nielsen：AI研究工具 vs 消费数据巨头",
+    titleZh: "atypica vs Nielsen",
     titleEn: "atypica vs Nielsen",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 消费数据巨头",
@@ -383,7 +383,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-kantar",
-    titleZh: "atypica vs Kantar：AI研究工具 vs 全球洞察巨头",
+    titleZh: "atypica vs Kantar",
     titleEn: "atypica vs Kantar",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 全球洞察巨头",
@@ -393,7 +393,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-ipsos",
-    titleZh: "atypica vs Ipsos：AI研究工具 vs 全球研究巨头",
+    titleZh: "atypica vs Ipsos",
     titleEn: "atypica vs Ipsos",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 全球研究巨头",
@@ -403,7 +403,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-gfk",
-    titleZh: "atypica vs GfK：AI研究工具 vs 德国市场研究巨头",
+    titleZh: "atypica vs GfK",
     titleEn: "atypica vs GfK",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 德国市场研究巨头",
@@ -413,7 +413,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-gartner",
-    titleZh: "atypica vs Gartner：AI研究工具 vs 技术研究分析",
+    titleZh: "atypica vs Gartner",
     titleEn: "atypica vs Gartner",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 技术研究分析",
@@ -423,7 +423,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-forrester",
-    titleZh: "atypica vs Forrester：AI研究工具 vs 技术研究咨询",
+    titleZh: "atypica vs Forrester",
     titleEn: "atypica vs Forrester",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 技术研究咨询",
@@ -433,7 +433,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-idc",
-    titleZh: "atypica vs IDC：AI研究工具 vs IT市场研究",
+    titleZh: "atypica vs IDC",
     titleEn: "atypica vs IDC",
     category: "competitor",
     descriptionZh: "AI研究工具 vs IT市场研究",
@@ -443,7 +443,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-roland-berger",
-    titleZh: "atypica vs Roland Berger：AI研究工具 vs 欧洲战略咨询",
+    titleZh: "atypica vs Roland Berger",
     titleEn: "atypica vs Roland Berger",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 欧洲战略咨询",
@@ -453,7 +453,7 @@ export const docs: Doc[] = [
   },
   {
     slug: "atypica-vs-ctr",
-    titleZh: "atypica vs 索福瑞/CTR：AI研究工具 vs 中国媒体测量",
+    titleZh: "atypica vs 索福瑞/CTR",
     titleEn: "atypica vs CTR",
     category: "competitor",
     descriptionZh: "AI研究工具 vs 中国媒体测量",

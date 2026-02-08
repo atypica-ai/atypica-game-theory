@@ -1,4 +1,4 @@
-# atypica vs Wynter：深度用户研究 vs 消息测试
+# atypica vs Wynter
 
 ## 一句话说清区别
 

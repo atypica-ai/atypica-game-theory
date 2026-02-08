@@ -1,4 +1,4 @@
-# atypica vs BCG：AI用户研究 vs 战略咨询
+# atypica vs BCG
 
 ## 一句话说清区别
 

@@ -1,4 +1,4 @@
-# atypica.AI vs UserTesting：AI 模拟 vs 真人测试
+# atypica.AI vs UserTesting
 
 **一句话总结**：UserTesting 招募真人录屏测试产品，atypica.AI 用 AI 人设模拟验证概念——UserTesting 是"真人测试平台"，atypica.AI 是"AI 研究加速器"。
 

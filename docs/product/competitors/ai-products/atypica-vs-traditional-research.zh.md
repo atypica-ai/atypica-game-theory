@@ -1,4 +1,4 @@
-# atypica.AI vs 传统调研公司：全面对比
+# atypica.AI vs 传统调研公司
 
 ## 核心定位差异
 

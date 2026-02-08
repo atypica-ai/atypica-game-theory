@@ -1,4 +1,4 @@
-# atypica vs Qualtrics：AI用户研究 vs 企业级调研平台
+# atypica vs Qualtrics
 
 ## 一句话说清区别
 

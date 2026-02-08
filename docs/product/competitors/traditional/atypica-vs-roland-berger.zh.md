@@ -1,4 +1,4 @@
-# atypica vs Roland Berger：AI研究工具 vs 欧洲战略咨询
+# atypica vs Roland Berger
 
 ## 一句话说清区别
 

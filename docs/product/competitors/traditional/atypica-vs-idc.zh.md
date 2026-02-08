@@ -1,4 +1,4 @@
-# atypica vs IDC：AI研究工具 vs IT市场研究
+# atypica vs IDC
 
 ## 一句话说清区别
 

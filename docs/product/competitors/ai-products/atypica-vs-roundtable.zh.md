@@ -1,4 +1,4 @@
-# atypica vs Roundtable：用户研究平台 vs 问卷防欺诈工具
+# atypica vs Roundtable
 
 ## 一句话说清区别
 

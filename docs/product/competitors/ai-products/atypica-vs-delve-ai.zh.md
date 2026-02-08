@@ -1,4 +1,4 @@
-# atypica vs Delve AI：用户研究平台 vs Persona生成工具
+# atypica vs Delve AI
 
 ## 一句话说清区别
 

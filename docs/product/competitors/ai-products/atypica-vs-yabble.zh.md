@@ -1,4 +1,4 @@
-# atypica vs Yabble：全场景研究 vs Virtual Audiences问卷
+# atypica vs Yabble
 
 ## 一句话说清区别
 

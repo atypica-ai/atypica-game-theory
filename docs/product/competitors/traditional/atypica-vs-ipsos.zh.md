@@ -1,4 +1,4 @@
-# atypica vs Ipsos：AI研究工具 vs 全球研究巨头
+# atypica vs Ipsos
 
 ## 一句话说清区别
 

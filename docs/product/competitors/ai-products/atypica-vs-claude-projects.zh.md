@@ -1,4 +1,4 @@
-# atypica.AI vs Claude Projects：商业研究智能体 vs 通用知识助手
+# atypica.AI vs Claude Projects
 
 **一句话总结**：Claude Projects 是通用文档对话工具，atypica.AI 是专为商业研究设计的多智能体系统——如果说 Projects 是"智能文件夹"，atypica.AI 就是"数字研究团队"。
 

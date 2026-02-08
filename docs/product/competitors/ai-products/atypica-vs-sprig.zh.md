@@ -1,4 +1,4 @@
-# atypica vs Sprig：全场景研究 vs 产品体验反馈
+# atypica vs Sprig
 
 ## 一句话说清区别
 

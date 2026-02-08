@@ -15,7 +15,7 @@ export interface Doc {
 
 export const categoryLabels: Record<DocCategory, { zh: string; en: string }> = {
   feature: { zh: "功能特性", en: "Features" },
-  competitor: { zh: "竞品对比", en: "Competitors" },
+  competitor: { zh: "产品对比", en: "Comparisons" },
   faq: { zh: "常见问题", en: "FAQ" },
   guide: { zh: "使用指南", en: "Guides" },
 };

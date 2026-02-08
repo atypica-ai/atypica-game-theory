@@ -1,4 +1,4 @@
-# atypica vs Synthetic Users：用户研究 vs 产品测试
+# atypica vs Synthetic Users
 
 ## 一句话说清区别
 

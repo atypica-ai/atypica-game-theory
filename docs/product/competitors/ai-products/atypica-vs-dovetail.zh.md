@@ -1,4 +1,4 @@
-# atypica vs Dovetail：用户研究平台 vs 洞察管理工具
+# atypica vs Dovetail
 
 ## 一句话说清区别
 

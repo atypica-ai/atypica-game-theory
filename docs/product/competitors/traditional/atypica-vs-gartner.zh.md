@@ -1,4 +1,4 @@
-# atypica vs Gartner：AI研究工具 vs 技术研究分析
+# atypica vs Gartner
 
 ## 一句话说清区别
 

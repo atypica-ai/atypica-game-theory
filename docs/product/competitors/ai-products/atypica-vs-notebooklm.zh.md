@@ -1,4 +1,4 @@
-# atypica.AI vs NotebookLM：主动研究 vs 被动播客
+# atypica.AI vs NotebookLM
 
 **一句话总结**：NotebookLM 将"已有文档"自动生成播客，atypica.AI 从"研究需求"到"播客内容"全流程自动化——NotebookLM 是"播客生成器"，atypica.AI 是"研究+播客平台"。
 

@@ -1,4 +1,4 @@
-# atypica vs Nielsen：AI研究工具 vs 消费数据巨头
+# atypica vs Nielsen
 
 ## 一句话说清区别
 
