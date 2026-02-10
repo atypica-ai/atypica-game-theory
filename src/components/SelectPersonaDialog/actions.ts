@@ -1,6 +1,7 @@
 "use server";
 import { createTextEmbedding } from "@/ai/embedding";
 import authOptions from "@/app/(auth)/authOptions";
+import { searchPersonas as searchPersonasFromMeili } from "@/app/(search)/lib/queries";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Persona } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
@@ -14,7 +15,194 @@ type TPersona = Pick<Persona, "name" | "source" | "prompt" | "tier"> & {
   tags: string[];
 };
 
-export async function fetchPersonas({
+export async function fetchPersonasWithMeili({
+  locale,
+  searchQuery,
+  page = 1,
+  pageSize = 12,
+  mode = "public",
+}: {
+  locale?: Locale;
+  searchQuery?: string;
+  page?: number;
+  pageSize?: number;
+  mode?: "public" | "private";
+} = {}): Promise<ServerActionResult<TPersona[]>> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    forbidden();
+  }
+
+  locale = locale || (await getLocale());
+  const skip = (page - 1) * pageSize;
+
+  if (mode === "private") {
+    // Private mode: tier 3, user-created personas, no search
+    const where = {
+      tier: { in: [3] },
+      locale,
+      personaImport: {
+        userId: session.user.id,
+      },
+    };
+
+    const [personas, totalCount] = await Promise.all([
+      prismaRO.persona.findMany({
+        where,
+        orderBy: {
+          id: "desc",
+        },
+        select: {
+          token: true,
+          name: true,
+          source: true,
+          prompt: true,
+          tags: true,
+          tier: true,
+        },
+        skip,
+        take: pageSize,
+      }),
+      prismaRO.persona.count({ where }),
+    ]);
+
+    return {
+      success: true,
+      data: personas.map(({ token, tags, ...persona }) => {
+        return {
+          ...persona,
+          token: token,
+          tags: tags as string[],
+        };
+      }),
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+    };
+  }
+
+  // Public mode: tier 1,2 personas with search support
+  if (searchQuery && searchQuery.trim()) {
+    try {
+      // Use Meilisearch for full-text search
+      const searchResults = await searchPersonasFromMeili({
+        query: searchQuery,
+        tiers: [1, 2],
+        locales: [locale],
+        page,
+        pageSize,
+      });
+
+      // Extract persona IDs from slugs
+      const personaIds = searchResults.hits
+        .map((hit) => {
+          const match = hit.slug.match(/^persona-(\d+)$/);
+          return match ? parseInt(match[1], 10) : 0;
+        })
+        .filter((id) => id > 0);
+
+      if (personaIds.length === 0) {
+        return {
+          success: true,
+          data: [],
+          pagination: {
+            page,
+            pageSize,
+            totalCount: 0,
+            totalPages: 0,
+          },
+        };
+      }
+
+      // Query database for full persona data
+      const personas = await prismaRO.persona.findMany({
+        where: { id: { in: personaIds } },
+        select: {
+          token: true,
+          name: true,
+          source: true,
+          prompt: true,
+          tags: true,
+          tier: true,
+        },
+      });
+
+      // Maintain Meilisearch order
+      const personaMap = new Map(personas.map((p) => [p.token, p]));
+      const orderedPersonas = personaIds
+        .map((id) => personaMap.get(`persona-${id}`))
+        .filter(Boolean) as typeof personas;
+
+      return {
+        success: true,
+        data: orderedPersonas.map((persona) => ({
+          ...persona,
+          tags: persona.tags as string[],
+        })),
+        pagination: {
+          page,
+          pageSize,
+          totalCount: searchResults.totalHits,
+          totalPages: searchResults.totalPages,
+        },
+      };
+    } catch (error) {
+      console.log(`Meilisearch search error: ${(error as Error).message}`);
+      return {
+        success: false,
+        message: "Persona search error",
+      };
+    }
+  }
+
+  const where = {
+    tier: { in: [1, 2] },
+    locale,
+  };
+  // Regular search (no query or fallback from vector search error)
+  const [personas, totalCount] = await Promise.all([
+    prismaRO.persona.findMany({
+      where,
+      orderBy: {
+        id: "desc",
+      },
+      select: {
+        token: true,
+        name: true,
+        source: true,
+        prompt: true,
+        tags: true,
+        tier: true,
+      },
+      skip,
+      take: pageSize,
+    }),
+    prismaRO.persona.count({ where }),
+  ]);
+
+  return {
+    success: true,
+    data: personas.map(({ token, tags, ...persona }) => {
+      return {
+        ...persona,
+        token: token,
+        tags: tags as string[],
+      };
+    }),
+    pagination: {
+      page,
+      pageSize,
+      totalCount,
+      totalPages: Math.ceil(totalCount / pageSize),
+    },
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function fetchPersonasWithEmbedding({
   locale,
   searchQuery,
   page = 1,

@@ -1,10 +1,10 @@
 import "server-only";
 
-import { createTextEmbedding } from "@/ai/embedding";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { reasoningPrologue, reasoningSystem } from "@/ai/tools/experts/reasoningThinking/prompt";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { searchPersonas as searchPersonasFromMeili } from "@/app/(search)/lib/queries";
 import { prismaRO } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { streamText, tool, UserModelMessage } from "ai";
@@ -151,20 +151,53 @@ export const audienceCallTool = (toolCallConfigArgs: AgentToolConfigArgs) =>
   });
 
 async function searchPersonas(locale: Locale, searchQuery: string) {
-  const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
-  const personas = await prismaRO.$queryRaw<TPersonaForStudy[]>`
-SELECT
-  "id" as "personaId",
-  "name",
-  "source",
-  "tags",
-  "prompt"
-FROM "Persona"
-WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
-  AND locale = ${locale}
-  AND tier in (1, 2)
-ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
-LIMIT 5
-`;
-  return { searchQuery, personas };
+  // Use Meilisearch for full-text search
+  const searchResults = await searchPersonasFromMeili({
+    query: searchQuery,
+    tiers: [1, 2],
+    locales: [locale],
+    pageSize: 5,
+  });
+
+  // Extract persona IDs from slugs
+  const personaIds = searchResults.hits
+    .map((hit) => {
+      const match = hit.slug.match(/^persona-(\d+)$/);
+      return match ? parseInt(match[1], 10) : 0;
+    })
+    .filter((id) => id > 0);
+
+  if (personaIds.length === 0) {
+    return { searchQuery, personas: [] };
+  }
+
+  // Query database for full persona data
+  const personas = await prismaRO.persona
+    .findMany({
+      where: { id: { in: personaIds } },
+      select: {
+        id: true,
+        name: true,
+        source: true,
+        tags: true,
+        prompt: true,
+      },
+    })
+    .then((results) =>
+      results.map((p) => ({
+        personaId: p.id,
+        name: p.name,
+        source: p.source,
+        tags: p.tags as string[],
+        prompt: p.prompt,
+      })),
+    );
+
+  // Maintain Meilisearch order
+  const personaMap = new Map(personas.map((p) => [p.personaId, p]));
+  const orderedPersonas = personaIds
+    .map((id) => personaMap.get(id))
+    .filter(Boolean) as TPersonaForStudy[];
+
+  return { searchQuery, personas: orderedPersonas };
 }

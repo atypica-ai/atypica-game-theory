@@ -15,9 +15,9 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { BotIcon, EyeIcon, Loader2Icon, SearchIcon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { fetchPersonas } from "./actions";
+import { fetchPersonasWithMeili } from "./actions";
 
-type TPersona = ExtractServerActionData<typeof fetchPersonas>[number];
+type TPersona = ExtractServerActionData<typeof fetchPersonasWithMeili>[number];
 
 export function SelectPersonaDialog({
   open,
@@ -47,7 +47,7 @@ export function SelectPersonaDialog({
     async (page: number, search = "") => {
       setLoading(true);
       try {
-        const result = await fetchPersonas({ locale, searchQuery: search, page, mode });
+        const result = await fetchPersonasWithMeili({ locale, searchQuery: search, page, mode });
         if (!result.success) throw result;
         setPersonas(result.data);
         if (result.pagination) {

@@ -89,119 +89,65 @@ export async function searchPersonasInToolWithMeili({
   usePrivatePersonas: boolean;
 }) {
   try {
-    let personas = [] as TPersonaForStudy[];
-
-    if (usePrivatePersonas) {
-      // Search user's own personas
-      const userPersonaIds = (
-        await prismaRO.persona.findMany({
-          where: { personaImport: { userId } },
-          select: { id: true },
+    // Get search results from Meilisearch
+    const searchResults = usePrivatePersonas
+      ? await searchPersonasFromMeili({
+          query: searchQuery,
+          userId: userId,
+          pageSize: 5,
         })
-      ).map(({ id }) => id);
+      : await searchPersonasFromMeili({
+          query: searchQuery,
+          tiers: [1, 2],
+          locales: [locale],
+          pageSize: 5,
+        });
 
-      if (userPersonaIds.length === 0) {
-        return { searchQuery, personas: [] };
-      }
+    // Extract persona IDs from slugs
+    const personaIds = searchResults.hits
+      .map((hit) => {
+        const match = hit.slug.match(/^persona-(\d+)$/);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+      .filter((id) => id > 0);
 
-      // Use Meilisearch for full-text search
-      const searchResults = await searchPersonasFromMeili({
-        query: searchQuery,
-        pageSize: 20, // Get more to filter by user's personas
-      });
-
-      // Extract persona IDs from Meilisearch results
-      const allPersonaIds = searchResults.hits
-        .map((hit) => {
-          const match = hit.slug.match(/^persona-(\d+)$/);
-          return match ? parseInt(match[1], 10) : 0;
-        })
-        .filter((id) => id > 0);
-
-      // Filter to only user's personas and limit to 5
-      const filteredIds = allPersonaIds.filter((id) => userPersonaIds.includes(id)).slice(0, 5);
-
-      if (filteredIds.length === 0) {
-        return { searchQuery, personas: [] };
-      }
-
-      // Query database for full persona data
-      personas = await prismaRO.persona
-        .findMany({
-          where: { id: { in: filteredIds } },
-          select: {
-            id: true,
-            name: true,
-            source: true,
-            tags: true,
-          },
-        })
-        .then((results) =>
-          results.map((p) => ({
-            personaId: p.id,
-            name: p.name,
-            source: p.source,
-            tags: p.tags as string[],
-          })),
-        );
-
-      // Maintain Meilisearch order
-      const personaMap = new Map(personas.map((p) => [p.personaId, p]));
-      personas = filteredIds.map((id) => personaMap.get(id)).filter(Boolean) as TPersonaForStudy[];
-    } else {
-      // Search public personas (tier 1, 2)
-      const searchResults = await searchPersonasFromMeili({
-        query: searchQuery,
-        tiers: [1, 2],
-        locales: [locale],
-        pageSize: 5,
-      });
-
-      // Extract persona IDs from slugs
-      const personaIds = searchResults.hits
-        .map((hit) => {
-          const match = hit.slug.match(/^persona-(\d+)$/);
-          return match ? parseInt(match[1], 10) : 0;
-        })
-        .filter((id) => id > 0);
-
-      if (personaIds.length === 0) {
-        return { searchQuery, personas: [] };
-      }
-
-      // Query database for full persona data
-      personas = await prismaRO.persona
-        .findMany({
-          where: { id: { in: personaIds } },
-          select: {
-            id: true,
-            name: true,
-            source: true,
-            tags: true,
-          },
-        })
-        .then((results) =>
-          results.map((p) => ({
-            personaId: p.id,
-            name: p.name,
-            source: p.source,
-            tags: p.tags as string[],
-          })),
-        );
-
-      // Maintain Meilisearch order
-      const personaMap = new Map(personas.map((p) => [p.personaId, p]));
-      personas = personaIds.map((id) => personaMap.get(id)).filter(Boolean) as TPersonaForStudy[];
+    if (personaIds.length === 0) {
+      return { searchQuery, personas: [] };
     }
 
-    return { searchQuery, personas };
+    // Query database for full persona data
+    const personas = await prismaRO.persona
+      .findMany({
+        where: { id: { in: personaIds } },
+        select: {
+          id: true,
+          name: true,
+          source: true,
+          tags: true,
+        },
+      })
+      .then((results) =>
+        results.map((p) => ({
+          personaId: p.id,
+          name: p.name,
+          source: p.source,
+          tags: p.tags as string[],
+        })),
+      );
+
+    // Maintain Meilisearch order
+    const personaMap = new Map(personas.map((p) => [p.personaId, p]));
+    const orderedPersonas = personaIds
+      .map((id) => personaMap.get(id))
+      .filter(Boolean) as TPersonaForStudy[];
+
+    return { searchQuery, personas: orderedPersonas };
   } catch (error) {
     logger.error(`Error searching personas with query "${searchQuery}": ${error}`);
     return { searchQuery, personas: [] };
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function searchPersonasInToolWithEmbedding({
   locale,
   searchQuery,

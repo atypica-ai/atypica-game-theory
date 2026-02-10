@@ -45,7 +45,6 @@ type TPersonaWithImport = TPersona & {
 /**
  * Admin-only fetchAdminPersonas with tier and locale filtering
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function fetchAdminPersonasWithEmbedding({
   locales,
   tiers,
