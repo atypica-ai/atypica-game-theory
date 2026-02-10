@@ -5,11 +5,13 @@ import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { reportHTMLPrologue, reportHTMLSystem } from "./prompt";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
+import { syncReport } from "@/app/(search)/lib/sync";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { FinishReason, ModelMessage, stepCountIs, streamText, tool } from "ai";
 import { promises as fs } from "fs";
 import { getReportCacheDir, getReportCacheFilePath } from "../../artifacts/lib/reportCache";
@@ -228,6 +230,17 @@ export const generateReportTool = ({
         //   reportLogger.error(`Error generating cover for analyst ${analystId}: ${error}`); // cover 生成失败就算了
         // }),
       ]);
+
+      // 异步同步到 Meilisearch
+      waitUntil(
+        syncReport(report.id).catch((error) => {
+          reportLogger.error({
+            msg: "Failed to sync report to search",
+            reportId: report.id,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }),
+      );
 
       return {
         reportToken: report.token,

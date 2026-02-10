@@ -3,11 +3,13 @@ import "server-only";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { PodcastKind } from "@/app/(podcast)/types";
+import { syncPodcast } from "@/app/(search)/lib/sync";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { AnalystKind, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { tool } from "ai";
 import {
   generatePodcastInputSchema,
@@ -133,6 +135,17 @@ export const generatePodcastTool = ({
           podcastTokens: Array.from(new Set([...existingTokens, podcast.token])),
         },
       });
+
+      // 异步同步到 Meilisearch
+      waitUntil(
+        syncPodcast(podcast.id).catch((error) => {
+          logger.error({
+            msg: "Failed to sync podcast to search",
+            podcastId: podcast.id,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }),
+      );
 
       return {
         podcastToken: podcast.token,

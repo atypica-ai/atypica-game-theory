@@ -1,6 +1,7 @@
 "use server";
 import { generatePodcastCoverImage } from "@/app/(podcast)/lib/coverImage";
 import { generatePodcastMetadata } from "@/app/(podcast)/lib/generation";
+import { searchArtifacts } from "@/app/(search)/lib/queries";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
@@ -19,6 +20,28 @@ import { prisma, prismaRO } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { waitUntil } from "@vercel/functions";
 import { revalidatePath, revalidateTag } from "next/cache";
+
+/**
+ * 判断是否是 token（16位字母数字）
+ */
+function isToken(query: string): boolean {
+  return /^[a-zA-Z0-9]{16}$/.test(query);
+}
+
+/**
+ * 判断是否是 email
+ */
+function isEmail(query: string): boolean {
+  return query.includes("@");
+}
+
+/**
+ * 从 slug 提取 ID（格式：podcast-123）
+ */
+function extractIdFromSlug(slug: string): number {
+  const match = slug.match(/^podcast-(\d+)$/);
+  return match ? parseInt(match[1], 10) : 0;
+}
 
 // Get all analyst podcasts with pagination
 export async function fetchAnalystPodcastsAction(
@@ -39,15 +62,69 @@ export async function fetchAnalystPodcastsAction(
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const skip = (page - 1) * pageSize;
-  const where: AnalystPodcastWhereInput = searchQuery
-    ? {
-        OR: [
-          { token: { contains: searchQuery } },
-          { user: { email: { contains: searchQuery } } },
-          // 目前暂时不支持关键词搜索，得改成 raw sql 搜索 extra 中的 title
-        ],
+  let where: AnalystPodcastWhereInput = {};
+  let totalCount = 0;
+  let orderedIds: number[] | null = null; // Meilisearch 返回的有序 IDs
+  let useDatabasePagination = true; // 是否使用数据库分页
+
+  // 搜索逻辑
+  if (searchQuery) {
+    const trimmedQuery = searchQuery.trim();
+
+    if (isToken(trimmedQuery)) {
+      // Token 搜索：精确匹配
+      where = { token: trimmedQuery };
+    } else if (isEmail(trimmedQuery)) {
+      // Email 搜索：精确匹配
+      where = { user: { email: trimmedQuery } };
+    } else if (trimmedQuery) {
+      // 关键词搜索：使用 Meilisearch
+      try {
+        const searchResults = await searchArtifacts({
+          query: trimmedQuery,
+          type: "podcast",
+          page,
+          pageSize,
+        });
+
+        if (searchResults.hits.length === 0) {
+          // Meilisearch 无结果，返回空
+          return {
+            success: true,
+            data: [],
+            pagination: {
+              page,
+              pageSize,
+              totalCount: 0,
+              totalPages: 0,
+            },
+          };
+        }
+
+        // 从 slugs 提取 IDs
+        orderedIds = searchResults.hits.map((hit) => extractIdFromSlug(hit.slug));
+        where = { id: { in: orderedIds } };
+        totalCount = searchResults.totalHits;
+        useDatabasePagination = false; // Meilisearch 已经分页
+      } catch (error) {
+        rootLogger.error({
+          msg: "Meilisearch search failed",
+          error: error instanceof Error ? error.message : String(error),
+        });
+        // Meilisearch 失败，返回空结果
+        return {
+          success: true,
+          data: [],
+          pagination: {
+            page,
+            pageSize,
+            totalCount: 0,
+            totalPages: 0,
+          },
+        };
       }
-    : {};
+    }
+  }
 
   // Get featured podcast IDs if featuredOnly filter is active
   if (featuredOnly) {
@@ -75,7 +152,19 @@ export async function fetchAnalystPodcastsAction(
       };
     }
 
-    where.id = { in: featuredPodcastIds };
+    // Merge with existing where condition
+    if (
+      where.id &&
+      typeof where.id === "object" &&
+      "in" in where.id &&
+      Array.isArray(where.id.in)
+    ) {
+      // If already have IDs from Meilisearch, intersect with featured IDs
+      const existingIds = where.id.in;
+      where.id = { in: existingIds.filter((id) => featuredPodcastIds.includes(id)) };
+    } else {
+      where.id = { in: featuredPodcastIds };
+    }
   }
 
   const analystPodcasts = await prismaRO.analystPodcast.findMany({
@@ -87,15 +176,27 @@ export async function fetchAnalystPodcastsAction(
         },
       },
     },
-    orderBy: { createdAt: "desc" },
-    skip,
-    take: pageSize,
+    orderBy: useDatabasePagination ? { createdAt: "desc" } : undefined,
+    skip: useDatabasePagination ? skip : undefined,
+    take: useDatabasePagination ? pageSize : undefined,
   });
 
-  const totalCount = await prismaRO.analystPodcast.count({ where });
+  // 如果使用数据库分页，需要计算 totalCount
+  if (useDatabasePagination) {
+    totalCount = await prismaRO.analystPodcast.count({ where });
+  }
+
+  // 如果是 Meilisearch 搜索，按照返回的顺序排序
+  let sortedPodcasts = analystPodcasts;
+  if (orderedIds) {
+    const idToPodcast = new Map(analystPodcasts.map((p) => [p.id, p]));
+    sortedPodcasts = orderedIds
+      .map((id) => idToPodcast.get(id))
+      .filter((p): p is (typeof analystPodcasts)[0] => p !== undefined);
+  }
 
   // Check featured status for each podcast and get tags
-  const podcastIds = analystPodcasts.map((p) => p.id);
+  const podcastIds = sortedPodcasts.map((p) => p.id);
   const featuredItems = await prismaRO.featuredItem.findMany({
     where: {
       resourceType: FeaturedItemResourceType.AnalystPodcast,
@@ -114,7 +215,7 @@ export async function fetchAnalystPodcastsAction(
 
   // Get cover CDN URLs for all podcasts
   const podcastsWithCovers = await Promise.all(
-    analystPodcasts.map(async (podcast) => {
+    sortedPodcasts.map(async (podcast) => {
       const extra = podcast.extra as AnalystPodcastExtra;
       const coverObjectUrl = extra?.metadata?.coverObjectUrl;
       const coverCdnHttpUrl = coverObjectUrl ? await getS3SignedCdnUrl(coverObjectUrl) : undefined;

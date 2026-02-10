@@ -2,6 +2,7 @@
 import { generateReportCoverImage } from "@/app/(study)/tools/generateReport/coverImage";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 // import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
+import { searchArtifacts } from "@/app/(search)/lib/queries";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
@@ -19,6 +20,28 @@ import { AnalystReportWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { revalidatePath, revalidateTag } from "next/cache";
+
+/**
+ * 判断是否是 token（16位字母数字）
+ */
+function isToken(query: string): boolean {
+  return /^[a-zA-Z0-9]{16}$/.test(query);
+}
+
+/**
+ * 判断是否是 email
+ */
+function isEmail(query: string): boolean {
+  return query.includes("@");
+}
+
+/**
+ * 从 slug 提取 ID（格式：report-123）
+ */
+function extractIdFromSlug(slug: string): number {
+  const match = slug.match(/^report-(\d+)$/);
+  return match ? parseInt(match[1], 10) : 0;
+}
 
 // Get all analyst reports with pagination
 export async function fetchAnalystReportsAction(
@@ -39,15 +62,69 @@ export async function fetchAnalystReportsAction(
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const skip = (page - 1) * pageSize;
-  const where: AnalystReportWhereInput = searchQuery
-    ? {
-        OR: [
-          { token: { contains: searchQuery } },
-          { user: { email: { contains: searchQuery } } },
-          // 目前暂时不支持关键词搜索，得改成 raw sql 搜索 extra 中的 title
-        ],
+  let where: AnalystReportWhereInput = {};
+  let totalCount = 0;
+  let orderedIds: number[] | null = null; // Meilisearch 返回的有序 IDs
+  let useDatabasePagination = true; // 是否使用数据库分页
+
+  // 搜索逻辑
+  if (searchQuery) {
+    const trimmedQuery = searchQuery.trim();
+
+    if (isToken(trimmedQuery)) {
+      // Token 搜索：精确匹配
+      where = { token: trimmedQuery };
+    } else if (isEmail(trimmedQuery)) {
+      // Email 搜索：精确匹配
+      where = { user: { email: trimmedQuery } };
+    } else if (trimmedQuery) {
+      // 关键词搜索：使用 Meilisearch
+      try {
+        const searchResults = await searchArtifacts({
+          query: trimmedQuery,
+          type: "report",
+          page,
+          pageSize,
+        });
+
+        if (searchResults.hits.length === 0) {
+          // Meilisearch 无结果，返回空
+          return {
+            success: true,
+            data: [],
+            pagination: {
+              page,
+              pageSize,
+              totalCount: 0,
+              totalPages: 0,
+            },
+          };
+        }
+
+        // 从 slugs 提取 IDs
+        orderedIds = searchResults.hits.map((hit) => extractIdFromSlug(hit.slug));
+        where = { id: { in: orderedIds } };
+        totalCount = searchResults.totalHits;
+        useDatabasePagination = false; // Meilisearch 已经分页
+      } catch (error) {
+        rootLogger.error({
+          msg: "Meilisearch search failed",
+          error: error instanceof Error ? error.message : String(error),
+        });
+        // Meilisearch 失败，返回空结果
+        return {
+          success: true,
+          data: [],
+          pagination: {
+            page,
+            pageSize,
+            totalCount: 0,
+            totalPages: 0,
+          },
+        };
       }
-    : {};
+    }
+  }
 
   // Get featured report IDs if featuredOnly filter is active
   if (featuredOnly) {
@@ -75,7 +152,19 @@ export async function fetchAnalystReportsAction(
       };
     }
 
-    where.id = { in: featuredReportIds };
+    // Merge with existing where condition
+    if (
+      where.id &&
+      typeof where.id === "object" &&
+      "in" in where.id &&
+      Array.isArray(where.id.in)
+    ) {
+      // If already have IDs from Meilisearch, intersect with featured IDs
+      const existingIds = where.id.in;
+      where.id = { in: existingIds.filter((id) => featuredReportIds.includes(id)) };
+    } else {
+      where.id = { in: featuredReportIds };
+    }
   }
 
   const analystReports = await prismaRO.analystReport.findMany({
@@ -87,15 +176,27 @@ export async function fetchAnalystReportsAction(
         },
       },
     },
-    orderBy: { createdAt: "desc" },
-    skip,
-    take: pageSize,
+    orderBy: useDatabasePagination ? { createdAt: "desc" } : undefined,
+    skip: useDatabasePagination ? skip : undefined,
+    take: useDatabasePagination ? pageSize : undefined,
   });
 
-  const totalCount = await prismaRO.analystReport.count({ where });
+  // 如果使用数据库分页，需要计算 totalCount
+  if (useDatabasePagination) {
+    totalCount = await prismaRO.analystReport.count({ where });
+  }
+
+  // 如果是 Meilisearch 搜索，按照返回的顺序排序
+  let sortedReports = analystReports;
+  if (orderedIds) {
+    const idToReport = new Map(analystReports.map((r) => [r.id, r]));
+    sortedReports = orderedIds
+      .map((id) => idToReport.get(id))
+      .filter((r): r is (typeof analystReports)[0] => r !== undefined);
+  }
 
   // Check featured status for each report and get tags
-  const reportIds = analystReports.map((r) => r.id);
+  const reportIds = sortedReports.map((r) => r.id);
   const featuredItems = await prismaRO.featuredItem.findMany({
     where: {
       resourceType: FeaturedItemResourceType.AnalystReport,
@@ -114,7 +215,7 @@ export async function fetchAnalystReportsAction(
 
   // Generate cover URLs for reports that have coverObjectUrl
   const reportsWithCoverUrls = await Promise.all(
-    analystReports.map(async (report) => {
+    sortedReports.map(async (report) => {
       const objectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
       const featuredInfo = featuredItemsMap.get(report.id);
       if (objectUrl) {
