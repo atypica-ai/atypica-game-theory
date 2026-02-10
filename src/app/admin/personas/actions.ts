@@ -3,12 +3,12 @@
 import { createTextEmbedding } from "@/ai/embedding";
 import { scorePersona } from "@/app/(persona)/lib";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
-import { searchPersonas as searchPersonasFromMeili } from "@/app/(search)/lib/queries";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
+import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 
 type TPersona = Pick<Persona, "name" | "source" | "prompt" | "locale" | "tier"> & {
   token: string;

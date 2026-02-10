@@ -38,8 +38,8 @@ export async function syncAllArtifacts(options?: {
   reportsCount: number;
   podcastsCount: number;
 }> {
-  const { podcastToDocument, reportToDocument } = await import("@/app/(search)/lib/sync");
-  const { INDEXES, meilisearchClient } = await import("@/app/(search)/lib/client");
+  const { podcastToDocument, reportToDocument } = await import("@/search/lib/sync");
+  const { INDEXES, meilisearchClient } = await import("@/search/lib/client");
   const { prismaRO } = await import("@/prisma/prisma");
 
   const {
@@ -320,8 +320,8 @@ export async function syncAllPersonas(options?: {
 }): Promise<{
   count: number;
 }> {
-  const { personaToDocument } = await import("@/app/(search)/lib/sync");
-  const { INDEXES, meilisearchClient } = await import("@/app/(search)/lib/client");
+  const { personaToDocument } = await import("@/search/lib/sync");
+  const { INDEXES, meilisearchClient } = await import("@/search/lib/client");
   const { prismaRO } = await import("@/prisma/prisma");
 
   const { filter, limit, startFromPersonaId } = options || {};
@@ -535,8 +535,7 @@ function parseArgs(args: string[]): {
 async function main() {
   loadEnvConfig(process.cwd());
 
-  const { initializeArtifactsIndex, initializePersonasIndex } =
-    await import("@/app/(search)/lib/client");
+  const { initializeArtifactsIndex, initializePersonasIndex } = await import("@/search/lib/client");
 
   const command = process.argv[2];
 

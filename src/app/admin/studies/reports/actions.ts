@@ -2,8 +2,6 @@
 import { generateReportCoverImage } from "@/app/(study)/tools/generateReport/coverImage";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 // import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
-import { searchArtifacts as searchArtifactsFromMeili } from "@/app/(search)/lib/queries";
-import { syncReport as syncReportToMeili } from "@/app/(search)/lib/sync";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
@@ -19,6 +17,8 @@ import {
 } from "@/prisma/client";
 import { AnalystReportWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
+import { searchArtifacts as searchArtifactsFromMeili } from "@/search/lib/queries";
+import { syncReport as syncReportToMeili } from "@/search/lib/sync";
 import { waitUntil } from "@vercel/functions";
 import { revalidatePath, revalidateTag } from "next/cache";
 

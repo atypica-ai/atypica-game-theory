@@ -1,10 +1,10 @@
 "use server";
 import { createTextEmbedding } from "@/ai/embedding";
 import authOptions from "@/app/(auth)/authOptions";
-import { searchPersonas as searchPersonasFromMeili } from "@/app/(search)/lib/queries";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Persona } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
+import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { getServerSession } from "next-auth";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";

@@ -137,7 +137,7 @@ pnpm tsx scripts/admin/search-management.ts sync-personas
 ## 文件结构
 
 ```
-(search)/
+search/
 ├── README.md       # 本文档
 ├── actions.ts      # Server Actions
 ├── types.ts        # 类型定义

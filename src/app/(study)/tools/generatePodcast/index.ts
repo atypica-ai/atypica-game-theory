@@ -3,12 +3,12 @@ import "server-only";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { PodcastKind } from "@/app/(podcast)/types";
-import { syncPodcast as syncPodcastToMeili } from "@/app/(search)/lib/sync";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { AnalystKind, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { syncPodcast as syncPodcastToMeili } from "@/search/lib/sync";
 import { waitUntil } from "@vercel/functions";
 import { tool } from "ai";
 import {

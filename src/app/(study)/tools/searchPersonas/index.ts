@@ -2,8 +2,8 @@ import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
-import { searchPersonas as searchPersonasFromMeili } from "@/app/(search)/lib/queries";
 import { prismaRO } from "@/prisma/prisma";
+import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { tool } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";

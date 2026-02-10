@@ -2,11 +2,11 @@ import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { syncPersona as syncPersonaToMeili } from "@/app/(search)/lib/sync";
 import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
 import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { syncPersona as syncPersonaToMeili } from "@/search/lib/sync";
 import { waitUntil } from "@vercel/functions";
 import { generateObject, UserModelMessage } from "ai";
 import { Locale } from "next-intl";
