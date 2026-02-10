@@ -51,3 +51,47 @@ export interface ArtifactsSearchResult {
   totalPages: number;
   totalHits: number;
 }
+
+/**
+ * Meilisearch 中的 Persona 文档结构
+ * 只存储搜索必需的字段，完整数据从数据库查询
+ */
+export interface PersonaDocument {
+  slug: string; // "persona-{id}" 格式，用作主键
+
+  // 搜索字段
+  name: string;
+  tags: string[];
+  prompt: string;
+
+  // 过滤字段
+  tier: number;
+  locale: string;
+
+  // 排序字段
+  createdAt: number; // Unix timestamp
+}
+
+/**
+ * Personas 搜索参数
+ */
+export interface PersonasSearchParams {
+  query: string;
+  tiers?: number[];
+  locales?: string[];
+  page?: number;
+  pageSize?: number;
+}
+
+/**
+ * Personas 搜索结果
+ */
+export interface PersonasSearchResult {
+  hits: PersonaDocument[];
+  query: string;
+  processingTimeMs: number;
+  hitsPerPage: number;
+  page: number;
+  totalPages: number;
+  totalHits: number;
+}

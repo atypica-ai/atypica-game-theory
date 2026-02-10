@@ -7,9 +7,10 @@ import {
   AnalystReport,
   AnalystReportExtra,
   FeaturedItemResourceType,
+  Persona,
 } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
-import { ArtifactDocument, ArtifactType } from "../types";
+import { ArtifactDocument, ArtifactType, PersonaDocument } from "../types";
 import { INDEXES, meilisearchClient } from "./client";
 
 const logger = rootLogger.child({ module: "search-sync" });
@@ -165,6 +166,83 @@ export async function deleteArtifact(type: ArtifactType, id: number): Promise<vo
     logger.error({
       msg: "Failed to delete artifact",
       type,
+      id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+
+/**
+ * 将 Persona 转换为搜索文档
+ * 只包含搜索必需的字段
+ */
+export function personaToDocument(persona: Persona): PersonaDocument {
+  return {
+    slug: `persona-${persona.id}`,
+
+    name: persona.name,
+    tags: persona.tags as string[],
+    prompt: persona.prompt,
+
+    tier: persona.tier,
+    locale: persona.locale || "",
+
+    createdAt: persona.createdAt.getTime(),
+  };
+}
+
+/**
+ * 同步单个 Persona 到 Meilisearch
+ */
+export async function syncPersona(personaId: number): Promise<void> {
+  try {
+    logger.info({ msg: "Starting persona sync", personaId });
+
+    const persona = await prismaRO.persona.findUnique({
+      where: { id: personaId },
+    });
+
+    if (!persona) {
+      logger.warn({ msg: "Persona not found for sync", personaId });
+      return;
+    }
+
+    logger.info({ msg: "Persona fetched from database", personaId, createdAt: persona.createdAt });
+
+    const document = personaToDocument(persona);
+    logger.info({ msg: "Persona converted to document", personaId, document });
+
+    const index = meilisearchClient.index(INDEXES.PERSONAS);
+    const task = index.addDocuments([document]);
+
+    logger.info({ msg: "Document added to Meilisearch, waiting for task", personaId });
+    const result = await task.waitTask();
+    logger.info({ msg: "Persona sync task completed", personaId, taskResult: result });
+  } catch (error) {
+    logger.error({
+      msg: "Failed to sync persona",
+      personaId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw error;
+  }
+}
+
+/**
+ * 从 Meilisearch 删除 Persona
+ */
+export async function deletePersona(id: number): Promise<void> {
+  try {
+    const slug = `persona-${id}`;
+    const index = meilisearchClient.index(INDEXES.PERSONAS);
+
+    await index.deleteDocument(slug);
+    logger.info({ msg: "Persona deleted from search", id, slug });
+  } catch (error) {
+    logger.error({
+      msg: "Failed to delete persona",
       id,
       error: error instanceof Error ? error.message : String(error),
     });

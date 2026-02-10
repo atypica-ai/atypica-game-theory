@@ -58,10 +58,13 @@ export const INDEXES = {
   get ARTIFACTS() {
     return getIndexesConfig().artifacts || "artifacts";
   },
+  get PERSONAS() {
+    return getIndexesConfig().personas || "personas";
+  },
 } as const;
 
 /**
- * 初始化索引配置
+ * 初始化 Artifacts 索引配置
  * 需要在首次使用前调用，或者通过脚本初始化
  */
 export async function initializeArtifactsIndex() {
@@ -92,6 +95,48 @@ export async function initializeArtifactsIndex() {
 
     // 显示字段
     displayedAttributes: ["slug", "type", "title", "description", "kind", "isFeatured", "createdAt"],
+
+    // 分面搜索配置
+    faceting: {
+      maxValuesPerFacet: 100,
+    },
+  });
+
+  return index;
+}
+
+/**
+ * 初始化 Personas 索引配置
+ * 需要在首次使用前调用，或者通过脚本初始化
+ */
+export async function initializePersonasIndex() {
+  const indexName = INDEXES.PERSONAS;
+
+  try {
+    // 尝试获取索引，如果不存在会抛出错误
+    await meilisearchClient.getIndex(indexName);
+  } catch {
+    // 索引不存在，创建新索引
+    await meilisearchClient.createIndex(indexName, {
+      primaryKey: "slug",
+    });
+  }
+
+  // 配置索引设置
+  const index = meilisearchClient.index(indexName);
+
+  await index.updateSettings({
+    // 可搜索字段（按优先级排序）
+    searchableAttributes: ["name", "tags", "prompt"],
+
+    // 可过滤字段
+    filterableAttributes: ["tier", "locale"],
+
+    // 可排序字段
+    sortableAttributes: ["createdAt"],
+
+    // 显示字段
+    displayedAttributes: ["slug", "name", "tags", "prompt", "tier", "locale", "createdAt"],
 
     // 分面搜索配置
     faceting: {
