@@ -84,6 +84,7 @@
     "jszip": "^3.10.1",
     "just-bash": "^2.5.2",
     "lucide-react": "^0.479.0",
+    "meilisearch": "^0.55.0",
     "motion": "^12.26.2",
     "music-metadata": "^11.10.3",
     "next": "^15.5.9",
