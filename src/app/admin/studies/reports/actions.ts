@@ -3,6 +3,7 @@ import { generateReportCoverImage } from "@/app/(study)/tools/generateReport/cov
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 // import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { searchArtifacts } from "@/app/(search)/lib/queries";
+import { syncReport } from "@/app/(search)/lib/sync";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
@@ -83,6 +84,7 @@ export async function fetchAnalystReportsAction(
         const searchResults = await searchArtifacts({
           query: trimmedQuery,
           type: "report",
+          isFeatured: featuredOnly ? true : undefined, // 如果需要 featured only，在 Meilisearch 直接过滤
           page,
           pageSize,
         });
@@ -127,7 +129,8 @@ export async function fetchAnalystReportsAction(
   }
 
   // Get featured report IDs if featuredOnly filter is active
-  if (featuredOnly) {
+  // Note: 对于 Meilisearch 搜索，已经在上面通过 isFeatured 参数过滤了，这里只处理 token/email 搜索
+  if (featuredOnly && useDatabasePagination) {
     const featuredItems = await prismaRO.featuredItem.findMany({
       where: {
         resourceType: FeaturedItemResourceType.AnalystReport,
@@ -159,7 +162,7 @@ export async function fetchAnalystReportsAction(
       "in" in where.id &&
       Array.isArray(where.id.in)
     ) {
-      // If already have IDs from Meilisearch, intersect with featured IDs
+      // If already have IDs, intersect with featured IDs (should not happen for Meilisearch path)
       const existingIds = where.id.in;
       where.id = { in: existingIds.filter((id) => featuredReportIds.includes(id)) };
     } else {
@@ -363,6 +366,17 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
       },
     });
   }
+
+  // 同步更新 Meilisearch 中的 isFeatured 状态
+  waitUntil(
+    syncReport(reportId).catch((error) => {
+      rootLogger.error({
+        msg: "Failed to sync report featured status to search",
+        reportId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }),
+  );
 
   revalidatePath("/admin/studies/reports");
   revalidateTag("public-featured-items");

@@ -104,6 +104,7 @@ pnpm tsx scripts/admin/search-management.ts sync   # 全量同步
   title: string,                      // 搜索
   description: string,                // 搜索
   kind: string | null,                // 过滤（analystKind，可能为空）
+  isFeatured: boolean,                // 过滤（是否为精选内容）
   createdAt: timestamp                // 排序
 }
 ```

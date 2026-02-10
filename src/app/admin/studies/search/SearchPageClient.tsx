@@ -9,11 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { formatDate } from "@/lib/utils";
-import { ExternalLinkIcon, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
@@ -47,7 +45,6 @@ export function SearchPageClient({ initialSearchParams }: SearchPageClientProps)
 
   const {
     values: { page, query, type, kind },
-    setParam,
     setParams,
   } = useListQueryParams<SearchParams>({
     params: SearchParamsConfig,

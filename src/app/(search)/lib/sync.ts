@@ -6,6 +6,7 @@ import {
   AnalystPodcastExtra,
   AnalystReport,
   AnalystReportExtra,
+  FeaturedItemResourceType,
   Prisma,
 } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
@@ -18,7 +19,7 @@ const logger = rootLogger.child({ module: "search-sync" });
  * 将 Report 转换为 Artifact 文档
  * 只包含搜索必需的字段
  */
-function reportToDocument(report: AnalystReport): ArtifactDocument {
+function reportToDocument(report: AnalystReport, isFeatured: boolean): ArtifactDocument {
   const extra = report.extra as AnalystReportExtra;
 
   return {
@@ -29,6 +30,7 @@ function reportToDocument(report: AnalystReport): ArtifactDocument {
     description: extra?.description || "",
 
     kind: extra?.analystKind || null,
+    isFeatured,
 
     createdAt: report.createdAt.getTime(),
   };
@@ -38,7 +40,7 @@ function reportToDocument(report: AnalystReport): ArtifactDocument {
  * 将 Podcast 转换为 Artifact 文档
  * 只包含搜索必需的字段
  */
-function podcastToDocument(podcast: AnalystPodcast): ArtifactDocument {
+function podcastToDocument(podcast: AnalystPodcast, isFeatured: boolean): ArtifactDocument {
   const extra = podcast.extra as AnalystPodcastExtra;
   const metadata = extra?.metadata;
 
@@ -50,6 +52,7 @@ function podcastToDocument(podcast: AnalystPodcast): ArtifactDocument {
     description: metadata?.showNotes || "",
 
     kind: null,
+    isFeatured,
 
     createdAt: podcast.createdAt.getTime(),
   };
@@ -73,7 +76,16 @@ export async function syncReport(reportId: number): Promise<void> {
 
     logger.info({ msg: "Report fetched from database", reportId, createdAt: report.createdAt });
 
-    const document = reportToDocument(report);
+    // 查询是否 featured
+    const featuredItem = await prismaRO.featuredItem.findFirst({
+      where: {
+        resourceType: FeaturedItemResourceType.AnalystReport,
+        resourceId: reportId,
+      },
+    });
+    const isFeatured = !!featuredItem;
+
+    const document = reportToDocument(report, isFeatured);
     logger.info({ msg: "Report converted to document", reportId, document });
 
     const index = meilisearchClient.index(INDEXES.ARTIFACTS);
@@ -111,7 +123,16 @@ export async function syncPodcast(podcastId: number): Promise<void> {
 
     logger.info({ msg: "Podcast fetched from database", podcastId, createdAt: podcast.createdAt });
 
-    const document = podcastToDocument(podcast);
+    // 查询是否 featured
+    const featuredItem = await prismaRO.featuredItem.findFirst({
+      where: {
+        resourceType: FeaturedItemResourceType.AnalystPodcast,
+        resourceId: podcastId,
+      },
+    });
+    const isFeatured = !!featuredItem;
+
+    const document = podcastToDocument(podcast, isFeatured);
     logger.info({ msg: "Podcast converted to document", podcastId, document });
 
     const index = meilisearchClient.index(INDEXES.ARTIFACTS);
@@ -213,9 +234,41 @@ export async function syncAllArtifacts(options?: {
     });
     logger.info({ msg: "Podcasts fetched", count: podcasts.length });
 
+    // 批量查询 featured items
+    const reportIds = reports.map((r) => r.id);
+    const podcastIds = podcasts.map((p) => p.id);
+
+    logger.info({ msg: "Fetching featured items" });
+    const [featuredReports, featuredPodcasts] = await Promise.all([
+      prismaRO.featuredItem.findMany({
+        where: {
+          resourceType: FeaturedItemResourceType.AnalystReport,
+          resourceId: { in: reportIds },
+        },
+        select: { resourceId: true },
+      }),
+      prismaRO.featuredItem.findMany({
+        where: {
+          resourceType: FeaturedItemResourceType.AnalystPodcast,
+          resourceId: { in: podcastIds },
+        },
+        select: { resourceId: true },
+      }),
+    ]);
+
+    const featuredReportIds = new Set(featuredReports.map((f) => f.resourceId));
+    const featuredPodcastIds = new Set(featuredPodcasts.map((f) => f.resourceId));
+    logger.info({
+      msg: "Featured items fetched",
+      featuredReportsCount: featuredReportIds.size,
+      featuredPodcastsCount: featuredPodcastIds.size,
+    });
+
     // 转换为文档
     logger.info({ msg: "Converting reports to documents" });
-    const reportDocuments = reports.map(reportToDocument);
+    const reportDocuments = reports.map((report) =>
+      reportToDocument(report, featuredReportIds.has(report.id)),
+    );
     logger.info({
       msg: "Report documents created",
       count: reportDocuments.length,
@@ -223,7 +276,9 @@ export async function syncAllArtifacts(options?: {
     });
 
     logger.info({ msg: "Converting podcasts to documents" });
-    const podcastDocuments = podcasts.map(podcastToDocument);
+    const podcastDocuments = podcasts.map((podcast) =>
+      podcastToDocument(podcast, featuredPodcastIds.has(podcast.id)),
+    );
     logger.info({
       msg: "Podcast documents created",
       count: podcastDocuments.length,

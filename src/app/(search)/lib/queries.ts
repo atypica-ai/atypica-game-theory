@@ -13,7 +13,7 @@ const logger = rootLogger.child({ module: "search-queries" });
 export async function searchArtifacts(
   params: ArtifactsSearchParams,
 ): Promise<ArtifactsSearchResult> {
-  const { query, type, kind, page = 1, pageSize = 20 } = params;
+  const { query, type, kind, isFeatured, page = 1, pageSize = 20 } = params;
 
   try {
     const index = meilisearchClient.index<ArtifactDocument>(INDEXES.ARTIFACTS);
@@ -27,6 +27,10 @@ export async function searchArtifacts(
 
     if (kind) {
       filters.push(`kind = "${kind}"`);
+    }
+
+    if (isFeatured !== undefined) {
+      filters.push(`isFeatured = ${isFeatured}`);
     }
 
     // 执行搜索

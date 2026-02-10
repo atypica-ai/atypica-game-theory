@@ -19,8 +19,9 @@ export interface ArtifactDocument {
   title: string;
   description: string;
 
-  // 过滤字段（可选）
+  // 过滤字段
   kind: string | null; // analystKind，可能为空
+  isFeatured: boolean; // 是否为精选内容
 
   // 排序字段
   createdAt: number; // Unix timestamp
@@ -33,6 +34,7 @@ export interface ArtifactsSearchParams {
   query: string;
   type?: ArtifactType;
   kind?: string;
+  isFeatured?: boolean;
   page?: number;
   pageSize?: number;
 }

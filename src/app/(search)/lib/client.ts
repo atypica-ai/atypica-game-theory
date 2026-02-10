@@ -46,7 +46,7 @@ export async function initializeArtifactsIndex() {
   try {
     // 尝试获取索引，如果不存在会抛出错误
     await meilisearchClient.getIndex(indexName);
-  } catch (error) {
+  } catch {
     // 索引不存在，创建新索引
     await meilisearchClient.createIndex(indexName, {
       primaryKey: "slug",
@@ -61,13 +61,13 @@ export async function initializeArtifactsIndex() {
     searchableAttributes: ["title", "description", "kind"],
 
     // 可过滤字段
-    filterableAttributes: ["type", "kind"],
+    filterableAttributes: ["type", "kind", "isFeatured"],
 
     // 可排序字段
     sortableAttributes: ["createdAt"],
 
     // 显示字段
-    displayedAttributes: ["slug", "type", "title", "description", "kind", "createdAt"],
+    displayedAttributes: ["slug", "type", "title", "description", "kind", "isFeatured", "createdAt"],
 
     // 分面搜索配置
     faceting: {
