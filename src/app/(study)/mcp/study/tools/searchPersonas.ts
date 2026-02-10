@@ -1,6 +1,6 @@
 import "server-only";
 
-import { searchPersonasInTool } from "@/app/(study)/tools/searchPersonas";
+import { searchPersonasInToolWithMeili } from "@/app/(study)/tools/searchPersonas";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
 import { prismaRO } from "@/prisma/prisma";
@@ -40,13 +40,13 @@ export async function handleSearchPersonas(
       userId,
     });
 
-    // Use semantic search from study agent tool
+    // Use Meilisearch for full-text search
     let allPersonas: Array<{ personaId: number; name: string; source: string; tags: string[] }> =
       [];
 
     if (query) {
-      // Semantic search with embedding
-      const result = await searchPersonasInTool({
+      // Full-text search with Meilisearch
+      const result = await searchPersonasInToolWithMeili({
         locale,
         searchQuery: query,
         logger,

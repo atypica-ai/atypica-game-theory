@@ -94,7 +94,15 @@ export async function initializeArtifactsIndex() {
     sortableAttributes: ["createdAt"],
 
     // 显示字段
-    displayedAttributes: ["slug", "type", "title", "description", "kind", "isFeatured", "createdAt"],
+    displayedAttributes: [
+      "slug",
+      "type",
+      "title",
+      "description",
+      "kind",
+      "isFeatured",
+      "createdAt",
+    ],
 
     // 分面搜索配置
     faceting: {

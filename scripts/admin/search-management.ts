@@ -20,7 +20,7 @@ import { rootLogger } from "@/lib/logging";
 import { FeaturedItemResourceType, Prisma } from "@/prisma/client";
 const logger = rootLogger.child({ script: "search-management" });
 
-const FETCH_BATCH_SIZE = 30; // 每批并行获取 30 条
+const FETCH_BATCH_SIZE = 10; // 每批并行获取 30 条
 
 /**
  * 全量同步所有 Reports 和 Podcasts
@@ -522,9 +522,8 @@ function parseArgs(args: string[]): {
 async function main() {
   loadEnvConfig(process.cwd());
 
-  const { initializeArtifactsIndex, initializePersonasIndex } = await import(
-    "@/app/(search)/lib/client"
-  );
+  const { initializeArtifactsIndex, initializePersonasIndex } =
+    await import("@/app/(search)/lib/client");
 
   const command = process.argv[2];
 

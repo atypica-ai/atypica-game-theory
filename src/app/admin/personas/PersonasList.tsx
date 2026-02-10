@@ -30,7 +30,7 @@ import { EyeIcon, FileTextIcon, Loader2Icon, SearchIcon, XIcon } from "lucide-re
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { fetchAdminPersonasWithMeilisearch, rescorePersona } from "./actions";
+import { fetchAdminPersonasWithMeili, rescorePersona } from "./actions";
 import { PersonaImportDialog } from "./PersonaImportDialog";
 
 type PaginationInfo = {
@@ -40,7 +40,7 @@ type PaginationInfo = {
   totalPages: number;
 };
 
-type TAdminPersona = ExtractServerActionData<typeof fetchAdminPersonasWithMeilisearch>[number];
+type TAdminPersona = ExtractServerActionData<typeof fetchAdminPersonasWithMeili>[number];
 
 export default function PersonasList({
   scoutUserChat,
@@ -104,7 +104,7 @@ export default function PersonasList({
   const fetchPersonasForPage = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await fetchAdminPersonasWithMeilisearch({
+      const result = await fetchAdminPersonasWithMeili({
         locales: selectedLocales,
         tiers: selectedTiers,
         scoutUserChatId: scoutUserChat?.id,

@@ -210,7 +210,7 @@ export async function fetchAdminPersonasWithEmbedding({
 /**
  * Admin-only fetchAdminPersonas with Meilisearch full-text search
  */
-export async function fetchAdminPersonasWithMeilisearch({
+export async function fetchAdminPersonasWithMeili({
   locales,
   tiers,
   scoutUserChatId,
