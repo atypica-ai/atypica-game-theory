@@ -20,7 +20,7 @@ import { rootLogger } from "@/lib/logging";
 import { FeaturedItemResourceType, Prisma } from "@/prisma/client";
 const logger = rootLogger.child({ script: "search-management" });
 
-const FETCH_BATCH_SIZE = 10; // 每批并行获取 30 条
+const FETCH_BATCH_SIZE = 30; // 每批并行获取 30 条
 
 /**
  * 全量同步所有 Reports 和 Podcasts
@@ -188,7 +188,7 @@ export async function syncAllArtifacts(options?: {
 
         // 转换为文档
         const documents = reports.map((report) =>
-          reportToDocument(report, featuredReportIds.has(report.id)),
+          reportToDocument({ report, isFeatured: featuredReportIds.has(report.id) }),
         );
 
         // 同步到 Meilisearch
@@ -257,7 +257,7 @@ export async function syncAllArtifacts(options?: {
 
         // 转换为文档
         const documents = podcasts.map((podcast) =>
-          podcastToDocument(podcast, featuredPodcastIds.has(podcast.id)),
+          podcastToDocument({ podcast, isFeatured: featuredPodcastIds.has(podcast.id) }),
         );
 
         // 同步到 Meilisearch
@@ -410,10 +410,23 @@ export async function syncAllPersonas(options?: {
         // 获取这批 personas 的完整数据
         const personas = await prismaRO.persona.findMany({
           where: { id: { in: batchIds } },
+          include: {
+            personaImport: {
+              select: {
+                userId: true,
+              },
+            },
+          },
         });
 
         // 转换为文档
-        const documents = personas.map((persona) => personaToDocument(persona));
+        const documents = personas.map((persona) =>
+          personaToDocument({
+            persona,
+            userId: persona.personaImport?.userId ?? null,
+            teamId: null,
+          }),
+        );
 
         // 同步到 Meilisearch
         if (documents.length > 0) {

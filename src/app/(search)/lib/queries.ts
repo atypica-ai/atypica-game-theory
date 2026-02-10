@@ -20,7 +20,7 @@ const logger = rootLogger.child({ module: "search-queries" });
 export async function searchArtifacts(
   params: ArtifactsSearchParams,
 ): Promise<ArtifactsSearchResult> {
-  const { query, type, kind, isFeatured, page = 1, pageSize = 20 } = params;
+  const { query, type, kind, isFeatured, userId, teamId, page = 1, pageSize = 20 } = params;
 
   try {
     const index = meilisearchClient.index<ArtifactDocument>(INDEXES.ARTIFACTS);
@@ -38,6 +38,14 @@ export async function searchArtifacts(
 
     if (isFeatured !== undefined) {
       filters.push(`isFeatured = ${isFeatured}`);
+    }
+
+    if (userId !== undefined) {
+      filters.push(`userId = ${userId}`);
+    }
+
+    if (teamId !== undefined) {
+      filters.push(`teamId = ${teamId}`);
     }
 
     // 执行搜索
@@ -109,7 +117,7 @@ export async function getArtifactsFacets(query: string = "") {
  * 只返回匹配的文档，前端用 IDs 去数据库查完整数据
  */
 export async function searchPersonas(params: PersonasSearchParams): Promise<PersonasSearchResult> {
-  const { query, tiers, locales, page = 1, pageSize = 20 } = params;
+  const { query, tiers, locales, userId, teamId, page = 1, pageSize = 20 } = params;
 
   try {
     const index = meilisearchClient.index<PersonaDocument>(INDEXES.PERSONAS);
@@ -127,6 +135,14 @@ export async function searchPersonas(params: PersonasSearchParams): Promise<Pers
       // locale IN ["zh-CN", "en-US"] -> locale = "zh-CN" OR locale = "en-US"
       const localeFilters = locales.map((locale) => `locale = "${locale}"`).join(" OR ");
       filters.push(`(${localeFilters})`);
+    }
+
+    if (userId !== undefined) {
+      filters.push(`userId = ${userId}`);
+    }
+
+    if (teamId !== undefined) {
+      filters.push(`teamId = ${teamId}`);
     }
 
     // 执行搜索

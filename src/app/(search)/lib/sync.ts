@@ -19,7 +19,13 @@ const logger = rootLogger.child({ module: "search-sync" });
  * 将 Report 转换为 Artifact 文档
  * 只包含搜索必需的字段
  */
-export function reportToDocument(report: AnalystReport, isFeatured: boolean): ArtifactDocument {
+export function reportToDocument({
+  report,
+  isFeatured,
+}: {
+  report: AnalystReport;
+  isFeatured: boolean;
+}): ArtifactDocument {
   const extra = report.extra as AnalystReportExtra;
 
   return {
@@ -31,6 +37,8 @@ export function reportToDocument(report: AnalystReport, isFeatured: boolean): Ar
 
     kind: extra?.analystKind || null,
     isFeatured,
+    userId: report.userId,
+    teamId: null,
 
     createdAt: report.createdAt.getTime(),
   };
@@ -40,7 +48,13 @@ export function reportToDocument(report: AnalystReport, isFeatured: boolean): Ar
  * 将 Podcast 转换为 Artifact 文档
  * 只包含搜索必需的字段
  */
-export function podcastToDocument(podcast: AnalystPodcast, isFeatured: boolean): ArtifactDocument {
+export function podcastToDocument({
+  podcast,
+  isFeatured,
+}: {
+  podcast: AnalystPodcast;
+  isFeatured: boolean;
+}): ArtifactDocument {
   const extra = podcast.extra as AnalystPodcastExtra;
   const metadata = extra?.metadata;
 
@@ -53,6 +67,8 @@ export function podcastToDocument(podcast: AnalystPodcast, isFeatured: boolean):
 
     kind: null,
     isFeatured,
+    userId: podcast.userId,
+    teamId: null,
 
     createdAt: podcast.createdAt.getTime(),
   };
@@ -85,7 +101,7 @@ export async function syncReport(reportId: number): Promise<void> {
     });
     const isFeatured = !!featuredItem;
 
-    const document = reportToDocument(report, isFeatured);
+    const document = reportToDocument({ report, isFeatured });
     logger.info({ msg: "Report converted to document", reportId, document });
 
     const index = meilisearchClient.index(INDEXES.ARTIFACTS);
@@ -132,7 +148,7 @@ export async function syncPodcast(podcastId: number): Promise<void> {
     });
     const isFeatured = !!featuredItem;
 
-    const document = podcastToDocument(podcast, isFeatured);
+    const document = podcastToDocument({ podcast, isFeatured });
     logger.info({ msg: "Podcast converted to document", podcastId, document });
 
     const index = meilisearchClient.index(INDEXES.ARTIFACTS);
@@ -155,7 +171,13 @@ export async function syncPodcast(podcastId: number): Promise<void> {
 /**
  * 从 Meilisearch 删除 Artifact
  */
-export async function deleteArtifact(type: ArtifactType, id: number): Promise<void> {
+export async function deleteArtifact({
+  type,
+  id,
+}: {
+  type: ArtifactType;
+  id: number;
+}): Promise<void> {
   try {
     const slug = `${type}-${id}`;
     const index = meilisearchClient.index(INDEXES.ARTIFACTS);
@@ -177,7 +199,15 @@ export async function deleteArtifact(type: ArtifactType, id: number): Promise<vo
  * 将 Persona 转换为搜索文档
  * 只包含搜索必需的字段
  */
-export function personaToDocument(persona: Persona): PersonaDocument {
+export function personaToDocument({
+  persona,
+  userId,
+  teamId = null,
+}: {
+  persona: Persona;
+  userId: number | null;
+  teamId?: number | null;
+}): PersonaDocument {
   return {
     slug: `persona-${persona.id}`,
 
@@ -187,6 +217,8 @@ export function personaToDocument(persona: Persona): PersonaDocument {
 
     tier: persona.tier,
     locale: persona.locale || "",
+    userId: userId,
+    teamId: teamId,
 
     createdAt: persona.createdAt.getTime(),
   };
@@ -201,6 +233,13 @@ export async function syncPersona(personaId: number): Promise<void> {
 
     const persona = await prismaRO.persona.findUnique({
       where: { id: personaId },
+      include: {
+        personaImport: {
+          select: {
+            userId: true,
+          },
+        },
+      },
     });
 
     if (!persona) {
@@ -210,7 +249,8 @@ export async function syncPersona(personaId: number): Promise<void> {
 
     logger.info({ msg: "Persona fetched from database", personaId, createdAt: persona.createdAt });
 
-    const document = personaToDocument(persona);
+    const userId = persona.personaImport?.userId ?? null;
+    const document = personaToDocument({ persona, userId, teamId: null });
     logger.info({ msg: "Persona converted to document", personaId, document });
 
     const index = meilisearchClient.index(INDEXES.PERSONAS);

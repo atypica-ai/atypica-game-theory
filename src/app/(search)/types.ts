@@ -22,6 +22,8 @@ export interface ArtifactDocument {
   // 过滤字段
   kind: string | null; // analystKind，可能为空
   isFeatured: boolean; // 是否为精选内容
+  userId: number; // 创建者 ID
+  teamId: number | null; // 团队 ID（预留）
 
   // 排序字段
   createdAt: number; // Unix timestamp
@@ -35,6 +37,8 @@ export interface ArtifactsSearchParams {
   type?: ArtifactType;
   kind?: string;
   isFeatured?: boolean;
+  userId?: number;
+  teamId?: number;
   page?: number;
   pageSize?: number;
 }
@@ -67,6 +71,8 @@ export interface PersonaDocument {
   // 过滤字段
   tier: number;
   locale: string;
+  userId: number | null; // 创建者 ID (from personaImport)
+  teamId: number | null; // 团队 ID（预留）
 
   // 排序字段
   createdAt: number; // Unix timestamp
@@ -79,6 +85,8 @@ export interface PersonasSearchParams {
   query: string;
   tiers?: number[];
   locales?: string[];
+  userId?: number;
+  teamId?: number;
   page?: number;
   pageSize?: number;
 }

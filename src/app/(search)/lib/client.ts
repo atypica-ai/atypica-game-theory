@@ -88,7 +88,7 @@ export async function initializeArtifactsIndex() {
     searchableAttributes: ["title", "description", "kind"],
 
     // 可过滤字段
-    filterableAttributes: ["type", "kind", "isFeatured"],
+    filterableAttributes: ["type", "kind", "isFeatured", "userId", "teamId"],
 
     // 可排序字段
     sortableAttributes: ["createdAt"],
@@ -101,6 +101,8 @@ export async function initializeArtifactsIndex() {
       "description",
       "kind",
       "isFeatured",
+      "userId",
+      "teamId",
       "createdAt",
     ],
 
@@ -138,13 +140,23 @@ export async function initializePersonasIndex() {
     searchableAttributes: ["name", "tags", "prompt"],
 
     // 可过滤字段
-    filterableAttributes: ["tier", "locale"],
+    filterableAttributes: ["tier", "locale", "userId", "teamId"],
 
     // 可排序字段
     sortableAttributes: ["createdAt"],
 
     // 显示字段
-    displayedAttributes: ["slug", "name", "tags", "prompt", "tier", "locale", "createdAt"],
+    displayedAttributes: [
+      "slug",
+      "name",
+      "tags",
+      "prompt",
+      "tier",
+      "locale",
+      "userId",
+      "teamId",
+      "createdAt",
+    ],
 
     // 分面搜索配置
     faceting: {
