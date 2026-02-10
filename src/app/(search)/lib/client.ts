@@ -5,35 +5,59 @@ import { MeiliSearch } from "meilisearch";
 /**
  * Meilisearch 客户端配置
  * 使用云端托管的 Meilisearch 实例
+ * 延迟初始化，避免构建时检查环境变量
  */
 
-if (!process.env.MEILISEARCH_HOST) {
-  throw new Error("MEILISEARCH_HOST environment variable is required");
-}
+let _meilisearchClient: MeiliSearch | null = null;
 
-if (!process.env.MEILISEARCH_MASTER_KEY) {
-  throw new Error("MEILISEARCH_MASTER_KEY environment variable is required");
+/**
+ * 获取 Meilisearch 客户端实例（延迟初始化）
+ */
+function getMeilisearchClient(): MeiliSearch {
+  if (_meilisearchClient) {
+    return _meilisearchClient;
+  }
+
+  if (!process.env.MEILISEARCH_HOST) {
+    throw new Error("MEILISEARCH_HOST environment variable is required");
+  }
+
+  if (!process.env.MEILISEARCH_MASTER_KEY) {
+    throw new Error("MEILISEARCH_MASTER_KEY environment variable is required");
+  }
+
+  _meilisearchClient = new MeiliSearch({
+    host: process.env.MEILISEARCH_HOST,
+    apiKey: process.env.MEILISEARCH_MASTER_KEY,
+    timeout: 10000, // 10 秒超时
+  });
+
+  return _meilisearchClient;
 }
 
 /**
  * Meilisearch 客户端实例（服务端使用，拥有完全权限）
+ * 通过 getter 实现延迟初始化
  */
-export const meilisearchClient = new MeiliSearch({
-  host: process.env.MEILISEARCH_HOST,
-  apiKey: process.env.MEILISEARCH_MASTER_KEY,
-  timeout: 10000, // 10 秒超时
+export const meilisearchClient = new Proxy({} as MeiliSearch, {
+  get(_target, prop) {
+    const client = getMeilisearchClient();
+    const value = client[prop as keyof MeiliSearch];
+    return typeof value === "function" ? value.bind(client) : value;
+  },
 });
 
 /**
  * 索引名称配置（从环境变量读取）
  */
-const INDEXES_CONFIG = JSON.parse(process.env.MEILISEARCH_INDEXES || "{}") as Record<
-  string,
-  string
->;
+function getIndexesConfig() {
+  return JSON.parse(process.env.MEILISEARCH_INDEXES || "{}") as Record<string, string>;
+}
 
 export const INDEXES = {
-  ARTIFACTS: INDEXES_CONFIG.artifacts || "artifacts",
+  get ARTIFACTS() {
+    return getIndexesConfig().artifacts || "artifacts";
+  },
 } as const;
 
 /**
