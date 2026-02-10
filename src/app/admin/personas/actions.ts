@@ -3,6 +3,7 @@
 import { createTextEmbedding } from "@/ai/embedding";
 import { scorePersona } from "@/app/(persona)/lib";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
+import { searchPersonas as searchPersonasFromMeili } from "@/app/(search)/lib/queries";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -44,7 +45,8 @@ type TPersonaWithImport = TPersona & {
 /**
  * Admin-only fetchAdminPersonas with tier and locale filtering
  */
-export async function fetchAdminPersonas({
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function fetchAdminPersonasWithEmbedding({
   locales,
   tiers,
   scoutUserChatId,
@@ -201,6 +203,164 @@ export async function fetchAdminPersonas({
       pageSize,
       totalCount,
       totalPages: Math.ceil(totalCount / pageSize),
+    },
+  };
+}
+
+/**
+ * Admin-only fetchAdminPersonas with Meilisearch full-text search
+ */
+export async function fetchAdminPersonasWithMeilisearch({
+  locales,
+  tiers,
+  scoutUserChatId,
+  searchQuery,
+  page = 1,
+  pageSize = 12,
+}: {
+  locales?: string[];
+  tiers?: number[];
+  scoutUserChatId?: number;
+  searchQuery?: string;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<ServerActionResult<TPersonaWithImport[]>> {
+  await checkAdminAuth([AdminPermission.MANAGE_PERSONAS]);
+
+  const selectedTiers = tiers || [0, 1, 2, 3];
+  const selectedLocales = locales || ["zh-CN", "en-US"];
+
+  // 如果有 query，通过 Meilisearch 获取 IDs
+  let personaIds: number[] | undefined = undefined;
+  let totalCount = 0;
+
+  if (searchQuery && searchQuery.trim()) {
+    try {
+      const searchResults = await searchPersonasFromMeili({
+        query: searchQuery,
+        tiers: selectedTiers,
+        locales: selectedLocales,
+        page,
+        pageSize,
+      });
+
+      // Extract persona IDs from slugs (format: "persona-123")
+      personaIds = searchResults.hits
+        .map((hit) => {
+          const match = hit.slug.match(/^persona-(\d+)$/);
+          return match ? parseInt(match[1], 10) : 0;
+        })
+        .filter((id) => id > 0);
+
+      totalCount = searchResults.totalHits;
+
+      if (personaIds.length === 0) {
+        return {
+          success: true,
+          data: [],
+          pagination: {
+            page,
+            pageSize,
+            totalCount: 0,
+            totalPages: 0,
+          },
+        };
+      }
+    } catch (error) {
+      console.log(`Meilisearch error: ${(error as Error).message}`);
+      return {
+        success: false,
+        message: "Persona search error",
+      };
+    }
+  }
+
+  // 构建 where 条件
+  const skip = (page - 1) * pageSize;
+  const where: Record<string, unknown> = {};
+
+  // 如果有 IDs 就放
+  if (personaIds) {
+    where.id = { in: personaIds };
+  }
+
+  // 其他条件
+  if (scoutUserChatId) {
+    where.scoutUserChatId = scoutUserChatId;
+  }
+  if (!personaIds) {
+    // 只有在没有通过 Meilisearch 搜索时才使用 tier 和 locale 过滤
+    where.tier = { in: selectedTiers };
+  }
+  where.locale = { in: selectedLocales };
+
+  // 一次数据库查询搞定
+  const [personas, dbTotalCount] = await Promise.all([
+    prismaRO.persona.findMany({
+      where,
+      orderBy: personaIds
+        ? // 如果有 personaIds，不需要排序，后面会按 Meilisearch 顺序排
+          undefined
+        : {
+            createdAt: "desc",
+          },
+      select: {
+        id: true,
+        token: true,
+        name: true,
+        source: true,
+        prompt: true,
+        locale: true,
+        tags: true,
+        tier: true,
+        personaImport: {
+          select: {
+            id: true,
+            analysis: true,
+            extra: true,
+            createdAt: true,
+            user: {
+              select: {
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      skip: personaIds ? undefined : skip,
+      take: personaIds ? undefined : pageSize,
+    }),
+    personaIds ? Promise.resolve(0) : prismaRO.persona.count({ where }),
+  ]);
+
+  // 如果有 personaIds，按 Meilisearch 顺序排列
+  const orderedPersonas = personaIds
+    ? (() => {
+        const personaMap = new Map(personas.map((p) => [p.id, p]));
+        return personaIds.map((id) => personaMap.get(id)).filter(Boolean) as typeof personas;
+      })()
+    : personas;
+
+  return {
+    success: true,
+    data: orderedPersonas.map(({ token, tags, personaImport, ...persona }) => ({
+      ...persona,
+      token: token,
+      tags: tags as string[],
+      personaImport: personaImport
+        ? {
+            ...personaImport,
+            analysis: personaImport.analysis,
+            extra: personaImport.extra,
+            user: personaImport.user?.email ? { email: personaImport.user.email } : undefined,
+          }
+        : null,
+    })),
+    pagination: {
+      page,
+      pageSize,
+      totalCount: personaIds ? totalCount : dbTotalCount,
+      totalPages: Math.ceil((personaIds ? totalCount : dbTotalCount) / pageSize),
     },
   };
 }

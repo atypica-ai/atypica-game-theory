@@ -1,4 +1,5 @@
 "use client";
+import { createOrGetUserPersonaChat } from "@/app/(persona)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,8 +30,7 @@ import { EyeIcon, FileTextIcon, Loader2Icon, SearchIcon, XIcon } from "lucide-re
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { createOrGetUserPersonaChat } from "../../(persona)/actions";
-import { fetchAdminPersonas, rescorePersona } from "./actions";
+import { fetchAdminPersonasWithMeilisearch, rescorePersona } from "./actions";
 import { PersonaImportDialog } from "./PersonaImportDialog";
 
 type PaginationInfo = {
@@ -40,7 +40,7 @@ type PaginationInfo = {
   totalPages: number;
 };
 
-type TAdminPersona = ExtractServerActionData<typeof fetchAdminPersonas>[number];
+type TAdminPersona = ExtractServerActionData<typeof fetchAdminPersonasWithMeilisearch>[number];
 
 export default function PersonasList({
   scoutUserChat,
@@ -104,7 +104,7 @@ export default function PersonasList({
   const fetchPersonasForPage = useCallback(async () => {
     setIsLoading(true);
     try {
-      const result = await fetchAdminPersonas({
+      const result = await fetchAdminPersonasWithMeilisearch({
         locales: selectedLocales,
         tiers: selectedTiers,
         scoutUserChatId: scoutUserChat?.id,

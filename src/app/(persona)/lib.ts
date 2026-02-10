@@ -2,10 +2,12 @@ import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import { syncPersona as syncPersonaToMeili } from "@/app/(search)/lib/sync";
 import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
 import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { waitUntil } from "@vercel/functions";
 import { generateObject, UserModelMessage } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -65,6 +67,17 @@ export async function createPersonaWithPostProcess({
   // 只调用 scorePersona，如果 tier > 0，再计算 embedding，否则清空 embedding
   await scorePersona(persona);
   // await Promise.all([createPersonaEmbedding(persona), scorePersona(persona)]);
+
+  // 异步同步到 Meilisearch
+  waitUntil(
+    syncPersonaToMeili(persona.id).catch((error) => {
+      rootLogger.error({
+        msg: "Failed to sync persona to search",
+        personaId: persona.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }),
+  );
 
   return persona;
 }
