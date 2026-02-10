@@ -2,8 +2,8 @@
 import { generateReportCoverImage } from "@/app/(study)/tools/generateReport/coverImage";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 // import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
-import { searchArtifacts } from "@/app/(search)/lib/queries";
-import { syncReport } from "@/app/(search)/lib/sync";
+import { searchArtifacts as searchArtifactsFromMeili } from "@/app/(search)/lib/queries";
+import { syncReport as syncReportToMeili } from "@/app/(search)/lib/sync";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
@@ -81,7 +81,7 @@ export async function fetchAnalystReportsAction(
     } else if (trimmedQuery) {
       // 关键词搜索：使用 Meilisearch
       try {
-        const searchResults = await searchArtifacts({
+        const searchResults = await searchArtifactsFromMeili({
           query: trimmedQuery,
           type: "report",
           isFeatured: featuredOnly ? true : undefined, // 如果需要 featured only，在 Meilisearch 直接过滤
@@ -369,7 +369,7 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
 
   // 同步更新 Meilisearch 中的 isFeatured 状态
   waitUntil(
-    syncReport(reportId).catch((error) => {
+    syncReportToMeili(reportId).catch((error) => {
       rootLogger.error({
         msg: "Failed to sync report featured status to search",
         reportId,

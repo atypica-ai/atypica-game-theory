@@ -5,7 +5,7 @@ import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { reportHTMLPrologue, reportHTMLSystem } from "./prompt";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
-import { syncReport } from "@/app/(search)/lib/sync";
+import { syncReport as syncReportToMeili } from "@/app/(search)/lib/sync";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
@@ -233,7 +233,7 @@ export const generateReportTool = ({
 
       // 异步同步到 Meilisearch
       waitUntil(
-        syncReport(report.id).catch((error) => {
+        syncReportToMeili(report.id).catch((error) => {
           reportLogger.error({
             msg: "Failed to sync report to search",
             reportId: report.id,

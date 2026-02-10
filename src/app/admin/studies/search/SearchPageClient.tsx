@@ -1,12 +1,17 @@
 "use client";
 
-import { searchArtifactsAction } from "@/app/(search)/actions";
 import { ArtifactDocument, ArtifactType } from "@/app/(search)/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { formatDate } from "@/lib/utils";
 import { SearchIcon } from "lucide-react";
@@ -14,6 +19,7 @@ import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
+import { searchArtifactsAction } from "./actions";
 
 export const SearchParamsConfig = {
   page: createParamConfig.number(1),
@@ -222,13 +228,7 @@ export function SearchPageClient({ initialSearchParams }: SearchPageClientProps)
  * Artifact 卡片组件
  * 简化版：只显示搜索字段，完整数据需要从数据库查询
  */
-function ArtifactCard({
-  artifact,
-  locale,
-}: {
-  artifact: ArtifactDocument;
-  locale: string;
-}) {
+function ArtifactCard({ artifact, locale }: { artifact: ArtifactDocument; locale: string }) {
   // 从 slug 中提取真实的数据库 ID (格式: "report-1" 或 "podcast-2")
   const match = artifact.slug.match(/^(report|podcast)-(\d+)$/);
   const realId = match ? parseInt(match[2], 10) : 0;
@@ -256,7 +256,9 @@ function ArtifactCard({
 
         {/* 元数据 */}
         <div className="text-xs text-muted-foreground space-y-1">
-          <div>创建时间: {formatDate(new Date(artifact.createdAt), locale as "zh-CN" | "en-US")}</div>
+          <div>
+            创建时间: {formatDate(new Date(artifact.createdAt), locale as "zh-CN" | "en-US")}
+          </div>
           <div>ID: {realId}</div>
         </div>
 

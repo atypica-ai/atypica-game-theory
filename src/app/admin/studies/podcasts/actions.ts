@@ -1,8 +1,8 @@
 "use server";
 import { generatePodcastCoverImage } from "@/app/(podcast)/lib/coverImage";
 import { generatePodcastMetadata } from "@/app/(podcast)/lib/generation";
-import { searchArtifacts } from "@/app/(search)/lib/queries";
-import { syncPodcast } from "@/app/(search)/lib/sync";
+import { searchArtifacts as searchArtifactsFromMeili } from "@/app/(search)/lib/queries";
+import { syncPodcast as syncPodcastToMeili } from "@/app/(search)/lib/sync";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
@@ -81,7 +81,7 @@ export async function fetchAnalystPodcastsAction(
     } else if (trimmedQuery) {
       // 关键词搜索：使用 Meilisearch
       try {
-        const searchResults = await searchArtifacts({
+        const searchResults = await searchArtifactsFromMeili({
           query: trimmedQuery,
           type: "podcast",
           isFeatured: featuredOnly ? true : undefined, // 如果需要 featured only，在 Meilisearch 直接过滤
@@ -422,7 +422,7 @@ export async function featurePodcastAction(podcastId: number): Promise<ServerAct
 
   // 同步更新 Meilisearch 中的 isFeatured 状态
   waitUntil(
-    syncPodcast(podcastId).catch((error) => {
+    syncPodcastToMeili(podcastId).catch((error) => {
       rootLogger.error({
         msg: "Failed to sync podcast featured status to search",
         podcastId,
