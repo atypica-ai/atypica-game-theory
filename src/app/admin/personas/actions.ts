@@ -44,6 +44,7 @@ type TPersonaWithImport = TPersona & {
 
 /**
  * Admin-only fetchAdminPersonas with tier and locale filtering
+ * @deprecated
  */
 export async function fetchAdminPersonasWithEmbedding({
   locales,

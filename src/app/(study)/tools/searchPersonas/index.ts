@@ -148,6 +148,9 @@ export async function searchPersonasInToolWithMeili({
   }
 }
 
+/**
+ * @deprecated
+ */
 export async function searchPersonasInToolWithEmbedding({
   locale,
   searchQuery,

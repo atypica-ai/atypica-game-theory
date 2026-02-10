@@ -194,7 +194,7 @@ export async function syncAllArtifacts(options?: {
         // 同步到 Meilisearch
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          const result = await task.waitTask();
+          const result = await task.waitTask({ timeout: 30000 }); // 30 seconds timeout
 
           if (result.status === "failed") {
             logger.error({
@@ -263,7 +263,7 @@ export async function syncAllArtifacts(options?: {
         // 同步到 Meilisearch
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          const result = await task.waitTask();
+          const result = await task.waitTask({ timeout: 30000 }); // 30 seconds timeout
 
           if (result.status === "failed") {
             logger.error({
@@ -431,7 +431,7 @@ export async function syncAllPersonas(options?: {
         // 同步到 Meilisearch
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          const result = await task.waitTask();
+          const result = await task.waitTask({ timeout: 30000 }); // 30 seconds timeout
 
           if (result.status === "failed") {
             logger.error({

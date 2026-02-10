@@ -285,6 +285,7 @@
       "selected": "已选择",
       "publicPersonas": "公共人设",
       "myPersonas": "我的人设",
+      "showOnlyMyPersonas": "仅显示我的人设",
       "search": "搜索",
       "searchPlaceholder": "搜索人设名称或标签...",
       "searchAriaLabel": "通过名称或标签搜索人设",

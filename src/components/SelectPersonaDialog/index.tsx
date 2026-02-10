@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -9,10 +10,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Pagination } from "@/components/ui/pagination";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { BotIcon, EyeIcon, Loader2Icon, SearchIcon, XIcon } from "lucide-react";
+import { EyeIcon, Loader2Icon, SearchIcon, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchPersonasWithMeili } from "./actions";
@@ -37,17 +38,22 @@ export function SelectPersonaDialog({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [mode, setMode] = useState<"public" | "private">("public");
+  const [isPrivate, setIsPrivate] = useState(false);
   const [previewPersona, setPreviewPersona] = useState<TPersona | null>(null);
   const [showSelectedList, setShowSelectedList] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadPersonas = useCallback(
-    async (page: number, search = "") => {
+    async (page: number, search: string, privateMode: boolean) => {
       setLoading(true);
       try {
-        const result = await fetchPersonasWithMeili({ locale, searchQuery: search, page, mode });
+        const result = await fetchPersonasWithMeili({
+          locale,
+          searchQuery: search,
+          private: privateMode,
+          page,
+        });
         if (!result.success) throw result;
         setPersonas(result.data);
         if (result.pagination) {
@@ -57,41 +63,27 @@ export function SelectPersonaDialog({
         setLoading(false);
       }
     },
-    [locale, mode],
+    [locale],
   );
 
+  // 初始化：打开时重置状态并加载默认数据
   useEffect(() => {
     if (open) {
       setSelectedTokens([]);
       setSearchQuery("");
-      setMode("public");
+      setIsPrivate(false);
       setCurrentPage(1);
       if (inputRef.current) inputRef.current.value = "";
+      // 默认加载公开 personas
+      loadPersonas(1, "", false);
     }
-  }, [open]);
+  }, [open, loadPersonas]);
 
+  // 当 searchQuery、isPrivate 或 currentPage 变化时重新加载
   useEffect(() => {
     if (!open) return;
-
-    setSearchQuery("");
-    setCurrentPage(1);
-    if (inputRef.current) inputRef.current.value = "";
-
-    if (mode === "private") {
-      loadPersonas(1, "");
-    } else {
-      setPersonas([]);
-    }
-  }, [mode, open, loadPersonas]);
-
-  useEffect(() => {
-    if (!open) return;
-    if (mode === "private") {
-      loadPersonas(currentPage, "");
-    } else if (searchQuery.trim()) {
-      loadPersonas(currentPage, searchQuery);
-    }
-  }, [currentPage, searchQuery, open, loadPersonas, mode]);
+    loadPersonas(currentPage, searchQuery, isPrivate);
+  }, [currentPage, searchQuery, isPrivate, open, loadPersonas]);
 
   const selectedPersonas = useMemo(
     () => personas.filter((p) => selectedTokens.includes(p.token)),
@@ -111,10 +103,8 @@ export function SelectPersonaDialog({
   const handleSearch = useCallback((e: FormEvent) => {
     e.preventDefault();
     const value = inputRef.current?.value?.trim() ?? "";
-    if (value) {
-      setCurrentPage(1);
-      setSearchQuery(value);
-    }
+    setCurrentPage(1);
+    setSearchQuery(value);
   }, []);
 
   const handleClearSearch = useCallback(() => {
@@ -129,8 +119,7 @@ export function SelectPersonaDialog({
     );
   }, []);
 
-  const showEmptyState = mode === "public" && !searchQuery.trim();
-  const showNoResults = !loading && personas.length === 0 && !showEmptyState;
+  const showNoResults = !loading && personas.length === 0;
 
   return (
     <>
@@ -140,14 +129,7 @@ export function SelectPersonaDialog({
             <DialogTitle>{t("title")}</DialogTitle>
           </DialogHeader>
 
-          <Tabs value={mode} onValueChange={(value) => setMode(value as "public" | "private")}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="public">{t("publicPersonas")}</TabsTrigger>
-              <TabsTrigger value="private">{t("myPersonas")}</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {mode === "public" && (
+          <div className="space-y-3">
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="flex-1 relative">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -166,22 +148,31 @@ export function SelectPersonaDialog({
               </div>
               <Button type="submit">{t("search")}</Button>
             </form>
-          )}
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="privateMode"
+                checked={isPrivate}
+                onCheckedChange={(checked) => {
+                  setIsPrivate(checked === true);
+                  setCurrentPage(1);
+                }}
+              />
+              <Label htmlFor="privateMode" className="text-sm cursor-pointer">
+                {t("showOnlyMyPersonas")}
+              </Label>
+            </div>
+          </div>
 
           <div className="flex-1 flex flex-col min-h-0">
-            {loading && currentPage === 1 && (mode === "private" || !searchQuery) ? (
+            {loading && currentPage === 1 ? (
               <div className="flex-1 flex items-center justify-center">
                 <Loader2Icon className="h-8 w-8 animate-spin" />
-              </div>
-            ) : showEmptyState ? (
-              <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                <BotIcon className="h-12 w-12 opacity-50" />
-                <span className="text-sm">{t("searchFirstPrompt")}</span>
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto relative">
                 <div className="grid lg:grid-cols-3 gap-4">
-                  {loading && (currentPage > 1 || (mode === "public" && searchQuery)) && (
+                  {loading && currentPage > 1 && (
                     <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
                       <Loader2Icon className="h-8 w-8 animate-spin" />
                     </div>
@@ -190,13 +181,13 @@ export function SelectPersonaDialog({
                   {showNoResults ? (
                     <div className="col-span-3 py-12 text-center space-y-2">
                       <p className="text-muted-foreground">
-                        {mode === "public" && searchQuery
+                        {searchQuery
                           ? t("noResultsFound", { query: searchQuery })
-                          : mode === "private"
+                          : isPrivate
                             ? t("noPrivatePersonas")
                             : t("noPersonasAvailable")}
                       </p>
-                      {mode === "public" && searchQuery && (
+                      {searchQuery && (
                         <Button variant="ghost" size="sm" onClick={handleClearSearch}>
                           {t("clearSearch")}
                         </Button>

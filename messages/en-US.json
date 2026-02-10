@@ -285,6 +285,7 @@
       "selected": "Selected",
       "publicPersonas": "Public Personas",
       "myPersonas": "My Personas",
+      "showOnlyMyPersonas": "Show only my personas",
       "search": "Search",
       "searchPlaceholder": "Search personas by name or tags...",
       "searchAriaLabel": "Search personas by name or tags",
