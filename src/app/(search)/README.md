@@ -41,6 +41,13 @@ pnpm tsx scripts/admin/search-management.ts sync --filter '{"userId":2}'
 # 限制同步数量
 pnpm tsx scripts/admin/search-management.ts sync --limit 100
 
+# 断点续传：从指定 ID 继续同步
+pnpm tsx scripts/admin/search-management.ts sync --start-from-report-id 1900
+
+# 只同步 reports 或 podcasts
+pnpm tsx scripts/admin/search-management.ts sync --only-reports
+pnpm tsx scripts/admin/search-management.ts sync --only-podcasts
+
 # 组合使用
 pnpm tsx scripts/admin/search-management.ts sync -f '{"userId":2}' -l 100
 ```
@@ -117,6 +124,8 @@ pnpm tsx scripts/admin/search-management.ts sync   # 全量同步
 
 位置: `scripts/admin/search-management.ts`
 
+### 基本用法
+
 ```bash
 # 初始化索引
 pnpm tsx scripts/admin/search-management.ts init
@@ -133,6 +142,61 @@ pnpm tsx scripts/admin/search-management.ts sync --limit 100
 # 组合使用（同步用户 2 的前 50 条记录）
 pnpm tsx scripts/admin/search-management.ts sync -f '{"userId":2}' -l 50
 ```
+
+### 断点续传
+
+大数据量同步时如果中断，可以从指定 ID 继续：
+
+```bash
+# 从 report ID 1900 继续同步（查询条件：id > 1900）
+pnpm tsx scripts/admin/search-management.ts sync --start-from-report-id 1900
+
+# 从 podcast ID 500 继续同步
+pnpm tsx scripts/admin/search-management.ts sync --start-from-podcast-id 500
+
+# 同时指定两个起点
+pnpm tsx scripts/admin/search-management.ts sync \
+  --start-from-report-id 1900 \
+  --start-from-podcast-id 500
+```
+
+**如何确定续传起点：**
+
+脚本会输出每批次的 ID 范围，例如：
+```
+Report IDs fetched: count=5874, firstId=1, lastId=5874
+Report batch synced: batchNumber=191, totalBatches=196, batchSize=30, totalSynced=5730
+```
+
+如果在 batch 191 失败，可以从 lastId 继续：
+```bash
+pnpm tsx scripts/admin/search-management.ts sync --start-from-report-id 5730
+```
+
+### 选择性同步
+
+```bash
+# 只同步 reports（跳过 podcasts）
+pnpm tsx scripts/admin/search-management.ts sync --only-reports
+
+# 只同步 podcasts（跳过 reports）
+pnpm tsx scripts/admin/search-management.ts sync --only-podcasts
+
+# 组合使用：只同步 reports，从 ID 1900 开始
+pnpm tsx scripts/admin/search-management.ts sync --only-reports --start-from-report-id 1900
+```
+
+### 批量处理说明
+
+同步采用**两阶段批量处理**，避免大数据集的内存溢出和超时：
+
+1. **阶段 1**：只查询 ID（按 ID 升序）
+2. **阶段 2**：每 30 个 ID 一批，并行获取完整数据 + featured 状态，然后同步到 Meilisearch
+
+优势：
+- 内存占用小（第一阶段只查 ID）
+- 支持断点续传（按 ID 升序）
+- 批次大小（30）经过优化，避免超时
 
 ### 过滤条件说明
 

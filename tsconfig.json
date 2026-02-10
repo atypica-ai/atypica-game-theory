@@ -16,14 +16,20 @@
     "tsBuildInfoFile": ".next/.tsbuildinfo",
     "plugins": [
       {
-        "name": "next"
-      }
+        "name": "next",
+      },
     ],
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": ["./src/*"],
+    },
   },
-  "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "scripts/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts",
+  ],
   "exclude": [
     "node_modules",
     ".next",
@@ -31,13 +37,13 @@
     "dist",
     "build",
     "functions",
-    "scripts",
+    "scripts/archive",
     "__tests__",
     "prisma",
     "docs",
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "**/*.test.ts",
-    "**/*.test.tsx"
-  ]
+    "**/*.test.tsx",
+  ],
 }
