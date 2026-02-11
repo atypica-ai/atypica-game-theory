@@ -7,10 +7,10 @@ import { generateToken } from "@/lib/utils";
 import { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { syncPersona as syncPersonaToMeili } from "@/search/lib/sync";
-import { waitUntil } from "@vercel/functions";
 import { generateObject, UserModelMessage } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
+import { after } from "next/server";
 import { personaScoringPrompt } from "./prompt";
 import { personaScoringSchema, PersonaTier } from "./types";
 
@@ -65,19 +65,30 @@ export async function createPersonaWithPostProcess({
   }
 
   // 只调用 scorePersona，如果 tier > 0，再计算 embedding，否则清空 embedding
-  await scorePersona(persona);
+  const { tier } = await scorePersona(persona);
   // await Promise.all([createPersonaEmbedding(persona), scorePersona(persona)]);
 
-  // 异步同步到 Meilisearch
-  waitUntil(
-    syncPersonaToMeili(persona.id).catch((error) => {
-      rootLogger.error({
-        msg: "Failed to sync persona to search",
-        personaId: persona.id,
-        error: error instanceof Error ? error.message : String(error),
+  // 创建 embedding (目前已经用不到了)，同步到 Meilisearch
+  after(async () => {
+    if (tier === PersonaTier.Tier0) {
+      await clearPersonaEmbedding(persona);
+    } else {
+      await createPersonaEmbedding(persona).catch((error) => {
+        rootLogger.error({
+          msg: "Failed to create persona embedding",
+          personaId: persona.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
       });
-    }),
-  );
+      await syncPersonaToMeili(persona.id).catch((error) => {
+        rootLogger.error({
+          msg: "Failed to sync persona to search",
+          personaId: persona.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }
+  });
 
   return persona;
 }
@@ -115,7 +126,7 @@ async function clearPersonaEmbedding(persona: Persona) {
   }
 }
 
-export async function scorePersona(persona: Persona) {
+export async function scorePersona(persona: Persona): Promise<{ tier: PersonaTier }> {
   try {
     if (persona.personaImportId) {
       await prisma.persona.update({
@@ -125,7 +136,7 @@ export async function scorePersona(persona: Persona) {
       rootLogger.info(
         `Persona ${persona.id} scored with tier ${PersonaTier.Tier3} due to personaImportId.`,
       );
-      return;
+      return { tier: PersonaTier.Tier3 };
     }
 
     const locale = (persona.locale as Locale) ?? (await getLocale());
@@ -167,16 +178,13 @@ export async function scorePersona(persona: Persona) {
       data: { tier: tier },
     });
 
-    if (tier === PersonaTier.Tier0) {
-      await clearPersonaEmbedding(persona);
-    } else {
-      await createPersonaEmbedding(persona);
-    }
-
     rootLogger.info(
       `Persona ${persona.id} scored with tier ${tier}. ${JSON.stringify(result.object)}`,
     );
+
+    return { tier };
   } catch (error) {
     rootLogger.error(`Failed to score persona ${persona.id}: ${(error as Error).message}`);
+    return { tier: PersonaTier.Tier0 };
   }
 }

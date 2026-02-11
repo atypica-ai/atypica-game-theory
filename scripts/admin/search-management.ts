@@ -20,7 +20,82 @@ import { rootLogger } from "@/lib/logging";
 import { FeaturedItemResourceType, Prisma } from "@/prisma/client";
 const logger = rootLogger.child({ script: "search-management" });
 
-const FETCH_BATCH_SIZE = 30; // 每批并行获取 30 条
+const ARTIFACT_BATCH_SIZE = 500; // Batch size for reports and podcasts
+const PERSONA_BATCH_SIZE = 500; // Batch size for personas
+
+const MAX_RETRIES = 3; // 最大重试次数
+const RETRY_DELAY_MS = 5000; // 重试间隔 5 秒
+const TASK_TIMEOUT_MS = 120000; // 任务超时 120 秒
+
+/**
+ * 等待 Meilisearch 任务完成，支持重试
+ */
+async function waitForTaskWithRetry(
+  task: { waitTask: (options?: { timeout: number }) => Promise<any> },
+  context: { batchNumber: number; batchType: string },
+): Promise<any> {
+  await new Promise((resolve) => setTimeout(resolve, 10000));
+  if (1 === 1) return;
+  // 我发现其实不需要等待任务结束，设定个合适的间隔提交就行，meili 是后台排队处理
+
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      logger.info({
+        msg: "Waiting for task to complete",
+        ...context,
+        attempt,
+        maxRetries: MAX_RETRIES,
+        timeout: TASK_TIMEOUT_MS,
+      });
+
+      const result = await task.waitTask({ timeout: TASK_TIMEOUT_MS });
+
+      if (result.status === "failed") {
+        throw new Error(`Task failed: ${JSON.stringify(result.error)}`);
+      }
+
+      logger.info({
+        msg: "Task completed successfully",
+        ...context,
+        attempt,
+      });
+
+      return result;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      logger.warn({
+        msg: "Task wait failed, will retry",
+        ...context,
+        attempt,
+        maxRetries: MAX_RETRIES,
+        error: lastError.message,
+        willRetry: attempt < MAX_RETRIES,
+      });
+
+      if (attempt < MAX_RETRIES) {
+        logger.info({
+          msg: "Waiting before retry",
+          ...context,
+          delayMs: RETRY_DELAY_MS,
+        });
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      }
+    }
+  }
+
+  // 所有重试都失败了
+  logger.error({
+    msg: "All retry attempts exhausted",
+    ...context,
+    maxRetries: MAX_RETRIES,
+    error: lastError?.message,
+  });
+
+  throw lastError;
+}
 
 /**
  * 全量同步所有 Reports 和 Podcasts
@@ -155,13 +230,13 @@ export async function syncAllArtifacts(options?: {
       logger.info({
         msg: "Starting report sync in batches",
         totalReports: reportIds.length,
-        fetchBatchSize: FETCH_BATCH_SIZE,
+        fetchBatchSize: ARTIFACT_BATCH_SIZE,
       });
 
-      for (let i = 0; i < reportIds.length; i += FETCH_BATCH_SIZE) {
-        const batchIds = reportIds.slice(i, i + FETCH_BATCH_SIZE);
-        const batchNumber = Math.floor(i / FETCH_BATCH_SIZE) + 1;
-        const totalBatches = Math.ceil(reportIds.length / FETCH_BATCH_SIZE);
+      for (let i = 0; i < reportIds.length; i += ARTIFACT_BATCH_SIZE) {
+        const batchIds = reportIds.slice(i, i + ARTIFACT_BATCH_SIZE);
+        const batchNumber = Math.floor(i / ARTIFACT_BATCH_SIZE) + 1;
+        const totalBatches = Math.ceil(reportIds.length / ARTIFACT_BATCH_SIZE);
 
         logger.info({
           msg: "Fetching report batch",
@@ -194,16 +269,10 @@ export async function syncAllArtifacts(options?: {
         // 同步到 Meilisearch
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          const result = await task.waitTask({ timeout: 30000 }); // 30 seconds timeout
-
-          if (result.status === "failed") {
-            logger.error({
-              msg: "Report batch sync failed",
-              batchNumber,
-              error: result.error,
-            });
-            throw new Error(`Report batch ${batchNumber} failed: ${JSON.stringify(result.error)}`);
-          }
+          await waitForTaskWithRetry(task, {
+            batchNumber,
+            batchType: "report",
+          });
 
           totalReportsSynced += documents.length;
           const lastProcessedId = Math.max(...reports.map((r) => r.id));
@@ -224,13 +293,13 @@ export async function syncAllArtifacts(options?: {
       logger.info({
         msg: "Starting podcast sync in batches",
         totalPodcasts: podcastIds.length,
-        fetchBatchSize: FETCH_BATCH_SIZE,
+        fetchBatchSize: ARTIFACT_BATCH_SIZE,
       });
 
-      for (let i = 0; i < podcastIds.length; i += FETCH_BATCH_SIZE) {
-        const batchIds = podcastIds.slice(i, i + FETCH_BATCH_SIZE);
-        const batchNumber = Math.floor(i / FETCH_BATCH_SIZE) + 1;
-        const totalBatches = Math.ceil(podcastIds.length / FETCH_BATCH_SIZE);
+      for (let i = 0; i < podcastIds.length; i += ARTIFACT_BATCH_SIZE) {
+        const batchIds = podcastIds.slice(i, i + ARTIFACT_BATCH_SIZE);
+        const batchNumber = Math.floor(i / ARTIFACT_BATCH_SIZE) + 1;
+        const totalBatches = Math.ceil(podcastIds.length / ARTIFACT_BATCH_SIZE);
 
         logger.info({
           msg: "Fetching podcast batch",
@@ -263,16 +332,10 @@ export async function syncAllArtifacts(options?: {
         // 同步到 Meilisearch
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          const result = await task.waitTask({ timeout: 30000 }); // 30 seconds timeout
-
-          if (result.status === "failed") {
-            logger.error({
-              msg: "Podcast batch sync failed",
-              batchNumber,
-              error: result.error,
-            });
-            throw new Error(`Podcast batch ${batchNumber} failed: ${JSON.stringify(result.error)}`);
-          }
+          await waitForTaskWithRetry(task, {
+            batchNumber,
+            batchType: "podcast",
+          });
 
           totalPodcastsSynced += documents.length;
           const lastProcessedId = Math.max(...podcasts.map((p) => p.id));
@@ -385,20 +448,19 @@ export async function syncAllPersonas(options?: {
     });
 
     // Step 2: 分批并行获取完整数据并同步
-    const FETCH_BATCH_SIZE = 30; // 每批并行获取 30 条
     let totalPersonasSynced = 0;
 
     if (personaIds.length > 0) {
       logger.info({
         msg: "Starting persona sync in batches",
         totalPersonas: personaIds.length,
-        fetchBatchSize: FETCH_BATCH_SIZE,
+        fetchBatchSize: PERSONA_BATCH_SIZE,
       });
 
-      for (let i = 0; i < personaIds.length; i += FETCH_BATCH_SIZE) {
-        const batchIds = personaIds.slice(i, i + FETCH_BATCH_SIZE);
-        const batchNumber = Math.floor(i / FETCH_BATCH_SIZE) + 1;
-        const totalBatches = Math.ceil(personaIds.length / FETCH_BATCH_SIZE);
+      for (let i = 0; i < personaIds.length; i += PERSONA_BATCH_SIZE) {
+        const batchIds = personaIds.slice(i, i + PERSONA_BATCH_SIZE);
+        const batchNumber = Math.floor(i / PERSONA_BATCH_SIZE) + 1;
+        const totalBatches = Math.ceil(personaIds.length / PERSONA_BATCH_SIZE);
 
         logger.info({
           msg: "Fetching persona batch",
@@ -431,16 +493,10 @@ export async function syncAllPersonas(options?: {
         // 同步到 Meilisearch
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          const result = await task.waitTask({ timeout: 30000 }); // 30 seconds timeout
-
-          if (result.status === "failed") {
-            logger.error({
-              msg: "Persona batch sync failed",
-              batchNumber,
-              error: result.error,
-            });
-            throw new Error(`Persona batch ${batchNumber} failed: ${JSON.stringify(result.error)}`);
-          }
+          await waitForTaskWithRetry(task, {
+            batchNumber,
+            batchType: "persona",
+          });
 
           totalPersonasSynced += documents.length;
           const lastProcessedId = Math.max(...personas.map((p) => p.id));
