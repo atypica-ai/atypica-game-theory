@@ -36,7 +36,7 @@
 #    ```bash
 #    git clone git@github.com:bmrlab/atypica-research-skill.git
 #    cd atypica-research-skill
-#    cp -r ../atypica-llm-app/src/app/(study)/skills/atypica-research/* .
+#    cp -r ../atypica-llm-app/src/app/(open)/skills/atypica-research/* .
 #    git add .
 #    git commit -m "Initial commit"
 #    git push origin main
@@ -52,7 +52,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'src/app/(study)/skills/atypica-research/**'
+      - 'src/app/(open)/skills/atypica-research/**'
 
 jobs:
   publish:
@@ -73,7 +73,7 @@ jobs:
       - name: Sync skill files
         run: |
           # 复制所有 skill 文件到目标仓库
-          cp -r "src/app/(study)/skills/atypica-research/"* skill-repo/
+          cp -r "src/app/(open)/skills/atypica-research/"* skill-repo/
 
           # 生成同步信息文件
           cd skill-repo
@@ -95,7 +95,7 @@ jobs:
           ## Do not edit files directly in this repository
 
           All changes should be made in the main repository under:
-          \`src/app/(study)/skills/atypica-research/\`
+          \`src/app/(open)/skills/atypica-research/\`
           SYNCEOF
 
       - name: Commit and push to skill repo
