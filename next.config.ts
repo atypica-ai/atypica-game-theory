@@ -6,9 +6,9 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   // Include docs in standalone output for documentation pages
   outputFileTracingIncludes: {
-    "/(docs)/features/[slug]": ["./docs/**/*"],
-    "/(docs)/faq/[slug]": ["./docs/**/*"],
-    "/(docs)/guides/[slug]": ["./docs/**/*"],
+    "/(public)/(docs)/features/[slug]": ["./docs/**/*"],
+    "/(public)/(docs)/faq/[slug]": ["./docs/**/*"],
+    "/(public)/(docs)/guides/[slug]": ["./docs/**/*"],
   },
   webpack: (config, { isServer, webpack }) => {
     if (isServer) {

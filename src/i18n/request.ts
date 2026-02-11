@@ -24,7 +24,7 @@ const getMessages = async (locale: string) => {
     import(`../app/(sage)/messages/${locale}.json`),
     import(`../app/(study)/messages/${locale}.json`),
     import(`../app/(public)/messages/${locale}.json`),
-    import(`../app/(solutions)/messages/${locale}.json`),
+    import(`../app/(public)/(solutions)/messages/${locale}.json`),
     import(`../app/account/messages/${locale}.json`),
     import(`../app/team/messages/${locale}.json`),
     import(`../app/(universal)/messages/${locale}.json`),

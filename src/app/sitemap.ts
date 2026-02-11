@@ -1,6 +1,6 @@
-import { docs as faqDocs } from "@/app/(docs)/faq/docs-config";
-import { docs as featureDocs } from "@/app/(docs)/features/docs-config";
-import { docs as guideDocs } from "@/app/(docs)/guides/docs-config";
+import { docs as faqDocs } from "@/app/(public)/(docs)/faq/docs-config";
+import { docs as featureDocs } from "@/app/(public)/(docs)/features/docs-config";
+import { docs as guideDocs } from "@/app/(public)/(docs)/guides/docs-config";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
