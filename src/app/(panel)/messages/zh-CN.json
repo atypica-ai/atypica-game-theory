@@ -1,0 +1,24 @@
+{
+  "PersonaPanel": {
+    "title": "我的人物面板",
+    "subtitle": "管理和复用您的人物组合，用于讨论和访谈",
+    "createNewPanel": "创建新面板",
+    "createNewPanelDescription": "开始新讨论以创建可复用的人物面板",
+    "startDiscussion": "开始讨论",
+    "panelId": "面板 #{id}",
+    "personaCount": "{count} 个人物",
+    "personas": "人物",
+    "andMore": "还有 {count} 个",
+    "discussions": "{count, plural, =0 {未使用} =1 {1 次讨论} other {# 次讨论}}",
+    "interviews": "{count, plural, =0 {未访谈} =1 {1 次访谈} other {# 次访谈}}",
+    "loadingFailed": "加载人物面板失败",
+    "deleteSuccess": "面板删除成功",
+    "deleteFailed": "删除面板失败",
+    "cannotDeleteUsedPanel": "无法删除正在使用的面板",
+    "confirmDelete": "删除人物面板",
+    "deleteWarning": "确定要删除面板 #{id} 吗？此操作无法撤销。",
+    "cancel": "取消",
+    "delete": "删除",
+    "deleting": "删除中..."
+  }
+}
