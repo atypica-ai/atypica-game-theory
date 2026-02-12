@@ -40,7 +40,7 @@ async function main() {
         OR: [{ extra: { equals: {} } }, { extra: { path: ["role"], equals: Prisma.JsonNull } }],
       },
       orderBy: { id: "asc" },
-      skip,
+      // skip, 每次都是过滤 extra 为空的，所以，其实就不用 skip 了，对吧?
       take: batchSize,
     });
 
