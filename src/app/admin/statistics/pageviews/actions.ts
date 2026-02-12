@@ -8,7 +8,7 @@ import {
 } from "@/lib/analytics/google/reporter";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystPodcast, AnalystReport, AnalystReportExtra, User, UserChat } from "@/prisma/client";
+import { AnalystPodcast, AnalystReport, User, UserChat } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 
 export interface PageViewWithReport extends PageViewsReport {
@@ -98,7 +98,7 @@ export async function fetchTopPageViewsAction(
     // Generate cover URLs for reports that have coverObjectUrl
     const reportsWithCoverUrls = await Promise.all(
       reportDetails.map(async (report) => {
-        const objectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
+        const objectUrl = report.extra.coverObjectUrl;
         if (objectUrl) {
           const coverUrl = await getS3SignedCdnUrl(objectUrl);
           return { ...report, coverUrl };

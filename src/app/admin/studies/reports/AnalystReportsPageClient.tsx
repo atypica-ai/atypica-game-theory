@@ -10,7 +10,6 @@ import { Switch } from "@/components/ui/switch";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { AnalystReportExtra } from "@/prisma/client";
 import {
   CameraIcon,
   ChevronDown,
@@ -265,7 +264,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                     <div className="flex-1 min-w-0">
                       <div className="leading-normal truncate font-semibold">
                         <span className="text-xs text-muted-foreground font-normal">Brief: </span>
-                        {(report.extra as AnalystReportExtra).title || "Untitled Report"}
+                        {report.extra.title || "Untitled Report"}
                       </div>
                     </div>
                     <button
@@ -353,7 +352,7 @@ export function AnalystReportsPageClient({ initialSearchParams }: AnalystReports
                         expandedTopics.has(report.id) ? "whitespace-pre-wrap" : "line-clamp-2"
                       }`}
                     >
-                      {(report.extra as AnalystReportExtra).description}
+                      {report.extra.description}
                     </p>
                   </div>
 

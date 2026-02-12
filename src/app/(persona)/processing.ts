@@ -26,81 +26,65 @@ import {
 import { analysisSchema } from "./types";
 
 export async function processPersonaImport(personaImportId: number) {
-  const convertType = ({ attachments, extra, ...personaImport }: PersonaImport) => ({
-    ...personaImport,
-    attachments: attachments as unknown as ChatMessageAttachment[],
-    extra: extra as unknown as PersonaImportExtra,
+  let personaImport = await prisma.personaImport.findUniqueOrThrow({
+    where: { id: personaImportId },
   });
-
-  let personaImport = await prisma.personaImport
-    .findUniqueOrThrow({
-      where: { id: personaImportId },
-    })
-    .then(convertType);
 
   const shouldResetContext =
     !personaImport.context || !!personaImport.extra.error || !!personaImport.extra.processing;
 
-  personaImport = await prisma.personaImport
-    .update({
-      where: { id: personaImportId },
-      data: {
-        ...(shouldResetContext ? { context: "" } : {}),
-        analysis: {},
-        extra: {
-          ...personaImport.extra,
-          error: undefined,
-          processing: {
-            startsAt: Date.now(),
-            parseAttachment: shouldResetContext ? false : true,
-            buildPersonaPrompt: false,
-            analyzeCompleteness: false,
-          },
-        } as PersonaImportExtra,
-      },
-    })
-    .then(convertType);
+  personaImport = await prisma.personaImport.update({
+    where: { id: personaImportId },
+    data: {
+      ...(shouldResetContext ? { context: "" } : {}),
+      analysis: {},
+      extra: {
+        ...personaImport.extra,
+        error: undefined,
+        processing: {
+          startsAt: Date.now(),
+          parseAttachment: shouldResetContext ? false : true,
+          buildPersonaPrompt: false,
+          analyzeCompleteness: false,
+        },
+      } satisfies PersonaImportExtra,
+    },
+  });
 
   try {
     if (shouldResetContext) {
       const context = await attachmentToContext(personaImport);
-      personaImport = await prisma.personaImport
-        .update({
-          where: { id: personaImport.id },
-          data: {
-            context,
-            extra: {
-              ...personaImport.extra,
-              processing: { ...personaImport.extra.processing, parseAttachment: true },
-            },
+      personaImport = await prisma.personaImport.update({
+        where: { id: personaImport.id },
+        data: {
+          context,
+          extra: {
+            ...personaImport.extra,
+            processing: { ...personaImport.extra.processing, parseAttachment: true },
           },
-        })
-        .then(convertType);
+        },
+      });
     }
 
     const analysis = await analyzeInterviewCompleteness(personaImport);
-    personaImport = await prisma.personaImport
-      .update({
-        where: { id: personaImport.id },
-        data: {
-          analysis,
-          extra: {
-            ...personaImport.extra,
-            processing: { ...personaImport.extra.processing, analyzeCompleteness: true },
-          },
+    personaImport = await prisma.personaImport.update({
+      where: { id: personaImport.id },
+      data: {
+        analysis,
+        extra: {
+          ...personaImport.extra,
+          processing: { ...personaImport.extra.processing, analyzeCompleteness: true },
         },
-      })
-      .then(convertType);
+      },
+    });
 
     await buildPersonaAgentPrompt(personaImport);
-    personaImport = await prisma.personaImport
-      .update({
-        where: { id: personaImport.id },
-        data: {
-          extra: { ...personaImport.extra, error: undefined, processing: false },
-        },
-      })
-      .then(convertType);
+    personaImport = await prisma.personaImport.update({
+      where: { id: personaImport.id },
+      data: {
+        extra: { ...personaImport.extra, error: undefined, processing: false },
+      },
+    });
 
     // Track persona import completed
     trackEventServerSide({

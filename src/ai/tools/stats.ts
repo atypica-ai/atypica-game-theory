@@ -1,7 +1,6 @@
 import { prisma } from "@/prisma/prisma";
 import { consumeUserTokens } from "@/tokens/lib";
 import { TokensLogResourceType } from "@/tokens/types";
-import { InputJsonValue } from "@prisma/client/runtime/client";
 import { after } from "next/server";
 import { Logger } from "pino";
 import { StatReporter } from "./types";
@@ -86,7 +85,7 @@ export const initStudyStatReporter = ({
         userChatId: studyUserChatId,
         dimension,
         value,
-        extra: extra as InputJsonValue,
+        extra,
       },
     });
     if (dimension === "tokens") {
@@ -120,7 +119,7 @@ export const initGenericUserChatStatReporter = ({
         userChatId: userChatId,
         dimension,
         value,
-        extra: extra as InputJsonValue,
+        extra,
       },
     });
     if (dimension === "tokens") {
@@ -157,7 +156,7 @@ export const initInterviewProjectStatReporter = ({
           userChatId: sessionUserChatId,
           dimension,
           value,
-          extra: extra as InputJsonValue,
+          extra,
         },
       });
     }
@@ -195,7 +194,7 @@ export const initPersonaImportStatReporter = ({
           userChatId: userChatId,
           dimension,
           value,
-          extra: extra as InputJsonValue,
+          extra,
         },
       });
     }

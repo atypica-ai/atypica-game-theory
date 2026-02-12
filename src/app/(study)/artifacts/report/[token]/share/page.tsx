@@ -2,7 +2,6 @@ import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { truncateForTitle } from "@/lib/textUtils";
-import { AnalystReportExtra } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { Metadata } from "next";
 import { getLocale } from "next-intl/server";
@@ -61,17 +60,17 @@ export async function generateMetadata({
 
   const title =
     "📝 " +
-    truncateForTitle((report.extra as AnalystReportExtra).title || "", {
+    truncateForTitle(report.extra.title || "", {
       maxDisplayWidth: 100,
       suffix: "...",
     });
-  const description = truncateForTitle((report.extra as AnalystReportExtra).description || "", {
+  const description = truncateForTitle(report.extra.description || "", {
     maxDisplayWidth: 300,
     suffix: "...",
   }).replace(/[\n\r]/g, " ");
 
   let image: string | undefined;
-  const reportCoverObjectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
+  const reportCoverObjectUrl = report.extra.coverObjectUrl;
   if (reportCoverObjectUrl) {
     image = await getS3SignedCdnUrl(reportCoverObjectUrl);
   }
@@ -84,14 +83,14 @@ async function ReportSharePage({ reportToken }: { reportToken: string }) {
   const report = await getCachedReportData(reportToken);
   if (!report) notFound();
 
-  const extra = report.extra as AnalystReportExtra;
+  const extra = report.extra;
   const studyReplayUrl = extra.userChatToken
     ? `/study/${extra.userChatToken}/share?replay=1`
     : undefined;
 
   // Extract structured data for SEO
   let coverImageUrl: string | undefined;
-  const reportCoverObjectUrl = (report.extra as AnalystReportExtra)?.coverObjectUrl;
+  const reportCoverObjectUrl = report.extra?.coverObjectUrl;
   if (reportCoverObjectUrl) {
     coverImageUrl = await getS3SignedCdnUrl(reportCoverObjectUrl);
   }

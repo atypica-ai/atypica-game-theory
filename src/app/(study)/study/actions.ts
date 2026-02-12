@@ -12,7 +12,6 @@ import {
   AnalystPodcast,
   AnalystPodcastExtra,
   AnalystReport,
-  AnalystReportExtra,
   ChatMessageAttachment,
   Persona,
   UserChat,
@@ -479,7 +478,7 @@ export async function fetchAnalystReportByToken(token: string): Promise<
   }
 
   const { extra, ...rest } = report;
-  const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
+  const objectUrl = extra.coverObjectUrl;
   const coverCdnHttpUrl = objectUrl ? await getS3SignedCdnUrl(objectUrl) : undefined;
 
   return {
@@ -534,7 +533,7 @@ export async function fetchAnalystReportsOfStudyUserChat({
   const reportsWithCoverUrls = await Promise.all(
     reports.map(async (report) => {
       const { extra, ...rest } = report;
-      const objectUrl = (extra as AnalystReportExtra).coverObjectUrl;
+      const objectUrl = extra.coverObjectUrl;
       if (objectUrl) {
         const coverCdnHttpUrl = await getS3SignedCdnUrl(objectUrl);
         return { ...rest, coverCdnHttpUrl };
@@ -592,7 +591,7 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
     success: true,
     data: podcasts.map(({ extra, ...podcast }) => ({
       ...podcast,
-      extra: extra as AnalystPodcastExtra,
+      extra: extra,
     })),
   };
 }

@@ -1,5 +1,6 @@
 import type { Locale } from "next-intl";
 import type { DiscussionTimelineEvent } from "../app/(panel)/types";
+import type { PersonaImportAnalysis } from "../app/(persona)/types";
 import type * as sage from "../app/(sage)/types";
 import type { UserChatContext } from "../app/(study)/context/types";
 import type { TokensLogResourceType } from "../tokens/types";
@@ -34,6 +35,7 @@ declare global {
       UserChatExtra: client.UserChatExtra;
       ChatMessagePart: client.ChatMessagePart;
       ChatMessageAttachment: client.ChatMessageAttachment;
+      AgentStatisticsExtra: client.AgentStatisticsExtra;
 
       // Subscription and Tokens
       SubscriptionExtra: client.SubscriptionExtra;
@@ -47,6 +49,7 @@ declare global {
 
       // Persona
       PersonaExtra: client.PersonaExtra;
+      PersonaImportAnalysis: PersonaImportAnalysis;
       PersonaImportExtra: client.PersonaImportExtra;
       PersonaPanelExtra: client.PersonaPanelExtra;
 

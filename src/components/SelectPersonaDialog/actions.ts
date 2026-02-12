@@ -100,7 +100,7 @@ export async function fetchPersonasWithMeili({
       success: true,
       data: orderedPersonas.map((persona) => ({
         ...persona,
-        tags: persona.tags as string[],
+        tags: persona.tags,
       })),
       pagination: {
         page,
@@ -175,13 +175,7 @@ async function fetchPersonasWithEmbedding({
 
     return {
       success: true,
-      data: personas.map(({ token, tags, ...persona }) => {
-        return {
-          ...persona,
-          token: token,
-          tags: tags as string[],
-        };
-      }),
+      data: personas,
       pagination: {
         page,
         pageSize,
@@ -212,12 +206,7 @@ async function fetchPersonasWithEmbedding({
       const totalCount = Math.min(40, Number(totalCountResult[0].count));
       return {
         success: true,
-        data: personas.map((persona) => {
-          return {
-            ...persona,
-            tags: persona.tags as string[],
-          };
-        }),
+        data: personas,
         pagination: {
           page,
           pageSize,
@@ -265,7 +254,7 @@ async function fetchPersonasWithEmbedding({
       return {
         ...persona,
         token: token,
-        tags: tags as string[],
+        tags: tags,
       };
     }),
     pagination: {

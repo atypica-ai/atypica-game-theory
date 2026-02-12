@@ -5,7 +5,7 @@ import { initStudyStatReporter } from "@/ai/tools/stats";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
-import { AnalystReportExtra, ImageGenerationExtra } from "@/prisma/client";
+import { ImageGenerationExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { experimental_generateImage as generateImage } from "ai";
@@ -80,7 +80,7 @@ async function backgroundGenerateImage({
       extra: true,
     },
   });
-  const userChatToken = (report.extra as AnalystReportExtra).userChatToken;
+  const userChatToken = report.extra.userChatToken;
   if (!userChatToken) {
     rootLogger.error(`Failed to find userChatToken for report ${report.token}`);
     return new Response("Something went wrong", { status: 500 });

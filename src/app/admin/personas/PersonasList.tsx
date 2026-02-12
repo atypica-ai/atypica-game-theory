@@ -384,7 +384,7 @@ export default function PersonasList({
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
                   <div className="flex flex-wrap gap-1.5">
-                    {(persona.tags as string[])?.map((tag, index) => (
+                    {persona.tags?.map((tag, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
                         {tag}
                       </Badge>
@@ -439,7 +439,7 @@ export default function PersonasList({
               {selectedPersona && chatCreating[selectedPersona.token] ? "Starting..." : "Chat"}
             </Button>
             <div className="flex flex-wrap gap-2">
-              {(selectedPersona?.tags as string[])?.map((tag, index) => (
+              {selectedPersona?.tags?.map((tag, index) => (
                 <Badge key={index} variant="outline">
                   {tag}
                 </Badge>

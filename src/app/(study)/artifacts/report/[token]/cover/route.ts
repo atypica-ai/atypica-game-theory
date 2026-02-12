@@ -7,7 +7,6 @@
 
 import { getS3Object } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
-import { AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
@@ -226,7 +225,7 @@ export async function GET(
       reportToken,
     });
 
-    const extra = report.extra as AnalystReportExtra | null;
+    const extra = report.extra;
     if (!extra?.coverObjectUrl) {
       return new NextResponse("No cover image available", { status: 404 });
     }

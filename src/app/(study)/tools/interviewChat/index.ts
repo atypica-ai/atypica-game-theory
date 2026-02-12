@@ -110,7 +110,7 @@ export const interviewChatTool = ({
           data: {
             userId,
             personaIds: mergeIds(
-              personaPanel.personaIds as number[],
+              personaPanel.personaIds,
               personas.map((p) => p.id),
             ),
           },

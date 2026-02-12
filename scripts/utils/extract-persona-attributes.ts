@@ -25,7 +25,7 @@ async function main() {
 
   console.log(`Total personas to process: ${totalCount}`);
 
-  const batchSize = 30;
+  const batchSize = 50;
   const totalBatches = Math.ceil(totalCount / batchSize);
 
   for (let i = 0; i < totalBatches; i++) {
@@ -46,11 +46,15 @@ async function main() {
 
     // 并行处理当前批次
     const promises = personas.map(async (persona) => {
+      const extra = persona.extra;
       await extractPersonaAttributes(persona);
       console.log(`Persona ${persona.id} processed`);
     });
 
-    await Promise.all(promises);
+    await Promise.race([
+      new Promise((resolve) => setTimeout(resolve, 10000)),
+      Promise.allSettled(promises),
+    ]);
     console.log(`Batch ${i + 1} completed`);
   }
 

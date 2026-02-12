@@ -115,30 +115,25 @@ export async function generatePodcastAudioFromScriptAction({
 
     // Create podcast record with the provided script
     const podcastToken = generateToken();
-    const podcast = await prisma.analystPodcast
-      .create({
-        data: {
-          userId: adminUserId,
-          token: podcastToken,
-          instruction: "[TEST] Script-based audio generation",
-          script: script.trim(),
-          extra: {
-            kindDetermination: {
-              kind: podcastKind,
-              reason: "Test podcast audio generation",
-            },
-            processing: {
-              startsAt: Date.now(),
-              scriptGeneration: true, // Script already provided
-              audioGeneration: false,
-            },
-          } as AnalystPodcastExtra,
-        },
-      })
-      .then(({ extra, ...podcast }) => ({
-        ...podcast,
-        extra: extra as AnalystPodcastExtra,
-      }));
+    const podcast = await prisma.analystPodcast.create({
+      data: {
+        userId: adminUserId,
+        token: podcastToken,
+        instruction: "[TEST] Script-based audio generation",
+        script: script.trim(),
+        extra: {
+          kindDetermination: {
+            kind: podcastKind,
+            reason: "Test podcast audio generation",
+          },
+          processing: {
+            startsAt: Date.now(),
+            scriptGeneration: true, // Script already provided
+            audioGeneration: false,
+          },
+        } satisfies AnalystPodcastExtra,
+      },
+    });
 
     logger.info({
       msg: "Test podcast record created",

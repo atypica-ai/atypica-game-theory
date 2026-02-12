@@ -78,7 +78,7 @@ The tool will create 3-5 personas based on collected data and requirements.`,
           (persona) => ({
             personaId: persona.id,
             name: persona.name,
-            tags: persona.tags as string[],
+            tags: persona.tags,
             source: persona.source,
           }),
         );

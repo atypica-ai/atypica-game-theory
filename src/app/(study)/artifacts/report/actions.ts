@@ -1,7 +1,6 @@
 "use server";
 import { generateReportPDF } from "@/app/(study)/artifacts/lib/pdf";
 import { withAuth } from "@/lib/request/withAuth";
-import { AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { forbidden } from "next/navigation";
 
@@ -25,7 +24,7 @@ export async function generateReportPDFAction(reportToken: string): Promise<{
       forbidden();
     }
 
-    const topic = ((report.extra as AnalystReportExtra).description ?? "")
+    const topic = (report.extra.description ?? "")
       .replace(/\s+/g, " ")
       .replace(/[<>:"/\\|?*]/g, "")
       .replace(/\./g, "");
@@ -48,7 +47,7 @@ export async function generateReportPDFAction(reportToken: string): Promise<{
     } = await generateReportPDF({
       ...report,
       userId: report.userId,
-      extra: report.extra as AnalystReportExtra,
+      extra: report.extra,
     });
 
     return {

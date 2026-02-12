@@ -8,7 +8,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/utils";
-import { AnalystPodcastExtra } from "@/prisma/client";
 import { RefreshCwIcon } from "lucide-react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
@@ -78,8 +77,7 @@ export function PodcastsList({ data, isLoading }: PodcastsListProps) {
                           className="block hover:text-blue-600 transition-colors"
                         >
                           <p className="font-medium text-sm line-clamp-2">
-                            {(pageView.podcast.extra as AnalystPodcastExtra)?.metadata?.title ||
-                              "Untitled Podcast"}
+                            {pageView.podcast.extra?.metadata?.title || "Untitled Podcast"}
                           </p>
                         </Link>
                         {/* Script Preview - Not clickable */}

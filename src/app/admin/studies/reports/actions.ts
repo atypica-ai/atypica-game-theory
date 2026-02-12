@@ -219,7 +219,7 @@ export async function fetchAnalystReportsAction(
   // Generate cover URLs for reports that have coverObjectUrl
   const reportsWithCoverUrls = await Promise.all(
     sortedReports.map(async (report) => {
-      const objectUrl = (report.extra as AnalystReportExtra).coverObjectUrl;
+      const objectUrl = report.extra.coverObjectUrl;
       const featuredInfo = featuredItemsMap.get(report.id);
       if (objectUrl) {
         const coverCdnHttpUrl = await getS3SignedCdnUrl(objectUrl);
@@ -275,8 +275,7 @@ export async function adminGenerateScreenshotAction(
 
   // const { coverUrl } = await generateReportScreenshot(report);
   // ⚠️ 重新生成封面的时候，直接使用 report 上的 description
-  const studyLog =
-    (report.extra as AnalystReportExtra).description || (report.extra as AnalystReportExtra).title;
+  const studyLog = report.extra.description || report.extra.title;
   if (!studyLog) {
     return {
       success: false,
@@ -334,7 +333,7 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
     });
   } else {
     // Add to featured - copy info from report
-    const extra = report.extra as AnalystReportExtra;
+    const extra = report.extra;
     if (!extra.title || !extra.description) {
       return {
         success: false,
@@ -361,7 +360,7 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
           coverObjectUrl: extra?.coverObjectUrl || "",
           url: `/artifacts/report/${report.token}/share`,
           // category: report.analyst.kind || undefined, // 保留字段但不使用
-          tags: (report.extra as AnalystReportExtra).analystKind || "", // 默认写入 kind 作为 tags
+          tags: report.extra.analystKind || "", // 默认写入 kind 作为 tags
         } satisfies FeaturedItemExtra,
       },
     });

@@ -196,7 +196,7 @@ export function SelectPersonaDialog({
                   ) : (
                     personas.map((persona) => {
                       const isSelected = selectedTokens.includes(persona.token);
-                      const displayTags = filterDisplayTags(persona.tags as string[]);
+                      const displayTags = filterDisplayTags(persona.tags);
 
                       return (
                         <Card
@@ -297,11 +297,11 @@ export function SelectPersonaDialog({
                 </p>
               </div>
 
-              {previewPersona.tags && (previewPersona.tags as string[]).length > 0 && (
+              {previewPersona.tags && previewPersona.tags.length > 0 && (
                 <div>
                   <p className="text-sm font-medium mb-2">{t("tags")}</p>
                   <div className="flex flex-wrap gap-2">
-                    {filterDisplayTags(previewPersona.tags as string[]).map((tag, idx) => (
+                    {filterDisplayTags(previewPersona.tags).map((tag, idx) => (
                       <Badge key={idx} variant="outline">
                         {tag}
                       </Badge>
@@ -357,9 +357,9 @@ export function SelectPersonaDialog({
                       </Button>
                     </div>
                   </div>
-                  {persona.tags && (persona.tags as string[]).length > 0 && (
+                  {persona.tags && persona.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {filterDisplayTags(persona.tags as string[]).map((tag, idx) => (
+                      {filterDisplayTags(persona.tags).map((tag, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs">
                           {tag}
                         </Badge>

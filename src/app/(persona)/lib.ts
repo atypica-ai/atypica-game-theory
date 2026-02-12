@@ -157,7 +157,7 @@ export async function extractPersonaAttributes(persona: Persona): Promise<void> 
           content: [
             {
               type: "text",
-              text: `Name: ${persona.name}\n\nPrompt: ${persona.prompt}\n\nTags: ${(persona.tags as string[]).join(", ")}`,
+              text: `Name: ${persona.name}\n\nPrompt: ${persona.prompt}\n\nTags: ${persona.tags.join(", ")}`,
             },
           ],
         },
@@ -168,7 +168,7 @@ export async function extractPersonaAttributes(persona: Persona): Promise<void> 
     await mergeExtra({
       tableName: "Persona",
       id: persona.id,
-      extra: attributesResult.object as PersonaExtra,
+      extra: attributesResult.object satisfies PersonaExtra,
     });
 
     rootLogger.info({
@@ -213,7 +213,7 @@ export async function scorePersona(persona: Persona): Promise<{ tier: PersonaTie
           content: [
             {
               type: "text",
-              text: `Prompt: ${persona.prompt}\n\nTags: ${(persona.tags as string[]).join(", ")}`,
+              text: `Prompt: ${persona.prompt}\n\nTags: ${persona.tags.join(", ")}`,
             },
           ],
         },

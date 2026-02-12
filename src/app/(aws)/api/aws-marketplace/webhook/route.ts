@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/prisma/prisma";
 import { checkCustomerSubscription } from "@/app/(aws)/lib/entitlement";
 import { parseAndVerifySNSBody, type ValidatedSNSMessage } from "@/app/(aws)/lib/sns-validator";
-import { rootLogger } from "@/lib/logging";
 import { isActiveSubscription } from "@/app/(aws)/lib/types";
+import { rootLogger } from "@/lib/logging";
+import { prisma } from "@/prisma/prisma";
+import { NextRequest, NextResponse } from "next/server";
 
 const logger = rootLogger.child({ module: "aws-marketplace-webhook" });
 
@@ -27,10 +27,7 @@ export async function POST(req: NextRequest) {
       msg: "SNS message signature verification failed",
       error: error instanceof Error ? error.message : String(error),
     });
-    return NextResponse.json(
-      { error: "Invalid SNS message signature" },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: "Invalid SNS message signature" }, { status: 403 });
   }
 
   // Handle SNS subscription confirmation

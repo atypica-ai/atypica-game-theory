@@ -23,7 +23,6 @@ import { prisma } from "@/prisma/prisma";
 import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
-import { InputJsonValue } from "@prisma/client/runtime/client";
 import { generateId, stepCountIs, streamText, UIMessage } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
@@ -120,7 +119,7 @@ export async function runAutoPersonaInterview({
           ...currentSession.extra,
           ongoing: true,
           startsAt: Date.now(),
-        } as InputJsonValue,
+        } satisfies InterviewSessionExtra,
       },
     });
   }

@@ -185,10 +185,9 @@ export async function fetchAdminPersonasWithEmbedding({
 
   return {
     success: true,
-    data: personas.map(({ token, tags, personaImport, ...persona }) => ({
+    data: personas.map(({ token, personaImport, ...persona }) => ({
       ...persona,
       token: token,
-      tags: tags as string[],
       personaImport: personaImport
         ? {
             ...personaImport,
@@ -346,7 +345,7 @@ export async function fetchAdminPersonasWithMeili({
     data: orderedPersonas.map(({ token, tags, personaImport, ...persona }) => ({
       ...persona,
       token: token,
-      tags: tags as string[],
+      tags: tags,
       personaImport: personaImport
         ? {
             ...personaImport,
@@ -397,12 +396,8 @@ export async function fetchPersonaImportDetails(personaImportId: number): Promis
   return {
     success: true,
     data: {
-      personaImport: {
-        ...personaImport,
-        analysis: personaImport.analysis as Partial<PersonaImportAnalysis> | null,
-        extra: personaImport.extra as PersonaImportExtra,
-      },
-      attachments: personaImport.attachments as ChatMessageAttachment[],
+      personaImport,
+      attachments: personaImport.attachments,
       userEmail: personaImport.user.email,
     },
   };

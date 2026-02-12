@@ -376,6 +376,7 @@ model ChatStatistics {
   userChat   UserChat                @relation(fields: [userChatId], references: [id])
   dimension  ChatStatisticsDimension
   value      Int                     @default(0)
+  /// [DBType.AgentStatisticsExtra]
   extra      Json                    @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -589,6 +590,7 @@ model PersonaImport {
   /// [DBType.ChatMessageAttachment[]]
   attachments     Json      @default("[]")
   context         String    @default("") @db.Text // parse attachments as context
+  /// [DBType.PersonaImportAnalysis]
   analysis        Json      @default("{}")
   /// [DBType.PersonaImportExtra]
   extra           Json      @default("{}")

@@ -38,17 +38,12 @@ export async function createPersonaImport({
   >
 > {
   return withAuth(async (user) => {
-    const data = await prisma.personaImport.create({
+    const personaImport = await prisma.personaImport.create({
       data: {
         userId: user.id,
         attachments: [{ objectUrl, name, size, mimeType }],
       },
     });
-    const personaImport = {
-      ...data,
-      attachments: data.attachments as unknown as ChatMessageAttachment[],
-      extra: data.extra as unknown as PersonaImportExtra,
-    };
 
     // Track persona import started
     trackEventServerSide({
@@ -135,22 +130,13 @@ export async function fetchPersonaWithDetails(personaToken: string): Promise<
     };
   }
 
-  const { personaImport, token, tags, ...persona } = personaWithImport;
+  const { personaImport, ...persona } = personaWithImport;
 
   return {
     success: true,
     data: {
-      persona: {
-        ...persona,
-        token: token,
-        tags: tags as string[],
-      },
-      personaImport: personaImport
-        ? {
-            ...personaImport,
-            analysis: personaImport.analysis as Partial<PersonaImportAnalysis> | null,
-          }
-        : null,
+      persona,
+      personaImport,
     },
   };
 }
@@ -184,7 +170,7 @@ export async function createFollowUpInterviewChat(
     }
 
     // 获取分析结果中的第一个补充问题
-    const analysis = personaImport.analysis as PersonaImportAnalysis | null;
+    const analysis = personaImport.analysis;
     const firstQuestion = analysis?.supplementaryQuestions?.questions?.[0];
 
     // followup chat 的开场白默认使用导入文件的语言 (context 字段)
@@ -301,11 +287,9 @@ export async function fetchUserPersonas(): Promise<
       success: true,
       data: personas.map(({ personaImport, token, tags, ...persona }) => ({
         ...persona,
-        token: token,
-        tags: tags as string[],
-        personaImportProcessing: Boolean(
-          personaImport?.extra && (personaImport.extra as PersonaImportExtra).processing,
-        ),
+        token,
+        tags,
+        personaImportProcessing: Boolean(personaImport?.extra && personaImport.extra.processing),
       })),
     };
   });

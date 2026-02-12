@@ -3,7 +3,6 @@ import { sendStudyInterruptionEmail } from "@/email/studyInterruption";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
-import { AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -53,7 +52,7 @@ export async function notifyReportCompletion({
     return;
   }
 
-  const extra = report.extra as AnalystReportExtra;
+  const extra = report.extra;
   const title = extra?.title || "";
   const description = truncateForTitle(extra.description || "", {
     maxDisplayWidth: 200,

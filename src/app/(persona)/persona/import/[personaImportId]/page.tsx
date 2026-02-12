@@ -1,9 +1,7 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { Forbidden } from "@/components/Forbidden";
 import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
-import { PersonaImportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { Suspense } from "react";
@@ -41,16 +39,7 @@ async function PersonaImportDetailPage({
     orderBy: { createdAt: "asc" },
   });
 
-  return (
-    <PersonaImportView
-      personaImport={{
-        ...personaImport,
-        analysis: personaImport.analysis as unknown as Partial<PersonaImportAnalysis> | null,
-        extra: personaImport.extra as unknown as PersonaImportExtra,
-      }}
-      personas={personas}
-    />
-  );
+  return <PersonaImportView personaImport={personaImport} personas={personas} />;
 }
 
 export default async function PersonaImportDetailPageWithLoading({

@@ -5,7 +5,7 @@ import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { rootLogger } from "@/lib/logging";
 import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { InputJsonValue, ITXClientDenyList } from "@prisma/client/runtime/client";
+import { ITXClientDenyList } from "@prisma/client/runtime/client";
 import {
   convertToModelMessages,
   DynamicToolUIPart,
@@ -324,7 +324,7 @@ export const persistentAIMessageToDB = async ({
           role,
           content: compatibleContent(newPartsExcludeFiles),
           parts: newPartsExcludeFiles, // as InputJsonValue,
-          extra: extra as InputJsonValue,
+          extra,
           ...(attachments ? { attachments } : undefined),
         },
       })
@@ -345,7 +345,7 @@ export const persistentAIMessageToDB = async ({
           messageId,
           content: compatibleContent(newPartsExcludeFiles),
           parts: newPartsExcludeFiles, // as InputJsonValue,
-          extra: extra as InputJsonValue,
+          extra,
           ...(attachments ? { attachments } : undefined),
         },
       })
@@ -374,7 +374,7 @@ export const persistentAIMessageToDB = async ({
           messageId,
           content: compatibleContent(partsToUpdate),
           parts: partsToUpdate, // as InputJsonValue,
-          extra: extra as InputJsonValue,
+          extra,
           ...(attachments ? { attachments } : undefined),
         },
       })
@@ -420,7 +420,7 @@ export const persistentAIMessageToDB = async ({
           messageId,
           content: compatibleContent(partsToUpdate),
           parts: partsToUpdate, // as InputJsonValue,
-          extra: extra as InputJsonValue,
+          extra,
           ...(attachments ? { attachments } : undefined),
         },
       })

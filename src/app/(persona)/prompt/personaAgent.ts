@@ -12,7 +12,7 @@ ${persona.prompt}
 </role>
 
 <tags>
-${((persona.tags ?? []) as string[]).join(", ")}
+${(persona.tags ?? []).join(", ")}
 </tags>
 
 <task>
@@ -51,7 +51,7 @@ ${persona.prompt}
 </role>
 
 <tags>
-${((persona.tags ?? []) as string[]).join(", ")}
+${(persona.tags ?? []).join(", ")}
 </tags>
 
 <task>

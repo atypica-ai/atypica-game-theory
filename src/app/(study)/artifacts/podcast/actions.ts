@@ -41,7 +41,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
   }
 
   // Use podcast's own cover image
-  const coverObjectUrl = (podcast.extra as AnalystPodcastExtra).metadata?.coverObjectUrl;
+  const coverObjectUrl = podcast.extra.metadata?.coverObjectUrl;
   const coverCdnHttpUrl = coverObjectUrl ? await getS3SignedCdnUrl(coverObjectUrl) : undefined;
 
   return {
@@ -53,7 +53,7 @@ export async function fetchPodcastByToken(podcastToken: string): Promise<
         script: podcast.script,
         objectUrl: podcast.objectUrl,
         generatedAt: podcast.generatedAt,
-        extra: podcast.extra as AnalystPodcastExtra,
+        extra: podcast.extra,
       },
       coverCdnHttpUrl,
     },

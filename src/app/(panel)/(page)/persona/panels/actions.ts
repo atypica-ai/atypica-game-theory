@@ -42,7 +42,7 @@ export async function fetchUserPersonaPanels(): Promise<
     });
 
     // Fetch all personas for all panels in one query
-    const allPersonaIds = panels.flatMap((panel) => panel.personaIds as number[]);
+    const allPersonaIds = panels.flatMap((panel) => panel.personaIds);
     const uniquePersonaIds = [...new Set(allPersonaIds)];
 
     const personas = await prisma.persona.findMany({

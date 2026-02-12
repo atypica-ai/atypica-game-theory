@@ -88,26 +88,21 @@ export const generatePodcastTool = ({
           : "Fixed to opinionOriented for study";
 
       // Create podcast record with determined kind
-      let podcast = await prisma.analystPodcast
-        .create({
-          data: {
-            userId,
-            token: podcastToken,
-            instruction: "",
-            script: "",
-            extra: {
-              userChatToken: userChat.token,
-              kindDetermination: {
-                kind: podcastKind,
-                reason: kindReason,
-              },
-            } as AnalystPodcastExtra,
-          },
-        })
-        .then(({ extra, ...podcast }) => ({
-          ...podcast,
-          extra: extra as AnalystPodcastExtra,
-        }));
+      let podcast = await prisma.analystPodcast.create({
+        data: {
+          userId,
+          token: podcastToken,
+          instruction: "",
+          script: "",
+          extra: {
+            userChatToken: userChat.token,
+            kindDetermination: {
+              kind: podcastKind,
+              reason: kindReason,
+            },
+          } satisfies AnalystPodcastExtra,
+        },
+      });
 
       // Generate podcast with fixed opinionOriented kind
       await generatePodcast({
@@ -123,7 +118,7 @@ export const generatePodcastTool = ({
         .findUniqueOrThrow({ where: { id: podcast.id } })
         .then(({ extra, ...podcast }) => ({
           ...podcast,
-          extra: extra as AnalystPodcastExtra,
+          extra,
         }));
 
       // Save podcast token to context

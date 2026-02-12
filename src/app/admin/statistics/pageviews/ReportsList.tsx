@@ -13,7 +13,6 @@ import { useLocale } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 
-import { AnalystReportExtra } from "@/prisma/client";
 import { PageViewWithReport } from "./actions";
 
 interface ReportsListProps {
@@ -90,14 +89,12 @@ export function ReportsList({ data, isLoading }: ReportsListProps) {
                           className="block hover:text-blue-600 transition-colors"
                         >
                           <p className="font-medium text-sm line-clamp-2">
-                            {(pageView.report.extra as AnalystReportExtra).title ||
-                              "Untitled Report"}
+                            {pageView.report.extra.title || "Untitled Report"}
                           </p>
                         </Link>
                         {/* Topic - Not clickable */}
                         <p className="text-xs text-muted-foreground line-clamp-2">
-                          {(pageView.report.extra as AnalystReportExtra).description ||
-                            "No description provided"}
+                          {pageView.report.extra.description || "No description provided"}
                         </p>
                         {/* Path - Not clickable */}
                         <p className="text-xs text-muted-foreground font-mono truncate">

@@ -219,7 +219,7 @@ export async function fetchAnalystPodcastsAction(
   // Get cover CDN URLs for all podcasts
   const podcastsWithCovers = await Promise.all(
     sortedPodcasts.map(async (podcast) => {
-      const extra = podcast.extra as AnalystPodcastExtra;
+      const extra = podcast.extra;
       const coverObjectUrl = extra?.metadata?.coverObjectUrl;
       const coverCdnHttpUrl = coverObjectUrl ? await getS3SignedCdnUrl(coverObjectUrl) : undefined;
 
@@ -270,7 +270,7 @@ export async function updatePodcastTitleAction(
       id: podcastId,
       extra: {
         metadata: {
-          ...(podcast.extra as AnalystPodcastExtra).metadata,
+          ...podcast.extra.metadata,
           title,
         },
       } satisfies Partial<AnalystPodcastExtra>,
@@ -345,7 +345,7 @@ export async function generatePodcastMetadataAction(
       id: podcastId,
       extra: {
         metadata: {
-          ...(podcast.extra as AnalystPodcastExtra).metadata,
+          ...podcast.extra.metadata,
           title,
           showNotes,
         },
@@ -397,7 +397,7 @@ export async function featurePodcastAction(podcastId: number): Promise<ServerAct
     });
   } else {
     // Add to featured - copy info from extra.metadata
-    const extra = podcast.extra as AnalystPodcastExtra;
+    const extra = podcast.extra;
     const metadata = extra?.metadata;
     const locale = await detectInputLanguage({
       text: podcast.script,

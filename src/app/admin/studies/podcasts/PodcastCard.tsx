@@ -52,7 +52,7 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
   const [togglingFeatured, setTogglingFeatured] = useState(false);
   const [generatingCover, setGeneratingCover] = useState(false);
 
-  const extra = (podcast.extra || {}) as AnalystPodcastExtra;
+  const extra = podcast.extra;
   const podcastTitle = extra.metadata?.title || "";
   const kindInfo = extra.kindDetermination;
 
@@ -77,7 +77,7 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
             ...extra.metadata,
             title: editingTitleValue,
           },
-        } as AnalystPodcastExtra;
+        } satisfies AnalystPodcastExtra;
 
         onUpdate({
           ...podcast,
@@ -108,7 +108,7 @@ export function PodcastCard({ podcast, onUpdate, onError }: PodcastCardProps) {
             title: result.data.title,
             showNotes: result.data.showNotes,
           },
-        } as AnalystPodcastExtra;
+        } satisfies AnalystPodcastExtra;
 
         onUpdate({
           ...podcast,
