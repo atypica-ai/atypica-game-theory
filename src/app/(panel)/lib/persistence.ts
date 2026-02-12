@@ -1,9 +1,6 @@
 import "server-only";
 
-import {
-  DiscussionTimelineUpdateInput,
-  InputJsonObject,
-} from "@/prisma/generated/internal/prismaNamespace";
+import { DiscussionTimelineUpdateInput } from "@/prisma/generated/internal/prismaNamespace";
 import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
 import { DiscussionTimelineEvent } from "../types";
@@ -26,7 +23,7 @@ export async function saveTimelineEvent({
   logger: Logger;
 }): Promise<void> {
   const updatePayload: DiscussionTimelineUpdateInput = {};
-  if (timelineEvents) updatePayload.events = timelineEvents as unknown as InputJsonObject;
+  if (timelineEvents) updatePayload.events = timelineEvents; // as unknown as InputJsonObject;
   if (summary) updatePayload.summary = summary;
   if (minutes) updatePayload.minutes = minutes;
   try {
@@ -57,7 +54,7 @@ export async function savePersonaPanel({
     const personaPanel = await prisma.personaPanel.create({
       data: {
         userId,
-        personaIds: personaIds as unknown as object,
+        personaIds,
       },
     });
     logger.info(`Panel config saved with id: ${personaPanel.id}`);

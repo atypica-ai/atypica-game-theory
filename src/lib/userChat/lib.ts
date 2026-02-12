@@ -9,7 +9,6 @@ import { getRequestClientIp, getRequestGeo, getRequestUserAgent } from "@/lib/re
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
 import { UserChat, UserChatExtra, UserChatKind } from "@/prisma/client";
-import { InputJsonValue } from "@/prisma/generated/internal/prismaNamespace";
 import { prisma } from "@/prisma/prisma";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { ITXClientDenyList } from "@prisma/client/runtime/client";
@@ -359,7 +358,7 @@ Return only the corrected text without explanations or markup.
       .update({
         where: { messageId: dbMessage.messageId },
         data: {
-          parts: updatedParts as unknown as InputJsonValue,
+          parts: updatedParts, // as unknown as InputJsonValue,
           content: correctedText, // 更新 legacy content 字段
           extra: {
             ...(typeof dbMessage.extra === "object" && dbMessage.extra !== null

@@ -323,7 +323,7 @@ export const persistentAIMessageToDB = async ({
           messageId,
           role,
           content: compatibleContent(newPartsExcludeFiles),
-          parts: newPartsExcludeFiles as InputJsonValue,
+          parts: newPartsExcludeFiles, // as InputJsonValue,
           extra: extra as InputJsonValue,
           ...(attachments ? { attachments } : undefined),
         },
@@ -344,7 +344,7 @@ export const persistentAIMessageToDB = async ({
         data: {
           messageId,
           content: compatibleContent(newPartsExcludeFiles),
-          parts: newPartsExcludeFiles as InputJsonValue,
+          parts: newPartsExcludeFiles, // as InputJsonValue,
           extra: extra as InputJsonValue,
           ...(attachments ? { attachments } : undefined),
         },
@@ -373,7 +373,7 @@ export const persistentAIMessageToDB = async ({
         data: {
           messageId,
           content: compatibleContent(partsToUpdate),
-          parts: partsToUpdate as InputJsonValue,
+          parts: partsToUpdate, // as InputJsonValue,
           extra: extra as InputJsonValue,
           ...(attachments ? { attachments } : undefined),
         },
@@ -419,7 +419,7 @@ export const persistentAIMessageToDB = async ({
         data: {
           messageId,
           content: compatibleContent(partsToUpdate),
-          parts: partsToUpdate as InputJsonValue,
+          parts: partsToUpdate, // as InputJsonValue,
           extra: extra as InputJsonValue,
           ...(attachments ? { attachments } : undefined),
         },

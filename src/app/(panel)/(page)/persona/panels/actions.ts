@@ -2,8 +2,8 @@
 
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { prisma } from "@/prisma/prisma";
 import type { Persona } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 
 export interface PersonaPanelWithDetails {
   id: number;
@@ -63,8 +63,8 @@ export async function fetchUserPersonaPanels(): Promise<
     // Transform data
     const panelsWithDetails: PersonaPanelWithDetails[] = panels.map((panel) => ({
       id: panel.id,
-      personaIds: panel.personaIds as number[],
-      personas: (panel.personaIds as number[])
+      personaIds: panel.personaIds, // as number[],
+      personas: panel.personaIds
         .map((id) => personaMap.get(id))
         .filter((p): p is Pick<Persona, "id" | "name" | "token" | "tags"> => p !== undefined),
       createdAt: panel.createdAt,
