@@ -19,6 +19,23 @@
     "deleteWarning": "Are you sure you want to delete Panel #{id}? This action cannot be undone.",
     "cancel": "Cancel",
     "delete": "Delete",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "panelInfo": "Panel Information",
+    "usageCount": "Usage",
+    "viewDetails": "View Details",
+    "personaDescription": "Persona Description",
+    "personaAttributes": "Persona Attributes",
+    "role": "Role",
+    "roleType": {
+      "consumer": "Consumer",
+      "buyer": "Buyer",
+      "expert": "Expert"
+    },
+    "ageRange": "Age Range",
+    "location": "Location",
+    "industry": "Industry",
+    "title": "Title",
+    "organization": "Organization",
+    "experience": "Experience"
   }
 }

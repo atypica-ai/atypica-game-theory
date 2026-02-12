@@ -19,6 +19,23 @@
     "deleteWarning": "确定要删除面板 #{id} 吗？此操作无法撤销。",
     "cancel": "取消",
     "delete": "删除",
-    "deleting": "删除中..."
+    "deleting": "删除中...",
+    "panelInfo": "面板信息",
+    "usageCount": "使用情况",
+    "viewDetails": "查看详情",
+    "personaDescription": "人物描述",
+    "personaAttributes": "人物属性",
+    "role": "角色",
+    "roleType": {
+      "consumer": "消费者",
+      "buyer": "采购者",
+      "expert": "专家"
+    },
+    "ageRange": "年龄段",
+    "location": "地区",
+    "industry": "行业",
+    "title": "职位",
+    "organization": "组织",
+    "experience": "经验"
   }
 }
