@@ -50,6 +50,7 @@ export async function recordPersonaPanelContext({
       personaIds,
       instruction,
     });
+    interviewPersonaPanelId = personaPanel.id;
   } else {
     personaPanel = await prisma.personaPanel.findUniqueOrThrow({
       where: { id: interviewPersonaPanelId },
@@ -66,7 +67,7 @@ export async function recordPersonaPanelContext({
   await mergeUserChatContext({
     id: userChatId,
     context: {
-      interviewPersonaPanelId: personaPanel.id,
+      interviewPersonaPanelId,
     },
   });
   return personaPanel;

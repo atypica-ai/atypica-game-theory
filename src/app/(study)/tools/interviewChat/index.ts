@@ -52,8 +52,6 @@ type TReduceTokens = {
   ratio: number;
 } | null;
 
-const mergeIds = (ids1: number[], ids2: number[]) => Array.from(new Set([...ids1, ...ids2]));
-
 export const interviewChatTool = ({
   userId,
   userChatId,
@@ -76,18 +74,6 @@ export const interviewChatTool = ({
       return { type: "text", value: result.plainText };
     },
     execute: async ({ personas, instruction }): Promise<InterviewChatResult> => {
-      // 第一步，先把 analyst 上的研究都转移到每个 userChat 上下文里面唯一的一个用于 1v1 访谈的 persona panel
-      const { context } = await prisma.userChat.findUniqueOrThrow({
-        where: {
-          id: userChatId,
-          // kind: "study", // 因为有 universal agent, 现在不过滤了
-        },
-        select: {
-          context: true,
-          extra: true,
-        },
-      });
-
       const personaPanel = await recordPersonaPanelContext({
         userId,
         userChatId,
