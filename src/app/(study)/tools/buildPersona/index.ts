@@ -5,6 +5,7 @@ import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { handleToolCallError, toolCallError } from "@/ai/tools/error";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { recordPersonaPanelContext } from "@/app/(study)/context/utils";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { prisma } from "@/prisma/prisma";
 import { ModelMessage, stepCountIs, streamText, tool, UIMessageStreamWriter } from "ai";
@@ -26,12 +27,14 @@ type TReduceTokens = {
 
 export const buildPersonaTool = ({
   userId,
+  userChatId,
   locale,
   abortSignal,
   statReport,
   logger,
 }: {
   userId: number;
+  userChatId: number;
 } & AgentToolConfigArgs) =>
   tool({
     description: `Build AI personas from scout task results. Can optionally accept persona requirements from research plan to guide construction.
@@ -103,6 +106,12 @@ The tool will create 3-5 personas based on collected data and requirements.`,
           personaIds: personas.map((persona) => persona.personaId),
         });
       }
+      await recordPersonaPanelContext({
+        userId,
+        userChatId,
+        personaIds: personas.map((p) => p.personaId),
+        instruction: description,
+      });
       return {
         personas,
         plainText: `${personas.length} personas build: ${JSON.stringify(personas)}`,

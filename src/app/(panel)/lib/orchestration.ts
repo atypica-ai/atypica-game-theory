@@ -5,13 +5,13 @@ import { buildDiscussionType } from "@/app/(panel)//discussionTypes/buildDiscuss
 import { DiscussionTimelineEvent, PersonaSession } from "@/app/(panel)//types";
 import { DiscussionTypeConfig } from "@/app/(panel)/discussionTypes";
 import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
-import { DiscussionTimelineExtra } from "@/prisma/client";
+import { DiscussionTimelineExtra, PersonaPanel } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { generatePersonaReply, generateSummaryAndMinutes } from "./generation";
-import { savePersonaPanel, saveTimelineEvent } from "./persistence";
+import { saveTimelineEvent } from "./persistence";
 import { selectNextSpeakerModerator } from "./speaker-selection";
 
 const MAX_DISCUSSION_ROUNDS = 12; // Temporary
@@ -170,20 +170,18 @@ async function executeDiscussionRound({
  * @param instruction User instruction that may include both question and discussion type requirements
  */
 export async function runPersonaDiscussion({
-  userId,
   maxRounds = MAX_DISCUSSION_ROUNDS,
   instruction,
-  personaIds,
+  personaPanel,
   timelineToken,
   locale,
   abortSignal,
   statReport,
   logger,
 }: {
-  userId: number;
   maxRounds?: number;
   instruction: string;
-  personaIds: number[];
+  personaPanel: Pick<PersonaPanel, "id" | "personaIds">;
   timelineToken: string;
   locale: Locale;
   abortSignal: AbortSignal;
@@ -201,17 +199,10 @@ export async function runPersonaDiscussion({
   // Extract moderatorSystem from discussionTypeConfig for storage
   const moderatorSystem = discussionTypeConfig.moderatorSystem({ locale });
 
-  // Save PersonaPanel to database for reuse
-  const personaPanelId = await savePersonaPanel({
-    userId,
-    personaIds,
-    logger,
-  });
-
   // Link DiscussionTimeline to PersonaPanel
   const updatedTimeline = await prisma.discussionTimeline.update({
     where: { token: timelineToken },
-    data: { personaPanelId },
+    data: { personaPanelId: personaPanel.id },
   });
   // 用 mergeExtra 避免覆盖 extra 其他字段
   await mergeExtra({
@@ -225,7 +216,7 @@ export async function runPersonaDiscussion({
   // Initialize panel discussion
   const { timelineEvents, personaSessions } = await initializeDiscussionTimeline({
     question: instruction,
-    personaIds,
+    personaIds: personaPanel.personaIds,
     timelineToken,
     locale,
     logger,

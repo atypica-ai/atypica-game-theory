@@ -5,6 +5,7 @@ import { runPersonaDiscussion } from "@/app/(panel)/lib";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 
+import { recordPersonaPanelContext } from "@/app/(study)/context/utils";
 import {
   discussionChatInputSchema,
   discussionChatOutputSchema,
@@ -13,12 +14,14 @@ import {
 
 export const discussionChatTool = ({
   userId,
+  userChatId,
   locale,
   abortSignal,
   statReport,
   logger,
 }: {
   userId: number;
+  userChatId: number;
 } & AgentToolConfigArgs) =>
   tool({
     description:
@@ -45,11 +48,17 @@ export const discussionChatTool = ({
           },
         });
 
+        // Save PersonaPanel to database for reuse
+        const personaPanel = await recordPersonaPanelContext({
+          userId,
+          userChatId,
+          personaIds,
+        });
+
         // Run panel discussion (automatically saves timeline events to database)
         const { summary } = await runPersonaDiscussion({
-          userId,
           instruction,
-          personaIds,
+          personaPanel,
           timelineToken: discussionTimeline.token,
           locale,
           abortSignal,

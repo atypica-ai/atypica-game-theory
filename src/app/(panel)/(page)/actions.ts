@@ -2,6 +2,7 @@
 
 import { StatReporter } from "@/ai/tools/types";
 import { runPersonaDiscussion } from "@/app/(panel)/lib";
+import { createPersonaPanel } from "@/app/(panel)/lib/persistence";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { rootLogger } from "@/lib/logging";
@@ -88,13 +89,16 @@ export async function startPersonaDiscussionAction({
         minutes: "",
       },
     });
+    const personaPanel = await createPersonaPanel({
+      userId: user.id,
+      personaIds,
+    });
 
     // Start panel discussion in background (don't await - let it run async)
     const logger = rootLogger.child({ timelineToken: token });
     runPersonaDiscussion({
-      userId: user.id,
       instruction,
-      personaIds,
+      personaPanel,
       timelineToken: token,
       locale,
       abortSignal,

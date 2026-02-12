@@ -183,16 +183,28 @@ function buildStudyTools(params: {
       ...agentToolArgs,
     }),
     [StudyToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
-    [StudyToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
+    [StudyToolName.searchPersonas]: searchPersonasTool({
+      userId,
+      userChatId: studyUserChatId,
+      ...agentToolArgs,
+    }),
     [StudyToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
-    [StudyToolName.buildPersona]: buildPersonaTool({ userId, ...agentToolArgs }),
+    [StudyToolName.buildPersona]: buildPersonaTool({
+      userId,
+      userChatId: studyUserChatId,
+      ...agentToolArgs,
+    }),
     [StudyToolName.interviewChat]: interviewChatTool({
       userId,
       userChatId: studyUserChatId,
       attachments: analyst.attachments as ChatMessageAttachment[],
       ...agentToolArgs,
     }),
-    [StudyToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
+    [StudyToolName.discussionChat]: discussionChatTool({
+      userId,
+      userChatId: studyUserChatId,
+      ...agentToolArgs,
+    }),
     [StudyToolName.generateReport]: generateReportTool({
       userId,
       userChatId: studyUserChatId,

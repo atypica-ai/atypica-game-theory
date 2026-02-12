@@ -2,6 +2,7 @@ import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
+import { recordPersonaPanelContext } from "@/app/(study)/context/utils";
 import { prismaRO } from "@/prisma/prisma";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { tool } from "ai";
@@ -16,10 +17,14 @@ import {
 
 export const searchPersonasTool = ({
   userId,
+  userChatId,
   locale,
   statReport,
   logger,
-}: AgentToolConfigArgs & { userId: number }) =>
+}: AgentToolConfigArgs & {
+  userId: number;
+  userChatId: number;
+}) =>
   tool({
     description:
       "Search existing user persona database using semantic similarity matching to find relevant user profiles that match research criteria",
@@ -68,6 +73,12 @@ export const searchPersonasTool = ({
           personaIds: personas.map((persona) => persona.personaId),
         });
       }
+      await recordPersonaPanelContext({
+        userId,
+        userChatId,
+        personaIds: personas.map((p) => p.personaId),
+        instruction: searchQueries.join("\n"),
+      });
       return {
         personas,
         plainText: `${personas.length} personas found: ${JSON.stringify(personas)}`,

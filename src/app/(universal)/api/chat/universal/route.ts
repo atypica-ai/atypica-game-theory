@@ -187,8 +187,16 @@ export async function POST(req: Request) {
     [UniversalToolName.writeFile]: bashTools.writeFile,
 
     // study agent
-    [UniversalToolName.searchPersonas]: searchPersonasTool({ userId, ...agentToolArgs }),
-    [UniversalToolName.discussionChat]: discussionChatTool({ userId, ...agentToolArgs }),
+    [UniversalToolName.searchPersonas]: searchPersonasTool({
+      userId,
+      userChatId: universalChatId,
+      ...agentToolArgs,
+    }),
+    [UniversalToolName.discussionChat]: discussionChatTool({
+      userId,
+      userChatId: universalChatId,
+      ...agentToolArgs,
+    }),
     [UniversalToolName.interviewChat]: interviewChatTool({
       userId,
       userChatId: universalChatId,

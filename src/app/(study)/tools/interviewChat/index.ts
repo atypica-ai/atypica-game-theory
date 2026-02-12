@@ -16,8 +16,7 @@ import { reasoningThinkingTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
-import { UserChatContext } from "@/app/(study)/context/types";
-import { mergeUserChatContext } from "@/app/(study)/context/utils";
+import { recordPersonaPanelContext } from "@/app/(study)/context/utils";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { truncateForTitle } from "@/lib/textUtils";
@@ -88,34 +87,13 @@ export const interviewChatTool = ({
           extra: true,
         },
       });
-      let interviewPersonaPanelId = (context as UserChatContext).interviewPersonaPanelId;
-      if (!interviewPersonaPanelId) {
-        const personaPanel = await prisma.personaPanel.create({
-          data: {
-            userId,
-            personaIds: personas.map((p) => p.id),
-          },
-        });
-        interviewPersonaPanelId = personaPanel.id;
-        await mergeUserChatContext({
-          id: userChatId,
-          context: { interviewPersonaPanelId },
-        });
-      } else {
-        const personaPanel = await prisma.personaPanel.findUniqueOrThrow({
-          where: { id: interviewPersonaPanelId },
-        });
-        await prisma.personaPanel.update({
-          where: { id: interviewPersonaPanelId },
-          data: {
-            userId,
-            personaIds: mergeIds(
-              personaPanel.personaIds,
-              personas.map((p) => p.id),
-            ),
-          },
-        });
-      }
+
+      const personaPanel = await recordPersonaPanelContext({
+        userId,
+        userChatId,
+        personaIds: personas.map((p) => p.id),
+      });
+      const interviewPersonaPanelId = personaPanel.id;
 
       const single = async ({
         id: personaId,

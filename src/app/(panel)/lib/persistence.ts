@@ -1,5 +1,7 @@
 import "server-only";
 
+import { rootLogger } from "@/lib/logging";
+import { PersonaPanel } from "@/prisma/client";
 import { DiscussionTimelineUpdateInput } from "@/prisma/generated/internal/prismaNamespace";
 import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
@@ -41,26 +43,28 @@ export async function saveTimelineEvent({
  * Save panel configuration to database for reuse
  * This creates a template that can be reused for similar questions
  */
-export async function savePersonaPanel({
+export async function createPersonaPanel({
   userId,
   personaIds,
-  logger,
+  instruction,
 }: {
   userId: number;
   personaIds: number[];
-  logger: Logger;
-}): Promise<number> {
+  instruction?: string;
+}): Promise<PersonaPanel> {
   try {
     const personaPanel = await prisma.personaPanel.create({
       data: {
         userId,
         personaIds,
+        instruction,
       },
     });
-    logger.info(`Panel config saved with id: ${personaPanel.id}`);
-    return personaPanel.id;
+    // todo: 在 after 里，生成一下 title
+    rootLogger.info(`Panel config saved with id: ${personaPanel.id}`);
+    return personaPanel;
   } catch (error) {
-    logger.error(`Error saving panel config: ${(error as Error).message}`);
+    rootLogger.error(`Error saving panel config: ${(error as Error).message}`);
     throw error;
   }
 }
