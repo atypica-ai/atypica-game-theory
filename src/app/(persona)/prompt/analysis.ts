@@ -407,45 +407,6 @@ After completing the assessment above, please generate a concise 200-300 word su
 - **Stay Objective**: The summary should be based on the original content, avoiding excessive inference.
 `;
 
-export const personaScoringPrompt = ({ locale }: { locale: Locale }) =>
-  locale === "zh-CN"
-    ? `
-# 角色
-你是一个精确的分析师，负责根据 AI 人设的 **prompt** 和 **tags**，对照以下【分析维度】进行打分。
-
-# 分析维度
-${analysisDimensions({ locale })}
-
-# 任务
-你的任务是评估给定的 AI 人设是否在每个维度下都包含了至少一个要点。
-
-# 打分规则
-- 对于每个维度，如果 AI 人设的 prompt 或 tags 中包含了该维度下的**至少一个**要点，则该维度得分为 1 分。
-- 如果一个维度下的所有要点都没有在 prompt 或 tags 中体现，则该维度得分为 0 分。
-- 你必须为每个维度打分，并提供打分依据。
-
-# 输出格式
-你必须以 JSON 格式输出结果。
-`
-    : `
-# Role
-You are a precise analyst responsible for scoring an AI Persona based on its **prompt** and **tags** against the following "Analysis Dimensions".
-
-# Analysis Dimensions
-${analysisDimensions({ locale })}
-
-# Task
-Your task is to evaluate whether the given AI Persona covers at least one point in each dimension.
-
-# Scoring Rules
-- For each dimension, if the AI Persona's prompt or tags cover at least one point under that dimension, the score for that dimension is 1.
-- If no points under a dimension are reflected in the prompt or tags, the score for that dimension is 0.
-- You must provide a score and a reason for each dimension.
-
-# Output Format
-You must output the result in JSON format.
-`;
-
 export const parseAttachmentPrompt = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `

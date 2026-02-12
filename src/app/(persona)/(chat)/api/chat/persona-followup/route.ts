@@ -9,7 +9,7 @@ import { initPersonaImportStatReporter } from "@/ai/tools/stats";
 import { reasoningThinkingTool } from "@/ai/tools/tools";
 import { BasicToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
-import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt";
+import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt/analysis";
 import { followUpInterviewTools } from "@/app/(persona)/tools";
 import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { rootLogger } from "@/lib/logging";

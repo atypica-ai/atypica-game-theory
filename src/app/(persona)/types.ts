@@ -51,17 +51,6 @@ export type AnalysisResult = z.infer<typeof analysisSchema>;
 // Type for PersonaImport analysis field (complete result from analyze-interview)
 export type PersonaImportAnalysis = AnalysisResult;
 
-// Schema for persona scoring
-export const personaScoringSchema = z.object({
-  demographic: z.number().min(0).max(1).describe("1 if present, 0 if not"),
-  geographic: z.number().min(0).max(1).describe("1 if present, 0 if not"),
-  psychological: z.number().min(0).max(1).describe("1 if present, 0 if not"),
-  behavioral: z.number().min(0).max(1).describe("1 if present, 0 if not"),
-  needsPainPoints: z.number().min(0).max(1).describe("1 if present, 0 if not"),
-  techAcceptance: z.number().min(0).max(1).describe("1 if present, 0 if not"),
-  socialRelations: z.number().min(0).max(1).describe("1 if present, 0 if not"),
-});
-
 export type TPersonaMessageWithTool<
   TOOLS extends TPersonaUITools = TPersonaUITools,
   METADATA = unknown,

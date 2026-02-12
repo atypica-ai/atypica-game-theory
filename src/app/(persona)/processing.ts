@@ -18,7 +18,11 @@ import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { ModelMessage, UserModelMessage, generateObject, stepCountIs, streamText } from "ai";
 import { getLocale } from "next-intl/server";
 import { z } from "zod/v3";
-import { parseAttachmentPrompt, personaAnalysisPrompt, personaGenerationPrompt } from "./prompt";
+import {
+  parseAttachmentPrompt,
+  personaAnalysisPrompt,
+  personaGenerationPrompt,
+} from "./prompt/analysis";
 import { analysisSchema } from "./types";
 
 export async function processPersonaImport(personaImportId: number) {
