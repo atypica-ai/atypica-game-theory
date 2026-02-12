@@ -108,7 +108,10 @@ export async function syncReport(reportId: number): Promise<void> {
     const task = index.addDocuments([document]);
 
     logger.info({ msg: "Document added to Meilisearch, waiting for task", reportId });
-    const result = await task.waitTask();
+    const result = await task.waitTask({ timeout: 5000 }).catch(() => {
+      // 超时没事，meili 后台只是在等待，这里 warn 一下继续即可
+      logger.warn({ msg: "Failed to wait for task", reportId });
+    });
     logger.info({ msg: "Report sync task completed", reportId, taskResult: result });
   } catch (error) {
     logger.error({
@@ -155,7 +158,10 @@ export async function syncPodcast(podcastId: number): Promise<void> {
     const task = index.addDocuments([document]);
 
     logger.info({ msg: "Document added to Meilisearch, waiting for task", podcastId });
-    const result = await task.waitTask();
+    const result = await task.waitTask({ timeout: 5000 }).catch(() => {
+      // 超时没事，meili 后台只是在等待，这里 warn 一下继续即可
+      logger.warn({ msg: "Failed to wait for task", podcastId });
+    });
     logger.info({ msg: "Podcast sync task completed", podcastId, taskResult: result });
   } catch (error) {
     logger.error({
@@ -257,7 +263,10 @@ export async function syncPersona(personaId: number): Promise<void> {
     const task = index.addDocuments([document]);
 
     logger.info({ msg: "Document added to Meilisearch, waiting for task", personaId });
-    const result = await task.waitTask();
+    const result = await task.waitTask({ timeout: 5000 }).catch(() => {
+      // 超时没事，meili 后台只是在等待，这里 warn 一下继续即可
+      logger.warn({ msg: "Failed to wait for task", personaId });
+    });
     logger.info({ msg: "Persona sync task completed", personaId, taskResult: result });
   } catch (error) {
     logger.error({

@@ -15,6 +15,8 @@ export async function mergeExtra({
     | "UserProfile"
     | "AnalystReport"
     | "AnalystPodcast"
+    | "Persona"
+    | "PersonaPanel"
     | "InterviewSession"
     | "InterviewReport"
     | "DiscussionTimeline"

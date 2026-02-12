@@ -1,18 +1,25 @@
 import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
-import { defaultProviderOptions, llm } from "@/ai/provider";
+import { llm } from "@/ai/provider";
 import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
-import { Persona } from "@/prisma/client";
+import { Persona, PersonaExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { syncPersona as syncPersonaToMeili } from "@/search/lib/sync";
+import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateObject, UserModelMessage } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { after } from "next/server";
-import { personaScoringPrompt } from "./prompt";
-import { personaScoringSchema, PersonaTier } from "./types";
+import {
+  personaAttributesPrompt,
+  personaAttributesSchema,
+  personaScoringPrompt,
+  personaScoringSchema,
+} from "./prompt/score";
+import { PersonaTier } from "./types";
 
 export async function createPersonaWithPostProcess({
   name,
@@ -68,28 +75,33 @@ export async function createPersonaWithPostProcess({
   const { tier } = await scorePersona(persona);
   // await Promise.all([createPersonaEmbedding(persona), scorePersona(persona)]);
 
-  // 创建 embedding (目前已经用不到了)，同步到 Meilisearch
+  // 创建 embedding (目前已经用不到了)，同步到 Meilisearch，提取属性
   after(async () => {
     if (tier === PersonaTier.Tier0) {
       await clearPersonaEmbedding(persona);
     } else {
-      await createPersonaEmbedding(persona).catch((error) => {
-        rootLogger.error({
-          msg: "Failed to create persona embedding",
-          personaId: persona.id,
-          error: error instanceof Error ? error.message : String(error),
+      Promise.allSettled([
+        createPersonaEmbedding(persona),
+        extractPersonaAttributes(persona),
+        syncPersonaToMeili(persona.id),
+      ])
+        .then((results) => {
+          // 上面三个都是自己有错误日志，这里不重复打印了
+          rootLogger.debug({
+            msg: "Persona post-processing completed",
+            personaId: persona.id,
+            results,
+          });
+        })
+        .catch((error) => {
+          rootLogger.error({
+            msg: "Persona post-processing failed",
+            personaId: persona.id,
+            error: error instanceof Error ? error.message : String(error),
+          });
         });
-      });
-      await syncPersonaToMeili(persona.id).catch((error) => {
-        rootLogger.error({
-          msg: "Failed to sync persona to search",
-          personaId: persona.id,
-          error: error instanceof Error ? error.message : String(error),
-        });
-      });
     }
   });
-
   return persona;
 }
 
@@ -126,6 +138,51 @@ async function clearPersonaEmbedding(persona: Persona) {
   }
 }
 
+export async function extractPersonaAttributes(persona: Persona): Promise<void> {
+  try {
+    const locale = (persona.locale as Locale) ?? (await getLocale());
+    const attributesResult = await generateObject({
+      model: llm("gpt-5-mini"),
+      providerOptions: {
+        openai: {
+          reasoningSummary: "auto",
+          reasoningEffort: "minimal",
+        } satisfies OpenAIResponsesProviderOptions,
+      },
+      system: personaAttributesPrompt({ locale }),
+      schema: personaAttributesSchema,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Name: ${persona.name}\n\nPrompt: ${persona.prompt}\n\nTags: ${(persona.tags as string[]).join(", ")}`,
+            },
+          ],
+        },
+      ] as UserModelMessage[],
+    });
+
+    // Merge extracted attributes into persona.extra
+    await mergeExtra({
+      tableName: "Persona",
+      id: persona.id,
+      extra: attributesResult.object as PersonaExtra,
+    });
+
+    rootLogger.info({
+      msg: `Persona ${persona.id} attributes extracted`,
+      attributes: attributesResult.object,
+    });
+  } catch (error) {
+    rootLogger.error({
+      msg: `Failed to extract attributes for persona ${persona.id}`,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
 export async function scorePersona(persona: Persona): Promise<{ tier: PersonaTier }> {
   try {
     if (persona.personaImportId) {
@@ -141,8 +198,13 @@ export async function scorePersona(persona: Persona): Promise<{ tier: PersonaTie
 
     const locale = (persona.locale as Locale) ?? (await getLocale());
     const result = await generateObject({
-      model: llm("gpt-4.1-mini"),
-      providerOptions: defaultProviderOptions(),
+      model: llm("gpt-5-mini"),
+      providerOptions: {
+        openai: {
+          reasoningSummary: "auto",
+          reasoningEffort: "minimal",
+        } satisfies OpenAIResponsesProviderOptions,
+      },
       system: personaScoringPrompt({ locale }),
       schema: personaScoringSchema,
       messages: [
