@@ -184,6 +184,7 @@ model Persona {
   prompt          String         @db.Text
   locale          String?        @db.VarChar(16)
   tier            Int            @default(0) @db.Integer
+  extra           Json           @default("{}")
   scoutUserChatId Int?           @db.Integer
   scoutUserChat   UserChat?      @relation(fields: [scoutUserChatId], references: [id]) // 是否需要 onDelete: SetNull ?
   personaImportId Int?           @db.Integer
@@ -627,10 +628,12 @@ model InterviewReport {
 }
 
 model PersonaPanel {
-  id         Int  @id @default(autoincrement())
-  userId     Int
-  personaIds Json @default("[]") // Persona ID 列表
-  extra      Json @default("{}")
+  id          Int    @id @default(autoincrement())
+  userId      Int
+  personaIds  Json   @default("[]") // Persona ID 列表
+  title       String @default("") @db.VarChar(255)
+  instruction String @default("") @db.Text // 用户指令
+  extra       Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)

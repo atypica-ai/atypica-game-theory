@@ -316,7 +316,25 @@ export type ResearchTemplateExtra = Partial<{
   tags: string[]; // Research method tags
 }>;
 
-export type PersonaPanelExtra = never; // 这个现在暂时没用到
+export type PersonaExtra = Partial<{
+  role: "consumer" | "buyer" | "expert"; // Persona role: consumer (B2C), buyer (B2B), expert (domain specialist)
+  // Common fields - use 2-3 fields based on role
+  ageRange: "18-24" | "25-34" | "35-44" | "45-54" | "55-64" | "65+"; // Age range (mainly for consumer)
+  location: string; // Location format: English "City, Country" (e.g. "Shanghai, China") or Chinese "国家城市" (e.g. "中国上海")
+  industry: string; // Industry/domain (for buyer & expert) - e.g. "FinTech", "AI"
+  title: string; // Job title/role (all types) - e.g. "Stay-at-home mom", "IT Procurement Manager", "Senior Researcher"
+  organization: string; // Organization (for buyer & expert) - e.g. "500-1000 employees", "Tsinghua University"
+  experience: string; // Experience/seniority (mainly for expert) - e.g. "10 years"
+}>;
+
+export type PersonaPanelExtra = Partial<{
+  processing:
+    | {
+        startsAt: number; // timestamp, typeof Date.now()
+      }
+    | false; // false 表示未开始或已完成
+  error: string; // 错误信息
+}>;
 
 export type DiscussionTimelineExtra = Partial<{
   error: string | null; // Error message if processing failed
