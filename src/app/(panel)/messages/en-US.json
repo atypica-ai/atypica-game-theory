@@ -2,40 +2,46 @@
   "PersonaPanel": {
     "title": "My Persona Panels",
     "subtitle": "Manage and reuse your persona groups for discussions and interviews",
-    "createNewPanel": "Create New Panel",
-    "createNewPanelDescription": "Start a new discussion to create a reusable persona panel",
-    "startDiscussion": "Start Discussion",
     "panelId": "Panel #{id}",
     "personaCount": "{count, plural, =1 {1 Persona} other {# Personas}}",
     "personas": "Personas",
-    "andMore": "+{count} more",
     "discussions": "{count, plural, =0 {No discussions} =1 {1 discussion} other {# discussions}}",
     "interviews": "{count, plural, =0 {No interviews} =1 {1 interview} other {# interviews}}",
-    "loadingFailed": "Failed to load persona panels",
-    "deleteSuccess": "Panel deleted successfully",
-    "deleteFailed": "Failed to delete panel",
-    "cannotDeleteUsedPanel": "Cannot delete a panel that is being used in discussions or interviews",
-    "confirmDelete": "Delete Persona Panel",
-    "deleteWarning": "Are you sure you want to delete Panel #{id}? This action cannot be undone.",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "deleting": "Deleting...",
-    "panelInfo": "Panel Information",
-    "usageCount": "Usage",
-    "viewDetails": "View Details",
-    "personaDescription": "Persona Description",
-    "personaAttributes": "Persona Attributes",
-    "role": "Role",
-    "roleType": {
-      "consumer": "Consumer",
-      "buyer": "Buyer",
-      "expert": "Expert"
+    "ListPage": {
+      "createNewPanel": "Create New Panel",
+      "createNewPanelDescription": "Start a new discussion to create a reusable persona panel",
+      "startDiscussion": "Start Discussion",
+      "andMore": "+{count} more",
+      "loadingFailed": "Failed to load persona panels",
+      "deleteSuccess": "Panel deleted successfully",
+      "deleteFailed": "Failed to delete panel",
+      "cannotDeleteUsedPanel": "Cannot delete a panel that is being used in discussions or interviews",
+      "confirmDelete": "Delete Persona Panel",
+      "deleteWarning": "Are you sure you want to delete Panel #{id}? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting..."
     },
-    "ageRange": "Age Range",
-    "location": "Location",
-    "industry": "Industry",
-    "title": "Title",
-    "organization": "Organization",
-    "experience": "Experience"
+    "DetailPage": {
+      "panelInfo": "Panel Information",
+      "usageCount": "Usage",
+      "viewDetails": "View Details",
+      "attributes": {
+        "description": "Persona Description",
+        "heading": "Persona Attributes",
+        "role": "Role",
+        "roleType": {
+          "consumer": "Consumer",
+          "buyer": "Buyer",
+          "expert": "Expert"
+        },
+        "ageRange": "Age Range",
+        "location": "Location",
+        "industry": "Industry",
+        "title": "Title",
+        "organization": "Organization",
+        "experience": "Experience"
+      }
+    }
   }
 }

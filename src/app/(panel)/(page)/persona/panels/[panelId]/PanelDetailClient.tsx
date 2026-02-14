@@ -19,10 +19,13 @@ import { fetchPersonaPanelById, PersonaWithAttributes } from "../actions";
 
 type PanelData = ExtractServerActionData<typeof fetchPersonaPanelById>;
 
-function getRoleLabel(role: PersonaExtra["role"], t: ReturnType<typeof useTranslations<"PersonaPanel">>) {
-  if (role === "consumer") return t("roleType.consumer");
-  if (role === "buyer") return t("roleType.buyer");
-  return t("roleType.expert");
+function getRoleLabel(
+  role: PersonaExtra["role"],
+  t: ReturnType<typeof useTranslations<"PersonaPanel">>,
+) {
+  if (role === "consumer") return t("DetailPage.attributes.roleType.consumer");
+  if (role === "buyer") return t("DetailPage.attributes.roleType.buyer");
+  return t("DetailPage.attributes.roleType.expert");
 }
 
 /** Build a compact attribute summary line based on role type */
@@ -104,15 +107,16 @@ export function PanelDetailClient({ panel }: { panel: PanelData }) {
                 >
                   {/* Role badge */}
                   {extra?.role && (
-                    <Badge variant="outline" className="self-start text-xs px-2 py-0.5 font-normal text-muted-foreground border-muted-foreground/30">
+                    <Badge
+                      variant="outline"
+                      className="self-start text-xs px-2 py-0.5 font-normal text-muted-foreground border-muted-foreground/30"
+                    >
                       {getRoleLabel(extra.role, t)}
                     </Badge>
                   )}
 
                   {/* Name */}
-                  <div className="text-sm font-medium leading-snug">
-                    {persona.name}
-                  </div>
+                  <div className="text-sm font-medium leading-snug">{persona.name}</div>
 
                   {/* Attribute summary */}
                   {summaryParts.length > 0 && (
@@ -150,13 +154,11 @@ export function PanelDetailClient({ panel }: { panel: PanelData }) {
 
       {/* Persona Detail Dialog */}
       <Dialog open={!!selectedPersona} onOpenChange={() => setSelectedPersona(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl sm:max-w-2xl max-h-[85vh] overflow-y-auto">
           {selectedPersona && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-xl tracking-tight">
-                  {selectedPersona.name}
-                </DialogTitle>
+                <DialogTitle className="text-xl tracking-tight">{selectedPersona.name}</DialogTitle>
                 <DialogDescription className="flex items-center gap-2.5 text-xs">
                   <span>{selectedPersona.source}</span>
                   <span>·</span>
@@ -169,7 +171,10 @@ export function PanelDetailClient({ panel }: { panel: PanelData }) {
                 {selectedPersona.extra && Object.keys(selectedPersona.extra).length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {selectedPersona.extra.role && (
-                      <Badge variant="outline" className="text-xs font-normal border-green-500/30 text-foreground">
+                      <Badge
+                        variant="outline"
+                        className="text-xs font-normal border-green-500/30 text-foreground"
+                      >
                         {getRoleLabel(selectedPersona.extra.role, t)}
                       </Badge>
                     )}

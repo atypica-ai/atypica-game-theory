@@ -2,40 +2,46 @@
   "PersonaPanel": {
     "title": "我的人物面板",
     "subtitle": "管理和复用您的人物组合，用于讨论和访谈",
-    "createNewPanel": "创建新面板",
-    "createNewPanelDescription": "开始新讨论以创建可复用的人物面板",
-    "startDiscussion": "开始讨论",
     "panelId": "面板 #{id}",
     "personaCount": "{count} 个人物",
     "personas": "人物",
-    "andMore": "还有 {count} 个",
     "discussions": "{count, plural, =0 {未使用} =1 {1 次讨论} other {# 次讨论}}",
     "interviews": "{count, plural, =0 {未访谈} =1 {1 次访谈} other {# 次访谈}}",
-    "loadingFailed": "加载人物面板失败",
-    "deleteSuccess": "面板删除成功",
-    "deleteFailed": "删除面板失败",
-    "cannotDeleteUsedPanel": "无法删除正在使用的面板",
-    "confirmDelete": "删除人物面板",
-    "deleteWarning": "确定要删除面板 #{id} 吗？此操作无法撤销。",
-    "cancel": "取消",
-    "delete": "删除",
-    "deleting": "删除中...",
-    "panelInfo": "面板信息",
-    "usageCount": "使用情况",
-    "viewDetails": "查看详情",
-    "personaDescription": "人物描述",
-    "personaAttributes": "人物属性",
-    "role": "角色",
-    "roleType": {
-      "consumer": "消费者",
-      "buyer": "采购者",
-      "expert": "专家"
+    "ListPage": {
+      "createNewPanel": "创建新面板",
+      "createNewPanelDescription": "开始新讨论以创建可复用的人物面板",
+      "startDiscussion": "开始讨论",
+      "andMore": "还有 {count} 个",
+      "loadingFailed": "加载人物面板失败",
+      "deleteSuccess": "面板删除成功",
+      "deleteFailed": "删除面板失败",
+      "cannotDeleteUsedPanel": "无法删除正在使用的面板",
+      "confirmDelete": "删除人物面板",
+      "deleteWarning": "确定要删除面板 #{id} 吗？此操作无法撤销。",
+      "cancel": "取消",
+      "delete": "删除",
+      "deleting": "删除中..."
     },
-    "ageRange": "年龄段",
-    "location": "地区",
-    "industry": "行业",
-    "title": "职位",
-    "organization": "组织",
-    "experience": "经验"
+    "DetailPage": {
+      "panelInfo": "面板信息",
+      "usageCount": "使用情况",
+      "viewDetails": "查看详情",
+      "attributes": {
+        "description": "人物描述",
+        "heading": "人物属性",
+        "role": "角色",
+        "roleType": {
+          "consumer": "消费者",
+          "buyer": "采购者",
+          "expert": "专家"
+        },
+        "ageRange": "年龄段",
+        "location": "地区",
+        "industry": "行业",
+        "title": "职位",
+        "organization": "组织",
+        "experience": "经验"
+      }
+    }
   }
 }
