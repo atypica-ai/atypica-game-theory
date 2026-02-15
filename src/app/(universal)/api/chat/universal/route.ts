@@ -34,6 +34,7 @@ import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { createBashTool } from "bash-tool";
 import { getServerSession } from "next-auth/next";
 import type { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -93,6 +94,7 @@ export async function POST(req: Request) {
   // Detect input language
   const locale: Locale = await detectInputLanguage({
     text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
+    fallbackLocale: await getLocale(),
   });
 
   // Get user and team info

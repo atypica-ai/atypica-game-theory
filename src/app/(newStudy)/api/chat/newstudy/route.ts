@@ -26,6 +26,7 @@ import {
   streamText,
 } from "ai";
 import { getServerSession } from "next-auth";
+import { getLocale } from "next-intl/server";
 import { after, NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
   // 动态检测用户输入的语言
   const locale = await detectInputLanguage({
     text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
+    fallbackLocale: await getLocale(),
   });
 
   // Verify user has access to this chat

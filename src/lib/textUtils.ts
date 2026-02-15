@@ -1,6 +1,5 @@
 import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { Locale } from "next-intl";
-import { getLocale } from "next-intl/server";
 
 /**
  * 检测字符串中中文字符的比例
@@ -123,7 +122,7 @@ export function truncateForTitle(
 export async function detectInputLanguage({
   text,
   threshold = 0.3,
-  fallbackLocale,
+  fallbackLocale = "en-US", // 默认用英文，不要从 getLocale() 获取，这个方法有可能不在 request context 中，不一定可以拿到 headers
 }: {
   text: string;
   threshold?: number;
@@ -131,12 +130,12 @@ export async function detectInputLanguage({
 }): Promise<Locale> {
   // 处理 null/undefined 输入或空白字符
   if (!text || !text.trim()) {
-    return fallbackLocale || (await getLocale());
+    return fallbackLocale;
   }
 
   // 处理系统消息，只允许单个空格转下划线，不允许连续空格或前后空格
   if (isSystemMessage(text)) {
-    return fallbackLocale || (await getLocale());
+    return fallbackLocale;
   }
 
   // 清理文本：去掉 URL 和连续数字，避免干扰语言检测

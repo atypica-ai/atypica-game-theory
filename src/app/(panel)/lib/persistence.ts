@@ -132,7 +132,6 @@ export async function generatePersonaPanelTitle(personaPanelId: number): Promise
 
   const locale: Locale = await detectInputLanguage({
     text: textForDetection,
-    fallbackLocale: "en-US",
   });
 
   const { text: title } = await generateText({

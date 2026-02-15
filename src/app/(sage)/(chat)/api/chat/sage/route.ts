@@ -11,12 +11,14 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { sageChatSystemPrompt } from "@/app/(sage)/prompt/chat";
 import { SageAvatar, SageExtra } from "@/app/(sage)/types";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth";
+import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -132,7 +134,7 @@ export async function POST(req: Request) {
   // Detect user input language, fallback to sage's locale
   const locale = await detectInputLanguage({
     text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
-    fallbackLocale: sage.locale as "zh-CN" | "en-US",
+    fallbackLocale: VALID_LOCALES.includes(sage.locale) ? sage.locale : await getLocale(),
   });
 
   const mergedAbortSignal = AbortSignal.any([req.signal]);

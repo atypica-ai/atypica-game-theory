@@ -10,6 +10,7 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
+import { getLocale } from "next-intl/server";
 
 export async function fetchDiscussionTimeline(timelineToken: string): Promise<
   ServerActionResult<{
@@ -76,7 +77,10 @@ export async function startPersonaDiscussionAction({
     const abortSignal = new AbortController().signal;
 
     // Detect locale from instruction
-    const locale = await detectInputLanguage({ text: instruction });
+    const locale = await detectInputLanguage({
+      text: instruction,
+      fallbackLocale: await getLocale(),
+    });
 
     const personaPanel = await createPersonaPanel({
       userId: user.id,

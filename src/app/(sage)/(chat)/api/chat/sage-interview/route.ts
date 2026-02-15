@@ -22,7 +22,6 @@ import { prisma } from "@/prisma/prisma";
 import { type AnthropicProviderOptions } from "@ai-sdk/anthropic";
 import { generateId, smoothStream, stepCountIs, streamText, tool } from "ai";
 import { getServerSession } from "next-auth";
-import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { after, NextResponse } from "next/server";
 import z from "zod";
@@ -149,9 +148,7 @@ export async function POST(req: Request) {
   // Detect user input language, fallback to sage's locale
   const locale = await detectInputLanguage({
     text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
-    fallbackLocale: VALID_LOCALES.includes(sage.locale as Locale)
-      ? (sage.locale as Locale)
-      : await getLocale(),
+    fallbackLocale: VALID_LOCALES.includes(sage.locale) ? sage.locale : await getLocale(),
   });
 
   const FETCH_PENDING_GAPS = "fetchPendingGaps";

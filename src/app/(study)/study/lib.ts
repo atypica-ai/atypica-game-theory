@@ -10,6 +10,7 @@ import { ChatMessageAttachment, UserChat, UserChatExtra } from "@/prisma/client"
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
+import { getLocale } from "next-intl/server";
 
 /**
  * Core logic for creating a study user chat
@@ -59,6 +60,7 @@ export async function createStudyUserChat({
   // 根据用户输入决定模型的默认语言
   const locale = await detectInputLanguage({
     text: content,
+    fallbackLocale: await getLocale(), // createStudyUserChat 都是在 api 或者 serveraction 里调用的，可以放心拿到 request headers
   });
 
   const userChat = await prisma.$transaction(async (tx) => {
