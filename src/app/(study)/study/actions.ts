@@ -178,12 +178,10 @@ export async function fetchAttachmentsByStudyUserChatToken({
     };
   }
   const fileUIParts = await Promise.all(
-    (studyUserChat.context.attachments as ChatMessageAttachment[]).map(
-      async ({ name, objectUrl, mimeType }) => {
-        const url = await getS3SignedCdnUrl(objectUrl);
-        return { type: "file" as const, mediaType: mimeType, filename: name, url: url };
-      },
-    ),
+    (studyUserChat.context.attachments ?? []).map(async ({ name, objectUrl, mimeType }) => {
+      const url = await getS3SignedCdnUrl(objectUrl);
+      return { type: "file" as const, mediaType: mimeType, filename: name, url: url };
+    }),
   );
   return {
     success: true,

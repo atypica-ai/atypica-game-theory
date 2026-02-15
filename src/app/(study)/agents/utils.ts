@@ -4,7 +4,7 @@ import { UserChatContext } from "@/app/(study)/context/types";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { parseAttachmentText } from "@/lib/attachments/processing";
-import { AttachmentFileExtra, ChatMessageAttachment } from "@/prisma/client";
+import { AttachmentFileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import { BedrockProviderOptions } from "@ai-sdk/amazon-bedrock";
@@ -175,9 +175,9 @@ export async function waitUntilAttachmentsProcessed({
   ({ type: "image"; mimeType: string; dataUrl: string } | { type: "text"; text: string })[]
 > {
   // Check attachments and process if needed
-  const analystAttachments = (userChatContext.attachments ?? []) as ChatMessageAttachment[];
+  const analystAttachments = userChatContext.attachments;
 
-  if (!analystAttachments.length) {
+  if (!analystAttachments?.length) {
     return [];
   }
 

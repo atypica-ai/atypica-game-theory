@@ -37,7 +37,8 @@ import {
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
-import { FormEvent, useCallback, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { fetchBriefChatMessages, fetchStudies, generateChatTitleAction } from "./actions";
 
 export const SearchParamsConfig = {
@@ -66,6 +67,7 @@ export function AdminStudiesPageClient({
 }) {
   const { status } = useSession();
   const locale = useLocale();
+  const router = useRouter();
   const [studyUserChats, setStudyUserChats] = useState<
     ExtractServerActionData<typeof fetchStudies>
   >([]);
@@ -100,6 +102,14 @@ export function AdminStudiesPageClient({
     }
     setIsLoading(false);
   }, [currentPage, searchQuery, selectedKind]);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin?callbackUrl=/admin/studies/reports");
+    } else if (status === "authenticated") {
+      fetchData();
+    }
+  }, [status, router, fetchData]);
 
   const handleSearch = useCallback(
     (e: FormEvent) => {
@@ -340,7 +350,7 @@ export function AdminStudiesPageClient({
                   {/* Summary Section */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-muted-foreground">Summary:</span>
+                      <span className="text-xs font-medium text-muted-foreground">StudyLog:</span>
                       <button
                         onClick={() => toggleSummaryExpansion(studyUserChat.id)}
                         className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground"

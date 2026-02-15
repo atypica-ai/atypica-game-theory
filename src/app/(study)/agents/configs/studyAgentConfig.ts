@@ -15,7 +15,6 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import type { ChatMessageAttachment } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -195,7 +194,7 @@ function buildStudyTools(params: {
     [StudyToolName.interviewChat]: interviewChatTool({
       userId,
       userChatId: studyUserChatId,
-      attachments: userChatContext.attachments as ChatMessageAttachment[],
+      attachments: userChatContext.attachments,
       ...agentToolArgs,
     }),
     [StudyToolName.discussionChat]: discussionChatTool({

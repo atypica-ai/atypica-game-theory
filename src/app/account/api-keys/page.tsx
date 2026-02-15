@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { UserApiKeyCard } from "./UserApiKeyCard";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -27,7 +28,10 @@ export default async function UserApiKeyPage() {
       <div>
         <h1 className="text-2xl font-bold mb-2">API Configuration</h1>
         <p className="text-muted-foreground text-sm">
-          Manage your personal API key for programmatic access.
+          Manage your personal API key for programmatic access.{" "}
+          <Link href="/docs/mcp" className="text-primary hover:underline">
+            View documentation
+          </Link>
         </p>
       </div>
 

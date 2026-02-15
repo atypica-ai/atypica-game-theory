@@ -363,6 +363,8 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // Phase 8: streamText Configuration
   // =============================================================================
 
+  console.log(JSON.stringify(modelMessages));
+
   let streamStartTime = Date.now();
   const streamTextResult = streamText<TOOLS>({
     // Core configuration

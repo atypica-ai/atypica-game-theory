@@ -136,7 +136,7 @@ export default function GlobalFooter({ className }: { className?: string }) {
                 {t("insightRadio")}
               </Link>
               <Link
-                href="https://skill0.atypica.ai"
+                href="https://skill0.io"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block text-muted-foreground hover:text-foreground transition-colors"

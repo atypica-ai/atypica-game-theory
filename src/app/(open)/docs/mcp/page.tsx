@@ -182,7 +182,7 @@ export default async function McpDocsPage() {
                   <p className="text-sm text-muted-foreground mb-3">
                     1. Get your API key from{" "}
                     <Link
-                      href="/account/settings"
+                      href="/account/api-keys"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary hover:underline"
@@ -252,19 +252,44 @@ export default async function McpDocsPage() {
                     with MCP-compatible AI assistants.
                   </p>
 
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-md p-4 mb-4">
-                    <p className="text-sm text-foreground">
-                      <strong>Download Skills:</strong> Visit{" "}
+                  <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-6 mb-4">
+                    <h3 className="text-base font-semibold mb-3">Download Options</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <a
+                        href="https://github.com/bmrlab/atypica-research-skill"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block p-4 bg-background/80 border border-border rounded-md hover:border-primary hover:bg-accent/50 transition-all"
+                      >
+                        <div className="flex items-start gap-3">
+                          <svg className="w-6 h-6 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                          </svg>
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm mb-1 font-mono">bmrlab/atypica-research-skill</div>
+                            <div className="text-xs text-muted-foreground">
+                              Direct download • Source code • Issues & contributions
+                            </div>
+                          </div>
+                        </div>
+                      </a>
                       <a
                         href="https://skill0.io"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className="block p-4 bg-background/80 border border-border rounded-md hover:border-primary hover:bg-accent/50 transition-all"
                       >
-                        skill0.io
-                      </a>{" "}
-                      to download the atypica-research skill and other community agent skills.
-                    </p>
+                        <div className="flex items-start gap-3">
+                          <div className="w-6 h-6 mt-0.5 shrink-0 flex items-center justify-center text-xl">🎯</div>
+                          <div className="flex-1">
+                            <div className="font-semibold text-sm mb-1">skill0.io</div>
+                            <div className="text-xs text-muted-foreground">
+                              Community skills • Browse catalog • Easy install
+                            </div>
+                          </div>
+                        </div>
+                      </a>
+                    </div>
                   </div>
                 </div>
 
@@ -274,12 +299,12 @@ export default async function McpDocsPage() {
                     <li>
                       <strong>Get API Key:</strong> Visit{" "}
                       <Link
-                        href="/account/settings"
+                        href="/account/api-keys"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
                       >
-                        {baseURL}/account/settings
+                        {baseURL}/account/api-keys
                       </Link>{" "}
                       to create an API key (format: <code className="bg-muted px-1 py-0.5 rounded text-xs">atypica_xxx</code>)
                     </li>
@@ -295,15 +320,7 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
                     </li>
                     <li>
                       <strong>Download Skill:</strong> Get the{" "}
-                      <code className="bg-muted px-1 py-0.5 rounded text-xs">atypica-research</code> skill from{" "}
-                      <a
-                        href="https://skill0.io"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        skill0.io
-                      </a>
+                      <code className="bg-muted px-1 py-0.5 rounded text-xs">atypica-research</code> skill from the download options above
                     </li>
                     <li>
                       <strong>Restart:</strong> Restart your AI assistant to load the new skill
@@ -430,18 +447,30 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
               </ul>
 
               <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-md p-4">
-                <p className="text-sm text-foreground">
-                  <strong>Full API documentation</strong> is included in the skill download from{" "}
+                <p className="text-sm text-foreground mb-3">
+                  <strong>Full API documentation</strong> is included in the skill package with comprehensive guides and reference materials.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href="https://github.com/bmrlab/atypica-research-skill"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-md text-xs font-mono hover:border-primary transition-colors"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    bmrlab/atypica-research-skill
+                  </a>
                   <a
                     href="https://skill0.io"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-md text-xs font-medium hover:border-primary transition-colors"
                   >
-                    skill0.io
+                    🎯 skill0.io
                   </a>
-                  . The skill package contains comprehensive guides and reference materials.
-                </p>
+                </div>
               </div>
             </section>
 
@@ -455,7 +484,7 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
                 <p>
                   <strong>API Keys:</strong> Manage your API keys in{" "}
                   <Link
-                    href="/account/settings"
+                    href="/account/api-keys"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
@@ -464,17 +493,30 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
                   </Link>
                 </p>
 
-                <p>
-                  <strong>Skill Downloads:</strong> Get the latest skills from{" "}
-                  <a
-                    href="https://skill0.io"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    skill0.io
-                  </a>
-                </p>
+                <div>
+                  <p className="font-medium mb-2">Skill Downloads:</p>
+                  <div className="flex flex-wrap gap-2">
+                    <a
+                      href="https://github.com/bmrlab/atypica-research-skill"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/50 border border-border rounded-md text-xs font-mono hover:border-primary hover:bg-accent transition-colors"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                      </svg>
+                      bmrlab/atypica-research-skill
+                    </a>
+                    <a
+                      href="https://skill0.io"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/50 border border-border rounded-md text-xs font-medium hover:border-primary hover:bg-accent transition-colors"
+                    >
+                      🎯 skill0.io
+                    </a>
+                  </div>
+                </div>
 
                 <p>
                   <strong>Questions?</strong> Contact us through{" "}
