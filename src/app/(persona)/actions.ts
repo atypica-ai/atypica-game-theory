@@ -550,7 +550,7 @@ export async function fetchFollowUpInterviewChatMessages(
         extraUserChat: {
           include: {
             messages: {
-              orderBy: { createdAt: "asc" },
+              orderBy: { id: "asc" },
             },
           },
         },

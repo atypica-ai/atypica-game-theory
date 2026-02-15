@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Fix duplicate message parts caused by append mode bug
 //
 // Background:

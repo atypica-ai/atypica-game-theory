@@ -323,7 +323,7 @@ const user = await prisma.user.findUnique({
 const chat = await prisma.userChat.findUnique({
   where: { token },
   include: {
-    messages: { orderBy: { createdAt: "asc" } },
+    messages: { orderBy: { id: "asc" } },
     user: { select: { id: true, name: true } },
   },
 });

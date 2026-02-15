@@ -34,7 +34,7 @@ async function InterviewSessionChatPage({ userChatToken }: { userChatToken: stri
   const initialMessages = (await convertDBMessagesToAIMessages(
     await prisma.chatMessage.findMany({
       where: { userChatId: interviewSession.userChatId },
-      orderBy: { createdAt: "asc" },
+      orderBy: { id: "asc" },
     }),
   )) as Parameters<typeof InterviewSessionChatClient>[0]["initialMessages"];
 

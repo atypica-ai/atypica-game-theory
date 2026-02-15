@@ -1,4 +1,5 @@
-#!/usr/bin/env tsx
+// @ts-nocheck
+
 // Migrate interview project questions from brief field to questions array
 // Usage: pnpm tsx scripts/migrate-questions-to-array.ts
 

@@ -37,7 +37,6 @@
     "dist",
     "build",
     "functions",
-    "scripts/archive",
     "__tests__",
     "prisma",
     "docs",

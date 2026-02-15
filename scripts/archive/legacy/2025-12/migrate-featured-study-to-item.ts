@@ -1,4 +1,5 @@
-#!/usr/bin/env tsx
+// @ts-nocheck
+
 // Migrate FeaturedStudy to FeaturedItem
 // For each FeaturedStudy, feature the last generated report and podcast
 // Usage:

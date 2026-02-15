@@ -99,7 +99,7 @@ export async function fetchUserChatByToken(
     // Load messages
     const dbMessages = await prismaRO.chatMessage.findMany({
       where: { userChatId: userChat.id },
-      orderBy: { createdAt: "asc" },
+      orderBy: { id: "asc" },
     });
 
     const messages = await convertDBMessagesToAIMessages(dbMessages);

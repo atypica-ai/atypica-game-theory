@@ -1,4 +1,5 @@
-#!/usr/bin/env tsx
+// @ts-nocheck
+
 // Migrate API keys from TeamConfig to ApiKey table
 // Usage:
 //   pnpm tsx scripts/migrate-apikey-to-table.ts --dry-run   (preview)

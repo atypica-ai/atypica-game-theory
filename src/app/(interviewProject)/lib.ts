@@ -200,7 +200,7 @@ export async function extractInterviewTranscript(userChatId: number): Promise<In
   const uiMessages = (
     await prisma.chatMessage.findMany({
       where: { userChatId },
-      orderBy: { createdAt: "asc" },
+      orderBy: { id: "asc" },
       select: {
         messageId: true,
         role: true,

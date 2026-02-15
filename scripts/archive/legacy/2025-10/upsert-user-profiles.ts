@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Generate UserProfile for all users without profiles
 // Usage: pnpm tsx scripts/upsert-user-profiles.ts
 

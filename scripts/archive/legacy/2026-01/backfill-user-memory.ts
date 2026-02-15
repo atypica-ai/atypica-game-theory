@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Backfill user memory from their study logs
  *

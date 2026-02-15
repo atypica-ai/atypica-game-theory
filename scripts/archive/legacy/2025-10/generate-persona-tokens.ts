@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Generate unique tokens for all personas without tokens
 // Usage: pnpm tsx scripts/generate-persona-tokens.ts
 

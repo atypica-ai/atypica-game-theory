@@ -1,4 +1,5 @@
-#!/usr/bin/env tsx
+// @ts-nocheck
+
 // Migrate interview project questions from extra.questions to top-level questions field
 // Usage: pnpm tsx scripts/archive/legacy/2025-12/migrate-questions-to-top-level.ts
 

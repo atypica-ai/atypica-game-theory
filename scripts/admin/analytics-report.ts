@@ -1,5 +1,3 @@
-#!/usr/bin/env tsx
-
 import { GoogleAnalyticsReporter } from "@/lib/analytics/google/reporter.js";
 import { loadEnvConfig } from "@next/env";
 

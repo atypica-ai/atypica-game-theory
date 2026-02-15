@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import "../../../mock-server-only";
 
 import type { Analyst, AnalystReport, AnalystReportExtra } from "@/prisma/client";

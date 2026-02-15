@@ -1,4 +1,5 @@
-#!/usr/bin/env tsx
+// @ts-nocheck
+
 // Migrate Analyst-based interviews to PersonaPanel-based interviews
 // For each Analyst with interviews, create a PersonaPanel and update UserChat.context
 // Usage:

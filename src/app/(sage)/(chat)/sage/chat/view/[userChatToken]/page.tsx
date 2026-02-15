@@ -35,7 +35,7 @@ async function getChatData(userChatToken: string) {
       },
       messages: {
         orderBy: {
-          createdAt: "asc",
+          id: "asc",
         },
         select: {
           role: true,

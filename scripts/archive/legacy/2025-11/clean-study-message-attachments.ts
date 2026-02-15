@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import "./mock-server-only";
 
 import { loadEnvConfig } from "@next/env";
