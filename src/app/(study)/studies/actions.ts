@@ -1,8 +1,8 @@
 "use server";
-import { UserChatContext } from "@/app/(study)/context/types";
+import { AnalystKind, UserChatContext } from "@/app/(study)/context/types";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystKind, ChatMessageAttachment } from "@/prisma/client";
+import { ChatMessageAttachment } from "@/prisma/client";
 import { AnalystWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 

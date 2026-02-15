@@ -8,13 +8,13 @@ import { createFastInsightAgentConfig } from "@/app/(study)/agents/configs/fastI
 import { createPlanModeAgentConfig } from "@/app/(study)/agents/configs/planModeAgentConfig";
 import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/productRnDAgentConfig";
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
+import { AnalystKind } from "@/app/(study)/context/types";
 import { saveAnalystFromPlan } from "@/app/(study)/study/lib";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { AnalystKind } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";

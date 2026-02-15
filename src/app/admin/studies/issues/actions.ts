@@ -6,17 +6,11 @@ import { executeBaseAgentRequest } from "@/app/(study)/agents/baseAgentRequest";
 import { createFastInsightAgentConfig } from "@/app/(study)/agents/configs/fastInsightAgentConfig";
 import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/productRnDAgentConfig";
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
+import { AnalystKind } from "@/app/(study)/context/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import {
-  AnalystKind,
-  PaymentRecord,
-  TokensAccount,
-  User,
-  UserChat,
-  UserChatExtra,
-} from "@/prisma/client";
+import { PaymentRecord, TokensAccount, User, UserChat, UserChatExtra } from "@/prisma/client";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { createUIMessageStream, generateId } from "ai";
 import { Locale } from "next-intl";

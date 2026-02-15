@@ -1,6 +1,6 @@
 "use client";
+import { AnalystKind } from "@/app/(study)/context/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnalystKind } from "@/prisma/client";
 
 interface StudiesByKindProps {
   studiesByKind: Record<AnalystKind, number>;

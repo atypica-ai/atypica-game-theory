@@ -7,15 +7,8 @@ import { V4MessagePart, V5MessagePart } from "@/ai/v4";
 /**
  * Enums
  */
-export enum AnalystKind {
-  testing = "testing",
-  planning = "planning",
-  insights = "insights",
-  creation = "creation",
-  productRnD = "productRnD",
-  fastInsight = "fastInsight",
-  misc = "misc",
-}
+
+// nothing
 
 /**
  * Types

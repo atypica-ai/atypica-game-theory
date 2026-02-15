@@ -1,5 +1,15 @@
 import { ExpertName } from "@/app/(deepResearch)/experts/types";
 
+export enum AnalystKind {
+  testing = "testing",
+  planning = "planning",
+  insights = "insights",
+  creation = "creation",
+  productRnD = "productRnD",
+  fastInsight = "fastInsight",
+  misc = "misc",
+}
+
 export type UserChatContext = Partial<{
   // studyUserChat 专用: 过程关键信息
   interviewPersonaPanelId: number;

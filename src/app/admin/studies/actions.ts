@@ -1,10 +1,12 @@
 "use server";
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { AnalystKind } from "@/app/(study)/context/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { generateChatTitle } from "@/lib/userChat/lib";
-import { Analyst, AnalystKind, User, UserChat } from "@/prisma/client";
+import { User, UserChat } from "@/prisma/client";
+import { UserChatWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
 import { UIMessage } from "ai";
 import { after } from "next/server";

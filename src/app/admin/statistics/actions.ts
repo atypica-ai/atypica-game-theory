@@ -1,8 +1,8 @@
 "use server";
+import { AnalystKind } from "@/app/(study)/context/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
-import { AnalystKind } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 
 /**

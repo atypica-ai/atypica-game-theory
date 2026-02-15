@@ -1,5 +1,6 @@
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
-import { Analyst, AnalystKind, AnalystReport } from "@/prisma/client";
+import { AnalystKind } from "@/app/(study)/context/types";
+import { Analyst, AnalystReport } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { reportHTMLSystemCreation } from "./creation";
 import { reportHTMLSystemFastInsight } from "./fastInsight";
