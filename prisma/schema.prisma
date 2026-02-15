@@ -36,7 +36,7 @@ model ApiKey {
   user   User?  @relation("UserApiKey", fields: [userId], references: [id], onDelete: Cascade)
   teamId Int?
   team   Team?  @relation("TeamApiKey", fields: [teamId], references: [id], onDelete: Cascade)
-  /// [DBType.ApiKeyExtra]
+  /// [ApiKeyExtra]
   extra  Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -63,7 +63,7 @@ model Team {
   ownerUserId Int
   ownerUser   User   @relation("TeamOwner", fields: [ownerUserId], references: [id])
   members     User[] @relation("TeamMembership")
-  /// [DBType.TeamExtra]
+  /// [TeamExtra]
   extra       Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -103,7 +103,6 @@ model User {
   adminUser         AdminUser?
   tokensAccount     TokensAccount?
   tokensLogs        TokensLog[]
-  analysts          Analyst[]
   userChats         UserChat[]
   paymentRecords    PaymentRecord[]
   subscriptions     Subscription[]
@@ -123,6 +122,7 @@ model User {
   userPersonaChatRelations       UserPersonaChatRelation[]
   interviewSessionsAsInterviewee InterviewSession[]
   awsMarketplaceCustomer         AWSMarketplaceCustomer?
+  analysts                       Analyst[]
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -132,11 +132,11 @@ model UserProfile {
   id         Int  @id @default(autoincrement())
   userId     Int  @unique
   user       User @relation(fields: [userId], references: [id])
-  /// [DBType.UserLastLogin]
+  /// [UserLastLogin]
   lastLogin  Json @default("{}")
-  /// [DBType.UserOnboardingData]
+  /// [UserOnboardingData]
   onboarding Json @default("{}")
-  /// [DBType.UserProfileExtra]
+  /// [UserProfileExtra]
   extra      Json @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -176,7 +176,7 @@ model AgentSkill {
   name        String @db.VarChar(255)
   description String @db.Text
   objectUrl   String @db.VarChar(255)
-  /// [DBType.AgentSkillExtra]
+  /// [AgentSkillExtra]
   extra       Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -195,10 +195,10 @@ model Persona {
   /// [string[]]
   samples         Json           @default("[]") // 存储小红书用户主页链接作为参考样本
   prompt          String         @db.Text
-  /// [DBType.Locale]
+  /// [Locale]
   locale          String?        @db.VarChar(16)
   tier            Int            @default(0) @db.Integer
-  /// [DBType.PersonaExtra]
+  /// [PersonaExtra]
   extra           Json           @default("{}")
   scoutUserChatId Int?           @db.Integer
   scoutUserChat   UserChat?      @relation(fields: [scoutUserChatId], references: [id], onDelete: SetNull)
@@ -230,11 +230,10 @@ model Analyst {
   studyLog        String   @default("") @db.Text
   studyUserChatId Int      @unique @db.Integer
   studyUserChat   UserChat @relation(fields: [studyUserChatId], references: [id], onDelete: Cascade)
-  /// [DBType.ChatMessageAttachment[]]
+  /// [ChatMessageAttachment[]]
   attachments     Json     @default("[]")
-  /// [DBType.AnalystKind]
   kind            String?  @db.VarChar(16)
-  /// [DBType.Locale]
+  /// [Locale]
   locale          String?  @db.VarChar(16)
   extra           Json     @default("{}")
 
@@ -246,12 +245,12 @@ model Analyst {
 
 model FeaturedItem {
   id           Int    @id @default(autoincrement())
-  /// [DBType.FeaturedItemResourceType]
+  /// [FeaturedItemResourceType]
   resourceType String @db.VarChar(50)
   resourceId   Int
-  /// [DBType.Locale]
+  /// [Locale]
   locale       String @db.VarChar(16)
-  /// [DBType.FeaturedItemExtra]
+  /// [FeaturedItemExtra]
   extra        Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -269,7 +268,7 @@ model AnalystReport {
   coverSvg    String    @db.Text
   onePageHtml String    @db.Text
   generatedAt DateTime? @db.Timestamptz(6)
-  /// [DBType.AnalystReportExtra]
+  /// [AnalystReportExtra]
   extra       Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -285,7 +284,7 @@ model AnalystPodcast {
   script      String    @db.Text
   objectUrl   String?   @db.VarChar(255)
   generatedAt DateTime? @db.Timestamptz(6)
-  /// [DBType.AnalystPodcastExtra]
+  /// [AnalystPodcastExtra]
   extra       Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -310,16 +309,15 @@ model UserChat {
   title           String       @db.VarChar(255)
   kind            UserChatKind
   backgroundToken String?      @db.VarChar(255)
-  /// [DBType.UserChatContext]
+  /// [UserChatContext]
   context         Json         @default("{}")
-  /// [DBType.UserChatExtra]
+  /// [UserChatExtra]
   extra           Json         @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   personas                Persona[]
-  analyst                 Analyst?
   analystInterview        AnalystInterview?
   statistics              ChatStatistics[]
   messages                ChatMessage[]
@@ -328,6 +326,7 @@ model UserChat {
   interviewSession        InterviewSession?
   sageChat                SageChat?
   sageInterview           SageInterview?
+  analyst                 Analyst?
 
   @@index([userId])
 }
@@ -346,10 +345,10 @@ model ChatMessage {
   userChat    UserChat    @relation(fields: [userChatId], references: [id], onDelete: Cascade)
   role        MessageRole
   content     String      @db.Text
-  /// [DBType.ChatMessagePart[]]
+  /// [ChatMessagePart[]]
   parts       Json        @default("[]")
   extra       Json        @default("{}")
-  /// [DBType.ChatMessageAttachment[]]
+  /// [ChatMessageAttachment[]]
   attachments Json        @default("[]")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -372,7 +371,7 @@ model ChatStatistics {
   userChat   UserChat                @relation(fields: [userChatId], references: [id], onDelete: Cascade)
   dimension  ChatStatisticsDimension
   value      Int                     @default(0)
-  /// [DBType.AgentStatisticsExtra]
+  /// [AgentStatisticsExtra]
   extra      Json                    @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -477,7 +476,7 @@ model Subscription {
   plan     SubscriptionPlan
   startsAt DateTime         @db.Timestamptz(6)
   endsAt   DateTime         @db.Timestamptz(6)
-  /// [DBType.SubscriptionExtra]
+  /// [SubscriptionExtra]
   extra    Json             @default("{}")
 
   paymentRecordId      Int?           @unique //一个支付记录只能生成一条 Subscription
@@ -502,7 +501,7 @@ model TokensAccount {
   permanentBalance Int       @default(0)
   monthlyBalance   Int       @default(0)
   monthlyResetAt   DateTime? @db.Timestamptz(6)
-  /// [DBType.TokensAccountExtra]
+  /// [TokensAccountExtra]
   extra            Json      @default("{}")
 
   activeSubscriptionId Int?          @unique
@@ -529,10 +528,10 @@ model TokensLog {
   team         Team?         @relation(fields: [teamId], references: [id])
   value        Int
   verb         TokensLogVerb
-  /// [DBType.TokensLogResourceType]
+  /// [TokensLogResourceType]
   resourceType String?       @db.VarChar(50)
   resourceId   Int?
-  /// [DBType.TokensLogExtra]
+  /// [TokensLogExtra]
   extra        Json          @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -556,7 +555,7 @@ model ImageGeneration {
   prompt      String    @db.Text
   promptHash  String    @unique // unique hash
   objectUrl   String    @db.VarChar(255) // s3 object url for generated image
-  /// [DBType.ImageGenerationExtra]
+  /// [ImageGenerationExtra]
   extra       Json      @default("{}")
   generatedAt DateTime? @db.Timestamptz(6)
 
@@ -572,7 +571,7 @@ model AttachmentFile {
   mimeType  String @db.VarChar(255)
   size      Int
   objectUrl String @unique @db.VarChar(255) // s3 object url
-  /// [DBType.AttachmentFileExtra]
+  /// [AttachmentFileExtra]
   extra     Json   @default("{}") // not useful for the moment
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -583,12 +582,12 @@ model PersonaImport {
   id              Int       @id @default(autoincrement())
   userId          Int
   user            User      @relation(fields: [userId], references: [id])
-  /// [DBType.ChatMessageAttachment[]]
+  /// [ChatMessageAttachment[]]
   attachments     Json      @default("[]")
   context         String    @default("") @db.Text // parse attachments as context
-  /// [DBType.PersonaImportAnalysis]
+  /// [PersonaImportAnalysis]
   analysis        Json      @default("{}")
-  /// [DBType.PersonaImportExtra]
+  /// [PersonaImportExtra]
   extra           Json      @default("{}")
   extraUserChatId Int?      @unique // interview UserChat for follow up questions, 其实记录在 extra 就行了，加一个字段反而不好
   extraUserChat   UserChat? @relation(fields: [extraUserChatId], references: [id], onDelete: SetNull)
@@ -620,9 +619,9 @@ model InterviewProject {
   userId    Int
   user      User   @relation(fields: [userId], references: [id])
   brief     String @db.Text
-  /// [DBType.InterviewProjectQuestion[]]
+  /// [InterviewProjectQuestion[]]
   questions Json   @default("[]")
-  /// [DBType.InterviewProjectExtra]
+  /// [InterviewProjectExtra]
   extra     Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -643,7 +642,7 @@ model InterviewSession {
   intervieweeUser      User?            @relation(fields: [intervieweeUserId], references: [id], onDelete: SetNull)
   intervieweePersonaId Int? // 受访的 AI 角色
   intervieweePersona   Persona?         @relation(fields: [intervieweePersonaId], references: [id], onDelete: SetNull)
-  /// [DBType.InterviewSessionExtra]
+  /// [InterviewSessionExtra]
   extra                Json             @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -657,7 +656,7 @@ model InterviewReport {
   project     InterviewProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
   onePageHtml String           @db.Text
   generatedAt DateTime?        @db.Timestamptz(6)
-  /// [DBType.InterviewReportExtra]
+  /// [InterviewReportExtra]
   extra       Json             @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -671,7 +670,7 @@ model PersonaPanel {
   personaIds  Json   @default("[]") // Persona ID 列表
   title       String @default("") @db.VarChar(255)
   instruction String @default("") @db.Text // 用户指令
-  /// [DBType.PersonaPanelExtra]
+  /// [PersonaPanelExtra]
   extra       Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -706,11 +705,11 @@ model DiscussionTimeline {
   personaPanelId Int
   personaPanel   PersonaPanel @relation(fields: [personaPanelId], references: [id], onDelete: Cascade)
   instruction    String       @db.Text // 用户指令
-  /// [DBType.DiscussionTimelineEvent[]]
+  /// [DiscussionTimelineEvent[]]
   events         Json         @default("[]") // TimelineEvent[] 数组
   summary        String       @db.Text // 主持人最终总结 default empty string
   minutes        String       @db.Text // 结构化讨论纪要（无损记录）default empty string
-  /// [DBType.DiscussionTimelineExtra]
+  /// [DiscussionTimelineExtra]
   extra          Json         @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -730,12 +729,12 @@ model Sage {
   domain    String @db.VarChar(255)
   /// [string[]]
   expertise Json   @default("[]")
-  /// [DBType.SageAvatar]
+  /// [SageAvatar]
   avatar    Json   @default("{}")
   bio       String @db.Text
-  /// [DBType.Locale]
+  /// [Locale]
   locale    String @db.VarChar(16)
-  /// [DBType.SageExtra]
+  /// [SageExtra]
   extra     Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -752,11 +751,11 @@ model SageSource {
   id            Int    @id @default(autoincrement())
   sageId        Int
   sage          Sage   @relation(fields: [sageId], references: [id], onDelete: Cascade)
-  /// [DBType.SageSourceContent]
+  /// [SageSourceContent]
   content       Json // { type:"text", text } or { type:"file", objectUrl, name, mimeType, size } or { type:"url", url }
   title         String @db.VarChar(255)
   extractedText String @db.Text
-  /// [DBType.SageSourceExtra]
+  /// [SageSourceExtra]
   extra         Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -771,7 +770,7 @@ model SageChat {
   user       User     @relation(fields: [userId], references: [id])
   userChatId Int      @unique
   userChat   UserChat @relation(fields: [userChatId], references: [id], onDelete: Cascade)
-  /// [DBType.SageChatExtra]
+  /// [SageChatExtra]
   extra      Json     @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -784,7 +783,7 @@ model SageInterview {
   sage       Sage     @relation(fields: [sageId], references: [id], onDelete: Cascade)
   userChatId Int      @unique
   userChat   UserChat @relation(fields: [userChatId], references: [id], onDelete: Cascade)
-  /// [DBType.SageInterviewExtra]
+  /// [SageInterviewExtra]
   extra      Json     @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -797,14 +796,14 @@ model SageKnowledgeGap {
   sage        Sage      @relation(fields: [sageId], references: [id], onDelete: Cascade)
   area        String    @db.VarChar(255)
   description String    @db.Text
-  /// [DBType.SageKnowledgeGapSeverity]
+  /// [SageKnowledgeGapSeverity]
   severity    String    @db.VarChar(32)
   impact      String    @db.Text
   resolvedAt  DateTime? @db.Timestamptz(6)
   // extra 包含:
   // - sourceChat: { id: number, token: string } - 来源对话(UserChat.id+token,用于UI跳转)
   // - resolvedChat: { id: number, token: string } - 解决访谈(UserChat.id+token,用于UI跳转)
-  /// [DBType.SageKnowledgeGapExtra]
+  /// [SageKnowledgeGapExtra]
   extra       Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -818,7 +817,7 @@ model SageMemoryDocument {
   version Int
 
   core    String @default("") @db.Text // 核心记忆 (Markdown)
-  /// [DBType.WorkingMemoryItem[]]
+  /// [WorkingMemoryItem[]]
   working Json   @default("[]") // 工作记忆 (来自访谈的待整合知识)
 
   changeNotes String @db.Text
@@ -861,9 +860,9 @@ model BlogArticle {
   content     String    @db.Text
   slug        String    @db.VarChar(255)
   publishedAt DateTime? @db.Timestamptz(6)
-  /// [DBType.Locale]
+  /// [Locale]
   locale      String    @db.VarChar(16)
-  /// [DBType.BlogArticleExtra]
+  /// [BlogArticleExtra]
   extra       Json      @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -879,7 +878,7 @@ model ResearchTemplate {
   // 核心字段
   title       String @db.VarChar(255)
   description String @db.Text
-  /// [DBType.Locale]
+  /// [Locale]
   locale      String @db.VarChar(16)
 
   // 所有权（null = 公共模板，非 null = 个人/团队模板）
@@ -889,7 +888,7 @@ model ResearchTemplate {
   team   Team? @relation("TeamResearchTemplates", fields: [teamId], references: [id], onDelete: Cascade)
 
   // 扩展字段（tags, category, useCount 等）
-  /// [DBType.ResearchTemplateExtra]
+  /// [ResearchTemplateExtra]
   extra Json @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)

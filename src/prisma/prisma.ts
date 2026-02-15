@@ -1,5 +1,6 @@
 import "dotenv/config";
 import "server-only";
+import "./dbtype"; // 这里需要引入一下
 
 // import { readReplicas } from "@prisma/extension-read-replicas";
 // import { withAccelerate } from "@prisma/extension-accelerate";
