@@ -158,7 +158,7 @@ async function importInterviewProject(userId: number, jsonFilePath: string) {
           const sessionData = exportData.sessions[i];
 
           // Create UserChat first if exists
-          let userChatId: number | undefined;
+          let userChatId: number;
 
           if (sessionData.userChat) {
             const newChatToken = generateToken();
@@ -209,6 +209,9 @@ async function importInterviewProject(userId: number, jsonFilePath: string) {
                 `   ✅ Created UserChat (ID: ${createdChat.id}) with ${chat.messages.length} messages`,
               );
             }
+          } else {
+            // Skip creating UserChat if it doesn't exist
+            continue;
           }
 
           // Create session

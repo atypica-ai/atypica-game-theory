@@ -35,10 +35,18 @@ export const discussionChatTool = ({
       const discussionLogger = logger.child({ tool: "discussionChat", personaIds, timelineToken });
 
       try {
+        // Save PersonaPanel to database for reuse
+        const personaPanel = await recordPersonaPanelContext({
+          userId,
+          userChatId,
+          personaIds,
+        });
+
         // Create DiscussionTimeline record first (with empty events) so frontend can start polling
         // Use the token provided from input schema (auto-generated)
         const discussionTimeline = await prisma.discussionTimeline.create({
           data: {
+            personaPanelId: personaPanel.id,
             token: timelineToken,
             instruction,
             events: [],
@@ -48,18 +56,11 @@ export const discussionChatTool = ({
           },
         });
 
-        // Save PersonaPanel to database for reuse
-        const personaPanel = await recordPersonaPanelContext({
-          userId,
-          userChatId,
-          personaIds,
-        });
-
         // Run panel discussion (automatically saves timeline events to database)
         const { summary } = await runPersonaDiscussion({
           instruction,
           personaPanel,
-          timelineToken: discussionTimeline.token,
+          discussionTimeline,
           locale,
           abortSignal,
           statReport,

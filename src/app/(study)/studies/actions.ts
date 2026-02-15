@@ -43,9 +43,6 @@ export async function fetchUserStudies({
     // Build where condition with search and user filters
     const where: AnalystWhereInput = {
       userId: user.id,
-      studyUserChatId: {
-        not: null,
-      },
       // studyUserChat: {
       //   kind: "study",
       // },

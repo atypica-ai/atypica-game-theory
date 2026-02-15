@@ -37,10 +37,10 @@ async function InterviewAgentPage({ userChatId }: { userChatId: number }) {
     <AgentChatPage
       userChatToken={userChat.token}
       chatTitle={userChat.title}
-      nickname={{ user: "Inteviewer", assistant: interview.persona.name }}
+      nickname={{ user: "Inteviewer", assistant: interview.persona?.name }}
       avatar={{
         user: <HippyGhostAvatar className="size-8" seed={"Interviewer"} />,
-        assistant: <HippyGhostAvatar className="size-8" seed={interview.persona.id} />,
+        assistant: <HippyGhostAvatar className="size-8" seed={interview.persona?.id} />,
       }}
       initialMessages={userChat.messages as TSimpleAgentMessageWithTool[]}
       readOnly={true}

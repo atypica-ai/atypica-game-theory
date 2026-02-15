@@ -294,7 +294,7 @@ export async function fetchAnalystInterviewForPersona({
     };
   }
   const { persona, interviewUserChat, conclusion } = interview;
-  if (!persona.token) {
+  if (!persona?.token) {
     return {
       success: false,
       code: "internal_server_error",

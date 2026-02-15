@@ -201,9 +201,9 @@ model Persona {
   /// [DBType.PersonaExtra]
   extra           Json           @default("{}")
   scoutUserChatId Int?           @db.Integer
-  scoutUserChat   UserChat?      @relation(fields: [scoutUserChatId], references: [id]) // 是否需要 onDelete: SetNull ?
+  scoutUserChat   UserChat?      @relation(fields: [scoutUserChatId], references: [id], onDelete: SetNull)
   personaImportId Int?           @db.Integer
-  personaImport   PersonaImport? @relation(fields: [personaImportId], references: [id]) // 是否需要 onDelete: SetNull ?
+  personaImport   PersonaImport? @relation(fields: [personaImportId], references: [id], onDelete: Cascade)
 
   embedding Unsupported("halfvec(1024)")? // 使用 Unsupported 类型表示向量
 
@@ -220,23 +220,23 @@ model Persona {
 }
 
 model Analyst {
-  id              Int       @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   userId          Int
-  user            User      @relation(fields: [userId], references: [id])
-  brief           String    @db.Text
-  role            String    @db.VarChar(255)
-  topic           String    @db.Text
-  studySummary    String    @db.Text // 目前已经用不到了
-  studyLog        String    @default("") @db.Text
-  studyUserChatId Int?      @unique @db.Integer
-  studyUserChat   UserChat? @relation(fields: [studyUserChatId], references: [id])
+  user            User     @relation(fields: [userId], references: [id])
+  brief           String   @db.Text
+  role            String   @db.VarChar(255)
+  topic           String   @db.Text
+  studySummary    String   @db.Text // 目前已经用不到了
+  studyLog        String   @default("") @db.Text
+  studyUserChatId Int      @unique @db.Integer
+  studyUserChat   UserChat @relation(fields: [studyUserChatId], references: [id], onDelete: Cascade)
   /// [DBType.ChatMessageAttachment[]]
-  attachments     Json      @default("[]")
+  attachments     Json     @default("[]")
   /// [DBType.AnalystKind]
-  kind            String?   @db.VarChar(16)
+  kind            String?  @db.VarChar(16)
   /// [DBType.Locale]
-  locale          String?   @db.VarChar(16)
-  extra           Json      @default("{}")
+  locale          String?  @db.VarChar(16)
+  extra           Json     @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -274,8 +274,6 @@ model AnalystReport {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  analystId Int? @db.Integer // legacy field, remove after 2.15
 }
 
 model AnalystPodcast {
@@ -292,8 +290,6 @@ model AnalystPodcast {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  analystId Int? @db.Integer // legacy field, remove after 2.15
 }
 
 enum UserChatKind {
@@ -347,7 +343,7 @@ model ChatMessage {
   id          Int         @id @default(autoincrement())
   messageId   String      @unique @db.VarChar(64)
   userChatId  Int
-  userChat    UserChat    @relation(fields: [userChatId], references: [id])
+  userChat    UserChat    @relation(fields: [userChatId], references: [id], onDelete: Cascade)
   role        MessageRole
   content     String      @db.Text
   /// [DBType.ChatMessagePart[]]
@@ -373,7 +369,7 @@ enum ChatStatisticsDimension {
 model ChatStatistics {
   id         Int                     @id @default(autoincrement())
   userChatId Int
-  userChat   UserChat                @relation(fields: [userChatId], references: [id])
+  userChat   UserChat                @relation(fields: [userChatId], references: [id], onDelete: Cascade)
   dimension  ChatStatisticsDimension
   value      Int                     @default(0)
   /// [DBType.AgentStatisticsExtra]
@@ -594,8 +590,8 @@ model PersonaImport {
   analysis        Json      @default("{}")
   /// [DBType.PersonaImportExtra]
   extra           Json      @default("{}")
-  extraUserChatId Int?      @unique // interview UserChat for follow up questions
-  extraUserChat   UserChat? @relation(fields: [extraUserChatId], references: [id])
+  extraUserChatId Int?      @unique // interview UserChat for follow up questions, 其实记录在 extra 就行了，加一个字段反而不好
+  extraUserChat   UserChat? @relation(fields: [extraUserChatId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -610,7 +606,7 @@ model UserPersonaChatRelation {
   personaId  Int
   persona    Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
   userChatId Int      @unique
-  userChat   UserChat @relation(fields: [userChatId], references: [id])
+  userChat   UserChat @relation(fields: [userChatId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -640,9 +636,9 @@ model InterviewSession {
   id                   Int              @id @default(autoincrement())
   title                String           @default("") @db.Text
   projectId            Int
-  project              InterviewProject @relation(fields: [projectId], references: [id])
-  userChatId           Int?             @unique
-  userChat             UserChat?        @relation(fields: [userChatId], references: [id])
+  project              InterviewProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userChatId           Int              @unique
+  userChat             UserChat         @relation(fields: [userChatId], references: [id], onDelete: Cascade)
   intervieweeUserId    Int? // 受访的真人用户
   intervieweeUser      User?            @relation(fields: [intervieweeUserId], references: [id], onDelete: SetNull)
   intervieweePersonaId Int? // 受访的 AI 角色
@@ -658,7 +654,7 @@ model InterviewReport {
   id          Int              @id @default(autoincrement())
   token       String           @unique @db.VarChar(64)
   projectId   Int              @db.Integer
-  project     InterviewProject @relation(fields: [projectId], references: [id])
+  project     InterviewProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
   onePageHtml String           @db.Text
   generatedAt DateTime?        @db.Timestamptz(6)
   /// [DBType.InterviewReportExtra]
@@ -688,36 +684,34 @@ model PersonaPanel {
 }
 
 model AnalystInterview {
-  id                  Int           @id @default(autoincrement())
-  personaPanelId      Int?
-  personaPanel        PersonaPanel? @relation(fields: [personaPanelId], references: [id], onDelete: SetNull)
-  personaId           Int           @db.Integer
-  persona             Persona       @relation(fields: [personaId], references: [id])
-  instruction         String        @db.Text
-  conclusion          String        @db.Text
-  interviewUserChatId Int?          @unique @db.Integer
-  interviewUserChat   UserChat?     @relation(fields: [interviewUserChatId], references: [id])
+  id                  Int          @id @default(autoincrement())
+  personaPanelId      Int
+  personaPanel        PersonaPanel @relation(fields: [personaPanelId], references: [id], onDelete: Cascade)
+  personaId           Int?
+  persona             Persona?     @relation(fields: [personaId], references: [id], onDelete: SetNull)
+  instruction         String       @db.Text
+  conclusion          String       @db.Text
+  interviewUserChatId Int?         @unique @db.Integer
+  interviewUserChat   UserChat?    @relation(fields: [interviewUserChatId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  analystId Int? @db.Integer // legacy field, remove after 2.15
 
   @@index([personaPanelId])
 }
 
 model DiscussionTimeline {
-  id             Int           @id @default(autoincrement())
-  token          String        @unique @db.VarChar(64)
-  personaPanelId Int?
-  personaPanel   PersonaPanel? @relation(fields: [personaPanelId], references: [id], onDelete: SetNull)
-  instruction    String        @db.Text // 用户指令
+  id             Int          @id @default(autoincrement())
+  token          String       @unique @db.VarChar(64)
+  personaPanelId Int
+  personaPanel   PersonaPanel @relation(fields: [personaPanelId], references: [id], onDelete: Cascade)
+  instruction    String       @db.Text // 用户指令
   /// [DBType.DiscussionTimelineEvent[]]
-  events         Json          @default("[]") // TimelineEvent[] 数组
-  summary        String        @db.Text // 主持人最终总结 default empty string
-  minutes        String        @db.Text // 结构化讨论纪要（无损记录）default empty string
+  events         Json         @default("[]") // TimelineEvent[] 数组
+  summary        String       @db.Text // 主持人最终总结 default empty string
+  minutes        String       @db.Text // 结构化讨论纪要（无损记录）default empty string
   /// [DBType.DiscussionTimelineExtra]
-  extra          Json          @default("{}")
+  extra          Json         @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -776,7 +770,7 @@ model SageChat {
   userId     Int
   user       User     @relation(fields: [userId], references: [id])
   userChatId Int      @unique
-  userChat   UserChat @relation(fields: [userChatId], references: [id])
+  userChat   UserChat @relation(fields: [userChatId], references: [id], onDelete: Cascade)
   /// [DBType.SageChatExtra]
   extra      Json     @default("{}")
 
@@ -789,7 +783,7 @@ model SageInterview {
   sageId     Int
   sage       Sage     @relation(fields: [sageId], references: [id], onDelete: Cascade)
   userChatId Int      @unique
-  userChat   UserChat @relation(fields: [userChatId], references: [id])
+  userChat   UserChat @relation(fields: [userChatId], references: [id], onDelete: Cascade)
   /// [DBType.SageInterviewExtra]
   extra      Json     @default("{}")
 

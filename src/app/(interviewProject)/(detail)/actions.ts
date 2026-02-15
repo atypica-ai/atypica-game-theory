@@ -299,9 +299,6 @@ export async function fetchInterviewSessionsByProjectToken({
       // Get all sessions
       const whereCondition = {
         projectId: project.id,
-        userChatId: {
-          not: null,
-        },
       } satisfies InterviewSessionWhereInput;
 
       const [sessions, count] = await Promise.all([

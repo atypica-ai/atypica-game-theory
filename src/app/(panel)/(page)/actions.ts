@@ -78,28 +78,27 @@ export async function startPersonaDiscussionAction({
     // Detect locale from instruction
     const locale = await detectInputLanguage({ text: instruction });
 
-    // Create DiscussionTimeline record first
-    const token = generateToken();
-    await prisma.discussionTimeline.create({
+    const personaPanel = await createPersonaPanel({
+      userId: user.id,
+      personaIds,
+    });
+    const discussionTimeline = await prisma.discussionTimeline.create({
       data: {
-        token,
+        personaPanelId: personaPanel.id,
+        token: generateToken(),
         instruction,
         events: [],
         summary: "",
         minutes: "",
       },
     });
-    const personaPanel = await createPersonaPanel({
-      userId: user.id,
-      personaIds,
-    });
 
     // Start panel discussion in background (don't await - let it run async)
-    const logger = rootLogger.child({ timelineToken: token });
+    const logger = rootLogger.child({ timelineToken: discussionTimeline.token });
     runPersonaDiscussion({
       instruction,
       personaPanel,
-      timelineToken: token,
+      discussionTimeline,
       locale,
       abortSignal,
       statReport,
@@ -110,7 +109,7 @@ export async function startPersonaDiscussionAction({
 
     return {
       success: true as const,
-      data: { timelineToken: token },
+      data: { timelineToken: discussionTimeline.token },
     };
   } catch (error) {
     return {

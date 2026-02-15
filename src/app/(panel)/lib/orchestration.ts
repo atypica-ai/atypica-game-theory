@@ -5,7 +5,7 @@ import { buildDiscussionType } from "@/app/(panel)//discussionTypes/buildDiscuss
 import { DiscussionTimelineEvent, PersonaSession } from "@/app/(panel)//types";
 import { DiscussionTypeConfig } from "@/app/(panel)/discussionTypes";
 import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
-import { DiscussionTimelineExtra, PersonaPanel } from "@/prisma/client";
+import { DiscussionTimeline, DiscussionTimelineExtra, PersonaPanel } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { Locale } from "next-intl";
@@ -173,7 +173,7 @@ export async function runPersonaDiscussion({
   maxRounds = MAX_DISCUSSION_ROUNDS,
   instruction,
   personaPanel,
-  timelineToken,
+  discussionTimeline,
   locale,
   abortSignal,
   statReport,
@@ -182,7 +182,7 @@ export async function runPersonaDiscussion({
   maxRounds?: number;
   instruction: string;
   personaPanel: Pick<PersonaPanel, "id" | "personaIds">;
-  timelineToken: string;
+  discussionTimeline: Pick<DiscussionTimeline, "id" | "token">;
   locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
@@ -199,15 +199,10 @@ export async function runPersonaDiscussion({
   // Extract moderatorSystem from discussionTypeConfig for storage
   const moderatorSystem = discussionTypeConfig.moderatorSystem({ locale });
 
-  // Link DiscussionTimeline to PersonaPanel
-  const updatedTimeline = await prisma.discussionTimeline.update({
-    where: { token: timelineToken },
-    data: { personaPanelId: personaPanel.id },
-  });
   // 用 mergeExtra 避免覆盖 extra 其他字段
   await mergeExtra({
     tableName: "DiscussionTimeline",
-    id: updatedTimeline.id,
+    id: discussionTimeline.id,
     extra: {
       moderatorSystem,
     } satisfies DiscussionTimelineExtra,
@@ -217,7 +212,7 @@ export async function runPersonaDiscussion({
   const { timelineEvents, personaSessions } = await initializeDiscussionTimeline({
     question: instruction,
     personaIds: personaPanel.personaIds,
-    timelineToken,
+    timelineToken: discussionTimeline.token,
     locale,
     logger,
   });
@@ -236,7 +231,7 @@ export async function runPersonaDiscussion({
     const { updatedTimeline, spokenPersonaId } = await executeDiscussionRound({
       personaSessions,
       timelineEvents,
-      timelineToken,
+      timelineToken: discussionTimeline.token,
       discussionTypeConfig,
       locale,
       abortSignal,
@@ -270,7 +265,7 @@ export async function runPersonaDiscussion({
 
   // Save final timeline with summary and minutes to database
   await saveTimelineEvent({
-    timelineToken,
+    timelineToken: discussionTimeline.token,
     timelineEvents,
     summary,
     minutes,
