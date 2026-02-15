@@ -22,7 +22,7 @@ export type UserOnboardingData = Partial<{
   industry: string;
   companyName: string;
   howDidYouHear: string;
-  completedAt: Date;
+  completedAt: string; // ISOString
 }>;
 
 // deprecated

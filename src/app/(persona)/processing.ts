@@ -60,7 +60,10 @@ export async function processPersonaImport(personaImportId: number) {
           context,
           extra: {
             ...personaImport.extra,
-            processing: { ...personaImport.extra.processing, parseAttachment: true },
+            processing: {
+              ...personaImport.extra.processing,
+              parseAttachment: true,
+            } as typeof personaImport.extra.processing,
           },
         },
       });
@@ -73,7 +76,10 @@ export async function processPersonaImport(personaImportId: number) {
         analysis,
         extra: {
           ...personaImport.extra,
-          processing: { ...personaImport.extra.processing, analyzeCompleteness: true },
+          processing: {
+            ...personaImport.extra.processing,
+            analyzeCompleteness: true,
+          } as typeof personaImport.extra.processing,
         },
       },
     });

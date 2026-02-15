@@ -11,7 +11,6 @@ import { BasicToolName } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { personaFollowUpSystemPrompt } from "@/app/(persona)/prompt/analysis";
 import { followUpInterviewTools } from "@/app/(persona)/tools";
-import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { correctUserInputMessage } from "@/lib/userChat/lib";
@@ -92,7 +91,7 @@ export async function POST(req: NextRequest) {
   // Generate system prompt for follow-up interview
   const systemPrompt = personaFollowUpSystemPrompt({
     personaImport: {
-      analysis: personaImport.analysis as Partial<PersonaImportAnalysis> | null,
+      analysis: personaImport.analysis,
     },
     locale,
   });

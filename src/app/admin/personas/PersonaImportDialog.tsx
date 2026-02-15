@@ -1,9 +1,8 @@
 import { AnalysisResult } from "@/app/(persona)/persona/import/[personaImportId]/AnalysisResult";
-import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
-import { ChatMessageAttachment, PersonaImport, PersonaImportExtra } from "@/prisma/client";
+import { ChatMessageAttachment, PersonaImport } from "@/prisma/client";
 import { CalendarIcon, DownloadIcon, FileIcon, UserIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -22,10 +21,7 @@ export function PersonaImportDialog({
 }: PersonaImportDialogProps) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<{
-    personaImport: Omit<PersonaImport, "analysis" | "extra"> & {
-      analysis: Partial<PersonaImportAnalysis> | null;
-      extra: PersonaImportExtra;
-    };
+    personaImport: PersonaImport;
     attachments: ChatMessageAttachment[];
     userEmail: string | null;
   } | null>(null);

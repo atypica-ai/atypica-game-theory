@@ -5,6 +5,7 @@ import { getRequestOrigin } from "@/lib/request/headers";
 import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { MetadataRoute } from "next";
+import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
 
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 // Cache featured reports for 1 day
 const getFeaturedReports = unstable_cache(
-  async (locale: string) => {
+  async (locale: Locale) => {
     const featuredItems = await prismaRO.featuredItem.findMany({
       where: {
         resourceType: FeaturedItemResourceType.AnalystReport,
@@ -49,7 +50,7 @@ const getFeaturedReports = unstable_cache(
 
 // Cache featured podcast episodes for 1 day
 const getFeaturedPodcastEpisodes = unstable_cache(
-  async (locale: string) => {
+  async (locale: Locale) => {
     const featuredItems = await prismaRO.featuredItem.findMany({
       where: {
         resourceType: FeaturedItemResourceType.AnalystPodcast,

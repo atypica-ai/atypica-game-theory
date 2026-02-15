@@ -13,6 +13,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { throwServerActionError } from "@/lib/serverAction";
 import type { BlogArticle, BlogArticleExtra } from "@/prisma/client";
+import { Locale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createBlogArticle, updateBlogArticle } from "./actions";
@@ -105,7 +106,7 @@ export function BlogForm({ article }: BlogFormProps) {
           <Label htmlFor="locale">Locale</Label>
           <Select
             value={formData.locale}
-            onValueChange={(value) => setFormData({ ...formData, locale: value })}
+            onValueChange={(value: Locale) => setFormData({ ...formData, locale: value })}
           >
             <SelectTrigger>
               <SelectValue />

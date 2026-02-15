@@ -17,7 +17,6 @@ import { waitUntil } from "@vercel/functions";
 import { generateId, UIMessage } from "ai";
 import { notFound } from "next/navigation";
 import { processPersonaImport } from "./processing";
-import { PersonaImportAnalysis } from "./types";
 
 /**
  * 管理员可以访问 tier 0,1,2,3 (所有personas)
@@ -95,11 +94,7 @@ export async function fetchPersonaWithDetails(personaToken: string): Promise<
       token: string;
       tags: string[];
     };
-    personaImport: {
-      id: number;
-      userId: number;
-      analysis: Partial<PersonaImportAnalysis> | null;
-    } | null;
+    personaImport: Pick<PersonaImport, "id" | "userId" | "analysis"> | null;
   }>
 > {
   const personaWithImport = await prisma.persona.findUnique({

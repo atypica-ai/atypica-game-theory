@@ -21,7 +21,7 @@ interface ProcessingStatusProps {
       }
     | false;
   personas?: Persona[];
-  personaImportAnalysis?: Partial<PersonaImportAnalysis> | null;
+  personaImportAnalysis?: PersonaImportAnalysis;
   context?: string;
 }
 

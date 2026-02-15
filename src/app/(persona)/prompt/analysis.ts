@@ -234,7 +234,7 @@ export const personaFollowUpSystemPrompt = ({
   locale,
 }: {
   personaImport: {
-    analysis: Partial<PersonaImportAnalysis> | null;
+    analysis: PersonaImportAnalysis;
   };
   locale: string;
 }) =>

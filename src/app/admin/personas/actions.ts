@@ -2,13 +2,13 @@
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { scorePersona } from "@/app/(persona)/lib";
-import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
-import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
+import { ChatMessageAttachment, Persona, PersonaImport } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
+import { Locale } from "next-intl";
 
 type TPersona = Pick<Persona, "name" | "source" | "prompt" | "locale" | "tier"> & {
   token: string;
@@ -54,7 +54,7 @@ export async function fetchAdminPersonasWithEmbedding({
   page = 1,
   pageSize = 12,
 }: {
-  locales?: string[];
+  locales?: Locale[];
   tiers?: number[];
   scoutUserChatId?: number;
   searchQuery?: string;
@@ -107,7 +107,7 @@ export async function fetchAdminPersonasWithEmbedding({
           name: row.name as string,
           source: row.source as string,
           prompt: row.prompt as string,
-          locale: row.locale as string,
+          locale: row.locale as Locale,
           tags: row.tags as string[],
           tier: row.tier as number,
           personaImport: row.personaImportId
@@ -366,10 +366,7 @@ export async function fetchAdminPersonasWithMeili({
 
 export async function fetchPersonaImportDetails(personaImportId: number): Promise<
   ServerActionResult<{
-    personaImport: Omit<PersonaImport, "analysis" | "extra"> & {
-      analysis: Partial<PersonaImportAnalysis> | null;
-      extra: PersonaImportExtra;
-    };
+    personaImport: PersonaImport;
     attachments: ChatMessageAttachment[];
     userEmail: string | null;
   }>

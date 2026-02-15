@@ -49,7 +49,7 @@ export const analysisSchema = z.object({
 export type AnalysisResult = z.infer<typeof analysisSchema>;
 
 // Type for PersonaImport analysis field (complete result from analyze-interview)
-export type PersonaImportAnalysis = AnalysisResult;
+export type PersonaImportAnalysis = Partial<AnalysisResult>;
 
 export type TPersonaMessageWithTool<
   TOOLS extends TPersonaUITools = TPersonaUITools,

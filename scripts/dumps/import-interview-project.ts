@@ -143,6 +143,7 @@ async function importInterviewProject(userId: number, jsonFilePath: string) {
             brief: `[IMPORTED] ${exportData.project.brief}`,
             extra: {
               ...(exportData.project.extra as object),
+              // @ts-expect-error
               originalToken: exportData.project.token,
               importedAt: new Date().toISOString(),
               importedFrom: exportData.exportedAt,
@@ -173,6 +174,7 @@ async function importInterviewProject(userId: number, jsonFilePath: string) {
                 backgroundToken: chat.backgroundToken,
                 extra: {
                   ...(chat.extra as object),
+                  // @ts-expect-error
                   originalToken: chat.token,
                 },
                 createdAt: new Date(chat.createdAt),

@@ -1,11 +1,10 @@
 "use client";
 import { processPersonaImportAction } from "@/app/(persona)/actions";
-import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { cn } from "@/lib/utils";
-import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
+import { ChatMessageAttachment, Persona, PersonaImport } from "@/prisma/client";
 import { BrainIcon, RefreshCwIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -21,10 +20,7 @@ export function PersonaImportView({
   personaImport: initialPersonaImport,
   personas,
 }: {
-  personaImport: Omit<PersonaImport, "analysis" | "extra"> & {
-    analysis: Partial<PersonaImportAnalysis> | null;
-    extra: PersonaImportExtra;
-  };
+  personaImport: PersonaImport;
   personas: Persona[];
 }) {
   const t = useTranslations("PersonaImport.import");

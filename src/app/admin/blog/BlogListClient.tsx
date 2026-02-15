@@ -18,13 +18,14 @@ import {
 } from "@/components/ui/table";
 import { throwServerActionError } from "@/lib/serverAction";
 import type { BlogArticle } from "@/prisma/client";
+import { Locale } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { deleteBlogArticle, fetchBlogArticles } from "./actions";
 
 export function BlogListClient() {
   const [articles, setArticles] = useState<BlogArticle[]>([]);
-  const [locale, setLocale] = useState<string>("all");
+  const [locale, setLocale] = useState<Locale | "all">("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,7 +73,12 @@ export function BlogListClient() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <Select value={locale} onValueChange={setLocale}>
+        <Select
+          value={locale}
+          onValueChange={(locale: Locale | "all") => {
+            setLocale(locale);
+          }}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Select locale" />
           </SelectTrigger>

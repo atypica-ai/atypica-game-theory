@@ -28,7 +28,7 @@ export function PersonaDetailClient({
   personaImportId,
 }: {
   persona: ExtractServerActionData<typeof fetchPersonaWithDetails>["persona"];
-  analysis: Partial<PersonaImportAnalysis> | null;
+  analysis: PersonaImportAnalysis | null;
   personaImportId: number | null;
 }) {
   const t = useTranslations("PersonaImport.personaDetails");

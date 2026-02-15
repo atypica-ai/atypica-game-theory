@@ -5,6 +5,7 @@ import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import type { BlogArticle, BlogArticleExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { Locale } from "next-intl";
 import { revalidateTag } from "next/cache";
 
 type BlogArticleInput = {
@@ -12,7 +13,7 @@ type BlogArticleInput = {
   content: string;
   slug: string;
   publishedAt: Date | null;
-  locale: string;
+  locale: Locale;
   extra: BlogArticleExtra;
 };
 
@@ -24,7 +25,7 @@ export async function fetchBlogArticles({
   page = 1,
   pageSize = 20,
 }: {
-  locale?: string;
+  locale?: Locale;
   page?: number;
   pageSize?: number;
 } = {}): Promise<ServerActionResult<BlogArticle[]>> {

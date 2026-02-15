@@ -2,6 +2,7 @@ import { generatePageMetadata } from "@/lib/request/metadata";
 import type { BlogArticleExtra } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { Metadata } from "next";
+import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { unstable_cache } from "next/cache";
 import Image from "next/image";
@@ -17,7 +18,7 @@ const PAGE_SIZE = 10;
  * - Cache time: 1 day (86400 seconds)
  */
 const getCachedBlogList = unstable_cache(
-  async (locale: string, page: number) => {
+  async (locale: Locale, page: number) => {
     const where = {
       locale,
       publishedAt: {
