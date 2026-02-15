@@ -3,7 +3,6 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { ResearchTemplateExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth/next";
 import { Locale } from "next-intl";
@@ -43,15 +42,12 @@ const getCachedTemplates = unstable_cache(
     const templates = [...personalTemplates, ...publicTemplates].slice(0, 12);
 
     // 转换为前端格式，包含 id
-    return templates.map((t) => {
-      const extra = t.extra as ResearchTemplateExtra;
-      return {
-        id: t.id,
-        title: t.title,
-        description: t.description,
-        tags: extra.tags || [],
-      };
-    });
+    return templates.map((t) => ({
+      id: t.id,
+      title: t.title,
+      description: t.description,
+      tags: t.extra.tags || [],
+    }));
   },
   ["research-templates"],
   {

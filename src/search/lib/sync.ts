@@ -1,14 +1,7 @@
 import "server-only";
 
 import { rootLogger } from "@/lib/logging";
-import {
-  AnalystPodcast,
-  AnalystPodcastExtra,
-  AnalystReport,
-  AnalystReportExtra,
-  FeaturedItemResourceType,
-  Persona,
-} from "@/prisma/client";
+import { AnalystPodcast, AnalystReport, FeaturedItemResourceType, Persona } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { ArtifactDocument, ArtifactType, PersonaDocument } from "../types";
 import { INDEXES, meilisearchClient } from "./client";
@@ -26,7 +19,7 @@ export function reportToDocument({
   report: AnalystReport;
   isFeatured: boolean;
 }): ArtifactDocument {
-  const extra = report.extra as AnalystReportExtra;
+  const extra = report.extra;
 
   return {
     slug: `report-${report.id}`,
@@ -55,8 +48,7 @@ export function podcastToDocument({
   podcast: AnalystPodcast;
   isFeatured: boolean;
 }): ArtifactDocument {
-  const extra = podcast.extra as AnalystPodcastExtra;
-  const metadata = extra?.metadata;
+  const metadata = podcast.extra?.metadata;
 
   return {
     slug: `podcast-${podcast.id}`,

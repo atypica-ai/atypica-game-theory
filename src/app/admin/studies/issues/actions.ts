@@ -6,7 +6,6 @@ import { executeBaseAgentRequest } from "@/app/(study)/agents/baseAgentRequest";
 import { createFastInsightAgentConfig } from "@/app/(study)/agents/configs/fastInsightAgentConfig";
 import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/productRnDAgentConfig";
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
-import { UserChatContext } from "@/app/(study)/context/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -261,7 +260,7 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
           teamId,
           studyUserChatId,
           analyst: studyUserChat.analyst,
-          userChatContext: studyUserChat.context as UserChatContext,
+          userChatContext: studyUserChat.context,
           locale,
           logger,
           statReport,

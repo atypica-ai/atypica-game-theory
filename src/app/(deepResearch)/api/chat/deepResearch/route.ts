@@ -6,7 +6,6 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import authOptions from "@/app/(auth)/authOptions";
 import { resolveExpert } from "@/app/(deepResearch)/experts";
-import { UserChatContext } from "@/app/(study)/context/types";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
 import {
@@ -57,8 +56,7 @@ export async function POST(req: Request) {
   }
 
   // Extract expert type from UserChat.context (should always be resolved, no "auto")
-  const userChatContext = userChat.context as UserChatContext;
-  const expert = userChatContext?.deepResearchExpert || ExpertName.Grok; // fallback to Grok
+  const expert = userChat.context.deepResearchExpert || ExpertName.Grok; // fallback to Grok
 
   const userChatId = userChat.id;
   const locale = await getLocale();

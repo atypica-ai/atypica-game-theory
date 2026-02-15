@@ -4,7 +4,6 @@ import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { generatePodcast } from "@/app/(podcast)/lib/generation";
 import { PodcastKind } from "@/app/(podcast)/types";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
-import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { AnalystKind, AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -122,8 +121,7 @@ export const generatePodcastTool = ({
         }));
 
       // Save podcast token to context
-      const context = (userChat.context || {}) as UserChatContext;
-      const existingTokens = context.podcastTokens || [];
+      const existingTokens = userChat.context.podcastTokens || [];
       await mergeUserChatContext({
         id: userChatId,
         context: {

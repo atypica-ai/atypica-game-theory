@@ -10,7 +10,6 @@ import { prisma } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { generateId } from "ai";
 import { getTranslations } from "next-intl/server";
-import { UserChatContext } from "../(study)/context/types";
 import { mergeUserChatContext } from "../(study)/context/utils";
 
 export async function createNewStudyChat(): Promise<
@@ -62,7 +61,7 @@ export async function continueToStudyUserChat(
       return { success: false, message: t("chatNotFound") };
     }
 
-    const userChatContext = userChat.context as UserChatContext;
+    const userChatContext = userChat.context;
     if (
       userChatContext?.newStudyUserChatToken &&
       typeof userChatContext.newStudyUserChatToken === "string"

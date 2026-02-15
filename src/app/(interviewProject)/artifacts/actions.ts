@@ -2,7 +2,7 @@
 
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { InterviewReportExtra, InterviewSessionExtra } from "@/prisma/client";
+import { InterviewSessionExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getLocale } from "next-intl/server";
 import { forbidden } from "next/navigation";
@@ -59,7 +59,7 @@ export async function generateInterviewReportPDFAction(reportToken: string): Pro
         id: report.project.id,
         title: report.project.brief,
       },
-      extra: report.extra as InterviewReportExtra,
+      extra: report.extra,
       onePageHtml: report.onePageHtml,
     });
 

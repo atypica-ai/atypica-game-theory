@@ -582,7 +582,7 @@ export async function generateInterviewReport(
             id: s.id,
             title: s.title || "",
           })),
-        } as InterviewReportExtra,
+        } satisfies InterviewReportExtra,
       },
     });
 
@@ -627,7 +627,7 @@ export async function generateInterviewReport(
       data: {
         id: report.id,
         token: report.token,
-        extra: report.extra as InterviewReportExtra,
+        extra: report.extra,
         generatedAt: null,
         createdAt: report.createdAt,
       },

@@ -83,6 +83,7 @@ async function main() {
 
         // Find all interviews for this analyst
         const interviews = await prisma.analystInterview.findMany({
+          // @ts-ignore
           where: { analystId: analyst.id },
           select: {
             id: true,

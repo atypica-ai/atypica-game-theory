@@ -1,6 +1,5 @@
 import { AgentChatPage } from "@/app/(agents)/agents/AgentChatPage";
 import { TSimpleAgentMessageWithTool } from "@/app/(agents)/tools/types";
-import { UserChatContext } from "@/app/(study)/context/types";
 import { checkTezignAuth } from "@/app/admin/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { NotFound } from "@/components/NotFound";
@@ -20,8 +19,7 @@ async function DeepResearchResultPage({ userChatToken }: { userChatToken: string
   const { userChat, messages } = result.data;
 
   // Extract expert type from context field (should always be resolved, no "auto")
-  const userChatContext = userChat.context as UserChatContext;
-  const expertType = userChatContext?.deepResearchExpert;
+  const expertType = userChat.context.deepResearchExpert;
 
   return (
     <AgentChatPage

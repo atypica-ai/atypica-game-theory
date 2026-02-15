@@ -5,7 +5,6 @@ import {
 } from "@/ai/messageUtilsClient";
 import { fetchChatTitlesByTokens } from "@/app/(newStudy)/actions";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
-import { UserChatContext } from "@/app/(study)/context/types";
 import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import { useTokensBalance } from "@/app/account/hooks";
@@ -71,8 +70,7 @@ export function ChatBox() {
 
   useEffect(() => {
     const loadReferenceChatTitles = async () => {
-      const contextData = userChatContext as UserChatContext;
-      const referenceTokens = contextData?.referenceUserChats;
+      const referenceTokens = userChatContext.referenceUserChats;
       if (referenceTokens && referenceTokens.length > 0) {
         const result = await fetchChatTitlesByTokens(referenceTokens);
         if (result.success) {

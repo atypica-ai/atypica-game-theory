@@ -443,10 +443,7 @@ export async function fetchInterviewReportsByProjectToken({
     });
     return {
       success: true,
-      data: reports.map(({ extra, ...report }) => ({
-        ...report,
-        extra: extra as InterviewReportExtra,
-      })),
+      data: reports,
     };
   });
 }

@@ -1,6 +1,5 @@
 "use client";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
-import { UserChatContext } from "@/app/(study)/context/types";
 import { PaginationInfo } from "@/app/admin/types";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
@@ -170,7 +169,7 @@ export function AdminStudiesPageClient({
   };
 
   const handleShowBrief = async (analyst: AnalystWithFeature) => {
-    const userChatContext = analyst.studyUserChat?.context as UserChatContext | undefined;
+    const userChatContext = analyst.studyUserChat?.context;
     const briefUserChatId = userChatContext?.briefUserChatId;
 
     if (!briefUserChatId) return;
@@ -299,9 +298,7 @@ export function AdminStudiesPageClient({
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {(() => {
-                        const userChatContext = analyst.studyUserChat?.context as
-                          | UserChatContext
-                          | undefined;
+                        const userChatContext = analyst.studyUserChat?.context;
                         const briefUserChatId = userChatContext?.briefUserChatId;
                         return briefUserChatId ? (
                           <div className="relative m-1">

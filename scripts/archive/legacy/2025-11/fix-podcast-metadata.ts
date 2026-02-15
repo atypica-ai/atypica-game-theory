@@ -116,7 +116,7 @@ async function fixMetadataForPodcast(podcastId: number): Promise<{
     return { success: false, podcastId };
   }
 
-  const extra = (podcast.extra as AnalystPodcastExtra) || {};
+  const extra = podcast.extra || {};
   const existingMetadata = extra.metadata || {};
 
   // Skip if both size and duration already exist

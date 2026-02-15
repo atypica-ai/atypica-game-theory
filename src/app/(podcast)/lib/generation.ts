@@ -55,9 +55,7 @@ export async function generatePodcast({
   });
 
   // Fetch updated podcast with extra
-  podcast = await prisma.analystPodcast
-    .findUniqueOrThrow({ where: { id: podcast.id } })
-    .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
+  podcast = await prisma.analystPodcast.findUniqueOrThrow({ where: { id: podcast.id } });
 
   try {
     // Step 2: Generate script
@@ -83,9 +81,7 @@ export async function generatePodcast({
     });
 
     // Fetch updated podcast with extra
-    podcast = await prisma.analystPodcast
-      .findUniqueOrThrow({ where: { id: podcast.id } })
-      .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
+    podcast = await prisma.analystPodcast.findUniqueOrThrow({ where: { id: podcast.id } });
 
     /**
      * @todo 这里其实应该用 ./evaluate.ts 里面的 determineKindAndGeneratePodcast 方法
@@ -161,9 +157,7 @@ export async function generatePodcast({
       } satisfies AnalystPodcastExtra,
     });
 
-    podcast = await prisma.analystPodcast
-      .findUniqueOrThrow({ where: { id: podcast.id } })
-      .then(({ extra, ...podcast }) => ({ ...podcast, extra: extra as AnalystPodcastExtra }));
+    podcast = await prisma.analystPodcast.findUniqueOrThrow({ where: { id: podcast.id } });
 
     logger.info("Unified podcast generation completed successfully");
   } catch (error) {

@@ -3,7 +3,6 @@ import "server-only";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
-import { AnalystPodcastExtra } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
@@ -61,8 +60,7 @@ export async function handleGetPodcast(
     }
 
     // Get metadata from extra field (similar to fetchPodcastByToken)
-    const extra = podcast.extra as AnalystPodcastExtra;
-    const metadata = extra.metadata;
+    const metadata = podcast.extra.metadata;
 
     // Get signed CDN URLs for audio and cover
     const audioUrl = podcast.objectUrl ? await getS3SignedCdnUrl(podcast.objectUrl) : null;

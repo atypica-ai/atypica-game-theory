@@ -74,8 +74,8 @@ export const pickRandomFeaturedPodcast = unstable_cache(
       };
     }
 
-    const extra = (randomItem.extra as FeaturedItemExtra) || {};
-    const podcastExtra = (podcast.extra as AnalystPodcastExtra) || {};
+    const extra = randomItem.extra || {};
+    const podcastExtra = podcast.extra || {};
 
     return {
       success: true,
@@ -177,8 +177,8 @@ export const fetchFeaturedPodcasts = unstable_cache(
         featuredItems.map(async (item) => {
           const podcast = podcastMap.get(item.resourceId);
           if (!podcast) return null;
-          const extra = (item.extra as FeaturedItemExtra) || {};
-          const podcastExtra = (podcast.extra as AnalystPodcastExtra) || {};
+          const extra = item.extra || {};
+          const podcastExtra = podcast.extra || {};
           return {
             id: item.id,
             createdAt: item.createdAt,

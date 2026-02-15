@@ -6,7 +6,6 @@ import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { reportHTMLPrologue, reportHTMLSystem } from "./prompt";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
-import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -94,7 +93,7 @@ export const generateReportTool = ({
           where: {
             userId, // 过滤一下当前用户的
             token: {
-              in: (userChat.context as UserChatContext).reportTokens ?? [],
+              in: userChat.context.reportTokens ?? [],
             },
           },
           orderBy: { createdAt: "desc" },
@@ -143,7 +142,7 @@ export const generateReportTool = ({
       }
 
       // Save report token to context
-      const context = (userChat.context || {}) as UserChatContext;
+      const context = userChat.context || {};
       const existingTokens = context.reportTokens || [];
       await mergeUserChatContext({
         id: userChatId,
@@ -211,7 +210,7 @@ export const generateReportTool = ({
           // 因为现在 report 和 coverImage 是一起生成的，到这里不一定 report 已经生成好了，所以就不要 Fallback to screenshot 了
           // return await generateReportScreenshot({
           //   ...report,
-          //   extra: report.extra as AnalystReportExtra,
+          //   extra: report.extra,
           //   analyst,
           // }).catch((error) => {
           //   reportLogger.error(`Error generating screenshot for report ${report.token}: ${error}`); // screenshot 生成失败就算了

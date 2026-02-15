@@ -124,20 +124,15 @@ export async function determineKindAndGeneratePodcast({
   const logger = rootLogger.child({ method: "determineKindAndGeneratePodcast" });
 
   // Create podcast record
-  let podcast = await prisma.analystPodcast
-    .create({
-      data: {
-        userId,
-        token: generateToken(),
-        instruction: instruction || "",
-        script: "",
-        extra: { userChatToken } satisfies AnalystPodcastExtra,
-      },
-    })
-    .then(({ extra, ...analyst }) => ({
-      ...analyst,
-      extra: extra as AnalystPodcastExtra,
-    }));
+  let podcast = await prisma.analystPodcast.create({
+    data: {
+      userId,
+      token: generateToken(),
+      instruction: instruction || "",
+      script: "",
+      extra: { userChatToken } satisfies AnalystPodcastExtra,
+    },
+  });
 
   // Step 1: Determine podcast kind
   logger.info("Determining podcast kind");
@@ -154,9 +149,7 @@ export async function determineKindAndGeneratePodcast({
         "updatedAt" = NOW()
     WHERE "id" = ${podcast.id}
   `;
-  podcast = await prisma.analystPodcast
-    .findUniqueOrThrow({ where: { id: podcast.id } })
-    .then(({ extra, ...analyst }) => ({ ...analyst, extra: extra as AnalystPodcastExtra }));
+  podcast = await prisma.analystPodcast.findUniqueOrThrow({ where: { id: podcast.id } });
 
   // Step 2: Generate podcast with the determined kind (no systemPrompt for auto-determined podcasts)
   await generatePodcast({
@@ -168,9 +161,7 @@ export async function determineKindAndGeneratePodcast({
   });
   logger.info({ msg: "Podcast generated with kind determination", podcastId: podcast.id });
 
-  podcast = await prisma.analystPodcast
-    .findUniqueOrThrow({ where: { id: podcast.id } })
-    .then(({ extra, ...analyst }) => ({ ...analyst, extra: extra as AnalystPodcastExtra }));
+  podcast = await prisma.analystPodcast.findUniqueOrThrow({ where: { id: podcast.id } });
 
   // 目前通过 intercom 发送
   // await notifyPodcastReady({

@@ -37,10 +37,7 @@ export async function fetchMyPodcasts(): Promise<
 
     return {
       success: true,
-      data: podcasts.map((podcast) => ({
-        ...podcast,
-        extra: (podcast.extra || {}) as AnalystPodcastExtra,
-      })),
+      data: podcasts,
     };
   });
 }

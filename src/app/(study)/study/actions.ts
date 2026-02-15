@@ -248,8 +248,7 @@ export async function fetchAnalystInterviewForPersona({
     where: { token: studyUserChatToken, kind: "study" },
   });
   // const analystId = studyUserChat?.analyst?.id;
-  const personaPanelId = (studyUserChat?.context as UserChatContext | undefined)
-    ?.interviewPersonaPanelId;
+  const personaPanelId = studyUserChat?.context?.interviewPersonaPanelId;
   if (!personaPanelId) {
     return {
       success: false,
@@ -506,7 +505,7 @@ export async function fetchAnalystReportsOfStudyUserChat({
   const userChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken },
   });
-  const reportTokens = (userChat?.context as UserChatContext | undefined)?.reportTokens;
+  const reportTokens = userChat?.context?.reportTokens;
   if (!reportTokens) {
     return {
       success: false,
@@ -563,7 +562,7 @@ export async function fetchAnalystPodcastsOfStudyUserChat({
   const userChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken },
   });
-  const podcastTokens = (userChat?.context as UserChatContext | undefined)?.podcastTokens;
+  const podcastTokens = userChat?.context?.podcastTokens;
   if (!podcastTokens) {
     return {
       success: false,
@@ -606,7 +605,7 @@ export async function fetchAnalystReportsCountOfStudyUserChat({
   });
   return {
     success: true,
-    data: (userChat?.context as UserChatContext | undefined)?.reportTokens?.length ?? 0,
+    data: userChat?.context?.reportTokens?.length ?? 0,
   };
 }
 
@@ -620,6 +619,6 @@ export async function fetchAnalystPodcastsCountOfStudyUserChat({
   });
   return {
     success: true,
-    data: (userChat?.context as UserChatContext | undefined)?.podcastTokens?.length ?? 0,
+    data: userChat?.context?.podcastTokens?.length ?? 0,
   };
 }

@@ -33,7 +33,7 @@ async function generateMetadataForPodcast(podcastId: number) {
     id: podcastId,
     extra: {
       metadata: {
-        ...((podcast.extra as AnalystPodcastExtra)?.metadata || {}),
+        ...(podcast.extra?.metadata || {}),
         title,
         showNotes,
       },

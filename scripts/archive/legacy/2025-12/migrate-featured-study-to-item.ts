@@ -6,12 +6,7 @@
 //   pnpm tsx scripts/archive/legacy/2025-12/migrate-featured-study-to-item.ts             (execute)
 
 import { truncateForTitle } from "@/lib/textUtils";
-import {
-  AnalystPodcastExtra,
-  AnalystReportExtra,
-  FeaturedItemExtra,
-  FeaturedItemResourceType,
-} from "@/prisma/client";
+import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { loadEnvConfig } from "@next/env";
 import "../../../mock-server-only";
 
@@ -103,7 +98,7 @@ async function main() {
           console.log(`   ⏭️  Report ${lastReport.id} already featured, skipping`);
           skippedReports++;
         } else {
-          const extra = lastReport.extra as AnalystReportExtra;
+          const extra = lastReport.extra;
           const title = analyst.studyUserChat?.title || "";
           const description = truncateForTitle(analyst.topic, {
             maxDisplayWidth: 200,
@@ -171,7 +166,7 @@ async function main() {
           console.log(`   ⏭️  Podcast ${lastPodcast.id} already featured, skipping`);
           skippedPodcasts++;
         } else {
-          const extra = lastPodcast.extra as AnalystPodcastExtra;
+          const extra = lastPodcast.extra;
           const metadata = extra?.metadata;
 
           const featuredItemData = {

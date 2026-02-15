@@ -1,5 +1,5 @@
 "use server";
-import { persistentAIMessageToDB } from "@/ai/messageUtils";
+import { convertDBMessagesToAIMessages, persistentAIMessageToDB } from "@/ai/messageUtils";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { checkTezignAuth } from "@/app/admin/actions";
@@ -7,7 +7,7 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
-import type { ChatMessage, UserChat } from "@/prisma/client";
+import type { UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { generateId, UIMessage } from "ai";
 import { ExpertName } from "../experts/types";
@@ -95,9 +95,18 @@ export async function fetchDeepResearchUserChatAction(userChatToken: string): Pr
   return withAuth(async (user) => {
     const userChat = await prisma.userChat.findUnique({
       where: { token: userChatToken, kind: "misc" },
-      include: {
+      select: {
+        id: true,
+        userId: true,
+        token: true,
+        title: true,
+        context: true,
+        extra: true,
+        createdAt: true,
+        updatedAt: true,
+        backgroundToken: true,
         messages: {
-          orderBy: { createdAt: "asc" },
+          orderBy: { id: "asc" },
         },
       },
     });
@@ -118,27 +127,16 @@ export async function fetchDeepResearchUserChatAction(userChatToken: string): Pr
       };
     }
 
+    const { messages: dbMessages, ...userChatData } = userChat;
     // Convert database messages to UIMessage format
-    const messages: UIMessage[] = userChat.messages.map((msg: ChatMessage) => ({
-      id: msg.messageId,
-      role: msg.role as "user" | "assistant",
-      parts: msg.parts as UIMessage["parts"],
-    }));
+    const messages = await convertDBMessagesToAIMessages(dbMessages);
 
     return {
       success: true,
       data: {
         userChat: {
-          id: userChat.id,
-          userId: userChat.userId,
-          token: userChat.token,
-          title: userChat.title,
+          ...userChatData,
           kind: "misc",
-          context: userChat.context as UserChatContext,
-          extra: userChat.extra,
-          createdAt: userChat.createdAt,
-          updatedAt: userChat.updatedAt,
-          backgroundToken: userChat.backgroundToken,
         },
         messages,
       },
@@ -187,8 +185,7 @@ export async function fetchDeepResearchHistoryAction({
     // Filter to only DeepResearch sessions (those with deepResearchExpert in extra)
     const deepResearchSessions = userChats
       .filter((chat) => {
-        const userChatContext = chat.context as UserChatContext;
-        return userChatContext?.deepResearchExpert !== undefined;
+        return chat.context.deepResearchExpert !== undefined;
       })
       .map((chat) => ({
         id: chat.id,
