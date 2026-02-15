@@ -71,7 +71,9 @@ export async function submitStudyFeedback(
     // 使用 mergeExtra 安全地更新 extra 字段，避免覆盖其他值
     await mergeExtra({
       tableName: "UserChat",
-      extra: { feedback: feedbackData },
+      extra: {
+        feedback: feedbackData,
+      } satisfies UserChatExtra,
       id: userChat.id,
     });
 

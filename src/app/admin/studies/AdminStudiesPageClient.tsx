@@ -170,19 +170,14 @@ export function AdminStudiesPageClient({
 
   const handleShowBrief = async (analyst: AnalystWithFeature) => {
     const userChatContext = analyst.studyUserChat?.context;
-    const briefUserChatId = userChatContext?.briefUserChatId;
+    const briefUserChatToken = userChatContext?.briefUserChatToken;
 
-    if (!briefUserChatId) return;
-
-    // Ensure briefUserChatId is a number
-    const chatId =
-      typeof briefUserChatId === "string" ? parseInt(briefUserChatId, 10) : briefUserChatId;
-    if (isNaN(chatId)) return;
+    if (!briefUserChatToken) return;
 
     setLoadingBrief(true);
     setBriefDialogOpen(true);
 
-    const result = await fetchBriefChatMessages(chatId);
+    const result = await fetchBriefChatMessages(briefUserChatToken);
     if (result.success) {
       setBriefMessages(result.data as TMessageWithPlainTextTool[]);
     } else {
@@ -299,8 +294,7 @@ export function AdminStudiesPageClient({
                     <div className="flex items-center gap-1 shrink-0">
                       {(() => {
                         const userChatContext = analyst.studyUserChat?.context;
-                        const briefUserChatId = userChatContext?.briefUserChatId;
-                        return briefUserChatId ? (
+                        return userChatContext?.briefUserChatToken ? (
                           <div className="relative m-1">
                             <Button
                               onClick={() => handleShowBrief(analyst)}

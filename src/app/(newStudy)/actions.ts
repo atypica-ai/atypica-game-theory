@@ -7,7 +7,6 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { createUserChat } from "@/lib/userChat/lib";
 import { UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { mergeExtra } from "@/prisma/utils";
 import { generateId } from "ai";
 import { getTranslations } from "next-intl/server";
 import { mergeUserChatContext } from "../(study)/context/utils";
@@ -79,14 +78,12 @@ export async function continueToStudyUserChat(
     await mergeUserChatContext({
       id: newStudyChat.id,
       context: {
-        briefUserChatId: userChat.id,
+        briefUserChatToken: userChat.token,
       },
     });
-    await mergeExtra({
-      tableName: "UserChat",
+    await mergeUserChatContext({
       id: userChat.id,
-      extra: {
-        newStudyUserChatId: newStudyChat.id,
+      context: {
         newStudyUserChatToken: newStudyChat.token,
       },
     });

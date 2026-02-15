@@ -69,7 +69,7 @@ export async function createStudyAgentConfig(
   // =============================================================================
 
   const briefStatus: "CLARIFIED" | "DRAFT" =
-    userChatContext?.briefUserChatId || userChatContext?.referenceUserChats?.length
+    userChatContext?.briefUserChatToken || userChatContext?.referenceUserChats?.length
       ? "CLARIFIED"
       : "DRAFT";
 

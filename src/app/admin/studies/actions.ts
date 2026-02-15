@@ -117,12 +117,12 @@ export async function generateChatTitleAction(
 
 // Fetch brief chat messages by chat ID
 export async function fetchBriefChatMessages(
-  briefUserChatId: number,
+  briefUserChatToken: string,
 ): Promise<ServerActionResult<UIMessage[]>> {
   await checkAdminAuth([AdminPermission.MANAGE_STUDIES]);
 
   const briefChat = await prisma.userChat.findUnique({
-    where: { id: briefUserChatId },
+    where: { token: briefUserChatToken },
     include: {
       messages: {
         orderBy: { id: "asc" },
