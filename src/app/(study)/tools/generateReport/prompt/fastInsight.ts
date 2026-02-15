@@ -58,10 +58,10 @@ export const reportHTMLSystemFastInsight = ({ locale }: { locale: Locale }) =>
   * 段落简短，避免长文本墙
 
 - **色彩使用**：
-  * 主要用于功能性区分（如数据类型、趋势方向）
-  * 可以使用彩色标签、图标、图表
-  * 避免大面积彩色背景，保持整体清爽
-  * 确保色彩对比度足够，易于阅读
+  * 遵循统一规范：文字全部单色，最多一个品牌色用于非文字元素
+  * 品牌色可用于：关键数据标注、状态指示、图表元素
+  * 主要通过字重、边框、图形区分信息类型
+  * 避免彩色文字和大面积色块
 
 - **字体与排版**：
   * 使用清晰易读的无衬线字体
@@ -151,10 +151,10 @@ Based on the research topic, research process, and deep research results provide
   * Short paragraphs, avoid text walls
 
 - **Color Usage**:
-  * Primarily for functional differentiation (e.g., data types, trend directions)
-  * Can use colored labels, icons, charts
-  * Avoid large colored backgrounds, keep overall clean
-  * Ensure sufficient color contrast for readability
+  * Follow unified guidelines: all text monochrome, maximum one brand color for non-text elements
+  * Brand color for: key data highlights, status indicators, chart elements
+  * Primarily use font weight, borders, shapes to differentiate information types
+  * Avoid colored text and large color blocks
 
 - **Typography**:
   * Use clear, readable sans-serif fonts

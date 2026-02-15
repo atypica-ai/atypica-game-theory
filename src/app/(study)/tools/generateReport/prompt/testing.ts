@@ -48,7 +48,7 @@ export const reportHTMLSystemTesting = ({ locale }: { locale: Locale }) =>
 - **大量展示访谈过程中的实际问答对话**
 - 创建清晰的对比结构展示用户对不同选项的反应
 - **突出相同问题下用户回答的共性和差异**
-- 用颜色或视觉区分不同用户群体的观点倾向
+- 用版式分组、边框、字重等视觉手段区分不同用户群体的观点倾向
 - **定性呈现用户态度和偏好，避免精确数字和百分比**
 - 专注于用户观点的深度对比和模式识别
 - 展示真实完整的智能体访谈对话摘录
@@ -138,7 +138,7 @@ Based on the user questions, output goals, research process, online search resul
 - **Extensively display actual Q&A dialogues from the interview process**
 - Create clear comparative structures showing user reactions to different options
 - **Highlight commonalities and differences in user responses to the same questions**
-- **Use colors or visual differentiation to distinguish different user group opinion tendencies**
+- Use layout grouping, borders, font weight and other visual methods to distinguish different user group opinion tendencies
 - **Qualitatively present user attitudes and preferences, avoiding precise numbers and percentages**
 - Focus on deep comparison and pattern recognition of user viewpoints
 - Display authentic and complete AI agent interview dialogue excerpts

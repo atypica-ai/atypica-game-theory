@@ -3,33 +3,31 @@ import { Locale } from "next-intl";
 export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `
-【核心设计哲学：越不AI越AI】
-用最有力的人性化方式，呈现最智能的洞察。
+【核心设计哲学：克制的专业主义】
+用最克制的视觉语言，呈现最有力的洞察。
 
-我们研究的是人、模拟的是人、服务的是理解人。所以报告的视觉语言应该用成熟的专业手法（编辑设计、建筑摄影美学）而非廉价的科技感陈词滥调（霓虹渐变、3D渲染、浮夸特效）。
+**颜色使用规范**：
+- **文字**：全部单色（黑或深灰），绝不用彩色
+- **品牌色**：最多一个，仅用于非文字元素（边框、图形、背景装饰）
+- **背景**：白色或极浅灰为主，局部可用抽象图形（明亮、低饱和度）
+- **严禁**：彩色文字、大面积色块、粗边框、高饱和度颜色
 
-**关键原则**：
-- 真实大于合成，但要有戏剧性 - 避免合成感的塑料质感，拥抱有力量的视觉呈现
-- 力量和深度 - 既有视觉冲击力，又经得起细看
-- 专业但不疏远 - McKinsey的严谨 + 人类学的人文关怀
-- 色彩作为戏剧，不是装饰 - 有目的的戏剧性对比，而非无意义的彩色点缀
+**排版与层级**：
+- 用字号、粗细（Regular/Medium/Bold）、字体类型（无衬线/衬线）、倾斜建立层级
+- 不依赖颜色区分层级
+- 用单色 SVG 图形替代 emoji（简单几何、线条风格）
+- 细边框（1px）+ 小圆角（4-8px）
+- 紧凑布局，适度留白
 
-**配色策略**：
-- 黑、白、灰作为基础，可选单一强调色（深蓝、炭灰、暖棕）
-- 严禁大面积彩色卡片、背景色块、粗大彩色边框
-- 排版克制不等于压制所有色彩 - 摄影内容可以有完整的电影化色彩
-- 克制体现在版式和结构，不是把一切都变成灰色
+**视觉元素**：
+- 插图：扁平、几何、抽象风格，避免写实
+- 背景：抽象图形（天空、自然、渐变），颜色柔和
+- 透明度控制，背景不抢内容
 
-**排版层级**：
-- 通过字重建立层级（Regular → Medium → Bold），不靠颜色
-- 通过字号表示重要性，通过留白创造呼吸感
-- 最好的排版应该隐形，直到需要阅读时毫不费力
-
-**信息密度与阅读效率**：
-- 布局要紧凑，确保一屏内有足够的信息量，不要过度留白导致"一眼看不到什么"
-- 但紧凑不等于密密麻麻 - 要有清晰的视觉分组和适度的呼吸空间
-- 目标是高阅读效率：读者能快速扫视并抓住要点，深入阅读时又不感到拥挤
-- 段落间距、标题间距要适中，既有区隔又不浪费空间
+**开篇设计方法**：
+- 运用叙事张力：建立信息落差和阅读期待
+- 首屏内容选择：优先最具冲击力和价值的洞察
+- 避免线性铺陈：跳过背景铺垫，直接切入核心
 
 【视觉内容增强】
 - 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
@@ -74,33 +72,31 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 你的回复应该只包含可直接使用的HTML代码，从<!DOCTYPE html>开始。
 `
     : `
-【Core Design Philosophy: The Less AI, the More AI】
-Present the most intelligent insights in the most powerful human way.
+【Core Design Philosophy: Restrained Professionalism】
+Use the most restrained visual language to present the most powerful insights.
 
-We study people, simulate people, and serve the understanding of people. So the report's visual language should use sophisticated professional techniques (editorial design, architectural photography aesthetics) not cheap tech clichés (neon gradients, 3D renders, gaudy effects).
+**Color Usage Guidelines**:
+- **Text**: Monochrome only (black or dark gray), never colored text
+- **Brand accent**: Maximum one color, only for non-text elements (borders, graphics, backgrounds)
+- **Backgrounds**: White or very light gray primary, abstract graphics optional (bright, low saturation)
+- **Forbidden**: Colored text, large color blocks, thick borders, high saturation
 
-**Key Principles**:
-- Real over synthetic, but with drama - avoid the plastic feel of composites, embrace powerful visual presentation
-- Power and depth - both visual impact and substance that rewards closer examination
-- Professional but not distant - McKinsey's rigor + anthropological humanistic care
-- Color as drama, not decoration - purposeful dramatic contrast, not meaningless colorful accents
+**Typography & Hierarchy**:
+- Use size, weight (Regular/Medium/Bold), typeface (sans-serif/serif), italics to establish hierarchy
+- Never rely on color for hierarchy
+- Replace emoji with monochrome SVG graphics (simple geometric, line-based style)
+- Thin borders (1px) + small radius (4-8px)
+- Compact layout, moderate whitespace
 
-**Color Strategy**:
-- Black, white, gray as foundation, optional single accent color (deep blue, charcoal, warm brown)
-- Strictly forbid large colored cards, background blocks, thick colored borders
-- Restrained layout doesn't mean suppressing all color - photographic content can have full cinematic color
-- Restraint is in layout and structure, not turning everything gray
+**Visual Elements**:
+- Illustrations: Flat, geometric, abstract style - avoid photorealism
+- Backgrounds: Abstract shapes (sky, nature, gradients), soft colors
+- Control opacity, backgrounds never overpower content
 
-**Typography Hierarchy**:
-- Build hierarchy through font weight (Regular → Medium → Bold), not color
-- Size indicates importance, whitespace creates breathing room
-- The best typography should be invisible until you need to read it, then effortless
-
-**Information Density & Reading Efficiency**:
-- Layout should be compact, ensuring sufficient information per screen - avoid excessive whitespace that makes "nothing visible at a glance"
-- But compact ≠ cramped - maintain clear visual grouping and moderate breathing space
-- Goal is high reading efficiency: readers can quickly scan and grasp key points, yet feel comfortable when reading deeply
-- Paragraph spacing and heading spacing should be moderate - distinct yet space-efficient
+**Opening Design Method**:
+- Apply narrative tension: create information gaps and reading anticipation
+- Content prioritization: lead with highest-impact insights
+- Avoid linear exposition: skip setup, go straight to core
 
 【Visual Content Enhancement】
 - Generate illustrations only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.

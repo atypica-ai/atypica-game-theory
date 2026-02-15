@@ -34,9 +34,12 @@ export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
      - （可选）1条主要风险提示
 
 2. **创新推理**
-  - 目的是用简洁和强逻辑的方式描述整个创新的流程逻辑，让读者能够更好的和这个方案connect，从而被说服.
-  - 根据提供的创新推理逻辑，用简洁同时逻辑性强地方式，用以下格式展示：
-  <div class="mb-12"> <h3 class="text-xl font-bold mb-4 serif border-b border-gray-300 pb-2">创新推理</h3> <div class="relative"> <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-slate-600"></div> <div class="space-y-8"> <div class="flex items-center"> <div class="w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold text-xl relative z-10">1</div> <div class="ml-6 flex-1"> <div class="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-sm"> <strong class="text-blue-600">起点</strong>： </div> </div> </div> <div class="flex items-center"> <div class="w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold text-xl relative z-10">2</div> <div class="ml-6 flex-1"> <div class="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-sm"> <strong class="text-blue-600">搜索策略</strong>：</div> </div> </div> <div class="flex items-center"> <div class="w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold text-xl relative z-10">3</div> <div class="ml-6 flex-1"> <div class="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-sm"> <strong class="text-blue-600">灵感点</strong>：</div> </div> </div> <div class="flex items-center"> <div class="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-lg relative z-10">★</div> <div class="ml-6 flex-1"> <div class="bg-emerald-600 text-white rounded-lg p-4 shadow-lg"> <strong>创新成果</strong>：冻干双汇火腿新品 </div> </div> </div> </div> </div></div>
+  - 目的：用简洁且强逻辑的方式描述创新流程，让读者理解推理过程从而被说服
+  - 设计手法：
+    * 时间线结构：用垂直流程展示从起点到成果的演进
+    * 视觉节奏：用编号、连接线、卡片分组建立清晰步骤
+    * 层级强调：通过字重、尺寸、边框区分不同阶段的重要性
+    * 最终高潮：创新成果节点在视觉上做适当突出
 
 3. **市场机会分析：消费者需求洞察**
    - 目标客群画像
