@@ -15,7 +15,7 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import type { Analyst, ChatMessageAttachment } from "@/prisma/client";
+import type { ChatMessageAttachment } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -27,7 +27,6 @@ import { calculateToolUsage } from "../utils";
 export interface StudyAgentConfigParams {
   userId: number;
   studyUserChatId: number;
-  analyst: Analyst;
   userChatContext: UserChatContext;
   locale: Locale;
   logger: Logger;
@@ -55,7 +54,6 @@ export async function createStudyAgentConfig(
 ): Promise<AgentRequestConfig<TOOLS>> {
   const {
     studyUserChatId,
-    analyst,
     userId,
     locale,
     logger,
@@ -86,7 +84,7 @@ export async function createStudyAgentConfig(
 
   const allTools = buildStudyTools({
     studyUserChatId,
-    analyst,
+    userChatContext,
     userId,
     agentToolArgs,
   });
@@ -167,12 +165,12 @@ export async function createStudyAgentConfig(
  * Note: createSubAgent tool is added dynamically in base if MCP clients are available
  */
 function buildStudyTools(params: {
-  analyst: Pick<Analyst, "id" | "attachments">;
   studyUserChatId: number;
+  userChatContext: UserChatContext;
   userId: number;
   agentToolArgs: AgentToolConfigArgs;
 }) {
-  const { studyUserChatId, analyst, userId, agentToolArgs } = params;
+  const { studyUserChatId, userChatContext, userId, agentToolArgs } = params;
 
   return {
     [StudyToolName.requestInteraction]: requestInteractionTool,
@@ -197,7 +195,7 @@ function buildStudyTools(params: {
     [StudyToolName.interviewChat]: interviewChatTool({
       userId,
       userChatId: studyUserChatId,
-      attachments: analyst.attachments as ChatMessageAttachment[],
+      attachments: userChatContext.attachments as ChatMessageAttachment[],
       ...agentToolArgs,
     }),
     [StudyToolName.discussionChat]: discussionChatTool({

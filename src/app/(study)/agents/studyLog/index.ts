@@ -4,9 +4,9 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { updateMemory } from "@/app/(memory)/lib/updateMemory";
+import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { generateRecommendedQuestions } from "@/app/(study)/study/StudyNextSteps/lib";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { waitUntil } from "@vercel/functions";
 import { ModelMessage, streamText } from "ai";
@@ -144,12 +144,10 @@ export async function generateAndSaveStudyLog({
         if (statReport) {
           await statReport("tokens", tokens, { reportedBy: "studyLog tool", ...extra });
         }
-        // ⚠️ 通过 userChatId 来更新，使用 updateMany，如果 userChat 没关联 analyst，也不会报错
-        await prisma.analyst.updateMany({
-          where: {
-            studyUserChatId: userChatId,
-          },
-          data: { studyLog },
+
+        await mergeUserChatContext({
+          id: userChatId,
+          context: { studyLog },
         });
 
         // Trigger recommended questions generation in background after studyLog is complete

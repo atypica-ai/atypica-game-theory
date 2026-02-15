@@ -9,6 +9,7 @@ import type * as client from "./client";
 // https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types/working-with-json-fields#typed-json-fields
 // 文件放在哪都行，只需要被 tsconfig.json 引用，同时在项目里被引入 (在 ./prisma.ts 里) 就可以
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- Prisma requires global namespace for JSON field types
   namespace PrismaJson {
     // User and Team
     type UserLastLogin = client.UserLastLogin;

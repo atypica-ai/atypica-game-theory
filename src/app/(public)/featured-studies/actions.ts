@@ -44,10 +44,10 @@ async function _fetchPublicFeaturedItemsImpl({
     createdAt: Date;
   }>;
 
-  const resourceTypes: string[] =
+  const resourceTypes: FeaturedItemResourceType[] =
     resourceType === "all"
       ? [FeaturedItemResourceType.AnalystPodcast, FeaturedItemResourceType.AnalystReport]
-      : [resourceType];
+      : ([resourceType] as FeaturedItemResourceType[]);
 
   if (random && limit) {
     // Random selection with tag filter

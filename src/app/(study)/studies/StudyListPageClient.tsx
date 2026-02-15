@@ -162,7 +162,7 @@ export function StudyListPageClient({
               </Card>
 
               {studies.map((study) => (
-                <StudyCard key={study.studyUserChat.id} study={study} />
+                <StudyCard key={study.id} study={study} />
               ))}
             </div>
 

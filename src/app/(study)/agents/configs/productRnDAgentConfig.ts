@@ -10,7 +10,6 @@ import {
   scoutSocialTrendsTool,
 } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import type { Analyst } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -22,7 +21,6 @@ import { calculateToolUsage } from "../utils";
 export interface ProductRnDAgentConfigParams {
   userId: number;
   studyUserChatId: number;
-  analyst: Analyst;
   userChatContext: UserChatContext;
   locale: Locale;
   logger: Logger;

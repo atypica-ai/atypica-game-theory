@@ -377,15 +377,18 @@ export async function generatePersonalTemplates(
     const memoryCore = await loadUserMemory(userId);
 
     // 2. 获取用户最近的研究历史
-    const recentStudies = await prisma.analyst.findMany({
-      where: { userId },
+    const recentStudies = await prisma.userChat.findMany({
+      where: {
+        userId,
+        kind: "study",
+      },
       orderBy: { createdAt: "desc" },
       take: 10,
       select: {
-        brief: true,
-        topic: true,
-        studyLog: true,
-        kind: true,
+        id: true,
+        token: true,
+        context: true,
+        extra: true,
       },
     });
 
@@ -414,7 +417,7 @@ export async function generatePersonalTemplates(
 ${memoryCore || "无"}
 
 ### 最近研究历史
-${recentStudies.map((s) => `- ${s.topic}\n  类型: ${s.kind}\n  摘要: ${s.studyLog.slice(0, 200)}`).join("\n\n")}
+${recentStudies.map(({ context }) => `- ${context.studyTopic}\n  类型: ${context.analystKind}\n  摘要: ${context.studyLog?.slice(0, 200)}`).join("\n\n")}
 
 ## 生成要求
 
@@ -437,7 +440,7 @@ ${recentStudies.map((s) => `- ${s.topic}\n  类型: ${s.kind}\n  摘要: ${s.stu
 ${memoryCore || "None"}
 
 ### Recent Research History
-${recentStudies.map((s) => `- ${s.topic}\n  Type: ${s.kind}\n  Summary: ${s.studyLog.slice(0, 200)}`).join("\n\n")}
+${recentStudies.map(({ context }) => `- ${context.studyTopic}\n  Type: ${context.analystKind}\n  Summary: ${context.studyLog?.slice(0, 200)}`).join("\n\n")}
 
 ## Requirements
 
@@ -531,7 +534,7 @@ export async function checkAndGeneratePersonalTemplates(
 
     // 检查是否满足生成条件
     const [studyCount, memoryCount] = await Promise.all([
-      prisma.analyst.count({ where: { userId } }),
+      prisma.userChat.count({ where: { userId, kind: "study" } }),
       prisma.memory.count({ where: { userId } }),
     ]);
 

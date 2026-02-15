@@ -6,7 +6,6 @@ import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { createUserChat } from "@/lib/userChat/lib";
 import { generateToken } from "@/lib/utils";
 import { AnalystPodcastExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -62,56 +61,6 @@ export async function generatePodcastAudioFromScriptAction({
       scriptLength: script.length,
       podcastKind,
     });
-
-    // Get or create a test analyst for testing purposes
-    // We'll use a system test analyst to satisfy the database constraint
-    let testAnalyst = await prisma.analyst.findFirst({
-      where: {
-        topic: "[TEST] Podcast Audio Test Analyst",
-        kind: "testing",
-      },
-    });
-
-    if (!testAnalyst) {
-      // Create a test UserChat for the analyst (required for share page)
-      const testUserChat = await createUserChat({
-        userId: adminUserId,
-        kind: "study",
-        title: "[TEST] Podcast Audio Test Study",
-      });
-
-      // Create the test analyst with the UserChat linked
-      testAnalyst = await prisma.analyst.create({
-        data: {
-          userId: adminUserId,
-          studyUserChatId: testUserChat.id,
-          topic: "[TEST] Podcast Audio Test Analyst",
-          brief: "Test analyst for podcast audio generation testing",
-          role: "Test Analyst",
-          studySummary: "Test analyst for podcast audio generation testing",
-          kind: "testing",
-          locale: finalLocale,
-        },
-      });
-    } else if (!testAnalyst.studyUserChatId) {
-      // If analyst exists but doesn't have a studyUserChat, create one
-      const adminUser = await prisma.user.findUnique({
-        where: { id: testAnalyst.userId },
-      });
-
-      if (adminUser) {
-        const testUserChat = await createUserChat({
-          userId: adminUser.id,
-          kind: "study",
-          title: "[TEST] Podcast Audio Test Study",
-        });
-
-        testAnalyst = await prisma.analyst.update({
-          where: { id: testAnalyst.id },
-          data: { studyUserChatId: testUserChat.id },
-        });
-      }
-    }
 
     // Create podcast record with the provided script
     const podcastToken = generateToken();

@@ -122,7 +122,6 @@ model User {
   userPersonaChatRelations       UserPersonaChatRelation[]
   interviewSessionsAsInterviewee InterviewSession[]
   awsMarketplaceCustomer         AWSMarketplaceCustomer?
-  analysts                       Analyst[]
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -219,23 +218,21 @@ model Persona {
   @@index([tier, locale])
 }
 
-model Analyst {
-  id              Int      @id @default(autoincrement())
+model LegacyAnalyst {
+  id              Int     @id @default(autoincrement())
   userId          Int
-  user            User     @relation(fields: [userId], references: [id])
-  brief           String   @db.Text
-  role            String   @db.VarChar(255)
-  topic           String   @db.Text
-  studySummary    String   @db.Text // 目前已经用不到了
-  studyLog        String   @default("") @db.Text
-  studyUserChatId Int      @unique @db.Integer
-  studyUserChat   UserChat @relation(fields: [studyUserChatId], references: [id], onDelete: Cascade)
+  brief           String  @db.Text
+  role            String  @db.VarChar(255)
+  topic           String  @db.Text
+  studySummary    String  @db.Text // 目前已经用不到了
+  studyLog        String  @default("") @db.Text
+  studyUserChatId Int     @unique @db.Integer
   /// [ChatMessageAttachment[]]
-  attachments     Json     @default("[]")
-  kind            String?  @db.VarChar(16)
+  attachments     Json    @default("[]")
+  kind            String? @db.VarChar(16)
   /// [Locale]
-  locale          String?  @db.VarChar(16)
-  extra           Json     @default("{}")
+  locale          String? @db.VarChar(16)
+  extra           Json    @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -326,7 +323,6 @@ model UserChat {
   interviewSession        InterviewSession?
   sageChat                SageChat?
   sageInterview           SageInterview?
-  analyst                 Analyst?
 
   @@index([userId])
 }

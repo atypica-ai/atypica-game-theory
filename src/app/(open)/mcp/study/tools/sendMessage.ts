@@ -70,8 +70,10 @@ export async function handleSendMessage(
 
     // Verify ownership and fetch full userChat - same logic as route.ts
     const userChat = await prisma.userChat.findUnique({
-      where: { token: userChatToken, kind: "study" },
-      include: { analyst: true },
+      where: {
+        token: userChatToken,
+        kind: "study",
+      },
     });
 
     if (!userChat) {
@@ -80,10 +82,6 @@ export async function handleSendMessage(
 
     if (userChat.userId !== userId) {
       throw new Error("Unauthorized: Study does not belong to user");
-    }
-
-    if (!userChat.analyst) {
-      throw new Error("Study does not have an analyst");
     }
 
     const studyUserChatId = userChat.id;
@@ -119,8 +117,8 @@ export async function handleSendMessage(
     const locale: Locale = await detectInputLanguage({
       text: [newMessage.lastPart].map((part) => (part.type === "text" ? part.text : "")).join(""),
       fallbackLocale:
-        userChat.analyst.locale && VALID_LOCALES.includes(userChat.analyst.locale as Locale)
-          ? (userChat.analyst.locale as Locale)
+        userChat.context.defaultLocale && VALID_LOCALES.includes(userChat.context.defaultLocale)
+          ? userChat.context.defaultLocale
           : undefined,
     });
 
@@ -165,7 +163,6 @@ export async function handleSendMessage(
       userId,
       teamId,
       studyUserChatId,
-      analyst: userChat.analyst,
       userChatContext: userChat.context,
       locale,
       logger,
@@ -177,14 +174,14 @@ export async function handleSendMessage(
     try {
       // Execute agent based on analyst.kind - same logic as route.ts
       // No streamWriter needed for MCP (synchronous execution)
-      if (!userChat.analyst.kind) {
+      if (!userChat.context.analystKind) {
         // Plan Mode - Intent Layer for research planning
         const config = await createPlanModeAgentConfig(agentContext);
         await executeBaseAgentRequest(agentContext, config);
-      } else if (userChat.analyst.kind === AnalystKind.productRnD) {
+      } else if (userChat.context.analystKind === AnalystKind.productRnD) {
         const config = await createProductRnDAgentConfig(agentContext);
         await executeBaseAgentRequest(agentContext, config);
-      } else if (userChat.analyst.kind === AnalystKind.fastInsight) {
+      } else if (userChat.context.analystKind === AnalystKind.fastInsight) {
         const config = await createFastInsightAgentConfig(agentContext);
         await executeBaseAgentRequest(agentContext, config);
       } else {

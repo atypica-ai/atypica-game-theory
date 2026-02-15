@@ -1,4 +1,6 @@
 import { ExpertName } from "@/app/(deepResearch)/experts/types";
+import { ChatMessageAttachment } from "@/prisma/client";
+import { Locale } from "next-intl";
 
 export enum AnalystKind {
   testing = "testing",
@@ -11,10 +13,23 @@ export enum AnalystKind {
 }
 
 export type UserChatContext = Partial<{
+  defaultLocale: Locale;
+
   // studyUserChat 专用: 过程关键信息
   interviewPersonaPanelId: number;
   reportTokens: string[];
   podcastTokens: string[];
+  analystKind:
+    | "testing"
+    | "planning"
+    | "insights"
+    | "creation"
+    | "productRnD"
+    | "fastInsight"
+    | "misc";
+  attachments: ChatMessageAttachment[];
+  studyTopic: string;
+  studyLog: string;
 
   // studyUserChat 专用: 创建来源
   referenceUserChats: string[]; // List of chat tokens used as context

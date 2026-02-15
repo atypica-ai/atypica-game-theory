@@ -254,7 +254,7 @@ async function _trackUserServerSide({
   if (traitTypesToUse["stats"]) {
     try {
       const [studies, interviews, personas, tokensConsumed] = await Promise.all([
-        prismaRO.analyst.count({ where: { userId: userId } }),
+        prismaRO.userChat.count({ where: { userId: userId, kind: "study" } }),
         prismaRO.interviewProject.count({ where: { userId: userId } }),
         prismaRO.personaImport.count({ where: { userId: userId } }),
         prismaRO.tokensLog

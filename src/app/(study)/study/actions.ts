@@ -8,7 +8,6 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
 import {
-  Analyst,
   AnalystPodcast,
   AnalystPodcastExtra,
   AnalystReport,
@@ -163,30 +162,6 @@ export async function fetchStatsByStudyUserChatToken(
   };
 }
 
-export async function fetchAnalystByStudyUserChatToken({
-  studyUserChatToken,
-}: {
-  studyUserChatToken: string;
-}): Promise<ServerActionResult<Analyst>> {
-  const studyUserChat = await prismaRO.userChat.findUnique({
-    where: { token: studyUserChatToken, kind: "study" },
-    include: {
-      analyst: true,
-    },
-  });
-  if (!studyUserChat?.analyst) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "Analyst not found",
-    };
-  }
-  return {
-    success: true,
-    data: studyUserChat.analyst,
-  };
-}
-
 export async function fetchAttachmentsByStudyUserChatToken({
   studyUserChatToken,
 }: {
@@ -194,19 +169,16 @@ export async function fetchAttachmentsByStudyUserChatToken({
 }): Promise<ServerActionResult<FileUIPart[]>> {
   const studyUserChat = await prismaRO.userChat.findUnique({
     where: { token: studyUserChatToken, kind: "study" },
-    include: {
-      analyst: true,
-    },
   });
-  if (!studyUserChat?.analyst) {
+  if (!studyUserChat) {
     return {
       success: false,
       code: "not_found",
-      message: "Analyst not found",
+      message: "study user chat not found",
     };
   }
   const fileUIParts = await Promise.all(
-    (studyUserChat.analyst.attachments as ChatMessageAttachment[]).map(
+    (studyUserChat.context.attachments as ChatMessageAttachment[]).map(
       async ({ name, objectUrl, mimeType }) => {
         const url = await getS3SignedCdnUrl(objectUrl);
         return { type: "file" as const, mediaType: mimeType, filename: name, url: url };

@@ -1,7 +1,4 @@
-import {
-  fetchAnalystByStudyUserChatToken,
-  fetchAnalystInterviewForPersona,
-} from "@/app/(study)/study/actions";
+import { fetchAnalystInterviewForPersona } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
@@ -9,7 +6,6 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { ExtractServerActionData } from "@/lib/serverAction";
-import { Analyst } from "@/prisma/client";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -27,25 +23,7 @@ export const InterviewChatConsole = ({
     (persona) => !!persona?.id,
   ) as StudyUITools[StudyToolName.interviewChat]["input"]["personas"];
 
-  const [analyst, setAnalyst] =
-    useState<ExtractServerActionData<typeof fetchAnalystByStudyUserChatToken>>();
-  useEffect(() => {
-    (async () => {
-      try {
-        const result = await fetchAnalystByStudyUserChatToken({
-          studyUserChatToken: studyUserChat.token,
-        });
-        if (!result.success) {
-          throw result;
-        }
-        setAnalyst(result.data);
-      } catch (error) {
-        console.log("Error fetching analyst:", error);
-      }
-    })();
-  }, [studyUserChat.token]);
-
-  if (!analyst || !personasArg.length) {
+  if (!personasArg.length) {
     return <div className="font-mono text-sm">Loading...</div>;
   }
 
@@ -60,7 +38,6 @@ export const InterviewChatConsole = ({
           >
             <SingleInterviewChat
               key={id}
-              analyst={analyst}
               personaId={id}
               toolInvocation={toolInvocation}
             ></SingleInterviewChat>
@@ -96,7 +73,7 @@ export const InterviewChatConsole = ({
           <div className="flex-1 max-h-24 overflow-y-scroll scrollbar-thin">
             <div className="text-sm font-medium mb-2">{t("researchTopic")}</div>
             <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-              {analyst.topic}
+              {studyUserChat.context.studyTopic}
             </div>
           </div>
         </div>
@@ -106,10 +83,8 @@ export const InterviewChatConsole = ({
 };
 
 const SingleInterviewChat = ({
-  analyst,
   personaId,
 }: {
-  analyst: Pick<Analyst, "id" | "role" | "topic">;
   personaId: number;
   toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.interviewChat>>;
 }) => {
@@ -174,10 +149,10 @@ const SingleInterviewChat = ({
             message.role === "assistant" ? (
               <HippyGhostAvatar seed={personaId} />
             ) : message.role === "user" ? (
-              <HippyGhostAvatar seed={analyst.id} />
+              <HippyGhostAvatar seed={studyUserChat.id} />
             ) : undefined
           }
-          nickname={message.role === "assistant" ? persona?.name : analyst.role}
+          nickname={message.role === "assistant" ? persona?.name : "atypica.AI"}
           message={message}
           renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
         ></StreamSteps>

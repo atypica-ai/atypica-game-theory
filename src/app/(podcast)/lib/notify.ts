@@ -8,59 +8,56 @@ import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
 
-/**
- * @deprecated 包含 podcast.analystId 的关系，如果要继续使用，需要修改
- */
 export async function notifyPodcastReady({
-  analystId,
+  studyUserChatId,
   podcast,
   logger,
 }: {
-  analystId: number;
+  studyUserChatId: number;
   podcast: Pick<AnalystPodcast, "token">;
   logger: Logger;
 }): Promise<void> {
   // cronjob 是使用域名调用 batch generate api 的，所以也可以拿到 origin
   const siteOrigin = await getRequestOrigin();
 
-  const analyst = await prisma.analyst.findUnique({
-    where: { id: analystId },
+  const studyUserChat = await prisma.userChat.findUnique({
+    where: { id: studyUserChatId, kind: "study" },
     select: {
       id: true,
-      locale: true,
-      topic: true,
-      studyUserChat: {
-        select: {
-          token: true,
-          title: true,
-          user: { select: { email: true } },
-        },
-      },
+      token: true,
+      title: true,
+      context: true,
+      extra: true,
+      user: { select: { email: true } },
     },
   });
 
-  if (!analyst?.studyUserChat) {
+  if (!studyUserChat) {
     return;
   }
 
-  const recipientEmail = analyst.studyUserChat.user.email;
+  const recipientEmail = studyUserChat.user.email;
   if (!recipientEmail) {
     logger.info("Podcast ready notification skipped: missing recipient email");
     return;
   }
 
   const locale: Locale =
-    analyst.locale && VALID_LOCALES.includes(analyst.locale as Locale)
-      ? (analyst.locale as Locale)
+    studyUserChat.context.defaultLocale &&
+    VALID_LOCALES.includes(studyUserChat.context.defaultLocale)
+      ? studyUserChat.context.defaultLocale
       : await getLocale();
 
-  const studyTitle = truncateForTitle(analyst.studyUserChat.title || analyst.topic || "", {
-    maxDisplayWidth: 100,
-    suffix: "...",
-  });
+  const studyTitle = truncateForTitle(
+    studyUserChat.title || studyUserChat.context.studyTopic || "",
+    {
+      maxDisplayWidth: 100,
+      suffix: "...",
+    },
+  );
 
   const podcastUrl = `${siteOrigin}/artifacts/podcast/${podcast.token}/share`;
-  const studyUrl = `${siteOrigin}/study/${analyst.studyUserChat.token}/share`;
+  const studyUrl = `${siteOrigin}/study/${studyUserChat.token}/share`;
 
   try {
     await sendPodcastReadyEmail({

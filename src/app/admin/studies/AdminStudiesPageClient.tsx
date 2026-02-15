@@ -1,5 +1,6 @@
 "use client";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
+import { AnalystKind } from "@/app/(study)/context/types";
 import { PaginationInfo } from "@/app/admin/types";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,6 @@ import {
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
-import { Analyst, AnalystKind, UserChatExtra } from "@/prisma/client";
 import {
   ChevronDown,
   ChevronUp,
@@ -37,11 +37,8 @@ import {
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { fetchAnalysts, fetchBriefChatMessages, generateChatTitleAction } from "./actions";
-
-type AnalystWithFeature = ExtractServerActionData<typeof fetchAnalysts>[number];
+import { FormEvent, useCallback, useRef, useState } from "react";
+import { fetchBriefChatMessages, fetchStudies, generateChatTitleAction } from "./actions";
 
 export const SearchParamsConfig = {
   page: createParamConfig.number(1),
@@ -69,8 +66,9 @@ export function AdminStudiesPageClient({
 }) {
   const { status } = useSession();
   const locale = useLocale();
-  const router = useRouter();
-  const [analysts, setAnalysts] = useState<AnalystWithFeature[]>([]);
+  const [studyUserChats, setStudyUserChats] = useState<
+    ExtractServerActionData<typeof fetchStudies>
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -93,24 +91,15 @@ export function AdminStudiesPageClient({
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const analystsResult = await fetchAnalysts(currentPage, searchQuery, 12, selectedKind);
-
-    if (!analystsResult.success) {
-      setError(analystsResult.message);
+    const result = await fetchStudies(currentPage, searchQuery, 12, selectedKind);
+    if (!result.success) {
+      setError(result.message);
     } else {
-      setAnalysts(analystsResult.data);
-      if (analystsResult.pagination) setPagination(analystsResult.pagination);
+      setStudyUserChats(result.data);
+      if (result.pagination) setPagination(result.pagination);
     }
     setIsLoading(false);
   }, [currentPage, searchQuery, selectedKind]);
-
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin?callbackUrl=/admin/studies");
-    } else if (status === "authenticated") {
-      fetchData();
-    }
-  }, [status, router, fetchData]);
 
   const handleSearch = useCallback(
     (e: FormEvent) => {
@@ -121,9 +110,8 @@ export function AdminStudiesPageClient({
   );
 
   const handleGenerateChatTitle = useCallback(
-    async (analyst: Analyst) => {
-      if (!analyst.studyUserChatId) return;
-      const result = await generateChatTitleAction(analyst.studyUserChatId);
+    async (studyUserChat: (typeof studyUserChats)[number]) => {
+      const result = await generateChatTitleAction(studyUserChat.id);
       if (!result.success) {
         setError(result.message);
       } else {
@@ -137,25 +125,25 @@ export function AdminStudiesPageClient({
     setParams({ kind: value as AnalystKind | "all", page: 1 });
   };
 
-  const toggleTopicExpansion = (analystId: number) => {
+  const toggleTopicExpansion = (studyUserChatId: number) => {
     setExpandedTopics((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(analystId)) {
-        newSet.delete(analystId);
+      if (newSet.has(studyUserChatId)) {
+        newSet.delete(studyUserChatId);
       } else {
-        newSet.add(analystId);
+        newSet.add(studyUserChatId);
       }
       return newSet;
     });
   };
 
-  const toggleSummaryExpansion = (analystId: number) => {
+  const toggleSummaryExpansion = (studyUserChatId: number) => {
     setExpandedSummaries((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(analystId)) {
-        newSet.delete(analystId);
+      if (newSet.has(studyUserChatId)) {
+        newSet.delete(studyUserChatId);
       } else {
-        newSet.add(analystId);
+        newSet.add(studyUserChatId);
       }
       return newSet;
     });
@@ -168,8 +156,8 @@ export function AdminStudiesPageClient({
     setParams({ search: "", kind: "all", page: 1 });
   };
 
-  const handleShowBrief = async (analyst: AnalystWithFeature) => {
-    const userChatContext = analyst.studyUserChat?.context;
+  const handleShowBrief = useCallback(async (studyUserChat: (typeof studyUserChats)[number]) => {
+    const userChatContext = studyUserChat.context;
     const briefUserChatToken = userChatContext?.briefUserChatToken;
 
     if (!briefUserChatToken) return;
@@ -184,7 +172,7 @@ export function AdminStudiesPageClient({
       setBriefMessages([]);
     }
     setLoadingBrief(false);
-  };
+  }, []);
 
   const renderBriefConversation = (messages: TMessageWithPlainTextTool[]) => {
     return (
@@ -274,7 +262,7 @@ export function AdminStudiesPageClient({
       {/* Studies Grid */}
       <div className="mb-4">
         <h2 className="mb-4 text-xl font-semibold">Studies</h2>
-        {analysts.length === 0 ? (
+        {studyUserChats.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-lg font-semibold text-gray-500">
               {hasActiveFilters ? "No studies found matching your filters" : "No studies found"}
@@ -282,33 +270,30 @@ export function AdminStudiesPageClient({
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {analysts.map((analyst) => (
-              <Card key={analyst.id}>
+            {studyUserChats.map((studyUserChat) => (
+              <Card key={studyUserChat.id}>
                 <CardHeader>
                   <CardTitle className="flex items-start justify-between gap-2 w-full overflow-hidden">
                     <div className="flex-1 min-w-0">
                       <div className="leading-normal line-clamp-2 font-semibold">
-                        {analyst.studyUserChat?.title || "Untitled Study"}
+                        {studyUserChat.title || "Untitled Study"}
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {(() => {
-                        const userChatContext = analyst.studyUserChat?.context;
-                        return userChatContext?.briefUserChatToken ? (
-                          <div className="relative m-1">
-                            <Button
-                              onClick={() => handleShowBrief(analyst)}
-                              className="p-0 has-[>svg]:p-0 size-8 hover:bg-blue-50 rounded-md bg-blue-100 border border-blue-300"
-                            >
-                              <FileText className="h-5 w-5 text-blue-700" />
-                            </Button>
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                          </div>
-                        ) : null;
-                      })()}
+                      {studyUserChat.context.briefUserChatToken ? (
+                        <div className="relative m-1">
+                          <Button
+                            onClick={() => handleShowBrief(studyUserChat)}
+                            className="p-0 has-[>svg]:p-0 size-8 hover:bg-blue-50 rounded-md bg-blue-100 border border-blue-300"
+                          >
+                            <FileText className="h-5 w-5 text-blue-700" />
+                          </Button>
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                        </div>
+                      ) : null}
                       <div className="flex flex-col items-center">
                         <button
-                          onClick={() => handleGenerateChatTitle(analyst)}
+                          onClick={() => handleGenerateChatTitle(studyUserChat)}
                           className="p-1 hover:bg-gray-100 rounded transition-colors"
                           title="re-generate chat title"
                         >
@@ -317,7 +302,7 @@ export function AdminStudiesPageClient({
                       </div>
                     </div>
                   </CardTitle>
-                  <CardDescription>{analyst.role}</CardDescription>
+                  <CardDescription></CardDescription>
                 </CardHeader>
                 <CardContent>
                   {/* Topic Section */}
@@ -325,10 +310,10 @@ export function AdminStudiesPageClient({
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-medium text-muted-foreground">Topic:</span>
                       <button
-                        onClick={() => toggleTopicExpansion(analyst.id)}
+                        onClick={() => toggleTopicExpansion(studyUserChat.id)}
                         className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground"
                       >
-                        {expandedTopics.has(analyst.id) ? (
+                        {expandedTopics.has(studyUserChat.id) ? (
                           <>
                             <ChevronUp className="h-3 w-3 mr-1" />
                             Collapse
@@ -343,10 +328,12 @@ export function AdminStudiesPageClient({
                     </div>
                     <p
                       className={`text-sm ${
-                        expandedTopics.has(analyst.id) ? "whitespace-pre-wrap" : "line-clamp-2"
+                        expandedTopics.has(studyUserChat.id)
+                          ? "whitespace-pre-wrap"
+                          : "line-clamp-2"
                       }`}
                     >
-                      {analyst.topic}
+                      {studyUserChat.context.studyTopic}
                     </p>
                   </div>
 
@@ -355,10 +342,10 @@ export function AdminStudiesPageClient({
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-medium text-muted-foreground">Summary:</span>
                       <button
-                        onClick={() => toggleSummaryExpansion(analyst.id)}
+                        onClick={() => toggleSummaryExpansion(studyUserChat.id)}
                         className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground"
                       >
-                        {expandedSummaries.has(analyst.id) ? (
+                        {expandedSummaries.has(studyUserChat.id) ? (
                           <>
                             <ChevronUp className="h-3 w-3 mr-1" />
                             Collapse
@@ -373,10 +360,12 @@ export function AdminStudiesPageClient({
                     </div>
                     <p
                       className={`text-sm ${
-                        expandedSummaries.has(analyst.id) ? "whitespace-pre-wrap" : "line-clamp-3"
+                        expandedSummaries.has(studyUserChat.id)
+                          ? "whitespace-pre-wrap"
+                          : "line-clamp-3"
                       }`}
                     >
-                      {analyst.studyLog || "No study log available"}
+                      {studyUserChat.context.studyLog || "No study log available"}
                     </p>
                   </div>
 
@@ -384,8 +373,7 @@ export function AdminStudiesPageClient({
                   <div className="mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
                     <div className="text-xs font-medium text-gray-700">User Feedback</div>
                     {(() => {
-                      const extra = analyst.studyUserChat?.extra as UserChatExtra;
-                      const feedback = extra?.feedback;
+                      const feedback = studyUserChat.extra.feedback;
                       if (feedback?.rating) {
                         return (
                           <div className="flex items-center gap-4">
@@ -411,18 +399,17 @@ export function AdminStudiesPageClient({
                   {/* Meta Information */}
                   <div className="space-y-1 text-sm text-muted-foreground">
                     <p>
-                      <span className="text-xs">User:</span> {analyst.user?.email || "N/A"}
+                      <span className="text-xs">User:</span> {studyUserChat.user.email || "N/A"}
                     </p>
                     <p>
-                      <span className="text-xs">Token:</span>{" "}
-                      {analyst.studyUserChat?.token || "N/A"}
+                      <span className="text-xs">Token:</span> {studyUserChat.token || "N/A"}
                     </p>
                     {(() => {
-                      const extra = analyst.studyUserChat?.extra as UserChatExtra;
+                      const extra = studyUserChat.extra;
                       return (
                         <p>
                           <span className="text-xs">Created:</span>{" "}
-                          {formatDate(analyst.createdAt, locale)}
+                          {formatDate(studyUserChat.createdAt, locale)}
                           {extra?.geo && (
                             <span>
                               (📍{extra.geo.city},{extra.geo.country})
@@ -437,29 +424,26 @@ export function AdminStudiesPageClient({
                   <div className="flex items-center">
                     <span
                       className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                        analyst.kind === "testing"
+                        studyUserChat.context.analystKind === "testing"
                           ? "bg-blue-100 text-blue-800"
-                          : analyst.kind === "planning"
+                          : studyUserChat.context.analystKind === "planning"
                             ? "bg-green-100 text-green-800"
-                            : analyst.kind === "insights"
+                            : studyUserChat.context.analystKind === "insights"
                               ? "bg-purple-100 text-purple-800"
-                              : analyst.kind === "creation"
+                              : studyUserChat.context.analystKind === "creation"
                                 ? "bg-orange-100 text-orange-800"
-                                : analyst.kind === "productRnD"
+                                : studyUserChat.context.analystKind === "productRnD"
                                   ? "bg-cyan-100 text-cyan-800"
-                                  : analyst.kind === "misc"
+                                  : studyUserChat.context.analystKind === "misc"
                                     ? "bg-gray-100 text-gray-800"
                                     : "bg-gray-100 text-gray-500"
                       }`}
                     >
-                      {analyst.kind || "N/A"}
+                      {studyUserChat.context.analystKind || "N/A"}
                     </span>
                   </div>
                   <Button variant="outline" asChild>
-                    <Link
-                      href={`/study/${analyst.studyUserChat?.token}/share?replay=1`}
-                      target="_blank"
-                    >
+                    <Link href={`/study/${studyUserChat.token}/share?replay=1`} target="_blank">
                       View Study
                     </Link>
                   </Button>

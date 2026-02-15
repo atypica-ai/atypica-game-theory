@@ -8,6 +8,7 @@ import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/produc
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
 import { AnalystKind } from "@/app/(study)/context/types";
 import { checkAdminAuth } from "@/app/admin/actions";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { PaymentRecord, TokensAccount, User, UserChat, UserChatExtra } from "@/prisma/client";
@@ -187,7 +188,6 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       where: { id: studyUserChatId },
       include: {
         user: true,
-        analyst: true,
       },
     });
 
@@ -195,12 +195,6 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       return {
         success: false,
         message: "Study not found",
-      };
-    }
-    if (!studyUserChat.analyst) {
-      return {
-        success: false,
-        message: `UserChat ${studyUserChat.id} does not have an analyst`,
       };
     }
 
@@ -221,11 +215,10 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
     });
 
     const locale: Locale =
-      studyUserChat.analyst.locale === "zh-CN"
-        ? "zh-CN"
-        : studyUserChat.analyst.locale === "en-US"
-          ? "en-US"
-          : await getLocale();
+      studyUserChat.context.defaultLocale &&
+      VALID_LOCALES.includes(studyUserChat.context.defaultLocale)
+        ? studyUserChat.context.defaultLocale
+        : await getLocale();
 
     // Start the study agent request in the background
     const userId = studyUserChat.userId;
@@ -235,8 +228,6 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const stream = createUIMessageStream({
       async execute({ writer: streamWriter }) {
-        if (!studyUserChat.analyst) throw new Error("Something went wrong");
-
         // Initialize statistics reporter
         const { statReport } = initStudyStatReporter({
           userId,
@@ -253,7 +244,6 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
           userId,
           teamId,
           studyUserChatId,
-          analyst: studyUserChat.analyst,
           userChatContext: studyUserChat.context,
           locale,
           logger,
@@ -262,10 +252,10 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
           studyAbortController,
         };
 
-        if (studyUserChat.analyst.kind === AnalystKind.productRnD) {
+        if (studyUserChat.context.analystKind === AnalystKind.productRnD) {
           const config = await createProductRnDAgentConfig({ ...agentContext });
           await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
-        } else if (studyUserChat.analyst.kind === AnalystKind.fastInsight) {
+        } else if (studyUserChat.context.analystKind === AnalystKind.fastInsight) {
           const config = await createFastInsightAgentConfig({ ...agentContext });
           await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
         } else {

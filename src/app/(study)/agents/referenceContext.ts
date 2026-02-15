@@ -24,16 +24,9 @@ export async function buildReferenceStudyContext({
       userId,
       // kind: "study", // 因为有 universal agent, 现在不过滤了
     },
-    include: {
-      analyst: {
-        select: {
-          studyLog: true,
-        },
-      },
-    },
   });
 
-  const validReferenceChats = referenceChats.filter((chat) => chat.analyst?.studyLog);
+  const validReferenceChats = referenceChats.filter((chat) => chat.context.studyLog);
 
   if (validReferenceChats.length === 0) {
     return null;
@@ -42,17 +35,21 @@ export async function buildReferenceStudyContext({
   const formatStudySection = (chat: (typeof validReferenceChats)[0], index: number) => {
     const num = index + 1;
     return locale === "zh-CN"
-      ? `<参考研究_${num}>
+      ? `
+<参考研究_${num}>
 <标题>${chat.title}</标题>
-<研究日志>${chat.analyst!.studyLog}</研究日志>
-</参考研究_${num}>`
-      : `<reference_study_${num}>
+<研究日志>${chat.context.studyLog}</研究日志>
+</参考研究_${num}>
+`
+      : `
+<reference_study_${num}>
 <title>${chat.title}</title>
-<study_log>${chat.analyst!.studyLog}</study_log>
-</reference_study_${num}>`;
+<study_log>${chat.context.studyLog}</study_log>
+</reference_study_${num}>
+`;
   };
 
-  const studySections = validReferenceChats.map(formatStudySection).join("\n\n");
+  const studySections = validReferenceChats.map(formatStudySection).join("\n");
 
   return locale === "zh-CN"
     ? `我之前已经完成了一些相关研究，现在想基于这些研究结果继续深入探索。请你先仔细阅读下面我提供的参考研究内容，然后在接下来的研究中充分利用这些已有的发现和洞察。

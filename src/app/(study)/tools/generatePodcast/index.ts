@@ -51,14 +51,11 @@ export const generatePodcastTool = ({
         select: {
           title: true,
           token: true,
-          analyst: {
-            select: { studyLog: true, topic: true, kind: true },
-          },
           context: true,
         },
       });
 
-      let studyLog = userChat.analyst?.studyLog ?? "";
+      let studyLog = userChat.context.studyLog;
 
       // 如果 studyLog 没有生成过，先生成，podcast 的内容主要来自 studyLog
       if (studyLog) {
@@ -79,11 +76,11 @@ export const generatePodcastTool = ({
 
       // Determine podcast kind based on analyst kind
       const podcastKind =
-        userChat.analyst?.kind === AnalystKind.fastInsight
+        userChat.context.analystKind === AnalystKind.fastInsight
           ? PodcastKind.fastInsight
           : PodcastKind.opinionOriented;
       const kindReason =
-        userChat.analyst?.kind === AnalystKind.fastInsight
+        userChat.context.analystKind === AnalystKind.fastInsight
           ? "Fast insight study - using fastInsight podcast type"
           : "Fixed to opinionOriented for study";
 

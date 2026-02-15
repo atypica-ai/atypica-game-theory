@@ -14,7 +14,7 @@ import { fetchUserStudies } from "./actions";
 
 type TStudy = ExtractServerActionData<typeof fetchUserStudies>[number];
 
-export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy }) {
+export function StudyCard({ study: studyUserChat }: { study: TStudy }) {
   const t = useTranslations("StudyListPage");
   const locale = useLocale();
 
@@ -31,9 +31,9 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
 
   const status = getStudyStatus();
   const hasStats =
-    studyUserChat.context.reportTokens?.length ||
-    studyUserChat.context.podcastTokens?.length ||
-    (analyst?.attachments && analyst.attachments.length > 0);
+    Boolean(studyUserChat.context.reportTokens?.length) ||
+    Boolean(studyUserChat.context.podcastTokens?.length) ||
+    Boolean(studyUserChat.context.attachments?.length);
 
   return (
     <Card className="flex flex-col h-full border border-zinc-200 dark:border-zinc-700 shadow-sm bg-linear-to-br from-white to-zinc-50/50 dark:from-zinc-800 dark:to-zinc-700/50">
@@ -76,7 +76,7 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
 
         {/* Description */}
         <p className="text-sm text-muted-foreground mb-4 line-clamp-3 leading-relaxed">
-          {analyst?.topic || t("noTopic")}
+          {studyUserChat.context.studyTopic || t("noTopic")}
         </p>
 
         {/* Stats section */}
@@ -102,10 +102,12 @@ export function StudyCard({ study: { studyUserChat, analyst } }: { study: TStudy
                 </div>
               </PodcastsListPanel>
             ) : null}
-            {analyst?.attachments && analyst.attachments.length > 0 ? (
+            {studyUserChat.context.attachments?.length ? (
               <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
                 <PaperclipIcon className="h-3.5 w-3.5" />
-                <span>{t("stats.attachments", { count: analyst.attachments.length })}</span>
+                <span>
+                  {t("stats.attachments", { count: studyUserChat.context.attachments.length })}
+                </span>
               </div>
             ) : null}
           </div>

@@ -12,16 +12,15 @@ import { UIMessage } from "ai";
 import { after } from "next/server";
 
 // Get all analysts
-export async function fetchAnalysts(
+export async function fetchStudies(
   page: number = 1,
   search?: string,
   pageSize: number = 12,
   kind?: AnalystKind | "all",
 ): Promise<
   ServerActionResult<
-    (Analyst & {
-      user: Pick<User, "email"> | null;
-      studyUserChat: Pick<UserChat, "token" | "title" | "extra" | "context"> | null;
+    (Pick<UserChat, "id" | "token" | "title" | "extra" | "context" | "createdAt"> & {
+      user: Pick<User, "email">;
     })[]
   >
 > {
@@ -30,71 +29,56 @@ export async function fetchAnalysts(
   const skip = (page - 1) * pageSize;
 
   // Build where clause
-  const where: {
-    topic: { not: string };
-    OR?: Array<{
-      topic?: { contains: string };
-      brief?: { contains: string };
-      user?: { email: { contains: string } };
-      studyUserChat?: { token: { contains: string } };
-    }>;
-    kind?: AnalystKind;
-  } = {
-    topic: { not: "" },
+  const where: UserChatWhereInput = {
+    kind: "study",
   };
 
   // Add search filter
   if (search) {
     where.OR = [
-      { topic: { contains: search } },
-      { brief: { contains: search } },
       {
-        user: {
-          email: { contains: search },
+        context: {
+          path: ["studyTopic"],
+          string_contains: search,
+          mode: "insensitive",
         },
       },
-      {
-        studyUserChat: {
-          token: { contains: search },
-        },
-      },
+      { title: { contains: search, mode: "insensitive" } },
+      { user: { email: search } },
+      { token: search },
     ];
   }
 
   // Add kind filter
   if (kind && kind !== "all") {
-    where.kind = kind;
+    where.context = {
+      path: ["analystKind"],
+      equals: kind,
+    };
   }
 
-  // Step 1: Get main analyst data without nested collections
-  const analysts = await prisma.analyst.findMany({
+  const studyUserChats = await prisma.userChat.findMany({
     where,
-    include: {
-      studyUserChat: {
-        select: {
-          token: true,
-          title: true,
-          extra: true,
-          context: true,
-        },
-      },
-      user: {
-        select: {
-          email: true,
-        },
-      },
+    select: {
+      id: true,
+      token: true,
+      title: true,
+      extra: true,
+      context: true,
+      createdAt: true,
+      user: { select: { email: true } },
     },
     orderBy: { createdAt: "desc" },
     skip,
     take: pageSize,
   });
 
-  const totalCount = await prisma.analyst.count({ where });
+  const totalCount = await prisma.userChat.count({ where });
 
   // Step 4: Combine data
   return {
     success: true,
-    data: analysts,
+    data: studyUserChats,
     pagination: {
       page,
       pageSize,

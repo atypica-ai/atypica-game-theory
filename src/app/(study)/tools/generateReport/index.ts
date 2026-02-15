@@ -67,19 +67,11 @@ export const generateReportTool = ({
         select: {
           title: true,
           token: true,
-          analyst: {
-            select: { studyLog: true, topic: true, kind: true },
-          },
           context: true,
         },
       });
 
-      /**
-       * @todo 需要从 messages 里面获取 kind
-       */
-      const analystKind = userChat.analyst?.kind ?? undefined;
-
-      let studyLog = userChat.analyst?.studyLog ?? "";
+      const analystKind = userChat.context.analystKind;
 
       // if (await prisma.analystReport.findUnique({ where: { token: reportToken } })) {
       //   return {
@@ -116,7 +108,7 @@ export const generateReportTool = ({
             instruction,
             extra: {
               title: userChat.title,
-              description: userChat?.analyst?.topic ?? "",
+              description: userChat.context.studyTopic,
               userChatToken: userChat.token,
               analystKind,
             } satisfies AnalystReportExtra,
@@ -133,7 +125,7 @@ export const generateReportTool = ({
             onePageHtml: "",
             extra: {
               title: userChat.title,
-              description: userChat?.analyst?.topic ?? "",
+              description: userChat.context.studyTopic,
               userChatToken: userChat.token,
               analystKind,
             } satisfies AnalystReportExtra,
@@ -151,6 +143,7 @@ export const generateReportTool = ({
         },
       });
 
+      let studyLog = userChat.context.studyLog;
       // 如果 studyLog 没有生成过，先生成，report 的内容主要来自 studyLog
       if (studyLog) {
         logger.info("generateReport: studyLog found in Analyst");
@@ -218,8 +211,8 @@ export const generateReportTool = ({
         }),
         // Deprecated: coverSvg generation is no longer used, replaced by coverImage
         // generateReportCoverSvg({
-        //   analyst,
         //   report,
+        //   studyLog,
         //   instruction,
         //   locale,
         //   abortSignal,

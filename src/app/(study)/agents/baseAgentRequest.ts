@@ -18,7 +18,6 @@ import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
 import { generateChatTitle, setUserChatError } from "@/lib/userChat/lib";
 import { safeAbort } from "@/lib/utils";
-import type { Analyst } from "@/prisma/client";
 import {
   ImagePart,
   JSONValue,
@@ -58,7 +57,6 @@ export interface BaseAgentContext {
   userId: number;
   teamId: number | null;
   studyUserChatId: number;
-  analyst: Analyst;
   userChatContext: UserChatContext;
   locale: Locale;
   logger: Logger;
@@ -145,7 +143,6 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     userId,
     studyUserChatId,
     userChatContext,
-    analyst,
     locale,
     logger,
     statReport,
@@ -210,14 +207,13 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // =============================================================================
 
   // Process attachments if analyst is provided (universal for all agents)
-  const parsedAttachments = analyst
-    ? await waitUntilAttachmentsProcessed({
-        analyst,
-        locale,
-        streamWriter,
-        streamingMessage,
-      })
-    : [];
+  const parsedAttachments = await waitUntilAttachmentsProcessed({
+    userId,
+    userChatContext,
+    locale,
+    streamWriter,
+    streamingMessage,
+  });
 
   // =============================================================================
   // Phase 4: Universal MCP and Team System Prompt

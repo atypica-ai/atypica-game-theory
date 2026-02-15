@@ -2,6 +2,7 @@ import "server-only";
 
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { UserChatContext } from "@/app/(study)/context/types";
+import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { categorizeFiles, FILE_UPLOAD_LIMITS } from "@/lib/fileUploadLimits";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
@@ -58,7 +59,7 @@ export async function createStudyUserChat({
   }
 
   // 根据用户输入决定模型的默认语言
-  const locale = await detectInputLanguage({
+  const defaultLocale = await detectInputLanguage({
     text: content,
     fallbackLocale: await getLocale(), // createStudyUserChat 都是在 api 或者 serveraction 里调用的，可以放心拿到 request headers
   });
@@ -86,21 +87,29 @@ export async function createStudyUserChat({
       // attachments, // attachments 只保存在 analyst 上，然后在 baseAgentRequest 中提前处理好了以后，插入 messages 中
       tx,
     });
-    await tx.analyst.create({
-      data: {
-        userId,
-        studyUserChatId: userChat.id,
-        // 现在不再是提前选择研究类型了，所以一开始都是 null
-        kind: null,
-        brief: content, // 用户的第一条消息作为 brief
-        locale,
-        role: "",
-        topic: "",
-        studySummary: "",
-        studyLog: "",
-        attachments: attachments,
+    await mergeUserChatContext({
+      id: userChat.id,
+      context: {
+        defaultLocale,
+        attachments,
       },
+      tx,
     });
+    // await tx.analyst.create({
+    //   data: {
+    //     userId,
+    //     studyUserChatId: userChat.id,
+    //     // 现在不再是提前选择研究类型了，所以一开始都是 null
+    //     kind: null,
+    //     brief: content, // 用户的第一条消息作为 brief
+    //     locale,
+    //     role: "",
+    //     topic: "",
+    //     studySummary: "",
+    //     studyLog: "",
+    //     attachments: attachments,
+    //   },
+    // });
     return userChat;
   });
 
@@ -130,43 +139,47 @@ export async function saveAnalystFromPlan({
     const userChat = await prisma.userChat.findUnique({
       where: {
         token: userChatToken,
-        kind: "study",
         userId,
       },
       select: {
         id: true,
-        analyst: {
-          select: { id: true },
-        },
       },
     });
 
-    if (!userChat || !userChat.analyst) {
+    if (!userChat) {
       return {
         success: false,
         code: "not_found",
-        message: "Study session or analyst not found",
+        message: "Study session not found",
       };
     }
 
     // 见 baseAgentRequest 的 onStepFinish 方法里的描述
     waitUntil(generateChatTitle(userChat.id));
 
-    // Update analyst with plan data
-    await prisma.analyst.update({
-      where: { id: userChat.analyst.id },
-      data: {
-        locale,
-        kind,
-        role,
-        topic,
+    // await prisma.analyst.update({
+    //   where: { id: userChat.analyst.id },
+    //   data: {
+    //     locale,
+    //     kind,
+    //     role,
+    //     topic,
+    //   },
+    // });
+    // TODO
+    // locale 没保存，要看是不是要保存
+    // role 没用了, 所以 tool input 里也不需要了?
+    await mergeUserChatContext({
+      id: userChat.id,
+      context: {
+        analystKind: kind,
+        studyTopic: topic,
       },
     });
 
     const logger = rootLogger.child({
       userChatToken,
       userId,
-      analystId: userChat.analyst.id,
     });
 
     logger.info({

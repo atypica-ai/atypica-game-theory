@@ -4,7 +4,6 @@ import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { planStudyPrologue, planStudySystem } from "@/app/(study)/prompt/planStudy";
-import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { streamText, tool, UserModelMessage } from "ai";
 import { planStudyInputSchema, planStudyOutputSchema, type PlanStudyResult } from "./types";
@@ -73,7 +72,7 @@ async function planStudy({
 }
 
 export const planStudyTool = ({
-  studyUserChatId,
+  // studyUserChatId,
   teamStudySystemPrompt,
   ...toolCallConfigArgs
 }: {
@@ -94,34 +93,6 @@ export const planStudyTool = ({
         question,
         teamStudySystemPrompt,
         ...toolCallConfigArgs,
-      });
-      const { analyst } = await prisma.userChat.findUniqueOrThrow({
-        where: {
-          id: studyUserChatId,
-          // kind: "study", // 因为有 universal agent, 现在不过滤了
-        },
-        select: {
-          analyst: {
-            select: {
-              id: true,
-              topic: true,
-              kind: true,
-            },
-          },
-        },
-      });
-      if (!analyst) {
-        throw new Error("Something went wrong, analyst does not exist on studyUserChat");
-      }
-      const analystId = analyst.id;
-      await prisma.analyst.update({
-        where: { id: analystId },
-        data: {
-          topic:
-            analyst.topic +
-            (toolCallConfigArgs.locale === "zh-CN" ? "\n\n研究计划：\n" : "\n\nStudy Plan: \n") +
-            result.plainText,
-        },
       });
       return result;
     },

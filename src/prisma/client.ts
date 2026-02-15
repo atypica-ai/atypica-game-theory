@@ -140,6 +140,7 @@ export type ImageGenerationExtra = Partial<{
   midjourney: { urls: string[] };
   // s3SignedUrl: string;
   // s3SignedUrlExpiresAt: number; // timestamp millis
+  error: string;
 }>;
 
 export type AttachmentFileExtra = Partial<{

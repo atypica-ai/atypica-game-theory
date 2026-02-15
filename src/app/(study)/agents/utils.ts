@@ -1,9 +1,10 @@
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { LLMModelName } from "@/ai/provider";
+import { UserChatContext } from "@/app/(study)/context/types";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { parseAttachmentText } from "@/lib/attachments/processing";
-import { Analyst, AttachmentFileExtra, ChatMessageAttachment } from "@/prisma/client";
+import { AttachmentFileExtra, ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import { BedrockProviderOptions } from "@ai-sdk/amazon-bedrock";
@@ -159,12 +160,14 @@ export async function shouldDecidePersonaTier({
 }
 
 export async function waitUntilAttachmentsProcessed({
-  analyst,
+  userId,
+  userChatContext,
   locale,
   streamWriter,
   streamingMessage,
 }: {
-  analyst: Analyst;
+  userId: number;
+  userChatContext: UserChatContext;
   locale: Locale;
   streamWriter?: UIMessageStreamWriter;
   streamingMessage: UIMessage;
@@ -172,7 +175,7 @@ export async function waitUntilAttachmentsProcessed({
   ({ type: "image"; mimeType: string; dataUrl: string } | { type: "text"; text: string })[]
 > {
   // Check attachments and process if needed
-  const analystAttachments = (analyst.attachments ?? []) as ChatMessageAttachment[];
+  const analystAttachments = (userChatContext.attachments ?? []) as ChatMessageAttachment[];
 
   if (!analystAttachments.length) {
     return [];
@@ -181,7 +184,7 @@ export async function waitUntilAttachmentsProcessed({
   // Find all attachment files by objectUrl
   const attachmentFiles = await prisma.attachmentFile.findMany({
     where: {
-      userId: analyst.userId,
+      userId: userId,
       objectUrl: { in: analystAttachments.map((a) => a.objectUrl) },
     },
   });
@@ -291,7 +294,7 @@ export async function waitUntilAttachmentsProcessed({
     (
       await prisma.attachmentFile.findMany({
         where: {
-          userId: analyst.userId,
+          userId: userId,
           objectUrl: { in: analystAttachments.map((a) => a.objectUrl) },
         },
       })

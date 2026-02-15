@@ -90,11 +90,10 @@ export async function _notifyStudyInterruption({
     select: {
       token: true,
       title: true,
+      context: true,
+      extra: true,
       user: {
         select: { email: true, id: true },
-      },
-      analyst: {
-        select: { topic: true, locale: true },
       },
     },
   });
@@ -110,9 +109,10 @@ export async function _notifyStudyInterruption({
     // TODO: team user 没有邮箱，需要取出 personalUser 的 邮箱，目前先跳过
     return;
   }
-  const locale =
-    studyUserChat.analyst?.locale && VALID_LOCALES.includes(studyUserChat.analyst.locale as Locale)
-      ? (studyUserChat.analyst.locale as Locale)
+  const locale: Locale =
+    studyUserChat.context.defaultLocale &&
+    VALID_LOCALES.includes(studyUserChat.context.defaultLocale)
+      ? studyUserChat.context.defaultLocale
       : await getLocale();
   await sendStudyInterruptionEmail({
     email: studyUserChat.user.email,

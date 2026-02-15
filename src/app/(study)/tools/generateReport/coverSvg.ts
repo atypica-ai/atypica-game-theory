@@ -2,22 +2,25 @@ import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { AgentToolConfigArgs } from "@/ai/tools/types";
-import { Analyst, AnalystReport } from "@/prisma/client";
+import { AnalystReport } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { stepCountIs, streamText, UserModelMessage } from "ai";
 import { reportCoverPrologue, reportCoverSystem } from "./prompt";
 
+/**
+ * @deprecated
+ */
 export async function generateReportCoverSvg({
-  analyst,
   report,
+  studyLog,
   instruction,
   locale,
   abortSignal,
   statReport,
   logger,
 }: {
-  analyst: Analyst;
   report: AnalystReport;
+  studyLog: string;
   instruction: string;
 } & AgentToolConfigArgs) {
   const response = streamText({
@@ -30,7 +33,7 @@ export async function generateReportCoverSvg({
         content: [
           {
             type: "text",
-            text: reportCoverPrologue({ locale, analyst, instruction }),
+            text: reportCoverPrologue({ locale, studyLog, instruction }),
           },
         ],
       },

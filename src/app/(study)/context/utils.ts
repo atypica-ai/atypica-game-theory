@@ -3,16 +3,20 @@ import "server-only";
 import { createPersonaPanel } from "@/app/(panel)/lib/persistence";
 import { PersonaPanel } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { ITXClientDenyList } from "@prisma/client/runtime/client";
 import { UserChatContext } from "./types";
 
 export async function mergeUserChatContext({
   id,
   context,
+  tx,
 }: {
   id: number;
   context: UserChatContext;
+  tx?: Omit<typeof prisma, ITXClientDenyList>;
 }) {
-  await prisma.$executeRaw`
+  if (!tx) tx = prisma;
+  await tx.$executeRaw`
     UPDATE "UserChat"
     SET "context" = COALESCE("context", '{}') || ${JSON.stringify({ ...context })}::jsonb,
         "updatedAt" = NOW()

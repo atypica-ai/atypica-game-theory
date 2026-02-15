@@ -1,9 +1,11 @@
-import { prisma } from "./prisma";
+import { prisma } from "@/prisma/prisma";
+import { ITXClientDenyList } from "@prisma/client/runtime/client";
 
 export async function mergeExtra({
   tableName,
   extra,
   id,
+  tx,
 }: {
   tableName:
     | "User"
@@ -26,7 +28,9 @@ export async function mergeExtra({
     | "AttachmentFile";
   extra: Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
   id: number;
+  tx?: Omit<typeof prisma, ITXClientDenyList>;
 }) {
+  if (!tx) tx = prisma;
   // $executeRaw 不支持 dynamic table name
   // await prisma.$executeRaw`
   //   UPDATE "User"
@@ -34,7 +38,7 @@ export async function mergeExtra({
   //       "updatedAt" = NOW()
   //   WHERE "id" = ${id}
   // `;
-  await prisma.$executeRawUnsafe(
+  await tx.$executeRawUnsafe(
     `UPDATE "${tableName}" SET "extra" = COALESCE("extra", '{}') || $2::jsonb, "updatedAt" = NOW() WHERE "id" = $1;`,
     id,
     JSON.stringify({ ...extra }),

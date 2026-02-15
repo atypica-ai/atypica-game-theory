@@ -46,7 +46,11 @@ export async function createUserChat<TKind extends UserChatKind>({
   }
   const extra = {
     ..._extra,
-    ...{ clientIp, userAgent, geo, locale: await getLocale() }, // 发起 chat 时候的客户端信息，不用于后续逻辑判断
+    // 发起 chat 时候的客户端信息，不用于后续逻辑判断
+    ...(clientIp ? { clientIp } : {}),
+    ...(userAgent ? { userAgent } : {}),
+    ...(geo ? { geo } : {}),
+    locale: await getLocale(),
   };
   const userChat = await tx.userChat.create({
     data: {
@@ -61,7 +65,7 @@ export async function createUserChat<TKind extends UserChatKind>({
   return {
     ...userChat,
     kind,
-    extra: userChat.extra as UserChatExtra,
+    extra: userChat.extra,
   };
 }
 
@@ -92,14 +96,13 @@ export async function setUserChatError(userChatId: number, error: string | null)
 }
 
 export async function generateChatTitle(userChatId: number): Promise<string> {
-  const { analyst, messages } = await prisma.userChat.findUniqueOrThrow({
+  const { messages, ...userChat } = await prisma.userChat.findUniqueOrThrow({
     where: { id: userChatId },
     select: {
       id: true,
       token: true,
-      analyst: {
-        select: { locale: true },
-      },
+      context: true,
+      extra: true,
       messages: {
         select: { role: true, parts: true },
         orderBy: { id: "asc" },
@@ -118,8 +121,8 @@ export async function generateChatTitle(userChatId: number): Promise<string> {
     .join("");
 
   const locale: Locale =
-    analyst?.locale && VALID_LOCALES.includes(analyst.locale as Locale)
-      ? (analyst.locale as Locale)
+    userChat.context.defaultLocale && VALID_LOCALES.includes(userChat.context.defaultLocale)
+      ? userChat.context.defaultLocale
       : "en-US";
   // 因为这个方法一般都在 waitUntil 里执行，waitUntil 里面不能访问 request headers，可能会导致 getLocale 失效
   // : await getLocale();

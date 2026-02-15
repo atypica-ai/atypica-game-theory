@@ -1,6 +1,6 @@
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { AnalystKind } from "@/app/(study)/context/types";
-import { Analyst, AnalystReport } from "@/prisma/client";
+import { AnalystReport } from "@/prisma/client";
 import { Locale } from "next-intl";
 import { reportHTMLSystemCreation } from "./creation";
 import { reportHTMLSystemFastInsight } from "./fastInsight";
@@ -197,47 +197,27 @@ Your response should contain only ready-to-use SVG code, starting with <svg and 
 
 export const reportCoverPrologue = ({
   locale,
-  analyst,
+  studyLog,
   instruction,
 }: {
   locale: Locale;
-  analyst: Pick<Analyst, "role" | "topic" | "studyLog">;
+  studyLog: string;
   instruction: string;
 }) =>
   locale === "zh-CN"
     ? `
-我的角色是<role>${analyst.role}</role>
-
-研究主题是：
-
-<topic>
-${analyst.topic}
-</topic>
-
-以下是调研专家的结论：
-
-<studyContent>
-${analyst.studyLog}
-</studyContent>
+<studyLog>
+${studyLog.slice(0, 3000)}
+</studyLog>
 
 ${instruction ? `额外指令（在遵循上述核心要求的基础上）：\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
 
 请直接输出完整SVG代码，从<svg开始到</svg>结束，不要包含任何解释、前言或markdown标记。
 `
     : `
-My role is <role>${analyst.role}</role>
-
-The study topic is:
-
-<topic>
-${analyst.topic}
-</topic>
-
-Here is the study expert's conclusion:
-
-<studyContent>
-${analyst.studyLog}
-</studyContent>
+<studyLog>
+${studyLog.slice(0, 3000)}
+</studyLog>
 
 ${instruction ? `Additional instructions (while following the core requirements above):\n\n<instruction>\n${instruction}\n</instruction>\n` : ""}
 

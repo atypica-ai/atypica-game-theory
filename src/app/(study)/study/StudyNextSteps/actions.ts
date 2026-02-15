@@ -36,12 +36,9 @@ export async function generateRecommendedQuestionsAction(
         token: studyUserChatToken,
         // kind: "study", // 因为有 universal agent, 现在不过滤了
       },
-      include: {
-        analyst: true,
-      },
     });
 
-    if (!userChat?.analyst?.studyLog) {
+    if (!userChat?.context?.studyLog) {
       return {
         success: true,
         data: {
@@ -52,12 +49,12 @@ export async function generateRecommendedQuestionsAction(
 
     const logger = rootLogger.child({ studyUserChatId: userChat.id, studyUserChatToken });
 
-    const studyLog = userChat.analyst.studyLog;
+    const studyLog = userChat.context.studyLog;
 
     // Determine locale
     const locale: Locale =
-      userChat.analyst.locale && VALID_LOCALES.includes(userChat.analyst.locale as Locale)
-        ? (userChat.analyst.locale as Locale)
+      userChat.context.defaultLocale && VALID_LOCALES.includes(userChat.context.defaultLocale)
+        ? userChat.context.defaultLocale
         : await getLocale();
 
     // Check if we already have cached questions in analyst.extra

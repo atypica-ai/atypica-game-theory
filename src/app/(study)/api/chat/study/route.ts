@@ -14,7 +14,6 @@ import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
-import { UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import {
@@ -26,6 +25,7 @@ import {
 } from "ai";
 import { getServerSession } from "next-auth/next";
 import { Locale } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -96,9 +96,6 @@ export async function POST(req: Request) {
       token: userChatToken,
       kind: "study",
     },
-    include: {
-      analyst: true,
-    },
   });
   if (!userChat) {
     return NextResponse.json({ error: "UserChat not found" }, { status: 404 });
@@ -112,11 +109,6 @@ export async function POST(req: Request) {
   const studyUserChatId = userChat.id;
 
   const logger = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
-  if (!userChat.analyst) {
-    const msg = `UserChat ${userChat.id} does not have an analyst`;
-    logger.error(msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
-  }
 
   // 首先要把新提交的消息保存
   // 如果是 user message，会新建一条，
@@ -132,13 +124,13 @@ export async function POST(req: Request) {
     },
   });
 
-  // 首先遵循用户的输入语言，然后，如果 analyst 语言已经定了，默认使用 analyst 的语言
+  // 首先遵循用户的输入语言，然后，如果 analyst 语言已经定了，默认使用 analyst 的语言，最后使用客户端语言
   const locale: Locale = await detectInputLanguage({
     text: [newMessage.lastPart].map((part) => (part.type === "text" ? part.text : "")).join(""),
     fallbackLocale:
-      userChat.analyst.locale && VALID_LOCALES.includes(userChat.analyst.locale as Locale)
-        ? (userChat.analyst.locale as Locale)
-        : undefined,
+      userChat.context.defaultLocale && VALID_LOCALES.includes(userChat.context.defaultLocale)
+        ? userChat.context.defaultLocale
+        : await getLocale(),
   });
 
   const reqSignal = req.signal;
@@ -151,8 +143,7 @@ export async function POST(req: Request) {
     locale,
     userChat: {
       ...userChat,
-      extra: userChat.extra as UserChatExtra,
-      analyst: userChat.analyst,
+      extra: userChat.extra,
     },
     userId,
     teamId,
@@ -165,8 +156,6 @@ export async function POST(req: Request) {
   }
 
   const executeAgent = async ({ streamWriter }: { streamWriter: UIMessageStreamWriter }) => {
-    if (!userChat.analyst) throw new Error("Something went wrong");
-
     const studyUserChatId = userChat.id;
 
     // Initialize statistics reporter
@@ -185,7 +174,6 @@ export async function POST(req: Request) {
       userId,
       teamId,
       studyUserChatId,
-      analyst: userChat.analyst,
       userChatContext: userChat.context,
       locale,
       logger,
@@ -195,14 +183,14 @@ export async function POST(req: Request) {
     };
 
     // Check if this is first-time planning (analyst.kind not set)
-    if (!userChat.analyst.kind) {
+    if (!userChat.context.analystKind) {
       // NEW: Plan Mode - Intent Layer for research planning
       const config = await createPlanModeAgentConfig(agentContext);
       await executeBaseAgentRequest(agentContext, config, streamWriter);
-    } else if (userChat.analyst.kind === AnalystKind.productRnD) {
+    } else if (userChat.context.analystKind === AnalystKind.productRnD) {
       const config = await createProductRnDAgentConfig(agentContext);
       await executeBaseAgentRequest(agentContext, config, streamWriter);
-    } else if (userChat.analyst.kind === AnalystKind.fastInsight) {
+    } else if (userChat.context.analystKind === AnalystKind.fastInsight) {
       const config = await createFastInsightAgentConfig(agentContext);
       await executeBaseAgentRequest(agentContext, config, streamWriter);
     } else {
