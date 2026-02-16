@@ -1,5 +1,7 @@
 "use server";
 
+import { UserChatContext } from "@/app/(study)/context/types";
+import { createStudyUserChat } from "@/app/(study)/study/lib";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import type { Persona, PersonaExtra } from "@/prisma/client";
@@ -102,7 +104,9 @@ export interface PersonaWithAttributes {
 
 export async function fetchPersonaPanelById(
   panelId: number,
-): Promise<ServerActionResult<PersonaPanelWithDetails & { personasWithAttributes: PersonaWithAttributes[] }>> {
+): Promise<
+  ServerActionResult<PersonaPanelWithDetails & { personasWithAttributes: PersonaWithAttributes[] }>
+> {
   return withAuth(async (user) => {
     const panel = await prisma.personaPanel.findFirst({
       where: {
@@ -148,7 +152,9 @@ export async function fetchPersonaPanelById(
     const personaMap = new Map(personasWithAttributes.map((p) => [p.id, p]));
 
     // Transform data
-    const panelWithDetails: PersonaPanelWithDetails & { personasWithAttributes: PersonaWithAttributes[] } = {
+    const panelWithDetails: PersonaPanelWithDetails & {
+      personasWithAttributes: PersonaWithAttributes[];
+    } = {
       id: panel.id,
       title: panel.title,
       instruction: panel.instruction,
@@ -221,6 +227,86 @@ export async function deletePersonaPanel(
     return {
       success: true,
       data: { id: panelId },
+    };
+  });
+}
+
+/**
+ * Fetch all research projects (UserChats) associated with a PersonaPanel
+ */
+export interface ResearchProject {
+  token: string;
+  title: string;
+  kind: string;
+  context: UserChatContext;
+  backgroundToken: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function fetchResearchProjectsByPanelId(
+  panelId: number,
+): Promise<ServerActionResult<ResearchProject[]>> {
+  return withAuth(async (user) => {
+    const userChats = await prisma.userChat.findMany({
+      where: {
+        userId: user.id,
+        context: {
+          path: ["personaPanelId"],
+          equals: panelId,
+        },
+      },
+      select: {
+        token: true,
+        title: true,
+        kind: true,
+        context: true,
+        backgroundToken: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return {
+      success: true,
+      data: userChats,
+    };
+  });
+}
+
+/**
+ * Create a new study UserChat from a Panel (with personaPanelId pre-set in context)
+ */
+export async function createStudyFromPanel(
+  panelId: number,
+  content: string,
+): Promise<ServerActionResult<{ token: string }>> {
+  return withAuth(async (user) => {
+    const panel = await prisma.personaPanel.findFirst({
+      where: { id: panelId, userId: user.id },
+    });
+
+    if (!panel) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "PersonaPanel not found",
+      };
+    }
+
+    const userChat = await createStudyUserChat({
+      userId: user.id,
+      role: "user",
+      content,
+      context: {
+        personaPanelId: panelId,
+      },
+    });
+
+    return {
+      success: true,
+      data: { token: userChat.token },
     };
   });
 }

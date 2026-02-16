@@ -26,6 +26,21 @@
       "panelInfo": "面板信息",
       "usageCount": "使用情况",
       "viewDetails": "查看详情",
+      "researchProjects": "研究项目",
+      "noProjects": "暂无研究项目",
+      "noProjectsDescription": "创建新的研究项目，开始使用此面板进行分析",
+      "newProject": "新建项目",
+      "newProjectDescription": "描述您的研究问题或目标",
+      "newProjectPlaceholder": "例如：Z世代消费者的关键购买因素是什么？",
+      "creating": "创建中...",
+      "create": "开始研究",
+      "projectKind": {
+        "study": "研究",
+        "scout": "观察",
+        "interview": "访谈",
+        "default": "研究"
+      },
+      "running": "进行中",
       "attributes": {
         "description": "人物描述",
         "heading": "人物属性",

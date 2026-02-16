@@ -26,6 +26,21 @@
       "panelInfo": "Panel Information",
       "usageCount": "Usage",
       "viewDetails": "View Details",
+      "researchProjects": "Research Projects",
+      "noProjects": "No research projects yet",
+      "noProjectsDescription": "Start a new research project to begin analyzing with this panel",
+      "newProject": "New Project",
+      "newProjectDescription": "Describe your research question or objective",
+      "newProjectPlaceholder": "e.g., What are the key purchasing factors for Gen Z consumers?",
+      "creating": "Creating...",
+      "create": "Start Research",
+      "projectKind": {
+        "study": "Study",
+        "scout": "Scout",
+        "interview": "Interview",
+        "default": "Research"
+      },
+      "running": "Running",
       "attributes": {
         "description": "Persona Description",
         "heading": "Persona Attributes",

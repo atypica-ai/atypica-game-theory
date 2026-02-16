@@ -1,6 +1,6 @@
 "use client";
-
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,14 +8,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import { PersonaExtra } from "@/prisma/client";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink, Plus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { Streamdown } from "streamdown";
-import { fetchPersonaPanelById, PersonaWithAttributes } from "../actions";
+import {
+  createStudyFromPanel,
+  fetchPersonaPanelById,
+  PersonaWithAttributes,
+  ResearchProject,
+} from "../actions";
 
 type PanelData = ExtractServerActionData<typeof fetchPersonaPanelById>;
 
@@ -57,10 +65,41 @@ function extractSummaryFromPrompt(prompt: string) {
   return match ? match[1] : prompt;
 }
 
-export function PanelDetailClient({ panel }: { panel: PanelData }) {
+export function PanelDetailClient({
+  panel,
+  projects,
+}: {
+  panel: PanelData;
+  projects: ResearchProject[];
+}) {
   const t = useTranslations("PersonaPanel");
   const locale = useLocale();
+  const router = useRouter();
   const [selectedPersona, setSelectedPersona] = useState<PersonaWithAttributes | null>(null);
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [newProjectContent, setNewProjectContent] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  const handleCreateProject = () => {
+    if (!newProjectContent.trim()) return;
+    startTransition(async () => {
+      const result = await createStudyFromPanel(panel.id, newProjectContent.trim());
+      if (result.success) {
+        setShowNewProject(false);
+        setNewProjectContent("");
+        router.push(`/study/${result.data.token}`);
+      }
+    });
+  };
+
+  const getKindLabel = (kind: string) => {
+    const key = `DetailPage.projectKind.${kind}` as const;
+    try {
+      return t(key as "DetailPage.projectKind.default");
+    } catch {
+      return t("DetailPage.projectKind.default");
+    }
+  };
 
   return (
     <>
@@ -87,6 +126,61 @@ export function PanelDetailClient({ panel }: { panel: PanelData }) {
                 {t("interviews", { count: panel.usageCount.interviews })}
               </span>
             </div>
+          </div>
+
+          {/* Research Projects */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium tracking-tight text-muted-foreground uppercase">
+                {t("DetailPage.researchProjects")}
+              </h2>
+              <button
+                onClick={() => setShowNewProject(true)}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Plus className="size-3.5" />
+                {t("DetailPage.newProject")}
+              </button>
+            </div>
+
+            {projects.length === 0 ? (
+              <div className="border border-dashed border-border rounded-lg py-8 px-4 text-center">
+                <p className="text-sm text-muted-foreground">{t("DetailPage.noProjects")}</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  {t("DetailPage.noProjectsDescription")}
+                </p>
+              </div>
+            ) : (
+              <div className="border border-border rounded-lg divide-y divide-border">
+                {projects.map((project) => (
+                  <Link
+                    key={project.token}
+                    href={`/study/${project.token}`}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm truncate">
+                          {project.title || project.token.slice(0, 8)}
+                        </span>
+                        {project.backgroundToken && (
+                          <span className="relative flex size-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full size-2 bg-green-500" />
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                        <span>{getKindLabel(project.kind)}</span>
+                        <span>·</span>
+                        <span>{formatDate(project.createdAt, locale)}</span>
+                      </div>
+                    </div>
+                    <ExternalLink className="size-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors shrink-0" />
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Personas */}
@@ -229,6 +323,38 @@ export function PanelDetailClient({ panel }: { panel: PanelData }) {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* New Project Dialog */}
+      <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg tracking-tight">
+              {t("DetailPage.newProject")}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              {t("DetailPage.newProjectDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <Textarea
+              value={newProjectContent}
+              onChange={(e) => setNewProjectContent(e.target.value)}
+              placeholder={t("DetailPage.newProjectPlaceholder")}
+              className="min-h-[120px] text-sm resize-none"
+              autoFocus
+            />
+            <div className="flex justify-end">
+              <Button
+                onClick={handleCreateProject}
+                disabled={!newProjectContent.trim() || isPending}
+                size="sm"
+              >
+                {isPending ? t("DetailPage.creating") : t("DetailPage.create")}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>

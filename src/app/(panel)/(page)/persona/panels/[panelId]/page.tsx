@@ -4,11 +4,11 @@ import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
-import { getServerSession, Session } from "next-auth";
+import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { fetchPersonaPanelById } from "../actions";
+import { fetchPersonaPanelById, fetchResearchProjectsByPanelId } from "../actions";
 import { PanelDetailClient } from "./PanelDetailClient";
 
 // generateMetadata needs database access
@@ -34,22 +34,25 @@ export async function generateMetadata({
   });
 }
 
-async function PanelDetailPage({
-  panelId,
-  // sessionUser,
-}: {
-  panelId: number;
-  sessionUser: NonNullable<Session["user"]>;
-}) {
-  const result = await fetchPersonaPanelById(panelId);
-  if (!result.success) {
-    if (result.code === "forbidden") {
+async function PanelDetailPage({ panelId }: { panelId: number }) {
+  const [panelResult, projectsResult] = await Promise.all([
+    fetchPersonaPanelById(panelId),
+    fetchResearchProjectsByPanelId(panelId),
+  ]);
+
+  if (!panelResult.success) {
+    if (panelResult.code === "forbidden") {
       return <Forbidden />;
     }
     return <NotFound />;
   }
 
-  return <PanelDetailClient panel={result.data} />;
+  return (
+    <PanelDetailClient
+      panel={panelResult.data}
+      projects={projectsResult.success ? projectsResult.data : []}
+    />
+  );
 }
 
 export default async function PanelDetailPageWithLoading({
@@ -68,7 +71,7 @@ export default async function PanelDetailPageWithLoading({
 
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <PanelDetailPage panelId={parseInt(panelId, 10)} sessionUser={session.user} />
+      <PanelDetailPage panelId={parseInt(panelId, 10)} />
     </Suspense>
   );
 }
