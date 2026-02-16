@@ -134,6 +134,156 @@
     },
     "paidValueAddedService": "付费增值服务"
   },
+  "HomePageV4": {
+    "Hero": {
+      "badge": "Atypica 2.0",
+      "titleLine1": "The Agent That",
+      "titleLine2": "Understands People",
+      "subtitle": "大多数 Agent 替你做事。我们的 Agent 理解人为什么选择、犹豫、决定。",
+      "cta": "免费试用",
+      "secondaryCta": "价格"
+    },
+    "AgentComparison": {
+      "label": "另一种 Agent",
+      "title": "执行者与理解者",
+      "worker": {
+        "title": "Worker Agent",
+        "description": "写代码、做设计、跑流程。很好用——但它说不出你的客户为什么选了竞品。",
+        "task1": "代码生成与自动化",
+        "task2": "设计与内容生产",
+        "task3": "工作流编排"
+      },
+      "understanding": {
+        "title": "Understanding Agent",
+        "badge": "2.0",
+        "description": "建模真实的人如何思考和决策。动机、权衡、犹豫——驱动市场的主观因素。",
+        "task1": "消费者决策建模",
+        "task2": "主观世界建模",
+        "task3": "行为动因分析"
+      },
+      "tagline": "理解人，比替人做事更难——也更值钱。"
+    },
+    "DualRoles": {
+      "label": "工作原理",
+      "title": "两个角色，一种理解",
+      "subtitle": "每次研究同时调用两种互补的 Agent 角色",
+      "simulator": {
+        "title": "代入者",
+        "titleEn": "Simulator",
+        "description": "成为一个具体的消费者。不是统计均值——而是一个有真实权衡、犹豫和决策逻辑的人。",
+        "capabilityLabel": "能力",
+        "capability": "基于 30 万+ 人设模型，模拟个体认知模式、情感反应和决策框架。与真人行为一致性达 85%。"
+      },
+      "researcher": {
+        "title": "倾听者",
+        "titleEn": "Researcher",
+        "description": "提出对的问题、追问更深、引出人们难以自述的东西。既是访谈者，也是分析者。",
+        "methodsLabel": "研究形态",
+        "method1": "1v1 深度访谈",
+        "method2": "一对多访谈",
+        "method3": "Focus Group",
+        "method4": "Panel Discussion",
+        "method5": "行为追踪"
+      }
+    },
+    "Methods": {
+      "label": "研究模态",
+      "title": "五种理解方式",
+      "subtitle": "不只是问卷。真正揭示人为什么做出决策的研究。",
+      "interview": {
+        "title": "1v1 深度访谈",
+        "description": "与 AI 人设深度对话，挖掘隐藏的动机。每次 5–10 人，各有独立的决策模式。"
+      },
+      "focusGroup": {
+        "title": "Focus Group",
+        "description": "3–8 个人设实时辩论。观察观点碰撞、共识形成和社交动力学。"
+      },
+      "panel": {
+        "title": "Panel Simulation",
+        "description": "跨消费群体的大规模讨论。几分钟获得多维市场视角，而非几个月。"
+      },
+      "persona": {
+        "title": "人设向量化",
+        "description": "向量嵌入的人设模型，精确匹配目标受众、相似度搜索和群体分析。"
+      },
+      "simulation": {
+        "title": "行为模拟",
+        "description": "模拟真实决策旅程——从初次印象到最终购买——找到用户流失的节点。"
+      }
+    },
+    "UseCases": {
+      "label": "使用场景",
+      "title": "为需要理解人的团队而生",
+      "tabs": {
+        "enterprise": "企业",
+        "creator": "创作者"
+      },
+      "enterprise": {
+        "productTest": {
+          "title": "产品验证",
+          "description": "动手开发前验证市场反应。知道什么能打动人、什么不行。"
+        },
+        "pricing": {
+          "title": "定价策略",
+          "description": "理解不同人群的价格敏感度和支付意愿。"
+        },
+        "brand": {
+          "title": "品牌定位",
+          "description": "看到目标受众真实的品牌认知，而非你以为的。"
+        },
+        "content": {
+          "title": "内容测试",
+          "description": "发布前预测哪些信息能打动人、哪些会被忽略。"
+        },
+        "journey": {
+          "title": "旅程推演",
+          "description": "模拟完整决策路径，精确定位转化断裂点。"
+        }
+      },
+      "creator": {
+        "persona": {
+          "title": "受众测试",
+          "description": "上线前用模拟受众验证你的定位。"
+        },
+        "resonance": {
+          "title": "内容共鸣",
+          "description": "发布前知道你的内容能否引发情感共鸣。"
+        },
+        "community": {
+          "title": "社群模拟",
+          "description": "预览社群对新想法和策略的反应。"
+        }
+      }
+    },
+    "Stats": {
+      "title": "主观世界模型",
+      "subtitle": "不只追踪人做了什么，而是建模人为什么这样想。",
+      "personas": {
+        "label": "AI 人设"
+      },
+      "interviews": {
+        "label": "访谈完成"
+      },
+      "speed": {
+        "label": "每次研究"
+      },
+      "modelTitle": "建模人真正在想什么",
+      "modelDescription": "传统调研衡量行为。Atypica 建模内心世界——价值观、恐惧、情绪和影响每个决策的社会压力。",
+      "dimensions": {
+        "values": "价值观",
+        "risk": "风险容忍",
+        "emotion": "情绪触发",
+        "decision": "决策逻辑",
+        "social": "社会压力"
+      }
+    },
+    "CTA": {
+      "title": "理解人为什么做决策",
+      "subtitle": "几分钟启动第一次研究。无需配置、无需设计问卷、无需等待。",
+      "cta": "免费试用",
+      "secondaryCta": "价格"
+    }
+  },
   "HomePageV3": {
     "HeroSection": {
       "title": "商业研究多智能体",

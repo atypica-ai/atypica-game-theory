@@ -134,6 +134,156 @@
     },
     "paidValueAddedService": "Paid Add-on Service"
   },
+  "HomePageV4": {
+    "Hero": {
+      "badge": "Introducing 2.0",
+      "titleLine1": "The Agent That",
+      "titleLine2": "Understands People",
+      "subtitle": "Most agents do tasks. Ours understands why people choose, hesitate, and decide.",
+      "cta": "Start Free",
+      "secondaryCta": "Pricing"
+    },
+    "AgentComparison": {
+      "label": "A Different Kind of Agent",
+      "title": "Workers Execute. Ours Understands.",
+      "worker": {
+        "title": "Worker Agent",
+        "description": "Writes code, generates content, runs workflows. Useful — but it can't tell you why your customers chose a competitor.",
+        "task1": "Code generation & automation",
+        "task2": "Design & content production",
+        "task3": "Workflow orchestration"
+      },
+      "understanding": {
+        "title": "Understanding Agent",
+        "badge": "2.0",
+        "description": "Models how real people think and decide. Motivations, trade-offs, hesitation — the subjective factors that actually drive markets.",
+        "task1": "Consumer decision modeling",
+        "task2": "Subjective world modeling",
+        "task3": "Behavioral driver analysis"
+      },
+      "tagline": "Understanding people is harder than doing things for them — and far more valuable."
+    },
+    "DualRoles": {
+      "label": "How It Works",
+      "title": "Two Roles. One Understanding.",
+      "subtitle": "Every research session uses two complementary agent roles",
+      "simulator": {
+        "title": "The Simulator",
+        "titleEn": "Simulator",
+        "description": "Becomes a specific consumer. Not a statistical average — a real person with real trade-offs, hesitations, and decision logic.",
+        "capabilityLabel": "What It Does",
+        "capability": "Draws from 300K+ persona models to simulate individual cognitive patterns, emotional responses, and decision frameworks. 85% behavioral consistency with real humans."
+      },
+      "researcher": {
+        "title": "The Researcher",
+        "titleEn": "Researcher",
+        "description": "Asks the right questions, probes deeper, draws out what people can't easily articulate. Part interviewer, part analyst.",
+        "methodsLabel": "Research Modes",
+        "method1": "1-on-1 Deep Interview",
+        "method2": "One-to-Many Interview",
+        "method3": "Focus Group",
+        "method4": "Panel Discussion",
+        "method5": "Behavioral Tracking"
+      }
+    },
+    "Methods": {
+      "label": "Research Modalities",
+      "title": "Five Ways to Understand",
+      "subtitle": "Go beyond surveys. Run the kind of research that actually reveals why people decide.",
+      "interview": {
+        "title": "1-on-1 Deep Interview",
+        "description": "In-depth conversations with AI personas to surface hidden motivations. 5–10 personas per session, each with distinct decision patterns."
+      },
+      "focusGroup": {
+        "title": "Focus Group",
+        "description": "3–8 personas debate in real time. Watch opinions clash, consensus form, and social dynamics emerge."
+      },
+      "panel": {
+        "title": "Panel Simulation",
+        "description": "Large-scale discussions across consumer segments. Get multi-dimensional market perspective in minutes, not months."
+      },
+      "persona": {
+        "title": "Persona Vectorization",
+        "description": "Vector-embedded persona models for precise audience matching, similarity search, and cohort analysis."
+      },
+      "simulation": {
+        "title": "Behavioral Simulation",
+        "description": "Simulate real-world decision journeys — from first impression to final purchase — and find where people drop off."
+      }
+    },
+    "UseCases": {
+      "label": "Use Cases",
+      "title": "Built for Teams That Need to Understand People",
+      "tabs": {
+        "enterprise": "Enterprise",
+        "creator": "Creators"
+      },
+      "enterprise": {
+        "productTest": {
+          "title": "Product Validation",
+          "description": "Test market reactions before you build. Know what resonates and what falls flat."
+        },
+        "pricing": {
+          "title": "Pricing Strategy",
+          "description": "Understand willingness to pay and price sensitivity across segments."
+        },
+        "brand": {
+          "title": "Brand Positioning",
+          "description": "See how your target audience actually perceives your brand versus competitors."
+        },
+        "content": {
+          "title": "Content Testing",
+          "description": "Predict which messages land and which ones miss before you publish."
+        },
+        "journey": {
+          "title": "Journey Mapping",
+          "description": "Simulate the full decision path and pinpoint where conversion breaks down."
+        }
+      },
+      "creator": {
+        "persona": {
+          "title": "Audience Testing",
+          "description": "Validate your positioning with simulated audiences before going live."
+        },
+        "resonance": {
+          "title": "Content Resonance",
+          "description": "Find out if your content connects emotionally — before you hit publish."
+        },
+        "community": {
+          "title": "Community Simulation",
+          "description": "Preview how your community will react to new ideas and strategies."
+        }
+      }
+    },
+    "Stats": {
+      "title": "The Subjective World Model",
+      "subtitle": "We don't just track what people do. We model why they think the way they do.",
+      "personas": {
+        "label": "AI Personas"
+      },
+      "interviews": {
+        "label": "Interviews Run"
+      },
+      "speed": {
+        "label": "Per Study"
+      },
+      "modelTitle": "Modeling What People Actually Think",
+      "modelDescription": "Traditional research measures behavior. Atypica models the inner world — the values, fears, emotions, and social pressures that shape every decision.",
+      "dimensions": {
+        "values": "Values",
+        "risk": "Risk Tolerance",
+        "emotion": "Emotional Triggers",
+        "decision": "Decision Logic",
+        "social": "Social Pressure"
+      }
+    },
+    "CTA": {
+      "title": "Understand why people decide",
+      "subtitle": "Run your first study in minutes. No setup, no survey design, no waiting.",
+      "cta": "Start Free",
+      "secondaryCta": "Pricing"
+    }
+  },
   "HomePageV3": {
     "HeroSection": {
       "title": "The AI Research Agent",
