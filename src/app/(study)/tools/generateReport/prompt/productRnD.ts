@@ -25,7 +25,6 @@ export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
 
 1. **创新产品方案**（最高信息层级，第一眼就让读者理解这个创新案例的重要性并且眼前一亮，让读者想要继续阅读下去）
    - 方案名称作为标题
-   - 有表现力的产品图片
    - 可信支撑点(Reason to Believe)：一句话概括产品创新的核心价值主张
      - 如果是一个toC产品：以消费者的第一人称"我"的口吻开始。从 [消费者需求洞察] 出发，描述"我"的需求，包括："我"的使用场景（如常年坐在办公室，或我的孩子们上学），"我"对某一类产品的喜爱，并指出市面上同类产品的普遍缺陷或"我"的不满（例如：太甜、太腻、热量高、口感不好等），制造冲突感。最后，用一句话总结这种不满带来的负面感受，即"痛点"（例如：很有负罪感、吃完不舒服、找不到满意的）。
    - 关键发现
@@ -88,20 +87,22 @@ export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
 
 【产品创新专属设计要求】
 **视觉定位**：商务演示的冲击力 + 咨询公司的专业感
+**标志性视觉**：全出血 Hero Section — 每个关键章节像 PPT 翻页，大面积品牌色氛围背景 + 聚焦式数据展示，像 Pitch Deck 的节奏感。
 
 这是向高层汇报的演示文档，需要在几秒内抓住注意力，同时保持专业可信。
 
 **设计手法**：
-- **PPT 演示格式**（16:9 宽屏），单页或多页，信息紧凑但视觉清晰
-- **大胆的视觉对比** - 标题巨大、数据突出、关键信息用品牌色标注
-- **高密度信息** - 信息量大但组织清晰，用表格、图表、视觉分组提高可读性
-- **品牌色战略性使用** - 用于关键数据、重要结论、视觉引导（非文字元素）
+- **Pitch Deck 节奏** — 每个核心章节以全宽 hero 区开场（品牌色 5% 背景 + text-5xl 标题 + 核心数据），像翻页演示
+- **数据聚焦** — 关键数字用 text-6xl font-serif + 品牌色，配合一句话解读(text-xl)，形成"数据+洞察"组合
+- **高密度信息区** — 用 CSS Grid 多列布局、表格、视觉分组组织大量信息，紧凑但不混乱
+- **品牌色战略性使用** — 关键数据边框、章节 hero 背景、重要结论标注（非文字元素）
 
 **执行方式**：
-- 首屏必须有视觉冲击：大标题 + 关键数据 + 核心价值主张
-- 表格和数据可视化要醒目，用品牌色标注关键发现
-- 单色文字保持专业，品牌色创造视觉焦点
-- 移动端响应式：并行布局改为垂直堆叠
+- 首屏：全宽品牌色 5% 背景，text-5xl 标题 + text-6xl 核心数据 + text-xl 价值主张
+- 数据展示：关键数字 text-5xl font-serif 品牌色 + border-l-4，配 text-base 解读
+- 对比表格：清晰的 thead/tbody 结构，品牌色 bg 标注关键行
+- 章节切换：每个大章节用全宽品牌色 5% 背景区块作为视觉分界
+- 16:9 宽屏格式，移动端响应式：并行布局改为垂直堆叠
 
 【报告特点】
 1. 问题导向，直击痛点
@@ -111,10 +112,7 @@ export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
 5. 风险预判，体现专业度
 6. 语言精炼，决策友好
 
-【产品创新专属图片生成】
-- **图片限制：最多1张，作为创新内容的概念图**
-- 专门场景：创新产品概念、包装设计、品牌视觉概念等
-- 突出产品创新特色和市场定位
+【图片】默认不生成图片。如果研究内容涉及产品概念、包装设计等需要具象化呈现的内容，可选择生成最多1张概念配图。
 
 ${sharedTechnicalSpecs({ locale })}
 `
@@ -138,7 +136,6 @@ Each section's content should be extracted only from <Related Information> (such
 
 1. **Innovation Product Solution** (Highest information hierarchy, immediately making readers understand the importance of this innovation case and catching their attention, making readers want to continue reading)
    - Solution name as title
-   - Expressive product images
    - Reason to Believe: One sentence summarizing the core value proposition of product innovation
      - If it's a B2C product: Start with the consumer's first-person "I" perspective. Based on [consumer needs insights], describe "my" needs, including: "my" usage scenarios (such as sitting in the office year-round, or my children going to school), "my" preference for certain types of products, and point out common defects in similar products on the market or "my" dissatisfaction (e.g., too sweet, too greasy, high calories, poor taste, etc.), creating conflict. Finally, summarize in one sentence the negative feelings this dissatisfaction brings, i.e., the "pain point" (e.g., feeling very guilty, uncomfortable after eating, unable to find satisfactory options).
    - Key Findings
@@ -195,12 +192,23 @@ Each section's content should be extracted only from <Related Information> (such
 - The length of each section's content needs to be balanced according to layout requirements
 
 【Product Innovation Specific Design Requirements】
-- Use business PPT presentation format (16:9 widescreen landscape layout), compact and efficient information presentation, can be single or multi-page structure
-- Adopt black-white-gray professional color scheme, reflecting consulting-level seriousness and authority
-- Establish clear information hierarchy: distinguish content importance through font weight, size, and serif/sans-serif font combinations
-- Carefully arrange layout structure: higher information density, reduce unnecessary whitespace, use precise grouping and alignment to highlight key content
-- Emphasize table displays for data comparison analysis, highlight key numbers and important findings through bold text, borders, and other emphasis methods
-- Prohibit use of multiple colors, colored card blocks, or decorative borders, maintain simple and restrained professional aesthetics
+**Visual Positioning**: Pitch deck impact + consulting-firm professionalism
+**Signature Visual**: Full-bleed Hero Sections — each key chapter opens like a PPT slide turn, with large brand color atmospheric background + focused data display, creating Pitch Deck rhythm.
+
+This is an executive presentation document that must capture attention within seconds while maintaining professional credibility.
+
+**Design Approach**:
+- **Pitch Deck rhythm** — Each core chapter opens with full-width hero zone (brand color 5% background + text-5xl title + key data), like flipping through a presentation
+- **Data focus** — Key numbers in text-6xl font-serif + brand color, paired with one-line interpretation (text-xl), forming "data + insight" combinations
+- **High-density information zones** — Use CSS Grid multi-column layouts, tables, visual grouping to organize large volumes of information, compact but not chaotic
+- **Strategic brand color usage** — Key data borders, chapter hero backgrounds, important conclusion markers (non-text elements)
+
+**Execution**:
+- Hero: full-width brand color 5% background, text-5xl title + text-6xl key data + text-xl value proposition
+- Data display: key numbers text-5xl font-serif brand color + border-l-4, with text-base interpretation
+- Comparison tables: clean thead/tbody structure, brand color bg marking key rows
+- Chapter transitions: each major chapter uses full-width brand color 5% background block as visual divider
+- 16:9 widescreen format, mobile responsive: parallel layouts convert to vertical stacking
 
 【Report Characteristics】
 1. Problem-oriented, directly addressing pain points
@@ -210,10 +218,7 @@ Each section's content should be extracted only from <Related Information> (such
 5. Risk prediction demonstrating professionalism
 6. Concise language, decision-friendly
 
-【Product Innovation Specific Image Generation】
-- **Image Limit: Maximum 1 image as conceptual diagram for innovative content**
-- Specialized Scenarios: Innovative product concepts, packaging design, brand visual concepts, etc.
-- Highlight product innovation features and market positioning
+**[Images]** Do not generate images by default. If the research involves product concepts, packaging design, or other content requiring concrete visualization, optionally generate up to 1 conceptual illustration.
 
 ${sharedTechnicalSpecs({ locale })}
 `;

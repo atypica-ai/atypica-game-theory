@@ -3,75 +3,88 @@ import { Locale } from "next-intl";
 export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `
-【核心设计哲学：用少创造视觉冲击】
-目标：创造吸引眼球、美观、有视觉震撼力的报告。
+【核心设计哲学：排版即设计】
+设计的力量来自字体，不是颜色。通过字号大小、加粗、斜体、衬线/无衬线的对比来建立所有层级和重点。颜色要少而精。
 
-少即是多 - 通过有限的颜色、精准的排版、强烈的对比，创造高级感和视觉冲击力。
+**第一原则：颜色极度克制**
+- 文字颜色只有两种：黑色(#1a1a1a)和灰色(#6b7280)，绝不使用彩色文字
+- 最多选择一个品牌色，用于少量非文字装饰：细边框(border-left)、时间线节点、图标填充、偶尔的小面积背景点缀
+- 品牌色绝不用于：文字颜色、大段文字的背景
+- 背景主要用白色(#ffffff)和极浅灰(#f9fafb/#f3f4f6)，品牌色背景只在关键位置偶尔出现且透明度要低(5%-8%)
+- 整个报告的视觉是"以黑白灰为主体，品牌色作为克制的点睛"
 
-**颜色策略**（创造对比与聚焦）：
-- **文字颜色**：全部单色（黑或深灰），创造统一的阅读基线
-- **品牌色**：选择一个强有力的品牌色，用于关键元素（边框、图标、背景装饰）
-  - 品牌色的作用：吸引注意力、建立视觉焦点、创造品牌印象
-  - 使用位置：关键数据、重要节点、视觉引导
-- **背景氛围**：用抽象图形背景（天空、自然、渐变）营造视觉吸引力
-  - 颜色明亮、饱和度低，不干扰阅读
-  - 创造空间感和呼吸感
-- **避免**：彩色文字（降低可读性）、多色混杂（降低品牌感）、粗边框（显得笨重）
+**第二原则：字体建立全部层级**
+字体方案（必须严格执行）：
+- 标题/大数据：font-family: Georgia, 'Noto Serif SC', 'Source Han Serif SC', serif — 衬线体传达权威和印刷质感
+- 正文/说明：font-family: system-ui, -apple-system, 'PingFang SC', sans-serif — 无衬线体保证可读性
+- 数据/引用来源：font-family: 'SF Mono', 'JetBrains Mono', monospace — 等宽体传达精确感
+- 禁止：Inter、Roboto、Arial 等泛用字体
 
-**排版艺术**（创造视觉节奏与张力）：
-- **字号对比**：大胆的尺寸落差创造视觉冲击（标题 vs 正文）
-- **字重变化**：Regular/Medium/Bold 创造层级和重点
-- **字体混搭**：无衬线（现代）+ 衬线（优雅）创造视觉趣味
-- **留白节奏**：紧凑与宽松交替，创造呼吸感和阅读节奏
-- **图形语言**：用单色 SVG 几何图形（圆、方、三角、线条）替代 emoji，保持现代感
-- **细节精致**：细边框（1px）+ 小圆角（4-8px）体现精致感
+层级完全通过字体属性区分（不靠颜色）：
+- 核心冲击：text-5xl/text-6xl + serif + font-bold — 首屏大标题、震撼性数据
+- 章节标题：text-3xl + serif + font-semibold — 清晰分界
+- 小节标题：text-xl + sans-serif + font-bold — 内容导航
+- 正文：text-base + sans-serif + font-normal — 舒适阅读
+- 辅助：text-sm + sans-serif + text-gray-500 — 来源标注、脚注
+- 强调：font-bold 或 italic，不用颜色来强调
+- 禁止使用 text-lg、text-2xl 等中间值（Pull Quote 可用 text-xl italic serif）
 
-**视觉吸引力**（创造第一印象）：
-- **抽象插图**：扁平、几何、有设计感的插图吸引眼球
-- **背景设计**：用渐变、光影、抽象形状创造氛围和深度
-- **空间层次**：通过透明度、阴影、边框创造空间感
-- **视觉焦点**：用品牌色、尺寸、留白引导视线
+**第三原则：用图形语言替代颜色装饰**
+- 用单色(黑/深灰) SVG 几何图形（圆、方、三角、线条）替代 emoji
+- 分隔线：细线 border-t border-gray-200（1px），不用粗线
+- 边框：细边框 border(1px)，小圆角 rounded(4px) 或 rounded-md(6px)
+- 绝不使用 rounded-xl/rounded-2xl（太圆显得廉价）
+- 绝不使用 shadow-lg/shadow-xl（悬浮感太重），最多 shadow-sm
+- 引用标记：border-left 2px 品牌色 + italic，这是品牌色为数不多的出现位置
 
-**开篇冲击力**（第一屏决定一切）：
-- 用叙事张力抓住注意力：悬念、冲突、意外发现
-- 首屏必须视觉震撼：大标题、关键数据、吸引人的配图
-- 直接切入最有价值的洞察，不要铺垫
+**第四原则：留白是最重要的设计元素**
+- 页面容器：max-w-5xl mx-auto
+- 章节之间：py-16（64px）大留白，让读者的眼睛休息
+- 段落之间：适度间距，不要拥挤也不要过散
+- 首屏：大标题(text-5xl serif) + 大留白 + 一句话副标题，不要堆砌
+- 视觉节奏：密集信息区 → 大留白 → 冲击性洞察(大字号) → 支撑细节 → 大留白...
+- 标题 tracking-tight，正文 leading-relaxed(1.75)
 
-**Tailwind CSS 精准控制**：
-- 用 Tailwind 实现精确的间距、对齐、响应式
-- 通过 utility classes 控制排版节奏和视觉层次
-- 保持设计的一致性和可预测性
+**第五原则：如果需要插图和背景**
+- 背景：用抽象图形（天空、自然、渐变色等），颜色明亮，饱和度低，不干扰阅读
+- 插图：用扁平、几何、抽象的插画，不要写实照片
+- 插图颜色也要克制，以黑白灰为主，可以有少量品牌色点缀
 
-【视觉内容增强】
-- 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
+**❌ 必须避免的模式**：
+- 彩色背景色块（每个 section 不同颜色 = 幼儿园墙）
+- 品牌色文字（文字只能是黑色或灰色）
+- 品牌色大面积高饱和度背景（品牌色背景只能低透明度、小面积、偶尔出现）
+- 标题和正文字号差距太小（必须至少 2 倍差距）
+- emoji 当图标（🔵🟢🔴❌✅）
+- 圆角卡片 + 大阴影堆叠
+- 蓝紫渐变 + 白色文字
+- 所有信息等宽等距没有主次
+
+**✅ 追求的质感**：
+- 打开一本精心排版的书 — 留白、字体层级、克制的用色就是全部设计语言
+- McKinsey/Bain 咨询报告 — 专业感来自排版克制而非颜色花哨
+- Monocle/Kinfolk 杂志 — 大胆留白 + 精致的字体细节
+
+**最低视觉标准**（生成报告时自查）：
+1. 主标题是否用了 serif 字体？是否 >= 3rem（text-5xl）？
+2. 标题和正文的字号差距是否 >= 2 倍？
+3. 文字是否只有黑(#1a1a1a)和灰(#6b7280)两种颜色？
+4. 品牌色是否仅用于细边框、节点等非文字小元素？
+5. 章节之间是否有足够留白（>= py-16）？
+6. 是否避免了所有彩色背景色块？
+7. 用户引用是否用了 italic + 比正文大的字号 + border-left？
+
+【图片生成策略】
+- **默认不生成图片**。报告的设计力量来自排版和文字，不依赖配图。
+- 仅在以下极少数场景中可选择生成配图：产品概念可视化、包装设计展示、品牌视觉概念等需要具象化呈现的创意内容
 - 严格禁止：绘制人物、流程图、架构图、复杂的技术图表等
 - **严格禁止**：绝对禁止使用图片生成API生成任何图表、表格、数据可视化、统计图、流程图等需要基于真实数据的内容。图片生成API无法输入可信数据源，生成的图表会包含虚假数据，具有误导性。
-- 图片应该与研究发现紧密相关，用于具象化展示设计概念或产品方向
-- 每张图片都应有明确的说明文字，解释其与研究内容的关联性
-- 专注于简洁的设计元素展示，避免复杂图形
-- 图片数量控制适度，避免过多配图影响阅读
 
-【图片生成】
+如确需生成图片：
 语法：\`<img src="/api/imagegen/[英文提示词]?ratio=[比例]" alt="[描述]" class="[样式]" />\`
-
-图片样式要求：
-- 必须限制最大宽度为100%，使用 Tailwind CSS 类 max-w-full 或直接添加 style="max-width: 100%" 内联样式
-- 确保图片在不同设备上的响应式显示
-
-图片策略：
-- 多元素组合：单张图片可展示产品系列、设计变体、配色组合、多角度视图
-- 文字处理原则：如果研究内容需要展示品牌名称、产品标识等文字信息，应在提示词中明确描述；否则专注纯视觉元素：外观、色彩、材质、形状、纹理
-- 每张图片需明确说明与研究内容的关联性
-
-英文提示词创作要求（以专业text-to-image艺术家视角）：
-- 使用专业的视觉艺术术语和描述方式
-- 构建富有层次和细节的画面描述
-- 产品相关：包含品牌、类别、关键特征（如"Apple iPhone sleek black metal frame with Apple logo, minimalist design, premium materials"）
-- 包装设计：多角度视觉呈现（如"product packaging design, front view and side angle, detailed close-up with brand identity, modern typography"）
-- 品牌视觉：体现风格调性（如"modern minimalist aesthetic, blue and white color palette, tech-inspired design language, clean typography"）
-- 纯视觉设计：明确说明"no text, pure visual design focus"
-- 艺术指导词汇：使用lighting（光影）、composition（构图）、texture（质感）、color harmony（色彩和谐）等专业术语
-- 比例：square/landscape/portrait
+- 必须限制最大宽度为100%，使用 max-w-full 或 style="max-width: 100%"
+- 图片数量最多1张，不要让图片主导页面
+- 英文提示词使用专业视觉艺术术语，比例：square/landscape/portrait
 
 【技术实现】
 - 使用 Tailwind CSS 构建响应式布局
@@ -85,75 +98,88 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 你的回复应该只包含可直接使用的HTML代码，从<!DOCTYPE html>开始。
 `
     : `
-【Core Design Philosophy: Create Visual Impact with Less】
-Goal: Create eye-catching, beautiful, visually striking reports.
+【Core Design Philosophy: Typography IS Design】
+Design power comes from fonts, not colors. Establish all hierarchy and emphasis through font size, weight, italic, serif/sans-serif contrast. Use color sparingly and precisely.
 
-Less is more - through limited colors, precise typography, and strong contrast, create sophistication and visual impact.
+**Principle 1: Extreme Color Restraint**
+- Text colors only two kinds: black (#1a1a1a) and gray (#6b7280). Never use colored text.
+- Choose at most one brand color, used only for sparse non-text decoration: thin borders (border-left), timeline nodes, icon fills, occasional small-area background accents
+- Brand color NEVER used for: text color, backgrounds behind large blocks of text
+- Backgrounds primarily white (#ffffff) and very light gray (#f9fafb/#f3f4f6). Brand color backgrounds only appear occasionally at key positions with low opacity (5%-8%)
+- The overall visual should be "restrained palette with brand color as a precise accent"
 
-**Color Strategy** (Create Contrast & Focus):
-- **Text color**: All monochrome (black or dark gray), creating unified reading baseline
-- **Brand color**: Choose one powerful brand color for key elements (borders, icons, background accents)
-  - Purpose: attract attention, establish visual focus, create brand impression
-  - Usage: key data, important nodes, visual guidance
-- **Background atmosphere**: Use abstract graphic backgrounds (sky, nature, gradients) to create visual appeal
-  - Bright colors, low saturation, don't interfere with reading
-  - Create spatial sense and breathing room
-- **Avoid**: Colored text (reduces readability), mixed colors (reduces brand coherence), thick borders (looks heavy)
+**Principle 2: Font Establishes All Hierarchy**
+Font scheme (must follow strictly):
+- Headlines/Key data: font-family: Georgia, 'Noto Serif SC', 'Source Han Serif SC', serif — serif conveys authority and print quality
+- Body/Descriptions: font-family: system-ui, -apple-system, 'PingFang SC', sans-serif — sans-serif ensures readability
+- Data/Citations: font-family: 'SF Mono', 'JetBrains Mono', monospace — monospace conveys precision
+- FORBIDDEN: Inter, Roboto, Arial or other generic fonts
 
-**Typography Art** (Create Visual Rhythm & Tension):
-- **Size contrast**: Bold size differences create visual impact (headings vs body)
-- **Weight variation**: Regular/Medium/Bold create hierarchy and emphasis
-- **Typeface mixing**: Sans-serif (modern) + Serif (elegant) create visual interest
-- **Whitespace rhythm**: Alternate between compact and spacious, create breathing and reading rhythm
-- **Graphic language**: Use monochrome SVG geometric shapes (circles, squares, triangles, lines) instead of emoji, maintain modern feel
-- **Refined details**: Thin borders (1px) + small radius (4-8px) convey refinement
+Hierarchy established entirely through font properties (not color):
+- Core impact: text-5xl/text-6xl + serif + font-bold — hero headlines, striking data
+- Section titles: text-3xl + serif + font-semibold — clear division
+- Subsection titles: text-xl + sans-serif + font-bold — content navigation
+- Body: text-base + sans-serif + font-normal — comfortable reading
+- Auxiliary: text-sm + sans-serif + text-gray-500 — source citations, footnotes
+- Emphasis: font-bold or italic, not color
+- FORBIDDEN: text-lg, text-2xl and other in-between sizes (Pull Quotes may use text-xl italic serif)
 
-**Visual Appeal** (Create First Impression):
-- **Abstract illustrations**: Flat, geometric, design-forward illustrations attract eyes
-- **Background design**: Use gradients, lighting, abstract shapes to create atmosphere and depth
-- **Spatial layers**: Create spatial sense through opacity, shadows, borders
-- **Visual focus**: Guide sight lines with brand color, size, whitespace
+**Principle 3: Graphic Language Replaces Color Decoration**
+- Use monochrome (black/dark gray) SVG geometric shapes (circles, squares, triangles, lines) instead of emoji
+- Dividers: thin line border-t border-gray-200 (1px), no thick lines
+- Borders: thin border (1px), small border-radius rounded (4px) or rounded-md (6px)
+- NEVER use rounded-xl/rounded-2xl (too round, looks cheap)
+- NEVER use shadow-lg/shadow-xl (too much floating effect), shadow-sm at most
+- Quote marks: border-left 2px brand color + italic — one of the few places brand color appears
 
-**Opening Impact** (First Screen Decides Everything):
-- Use narrative tension to grab attention: suspense, conflict, unexpected discoveries
-- First screen must be visually striking: large headlines, key data, compelling visuals
-- Lead directly with most valuable insights, no setup
+**Principle 4: Whitespace is the Most Important Design Element**
+- Page container: max-w-5xl mx-auto
+- Between sections: py-16 (64px) generous whitespace, let readers' eyes rest
+- Between paragraphs: moderate spacing, not cramped or too loose
+- Hero: large title (text-5xl serif) + generous whitespace + one-line subtitle, don't pile up elements
+- Visual rhythm: dense information zone → large whitespace → striking insight (large type) → supporting details → large whitespace...
+- Titles tracking-tight, body leading-relaxed (1.75)
 
-**Tailwind CSS Precision Control**:
-- Use Tailwind for precise spacing, alignment, responsiveness
-- Control typography rhythm and visual hierarchy through utility classes
-- Maintain design consistency and predictability
+**Principle 5: Illustrations and Backgrounds (If Needed)**
+- Backgrounds: use abstract shapes (sky, nature, gradients), bright colors, low saturation, don't interfere with reading
+- Illustrations: use flat, geometric, abstract illustrations, no realistic photos
+- Illustration colors should also be restrained, primarily neutral tones with minimal brand color accents
 
-【Visual Content Enhancement】
-- Generate illustrations only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.
+**❌ Patterns to AVOID**:
+- Colored background blocks (different color per section = kindergarten wall)
+- Brand color text (text can only be black or gray)
+- Brand color large-area high-saturation backgrounds (brand color backgrounds must be low opacity, small area, occasional)
+- Title and body font sizes too close (must be at least 2x gap)
+- Emoji as icons (🔵🟢🔴❌✅)
+- Rounded cards + large shadow stacking
+- Blue-purple gradient + white text
+- All information equal width/spacing with no priority
+
+**✅ Quality Benchmarks**:
+- A carefully typeset book — whitespace, font hierarchy, and restrained color IS the entire design language
+- McKinsey/Bain consulting reports — professionalism from typographic restraint, not flashy colors
+- Monocle/Kinfolk magazine — bold whitespace + refined font details
+
+**Minimum Visual Standards** (self-check when generating reports):
+1. Does the hero title use serif font? Is it >= 3rem (text-5xl)?
+2. Is the font size gap between title and body >= 2x?
+3. Is text limited to only black (#1a1a1a) and gray (#6b7280)?
+4. Is brand color used only for thin borders, nodes, and other small non-text elements?
+5. Is there sufficient whitespace between sections (>= py-16)?
+6. Are all colored background blocks avoided?
+7. Do user quotes use italic + larger-than-body font size + border-left?
+
+【Image Generation Strategy】
+- **Do not generate images by default.** The report's design power comes from typography and text, not illustrations.
+- Only in rare scenarios may you optionally generate an image: product concept visualization, packaging design display, brand visual concepts — creative content that requires concrete visual representation
 - Strictly prohibit: drawing people, flowcharts, architecture diagrams, complex technical charts, etc.
-- **STRICTLY PROHIBITED**: Absolutely forbidden to use image generation APIs to create any charts, tables, data visualizations, statistical graphs, flowcharts, or any content requiring real data sources. Image generation APIs cannot input credible data sources, and generated charts will contain false data and be misleading.
-- Images should be closely related to research findings, used to visualize design concepts or product directions
-- Each image should have clear explanatory text explaining its relevance to research content
-- Focus on simple design element presentation, avoid complex graphics
-- Control image quantity appropriately, avoid too many images affecting readability
+- **STRICTLY PROHIBITED**: Absolutely forbidden to use image generation APIs to create any charts, tables, data visualizations, statistical graphs, flowcharts, or any content requiring real data sources.
 
-【Image Generation】
+If an image is truly needed:
 Syntax: \`<img src="/api/imagegen/[English prompt]?ratio=[ratio]" alt="[description]" class="[styles]" />\`
-
-Image Styling Requirements:
-- Must limit maximum width to 100% using Tailwind CSS class max-w-full or directly add inline style="max-width: 100%"
-- Ensure responsive display across different devices
-
-Image Strategy:
-- Multi-element combination: Single image can show product series, design variants, color combinations, multi-angle views
-- Text handling principle: If research content requires showing brand names, product identifiers, or other text information, specify clearly in prompt; otherwise focus on pure visual elements: appearance, colors, materials, shapes, textures
-- Each image needs clear explanation of its relevance to research content
-
-English Prompt Creation Requirements (Professional Text-to-Image Artist Perspective):
-- Use professional visual art terminology and descriptive approaches
-- Build layered and detailed scene descriptions
-- Product-related: Include brand, category, key features (e.g., "Apple iPhone sleek black metal frame with Apple logo, minimalist design, premium materials, studio lighting")
-- Packaging design: Multi-angle visual presentation (e.g., "product packaging design, front view and side angle, detailed close-up with brand identity, modern typography, clean composition")
-- Brand visuals: Convey style and tone (e.g., "modern minimalist aesthetic, blue and white color palette, tech-inspired design language, clean typography, balanced composition")
-- Pure visual design: Specify "no text, pure visual design focus, emphasis on form and color"
-- Artistic direction vocabulary: Use professional terms like lighting, composition, texture, color harmony, visual hierarchy, aesthetic balance
-- Ratios: square/landscape/portrait
+- Must limit maximum width to 100% using max-w-full or style="max-width: 100%"
+- Maximum 1 image, do not let images dominate the page
+- Use professional visual art terminology in English prompts, ratios: square/landscape/portrait
 
 【Technical Implementation】
 - Use Tailwind CSS for responsive layouts

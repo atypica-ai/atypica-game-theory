@@ -38,42 +38,28 @@ export const reportHTMLSystemFastInsight = ({ locale }: { locale: Locale }) =>
    - 进一步探索的话题
 
 【快速洞察报告专属设计要求】
+**视觉定位**：高信息密度 + 快速可扫描
+**标志性视觉**：Dashboard 美学 — 多列网格布局、指标卡片、紧凑但有节奏，像 Bloomberg Terminal 或高端数据仪表盘。
 
-**核心原则：高信息密度 + 快速可读**
+快速洞察不是牺牲美感，而是用紧凑的布局和清晰的视觉组织，让读者在最短时间内获取最多信息。
 
-快速洞察不是牺牲美感，而是用紧凑的布局和清晰的视觉组织，让读者快速抓住要点。
+**设计手法**：
+- **指标卡片网格** — 核心数据用 grid grid-cols-3 的指标卡片展示，每个卡片包含：数字(text-3xl font-serif 品牌色)、标签(text-sm text-gray-500)、趋势箭头
+- **紧凑列表** — 洞察要点用编号列表，每条 2-3 句话，标题加粗，正文紧凑
+- **信息分层** — 执行摘要(最顶部、最大字号) → 核心洞察(卡片+列表) → 背景趋势(紧凑段落) → 来源(text-sm)
+- **视觉分组** — 用细分隔线(border-t border-gray-200)和小间距(py-4)区分信息块，不用大留白
 
-- **紧凑但清晰**：最大化信息展示，但保持视觉呼吸感
-  * 使用多列布局有效利用空间，但保持清晰分组
-  * 适度的行间距和段落间距（紧凑不等于拥挤）
-  * 通过品牌色和尺寸变化建立清晰的信息优先级
-
-- **高效空间利用**：
-  * 使用卡片、标签、徽章等组件快速区分信息类型
-  * 数据可视化简洁明了（条形图、折线图优先）
-  * 表格数据清晰对齐，便于对比
-
-- **快速扫描优化**：
-  * 清晰的视觉层级（标题、子标题、正文）
-  * 使用图标、数字、标签辅助信息分类
-  * 重点内容加粗或高亮（适度使用）
-  * 段落简短，避免长文本墙
-
-- **色彩使用**：
-  * 遵循统一规范：文字全部单色，最多一个品牌色用于非文字元素
-  * 品牌色可用于：关键数据标注、状态指示、图表元素
-  * 主要通过字重、边框、图形区分信息类型
-  * 避免彩色文字和大面积色块
-
-- **字体与排版**：
-  * 使用清晰易读的无衬线字体
-  * 字号适中，确保快速阅读
-  * 标题与正文对比明显
-  * 使用适当的字重区分重要性
+**执行方式**：
+- 指标卡片：grid grid-cols-2 md:grid-cols-3 gap-4，数字 text-3xl，标签 text-sm
+- 洞察列表：每条洞察标题 text-base font-bold + 正文 text-sm，间距 py-3
+- 来源标注：text-xs text-gray-400，紧跟在相关内容之后
+- 段落简短：每段不超过 3 句话，避免文本墙
+- 品牌色用于：关键数字、状态指示、趋势标记（非文字元素）
+- section 间距 py-6（比其他报告更紧凑），不用 py-12/py-16
 
 **禁止项**：
 - 不要过度装饰，避免分散注意力
-- 不要使用过大的标题或图片占用空间
+- 不要使用过大的标题或图片占用空间（首屏标题最大 text-3xl）
 - 不要有大段落的文字描述，优先要点式
 - 不要隐藏或弱化数据来源
 
@@ -84,11 +70,7 @@ export const reportHTMLSystemFastInsight = ({ locale }: { locale: Locale }) =>
 3. **可追溯性**：保留关键信息来源和引用
 4. **可操作性**：提供清晰的下一步建议或关注点
 
-【快速洞察专属图片生成】
-- **图片限制：最多 1 张，作为主题配图**
-- 用途：快速传达主题或核心概念
-- 位置：通常放在报告顶部作为视觉引导
-- 风格：简洁、概念化、不喧宾夺主
+【图片】默认不生成图片。快速洞察报告追求信息密度，不需要配图。
 
 【重要提醒】
 - 这是为"快速了解"而设计的报告，不是深度分析报告
@@ -133,40 +115,28 @@ Based on the research topic, research process, and deep research results provide
    - Topics for further exploration
 
 **[Fast Insight Report Exclusive Design Requirements]**
+**Visual Positioning**: High information density + quick scannability
+**Signature Visual**: Dashboard aesthetic — multi-column grid layout, metric cards, compact but rhythmic, like Bloomberg Terminal or premium data dashboards.
 
-**Core Principle: Information Density > Visual Aesthetics**
+Fast insight doesn't sacrifice aesthetics — it uses compact layout and clear visual organization to deliver maximum information in minimum time.
 
-- **Compact Layout**: Maximize information display, reduce white space
-  * Use multi-column layouts for efficient space utilization
-  * Reasonable line spacing and paragraph spacing (not excessive)
-  * Clear information priority
+**Design Approach**:
+- **Metric card grid** — Core data in grid grid-cols-3 metric cards, each containing: number (text-3xl font-serif brand color), label (text-sm text-gray-500), trend arrow
+- **Compact lists** — Insight points as numbered lists, 2-3 sentences each, bold titles, compact body
+- **Information layering** — Executive summary (top, largest type) → Core insights (cards + lists) → Background trends (compact paragraphs) → Sources (text-sm)
+- **Visual grouping** — Use thin dividers (border-t border-gray-200) and small spacing (py-4) to separate information blocks, no large whitespace
 
-- **Efficient Space Utilization**:
-  * Use components like cards, tags, badges to quickly differentiate information types
-  * Data visualization concise and clear (bar charts, line charts preferred)
-  * Table data clearly aligned for easy comparison
-
-- **Quick Scanning Optimization**:
-  * Clear visual hierarchy (titles, subtitles, body text)
-  * Use icons, numbers, tags to assist information classification
-  * Bold or highlight key content (moderate use)
-  * Short paragraphs, avoid text walls
-
-- **Color Usage**:
-  * Follow unified guidelines: all text monochrome, maximum one brand color for non-text elements
-  * Brand color for: key data highlights, status indicators, chart elements
-  * Primarily use font weight, borders, shapes to differentiate information types
-  * Avoid colored text and large color blocks
-
-- **Typography**:
-  * Use clear, readable sans-serif fonts
-  * Moderate font size for quick reading
-  * Clear contrast between titles and body text
-  * Use appropriate font weight to distinguish importance
+**Execution**:
+- Metric cards: grid grid-cols-2 md:grid-cols-3 gap-4, numbers text-3xl, labels text-sm
+- Insight list: each insight title text-base font-bold + body text-sm, spacing py-3
+- Source citations: text-xs text-gray-400, immediately following related content
+- Short paragraphs: no more than 3 sentences each, avoid text walls
+- Brand color for: key numbers, status indicators, trend markers (non-text elements)
+- Section spacing py-6 (more compact than other reports), NOT py-12/py-16
 
 **Prohibited Items**:
 - Don't over-decorate, avoid distracting attention
-- Don't use oversized titles or images that occupy space
+- Don't use oversized titles or images that occupy space (hero title max text-3xl)
 - Don't have large paragraph text descriptions, prioritize bullet points
 - Don't hide or weaken data sources
 
@@ -177,11 +147,7 @@ Based on the research topic, research process, and deep research results provide
 3. **Traceability**: Retain key information sources and citations
 4. **Actionability**: Provide clear next steps or focus points
 
-**[Fast Insight Exclusive Image Generation]**
-- **Image limit: Maximum 1 image as thematic illustration**
-- Purpose: Quickly convey theme or core concept
-- Position: Usually at the top of report as visual guide
-- Style: Concise, conceptual, not overshadowing content
+**[Images]** Do not generate images by default. Fast insight reports prioritize information density and do not need illustrations.
 
 **[Important Reminders]**
 - This is a report designed for "quick understanding," not deep analysis

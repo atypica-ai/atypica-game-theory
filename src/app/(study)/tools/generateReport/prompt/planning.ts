@@ -59,19 +59,22 @@ export const reportHTMLSystemPlanning = ({ locale }: { locale: Locale }) =>
 
 【规划报告专属设计要求】
 **视觉定位**：结构美感 + 逻辑清晰 + 专业可信
+**标志性视觉**：时间线脊柱 — 垂直时间线作为页面的视觉脊柱，各阶段沿线展开，像建筑蓝图的结构感。
 
-规划研究需要系统性。通过精准的视觉结构和清晰的视觉引导，让实施路径一目了然。
+规划研究需要系统性。时间线是整个报告的骨架，读者沿线阅读就能理解全部实施路径。
 
 **设计手法**：
-- **建筑感的版式** - 严谨的层级、精准的对齐、强烈的秩序感创造专业可信度
-- **流程可视化** - 用时间线、连接线、节点标注创造视觉流动和清晰路径
-- **视觉锚点** - 用品牌色和尺寸变化标注关键里程碑，吸引视线
+- **垂直时间线** — 用 border-l-2 品牌色作为页面左侧视觉脊柱，各阶段节点用品牌色圆点标记
+- **阶段卡片** — 每个规划阶段是一个卡片，沿时间线排列，包含：阶段标题(text-xl font-bold)、关键任务、用户反馈、预期成果
+- **里程碑强调** — 关键节点用 text-3xl + 品牌色 border-l-4 + 品牌色 5% 背景突出
+- **数字编号系统** — 每个步骤用大号数字(text-4xl font-serif text-品牌色)作为视觉锚点
 
 **执行方式**：
-- 大胆的数字编号和视觉分隔创造清晰步骤感
-- 品牌色用于标注关键节点和状态，建立视觉引导
+- 时间线结构：左侧 border-l-2 品牌色，节点用 w-4 h-4 rounded-full bg-品牌色
+- 阶段卡片：ml-8（相对时间线缩进），内含结构化信息
+- 关键里程碑：全宽突破时间线，text-3xl + 品牌色背景(5%透明度)
+- 风险标注：用 border-l-4 border-amber-500 区分，与品牌色形成警示对比
 - 通过网格对齐和精确间距创造专业感和信任感
-- 用留白和分组让复杂规划看起来井然有序
 
 ## 严格禁止项
 1. **禁止显式提及分析框架**：不要写"我们采用BCG/KANO/STP..."，直接呈现规划要点
@@ -94,10 +97,7 @@ export const reportHTMLSystemPlanning = ({ locale }: { locale: Locale }) =>
 常见问题：提出通用性建议，没有基于具体洞察
 正确做法：每个建议都要明确追溯到具体的用户洞察
 
-【规划专属图片生成】
-- **图片限制：最多2张，作为概念性配图**
-- 专门场景：规划概念可视化、实施主题展示、架构概念图像等
-- 规划策略：展示与规划主题相关的概念性视觉内容，避免具体的流程图、架构图、实施框架、规划蓝图、时间线等
+【图片】默认不生成图片。仅在需要具象化展示规划概念时可选择生成最多1张概念配图。
 
 【禁止】绝对不能丢弃任何信息溯源和用户访谈原声溯源，这会导致分析过程丧失支撑。
 ${sharedTechnicalSpecs({ locale })}
@@ -156,9 +156,23 @@ Based on the user questions, output objectives, research process, online search 
 - Honestly explain the characteristics and uncertainties of qualitative planning research
 
 **[Planning Report Exclusive Design Requirements]**
-- **Core design principles**: Professional, minimalist, logically clear. Build clear visual hierarchy through typography elements like fonts, spacing, and structure rather than color, to present the systematic nature of planning.
-- **Style requirements**: Design should reflect the rigor and operability of planning. Clear layout structure with distinct information hierarchy, making implementation pathways immediately apparent.
-- **Prohibitions**: Strictly forbidden to use colored cards, background color blocks, or thick colored borders. Allow use of subtle visual cues (such as numerical numbering, bullet points) to organize information, and may use a single color as accent, but cannot compromise overall professionalism.
+**Visual Positioning**: Structural beauty + logical clarity + professional credibility
+**Signature Visual**: Timeline spine — a vertical timeline serves as the page's visual backbone, with stages unfolding along it, like an architectural blueprint's structural sense.
+
+Planning research demands systematic thinking. The timeline is the report's skeleton; readers following it understand the entire implementation pathway.
+
+**Design Approach**:
+- **Vertical timeline** — border-l-2 brand color as left-side visual spine, stage nodes marked with brand color dots
+- **Stage cards** — Each planning stage is a card arranged along the timeline, containing: stage title (text-xl font-bold), key tasks, user feedback, expected outcomes
+- **Milestone emphasis** — Key nodes highlighted with text-3xl + brand color border-l-4 + brand color 5% background
+- **Number system** — Each step uses large numbers (text-4xl font-serif text-brand-color) as visual anchors
+
+**Execution**:
+- Timeline structure: left-side border-l-2 brand color, nodes with w-4 h-4 rounded-full bg-brand-color
+- Stage cards: ml-8 (indented from timeline), containing structured information
+- Key milestones: full-width breaking out of timeline, text-3xl + brand color background (5% opacity)
+- Risk callouts: border-l-4 border-amber-500 to differentiate, creating warning contrast with brand color
+- Create professionalism and trust through grid alignment and precise spacing
 
 **[Professionalism]**
 - Use industry-standard business analysis terminology
@@ -178,10 +192,7 @@ Correct approach: Each user quote segment must be followed by in-depth interpret
 Common problem: Providing generic recommendations without basing on specific insights
 Correct approach: Each recommendation must clearly trace back to specific user insights
 
-**[Planning-Exclusive Image Generation]**
-- **Image limit: Maximum 2 images, as conceptual illustrations**
-- Specific scenarios: Planning concept visualization, implementation theme display, architectural concept imagery, etc.
-- Planning strategy: Display conceptual visual content related to planning themes, avoiding specific flowcharts, architectural diagrams, implementation frameworks, planning blueprints, timelines, etc.
+**[Images]** Do not generate images by default. Only optionally generate up to 1 conceptual illustration when concrete visualization of a planning concept is needed.
 
 **[PROHIBITION]** Absolutely cannot discard any information traceability and user interview original voice traceability, as this would cause the analysis process to lose support.
 ${sharedTechnicalSpecs({ locale })}

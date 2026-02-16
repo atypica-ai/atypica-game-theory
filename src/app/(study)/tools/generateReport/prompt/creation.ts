@@ -67,19 +67,22 @@ export const reportHTMLSystemCreation = ({ locale }: { locale: Locale }) =>
 
 【创新报告专属设计要求】
 **视觉定位**：前瞻性 + 视觉启发力 + 设计美感
+**标志性视觉**：Mood Board 美学 — 灵感板式的非对称拼贴布局，概念卡片有不同尺寸和视觉权重，像设计工作室的创意墙。
 
-创新研究需要激发想象。用大胆的视觉语言和流畅的排版节奏传达创意能量。
+创新研究需要激发想象。打破规整的网格，用视觉的不对称和意外感传达创意能量。
 
 **设计手法**：
-- **大胆的排版** - 打破常规的字号对比、动态的留白节奏、意外的视觉焦点
-- **富有想象力的插图** - 用抽象几何和渐变色彩营造未来感和创新氛围
-- **品牌色的表现力** - 用品牌色创造视觉高潮，标注关键创意突破点
+- **非对称拼贴布局** — 概念卡片用不同尺寸（大卡片占 2/3 宽 + 小卡片占 1/3 宽），创造视觉层次和意外感
+- **创意突破标注** — 关键创意灵感用 text-4xl font-serif italic + 品牌色 border-l-4，像杂志的 hero quote
+- **概念卡片** — 每个创意方向用独立卡片包裹，品牌色 10% 背景 + border-l-4 品牌色，内含标题、核心描述、灵感来源
+- **视觉节奏打破** — 在规整的分析段落之间，插入全宽的创意高潮区（大字号 + 品牌色氛围背景）
 
 **执行方式**：
-- 更大胆的尺寸对比，创造视觉冲击力
-- 品牌色可以更醒目地使用（关键创意、概念卡片边框）
-- 抽象渐变背景营造创新氛围和空间感
-- 通过非对称布局和视觉张力表达创造性思维
+- 创意方向展示：grid grid-cols-3，允许某个卡片 col-span-2 创造不对称
+- 关键创意：text-4xl font-serif italic，前后 py-12 大留白，品牌色 5% 背景全宽
+- 头脑风暴过程：用对话气泡式排版（左右交替），区分用户和 AI 的创意碰撞
+- 品牌色可以更大胆使用：概念卡片边框、关键灵感背景、创意节点标记
+- 通过非对称和尺寸变化表达创造性思维，但整体仍保持品牌色统一
 
 ## 严格禁止项
 1. **禁止显式提及分析框架**：不要写"我们采用BCG/KANO/STP..."，直接呈现发现
@@ -102,11 +105,7 @@ export const reportHTMLSystemCreation = ({ locale }: { locale: Locale }) =>
 常见问题：提出通用性建议，没有基于具体洞察
 正确做法：每个建议都要明确追溯到具体的用户洞察
 
-【创新专属图片生成】
-- **图片限制：最多5张，作为创意表达的重要组成部分**
-- 专门场景：概念设计、创新产品概念、未来场景可视化、创意解决方案展示等
-- 创新策略：展示创新概念和设计想法的视觉化表达，突出前瞻性和创新性
-- 英文提示词要求：使用innovation（创新）、futuristic（未来感）、creative concept（创意概念）等术语，比例建议landscape或square
+【图片】默认不生成图片。如果研究内容涉及产品概念、包装设计、品牌视觉等需要具象化展示的创意内容，可选择生成最多2张概念配图。
 
 【禁止】绝对不能丢弃任何信息溯源和用户访谈原声溯源，这会导致分析过程丧失支撑。
 ${sharedTechnicalSpecs({ locale })}
@@ -175,13 +174,23 @@ Based on the user questions, output goals, research process, internet search res
 - Honestly acknowledge the openness and uncertainty of creative research
 
 **[Innovation Report Exclusive Design Requirements]**
-- **Core design principles**: Minimalist, ultimate, creative but never flashy. Build clear visual hierarchy through typography elements like fonts, spacing, and structure rather than colors. Professional, referencing consulting company design styles. Convey deep insights through typography elements like fonts, spacing, and structure rather than colors.
-- **Style requirements**: Professional, high-end, and inspirational. Design should embody the vitality of innovation while maintaining elegance and restraint.
-- **Prohibitions**: Strictly forbid using colored cards, background color blocks, or thick colored borders. Allow using a single highlight color as accent, but cannot break the overall sense of simplicity.
-- Establish clear information hierarchy: Distinguish content importance through font weight, size, and serif/sans-serif font combinations
-- **[Section Title Guidelines]** Each content section title should serve a bridging function, using concise and direct methods to tell readers "why they should read this section"
-  * ✅ Correct examples (finding-oriented): "Three Breakthrough Creative Directions", "Features Users Want But Market Lacks", "Unexpectedly Discovered Design Inspiration"
-  * ❌ Wrong examples (methodology-oriented): "Detailed SWOT Analysis Process Restoration", "Creative Generation Based on Design Thinking Framework"
+**Visual Positioning**: Forward-thinking + visual inspiration + design aesthetics
+**Signature Visual**: Mood Board aesthetic — inspiration-board-style asymmetric collage layout, concept cards with varying sizes and visual weights, like a design studio's creative wall.
+
+Innovation research needs to spark imagination. Break rigid grids; use visual asymmetry and surprise to convey creative energy.
+
+**Design Approach**:
+- **Asymmetric collage layout** — Concept cards with different sizes (large card 2/3 width + small card 1/3 width), creating visual hierarchy and surprise
+- **Creative breakthrough callouts** — Key creative inspirations in text-4xl font-serif italic + brand color border-l-4, like a magazine hero quote
+- **Concept cards** — Each creative direction wrapped in independent card, brand color 10% background + border-l-4, containing title, core description, inspiration source
+- **Rhythm breaks** — Between structured analysis paragraphs, insert full-width creative climax zones (large type + brand color atmospheric background)
+
+**Execution**:
+- Creative direction display: grid grid-cols-3, allow certain cards col-span-2 for asymmetry
+- Key creativity: text-4xl font-serif italic, py-12 generous whitespace before/after, brand color 5% full-width background
+- Brainstorming process: dialogue-bubble-style layout (alternating left/right), distinguishing user vs AI creative collision
+- Brand color can be used more boldly: concept card borders, key inspiration backgrounds, creative node markers
+- Express creative thinking through asymmetry and size variation while maintaining unified brand color
 
 ## Strictly Prohibited Items
 1. **Prohibited: Explicitly Mentioning Analysis Frameworks**: Do not write "We used BCG/KANO/STP...", present findings directly
@@ -206,11 +215,7 @@ Correct approach: Every user quote should be followed by in-depth interpretation
 Common problem: Providing generic recommendations without basing them on specific insights
 Correct approach: Every recommendation must clearly trace back to specific user insights
 
-**[Innovation-Specific Image Generation]**
-- **Image limit: Maximum 5 images, as important components of creative expression**
-- Specific scenarios: Concept design, innovative product concepts, future scenario visualization, creative solution displays, etc.
-- Innovation strategy: Visual expression showcasing innovative concepts and design ideas, emphasizing forward-thinking and innovation
-- English prompt requirements: Use terms like innovation, futuristic, creative concept, etc. Recommended ratios are landscape or square
+**[Images]** Do not generate images by default. If the research involves product concepts, packaging design, brand visuals, or other creative content requiring concrete visualization, optionally generate up to 2 conceptual illustrations.
 
 **[PROHIBITED]** Absolutely cannot discard any information traceability and user interview original voice traceability, as this would cause the analysis process to lose support.
 ${sharedTechnicalSpecs({ locale })}

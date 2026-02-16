@@ -40,24 +40,24 @@ export const reportHTMLSystemMisc = ({ locale }: { locale: Locale }) =>
 
 【综合报告专属设计要求】
 **视觉定位**：整合美学 + 多维平衡 + 清晰易读
+**标志性视觉**：Chapter Book 质感 — 清晰的章节编号系统，每个维度是一个"章"，有统一的视觉节奏但独立的内容空间，像一本精心排版的书。
 
-综合研究整合多维信息。通过统一的视觉语言和清晰的视觉分组，让复杂内容井然有序。
+综合研究整合多维信息。统一的章节系统让读者在复杂内容中保持方向感。
 
 **设计手法**：
-- **模块化版式** - 清晰的视觉分组、流畅的信息流动、优雅的维度过渡
-- **视觉区隔** - 用细分隔线、留白、背景色调变化区分不同维度
-- **统一中有变化** - 各维度保持统一视觉风格，但通过品牌色标注创造焦点
+- **章节编号系统** — 每个维度用大号数字(text-5xl font-serif text-gray-200)作为章节标记，配合维度标题(text-3xl)，创造书的质感
+- **维度色带** — 每个维度的关键发现区域用品牌色不同透明度(5%-10%)的背景区分，但文字保持统一的墨色
+- **跨维度关联** — 维度间的关联发现用品牌色 border-l-4 + 特殊标注区块突出
+- **统一的模块节奏** — 每个维度结构一致：章节标记 → 核心发现 → 用户声音 → 小结
 
 **执行方式**：
-- 用品牌色标注不同维度的关键发现，建立视觉锚点
-- 通过模块化布局和一致的间距创造整体感
-- 适度的视觉变化（尺寸、留白）区分不同维度，避免单调
-- 清晰的视觉层级让读者轻松导航
+- 章节标记：text-5xl font-serif text-gray-200 作为背景数字，叠加 text-3xl 维度标题
+- 维度内容：统一结构，每个维度 py-12 间距
+- 关键发现：品牌色 border-l-4 + text-xl font-bold
+- 跨维度关联：独立区块，品牌色 10% 背景 + 品牌色 border，标注"跨维度发现"
+- 清晰的视觉层级让读者轻松导航，不迷失在多维信息中
 
-【综合专属图片生成】
-- **图片限制：最多2张，避免过多配图影响对综合分析和用户反馈的关注**
-- 专门场景：综合概念可视化、多维特征展示、复合解决方案概念、整体策略展示等
-- 综合策略：展示与综合研究相关的概念性视觉内容，避免过于具体的流程图、架构图、精确数据展示等
+【图片】默认不生成图片。仅在需要具象化展示综合概念时可选择生成最多1张概念配图。
 
 ${sharedTechnicalSpecs({ locale })}
 `
@@ -95,14 +95,25 @@ Create an objective and engaging comprehensive research report that presents key
 - Honestly explain complexity and limitations of comprehensive qualitative research
 
 【Comprehensive Report Specific Design Requirements】
-- **Core Design Principle**: Professional, minimalist, and balanced. Build a clear visual hierarchy using typographic elements like font, spacing, and structure—not color—to present multi-dimensional information.
-- **Style Requirement**: The design must reflect the comprehensiveness and logical nature of the research. The layout should be structured and the visual flow clear to help readers easily understand complex information.
-- **Prohibitions**: Strictly avoid using colored cards, background color blocks, or thick, colored borders. Subtle visual cues (like dividers) are permissible to distinguish between dimensions, but the overall design must remain unified and clean.
+**Visual Positioning**: Integration aesthetics + multi-dimensional balance + clear readability
+**Signature Visual**: Chapter Book quality — a clear chapter numbering system where each dimension is a "chapter" with unified visual rhythm but independent content space, like a carefully typeset book.
 
-【Comprehensive-Specific Image Generation】
-- **Image limit: Maximum 2 images to avoid excessive visuals distracting from comprehensive analysis and user feedback focus**
-- Specialized scenarios: comprehensive concept visualization, multi-dimensional characteristic displays, composite solution concepts, holistic strategy demonstrations, etc.
-- Comprehensive strategy: Show conceptual visual content related to comprehensive research, avoid overly specific flowcharts, architecture diagrams, precise data displays, etc.
+Comprehensive research integrates multi-dimensional information. A unified chapter system keeps readers oriented within complex content.
+
+**Design Approach**:
+- **Chapter numbering system** — Each dimension marked with large numbers (text-5xl font-serif text-gray-200) as chapter markers, paired with dimension titles (text-3xl), creating book-like quality
+- **Dimension color bands** — Each dimension's key findings area distinguished by brand color at varying opacity (5%-10%) backgrounds, while text remains unified ink color
+- **Cross-dimension connections** — Related findings across dimensions highlighted with brand color border-l-4 + special callout blocks
+- **Unified module rhythm** — Each dimension follows consistent structure: chapter marker → core findings → user voices → summary
+
+**Execution**:
+- Chapter markers: text-5xl font-serif text-gray-200 as background numbers, overlaid with text-3xl dimension titles
+- Dimension content: unified structure, py-12 spacing per dimension
+- Key findings: brand color border-l-4 + text-xl font-bold
+- Cross-dimension connections: independent blocks, brand color 10% background + brand color border, labeled "Cross-dimension finding"
+- Clear visual hierarchy for easy navigation without getting lost in multi-dimensional information
+
+**[Images]** Do not generate images by default. Only optionally generate up to 1 conceptual illustration when concrete visualization of a comprehensive concept is needed.
 
 ${sharedTechnicalSpecs({ locale })}
 `;

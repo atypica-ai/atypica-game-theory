@@ -55,20 +55,23 @@ export const reportHTMLSystemTesting = ({ locale }: { locale: Locale }) =>
 - 坦诚说明定性研究的特点和局限性
 
 【测试报告专属设计要求】
-**视觉定位**：清晰对比 + 专业可信
+**视觉定位**：法庭式对比 + 专业公信力
+**标志性视觉**：Split-screen 对比布局 — 选项并排展示，用中线或留白分割，像法庭正反方陈述。
 
-测试研究需要公正和说服力。通过强烈的视觉对比和精准的版式，让差异一目了然。
+测试研究需要公正和说服力。让差异一目了然是第一优先级。
 
 **设计手法**：
-- **对称严谨的版式** - 通过对齐和分组强化对比的公平性
-- **视觉对比结构** - A vs B 的并列展示，用留白、边框、尺寸创造清晰区隔
-- **精准的视觉引导** - 用品牌色标注关键差异点，吸引视线到重要发现
+- **对称分屏布局** — A vs B 并排展示，用 CSS Grid 两栏实现，中间 gap-8 或细分隔线
+- **对比卡片** — 相同结构不同内容，品牌色 border-l-4 标注胜出项
+- **用户声音穿插** — 测试过程中的关键原话用 blockquote 大字号(text-xl)穿插在对比分析中
+- **结果聚焦** — 关键测试结论用 text-3xl + 品牌色背景(5%透明度)突出
 
 **执行方式**：
-- 单色文字保持客观中立
-- 品牌色用于标注测试结果的关键差异（非文字元素）
-- 通过字重、字号、间距创造清晰的视觉层级
-- 对称布局和精准对齐强化专业感
+- 对比区域：grid grid-cols-2 gap-8，每列结构一致
+- 关键差异：品牌色 border-l-4 + 背景色(10%透明度)标注
+- 共性发现：full-width 区域，与对比区形成节奏对比
+- 用户原话：pl-6 border-l-2 italic text-xl，穿插在分析段落之间
+- 单色文字保持客观中立，品牌色只用于标注差异（非文字元素）
 
 【专业性】
 - 使用行业标准的商业分析术语
@@ -86,10 +89,7 @@ export const reportHTMLSystemTesting = ({ locale }: { locale: Locale }) =>
 常见问题：提出通用性建议，没有基于具体洞察
 正确做法：每个建议都要明确追溯到具体的用户洞察
 
-【测试专属图片生成】
-- **图片限制：最多2张，作为概念性配图**
-- 专门场景：测试概念可视化、选择概念展示、验证概念图像等
-- 测试策略：展示与测试主题相关的概念性视觉内容，避免具体的图表、流程图、对比图、数据可视化、精确测试结果等
+【图片】默认不生成图片。仅在需要具象化展示测试概念时可选择生成最多1张概念配图。
 
 【禁止】绝对不能丢弃任何信息溯源和用户访谈原声溯源，这会导致分析过程丧失支撑。
 ${sharedTechnicalSpecs({ locale })}
@@ -145,20 +145,23 @@ Based on the user questions, output goals, research process, online search resul
 - Honestly explain the characteristics and limitations of qualitative research
 
 【Testing Report Exclusive Design Requirements】
-**Visual Positioning**: Ultimate simplicity + objective credibility
+**Visual Positioning**: Courtroom-style comparison + professional credibility
+**Signature Visual**: Split-screen comparison layout — options displayed side-by-side, separated by centerline or whitespace, like prosecution vs. defense statements.
 
-Testing research demands fairness and persuasiveness. Use minimal visual elements to present clear comparisons.
+Testing research demands fairness and persuasiveness. Making differences immediately visible is the top priority.
 
 **Design Approach**:
-- **Symmetrical aligned rigorous layout** - build fairness of test results
-- **Clear comparison structure** - use layout grouping for A vs B, not color
-- **Neutral objective tones** - black/white/gray primary, color only for contrast highlighting
+- **Symmetrical split layout** — A vs B side-by-side using CSS Grid two-column, gap-8 or thin divider between
+- **Comparison cards** — Same structure, different content; brand color border-l-4 marks the winning option
+- **User voice interspersed** — Key quotes from testing process in blockquote large type (text-xl) interspersed within comparison analysis
+- **Result focus** — Key testing conclusions highlighted with text-3xl + brand color background (5% opacity)
 
-**Color & Typography**:
-- Black/white/gray main palette for objectivity
-- Optional single neutral color (deep blue) to mark key differences
-- Forbid colored cards, background blocks
-- Distinguish importance through font weight and structure
+**Execution**:
+- Comparison areas: grid grid-cols-2 gap-8, consistent column structure
+- Key differences: brand color border-l-4 + background (10% opacity) marking
+- Common findings: full-width sections, creating rhythm contrast with comparison areas
+- User quotes: pl-6 border-l-2 italic text-xl, interspersed between analysis paragraphs
+- Monochrome text maintains objectivity, brand color only for marking differences (non-text elements)
 
 【Professionalism】
 - Use industry-standard business analysis terminology
@@ -176,10 +179,7 @@ Correct approach: Every user quote segment should be followed by in-depth interp
 Common problem: Providing generic recommendations without basing them on specific insights
 Correct approach: Every recommendation must clearly trace back to specific user insights
 
-【Testing-Specific Image Generation】
-- **Image limit: Maximum 2 images, as conceptual illustrations**
-- Specific scenarios: Testing concept visualization, choice concept display, validation concept images, etc.
-- Testing strategy: Display conceptual visual content related to testing themes, avoiding specific charts, flowcharts, comparison diagrams, data visualizations, precise testing results, etc.
+【Images】Do not generate images by default. Only optionally generate up to 1 conceptual illustration when concrete visualization of a testing concept is needed.
 
 【FORBIDDEN】Absolutely must not discard any information traceability and user interview original voice traceability, as this will cause the analysis process to lose support.
 ${sharedTechnicalSpecs({ locale })}

@@ -49,18 +49,21 @@ export const reportHTMLSystemInsights = ({ locale }: { locale: Locale }) =>
 
 【洞察报告专属设计要求】
 **视觉定位**：咨询公司的专业 + 编辑杂志的美感 + 人文的温度
+**标志性视觉**：Pull Quote 主导 — 用户原话以超大字号(text-2xl/text-3xl italic)穿插在分析中，像《纽约客》《人物》杂志的深度报道。
 
-这是严谨的商业分析，但关于真实的人。要创造既有权威感又有吸引力的视觉体验。
+这是严谨的商业分析，但关于真实的人。用户的声音应该是视觉上最醒目的元素。
 
 **设计手法**：
-- **精致的编辑设计** - 成熟的排版、优雅的字体搭配、精心的留白节奏
-- **抽象视觉语言** - 用几何插图和柔和渐变背景创造人文氛围和视觉吸引力
-- **视觉故事性** - 通过版式节奏和视觉流动引导阅读，创造沉浸感
+- **Pull Quote 穿插** — 关键用户原话用 text-2xl 或 text-3xl italic + pl-8 border-l-3 品牌色，打断分析段落的节奏，创造阅读张力
+- **编辑式留白** — section 之间 py-16，pull quote 前后 py-8，让每个洞察有呼吸空间
+- **洞察递进** — 从现象到原因到启示，用逐渐加大的字号和加深的品牌色层级表达递进
+- **柔和的氛围背景** — 首屏和关键洞察区域用品牌色 5% 透明度大面积背景，营造人文温度
 
 **执行方式**：
-- 大胆的字号对比创造视觉冲击力
-- 品牌色用于关键洞察的视觉标注，吸引注意力
-- 抽象背景图形（柔和色彩、低饱和度）营造氛围不抢内容
+- 用户原话：text-2xl italic pl-8 border-l-3 品牌色，前后 py-8 留白
+- 分析解读：紧跟在原话之后，text-base，用 "这说明了..." 的逻辑连接
+- 关键洞察标题：text-3xl font-serif tracking-tight，配合品牌色 border-b-2
+- 过渡段落：text-base text-gray-500 italic，引导读者从一个洞察流向下一个
 - 通过留白和对齐创造呼吸感和高级感
 
 **板块标题策略**：
@@ -105,10 +108,7 @@ export const reportHTMLSystemInsights = ({ locale }: { locale: Locale }) =>
 常见问题：提出通用性建议，没有基于具体洞察
 正确做法：每个建议都要明确追溯到具体的用户洞察
 
-【洞察专属图片生成】
-- **图片限制：最多2张，作为概念性配图**
-- 专门场景：洞察概念可视化、用户体验概念、行为理解主题等
-- 洞察策略：展示与用户洞察相关的概念性视觉内容，避免具体的情感图表、行为分析图、用户画像、流程图、数据可视化等
+【图片】默认不生成图片。仅在需要具象化展示洞察概念时可选择生成最多1张概念配图。
 
 【禁止】绝对不能丢弃任何信息溯源和用户访谈原声溯源，这会导致分析过程丧失支撑。
 ${sharedTechnicalSpecs({ locale })}
@@ -157,20 +157,23 @@ Based on the user questions, output objectives, research process, online search 
    - **Risk identification & mitigation**: Main uncertainty factors and response plans
 
 **[Insight Report Exclusive Design Requirements]**
-**Visual Positioning**: McKinsey meets anthropological field notes meets editorial design magazine
+**Visual Positioning**: Consultancy authority + editorial magazine aesthetics + human warmth
+**Signature Visual**: Pull Quote dominant — user quotes in oversized type (text-2xl/text-3xl italic) interspersed throughout analysis, like deep features in The New Yorker or The Atlantic.
 
-Rigorous business analysis about real people. Visual language should have both consultancy authority and field research humanity.
+Rigorous business analysis about real people. User voices should be the most visually prominent elements.
 
 **Design Approach**:
-- **Editorial rigor** - mature typography, clear structure, precise hierarchy
-- **Documentary authenticity** - if using images, prefer real scenes, natural light, honest moments (ref: Magnum, National Geographic)
-- **Architectural geometry** - for systematic thinking, use geometric composition, dramatic light/shadow
+- **Pull Quote interspersion** — Key user quotes in text-2xl or text-3xl italic + pl-8 border-l-3 brand color, breaking the rhythm of analysis paragraphs, creating reading tension
+- **Editorial whitespace** — py-16 between sections, py-8 before/after pull quotes, giving each insight breathing room
+- **Insight progression** — From phenomenon to cause to implication, expressed through gradually increasing type size and deepening brand color layers
+- **Soft atmospheric backgrounds** — Hero and key insight areas use brand color at 5% opacity for large backgrounds, creating human warmth
 
-**Color & Typography**:
-- Black/white/gray primary, optional single deep accent (deep blue, charcoal)
-- Build hierarchy through font weight (Regular → Bold), not color
-- Interview quotes can have photos with full natural color
-- Forbid colored cards, background blocks, thick borders
+**Execution**:
+- User quotes: text-2xl italic pl-8 border-l-3 brand color, py-8 whitespace before/after
+- Analysis interpretation: Immediately following quotes, text-base, connected with "This indicates..." logic
+- Key insight titles: text-3xl font-serif tracking-tight, with brand color border-b-2
+- Transition paragraphs: text-base text-gray-500 italic, guiding readers from one insight to the next
+- Create breathing room and sophistication through whitespace and alignment
 
 **Section Titles**: Tell readers "why read this" not "what method we used"
 - ✅ Finding-oriented: "Three User Types' Payment Willingness Gap", "Key Need Competitors Missed"
@@ -215,10 +218,7 @@ Correct approach: Every user quote segment must be followed by in-depth interpre
 Common problem: Providing generic recommendations without basis in specific insights
 Correct approach: Every recommendation must clearly trace back to specific user insights
 
-**[Insight-Exclusive Image Generation]**
-- **Image limitation: Maximum 2 images as conceptual illustrations**
-- Specific scenarios: Insight concept visualization, user experience concepts, behavioral understanding themes, etc.
-- Insight strategy: Display conceptual visual content related to user insights, avoiding specific emotional charts, behavioral analysis diagrams, user personas, process flows, data visualizations, etc.
+**[Images]** Do not generate images by default. Only optionally generate up to 1 conceptual illustration when concrete visualization of an insight concept is needed.
 
 **[PROHIBITED]** Absolutely cannot discard any information traceability and user interview original voice traceability, as this would cause the analysis process to lose support.
 ${sharedTechnicalSpecs({ locale })}
