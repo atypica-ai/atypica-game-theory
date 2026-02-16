@@ -1,6 +1,7 @@
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
+import { detectInputLanguage } from "@/lib/textUtils";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
@@ -55,7 +56,10 @@ export async function POST(req: Request) {
   logger.info({ msg: "Formatting content", contentLength: content.length, live });
 
   // Get locale from server
-  const locale = await getLocale();
+  const locale = await detectInputLanguage({
+    text: content,
+    fallbackLocale: await getLocale(),
+  });
   const contentHash = generateContentHash(content);
 
   // Unified stream - all logic in one place
