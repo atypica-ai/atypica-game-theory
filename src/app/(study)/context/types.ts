@@ -16,7 +16,7 @@ export type UserChatContext = Partial<{
   defaultLocale: Locale;
 
   // studyUserChat 专用: 过程关键信息
-  interviewPersonaPanelId: number;
+  personaPanelId: number;
   reportTokens: string[];
   podcastTokens: string[];
   analystKind:

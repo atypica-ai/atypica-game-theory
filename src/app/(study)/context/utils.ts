@@ -29,7 +29,7 @@ const mergeIds = (ids1: number[], ids2: number[]) => Array.from(new Set([...ids1
 /**
  * 如果 userchat 上已经有了 persona panel，会合并 personaIds 后复用
  * 如果没有，会创建一个新的
- * 会存在并发写入的问题，解决方法是在更新 context 字段的时候使用 context 的 json filter 过滤一下 interviewPersonaPanelId is null
+ * 会存在并发写入的问题，解决方法是在更新 context 字段的时候使用 context 的 json filter 过滤一下 personaPanelId is null
  */
 export async function recordPersonaPanelContext({
   userId,
@@ -46,21 +46,21 @@ export async function recordPersonaPanelContext({
     where: { id: userChatId },
     select: { context: true },
   });
-  let interviewPersonaPanelId = context.interviewPersonaPanelId;
+  let personaPanelId = context.personaPanelId;
   let personaPanel: PersonaPanel;
-  if (!interviewPersonaPanelId) {
+  if (!personaPanelId) {
     personaPanel = await createPersonaPanel({
       userId,
       personaIds,
       instruction,
     });
-    interviewPersonaPanelId = personaPanel.id;
+    personaPanelId = personaPanel.id;
   } else {
     personaPanel = await prisma.personaPanel.findUniqueOrThrow({
-      where: { id: interviewPersonaPanelId },
+      where: { id: personaPanelId },
     });
     personaPanel = await prisma.personaPanel.update({
-      where: { id: interviewPersonaPanelId },
+      where: { id: personaPanelId },
       data: {
         userId,
         personaIds: mergeIds(personaPanel.personaIds, personaIds),
@@ -71,7 +71,7 @@ export async function recordPersonaPanelContext({
   await mergeUserChatContext({
     id: userChatId,
     context: {
-      interviewPersonaPanelId,
+      personaPanelId,
     },
   });
   return personaPanel;

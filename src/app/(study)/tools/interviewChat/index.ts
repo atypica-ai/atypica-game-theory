@@ -79,7 +79,7 @@ export const interviewChatTool = ({
         userChatId,
         personaIds: personas.map((p) => p.id),
       });
-      const interviewPersonaPanelId = personaPanel.id;
+      const panelId = personaPanel.id;
 
       const single = async ({
         id: personaId,
@@ -91,7 +91,7 @@ export const interviewChatTool = ({
         try {
           const interview = await prisma.analystInterview.findFirst({
             where: {
-              personaPanelId: interviewPersonaPanelId,
+              personaPanelId: panelId,
               personaId,
             },
           });
@@ -105,7 +105,7 @@ export const interviewChatTool = ({
           const { analystInterviewId, interviewUserChatId, prompt } = await prepareDBForInterview({
             userId,
             personaId,
-            interviewPersonaPanelId,
+            personaPanelId: panelId,
             instruction,
             locale,
           });
@@ -200,13 +200,13 @@ async function generateInterviewSummary(
 export async function prepareDBForInterview({
   userId,
   personaId,
-  interviewPersonaPanelId,
+  personaPanelId,
   instruction,
   locale,
 }: {
   userId: number;
   personaId: number;
-  interviewPersonaPanelId: number;
+  personaPanelId: number;
   instruction: string;
   locale: Locale;
 }) {
@@ -218,7 +218,7 @@ export async function prepareDBForInterview({
   const conclusion = ""; // conclusion 被用于判断是否结束，开始前一定要清空
   const interview = await prisma.analystInterview.create({
     data: {
-      personaPanelId: interviewPersonaPanelId,
+      personaPanelId,
       personaId,
       instruction,
       conclusion,

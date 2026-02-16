@@ -218,7 +218,7 @@ export async function fetchAnalystInterviewForPersona({
     where: { token: studyUserChatToken, kind: "study" },
   });
   // const analystId = studyUserChat?.analyst?.id;
-  const personaPanelId = studyUserChat?.context?.interviewPersonaPanelId;
+  const personaPanelId = studyUserChat?.context?.personaPanelId;
   if (!personaPanelId) {
     return {
       success: false,
