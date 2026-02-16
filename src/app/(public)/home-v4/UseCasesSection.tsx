@@ -1,142 +1,128 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { motion, AnimatePresence } from "framer-motion";
-import { Building2, User, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
+import { motion } from "framer-motion";
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 30 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-100px" },
-  transition: { duration: 0.6 },
-};
+const FEATURED_IMG_1 =
+  "Macro close-up of eye iris reflecting colorful data visualizations, abstract and artistic, warm amber and cool blue tones, no full face, extreme close-up, editorial photography, 8k";
 
-const enterpriseCases = ["productTest", "pricing", "brand", "content", "journey"] as const;
-const creatorCases = ["persona", "resonance", "community"] as const;
+const FEATURED_IMG_2 =
+  "Abstract topographic contour map made of glowing green lines on dark background, data landscape visualization, minimal and elegant, no text, 8k";
+
+const FEATURED_IMG_3 =
+  "Aerial view of a winding river through dark landscape at twilight, dramatic light reflecting on water surface, abstract nature photography, warm and cool tones, no people, 8k";
+
+const featuredCases = [
+  { key: "c1", img: FEATURED_IMG_1 },
+  { key: "c2", img: FEATURED_IMG_2 },
+  { key: "c3", img: FEATURED_IMG_3 },
+] as const;
+
+const compactCases = ["c4", "c5", "c6", "c7", "c8", "c9"] as const;
 
 export function UseCasesSection() {
   const t = useTranslations("HomePageV4.UseCases");
-  const [activeTab, setActiveTab] = useState<"enterprise" | "creator">("enterprise");
 
   return (
-    <section className="py-24 md:py-32 bg-zinc-50 dark:bg-zinc-900/30">
+    <section className="py-24 md:py-32 border-t border-white/[0.06]">
       <div className="container mx-auto px-4">
-        {/* Section header */}
-        <motion.div className="max-w-3xl mx-auto text-center mb-12 md:mb-16" {...fadeInUp}>
-          <p className="text-sm font-EuclidCircularA text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-4">
-            {t("label")}
-          </p>
-          <h2
-            className={cn(
-              "font-EuclidCircularA font-medium tracking-tight",
-              "text-3xl md:text-4xl lg:text-5xl",
-              "zh:text-2xl zh:md:text-3xl zh:lg:text-4xl zh:tracking-wide",
-              "text-zinc-950 dark:text-white",
-            )}
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <motion.div
+            className="mb-12 md:mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
           >
-            {t("title")}
-          </h2>
-        </motion.div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-px bg-[#00ff00]" />
+              <span className="font-IBMPlexMono text-xs text-[#00ff00] uppercase tracking-[0.2em]">
+                {t("label")}
+              </span>
+            </div>
+            <h2
+              className={cn(
+                "font-EuclidCircularA font-medium tracking-tight text-white",
+                "text-3xl md:text-4xl lg:text-5xl",
+                "zh:text-2xl zh:md:text-3xl zh:lg:text-4xl zh:tracking-wide",
+              )}
+            >
+              {t("title")}
+            </h2>
+          </motion.div>
 
-        {/* Tab switcher */}
-        <motion.div className="flex justify-center mb-12" {...fadeInUp} transition={{ duration: 0.6, delay: 0.1 }}>
-          <div className="inline-flex items-center p-1 rounded-full bg-zinc-200/50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/50">
-            <button
-              onClick={() => setActiveTab("enterprise")}
-              className={cn(
-                "flex items-center gap-2 px-5 py-2 rounded-full text-sm font-EuclidCircularA transition-all duration-200",
-                activeTab === "enterprise"
-                  ? "bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white shadow-sm"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
-              )}
-            >
-              <Building2 className="size-4" />
-              {t("tabs.enterprise")}
-            </button>
-            <button
-              onClick={() => setActiveTab("creator")}
-              className={cn(
-                "flex items-center gap-2 px-5 py-2 rounded-full text-sm font-EuclidCircularA transition-all duration-200",
-                activeTab === "creator"
-                  ? "bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white shadow-sm"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
-              )}
-            >
-              <User className="size-4" />
-              {t("tabs.creator")}
-            </button>
+          {/* Featured 3 — larger cards with images */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {featuredCases.map(({ key, img }, i) => (
+              <motion.div
+                key={key}
+                className={cn(
+                  "group rounded-2xl overflow-hidden",
+                  "bg-white/[0.03] border border-white/[0.06]",
+                  "transition-all duration-300",
+                  "hover:border-[#00ff00]/20 hover:shadow-[0_0_30px_rgba(0,255,0,0.06)]",
+                )}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.5, delay: 0.08 * i }}
+              >
+                <div className="relative aspect-[16/9] overflow-hidden">
+                  <Image
+                    src={`/api/imagegen/dev/${encodeURIComponent(img)}?ratio=landscape`}
+                    alt=""
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                  <span className="absolute top-4 left-4 font-IBMPlexMono text-xs text-[#00ff00]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <div className="p-5 md:p-6">
+                  <h4 className="font-EuclidCircularA font-medium text-base text-white mb-2">
+                    {t(`cases.${key}.title`)}
+                  </h4>
+                  <p className="text-sm text-white/40 leading-relaxed">
+                    {t(`cases.${key}.description`)}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </motion.div>
 
-        {/* Cases grid */}
-        <div className="max-w-5xl mx-auto">
-          <AnimatePresence mode="wait">
-            {activeTab === "enterprise" ? (
+          {/* Compact 6 — text-only numbered list */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {compactCases.map((key, i) => (
               <motion.div
-                key="enterprise"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                key={key}
+                className={cn(
+                  "group p-5 md:p-6 rounded-2xl",
+                  "bg-white/[0.03] border border-white/[0.06]",
+                  "transition-all duration-300",
+                  "hover:border-[#00ff00]/20 hover:shadow-[0_0_30px_rgba(0,255,0,0.06)]",
+                )}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.4, delay: 0.05 * i }}
               >
-                {enterpriseCases.map((key) => (
-                  <div
-                    key={key}
-                    className={cn(
-                      "group p-6 md:p-7 rounded-2xl",
-                      "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
-                      "transition-all duration-200 hover:border-zinc-300 dark:hover:border-zinc-700",
-                      "hover:shadow-lg hover:shadow-zinc-200/50 dark:hover:shadow-zinc-900/50",
-                    )}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <h4 className="font-EuclidCircularA font-medium text-base text-zinc-950 dark:text-white">
-                        {t(`enterprise.${key}.title`)}
-                      </h4>
-                      <ArrowUpRight className="size-4 text-zinc-300 dark:text-zinc-700 group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors" />
-                    </div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                      {t(`enterprise.${key}.description`)}
-                    </p>
-                  </div>
-                ))}
+                <span className="font-IBMPlexMono text-xs text-[#00ff00] mb-3 block">
+                  {String(i + 4).padStart(2, "0")}
+                </span>
+                <h4 className="font-EuclidCircularA font-medium text-sm text-white mb-1.5">
+                  {t(`cases.${key}.title`)}
+                </h4>
+                <p className="text-xs text-white/35 leading-relaxed">
+                  {t(`cases.${key}.description`)}
+                </p>
               </motion.div>
-            ) : (
-              <motion.div
-                key="creator"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-              >
-                {creatorCases.map((key) => (
-                  <div
-                    key={key}
-                    className={cn(
-                      "group p-6 md:p-7 rounded-2xl",
-                      "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
-                      "transition-all duration-200 hover:border-zinc-300 dark:hover:border-zinc-700",
-                      "hover:shadow-lg hover:shadow-zinc-200/50 dark:hover:shadow-zinc-900/50",
-                    )}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <h4 className="font-EuclidCircularA font-medium text-base text-zinc-950 dark:text-white">
-                        {t(`creator.${key}.title`)}
-                      </h4>
-                      <ArrowUpRight className="size-4 text-zinc-300 dark:text-zinc-700 group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors" />
-                    </div>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                      {t(`creator.${key}.description`)}
-                    </p>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+            ))}
+          </div>
         </div>
       </div>
     </section>

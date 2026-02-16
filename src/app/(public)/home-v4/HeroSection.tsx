@@ -9,13 +9,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const HERO_IMAGE_PROMPT =
-  "A cinematic wide shot of a single human figure standing in a vast dark architectural space, dramatic side lighting creating strong shadows, the figure is surrounded by subtle floating translucent layers that suggest layers of consciousness and inner world, minimal color palette of deep blacks warm amber light and cool blue undertones, architectural photography style, no text, no UI elements, photorealistic, 8k quality, inspired by Roger Deakins cinematography";
+  "Abstract architectural interior with converging corridors and warm amber light streaming through geometric openings, deep shadows, minimalist concrete surfaces, ethereal atmosphere, no people, cinematic wide angle, inspired by Tadao Ando architecture, 8k";
 
 export function HeroSection() {
   const t = useTranslations("HomePageV4.Hero");
 
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-end bg-zinc-950 overflow-hidden">
+    <section className="relative min-h-[calc(100vh-4rem)] flex items-end overflow-hidden">
       {/* Hero background image */}
       <div className="absolute inset-0">
         <Image
@@ -26,27 +26,26 @@ export function HeroSection() {
           sizes="100vw"
           priority
         />
-        {/* Gradient overlays for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/30" />
-        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/70 to-[#0a0a0c]/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/80 via-transparent to-transparent" />
       </div>
 
-      {/* Content — bottom-left aligned, editorial style */}
+      {/* Content */}
       <div className="relative z-10 container mx-auto px-4 pb-16 md:pb-24 pt-48 md:pt-64">
         <div className="max-w-3xl">
-          {/* Version badge */}
+          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/20 text-white/60 text-xs font-EuclidCircularA tracking-wider uppercase backdrop-blur-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#00ff00]/20 text-[#00ff00]/80 text-xs font-EuclidCircularA tracking-wider uppercase backdrop-blur-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff00] animate-pulse" />
               {t("badge")}
             </span>
           </motion.div>
 
-          {/* Main title — large, left-aligned */}
+          {/* Title */}
           <motion.h1
             className={cn(
               "mt-6 font-EuclidCircularA font-medium tracking-tight text-white",
@@ -60,7 +59,9 @@ export function HeroSection() {
           >
             {t("titleLine1")}
             <br />
-            <span className="font-InstrumentSerif italic text-white/80">{t("titleLine2")}</span>
+            <span className="font-InstrumentSerif italic text-[#00ff00]">
+              {t("titleLine2")}
+            </span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -86,7 +87,7 @@ export function HeroSection() {
           >
             <Button
               size="lg"
-              className="rounded-full px-8 h-12 bg-white text-zinc-950 hover:bg-zinc-200 font-EuclidCircularA font-medium"
+              className="rounded-full px-8 h-12 bg-[#00ff00] text-black hover:bg-[#00ff00]/80 font-EuclidCircularA font-medium"
               asChild
             >
               <Link href="/newstudy">

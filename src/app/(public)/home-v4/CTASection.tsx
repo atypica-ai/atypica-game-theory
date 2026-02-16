@@ -16,24 +16,27 @@ const fadeInUp = {
 };
 
 const CTA_BG_PROMPT =
-  "Cinematic wide shot of a vast horizon at golden hour, a single path leads toward the light, silhouette of distant mountains, dramatic sky with warm amber and deep indigo gradient, landscape photography, inspired by Terrence Malick cinematography, no text, 8k";
+  "Abstract horizon at golden hour, vast open landscape with warm amber light meeting deep indigo sky, single path leading into distance, ethereal atmospheric perspective, no people, landscape photography, inspired by Terrence Malick, 8k";
 
 export function CTASection() {
   const t = useTranslations("HomePageV4.CTA");
 
   return (
-    <section className="relative py-32 md:py-40 bg-zinc-950 overflow-hidden">
+    <section className="relative py-32 md:py-40 overflow-hidden border-t border-white/[0.06]">
       {/* Background image */}
       <div className="absolute inset-0">
         <Image
           src={`/api/imagegen/dev/${encodeURIComponent(CTA_BG_PROMPT)}?ratio=landscape`}
           alt=""
           fill
-          className="object-cover opacity-40"
+          className="object-cover opacity-30"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-zinc-950/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/80 to-[#0a0a0c]/60" />
       </div>
+
+      {/* Green glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#00ff00]/[0.03] rounded-full blur-3xl" />
 
       <div className="relative z-10 container mx-auto px-4">
         <motion.div className="max-w-3xl mx-auto text-center" {...fadeInUp}>
@@ -48,14 +51,14 @@ export function CTASection() {
             {t("title")}
           </h2>
 
-          <p className="mt-6 text-zinc-400 text-base md:text-lg max-w-lg mx-auto leading-relaxed">
+          <p className="mt-6 text-white/40 text-base md:text-lg max-w-lg mx-auto leading-relaxed">
             {t("subtitle")}
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               size="lg"
-              className="rounded-full px-10 h-14 bg-white text-zinc-950 hover:bg-zinc-200 font-EuclidCircularA font-medium text-base"
+              className="rounded-full px-10 h-14 bg-[#00ff00] text-black hover:bg-[#00ff00]/80 font-EuclidCircularA font-medium text-base"
               asChild
             >
               <Link href="/newstudy">
@@ -66,7 +69,7 @@ export function CTASection() {
             <Button
               variant="ghost"
               size="lg"
-              className="rounded-full px-8 h-14 text-zinc-400 hover:text-white hover:bg-white/10 font-EuclidCircularA text-base"
+              className="rounded-full px-8 h-14 text-white/40 hover:text-white hover:bg-white/10 font-EuclidCircularA text-base"
               asChild
             >
               <Link href="/pricing">{t("secondaryCta")}</Link>

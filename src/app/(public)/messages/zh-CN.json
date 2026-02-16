@@ -138,150 +138,130 @@
     "Hero": {
       "badge": "Atypica 2.0",
       "titleLine1": "The Agent That",
-      "titleLine2": "Understands People",
-      "subtitle": "大多数 Agent 替你做事。我们的 Agent 理解人为什么选择、犹豫、决定。",
-      "cta": "免费试用",
-      "secondaryCta": "价格"
+      "titleLine2": "Understands",
+      "subtitle": "大多数 Agent 只有一种使命——替人干活。我们认为 Agent 还有第二种形态——理解人。在商业世界里，理解人，比替人做事更难，也更值钱。",
+      "cta": "开始理解",
+      "secondaryCta": "了解更多"
     },
-    "AgentComparison": {
-      "label": "另一种 Agent",
-      "title": "执行者与理解者",
-      "worker": {
-        "title": "Worker Agent",
-        "description": "写代码、做设计、跑流程。很好用——但它说不出你的客户为什么选了竞品。",
-        "task1": "代码生成与自动化",
-        "task2": "设计与内容生产",
-        "task3": "工作流编排"
-      },
-      "understanding": {
-        "title": "Understanding Agent",
-        "badge": "2.0",
-        "description": "建模真实的人如何思考和决策。动机、权衡、犹豫——驱动市场的主观因素。",
-        "task1": "消费者决策建模",
-        "task2": "主观世界建模",
-        "task3": "行为动因分析"
-      },
-      "tagline": "理解人，比替人做事更难——也更值钱。"
+    "Manifesto": {
+      "prelude": "在 Agent 时代，大多数 Agent 只有一种使命：替人干活。但我们认为，Agent 还有第二种形态。",
+      "line1": "物理学为客观世界建模。",
+      "line2": "Atypica 为主观世界建模。"
     },
-    "DualRoles": {
-      "label": "工作原理",
-      "title": "两个角色，一种理解",
-      "subtitle": "每次研究同时调用两种互补的 Agent 角色",
+    "Thesis": {
+      "label": "核心论点",
+      "title": "一个「理解人」的 Agent 系统",
+      "description": "Atypica 通过多种 Agent 交互形态，对消费者的主观世界进行建模。在理解过程中，Agent 扮演两种角色——",
       "simulator": {
-        "title": "代入者",
-        "titleEn": "Simulator",
-        "description": "成为一个具体的消费者。不是统计均值——而是一个有真实权衡、犹豫和决策逻辑的人。",
-        "capabilityLabel": "能力",
-        "capability": "基于 30 万+ 人设模型，模拟个体认知模式、情感反应和决策框架。与真人行为一致性达 85%。"
+        "icon": "mirror",
+        "title": "模拟者 AI Simulator",
+        "tag": "人设建模",
+        "description": "Agent 模拟一个真实用户的决策过程。重建他们如何选择、为什么犹豫、如何权衡。它不是统计平均数，而是模拟「一个具体的人」。",
+        "stat": "30万+ 人设 · 85% 行为一致性"
       },
       "researcher": {
-        "title": "倾听者",
-        "titleEn": "Researcher",
-        "description": "提出对的问题、追问更深、引出人们难以自述的东西。既是访谈者，也是分析者。",
-        "methodsLabel": "研究形态",
-        "method1": "1v1 深度访谈",
-        "method2": "一对多访谈",
-        "method3": "Focus Group",
-        "method4": "Panel Discussion",
-        "method5": "行为追踪"
+        "icon": "mic",
+        "title": "倾听者 AI Researcher",
+        "tag": "主动倾听",
+        "description": "Agent 像研究员一样发问、追问、引导真实用户的表达。AI 既是采访者，也是分析者。",
+        "items": ["一对一深度访谈", "一对多访谈", "焦点小组", "多对多共创会", "连续行为观察"]
       }
     },
-    "Methods": {
-      "label": "研究模态",
-      "title": "五种理解方式",
-      "subtitle": "不只是问卷。真正揭示人为什么做出决策的研究。",
-      "interview": {
-        "title": "1v1 深度访谈",
-        "description": "与 AI 人设深度对话，挖掘隐藏的动机。每次 5–10 人，各有独立的决策模式。"
+    "CoreTech": {
+      "label": "核心技术",
+      "title": "主观世界模型",
+      "subtitle": "我们正在研发「主观世界基础模型」，对 2C 和 2B 用户的主观决策世界进行系统化建模。",
+      "center": "SWM",
+      "nodes": {
+        "values": "价值体系",
+        "risk": "风险偏好",
+        "emotion": "情绪触发点",
+        "decision": "决策路径",
+        "social": "社会影响因素",
+        "cognitive": "认知框架"
       },
-      "focusGroup": {
-        "title": "Focus Group",
-        "description": "3–8 个人设实时辩论。观察观点碰撞、共识形成和社交动力学。"
+      "features": ["价值体系 — Value Systems", "风险偏好 — Risk Preferences", "情绪触发点 — Emotional Triggers", "决策路径 — Decision Pathways", "社会影响因素 — Social Influence Factors"],
+      "filing": "基础模型备案进行中"
+    },
+    "ProductModules": {
+      "label": "产品模式",
+      "title": "四种理解方式",
+      "subtitle": "从主动信号吸收到全自动研究，再到人机深度访谈。",
+      "proactive": {
+        "badge": "Proactive",
+        "title": "主动模式",
+        "description": "主动吸收信号，随时主动进行研究，提供结果。无需指令，Agent 持续感知与输出洞察。"
+      },
+      "auto": {
+        "badge": "Auto",
+        "title": "自动模式",
+        "description": "全自动 AI 研究——用多智能体自动完成从研究设计、数据生成到洞察输出的端到端市场研究，将数周研究压缩到分钟级。"
+      },
+      "human": {
+        "badge": "Human",
+        "title": "人机模式",
+        "description": "用 AI 主导与人类或虚拟 Persona 的深度访谈，把「对话」直接转化为结构化洞察与可行动结论。"
+      },
+      "model": {
+        "badge": "Model",
+        "title": "主观模型",
+        "description": "基于真实行为数据与社会科学模型构建的虚拟样本系统——可调用、可验证、可扩展。"
+      }
+    },
+    "SubjectiveModel": {
+      "label": "样本引擎",
+      "title": "主观世界样本系统",
+      "persona": {
+        "title": "AI Persona",
+        "description": "基于真实行为数据与社会科学模型构建的可调用、可验证的虚拟消费者样本库。",
+        "stat": "1,000,000+ AI · 70,000+ 真人"
+      },
+      "sage": {
+        "title": "AI Sage",
+        "description": "基于真实行为数据与社会科学模型构建的可调用、可验证的虚拟专家样本库。",
+        "stat": "行业专家 · 学术权威 · 领域顾问"
       },
       "panel": {
-        "title": "Panel Simulation",
-        "description": "跨消费群体的大规模讨论。几分钟获得多维市场视角，而非几个月。"
-      },
-      "persona": {
-        "title": "人设向量化",
-        "description": "向量嵌入的人设模型，精确匹配目标受众、相似度搜索和群体分析。"
-      },
-      "simulation": {
-        "title": "行为模拟",
-        "description": "模拟真实决策旅程——从初次印象到最终购买——找到用户流失的节点。"
+        "title": "AI Panel",
+        "description": "由 AI 虚拟样本与真实受访者共同构成的新一代智能调研 Panel，将传统样本库升级为可模拟、可对照、可扩展的主观世界建模系统。",
+        "stat": "模拟 · 对照 · 扩展"
       }
+    },
+    "InteractionModes": {
+      "label": "市场应用",
+      "title": "多元理解 × 多模态",
+      "subtitle": "通过多种方式与多种模态，全方位理解用户。",
+      "methodsTitle": "多元理解方式",
+      "methodsTag": "多元方法",
+      "methods": ["一对一访谈", "一对多访谈", "多人讨论", "专家访谈", "行为观察"],
+      "modalitiesTitle": "多模态输入",
+      "modalitiesTag": "多模态",
+      "modalities": ["文字", "图像", "视频", "网页", "声音"]
     },
     "UseCases": {
       "label": "使用场景",
-      "title": "为需要理解人的团队而生",
-      "tabs": {
-        "enterprise": "企业",
-        "creator": "创作者"
-      },
-      "enterprise": {
-        "productTest": {
-          "title": "产品验证",
-          "description": "动手开发前验证市场反应。知道什么能打动人、什么不行。"
-        },
-        "pricing": {
-          "title": "定价策略",
-          "description": "理解不同人群的价格敏感度和支付意愿。"
-        },
-        "brand": {
-          "title": "品牌定位",
-          "description": "看到目标受众真实的品牌认知，而非你以为的。"
-        },
-        "content": {
-          "title": "内容测试",
-          "description": "发布前预测哪些信息能打动人、哪些会被忽略。"
-        },
-        "journey": {
-          "title": "旅程推演",
-          "description": "模拟完整决策路径，精确定位转化断裂点。"
-        }
-      },
-      "creator": {
-        "persona": {
-          "title": "受众测试",
-          "description": "上线前用模拟受众验证你的定位。"
-        },
-        "resonance": {
-          "title": "内容共鸣",
-          "description": "发布前知道你的内容能否引发情感共鸣。"
-        },
-        "community": {
-          "title": "社群模拟",
-          "description": "预览社群对新想法和策略的反应。"
-        }
+      "title": "覆盖所有「理解人」的场景",
+      "cases": {
+        "c1": { "title": "市场研究与消费者洞察", "description": "消费者细分、画像、U&A、JTBD、需求洞察、定性访谈 + 洞察报告" },
+        "c2": { "title": "产品概念测试与创新研究", "description": "新品概念测试、包装/命名/价值主张验证、创新机会地图" },
+        "c3": { "title": "品牌策略与传播洞察", "description": "品牌诊断、定位与叙事、心智地图、传播主张、客户人群分析" },
+        "c4": { "title": "归因分析", "description": "驱动因素分析、内容/产品/体验对转化的影响解释、决策路径拆解" },
+        "c5": { "title": "定价策略与商业模式设计", "description": "定价模型设计（订阅/用量/分层）、愿付价研究、价格架构与升级路径" },
+        "c6": { "title": "社媒舆情与趋势情报", "description": "舆情监测、趋势报告、消费者声音归纳" },
+        "c7": { "title": "用户体验和 VOC", "description": "VOC 体系、客户旅程与痛点、体验改进路线图" },
+        "c8": { "title": "学术社会科学研究", "description": "社会模拟、人物志、深度采访研究" },
+        "c9": { "title": "预测投资和市场判断", "description": "宏观/政治/科技/市场事件预测、多观点模拟与共识生成、信号追踪与验证" }
       }
     },
-    "Stats": {
-      "title": "主观世界模型",
-      "subtitle": "不只追踪人做了什么，而是建模人为什么这样想。",
-      "personas": {
-        "label": "AI 人设"
-      },
-      "interviews": {
-        "label": "访谈完成"
-      },
-      "speed": {
-        "label": "每次研究"
-      },
-      "modelTitle": "建模人真正在想什么",
-      "modelDescription": "传统调研衡量行为。Atypica 建模内心世界——价值观、恐惧、情绪和影响每个决策的社会压力。",
-      "dimensions": {
-        "values": "价值观",
-        "risk": "风险容忍",
-        "emotion": "情绪触发",
-        "decision": "决策逻辑",
-        "social": "社会压力"
-      }
+    "Clients": {
+      "label": "标杆客户",
+      "title": "他们在用 Atypica"
     },
     "CTA": {
-      "title": "理解人为什么做决策",
-      "subtitle": "几分钟启动第一次研究。无需配置、无需设计问卷、无需等待。",
-      "cta": "免费试用",
-      "secondaryCta": "价格"
+      "title": "Ready to Understand Your Users?",
+      "subtitle": "让 Agent 帮你理解每一个消费者的主观世界。比替人干活更难的事，我们已经开始了。",
+      "cta": "预约演示",
+      "secondaryCta": "阅读白皮书"
     }
   },
   "HomePageV3": {
