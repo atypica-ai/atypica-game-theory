@@ -8,7 +8,12 @@ import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { fetchPersonaPanelById, fetchResearchProjectsByPanelId } from "../actions";
+import {
+  fetchDiscussionsByPanelId,
+  fetchInterviewsByPanelId,
+  fetchPersonaPanelById,
+  fetchResearchProjectsByPanelId,
+} from "../actions";
 import { PanelDetailClient } from "./PanelDetailClient";
 
 // generateMetadata needs database access
@@ -35,9 +40,11 @@ export async function generateMetadata({
 }
 
 async function PanelDetailPage({ panelId }: { panelId: number }) {
-  const [panelResult, projectsResult] = await Promise.all([
+  const [panelResult, projectsResult, discussionsResult, interviewsResult] = await Promise.all([
     fetchPersonaPanelById(panelId),
     fetchResearchProjectsByPanelId(panelId),
+    fetchDiscussionsByPanelId(panelId),
+    fetchInterviewsByPanelId(panelId),
   ]);
 
   if (!panelResult.success) {
@@ -51,6 +58,9 @@ async function PanelDetailPage({ panelId }: { panelId: number }) {
     <PanelDetailClient
       panel={panelResult.data}
       projects={projectsResult.success ? projectsResult.data : []}
+      discussions={discussionsResult.success ? discussionsResult.data : []}
+      interviews={interviewsResult.success ? interviewsResult.data.interviews : []}
+      totalPersonas={interviewsResult.success ? interviewsResult.data.totalPersonas : 0}
     />
   );
 }

@@ -23,8 +23,6 @@
       "deleting": "Deleting..."
     },
     "DetailPage": {
-      "panelInfo": "Panel Information",
-      "usageCount": "Usage",
       "viewDetails": "View Details",
       "researchProjects": "Research Projects",
       "noProjects": "No research projects yet",
@@ -41,6 +39,17 @@
         "default": "Research"
       },
       "running": "Running",
+      "discussions": "Discussions",
+      "noDiscussions": "No discussions yet",
+      "noDiscussionsDescription": "Discussions will appear here when panel personas participate in group discussions",
+      "participantsLabel": "participants",
+      "eventsLabel": "events",
+      "interviewProgress": "Interview Progress",
+      "interviewsCompleted": "{completed} of {total} completed",
+      "noInterviews": "No interviews yet",
+      "noInterviewsDescription": "Interviews will appear here when panel personas are interviewed",
+      "completedLabel": "completed",
+      "inProgressLabel": "in progress",
       "attributes": {
         "description": "Persona Description",
         "heading": "Persona Attributes",
@@ -57,6 +66,34 @@
         "organization": "Organization",
         "experience": "Experience"
       }
+    },
+    "DiscussionDetailPage": {
+      "backToPanel": "Back to Panel",
+      "participants": "Participants",
+      "complete": "Complete",
+      "inProgress": "In Progress",
+      "starting": "Discussion is starting...",
+      "analysis": "Analysis",
+      "events": "Events",
+      "summary": "Summary",
+      "minutes": "Minutes"
+    },
+    "InterviewsPage": {
+      "title": "Interviews",
+      "backToPanel": "Back to Panel",
+      "completedOf": "{completed} of {total} completed",
+      "completed": "completed",
+      "inProgress": "in progress",
+      "pending": "pending",
+      "messages": "{count, plural, =1 {1 message} other {# messages}}",
+      "analysis": "Analysis",
+      "status": "Status",
+      "messagesCount": "Messages",
+      "conclusion": "Conclusion",
+      "loading": "Loading conversation...",
+      "noMessages": "No messages yet",
+      "noInterviews": "No interviews have been conducted yet",
+      "selectInterview": "Select a persona to view their interview"
     }
   }
 }

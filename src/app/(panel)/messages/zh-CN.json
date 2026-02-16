@@ -23,8 +23,6 @@
       "deleting": "删除中..."
     },
     "DetailPage": {
-      "panelInfo": "面板信息",
-      "usageCount": "使用情况",
       "viewDetails": "查看详情",
       "researchProjects": "研究项目",
       "noProjects": "暂无研究项目",
@@ -41,6 +39,17 @@
         "default": "研究"
       },
       "running": "进行中",
+      "discussions": "讨论",
+      "noDiscussions": "暂无讨论",
+      "noDiscussionsDescription": "当面板人物参与群体讨论时，讨论记录将显示在这里",
+      "participantsLabel": "位参与者",
+      "eventsLabel": "条发言",
+      "interviewProgress": "访谈进度",
+      "interviewsCompleted": "已完成 {completed}/{total}",
+      "noInterviews": "暂无访谈",
+      "noInterviewsDescription": "当面板人物接受访谈时，访谈记录将显示在这里",
+      "completedLabel": "已完成",
+      "inProgressLabel": "进行中",
       "attributes": {
         "description": "人物描述",
         "heading": "人物属性",
@@ -57,6 +66,34 @@
         "organization": "组织",
         "experience": "经验"
       }
+    },
+    "DiscussionDetailPage": {
+      "backToPanel": "返回面板",
+      "participants": "参与者",
+      "complete": "已完成",
+      "inProgress": "进行中",
+      "starting": "讨论正在开始...",
+      "analysis": "分析",
+      "events": "发言",
+      "summary": "总结",
+      "minutes": "会议记录"
+    },
+    "InterviewsPage": {
+      "title": "访谈",
+      "backToPanel": "返回面板",
+      "completedOf": "已完成 {completed}/{total}",
+      "completed": "已完成",
+      "inProgress": "进行中",
+      "pending": "待开始",
+      "messages": "{count} 条消息",
+      "analysis": "分析",
+      "status": "状态",
+      "messagesCount": "消息数",
+      "conclusion": "结论",
+      "loading": "加载对话中...",
+      "noMessages": "暂无消息",
+      "noInterviews": "尚未进行任何访谈",
+      "selectInterview": "选择一个人物查看访谈内容"
     }
   }
 }

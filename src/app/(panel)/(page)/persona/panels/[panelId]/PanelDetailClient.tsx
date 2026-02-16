@@ -12,15 +12,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import { PersonaExtra } from "@/prisma/client";
-import { ArrowRight, ExternalLink, Plus } from "lucide-react";
+import { ArrowRight, CheckCircle2, ExternalLink, Loader2, MessageSquare, Plus, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Streamdown } from "streamdown";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import {
   createStudyFromPanel,
+  type DiscussionSummary,
   fetchPersonaPanelById,
+  type PanelInterview,
   PersonaWithAttributes,
   ResearchProject,
 } from "../actions";
@@ -68,9 +71,15 @@ function extractSummaryFromPrompt(prompt: string) {
 export function PanelDetailClient({
   panel,
   projects,
+  discussions,
+  interviews,
+  totalPersonas,
 }: {
   panel: PanelData;
   projects: ResearchProject[];
+  discussions: DiscussionSummary[];
+  interviews: PanelInterview[];
+  totalPersonas: number;
 }) {
   const t = useTranslations("PersonaPanel");
   const locale = useLocale();
@@ -102,9 +111,8 @@ export function PanelDetailClient({
   };
 
   return (
-    <>
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="mx-auto max-w-5xl px-6 py-10 space-y-7">
+    <FitToViewport>
+      <div className="mx-auto max-w-5xl px-6 py-10 space-y-7">
           {/* Header */}
           <div>
             <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
@@ -183,6 +191,123 @@ export function PanelDetailClient({
             )}
           </div>
 
+          {/* Discussions */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium tracking-tight text-muted-foreground uppercase">
+                {t("DetailPage.discussions")}
+              </h2>
+            </div>
+
+            {discussions.length === 0 ? (
+              <div className="border border-dashed border-border rounded-lg py-6 px-4 text-center">
+                <p className="text-sm text-muted-foreground">{t("DetailPage.noDiscussions")}</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  {t("DetailPage.noDiscussionsDescription")}
+                </p>
+              </div>
+            ) : (
+              <div className="border border-border rounded-lg divide-y divide-border">
+                {discussions.slice(0, 5).map((discussion) => (
+                  <Link
+                    key={discussion.token}
+                    href={`/persona/panels/${panel.id}/discussions/${discussion.token}`}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group"
+                  >
+                    <MessageSquare className="size-4 text-muted-foreground/50 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm truncate">{discussion.instruction}</span>
+                        {!discussion.isComplete && (
+                          <span className="relative flex size-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full size-2 bg-green-500" />
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                        <span>
+                          {discussion.participantIds.length} {t("DetailPage.participantsLabel")}
+                        </span>
+                        <span>·</span>
+                        <span>{discussion.eventCount} {t("DetailPage.eventsLabel")}</span>
+                        <span>·</span>
+                        <span>{formatDate(discussion.createdAt, locale)}</span>
+                      </div>
+                    </div>
+                    <ArrowRight className="size-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors shrink-0" />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Interview Progress */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium tracking-tight text-muted-foreground uppercase">
+                {t("DetailPage.interviewProgress")}
+              </h2>
+              {interviews.length > 0 && (
+                <Link
+                  href={`/persona/panels/${panel.id}/interviews`}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {t("DetailPage.viewDetails")}
+                </Link>
+              )}
+            </div>
+
+            {interviews.length === 0 ? (
+              <div className="border border-dashed border-border rounded-lg py-6 px-4 text-center">
+                <p className="text-sm text-muted-foreground">{t("DetailPage.noInterviews")}</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  {t("DetailPage.noInterviewsDescription")}
+                </p>
+              </div>
+            ) : (
+              <Link
+                href={`/persona/panels/${panel.id}/interviews`}
+                className="block border border-border rounded-lg p-4 hover:border-green-500/30 transition-colors group"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <Users className="size-4 text-muted-foreground/50" />
+                  <span className="text-sm">
+                    {t("DetailPage.interviewsCompleted", {
+                      completed: interviews.filter((i) => i.status === "completed").length,
+                      total: totalPersonas,
+                    })}
+                  </span>
+                  {interviews.some((i) => i.status === "in-progress") && (
+                    <Loader2 className="size-3.5 text-amber-500 animate-spin" />
+                  )}
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${totalPersonas > 0 ? (interviews.filter((i) => i.status === "completed").length / totalPersonas) * 100 : 0}%`,
+                    }}
+                  />
+                </div>
+                <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                  {interviews.filter((i) => i.status === "completed").length > 0 && (
+                    <span className="flex items-center gap-1">
+                      <CheckCircle2 className="size-3 text-green-500" />
+                      {interviews.filter((i) => i.status === "completed").length} {t("DetailPage.completedLabel")}
+                    </span>
+                  )}
+                  {interviews.filter((i) => i.status === "in-progress").length > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Loader2 className="size-3 text-amber-500 animate-spin" />
+                      {interviews.filter((i) => i.status === "in-progress").length} {t("DetailPage.inProgressLabel")}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            )}
+          </div>
+
           {/* Personas */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {panel.personasWithAttributes.map((persona) => {
@@ -244,7 +369,6 @@ export function PanelDetailClient({
             })}
           </div>
         </div>
-      </div>
 
       {/* Persona Detail Dialog */}
       <Dialog open={!!selectedPersona} onOpenChange={() => setSelectedPersona(null)}>
@@ -357,6 +481,6 @@ export function PanelDetailClient({
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </FitToViewport>
   );
 }

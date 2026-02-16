@@ -2,9 +2,9 @@ import { DefaultLayout } from "@/components/layout/DefaultLayout";
 import { ReactNode } from "react";
 
 /**
- * Agents Layout
+ * Panel Page Layout
  *
- * This layout expects all child pages to wrap their content in <FitToViewport>
+ * Full-screen layout with no footer. All child pages should wrap their content in <FitToViewport>.
  *
  * @example
  * ```tsx
@@ -15,7 +15,7 @@ import { ReactNode } from "react";
  */
 export default async function PanelPageLayout({ children }: { children: ReactNode }) {
   return (
-    <DefaultLayout header={true} fitToViewport={false}>
+    <DefaultLayout header={true} fitToViewport={true}>
       {children}
     </DefaultLayout>
   );

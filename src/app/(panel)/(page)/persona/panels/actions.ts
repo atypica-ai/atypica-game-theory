@@ -1,11 +1,14 @@
 "use server";
 
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { createStudyUserChat } from "@/app/(study)/study/lib";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import type { Persona, PersonaExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import type { UIMessage } from "ai";
 
 export interface PersonaPanelWithDetails {
   id: number;
@@ -308,5 +311,249 @@ export async function createStudyFromPanel(
       success: true,
       data: { token: userChat.token },
     };
+  });
+}
+
+/**
+ * Fetch all discussions for a panel (summary view)
+ */
+export interface DiscussionSummary {
+  token: string;
+  instruction: string;
+  summary: string;
+  eventCount: number;
+  participantIds: number[];
+  createdAt: Date;
+  isComplete: boolean;
+}
+
+export async function fetchDiscussionsByPanelId(
+  panelId: number,
+): Promise<ServerActionResult<DiscussionSummary[]>> {
+  return withAuth(async (user) => {
+    const panel = await prisma.personaPanel.findFirst({
+      where: { id: panelId, userId: user.id },
+      select: { id: true },
+    });
+    if (!panel) {
+      return { success: false, code: "forbidden", message: "Panel not found" };
+    }
+
+    const timelines = await prisma.discussionTimeline.findMany({
+      where: { personaPanelId: panelId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const discussions: DiscussionSummary[] = timelines.map((t) => {
+      const events = (t.events ?? []) as DiscussionTimelineEvent[];
+      const participantIds = [
+        ...new Set(
+          events
+            .filter((e): e is DiscussionTimelineEvent & { type: "persona-reply" } => e.type === "persona-reply")
+            .map((e) => e.personaId),
+        ),
+      ];
+      return {
+        token: t.token,
+        instruction: t.instruction,
+        summary: t.summary,
+        eventCount: events.length,
+        participantIds,
+        createdAt: t.createdAt,
+        isComplete: t.summary !== "",
+      };
+    });
+
+    return { success: true, data: discussions };
+  });
+}
+
+/**
+ * Fetch a single discussion with panel personas (for detail view)
+ */
+export async function fetchDiscussionDetail(
+  panelId: number,
+  timelineToken: string,
+): Promise<
+  ServerActionResult<{
+    timeline: {
+      token: string;
+      instruction: string;
+      events: DiscussionTimelineEvent[];
+      summary: string;
+      minutes: string;
+      createdAt: Date;
+    };
+    personas: PersonaWithAttributes[];
+  }>
+> {
+  return withAuth(async (user) => {
+    const panel = await prisma.personaPanel.findFirst({
+      where: { id: panelId, userId: user.id },
+    });
+    if (!panel) {
+      return { success: false, code: "forbidden", message: "Panel not found" };
+    }
+
+    const timeline = await prisma.discussionTimeline.findFirst({
+      where: { token: timelineToken, personaPanelId: panelId },
+    });
+    if (!timeline) {
+      return { success: false, code: "not_found", message: "Discussion not found" };
+    }
+
+    const personas = await prisma.persona.findMany({
+      where: { id: { in: panel.personaIds as number[] } },
+      select: {
+        id: true,
+        name: true,
+        token: true,
+        tags: true,
+        source: true,
+        prompt: true,
+        createdAt: true,
+        extra: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        timeline: {
+          token: timeline.token,
+          instruction: timeline.instruction,
+          events: (timeline.events ?? []) as DiscussionTimelineEvent[],
+          summary: timeline.summary,
+          minutes: timeline.minutes,
+          createdAt: timeline.createdAt,
+        },
+        personas: personas as PersonaWithAttributes[],
+      },
+    };
+  });
+}
+
+/**
+ * Fetch all interviews for a panel (aggregated view, no messages)
+ */
+export interface PanelInterview {
+  id: number;
+  personaId: number;
+  personaName: string;
+  personaToken: string;
+  personaExtra: PersonaExtra;
+  status: "completed" | "in-progress" | "pending";
+  conclusion: string;
+  messageCount: number;
+  interviewUserChat: {
+    token: string;
+    backgroundToken: string | null;
+  } | null;
+  createdAt: Date;
+}
+
+export async function fetchInterviewsByPanelId(
+  panelId: number,
+): Promise<ServerActionResult<{ interviews: PanelInterview[]; totalPersonas: number }>> {
+  return withAuth(async (user) => {
+    const panel = await prisma.personaPanel.findFirst({
+      where: { id: panelId, userId: user.id },
+    });
+    if (!panel) {
+      return { success: false, code: "forbidden", message: "Panel not found" };
+    }
+
+    const interviews = await prisma.analystInterview.findMany({
+      where: { personaPanelId: panelId },
+      include: {
+        persona: {
+          select: { id: true, name: true, token: true, extra: true },
+        },
+        interviewUserChat: {
+          select: {
+            token: true,
+            backgroundToken: true,
+            _count: { select: { messages: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const panelInterviews: PanelInterview[] = interviews
+      .filter((i) => i.persona !== null)
+      .map((i) => {
+        const hasConclusion = i.conclusion !== "";
+        const isRunning = i.interviewUserChat?.backgroundToken != null;
+        const status: PanelInterview["status"] = hasConclusion
+          ? "completed"
+          : isRunning
+            ? "in-progress"
+            : "pending";
+
+        return {
+          id: i.id,
+          personaId: i.persona!.id,
+          personaName: i.persona!.name,
+          personaToken: i.persona!.token,
+          personaExtra: i.persona!.extra as PersonaExtra,
+          status,
+          conclusion: i.conclusion,
+          messageCount: i.interviewUserChat?._count.messages ?? 0,
+          interviewUserChat: i.interviewUserChat
+            ? {
+                token: i.interviewUserChat.token,
+                backgroundToken: i.interviewUserChat.backgroundToken,
+              }
+            : null,
+          createdAt: i.createdAt,
+        };
+      });
+
+    return {
+      success: true,
+      data: {
+        interviews: panelInterviews,
+        totalPersonas: (panel.personaIds as number[]).length,
+      },
+    };
+  });
+}
+
+/**
+ * Fetch messages for a single interview (lazy-loaded when user expands)
+ */
+export async function fetchInterviewMessages(
+  panelId: number,
+  interviewId: number,
+): Promise<ServerActionResult<UIMessage[]>> {
+  return withAuth(async (user) => {
+    const panel = await prisma.personaPanel.findFirst({
+      where: { id: panelId, userId: user.id },
+      select: { id: true },
+    });
+    if (!panel) {
+      return { success: false, code: "forbidden", message: "Panel not found" };
+    }
+
+    const interview = await prisma.analystInterview.findFirst({
+      where: { id: interviewId, personaPanelId: panelId },
+      select: {
+        interviewUserChat: {
+          select: {
+            messages: { orderBy: { id: "asc" } },
+          },
+        },
+      },
+    });
+    if (!interview) {
+      return { success: false, code: "not_found", message: "Interview not found" };
+    }
+
+    const messages: UIMessage[] = (interview.interviewUserChat?.messages ?? []).map(
+      convertDBMessageToAIMessage,
+    );
+
+    return { success: true, data: messages };
   });
 }
