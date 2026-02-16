@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 const INTERACTION_HERO_PROMPT =
-  "Multiple overlapping translucent holographic screens floating in dark architectural space, each showing abstract organic patterns and waveforms, cool blue and warm amber light interplay, futuristic yet human, no text, cinematic wide shot, 8k";
+  "A beautifully curated collection of vintage communication devices arranged on a long white table, photographed from a slightly elevated angle in bright natural light. The collection includes: a 1960s Braun radio receiver with its iconic minimal design, a vintage rotary telephone in cream Bakelite, an early portable typewriter with round keys, and a reel-to-reel tape recorder. Each device is spaced with generous breathing room between them. The arrangement suggests the evolution and diversity of human communication methods — from listening to speaking to writing to recording. All devices share a common aesthetic: rounded forms, warm materials (Bakelite, brushed aluminum, fabric speaker grilles), and the unmistakable beauty of mid-century industrial design. The overall mood is bright, warm, and intellectually curious. Color palette: cream whites, warm aluminum, honey-toned wood, soft natural shadows. No people, no modern technology, no digital screens, no text. Museum exhibition photography style. 8k resolution.";
 
 export function InteractionModesSection() {
   const t = useTranslations("HomePageV4.InteractionModes");
@@ -15,7 +15,7 @@ export function InteractionModesSection() {
   const modalities = t.raw("modalities") as string[];
 
   return (
-    <section className="py-24 md:py-32 border-t border-white/[0.06]">
+    <section className="py-24 md:py-32 border-t border-zinc-200">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Wide hero image with overlaid header */}
@@ -34,12 +34,12 @@ export function InteractionModesSection() {
                 className="object-cover"
                 sizes="100vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/90 via-[#0a0a0c]/40 to-[#0a0a0c]/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-zinc-900/30 to-zinc-900/10" />
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-px bg-[#00ff00]" />
-                <span className="font-IBMPlexMono text-xs text-[#00ff00] uppercase tracking-[0.2em]">
+                <div className="w-8 h-px bg-[#4ade80]" />
+                <span className="font-IBMPlexMono text-xs text-[#4ade80] uppercase tracking-[0.2em]">
                   {t("label")}
                 </span>
               </div>
@@ -52,7 +52,7 @@ export function InteractionModesSection() {
               >
                 {t("title")}
               </h2>
-              <p className="mt-3 text-white/40 text-sm md:text-base max-w-xl">
+              <p className="mt-3 text-white/50 text-sm md:text-base max-w-xl">
                 {t("subtitle")}
               </p>
             </div>
@@ -64,7 +64,7 @@ export function InteractionModesSection() {
             <motion.div
               className={cn(
                 "p-6 md:p-8 rounded-2xl",
-                "bg-white/[0.03] border border-white/[0.06]",
+                "bg-white border border-zinc-200 shadow-sm",
               )}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -72,10 +72,10 @@ export function InteractionModesSection() {
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <div className="flex items-center gap-3 mb-6">
-                <h3 className="font-EuclidCircularA font-medium text-lg text-white">
+                <h3 className="font-EuclidCircularA font-medium text-lg text-zinc-900">
                   {t("methodsTitle")}
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-IBMPlexMono uppercase tracking-wider text-[#00ff00]/70 border border-[#00ff00]/20 bg-[#00ff00]/[0.05]">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-IBMPlexMono uppercase tracking-wider text-[#2d8a4e]/70 border border-[#2d8a4e]/20 bg-[#2d8a4e]/[0.05]">
                   {t("methodsTag")}
                 </span>
               </div>
@@ -85,15 +85,15 @@ export function InteractionModesSection() {
                     key={method}
                     className={cn(
                       "flex items-center gap-3 px-4 py-3 rounded-xl",
-                      "bg-white/[0.02] border border-white/[0.04]",
+                      "bg-zinc-50 border border-zinc-100",
                       "transition-all duration-200",
-                      "hover:border-[#00ff00]/20 hover:bg-[#00ff00]/[0.03]",
+                      "hover:border-[#2d8a4e]/20 hover:bg-[#2d8a4e]/[0.03]",
                     )}
                   >
-                    <span className="font-IBMPlexMono text-[10px] text-[#00ff00]/50">
+                    <span className="font-IBMPlexMono text-[10px] text-[#2d8a4e]/50">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span className="font-EuclidCircularA text-sm text-white/60 hover:text-white/80 transition-colors">
+                    <span className="font-EuclidCircularA text-sm text-zinc-600 hover:text-zinc-900 transition-colors">
                       {method}
                     </span>
                   </div>
@@ -105,7 +105,7 @@ export function InteractionModesSection() {
             <motion.div
               className={cn(
                 "p-6 md:p-8 rounded-2xl",
-                "bg-white/[0.03] border border-white/[0.06]",
+                "bg-white border border-zinc-200 shadow-sm",
               )}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -113,10 +113,10 @@ export function InteractionModesSection() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="flex items-center gap-3 mb-6">
-                <h3 className="font-EuclidCircularA font-medium text-lg text-white">
+                <h3 className="font-EuclidCircularA font-medium text-lg text-zinc-900">
                   {t("modalitiesTitle")}
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-IBMPlexMono uppercase tracking-wider text-[#00ff00]/70 border border-[#00ff00]/20 bg-[#00ff00]/[0.05]">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-IBMPlexMono uppercase tracking-wider text-[#2d8a4e]/70 border border-[#2d8a4e]/20 bg-[#2d8a4e]/[0.05]">
                   {t("modalitiesTag")}
                 </span>
               </div>
@@ -126,12 +126,12 @@ export function InteractionModesSection() {
                     key={modality}
                     className={cn(
                       "flex items-center justify-center px-4 py-4 rounded-xl",
-                      "bg-white/[0.02] border border-white/[0.04]",
+                      "bg-zinc-50 border border-zinc-100",
                       "transition-all duration-200",
-                      "hover:border-[#00ff00]/20 hover:bg-[#00ff00]/[0.03]",
+                      "hover:border-[#2d8a4e]/20 hover:bg-[#2d8a4e]/[0.03]",
                     )}
                   >
-                    <span className="font-EuclidCircularA text-sm text-white/60 hover:text-white/80 transition-colors">
+                    <span className="font-EuclidCircularA text-sm text-zinc-600 hover:text-zinc-900 transition-colors">
                       {modality}
                     </span>
                   </div>

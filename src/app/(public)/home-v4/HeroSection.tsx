@@ -9,13 +9,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const HERO_IMAGE_PROMPT =
-  "Abstract architectural interior with converging corridors and warm amber light streaming through geometric openings, deep shadows, minimalist concrete surfaces, ethereal atmosphere, no people, cinematic wide angle, inspired by Tadao Ando architecture, 8k";
+  "A retro-futuristic control console inspired by 1970s Braun industrial design and early Apple aesthetics. The scene shows a beautifully minimal instrument panel with precisely machined aluminum dials, toggle switches, and a small circular oscilloscope display glowing with a soft green waveform. The surface is matte off-white plastic with subtle rounded edges, reminiscent of Dieter Rams' design philosophy. Warm natural light streams in from the left, casting gentle shadows that reveal the tactile quality of each knob and button. The background is a clean cream-colored wall. The overall mood is bright, intelligent, and warmly technological — technology that feels human and approachable rather than cold and digital. No people, no text, no screens showing modern UIs. Shot in a style reminiscent of product photography from a 1978 Braun catalog. Slight film grain texture. 8k resolution.";
 
 export function HeroSection() {
   const t = useTranslations("HomePageV4.Hero");
 
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-end overflow-hidden">
+    <section className="relative min-h-[calc(100vh-4rem)] flex items-end overflow-hidden bg-[#0a0a0c]">
       {/* Hero background image */}
       <div className="absolute inset-0">
         <Image
@@ -26,8 +26,8 @@ export function HeroSection() {
           sizes="100vw"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/70 to-[#0a0a0c]/30" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/60 to-[#0a0a0c]/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/70 via-transparent to-transparent" />
       </div>
 
       {/* Content */}
@@ -39,8 +39,8 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#00ff00]/20 text-[#00ff00]/80 text-xs font-EuclidCircularA tracking-wider uppercase backdrop-blur-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff00] animate-pulse" />
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#2d8a4e]/30 text-[#2d8a4e] text-xs font-EuclidCircularA tracking-wider uppercase backdrop-blur-sm bg-white/[0.05]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2d8a4e] animate-pulse" />
               {t("badge")}
             </span>
           </motion.div>
@@ -59,9 +59,10 @@ export function HeroSection() {
           >
             {t("titleLine1")}
             <br />
-            <span className="font-InstrumentSerif italic text-[#00ff00]">
+            <span className="font-InstrumentSerif italic text-[#4ade80]">
               {t("titleLine2")}
             </span>
+            {t("titleLine2End")}
           </motion.h1>
 
           {/* Subtitle */}
@@ -87,7 +88,7 @@ export function HeroSection() {
           >
             <Button
               size="lg"
-              className="rounded-full px-8 h-12 bg-[#00ff00] text-black hover:bg-[#00ff00]/80 font-EuclidCircularA font-medium"
+              className="rounded-full px-8 h-12 bg-[#2d8a4e] text-white hover:bg-[#2d8a4e]/80 font-EuclidCircularA font-medium"
               asChild
             >
               <Link href="/newstudy">

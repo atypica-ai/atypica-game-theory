@@ -11,14 +11,14 @@ import { UseCasesSection } from "./UseCasesSection";
 import { ClientsSection } from "./ClientsSection";
 import { CTASection } from "./CTASection";
 
-const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")`;
+const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E")`;
 
 export default function HomePageV4() {
   return (
-    <div className="relative min-h-screen bg-[#0a0a0c] text-white overflow-hidden">
-      {/* Film grain overlay */}
+    <div className="relative min-h-screen bg-[#fafaf8] overflow-hidden">
+      {/* Subtle film grain overlay */}
       <div
-        className="pointer-events-none fixed inset-0 z-50 opacity-30"
+        className="pointer-events-none fixed inset-0 z-50 opacity-20 mix-blend-multiply"
         style={{ backgroundImage: GRAIN_SVG }}
       />
 

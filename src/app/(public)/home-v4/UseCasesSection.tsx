@@ -6,13 +6,13 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 const FEATURED_IMG_1 =
-  "Macro close-up of eye iris reflecting colorful data visualizations, abstract and artistic, warm amber and cool blue tones, no full face, extreme close-up, editorial photography, 8k";
+  "A minimal retro-futuristic data visualization rendered as a physical object: a vintage circular pie chart made of colored acrylic segments (warm amber, sage green, soft gray) standing upright on a brass rod mount, against a clean cream background. The acrylic pieces are semi-transparent, catching and refracting warm natural light to create beautiful color overlaps and shadow patterns on the white surface below. The object suggests the elegance of data analysis reduced to its purest, most tactile form — information you can hold and examine. Inspired by the educational models and scientific demonstration instruments of the 1960s. Color palette: warm amber acrylic, sage green acrylic, translucent gray, brass mounting, cream background. No people, no screens, no text. Product photography with warm natural light. 8k resolution.";
 
 const FEATURED_IMG_2 =
-  "Abstract topographic contour map made of glowing green lines on dark background, data landscape visualization, minimal and elegant, no text, 8k";
+  "A vintage analog chart recorder — the kind used in seismology or meteorology stations in the 1970s — actively drawing a flowing trend line with a fine-tipped pen on continuously scrolling graph paper. The instrument has a clean aluminum housing with rounded edges and small control knobs. The pen traces an organic, undulating line that suggests market trends and human behavioral patterns. The graph paper has a subtle green grid. Warm side-light illuminates the mechanical beauty of the recording mechanism and the precision of the pen tip touching paper. The overall feeling is one of continuous observation — patient, systematic measurement of patterns over time. Color palette: aluminum silver, cream graph paper, green grid lines, warm natural light. No people, no digital displays. Scientific instrument product photography. 8k resolution.";
 
 const FEATURED_IMG_3 =
-  "Aerial view of a winding river through dark landscape at twilight, dramatic light reflecting on water surface, abstract nature photography, warm and cool tones, no people, 8k";
+  "A collection of vintage analog gauges and meters arranged in a neat grid on a white display board — the kind found in a 1960s power plant or early computing facility control room. Each gauge has a different purpose: some show pressure with sweeping needle dials, others show temperature with colored arc indicators, one has a moving coil meter. All share the same clean aesthetic: white faces, precise black markings, glass covers with chrome bezels. They represent a comprehensive dashboard for understanding complex systems — each meter capturing a different dimension of the same underlying reality. Warm ambient light creates subtle reflections on the glass faces and chrome frames. Color palette: white gauge faces, chrome bezels, red and green indicator zones, warm light. No people, no digital screens. Industrial equipment photography in the style of a design museum. 8k resolution.";
 
 const featuredCases = [
   { key: "c1", img: FEATURED_IMG_1 },
@@ -26,7 +26,7 @@ export function UseCasesSection() {
   const t = useTranslations("HomePageV4.UseCases");
 
   return (
-    <section className="py-24 md:py-32 border-t border-white/[0.06]">
+    <section className="py-24 md:py-32 border-t border-zinc-200">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -38,14 +38,14 @@ export function UseCasesSection() {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-px bg-[#00ff00]" />
-              <span className="font-IBMPlexMono text-xs text-[#00ff00] uppercase tracking-[0.2em]">
+              <div className="w-8 h-px bg-[#2d8a4e]" />
+              <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">
                 {t("label")}
               </span>
             </div>
             <h2
               className={cn(
-                "font-EuclidCircularA font-medium tracking-tight text-white",
+                "font-EuclidCircularA font-medium tracking-tight text-zinc-900",
                 "text-3xl md:text-4xl lg:text-5xl",
                 "zh:text-2xl zh:md:text-3xl zh:lg:text-4xl zh:tracking-wide",
               )}
@@ -61,9 +61,9 @@ export function UseCasesSection() {
                 key={key}
                 className={cn(
                   "group rounded-2xl overflow-hidden",
-                  "bg-white/[0.03] border border-white/[0.06]",
+                  "bg-white border border-zinc-200 shadow-sm",
                   "transition-all duration-300",
-                  "hover:border-[#00ff00]/20 hover:shadow-[0_0_30px_rgba(0,255,0,0.06)]",
+                  "hover:shadow-lg hover:border-zinc-300",
                 )}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -78,16 +78,15 @@ export function UseCasesSection() {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
-                  <span className="absolute top-4 left-4 font-IBMPlexMono text-xs text-[#00ff00]">
+                  <span className="absolute top-4 left-4 font-IBMPlexMono text-xs text-white bg-zinc-900/60 px-2 py-0.5 rounded-full backdrop-blur-sm">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                 </div>
                 <div className="p-5 md:p-6">
-                  <h4 className="font-EuclidCircularA font-medium text-base text-white mb-2">
+                  <h4 className="font-EuclidCircularA font-medium text-base text-zinc-900 mb-2">
                     {t(`cases.${key}.title`)}
                   </h4>
-                  <p className="text-sm text-white/40 leading-relaxed">
+                  <p className="text-sm text-zinc-500 leading-relaxed">
                     {t(`cases.${key}.description`)}
                   </p>
                 </div>
@@ -102,22 +101,22 @@ export function UseCasesSection() {
                 key={key}
                 className={cn(
                   "group p-5 md:p-6 rounded-2xl",
-                  "bg-white/[0.03] border border-white/[0.06]",
+                  "bg-white border border-zinc-200 shadow-sm",
                   "transition-all duration-300",
-                  "hover:border-[#00ff00]/20 hover:shadow-[0_0_30px_rgba(0,255,0,0.06)]",
+                  "hover:shadow-lg hover:border-zinc-300",
                 )}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.4, delay: 0.05 * i }}
               >
-                <span className="font-IBMPlexMono text-xs text-[#00ff00] mb-3 block">
+                <span className="font-IBMPlexMono text-xs text-[#2d8a4e] mb-3 block">
                   {String(i + 4).padStart(2, "0")}
                 </span>
-                <h4 className="font-EuclidCircularA font-medium text-sm text-white mb-1.5">
+                <h4 className="font-EuclidCircularA font-medium text-sm text-zinc-900 mb-1.5">
                   {t(`cases.${key}.title`)}
                 </h4>
-                <p className="text-xs text-white/35 leading-relaxed">
+                <p className="text-xs text-zinc-400 leading-relaxed">
                   {t(`cases.${key}.description`)}
                 </p>
               </motion.div>

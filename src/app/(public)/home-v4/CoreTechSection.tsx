@@ -24,14 +24,14 @@ export function CoreTechSection() {
   const t = useTranslations("HomePageV4.CoreTech");
 
   return (
-    <section className="py-24 md:py-32 border-t border-white/[0.06]">
+    <section className="py-24 md:py-32 bg-[#1a1a1a]">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <motion.div className="mb-16 md:mb-20" {...fadeInUp}>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-px bg-[#00ff00]" />
-              <span className="font-IBMPlexMono text-xs text-[#00ff00] uppercase tracking-[0.2em]">
+              <div className="w-8 h-px bg-[#2d8a4e]" />
+              <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">
                 {t("label")}
               </span>
             </div>
@@ -61,13 +61,13 @@ export function CoreTechSection() {
                 {/* Concentric circles */}
                 <div className="absolute inset-0 rounded-full border border-white/[0.06]" />
                 <div className="absolute inset-[15%] rounded-full border border-white/[0.06]" />
-                <div className="absolute inset-[30%] rounded-full border border-[#00ff00]/10" />
+                <div className="absolute inset-[30%] rounded-full border border-[#2d8a4e]/20" />
 
                 {/* Center label */}
                 <div className="absolute inset-[30%] flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-[#00ff00]/10 border border-[#00ff00]/20 flex items-center justify-center">
-                      <span className="font-IBMPlexMono text-xs text-[#00ff00] font-bold">
+                    <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-[#2d8a4e]/10 border border-[#2d8a4e]/30 flex items-center justify-center">
+                      <span className="font-IBMPlexMono text-xs text-[#2d8a4e] font-bold">
                         {t("center")}
                       </span>
                     </div>
@@ -83,8 +83,8 @@ export function CoreTechSection() {
                   {NODE_POSITIONS.map(({ angle, key }) => {
                     const rad = (angle * Math.PI) / 180;
                     const r = 50;
-                    const x = 50 + r * Math.cos(rad);
-                    const y = 50 + r * Math.sin(rad);
+                    const x = Math.round((50 + r * Math.cos(rad)) * 100) / 100;
+                    const y = Math.round((50 + r * Math.sin(rad)) * 100) / 100;
 
                     return (
                       <motion.div
@@ -112,8 +112,8 @@ export function CoreTechSection() {
                   })}
                 </motion.div>
 
-                {/* Glow effect */}
-                <div className="absolute inset-[25%] rounded-full bg-[#00ff00]/[0.03] blur-xl" />
+                {/* Subtle glow */}
+                <div className="absolute inset-[25%] rounded-full bg-[#2d8a4e]/[0.05] blur-xl" />
               </div>
             </motion.div>
 
@@ -122,7 +122,7 @@ export function CoreTechSection() {
               <div className="space-y-4">
                 {(t.raw("features") as string[]).map((feature, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[#00ff00] shrink-0" />
+                    <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[#2d8a4e] shrink-0" />
                     <span className="text-white/60 text-sm md:text-base leading-relaxed">
                       {feature}
                     </span>
@@ -130,9 +130,9 @@ export function CoreTechSection() {
                 ))}
               </div>
 
-              <div className="mt-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#00ff00]/20 bg-[#00ff00]/[0.05]">
-                <div className="w-2 h-2 rounded-full bg-[#00ff00] animate-pulse" />
-                <span className="font-IBMPlexMono text-xs text-[#00ff00]/80">
+              <div className="mt-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#2d8a4e]/30 bg-[#2d8a4e]/[0.08]">
+                <div className="w-2 h-2 rounded-full bg-[#2d8a4e] animate-pulse" />
+                <span className="font-IBMPlexMono text-xs text-[#2d8a4e]/80">
                   {t("filing")}
                 </span>
               </div>

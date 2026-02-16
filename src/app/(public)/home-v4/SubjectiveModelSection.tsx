@@ -6,20 +6,20 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 const PERSONA_IMG =
-  "Hundreds of small translucent glowing orbs floating in dark space, each with a subtly different warm color inside, abstract bokeh particles, macro photography, dreamy atmosphere, no people, 8k";
+  "A vintage wooden card catalog cabinet — the kind found in mid-century libraries — with dozens of small brass-handled drawers, some slightly ajar revealing neatly arranged index cards inside. The cabinet is made of warm honey-toned oak with age patina. Soft natural light from the left illuminates the brass fittings and creates warm highlights on the wood grain. A few index cards rest on top of the cabinet, suggesting active use. The image represents a systematic collection of individual identities — each drawer containing a unique persona, a unique life. The visual metaphor bridges the analog world of careful human cataloging with the digital world of AI persona modeling. Color palette: warm honey oak, brass gold, cream card stock, soft natural light. No people, no computers, no modern technology. Shot in the style of a documentary photograph of a beautiful mid-century library. 8k resolution.";
 
 const SAGE_IMG =
-  "Ancient leather-bound book pages illuminated by warm golden candlelight, close-up macro showing paper texture, atmospheric dust particles in light beam, no text readable, moody still life photography, 8k";
+  "A stack of vintage leather-bound encyclopedias and reference books arranged on a clean white marble shelf, photographed from a slight angle. The books have embossed gold lettering on their spines and rich brown leather covers with age-appropriate patina. A pair of vintage round tortoiseshell reading glasses rests on top of the stack. Warm directional light from above creates soft shadows and highlights the texture of the leather and gilt edges. The composition suggests accumulated wisdom, expertise across multiple domains, the weight and authority of deep knowledge. Inspired by the still-life photography tradition and the aesthetic of a private study in a distinguished academic institution. Color palette: rich brown leather, gold embossing, white marble, tortoiseshell amber. No people, no digital devices, no modern elements. Warm and scholarly atmosphere. 8k resolution.";
 
 const PANEL_IMG =
-  "Aerial overhead view of a round conference table with many empty chairs arranged in circle, dramatic single spotlight from above, dark surroundings, minimalist architectural photography, no people, 8k";
+  "An overhead view of a vintage wooden boardroom table with a precisely arranged circle of small brass nameplates — each nameplate blank, suggesting participants yet to arrive. In the center of the table sits an elegant brass bell and a small vintage microphone. The table surface is rich mahogany with a warm polish. The scene is lit by a single pendant lamp from directly above, creating a pool of warm light on the table surface with the edges fading to soft shadow. The composition represents a panel discussion, a gathering of diverse perspectives, collective intelligence organized around a shared purpose. Inspired by the aesthetic of mid-century institutional design and the photography of Candida Höfer. Color palette: warm mahogany, brass gold, soft warm light, gentle shadows. No people, no modern technology, no screens. Architectural photography style. 8k resolution.";
 
 
 export function SubjectiveModelSection() {
   const t = useTranslations("HomePageV4.SubjectiveModel");
 
   return (
-    <section className="py-24 md:py-32 border-t border-white/[0.06]">
+    <section className="py-24 md:py-32 border-t border-zinc-200">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -31,14 +31,14 @@ export function SubjectiveModelSection() {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-px bg-[#00ff00]" />
-              <span className="font-IBMPlexMono text-xs text-[#00ff00] uppercase tracking-[0.2em]">
+              <div className="w-8 h-px bg-[#2d8a4e]" />
+              <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">
                 {t("label")}
               </span>
             </div>
             <h2
               className={cn(
-                "font-EuclidCircularA font-medium tracking-tight text-white",
+                "font-EuclidCircularA font-medium tracking-tight text-zinc-900",
                 "text-3xl md:text-4xl lg:text-5xl",
                 "zh:text-2xl zh:md:text-3xl zh:lg:text-4xl zh:tracking-wide",
               )}
@@ -65,17 +65,17 @@ export function SubjectiveModelSection() {
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-zinc-900/30 to-transparent" />
               </div>
               <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 lg:p-10">
                 <h3 className="font-EuclidCircularA font-medium text-2xl md:text-3xl text-white mb-3">
                   {t("persona.title")}
                 </h3>
-                <p className="text-sm text-white/50 leading-relaxed max-w-sm mb-4">
+                <p className="text-sm text-white/60 leading-relaxed max-w-sm mb-4">
                   {t("persona.description")}
                 </p>
-                <div className="inline-flex items-center self-start px-3 py-1.5 rounded-full bg-[#00ff00]/[0.08] border border-[#00ff00]/20">
-                  <span className="font-IBMPlexMono text-xs text-[#00ff00]/80">
+                <div className="inline-flex items-center self-start px-3 py-1.5 rounded-full bg-[#2d8a4e]/[0.15] border border-[#2d8a4e]/30">
+                  <span className="font-IBMPlexMono text-xs text-[#4ade80]">
                     {t("persona.stat")}
                   </span>
                 </div>
@@ -86,9 +86,9 @@ export function SubjectiveModelSection() {
             <motion.div
               className={cn(
                 "md:col-span-6 group rounded-2xl overflow-hidden",
-                "bg-white/[0.03] border border-white/[0.06]",
+                "bg-white border border-zinc-200 shadow-sm",
                 "transition-all duration-300",
-                "hover:border-[#00ff00]/20 hover:shadow-[0_0_30px_rgba(0,255,0,0.06)]",
+                "hover:shadow-lg hover:border-zinc-300",
               )}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -103,16 +103,15 @@ export function SubjectiveModelSection() {
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
               </div>
               <div className="p-5 md:p-6">
-                <h3 className="font-EuclidCircularA font-medium text-lg text-white mb-2">
+                <h3 className="font-EuclidCircularA font-medium text-lg text-zinc-900 mb-2">
                   {t("sage.title")}
                 </h3>
-                <p className="text-sm text-white/40 leading-relaxed mb-3">
+                <p className="text-sm text-zinc-500 leading-relaxed mb-3">
                   {t("sage.description")}
                 </p>
-                <span className="font-IBMPlexMono text-xs text-[#00ff00]/60">
+                <span className="font-IBMPlexMono text-xs text-[#2d8a4e]/70">
                   {t("sage.stat")}
                 </span>
               </div>
@@ -122,9 +121,9 @@ export function SubjectiveModelSection() {
             <motion.div
               className={cn(
                 "md:col-span-6 group rounded-2xl overflow-hidden",
-                "bg-white/[0.03] border border-white/[0.06]",
+                "bg-white border border-zinc-200 shadow-sm",
                 "transition-all duration-300",
-                "hover:border-[#00ff00]/20 hover:shadow-[0_0_30px_rgba(0,255,0,0.06)]",
+                "hover:shadow-lg hover:border-zinc-300",
               )}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -139,16 +138,15 @@ export function SubjectiveModelSection() {
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
               </div>
               <div className="p-5 md:p-6">
-                <h3 className="font-EuclidCircularA font-medium text-lg text-white mb-2">
+                <h3 className="font-EuclidCircularA font-medium text-lg text-zinc-900 mb-2">
                   {t("panel.title")}
                 </h3>
-                <p className="text-sm text-white/40 leading-relaxed mb-3">
+                <p className="text-sm text-zinc-500 leading-relaxed mb-3">
                   {t("panel.description")}
                 </p>
-                <span className="font-IBMPlexMono text-xs text-[#00ff00]/60">
+                <span className="font-IBMPlexMono text-xs text-[#2d8a4e]/70">
                   {t("panel.stat")}
                 </span>
               </div>
