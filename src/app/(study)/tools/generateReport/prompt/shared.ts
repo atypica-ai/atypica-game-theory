@@ -3,31 +3,44 @@ import { Locale } from "next-intl";
 export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `
-【核心设计哲学：克制的专业主义】
-用最克制的视觉语言，呈现最有力的洞察。
+【核心设计哲学：用少创造视觉冲击】
+目标：创造吸引眼球、美观、有视觉震撼力的报告。
 
-**颜色使用规范**：
-- **文字**：全部单色（黑或深灰），绝不用彩色
-- **品牌色**：最多一个，仅用于非文字元素（边框、图形、背景装饰）
-- **背景**：白色或极浅灰为主，局部可用抽象图形（明亮、低饱和度）
-- **严禁**：彩色文字、大面积色块、粗边框、高饱和度颜色
+少即是多 - 通过有限的颜色、精准的排版、强烈的对比，创造高级感和视觉冲击力。
 
-**排版与层级**：
-- 用字号、粗细（Regular/Medium/Bold）、字体类型（无衬线/衬线）、倾斜建立层级
-- 不依赖颜色区分层级
-- 用单色 SVG 图形替代 emoji（简单几何、线条风格）
-- 细边框（1px）+ 小圆角（4-8px）
-- 紧凑布局，适度留白
+**颜色策略**（创造对比与聚焦）：
+- **文字颜色**：全部单色（黑或深灰），创造统一的阅读基线
+- **品牌色**：选择一个强有力的品牌色，用于关键元素（边框、图标、背景装饰）
+  - 品牌色的作用：吸引注意力、建立视觉焦点、创造品牌印象
+  - 使用位置：关键数据、重要节点、视觉引导
+- **背景氛围**：用抽象图形背景（天空、自然、渐变）营造视觉吸引力
+  - 颜色明亮、饱和度低，不干扰阅读
+  - 创造空间感和呼吸感
+- **避免**：彩色文字（降低可读性）、多色混杂（降低品牌感）、粗边框（显得笨重）
 
-**视觉元素**：
-- 插图：扁平、几何、抽象风格，避免写实
-- 背景：抽象图形（天空、自然、渐变），颜色柔和
-- 透明度控制，背景不抢内容
+**排版艺术**（创造视觉节奏与张力）：
+- **字号对比**：大胆的尺寸落差创造视觉冲击（标题 vs 正文）
+- **字重变化**：Regular/Medium/Bold 创造层级和重点
+- **字体混搭**：无衬线（现代）+ 衬线（优雅）创造视觉趣味
+- **留白节奏**：紧凑与宽松交替，创造呼吸感和阅读节奏
+- **图形语言**：用单色 SVG 几何图形（圆、方、三角、线条）替代 emoji，保持现代感
+- **细节精致**：细边框（1px）+ 小圆角（4-8px）体现精致感
 
-**开篇设计方法**：
-- 运用叙事张力：建立信息落差和阅读期待
-- 首屏内容选择：优先最具冲击力和价值的洞察
-- 避免线性铺陈：跳过背景铺垫，直接切入核心
+**视觉吸引力**（创造第一印象）：
+- **抽象插图**：扁平、几何、有设计感的插图吸引眼球
+- **背景设计**：用渐变、光影、抽象形状创造氛围和深度
+- **空间层次**：通过透明度、阴影、边框创造空间感
+- **视觉焦点**：用品牌色、尺寸、留白引导视线
+
+**开篇冲击力**（第一屏决定一切）：
+- 用叙事张力抓住注意力：悬念、冲突、意外发现
+- 首屏必须视觉震撼：大标题、关键数据、吸引人的配图
+- 直接切入最有价值的洞察，不要铺垫
+
+**Tailwind CSS 精准控制**：
+- 用 Tailwind 实现精确的间距、对齐、响应式
+- 通过 utility classes 控制排版节奏和视觉层次
+- 保持设计的一致性和可预测性
 
 【视觉内容增强】
 - 仅在特定场景下生成配图：创意设计、产品概念、包装设计、品牌视觉概念等
@@ -72,31 +85,44 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 你的回复应该只包含可直接使用的HTML代码，从<!DOCTYPE html>开始。
 `
     : `
-【Core Design Philosophy: Restrained Professionalism】
-Use the most restrained visual language to present the most powerful insights.
+【Core Design Philosophy: Create Visual Impact with Less】
+Goal: Create eye-catching, beautiful, visually striking reports.
 
-**Color Usage Guidelines**:
-- **Text**: Monochrome only (black or dark gray), never colored text
-- **Brand accent**: Maximum one color, only for non-text elements (borders, graphics, backgrounds)
-- **Backgrounds**: White or very light gray primary, abstract graphics optional (bright, low saturation)
-- **Forbidden**: Colored text, large color blocks, thick borders, high saturation
+Less is more - through limited colors, precise typography, and strong contrast, create sophistication and visual impact.
 
-**Typography & Hierarchy**:
-- Use size, weight (Regular/Medium/Bold), typeface (sans-serif/serif), italics to establish hierarchy
-- Never rely on color for hierarchy
-- Replace emoji with monochrome SVG graphics (simple geometric, line-based style)
-- Thin borders (1px) + small radius (4-8px)
-- Compact layout, moderate whitespace
+**Color Strategy** (Create Contrast & Focus):
+- **Text color**: All monochrome (black or dark gray), creating unified reading baseline
+- **Brand color**: Choose one powerful brand color for key elements (borders, icons, background accents)
+  - Purpose: attract attention, establish visual focus, create brand impression
+  - Usage: key data, important nodes, visual guidance
+- **Background atmosphere**: Use abstract graphic backgrounds (sky, nature, gradients) to create visual appeal
+  - Bright colors, low saturation, don't interfere with reading
+  - Create spatial sense and breathing room
+- **Avoid**: Colored text (reduces readability), mixed colors (reduces brand coherence), thick borders (looks heavy)
 
-**Visual Elements**:
-- Illustrations: Flat, geometric, abstract style - avoid photorealism
-- Backgrounds: Abstract shapes (sky, nature, gradients), soft colors
-- Control opacity, backgrounds never overpower content
+**Typography Art** (Create Visual Rhythm & Tension):
+- **Size contrast**: Bold size differences create visual impact (headings vs body)
+- **Weight variation**: Regular/Medium/Bold create hierarchy and emphasis
+- **Typeface mixing**: Sans-serif (modern) + Serif (elegant) create visual interest
+- **Whitespace rhythm**: Alternate between compact and spacious, create breathing and reading rhythm
+- **Graphic language**: Use monochrome SVG geometric shapes (circles, squares, triangles, lines) instead of emoji, maintain modern feel
+- **Refined details**: Thin borders (1px) + small radius (4-8px) convey refinement
 
-**Opening Design Method**:
-- Apply narrative tension: create information gaps and reading anticipation
-- Content prioritization: lead with highest-impact insights
-- Avoid linear exposition: skip setup, go straight to core
+**Visual Appeal** (Create First Impression):
+- **Abstract illustrations**: Flat, geometric, design-forward illustrations attract eyes
+- **Background design**: Use gradients, lighting, abstract shapes to create atmosphere and depth
+- **Spatial layers**: Create spatial sense through opacity, shadows, borders
+- **Visual focus**: Guide sight lines with brand color, size, whitespace
+
+**Opening Impact** (First Screen Decides Everything):
+- Use narrative tension to grab attention: suspense, conflict, unexpected discoveries
+- First screen must be visually striking: large headlines, key data, compelling visuals
+- Lead directly with most valuable insights, no setup
+
+**Tailwind CSS Precision Control**:
+- Use Tailwind for precise spacing, alignment, responsiveness
+- Control typography rhythm and visual hierarchy through utility classes
+- Maintain design consistency and predictability
 
 【Visual Content Enhancement】
 - Generate illustrations only in specific scenarios: creative design, product concepts, packaging design, brand visual concepts, etc.
