@@ -9,7 +9,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const HERO_IMAGE_PROMPT =
-  "An extremely abstract composition of intersecting translucent geometric planes and particle fields suspended in deep warm space. Layers of impossible geometry — Penrose triangles dissolving into particle streams, Möbius surfaces refracting warm light through crystalline facets, nested polyhedra rotating at impossible angles. The forms are simultaneously mechanical and organic — hard geometric edges dissolve into clouds of softly glowing particles, precise structures bleed into natural flowing forms. Color palette: deep indigo and warm charcoal as base, with luminous amber, soft coral, and forest green accents where light catches surfaces. Subtle film grain texture. The composition feels vast and contemplative — like looking into the hidden structure of human thought. Inspired by 1970s sci-fi novel cover art and generative algorithmic art. NOT figurative — pure abstract visual experience. No people, no text, no recognizable objects.";
+  "A single massive translucent polyhedron with internal fractures, suspended in vast dark blue-gray void. Inside it, barely visible green particle streams flow slowly like veins. The surface catches cold light — some faces have rough concrete-like texture, others are glass-smooth. Extremely sparse luminous particles drift in the surrounding emptiness. The composition is almost entirely negative space. Cold palette: dark indigo-black background, steel gray and cool white on the form, faint green glow from within. Film grain texture. Vast, silent, contemplative — like discovering an alien artifact in deep space. No people, no text.";
 
 export function HeroSection() {
   const t = useTranslations("HomePageV4.Hero");

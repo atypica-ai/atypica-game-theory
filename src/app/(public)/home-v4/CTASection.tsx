@@ -16,7 +16,7 @@ const fadeInUp = {
 };
 
 const CTA_BG_PROMPT =
-  "An abstract panoramic horizon where warm light meets deep space. A vast gradient from deep indigo at top through amber and gold to pale cream at the base. Abstract particle clouds drift across the boundary — cosmic dust forming and dissolving in warm light. Scattered geometric fragments — translucent triangles, arcs, broken circles, fine dotted lines — float at various scales, some massive and barely visible, others tiny and bright like distant stars. Expansive, forward-looking, standing at the edge of something vast and new. Retro sci-fi atmosphere — the palette of a 1970s Asimov novel cover. Fine film grain. Style: abstract atmospheric art, wide panoramic. No recognizable objects, no people, no text.";
+  "A vast dark gradient from deep indigo-black at top to dark blue-gray at bottom. In the center-distance, a faint thin horizontal band of green-white light — barely visible, like a distant horizon or the first light of dawn. A few sparse geometric fragments and scattered particles float across the composition at various scales. Almost entirely negative space. Cold, expansive, the edge of something vast and new. Film grain. No people, no text.";
 
 export function CTASection() {
   const t = useTranslations("HomePageV4.CTA");
