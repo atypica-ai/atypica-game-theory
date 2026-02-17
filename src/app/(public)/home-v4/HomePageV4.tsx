@@ -18,7 +18,7 @@ export default function HomePageV4() {
     <div className="relative min-h-screen bg-[#fafaf8] overflow-hidden">
       {/* Subtle film grain overlay */}
       <div
-        className="pointer-events-none fixed inset-0 z-50 opacity-20 mix-blend-multiply"
+        className="pointer-events-none fixed inset-0 opacity-20 mix-blend-multiply"
         style={{ backgroundImage: GRAIN_SVG }}
       />
 

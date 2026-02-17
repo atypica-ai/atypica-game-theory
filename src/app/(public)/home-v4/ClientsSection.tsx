@@ -53,8 +53,8 @@ export function ClientsSection() {
       {/* Marquee scrolling strip */}
       <div className="relative">
         {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#fafaf8] to-transparent z-10" />
-        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#fafaf8] to-transparent z-10" />
+        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#fafaf8] to-transparent z-[1]" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#fafaf8] to-transparent z-[1]" />
 
         <motion.div
           className="flex items-center gap-16 md:gap-24 whitespace-nowrap"

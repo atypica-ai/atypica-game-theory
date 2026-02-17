@@ -31,7 +31,7 @@ export function HeroSection() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 pb-16 md:pb-24 pt-48 md:pt-64">
+      <div className="relative z-[1] container mx-auto px-4 pb-16 md:pb-24 pt-48 md:pt-64">
         <div className="max-w-3xl">
           {/* Badge */}
           <motion.div

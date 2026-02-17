@@ -35,7 +35,7 @@ export function CTASection() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/70 to-[#0a0a0c]/50" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4">
+      <div className="relative z-[1] container mx-auto px-4">
         <motion.div className="max-w-3xl mx-auto text-center" {...fadeInUp}>
           <h2
             className={cn(

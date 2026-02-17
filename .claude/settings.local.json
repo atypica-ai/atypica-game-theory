@@ -21,7 +21,8 @@
       "Bash(head:*)",
       "Bash(tree:*)",
       "Bash(mkdir:*)",
-      "Bash(npx tsc --noEmit)"
+      "Bash(npx tsc --noEmit)",
+      "mcp__plugin_playwright_playwright__*"
     ],
     "deny": [],
     "ask": []
