@@ -16,7 +16,7 @@ const fadeInUp = {
 };
 
 const CTA_BG_PROMPT =
-  "A wide panoramic view of a warm golden sunset over a vast, minimalist landscape — perhaps a calm sea or an open plain. The sky transitions from deep warm amber at the horizon through soft peach to a pale cream-blue at the top. The light is soft and diffused, creating a sense of infinite possibility and quiet confidence. The scene is almost abstract in its simplicity — just the gradation of warm light meeting earth or water. A single thin horizon line divides the composition into two equal halves. The overall mood is hopeful, intelligent, forward-looking — the feeling of standing at the beginning of something important. Inspired by the color field paintings of Mark Rothko and the landscape photography of Hiroshi Sugimoto. Color palette: warm amber, soft peach, pale cream, hints of sage. No people, no objects, no text, no buildings. Pure atmospheric landscape. Slight film grain texture. 8k resolution.";
+  "An abstract panoramic horizon where warm light meets deep space. A vast gradient from deep indigo at top through amber and gold to pale cream at the base. Abstract particle clouds drift across the boundary — cosmic dust forming and dissolving in warm light. Scattered geometric fragments — translucent triangles, arcs, broken circles, fine dotted lines — float at various scales, some massive and barely visible, others tiny and bright like distant stars. Expansive, forward-looking, standing at the edge of something vast and new. Retro sci-fi atmosphere — the palette of a 1970s Asimov novel cover. Fine film grain. Style: abstract atmospheric art, wide panoramic. No recognizable objects, no people, no text.";
 
 export function CTASection() {
   const t = useTranslations("HomePageV4.CTA");

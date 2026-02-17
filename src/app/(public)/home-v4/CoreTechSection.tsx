@@ -59,9 +59,9 @@ export function CoreTechSection() {
             >
               <div className="relative w-[320px] h-[320px] md:w-[400px] md:h-[400px]">
                 {/* Concentric circles */}
-                <div className="absolute inset-0 rounded-full border border-white/[0.06]" />
-                <div className="absolute inset-[15%] rounded-full border border-white/[0.06]" />
-                <div className="absolute inset-[30%] rounded-full border border-[#2d8a4e]/20" />
+                <div className="absolute inset-0 rounded-full border border-white/[0.04]" />
+                <div className="absolute inset-[14%] rounded-full border border-white/[0.08]" />
+                <div className="absolute inset-[35%] rounded-full border border-[#2d8a4e]/20" />
 
                 {/* Center label */}
                 <div className="absolute inset-[30%] flex items-center justify-center">
@@ -82,12 +82,12 @@ export function CoreTechSection() {
                 >
                   {NODE_POSITIONS.map(({ angle, key }) => {
                     const rad = (angle * Math.PI) / 180;
-                    const r = 50;
+                    const r = 36;
                     const x = Math.round((50 + r * Math.cos(rad)) * 100) / 100;
                     const y = Math.round((50 + r * Math.sin(rad)) * 100) / 100;
 
                     return (
-                      <motion.div
+                      <div
                         key={key}
                         className="absolute"
                         style={{
@@ -95,19 +95,22 @@ export function CoreTechSection() {
                           top: `${y}%`,
                           transform: "translate(-50%, -50%)",
                         }}
-                        animate={{ rotate: -360 }}
-                        transition={{
-                          duration: 60,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
                       >
-                        <div className="px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm whitespace-nowrap">
-                          <span className="font-EuclidCircularA text-[10px] md:text-xs text-white/60">
-                            {t(`nodes.${key}`)}
-                          </span>
-                        </div>
-                      </motion.div>
+                        <motion.div
+                          animate={{ rotate: -360 }}
+                          transition={{
+                            duration: 60,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                        >
+                          <div className="px-3 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm whitespace-nowrap">
+                            <span className="font-EuclidCircularA text-[10px] md:text-xs text-white/60">
+                              {t(`nodes.${key}`)}
+                            </span>
+                          </div>
+                        </motion.div>
+                      </div>
                     );
                   })}
                 </motion.div>

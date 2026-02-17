@@ -6,10 +6,10 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 const SIMULATOR_PROMPT =
-  "A vintage oscilloscope from the late 1970s displaying a warm green phosphor waveform on its circular CRT screen. The instrument has a brushed aluminum faceplate with precisely labeled Bakelite knobs and toggle switches, sitting on a clean white laboratory bench. Warm afternoon light enters from a window to the right, casting a soft glow on the instrument's surface and creating gentle shadows. The waveform on screen shows a complex, organic pattern — not a simple sine wave, but something that suggests the irregular rhythms of human behavior and decision-making. The overall feeling is one of analog warmth meeting scientific precision. Inspired by the aesthetic of early Hewlett-Packard test equipment catalogs. Color palette: warm cream background, brushed silver instrument, green phosphor glow, warm natural light. No people, no modern technology, no digital displays. Film grain texture. 8k resolution.";
+  "Hundreds of tiny pixel-art figures scattered across a vast minimal cream-white space, viewed from a gentle aerial perspective. Each figure is only 6-10 pixels tall but uniquely colored and styled — different silhouettes, postures, and hues of coral, amber, teal, indigo, sage, and pink. Some cluster in small conversation groups, others walk alone, some stand still as if thinking. Faint translucent data-threads connect certain figures across the space, forming an organic network pattern. The figures cast soft colored shadows. The ground is a clean warm gradient with barely visible grid lines. At the edges, figures dissolve into scattered pixels and particles, suggesting an expanding simulation. Style: crisp isometric pixel art, clean airy modern composition. Warm and inviting. No text, no UI elements.";
 
 const RESEARCHER_PROMPT =
-  "An abstract visualization of sound waves and conversation, rendered as flowing ribbon-like forms in warm amber and soft green tones against a bright cream background. The ribbons interweave and respond to each other, suggesting a dialogue — two distinct voices meeting, overlapping, diverging, and reconnecting. The forms have a tactile quality reminiscent of paper sculpture or carefully folded origami, with subtle shadows giving them dimensionality. The composition suggests both the structure and spontaneity of human conversation — part geometric, part organic. Inspired by the kinetic sculptures of Alexander Calder and the paper art of Richard Sweeney. Color palette: warm amber, sage green, cream white, soft shadows. No people, no microphones, no tech devices, no text. Bright and airy overall mood. Slight film texture. 8k resolution.";
+  "A small cluster of 7-8 colorful pixel-art figures sitting in a loose semicircle, as if in a focus group discussion. Each figure is distinctly styled — different sizes, colors (warm coral, sage green, golden amber, deep indigo), and poses: one leaning forward, one gesturing while speaking, one with hand on chin thinking. Between them, abstract shapes float gently upward — soft geometric fragments, tiny particle bursts, translucent thought-bubbles made of scattered dots. A slightly larger figure on one side listens carefully, facilitating. Background: warm cream-to-peach gradient, spacious and minimal. Style: charming pixel art characters (8-16px scale) against a soft painterly background. Contrast between crisp pixel figures and organic abstract particles. Warm, intellectual, human. No text.";
 
 export function ThesisSection() {
   const t = useTranslations("HomePageV4.Thesis");
@@ -57,7 +57,7 @@ export function ThesisSection() {
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.7, delay: 0.1 }}
             >
-              <div className="relative aspect-[4/3] md:aspect-[16/10]">
+              <div className="relative aspect-[4/3] md:aspect-[16/10] lg:aspect-auto lg:h-full">
                 <Image
                   src={`/api/imagegen/dev/${encodeURIComponent(SIMULATOR_PROMPT)}?ratio=landscape`}
                   alt=""
@@ -67,22 +67,22 @@ export function ThesisSection() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-zinc-900/30 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/40 to-transparent" />
-              </div>
 
-              {/* Overlaid text content */}
-              <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 lg:p-10">
-                <span className="font-IBMPlexMono text-[10px] text-[#4ade80] uppercase tracking-[0.2em] mb-3">
-                  {t("simulator.tag")}
-                </span>
-                <h3 className="font-EuclidCircularA font-medium text-2xl md:text-3xl text-white mb-3">
-                  {t("simulator.title")}
-                </h3>
-                <p className="text-sm text-white/60 leading-relaxed max-w-md mb-4">
-                  {t("simulator.description")}
-                </p>
-                <p className="font-IBMPlexMono text-xs text-[#4ade80]/60">
-                  {t("simulator.stat")}
-                </p>
+                {/* Overlaid text content */}
+                <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8 lg:p-10">
+                  <span className="font-IBMPlexMono text-[10px] text-[#4ade80] uppercase tracking-[0.2em] mb-3">
+                    {t("simulator.tag")}
+                  </span>
+                  <h3 className="font-EuclidCircularA font-medium text-2xl md:text-3xl text-white mb-3">
+                    {t("simulator.title")}
+                  </h3>
+                  <p className="text-sm text-white/60 leading-relaxed max-w-md mb-4">
+                    {t("simulator.description")}
+                  </p>
+                  <p className="font-IBMPlexMono text-xs text-[#4ade80]/60">
+                    {t("simulator.stat")}
+                  </p>
+                </div>
               </div>
             </motion.div>
 

@@ -9,7 +9,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const HERO_IMAGE_PROMPT =
-  "A retro-futuristic control console inspired by 1970s Braun industrial design and early Apple aesthetics. The scene shows a beautifully minimal instrument panel with precisely machined aluminum dials, toggle switches, and a small circular oscilloscope display glowing with a soft green waveform. The surface is matte off-white plastic with subtle rounded edges, reminiscent of Dieter Rams' design philosophy. Warm natural light streams in from the left, casting gentle shadows that reveal the tactile quality of each knob and button. The background is a clean cream-colored wall. The overall mood is bright, intelligent, and warmly technological — technology that feels human and approachable rather than cold and digital. No people, no text, no screens showing modern UIs. Shot in a style reminiscent of product photography from a 1978 Braun catalog. Slight film grain texture. 8k resolution.";
+  "An extremely abstract composition of intersecting translucent geometric planes and particle fields suspended in deep warm space. Layers of impossible geometry — Penrose triangles dissolving into particle streams, Möbius surfaces refracting warm light through crystalline facets, nested polyhedra rotating at impossible angles. The forms are simultaneously mechanical and organic — hard geometric edges dissolve into clouds of softly glowing particles, precise structures bleed into natural flowing forms. Color palette: deep indigo and warm charcoal as base, with luminous amber, soft coral, and forest green accents where light catches surfaces. Subtle film grain texture. The composition feels vast and contemplative — like looking into the hidden structure of human thought. Inspired by 1970s sci-fi novel cover art and generative algorithmic art. NOT figurative — pure abstract visual experience. No people, no text, no recognizable objects.";
 
 export function HeroSection() {
   const t = useTranslations("HomePageV4.Hero");
@@ -49,8 +49,8 @@ export function HeroSection() {
           <motion.h1
             className={cn(
               "mt-6 font-EuclidCircularA font-medium tracking-tight text-white",
-              "text-5xl sm:text-6xl md:text-7xl lg:text-8xl",
-              "zh:text-4xl zh:sm:text-5xl zh:md:text-6xl zh:lg:text-7xl zh:tracking-wide",
+              "text-5xl sm:text-6xl md:text-7xl",
+              "zh:text-4xl zh:sm:text-5xl zh:md:text-6xl zh:tracking-wide",
               "leading-[1.05]",
             )}
             initial={{ opacity: 0, y: 30 }}
@@ -61,8 +61,7 @@ export function HeroSection() {
             <br />
             <span className="font-InstrumentSerif italic text-[#4ade80]">
               {t("titleLine2")}
-            </span>
-            {t("titleLine2End")}
+            </span>{t("titleLine2End")}
           </motion.h1>
 
           {/* Subtitle */}
