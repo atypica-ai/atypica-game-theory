@@ -5,7 +5,7 @@ import { StreamTextResult, ToolSet } from "ai";
 import { Logger } from "pino";
 
 export async function raceForUserChat(studyUserChatId: number) {
-  const logger = rootLogger.child({ studyUserChatId });
+  const logger = rootLogger.child({ userChatId: studyUserChatId });
   // race, 争取 userchat 的写入
   const backgroundToken = new Date().valueOf().toString();
 

@@ -95,8 +95,8 @@ async function backgroundGenerateImage({
   });
 
   const logger = rootLogger.child({
-    studyUserChatId: userChat.id,
-    studyUserChatToken: userChat.token,
+    userChatId: userChat.id,
+    userChatToken: userChat.token,
   });
 
   // 图片没有生成过，需要检查必要的权限，有权限以后可以接下来插入数据库条目

@@ -1,8 +1,7 @@
 import "server-only";
 
 import {
-  appendChunkToStreamingMessage,
-  createDebouncePersistentMessage,
+  appendStepToStreamingMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
@@ -20,7 +19,6 @@ import {
   smoothStream,
   stepCountIs,
   streamText,
-  TextStreamPart,
   tool,
   ToolSet,
 } from "ai";
@@ -331,11 +329,11 @@ ${mcpPrompts.length > 0 ? `\n## Available Tools and Context\n${mcpPrompts.join("
     },
   ];
 
-  const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
-    subAgentChatId,
-    5000,
-    logger,
-  );
+  // const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
+  //   subAgentChatId,
+  //   5000,
+  //   logger,
+  // );
 
   // Run streamText once - it will complete naturally when LLM finishes or max steps reached
   const streamTextPromise = new Promise<string>((resolve, reject) => {
@@ -353,17 +351,28 @@ ${mcpPrompts.length > 0 ? `\n## Available Tools and Context\n${mcpPrompts.join("
         delayInMs: 30,
         chunking: /[\u4E00-\u9FFF]|\S+\s+/,
       }),
-      onChunk: async ({ chunk }: { chunk: TextStreamPart<ToolSet> }) => {
-        appendChunkToStreamingMessage(streamingMessage, chunk);
-        await debouncePersistentMessage(streamingMessage, {
-          immediate:
-            chunk.type !== "text-delta" &&
-            chunk.type !== "reasoning-delta" &&
-            chunk.type !== "tool-input-delta",
-        });
-      },
+      // ⚠️ 改用 onStepFinish 里面保存
+      // onChunk: async ({ chunk }: { chunk: TextStreamPart<ToolSet> }) => {
+      //   appendChunkToStreamingMessage(streamingMessage, chunk);
+      //   await debouncePersistentMessage(streamingMessage, {
+      //     immediate:
+      //       chunk.type !== "text-delta" &&
+      //       chunk.type !== "reasoning-delta" &&
+      //       chunk.type !== "tool-input-delta",
+      //   });
+      // },
       onStepFinish: async (step) => {
-        await immediatePersistentMessage();
+        // ⚠️ 现在改用 onStepFinish 里面保存，下面这一行是搭配 debouncePersistentMessage 使用的
+        // await immediatePersistentMessage();
+        appendStepToStreamingMessage(streamingMessage, step);
+        if (streamingMessage.parts?.length) {
+          await persistentAIMessageToDB({
+            mode: "override",
+            userChatId: subAgentChatId,
+            message: streamingMessage,
+          });
+        }
+
         const toolCalls = step.toolCalls.map((call) => call.toolName);
         const { tokens, extra } = calculateStepTokensUsage(step);
         logger.info({

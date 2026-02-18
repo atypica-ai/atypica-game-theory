@@ -223,7 +223,10 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
     // Start the study agent request in the background
     const userId = studyUserChat.userId;
     const teamId = studyUserChat.user.teamIdAsMember ?? null;
-    const logger = rootLogger.child({ studyUserChatId, studyUserChatToken: studyUserChat.token });
+    const logger = rootLogger.child({
+      userChatId: studyUserChatId,
+      userChatToken: studyUserChat.token,
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const stream = createUIMessageStream({

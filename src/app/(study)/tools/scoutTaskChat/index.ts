@@ -128,7 +128,10 @@ export const scoutTaskChatTool = ({
         token: scoutUserChatToken,
       });
       const scoutUserChatId = scoutUserChat.id;
-      const scoutLog = logger.child({ scoutUserChatId, scoutUserChatToken });
+      const scoutLog = logger.child({
+        userChatId: scoutUserChatId,
+        userChatToken: scoutUserChatToken,
+      });
       // 插入一条新的消息
       await persistentAIMessageToDB({
         mode: "append",

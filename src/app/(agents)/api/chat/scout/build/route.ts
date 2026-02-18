@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     );
   }
   const scoutUserChatId = userChat.id;
-  const scoutLog = rootLogger.child({ scoutUserChatId: scoutUserChatId });
+  const scoutLog = rootLogger.child({ userChatId: scoutUserChatId });
   const statReport: StatReporter = async (dimension, value, extra) => {
     console.log(
       `Mock StatReport, dimension: ${dimension}, value: ${value}, extra: ${JSON.stringify(extra)}`,

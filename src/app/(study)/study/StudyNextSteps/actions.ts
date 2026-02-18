@@ -47,7 +47,7 @@ export async function generateRecommendedQuestionsAction(
       };
     }
 
-    const logger = rootLogger.child({ studyUserChatId: userChat.id, studyUserChatToken });
+    const logger = rootLogger.child({ userChatId: userChat.id, userChatToken: studyUserChatToken });
 
     const studyLog = userChat.context.studyLog;
 

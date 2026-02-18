@@ -109,7 +109,10 @@ export const interviewChatTool = ({
             instruction,
             locale,
           });
-          const interviewLog = logger.child({ interviewUserChatId, analystInterviewId });
+          const interviewLog = logger.child({
+            userChatId: interviewUserChatId,
+            analystInterviewId,
+          });
           const mergedAbortSignal = AbortSignal.any([
             abortSignal,
             AbortSignal.timeout(10 * 60 * 1000), // 10 分钟超时

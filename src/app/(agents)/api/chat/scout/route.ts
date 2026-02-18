@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       metadata: newMessage.metadata,
     },
   });
-  const scoutLog = rootLogger.child({ scoutUserChatId: scoutUserChatId });
+  const scoutLog = rootLogger.child({ userChatId: scoutUserChatId });
 
   const stream = createUIMessageStream({
     async execute({ writer }) {

@@ -108,7 +108,7 @@ export async function POST(req: Request) {
   }
   const studyUserChatId = userChat.id;
 
-  const logger = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+  const logger = rootLogger.child({ userChatId: studyUserChatId, userChatToken: userChat.token });
 
   // 首先要把新提交的消息保存
   // 如果是 user message，会新建一条，
