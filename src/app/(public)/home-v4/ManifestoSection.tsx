@@ -1,226 +1,133 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { motion, useSpring, useTransform } from "framer-motion";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useCallback, useState } from "react";
 
 const OBJECTIVE_PROMPT =
-  "A perfect geometric lattice of small identical spheres extending into cold dark space, rendered in cool silver-white. The lattice is mathematically precise. A few spheres glow with faint green light, breaking the monotony. The structure fades into void at the edges — spheres dissolving into sparse particles and then into nothing. Vast dark blue-gray negative space surrounds the lattice. Cold, precise, silent. Film grain. No people, no text.";
+  "Abstract retro-scientific instrument field viewed in perspective: precise modular grids, matte metal frames, thin calibration markings, and restrained green phosphor traces. The composition feels measurable, objective, and engineered. Massive negative space, charcoal and steel palette, faint film grain. No text, no people.";
 
 const SUBJECTIVE_PROMPT =
-  "A single amorphous cloud-like form floating in dark space — soft, organic, slowly shifting. Made of thousands of tiny particles in muted cool tones (sage, dusty blue, pale green) that drift and swirl but never resolve into a recognizable shape. At its core, a faint warm glow — the only warmth in the image. The form breathes against vast cold dark emptiness. Sparse particles scatter outward into the void. Mysterious, alive, ungovernable. Film grain. No people, no text.";
+  "Abstract emotional topology in dark space: soft drifting gradients, fractured signal ribbons, tiny HippyGhosts-like pixel silhouettes appearing and dissolving at edges. Organic but controlled, with subtle green pulse accents and analog film texture. Vast negative space. No text.";
 
 export function ManifestoSection() {
   const t = useTranslations("HomePageV4.Manifesto");
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [splitX, setSplitX] = useState(52);
+  const smoothSplitX = useSpring(splitX, { stiffness: 140, damping: 26 });
+  const splitClipPath = useTransform(
+    smoothSplitX,
+    (value) => `inset(0 0 0 ${value}%)`,
+  );
+  const splitLeft = useTransform(smoothSplitX, (value) => `${value}%`);
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
-
-  // Phase 1: Prelude text (0 → 0.3)
-  const preludeOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.08, 0.22, 0.3],
-    [0, 1, 1, 0],
-  );
-  const preludeY = useTransform(scrollYProgress, [0, 0.08], [40, 0]);
-
-  // Phase 2: Left / Objective (0.25 → 0.6)
-  const leftOpacity = useTransform(
-    scrollYProgress,
-    [0.25, 0.33, 0.52, 0.6],
-    [0, 1, 1, 0],
-  );
-  const leftScale = useTransform(scrollYProgress, [0.25, 0.4], [1.08, 1]);
-  const leftTextOpacity = useTransform(
-    scrollYProgress,
-    [0.3, 0.38, 0.52, 0.6],
-    [0, 1, 1, 0],
-  );
-  const leftTextY = useTransform(scrollYProgress, [0.3, 0.38], [40, 0]);
-
-  // Phase 3: Right / Subjective (0.55 → 1.0)
-  const rightOpacity = useTransform(
-    scrollYProgress,
-    [0.55, 0.63, 0.92, 1],
-    [0, 1, 1, 1],
-  );
-  const rightScale = useTransform(scrollYProgress, [0.55, 0.7], [1.08, 1]);
-  const rightTextOpacity = useTransform(
-    scrollYProgress,
-    [0.6, 0.68],
-    [0, 1],
-  );
-  const rightTextY = useTransform(scrollYProgress, [0.6, 0.68], [40, 0]);
+  const handleMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const ratio = ((event.clientX - rect.left) / rect.width) * 100;
+    setSplitX(Math.max(16, Math.min(84, ratio)));
+  }, []);
 
   return (
-    <>
-      {/* Desktop: scroll-driven full-bleed crossfade */}
-      <div
-        ref={containerRef}
-        className="hidden md:block relative"
-        style={{ height: "200vh" }}
-      >
-        <div className="sticky top-0 h-screen overflow-hidden">
-          {/* Left image layer */}
-          <motion.div
-            className="absolute inset-0"
-            style={{ opacity: leftOpacity, scale: leftScale }}
-          >
-            <Image
-              src={`/api/imagegen/dev/${encodeURIComponent(OBJECTIVE_PROMPT)}?ratio=landscape`}
-              alt=""
-              fill
-              className="object-cover"
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/80 via-[#0a0a0c]/20 to-[#0a0a0c]/10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/50 via-transparent to-transparent" />
-          </motion.div>
+    <section className="relative py-20 md:py-28 bg-[#0a0a0c]">
+      <div className="container mx-auto px-4">
+        <motion.div
+          className="max-w-6xl mx-auto"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <p className="text-white/55 text-sm md:text-base max-w-2xl leading-relaxed mb-8 md:mb-10">
+            {t("prelude")}
+          </p>
 
-          {/* Right image layer (renders on top of left during crossfade) */}
-          <motion.div
-            className="absolute inset-0"
-            style={{ opacity: rightOpacity, scale: rightScale }}
+          <div
+            className="hidden md:block relative rounded-2xl border border-white/[0.12] overflow-hidden bg-black/30"
+            onMouseMove={handleMove}
           >
-            <Image
-              src={`/api/imagegen/dev/${encodeURIComponent(SUBJECTIVE_PROMPT)}?ratio=landscape`}
-              alt=""
-              fill
-              className="object-cover"
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/80 via-[#0a0a0c]/20 to-[#0a0a0c]/10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/50 via-transparent to-transparent" />
-          </motion.div>
+            <div className="relative aspect-[16/8.5]">
+              <Image
+                src={`/api/imagegen/dev/${encodeURIComponent(OBJECTIVE_PROMPT)}?ratio=landscape`}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
 
-          {/* Prelude text — centered */}
-          <motion.div
-            className="absolute inset-0 z-10 flex items-center justify-center px-4"
-            style={{ opacity: preludeOpacity, y: preludeY }}
-          >
-            <p
-              className={cn(
-                "font-EuclidCircularA text-white/50 text-center",
-                "text-base md:text-lg lg:text-xl",
-                "zh:text-sm zh:md:text-base",
-                "max-w-xl leading-relaxed",
-              )}
-            >
-              {t("prelude")}
-            </p>
-          </motion.div>
+              <motion.div
+                className="absolute inset-0"
+                style={{ clipPath: splitClipPath }}
+              >
+                <Image
+                  src={`/api/imagegen/dev/${encodeURIComponent(SUBJECTIVE_PROMPT)}?ratio=landscape`}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="100vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/25" />
+              </motion.div>
 
-          {/* Left manifesto text — bottom left */}
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 z-10 p-8 md:p-16"
-            style={{ opacity: leftTextOpacity, y: leftTextY }}
-          >
-            <h2
-              className={cn(
-                "font-EuclidCircularA font-medium tracking-tight text-white",
-                "text-3xl md:text-5xl lg:text-6xl",
-                "zh:text-2xl zh:md:text-4xl zh:lg:text-5xl zh:tracking-wide",
-                "leading-[1.15]",
-              )}
-            >
-              {t("line1")}
-            </h2>
-          </motion.div>
+              <motion.div
+                className="absolute top-0 bottom-0 w-px bg-[#4ade80]/70"
+                style={{ left: splitLeft }}
+              />
 
-          {/* Right manifesto text — bottom left, green */}
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 z-10 p-8 md:p-16"
-            style={{ opacity: rightTextOpacity, y: rightTextY }}
-          >
-            <h2
-              className={cn(
-                "font-EuclidCircularA font-medium tracking-tight text-[#4ade80]",
-                "text-3xl md:text-5xl lg:text-6xl",
-                "zh:text-2xl zh:md:text-4xl zh:lg:text-5xl zh:tracking-wide",
-                "leading-[1.15]",
-              )}
-            >
-              {t("line2")}
-            </h2>
-          </motion.div>
-        </div>
+              <div className="absolute inset-0 p-6 md:p-8 flex items-end justify-between pointer-events-none">
+                <h2
+                  className={cn(
+                    "font-EuclidCircularA font-medium tracking-tight text-white max-w-md",
+                    "text-2xl md:text-4xl lg:text-5xl",
+                    "zh:text-xl zh:md:text-3xl zh:lg:text-4xl zh:tracking-wide",
+                  )}
+                >
+                  {t("line1")}
+                </h2>
+                <h2
+                  className={cn(
+                    "font-EuclidCircularA font-medium tracking-tight text-[#4ade80] max-w-md text-right",
+                    "text-2xl md:text-4xl lg:text-5xl",
+                    "zh:text-xl zh:md:text-3xl zh:lg:text-4xl zh:tracking-wide",
+                  )}
+                >
+                  {t("line2")}
+                </h2>
+              </div>
+            </div>
+          </div>
+
+          <div className="md:hidden space-y-4">
+            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] border border-white/[0.1]">
+              <Image
+                src={`/api/imagegen/dev/${encodeURIComponent(OBJECTIVE_PROMPT)}?ratio=square`}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <h2 className="absolute bottom-4 left-4 right-4 font-EuclidCircularA font-medium text-2xl text-white zh:text-xl">
+                {t("line1")}
+              </h2>
+            </div>
+            <div className="relative rounded-2xl overflow-hidden aspect-[4/3] border border-white/[0.1]">
+              <Image
+                src={`/api/imagegen/dev/${encodeURIComponent(SUBJECTIVE_PROMPT)}?ratio=square`}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <h2 className="absolute bottom-4 left-4 right-4 font-EuclidCircularA font-medium text-2xl text-[#4ade80] zh:text-xl">
+                {t("line2")}
+              </h2>
+            </div>
+          </div>
+        </motion.div>
       </div>
-
-      {/* Mobile: stacked with scroll-triggered reveals */}
-      <section className="md:hidden py-12 px-4">
-        <motion.p
-          className={cn(
-            "font-EuclidCircularA text-white/40 text-center text-sm",
-            "zh:text-xs",
-            "max-w-sm mx-auto leading-relaxed mb-8",
-          )}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          {t("prelude")}
-        </motion.p>
-
-        <motion.div
-          className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <Image
-            src={`/api/imagegen/dev/${encodeURIComponent(OBJECTIVE_PROMPT)}?ratio=square`}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/80 via-transparent to-transparent" />
-          <div className="absolute inset-0 flex items-end p-5">
-            <h2
-              className={cn(
-                "font-EuclidCircularA font-medium text-2xl text-white leading-[1.2]",
-                "zh:text-xl",
-              )}
-            >
-              {t("line1")}
-            </h2>
-          </div>
-        </motion.div>
-
-        <motion.div
-          className="relative aspect-[4/3] rounded-2xl overflow-hidden"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          <Image
-            src={`/api/imagegen/dev/${encodeURIComponent(SUBJECTIVE_PROMPT)}?ratio=square`}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/80 via-transparent to-transparent" />
-          <div className="absolute inset-0 flex items-end p-5">
-            <h2
-              className={cn(
-                "font-EuclidCircularA font-medium text-2xl text-[#4ade80] leading-[1.2]",
-                "zh:text-xl",
-              )}
-            >
-              {t("line2")}
-            </h2>
-          </div>
-        </motion.div>
-      </section>
-    </>
+    </section>
   );
 }

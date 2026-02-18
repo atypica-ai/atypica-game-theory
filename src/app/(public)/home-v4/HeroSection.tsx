@@ -3,17 +3,18 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 
 const HERO_IMAGE_PROMPT =
   "A single massive translucent polyhedron with internal fractures, suspended in vast dark blue-gray void. Inside it, barely visible green particle streams flow slowly like veins. The surface catches cold light — some faces have rough concrete-like texture, others are glass-smooth. Extremely sparse luminous particles drift in the surrounding emptiness. The composition is almost entirely negative space. Cold palette: dark indigo-black background, steel gray and cool white on the form, faint green glow from within. Film grain texture. Vast, silent, contemplative — like discovering an alien artifact in deep space. No people, no text.";
 
 export function HeroSection() {
   const t = useTranslations("HomePageV4.Hero");
+  const locale = useLocale();
   const sectionRef = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -24,6 +25,23 @@ export function HeroSection() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
   const textY = useTransform(scrollYProgress, [0, 0.7], [0, -80]);
+  const terminalLines = useMemo(
+    () =>
+      locale === "zh-CN"
+        ? [
+            "BOOT:: SUBJECTIVE-WORLD ENGINE READY",
+            "SCAN:: behavior traces aligned",
+            "LINK:: HippyGhosts persona mesh synced",
+            "INSIGHT:: latent intent found",
+          ]
+        : [
+            "BOOT:: SUBJECTIVE-WORLD ENGINE READY",
+            "SCAN:: behavior traces aligned",
+            "LINK:: HippyGhosts persona mesh synced",
+            "INSIGHT:: latent intent found",
+          ],
+    [locale],
+  );
 
   return (
     <section
@@ -45,6 +63,7 @@ export function HeroSection() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/60 to-[#0a0a0c]/20" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/70 via-transparent to-transparent" />
+        <div className="absolute inset-0 opacity-[0.12] bg-[linear-gradient(to_bottom,transparent_0%,rgba(255,255,255,0.2)_49%,transparent_100%)] bg-[size:100%_4px]" />
       </motion.div>
 
       {/* Content with scroll-driven drift */}
@@ -122,6 +141,33 @@ export function HeroSection() {
             </Button>
           </motion.div>
         </div>
+
+        <motion.div
+          className="mt-10 max-w-xl rounded-xl border border-white/[0.14] bg-black/35 backdrop-blur-sm overflow-hidden"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.5 }}
+        >
+          <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.1]">
+            <span className="font-IBMPlexMono text-[10px] uppercase tracking-[0.18em] text-[#4ade80]">
+              Cognitive Terminal
+            </span>
+            <span className="font-IBMPlexMono text-[10px] text-white/35">LIVE</span>
+          </div>
+          <div className="px-3 py-2.5 space-y-1.5">
+            {terminalLines.map((line, index) => (
+              <motion.p
+                key={line}
+                className="font-IBMPlexMono text-[10px] sm:text-xs text-white/65"
+                animate={{ opacity: [0.35, 1, 0.35] }}
+                transition={{ duration: 2.6, repeat: Infinity, delay: index * 0.24 }}
+              >
+                <span className="text-[#4ade80] mr-2">{">"}</span>
+                {line}
+              </motion.p>
+            ))}
+          </div>
+        </motion.div>
       </motion.div>
 
       <motion.div
