@@ -1,4 +1,4 @@
-import { fetchDiscussionTimeline } from "@/app/(panel)/(page)/actions";
+import { fetchDiscussionTimeline } from "@/app/(panel)/(page)/panel/project/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";

@@ -1,8 +1,4 @@
 import authOptions from "@/app/(auth)/authOptions";
-import {
-  fetchPersonaPanelById,
-  fetchResearchProjectsByPanelId,
-} from "@/app/(panel)/(page)/persona/panels/actions";
 import { Forbidden } from "@/components/Forbidden";
 import { NotFound } from "@/components/NotFound";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
@@ -12,9 +8,9 @@ import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { fetchPersonaPanelById, fetchResearchProjectsByPanelId } from "./actions";
 import { PanelDetailClient } from "./PanelDetailClient";
 
-// generateMetadata needs database access
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
@@ -29,6 +25,7 @@ export async function generateMetadata({
   if (!result.success) {
     return {};
   }
+
   const { title } = result.data;
   return generatePageMetadata({
     title: `${t("title")} - ${title || t("panelId", { id: panelId })}`,
@@ -65,10 +62,9 @@ export default async function PanelDetailPageWithLoading({
 }) {
   const { panelId } = await params;
 
-  // Check authentication before rendering to avoid client error flash
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = `/persona/panels/${panelId}`;
+    const callbackUrl = `/panel/${panelId}`;
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 

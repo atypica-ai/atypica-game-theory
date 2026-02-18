@@ -1,9 +1,4 @@
 "use client";
-import {
-  fetchInterviewMessages,
-  fetchInterviewsByPanelId,
-  type PanelInterview,
-} from "@/app/(panel)/(page)/persona/panels/actions";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
@@ -13,6 +8,7 @@ import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { Streamdown } from "streamdown";
+import { fetchInterviewMessages, fetchInterviewsByPanelId, type PanelInterview } from "./actions";
 
 interface InterviewsViewProps {
   panelId: number;

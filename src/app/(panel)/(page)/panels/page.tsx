@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { PersonaPanelsListClient } from "./PersonaPanelsListClient";
+import { PersonaPanelsListClient } from "./PanelsListClient";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("PersonaPanel");
@@ -18,20 +18,20 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-async function PersonaPanelsPage() {
+async function PanelListPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    const callbackUrl = "/persona/panels";
+    const callbackUrl = "/panels";
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
   return <PersonaPanelsListClient />;
 }
 
-export default async function PersonaPanelsPageWithLoading() {
+export default async function PanelListPageWithLoading() {
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <PersonaPanelsPage />
+      <PanelListPage />
     </Suspense>
   );
 }

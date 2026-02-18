@@ -1,10 +1,4 @@
 "use client";
-import {
-  createStudyFromPanel,
-  fetchPersonaPanelById,
-  PersonaPanelWithDetails,
-  ResearchProject,
-} from "@/app/(panel)/(page)/persona/panels/actions";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +19,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Streamdown } from "streamdown";
+import {
+  createStudyFromPanel,
+  fetchPersonaPanelById,
+  PersonaPanelWithDetails,
+  ResearchProject,
+} from "./actions";
 
 type PanelData = ExtractServerActionData<typeof fetchPersonaPanelById>;
 
@@ -90,7 +90,7 @@ export function PanelDetailClient({
       if (result.success) {
         setShowNewProject(false);
         setNewProjectContent("");
-        router.push(`/persona/panels/${panel.id}/projects/${result.data.token}`);
+        router.push(`/panel/project/${result.data.token}`);
       }
     });
   };
@@ -158,7 +158,7 @@ export function PanelDetailClient({
               {projects.map((project) => (
                 <Link
                   key={project.token}
-                  href={`/persona/panels/${panel.id}/projects/${project.token}`}
+                  href={`/panel/project/${project.token}`}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group"
                 >
                   <div className="flex-1 min-w-0">

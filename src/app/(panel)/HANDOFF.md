@@ -20,45 +20,36 @@ Panel 是 atypica.AI 平台的**研究面板**功能。核心概念：
 ## 二、当前分支与 Git 状态
 
 - **分支**：`feat/panel`
-- **最新 commit**：`1ef6b694 feat(panel): add discussion detail and interview pages`
-- **未提交的变更**（已暂存，还没 commit）：
-
-| 文件 | 状态 | 说明 |
-|------|------|------|
-| `[panelId]/PanelDetailClient.tsx` | Modified | 简化为只有项目+人物两个 section；修复 getKindLabel |
-| `[panelId]/page.tsx` | Modified | 移除 discussions/interviews 数据获取 |
-| `[panelId]/discussions/[timelineToken]/page.tsx` | Deleted | 旧的独立讨论路由 |
-| `[panelId]/interviews/page.tsx` | Deleted | 旧的独立访谈路由 |
-| `DiscussionDetailClient.tsx` → `DiscussionView.tsx` | Renamed | 迁移到 projects/ 下 |
-| `InterviewsClient.tsx` → `InterviewsView.tsx` | Renamed | 迁移到 projects/ 下 |
-| `projects/[userChatToken]/ProjectDetailClient.tsx` | Added | 新的项目详情页容器 |
-| `projects/[userChatToken]/page.tsx` | Added | 新的项目详情页 server component |
-| `actions.ts` | Modified | 新增 fetchProjectByToken |
-| `en-US.json` / `zh-CN.json` | Modified | 新增 ProjectDetailPage keys，清理废弃 keys |
-
-**这些变更 build 通过了，但还没 commit。** 用户可能会让你 commit，也可能会让你继续开发。
+- **当前路由基线**（最终版）：
+  - `/panels`：面板列表
+  - `/panel/[panelId]`：面板详情
+  - `/panel/project/[userChatToken]`：项目详情
+- **旧路由状态**：`/persona/panels/...` 已删除，不再兼容跳转。
+- **测试页状态**：`/panel/timeline` 测试页及专用 action 已删除。
 
 ## 三、路由结构
 
 ```
-src/app/(panel)/(page)/persona/panels/
-├── page.tsx                          → /persona/panels          面板列表
-├── PersonaPanelsListClient.tsx       → 列表页客户端组件
-├── actions.ts                        → 所有 server actions
-└── [panelId]/
-    ├── page.tsx                      → /persona/panels/:id      面板详情
-    ├── PanelDetailClient.tsx         → 面板详情客户端组件
-    └── projects/
-        └── [userChatToken]/
-            ├── page.tsx              → /persona/panels/:id/projects/:token  项目详情
-            ├── ProjectDetailClient.tsx → 项目详情容器（tab nav）
-            ├── DiscussionView.tsx     → Discussion 三栏布局
-            └── InterviewsView.tsx     → Interview 两栏布局
+src/app/(panel)/(page)/
+├── panels/
+│   ├── actions.ts                            → 列表页 action
+│   ├── page.tsx                              → /panels
+│   └── PanelsListClient.tsx
+└── panel/
+    ├── [panelId]/
+    │   ├── actions.ts                        → 面板详情 action
+    │   ├── page.tsx                          → /panel/:panelId
+    │   └── PanelDetailClient.tsx
+    ├── project/
+    │   ├── actions.ts                        → 通用 action（跨目录复用）
+    │   └── [userChatToken]/
+    │       ├── actions.ts                    → 项目详情 action
+    │       ├── page.tsx                      → /panel/project/:userChatToken
+    │       ├── ProjectDetailClient.tsx
+    │       ├── DiscussionView.tsx
+    │       └── InterviewsView.tsx
+    
 ```
-
-**已删除的旧路由**：
-- `[panelId]/discussions/[timelineToken]/` — 不再有独立的讨论页
-- `[panelId]/interviews/` — 不再有独立的访谈页
 
 ## 四、数据模型关系
 
@@ -93,16 +84,22 @@ AnalystInterview (访谈)
 
 ## 五、Server Actions 清单
 
-全部在 `src/app/(panel)/(page)/persona/panels/actions.ts`：
+已按目录拆分（每个目录只有一个 `actions.ts`）：
+
+- `src/app/(panel)/(page)/panels/actions.ts`
+- `src/app/(panel)/(page)/panel/[panelId]/actions.ts`
+- `src/app/(panel)/(page)/panel/project/[userChatToken]/actions.ts`
+- `src/app/(panel)/(page)/panel/project/actions.ts`（通用）
 
 | 函数 | 用途 | 调用方 |
 |------|------|--------|
+| `fetchDiscussionTimeline(timelineToken)` | 获取 discussion timeline（轮询） | `DiscussionView`、`DiscussionChatConsole` |
 | `fetchUserPersonaPanels()` | 获取用户所有面板 | 列表页 |
 | `fetchPersonaPanelById(panelId)` | 获取面板详情+完整 persona 信息 | 面板详情页、项目详情页 |
 | `deletePersonaPanel(panelId)` | 删除面板（有使用记录则拒绝） | 列表页 |
 | `fetchResearchProjectsByPanelId(panelId)` | 获取面板下所有 UserChat 项目 | 面板详情页 |
 | `createStudyFromPanel(panelId, content)` | 创建新研究项目 | 面板详情页"新建项目"按钮 |
-| `fetchProjectByToken(panelId, token)` | 获取单个项目并验证归属 | 项目详情页 |
+| `fetchProjectContextByToken(token)` | 按项目 token 反查 panelId + 项目基础信息 | 项目详情页 |
 | `fetchDiscussionsByPanelId(panelId)` | 获取面板下所有讨论摘要 | 项目详情页 |
 | `fetchDiscussionDetail(panelId, token)` | 获取讨论完整 timeline+personas | 项目详情页 |
 | `fetchInterviewsByPanelId(panelId)` | 获取面板下所有访谈 | 项目详情页 |
@@ -113,7 +110,7 @@ AnalystInterview (访谈)
 ### PanelDetailClient
 
 面板详情页。两个 section：
-1. **Research Projects** — 项目列表，每项链接到 `/persona/panels/{panelId}/projects/{token}`
+1. **Research Projects** — 项目列表，每项链接到 `/panel/project/{token}`
 2. **Personas** — 3 列网格，点击弹出 Dialog 显示 persona 详情
 
 特殊逻辑：
@@ -283,7 +280,13 @@ where: {
 
 | 文件 | 作用 |
 |------|------|
-| `actions.ts` | 所有数据获取和写入逻辑 |
+| `src/app/(panel)/(page)/panels/actions.ts` | 列表页 action |
+| `src/app/(panel)/(page)/panel/[panelId]/actions.ts` | 面板详情 action |
+| `src/app/(panel)/(page)/panel/project/[userChatToken]/actions.ts` | 项目详情 action |
+| `src/app/(panel)/(page)/panel/project/actions.ts` | 通用 action（discussion timeline 读取） |
+| `src/app/(panel)/(page)/panels/page.tsx` | `/panels` 路由入口 |
+| `src/app/(panel)/(page)/panel/[panelId]/page.tsx` | `/panel/[panelId]` 路由入口 |
+| `src/app/(panel)/(page)/panel/project/[userChatToken]/page.tsx` | `/panel/project/[userChatToken]` 路由入口 |
 | `PanelDetailClient.tsx` | 面板详情页（项目列表+人物列表） |
 | `ProjectDetailClient.tsx` | 项目详情页容器（tab+布局） |
 | `DiscussionView.tsx` | 讨论展示组件（三栏） |
@@ -304,5 +307,5 @@ where: {
 ---
 
 *Last updated: 2026-02-18*
-*Author: Claude (Opus 4.6)*
+*Author: Claude (Opus 4.6) + Codex (GPT-5)*
 *Branch: feat/panel*

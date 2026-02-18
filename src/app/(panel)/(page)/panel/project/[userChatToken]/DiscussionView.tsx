@@ -1,6 +1,4 @@
 "use client";
-import { fetchDiscussionTimeline } from "@/app/(panel)/(page)/actions";
-import { PanelDiscussionDetail } from "@/app/(panel)/(page)/persona/panels/actions";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +8,8 @@ import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Streamdown } from "streamdown";
+import type { PanelDiscussionDetail } from "./actions";
+import { fetchDiscussionTimeline } from "./actions";
 
 export function DiscussionView({ timeline: initialTimeline, personas }: PanelDiscussionDetail) {
   const t = useTranslations("PersonaPanel.DiscussionDetailPage");

@@ -41,13 +41,16 @@ export function PersonaPanelsListClient() {
     loadPanels();
   }, [loadPanels]);
 
-  const handleDeletePanel = useCallback((panel: PersonaPanelWithDetails) => {
-    if (panel.usageCount.discussions > 0 || panel.usageCount.interviews > 0) {
-      toast.error(t("ListPage.cannotDeleteUsedPanel"));
-      return;
-    }
-    setPanelToDelete(panel);
-  }, [t]);
+  const handleDeletePanel = useCallback(
+    (panel: PersonaPanelWithDetails) => {
+      if (panel.usageCount.discussions > 0 || panel.usageCount.interviews > 0) {
+        toast.error(t("ListPage.cannotDeleteUsedPanel"));
+        return;
+      }
+      setPanelToDelete(panel);
+    },
+    [t],
+  );
 
   const confirmDelete = useCallback(async () => {
     if (!panelToDelete) return;
@@ -108,10 +111,10 @@ export function PersonaPanelsListClient() {
                   key={panel.id}
                   className="group relative border border-border rounded-lg hover:border-foreground/20 transition-all duration-300"
                 >
-                  <Link href={`/persona/panels/${panel.id}`} className="block p-4">
+                  <Link href={`/panel/${panel.id}`} className="block p-4">
                     <div className="flex flex-col gap-2.5">
                       {/* Title */}
-                      <div className="text-sm font-medium leading-snug line-clamp-2 min-h-[2.5rem]">
+                      <div className="text-sm font-medium leading-snug line-clamp-2 min-h-10">
                         {panel.title || t("panelId", { id: panel.id })}
                       </div>
 
@@ -185,10 +188,7 @@ export function PersonaPanelsListClient() {
                   {t("ListPage.createNewPanelDescription")}
                 </div>
               </div>
-              <Link
-                href="/sage"
-                className="mt-2 text-sm hover:underline flex items-center gap-1.5"
-              >
+              <Link href="/sage" className="mt-2 text-sm hover:underline flex items-center gap-1.5">
                 {t("ListPage.startDiscussion")}
                 <ArrowRight className="size-3.5" />
               </Link>
@@ -208,7 +208,10 @@ export function PersonaPanelsListClient() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("ListPage.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground"
+            >
               {deletingPanelId ? t("ListPage.deleting") : t("ListPage.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>

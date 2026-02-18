@@ -1,15 +1,11 @@
 "use client";
-import type {
-  DiscussionSummary,
-  PanelDiscussionDetail,
-  PanelInterview,
-} from "@/app/(panel)/(page)/persona/panels/actions";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ExternalLink, Loader2, MessageSquare, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
+import type { DiscussionSummary, PanelDiscussionDetail, PanelInterview } from "./actions";
 import { DiscussionView } from "./DiscussionView";
 import { InterviewsView } from "./InterviewsView";
 
@@ -61,7 +57,7 @@ export function ProjectDetailClient({
       {/* Top bar */}
       <div className="border-b border-border px-6 py-4">
         <Link
-          href={`/persona/panels/${panelId}`}
+          href={`/panel/${panelId}`}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
         >
           <ArrowLeft className="size-3" />
