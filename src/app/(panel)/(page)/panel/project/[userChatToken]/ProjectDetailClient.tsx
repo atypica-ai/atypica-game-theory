@@ -236,7 +236,7 @@ export function ProjectDetailClient({
           )}
 
           <Link
-            href={`/study/${project.token}`}
+            href={`/universal/${project.token}`}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
           >
             {t("viewAgentChat")}

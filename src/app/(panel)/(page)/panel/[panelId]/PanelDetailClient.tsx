@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Streamdown } from "streamdown";
 import {
-  createStudyFromPanel,
+  createUniversalAgentFromPanel,
   fetchPersonaPanelById,
   PersonaPanelWithDetails,
   ResearchProject,
@@ -86,7 +86,7 @@ export function PanelDetailClient({
   const handleCreateProject = () => {
     if (!newProjectContent.trim()) return;
     startTransition(async () => {
-      const result = await createStudyFromPanel(panel.id, newProjectContent.trim());
+      const result = await createUniversalAgentFromPanel(panel.id, newProjectContent.trim());
       if (result.success) {
         setShowNewProject(false);
         setNewProjectContent("");

@@ -1,11 +1,17 @@
 "use server";
 
 import { UserChatContext } from "@/app/(study)/context/types";
-import { createStudyUserChat } from "@/app/(study)/study/lib";
+import { mergeUserChatContext } from "@/app/(study)/context/utils";
+import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import { executeUniversalAgent } from "@/app/(universal)/agent";
+import { createUniversalUserChat } from "@/app/(universal)/universal/actions";
+import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { detectInputLanguage } from "@/lib/textUtils";
 import type { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { getLocale } from "next-intl/server";
 
 export interface PersonaPanelWithDetails {
   id: number;
@@ -114,7 +120,7 @@ export async function fetchResearchProjectsByPanelId(
   });
 }
 
-export async function createStudyFromPanel(
+export async function createUniversalAgentFromPanel(
   panelId: number,
   content: string,
 ): Promise<ServerActionResult<{ token: string }>> {
@@ -127,13 +133,51 @@ export async function createStudyFromPanel(
       return { success: false, code: "not_found", message: "PersonaPanel not found" };
     }
 
-    const userChat = await createStudyUserChat({
-      userId: user.id,
+    const createResult = await createUniversalUserChat({
       role: "user",
       content,
-      context: { personaPanelId: panelId },
+    });
+    if (!createResult.success) {
+      return { success: false, code: createResult.code, message: createResult.message };
+    }
+
+    const defaultLocale = await detectInputLanguage({
+      text: content,
+      fallbackLocale: await getLocale(),
     });
 
-    return { success: true, data: { token: userChat.token } };
+    await mergeUserChatContext({
+      id: createResult.data.id,
+      context: {
+        personaPanelId: panelId,
+        defaultLocale,
+      },
+    });
+
+    const logger = rootLogger.child({
+      userChatId: createResult.data.id,
+      userChatToken: createResult.data.token,
+    });
+    const { statReport } = initGenericUserChatStatReporter({
+      userId: user.id,
+      userChatId: createResult.data.id,
+      logger,
+    });
+    const abortController = new AbortController();
+
+    await executeUniversalAgent({
+      userId: user.id,
+      userChat: {
+        id: createResult.data.id,
+        token: createResult.data.token,
+        extra: createResult.data.extra,
+      },
+      statReport,
+      abortSignal: abortController.signal,
+      logger,
+      locale: defaultLocale,
+    });
+
+    return { success: true, data: { token: createResult.data.token } };
   });
 }
