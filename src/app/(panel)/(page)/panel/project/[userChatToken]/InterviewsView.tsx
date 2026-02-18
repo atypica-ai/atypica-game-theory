@@ -6,45 +6,63 @@ import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Streamdown } from "streamdown";
-import { fetchInterviewMessages, fetchInterviewsByPanelId, type PanelInterview } from "./actions";
+import {
+  fetchInterviewBatchesByProjectToken,
+  fetchInterviewMessages,
+  type InterviewBatch,
+  type PanelInterview,
+} from "./actions";
 
 interface InterviewsViewProps {
-  panelId: number;
-  interviews: PanelInterview[];
+  userChatToken: string;
+  interviewBatches: InterviewBatch[];
   totalPersonas: number;
 }
 
 export function InterviewsView({
-  panelId,
-  interviews: initialInterviews,
+  userChatToken,
+  interviewBatches: initialInterviewBatches,
   totalPersonas,
 }: InterviewsViewProps) {
   const t = useTranslations("PersonaPanel.InterviewsPage");
-  const [interviews, setInterviews] = useState(initialInterviews);
-  const [selectedId, setSelectedId] = useState<number | null>(
-    initialInterviews.length > 0 ? initialInterviews[0].id : null,
+  const [interviewBatches, setInterviewBatches] = useState(initialInterviewBatches);
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(
+    initialInterviewBatches[0]?.id ?? null,
+  );
+  const selectedBatch = useMemo(
+    () => interviewBatches.find((batch) => batch.id === selectedBatchId) ?? null,
+    [interviewBatches, selectedBatchId],
+  );
+  const interviews = useMemo(() => selectedBatch?.interviews ?? [], [selectedBatch]);
+  const [selectedPersonaId, setSelectedPersonaId] = useState<number | null>(
+    interviews[0]?.personaId ?? null,
   );
 
   const completedCount = interviews.filter((i) => i.status === "completed").length;
   const inProgressCount = interviews.filter((i) => i.status === "in-progress").length;
-  const hasRunning = inProgressCount > 0;
+  const hasRunning = interviewBatches.some((batch) =>
+    batch.interviews.some((interview) => interview.status === "in-progress"),
+  );
+  const hasPending = interviewBatches.some((batch) =>
+    batch.interviews.some((interview) => interview.status === "pending"),
+  );
 
   // Poll for status updates while any interview is in progress
   const fetchUpdate = useCallback(async () => {
     try {
-      const result = await fetchInterviewsByPanelId(panelId);
+      const result = await fetchInterviewBatchesByProjectToken(userChatToken);
       if (result.success) {
-        setInterviews(result.data.interviews);
+        setInterviewBatches(result.data.interviewBatches);
       }
     } catch {
       // silently ignore
     }
-  }, [panelId]);
+  }, [userChatToken]);
 
   useEffect(() => {
-    if (!hasRunning) return;
+    if (!hasRunning && !hasPending) return;
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
       timeoutId = setTimeout(poll, 5000);
@@ -54,11 +72,24 @@ export function InterviewsView({
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [fetchUpdate, hasRunning]);
+  }, [fetchUpdate, hasPending, hasRunning]);
 
-  const selectedInterview = interviews.find((i) => i.id === selectedId) ?? null;
+  useEffect(() => {
+    if (!selectedBatchId && interviewBatches.length > 0) {
+      setSelectedBatchId(interviewBatches[0].id);
+    }
+  }, [interviewBatches, selectedBatchId]);
 
-  if (interviews.length === 0) {
+  useEffect(() => {
+    const selected = interviews.find((interview) => interview.personaId === selectedPersonaId);
+    if (selected) return;
+    setSelectedPersonaId(interviews[0]?.personaId ?? null);
+  }, [interviews, selectedPersonaId]);
+
+  const selectedInterview =
+    interviews.find((interview) => interview.personaId === selectedPersonaId) ?? null;
+
+  if (interviewBatches.length === 0 || interviews.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <p className="text-sm text-muted-foreground">{t("noInterviews")}</p>
@@ -70,6 +101,24 @@ export function InterviewsView({
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Compact progress bar */}
       <div className="border-b border-border px-6 py-3">
+        {interviewBatches.length > 1 && (
+          <div className="flex items-center gap-1 mb-3">
+            {interviewBatches.map((batch, index) => (
+              <button
+                key={batch.id}
+                onClick={() => setSelectedBatchId(batch.id)}
+                className={cn(
+                  "h-6 px-2 rounded text-xs font-medium transition-colors",
+                  selectedBatchId === batch.id
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted/50",
+                )}
+              >
+                #{index + 1}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {completedCount > 0 && (
@@ -107,7 +156,7 @@ export function InterviewsView({
             {t("title")}
           </div>
           {interviews.map((interview) => {
-            const isSelected = selectedId === interview.id;
+            const isSelected = selectedPersonaId === interview.personaId;
             const StatusIcon =
               interview.status === "completed"
                 ? CheckCircle2
@@ -123,8 +172,8 @@ export function InterviewsView({
 
             return (
               <button
-                key={interview.id}
-                onClick={() => setSelectedId(interview.id)}
+                key={`${interview.personaId}-${interview.id ?? "pending"}`}
+                onClick={() => setSelectedPersonaId(interview.personaId)}
                 className={cn(
                   "flex items-center gap-2.5 px-2 py-2 rounded-md text-left transition-colors w-full",
                   isSelected
@@ -149,7 +198,7 @@ export function InterviewsView({
 
         {/* Center + Right: Interview content */}
         {selectedInterview ? (
-          <InterviewContent panelId={panelId} interview={selectedInterview} />
+          <InterviewContent interview={selectedInterview} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
             {t("selectInterview")}
@@ -160,14 +209,19 @@ export function InterviewsView({
   );
 }
 
-function InterviewContent({ panelId, interview }: { panelId: number; interview: PanelInterview }) {
+function InterviewContent({ interview }: { interview: PanelInterview }) {
   const t = useTranslations("PersonaPanel.InterviewsPage");
   const [messages, setMessages] = useState<UIMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchMessages = useCallback(async () => {
+    if (!interview.interviewUserChat?.token) {
+      setMessages([]);
+      setIsLoading(false);
+      return;
+    }
     try {
-      const result = await fetchInterviewMessages(panelId, interview.id);
+      const result = await fetchInterviewMessages(interview.interviewUserChat.token);
       if (result.success) {
         setMessages(result.data);
       }
@@ -176,7 +230,7 @@ function InterviewContent({ panelId, interview }: { panelId: number; interview: 
     } finally {
       setIsLoading(false);
     }
-  }, [panelId, interview.id]);
+  }, [interview.interviewUserChat?.token]);
 
   useEffect(() => {
     setIsLoading(true);

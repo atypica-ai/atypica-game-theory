@@ -7,9 +7,9 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import {
   fetchDiscussionDetail,
-  fetchDiscussionsByPanelId,
-  fetchInterviewsByPanelId,
   fetchProjectContextByToken,
+  fetchProjectProgress,
+  fetchProjectResearchByToken,
 } from "./actions";
 import { ProjectDetailClient, type ProjectDetailClientProps } from "./ProjectDetailClient";
 
@@ -25,16 +25,14 @@ async function ProjectPage({ userChatToken }: { userChatToken: string }) {
 
   const { panelId, panelTitle, project } = projectContextResult.data;
 
-  const [discussionsResult, interviewsResult] = await Promise.all([
-    fetchDiscussionsByPanelId(panelId),
-    fetchInterviewsByPanelId(panelId),
-  ]);
+  const researchResult = await fetchProjectResearchByToken(userChatToken);
+  const progressResult = await fetchProjectProgress(userChatToken);
 
   let discussionDetail: ProjectDetailClientProps["discussionDetail"] = null;
 
-  if (discussionsResult.success && discussionsResult.data.length > 0) {
-    const firstDiscussion = discussionsResult.data[0];
-    const detailResult = await fetchDiscussionDetail(panelId, firstDiscussion.token);
+  if (researchResult.success && researchResult.data.discussions.length > 0) {
+    const firstDiscussion = researchResult.data.discussions[0];
+    const detailResult = await fetchDiscussionDetail(firstDiscussion.token);
     if (detailResult.success) {
       discussionDetail = detailResult.data;
     }
@@ -45,10 +43,11 @@ async function ProjectPage({ userChatToken }: { userChatToken: string }) {
       panelId={panelId}
       panelTitle={panelTitle}
       project={project}
-      discussions={discussionsResult.success ? discussionsResult.data : []}
+      discussions={researchResult.success ? researchResult.data.discussions : []}
       discussionDetail={discussionDetail}
-      interviews={interviewsResult.success ? interviewsResult.data.interviews : []}
-      totalPersonas={interviewsResult.success ? interviewsResult.data.totalPersonas : 0}
+      interviewBatches={researchResult.success ? researchResult.data.interviewBatches : []}
+      totalPersonas={researchResult.success ? researchResult.data.totalPersonas : 0}
+      initialProgress={progressResult.success ? progressResult.data : null}
     />
   );
 }

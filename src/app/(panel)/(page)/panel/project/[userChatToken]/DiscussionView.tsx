@@ -8,8 +8,8 @@ import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Streamdown } from "streamdown";
+import { fetchDiscussionTimeline } from "../actions";
 import type { PanelDiscussionDetail } from "./actions";
-import { fetchDiscussionTimeline } from "./actions";
 
 export function DiscussionView({ timeline: initialTimeline, personas }: PanelDiscussionDetail) {
   const t = useTranslations("PersonaPanel.DiscussionDetailPage");

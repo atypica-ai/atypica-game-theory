@@ -66,7 +66,20 @@
       "discussion": "讨论",
       "interviews": "访谈",
       "noContent": "暂无研究产出",
-      "noContentDescription": "Agent 正在准备中，查看 Agent 对话了解进展。"
+      "noContentDescription": "Agent 正在准备中，查看 Agent 对话了解进展。",
+      "status": "状态",
+      "phase": "阶段",
+      "statusRunning": "运行中",
+      "statusCompleted": "已完成",
+      "phasePlanning": "规划中",
+      "phaseResearching": "研究中",
+      "phaseDiscussion": "执行讨论中",
+      "phaseInterviews": "执行访谈中",
+      "phaseSynthesizing": "汇总中",
+      "phaseCompleted": "已完成",
+      "latestStep": "最新步骤",
+      "recentSteps": "最近步骤",
+      "agentOutput": "最新输出"
     },
     "DiscussionDetailPage": {
       "participants": "参与者",

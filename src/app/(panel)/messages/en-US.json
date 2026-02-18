@@ -66,7 +66,20 @@
       "discussion": "Discussion",
       "interviews": "Interviews",
       "noContent": "No research output yet",
-      "noContentDescription": "The agent is preparing. View the agent chat to see progress."
+      "noContentDescription": "The agent is preparing. View the agent chat to see progress.",
+      "status": "Status",
+      "phase": "Phase",
+      "statusRunning": "Running",
+      "statusCompleted": "Completed",
+      "phasePlanning": "Planning",
+      "phaseResearching": "Researching",
+      "phaseDiscussion": "Running Discussion",
+      "phaseInterviews": "Running Interviews",
+      "phaseSynthesizing": "Synthesizing",
+      "phaseCompleted": "Completed",
+      "latestStep": "Latest Step",
+      "recentSteps": "Recent Steps",
+      "agentOutput": "Latest Agent Output"
     },
     "DiscussionDetailPage": {
       "participants": "Participants",

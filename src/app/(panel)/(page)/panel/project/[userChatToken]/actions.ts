@@ -1,15 +1,12 @@
 "use server";
-
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import type { Persona, PersonaExtra } from "@/prisma/client";
+import type { AgentStatisticsExtra, Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import type { UIMessage } from "ai";
-
-export { fetchDiscussionTimeline } from "../actions";
+import { getToolName, isToolUIPart, type UIMessage } from "ai";
 
 export interface DiscussionSummary {
   token: string;
@@ -34,11 +31,9 @@ export interface PanelDiscussionDetail {
 }
 
 export interface PanelInterview {
-  id: number;
+  id: number | null;
   personaId: number;
   personaName: string;
-  personaToken: string;
-  personaExtra: PersonaExtra;
   status: "completed" | "in-progress" | "pending";
   conclusion: string;
   messageCount: number;
@@ -47,6 +42,132 @@ export interface PanelInterview {
     backgroundToken: string | null;
   } | null;
   createdAt: Date;
+}
+
+export interface InterviewBatch {
+  id: string;
+  instruction: string;
+  createdAt: Date;
+  interviews: PanelInterview[];
+}
+
+export interface ProjectProgress {
+  status: "running" | "completed";
+  phase: "planning" | "researching" | "discussion" | "interviews" | "synthesizing" | "completed";
+  latestStep: string | null;
+  recentSteps: string[];
+  lastMessage: string | null;
+  updatedAt: Date;
+}
+
+function humanizeToolCallName(toolName: string) {
+  if (toolName === "discussionChat") return "Running discussion";
+  if (toolName === "interviewChat") return "Running interviews";
+  if (toolName === "searchPersonas") return "Searching personas";
+  if (toolName === "buildPersona") return "Building personas";
+  if (toolName === "planStudy") return "Planning study";
+  if (toolName === "scoutTaskChat") return "Running scout tasks";
+  if (toolName === "scoutSocialTrends") return "Analyzing social trends";
+  if (toolName === "webSearch") return "Searching web";
+  if (toolName === "generateReport") return "Generating report";
+  return `Running ${toolName}`;
+}
+
+function detectPhase(recentSteps: string[], isRunning: boolean): ProjectProgress["phase"] {
+  if (!isRunning) return "completed";
+
+  const joined = recentSteps.join(" | ").toLowerCase();
+  if (joined.includes("interview")) return "interviews";
+  if (joined.includes("discussion")) return "discussion";
+  if (
+    joined.includes("search") ||
+    joined.includes("scout") ||
+    joined.includes("persona") ||
+    joined.includes("web")
+  ) {
+    return "researching";
+  }
+  if (joined.includes("report") || joined.includes("summary")) return "synthesizing";
+  return "planning";
+}
+
+export async function fetchProjectProgress(
+  userChatToken: string,
+): Promise<ServerActionResult<ProjectProgress>> {
+  return withAuth(async (user) => {
+    const project = await prisma.userChat.findUnique({
+      where: { token: userChatToken, userId: user.id },
+      select: { id: true, backgroundToken: true, updatedAt: true },
+    });
+
+    if (!project) {
+      return { success: false, code: "not_found", message: "Project not found" };
+    }
+
+    const recentStepStats = await prisma.chatStatistics.findMany({
+      where: {
+        userChatId: project.id,
+        dimension: "steps",
+      },
+      orderBy: { id: "desc" },
+      take: 6,
+      select: {
+        createdAt: true,
+        extra: true,
+      },
+    });
+
+    const recentSteps: string[] = [];
+    for (const stat of recentStepStats) {
+      const extra = stat.extra as AgentStatisticsExtra;
+      const toolCalls = Array.isArray(extra.toolCalls)
+        ? extra.toolCalls.filter((item): item is string => typeof item === "string")
+        : [];
+
+      if (toolCalls.length > 0) {
+        for (const toolName of toolCalls) {
+          recentSteps.push(humanizeToolCallName(toolName));
+        }
+      } else if (typeof extra.reportedBy === "string" && extra.reportedBy.trim() !== "") {
+        recentSteps.push(extra.reportedBy);
+      }
+    }
+
+    const recentAssistantMessage = await prisma.chatMessage.findFirst({
+      where: {
+        userChatId: project.id,
+        role: "assistant",
+      },
+      orderBy: { id: "desc" },
+      select: {
+        content: true,
+        updatedAt: true,
+      },
+    });
+
+    const lastMessage =
+      recentAssistantMessage?.content?.replace(/\s+/g, " ").trim().slice(0, 180) || null;
+
+    const latestStep = recentSteps[0] ?? null;
+    const status: ProjectProgress["status"] = project.backgroundToken ? "running" : "completed";
+    const phase = detectPhase(recentSteps, status === "running");
+    const updatedAt =
+      recentAssistantMessage?.updatedAt && recentAssistantMessage.updatedAt > project.updatedAt
+        ? recentAssistantMessage.updatedAt
+        : project.updatedAt;
+
+    return {
+      success: true,
+      data: {
+        status,
+        phase,
+        latestStep,
+        recentSteps: recentSteps.slice(0, 6),
+        lastMessage,
+        updatedAt,
+      },
+    };
+  });
 }
 
 export async function fetchProjectContextByToken(userChatToken: string): Promise<
@@ -113,69 +234,299 @@ export async function fetchProjectContextByToken(userChatToken: string): Promise
   });
 }
 
-export async function fetchDiscussionsByPanelId(
-  panelId: number,
-): Promise<ServerActionResult<DiscussionSummary[]>> {
-  return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findUnique({
-      where: { id: panelId, userId: user.id },
-      select: { id: true },
-    });
-    if (!panel) {
-      return { success: false, code: "forbidden", message: "Panel not found" };
+type ProjectToolData = {
+  discussions: DiscussionSummary[];
+  interviewBatches: InterviewBatch[];
+  totalPersonas: number;
+};
+
+function extractDiscussionParticipantIds(events: DiscussionTimelineEvent[]) {
+  return [
+    ...new Set(
+      events
+        .filter(
+          (event): event is DiscussionTimelineEvent & { type: "persona-reply" } =>
+            event.type === "persona-reply",
+        )
+        .map((event) => event.personaId),
+    ),
+  ];
+}
+
+function toPanelInterviewStatus(params: {
+  conclusion: string;
+  interviewBackgroundToken: string | null | undefined;
+}): PanelInterview["status"] {
+  if (params.conclusion !== "") return "completed";
+  if (params.interviewBackgroundToken) return "in-progress";
+  return "pending";
+}
+
+async function fetchProjectToolData({
+  userId,
+  userChatToken,
+}: {
+  userId: number;
+  userChatToken: string;
+}): Promise<ProjectToolData | null> {
+  const userChat = await prisma.userChat.findUnique({
+    where: { token: userChatToken, userId },
+    select: {
+      id: true,
+      context: true,
+      messages: {
+        orderBy: { id: "asc" },
+        select: { messageId: true, role: true, parts: true, extra: true, createdAt: true },
+      },
+    },
+  });
+  if (!userChat) return null;
+
+  const panelId =
+    typeof (userChat.context as UserChatContext).personaPanelId === "number"
+      ? (userChat.context as UserChatContext).personaPanelId
+      : null;
+  if (!panelId) {
+    return {
+      discussions: [],
+      interviewBatches: [],
+      totalPersonas: 0,
+    };
+  }
+
+  const discussionCalls = new Map<
+    string,
+    { toolCallId: string; timelineToken: string; instruction: string; createdAt: Date }
+  >();
+  const interviewCalls = new Map<
+    string,
+    {
+      toolCallId: string;
+      instruction: string;
+      personas: Array<{ id: number; name: string }>;
+      createdAt: Date;
     }
+  >();
 
-    const timelines = await prisma.discussionTimeline.findMany({
-      where: { personaPanelId: panelId },
-      orderBy: { createdAt: "desc" },
+  for (const dbMessage of userChat.messages) {
+    const message = convertDBMessageToAIMessage(dbMessage);
+    for (const part of message.parts ?? []) {
+      if (!isToolUIPart(part)) continue;
+      const toolName = getToolName(part);
+
+      if (toolName === "discussionChat") {
+        const output =
+          part.state === "output-available" && part.output && typeof part.output === "object"
+            ? (part.output as Record<string, unknown>)
+            : null;
+        const input =
+          part.input && typeof part.input === "object"
+            ? (part.input as Record<string, unknown>)
+            : {};
+        const timelineToken =
+          (typeof output?.timelineToken === "string" ? output.timelineToken : null) ??
+          (typeof input.timelineToken === "string" ? input.timelineToken : null);
+        if (!timelineToken) continue;
+        discussionCalls.set(part.toolCallId, {
+          toolCallId: part.toolCallId,
+          timelineToken,
+          instruction: typeof input.instruction === "string" ? input.instruction : "",
+          createdAt: dbMessage.createdAt,
+        });
+      }
+
+      if (toolName === "interviewChat") {
+        const input =
+          part.input && typeof part.input === "object"
+            ? (part.input as Record<string, unknown>)
+            : null;
+        if (!input) continue;
+        const rawPersonas = Array.isArray(input.personas) ? input.personas : [];
+        const personas = rawPersonas
+          .map((item) => {
+            if (!item || typeof item !== "object") return null;
+            const value = item as Record<string, unknown>;
+            if (typeof value.id !== "number" || typeof value.name !== "string") return null;
+            return { id: value.id, name: value.name };
+          })
+          .filter((item): item is { id: number; name: string } => item !== null);
+        if (personas.length === 0) continue;
+
+        interviewCalls.set(part.toolCallId, {
+          toolCallId: part.toolCallId,
+          instruction: typeof input.instruction === "string" ? input.instruction : "",
+          personas,
+          createdAt: dbMessage.createdAt,
+        });
+      }
+    }
+  }
+
+  const discussionTokens = Array.from(
+    new Set(Array.from(discussionCalls.values()).map((call) => call.timelineToken)),
+  );
+  const timelines =
+    discussionTokens.length > 0
+      ? await prisma.discussionTimeline.findMany({
+          where: {
+            token: { in: discussionTokens },
+            personaPanel: { userId },
+          },
+          select: {
+            token: true,
+            instruction: true,
+            events: true,
+            summary: true,
+            createdAt: true,
+          },
+        })
+      : [];
+  const timelineMap = new Map(timelines.map((timeline) => [timeline.token, timeline]));
+
+  const sortedDiscussionCalls = Array.from(discussionCalls.values()).sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+  );
+  const discussions: DiscussionSummary[] = [];
+  const seenDiscussionToken = new Set<string>();
+  for (const call of sortedDiscussionCalls) {
+    if (seenDiscussionToken.has(call.timelineToken)) continue;
+    seenDiscussionToken.add(call.timelineToken);
+    const timeline = timelineMap.get(call.timelineToken);
+    const events = (timeline?.events ?? []) as DiscussionTimelineEvent[];
+
+    discussions.push({
+      token: call.timelineToken,
+      instruction: timeline?.instruction || call.instruction,
+      summary: timeline?.summary ?? "",
+      eventCount: events.length,
+      participantIds: extractDiscussionParticipantIds(events),
+      createdAt: timeline?.createdAt ?? call.createdAt,
+      isComplete: (timeline?.summary ?? "") !== "",
     });
+  }
 
-    const discussions: DiscussionSummary[] = timelines.map((t) => {
-      const events = t.events ?? [];
-      const participantIds = [
-        ...new Set(
-          events
-            .filter(
-              (e): e is DiscussionTimelineEvent & { type: "persona-reply" } =>
-                e.type === "persona-reply",
-            )
-            .map((e) => e.personaId),
-        ),
-      ];
+  const sortedInterviewCalls = Array.from(interviewCalls.values()).sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+  );
+  const allPersonaIds = Array.from(
+    new Set(sortedInterviewCalls.flatMap((call) => call.personas.map((persona) => persona.id))),
+  );
+  const interviewRows =
+    allPersonaIds.length > 0
+      ? await prisma.analystInterview.findMany({
+          where: {
+            personaPanelId: panelId,
+            personaId: { in: allPersonaIds },
+          },
+          include: {
+            persona: { select: { id: true, name: true } },
+            interviewUserChat: {
+              select: {
+                token: true,
+                backgroundToken: true,
+                _count: { select: { messages: true } },
+              },
+            },
+          },
+          orderBy: { updatedAt: "desc" },
+        })
+      : [];
+  const interviewByPersonaId = new Map<number, (typeof interviewRows)[number]>();
+  for (const row of interviewRows) {
+    if (typeof row.personaId !== "number") continue;
+    if (!interviewByPersonaId.has(row.personaId)) {
+      interviewByPersonaId.set(row.personaId, row);
+    }
+  }
+
+  const interviewBatches: InterviewBatch[] = sortedInterviewCalls.map((call) => ({
+    id: call.toolCallId,
+    instruction: call.instruction,
+    createdAt: call.createdAt,
+    interviews: call.personas.map((persona) => {
+      const row = interviewByPersonaId.get(persona.id);
+      if (!row) {
+        return {
+          id: null,
+          personaId: persona.id,
+          personaName: persona.name,
+          status: "pending",
+          conclusion: "",
+          messageCount: 0,
+          interviewUserChat: null,
+          createdAt: call.createdAt,
+        } satisfies PanelInterview;
+      }
+
       return {
-        token: t.token,
-        instruction: t.instruction,
-        summary: t.summary,
-        eventCount: events.length,
-        participantIds,
-        createdAt: t.createdAt,
-        isComplete: t.summary !== "",
-      };
-    });
+        id: row.id,
+        personaId: row.persona?.id ?? persona.id,
+        personaName: row.persona?.name ?? persona.name,
+        status: toPanelInterviewStatus({
+          conclusion: row.conclusion,
+          interviewBackgroundToken: row.interviewUserChat?.backgroundToken,
+        }),
+        conclusion: row.conclusion,
+        messageCount: row.interviewUserChat?._count.messages ?? 0,
+        interviewUserChat: row.interviewUserChat
+          ? {
+              token: row.interviewUserChat.token,
+              backgroundToken: row.interviewUserChat.backgroundToken,
+            }
+          : null,
+        createdAt: row.createdAt,
+      } satisfies PanelInterview;
+    }),
+  }));
 
-    return { success: true, data: discussions };
+  return {
+    discussions,
+    interviewBatches,
+    totalPersonas: allPersonaIds.length,
+  };
+}
+
+export async function fetchProjectResearchByToken(
+  userChatToken: string,
+): Promise<ServerActionResult<ProjectToolData>> {
+  return withAuth(async (user) => {
+    const data = await fetchProjectToolData({
+      userId: user.id,
+      userChatToken,
+    });
+    if (!data) {
+      return { success: false, code: "not_found", message: "Project not found" };
+    }
+    return { success: true, data };
   });
 }
 
 export async function fetchDiscussionDetail(
-  panelId: number,
   timelineToken: string,
 ): Promise<ServerActionResult<PanelDiscussionDetail>> {
   return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findUnique({ where: { id: panelId, userId: user.id } });
-    if (!panel) {
-      return { success: false, code: "forbidden", message: "Panel not found" };
-    }
-
     const timeline = await prisma.discussionTimeline.findUnique({
-      where: { token: timelineToken, personaPanelId: panelId },
+      where: { token: timelineToken },
+      select: {
+        token: true,
+        instruction: true,
+        events: true,
+        summary: true,
+        minutes: true,
+        createdAt: true,
+        personaPanel: { select: { userId: true, personaIds: true } },
+      },
     });
-    if (!timeline) {
+    if (!timeline || timeline.personaPanel.userId !== user.id) {
       return { success: false, code: "not_found", message: "Discussion not found" };
     }
 
+    const panelPersonaIds = Array.isArray(timeline.personaPanel.personaIds)
+      ? timeline.personaPanel.personaIds.filter((id): id is number => typeof id === "number")
+      : [];
+
     const personas = await prisma.persona.findMany({
-      where: { id: { in: panel.personaIds } },
+      where: { id: { in: panelPersonaIds } },
       select: { id: true, name: true, token: true, tags: true, extra: true },
     });
 
@@ -196,100 +547,43 @@ export async function fetchDiscussionDetail(
   });
 }
 
-export async function fetchInterviewsByPanelId(
-  panelId: number,
-): Promise<ServerActionResult<{ interviews: PanelInterview[]; totalPersonas: number }>> {
+export async function fetchInterviewBatchesByProjectToken(
+  userChatToken: string,
+): Promise<ServerActionResult<{ interviewBatches: InterviewBatch[]; totalPersonas: number }>> {
   return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findUnique({ where: { id: panelId, userId: user.id } });
-    if (!panel) {
-      return { success: false, code: "forbidden", message: "Panel not found" };
-    }
-
-    const interviews = await prisma.analystInterview.findMany({
-      where: { personaPanelId: panelId },
-      include: {
-        persona: { select: { id: true, name: true, token: true, extra: true } },
-        interviewUserChat: {
-          select: {
-            token: true,
-            backgroundToken: true,
-            _count: { select: { messages: true } },
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
+    const data = await fetchProjectToolData({
+      userId: user.id,
+      userChatToken,
     });
-
-    const panelInterviews: PanelInterview[] = interviews
-      .filter((i) => i.persona !== null)
-      .map((i) => {
-        const hasConclusion = i.conclusion !== "";
-        const isRunning = i.interviewUserChat?.backgroundToken != null;
-        const status: PanelInterview["status"] = hasConclusion
-          ? "completed"
-          : isRunning
-            ? "in-progress"
-            : "pending";
-
-        return {
-          id: i.id,
-          personaId: i.persona!.id,
-          personaName: i.persona!.name,
-          personaToken: i.persona!.token,
-          personaExtra: i.persona!.extra,
-          status,
-          conclusion: i.conclusion,
-          messageCount: i.interviewUserChat?._count.messages ?? 0,
-          interviewUserChat: i.interviewUserChat
-            ? {
-                token: i.interviewUserChat.token,
-                backgroundToken: i.interviewUserChat.backgroundToken,
-              }
-            : null,
-          createdAt: i.createdAt,
-        };
-      });
+    if (!data) {
+      return { success: false, code: "not_found", message: "Project not found" };
+    }
 
     return {
       success: true,
       data: {
-        interviews: panelInterviews,
-        totalPersonas: panel.personaIds.length,
+        interviewBatches: data.interviewBatches,
+        totalPersonas: data.totalPersonas,
       },
     };
   });
 }
 
 export async function fetchInterviewMessages(
-  panelId: number,
-  interviewId: number,
+  interviewUserChatToken: string,
 ): Promise<ServerActionResult<UIMessage[]>> {
   return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findUnique({
-      where: { id: panelId, userId: user.id },
-      select: { id: true },
-    });
-    if (!panel) {
-      return { success: false, code: "forbidden", message: "Panel not found" };
-    }
-
-    const interview = await prisma.analystInterview.findUnique({
-      where: { id: interviewId, personaPanelId: panelId },
+    const interviewUserChat = await prisma.userChat.findUnique({
+      where: { token: interviewUserChatToken, userId: user.id },
       select: {
-        interviewUserChat: {
-          select: {
-            messages: { orderBy: { id: "asc" } },
-          },
-        },
+        messages: { orderBy: { id: "asc" } },
       },
     });
-    if (!interview) {
+    if (!interviewUserChat) {
       return { success: false, code: "not_found", message: "Interview not found" };
     }
 
-    const messages: UIMessage[] = (interview.interviewUserChat?.messages ?? []).map(
-      convertDBMessageToAIMessage,
-    );
+    const messages: UIMessage[] = interviewUserChat.messages.map(convertDBMessageToAIMessage);
 
     return { success: true, data: messages };
   });
