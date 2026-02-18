@@ -36,20 +36,12 @@
         "study": "Study",
         "scout": "Scout",
         "interview": "Interview",
+        "universal": "Research",
+        "fastInsight": "Fast Insight",
+        "productRnD": "Product R&D",
         "default": "Research"
       },
       "running": "Running",
-      "discussions": "Discussions",
-      "noDiscussions": "No discussions yet",
-      "noDiscussionsDescription": "Discussions will appear here when panel personas participate in group discussions",
-      "participantsLabel": "participants",
-      "eventsLabel": "events",
-      "interviewProgress": "Interview Progress",
-      "interviewsCompleted": "{completed} of {total} completed",
-      "noInterviews": "No interviews yet",
-      "noInterviewsDescription": "Interviews will appear here when panel personas are interviewed",
-      "completedLabel": "completed",
-      "inProgressLabel": "in progress",
       "attributes": {
         "description": "Persona Description",
         "heading": "Persona Attributes",
@@ -67,8 +59,16 @@
         "experience": "Experience"
       }
     },
-    "DiscussionDetailPage": {
+    "ProjectDetailPage": {
       "backToPanel": "Back to Panel",
+      "agentRunning": "Agent Running",
+      "viewAgentChat": "View Agent Chat",
+      "discussion": "Discussion",
+      "interviews": "Interviews",
+      "noContent": "No research output yet",
+      "noContentDescription": "The agent is preparing. View the agent chat to see progress."
+    },
+    "DiscussionDetailPage": {
       "participants": "Participants",
       "complete": "Complete",
       "inProgress": "In Progress",
@@ -80,7 +80,6 @@
     },
     "InterviewsPage": {
       "title": "Interviews",
-      "backToPanel": "Back to Panel",
       "completedOf": "{completed} of {total} completed",
       "completed": "completed",
       "inProgress": "in progress",

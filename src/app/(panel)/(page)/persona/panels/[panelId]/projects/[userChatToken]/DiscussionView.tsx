@@ -1,37 +1,17 @@
 "use client";
-
 import { fetchDiscussionTimeline } from "@/app/(panel)/(page)/actions";
+import { PanelDiscussionDetail } from "@/app/(panel)/(page)/persona/panels/actions";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Badge } from "@/components/ui/badge";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
-import { FitToViewport } from "@/components/layout/FitToViewport";
-import { ArrowLeft, CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Streamdown } from "streamdown";
-import type { PersonaWithAttributes } from "../../../actions";
 
-interface DiscussionDetailClientProps {
-  panelId: number;
-  timeline: {
-    token: string;
-    instruction: string;
-    events: DiscussionTimelineEvent[];
-    summary: string;
-    minutes: string;
-    createdAt: Date;
-  };
-  personas: PersonaWithAttributes[];
-}
-
-export function DiscussionDetailClient({
-  panelId,
-  timeline: initialTimeline,
-  personas,
-}: DiscussionDetailClientProps) {
+export function DiscussionView({ timeline: initialTimeline, personas }: PanelDiscussionDetail) {
   const t = useTranslations("PersonaPanel.DiscussionDetailPage");
   const [events, setEvents] = useState<DiscussionTimelineEvent[]>(initialTimeline.events);
   const [summary, setSummary] = useState(initialTimeline.summary);
@@ -80,35 +60,23 @@ export function DiscussionDetailClient({
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
-    <FitToViewport className="flex flex-col overflow-hidden">
-      {/* Back nav + instruction */}
-      <div className="border-b border-border px-6 py-4">
-        <Link
-          href={`/persona/panels/${panelId}`}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
-        >
-          <ArrowLeft className="size-3" />
-          {t("backToPanel")}
-        </Link>
-        <h1 className="text-base font-medium tracking-tight leading-snug line-clamp-2">
-          {initialTimeline.instruction}
-        </h1>
-        <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
-          {isComplete ? (
-            <Badge variant="outline" className="text-xs font-normal gap-1 border-green-500/30">
-              <CheckCircle2 className="size-3 text-green-500" />
-              {t("complete")}
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="text-xs font-normal gap-1">
-              <Loader2 className="size-3 animate-spin" />
-              {t("inProgress")}
-            </Badge>
-          )}
-          <span>
-            {participatedIds.size}/{personas.length} {t("participants")}
-          </span>
-        </div>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Status bar */}
+      <div className="border-b border-border px-6 py-3 flex items-center gap-3">
+        {isComplete ? (
+          <Badge variant="outline" className="text-xs font-normal gap-1 border-green-500/30">
+            <CheckCircle2 className="size-3 text-green-500" />
+            {t("complete")}
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-xs font-normal gap-1">
+            <Loader2 className="size-3 animate-spin" />
+            {t("inProgress")}
+          </Badge>
+        )}
+        <span className="text-xs text-muted-foreground">
+          {participatedIds.size}/{personas.length} {t("participants")}
+        </span>
       </div>
 
       {/* Three-column layout */}
@@ -214,11 +182,11 @@ export function DiscussionDetailClient({
           )}
         </div>
       </div>
-    </FitToViewport>
+    </div>
   );
 }
 
-/** Render a single timeline event — extracted from PanelConsole pattern */
+/** Render a single timeline event */
 function TimelineEvent({ event }: { event: DiscussionTimelineEvent }) {
   if (event.type === "question") {
     return (

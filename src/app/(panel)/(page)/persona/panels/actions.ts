@@ -15,7 +15,10 @@ export interface PersonaPanelWithDetails {
   title: string;
   instruction: string;
   personaIds: number[];
-  personas: Pick<Persona, "id" | "name" | "token" | "tags">[];
+  personas: Pick<
+    Persona,
+    "id" | "name" | "token" | "tags" | "source" | "prompt" | "extra" | "createdAt"
+  >[];
   createdAt: Date;
   updatedAt: Date;
   usageCount: {
@@ -61,6 +64,10 @@ export async function fetchUserPersonaPanels(): Promise<
         name: true,
         token: true,
         tags: true,
+        source: true,
+        prompt: true,
+        extra: true,
+        createdAt: true,
       },
     });
 
@@ -72,10 +79,8 @@ export async function fetchUserPersonaPanels(): Promise<
       id: panel.id,
       title: panel.title,
       instruction: panel.instruction,
-      personaIds: panel.personaIds, // as number[],
-      personas: panel.personaIds
-        .map((id) => personaMap.get(id))
-        .filter((p): p is Pick<Persona, "id" | "name" | "token" | "tags"> => p !== undefined),
+      personaIds: panel.personaIds,
+      personas: panel.personaIds.map((id) => personaMap.get(id)).filter((p) => p !== undefined),
       createdAt: panel.createdAt,
       updatedAt: panel.updatedAt,
       usageCount: {
@@ -91,27 +96,11 @@ export async function fetchUserPersonaPanels(): Promise<
   });
 }
 
-/**
- * Fetch a single PersonaPanel by ID with full details
- */
-export interface PersonaWithAttributes {
-  id: number;
-  name: string;
-  token: string;
-  tags: string[];
-  source: string;
-  prompt: string;
-  createdAt: Date;
-  extra: PersonaExtra;
-}
-
 export async function fetchPersonaPanelById(
   panelId: number,
-): Promise<
-  ServerActionResult<PersonaPanelWithDetails & { personasWithAttributes: PersonaWithAttributes[] }>
-> {
+): Promise<ServerActionResult<PersonaPanelWithDetails>> {
   return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findFirst({
+    const panel = await prisma.personaPanel.findUnique({
       where: {
         id: panelId,
         userId: user.id,
@@ -135,9 +124,9 @@ export async function fetchPersonaPanelById(
     }
 
     // Fetch personas with full details
-    const personasWithAttributes = await prisma.persona.findMany({
+    const personas = await prisma.persona.findMany({
       where: {
-        id: { in: panel.personaIds as number[] },
+        id: { in: panel.personaIds },
       },
       select: {
         id: true,
@@ -146,31 +135,21 @@ export async function fetchPersonaPanelById(
         tags: true,
         source: true,
         prompt: true,
-        createdAt: true,
         extra: true,
+        createdAt: true,
       },
     });
 
     // Create persona lookup map for basic info
-    const personaMap = new Map(personasWithAttributes.map((p) => [p.id, p]));
+    const personaMap = new Map(personas.map((p) => [p.id, p]));
 
     // Transform data
-    const panelWithDetails: PersonaPanelWithDetails & {
-      personasWithAttributes: PersonaWithAttributes[];
-    } = {
+    const panelWithDetails = {
       id: panel.id,
       title: panel.title,
       instruction: panel.instruction,
       personaIds: panel.personaIds,
-      personas: panel.personaIds
-        .map((id) => {
-          const p = personaMap.get(id);
-          return p ? { id: p.id, name: p.name, token: p.token, tags: p.tags } : undefined;
-        })
-        .filter((p): p is Pick<Persona, "id" | "name" | "token" | "tags"> => p !== undefined),
-      personasWithAttributes: panel.personaIds
-        .map((id) => personaMap.get(id))
-        .filter((p): p is PersonaWithAttributes => p !== undefined),
+      personas: panel.personaIds.map((id) => personaMap.get(id)).filter((p) => p !== undefined),
       createdAt: panel.createdAt,
       updatedAt: panel.updatedAt,
       usageCount: {
@@ -194,7 +173,7 @@ export async function deletePersonaPanel(
 ): Promise<ServerActionResult<{ id: number }>> {
   return withAuth(async (user) => {
     // Check ownership
-    const panel = await prisma.personaPanel.findFirst({
+    const panel = await prisma.personaPanel.findUnique({
       where: {
         id: panelId,
         userId: user.id,
@@ -286,7 +265,7 @@ export async function createStudyFromPanel(
   content: string,
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findFirst({
+    const panel = await prisma.personaPanel.findUnique({
       where: { id: panelId, userId: user.id },
     });
 
@@ -315,6 +294,65 @@ export async function createStudyFromPanel(
 }
 
 /**
+ * Fetch a single research project (UserChat) by token, verifying it belongs to the panel
+ */
+export async function fetchProjectByToken(
+  panelId: number,
+  userChatToken: string,
+): Promise<
+  ServerActionResult<{
+    token: string;
+    title: string;
+    kind: string;
+    backgroundToken: string | null;
+    context: UserChatContext;
+    createdAt: Date;
+  }>
+> {
+  return withAuth(async (user) => {
+    const userChat = await prisma.userChat.findUnique({
+      where: {
+        token: userChatToken,
+        userId: user.id,
+      },
+      select: {
+        token: true,
+        title: true,
+        kind: true,
+        backgroundToken: true,
+        context: true,
+        createdAt: true,
+      },
+    });
+
+    if (!userChat) {
+      return { success: false, code: "not_found", message: "Project not found" };
+    }
+
+    const context = userChat.context;
+    if (context.personaPanelId !== panelId) {
+      return {
+        success: false,
+        code: "forbidden",
+        message: "Project does not belong to this panel",
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        token: userChat.token,
+        title: userChat.title,
+        kind: userChat.kind,
+        backgroundToken: userChat.backgroundToken,
+        context,
+        createdAt: userChat.createdAt,
+      },
+    };
+  });
+}
+
+/**
  * Fetch all discussions for a panel (summary view)
  */
 export interface DiscussionSummary {
@@ -331,7 +369,7 @@ export async function fetchDiscussionsByPanelId(
   panelId: number,
 ): Promise<ServerActionResult<DiscussionSummary[]>> {
   return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findFirst({
+    const panel = await prisma.personaPanel.findUnique({
       where: { id: panelId, userId: user.id },
       select: { id: true },
     });
@@ -345,11 +383,14 @@ export async function fetchDiscussionsByPanelId(
     });
 
     const discussions: DiscussionSummary[] = timelines.map((t) => {
-      const events = (t.events ?? []) as DiscussionTimelineEvent[];
+      const events = t.events ?? [];
       const participantIds = [
         ...new Set(
           events
-            .filter((e): e is DiscussionTimelineEvent & { type: "persona-reply" } => e.type === "persona-reply")
+            .filter(
+              (e): e is DiscussionTimelineEvent & { type: "persona-reply" } =>
+                e.type === "persona-reply",
+            )
             .map((e) => e.personaId),
         ),
       ];
@@ -368,34 +409,34 @@ export async function fetchDiscussionsByPanelId(
   });
 }
 
+export interface PanelDiscussionDetail {
+  timeline: {
+    token: string;
+    instruction: string;
+    events: DiscussionTimelineEvent[];
+    summary: string;
+    minutes: string;
+    createdAt: Date;
+  };
+  personas: Pick<Persona, "id" | "name" | "token" | "tags" | "extra">[];
+}
+
 /**
  * Fetch a single discussion with panel personas (for detail view)
  */
 export async function fetchDiscussionDetail(
   panelId: number,
   timelineToken: string,
-): Promise<
-  ServerActionResult<{
-    timeline: {
-      token: string;
-      instruction: string;
-      events: DiscussionTimelineEvent[];
-      summary: string;
-      minutes: string;
-      createdAt: Date;
-    };
-    personas: PersonaWithAttributes[];
-  }>
-> {
+): Promise<ServerActionResult<PanelDiscussionDetail>> {
   return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findFirst({
+    const panel = await prisma.personaPanel.findUnique({
       where: { id: panelId, userId: user.id },
     });
     if (!panel) {
       return { success: false, code: "forbidden", message: "Panel not found" };
     }
 
-    const timeline = await prisma.discussionTimeline.findFirst({
+    const timeline = await prisma.discussionTimeline.findUnique({
       where: { token: timelineToken, personaPanelId: panelId },
     });
     if (!timeline) {
@@ -403,15 +444,12 @@ export async function fetchDiscussionDetail(
     }
 
     const personas = await prisma.persona.findMany({
-      where: { id: { in: panel.personaIds as number[] } },
+      where: { id: { in: panel.personaIds } },
       select: {
         id: true,
         name: true,
         token: true,
         tags: true,
-        source: true,
-        prompt: true,
-        createdAt: true,
         extra: true,
       },
     });
@@ -422,12 +460,12 @@ export async function fetchDiscussionDetail(
         timeline: {
           token: timeline.token,
           instruction: timeline.instruction,
-          events: (timeline.events ?? []) as DiscussionTimelineEvent[],
+          events: timeline.events ?? [],
           summary: timeline.summary,
           minutes: timeline.minutes,
           createdAt: timeline.createdAt,
         },
-        personas: personas as PersonaWithAttributes[],
+        personas,
       },
     };
   });
@@ -456,7 +494,7 @@ export async function fetchInterviewsByPanelId(
   panelId: number,
 ): Promise<ServerActionResult<{ interviews: PanelInterview[]; totalPersonas: number }>> {
   return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findFirst({
+    const panel = await prisma.personaPanel.findUnique({
       where: { id: panelId, userId: user.id },
     });
     if (!panel) {
@@ -496,7 +534,7 @@ export async function fetchInterviewsByPanelId(
           personaId: i.persona!.id,
           personaName: i.persona!.name,
           personaToken: i.persona!.token,
-          personaExtra: i.persona!.extra as PersonaExtra,
+          personaExtra: i.persona!.extra,
           status,
           conclusion: i.conclusion,
           messageCount: i.interviewUserChat?._count.messages ?? 0,
@@ -514,7 +552,7 @@ export async function fetchInterviewsByPanelId(
       success: true,
       data: {
         interviews: panelInterviews,
-        totalPersonas: (panel.personaIds as number[]).length,
+        totalPersonas: panel.personaIds.length,
       },
     };
   });
@@ -528,7 +566,7 @@ export async function fetchInterviewMessages(
   interviewId: number,
 ): Promise<ServerActionResult<UIMessage[]>> {
   return withAuth(async (user) => {
-    const panel = await prisma.personaPanel.findFirst({
+    const panel = await prisma.personaPanel.findUnique({
       where: { id: panelId, userId: user.id },
       select: { id: true },
     });
@@ -536,7 +574,7 @@ export async function fetchInterviewMessages(
       return { success: false, code: "forbidden", message: "Panel not found" };
     }
 
-    const interview = await prisma.analystInterview.findFirst({
+    const interview = await prisma.analystInterview.findUnique({
       where: { id: interviewId, personaPanelId: panelId },
       select: {
         interviewUserChat: {

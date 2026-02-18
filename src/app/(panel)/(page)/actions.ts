@@ -32,7 +32,7 @@ export async function fetchDiscussionTimeline(timelineToken: string): Promise<
     success: true as const,
     data: {
       token: discussionTimeline.token,
-      events: discussionTimeline.events as DiscussionTimelineEvent[],
+      events: discussionTimeline.events,
       summary: discussionTimeline.summary,
       createdAt: discussionTimeline.createdAt,
     },

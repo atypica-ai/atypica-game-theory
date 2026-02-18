@@ -1,35 +1,30 @@
 "use client";
-
-import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Badge } from "@/components/ui/badge";
-import { FitToViewport } from "@/components/layout/FitToViewport";
-import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { cn } from "@/lib/utils";
-import { ArrowLeft, CheckCircle2, Circle, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { Streamdown } from "streamdown";
 import {
   fetchInterviewMessages,
   fetchInterviewsByPanelId,
   type PanelInterview,
-} from "../../actions";
+} from "@/app/(panel)/(page)/persona/panels/actions";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { Badge } from "@/components/ui/badge";
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
+import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
+import { CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
+import { Streamdown } from "streamdown";
 
-interface InterviewsClientProps {
+interface InterviewsViewProps {
   panelId: number;
-  panelTitle: string;
   interviews: PanelInterview[];
   totalPersonas: number;
 }
 
-export function InterviewsClient({
+export function InterviewsView({
   panelId,
-  panelTitle,
   interviews: initialInterviews,
   totalPersonas,
-}: InterviewsClientProps) {
+}: InterviewsViewProps) {
   const t = useTranslations("PersonaPanel.InterviewsPage");
   const [interviews, setInterviews] = useState(initialInterviews);
   const [selectedId, setSelectedId] = useState<number | null>(
@@ -69,34 +64,17 @@ export function InterviewsClient({
 
   if (interviews.length === 0) {
     return (
-      <FitToViewport className="flex items-center justify-center">
-        <div className="text-center space-y-2">
-          <p className="text-sm text-muted-foreground">{t("noInterviews")}</p>
-          <Link
-            href={`/persona/panels/${panelId}`}
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="size-3" />
-            {panelTitle || t("backToPanel")}
-          </Link>
-        </div>
-      </FitToViewport>
+      <div className="flex-1 flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">{t("noInterviews")}</p>
+      </div>
     );
   }
 
   return (
-    <FitToViewport className="flex flex-col overflow-hidden">
-      {/* Top bar: back + progress */}
-      <div className="border-b border-border px-6 py-4">
-        <Link
-          href={`/persona/panels/${panelId}`}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
-        >
-          <ArrowLeft className="size-3" />
-          {t("backToPanel")}
-        </Link>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Compact progress bar */}
+      <div className="border-b border-border px-6 py-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-base font-medium tracking-tight">{panelTitle || t("title")}</h1>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {completedCount > 0 && (
               <Badge variant="outline" className="text-xs font-normal gap-1 border-green-500/30">
@@ -111,9 +89,6 @@ export function InterviewsClient({
               </Badge>
             )}
           </div>
-        </div>
-        {/* Progress bar */}
-        <div className="flex items-center gap-3 mt-2">
           <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-green-500 rounded-full transition-all duration-700"
@@ -185,17 +160,11 @@ export function InterviewsClient({
           </div>
         )}
       </div>
-    </FitToViewport>
+    </div>
   );
 }
 
-function InterviewContent({
-  panelId,
-  interview,
-}: {
-  panelId: number;
-  interview: PanelInterview;
-}) {
+function InterviewContent({ panelId, interview }: { panelId: number; interview: PanelInterview }) {
   const t = useTranslations("PersonaPanel.InterviewsPage");
   const [messages, setMessages] = useState<UIMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -298,7 +267,13 @@ function InterviewContent({
               ) : (
                 <Circle className="size-3" />
               )}
-              {t(interview.status === "completed" ? "completed" : interview.status === "in-progress" ? "inProgress" : "pending")}
+              {t(
+                interview.status === "completed"
+                  ? "completed"
+                  : interview.status === "in-progress"
+                    ? "inProgress"
+                    : "pending",
+              )}
             </Badge>
           </div>
           <div className="flex items-center justify-between text-xs">
