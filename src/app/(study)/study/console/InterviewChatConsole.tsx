@@ -101,7 +101,7 @@ const SingleInterviewChat = ({
   const fetchUpdate = useCallback(async () => {
     try {
       const result = await fetchAnalystInterviewForPersona({
-        studyUserChatToken: studyUserChat.token,
+        userChatToken: studyUserChat.token,
         forPersonaId: personaId,
       });
       if (!result.success) throw result;

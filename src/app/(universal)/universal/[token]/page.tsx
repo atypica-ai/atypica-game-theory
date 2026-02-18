@@ -1,6 +1,6 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { TUniversalMessageWithTool } from "@/app/(universal)/tools/types";
-import { fetchUserChatByToken } from "@/app/(universal)/universal/actions";
+import { fetchUniversalUserChatByToken } from "@/app/(universal)/universal/actions";
 import { Forbidden } from "@/components/Forbidden";
 import { DefaultLayout } from "@/components/layout/DefaultLayout";
 import { NotFound } from "@/components/NotFound";
@@ -25,7 +25,7 @@ export async function generateMetadata({
   if (!token) {
     return {};
   }
-  const result = await fetchUserChatByToken(token, "universal");
+  const result = await fetchUniversalUserChatByToken(token);
   if (!result.success || !result.data.title) {
     return {};
   }
@@ -36,7 +36,7 @@ export async function generateMetadata({
 }
 
 async function UniversalChatContent({ token, userId }: { token: string; userId: number }) {
-  const result = await fetchUserChatByToken(token, "universal");
+  const result = await fetchUniversalUserChatByToken(token);
 
   if (!result.success) {
     return (

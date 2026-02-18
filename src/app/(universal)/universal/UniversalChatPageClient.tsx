@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { createUniversalUserChat } from "./actions";
 
 export function UniversalChatPageClient() {
-  const t = useTranslations("universal");
+  const t = useTranslations("UniversalAgent");
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [skills, setSkills] = useState<

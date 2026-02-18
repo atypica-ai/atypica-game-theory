@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { UniversalChatPageClient } from "./UniversalChatPageClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("universal.metadata");
+  const t = await getTranslations("UniversalAgent.metadata");
   const locale = await getLocale();
   return generatePageMetadata({
     title: t("title"),

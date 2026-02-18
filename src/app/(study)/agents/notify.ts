@@ -10,11 +10,11 @@ import { Logger } from "pino";
 
 export async function notifyReportCompletion({
   reportToken,
-  studyUserChatId,
+  userChatId,
   logger,
 }: {
   reportToken: string;
-  studyUserChatId: number;
+  userChatId: number;
   logger: Logger;
 }) {
   const [report, studyUserChat] = await Promise.all([
@@ -28,7 +28,7 @@ export async function notifyReportCompletion({
     }),
     prisma.userChat.findUnique({
       where: {
-        id: studyUserChatId,
+        id: userChatId,
         // kind: "study", // 因为有 universal agent, 现在不过滤了
       },
       select: {
@@ -41,7 +41,7 @@ export async function notifyReportCompletion({
   ]);
   if (!report || !studyUserChat) {
     logger.error(
-      `Something went wrong in notifyReportCompletion, report (${reportToken}) or studyUserChat (${studyUserChatId}) not found`,
+      `Something went wrong in notifyReportCompletion, report (${reportToken}) or studyUserChat (${userChatId}) not found`,
     );
     return;
   }
@@ -70,21 +70,21 @@ export async function notifyReportCompletion({
   });
 }
 
-export async function notifyStudyInterruption({}: { studyUserChatId: number; logger: Logger }) {
+export async function notifyStudyInterruption({}: { userChatId: number; logger: Logger }) {
   // 暂停发送错误邮件
   return;
 }
 
 export async function _notifyStudyInterruption({
-  studyUserChatId,
+  userChatId,
   logger,
 }: {
-  studyUserChatId: number;
+  userChatId: number;
   logger: Logger;
 }) {
   const studyUserChat = await prisma.userChat.findUnique({
     where: {
-      id: studyUserChatId,
+      id: userChatId,
       // kind: "study", // 因为有 universal agent, 现在不过滤了
     },
     select: {
@@ -99,7 +99,7 @@ export async function _notifyStudyInterruption({
   });
   if (!studyUserChat) {
     logger.error(
-      `Something went wrong in notifyStudyInterruption, studyUserChat (${studyUserChatId}) not found`,
+      `Something went wrong in notifyStudyInterruption, studyUserChat (${userChatId}) not found`,
     );
     return;
   }

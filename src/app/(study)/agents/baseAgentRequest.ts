@@ -650,7 +650,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
 
       // Notify user of interruption
       notifyStudyInterruption({
-        studyUserChatId,
+        userChatId: studyUserChatId,
         logger,
       }).catch(() => {}); // Don't await
     },

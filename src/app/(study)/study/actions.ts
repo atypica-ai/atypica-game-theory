@@ -109,11 +109,11 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
 }
 
 export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
-  studyUserChatToken: string,
+  userChatToken: string,
   kind: Tkind,
 ): Promise<ServerActionResult<{ backgroundToken: string | null; chatMessageUpdatedAt: Date }>> {
   const userChat = await prismaRO.userChat.findUnique({
-    where: { token: studyUserChatToken, kind },
+    where: { token: userChatToken, kind },
     select: {
       backgroundToken: true,
       updatedAt: true,
@@ -163,12 +163,15 @@ export async function fetchStatsByStudyUserChatToken(
 }
 
 export async function fetchAttachmentsByStudyUserChatToken({
-  studyUserChatToken,
+  userChatToken,
 }: {
-  studyUserChatToken: string;
+  userChatToken: string;
 }): Promise<ServerActionResult<FileUIPart[]>> {
   const studyUserChat = await prismaRO.userChat.findUnique({
-    where: { token: studyUserChatToken, kind: "study" },
+    where: {
+      token: userChatToken,
+      // kind: "study", // 因为有 universal agent, 现在不过滤了
+    },
   });
   if (!studyUserChat) {
     return {
@@ -195,10 +198,10 @@ export async function fetchAttachmentsByStudyUserChatToken({
  * personaId 仅用于过滤 studyUserChatToken 对应研究里的所有访谈（这些访谈在拥有 studyUserChatToken 的情况下，都是直接可读的）
  */
 export async function fetchAnalystInterviewForPersona({
-  studyUserChatToken,
+  userChatToken,
   forPersonaId,
 }: {
-  studyUserChatToken: string;
+  userChatToken: string;
   forPersonaId: number;
 }): Promise<
   ServerActionResult<{
@@ -215,7 +218,10 @@ export async function fetchAnalystInterviewForPersona({
   }>
 > {
   const studyUserChat = await prismaRO.userChat.findUnique({
-    where: { token: studyUserChatToken, kind: "study" },
+    where: {
+      token: userChatToken,
+      // kind: "study", // 因为有 universal agent, 现在不过滤了
+    },
   });
   // const analystId = studyUserChat?.analyst?.id;
   const personaPanelId = studyUserChat?.context?.personaPanelId;
@@ -292,10 +298,10 @@ export async function fetchAnalystInterviewForPersona({
  * 和 fetchAnalystInterviewForPersona 一样，这个方法是安全的，无法通过遍历 personaId 来获取所有 Persona
  */
 export async function fetchPersonasSearchInStudy({
-  studyUserChatToken,
+  userChatToken,
   filterByPersonaIds,
 }: {
-  studyUserChatToken: string;
+  userChatToken: string;
   filterByPersonaIds?: number[];
 }): Promise<
   ServerActionResult<
@@ -306,7 +312,10 @@ export async function fetchPersonasSearchInStudy({
   >
 > {
   const studyUserChat = await prismaRO.userChat.findUnique({
-    where: { token: studyUserChatToken, kind: "study" },
+    where: {
+      token: userChatToken,
+      // kind: "study", // 因为有 universal agent, 现在不过滤了
+    },
     select: {
       messages: {
         where: { role: "assistant" },
@@ -404,14 +413,18 @@ export async function fetchPersonasByScoutUserChatToken({
 }
 
 export async function userStopBackgroundStudyAction(
-  studyUserChatId: number,
+  userChatId: number,
 ): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
     const userChat = await prisma.userChat.update({
-      where: { id: studyUserChatId, userId: user.id, kind: "study" },
+      where: {
+        id: userChatId,
+        userId: user.id,
+        // kind: "study", // 因为有 universal agent, 现在不过滤了
+      },
       data: { backgroundToken: null },
     });
-    const logger = rootLogger.child({ studyUserChatId, studyUserChatToken: userChat.token });
+    const logger = rootLogger.child({ userChatId, userChatToken: userChat.token });
     logger.info("Study stopped by user");
     return {
       success: true,

@@ -57,16 +57,15 @@ export async function POST(req: Request) {
   const userChat = await prisma.userChat.findUnique({
     where: {
       token: userChatToken,
-      kind: "universal",
+      userId,
+      kind: {
+        in: ["universal", "study"],
+      },
     },
   });
 
   if (!userChat) {
     return NextResponse.json({ error: "UserChat not found" }, { status: 404 });
-  }
-
-  if (userChat.userId !== userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
   const universalChatId = userChat.id;

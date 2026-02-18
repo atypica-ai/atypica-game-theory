@@ -59,14 +59,12 @@ export async function createUniversalUserChat({
 
 /**
  * Fetch universal user chat by token
+ * 这个方法比较特殊，是要过滤 universal or study, 所以不直接用 (study) app 里的通用的 fetchUserChatByToken 方法
  */
-export async function fetchUserChatByToken(
-  token: string,
-  kind: Extract<UserChatKind, "universal">,
-): Promise<
+export async function fetchUniversalUserChatByToken(token: string): Promise<
   ServerActionResult<
     Omit<UserChat, "kind" | "extra"> & {
-      kind: Extract<UserChatKind, "universal">;
+      kind: Extract<UserChatKind, "universal" | "study">;
       extra: UserChatExtra;
       messages: Awaited<ReturnType<typeof convertDBMessagesToAIMessages>>;
     }
@@ -75,8 +73,11 @@ export async function fetchUserChatByToken(
   return withAuth(async (user) => {
     const userChat = await prismaRO.userChat.findUnique({
       where: {
+        userId: user.id,
         token,
-        kind,
+        kind: {
+          in: ["universal", "study"],
+        },
       },
     });
 
@@ -85,14 +86,6 @@ export async function fetchUserChatByToken(
         success: false,
         message: "UserChat not found",
         code: "not_found",
-      };
-    }
-
-    if (userChat.userId !== user.id) {
-      return {
-        success: false,
-        message: "Unauthorized",
-        code: "forbidden",
       };
     }
 
@@ -108,7 +101,7 @@ export async function fetchUserChatByToken(
       success: true,
       data: {
         ...userChat,
-        kind: "universal",
+        kind: userChat.kind as "universal" | "study",
         extra: userChat.extra as UserChatExtra,
         messages,
       },

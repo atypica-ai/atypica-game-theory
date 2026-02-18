@@ -16,7 +16,7 @@ export function AnalystAttachments() {
   >([]);
 
   useEffect(() => {
-    fetchAttachmentsByStudyUserChatToken({ studyUserChatToken }).then((result) => {
+    fetchAttachmentsByStudyUserChatToken({ userChatToken: studyUserChatToken }).then((result) => {
       if (!result.success) throw result;
       setFileUIParts(result.data);
     });

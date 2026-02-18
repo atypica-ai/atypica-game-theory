@@ -19,7 +19,7 @@ export function UniversalChatPageClient({
   initialMessages = [],
 }: {
   userChat: Omit<UserChat, "kind" | "extra"> & {
-    kind: "universal";
+    kind: "universal" | "study";
   };
   initialMessages?: TUniversalMessageWithTool[];
 }) {

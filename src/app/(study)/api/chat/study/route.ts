@@ -94,7 +94,7 @@ export async function POST(req: Request) {
   const userChat = await prisma.userChat.findUnique({
     where: {
       token: userChatToken,
-      kind: "study",
+      kind: "study", // 虽然有 Universal Agent，但这里还是要过滤的。这个 API 是只针对 Study Agent 的，Universal Agent 有另外一个 API
     },
   });
   if (!userChat) {

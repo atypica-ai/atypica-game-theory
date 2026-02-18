@@ -9,11 +9,11 @@ import { getLocale } from "next-intl/server";
 import { Logger } from "pino";
 
 export async function notifyPodcastReady({
-  studyUserChatId,
+  userChatId,
   podcast,
   logger,
 }: {
-  studyUserChatId: number;
+  userChatId: number;
   podcast: Pick<AnalystPodcast, "token">;
   logger: Logger;
 }): Promise<void> {
@@ -21,7 +21,7 @@ export async function notifyPodcastReady({
   const siteOrigin = await getRequestOrigin();
 
   const studyUserChat = await prisma.userChat.findUnique({
-    where: { id: studyUserChatId, kind: "study" },
+    where: { id: userChatId },
     select: {
       id: true,
       token: true,

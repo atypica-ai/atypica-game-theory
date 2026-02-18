@@ -63,7 +63,7 @@ const PersonaGrids: FC<{
   useEffect(() => {
     setIsLoading(true);
     fetchPersonasSearchInStudy({
-      studyUserChatToken: studyUserChat.token,
+      userChatToken: studyUserChat.token,
       filterByPersonaIds: personas.map(({ personaId }) => personaId),
     })
       .then((result) => {
