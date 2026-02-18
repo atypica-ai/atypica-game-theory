@@ -60,7 +60,8 @@ export function UniversalChatPageClient({
       // If no initial message, start the conversation with AI
       useChatRef.current.sendMessage({ text: "[READY]" });
     } else if (initialMessages[initialMessages.length - 1]?.role === "user") {
-      useChatRef.current.regenerate();
+      // 不自动继续，用户手动点 continue 继续
+      // useChatRef.current.regenerate();
     }
   }, [initialMessages]);
 

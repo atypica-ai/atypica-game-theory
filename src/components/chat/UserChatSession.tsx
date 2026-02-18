@@ -10,7 +10,7 @@ import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { ChatMessageAttachment } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
-import { ArrowRightIcon, PlayIcon } from "lucide-react";
+import { ArrowRightIcon, PlayIcon, SquareIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { ReactNode, RefObject, useCallback, useState } from "react";
 import { ChatMessage } from "./ChatMessage";
@@ -23,7 +23,7 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   avatar,
   readOnly,
   limit,
-  useChatHelpers: { messages, status, error },
+  useChatHelpers: { messages, status, error, stop },
   useChatRef,
   renderToolUIPart,
   acceptAttachments,
@@ -230,14 +230,25 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
                 language={locale}
                 className="h-9 w-9"
               />
-              <Button
-                type="submit"
-                variant="secondary"
-                disabled={inputDisabled || (!input.trim() && uploadedFiles.length === 0)}
-                className="rounded-full size-9"
-              >
-                <ArrowRightIcon className="h-5 w-5 text-primary" />
-              </Button>
+              {status === "streaming" || status === "submitted" ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="rounded-full size-9"
+                  onClick={() => stop()}
+                >
+                  <SquareIcon className="h-5 w-5 text-primary" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabled={inputDisabled || (!input.trim() && uploadedFiles.length === 0)}
+                  className="rounded-full size-9"
+                >
+                  <ArrowRightIcon className="h-5 w-5 text-primary" />
+                </Button>
+              )}
             </div>
           </form>
         )}
