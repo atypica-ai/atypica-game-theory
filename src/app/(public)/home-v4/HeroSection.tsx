@@ -6,18 +6,35 @@ import { ArrowRight, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 
 const HERO_IMAGE_PROMPT =
   "A single massive translucent polyhedron with internal fractures, suspended in vast dark blue-gray void. Inside it, barely visible green particle streams flow slowly like veins. The surface catches cold light — some faces have rough concrete-like texture, others are glass-smooth. Extremely sparse luminous particles drift in the surrounding emptiness. The composition is almost entirely negative space. Cold palette: dark indigo-black background, steel gray and cool white on the form, faint green glow from within. Film grain texture. Vast, silent, contemplative — like discovering an alien artifact in deep space. No people, no text.";
 
 export function HeroSection() {
   const t = useTranslations("HomePageV4.Hero");
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const textY = useTransform(scrollYProgress, [0, 0.7], [0, -80]);
 
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-end overflow-hidden bg-[#0a0a0c]">
-      {/* Hero background image */}
-      <div className="absolute inset-0">
+    <section
+      ref={sectionRef}
+      className="relative h-screen flex items-end overflow-hidden bg-[#0a0a0c]"
+    >
+      {/* Background with scroll-driven zoom */}
+      <motion.div
+        className="absolute inset-0"
+        style={{ scale: heroScale, opacity: heroOpacity }}
+      >
         <Image
           src={`/api/imagegen/dev/${encodeURIComponent(HERO_IMAGE_PROMPT)}?ratio=landscape`}
           alt=""
@@ -28,12 +45,14 @@ export function HeroSection() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/60 to-[#0a0a0c]/20" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/70 via-transparent to-transparent" />
-      </div>
+      </motion.div>
 
-      {/* Content */}
-      <div className="relative z-[1] container mx-auto px-4 pb-16 md:pb-24 pt-48 md:pt-64">
+      {/* Content with scroll-driven drift */}
+      <motion.div
+        className="relative z-[1] container mx-auto px-4 pb-16 md:pb-24 pt-48 md:pt-64"
+        style={{ y: textY, opacity: heroOpacity }}
+      >
         <div className="max-w-3xl">
-          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -45,7 +64,6 @@ export function HeroSection() {
             </span>
           </motion.div>
 
-          {/* Title */}
           <motion.h1
             className={cn(
               "mt-6 font-EuclidCircularA font-medium tracking-tight text-white",
@@ -61,10 +79,10 @@ export function HeroSection() {
             <br />
             <span className="font-InstrumentSerif italic text-[#4ade80]">
               {t("titleLine2")}
-            </span>{t("titleLine2End")}
+            </span>
+            {t("titleLine2End")}
           </motion.h1>
 
-          {/* Subtitle */}
           <motion.p
             className={cn(
               "mt-6 text-white/50 max-w-xl",
@@ -78,7 +96,6 @@ export function HeroSection() {
             {t("subtitle")}
           </motion.p>
 
-          {/* CTA */}
           <motion.div
             className="mt-8 flex flex-col sm:flex-row items-start gap-4"
             initial={{ opacity: 0, y: 20 }}
@@ -105,9 +122,8 @@ export function HeroSection() {
             </Button>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Scroll indicator */}
       <motion.div
         className="absolute bottom-6 right-8 hidden md:block"
         initial={{ opacity: 0 }}

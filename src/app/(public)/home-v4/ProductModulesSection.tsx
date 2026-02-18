@@ -3,7 +3,8 @@
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
 
 const PROACTIVE_IMG =
   "A single thin ring of sparse green particles expanding outward in vast dark void — like a ripple frozen in still water. Inside the ring, emptiness. Outside, a few scattered particle fragments drifting. The ring is barely there, just a faint suggestion of constant quiet observation. Extremely minimal composition — almost entirely dark blue-gray negative space. Cold palette with green as the only color. Film grain. No people, no text.";
@@ -26,18 +27,130 @@ const modules = [
 
 export function ProductModulesSection() {
   const t = useTranslations("HomePageV4.ProductModules");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  // Track active module for counter
+  useEffect(() => {
+    return scrollYProgress.on("change", (v) => {
+      if (v < 0.12) {
+        setActiveIdx(0);
+        return;
+      }
+      const normalized = (v - 0.12) / 0.88;
+      const idx = Math.min(Math.floor(normalized * 4), 3);
+      setActiveIdx((prev) => (prev !== idx ? idx : prev));
+    });
+  }, [scrollYProgress]);
+
+  // Phase 0: Header (0 → 0.15)
+  const headerOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.04, 0.1, 0.15],
+    [0, 1, 1, 0],
+  );
+  const headerY = useTransform(
+    scrollYProgress,
+    [0, 0.04, 0.1, 0.15],
+    [50, 0, 0, -30],
+  );
+
+  // Module phases: each gets ~22% of remaining range (0.12 → 1.0)
+  // M0: 0.12-0.34, M1: 0.34-0.56, M2: 0.56-0.78, M3: 0.78-1.0
+  const m0Opacity = useTransform(
+    scrollYProgress,
+    [0.1, 0.15, 0.3, 0.34],
+    [0, 1, 1, 0],
+  );
+  const m0Scale = useTransform(scrollYProgress, [0.1, 0.18], [1.08, 1]);
+  const m0TextY = useTransform(scrollYProgress, [0.13, 0.2], [40, 0]);
+  const m0TextOpacity = useTransform(
+    scrollYProgress,
+    [0.13, 0.2, 0.3, 0.34],
+    [0, 1, 1, 0],
+  );
+
+  const m1Opacity = useTransform(
+    scrollYProgress,
+    [0.34, 0.38, 0.52, 0.56],
+    [0, 1, 1, 0],
+  );
+  const m1Scale = useTransform(scrollYProgress, [0.34, 0.42], [1.08, 1]);
+  const m1TextY = useTransform(scrollYProgress, [0.36, 0.43], [40, 0]);
+  const m1TextOpacity = useTransform(
+    scrollYProgress,
+    [0.36, 0.43, 0.52, 0.56],
+    [0, 1, 1, 0],
+  );
+
+  const m2Opacity = useTransform(
+    scrollYProgress,
+    [0.56, 0.6, 0.74, 0.78],
+    [0, 1, 1, 0],
+  );
+  const m2Scale = useTransform(scrollYProgress, [0.56, 0.64], [1.08, 1]);
+  const m2TextY = useTransform(scrollYProgress, [0.58, 0.65], [40, 0]);
+  const m2TextOpacity = useTransform(
+    scrollYProgress,
+    [0.58, 0.65, 0.74, 0.78],
+    [0, 1, 1, 0],
+  );
+
+  const m3Opacity = useTransform(
+    scrollYProgress,
+    [0.78, 0.82, 0.95, 1],
+    [0, 1, 1, 1],
+  );
+  const m3Scale = useTransform(scrollYProgress, [0.78, 0.86], [1.08, 1]);
+  const m3TextY = useTransform(scrollYProgress, [0.8, 0.87], [40, 0]);
+  const m3TextOpacity = useTransform(
+    scrollYProgress,
+    [0.8, 0.87],
+    [0, 1],
+  );
+
+  const imgOpacities = [m0Opacity, m1Opacity, m2Opacity, m3Opacity];
+  const imgScales = [m0Scale, m1Scale, m2Scale, m3Scale];
+  const textOpacities = [m0TextOpacity, m1TextOpacity, m2TextOpacity, m3TextOpacity];
+  const textYs = [m0TextY, m1TextY, m2TextY, m3TextY];
 
   return (
-    <section className="py-24 md:py-32 border-t border-zinc-200">
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
+    <>
+      {/* Desktop: scroll-driven full-viewport slideshow */}
+      <div
+        ref={containerRef}
+        className="hidden lg:block relative"
+        style={{ height: "400vh" }}
+      >
+        <div className="sticky top-0 h-screen overflow-hidden">
+          {/* Module image layers */}
+          {modules.map((mod, i) => (
+            <motion.div
+              key={mod.key}
+              className="absolute inset-0"
+              style={{ opacity: imgOpacities[i], scale: imgScales[i] }}
+            >
+              <Image
+                src={`/api/imagegen/dev/${encodeURIComponent(mod.img)}?ratio=landscape`}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/90 via-[#0a0a0c]/30 to-[#0a0a0c]/10" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/60 via-transparent to-transparent" />
+            </motion.div>
+          ))}
+
+          {/* Phase 0: Header — centered */}
           <motion.div
-            className="mb-12 md:mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4"
+            style={{ opacity: headerOpacity, y: headerY }}
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-px bg-[#2d8a4e]" />
@@ -47,94 +160,120 @@ export function ProductModulesSection() {
             </div>
             <h2
               className={cn(
-                "font-EuclidCircularA font-medium tracking-tight text-zinc-900",
+                "font-EuclidCircularA font-medium tracking-tight text-white text-center",
                 "text-3xl md:text-4xl lg:text-5xl",
                 "zh:text-2xl zh:md:text-3xl zh:lg:text-4xl zh:tracking-wide",
               )}
             >
               {t("title")}
             </h2>
-            <p className="mt-4 text-zinc-500 text-base md:text-lg max-w-2xl leading-relaxed">
+            <p className="mt-4 text-white/40 text-base md:text-lg max-w-2xl text-center leading-relaxed">
               {t("subtitle")}
             </p>
           </motion.div>
 
-          {/* Bento grid — first item featured wide */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-            {/* Featured: Proactive mode — full width banner */}
+          {/* Module text overlays */}
+          {modules.map((mod, i) => (
             <motion.div
-              className="md:col-span-12 group relative rounded-2xl overflow-hidden"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.6, delay: 0.1 }}
+              key={`text-${mod.key}`}
+              className="absolute bottom-0 left-0 right-0 z-10 p-8 md:p-16"
+              style={{ opacity: textOpacities[i], y: textYs[i] }}
             >
-              <div className="relative aspect-[21/9] md:aspect-[3/1]">
-                <Image
-                  src={`/api/imagegen/dev/${encodeURIComponent(modules[0].img)}?ratio=landscape`}
-                  alt=""
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="100vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/80 via-zinc-900/50 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/70 to-transparent" />
+              <div className="flex items-center gap-3 mb-3">
+                <span className="font-IBMPlexMono text-sm text-[#4ade80]">
+                  {mod.number}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-IBMPlexMono uppercase tracking-wider text-[#4ade80]/80 border border-[#4ade80]/20 bg-white/[0.05]">
+                  {t(`${mod.key}.badge`)}
+                </span>
               </div>
-              <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="font-IBMPlexMono text-xs text-[#4ade80]">
-                    {modules[0].number}
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-IBMPlexMono uppercase tracking-wider text-[#4ade80]/80 border border-[#4ade80]/20 bg-white/[0.05]">
-                    {t(`${modules[0].key}.badge`)}
-                  </span>
-                </div>
-                <h3 className="font-EuclidCircularA font-medium text-xl md:text-3xl text-white mb-2 max-w-lg">
-                  {t(`${modules[0].key}.title`)}
-                </h3>
-                <p className="text-sm text-white/60 leading-relaxed max-w-lg">
-                  {t(`${modules[0].key}.description`)}
-                </p>
-              </div>
+              <h3 className="font-EuclidCircularA font-medium text-2xl md:text-4xl text-white mb-3 max-w-lg">
+                {t(`${mod.key}.title`)}
+              </h3>
+              <p className="text-sm md:text-base text-white/60 leading-relaxed max-w-md">
+                {t(`${mod.key}.description`)}
+              </p>
             </motion.div>
+          ))}
 
-            {/* Remaining 3 — each with image header */}
-            {modules.slice(1).map((mod, i) => (
+          {/* Counter — bottom right */}
+          <div className="absolute bottom-8 right-8 md:bottom-16 md:right-16 z-20">
+            <span className="font-IBMPlexMono text-sm">
+              <span className="text-[#4ade80]">
+                {String(activeIdx + 1).padStart(2, "0")}
+              </span>
+              <span className="mx-2 text-white/20">/</span>
+              <span className="text-white/30">
+                {String(modules.length).padStart(2, "0")}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: stacked full-bleed cards */}
+      <section className="lg:hidden py-16">
+        <div className="container mx-auto px-4">
+          <motion.div
+            className="mb-10"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-px bg-[#2d8a4e]" />
+              <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">
+                {t("label")}
+              </span>
+            </div>
+            <h2
+              className={cn(
+                "font-EuclidCircularA font-medium tracking-tight text-white",
+                "text-2xl md:text-3xl",
+                "zh:text-xl zh:md:text-2xl zh:tracking-wide",
+              )}
+            >
+              {t("title")}
+            </h2>
+            <p className="mt-3 text-white/40 text-sm max-w-lg leading-relaxed">
+              {t("subtitle")}
+            </p>
+          </motion.div>
+
+          <div className="space-y-4">
+            {modules.map((mod, i) => (
               <motion.div
                 key={mod.key}
-                className={cn(
-                  "md:col-span-4 group rounded-2xl overflow-hidden",
-                  "bg-white border border-zinc-200 shadow-sm",
-                  "transition-all duration-300",
-                  "hover:shadow-lg hover:border-zinc-300",
-                )}
+                className="relative rounded-2xl overflow-hidden"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.5, delay: 0.15 + 0.08 * i }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.08 * i }}
               >
-                <div className="relative aspect-[16/9] overflow-hidden">
+                <div className="relative aspect-[16/9]">
                   <Image
                     src={`/api/imagegen/dev/${encodeURIComponent(mod.img)}?ratio=landscape`}
                     alt=""
                     fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover"
+                    sizes="100vw"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c]/90 via-[#0a0a0c]/40 to-transparent" />
                 </div>
-                <div className="p-5 md:p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="font-IBMPlexMono text-xs text-[#2d8a4e]">
+                <div className="absolute inset-0 flex flex-col justify-end p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="font-IBMPlexMono text-xs text-[#4ade80]">
                       {mod.number}
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-IBMPlexMono uppercase tracking-wider text-[#2d8a4e]/70 border border-[#2d8a4e]/20 bg-[#2d8a4e]/[0.05]">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-IBMPlexMono uppercase tracking-wider text-[#4ade80]/80 border border-[#4ade80]/20 bg-white/[0.05]">
                       {t(`${mod.key}.badge`)}
                     </span>
                   </div>
-                  <h3 className="font-EuclidCircularA font-medium text-base md:text-lg text-zinc-900 mb-2">
+                  <h3 className="font-EuclidCircularA font-medium text-lg text-white mb-1">
                     {t(`${mod.key}.title`)}
                   </h3>
-                  <p className="text-sm text-zinc-500 leading-relaxed">
+                  <p className="text-sm text-white/60 leading-relaxed">
                     {t(`${mod.key}.description`)}
                   </p>
                 </div>
@@ -142,7 +281,7 @@ export function ProductModulesSection() {
             ))}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

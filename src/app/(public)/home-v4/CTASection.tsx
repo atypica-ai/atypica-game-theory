@@ -6,7 +6,8 @@ import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useRef, useCallback } from "react";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 30 },
@@ -20,6 +21,29 @@ const CTA_BG_PROMPT =
 
 export function CTASection() {
   const t = useTranslations("HomePageV4.CTA");
+  const buttonRef = useRef<HTMLDivElement>(null);
+
+  const buttonX = useMotionValue(0);
+  const buttonY = useMotionValue(0);
+  const springButtonX = useSpring(buttonX, { stiffness: 200, damping: 20 });
+  const springButtonY = useSpring(buttonY, { stiffness: 200, damping: 20 });
+
+  const handleButtonMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      const rect = buttonRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      buttonX.set(x * 0.15);
+      buttonY.set(y * 0.15);
+    },
+    [buttonX, buttonY],
+  );
+
+  const handleButtonMouseLeave = useCallback(() => {
+    buttonX.set(0);
+    buttonY.set(0);
+  }, [buttonX, buttonY]);
 
   return (
     <section className="relative py-32 md:py-40 overflow-hidden bg-[#0a0a0c]">
@@ -34,6 +58,17 @@ export function CTASection() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-[#0a0a0c]/70 to-[#0a0a0c]/50" />
       </div>
+
+      {/* Breathing glow */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        animate={{
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-[#2d8a4e]/[0.04] blur-[100px]" />
+      </motion.div>
 
       <div className="relative z-[1] container mx-auto px-4">
         <motion.div className="max-w-3xl mx-auto text-center" {...fadeInUp}>
@@ -53,16 +88,25 @@ export function CTASection() {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button
-              size="lg"
-              className="rounded-full px-10 h-14 bg-[#2d8a4e] text-white hover:bg-[#2d8a4e]/80 font-EuclidCircularA font-medium text-base"
-              asChild
+            {/* Magnetic primary button */}
+            <motion.div
+              ref={buttonRef}
+              onMouseMove={handleButtonMouseMove}
+              onMouseLeave={handleButtonMouseLeave}
+              style={{ x: springButtonX, y: springButtonY }}
             >
-              <Link href="/newstudy">
-                {t("cta")}
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
+              <Button
+                size="lg"
+                className="rounded-full px-10 h-14 bg-[#2d8a4e] text-white hover:bg-[#2d8a4e]/80 font-EuclidCircularA font-medium text-base"
+                asChild
+              >
+                <Link href="/newstudy">
+                  {t("cta")}
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </motion.div>
+
             <Button
               variant="ghost"
               size="lg"
