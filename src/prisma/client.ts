@@ -98,6 +98,8 @@ export type UserChatExtra = Partial<{
     rating: string;
     submittedAt: string;
   };
+  // Runtime execution ownership marker. If present, this chat is currently running in background.
+  runId: string;
   error: string;
   // 下一步操作建议（从 Analyst.extra 迁移过来）
   recommendedStudies: {
