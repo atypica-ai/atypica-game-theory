@@ -23,7 +23,6 @@ export async function fetchUserStudies({
       kind: "study";
       context: UserChatContext;
       extra: UserChatExtra;
-      backgroundToken: string | null;
       createdAt: Date;
       updatedAt: Date;
     }[]
@@ -66,7 +65,6 @@ export async function fetchUserStudies({
         title: true,
         context: true,
         extra: true,
-        backgroundToken: true,
         createdAt: true,
         updatedAt: true,
       },

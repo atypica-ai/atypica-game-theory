@@ -3,7 +3,6 @@ import { convertDBMessagesToAIMessages, convertDBMessageToAIMessage } from "@/ai
 import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
 import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
-import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
@@ -17,7 +16,7 @@ import {
   UserChatExtra,
 } from "@/prisma/client";
 import { AnalystInterviewWhereInput } from "@/prisma/models";
-import { prisma, prismaRO } from "@/prisma/prisma";
+import { prismaRO } from "@/prisma/prisma";
 import { FileUIPart, UIMessage } from "ai";
 import { UserChatContext } from "../context/types";
 import { createStudyUserChat } from "./lib";
@@ -108,37 +107,6 @@ export async function fetchUserChatByToken<Tkind extends UserChat["kind"]>(
   };
 }
 
-export async function fetchUserChatStateByToken<Tkind extends UserChat["kind"]>(
-  userChatToken: string,
-  kind: Tkind,
-): Promise<ServerActionResult<{ backgroundToken: string | null; chatMessageUpdatedAt: Date }>> {
-  const userChat = await prismaRO.userChat.findUnique({
-    where: { token: userChatToken, kind },
-    select: {
-      backgroundToken: true,
-      updatedAt: true,
-      messages: {
-        select: { id: true, updatedAt: true },
-        orderBy: { id: "desc" },
-        take: 1,
-      },
-    },
-  });
-  if (!userChat) {
-    return {
-      success: false,
-      code: "not_found",
-      message: "User chat not found",
-    };
-  }
-  const { backgroundToken, updatedAt, messages } = userChat;
-  const chatMessageUpdatedAt = messages[0]?.updatedAt ?? updatedAt;
-  return {
-    success: true,
-    data: { backgroundToken, chatMessageUpdatedAt },
-  };
-}
-
 export async function fetchStatsByStudyUserChatToken(
   studyUserChatToken: string,
 ): Promise<ServerActionResult<Array<{ dimension: string; total: number | null }>>> {
@@ -208,7 +176,6 @@ export async function fetchAnalystInterviewForPersona({
     conclusion: string;
     interviewUserChat: {
       token: string;
-      backgroundToken: string | null;
       messages: UIMessage[];
     } | null;
     persona: {
@@ -249,7 +216,6 @@ export async function fetchAnalystInterviewForPersona({
       interviewUserChat: {
         select: {
           token: true,
-          backgroundToken: true,
           messages: { orderBy: { id: "asc" } },
         },
       },
@@ -282,7 +248,7 @@ export async function fetchAnalystInterviewForPersona({
       conclusion,
       interviewUserChat: interviewUserChat
         ? {
-            ...interviewUserChat,
+            token: interviewUserChat.token,
             messages: interviewUserChat.messages.map(convertDBMessageToAIMessage),
           }
         : null,
@@ -410,27 +376,6 @@ export async function fetchPersonasByScoutUserChatToken({
       tags: tags as string[],
     })),
   };
-}
-
-export async function userStopBackgroundStudyAction(
-  userChatId: number,
-): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    const userChat = await prisma.userChat.update({
-      where: {
-        id: userChatId,
-        userId: user.id,
-        // kind: "study", // 因为有 universal agent, 现在不过滤了
-      },
-      data: { backgroundToken: null },
-    });
-    const logger = rootLogger.child({ userChatId, userChatToken: userChat.token });
-    logger.info("Study stopped by user");
-    return {
-      success: true,
-      data: undefined,
-    };
-  });
 }
 
 export async function fetchAnalystReportByToken(token: string): Promise<

@@ -20,7 +20,8 @@ export function StudyCard({ study: studyUserChat }: { study: TStudy }) {
 
   // Determine study status
   const getStudyStatus = () => {
-    if (studyUserChat.backgroundToken) {
+    // TODO: 之后需要优化，不应该直接访问 runId
+    if (studyUserChat.extra.runId) {
       return "backgroundRunning";
     } else if (studyUserChat.context.reportTokens?.length) {
       return "reportGenerated";

@@ -109,7 +109,7 @@ export function CancelButton({
 
 export function StatusDisplay({
   status,
-  backgroundToken,
+  startedAt,
   errorMessage,
 }: {
   status:
@@ -120,7 +120,7 @@ export function StatusDisplay({
     | "waitForUser"
     | "error"
     | "ready";
-  backgroundToken: string | null;
+  startedAt?: Date | null;
   errorMessage: string | null;
 }) {
   const t = useTranslations("StudyPage.StatusDisplay");
@@ -129,23 +129,21 @@ export function StatusDisplay({
   // Update elapsed time when in background status
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
-    if (status === "background" && backgroundToken) {
-      const startTime = parseInt(backgroundToken, 10);
-      if (!isNaN(startTime)) {
-        // Update elapsed seconds every second
-        interval = setInterval(() => {
-          const elapsed = Math.floor((Date.now() - startTime) / 1000);
-          setElapsedTime(elapsed);
-        }, 1000);
-        // Initial calculation
+    if (status === "background" && startedAt) {
+      const startTime = startedAt.getTime();
+      // Update elapsed seconds every second
+      interval = setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         setElapsedTime(elapsed);
-      }
+      }, 1000);
+      // Initial calculation
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      setElapsedTime(elapsed);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [status, backgroundToken]);
+  }, [status, startedAt]);
 
   const getStatusMessage = (status: string) => {
     switch (status) {

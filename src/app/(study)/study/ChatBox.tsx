@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
+import { fetchUserChatStateByTokenAction, stopUserChatRunAction } from "@/lib/userChat/actions";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import {
@@ -27,11 +28,7 @@ import { ArrowRightIcon, PlayIcon, PlusIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  fetchUserChatByToken,
-  fetchUserChatStateByToken,
-  userStopBackgroundStudyAction,
-} from "./actions";
+import { fetchUserChatByToken } from "./actions";
 import { AnalystAttachments } from "./components/AnalystAttachments";
 import { CancelButton, StatusDisplay } from "./components/StatusDisplay";
 import { useStudyContext } from "./hooks/StudyContext";
@@ -59,7 +56,6 @@ export function ChatBox() {
       id: studyUserChatId,
       token: studyUserChatToken,
       messages: initialMessages,
-      backgroundToken: initialBackgroundToken,
       context: userChatContext,
     },
   } = useStudyContext();
@@ -128,11 +124,12 @@ export function ChatBox() {
     }),
   });
 
-  const [backgroundToken, setBackgroundToken] = useState<string | null>(initialBackgroundToken);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [startedAt, setStartedAt] = useState<Date | null>(null);
   const useChatRef = useRef({ regenerate, setMessages, sendMessage });
 
   const [input, setInput] = useState("");
-  // 不知什么原因有时候会触发两次提交，这样就会导致 backgroundToken 被立即重置从而报错，所以加一个 2s throttle
+  // 不知什么原因有时候会触发两次提交，这里加一个 2s throttle 避免重复提交
   const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
   const handleSubmitMessage = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -158,17 +155,31 @@ export function ChatBox() {
   );
 
   // React 在 development 模式下默认会执行两次 useEffect，这是 React 的严格模式的有意设计，帮助发现副作用
-  // 两次请求会触发争夺 backgroundToken 冲突，需要阻止
+  // 两次请求会触发并发冲突，需要阻止
   const requestSentRef = useRef(false);
   useEffect(() => {
-    if (requestSentRef.current) return;
-    requestSentRef.current = true;
-    // 如果最初最后一条消息是用户消息，则立即开始聊天，但如果 backgroundToken 不为空，不要发起聊天
-    const { lastUserMessage } = popLastUserMessage(initialMessages);
-    if (lastUserMessage && !backgroundToken) {
-      useChatRef.current.regenerate();
-    }
-  }, [initialMessages, backgroundToken]);
+    let cancelled = false;
+    const init = async () => {
+      const state = await fetchUserChatStateByTokenAction({
+        userChatToken: studyUserChatToken,
+        kind: "study",
+      });
+      if (!state.success || cancelled) return;
+      setIsRunning(state.data.isRunning);
+      setStartedAt(state.data.startedAt);
+      if (requestSentRef.current) return;
+      requestSentRef.current = true;
+      // 如果最初最后一条消息是用户消息，则立即开始聊天，但如果正在后台运行，不要发起聊天
+      const { lastUserMessage } = popLastUserMessage(initialMessages);
+      if (lastUserMessage && !state.data.isRunning) {
+        useChatRef.current.regenerate();
+      }
+    };
+    init();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialMessages, studyUserChatToken]);
 
   const handleContinueChat = useCallback(() => {
     const { lastUserMessage } = popLastUserMessage(messages);
@@ -191,25 +202,26 @@ export function ChatBox() {
   const chatUpdatedAt = useRef<number | null>(null);
   const [maybeEvicted, setMaybeEvicted] = useState(false);
   const refreshStudyUserChat = useCallback(async () => {
-    const result = await fetchUserChatStateByToken(studyUserChatToken, "study");
+    const result = await fetchUserChatStateByTokenAction({
+      userChatToken: studyUserChatToken,
+      kind: "study",
+    });
     if (!result.success) {
       console.log(result.message);
       return;
     }
-    const { backgroundToken: newBackgroundToken, chatMessageUpdatedAt } = result.data;
-    if (newBackgroundToken && chatUpdatedAt.current) {
-      // 因为一些原因，backgroundToken 还在，但实际已经 30 分钟没更新 chat 了，则提示用户取消
+    const { isRunning: newIsRunning, chatMessageUpdatedAt } = result.data;
+    if (newIsRunning && chatUpdatedAt.current) {
+      // 因为一些原因，后台还在跑，但实际已经 30 分钟没更新 chat 了，则提示用户取消
       const elapsedMillis = Date.now() - chatUpdatedAt.current;
       if (elapsedMillis > 1000 * 60 * 30) {
         setMaybeEvicted(true);
       }
     }
-    if (
-      chatMessageUpdatedAt.valueOf() !== chatUpdatedAt.current ||
-      newBackgroundToken !== backgroundToken
-    ) {
+    if (chatMessageUpdatedAt.valueOf() !== chatUpdatedAt.current || newIsRunning !== isRunning) {
       chatUpdatedAt.current = chatMessageUpdatedAt.valueOf();
-      setBackgroundToken(newBackgroundToken);
+      setIsRunning(newIsRunning);
+      setStartedAt(result.data.startedAt);
       // console.log(`StudyUserChat [${studyUserChatId}] updated at ${chatMessageUpdatedAt}, reloading messages`);
       fetchUserChatByToken(studyUserChatToken, "study").then((result) => {
         if (result.success) {
@@ -221,7 +233,7 @@ export function ChatBox() {
     } else {
       // console.log(`StudyUserChat [${studyUserChatId}] no updates`);
     }
-  }, [studyUserChatToken, backgroundToken]);
+  }, [studyUserChatToken, isRunning]);
 
   const { balance: userTokensBalance } = useTokensBalance();
 
@@ -229,7 +241,7 @@ export function ChatBox() {
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
-      if (!backgroundToken) {
+      if (!isRunning) {
         // 在 background 状态时定期刷新
         return;
       }
@@ -244,7 +256,7 @@ export function ChatBox() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [refreshStudyUserChat, isDocumentVisible, backgroundToken]);
+  }, [refreshStudyUserChat, isDocumentVisible, isRunning]);
 
   useEffect(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -260,7 +272,7 @@ export function ChatBox() {
   }, [messages, setLastToolInvocation]);
 
   const [waitForUser, studyCompleted] = useMemo(() => {
-    if (backgroundToken || useChatStatus === "streaming" || useChatStatus === "submitted") {
+    if (isRunning || useChatStatus === "streaming" || useChatStatus === "submitted") {
       // 研究进行中不需要再判断 waitForUser，减少无效计算
       return [false, false];
     }
@@ -289,11 +301,11 @@ export function ChatBox() {
       );
     });
     return [waitForUser, studyCompleted];
-  }, [messages, backgroundToken, useChatStatus]);
+  }, [messages, isRunning, useChatStatus]);
 
   const uiStatus = useMemo(
     () =>
-      backgroundToken
+      isRunning
         ? "background"
         : useChatStatus === "streaming"
           ? "streaming"
@@ -307,7 +319,7 @@ export function ChatBox() {
                 ? "waitForUser"
                 : useChatStatus,
     // waitForUser 是对 useChatStatus 的补充，如果已经是 background, streaming 和 submitted 状态，则忽略 waitForUser
-    [backgroundToken, userTokensBalance, useChatStatus, waitForUser],
+    [isRunning, userTokensBalance, useChatStatus, waitForUser],
   );
   const inputDisabled =
     uiStatus === "background" ||
@@ -419,7 +431,7 @@ export function ChatBox() {
         >
           <StatusDisplay
             status={uiStatus}
-            backgroundToken={backgroundToken}
+            startedAt={startedAt}
             errorMessage={error ? error?.message?.toString() || error.toString() : null}
           />
           {/*<div className="absolute right-0 bottom-0 px-1 py-1 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
@@ -475,7 +487,10 @@ export function ChatBox() {
                 className="size-7"
                 showEvictionWarning={maybeEvicted}
                 onUserCancel={async () => {
-                  await userStopBackgroundStudyAction(studyUserChatId);
+                  await stopUserChatRunAction({
+                    userChatToken: studyUserChatToken,
+                    kind: "study",
+                  });
                   setTimeout(() => window.location.reload(), 100);
                 }}
               />
