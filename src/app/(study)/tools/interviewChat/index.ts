@@ -559,8 +559,15 @@ async function saveMessage({
 }
 
 export async function runInterview(chatProps: ChatProps) {
-  const { analystInterviewId, interviewUserChatId, prompt, attachments, logger } = chatProps;
+  const { analystInterviewId, interviewUserChatId, prompt, attachments, logger, abortSignal } =
+    chatProps;
   const managed = await startManagedRun({ userChatId: interviewUserChatId, logger });
+  // 父级 abort 时（用户取消、超时等），需要同步清理 sub-tool 的 managed run，否则 runId 会残留在 DB
+  // 注：scoutTaskChat / createSubAgent 等其他 managed sub-tool 用 try/finally 包裹，abort 抛错后由 finally 清理；
+  // 而 runInterview 是 while 循环结构，没有 try/finally，所以需要显式监听 abort 来触发 cleanup
+  abortSignal.addEventListener("abort", async () => {
+    await managed.cleanup();
+  });
   const fileParts: FileUIPart[] = await Promise.all(
     (attachments ?? []).map(async ({ name, objectUrl, mimeType }: ChatMessageAttachment) => {
       const url = await fileUrlToDataUrl({ objectUrl, mimeType });
