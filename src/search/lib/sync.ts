@@ -94,7 +94,7 @@ export async function syncReport(reportId: number): Promise<void> {
     const isFeatured = !!featuredItem;
 
     const document = reportToDocument({ report, isFeatured });
-    logger.info({ msg: "Report converted to document", reportId, document });
+    // logger.info({ msg: "Report converted to document", reportId, document });
 
     const index = meilisearchClient.index(INDEXES.ARTIFACTS);
     const task = index.addDocuments([document]);
@@ -144,7 +144,7 @@ export async function syncPodcast(podcastId: number): Promise<void> {
     const isFeatured = !!featuredItem;
 
     const document = podcastToDocument({ podcast, isFeatured });
-    logger.info({ msg: "Podcast converted to document", podcastId, document });
+    // logger.info({ msg: "Podcast converted to document", podcastId, document });
 
     const index = meilisearchClient.index(INDEXES.ARTIFACTS);
     const task = index.addDocuments([document]);
@@ -249,7 +249,7 @@ export async function syncPersona(personaId: number): Promise<void> {
 
     const userId = persona.personaImport?.userId ?? null;
     const document = personaToDocument({ persona, userId, teamId: null });
-    logger.info({ msg: "Persona converted to document", personaId, document });
+    // logger.info({ msg: "Persona converted to document", personaId, document });
 
     const index = meilisearchClient.index(INDEXES.PERSONAS);
     const task = index.addDocuments([document]);

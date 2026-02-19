@@ -213,6 +213,8 @@ export async function startManagedRun({
 
   const cleanup = async () => {
     stop();
+    const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+    logger.info({ msg: "managed run finished", runId, elapsedSeconds });
     await clearUserChatRun({ userChatId, runId });
   };
 

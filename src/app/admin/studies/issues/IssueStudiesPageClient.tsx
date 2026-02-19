@@ -5,12 +5,17 @@ import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
+import { UserChatExtra } from "@/prisma/client";
 import { useLocale } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { fetchIssueStudies, retryStudy } from "./actions";
 import ErrorStudiesList from "./ErrorStudiesList";
 
 type IssueStudy = ExtractServerActionData<typeof fetchIssueStudies>[number];
+
+function getRunId(study: IssueStudy): string | null {
+  return (study.extra as UserChatExtra)?.runId ?? null;
+}
 
 export const SearchParamsConfig = {
   page: createParamConfig.number(1),
@@ -179,7 +184,7 @@ export function IssueStudiesPageClient({ initialSearchParams }: IssueStudiesPage
                 {studies.map((study) => (
                   <div
                     key={study.id}
-                    className={`p-4 ${isStudyStuck(study.backgroundToken) ? "bg-destructive/5" : ""}`}
+                    className={`p-4 ${isStudyStuck(getRunId(study)) ? "bg-destructive/5" : ""}`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1">
@@ -187,7 +192,7 @@ export function IssueStudiesPageClient({ initialSearchParams }: IssueStudiesPage
                           <span className="font-medium truncate">
                             {study.title || "Untitled Study"}
                           </span>
-                          {isStudyStuck(study.backgroundToken) && (
+                          {isStudyStuck(getRunId(study)) && (
                             <span className="inline-flex items-center rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-0.5 text-xs font-semibold text-destructive">
                               Stuck
                             </span>
@@ -214,12 +219,12 @@ export function IssueStudiesPageClient({ initialSearchParams }: IssueStudiesPage
                       <div className="shrink-0 text-right">
                         <div className="text-sm">
                           Started:{" "}
-                          {study.backgroundToken
-                            ? formatDate(new Date(parseInt(study.backgroundToken)), locale)
+                          {getRunId(study)
+                            ? formatDate(new Date(parseInt(getRunId(study)!)), locale)
                             : "-"}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          Duration: {calculateDuration(study.backgroundToken)}
+                          Duration: {calculateDuration(getRunId(study))}
                         </div>
                       </div>
                     </div>

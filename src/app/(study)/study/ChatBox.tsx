@@ -124,7 +124,8 @@ export function ChatBox() {
     }),
   });
 
-  const [isRunning, setIsRunning] = useState<boolean>(false);
+  // 默认 true：在首次 fetchUserChatStateByTokenAction 返回前，禁止用户输入，避免和后台运行冲突
+  const [isRunning, setIsRunning] = useState<boolean>(true);
   const [startedAt, setStartedAt] = useState<Date | null>(null);
   const useChatRef = useRef({ regenerate, setMessages, sendMessage });
 
