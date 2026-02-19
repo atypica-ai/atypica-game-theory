@@ -16,7 +16,8 @@ import { formatContentCore } from "@/app/api/format-content";
 import { getTeamConfigWithDefault } from "@/app/team/teamConfig/lib";
 import { TeamConfigName } from "@/app/team/teamConfig/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
-import { generateChatTitle, setUserChatError } from "@/lib/userChat/lib";
+import { generateChatTitle } from "@/lib/userChat/lib";
+import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { safeAbort } from "@/lib/utils";
 import {
   ImagePart,
@@ -36,7 +37,6 @@ import { Locale } from "next-intl";
 import { after } from "next/server";
 import { Logger } from "pino";
 import { UserChatContext } from "../context/types";
-import { backgroundChatUntilCancel, raceForUserChat } from "./background";
 import { notifyStudyInterruption } from "./notify";
 import { buildReferenceStudyContext } from "./referenceContext";
 import {
@@ -47,11 +47,7 @@ import {
 } from "./utils";
 
 /**
- * Base context shared by all agent types
- *
- * IMPORTANT: toolAbortController and studyAbortController must be created
- * at the call site and passed through this context to ensure the same instances
- * are used both in config creation (for tools) and in baseAgentRequest (for abort logic).
+ * Base context shared by all agent types.
  */
 export interface BaseAgentContext {
   userId: number;
@@ -61,8 +57,6 @@ export interface BaseAgentContext {
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
-  toolAbortController: AbortController; // Shared instance for aborting tool execution
-  studyAbortController: AbortController; // Shared instance for aborting study execution
 }
 
 // /**
@@ -136,50 +130,48 @@ export interface BaseStepContext {
  */
 export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = StudyToolSet>(
   baseContext: BaseAgentContext,
-  config: AgentRequestConfig<TOOLS>,
+  createAgentConfig: (toolAbortSignal: AbortSignal) => Promise<AgentRequestConfig<TOOLS>>,
   streamWriter?: UIMessageStreamWriter,
 ) {
+  const { userId, studyUserChatId, userChatContext, locale, logger, statReport } = baseContext;
+
+  // =============================================================================
+  // Phase 1: Managed Run + Abort Controllers
+  // =============================================================================
+
+  // Start managed run — writes runId to DB (also clears previous error), starts watcher, returns abort signal.
   const {
-    userId,
-    studyUserChatId,
-    userChatContext,
-    locale,
+    runId,
+    abortSignal: managedAbortSignal,
+    cleanup: cleanupRun,
+  } = await startManagedRun({
+    userChatId: studyUserChatId,
     logger,
-    statReport,
-    toolAbortController,
-    studyAbortController,
-  } = baseContext;
+  });
+
+  // Create abort controllers. Both are internal — callers never see them.
+  const toolAbortController = new AbortController();
+  const studyAbortController = new AbortController();
+
+  managedAbortSignal.addEventListener("abort", () => {
+    setTimeout(() => safeAbort(toolAbortController), 0);
+    setTimeout(() => safeAbort(studyAbortController), 1000);
+  });
 
   // =============================================================================
-  // Phase 1: Initialization
+  // Phase 2: Build Config + Prepare Messages
   // =============================================================================
 
-  // Clear previous error messages
-  await setUserChatError(studyUserChatId, null);
-
-  // Create debounced message persistence (5s debounce)
-  // ⚠️ 现在改用 onStepFinish 保存
-  // const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
-  //   studyUserChatId,
-  //   5000,
-  //   logger,
-  // );
-
-  // Note: toolAbortController and studyAbortController are received from baseContext.
-  // They must be created at the call site to ensure the same instances are shared
-  // between config creation (for tools) and this function (for abort logic).
-
-  // =============================================================================
-  // Phase 2: Prepare Messages
-  // =============================================================================
+  // Build agent config. The config factory receives toolAbortSignal so tools can observe it.
+  const agentConfig = await createAgentConfig(toolAbortController.signal);
 
   // Prepare streaming messages
   const { coreMessages, streamingMessage, toolUseCount } = await prepareMessagesForStreaming(
     studyUserChatId,
-    { tools: config.tools },
+    { tools: agentConfig.tools },
   );
 
-  let modelName = config.modelName;
+  let modelName = agentConfig.modelName;
   let modelMessages: ModelMessage[] = [...coreMessages];
   if (
     (toolUseCount[StudyToolName.generateReport] ?? 0) > 0 ||
@@ -188,8 +180,8 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     // 报告生成以后，就换成 minimax 模型，以减少消耗
     modelName = "minimax-m2.1";
   }
-  let providerOptions: NonNullable<typeof config.providerOptions> =
-    config.providerOptions ?? defaultProviderOptions();
+  let providerOptions: NonNullable<typeof agentConfig.providerOptions> =
+    agentConfig.providerOptions ?? defaultProviderOptions();
 
   {
     const fixed = fixReasoningPartsInModelMessages({
@@ -237,16 +229,16 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     : null;
 
   // Build final system prompt (append team system prompt if available)
-  let finalSystemPrompt = config.systemPrompt;
+  let finalSystemPrompt = agentConfig.systemPrompt;
   if (teamSystemPrompt && typeof teamSystemPrompt === "object" && locale in teamSystemPrompt) {
     const prompt = teamSystemPrompt[locale];
     if (prompt) {
-      finalSystemPrompt = `${config.systemPrompt}\n\n${prompt}`;
+      finalSystemPrompt = `${agentConfig.systemPrompt}\n\n${prompt}`;
     }
   }
 
   // Build final tools (add createSubAgent if MCP clients available)
-  const finalTools = { ...config.tools };
+  const finalTools = { ...agentConfig.tools };
   if (mcpClients.length > 0) {
     const agentToolArgs: AgentToolConfigArgs = {
       locale,
@@ -354,16 +346,8 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   }
 
   // =============================================================================
-  // Phase 7: Background Execution Setup
+  // Phase 7: streamText Configuration
   // =============================================================================
-
-  const { clearBackgroundToken, backgroundToken } = await raceForUserChat(studyUserChatId);
-
-  // =============================================================================
-  // Phase 8: streamText Configuration
-  // =============================================================================
-
-  console.log(JSON.stringify(modelMessages));
 
   let streamStartTime = Date.now();
   const streamTextResult = streamText<TOOLS>({
@@ -373,13 +357,13 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     system: finalSystemPrompt, // Use final system prompt (with team prompt appended)
     messages: modelMessages,
     tools: finalTools, // Use final tools (with createSubAgent if MCP available)
-    toolChoice: config.toolChoice ?? "auto",
+    toolChoice: agentConfig.toolChoice ?? "auto",
     experimental_repairToolCall: handleToolCallError,
-    maxOutputTokens: config.maxTokens,
+    maxOutputTokens: agentConfig.maxTokens,
 
     // Stop conditions
     stopWhen: [
-      stepCountIs(config.maxSteps ?? 30),
+      stepCountIs(agentConfig.maxSteps ?? 30),
       ({ steps }) => {
         // Stop after report or podcast generation
         return steps.some((step) =>
@@ -398,8 +382,8 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
       logger.info({ msg: "baseAgentRequest prepareStep", messagesLength: currentMessages.length });
 
       // Execute custom prepareStep logic (if provided)
-      const customResult = config.specialHandlers?.customPrepareStep
-        ? await config.specialHandlers.customPrepareStep(options)
+      const customResult = agentConfig.specialHandlers?.customPrepareStep
+        ? await agentConfig.specialHandlers.customPrepareStep(options)
         : undefined;
 
       // Determine which model to use (custom model or default config model)
@@ -570,8 +554,8 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
       }
 
       // Execute custom onStepFinish logic
-      if (config.specialHandlers?.customOnStepFinish) {
-        await config.specialHandlers.customOnStepFinish(step, {
+      if (agentConfig.specialHandlers?.customOnStepFinish) {
+        await agentConfig.specialHandlers.customOnStepFinish(step, {
           studyUserChatId,
           userId,
           logger,
@@ -617,12 +601,12 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     },
 
     /**
-     * onFinish: Cleanup background token
+     * onFinish: Cleanup managed run
      */
     onFinish: async ({ usage, providerMetadata }) => {
       const cache = providerMetadata?.bedrock?.usage;
       logger.info({ msg: "baseAgentRequest onFinish", usage, cache });
-      await clearBackgroundToken();
+      await cleanupRun();
     },
 
     /**
@@ -639,13 +623,16 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
 
       // Abort all running tools
       safeAbort(toolAbortController);
-      await clearBackgroundToken();
 
       try {
-        // Save error message to database
-        await setUserChatError(studyUserChatId, (error as Error).message);
+        await failUserChatRun({
+          userChatId: studyUserChatId,
+          runId,
+          error: (error as Error).message,
+        });
       } catch (dbError) {
-        logger.error({ msg: "Error saving error to database", error: (dbError as Error).message });
+        logger.error({ msg: "Error saving run state", error: (dbError as Error).message });
+        await cleanupRun();
       }
 
       // Notify user of interruption
@@ -659,26 +646,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   });
 
   // =============================================================================
-  // Phase 9: Background Execution
-  // =============================================================================
-
-  // Clear background token on abort
-  studyAbortController.signal.addEventListener("abort", async () => {
-    await clearBackgroundToken();
-  });
-
-  // Start background execution until canceled
-  backgroundChatUntilCancel({
-    logger,
-    studyUserChatId,
-    backgroundToken,
-    streamTextResult,
-    toolAbortController,
-    studyAbortController,
-  });
-
-  // =============================================================================
-  // Phase 10: Return Stream (Universal: always use merge)
+  // Phase 9: Return Stream (Universal: always use merge)
   // =============================================================================
 
   // Only merge if streamWriter is provided (for non-MCP scenarios)

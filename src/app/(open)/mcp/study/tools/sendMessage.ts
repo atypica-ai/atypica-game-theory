@@ -155,10 +155,6 @@ export async function handleSendMessage(
       logger,
     });
 
-    // Create abort controllers - same logic as route.ts
-    const toolAbortController = new AbortController();
-    const studyAbortController = new AbortController();
-
     const agentContext = {
       userId,
       teamId,
@@ -167,26 +163,29 @@ export async function handleSendMessage(
       locale,
       logger,
       statReport,
-      toolAbortController,
-      studyAbortController,
     };
+
+    const configParams = { ...agentContext };
 
     try {
       // Execute agent based on analyst.kind - same logic as route.ts
       // No streamWriter needed for MCP (synchronous execution)
       if (!userChat.context.analystKind) {
-        // Plan Mode - Intent Layer for research planning
-        const config = await createPlanModeAgentConfig(agentContext);
-        await executeBaseAgentRequest(agentContext, config);
+        await executeBaseAgentRequest(agentContext, (toolAbortSignal) =>
+          createPlanModeAgentConfig({ ...configParams, toolAbortSignal }),
+        );
       } else if (userChat.context.analystKind === AnalystKind.productRnD) {
-        const config = await createProductRnDAgentConfig(agentContext);
-        await executeBaseAgentRequest(agentContext, config);
+        await executeBaseAgentRequest(agentContext, (toolAbortSignal) =>
+          createProductRnDAgentConfig({ ...configParams, toolAbortSignal }),
+        );
       } else if (userChat.context.analystKind === AnalystKind.fastInsight) {
-        const config = await createFastInsightAgentConfig(agentContext);
-        await executeBaseAgentRequest(agentContext, config);
+        await executeBaseAgentRequest(agentContext, (toolAbortSignal) =>
+          createFastInsightAgentConfig({ ...configParams, toolAbortSignal }),
+        );
       } else {
-        const config = await createStudyAgentConfig(agentContext);
-        await executeBaseAgentRequest(agentContext, config);
+        await executeBaseAgentRequest(agentContext, (toolAbortSignal) =>
+          createStudyAgentConfig({ ...configParams, toolAbortSignal }),
+        );
       }
 
       logger.info({

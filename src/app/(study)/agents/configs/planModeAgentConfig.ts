@@ -20,7 +20,7 @@ export interface PlanModeAgentConfigParams {
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
-  toolAbortController: AbortController;
+  toolAbortSignal: AbortSignal;
 }
 
 // Tools available in Plan Mode
@@ -40,12 +40,12 @@ type TOOLS = ReturnType<typeof buildPlanModeTools>;
 export async function createPlanModeAgentConfig(
   params: PlanModeAgentConfigParams,
 ): Promise<AgentRequestConfig<TOOLS>> {
-  const { locale, logger, statReport, toolAbortController } = params;
+  const { locale, logger, statReport, toolAbortSignal } = params;
 
   // Build tools
   const agentToolArgs: AgentToolConfigArgs = {
     locale,
-    abortSignal: toolAbortController.signal,
+    abortSignal: toolAbortSignal,
     statReport,
     logger,
   };

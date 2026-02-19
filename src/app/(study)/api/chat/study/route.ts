@@ -165,11 +165,6 @@ export async function POST(req: Request) {
       logger,
     });
 
-    // Create abort controllers - must be created here to ensure the same instances
-    // are shared between config creation (for tools) and baseAgentRequest (for abort logic)
-    const toolAbortController = new AbortController();
-    const studyAbortController = new AbortController();
-
     const agentContext = {
       userId,
       teamId,
@@ -178,24 +173,35 @@ export async function POST(req: Request) {
       locale,
       logger,
       statReport,
-      toolAbortController,
-      studyAbortController,
     };
+
+    const configParams = { ...agentContext };
 
     // Check if this is first-time planning (analyst.kind not set)
     if (!userChat.context.analystKind) {
-      // NEW: Plan Mode - Intent Layer for research planning
-      const config = await createPlanModeAgentConfig(agentContext);
-      await executeBaseAgentRequest(agentContext, config, streamWriter);
+      await executeBaseAgentRequest(
+        agentContext,
+        (toolAbortSignal) => createPlanModeAgentConfig({ ...configParams, toolAbortSignal }),
+        streamWriter,
+      );
     } else if (userChat.context.analystKind === AnalystKind.productRnD) {
-      const config = await createProductRnDAgentConfig(agentContext);
-      await executeBaseAgentRequest(agentContext, config, streamWriter);
+      await executeBaseAgentRequest(
+        agentContext,
+        (toolAbortSignal) => createProductRnDAgentConfig({ ...configParams, toolAbortSignal }),
+        streamWriter,
+      );
     } else if (userChat.context.analystKind === AnalystKind.fastInsight) {
-      const config = await createFastInsightAgentConfig(agentContext);
-      await executeBaseAgentRequest(agentContext, config, streamWriter);
+      await executeBaseAgentRequest(
+        agentContext,
+        (toolAbortSignal) => createFastInsightAgentConfig({ ...configParams, toolAbortSignal }),
+        streamWriter,
+      );
     } else {
-      const config = await createStudyAgentConfig(agentContext);
-      await executeBaseAgentRequest(agentContext, config, streamWriter);
+      await executeBaseAgentRequest(
+        agentContext,
+        (toolAbortSignal) => createStudyAgentConfig({ ...configParams, toolAbortSignal }),
+        streamWriter,
+      );
     }
   };
 

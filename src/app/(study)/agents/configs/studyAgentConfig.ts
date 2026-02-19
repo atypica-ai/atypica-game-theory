@@ -30,7 +30,7 @@ export interface StudyAgentConfigParams {
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
-  toolAbortController: AbortController;
+  toolAbortSignal: AbortSignal;
 }
 
 // 只是当前 agent 需要的 tools
@@ -51,15 +51,8 @@ type TOOLS = ReturnType<typeof buildStudyTools> | ReturnType<typeof removeReques
 export async function createStudyAgentConfig(
   params: StudyAgentConfigParams,
 ): Promise<AgentRequestConfig<TOOLS>> {
-  const {
-    studyUserChatId,
-    userId,
-    locale,
-    logger,
-    userChatContext,
-    statReport,
-    toolAbortController,
-  } = params;
+  const { studyUserChatId, userId, locale, logger, userChatContext, statReport, toolAbortSignal } =
+    params;
 
   // =============================================================================
   // 1. Determine brief status
@@ -76,7 +69,7 @@ export async function createStudyAgentConfig(
 
   const agentToolArgs: AgentToolConfigArgs = {
     locale,
-    abortSignal: toolAbortController.signal,
+    abortSignal: toolAbortSignal,
     statReport,
     logger: logger,
   };

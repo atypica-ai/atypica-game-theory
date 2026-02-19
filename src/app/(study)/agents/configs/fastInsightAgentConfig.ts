@@ -21,7 +21,7 @@ export interface FastInsightAgentConfigParams {
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
-  toolAbortController: AbortController;
+  toolAbortSignal: AbortSignal;
 }
 
 // 只是当前 agent 需要的 tools
@@ -42,7 +42,7 @@ type TOOLS = ReturnType<typeof buildFastInsightTools>;
 export async function createFastInsightAgentConfig(
   params: FastInsightAgentConfigParams,
 ): Promise<AgentRequestConfig<TOOLS>> {
-  const { studyUserChatId, userId, locale, statReport, toolAbortController } = params;
+  const { studyUserChatId, userId, locale, statReport, toolAbortSignal } = params;
 
   // =============================================================================
   // 1. Build tools
@@ -50,7 +50,7 @@ export async function createFastInsightAgentConfig(
 
   const agentToolArgs: AgentToolConfigArgs = {
     locale,
-    abortSignal: toolAbortController.signal,
+    abortSignal: toolAbortSignal,
     statReport,
     logger: params.logger,
   };

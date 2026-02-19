@@ -25,7 +25,7 @@ export interface ProductRnDAgentConfigParams {
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
-  toolAbortController: AbortController;
+  toolAbortSignal: AbortSignal;
 }
 
 // 只是当前 agent 需要的 tools
@@ -45,7 +45,7 @@ type TOOLS = ReturnType<typeof buildProductRnDTools>;
 export async function createProductRnDAgentConfig(
   params: ProductRnDAgentConfigParams,
 ): Promise<AgentRequestConfig<ReturnType<typeof buildProductRnDTools>>> {
-  const { studyUserChatId, userId, locale, logger, statReport, toolAbortController } = params;
+  const { studyUserChatId, userId, locale, logger, statReport, toolAbortSignal } = params;
 
   // =============================================================================
   // 1. Build tools
@@ -53,7 +53,7 @@ export async function createProductRnDAgentConfig(
 
   const agentToolArgs: AgentToolConfigArgs = {
     locale,
-    abortSignal: toolAbortController.signal,
+    abortSignal: toolAbortSignal,
     statReport,
     logger: logger,
   };
