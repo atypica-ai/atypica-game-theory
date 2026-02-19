@@ -27,7 +27,7 @@ export const ReasoningThinkingConsole: FC<{
           <HippyGhostAvatar seed={toolInvocation.toolCallId} className="size-6" />
           <div className="flex-1 overflow-hidden">
             <div>{toolInvocation.output.reasoning}</div>
-            <Streamdown>{toolInvocation.output.text}</Streamdown>
+            <Streamdown mode="static">{toolInvocation.output.text}</Streamdown>
           </div>
         </div>
       ) : null}

@@ -131,7 +131,9 @@ export function PersonaSummary({
                 </div>
                 <div className="mt-2">
                   <div className="p-2 rounded-sm text-xs bg-background border border-border/20">
-                    <Streamdown>{extractSummaryFromPrompt(persona.prompt)}</Streamdown>
+                    <Streamdown mode="static">
+                      {extractSummaryFromPrompt(persona.prompt)}
+                    </Streamdown>
                   </div>
                 </div>
               </div>

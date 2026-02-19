@@ -282,7 +282,9 @@ function InterviewContent({ interview }: { interview: PanelInterview }) {
                     {message.parts
                       .filter((p): p is { type: "text"; text: string } => p.type === "text")
                       .map((p, i) => (
-                        <Streamdown key={i}>{p.text}</Streamdown>
+                        <Streamdown mode="static" key={i}>
+                          {p.text}
+                        </Streamdown>
                       ))}
                   </div>
                 </div>
@@ -339,7 +341,7 @@ function InterviewContent({ interview }: { interview: PanelInterview }) {
               {t("conclusion")}
             </div>
             <div className="text-xs leading-relaxed bg-muted/50 rounded-lg p-3 border">
-              <Streamdown>{interview.conclusion}</Streamdown>
+              <Streamdown mode="static">{interview.conclusion}</Streamdown>
             </div>
           </div>
         )}

@@ -171,7 +171,7 @@ export function PersonaDetailClient({
 
           <div>
             <div className="text-xs max-w-none p-4 bg-muted/50 rounded-lg border">
-              <Streamdown>{extractSummaryFromPrompt(persona.prompt)}</Streamdown>
+              <Streamdown mode="static">{extractSummaryFromPrompt(persona.prompt)}</Streamdown>
             </div>
           </div>
         </div>

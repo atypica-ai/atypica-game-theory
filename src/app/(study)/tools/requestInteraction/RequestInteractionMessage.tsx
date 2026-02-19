@@ -100,7 +100,10 @@ export const RequestInteractionMessage = <
     <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg">
       <div className="text-xs text-foreground/80 mb-3 flex items-start justify-between gap-1">
         {toolInvocation.input ? (
-          <Streamdown isAnimating={toolInvocation.state === "input-streaming"}>
+          <Streamdown
+            mode={toolInvocation.state === "input-streaming" ? "streaming" : "static"}
+            isAnimating={toolInvocation.state === "input-streaming"}
+          >
             {toolInvocation.input.question ?? ""}
           </Streamdown>
         ) : null}

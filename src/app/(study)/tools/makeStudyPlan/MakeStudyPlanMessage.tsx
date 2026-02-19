@@ -83,7 +83,7 @@ export const MakeStudyPlanMessage = <
           <FileTextIcon className="size-4" />
         </div>
         <div className="prose prose-sm dark:prose-invert max-w-none mb-3 text-xs">
-          <Streamdown>{planContent}</Streamdown>
+          <Streamdown mode="static">{planContent}</Streamdown>
         </div>
         <div
           className={cn(
@@ -118,7 +118,9 @@ export const MakeStudyPlanMessage = <
           <FileTextIcon className="size-4" />
         </div>
         <div className="prose prose-sm dark:prose-invert max-w-none mb-3 text-xs">
-          <Streamdown isAnimating={true}>{planContent}</Streamdown>
+          <Streamdown mode="streaming" isAnimating={true}>
+            {planContent}
+          </Streamdown>
         </div>
         <LoadingPulse />
       </div>
@@ -135,7 +137,7 @@ export const MakeStudyPlanMessage = <
 
       {/* Plan content in markdown */}
       <div className="prose prose-sm dark:prose-invert max-w-none mb-4 text-xs">
-        <Streamdown>{planContent}</Streamdown>
+        <Streamdown mode="static">{planContent}</Streamdown>
       </div>
 
       {/* Action buttons */}

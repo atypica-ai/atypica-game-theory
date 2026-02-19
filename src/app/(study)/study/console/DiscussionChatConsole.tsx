@@ -68,7 +68,7 @@ export const DiscussionChatConsole = ({
                 <div className="flex-1 bg-zinc-50 dark:bg-zinc-800 rounded-lg p-4 border">
                   <div className="text-xs font-medium text-muted-foreground mb-1">Question</div>
                   <div className="text-xs">
-                    <Streamdown>{event.content}</Streamdown>
+                    <Streamdown mode="static">{event.content}</Streamdown>
                   </div>
                 </div>
               </div>
@@ -87,7 +87,7 @@ export const DiscussionChatConsole = ({
                     {event.personaName}
                   </div>
                   <div className="text-xs">
-                    <Streamdown>{event.content}</Streamdown>
+                    <Streamdown mode="static">{event.content}</Streamdown>
                   </div>
                 </div>
               </div>
@@ -105,7 +105,7 @@ export const DiscussionChatConsole = ({
                     Moderator Summary
                   </div>
                   <div className="text-xs">
-                    <Streamdown>{event.content}</Streamdown>
+                    <Streamdown mode="static">{event.content}</Streamdown>
                   </div>
                 </div>
               </div>

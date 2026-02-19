@@ -37,7 +37,7 @@ export const WebSearchConsole: FC<{
               <MessageSquareIcon className="size-3 shrink-0 mt-0.5" />
               <div className="flex-1 overflow-hidden">
                 <div className="leading-3 text-foreground/80 mb-2">{t("summary")}:</div>
-                <Streamdown>{toolInvocation.output.answer}</Streamdown>
+                <Streamdown mode="static">{toolInvocation.output.answer}</Streamdown>
               </div>
             </div>
           )}

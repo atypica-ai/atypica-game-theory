@@ -11,7 +11,7 @@ import { Streamdown } from "streamdown";
 const PlainText = ({ children }: PropsWithChildren) => {
   return (
     <div className="text-sm flex flex-col gap-4">
-      <Streamdown>{children as string}</Streamdown>
+      <Streamdown mode="static">{children as string}</Streamdown>
     </div>
   );
 };
