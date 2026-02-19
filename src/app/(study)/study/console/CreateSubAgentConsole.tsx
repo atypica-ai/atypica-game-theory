@@ -1,11 +1,12 @@
-import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/(study)/study/actions";
+import { fetchUserChatByToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
+import { fetchUserChatStateByTokenAction } from "@/lib/userChat/actions";
 import { ToolUIPart } from "ai";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { StreamSteps } from "./StreamSteps";
 
 export const CreateSubAgentConsole = ({
@@ -16,8 +17,7 @@ export const CreateSubAgentConsole = ({
   const { studyUserChat } = useStudyContext();
   const subAgentChatToken = toolInvocation.input?.subAgentChatToken;
   const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
-  const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
-  const backgroundRunning = useMemo(() => !!backgroundToken, [backgroundToken]);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
 
   const { replay } = useStudyContext();
   // Console 不做回放，直接显示完整内容
@@ -38,21 +38,21 @@ export const CreateSubAgentConsole = ({
   const chatUpdatedAt = useRef<number | null>(null);
   const refreshSubAgentChat = useCallback(async () => {
     if (!subAgentChatToken) return;
-    const result = await fetchUserChatStateByToken(subAgentChatToken, "misc");
+    const result = await fetchUserChatStateByTokenAction({
+      userChatToken: subAgentChatToken,
+      kind: "misc",
+    });
     if (!result.success) {
       console.log(result.message);
       return;
     }
-    const { backgroundToken: newBackgroundToken, chatMessageUpdatedAt } = result.data;
-    if (
-      chatMessageUpdatedAt.valueOf() !== chatUpdatedAt.current ||
-      newBackgroundToken !== backgroundToken
-    ) {
+    const { isRunning: newIsRunning, chatMessageUpdatedAt } = result.data;
+    if (chatMessageUpdatedAt.valueOf() !== chatUpdatedAt.current || newIsRunning !== isRunning) {
       chatUpdatedAt.current = chatMessageUpdatedAt.valueOf();
-      setBackgroundToken(newBackgroundToken);
+      setIsRunning(newIsRunning);
       reloadMessages();
     }
-  }, [subAgentChatToken, backgroundToken, reloadMessages]);
+  }, [subAgentChatToken, isRunning, reloadMessages]);
 
   const { isDocumentVisible } = useDocumentVisibility();
   useEffect(() => {
@@ -94,7 +94,7 @@ export const CreateSubAgentConsole = ({
       ))}
       {(toolInvocation.state === "input-streaming" ||
         toolInvocation.state === "input-available" ||
-        backgroundRunning) && (
+        isRunning) && (
         <div className="w-full flex py-4 gap-px items-center justify-start text-zinc-500 text-xs font-mono">
           <span className="mr-2">Executing task</span>
           <span className="animate-bounce">✨</span>

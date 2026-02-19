@@ -6,6 +6,7 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { ExtractServerActionData } from "@/lib/serverAction";
+import { fetchUserChatStateByTokenAction } from "@/lib/userChat/actions";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -92,11 +93,13 @@ const SingleInterviewChat = ({
   const { studyUserChat } = useStudyContext();
 
   // const [interviewId, setInterviewId] = useState<number | null>(null);
-  const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
   const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
   const [conclusion, setConclusion] = useState<string | null>(null);
   const [persona, setPersona] =
     useState<ExtractServerActionData<typeof fetchAnalystInterviewForPersona>["persona"]>();
+
+  const { replay } = useStudyContext();
 
   const fetchUpdate = useCallback(async () => {
     try {
@@ -107,16 +110,23 @@ const SingleInterviewChat = ({
       if (!result.success) throw result;
       const { persona, interviewUserChat, conclusion } = result.data;
       setMessages((interviewUserChat?.messages || []) as TStudyMessageWithTool[]);
-      setBackgroundToken(interviewUserChat?.backgroundToken ?? null);
       setPersona(persona);
-      // setInterviewId(interviewResult.data.id);
       setConclusion(conclusion);
+      // Query running state separately (replay mode users may not be logged in)
+      if (!replay && interviewUserChat?.token) {
+        const stateResult = await fetchUserChatStateByTokenAction({
+          userChatToken: interviewUserChat.token,
+          kind: "interview",
+        });
+        if (stateResult.success) {
+          setIsRunning(stateResult.data.isRunning);
+        }
+      }
     } catch (error) {
       console.log("Error fetching interview:", (error as Error).message);
     }
-  }, [studyUserChat.token, personaId]);
+  }, [studyUserChat.token, personaId, replay]);
 
-  const { replay } = useStudyContext();
   // Console 不做回放，直接显示完整内容
   const messagesDisplay = messages;
 
@@ -157,7 +167,7 @@ const SingleInterviewChat = ({
           renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
         ></StreamSteps>
       ))}
-      {backgroundToken && messagesDisplay.length === 0 ? (
+      {isRunning && messagesDisplay.length === 0 ? (
         <StreamSteps<TStudyMessageWithTool>
           key="message-start"
           nickname="System"
@@ -168,7 +178,7 @@ const SingleInterviewChat = ({
           renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
         ></StreamSteps>
       ) : null}
-      {!backgroundToken && conclusion && (!replay || messagesDisplay.length === messages.length) ? (
+      {!isRunning && conclusion && (!replay || messagesDisplay.length === messages.length) ? (
         <StreamSteps<TStudyMessageWithTool>
           key="message-conclusion"
           nickname={t("researchConclusion")}

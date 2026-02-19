@@ -14,6 +14,7 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
+import { startManagedRun } from "@/lib/userChat/runtime";
 import { prisma } from "@/prisma/prisma";
 import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
@@ -27,7 +28,6 @@ import {
   UIMessage,
   UIMessageStreamWriter,
 } from "ai";
-import { Logger } from "pino";
 import { scoutSystem } from "./prompt";
 import {
   scoutChatTools,
@@ -36,42 +36,6 @@ import {
   type ScoutTaskChatResult,
   type TPlatform,
 } from "./types";
-
-export const createBackgroundToken = async ({
-  scoutUserChatId,
-  scoutLog,
-}: {
-  scoutUserChatId: number;
-  scoutLog: Logger;
-}) => {
-  const backgroundToken = new Date().valueOf().toString();
-  try {
-    await prisma.userChat.update({
-      where: { id: scoutUserChatId, OR: [{ kind: "scout" }, { kind: "misc" }] },
-      data: { backgroundToken },
-    });
-  } catch (error) {
-    scoutLog.error(
-      `Error setting background token ${backgroundToken}: ${(error as Error).message}`,
-    );
-    throw error;
-  }
-  const clearBackgroundToken = async () => {
-    try {
-      // mark as background running end
-      await prisma.userChat.update({
-        where: { id: scoutUserChatId, backgroundToken },
-        data: { backgroundToken: null },
-      });
-    } catch (error) {
-      scoutLog.warn(
-        `Error clearing background token ${backgroundToken}: ${(error as Error).message}`,
-      );
-    }
-  };
-
-  return { clearBackgroundToken };
-};
 
 type TReduceTokens = {
   model: LLMModelName;
@@ -142,7 +106,7 @@ export const scoutTaskChatTool = ({
           parts: [{ type: "text", text: description }],
         },
       });
-      const { clearBackgroundToken } = await createBackgroundToken({ scoutUserChatId, scoutLog });
+      const managed = await startManagedRun({ userChatId: scoutUserChatId, logger: scoutLog });
       try {
         await runScoutTaskChatStream({
           locale,
@@ -157,7 +121,7 @@ export const scoutTaskChatTool = ({
         // - study 不会因为错误而过度消耗，进而需要人为介入
         // - toolUseCount 不会统计没有 result 的 tool
       } finally {
-        await clearBackgroundToken();
+        await managed.cleanup();
       }
       const messages = (
         await prisma.chatMessage.findMany({

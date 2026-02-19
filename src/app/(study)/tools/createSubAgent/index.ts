@@ -12,7 +12,7 @@ import type { MCPClient } from "@/ai/tools/mcp/client";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { createUserChat } from "@/lib/userChat/lib";
-import { prisma } from "@/prisma/prisma";
+import { startManagedRun } from "@/lib/userChat/runtime";
 import {
   generateId,
   generateObject,
@@ -22,7 +22,6 @@ import {
   tool,
   ToolSet,
 } from "ai";
-import { Logger } from "pino";
 import z from "zod/v3";
 import {
   createSubAgentInputSchema,
@@ -31,40 +30,6 @@ import {
 } from "./types";
 
 const MAX_STEPS = 20; // Allow up to 20 steps for the sub-agent to complete the task
-
-export const createBackgroundToken = async ({
-  toolUserChatId,
-  toolLog,
-}: {
-  toolUserChatId: number;
-  toolLog: Logger;
-}) => {
-  const backgroundToken = new Date().valueOf().toString();
-  try {
-    await prisma.userChat.update({
-      where: { id: toolUserChatId, kind: "misc" },
-      data: { backgroundToken },
-    });
-  } catch (error) {
-    toolLog.error(`Error setting background token ${backgroundToken}: ${(error as Error).message}`);
-    throw error;
-  }
-  const clearBackgroundToken = async () => {
-    try {
-      // mark as background running end
-      await prisma.userChat.update({
-        where: { id: toolUserChatId, backgroundToken },
-        data: { backgroundToken: null },
-      });
-    } catch (error) {
-      toolLog.warn(
-        `Error clearing background token ${backgroundToken}: ${(error as Error).message}`,
-      );
-    }
-  };
-
-  return { clearBackgroundToken };
-};
 
 /**
  * Tool selection schema for Gemini
@@ -519,10 +484,7 @@ export const createSubAgentTool = ({
         },
       });
 
-      const { clearBackgroundToken } = await createBackgroundToken({
-        toolUserChatId: subAgentChatId,
-        toolLog: subAgentLog,
-      });
+      const managed = await startManagedRun({ userChatId: subAgentChatId, logger: subAgentLog });
 
       let result: string;
       try {
@@ -577,7 +539,7 @@ export const createSubAgentTool = ({
       } catch (error) {
         throw error;
       } finally {
-        await clearBackgroundToken();
+        await managed.cleanup();
       }
 
       return {

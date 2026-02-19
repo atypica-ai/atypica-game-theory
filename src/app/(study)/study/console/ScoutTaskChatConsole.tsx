@@ -1,11 +1,12 @@
-import { fetchUserChatByToken, fetchUserChatStateByToken } from "@/app/(study)/study/actions";
+import { fetchUserChatByToken } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
+import { fetchUserChatStateByTokenAction } from "@/lib/userChat/actions";
 import { ToolUIPart } from "ai";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { StreamSteps } from "./StreamSteps";
 
 export const ScoutTaskChatConsole = ({
@@ -18,8 +19,7 @@ export const ScoutTaskChatConsole = ({
   const { studyUserChat, replay } = useStudyContext();
   const scoutUserChatToken = toolInvocation.input?.scoutUserChatToken;
   const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
-  const [backgroundToken, setBackgroundToken] = useState<string | null>(null);
-  const backgroundRunning = useMemo(() => !!backgroundToken, [backgroundToken]);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
 
   // Console 不做回放，直接显示完整内容
   const messagesDisplay = messages;
@@ -38,24 +38,24 @@ export const ScoutTaskChatConsole = ({
   const chatUpdatedAt = useRef<number | null>(null);
   const refreshScoutUserChat = useCallback(async () => {
     if (!scoutUserChatToken) return;
-    const result = await fetchUserChatStateByToken(scoutUserChatToken, "scout");
+    const result = await fetchUserChatStateByTokenAction({
+      userChatToken: scoutUserChatToken,
+      kind: "scout",
+    });
     if (!result.success) {
       console.log(result.message);
       return;
     }
-    const { backgroundToken: newBackgroundToken, chatMessageUpdatedAt } = result.data;
-    if (
-      chatMessageUpdatedAt.valueOf() !== chatUpdatedAt.current ||
-      newBackgroundToken !== backgroundToken
-    ) {
+    const { isRunning: newIsRunning, chatMessageUpdatedAt } = result.data;
+    if (chatMessageUpdatedAt.valueOf() !== chatUpdatedAt.current || newIsRunning !== isRunning) {
       chatUpdatedAt.current = chatMessageUpdatedAt.valueOf();
-      setBackgroundToken(newBackgroundToken);
+      setIsRunning(newIsRunning);
       // console.log(`ScoutTaskChat [${scoutUserChatToken}] updated at ${chatMessageUpdatedAt}, reloading messages`);
       reloadMessages();
     } else {
       // console.log(`ScoutTaskChat [${scoutUserChatToken}] no updates`);
     }
-  }, [scoutUserChatToken, backgroundToken, reloadMessages]);
+  }, [scoutUserChatToken, isRunning, reloadMessages]);
 
   const { isDocumentVisible } = useDocumentVisibility();
   useEffect(() => {
@@ -97,7 +97,7 @@ export const ScoutTaskChatConsole = ({
       ))}
       {(toolInvocation.state === "input-streaming" ||
         toolInvocation.state === "input-available" ||
-        backgroundRunning) && (
+        isRunning) && (
         <div className="w-full flex py-4 gap-px items-center justify-start text-zinc-500 text-xs font-mono">
           <span className="mr-2">Looking for target users </span>
           <span className="animate-bounce">✨ </span>

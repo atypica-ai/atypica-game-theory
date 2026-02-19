@@ -21,7 +21,8 @@ import { StudyToolName } from "@/app/(study)/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
-import { ChatMessageAttachment } from "@/prisma/client";
+import { startManagedRun } from "@/lib/userChat/runtime";
+import { ChatMessageAttachment, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import {
@@ -522,23 +523,27 @@ async function saveMessage({
   message,
   // analystInterviewId,
   interviewUserChatId,
-  backgroundToken,
+  runId,
   logger,
 }: {
   message: UIMessage;
   analystInterviewId: number;
   interviewUserChatId: number;
-  backgroundToken: string;
+  runId: string;
   logger: Logger;
 }) {
   try {
     // const { id: messageId, role, content, parts: _parts } = message;
     // const parts = _parts?.length ? _parts : [{ type: "text", text: content }];
     await prisma.$transaction(async (tx) => {
-      // 先确保 backgroundToken 是当前的
-      await tx.userChat.findUniqueOrThrow({
-        where: { id: interviewUserChatId, kind: "interview", backgroundToken },
+      // 先确保 runId 是当前执行会话
+      const userChat = await tx.userChat.findUniqueOrThrow({
+        where: { id: interviewUserChatId, kind: "interview" },
+        select: { extra: true },
       });
+      if (((userChat.extra as UserChatExtra | null)?.runId ?? null) !== runId) {
+        throw new Error("interview runId changed");
+      }
       await persistentAIMessageToDB({
         mode: "append",
         userChatId: interviewUserChatId,
@@ -548,18 +553,14 @@ async function saveMessage({
     });
   } catch (error) {
     logger.error(
-      `Error saving interview messages with token ${backgroundToken}: ${(error as Error).message}`,
+      `Error saving interview messages with runId ${runId}: ${(error as Error).message}`,
     );
   }
 }
 
 export async function runInterview(chatProps: ChatProps) {
   const { analystInterviewId, interviewUserChatId, prompt, attachments, logger } = chatProps;
-  const backgroundToken = new Date().valueOf().toString();
-  await prisma.userChat.update({
-    where: { id: interviewUserChatId, kind: "interview" },
-    data: { backgroundToken },
-  });
+  const managed = await startManagedRun({ userChatId: interviewUserChatId, logger });
   const fileParts: FileUIPart[] = await Promise.all(
     (attachments ?? []).map(async ({ name, objectUrl, mimeType }: ChatMessageAttachment) => {
       const url = await fileUrlToDataUrl({ objectUrl, mimeType });
@@ -586,7 +587,7 @@ export async function runInterview(chatProps: ChatProps) {
         ]
       : []) as UIMessage[],
   };
-  const saveParams = { analystInterviewId, interviewUserChatId, backgroundToken, logger };
+  const saveParams = { analystInterviewId, interviewUserChatId, runId: managed.runId, logger };
 
   while (true) {
     const personaReply = await chatWithPersona(chatProps, personaAgent.messages);
@@ -614,16 +615,7 @@ export async function runInterview(chatProps: ChatProps) {
     }
   }
 
-  try {
-    await prisma.userChat.update({
-      where: { id: interviewUserChatId, kind: "interview", backgroundToken },
-      data: { backgroundToken: null },
-    });
-  } catch (error) {
-    logger.error(
-      `Error clearing interview session token ${backgroundToken}: ${(error as Error).message}`,
-    );
-  }
+  await managed.cleanup();
 }
 
 function fixEmptyTextIssue(message: Omit<UIMessage, "role">) {

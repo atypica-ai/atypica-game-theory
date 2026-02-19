@@ -29,7 +29,7 @@ import {
   UIMessage,
   UIMessageStreamWriter,
 } from "ai";
-import { createBackgroundToken } from "../scoutTaskChat";
+import { startManagedRun } from "@/lib/userChat/runtime";
 import { scoutChatTools, TPlatform } from "../scoutTaskChat/types";
 import { scoutSocialTrendsSummarySystem, scoutSocialTrendsSystem } from "./prompt";
 import {
@@ -108,7 +108,7 @@ export const scoutSocialTrendsTool = ({
           parts: [{ type: "text", text: description }],
         },
       });
-      const { clearBackgroundToken } = await createBackgroundToken({ scoutUserChatId, scoutLog });
+      const managed = await startManagedRun({ userChatId: scoutUserChatId, logger: scoutLog });
       // let hasError = false;
       let summary: string;
       try {
@@ -126,7 +126,7 @@ export const scoutSocialTrendsTool = ({
         // - study 不会因为错误而过度消耗，进而需要人为介入
         // - toolUseCount 不统计没有 result 的 tool
       } finally {
-        await clearBackgroundToken();
+        await managed.cleanup();
       }
       const messages = (
         await prisma.chatMessage.findMany({
