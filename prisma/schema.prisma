@@ -305,7 +305,7 @@ model UserChat {
   user            User         @relation(fields: [userId], references: [id])
   title           String       @db.VarChar(255)
   kind            UserChatKind
-  backgroundToken String?      @db.VarChar(255)
+  backgroundToken String?      @db.VarChar(255) // @deprecated — replaced by extra.runId, pending removal
   /// [UserChatContext]
   context         Json         @default("{}")
   /// [UserChatExtra]

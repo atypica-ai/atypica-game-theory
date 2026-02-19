@@ -4,6 +4,7 @@ import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import { executeBaseAgentRequest } from "@/app/(study)/agents/baseAgentRequest";
 import { createFastInsightAgentConfig } from "@/app/(study)/agents/configs/fastInsightAgentConfig";
+import { createPlanModeAgentConfig } from "@/app/(study)/agents/configs/planModeAgentConfig";
 import { createProductRnDAgentConfig } from "@/app/(study)/agents/configs/productRnDAgentConfig";
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
 import { AnalystKind } from "@/app/(study)/context/types";
@@ -11,14 +12,22 @@ import { checkAdminAuth } from "@/app/admin/actions";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
-import { PaymentRecord, TokensAccount, User, UserChat, UserChatExtra } from "@/prisma/client";
+import { clearUserChatRun } from "@/lib/userChat/runtime";
+import {
+  PaymentRecord,
+  Prisma,
+  TokensAccount,
+  User,
+  UserChat,
+  UserChatExtra,
+} from "@/prisma/client";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { createUIMessageStream, generateId } from "ai";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
-// Fetch studies that might be having issues (have an active backgroundToken)
+// Fetch studies that might be having issues (have an active extra.runId)
 export async function fetchIssueStudies(
   page: number = 1,
   pageSize: number = 10,
@@ -37,13 +46,12 @@ export async function fetchIssueStudies(
 
   const skip = (page - 1) * pageSize;
 
-  // Find UserChats that have backgroundToken (meaning they're in progress)
+  // Find UserChats that have extra.runId (meaning they're in progress)
+  const runIdFilter = { extra: { path: ["runId"], not: Prisma.JsonNull } };
   const studies = await prismaRO.userChat.findMany({
     where: {
       kind: "study",
-      backgroundToken: {
-        not: null,
-      },
+      ...runIdFilter,
     },
     include: {
       user: {
@@ -60,7 +68,7 @@ export async function fetchIssueStudies(
       },
     },
     orderBy: [
-      { backgroundToken: "desc" }, // Show newest first
+      { updatedAt: "desc" }, // Show newest first
     ],
     skip,
     take: pageSize,
@@ -69,9 +77,7 @@ export async function fetchIssueStudies(
   const totalCount = await prismaRO.userChat.count({
     where: {
       kind: "study",
-      backgroundToken: {
-        not: null,
-      },
+      ...runIdFilter,
     },
   });
 
@@ -208,11 +214,8 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
       },
     });
 
-    // Clear the backgroundToken to allow a new study to start
-    await prisma.userChat.update({
-      where: { id: studyUserChatId },
-      data: { backgroundToken: null },
-    });
+    // Clear extra.runId to allow a new study to start
+    await clearUserChatRun({ userChatId: studyUserChatId });
 
     const locale: Locale =
       studyUserChat.context.defaultLocale &&
@@ -238,11 +241,6 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
           logger,
         });
 
-        // Create abort controllers - must be created here to ensure the same instances
-        // are shared between config creation (for tools) and baseAgentRequest (for abort logic)
-        const toolAbortController = new AbortController();
-        const studyAbortController = new AbortController();
-
         const agentContext = {
           userId,
           teamId,
@@ -251,19 +249,34 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
           locale,
           logger,
           statReport,
-          toolAbortController,
-          studyAbortController,
         };
 
+        const configParams = { ...agentContext };
+
         if (studyUserChat.context.analystKind === AnalystKind.productRnD) {
-          const config = await createProductRnDAgentConfig({ ...agentContext });
-          await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+          await executeBaseAgentRequest(
+            agentContext,
+            (toolAbortSignal) => createProductRnDAgentConfig({ ...configParams, toolAbortSignal }),
+            streamWriter,
+          );
         } else if (studyUserChat.context.analystKind === AnalystKind.fastInsight) {
-          const config = await createFastInsightAgentConfig({ ...agentContext });
-          await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+          await executeBaseAgentRequest(
+            agentContext,
+            (toolAbortSignal) => createFastInsightAgentConfig({ ...configParams, toolAbortSignal }),
+            streamWriter,
+          );
+        } else if (studyUserChat.context.analystKind) {
+          await executeBaseAgentRequest(
+            agentContext,
+            (toolAbortSignal) => createStudyAgentConfig({ ...configParams, toolAbortSignal }),
+            streamWriter,
+          );
         } else {
-          const config = await createStudyAgentConfig({ ...agentContext });
-          await executeBaseAgentRequest({ ...agentContext }, config, streamWriter);
+          await executeBaseAgentRequest(
+            agentContext,
+            (toolAbortSignal) => createPlanModeAgentConfig({ ...configParams, toolAbortSignal }),
+            streamWriter,
+          );
         }
       },
     });
