@@ -294,14 +294,15 @@ ${
 
 2. 【第二步 - 必须】调用 generateReport 生成报告：
    • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要根据研究类型和内容特点提供具体、丰富、且带有美学追求的设计指令：
-     - **核心哲学"越不AI越AI"**：我们研究的是人，所以报告应该用成熟的专业手法（编辑设计、建筑摄影美学）而非廉价科技感（霓虹渐变、3D渲染）。用最有力的人性化方式，呈现最智能的洞察。
-     - **测试型研究**：极致简约+客观可信。对称对齐的严谨版式，清晰对比结构，黑白灰主色调（可用单一中性色标注差异）。目标是公正和说服力，不是炫技。
-     - **洞察型研究**：McKinsey遇见人类学田野笔记。编辑设计的严谨性+纪实摄影的真实感+建筑摄影的几何美学。黑白灰为主（可选单一深色强调），通过字重建立层级。访谈引语可配真实场景照片（保留自然色彩）。
-     - **创造型研究**：极致简约+优雅创造力。表现力强的排版（字体、尺寸对比、间距节奏）创造视觉韵律。如需配图用电影化视觉（戏剧性打光和构图）。黑白灰为主，可用单一亮色点睛（但要高级）。创造力体现在排版节奏，不是堆砌颜色。
-     - **规划型研究**：极致简约+清晰逻辑。高度结构化版式，严谨层级，秩序感对齐。如需体现系统性用建筑摄影美学（几何构图、光影秩序）。黑白灰为主，高度统一专业。
-     - **综合型研究**：极致简约+全面平衡。结构化版式，清晰分组，自然视觉流。细微视觉提示（分隔线）区分维度但保持整体统一。
-     - **通用原则**：严禁大面积彩色卡片、背景色块、粗大彩色边框。布局要紧凑（一屏内有足够信息量，不要"一眼看不到什么"），但不密密麻麻（有清晰分组和适度呼吸空间）。排版克制不等于压制所有色彩 - 照片可有完整色彩，克制体现在版式和结构。
-     - **重要提醒**：指令越具体，报告美学效果越好。用丰富的描述性词汇（如"戏剧性打光"、"几何构图"、"视觉韵律"），而非泛泛而谈（如"好看"、"高级"）。
+     - **核心设计框架（必须遵循）**：排版即设计。视觉层级主要通过字体系统、字重、字号、间距和留白建立，不依赖颜色堆砌。
+     - **通用视觉约束（必须遵循）**：文字仅用黑色/灰色；最多一个品牌色且仅用于非文字小元素（细边框、节点、图标等）；禁止大面积彩色背景块、粗大彩色边框、品牌色文字、emoji 图标、夸张圆角和重阴影。
+     - **字体与结构约束（必须遵循）**：标题/关键数据使用 serif，正文说明使用 sans-serif，数据与来源使用 monospace；通过清晰分组和大留白建立阅读节奏；信息密度充足但不拥挤。
+     - **测试型研究**：强调客观对比与可验证性。用严谨网格、对齐和分组呈现差异，强化结论可追溯性与说服力。
+     - **洞察型研究**：强调深度与可读性。用强层级排版和克制节奏承载行为洞察与用户引语，提升信任感与理解效率。
+     - **创造型研究**：强调创意表达与秩序并存。用排版节奏、尺度对比与结构留白传达灵感，而非依赖高饱和色彩。
+     - **规划型研究**：强调系统性与执行路径。用高度结构化信息架构呈现阶段、依赖与优先级，突出可落地性。
+     - **综合型研究**：强调多维信息整合。用统一视觉语言组织不同维度内容，确保全局一致、重点清晰。
+     - **重要提醒**：instruction 越具体越好，必须给出可执行的视觉描述（如字体层级、间距节奏、分组方式、强调规则），避免空泛词汇（如"好看"、"高级"）。
    • 【限制范围】**不要**规划报告的具体内容，让系统自动根据收集的数据生成报告内容
    • 【使用条件】仅在有新研究结论时生成，避免重复
 </强制步骤顺序>
@@ -616,13 +617,15 @@ If the above conditions are not met, do not proceed to the next phase
 
 2. 【Second Step - MANDATORY】Call generateReport to generate report:
    • 【STYLE GUIDANCE REQUIREMENTS】Must provide detailed report style descriptions in the instruction parameter, **cannot provide style names only**, you need to provide specific, rich, and aesthetically driven design instructions based on the research type and content:
-     - **Testing Research**: Strive for ultimate simplicity and clarity. The design must use minimal visual elements to present a clear comparative analysis. The core is objectivity and credibility, built through rigorous layout (symmetry, alignment), a clear font system, and distinct visual grouping to establish fairness and persuasiveness. Color is only a tool for comparison or highlighting key differences, with a neutral and objective main palette.
-     - **Insights Research**: Strive for ultimate simplicity and professionalism, using minimal visual elements to convey profound insights. The core is depth and humanistic care, building trust and readability through rigorous typography, a clear font system, and appropriate spacing. Color is only for support, with a neutral and calm main palette, creating a high-level consulting report that is both warm and analytically deep.
-     - **Creation Research**: Strive for ultimate simplicity and elegance, using minimal visual elements to express rich creative layers. The core is creativity, but never flashy. Build visual rhythm and emphasis through expressive typography, font choices, size contrasts, and breathing room. Color is only for accent, with a restrained and sophisticated main palette, aiming for an artisanal quality report.
-     - **Planning Research**: Strive for ultimate simplicity and logic, using minimal visual elements to construct a clear implementation path. The core is systemization and actionability, building a sense of order and authority through a highly structured layout, a rigorous font system, and clear hierarchical contrasts. Color is only for functional cues, with a highly unified and professional main palette.
-     - **Comprehensive Research**: Strive for ultimate simplicity and balance, using minimal visual elements to integrate multi-dimensional information. The core is comprehensiveness and harmony, building a sense of order and cohesion through structured typography, a clear font system, and appropriate spacing. Color is only for subtle differentiation, with a unified and professional main palette.
-     - **General Design Principles**: All reports must follow the "less is more" principle. Strictly prohibit large colored cards, background blocks, or thick, colored borders. The focus of the design is to build visual aesthetics and information hierarchy through typography, spacing, and structure, not color.
-     - **Important Reminder**: The more specific your instructions, the better the aesthetic outcome of the report will be. Internalize these design principles into your own design language and use rich, descriptive vocabulary to guide report generation.
+     - **Core design framework (mandatory)**: Typography IS design. Build hierarchy through font system, font weight, size contrast, spacing, and whitespace, not color stacking.
+     - **Global visual constraints (mandatory)**: Text colors are black/gray only; use at most one brand color and only for small non-text accents (thin borders, nodes, icons). Prohibit large colored background blocks, thick colored borders, colored text, emoji icons, oversized rounded corners, and heavy shadows.
+     - **Typography and structure constraints (mandatory)**: Use serif for headlines/key data, sans-serif for body copy, monospace for data/sources. Create reading rhythm through clear grouping and generous whitespace. Keep information dense but not crowded.
+     - **Testing Research**: Emphasize objective comparison and verifiability. Use rigorous grid/alignment/grouping to present differences and improve traceability and persuasiveness.
+     - **Insights Research**: Emphasize depth and readability. Use strong typographic hierarchy and restrained pacing to present behavioral insights and user quotes with high trust.
+     - **Creation Research**: Emphasize creative expression with structural discipline. Convey creativity through typographic rhythm, scale contrast, and whitespace, not saturated color effects.
+     - **Planning Research**: Emphasize system thinking and execution path clarity. Use highly structured information architecture to present phases, dependencies, and priorities.
+     - **Comprehensive Research**: Emphasize multi-dimensional integration. Organize varied content with one unified visual language so the whole report stays coherent and scannable.
+     - **Important Reminder**: Instruction quality directly determines report quality. Provide executable visual guidance (type hierarchy, spacing rhythm, grouping logic, emphasis rules), not vague adjectives like "beautiful" or "premium."
    • 【SCOPE LIMITATION】Do **NOT** plan specific report content, let the system automatically generate report content based on collected data
    • 【USAGE CONDITIONS】Generate only when there are new study conclusions, avoid duplication
 </MANDATORY_STEP_ORDER>
