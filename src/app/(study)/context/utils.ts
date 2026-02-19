@@ -46,19 +46,29 @@ export async function recordPersonaPanelContext({
     where: { id: userChatId },
     select: { context: true },
   });
-  let personaPanelId = context.personaPanelId;
   let personaPanel: PersonaPanel;
-  if (!personaPanelId) {
+  if (!context.personaPanelId) {
     personaPanel = await createPersonaPanel({
       userId,
       personaIds,
       instruction,
     });
-    personaPanelId = personaPanel.id;
+    await mergeUserChatContext({
+      id: userChatId,
+      context: {
+        personaPanelId: personaPanel.id,
+      },
+    });
   } else {
+    const personaPanelId = context.personaPanelId;
     personaPanel = await prisma.personaPanel.findUniqueOrThrow({
       where: { id: personaPanelId },
     });
+    // Skip write if personaIds are already contained and no new instruction
+    const allContained = personaIds.every((id) => personaPanel.personaIds.includes(id));
+    if (allContained && !instruction) {
+      return personaPanel;
+    }
     personaPanel = await prisma.personaPanel.update({
       where: { id: personaPanelId },
       data: {
@@ -68,11 +78,5 @@ export async function recordPersonaPanelContext({
       },
     });
   }
-  await mergeUserChatContext({
-    id: userChatId,
-    context: {
-      personaPanelId,
-    },
-  });
   return personaPanel;
 }

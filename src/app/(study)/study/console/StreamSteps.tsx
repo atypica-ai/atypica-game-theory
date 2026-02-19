@@ -85,7 +85,7 @@ export const StreamSteps = <UI_MESSAGE extends TMessageWithPlainTextTool>({
               ? avatar || <CpuIcon className="size-6" />
               : null}
         {nickname && (
-          <div className="leading-[24px] text-zinc-800 dark:text-zinc-200 text-sm font-medium">
+          <div className="leading-6 text-zinc-800 dark:text-zinc-200 text-sm font-medium">
             {nickname}
           </div>
         )}

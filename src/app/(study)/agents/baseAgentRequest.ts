@@ -1,6 +1,5 @@
 import {
   appendChunkToStreamingMessage,
-  appendStepToStreamingMessage,
   createDebouncePersistentMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
@@ -26,6 +25,7 @@ import {
   JSONValue,
   ModelMessage,
   PrepareStepFunction,
+  ReasoningUIPart,
   smoothStream,
   StaticToolResult,
   stepCountIs,
@@ -140,10 +140,11 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
 
   // Create debounced message persistence (5s debounce)
   // ⚠️ 现在改用 onStepFinish 保存
-  const {
-    debouncePersistentMessage,
-    // immediatePersistentMessage,
-  } = createDebouncePersistentMessage(studyUserChatId, 5000, logger);
+  const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
+    studyUserChatId,
+    5000,
+    logger,
+  );
 
   // =============================================================================
   // Phase 1: Managed Run + Abort Controllers
@@ -425,25 +426,20 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
 
     /**
      * onChunk: Incremental message persistence with debouncing
+     * 为了能够在刷新以后，background 运行的时候也能看到 tool 正在被执行，需要 onChunk 的时候保存而不只是 onStepFinish 时候保存
+     *   而且不能只处理 tool，一个 step 可能是 reasoning + text + tool,
+     *   如果 onChunk 只是保存 tool 而 onStepFinish 保存别的，这样混用会有问题
+     *   会导致 reasoning part 被保存在 tool part 后面
+     * 然而，chunk 里拿不到 claude reasoning part 的 signature (在 providerMetadata 里), 只需要在 onStepFinish 里修复
      */
     onChunk: async ({ chunk }: { chunk: TextStreamPart<TOOLS> }) => {
-      // ⚠️ 现在改用 onStepFinish 保存
-      // appendChunkToStreamingMessage(streamingMessage, chunk);
-      // await debouncePersistentMessage(streamingMessage, {
-      //   immediate:
-      //     chunk.type !== "text-delta" &&
-      //     chunk.type !== "reasoning-delta" &&
-      //     chunk.type !== "tool-input-delta",
-      // });
-      if (chunk.type === "tool-call") {
-        // tool chunk 的顺序是 tool-input-start -> tool-input-delta -> tool-call, 不一定有 tool-input-end
-        // 0219 更新, 因为有一些 tool 的执行时间很长，input available 阶段也先保存一下
-        // 这个和 onStepFinish 里面的 appendStepToStreamingMessage 不会冲突，因为 tool result 会先尝试更新已有的 part
-        appendChunkToStreamingMessage(streamingMessage, chunk);
-        await debouncePersistentMessage(streamingMessage, {
-          immediate: true,
-        });
-      }
+      appendChunkToStreamingMessage(streamingMessage, chunk);
+      await debouncePersistentMessage(streamingMessage, {
+        immediate:
+          chunk.type !== "text-delta" &&
+          chunk.type !== "reasoning-delta" &&
+          chunk.type !== "tool-input-delta",
+      });
     },
 
     /**
@@ -454,17 +450,36 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
       const modelId = step.response.modelId;
 
       // Immediate persistence (critical for message consistency)
-      // ⚠️ 现在改用 onStepFinish 保存
-      // await immediatePersistentMessage();
-
-      appendStepToStreamingMessage(streamingMessage, step);
-      if (streamingMessage.parts?.length) {
-        await persistentAIMessageToDB({
-          mode: "override",
-          userChatId: studyUserChatId,
-          message: streamingMessage,
-        });
+      await immediatePersistentMessage();
+      {
+        const reasoning = step.content.find((step) => step.type === "reasoning");
+        if (reasoning) {
+          const lastReasoningPartIndex = streamingMessage.parts.findLastIndex(
+            (part) => part.type === "reasoning",
+          );
+          if (lastReasoningPartIndex !== -1) {
+            streamingMessage.parts[lastReasoningPartIndex] = {
+              ...streamingMessage.parts[lastReasoningPartIndex],
+              text: reasoning.text,
+              providerMetadata: reasoning.providerMetadata,
+            } as ReasoningUIPart;
+            await persistentAIMessageToDB({
+              mode: "override",
+              userChatId: studyUserChatId,
+              message: streamingMessage,
+            });
+          }
+        }
       }
+
+      // appendStepToStreamingMessage(streamingMessage, step);
+      // if (streamingMessage.parts?.length) {
+      //   await persistentAIMessageToDB({
+      //     mode: "override",
+      //     userChatId: studyUserChatId,
+      //     message: streamingMessage,
+      //   });
+      // }
 
       // Extract tool calls and usage stats
       const toolCalls = step.toolCalls.map((call) => call?.toolName ?? "unknown");

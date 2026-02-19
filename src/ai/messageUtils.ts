@@ -236,6 +236,26 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
       lastPart.text += chunk.text;
       lastPart.providerMetadata = chunk.providerMetadata; // 格外要注意，claude 模型的 extended thinking 有 signature，这个一定要带回去，不然无法被识别为是一个 reasoning block
     }
+  } else if (chunk.type === "source") {
+    const parts = streamingMessage.parts;
+    if (chunk.sourceType === "url") {
+      parts.push({
+        type: "source-url",
+        sourceId: chunk.id,
+        url: chunk.url,
+        title: chunk.title,
+        providerMetadata: chunk.providerMetadata,
+      });
+    } else if (chunk.sourceType === "document") {
+      parts.push({
+        type: "source-document",
+        sourceId: chunk.id,
+        filename: chunk.filename,
+        title: chunk.title,
+        mediaType: chunk.mediaType,
+        providerMetadata: chunk.providerMetadata,
+      });
+    }
   } else if (chunk.type === "tool-call") {
     // see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-input-streaming
     // streamingMessage.content += "";
