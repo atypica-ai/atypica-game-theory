@@ -163,8 +163,6 @@ export async function createUniversalAgentFromPanel(
       userChatId: createResult.data.id,
       logger,
     });
-    const abortController = new AbortController();
-
     await executeUniversalAgent({
       userId: user.id,
       userChat: {
@@ -173,7 +171,6 @@ export async function createUniversalAgentFromPanel(
         extra: createResult.data.extra,
       },
       statReport,
-      abortSignal: abortController.signal,
       logger,
       locale: defaultLocale,
     });

@@ -84,11 +84,6 @@ export async function POST(req: Request) {
     );
   }
 
-  // Build base tools (without bash-tool)
-  const abortController = new AbortController();
-  const abortSignal = abortController.signal;
-  // const abortSignal = req.signal;
-
   const stream = createUIMessageStream({
     async execute({ writer }) {
       await executeUniversalAgent(
@@ -96,7 +91,6 @@ export async function POST(req: Request) {
           userId,
           userChat,
           statReport,
-          abortSignal,
           logger,
           locale,
         },
@@ -105,13 +99,11 @@ export async function POST(req: Request) {
     },
     onError: (error) => {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      logger.error(
-        {
-          error: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        },
-        "universal chat api onError",
-      );
+      logger.error({
+        msg: "universal chat api onError",
+        error: errorMsg,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       return errorMsg;
     },
   });

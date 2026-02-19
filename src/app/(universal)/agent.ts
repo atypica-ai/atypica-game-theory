@@ -23,6 +23,7 @@ import { listSkillsTool, UniversalToolSet } from "@/app/(universal)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { loadAllSkillsToMemory } from "@/lib/skill/loadToMemory";
 import { loadUserWorkspace, saveUserWorkspace } from "@/lib/skill/workspace";
+import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
@@ -37,20 +38,28 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     userId,
     userChat,
     statReport,
-    abortSignal,
     logger,
     locale,
   }: {
     userId: number;
     userChat: Pick<UserChat, "id" | "token" | "extra">;
     statReport: StatReporter;
-    abortSignal: AbortSignal;
     logger: Logger;
     locale: Locale;
   },
   streamWriter?: UIMessageStreamWriter,
 ) {
   const universalChatId = userChat.id;
+
+  // Start managed run — writes runId to DB, starts watcher, returns abort signal
+  const {
+    runId,
+    abortSignal,
+    cleanup: cleanupRun,
+  } = await startManagedRun({
+    userChatId: universalChatId,
+    logger,
+  });
 
   // Get user and team info
   const user = await prisma.user.findUniqueOrThrow({
@@ -219,15 +228,24 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
       await saveUserWorkspace(userId, sandbox);
     },
     onFinish: async () => {
-      // Save workspace when streaming is complete
       await saveUserWorkspace(userId, sandbox);
+      await cleanupRun();
     },
-    onError: ({ error }) => {
+    onError: async ({ error }) => {
       logger.error({
         msg: "Universal agent stream error",
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });
+      try {
+        await failUserChatRun({
+          userChatId: universalChatId,
+          runId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      } catch {
+        await cleanupRun();
+      }
     },
     onAbort: async () => {
       // abortSignal 被触发，用来做一些清理
