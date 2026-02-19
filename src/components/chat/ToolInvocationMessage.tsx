@@ -56,6 +56,8 @@ export const ToolInvocationMessage = ({
               />
             </div>
           </>
+        ) : toolInvocation.state === "output-error" ? (
+          <div className="text-xs p-1 text-red-600">{toolInvocation.errorText}</div>
         ) : (
           <div className="p-1">
             <LoaderIcon className="animate-spin" size={16} />

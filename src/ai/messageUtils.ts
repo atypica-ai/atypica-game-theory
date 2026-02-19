@@ -107,24 +107,35 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
       }
     } else if (content.type === "tool-call") {
       // tool part 不需要 providerMetadata
-      let toolPart: ToolUIPart | DynamicToolUIPart;
-      if (content.dynamic) {
-        toolPart = {
-          type: "dynamic-tool",
-          toolName: content.toolName,
+      const toolPartIndex = parts.findIndex(
+        (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === content.toolCallId,
+      );
+      if (toolPartIndex) {
+        parts[toolPartIndex] = {
+          ...parts[toolPartIndex],
           state: "input-available",
           input: content.input,
-          toolCallId: content.toolCallId,
-        };
+        } as ToolUIPart | DynamicToolUIPart;
       } else {
-        toolPart = {
-          type: `tool-${content.toolName}`,
-          state: "input-available",
-          input: content.input,
-          toolCallId: content.toolCallId,
-        };
+        let toolPart: ToolUIPart | DynamicToolUIPart;
+        if (content.dynamic) {
+          toolPart = {
+            type: "dynamic-tool",
+            toolName: content.toolName,
+            state: "input-available",
+            input: content.input,
+            toolCallId: content.toolCallId,
+          };
+        } else {
+          toolPart = {
+            type: `tool-${content.toolName}`,
+            state: "input-available",
+            input: content.input,
+            toolCallId: content.toolCallId,
+          };
+        }
+        parts.push(toolPart);
       }
-      parts.push(toolPart);
     } else if (content.type === "tool-error") {
       const toolPartIndex = parts.findIndex(
         (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === content.toolCallId,
@@ -228,7 +239,11 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
   } else if (chunk.type === "tool-call") {
     // see https://ai-sdk.dev/docs/migration-guides/migration-guide-5-0#tool-input-streaming
     // streamingMessage.content += "";
-    streamingMessage.parts.push({
+    const index = streamingMessage.parts.findIndex(
+      // 通过 toolCallId 字段寻找，兼容 v4 和 v5
+      (part) => "toolCallId" in part && part.toolCallId === chunk.toolCallId,
+    );
+    const payload: ToolUIPart | DynamicToolUIPart = {
       ...(chunk.dynamic
         ? { type: "dynamic-tool", toolName: chunk.toolName }
         : { type: `tool-${chunk.toolName}` }),
@@ -236,39 +251,50 @@ export function appendChunkToStreamingMessage<T extends ToolSet>(
       input: chunk.input,
       state: "input-available",
       // tool part 不需要 providerMetadata
-    });
+    };
+    if (index !== -1) {
+      streamingMessage.parts[index] = payload;
+    } else {
+      streamingMessage.parts.push(payload);
+    }
   } else if (chunk.type === "tool-result") {
     // streamingMessage.content += "";
     const index = streamingMessage.parts.findIndex(
       // 通过 toolCallId 字段寻找，兼容 v4 和 v5
       (part) => "toolCallId" in part && part.toolCallId === chunk.toolCallId,
     );
+    const payload: ToolUIPart | DynamicToolUIPart = {
+      ...(chunk.dynamic
+        ? { type: "dynamic-tool", toolName: chunk.toolName }
+        : { type: `tool-${chunk.toolName}` }),
+      toolCallId: chunk.toolCallId,
+      input: chunk.input,
+      state: "output-available",
+      output: chunk.output,
+    };
     if (index !== -1) {
-      streamingMessage.parts[index] = {
-        ...(chunk.dynamic
-          ? { type: "dynamic-tool", toolName: chunk.toolName }
-          : { type: `tool-${chunk.toolName}` }),
-        toolCallId: chunk.toolCallId,
-        input: chunk.input,
-        state: "output-available",
-        output: chunk.output,
-      };
+      streamingMessage.parts[index] = payload;
+    } else {
+      streamingMessage.parts.push(payload);
     }
   } else if (chunk.type === "tool-error") {
     const index = streamingMessage.parts.findIndex(
       // 通过 toolCallId 字段寻找，兼容 v4 和 v5
       (part) => "toolCallId" in part && part.toolCallId === chunk.toolCallId,
     );
+    const payload: ToolUIPart | DynamicToolUIPart = {
+      ...(chunk.dynamic
+        ? { type: "dynamic-tool", toolName: chunk.toolName }
+        : { type: `tool-${chunk.toolName}` }),
+      toolCallId: chunk.toolCallId,
+      input: chunk.input,
+      state: "output-error",
+      errorText: chunk.error instanceof Error ? chunk.error.message : `${chunk.error}`,
+    };
     if (index !== -1) {
-      streamingMessage.parts[index] = {
-        ...(chunk.dynamic
-          ? { type: "dynamic-tool", toolName: chunk.toolName }
-          : { type: `tool-${chunk.toolName}` }),
-        toolCallId: chunk.toolCallId,
-        input: chunk.input,
-        state: "output-error",
-        errorText: chunk.error instanceof Error ? chunk.error.message : `${chunk.error}`,
-      };
+      streamingMessage.parts[index] = payload;
+    } else {
+      streamingMessage.parts.push(payload);
     }
   } else {
     // 其他类型的现在遇不到，不用处理

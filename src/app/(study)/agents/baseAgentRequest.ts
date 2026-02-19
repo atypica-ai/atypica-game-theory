@@ -1,5 +1,7 @@
 import {
+  appendChunkToStreamingMessage,
   appendStepToStreamingMessage,
+  createDebouncePersistentMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
@@ -30,6 +32,7 @@ import {
   StepResult,
   streamText,
   TextPart,
+  TextStreamPart,
   ToolChoice,
   UIMessageStreamWriter,
 } from "ai";
@@ -134,6 +137,13 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   streamWriter?: UIMessageStreamWriter,
 ) {
   const { userId, studyUserChatId, userChatContext, locale, logger, statReport } = baseContext;
+
+  // Create debounced message persistence (5s debounce)
+  // ⚠️ 现在改用 onStepFinish 保存
+  const {
+    debouncePersistentMessage,
+    // immediatePersistentMessage,
+  } = createDebouncePersistentMessage(studyUserChatId, 5000, logger);
 
   // =============================================================================
   // Phase 1: Managed Run + Abort Controllers
@@ -416,16 +426,25 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     /**
      * onChunk: Incremental message persistence with debouncing
      */
-    // onChunk: async ({ chunk }: { chunk: TextStreamPart<TOOLS> }) => {
-    //   // ⚠️ 现在改用 onStepFinish 保存
-    //   appendChunkToStreamingMessage(streamingMessage, chunk);
-    //   await debouncePersistentMessage(streamingMessage, {
-    //     immediate:
-    //       chunk.type !== "text-delta" &&
-    //       chunk.type !== "reasoning-delta" &&
-    //       chunk.type !== "tool-input-delta",
-    //   });
-    // },
+    onChunk: async ({ chunk }: { chunk: TextStreamPart<TOOLS> }) => {
+      // ⚠️ 现在改用 onStepFinish 保存
+      // appendChunkToStreamingMessage(streamingMessage, chunk);
+      // await debouncePersistentMessage(streamingMessage, {
+      //   immediate:
+      //     chunk.type !== "text-delta" &&
+      //     chunk.type !== "reasoning-delta" &&
+      //     chunk.type !== "tool-input-delta",
+      // });
+      if (chunk.type === "tool-call") {
+        // tool chunk 的顺序是 tool-input-start -> tool-input-delta -> tool-call, 不一定有 tool-input-end
+        // 0219 更新, 因为有一些 tool 的执行时间很长，input available 阶段也先保存一下
+        // 这个和 onStepFinish 里面的 appendStepToStreamingMessage 不会冲突，因为 tool result 会先尝试更新已有的 part
+        appendChunkToStreamingMessage(streamingMessage, chunk);
+        await debouncePersistentMessage(streamingMessage, {
+          immediate: true,
+        });
+      }
+    },
 
     /**
      * onStepFinish: Immediate persistence + stats reporting + balance check + universal notifications + custom logic
