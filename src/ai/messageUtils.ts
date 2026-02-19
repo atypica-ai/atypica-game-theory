@@ -110,7 +110,7 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
       const toolPartIndex = parts.findIndex(
         (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === content.toolCallId,
       );
-      if (toolPartIndex) {
+      if (toolPartIndex !== -1) {
         parts[toolPartIndex] = {
           ...parts[toolPartIndex],
           state: "input-available",
@@ -140,7 +140,7 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
       const toolPartIndex = parts.findIndex(
         (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === content.toolCallId,
       );
-      if (toolPartIndex) {
+      if (toolPartIndex !== -1) {
         parts[toolPartIndex] = {
           ...parts[toolPartIndex],
           state: "output-error",
@@ -172,7 +172,7 @@ export function appendStepToStreamingMessage<T extends ToolSet>(
       const toolPartIndex = parts.findIndex(
         (part) => isToolOrDynamicToolUIPart(part) && part.toolCallId === content.toolCallId,
       );
-      if (toolPartIndex) {
+      if (toolPartIndex !== -1) {
         parts[toolPartIndex] = {
           ...parts[toolPartIndex],
           state: "output-available",

@@ -179,7 +179,11 @@ export async function runScoutTaskChatStream({
   //   logger,
   // ); // 5000 debounce
 
-  const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
+  const reduceTokens: TReduceTokens = {
+    model: "gemini-3-flash",
+    // model: "minimax-m2.1",
+    ratio: 10,
+  };
   let tokensConsumed = 0;
 
   const streamTextPromise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
