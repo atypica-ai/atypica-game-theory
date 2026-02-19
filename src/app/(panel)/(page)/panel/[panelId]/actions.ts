@@ -1,8 +1,8 @@
 "use server";
 
+import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
-import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { executeUniversalAgent } from "@/app/(universal)/agent";
 import { createUniversalUserChat } from "@/app/(universal)/universal/actions";
 import { rootLogger } from "@/lib/logging";
@@ -133,9 +133,24 @@ export async function createUniversalAgentFromPanel(
       return { success: false, code: "not_found", message: "PersonaPanel not found" };
     }
 
+    // Fetch persona details so Agent knows which personas to use directly
+    const personas = await prisma.persona.findMany({
+      where: { id: { in: panel.personaIds } },
+      select: { id: true, name: true, tags: true },
+    });
+
+    const panelPersonaLines = personas
+      .map(
+        (p) =>
+          `- ID: ${p.id}, Name: "${p.name}"${p.tags?.length ? `, Tags: [${p.tags.join(", ")}]` : ""}`,
+      )
+      .join("\n");
+
+    const enrichedContent = `${content}\n\n---\n<panel_context>\nThis research uses a pre-selected panel (panelId: ${panelId}) with ${personas.length} personas.\nUse these personas directly for interviews and discussions — do NOT search for new ones.\n\n${panelPersonaLines}\n</panel_context>`;
+
     const createResult = await createUniversalUserChat({
       role: "user",
-      content,
+      content: enrichedContent,
     });
     if (!createResult.success) {
       return { success: false, code: createResult.code, message: createResult.message };
