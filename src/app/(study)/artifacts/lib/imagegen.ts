@@ -4,7 +4,6 @@ import { imageModel } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
-import { getRequestOrigin } from "@/lib/request/headers";
 import { ImageGenerationExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
@@ -19,14 +18,16 @@ import { z } from "zod/v3";
 export async function triggerImagegenInReport(html: string, reportToken: string) {
   const imgTagRegex = /<img([^>]*?)src="(\/api\/imagegen\/[^"]*)"([^>]*?)>/g;
   const matches = [...html.matchAll(imgTagRegex)];
-  const siteOrigin = await getRequestOrigin();
+  // 用 localhost 作为 base URL，只需要解析相对路径的 query params，不需要真实 origin。
+  // 之前用 getRequestOrigin() 会调用 headers()，在长时间运行的 agent 请求中
+  // 会触发 "headers inside after(...)" 错误（Next.js 不允许在 after phase 调用 headers）。
   const promises = Promise.all(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     matches.map(([match, beforeSrc, src, afterSrc], index) => {
       // Extract prompt and ratio from the URL
       const urlParts = src.split("/");
       const prompt = urlParts[urlParts.length - 1].split("?")[0];
-      const urlObj = new URL(src, siteOrigin);
+      const urlObj = new URL(src, "http://localhost");
       const ratio = urlObj.searchParams.get("ratio") || "";
       return backgroundGenerateImage({ prompt, ratio, reportToken });
     }),
