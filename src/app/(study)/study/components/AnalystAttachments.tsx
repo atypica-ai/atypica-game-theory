@@ -1,5 +1,5 @@
 "use client";
-import { fetchAttachmentsByStudyUserChatToken } from "@/app/(study)/study/actions";
+import { fetchAttachmentsInStudy } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { FileAttachment } from "@/components/chat/FileAttachment";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -12,11 +12,11 @@ export function AnalystAttachments() {
     studyUserChat: { token: studyUserChatToken },
   } = useStudyContext();
   const [fileUIParts, setFileUIParts] = useState<
-    ExtractServerActionData<typeof fetchAttachmentsByStudyUserChatToken>
+    ExtractServerActionData<typeof fetchAttachmentsInStudy>
   >([]);
 
   useEffect(() => {
-    fetchAttachmentsByStudyUserChatToken({ userChatToken: studyUserChatToken }).then((result) => {
+    fetchAttachmentsInStudy({ userChatToken: studyUserChatToken }).then((result) => {
       if (!result.success) throw result;
       setFileUIParts(result.data);
     });

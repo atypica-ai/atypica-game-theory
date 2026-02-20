@@ -130,7 +130,7 @@ export async function fetchStatsByStudyUserChatToken(
   };
 }
 
-export async function fetchAttachmentsByStudyUserChatToken({
+export async function fetchAttachmentsInStudy({
   userChatToken,
 }: {
   userChatToken: string;
@@ -165,7 +165,7 @@ export async function fetchAttachmentsByStudyUserChatToken({
  * 前端无法通过遍历 personaId 来获取所有 analystInterview，
  * personaId 仅用于过滤 studyUserChatToken 对应研究里的所有访谈（这些访谈在拥有 studyUserChatToken 的情况下，都是直接可读的）
  */
-export async function fetchAnalystInterviewForPersona({
+export async function fetchPersonaInterviewInStudy({
   userChatToken,
   forPersonaId,
 }: {
@@ -261,9 +261,9 @@ export async function fetchAnalystInterviewForPersona({
 }
 
 /**
- * 和 fetchAnalystInterviewForPersona 一样，这个方法是安全的，无法通过遍历 personaId 来获取所有 Persona
+ * 和 fetchPersonaInterviewInStudy 一样，这个方法是安全的，无法通过遍历 personaId 来获取所有 Persona
  */
-export async function fetchPersonasSearchInStudy({
+export async function fetchSearchedPersonasInStudy({
   userChatToken,
   filterByPersonaIds,
 }: {

@@ -1,4 +1,4 @@
-import { fetchPersonasSearchInStudy } from "@/app/(study)/study/actions";
+import { fetchSearchedPersonasInStudy } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { TPersonaForStudy } from "@/app/(study)/tools/buildPersona/types";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
@@ -14,7 +14,7 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { HighPrecisionPersonaMethodology } from "./HighPrecisionPersonaMethodology";
 import "./styles/RealPersonCard.css";
 
-type TPersonaDetail = ExtractServerActionData<typeof fetchPersonasSearchInStudy>[number];
+type TPersonaDetail = ExtractServerActionData<typeof fetchSearchedPersonasInStudy>[number];
 
 const PersonaGrids: FC<{
   personas: TPersonaForStudy[];
@@ -62,7 +62,7 @@ const PersonaGrids: FC<{
 
   useEffect(() => {
     setIsLoading(true);
-    fetchPersonasSearchInStudy({
+    fetchSearchedPersonasInStudy({
       userChatToken: studyUserChat.token,
       filterByPersonaIds: personas.map(({ personaId }) => personaId),
     })

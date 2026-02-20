@@ -1,4 +1,4 @@
-import { fetchAnalystInterviewForPersona } from "@/app/(study)/study/actions";
+import { fetchPersonaInterviewInStudy } from "@/app/(study)/study/actions";
 import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
@@ -97,13 +97,13 @@ const SingleInterviewChat = ({
   const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
   const [conclusion, setConclusion] = useState<string | null>(null);
   const [persona, setPersona] =
-    useState<ExtractServerActionData<typeof fetchAnalystInterviewForPersona>["persona"]>();
+    useState<ExtractServerActionData<typeof fetchPersonaInterviewInStudy>["persona"]>();
 
   const { replay } = useStudyContext();
 
   const fetchUpdate = useCallback(async () => {
     try {
-      const result = await fetchAnalystInterviewForPersona({
+      const result = await fetchPersonaInterviewInStudy({
         userChatToken: studyUserChat.token,
         forPersonaId: personaId,
       });
