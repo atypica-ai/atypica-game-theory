@@ -256,8 +256,10 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
   after(
     streamTextResult
       .consumeStream()
-      .then(() => {})
-      .catch(() => {}),
+      .then(() => logger.info("universal consumeStream completed"))
+      .catch((error) =>
+        logger.error({ msg: "universal consumeStream error", error: (error as Error).message }),
+      ),
   );
 
   streamWriter?.merge(

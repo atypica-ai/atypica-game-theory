@@ -680,8 +680,18 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   });
 
   // =============================================================================
-  // Phase 9: Return Stream (Universal: always use merge)
+  // Phase 9: Consume Stream + Return Stream
   // =============================================================================
+
+  // Ensure the stream is consumed to completion even if the client disconnects.
+  after(
+    streamTextResult
+      .consumeStream()
+      .then(() => logger.info("study consumeStream completed"))
+      .catch((error) =>
+        logger.error({ msg: "study consumeStream error", error: (error as Error).message }),
+      ),
+  );
 
   // Only merge if streamWriter is provided (for non-MCP scenarios)
   streamWriter?.merge(
