@@ -1,3 +1,19 @@
+import {
+  RequestSelectPersonasToolInput,
+  RequestSelectPersonasToolOutput,
+} from "@/app/(panel)/tools/requestSelectPersonas/types";
+import {
+  GeneratePodcastResult,
+  GeneratePodcastToolInput,
+} from "@/app/(study)/tools/generatePodcast/types";
+import {
+  GenerateReportResult,
+  GenerateReportToolInput,
+} from "@/app/(study)/tools/generateReport/types";
+import {
+  SearchPersonasToolInput,
+  SearchPersonasToolResult,
+} from "@/app/(study)/tools/searchPersonas/types";
 import { UIDataTypes, UIMessage } from "ai";
 
 /**
@@ -28,6 +44,10 @@ export enum UniversalToolName {
   generatePodcast = "generatePodcast",
   deepResearch = "deepResearch",
 
+  // Panel
+  requestSelectPersonas = "requestSelectPersonas",
+  updatePanel = "updatePanel",
+
   // Error handling
   toolCallError = "toolCallError",
 }
@@ -35,8 +55,34 @@ export enum UniversalToolName {
 /**
  * Universal Agent UI Tools
  * Maps tool names to their input/output types for UI rendering
- * Currently empty - use Record<string, never> instead of {}
  */
-export type UniversalUITools = Record<string, never>;
+export type UniversalUITools = {
+  [UniversalToolName.requestSelectPersonas]: {
+    input: RequestSelectPersonasToolInput;
+    output: RequestSelectPersonasToolOutput;
+  };
+  [UniversalToolName.searchPersonas]: {
+    input: SearchPersonasToolInput;
+    output: SearchPersonasToolResult;
+  };
+  [UniversalToolName.generateReport]: {
+    input: GenerateReportToolInput;
+    output: GenerateReportResult;
+  };
+  [UniversalToolName.generatePodcast]: {
+    input: GeneratePodcastToolInput;
+    output: GeneratePodcastResult;
+  };
+};
 
 export type TUniversalMessageWithTool = UIMessage<unknown, UIDataTypes, UniversalUITools>;
+
+export type TAddUniversalUIToolResult = <TOOL extends keyof UniversalUITools>({
+  tool,
+  toolCallId,
+  output,
+}: {
+  tool: TOOL;
+  toolCallId: string;
+  output: UniversalUITools[TOOL]["output"];
+}) => Promise<void>;

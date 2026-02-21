@@ -10,6 +10,8 @@ import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { loadTeamMemory, loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
+import { requestSelectPersonasTool } from "@/app/(panel)/tools/requestSelectPersonas";
+import { updatePanelTool } from "@/app/(panel)/tools/updatePanel";
 import { setBedrockCache } from "@/app/(study)/agents/utils";
 import {
   discussionChatTool,
@@ -176,6 +178,14 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
       ...agentToolArgs,
     }),
     // [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
+
+    // panel
+    [UniversalToolName.requestSelectPersonas]: requestSelectPersonasTool,
+    [UniversalToolName.updatePanel]: updatePanelTool({
+      userId,
+      userChatId: universalChatId,
+      ...agentToolArgs,
+    }),
 
     [UniversalToolName.toolCallError]: toolCallError,
   };

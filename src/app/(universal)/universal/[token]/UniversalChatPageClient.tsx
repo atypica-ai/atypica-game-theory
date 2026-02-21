@@ -1,6 +1,9 @@
 "use client";
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
-import { TUniversalMessageWithTool } from "@/app/(universal)/tools/types";
+import {
+  TAddUniversalUIToolResult,
+  TUniversalMessageWithTool,
+} from "@/app/(universal)/tools/types";
 import { UniversalToolUIPartDisplay } from "@/app/(universal)/tools/ui";
 import { WorkspaceFilesPanel } from "@/app/(universal)/universal/components/WorkspaceFilesPanel";
 import { UserChatSession } from "@/components/chat/UserChatSession";
@@ -12,7 +15,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { FolderOpenIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function UniversalChatPageClient({
   userChat,
@@ -27,7 +30,7 @@ export function UniversalChatPageClient({
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChat.token }), [userChat.token]);
 
   // Chat hooks
-  const useChatHelpers = useChat({
+  const { addToolOutput: _addToolOutput, ...useChatHelpers } = useChat({
     messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/chat/universal",
@@ -51,6 +54,15 @@ export function UniversalChatPageClient({
     setMessages: useChatHelpers.setMessages,
     sendMessage: useChatHelpers.sendMessage,
   });
+
+  // addToolResult: update tool output + continue conversation
+  const addToolResult: TAddUniversalUIToolResult = useCallback(
+    async (...args) => {
+      await _addToolOutput(...args);
+      useChatRef.current.sendMessage();
+    },
+    [_addToolOutput],
+  );
 
   const requestSentRef = useRef(false);
   useEffect(() => {
@@ -99,7 +111,9 @@ export function UniversalChatPageClient({
           }}
           useChatHelpers={useChatHelpers}
           useChatRef={useChatRef}
-          renderToolUIPart={(toolPart) => <UniversalToolUIPartDisplay toolUIPart={toolPart} />}
+          renderToolUIPart={(toolPart) => (
+            <UniversalToolUIPartDisplay toolUIPart={toolPart} addToolResult={addToolResult} />
+          )}
           acceptAttachments={false}
         />
       </div>
