@@ -1,16 +1,15 @@
 import "server-only";
 
-import { searchPersonasInToolWithMeili } from "@/app/(study)/tools/searchPersonas";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
 import { prismaRO } from "@/prisma/prisma";
+import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import {
   CallToolResult,
   ServerNotification,
   ServerRequest,
 } from "@modelcontextprotocol/sdk/types.js";
-import { getLocale } from "next-intl/server";
 import { z } from "zod";
 
 export const searchPersonasInputSchema = z.object({
@@ -32,13 +31,6 @@ export async function handleSearchPersonas(
 
     const { query, tier, limit } = args;
     const userId = context.userId;
-    const locale = await getLocale();
-
-    const logger = rootLogger.child({
-      mcp: "atypica-study-mcp",
-      tool: "search_personas",
-      userId,
-    });
 
     // Use Meilisearch for full-text search
     let allPersonas: Array<{ personaId: number; name: string; source: string; tags: string[] }> =
@@ -46,14 +38,32 @@ export async function handleSearchPersonas(
 
     if (query) {
       // Full-text search with Meilisearch
-      const result = await searchPersonasInToolWithMeili({
-        locale,
-        searchQuery: query,
-        logger,
+      const searchResults = await searchPersonasFromMeili({
+        query,
         userId,
-        usePrivatePersonas: true, // MCP always searches user's own personas
+        pageSize: limit,
       });
-      allPersonas = result.personas;
+      const personaIds = searchResults.hits
+        .map((hit) => {
+          const match = hit.slug.match(/^persona-(\d+)$/);
+          return match ? parseInt(match[1], 10) : 0;
+        })
+        .filter((id) => id > 0);
+
+      const personas = await prismaRO.persona.findMany({
+        where: { id: { in: personaIds } },
+        select: { id: true, name: true, source: true, tags: true },
+      });
+      const personaMap = new Map(personas.map((p) => [p.id, p]));
+      allPersonas = personaIds
+        .map((id) => personaMap.get(id))
+        .filter((p) => p !== undefined)
+        .map((p) => ({
+          personaId: p.id,
+          name: p.name,
+          source: p.source,
+          tags: p.tags as string[],
+        }));
     } else {
       // No query: fetch all user's personas directly
       const personas = await prismaRO.persona.findMany({

@@ -34,43 +34,63 @@ export const searchPersonasTool = ({
       return { type: "text", value: result.plainText };
     },
     execute: async ({ searchQueries, usePrivatePersonas }): Promise<SearchPersonasToolResult> => {
-      const searchResults = await Promise.all(
-        searchQueries.map((searchQuery) =>
-          searchPersonasInToolWithMeili({
-            locale,
-            searchQuery,
-            logger,
-            userId,
-            usePrivatePersonas,
-          }),
-        ),
+      // 1. Search: Meilisearch first, fallback to embedding if empty
+      const searchResultsSettled = await Promise.allSettled(
+        searchQueries.map(async (searchQuery) => {
+          const params = { locale, searchQuery, logger, userId, usePrivatePersonas };
+          let personaIds = await searchPersonaIdsByMeili({ ...params });
+          if (personaIds.length === 0) {
+            logger.info({
+              msg: "Meilisearch returned empty, falling back to embedding",
+              searchQuery,
+            });
+            personaIds = await searchPersonaIdsByEmbedding({ ...params });
+          }
+          return personaIds;
+        }),
       );
-      let personas: TPersonaForStudy[] = [];
-      const seenPersonaIds = new Set<number>();
-      const maxPersonaLength = Math.max(...searchResults.map((result) => result.personas.length));
-      for (let i = 0; i < maxPersonaLength; i++) {
-        searchResults.forEach((result) => {
-          if (i >= result.personas.length) {
-            return;
+      const searchResults = searchResultsSettled
+        .filter((result) => result.status === "fulfilled")
+        .map((result) => result.value);
+      // 2. Deduplicate with round-robin merge
+      const allPersonaIds: number[] = [];
+      const seenIds = new Set<number>();
+      const maxLen = Math.max(...searchResults.map((r) => r.length), 0);
+      for (let i = 0; i < maxLen; i++) {
+        for (const result of searchResults) {
+          if (i < result.length && !seenIds.has(result[i])) {
+            allPersonaIds.push(result[i]);
+            seenIds.add(result[i]);
           }
-          const persona = result.personas[i];
-          if (!seenPersonaIds.has(persona.personaId)) {
-            personas.push(persona);
-            seenPersonaIds.add(persona.personaId);
-          }
-        });
+        }
       }
-      personas = personas.slice(0, 10); // 取前10个
-      if (!personas.length) {
-        return {
-          personas,
-          plainText: "No personas found",
-        };
+      const finalIds = allPersonaIds.slice(0, 10);
+
+      if (finalIds.length === 0) {
+        return { personas: [], plainText: "No personas found" };
       }
+
+      // 3. Fetch persona details and maintain search order
+      const dbPersonas = await prismaRO.persona.findMany({
+        where: { id: { in: finalIds } },
+        select: { id: true, name: true, source: true, tags: true },
+      });
+      const personaMap = new Map(dbPersonas.map((p) => [p.id, p]));
+      const personas: TPersonaForStudy[] = finalIds
+        .map((id) => personaMap.get(id))
+        .filter((p) => p !== undefined)
+        .map((p) => ({
+          personaId: p.id,
+          name: p.name,
+          source: p.source,
+          tags: p.tags as string[],
+        }));
+
+      // 4. Stats & context recording
       if (statReport) {
         await statReport("personas", personas.length, {
           reportedBy: "searchPersonas tool",
-          personaIds: personas.map((persona) => persona.personaId),
+          personaIds: personas.map((p) => p.personaId),
         });
       }
       await recordPersonaPanelContext({
@@ -79,6 +99,7 @@ export const searchPersonasTool = ({
         personaIds: personas.map((p) => p.personaId),
         instruction: searchQueries.join("\n"),
       });
+
       return {
         personas,
         plainText: `${personas.length} personas found: ${JSON.stringify(personas)}`,
@@ -86,7 +107,7 @@ export const searchPersonasTool = ({
     },
   });
 
-export async function searchPersonasInToolWithMeili({
+async function searchPersonaIdsByMeili({
   locale,
   searchQuery,
   logger,
@@ -98,13 +119,12 @@ export async function searchPersonasInToolWithMeili({
   logger: Logger;
   userId: number;
   usePrivatePersonas: boolean;
-}) {
+}): Promise<number[]> {
   try {
-    // Get search results from Meilisearch
     const searchResults = usePrivatePersonas
       ? await searchPersonasFromMeili({
           query: searchQuery,
-          userId: userId,
+          userId,
           pageSize: 5,
         })
       : await searchPersonasFromMeili({
@@ -114,55 +134,23 @@ export async function searchPersonasInToolWithMeili({
           pageSize: 5,
         });
 
-    // Extract persona IDs from slugs
-    const personaIds = searchResults.hits
+    return searchResults.hits
       .map((hit) => {
         const match = hit.slug.match(/^persona-(\d+)$/);
         return match ? parseInt(match[1], 10) : 0;
       })
       .filter((id) => id > 0);
-
-    if (personaIds.length === 0) {
-      return { searchQuery, personas: [] };
-    }
-
-    // Query database for full persona data
-    const personas = await prismaRO.persona
-      .findMany({
-        where: { id: { in: personaIds } },
-        select: {
-          id: true,
-          name: true,
-          source: true,
-          tags: true,
-        },
-      })
-      .then((results) =>
-        results.map((p) => ({
-          personaId: p.id,
-          name: p.name,
-          source: p.source,
-          tags: p.tags as string[],
-        })),
-      );
-
-    // Maintain Meilisearch order
-    const personaMap = new Map(personas.map((p) => [p.personaId, p]));
-    const orderedPersonas = personaIds
-      .map((id) => personaMap.get(id))
-      .filter(Boolean) as TPersonaForStudy[];
-
-    return { searchQuery, personas: orderedPersonas };
   } catch (error) {
-    logger.error(`Error searching personas with query "${searchQuery}": ${error}`);
-    return { searchQuery, personas: [] };
+    logger.error({
+      msg: `Error searching personas via Meilisearch`,
+      searchQuery,
+      error: String(error),
+    });
+    return [];
   }
 }
 
-/**
- * @deprecated
- */
-export async function searchPersonasInToolWithEmbedding({
+async function searchPersonaIdsByEmbedding({
   locale,
   searchQuery,
   logger,
@@ -174,48 +162,40 @@ export async function searchPersonasInToolWithEmbedding({
   logger: Logger;
   userId: number;
   usePrivatePersonas: boolean;
-}) {
+}): Promise<number[]> {
   try {
     const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
-    let personas = [] as TPersonaForStudy[];
-    if (usePrivatePersonas) {
-      const personaIds = (
-        await prismaRO.persona.findMany({
-          where: { personaImport: { userId } },
-          select: { id: true },
-        })
-      ).map(({ id }) => id);
-      console.log(personaIds);
-      personas = await prismaRO.$queryRaw<TPersonaForStudy[]>`
-SELECT
-  "id" as "personaId",
-  "name",
-  "source",
-  "tags"
-FROM "Persona"
-WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
-  AND id = ANY(${personaIds})
-ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
-LIMIT 5
-`;
-    } else {
-      personas = await prismaRO.$queryRaw<TPersonaForStudy[]>`
-SELECT
-  "id" as "personaId",
-  "name",
-  "source",
-  "tags"
-FROM "Persona"
-WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
-  AND locale = ${locale}
-  AND tier in (1, 2)
-ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
-LIMIT 5
-`;
-    }
-    return { searchQuery, personas };
+
+    const rows = usePrivatePersonas
+      ? await prismaRO.$queryRaw<{ id: number }[]>`
+          SELECT "id"
+          FROM "Persona"
+          WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
+            AND id = ANY(
+              SELECT p."id" FROM "Persona" p
+              JOIN "PersonaImport" pi ON pi."id" = p."personaImportId"
+              WHERE pi."userId" = ${userId}
+            )
+          ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
+          LIMIT 5
+        `
+      : await prismaRO.$queryRaw<{ id: number }[]>`
+          SELECT "id"
+          FROM "Persona"
+          WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
+            AND locale = ${locale}
+            AND tier IN (1, 2)
+          ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
+          LIMIT 5
+        `;
+
+    return rows.map((r) => r.id);
   } catch (error) {
-    logger.error(`Error searching personas with query "${searchQuery}": ${error}`);
-    return { searchQuery, personas: [] };
+    logger.error({
+      msg: `Error searching personas via embedding`,
+      searchQuery,
+      error: String(error),
+    });
+    return [];
   }
 }
