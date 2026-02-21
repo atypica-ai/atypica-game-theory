@@ -68,7 +68,10 @@ export async function createSubscriptionStripeSession({
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
-
+  const discounts = await availableCoupons({
+    userId,
+    userProfileExtra,
+  });
   // const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
   const session = await stripe.checkout.sessions.create({
     customer_email: user.email,
@@ -85,12 +88,10 @@ export async function createSubscriptionStripeSession({
     mode: "subscription",
     subscription_data: { metadata },
     // 个人订阅支持关联自动的优惠券
-    discounts: await availableCoupons({
-      userId,
-      userProfileExtra,
-    }),
+    discounts: discounts,
     // 个人订阅支持用户自己 REDEEM 优惠券
-    allow_promotion_codes: true,
+    // discounts 和 allow_promotion_codes 不能混用，暂时禁用，回头做个界面让用户自己选
+    allow_promotion_codes: discounts ? false : true,
     line_items: [
       {
         // price_data: priceData,
@@ -284,6 +285,10 @@ export async function createTeamSubscriptionStripeSession({
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
+  const discounts = await availableCoupons({
+    userId: userId, // 不是 personnalUser, 而是当前用户
+    userProfileExtra: personalUserProfileExtra,
+  });
   const session = await stripe.checkout.sessions.create({
     customer_email: personalUserEmail,
     // customer: stripeCustomerId,
@@ -297,12 +302,10 @@ export async function createTeamSubscriptionStripeSession({
     mode: "subscription",
     subscription_data: { metadata },
     // 团队订阅支持关联自动的优惠券
-    discounts: await availableCoupons({
-      userId: userId, // 不是 personnalUser, 而是当前用户
-      userProfileExtra: personalUserProfileExtra,
-    }),
+    discounts: discounts,
     // 团队订阅支持用户自己 REDEEM 优惠券
-    allow_promotion_codes: true,
+    // discounts 和 allow_promotion_codes 不能混用，暂时禁用，回头做个界面让用户自己选
+    allow_promotion_codes: discounts ? false : true,
     line_items: [
       {
         // price_data: priceData,
