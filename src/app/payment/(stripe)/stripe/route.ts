@@ -7,6 +7,7 @@ import {
 } from "@/app/payment/(stripe)/create";
 import { stripeSessionCreatePayloadSchema } from "@/app/payment/(stripe)/types";
 import { ProductName } from "@/app/payment/data";
+import { rootLogger } from "@/lib/logging";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -16,9 +17,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const userId = session.user.id;
-
   // Block AWS Marketplace users from purchasing
   if (session.user.email.endsWith(AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN)) {
+    rootLogger.error({
+      msg: `AWS Marketplace user attempted to purchase a subscription`,
+      user: session.user.id,
+    });
     return NextResponse.json(
       { error: "AWS Marketplace users cannot purchase subscriptions" },
       { status: 403 },
@@ -28,6 +32,11 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const parseResult = stripeSessionCreatePayloadSchema.safeParse(Object.fromEntries(formData));
     if (!parseResult.success) {
+      rootLogger.error({
+        msg: `Failed to parse Stripe session creation payload`,
+        user: session.user.id,
+        payload: Object.fromEntries(formData),
+      });
       return NextResponse.json(
         { errors: parseResult.error.errors.map((error) => error.message) },
         { status: 400 },
@@ -55,10 +64,16 @@ export async function POST(req: Request) {
         quantity,
       });
     } else {
+      rootLogger.error({ msg: `Invalid product name`, user: session.user.id, productName });
       return NextResponse.json({ error: "Invalid product name" }, { status: 400 });
     }
     return NextResponse.redirect(sessionResponse.sessionUrl, 303);
   } catch (error) {
+    rootLogger.error({
+      msg: `Failed to create Stripe session`,
+      user: session.user.id,
+      error,
+    });
     return NextResponse.json(
       { error: (error as Error).message },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
