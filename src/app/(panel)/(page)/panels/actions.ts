@@ -1,7 +1,12 @@
 "use server";
 
+import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import { executeUniversalAgent } from "@/app/(universal)/agent";
+import { createUniversalUserChat } from "@/app/(universal)/universal/actions";
+import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { getLocale } from "next-intl/server";
 import type { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 
@@ -103,5 +108,51 @@ export async function deletePersonaPanel(
     await prisma.personaPanel.delete({ where: { id: panelId } });
 
     return { success: true, data: { id: panelId } };
+  });
+}
+
+/**
+ * Create a new Panel via Universal Agent.
+ * Creates a UserChat with a guiding user message, auto-executes the Agent,
+ * and returns the chat token for navigation.
+ */
+export async function createPanelViaAgent(): Promise<ServerActionResult<{ token: string }>> {
+  return withAuth(async (user) => {
+    const locale = await getLocale();
+    const content =
+      locale === "zh-CN"
+        ? "帮我创建一个 Persona Panel。先了解我需要什么样的 personas，然后搜索并推荐合适的人选。"
+        : "Help me create a Persona Panel. First understand what kind of personas I need, then search and recommend suitable candidates.";
+
+    const createResult = await createUniversalUserChat({
+      role: "user",
+      content,
+    });
+    if (!createResult.success) {
+      return { success: false, code: createResult.code, message: createResult.message };
+    }
+
+    const logger = rootLogger.child({
+      userChatId: createResult.data.id,
+      userChatToken: createResult.data.token,
+    });
+    const { statReport } = initGenericUserChatStatReporter({
+      userId: user.id,
+      userChatId: createResult.data.id,
+      logger,
+    });
+    await executeUniversalAgent({
+      userId: user.id,
+      userChat: {
+        id: createResult.data.id,
+        token: createResult.data.token,
+        extra: createResult.data.extra,
+      },
+      statReport,
+      logger,
+      locale,
+    });
+
+    return { success: true, data: { token: createResult.data.token } };
   });
 }

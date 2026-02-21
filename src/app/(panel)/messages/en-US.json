@@ -91,6 +91,13 @@
       "summary": "Summary",
       "minutes": "Minutes"
     },
+    "CreatePanelTool": {
+      "title": "Select Personas",
+      "loadingPersonas": "Search and add personas below",
+      "addMore": "Add Personas",
+      "confirm": "Confirm ({count})",
+      "personaCount": "{count, plural, =1 {1 persona selected} other {# personas selected}}"
+    },
     "InterviewsPage": {
       "title": "Interviews",
       "completedOf": "{completed} of {total} completed",

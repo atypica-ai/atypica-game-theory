@@ -91,6 +91,13 @@
       "summary": "总结",
       "minutes": "会议记录"
     },
+    "CreatePanelTool": {
+      "title": "选择 Personas",
+      "loadingPersonas": "搜索并添加 Personas",
+      "addMore": "添加 Persona",
+      "confirm": "确认（{count}）",
+      "personaCount": "已选择 {count} 个 Persona"
+    },
     "InterviewsPage": {
       "title": "访谈",
       "completedOf": "已完成 {completed}/{total}",

@@ -11,18 +11,26 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn, formatDate } from "@/lib/utils";
-import { ArrowRight, MessageCircle, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, Loader2, MessageCircle, Plus, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { deletePersonaPanel, fetchUserPersonaPanels, PersonaPanelWithDetails } from "./actions";
+import {
+  createPanelViaAgent,
+  deletePersonaPanel,
+  fetchUserPersonaPanels,
+  PersonaPanelWithDetails,
+} from "./actions";
 
 export function PersonaPanelsListClient() {
   const t = useTranslations("PersonaPanel");
   const locale = useLocale();
+  const router = useRouter();
   const [panels, setPanels] = useState<PersonaPanelWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
   const [deletingPanelId, setDeletingPanelId] = useState<number | null>(null);
   const [panelToDelete, setPanelToDelete] = useState<PersonaPanelWithDetails | null>(null);
 
@@ -68,6 +76,17 @@ export function PersonaPanelsListClient() {
     }
   }, [panelToDelete, t, loadPanels]);
 
+  const handleCreatePanel = useCallback(async () => {
+    setCreating(true);
+    const result = await createPanelViaAgent();
+    if (result.success) {
+      router.push(`/universal/${result.data.token}`);
+    } else {
+      toast.error(result.message ?? t("ListPage.loadingFailed"));
+      setCreating(false);
+    }
+  }, [router, t]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -90,12 +109,17 @@ export function PersonaPanelsListClient() {
           {panels.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* New Panel Card */}
-              <Link
-                href="/sage"
-                className="group border border-dashed border-border rounded-lg p-5 hover:border-green-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[150px]"
+              <button
+                onClick={handleCreatePanel}
+                disabled={creating}
+                className="group border border-dashed border-border rounded-lg p-5 hover:border-green-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[150px] disabled:opacity-50 disabled:pointer-events-none"
               >
                 <div className="size-10 rounded-full border border-border flex items-center justify-center group-hover:border-green-500/50 group-hover:bg-green-500/5 transition-all">
-                  <Plus className="size-5 text-muted-foreground" />
+                  {creating ? (
+                    <Loader2 className="size-5 text-muted-foreground animate-spin" />
+                  ) : (
+                    <Plus className="size-5 text-muted-foreground" />
+                  )}
                 </div>
                 <div className="text-sm text-center space-y-1">
                   <div className="font-medium">{t("ListPage.createNewPanel")}</div>
@@ -103,7 +127,7 @@ export function PersonaPanelsListClient() {
                     {t("ListPage.createNewPanelDescription")}
                   </div>
                 </div>
-              </Link>
+              </button>
 
               {/* Existing Panels */}
               {panels.map((panel) => (
@@ -188,10 +212,18 @@ export function PersonaPanelsListClient() {
                   {t("ListPage.createNewPanelDescription")}
                 </div>
               </div>
-              <Link href="/sage" className="mt-2 text-sm hover:underline flex items-center gap-1.5">
+              <button
+                onClick={handleCreatePanel}
+                disabled={creating}
+                className="mt-2 text-sm hover:underline flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {creating ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <ArrowRight className="size-3.5" />
+                )}
                 {t("ListPage.startDiscussion")}
-                <ArrowRight className="size-3.5" />
-              </Link>
+              </button>
             </div>
           )}
         </div>
