@@ -91,7 +91,7 @@ export async function createSubscriptionStripeSession({
     discounts: discounts,
     // 个人订阅支持用户自己 REDEEM 优惠券
     // discounts 和 allow_promotion_codes 不能混用，暂时禁用，回头做个界面让用户自己选
-    allow_promotion_codes: discounts ? false : true,
+    allow_promotion_codes: discounts ? undefined : true,
     line_items: [
       {
         // price_data: priceData,
@@ -305,7 +305,7 @@ export async function createTeamSubscriptionStripeSession({
     discounts: discounts,
     // 团队订阅支持用户自己 REDEEM 优惠券
     // discounts 和 allow_promotion_codes 不能混用，暂时禁用，回头做个界面让用户自己选
-    allow_promotion_codes: discounts ? false : true,
+    allow_promotion_codes: discounts ? undefined : true,
     line_items: [
       {
         // price_data: priceData,
