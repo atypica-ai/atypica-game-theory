@@ -15,15 +15,23 @@ import { authLogger, createPersonalUser, recordAndTrackLastLogin } from "./lib";
 const authOptions: NextAuthOptions = {
   logger: {
     error(code, metadata) {
-      const logger = code === "CLIENT_FETCH_ERROR" ? authLogger.warn : authLogger.error;
+      const log = (payload: { code: string; msg?: string }) => {
+        if (code === "CLIENT_FETCH_ERROR") {
+          authLogger.warn(payload);
+          return;
+        }
+        authLogger.error(payload);
+      };
       if (metadata instanceof Error) {
-        logger({ code, msg: metadata.message });
+        log({ code, msg: metadata.message });
+      } else if (!metadata) {
+        log({ code });
       } else {
-        const { error, ...rest } = metadata;
-        logger({
+        const { error, ...rest } = metadata as { error?: Error; [key: string]: unknown };
+        log({
           code,
           msg: JSON.stringify({
-            error: error.message,
+            ...(error ? { error: error.message } : {}),
             ...rest,
           }),
         });
