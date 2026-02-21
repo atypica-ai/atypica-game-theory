@@ -1,6 +1,6 @@
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
-import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { useOptionalStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
@@ -15,7 +15,8 @@ export const GenerateReportResultMessage = ({
     { state: "output-available" }
   >;
 }) => {
-  const { replay } = useStudyContext();
+  const studyContext = useOptionalStudyContext();
+
   const t = useTranslations("Components.GenerateReportResultMessage");
   const [report, setReport] = useState<{
     token: string;
@@ -48,7 +49,10 @@ export const GenerateReportResultMessage = ({
         target="_blank"
         dangerouslySetInnerHTML={{ __html: report.coverSvg }}
       ></Link> */}
-      <AnalystReportShareButton reportToken={report.token} download={!replay}>
+      <AnalystReportShareButton
+        reportToken={report.token}
+        download={studyContext && !studyContext.replay} // 没有 studyContext 的时候页禁用
+      >
         {/*<div
           className="block mb-4 w-[360px] h-[180px] [&>svg]:w-[360px] [&>svg]:h-[180px] cursor-pointer border border-input/50 rounded-md overflow-hidden"
           dangerouslySetInnerHTML={{ __html: report.coverSvg }}

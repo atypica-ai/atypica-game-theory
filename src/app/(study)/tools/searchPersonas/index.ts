@@ -8,6 +8,7 @@ import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries"
 import { tool } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
+import { PersonaTier } from "@/app/(persona)/types";
 import { TPersonaForStudy } from "../buildPersona/types";
 import {
   searchPersonasInputSchema,
@@ -129,7 +130,7 @@ async function searchPersonaIdsByMeili({
         })
       : await searchPersonasFromMeili({
           query: searchQuery,
-          tiers: [1, 2],
+          tiers: [PersonaTier.Tier1, PersonaTier.Tier2],
           locales: [locale],
           pageSize: 5,
         });

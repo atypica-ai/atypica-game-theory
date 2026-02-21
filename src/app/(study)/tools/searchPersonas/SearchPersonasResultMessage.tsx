@@ -1,4 +1,4 @@
-import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
+import { useOptionalStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ export const SearchPersonasResultMessage = ({
   >;
 }) => {
   const t = useTranslations("Components.SearchPersonasResultMessage");
-  const { setViewToolInvocation, setConsoleOpen } = useStudyContext();
+  const studyContext = useOptionalStudyContext();
   const { personas } = toolInvocation.output;
   if (!personas?.length) {
     return <div className="text-sm text-muted-foreground">No persona found</div>;
@@ -23,17 +23,19 @@ export const SearchPersonasResultMessage = ({
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-sm">
       <div className="font-medium mb-2 flex items-center gap-2">
         <div>🔍 {t("personasFound", { count: personas.length })}</div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="px-2 h-6 text-xs"
-          onClick={() => {
-            setViewToolInvocation(toolInvocation);
-            setConsoleOpen(true);
-          }}
-        >
-          {t("viewDetails")}
-        </Button>
+        {studyContext && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="px-2 h-6 text-xs"
+            onClick={() => {
+              studyContext.setViewToolInvocation(toolInvocation);
+              studyContext.setConsoleOpen(true);
+            }}
+          >
+            {t("viewDetails")}
+          </Button>
+        )}
       </div>
       <div className="space-y-1">
         {personas.map(({ personaId, name }) => (

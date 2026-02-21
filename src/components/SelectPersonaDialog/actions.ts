@@ -1,8 +1,10 @@
 "use server";
 import { createTextEmbedding } from "@/ai/embedding";
 import authOptions from "@/app/(auth)/authOptions";
+import { PersonaTier } from "@/app/(persona)/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Persona } from "@/prisma/client";
+import { PersonaWhereInput } from "@/prisma/models";
 import { prismaRO } from "@/prisma/prisma";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { getServerSession } from "next-auth";
@@ -33,15 +35,19 @@ export async function fetchPersonasWithMeili({
     forbidden();
   }
 
+  const userId = session.user.id;
   locale = locale || (await getLocale());
 
-  try {
+  let filterPersonaIds: number[] = [];
+  let totalCount = 0;
+  let totalPages = 0;
+  if (searchQuery) {
     // 统一使用 Meilisearch 搜索
     const searchResults = isPrivate
       ? // 搜索用户自己的 personas（所有 tier）
         await searchPersonasFromMeili({
           query: searchQuery,
-          userId: session.user.id,
+          userId: userId,
           locales: [locale],
           page,
           pageSize,
@@ -49,73 +55,92 @@ export async function fetchPersonasWithMeili({
       : // 搜索公开的 personas（tier 1, 2）
         await searchPersonasFromMeili({
           query: searchQuery,
-          tiers: [1, 2],
+          tiers: [PersonaTier.Tier1, PersonaTier.Tier2],
           locales: [locale],
           page,
           pageSize,
         });
 
+    totalCount = searchResults.totalHits;
+    totalPages = searchResults.totalPages;
     // Extract persona IDs from slugs
-    const personaIds = searchResults.hits
+    filterPersonaIds = searchResults.hits
       .map((hit) => {
         const match = hit.slug.match(/^persona-(\d+)$/);
         return match ? parseInt(match[1], 10) : 0;
       })
       .filter((id) => id > 0);
+  } else {
+    const where: PersonaWhereInput = {
+      locale: locale,
+      ...(isPrivate
+        ? { tier: { in: [PersonaTier.Tier3] }, personaImport: { userId: userId } }
+        : { tier: { in: [PersonaTier.Tier1, PersonaTier.Tier2] } }),
+    };
+    await Promise.all([
+      prismaRO.persona
+        .findMany({
+          where,
+          select: { id: true },
+          take: pageSize,
+          skip: (page - 1) * pageSize,
+        })
+        .then((personas) => {
+          filterPersonaIds = personas.map((persona) => persona.id);
+        }),
+      prismaRO.persona.count({ where }).then((count) => {
+        totalCount = count;
+        totalPages = Math.ceil(count / pageSize);
+      }),
+    ]);
+  }
 
-    if (personaIds.length === 0) {
-      return {
-        success: true,
-        data: [],
-        pagination: {
-          page,
-          pageSize,
-          totalCount: 0,
-          totalPages: 0,
-        },
-      };
-    }
-
-    // Query database for full persona data
-    const personas = await prismaRO.persona.findMany({
-      where: { id: { in: personaIds } },
-      select: {
-        id: true,
-        token: true,
-        name: true,
-        source: true,
-        prompt: true,
-        tags: true,
-        tier: true,
-      },
-    });
-
-    // Maintain Meilisearch order
-    const personaMap = new Map(personas.map((p) => [p.id, p]));
-    const orderedPersonas = personaIds
-      .map((id) => personaMap.get(id))
-      .filter(Boolean) as typeof personas;
-
+  if (filterPersonaIds.length === 0) {
     return {
       success: true,
-      data: orderedPersonas.map((persona) => ({
-        ...persona,
-        tags: persona.tags,
-      })),
+      data: [],
       pagination: {
         page,
         pageSize,
-        totalCount: searchResults.totalHits,
-        totalPages: searchResults.totalPages,
+        totalCount: 0,
+        totalPages: 0,
       },
     };
-  } catch (error) {
-    console.log(`Meilisearch search error: ${(error as Error).message}`);
-    return {
-      success: false,
-      message: "Persona search error",
-    };
   }
+
+  // Query database for full persona data
+  const personas = await prismaRO.persona.findMany({
+    where: { id: { in: filterPersonaIds } },
+    select: {
+      id: true,
+      token: true,
+      name: true,
+      source: true,
+      prompt: true,
+      tags: true,
+      tier: true,
+    },
+  });
+
+  // Maintain Meilisearch order
+  const personaMap = new Map(personas.map((p) => [p.id, p]));
+  const orderedPersonas = filterPersonaIds
+    .map((id) => personaMap.get(id))
+    .filter(Boolean) as typeof personas;
+
+  return {
+    success: true,
+    data: orderedPersonas.map((persona) => ({
+      ...persona,
+      tags: persona.tags,
+    })),
+    pagination: {
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
+    },
+  };
 }
 
 /**

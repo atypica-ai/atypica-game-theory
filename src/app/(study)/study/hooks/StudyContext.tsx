@@ -110,3 +110,7 @@ export function useStudyContext() {
   }
   return context;
 }
+
+export function useOptionalStudyContext() {
+  return useContext(StudyContext);
+}
