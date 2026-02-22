@@ -82,6 +82,7 @@ export async function fetchPersonasWithMeili({
         .findMany({
           where,
           select: { id: true },
+          orderBy: { id: "desc" },
           take: pageSize,
           skip: (page - 1) * pageSize,
         })

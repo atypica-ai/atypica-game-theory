@@ -77,7 +77,7 @@ export async function handleSearchPersonas(
           source: true,
           tags: true,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { id: "desc" },
         take: limit,
       });
       allPersonas = personas.map((p) => ({
