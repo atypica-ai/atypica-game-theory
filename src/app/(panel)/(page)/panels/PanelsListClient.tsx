@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -50,6 +51,7 @@ type WizardPhase = "input" | "running";
 export function PersonaPanelsListClient() {
   const t = useTranslations("PersonaPanel");
   const locale = useLocale();
+  const router = useRouter();
   const [panels, setPanels] = useState<PersonaPanelWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -63,6 +65,7 @@ export function PersonaPanelsListClient() {
   const [chatToken, setChatToken] = useState<string | null>(null);
   const [progress, setProgress] = useState<PanelCreationProgress | null>(null);
   const pollingRef = useRef(false);
+  const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
 
   const loadPanels = useCallback(async () => {
     setLoading(true);
@@ -124,6 +127,7 @@ export function PersonaPanelsListClient() {
   // Poll progress when wizard is running
   useEffect(() => {
     if (wizardPhase !== "running" || !chatToken) return;
+    if (progress?.status === "selectingPersonas") return; // pause polling while user selects
     pollingRef.current = true;
     let timeoutId: NodeJS.Timeout;
 
@@ -148,7 +152,7 @@ export function PersonaPanelsListClient() {
       pollingRef.current = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [wizardPhase, chatToken, loadPanels]);
+  }, [wizardPhase, chatToken, loadPanels, progress?.status]);
 
   // Submit tool result from persona selector
   const handleToolResult: TAddUniversalUIToolResult = useCallback(
@@ -160,7 +164,8 @@ export function PersonaPanelsListClient() {
         UniversalToolName.requestSelectPersonas,
         output as Record<string, unknown>,
       );
-      // Polling will detect the status change
+      // Optimistic transition — show saving immediately instead of waiting for next poll
+      setProgress((prev) => (prev ? { ...prev, status: "saving" } : { status: "saving" }));
     },
     [chatToken],
   );
@@ -171,6 +176,7 @@ export function PersonaPanelsListClient() {
     setChatToken(null);
     setProgress(null);
     setDescription("");
+    setAutoCloseCountdown(null);
     pollingRef.current = false;
   }, []);
 
@@ -178,21 +184,37 @@ export function PersonaPanelsListClient() {
   const handleDialogClose = useCallback(
     (open: boolean) => {
       if (creating) return;
-      // Allow closing during selectingPersonas/completed/error but not during searching/saving
-      if (
-        wizardPhase === "running" &&
-        progress &&
-        (progress.status === "searching" || progress.status === "saving")
-      ) {
-        return;
-      }
       if (!open) {
         setShowCreateDialog(false);
         resetWizard();
       }
     },
-    [creating, wizardPhase, progress, resetWizard],
+    [creating, resetWizard],
   );
+
+  // Auto-redirect countdown after completion
+  useEffect(() => {
+    if (progress?.status !== "completed" || !progress.panelId) return;
+    setAutoCloseCountdown(3);
+    const interval = setInterval(() => {
+      setAutoCloseCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [progress?.status, progress?.panelId]);
+
+  // Navigate when countdown reaches 0
+  useEffect(() => {
+    if (autoCloseCountdown !== 0 || !progress?.panelId) return;
+    setShowCreateDialog(false);
+    resetWizard();
+    router.push(`/panel/${progress.panelId}`);
+  }, [autoCloseCountdown, progress?.panelId, resetWizard, router]);
 
   if (loading) {
     return (
@@ -201,6 +223,37 @@ export function PersonaPanelsListClient() {
       </div>
     );
   }
+
+  // Step indicator for running phase
+  const STEPS = ["search", "select", "save", "done"] as const;
+  const getActiveStep = (status: string): number => {
+    if (status === "searching") return 0;
+    if (status === "selectingPersonas") return 1;
+    if (status === "saving") return 2;
+    if (status === "completed") return 3;
+    return 0;
+  };
+
+  const renderStepIndicator = (status: string) => {
+    const active = getActiveStep(status);
+    return (
+      <div className="flex gap-2 mb-4">
+        {STEPS.map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              "flex-1 h-px rounded-full transition-colors duration-300",
+              i < active
+                ? "bg-foreground/15"
+                : i === active
+                  ? "bg-foreground/8"
+                  : "bg-foreground/3",
+            )}
+          />
+        ))}
+      </div>
+    );
+  };
 
   // Render wizard dialog content based on phase and progress
   const renderWizardContent = () => {
@@ -249,13 +302,25 @@ export function PersonaPanelsListClient() {
     if (status === "searching") {
       return (
         <>
+          {renderStepIndicator(status)}
           <DialogHeader>
             <DialogTitle className="text-lg tracking-tight">
               {t("ListPage.createNewPanel")}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-8 gap-3">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center py-8 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="w-full max-w-xs space-y-2.5">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="h-2.5 rounded-full bg-muted animate-pulse"
+                  style={{
+                    animationDelay: `${i * 150}ms`,
+                    width: `${85 - i * 15}%`,
+                  }}
+                />
+              ))}
+            </div>
             <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.searching")}</p>
           </div>
         </>
@@ -265,12 +330,13 @@ export function PersonaPanelsListClient() {
     if (status === "selectingPersonas" && progress?.toolCallId) {
       return (
         <>
+          {renderStepIndicator(status)}
           <DialogHeader>
             <DialogTitle className="text-lg tracking-tight">
               {t("CreatePanelWizard.selectPersonas")}
             </DialogTitle>
           </DialogHeader>
-          <div className="mt-2">
+          <div className="mt-2 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
             <RequestSelectPersonasMessage
               toolInvocation={{
                 type: `tool-${UniversalToolName.requestSelectPersonas}`,
@@ -290,13 +356,14 @@ export function PersonaPanelsListClient() {
     if (status === "saving") {
       return (
         <>
+          {renderStepIndicator(status)}
           <DialogHeader>
             <DialogTitle className="text-lg tracking-tight">
               {t("ListPage.createNewPanel")}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-8 gap-3">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center py-8 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <Loader2 className="size-5 animate-spin text-primary/60" />
             <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
           </div>
         </>
@@ -306,20 +373,26 @@ export function PersonaPanelsListClient() {
     if (status === "completed") {
       return (
         <>
+          {renderStepIndicator(status)}
           <DialogHeader>
             <DialogTitle className="text-lg tracking-tight">
               {t("CreatePanelWizard.completed")}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-6 gap-4">
-            <CheckCircle2 className="size-10 text-green-500" />
+          <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="relative flex items-center justify-center">
+              <div className="absolute w-32 h-32 rounded-full bg-green-500 blur-[50px] opacity-20" />
+              <div className="relative flex items-center justify-center size-12 rounded-full bg-green-500/10">
+                <CheckCircle2 className="size-6 text-green-500" />
+              </div>
+            </div>
             {progress?.panelTitle && <p className="text-sm font-medium">{progress.panelTitle}</p>}
             {typeof progress?.personaCount === "number" && (
               <p className="text-xs text-muted-foreground">
                 {t("CreatePanelWizard.personaCount", { count: progress.personaCount })}
               </p>
             )}
-            <div className="flex gap-2 mt-2">
+            <div className="flex flex-col items-center gap-2 mt-2">
               {progress?.panelId && (
                 <Button asChild size="sm" className="gap-1.5">
                   <Link href={`/panel/${progress.panelId}`}>
@@ -327,6 +400,11 @@ export function PersonaPanelsListClient() {
                     {t("CreatePanelWizard.viewPanel")}
                   </Link>
                 </Button>
+              )}
+              {autoCloseCountdown !== null && autoCloseCountdown > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t("CreatePanelWizard.redirecting", { seconds: autoCloseCountdown })}
+                </p>
               )}
             </div>
           </div>
@@ -342,8 +420,10 @@ export function PersonaPanelsListClient() {
               {t("CreatePanelWizard.error")}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-6 gap-4">
-            <AlertCircle className="size-10 text-destructive" />
+          <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center justify-center size-12 rounded-full bg-destructive/10">
+              <AlertCircle className="size-6 text-destructive" />
+            </div>
             {progress?.errorMessage && (
               <p className="text-xs text-muted-foreground text-center max-w-sm">
                 {progress.errorMessage}
@@ -403,45 +483,70 @@ export function PersonaPanelsListClient() {
                   className="group relative border border-border rounded-lg hover:border-foreground/20 transition-all duration-300"
                 >
                   <Link href={`/panel/${panel.id}`} className="block p-4">
-                    <div className="flex flex-col gap-2.5">
-                      {/* Title */}
-                      <div className="text-sm font-medium leading-snug line-clamp-2 min-h-10">
-                        {panel.title || t("panelId", { id: panel.id })}
+                    <div className="flex flex-col gap-3">
+                      {/* Title + date */}
+                      <div className="space-y-1 pr-6">
+                        <div className="text-sm font-medium leading-snug">
+                          {panel.title || t("panelId", { id: panel.id })}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDate(panel.createdAt, locale)}
+                        </div>
                       </div>
 
                       {/* Instruction */}
                       {panel.instruction && (
-                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                        <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-3">
                           {panel.instruction}
                         </p>
                       )}
 
-                      {/* Meta */}
-                      <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                        <span>{panel.personas.length} personas</span>
-                        <span>·</span>
-                        <span>{formatDate(panel.createdAt, locale)}</span>
-                      </div>
-
                       {/* Personas preview */}
                       {panel.personas.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          {panel.personas.slice(0, 3).map((persona, i) => (
-                            <span key={i} className="text-xs text-muted-foreground/70">
-                              {persona.name}
-                            </span>
+                        <div className="space-y-1.5 pt-1 border-t border-border/50">
+                          {panel.personas.slice(0, 3).map((persona) => (
+                            <div key={persona.id} className="flex items-baseline gap-2 min-w-0">
+                              <span className="text-xs font-medium shrink-0">
+                                {persona.name}
+                              </span>
+                              {Array.isArray(persona.tags) && persona.tags.length > 0 && (
+                                <span className="text-[11px] text-muted-foreground/60 truncate">
+                                  {(persona.tags as string[]).slice(0, 2).map((t) => `#${t}`).join(" ")}
+                                </span>
+                              )}
+                            </div>
                           ))}
                           {panel.personas.length > 3 && (
                             <span className="text-xs text-muted-foreground/50">
-                              +{panel.personas.length - 3}
+                              {t("ListPage.andMore", { count: panel.personas.length - 3 })}
                             </span>
                           )}
                         </div>
                       )}
 
-                      {/* Arrow */}
-                      <div className="flex justify-end mt-auto">
-                        <ArrowRight className="size-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                      {/* Footer: usage stats + arrow */}
+                      <div className="flex items-center justify-between pt-1">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
+                          <span>
+                            {t("personaCount", { count: panel.personas.length })}
+                          </span>
+                          {(panel.usageCount.discussions > 0 || panel.usageCount.interviews > 0) && (
+                            <>
+                              <span>·</span>
+                              <span>
+                                {[
+                                  panel.usageCount.discussions > 0 &&
+                                    t("discussions", { count: panel.usageCount.discussions }),
+                                  panel.usageCount.interviews > 0 &&
+                                    t("interviews", { count: panel.usageCount.interviews }),
+                                ]
+                                  .filter(Boolean)
+                                  .join("、")}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <ArrowRight className="size-3.5 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
                       </div>
                     </div>
                   </Link>

@@ -120,6 +120,33 @@ export async function fetchResearchProjectsByPanelId(
   });
 }
 
+export async function updatePanelPersonas(
+  panelId: number,
+  personaIds: number[],
+): Promise<ServerActionResult<{ personaIds: number[] }>> {
+  return withAuth(async (user) => {
+    const panel = await prisma.personaPanel.findUnique({
+      where: { id: panelId, userId: user.id },
+      select: { id: true },
+    });
+
+    if (!panel) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "PersonaPanel not found or you don't have permission to update it",
+      };
+    }
+
+    const updated = await prisma.personaPanel.update({
+      where: { id: panelId, userId: user.id },
+      data: { personaIds },
+    });
+
+    return { success: true, data: { personaIds: updated.personaIds } };
+  });
+}
+
 export async function createUniversalAgentFromPanel(
   panelId: number,
   content: string,

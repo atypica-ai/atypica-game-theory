@@ -6,9 +6,8 @@ import {
   UniversalToolName,
 } from "@/app/(universal)/tools/types";
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { CheckIcon, Loader2Icon, PlusIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -98,66 +97,63 @@ export function RequestSelectPersonasMessage({
   // Input available — interactive selector
   return (
     <>
-      <div className="rounded-lg border border-border overflow-hidden">
-        <div className="px-4 py-3 border-b border-border bg-muted/30">
-          <div className="text-sm font-medium">{t("title")}</div>
-        </div>
-
-        <div className="p-4 space-y-3">
-          {personas.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {personas.map((persona) => (
-                <div
-                  key={persona.id}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md",
-                    "border border-border bg-background text-sm",
-                  )}
-                >
-                  <span className="truncate max-w-[150px]">{persona.name}</span>
+      <div className="space-y-3">
+        {personas.length > 0 ? (
+          <div className="space-y-1 max-h-[320px] overflow-y-auto scrollbar-thin">
+            {personas.map((persona) => (
+              <div
+                key={persona.id}
+                className="group flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors"
+              >
+                <HippyGhostAvatar seed={persona.id} className="size-6 shrink-0" />
+                <div className="flex-1 min-w-0 flex items-baseline gap-2">
+                  <span className="text-sm font-medium truncate">{persona.name}</span>
                   {persona.tags?.length > 0 && (
-                    <Badge variant="outline" className="text-[10px] px-1 py-0">
-                      {persona.tags[0]}
-                    </Badge>
+                    <span className="text-[11px] text-muted-foreground/60 truncate shrink-0">
+                      {persona.tags
+                        .slice(0, 2)
+                        .map((tag) => `#${tag}`)
+                        .join(" ")}
+                    </span>
                   )}
-                  <button
-                    onClick={() => removePersona(persona.id)}
-                    className="ml-0.5 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <XIcon className="size-3" />
-                  </button>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">{t("loadingPersonas")}</div>
-          )}
-
-          <div className="flex items-center gap-2 pt-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectDialogOpen(true)}
-              className="gap-1.5"
-            >
-              <PlusIcon className="size-3.5" />
-              {t("addMore")}
-            </Button>
-            <div className="flex-1" />
-            <Button
-              size="sm"
-              onClick={handleConfirm}
-              disabled={personas.length === 0 || submitting}
-              className="gap-1.5"
-            >
-              {submitting ? (
-                <Loader2Icon className="size-3.5 animate-spin" />
-              ) : (
-                <CheckIcon className="size-3.5" />
-              )}
-              {t("confirm", { count: personas.length })}
-            </Button>
+                <button
+                  onClick={() => removePersona(persona.id)}
+                  className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-all"
+                >
+                  <XIcon className="size-3" />
+                </button>
+              </div>
+            ))}
           </div>
+        ) : (
+          <div className="text-sm text-muted-foreground py-2">{t("loadingPersonas")}</div>
+        )}
+
+        <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectDialogOpen(true)}
+            className="gap-1.5 text-muted-foreground"
+          >
+            <PlusIcon className="size-3.5" />
+            {t("addMore")}
+          </Button>
+          <div className="flex-1" />
+          <Button
+            size="sm"
+            onClick={handleConfirm}
+            disabled={personas.length === 0 || submitting}
+            className="gap-1.5"
+          >
+            {submitting ? (
+              <Loader2Icon className="size-3.5 animate-spin" />
+            ) : (
+              <CheckIcon className="size-3.5" />
+            )}
+            {t("confirm", { count: personas.length })}
+          </Button>
         </div>
       </div>
 

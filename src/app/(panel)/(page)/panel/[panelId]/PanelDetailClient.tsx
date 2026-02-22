@@ -1,5 +1,8 @@
 "use client";
+import { fetchPersonasByTokens } from "@/app/(panel)/tools/requestSelectPersonas/actions";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FitToViewport } from "@/components/layout/FitToViewport";
+import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,17 +16,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import { PersonaExtra } from "@/prisma/client";
-import { ArrowRight, ExternalLink, MessageCircle, Mic, Plus, Users } from "lucide-react";
+import { ArrowRight, ExternalLink, MessageCircle, Mic, Plus, Users, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import {
   createUniversalAgentFromPanel,
   fetchPersonaPanelById,
   PersonaPanelWithDetails,
   ResearchProject,
+  updatePanelPersonas,
 } from "./actions";
 
 type ProjectType = "userInterview" | "expertInterview" | "focusGroup";
@@ -85,6 +90,7 @@ export function PanelDetailClient({
   const [newProjectContent, setNewProjectContent] = useState("");
   const [selectedProjectType, setSelectedProjectType] = useState<ProjectType>("focusGroup");
   const [isPending, startTransition] = useTransition();
+  const [showAddPersona, setShowAddPersona] = useState(false);
 
   const handleCreateProject = () => {
     if (!newProjectContent.trim()) return;
@@ -142,6 +148,27 @@ Requirements:
         router.push(`/panel/project/${result.data.token}`);
       }
     });
+  };
+
+  const handleAddPersonas = async (tokens: string[]) => {
+    if (tokens.length === 0) return;
+    const result = await fetchPersonasByTokens(tokens);
+    if (!result.success) return;
+    const newIds = result.data.map((p) => p.id);
+    const merged = [...new Set([...panel.personaIds, ...newIds])];
+    const updateResult = await updatePanelPersonas(panel.id, merged);
+    if (updateResult.success) {
+      router.refresh();
+    }
+  };
+
+  const handleRemovePersona = async (personaId: number) => {
+    const filtered = panel.personaIds.filter((id) => id !== personaId);
+    const result = await updatePanelPersonas(panel.id, filtered);
+    if (result.success) {
+      toast.success(t("DetailPage.removeSuccess"));
+      router.refresh();
+    }
   };
 
   const getKindLabel = (kind: string) => {
@@ -236,64 +263,101 @@ Requirements:
         </div>
 
         {/* Personas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {panel.personas.map((persona) => {
-            const extra = persona.extra;
-            const summaryParts = buildAttributeSummary(extra);
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium tracking-tight text-muted-foreground uppercase">
+              {t("personas")}
+            </h2>
+            <button
+              onClick={() => setShowAddPersona(true)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Plus className="size-3.5" />
+              {t("DetailPage.addPersona")}
+            </button>
+          </div>
 
-            return (
-              <div
-                key={persona.id}
-                className={cn(
-                  "group border border-border rounded-lg p-4",
-                  "hover:border-green-500/30 transition-all duration-300 cursor-pointer",
-                  "flex flex-col gap-2.5",
-                )}
-                onClick={() => setSelectedPersona(persona)}
-              >
-                {/* Role badge */}
-                {extra?.role && (
-                  <Badge
-                    variant="outline"
-                    className="self-start text-xs px-2 py-0.5 font-normal text-muted-foreground border-muted-foreground/30"
-                  >
-                    {getRoleLabel(extra.role, t)}
-                  </Badge>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {panel.personas.map((persona) => {
+              const extra = persona.extra;
+              const summaryParts = buildAttributeSummary(extra);
 
-                {/* Name */}
-                <div className="text-sm font-medium leading-snug">{persona.name}</div>
-
-                {/* Attribute summary */}
-                {summaryParts.length > 0 && (
-                  <div className="text-xs text-muted-foreground leading-relaxed">
-                    {summaryParts.join(" · ")}
-                  </div>
-                )}
-
-                {/* Tags */}
-                {persona.tags && persona.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-auto">
-                    {persona.tags.slice(0, 3).map((tag, i) => (
-                      <span key={i} className="text-xs text-muted-foreground/70">
-                        #{tag}
-                      </span>
-                    ))}
-                    {persona.tags.length > 3 && (
-                      <span className="text-xs text-muted-foreground/50">
-                        +{persona.tags.length - 3}
-                      </span>
+              return (
+                <div
+                  key={persona.id}
+                  className={cn(
+                    "group relative border border-border rounded-lg p-4",
+                    "hover:border-green-500/30 transition-all duration-300 cursor-pointer",
+                    "flex flex-col gap-2.5",
+                  )}
+                  onClick={() => setSelectedPersona(persona)}
+                >
+                  {/* Remove button */}
+                  <div
+                    className={cn(
+                      "absolute top-3 right-3",
+                      "opacity-0 group-hover:opacity-100 transition-opacity",
                     )}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ConfirmDialog
+                      title={t("DetailPage.confirmRemovePersona")}
+                      description={t("DetailPage.removePersonaWarning", { name: persona.name })}
+                      onConfirm={() => handleRemovePersona(persona.id)}
+                      variant="destructive"
+                    >
+                      <button
+                        className="size-7 rounded-md flex items-center justify-center hover:bg-muted"
+                      >
+                        <X className="size-3.5 text-muted-foreground" />
+                      </button>
+                    </ConfirmDialog>
                   </div>
-                )}
 
-                {/* Arrow */}
-                <div className="flex justify-end">
-                  <ArrowRight className="size-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                  {/* Role badge */}
+                  {extra?.role && (
+                    <Badge
+                      variant="outline"
+                      className="self-start text-xs px-2 py-0.5 font-normal text-muted-foreground border-muted-foreground/30"
+                    >
+                      {getRoleLabel(extra.role, t)}
+                    </Badge>
+                  )}
+
+                  {/* Name */}
+                  <div className="text-sm font-medium leading-snug">{persona.name}</div>
+
+                  {/* Attribute summary */}
+                  {summaryParts.length > 0 && (
+                    <div className="text-xs text-muted-foreground leading-relaxed">
+                      {summaryParts.join(" · ")}
+                    </div>
+                  )}
+
+                  {/* Tags */}
+                  {persona.tags && persona.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-auto">
+                      {persona.tags.slice(0, 3).map((tag, i) => (
+                        <span key={i} className="text-xs text-muted-foreground/70">
+                          #{tag}
+                        </span>
+                      ))}
+                      {persona.tags.length > 3 && (
+                        <span className="text-xs text-muted-foreground/50">
+                          +{persona.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Arrow */}
+                  <div className="flex justify-end">
+                    <ArrowRight className="size-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -376,6 +440,13 @@ Requirements:
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Add Persona Dialog */}
+      <SelectPersonaDialog
+        open={showAddPersona}
+        onOpenChange={setShowAddPersona}
+        onSelect={handleAddPersonas}
+      />
 
       {/* New Project Dialog */}
       <Dialog

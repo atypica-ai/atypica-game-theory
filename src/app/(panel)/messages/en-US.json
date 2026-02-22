@@ -51,6 +51,10 @@
         "productRnD": "Product R&D",
         "default": "Research"
       },
+      "addPersona": "Add Persona",
+      "confirmRemovePersona": "Remove Persona",
+      "removePersonaWarning": "Remove \"{name}\" from this panel?",
+      "removeSuccess": "Persona removed",
       "running": "Running",
       "attributes": {
         "description": "Persona Description",
@@ -118,7 +122,8 @@
       "error": "Something went wrong",
       "retry": "Try Again",
       "viewPanel": "View Panel",
-      "personaCount": "{count, plural, =1 {1 persona} other {# personas}}"
+      "personaCount": "{count, plural, =1 {1 persona} other {# personas}}",
+      "redirecting": "Redirecting in {seconds}s..."
     },
     "InterviewsPage": {
       "title": "Interviews",

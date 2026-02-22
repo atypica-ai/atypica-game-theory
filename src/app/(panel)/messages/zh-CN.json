@@ -51,6 +51,10 @@
         "productRnD": "产品研发",
         "default": "研究"
       },
+      "addPersona": "添加人物",
+      "confirmRemovePersona": "移除人物",
+      "removePersonaWarning": "从 Panel 中移除「{name}」？",
+      "removeSuccess": "已移除",
       "running": "进行中",
       "attributes": {
         "description": "人物描述",
@@ -118,7 +122,8 @@
       "error": "出现错误",
       "retry": "重试",
       "viewPanel": "查看 Panel",
-      "personaCount": "{count} 个人物"
+      "personaCount": "{count} 个人物",
+      "redirecting": "{seconds}秒后自动跳转..."
     },
     "InterviewsPage": {
       "title": "访谈",
