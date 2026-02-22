@@ -18,6 +18,21 @@ export async function fetchPersonasByTokens(
     const personas = await prisma.persona.findMany({
       where: { token: { in: tokens } },
       select: { id: true, token: true, name: true, tags: true },
+      orderBy: { id: "desc" },
+    });
+    return { success: true, data: personas };
+  });
+}
+
+export async function fetchPersonasByIds(
+  ids: number[],
+): Promise<ServerActionResult<PanelPersonaSummary[]>> {
+  return withAuth(async () => {
+    if (ids.length === 0) return { success: true, data: [] };
+    const personas = await prisma.persona.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, token: true, name: true, tags: true },
+      orderBy: { id: "desc" },
     });
     return { success: true, data: personas };
   });

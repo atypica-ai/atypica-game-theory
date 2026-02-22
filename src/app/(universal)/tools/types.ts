@@ -2,6 +2,7 @@ import {
   RequestSelectPersonasToolInput,
   RequestSelectPersonasToolOutput,
 } from "@/app/(panel)/tools/requestSelectPersonas/types";
+import { UpdatePanelToolInput, UpdatePanelToolOutput } from "@/app/(panel)/tools/updatePanel/types";
 import {
   GeneratePodcastResult,
   GeneratePodcastToolInput,
@@ -72,6 +73,10 @@ export type UniversalUITools = {
   [UniversalToolName.generatePodcast]: {
     input: GeneratePodcastToolInput;
     output: GeneratePodcastResult;
+  };
+  [UniversalToolName.updatePanel]: {
+    input: UpdatePanelToolInput;
+    output: UpdatePanelToolOutput;
   };
 };
 

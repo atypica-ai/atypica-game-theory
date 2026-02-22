@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import { PersonaExtra } from "@/prisma/client";
-import { ArrowRight, ExternalLink, Plus } from "lucide-react";
+import { ArrowRight, ExternalLink, MessageCircle, Mic, Plus, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,6 +25,8 @@ import {
   PersonaPanelWithDetails,
   ResearchProject,
 } from "./actions";
+
+type ProjectType = "userInterview" | "expertInterview" | "focusGroup";
 
 type PanelData = ExtractServerActionData<typeof fetchPersonaPanelById>;
 
@@ -81,15 +83,62 @@ export function PanelDetailClient({
   >(null);
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectContent, setNewProjectContent] = useState("");
+  const [selectedProjectType, setSelectedProjectType] = useState<ProjectType>("focusGroup");
   const [isPending, startTransition] = useTransition();
 
   const handleCreateProject = () => {
     if (!newProjectContent.trim()) return;
     startTransition(async () => {
-      const result = await createUniversalAgentFromPanel(panel.id, newProjectContent.trim());
+      const question = newProjectContent.trim();
+      const instructions =
+        locale === "zh-CN"
+          ? {
+              userInterview: `请使用 interviewChat 工具对 Panel 中的人物进行一对一用户访谈。
+研究问题：${question}
+要求：
+- 对每个人物进行独立的深度访谈
+- 聚焦于消费者动机、使用场景和痛点
+- 访谈结束后使用 generateReport 生成研究报告`,
+              expertInterview: `请使用 interviewChat 工具对 Panel 中的专家人物进行一对一专家访谈。
+研究问题：${question}
+要求：
+- 对每位专家进行独立的专业咨询
+- 聚焦于行业趋势、专业见解和建议
+- 访谈结束后使用 generateReport 生成研究报告`,
+              focusGroup: `请使用 discussionChat 工具组织 Panel 中的人物进行焦点小组讨论。
+研究问题：${question}
+要求：
+- 使用焦点小组模式，让所有人物同时参与讨论
+- 聚焦于观点碰撞、共识发现和分歧点
+- 讨论结束后使用 generateReport 生成研究报告`,
+            }
+          : {
+              userInterview: `Use the interviewChat tool to conduct 1-on-1 user interviews with panel personas.
+Research question: ${question}
+Requirements:
+- Conduct independent in-depth interviews with each persona
+- Focus on consumer motivations, usage scenarios, and pain points
+- After interviews, use generateReport to create a research report`,
+              expertInterview: `Use the interviewChat tool to conduct 1-on-1 expert interviews with panel personas.
+Research question: ${question}
+Requirements:
+- Conduct independent expert consultations with each persona
+- Focus on industry trends, professional insights, and recommendations
+- After interviews, use generateReport to create a research report`,
+              focusGroup: `Use the discussionChat tool to facilitate a focus group discussion with panel personas.
+Research question: ${question}
+Requirements:
+- Use focus group mode with all personas participating simultaneously
+- Focus on opinion exchange, consensus discovery, and points of divergence
+- After the discussion, use generateReport to create a research report`,
+            };
+
+      const content = instructions[selectedProjectType];
+      const result = await createUniversalAgentFromPanel(panel.id, content);
       if (result.success) {
         setShowNewProject(false);
         setNewProjectContent("");
+        setSelectedProjectType("focusGroup");
         router.push(`/panel/project/${result.data.token}`);
       }
     });
@@ -329,7 +378,17 @@ export function PanelDetailClient({
       </Dialog>
 
       {/* New Project Dialog */}
-      <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
+      <Dialog
+        open={showNewProject}
+        onOpenChange={(v) => {
+          if (isPending) return;
+          setShowNewProject(v);
+          if (!v) {
+            setNewProjectContent("");
+            setSelectedProjectType("focusGroup");
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-lg tracking-tight">
@@ -340,6 +399,36 @@ export function PanelDetailClient({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-2">
+            {/* Project Type Selection */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-muted-foreground">
+                {t("DetailPage.selectProjectType")}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    { type: "userInterview" as const, icon: MessageCircle },
+                    { type: "expertInterview" as const, icon: Mic },
+                    { type: "focusGroup" as const, icon: Users },
+                  ] as const
+                ).map(({ type, icon: Icon }) => (
+                  <button
+                    key={type}
+                    onClick={() => setSelectedProjectType(type)}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 p-3 rounded-lg border text-xs transition-all",
+                      selectedProjectType === type
+                        ? "border-foreground/30 bg-muted/50"
+                        : "border-border hover:border-foreground/20",
+                    )}
+                  >
+                    <Icon className="size-4 text-muted-foreground" />
+                    <span className="font-medium">{t(`DetailPage.projectType.${type}`)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <Textarea
               value={newProjectContent}
               onChange={(e) => setNewProjectContent(e.target.value)}

@@ -1,6 +1,6 @@
 "use client";
-
 import { RequestSelectPersonasMessage } from "@/app/(panel)/tools/requestSelectPersonas/RequestSelectPersonasMessage";
+import { UpdatePanelResultMessage } from "@/app/(panel)/tools/updatePanel/UpdatePanelResultMessage";
 import { GeneratePodcastResultMessage } from "@/app/(study)/tools/generatePodcast/GeneratePodcastResultMessage";
 import { GenerateReportResultMessage } from "@/app/(study)/tools/generateReport/GenerateReportResultMessage";
 import { SearchPersonasResultMessage } from "@/app/(study)/tools/searchPersonas/SearchPersonasResultMessage";
@@ -43,6 +43,8 @@ export function UniversalToolUIPartDisplay({
       return <GenerateReportResultMessage toolInvocation={toolUIPart} />;
     case `tool-${UniversalToolName.generatePodcast}`:
       return <GeneratePodcastResultMessage toolInvocation={toolUIPart} />;
+    case `tool-${UniversalToolName.updatePanel}`:
+      return <UpdatePanelResultMessage toolInvocation={toolUIPart} />;
   }
 
   return null;

@@ -10,6 +10,10 @@
     "ListPage": {
       "createNewPanel": "Create New Panel",
       "createNewPanelDescription": "Start a new discussion to create a reusable persona panel",
+      "createDescription": "Describe what kind of personas you need for your panel",
+      "createPlaceholder": "e.g., I need tech-savvy Gen Z consumers interested in sustainable fashion",
+      "create": "Create",
+      "creating": "Creating...",
       "startDiscussion": "Start Discussion",
       "andMore": "+{count} more",
       "loadingFailed": "Failed to load persona panels",
@@ -32,6 +36,12 @@
       "newProjectPlaceholder": "e.g., What are the key purchasing factors for Gen Z consumers?",
       "creating": "Creating...",
       "create": "Start Research",
+      "selectProjectType": "Project Type",
+      "projectType": {
+        "userInterview": "User Interview",
+        "expertInterview": "Expert Interview",
+        "focusGroup": "Focus Group"
+      },
       "projectKind": {
         "study": "Study",
         "scout": "Scout",
@@ -96,7 +106,19 @@
       "loadingPersonas": "Search and add personas below",
       "addMore": "Add Personas",
       "confirm": "Confirm ({count})",
-      "personaCount": "{count, plural, =1 {1 persona selected} other {# personas selected}}"
+      "personaCount": "{count, plural, =1 {1 persona selected} other {# personas selected}}",
+      "panelUpdated": "Panel \"{title}\" created with {count, plural, =1 {1 persona} other {# personas}}",
+      "viewPanel": "View Panel"
+    },
+    "CreatePanelWizard": {
+      "searching": "Searching for matching personas...",
+      "selectPersonas": "Review and select personas for your panel",
+      "saving": "Creating your panel...",
+      "completed": "Panel created successfully!",
+      "error": "Something went wrong",
+      "retry": "Try Again",
+      "viewPanel": "View Panel",
+      "personaCount": "{count, plural, =1 {1 persona} other {# personas}}"
     },
     "InterviewsPage": {
       "title": "Interviews",

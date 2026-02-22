@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckIcon, Loader2Icon, PlusIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
-import { fetchPersonasByTokens, PanelPersonaSummary } from "./actions";
+import { useCallback, useEffect, useState } from "react";
+import { fetchPersonasByIds, fetchPersonasByTokens, PanelPersonaSummary } from "./actions";
 
 type RequestSelectPersonasToolUIPart = Extract<
   TUniversalMessageWithTool["parts"][number],
@@ -30,6 +30,24 @@ export function RequestSelectPersonasMessage({
   const [personas, setPersonas] = useState<PanelPersonaSummary[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [selectDialogOpen, setSelectDialogOpen] = useState(false);
+
+  // Pre-populate personas from input personaIds (if provided by searchPersonas)
+  useEffect(() => {
+    if (toolInvocation.state === "output-available") return;
+    const inputIds: number[] = (toolInvocation.input?.personaIds ?? []).filter(
+      (id): id is number => typeof id === "number",
+    );
+    if (inputIds.length === 0) return;
+    fetchPersonasByIds(inputIds).then((result) => {
+      if (result.success && result.data.length > 0) {
+        setPersonas((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id));
+          const newPersonas = result.data.filter((p) => !existingIds.has(p.id));
+          return prev.length === 0 ? result.data : [...prev, ...newPersonas];
+        });
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- only on mount
 
   const removePersona = useCallback((id: number) => {
     setPersonas((prev) => prev.filter((p) => p.id !== id));

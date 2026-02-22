@@ -10,6 +10,10 @@
     "ListPage": {
       "createNewPanel": "创建新 Panel",
       "createNewPanelDescription": "开始新讨论以创建可复用的 Panel",
+      "createDescription": "描述您需要什么样的人物组合",
+      "createPlaceholder": "例如：我需要对可持续时尚感兴趣的 Z 世代科技爱好者",
+      "create": "创建",
+      "creating": "创建中...",
       "startDiscussion": "开始讨论",
       "andMore": "还有 {count} 个",
       "loadingFailed": "加载 Panel 失败",
@@ -32,6 +36,12 @@
       "newProjectPlaceholder": "例如：Z世代消费者的关键购买因素是什么？",
       "creating": "创建中...",
       "create": "开始研究",
+      "selectProjectType": "项目类型",
+      "projectType": {
+        "userInterview": "用户访谈",
+        "expertInterview": "专家访谈",
+        "focusGroup": "焦点小组"
+      },
       "projectKind": {
         "study": "研究",
         "scout": "观察",
@@ -96,7 +106,19 @@
       "loadingPersonas": "搜索并添加 Personas",
       "addMore": "添加 Persona",
       "confirm": "确认（{count}）",
-      "personaCount": "已选择 {count} 个 Persona"
+      "personaCount": "已选择 {count} 个 Persona",
+      "panelUpdated": "Panel「{title}」已创建，包含 {count} 个人物",
+      "viewPanel": "查看 Panel"
+    },
+    "CreatePanelWizard": {
+      "searching": "正在搜索匹配的人物...",
+      "selectPersonas": "查看并选择 Panel 中的人物",
+      "saving": "正在创建 Panel...",
+      "completed": "Panel 创建成功！",
+      "error": "出现错误",
+      "retry": "重试",
+      "viewPanel": "查看 Panel",
+      "personaCount": "{count} 个人物"
     },
     "InterviewsPage": {
       "title": "访谈",

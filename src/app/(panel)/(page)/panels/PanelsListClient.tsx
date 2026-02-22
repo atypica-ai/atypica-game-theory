@@ -1,5 +1,6 @@
 "use client";
-
+import { RequestSelectPersonasMessage } from "@/app/(panel)/tools/requestSelectPersonas/RequestSelectPersonasMessage";
+import { TAddUniversalUIToolResult, UniversalToolName } from "@/app/(universal)/tools/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,29 +11,58 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { cn, formatDate } from "@/lib/utils";
-import { ArrowRight, Loader2, MessageCircle, Plus, Trash2 } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  MessageCircle,
+  Plus,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   createPanelViaAgent,
   deletePersonaPanel,
+  fetchPanelCreationProgress,
   fetchUserPersonaPanels,
+  PanelCreationProgress,
   PersonaPanelWithDetails,
+  submitPanelCreationToolResult,
 } from "./actions";
+
+type WizardPhase = "input" | "running";
 
 export function PersonaPanelsListClient() {
   const t = useTranslations("PersonaPanel");
   const locale = useLocale();
-  const router = useRouter();
   const [panels, setPanels] = useState<PersonaPanelWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [description, setDescription] = useState("");
   const [deletingPanelId, setDeletingPanelId] = useState<number | null>(null);
   const [panelToDelete, setPanelToDelete] = useState<PersonaPanelWithDetails | null>(null);
+
+  // Wizard state
+  const [wizardPhase, setWizardPhase] = useState<WizardPhase>("input");
+  const [chatToken, setChatToken] = useState<string | null>(null);
+  const [progress, setProgress] = useState<PanelCreationProgress | null>(null);
+  const pollingRef = useRef(false);
 
   const loadPanels = useCallback(async () => {
     setLoading(true);
@@ -76,16 +106,93 @@ export function PersonaPanelsListClient() {
     }
   }, [panelToDelete, t, loadPanels]);
 
+  // Submit description → create agent chat
   const handleCreatePanel = useCallback(async () => {
+    if (!description.trim()) return;
     setCreating(true);
-    const result = await createPanelViaAgent();
+    const result = await createPanelViaAgent(description.trim());
     if (result.success) {
-      router.push(`/universal/${result.data.token}`);
+      setChatToken(result.data.token);
+      setWizardPhase("running");
+      setCreating(false);
     } else {
       toast.error(result.message ?? t("ListPage.loadingFailed"));
       setCreating(false);
     }
-  }, [router, t]);
+  }, [description, t]);
+
+  // Poll progress when wizard is running
+  useEffect(() => {
+    if (wizardPhase !== "running" || !chatToken) return;
+    pollingRef.current = true;
+    let timeoutId: NodeJS.Timeout;
+
+    const poll = async () => {
+      if (!pollingRef.current) return;
+      const result = await fetchPanelCreationProgress(chatToken);
+      if (!pollingRef.current) return;
+
+      if (result.success) {
+        setProgress(result.data);
+        if (result.data.status === "completed") {
+          await loadPanels();
+          return; // stop polling
+        }
+        if (result.data.status === "error") return; // stop polling
+      }
+      timeoutId = setTimeout(poll, 3000);
+    };
+
+    poll();
+    return () => {
+      pollingRef.current = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [wizardPhase, chatToken, loadPanels]);
+
+  // Submit tool result from persona selector
+  const handleToolResult: TAddUniversalUIToolResult = useCallback(
+    async ({ toolCallId, output }) => {
+      if (!chatToken) return;
+      await submitPanelCreationToolResult(
+        chatToken,
+        toolCallId,
+        UniversalToolName.requestSelectPersonas,
+        output as Record<string, unknown>,
+      );
+      // Polling will detect the status change
+    },
+    [chatToken],
+  );
+
+  // Reset wizard state
+  const resetWizard = useCallback(() => {
+    setWizardPhase("input");
+    setChatToken(null);
+    setProgress(null);
+    setDescription("");
+    pollingRef.current = false;
+  }, []);
+
+  // Handle dialog close
+  const handleDialogClose = useCallback(
+    (open: boolean) => {
+      if (creating) return;
+      // Allow closing during selectingPersonas/completed/error but not during searching/saving
+      if (
+        wizardPhase === "running" &&
+        progress &&
+        (progress.status === "searching" || progress.status === "saving")
+      ) {
+        return;
+      }
+      if (!open) {
+        setShowCreateDialog(false);
+        resetWizard();
+      }
+    },
+    [creating, wizardPhase, progress, resetWizard],
+  );
 
   if (loading) {
     return (
@@ -94,6 +201,171 @@ export function PersonaPanelsListClient() {
       </div>
     );
   }
+
+  // Render wizard dialog content based on phase and progress
+  const renderWizardContent = () => {
+    if (wizardPhase === "input") {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle className="text-lg tracking-tight">
+              {t("ListPage.createNewPanel")}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              {t("ListPage.createDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t("ListPage.createPlaceholder")}
+              className="min-h-[120px] text-sm resize-none"
+              autoFocus
+            />
+            <div className="flex justify-end">
+              <Button
+                onClick={handleCreatePanel}
+                disabled={!description.trim() || creating}
+                size="sm"
+                className="gap-1.5"
+              >
+                {creating ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="size-3.5" />
+                )}
+                {creating ? t("ListPage.creating") : t("ListPage.create")}
+              </Button>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    // Running phase — render based on progress status
+    const status = progress?.status ?? "searching";
+
+    if (status === "searching") {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle className="text-lg tracking-tight">
+              {t("ListPage.createNewPanel")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-8 gap-3">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.searching")}</p>
+          </div>
+        </>
+      );
+    }
+
+    if (status === "selectingPersonas" && progress?.toolCallId) {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle className="text-lg tracking-tight">
+              {t("CreatePanelWizard.selectPersonas")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-2">
+            <RequestSelectPersonasMessage
+              toolInvocation={{
+                type: `tool-${UniversalToolName.requestSelectPersonas}`,
+                toolCallId: progress.toolCallId,
+                state: "input-available",
+                input: {
+                  personaIds: progress.candidatePersonaIds ?? [],
+                },
+              }}
+              addToolResult={handleToolResult}
+            />
+          </div>
+        </>
+      );
+    }
+
+    if (status === "saving") {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle className="text-lg tracking-tight">
+              {t("ListPage.createNewPanel")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-8 gap-3">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
+          </div>
+        </>
+      );
+    }
+
+    if (status === "completed") {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle className="text-lg tracking-tight">
+              {t("CreatePanelWizard.completed")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-6 gap-4">
+            <CheckCircle2 className="size-10 text-green-500" />
+            {progress?.panelTitle && <p className="text-sm font-medium">{progress.panelTitle}</p>}
+            {typeof progress?.personaCount === "number" && (
+              <p className="text-xs text-muted-foreground">
+                {t("CreatePanelWizard.personaCount", { count: progress.personaCount })}
+              </p>
+            )}
+            <div className="flex gap-2 mt-2">
+              {progress?.panelId && (
+                <Button asChild size="sm" className="gap-1.5">
+                  <Link href={`/panel/${progress.panelId}`}>
+                    <ArrowRight className="size-3.5" />
+                    {t("CreatePanelWizard.viewPanel")}
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    if (status === "error") {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle className="text-lg tracking-tight">
+              {t("CreatePanelWizard.error")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-6 gap-4">
+            <AlertCircle className="size-10 text-destructive" />
+            {progress?.errorMessage && (
+              <p className="text-xs text-muted-foreground text-center max-w-sm">
+                {progress.errorMessage}
+              </p>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                resetWizard();
+              }}
+            >
+              {t("CreatePanelWizard.retry")}
+            </Button>
+          </div>
+        </>
+      );
+    }
+
+    // Fallback — should not happen
+    return null;
+  };
 
   return (
     <>
@@ -110,16 +382,11 @@ export function PersonaPanelsListClient() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* New Panel Card */}
               <button
-                onClick={handleCreatePanel}
-                disabled={creating}
-                className="group border border-dashed border-border rounded-lg p-5 hover:border-green-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[150px] disabled:opacity-50 disabled:pointer-events-none"
+                onClick={() => setShowCreateDialog(true)}
+                className="group border border-dashed border-border rounded-lg p-5 hover:border-green-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[150px]"
               >
                 <div className="size-10 rounded-full border border-border flex items-center justify-center group-hover:border-green-500/50 group-hover:bg-green-500/5 transition-all">
-                  {creating ? (
-                    <Loader2 className="size-5 text-muted-foreground animate-spin" />
-                  ) : (
-                    <Plus className="size-5 text-muted-foreground" />
-                  )}
+                  <Plus className="size-5 text-muted-foreground" />
                 </div>
                 <div className="text-sm text-center space-y-1">
                   <div className="font-medium">{t("ListPage.createNewPanel")}</div>
@@ -213,21 +480,21 @@ export function PersonaPanelsListClient() {
                 </div>
               </div>
               <button
-                onClick={handleCreatePanel}
-                disabled={creating}
-                className="mt-2 text-sm hover:underline flex items-center gap-1.5 disabled:opacity-50"
+                onClick={() => setShowCreateDialog(true)}
+                className="mt-2 text-sm hover:underline flex items-center gap-1.5"
               >
-                {creating ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <ArrowRight className="size-3.5" />
-                )}
+                <ArrowRight className="size-3.5" />
                 {t("ListPage.startDiscussion")}
               </button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Create Panel Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={handleDialogClose}>
+        <DialogContent className="sm:max-w-lg">{renderWizardContent()}</DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!panelToDelete} onOpenChange={() => setPanelToDelete(null)}>
