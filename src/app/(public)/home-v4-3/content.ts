@@ -67,9 +67,9 @@ export const CHAPTERS: Chapter[] = [
     number: "05",
     navLabel: "Data Assets",
     kicker: "ASSETS",
-    title: "Virtual Sample Infrastructure",
+    title: "Assets of the Subjective World",
     body: [
-      "Three types of AI-powered research assets, built on real behavioral data and social science models.",
+      "Callable, verifiable, always consistent \u2014 built on real behavioral data and social science models.",
     ],
   },
   {
@@ -241,96 +241,142 @@ export const DATA_ASSETS = [
   {
     key: "persona",
     title: "AI Persona",
-    description:
-      "Virtual consumers built from real behavioral data and social science models. Callable, verifiable, always consistent.",
-    stats: [
-      { label: "AI Samples", value: "1,000,000+" },
-      { label: "Human Baselines", value: "70,000+" },
-      { label: "Accuracy", value: "85%" },
-      { label: "Tier System", value: "0\u20133" },
+    subtitle: "Virtual Consumer Library",
+    description: "Callable, verifiable virtual consumers built from real behavioral data. Each maintains consistent personality traits, cognitive biases, and decision frameworks.",
+    heroStat: { value: "1M+", label: "AI Samples" },
+    details: [
+      { value: "70,000+", label: "Human baselines" },
+      { value: "85%", label: "Behavioral accuracy" },
+      { value: "Tier 0\u20133", label: "Fidelity system" },
     ],
+    note: "Enterprises can upload their own interview data to build private persona libraries.",
     accent: "#1bff1b",
   },
   {
     key: "sage",
     title: "AI Sage",
-    description:
-      "Domain experts with two-layer memory architecture. Core knowledge stays stable; working knowledge grows through every consultation.",
-    stats: [
-      { label: "Industries", value: "Healthcare, Finance, CPG, Tech" },
-      { label: "Cost Reduction", value: "~85%" },
-      { label: "Memory", value: "Core + Working" },
-      { label: "Knowledge Gaps", value: "Auto-detected" },
+    subtitle: "Virtual Expert Library",
+    description: "Domain experts with two-layer memory \u2014 core knowledge stays stable, working knowledge grows through every consultation. Auto-detects knowledge gaps and fills them.",
+    heroStat: { value: "85%", label: "Cost Reduction" },
+    details: [
+      { value: "4+", label: "Industry verticals" },
+      { value: "Core + Working", label: "Memory architecture" },
+      { value: "PDF, Audio, URL", label: "Import sources" },
     ],
+    note: "Compared to traditional expert networks ($500\u20132,000/hr), cost reduced by ~85%.",
     accent: "#93c5fd",
   },
   {
     key: "panel",
     title: "AI Panel",
-    description:
-      "Next-gen research panels combining AI samples with real respondents. Simulate, compare, and scale.",
-    stats: [
-      { label: "Panel Size", value: "3\u20138 personas" },
-      { label: "Modes", value: "Focus, Debate, Roundtable" },
-      { label: "Calibration", value: "Real respondents" },
-      { label: "Output", value: "Summary + Minutes" },
+    subtitle: "Next-Gen Research Panel",
+    description: "AI virtual samples and real respondents together \u2014 real respondents provide baseline calibration, AI provides scale. No traditional panel company can offer this.",
+    heroStat: { value: "3\u20138", label: "Personas per Panel" },
+    details: [
+      { value: "3 modes", label: "Focus \u00b7 Debate \u00b7 Roundtable" },
+      { value: "Real + AI", label: "Calibration source" },
+      { value: "Auto", label: "Summary + Minutes" },
     ],
+    note: "Real-time scalable samples that combine human ground truth with AI amplification.",
     accent: "#f59e0b",
   },
 ] as const;
 
 /* ─── 06: Use Cases ─── */
 
-export const USE_CASE_TABLE = [
+export type Scenario = { name: string; desc: string };
+
+export const USE_CASE_CATEGORIES = [
   {
-    scenario: "Consumer Insight & U&A",
-    tools: "Scout + Interview + Persona",
-    agent: "Study Agent",
+    key: "enterprise" as const,
+    label: "Enterprise Services",
+    color: "#16a34a",
+    items: [
+      { name: "Consumer Insight & U&A", desc: "Segmentation, persona, JTBD, need-state discovery, qualitative interviews + insight reports" },
+      { name: "Concept Testing & Innovation", desc: "New product concept tests, packaging / naming / value prop validation, innovation opportunity maps" },
+      { name: "Brand Strategy & Positioning", desc: "Brand diagnostics, positioning & narrative, mental maps, communication propositions, audience definition" },
+      { name: "Attribution Analysis", desc: "Drivers analysis, content / product / experience impact on conversion, decision-path decomposition" },
+      { name: "Pricing & Business Model", desc: "Pricing model design (subscription / usage / tiered), WTP research, price architecture & upgrade paths" },
+      { name: "Social Listening & Trends", desc: "Sentiment monitoring, trend reports, consumer voice synthesis across 5 platforms" },
+      { name: "User Experience & VOC", desc: "VOC systems, customer journey & pain-point mapping, experience improvement roadmaps" },
+      { name: "Sales Training & Simulation", desc: "Simulate target buyers for sales training, role-play exercises with AI personas" },
+    ],
   },
-  { scenario: "Concept Testing", tools: "PersonaImport + Interview + Panel", agent: "Study Agent" },
-  { scenario: "Brand Strategy", tools: "Social Trends + Report", agent: "Product R&D" },
   {
-    scenario: "Attribution Analysis",
-    tools: "Interview + Reasoning + Report",
-    agent: "Study Agent",
+    key: "academic" as const,
+    label: "Academic Research",
+    color: "#d97706",
+    items: [
+      { name: "Social Simulation", desc: "Large-scale population modeling, policy impact testing through virtual communities" },
+      { name: "Ethnography & Persona", desc: "AI-augmented ethnographic studies, digital persona construction from interview data" },
+      { name: "AI-Augmented Interviews", desc: "Scalable qualitative research — 1-on-1 deep interviews powered by AI interviewer agents" },
+    ],
   },
-  { scenario: "Pricing Strategy", tools: "Interview (WTP) + Panel", agent: "Study Agent" },
-  { scenario: "Social Listening", tools: "Scout (5 platforms) + Trends", agent: "Product R&D" },
-  { scenario: "User Experience & VOC", tools: "Scout + Interview + Report", agent: "Study Agent" },
-  { scenario: "Sales Training", tools: "PersonaImport + Persona Chat", agent: "Direct Use" },
-  { scenario: "Academic Research", tools: "Scout + Persona + Panel", agent: "Study Agent" },
-  { scenario: "Market Intelligence", tools: "MCP + Trends + Reasoning", agent: "Fast Insight" },
-] as const;
+  {
+    key: "prediction" as const,
+    label: "Investment & Prediction",
+    color: "#8b5cf6",
+    items: [
+      { name: "Event Outcome Prediction", desc: "Macro / political / tech / market event forecasting via multi-perspective simulation" },
+      { name: "Multi-Perspective Consensus", desc: "Persona + expert viewpoint simulation, consensus generation across diverse perspectives" },
+      { name: "Continuous Signal Tracking", desc: "Signal tape — ongoing sentiment monitoring with real-time judgment updates" },
+      { name: "Post-Prediction Validation", desc: "Retrospective accuracy analysis, model calibration, prediction quality scoring" },
+    ],
+  },
+];
 
 export const CUSTOMER_STORIES = [
   {
     key: "food",
+    category: "enterprise" as const,
     client: "Global Food Brand",
-    challenge: "Needed consumer feedback on 20+ product concepts across 5 markets in 2 weeks.",
-    solution:
-      "AI Persona interviews + Panel discussions replaced 3 months of traditional research.",
-    result: "80% cost reduction, 6x faster, concept selected outperformed control by 23%.",
+    quote: "We went from months of concept testing to days \u2014 and the AI-selected concept outperformed our control by 23%.",
+    body: "Regular AI consumer feedback collection, validated by real interviews. Co-created chocolate concepts with AI consumers for Lunar New Year, building a concept library filtered by preference, emotional resonance, and market potential.",
+    metrics: [
+      { label: "R&D Cycle", value: "Months \u2192 Days" },
+      { label: "Concepts", value: "6\u00d7 more" },
+      { label: "Testing Time", value: "\u201380%" },
+    ],
+    avatarPrompt: "Simple line illustration portrait of a female marketing director at a global food company, confident expression, minimal clean lines, 2 colors green and black, white background, no text, profile headshot only",
   },
   {
     key: "tools",
-    client: "Industrial Tools Manufacturer",
-    challenge: "Professional users too expensive and hard to recruit for product testing.",
-    solution: "Imported real interview data to create Tier 3 AI Personas for continuous testing.",
-    result: "Always-on virtual user panel, real-time feedback on CAD prototypes.",
+    category: "enterprise" as const,
+    client: "Power Tools Brand",
+    quote: "Professional users are expensive and hard to recruit. Now we have an always-on virtual panel that gives real-time feedback on our CAD prototypes.",
+    body: "Built Tier-3 AI Personas from real prosumer interview data. Product teams get instant professional user feedback on concepts, interfaces, and prototypes without recruitment overhead.",
+    metrics: [
+      { label: "Recruitment", value: "Zero" },
+      { label: "Feedback", value: "Real-time" },
+      { label: "Persona Tier", value: "Tier 3" },
+    ],
+    avatarPrompt: "Simple line illustration portrait of a male product engineer wearing safety goggles on forehead, focused expression, minimal clean lines, 2 colors blue and black, white background, no text, profile headshot only",
   },
   {
     key: "university",
+    category: "academic" as const,
     client: "University Research Team",
-    challenge: "20,000 household energy survey — traditional methods would take years.",
-    solution: "Scout observation + Persona generation + AI Panel for policy simulation.",
-    result: "Simulated policy responses across demographic segments in days.",
+    quote: "We simulated policy responses across 20,000 households in days \u2014 traditional methods would have taken years.",
+    body: "Interviewed core family members (couples and parents) via 1-on-1 sessions to create AI Personas, then assembled them into AI Panels. The team tested different policy measures for improving birth rates through virtual panel discussions.",
+    metrics: [
+      { label: "Households", value: "20,000" },
+      { label: "Method", value: "Interview \u2192 Panel" },
+      { label: "Speed", value: "Years \u2192 Days" },
+    ],
+    avatarPrompt: "Simple line illustration portrait of a female academic researcher with glasses, thoughtful expression, minimal clean lines, 2 colors amber and black, white background, no text, profile headshot only",
   },
   {
     key: "prediction",
-    client: "Prediction Market Platform",
-    challenge: "Needed sentiment model API for real-time event prediction.",
-    solution: "MCP integration — calling Atypica\u2019s subjective world model via API.",
-    result: "Continuous sentiment signals feeding prediction algorithms.",
+    category: "prediction" as const,
+    client: "IOIIO.BET",
+    quote: "We call the Subjective World Model via MCP to analyze sentiment on Polymarket events \u2014 and place bets based on what the model sees.",
+    body: "An independent developer integrated Atypica\u2019s subjective world model through MCP protocol, feeding continuous sentiment signals into prediction algorithms for real-time event forecasting.",
+    metrics: [
+      { label: "Integration", value: "MCP API" },
+      { label: "Signal", value: "Continuous" },
+      { label: "Use", value: "Polymarket" },
+    ],
+    avatarPrompt: "Simple line illustration portrait of a young male indie developer with headphones around neck, sharp gaze, minimal clean lines, 2 colors purple and black, white background, no text, profile headshot only",
   },
 ] as const;
 

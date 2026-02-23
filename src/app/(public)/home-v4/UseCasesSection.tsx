@@ -78,7 +78,7 @@ export function UseCasesSection() {
                       </p>
                       <p className="mt-1.5 text-xs text-zinc-200 leading-relaxed line-clamp-2">
                         {t(`cases.${key}.description`)}
-                      </p3
+                      </p>
                     </button>
                   );
                 })}

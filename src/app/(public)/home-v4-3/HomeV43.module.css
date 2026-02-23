@@ -3,7 +3,6 @@
    - @keyframes animations
    - filter + mix-blend-mode combos
    - mask-image with vendor prefix
-   - Complex table nested selectors
    - @media (prefers-reduced-motion)
    ═══════════════════════════════════════════════════════ */
 
@@ -68,37 +67,6 @@
 
 .modeCard:hover {
   border-color: rgba(255, 255, 255, 0.25);
-}
-
-/* ─── Use Cases: table nested selectors ─── */
-
-.useCaseTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.useCaseTable th {
-  text-align: left;
-  padding: 10px 14px;
-  font-family: "IBMPlexMono", "SF Mono", monospace;
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(17, 17, 17, 0.55);
-  border-bottom: 1px solid rgba(17, 17, 17, 0.1);
-  font-weight: 400;
-}
-
-.useCaseTable td {
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.1);
-  color: #111;
-  vertical-align: top;
-}
-
-.useCaseTable tr:hover td {
-  background: rgba(0, 0, 0, 0.02);
 }
 
 /* ─── Reduced motion ─── */
