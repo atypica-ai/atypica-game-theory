@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
+import SystemStageHUD from "./components/SystemStageHUD";
 import { CHAPTERS } from "./content";
 import ClosingSection from "./sections/ClosingSection";
 import DataAssetsSection from "./sections/DataAssetsSection";
@@ -189,6 +190,10 @@ export default function HomeV43Page() {
 
       {/* Closing -- full-width, like Hero */}
       <ClosingSection register={registerScene(7)} />
+
+      {/* SystemStage HUD — fixed bottom-right */}
+      <SystemStageHUD activeScene={activeScene} />
     </main>
   );
 }
+

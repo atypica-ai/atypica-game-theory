@@ -23,7 +23,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
         sectionRef.current = el;
         register(el);
       }}
-      className="relative min-h-screen flex items-end overflow-clip bg-[#09090b]"
+      className="relative min-h-screen flex items-center sm:items-end pb-20 overflow-clip bg-[#09090b]"
     >
       {/* Background — positioned right, faded left for text readability */}
       <motion.div className="absolute inset-0" style={{ scale: bgScale, opacity: bgOpacity }}>
