@@ -33,7 +33,7 @@ export default function ManifestoScene({
       <div>
         <div className={styles.sceneHeader}>
           <p className={styles.kicker}>{copy.kicker}</p>
-          <h2 className={styles.sceneTitle}>{copy.title}</h2>
+          <h2 className={styles.sceneTitleLong}>{copy.title}</h2>
           {copy.body.map((text) => (
             <p key={text} className={styles.sceneDetail}>{text}</p>
           ))}

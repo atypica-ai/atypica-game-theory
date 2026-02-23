@@ -27,7 +27,8 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image: radial-gradient(circle at 18% 20%, rgba(0, 0, 0, 0.06), transparent 43%),
+  background-image:
+    radial-gradient(circle at 18% 20%, rgba(0, 0, 0, 0.06), transparent 43%),
     radial-gradient(circle at 84% 78%, rgba(0, 0, 0, 0.05), transparent 41%);
 }
 
@@ -97,9 +98,13 @@
   color: var(--muted);
 }
 
-.topbarDark .brand { color: rgba(255, 255, 255, 0.85); }
+.topbarDark .brand {
+  color: rgba(255, 255, 255, 0.85);
+}
 .topbarDark .status,
-.topbarDark .clock { color: rgba(255, 255, 255, 0.45); }
+.topbarDark .clock {
+  color: rgba(255, 255, 255, 0.45);
+}
 
 /* ─── System chrome: Rail ─── */
 
@@ -118,7 +123,9 @@
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: rgba(17, 17, 17, 0.38);
-  transition: color 200ms ease, transform 200ms ease;
+  transition:
+    color 200ms ease,
+    transform 200ms ease;
   cursor: default;
 }
 
@@ -145,6 +152,11 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.hud .stat {
+  display: inline-block;
+  width: 28px;
 }
 
 /* ─── Scene containers ─── */
@@ -206,6 +218,15 @@
   line-height: 0.98;
 }
 
+/* Long narrative titles — readable thesis statement, not a shout */
+.sceneTitleLong {
+  margin: 0;
+  font-family: "Canela", "Iowan Old Style", "Times New Roman", serif;
+  font-size: clamp(24px, 2.8vw, 42px);
+  font-weight: 500;
+  line-height: 1.22;
+}
+
 .sceneDetail {
   margin: 16px 0 0;
   max-width: 64ch;
@@ -217,6 +238,7 @@
 /* ─── Hero (dark variant) ─── */
 
 .hero {
+  position: relative;
   min-height: 100vh;
   background: #0a0a0c;
   padding: 0;
@@ -247,7 +269,12 @@
   position: absolute;
   inset: 0;
   opacity: 0.1;
-  background: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.2) 49%, transparent 100%);
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 49%,
+    transparent 100%
+  );
   background-size: 100% 4px;
 }
 
@@ -322,7 +349,9 @@
   transition: background 200ms;
 }
 
-.heroCtaPrimary:hover { background: #236e3e; }
+.heroCtaPrimary:hover {
+  background: #236e3e;
+}
 
 .heroCtaSecondary {
   display: inline-flex;
@@ -336,7 +365,9 @@
   transition: color 200ms;
 }
 
-.heroCtaSecondary:hover { color: rgba(255, 255, 255, 0.85); }
+.heroCtaSecondary:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
 
 /* Terminal block */
 .terminal {
@@ -496,7 +527,9 @@
   border: 1px solid var(--line);
   overflow: hidden;
   background: var(--glass);
-  transition: border-color 300ms, box-shadow 300ms;
+  transition:
+    border-color 300ms,
+    box-shadow 300ms;
   cursor: pointer;
 }
 
@@ -644,7 +677,9 @@
   font-size: 11px;
   letter-spacing: 0.04em;
   cursor: pointer;
-  transition: border-color 200ms, background 200ms;
+  transition:
+    border-color 200ms,
+    background 200ms;
   white-space: nowrap;
 }
 
@@ -694,7 +729,10 @@
   font-size: 13px;
   line-height: 1.5;
   color: rgba(17, 17, 17, 0.62);
-  transition: border-color 200ms, background 200ms, color 200ms;
+  transition:
+    border-color 200ms,
+    background 200ms,
+    color 200ms;
 }
 
 .featureItemActive {
@@ -765,7 +803,9 @@
   transition: background 200ms;
 }
 
-.closingCtaPrimary:hover { background: #236e3e; }
+.closingCtaPrimary:hover {
+  background: #236e3e;
+}
 
 .closingCtaSecondary {
   display: inline-flex;
@@ -777,7 +817,9 @@
   font-size: 13px;
   letter-spacing: 0.06em;
   text-decoration: none;
-  transition: color 200ms, border-color 200ms;
+  transition:
+    color 200ms,
+    border-color 200ms;
 }
 
 .closingCtaSecondary:hover {
@@ -805,7 +847,9 @@
   background: rgba(255, 255, 255, 0.5);
   padding: 14px 16px;
   cursor: pointer;
-  transition: border-color 200ms, background 200ms;
+  transition:
+    border-color 200ms,
+    background 200ms;
 }
 
 .modeTab:hover,
@@ -927,7 +971,10 @@
   padding: 10px 14px;
   font-size: 13px;
   cursor: pointer;
-  transition: border-color 200ms, background 200ms, color 200ms;
+  transition:
+    border-color 200ms,
+    background 200ms,
+    color 200ms;
   color: rgba(17, 17, 17, 0.62);
 }
 
@@ -1019,7 +1066,9 @@
   background: rgba(255, 255, 255, 0.5);
   padding: 12px 14px;
   cursor: pointer;
-  transition: border-color 200ms, background 200ms;
+  transition:
+    border-color 200ms,
+    background 200ms;
 }
 
 .sampleTab:hover,
@@ -1113,7 +1162,9 @@
   background: rgba(255, 255, 255, 0.5);
   padding: 12px;
   cursor: pointer;
-  transition: border-color 200ms, background 200ms;
+  transition:
+    border-color 200ms,
+    background 200ms;
 }
 
 .caseCard:hover,
@@ -1198,7 +1249,7 @@
   color: rgba(255, 255, 255, 0.65);
 }
 
-/* ─── Closing: client badges ─── */
+/* ─── Closing: client credentials ─── */
 
 .clientSection {
   margin-bottom: 48px;
@@ -1210,21 +1261,16 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
-.clientBadges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.clientBadge {
-  padding: 6px 14px;
-  border: 1px solid var(--line);
-  font-size: 13px;
-  color: var(--muted);
-  transition: color 200ms;
+.clientList {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  line-height: 2;
+  color: rgba(17, 17, 17, 0.42);
 }
 
 /* ─── Responsive ─── */

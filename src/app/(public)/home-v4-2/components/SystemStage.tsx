@@ -37,10 +37,19 @@ export default function SystemStage({ activeScene, clock, time }: SystemStagePro
       </aside>
 
       <div className={styles.hud} aria-hidden="true">
-        <div>SCENE {chapterLabel}</div>
-        <div>SAMPLING {Math.round(metricValue(time, 0.3) * 100)}%</div>
-        <div>FEEDBACK {Math.round(metricValue(time, 1.1) * 100)}%</div>
-        <div>CONFIDENCE {Math.round(metricValue(time, 1.8) * 100)}%</div>
+        <div>
+          SCENE <span className={styles.stat}>{chapterLabel}</span>
+        </div>
+        <div>
+          SAMPLING <span className={styles.stat}>{Math.round(metricValue(time, 0.3) * 100)}%</span>
+        </div>
+        <div>
+          FEEDBACK <span className={styles.stat}>{Math.round(metricValue(time, 1.1) * 100)}%</span>
+        </div>
+        <div>
+          CONFIDENCE{" "}
+          <span className={styles.stat}>{Math.round(metricValue(time, 1.8) * 100)}%</span>
+        </div>
         <div>STATE {activeScene >= SCENES.length + 1 ? "CONVERGED" : "RUNNING"}</div>
       </div>
     </>

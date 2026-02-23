@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import styles from "../../HomeV42.module.css";
 import { CLOSING, CLIENTS } from "../../content";
 
@@ -16,24 +15,13 @@ export default function ClosingScene({
     >
       <div className={styles.sceneIndex}>{CLOSING.chapter}</div>
       <div>
-        {/* Client badges */}
+        {/* Client credentials — quiet social proof, not a feature */}
         <div className={styles.clientSection}>
           <p className={styles.clientLabel}>Trusted By</p>
-          <div className={styles.clientBadges}>
-            {CLIENTS.map((client, index) => (
-              <motion.span
-                key={client}
-                className={styles.clientBadge}
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2.8, repeat: Infinity, delay: index * 0.18 }}
-              >
-                {client}
-              </motion.span>
-            ))}
-          </div>
+          <p className={styles.clientList}>{CLIENTS.join(" · ")}</p>
         </div>
 
-        {/* CTA */}
+        {/* CTA — the focal point */}
         <p className={styles.kicker}>{CLOSING.kicker}</p>
         <h3 className={styles.closingTitle}>{CLOSING.title}</h3>
         <p className={styles.closingBody}>{CLOSING.body}</p>

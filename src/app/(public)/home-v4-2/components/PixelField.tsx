@@ -89,17 +89,14 @@ export default function PixelField({ activeScene }: { activeScene: number }) {
           tx += (cx + Math.cos(time + i * 0.14) * ring - p.x) * 0.03;
           ty += (cy + Math.sin(time * 1.5 + i * 0.14) * ring * 0.4 - p.y) * 0.03;
         } else if (scene === 4) {
-          // Horizontal structured flow for operating modes
           tx += Math.cos(time * 0.8 + i * 0.04) * 1.4;
           ty += (cy + Math.sin(i * 0.15) * h * 0.35 - p.y) * 0.02;
         } else if (scene === 5) {
-          // Expanding web for understanding stack
           const angle = (i / pixels.length) * Math.PI * 2 + time * 0.3;
           const radius = 60 + (i % 60) * 3;
           tx += (cx + Math.cos(angle) * radius - p.x) * 0.02;
           ty += (cy + Math.sin(angle) * radius * 0.6 - p.y) * 0.02;
         } else if (scene === 6) {
-          // Grid settle for use cases
           const col = i % 9;
           const row = Math.floor(i / 9) % 6;
           const gx = w * 0.15 + col * (w * 0.08);
@@ -107,9 +104,15 @@ export default function PixelField({ activeScene }: { activeScene: number }) {
           tx += (gx - p.x) * 0.02 + Math.sin(time + i) * 0.3;
           ty += (gy - p.y) * 0.02 + Math.cos(time * 0.7 + i) * 0.3;
         } else {
-          // Convergence for closing
-          tx += (cx - p.x) * 0.03;
-          ty += (cy - p.y) * 0.03;
+          // Closing: spread into even full-viewport distribution + gentle drift
+          const cols = 14;
+          const rows = Math.ceil(PIXEL_COUNT / cols);
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const spreadX = (col + 0.5) * (w / cols);
+          const spreadY = (row + 0.5) * (h / rows);
+          tx += (spreadX - p.x) * 0.004 + Math.sin(time * 0.3 + p.phase) * 0.2;
+          ty += (spreadY - p.y) * 0.004 + Math.cos(time * 0.25 + p.phase) * 0.15;
         }
 
         p.x = tx;
@@ -149,7 +152,6 @@ export default function PixelField({ activeScene }: { activeScene: number }) {
       window.cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- activeScene read via sceneRef to avoid teardown/rebuild
   }, []);
 
   return <canvas ref={canvasRef} className={styles.pixelField} aria-hidden="true" />;
