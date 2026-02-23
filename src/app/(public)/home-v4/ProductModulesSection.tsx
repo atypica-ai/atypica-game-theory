@@ -94,13 +94,21 @@ export function ProductModulesSection() {
 
             <div className="lg:col-span-8 rounded-2xl border border-white/[0.1] bg-black/25 overflow-hidden">
               <div className="relative aspect-[16/9] md:aspect-[16/8.5]">
-                <Image
-                  src={`/api/imagegen/dev/${encodeURIComponent(active.img)}?ratio=landscape`}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="70vw"
-                />
+                {moduleDefs.map((module, i) => (
+                  <Image
+                    key={module.key}
+                    src={`/api/imagegen/dev/${encodeURIComponent(module.img)}?ratio=landscape`}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="70vw"
+                    priority={i === 0}
+                    style={{
+                      opacity: i === activeIdx ? 1 : 0,
+                      transition: "opacity 0.3s ease-in-out",
+                    }}
+                  />
+                ))}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
 
                 <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">

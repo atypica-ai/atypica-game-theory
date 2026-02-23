@@ -145,13 +145,21 @@ export default function UnderstandingStackScene({
 
             <div className={styles.sampleDisplay}>
               <div className={styles.sampleImageWrap}>
-                <Image
-                  src={`/api/imagegen/dev/${encodeURIComponent(SAMPLE_PROMPTS[activeSample])}?ratio=landscape`}
-                  alt=""
-                  fill
-                  className={styles.sampleImage}
-                  sizes="60vw"
-                />
+                {SAMPLE_PROMPTS.map((prompt, i) => (
+                  <Image
+                    key={prompt}
+                    src={`/api/imagegen/dev/${encodeURIComponent(prompt)}?ratio=landscape`}
+                    alt=""
+                    fill
+                    className={styles.sampleImage}
+                    sizes="60vw"
+                    priority={i === 0}
+                    style={{
+                      opacity: i === activeSample ? 1 : 0,
+                      transition: "opacity 0.3s ease-in-out",
+                    }}
+                  />
+                ))}
                 <div className={styles.sampleOverlay} />
                 <div className={styles.sampleContent}>
                   <span className={styles.sampleContentTitle}>{sample.title}</span>

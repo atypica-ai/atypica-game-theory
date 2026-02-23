@@ -79,13 +79,21 @@ export function UseCasesSection() {
 
             <div className="lg:col-span-5 rounded-2xl border border-white/[0.1] overflow-hidden bg-black/25">
               <div className="relative aspect-[16/11] md:aspect-[4/3]">
-                <Image
-                  src={`/api/imagegen/dev/${encodeURIComponent(activeImage)}?ratio=landscape`}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="45vw"
-                />
+                {[CASE_IMG_A, CASE_IMG_B, CASE_IMG_C].map((img, i) => (
+                  <Image
+                    key={img}
+                    src={`/api/imagegen/dev/${encodeURIComponent(img)}?ratio=landscape`}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="45vw"
+                    priority={i === 0}
+                    style={{
+                      opacity: img === activeImage ? 1 : 0,
+                      transition: "opacity 0.3s ease-in-out",
+                    }}
+                  />
+                ))}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-4 md:p-5">
                   <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/35 px-3 py-1 mb-2.5">

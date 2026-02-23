@@ -62,6 +62,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
       headers: {
         "Content-Type": "image/png",
         "Content-Length": imageBuffer.byteLength.toString(),
+        "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
   }
@@ -109,6 +110,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
     headers: {
       "Content-Type": mediaType,
       "Content-Length": imageBuffer.length.toString(),
+      "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
   return response;

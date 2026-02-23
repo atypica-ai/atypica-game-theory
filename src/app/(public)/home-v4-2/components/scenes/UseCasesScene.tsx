@@ -52,13 +52,21 @@ export default function UseCasesScene({
 
             <div className={styles.caseDisplay}>
               <div className={styles.caseImageWrap}>
-                <Image
-                  src={`/api/imagegen/dev/${encodeURIComponent(activeImage)}?ratio=landscape`}
-                  alt=""
-                  fill
-                  className={styles.caseDisplayImage}
-                  sizes="45vw"
-                />
+                {CASE_PROMPTS.map((prompt, i) => (
+                  <Image
+                    key={prompt}
+                    src={`/api/imagegen/dev/${encodeURIComponent(prompt)}?ratio=landscape`}
+                    alt=""
+                    fill
+                    className={styles.caseDisplayImage}
+                    sizes="45vw"
+                    priority={i === 0}
+                    style={{
+                      opacity: prompt === activeImage ? 1 : 0,
+                      transition: "opacity 0.3s ease-in-out",
+                    }}
+                  />
+                ))}
                 <div className={styles.caseOverlay} />
                 <div className={styles.caseContent}>
                   <span className={styles.caseContentBadge}>Active Scenario</span>

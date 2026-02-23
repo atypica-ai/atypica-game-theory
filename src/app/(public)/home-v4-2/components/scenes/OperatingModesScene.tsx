@@ -56,13 +56,21 @@ export default function OperatingModesScene({
 
             <div className={styles.modeDisplay}>
               <div className={styles.modeImageWrap}>
-                <Image
-                  src={`/api/imagegen/dev/${encodeURIComponent(MODE_PROMPTS[activeIdx])}?ratio=landscape`}
-                  alt=""
-                  fill
-                  className={styles.modeImage}
-                  sizes="60vw"
-                />
+                {MODE_PROMPTS.map((prompt, i) => (
+                  <Image
+                    key={prompt}
+                    src={`/api/imagegen/dev/${encodeURIComponent(prompt)}?ratio=landscape`}
+                    alt=""
+                    fill
+                    className={styles.modeImage}
+                    sizes="60vw"
+                    priority={i === 0}
+                    style={{
+                      opacity: i === activeIdx ? 1 : 0,
+                      transition: "opacity 0.3s ease-in-out",
+                    }}
+                  />
+                ))}
                 <div className={styles.modeOverlay} />
                 <div className={styles.modeContent}>
                   <span className={styles.modeBadge} style={{ color: active.accent }}>
