@@ -88,6 +88,7 @@ export default function DataAssetsSection({
 }) {
   return (
     <section ref={register} id={copy.id} className={`${styles.chapter} ${styles.chapterLight}`}>
+      <div className={styles.chapterLightInner}>
       <div className={styles.chapterHeader}>
         <div className={styles.chapterNumber}>{copy.number}</div>
         <p className={styles.chapterKicker}>{copy.kicker}</p>
@@ -129,6 +130,7 @@ export default function DataAssetsSection({
           })}
         </div>
       </motion.div>
+      </div>
     </section>
   );
 }

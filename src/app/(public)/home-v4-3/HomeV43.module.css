@@ -6,7 +6,8 @@
 /* ─── Page shell ─── */
 
 .page {
-  --bg: #0a0a0c;
+  --bg: #09090b;
+  --bg-panel: #18181b;
   --bg-warm: #fafaf8;
   --ink: #111;
   --ink-white: #fff;
@@ -18,7 +19,8 @@
   --accent-light: #4ade80;
   --glass: rgba(255, 255, 255, 0.72);
   --content-max: 1120px;
-  --nav-width: 200px;
+  --nav-width: 160px;
+  --page-max: 1400px;
 
   position: relative;
   min-height: 100vh;
@@ -26,17 +28,32 @@
   color: var(--ink-white);
 }
 
+/* ─── Chapters area: nav + content side by side ─── */
+
+.chaptersArea {
+  display: flex;
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
+
 /* ─── Sticky side nav ─── */
 
 .sideNav {
-  position: fixed;
-  top: 50%;
-  left: clamp(16px, 2.5vw, 40px);
-  transform: translateY(-50%);
+  position: sticky;
+  top: 120px;
+  align-self: flex-start;
+  flex-shrink: 0;
+  width: var(--nav-width);
   z-index: 50;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 80px 16px 0 0;
+}
+
+.chaptersContent {
+  flex: 1;
+  min-width: 0;
 }
 
 .navItem {
@@ -78,6 +95,36 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
+/* ─── Fixed scroll background layer ─── */
+
+.bgLayer {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bgImage {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.bgImageActive {
+  opacity: 0.15;
+}
+
+/* Desaturate and soften for background use */
+.bgImageDark {
+  filter: grayscale(0.4) brightness(0.6);
+  mix-blend-mode: screen;
+}
+
+.bgImageLight {
+  filter: grayscale(0.5) contrast(1.05) brightness(0.9);
+  mix-blend-mode: multiply;
+}
+
 /* ─── Hero section (dark) ─── */
 
 .hero {
@@ -103,16 +150,16 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(to top, #0a0a0c, rgba(10, 10, 12, 0.6) 40%, rgba(10, 10, 12, 0.2)),
-    linear-gradient(to right, rgba(10, 10, 12, 0.7), transparent 50%);
+    linear-gradient(to top, var(--bg), rgba(9, 9, 11, 0.6) 40%, rgba(9, 9, 11, 0.2)),
+    linear-gradient(to right, rgba(9, 9, 11, 0.7), transparent 50%);
 }
 
 .heroContent {
   position: relative;
   z-index: 1;
-  padding: 0 6vw 8vh;
-  max-width: 100%;
-  margin-left: clamp(40px, 5vw, 80px);
+  padding: 0 24px 8vh;
+  max-width: var(--page-max);
+  margin: 0 auto;
 }
 
 .heroKicker {
@@ -220,15 +267,24 @@
 
 .chapter {
   position: relative;
-  padding: 120px 6vw 80px;
-  margin-left: clamp(40px, 5vw, 80px);
+  z-index: 2;
+  padding: 80px 0;
   border-top: 1px solid var(--line-white);
 }
 
 .chapterLight {
+  /* Section stays dark — only inner content is white */
+}
+
+.chapterDarkInner {
+  background: var(--bg-panel);
+  padding: 48px 32px;
+}
+
+.chapterLightInner {
   background: var(--bg-warm);
   color: var(--ink);
-  border-top-color: var(--line);
+  padding: 48px 32px;
 }
 
 .chapterHeader {
@@ -244,7 +300,7 @@
   margin-bottom: 16px;
 }
 
-.chapterLight .chapterNumber {
+.chapterLightInner .chapterNumber {
   color: var(--accent);
 }
 
@@ -257,7 +313,7 @@
   margin-bottom: 12px;
 }
 
-.chapterLight .chapterKicker {
+.chapterLightInner .chapterKicker {
   color: var(--muted);
 }
 
@@ -285,7 +341,7 @@
   color: var(--muted-white);
 }
 
-.chapterLight .chapterBody {
+.chapterLightInner .chapterBody {
   color: var(--muted);
 }
 
@@ -791,9 +847,9 @@
 /* ─── Closing section ─── */
 
 .closing {
-  padding: 100px 6vw 80px;
-  margin-left: clamp(40px, 5vw, 80px);
-  background: var(--bg);
+  position: relative;
+  z-index: 2;
+  padding: 80px 0;
   border-top: 1px solid var(--line-white);
 }
 
@@ -1105,16 +1161,20 @@
   }
 
   .heroContent {
-    margin-left: 0;
+    padding: 0 5vw 5vh;
   }
 
   .chapter {
-    margin-left: 0;
-    padding: 80px 5vw 60px;
+    padding: 60px 0;
+  }
+
+  .chapterDarkInner,
+  .chapterLightInner {
+    padding: 32px 16px;
   }
 
   .closing {
-    margin-left: 0;
+    padding: 60px 0;
   }
 
   .twoWorldsGrid {

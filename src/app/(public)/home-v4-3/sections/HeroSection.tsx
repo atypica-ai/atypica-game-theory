@@ -7,7 +7,11 @@ import { useRef } from "react";
 import styles from "../HomeV43.module.css";
 import { HERO, HERO_PROMPT } from "../content";
 
-export default function HeroSection() {
+export default function HeroSection({
+  register,
+}: {
+  register: (el: HTMLElement | null) => void;
+}) {
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -19,8 +23,14 @@ export default function HeroSection() {
   const textY = useTransform(scrollYProgress, [0, 0.7], [0, -60]);
 
   return (
-    <section ref={sectionRef} className={styles.hero}>
-      {/* Background */}
+    <section
+      ref={(el) => {
+        sectionRef.current = el;
+        register(el);
+      }}
+      className={styles.hero}
+    >
+      {/* Background with scroll-driven zoom */}
       <motion.div className={styles.heroBg} style={{ scale: bgScale, opacity: bgOpacity }}>
         <Image
           src={`/api/imagegen/dev/${encodeURIComponent(HERO_PROMPT)}?ratio=landscape`}

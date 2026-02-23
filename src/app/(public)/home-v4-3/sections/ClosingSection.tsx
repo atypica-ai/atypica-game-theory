@@ -4,9 +4,14 @@ import Link from "next/link";
 import styles from "../HomeV43.module.css";
 import { CLOSING, CLIENTS } from "../content";
 
-export default function ClosingSection() {
+export default function ClosingSection({
+  register,
+}: {
+  register: (el: HTMLElement | null) => void;
+}) {
   return (
-    <section className={styles.closing}>
+    <section ref={register} className={styles.closing}>
+      <div className={styles.chapterDarkInner}>
       {/* Client list — fin.ai style */}
       <div className={styles.clientSection}>
         <p className={styles.clientLabel}>Trusted By</p>
@@ -30,6 +35,7 @@ export default function ClosingSection() {
         <Link href="#" className={styles.closingCtaSecondary}>
           {CLOSING.secondaryCta}
         </Link>
+      </div>
       </div>
     </section>
   );

@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import styles from "./HomeV43.module.css";
 import { CHAPTERS } from "./content";
+import ScrollBackground from "./sections/ScrollBackground";
 import HeroSection from "./sections/HeroSection";
 import TwoWorldsSection from "./sections/TwoWorldsSection";
 import TwoAgentsSection from "./sections/TwoAgentsSection";
@@ -23,10 +24,16 @@ const SECTION_COMPONENTS = [
 
 export default function HomeV43Page() {
   const pageRef = useRef<HTMLElement>(null);
+
+  // Background scene tracking: hero(0), chapters(1-6), closing(7)
+  const sceneRefs = useRef<Array<HTMLElement | null>>([]);
+  const [activeScene, setActiveScene] = useState(0);
+
+  // Nav chapter tracking: chapters only (0-5)
   const chapterRefs = useRef<Array<HTMLElement | null>>([]);
   const [activeChapter, setActiveChapter] = useState(-1);
 
-  // Fix DefaultLayout overflow-y-auto creating secondary scroll context
+  // Fix DefaultLayout overflow-y-auto
   useEffect(() => {
     let target: HTMLElement | null = null;
     let el = pageRef.current?.parentElement ?? null;
@@ -44,10 +51,41 @@ export default function HomeV43Page() {
     };
   }, []);
 
-  // IntersectionObserver for sticky nav
+  // Observer for background scene switching
   useEffect(() => {
     const ratioMap = new Map<number, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const idx = sceneRefs.current.indexOf(entry.target as HTMLElement);
+          if (idx === -1) continue;
+          if (entry.isIntersecting) {
+            ratioMap.set(idx, entry.intersectionRatio);
+          } else {
+            ratioMap.delete(idx);
+          }
+        }
+        let bestIdx = -1;
+        let bestRatio = 0;
+        for (const [idx, ratio] of ratioMap) {
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestIdx = idx;
+          }
+        }
+        if (bestIdx >= 0) startTransition(() => setActiveScene(bestIdx));
+      },
+      { rootMargin: "-35% 0px -35% 0px", threshold: [0, 0.1, 0.25, 0.5, 0.75, 1] },
+    );
+    for (const el of sceneRefs.current) {
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, []);
 
+  // Observer for nav chapter highlighting
+  useEffect(() => {
+    const ratioMap = new Map<number, number>();
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -59,7 +97,6 @@ export default function HomeV43Page() {
             ratioMap.delete(idx);
           }
         }
-
         let bestIdx = -1;
         let bestRatio = 0;
         for (const [idx, ratio] of ratioMap) {
@@ -68,59 +105,72 @@ export default function HomeV43Page() {
             bestIdx = idx;
           }
         }
-        setActiveChapter(bestIdx);
+        startTransition(() => setActiveChapter(bestIdx));
       },
-      {
-        rootMargin: "-30% 0px -30% 0px",
-        threshold: [0, 0.1, 0.2, 0.3, 0.5, 0.75, 1],
-      },
+      { rootMargin: "-20% 0px -20% 0px", threshold: [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1] },
     );
-
     for (const el of chapterRefs.current) {
       if (el) observer.observe(el);
     }
     return () => observer.disconnect();
   }, []);
 
-  const registerChapter = useCallback(
+  const registerScene = useCallback(
     (index: number) => (el: HTMLElement | null) => {
-      chapterRefs.current[index] = el;
+      sceneRefs.current[index] = el;
     },
     [],
   );
 
-  const scrollToChapter = useCallback((index: number) => {
-    const el = chapterRefs.current[index];
+  const registerChapter = useCallback(
+    (index: number) => (el: HTMLElement | null) => {
+      chapterRefs.current[index] = el;
+      // Also register as scene (chapters are scenes 1-6)
+      sceneRefs.current[index + 1] = el;
+    },
+    [],
+  );
+
+  const scrollToChapter = useCallback((chapterIndex: number) => {
+    const el = chapterRefs.current[chapterIndex];
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
   return (
     <main ref={pageRef} className={styles.page}>
-      {/* Sticky side navigation */}
-      <nav className={styles.sideNav}>
-        {CHAPTERS.map((ch, i) => (
-          <button
-            key={ch.id}
-            type="button"
-            className={`${styles.navItem} ${i === activeChapter ? styles.navItemActive : ""}`}
-            onClick={() => scrollToChapter(i)}
-          >
-            <span className={styles.navNumber}>{ch.number}</span>
-            <span className={styles.navLabel}>{ch.navLabel}</span>
-          </button>
-        ))}
-      </nav>
+      {/* Fixed scroll background */}
+      <ScrollBackground activeScene={activeScene} />
 
-      {/* Hero */}
-      <HeroSection />
+      {/* Scene 0: Hero — full-width centered, no nav offset */}
+      <HeroSection register={registerScene(0)} />
 
-      {/* Chapters 01-06 */}
-      {SECTION_COMPONENTS.map((Component, i) => (
-        <Component key={CHAPTERS[i].id} register={registerChapter(i)} />
-      ))}
+      {/* Chapters area: nav + content */}
+      <div className={styles.chaptersArea}>
+        {/* Sticky side navigation — scrolls in with chapters, then sticks */}
+        <nav className={styles.sideNav}>
+          {CHAPTERS.map((ch, i) => (
+            <button
+              key={ch.id}
+              type="button"
+              className={`${styles.navItem} ${i === activeChapter ? styles.navItemActive : ""}`}
+              onClick={() => scrollToChapter(i)}
+            >
+              <span className={styles.navNumber}>{ch.number}</span>
+              <span className={styles.navLabel}>{ch.navLabel}</span>
+            </button>
+          ))}
+        </nav>
 
-      {/* Closing */}
-      <ClosingSection />
+        {/* Chapters 01-06 */}
+        <div className={styles.chaptersContent}>
+          {SECTION_COMPONENTS.map((Component, i) => (
+            <Component key={CHAPTERS[i].id} register={registerChapter(i)} />
+          ))}
+
+          {/* Closing */}
+          <ClosingSection register={registerScene(7)} />
+        </div>
+      </div>
     </main>
   );
 }

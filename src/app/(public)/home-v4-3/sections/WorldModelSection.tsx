@@ -34,6 +34,7 @@ export default function WorldModelSection({
 
   return (
     <section ref={register} id={copy.id} className={styles.chapter}>
+      <div className={styles.chapterDarkInner}>
       <div className={styles.chapterHeader}>
         <div className={styles.chapterNumber}>{copy.number}</div>
         <p className={styles.chapterKicker}>{copy.kicker}</p>
@@ -211,6 +212,7 @@ export default function WorldModelSection({
           </div>
         </div>
       </motion.div>
+      </div>
     </section>
   );
 }

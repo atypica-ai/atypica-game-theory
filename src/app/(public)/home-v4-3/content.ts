@@ -303,7 +303,27 @@ export const CLIENTS = [
   "Huawei", "L\u2019Or\u00e9al", "WPP", "Proya",
 ] as const;
 
-/* ─── Image prompts (Hero & backgrounds only) ─── */
+/* ─── Image prompts ─── */
 
 export const HERO_PROMPT =
   "A single massive translucent polyhedron with internal fractures, suspended in vast dark blue-gray void. Inside it, barely visible green particle streams flow slowly like veins. The surface catches cold light. Extremely sparse luminous particles drift in the surrounding emptiness. Cold palette: dark indigo-black background, steel gray and cool white on the form, faint green glow from within. Film grain texture. No text.";
+
+/** Background images that shift as user scrolls — one per chapter (01-06) + closing */
+export const BG_PROMPTS = [
+  // 01 Two Worlds
+  "Split-field diagram on warm white paper: left side precise measurement grids and calibration lines in graphite, right side soft emotional topology with drifting signal ribbons. A single green dividing line separates both worlds. Minimal, scientific, no text.",
+  // 02 Two Agents
+  "Two parallel decision rails in a minimal system space: one deterministic rail with rigid geometry, one adaptive rail with organic flowing paths. Pixel agents as tiny dots flowing along both tracks. Monochrome with subtle green routing indicators, no text.",
+  // 03 World Model
+  "Subjective world model topology viewed from above: six dimensional axes radiating from a central core, concentric influence rings, parameter mesh with thin connection lines. Black on white with selective green node highlights, scientific diagram aesthetic, no text.",
+  // 04 Three Modes
+  "Minimal product mode diagram on warm cream paper: four parallel operational channels arranged vertically, each with distinct geometric patterns \u2014 continuous waves, automated pipelines, conversational nodes, and structural meshes. Thin graphite lines, subtle green accent markers, scientific diagram aesthetic, no text.",
+  // 05 Data Assets (dark image for light bg)
+  "Multi-method research instrument field on dark matte surface: diverse analytical tools arranged in a semicircle, thin connecting lines between method nodes and modality channels. Charcoal and steel tones, sparse green highlights, analog instrument aesthetic, no text.",
+  // 06 Use Cases (dark image for light bg)
+  "Abstract scenario matrix on dark charcoal ground: nine interconnected chambers with flowing signal traces between them, each containing a tiny abstract symbol. Dark graphite and subtle green accents, retro scientific catalog aesthetic, no text.",
+  // Closing
+  "Convergence point on warm white: thin signal lines from all edges meeting at a calm center, subtle green pulse at the convergence. Minimal, precise, warm paper texture, no text.",
+] as const;
+
+export const ALL_BG_PROMPTS = [HERO_PROMPT, ...BG_PROMPTS] as const;
