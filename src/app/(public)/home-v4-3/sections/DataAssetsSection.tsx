@@ -1,34 +1,38 @@
 "use client";
 
 import { motion } from "framer-motion";
-import styles from "../HomeV43.module.css";
+import ChapterPanel from "../components/ChapterPanel";
 import { CHAPTERS, DATA_ASSETS } from "../content";
 
 const copy = CHAPTERS[4];
 
-/* ─── CSS-only Mockups for each asset ─── */
+/* --- CSS-only Mockups for each asset --- */
 
 function PersonaAssetMockup() {
   return (
-    <div className={styles.mockupPersona} style={{ height: "100%" }}>
+    <div className="relative w-full h-full flex flex-col items-center justify-center gap-2">
       <div
-        className={styles.mockupPersonaAvatar}
+        className="w-9 h-9 rounded-full border"
         style={{
-          width: 36,
-          height: 36,
           borderColor: "rgba(27,255,27,0.3)",
           background: "rgba(27,255,27,0.06)",
         }}
       />
-      <div className={styles.mockupLines} style={{ alignItems: "center" }}>
-        <div className={styles.mockupLine} style={{ width: "45%", background: "rgba(0,0,0,0.08)" }} />
-        <div className={styles.mockupLine} style={{ width: "30%", background: "rgba(0,0,0,0.05)" }} />
+      <div className="flex-1 flex flex-col gap-[3px] items-center">
+        <div
+          className="h-1.5 rounded-sm"
+          style={{ width: "45%", background: "rgba(0,0,0,0.08)" }}
+        />
+        <div
+          className="h-1.5 rounded-sm"
+          style={{ width: "30%", background: "rgba(0,0,0,0.05)" }}
+        />
       </div>
-      <div className={styles.mockupPersonaTags}>
+      <div className="flex gap-1 flex-wrap justify-center">
         {["Tier-2", "Female", "25-34", "Urban"].map((tag) => (
           <span
             key={tag}
-            className={styles.mockupPersonaTag}
+            className="py-0.5 px-2 font-IBMPlexMono border"
             style={{ borderColor: "rgba(0,0,0,0.1)", color: "rgba(0,0,0,0.4)", fontSize: 7 }}
           >
             {tag}
@@ -41,20 +45,44 @@ function PersonaAssetMockup() {
 
 function SageAssetMockup() {
   return (
-    <div className={styles.mockupSage} style={{ height: "100%" }}>
-      <div className={styles.mockupKnowledgeLayer} style={{ borderColor: "rgba(0,0,0,0.08)", background: "rgba(147,197,253,0.04)" }}>
-        <div className={styles.mockupKnowledgeLabel} style={{ color: "rgba(0,0,0,0.3)" }}>
+    <div className="relative w-full h-full flex flex-col gap-1.5">
+      <div
+        className="py-2 px-2.5 border"
+        style={{ borderColor: "rgba(0,0,0,0.08)", background: "rgba(147,197,253,0.04)" }}
+      >
+        <div
+          className="font-IBMPlexMono text-[8px] tracking-[0.08em] uppercase mb-1"
+          style={{ color: "rgba(0,0,0,0.3)" }}
+        >
           CORE MEMORY
         </div>
-        <div className={styles.mockupLine} style={{ width: "80%", background: "rgba(0,0,0,0.06)" }} />
-        <div className={styles.mockupLine} style={{ width: "60%", background: "rgba(0,0,0,0.04)", marginTop: 3 }} />
+        <div
+          className="h-1.5 rounded-sm"
+          style={{ width: "80%", background: "rgba(0,0,0,0.06)" }}
+        />
+        <div
+          className="h-1.5 rounded-sm mt-[3px]"
+          style={{ width: "60%", background: "rgba(0,0,0,0.04)" }}
+        />
       </div>
-      <div className={styles.mockupKnowledgeLayer} style={{ borderColor: "rgba(0,0,0,0.06)", background: "rgba(147,197,253,0.02)" }}>
-        <div className={styles.mockupKnowledgeLabel} style={{ color: "rgba(0,0,0,0.25)" }}>
+      <div
+        className="py-2 px-2.5 border"
+        style={{ borderColor: "rgba(0,0,0,0.06)", background: "rgba(147,197,253,0.02)" }}
+      >
+        <div
+          className="font-IBMPlexMono text-[8px] tracking-[0.08em] uppercase mb-1"
+          style={{ color: "rgba(0,0,0,0.25)" }}
+        >
           WORKING MEMORY
         </div>
-        <div className={styles.mockupLine} style={{ width: "70%", background: "rgba(0,0,0,0.05)" }} />
-        <div className={styles.mockupLine} style={{ width: "45%", background: "rgba(0,0,0,0.03)", marginTop: 3 }} />
+        <div
+          className="h-1.5 rounded-sm"
+          style={{ width: "70%", background: "rgba(0,0,0,0.05)" }}
+        />
+        <div
+          className="h-1.5 rounded-sm mt-[3px]"
+          style={{ width: "45%", background: "rgba(0,0,0,0.03)" }}
+        />
       </div>
     </div>
   );
@@ -63,15 +91,30 @@ function SageAssetMockup() {
 function PanelAssetMockup() {
   const colors = ["#1bff1b", "#93c5fd", "#f59e0b", "#f472b6"];
   return (
-    <div className={styles.mockupPanel} style={{ height: "100%" }}>
+    <div className="relative w-full h-full grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 content-start">
       {["Moderator", "Persona A", "Persona B", "Persona C"].map((name, i) => (
         <div key={name} style={{ display: "contents" }}>
-          <div className={styles.mockupParticipant}>
-            <span className={styles.mockupParticipantDot} style={{ backgroundColor: colors[i], opacity: 0.5 }} />
-            <span className={styles.mockupParticipantName} style={{ color: "rgba(0,0,0,0.35)" }}>{name}</span>
+          <div className="flex items-center gap-1.5 py-1">
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{ backgroundColor: colors[i], opacity: 0.5 }}
+            />
+            <span className="font-IBMPlexMono text-[8px]" style={{ color: "rgba(0,0,0,0.35)" }}>
+              {name}
+            </span>
           </div>
-          <div className={styles.mockupMessage} style={{ borderColor: "rgba(0,0,0,0.06)", background: "rgba(0,0,0,0.02)" }}>
-            <div className={styles.mockupLine} style={{ width: `${55 + i * 10}%`, background: "rgba(0,0,0,0.06)" }} />
+          <div
+            className="py-1.5 px-2 self-center"
+            style={{
+              borderColor: "rgba(0,0,0,0.06)",
+              background: "rgba(0,0,0,0.02)",
+              border: "1px solid rgba(0,0,0,0.06)",
+            }}
+          >
+            <div
+              className="h-1.5 rounded-sm"
+              style={{ width: `${55 + i * 10}%`, background: "rgba(0,0,0,0.06)" }}
+            />
           </div>
         </div>
       ))}
@@ -87,50 +130,71 @@ export default function DataAssetsSection({
   register: (el: HTMLElement | null) => void;
 }) {
   return (
-    <section ref={register} id={copy.id} className={`${styles.chapter} ${styles.chapterLight}`}>
-      <div className={styles.chapterLightInner}>
-      <div className={styles.chapterHeader}>
-        <div className={styles.chapterNumber}>{copy.number}</div>
-        <p className={styles.chapterKicker}>{copy.kicker}</p>
-        <h2 className={styles.chapterTitle}>{copy.title}</h2>
-        {copy.body.map((text) => (
-          <p key={text} className={styles.chapterBody}>{text}</p>
-        ))}
-      </div>
+    <section
+      ref={register}
+      id={copy.id}
+      className="relative z-[2] py-20 border-t border-white/10 max-lg:py-[60px]"
+    >
+      <ChapterPanel variant="light">
+        <div className="max-w-[1120px] mb-12">
+          <div className="font-IBMPlexMono text-[11px] tracking-[0.18em] text-[#15b025] mb-4">
+            {copy.number}
+          </div>
+          <p className="font-IBMPlexMono text-[11px] tracking-[0.14em] uppercase text-black/55 mb-3">
+            {copy.kicker}
+          </p>
+          <h2 className="m-0 font-EuclidCircularA text-[clamp(28px,3.5vw,52px)] font-medium leading-[1.1]">
+            {copy.title}
+          </h2>
+          {copy.body.map((text) => (
+            <p
+              key={text}
+              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-[1.7] text-black/55"
+            >
+              {text}
+            </p>
+          ))}
+        </div>
 
-      <motion.div
-        className={styles.chapterContent}
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className={styles.assetsGrid}>
-          {DATA_ASSETS.map((asset, i) => {
-            const Mockup = ASSET_MOCKUPS[i];
-            return (
-              <div key={asset.key} className={styles.assetCard}>
-                <div className={styles.assetMockup}>
-                  <Mockup />
-                </div>
-                <div className={styles.assetInfo}>
-                  <h3 className={styles.assetTitle}>{asset.title}</h3>
-                  <p className={styles.assetDesc}>{asset.description}</p>
-                  <div className={styles.assetStats}>
-                    {asset.stats.map((stat) => (
-                      <div key={stat.label} className={styles.assetStat}>
-                        <div className={styles.assetStatLabel}>{stat.label}</div>
-                        <div className={styles.assetStatValue}>{stat.value}</div>
-                      </div>
-                    ))}
+        <motion.div
+          className="max-w-[1120px]"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-1">
+            {DATA_ASSETS.map((asset, i) => {
+              const Mockup = ASSET_MOCKUPS[i];
+              return (
+                <div key={asset.key} className="border border-black/10 bg-white flex flex-col">
+                  <div className="aspect-[16/10] bg-[#f5f5f3] border-b border-black/10 relative overflow-hidden p-4">
+                    <Mockup />
+                  </div>
+                  <div className="p-5 flex-1">
+                    <h3 className="text-[18px] font-medium text-gray-900 mb-1.5">{asset.title}</h3>
+                    <p className="text-[13px] leading-[1.6] text-black/55 mb-4">
+                      {asset.description}
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {asset.stats.map((stat) => (
+                        <div key={stat.label} className="border border-black/10 py-2 px-2.5">
+                          <div className="font-IBMPlexMono text-[9px] tracking-[0.1em] uppercase text-black/55">
+                            {stat.label}
+                          </div>
+                          <div className="text-[13px] font-medium text-gray-900 mt-0.5">
+                            {stat.value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
-      </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      </ChapterPanel>
     </section>
   );
 }

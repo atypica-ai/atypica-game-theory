@@ -11,7 +11,10 @@ export default function LogoWall() {
     <div className={styles.logoWall}>
       <div className={styles.logoTrack}>
         {repeated.map((client, i) => (
-          <span key={`${client}-${i}`} className={styles.logoItem}>
+          <span
+            key={`${client}-${i}`}
+            className="font-EuclidCircularA text-[15px] font-medium text-white/30 whitespace-nowrap tracking-[0.02em]"
+          >
             {client}
           </span>
         ))}

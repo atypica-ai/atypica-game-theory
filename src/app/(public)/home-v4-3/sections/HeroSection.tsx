@@ -1,17 +1,12 @@
 "use client";
 
+import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import styles from "../HomeV43.module.css";
 import { HERO, HERO_PROMPT } from "../content";
 
-export default function HeroSection({
-  register,
-}: {
-  register: (el: HTMLElement | null) => void;
-}) {
+export default function HeroSection({ register }: { register: (el: HTMLElement | null) => void }) {
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -28,31 +23,40 @@ export default function HeroSection({
         sectionRef.current = el;
         register(el);
       }}
-      className={styles.hero}
+      className="relative min-h-screen flex items-end overflow-clip bg-[#09090b]"
     >
       {/* Background with scroll-driven zoom */}
-      <motion.div className={styles.heroBg} style={{ scale: bgScale, opacity: bgOpacity }}>
+      <motion.div className="absolute inset-0" style={{ scale: bgScale, opacity: bgOpacity }}>
         <Image
           src={`/api/imagegen/dev/${encodeURIComponent(HERO_PROMPT)}?ratio=landscape`}
           alt=""
           fill
-          className={styles.heroBgImage}
+          className="object-cover object-center"
           sizes="100vw"
           priority
         />
-        <div className={styles.heroGradient} />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, #09090b, rgba(9, 9, 11, 0.6) 40%, rgba(9, 9, 11, 0.2)), linear-gradient(to right, rgba(9, 9, 11, 0.7), transparent 50%)",
+          }}
+        />
       </motion.div>
 
       {/* Content */}
-      <motion.div className={styles.heroContent} style={{ y: textY, opacity: bgOpacity }}>
+      <motion.div
+        className="relative z-[1] px-6 pb-[8vh] max-w-[1400px] mx-auto max-lg:px-[5vw] max-lg:pb-[5vh]"
+        style={{ y: textY, opacity: bgOpacity }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <span className={styles.heroKicker}>
+          <span className="inline-flex items-center gap-2 py-[5px] px-3.5 border border-[rgba(27,255,27,0.3)] bg-white/[0.04] backdrop-blur-[4px] font-IBMPlexMono text-[11px] tracking-[0.17em] uppercase text-[#1bff1b]">
             <motion.span
-              className={styles.heroKickerDot}
+              className="w-1.5 h-1.5 rounded-full bg-[#15b025]"
               animate={{ opacity: [1, 0.4, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
@@ -61,18 +65,18 @@ export default function HeroSection({
         </motion.div>
 
         <motion.h1
-          className={styles.heroTitle}
+          className="mt-7 font-EuclidCircularA text-[clamp(48px,7vw,112px)] font-medium leading-[0.95] text-white"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
         >
           The Agent That
           <br />
-          <span className={styles.heroTitleAccent}>Understands</span> Humans
+          <span className="italic text-[#1bff1b]">Understands</span> Humans
         </motion.h1>
 
         <motion.p
-          className={styles.heroBody}
+          className="mt-5 max-w-[52ch] text-[clamp(15px,1.1vw,18px)] leading-[1.7] text-white/50"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
@@ -81,28 +85,37 @@ export default function HeroSection({
         </motion.p>
 
         <motion.div
-          className={styles.heroCtas}
+          className="mt-7 flex flex-wrap gap-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
         >
-          <Link href="/newstudy" className={styles.ctaPrimary}>
+          <Link
+            href="/newstudy"
+            className="inline-flex items-center gap-2 h-11 px-6 bg-[#1bff1b] text-black font-medium text-[13px] tracking-[0.04em] no-underline transition-colors duration-200 hover:bg-[#15b025]"
+          >
             {HERO.cta}
             <span aria-hidden="true">&rarr;</span>
           </Link>
-          <Link href="#two-worlds" className={styles.ctaSecondary}>
+          <Link
+            href="#two-worlds"
+            className="inline-flex items-center h-11 px-6 text-white/50 text-[13px] tracking-[0.04em] no-underline transition-colors duration-200 hover:text-white/85"
+          >
             {HERO.secondaryCta}
           </Link>
         </motion.div>
 
         <motion.div
-          className={styles.heroBadges}
+          className="mt-8 flex flex-wrap gap-2.5"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
           {HERO.badges.map((badge) => (
-            <span key={badge} className={styles.heroBadge}>
+            <span
+              key={badge}
+              className="py-[5px] px-3.5 border border-white/[0.12] font-IBMPlexMono text-[11px] tracking-[0.06em] text-white/45"
+            >
               {badge}
             </span>
           ))}

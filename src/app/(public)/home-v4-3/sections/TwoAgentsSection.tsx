@@ -1,29 +1,35 @@
 "use client";
 
 import { motion } from "framer-motion";
-import styles from "../HomeV43.module.css";
-import { CHAPTERS, SIMULATOR, RESEARCHER } from "../content";
+import ChapterPanel from "../components/ChapterPanel";
+import { CHAPTERS, RESEARCHER, SIMULATOR } from "../content";
 
 const copy = CHAPTERS[1];
 
-/* ─── Minimal UI Mockups (CSS only) ─── */
+/* --- Minimal UI Mockups (CSS only) --- */
 
 function PersonaMockup() {
   return (
-    <div className={styles.mockupPersona}>
+    <div className="relative w-full h-full flex flex-col items-center justify-center gap-2">
       <div
-        className={styles.mockupPersonaAvatar}
+        className="w-10 h-10 rounded-full border"
         style={{ borderColor: "rgba(27,255,27,0.3)", background: "rgba(27,255,27,0.08)" }}
       />
-      <div className={styles.mockupLines}>
-        <div className={styles.mockupLine} style={{ width: "50%", margin: "0 auto" }} />
-        <div className={styles.mockupLine} style={{ width: "35%", margin: "0 auto" }} />
+      <div className="flex-1 flex flex-col gap-[3px]">
+        <div
+          className="h-1.5 rounded-sm bg-white/[0.08]"
+          style={{ width: "50%", margin: "0 auto" }}
+        />
+        <div
+          className="h-1.5 rounded-sm bg-white/[0.08]"
+          style={{ width: "35%", margin: "0 auto" }}
+        />
       </div>
-      <div className={styles.mockupPersonaTags}>
+      <div className="flex gap-1 flex-wrap justify-center">
         {["Gen-Z", "Urban", "Price-sensitive", "Social"].map((tag) => (
           <span
             key={tag}
-            className={styles.mockupPersonaTag}
+            className="py-0.5 px-2 font-IBMPlexMono text-[8px] border"
             style={{ borderColor: "rgba(27,255,27,0.2)", color: "rgba(27,255,27,0.6)" }}
           >
             {tag}
@@ -36,22 +42,31 @@ function PersonaMockup() {
 
 function InterviewMockup() {
   return (
-    <div className={styles.mockupInterview}>
-      <div className={`${styles.mockupBubble} ${styles.mockupBubbleAi}`}>
-        <div className={styles.mockupLine} style={{ width: "85%" }} />
-        <div className={styles.mockupLine} style={{ width: "60%", marginTop: 3 }} />
+    <div className="relative w-full h-full flex flex-col gap-1.5">
+      <div className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-start bg-[rgba(27,255,27,0.15)] border border-[rgba(27,255,27,0.2)]">
+        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "85%" }} />
+        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "60%", marginTop: 3 }} />
       </div>
-      <div className={`${styles.mockupBubble} ${styles.mockupBubbleUser}`}>
-        <div className={styles.mockupLine} style={{ width: "70%", background: "rgba(255,255,255,0.1)" }} />
+      <div className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-end bg-white/[0.06] border border-white/[0.08]">
+        <div
+          className="h-1.5 rounded-sm"
+          style={{ width: "70%", background: "rgba(255,255,255,0.1)" }}
+        />
       </div>
-      <div className={`${styles.mockupBubble} ${styles.mockupBubbleAi}`}>
-        <div className={styles.mockupLine} style={{ width: "90%" }} />
-        <div className={styles.mockupLine} style={{ width: "75%", marginTop: 3 }} />
-        <div className={styles.mockupLine} style={{ width: "40%", marginTop: 3 }} />
+      <div className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-start bg-[rgba(27,255,27,0.15)] border border-[rgba(27,255,27,0.2)]">
+        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "90%" }} />
+        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "75%", marginTop: 3 }} />
+        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "40%", marginTop: 3 }} />
       </div>
-      <div className={`${styles.mockupBubble} ${styles.mockupBubbleUser}`}>
-        <div className={styles.mockupLine} style={{ width: "55%", background: "rgba(255,255,255,0.1)" }} />
-        <div className={styles.mockupLine} style={{ width: "80%", marginTop: 3, background: "rgba(255,255,255,0.1)" }} />
+      <div className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-end bg-white/[0.06] border border-white/[0.08]">
+        <div
+          className="h-1.5 rounded-sm"
+          style={{ width: "55%", background: "rgba(255,255,255,0.1)" }}
+        />
+        <div
+          className="h-1.5 rounded-sm"
+          style={{ width: "80%", marginTop: 3, background: "rgba(255,255,255,0.1)" }}
+        />
       </div>
     </div>
   );
@@ -63,74 +78,101 @@ export default function TwoAgentsSection({
   register: (el: HTMLElement | null) => void;
 }) {
   return (
-    <section ref={register} id={copy.id} className={styles.chapter}>
-      <div className={styles.chapterDarkInner}>
-      <div className={styles.chapterHeader}>
-        <div className={styles.chapterNumber}>{copy.number}</div>
-        <p className={styles.chapterKicker}>{copy.kicker}</p>
-        <h2 className={styles.chapterTitle}>{copy.title}</h2>
-        {copy.body.map((text) => (
-          <p key={text} className={styles.chapterBody}>{text}</p>
-        ))}
-      </div>
-
-      <motion.div
-        className={styles.chapterContent}
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className={styles.agentsGrid}>
-          {/* Simulator card */}
-          <div className={styles.agentCard}>
-            <div className={styles.agentTag} style={{ color: "#1bff1b" }}>
-              {SIMULATOR.tag}
-            </div>
-            <h3 className={styles.agentTitle}>{SIMULATOR.title}</h3>
-            <p className={styles.agentDesc}>{SIMULATOR.description}</p>
-
-            {/* Persona mockup */}
-            <div style={{ marginBottom: 16, padding: 16, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}>
-              <PersonaMockup />
-            </div>
-
-            <div className={styles.agentRoles}>
-              {SIMULATOR.roles.map((role) => (
-                <div key={role.key} className={styles.agentRole}>
-                  <div className={styles.agentRoleLabel}>{role.label}</div>
-                  <div className={styles.agentRoleSub}>{role.sub}</div>
-                  <div className={styles.agentRoleDesc}>{role.description}</div>
-                </div>
-              ))}
-            </div>
+    <section
+      ref={register}
+      id={copy.id}
+      className="relative z-[2] py-20 border-t border-white/10 max-lg:py-[60px]"
+    >
+      <ChapterPanel variant="dark">
+        <div className="max-w-[1120px] mb-12">
+          <div className="font-IBMPlexMono text-[11px] tracking-[0.18em] text-[#1bff1b] mb-4">
+            {copy.number}
           </div>
-
-          {/* Researcher card */}
-          <div className={styles.agentCard}>
-            <div className={styles.agentTag} style={{ color: "#93c5fd" }}>
-              {RESEARCHER.tag}
-            </div>
-            <h3 className={styles.agentTitle}>{RESEARCHER.title}</h3>
-            <p className={styles.agentDesc}>{RESEARCHER.description}</p>
-
-            {/* Interview mockup */}
-            <div style={{ marginBottom: 16, padding: 16, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}>
-              <InterviewMockup />
-            </div>
-
-            <div className={styles.methodsList}>
-              {RESEARCHER.methods.map((method, i) => (
-                <div key={method.key} className={styles.methodItem}>
-                  <span className={styles.methodIndex}>{String(i + 1).padStart(2, "0")}</span>
-                  <span>{method.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <p className="font-IBMPlexMono text-[11px] tracking-[0.14em] uppercase text-white/55 mb-3">
+            {copy.kicker}
+          </p>
+          <h2 className="m-0 font-EuclidCircularA text-[clamp(28px,3.5vw,52px)] font-medium leading-[1.1]">
+            {copy.title}
+          </h2>
+          {copy.body.map((text) => (
+            <p
+              key={text}
+              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-[1.7] text-white/55"
+            >
+              {text}
+            </p>
+          ))}
         </div>
-      </motion.div>
-      </div>
+
+        <motion.div
+          className="max-w-[1120px]"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
+            {/* Simulator card */}
+            <div className="border border-white/10 p-7">
+              <div className="font-IBMPlexMono text-[10px] tracking-[0.18em] uppercase mb-3 text-[#1bff1b]">
+                {SIMULATOR.tag}
+              </div>
+              <h3 className="text-[22px] font-medium mb-2">{SIMULATOR.title}</h3>
+              <p className="text-sm leading-[1.65] text-white/55 mb-5">{SIMULATOR.description}</p>
+
+              {/* Persona mockup */}
+              <div className="mb-4 p-4 border border-white/[0.08] bg-white/[0.02]">
+                <PersonaMockup />
+              </div>
+
+              <div className="grid gap-2">
+                {SIMULATOR.roles.map((role) => (
+                  <div
+                    key={role.key}
+                    className="border border-white/10 p-3 px-4 transition-colors duration-200 hover:border-white/25"
+                  >
+                    <div className="text-sm font-medium">{role.label}</div>
+                    <div className="font-IBMPlexMono text-[10px] tracking-[0.06em] text-white/55 mt-0.5">
+                      {role.sub}
+                    </div>
+                    <div className="text-[13px] leading-[1.55] text-white/55 mt-1.5">
+                      {role.description}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Researcher card */}
+            <div className="border border-white/10 p-7">
+              <div className="font-IBMPlexMono text-[10px] tracking-[0.18em] uppercase mb-3 text-[#93c5fd]">
+                {RESEARCHER.tag}
+              </div>
+              <h3 className="text-[22px] font-medium mb-2">{RESEARCHER.title}</h3>
+              <p className="text-sm leading-[1.65] text-white/55 mb-5">{RESEARCHER.description}</p>
+
+              {/* Interview mockup */}
+              <div className="mb-4 p-4 border border-white/[0.08] bg-white/[0.02]">
+                <InterviewMockup />
+              </div>
+
+              <div className="grid gap-1.5">
+                {RESEARCHER.methods.map((method, i) => (
+                  <div
+                    key={method.key}
+                    className="flex items-center gap-2.5 border border-white/10 py-2.5 px-3.5 text-[13px] transition-colors duration-200 hover:border-white/25"
+                  >
+                    <span className="font-IBMPlexMono text-[10px] text-white/55 min-w-[18px]">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span>{method.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </ChapterPanel>
     </section>
   );
 }

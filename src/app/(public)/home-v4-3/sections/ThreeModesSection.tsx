@@ -1,18 +1,24 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import styles from "../HomeV43.module.css";
+import ChapterPanel from "../components/ChapterPanel";
 import { CHAPTERS, THREE_MODES } from "../content";
 
 const copy = CHAPTERS[3];
 
-/* ─── CSS-only Mockups ─── */
+/* --- CSS-only Mockups --- */
 
 function SignalMockup() {
   return (
-    <div className={styles.mockupSignal}>
-      <svg className={styles.mockupSignalSvg} viewBox="0 0 200 100" fill="none" preserveAspectRatio="none">
+    <div className="relative w-full h-full">
+      <svg
+        className="absolute inset-0 w-full h-full"
+        viewBox="0 0 200 100"
+        fill="none"
+        preserveAspectRatio="none"
+      >
         {/* Trend lines */}
         <polyline
           points="0,70 30,65 50,50 80,55 100,35 130,40 160,25 200,30"
@@ -31,29 +37,38 @@ function SignalMockup() {
         <circle cx="160" cy="25" r="2" fill="rgba(27,255,27,0.5)" />
         <circle cx="50" cy="50" r="1.5" fill="rgba(27,255,27,0.3)" />
         {/* Platform labels */}
-        <text x="8" y="15" fontSize="6" fill="rgba(255,255,255,0.2)" fontFamily="monospace">XIAOHONGSHU</text>
-        <text x="8" y="25" fontSize="6" fill="rgba(255,255,255,0.2)" fontFamily="monospace">TIKTOK</text>
-        <text x="8" y="35" fontSize="6" fill="rgba(255,255,255,0.2)" fontFamily="monospace">TWITTER/X</text>
+        <text x="8" y="15" fontSize="6" fill="rgba(255,255,255,0.2)" fontFamily="monospace">
+          XIAOHONGSHU
+        </text>
+        <text x="8" y="25" fontSize="6" fill="rgba(255,255,255,0.2)" fontFamily="monospace">
+          TIKTOK
+        </text>
+        <text x="8" y="35" fontSize="6" fill="rgba(255,255,255,0.2)" fontFamily="monospace">
+          TWITTER/X
+        </text>
       </svg>
     </div>
   );
 }
 
 function DeepMockup() {
-  const stages = ["Plan Study", "Interview ×8", "Analyze", "Generate Report"];
+  const stages = ["Plan Study", "Interview x8", "Analyze", "Generate Report"];
   return (
-    <div className={styles.mockupDeep}>
+    <div className="flex flex-col gap-1">
       {stages.map((stage, i) => (
-        <div key={stage} className={styles.mockupStage}>
+        <div
+          key={stage}
+          className="flex items-center gap-2 py-1.5 px-2 border border-[rgba(147,197,253,0.12)] bg-[rgba(147,197,253,0.03)]"
+        >
           <span
-            className={styles.mockupStageDot}
+            className="w-1.5 h-1.5 rounded-full shrink-0"
             style={{
               backgroundColor: i < 3 ? "rgba(147,197,253,0.5)" : "rgba(147,197,253,0.2)",
             }}
           />
-          <span className={styles.mockupStageLabel}>{stage}</span>
+          <span className="font-IBMPlexMono text-[8px] text-white/40">{stage}</span>
           <div
-            className={styles.mockupStageBar}
+            className="ml-auto h-1 rounded-sm bg-white/[0.08]"
             style={{
               width: i < 3 ? `${30 + i * 15}px` : "20px",
               backgroundColor: i < 3 ? "rgba(147,197,253,0.2)" : "rgba(147,197,253,0.08)",
@@ -67,17 +82,26 @@ function DeepMockup() {
 
 function LiveMockup() {
   return (
-    <div className={styles.mockupLive}>
-      <div className={`${styles.mockupBubble} ${styles.mockupBubbleAi}`} style={{ borderColor: "rgba(245,158,11,0.2)", background: "rgba(245,158,11,0.08)" }}>
-        <div className={styles.mockupLine} style={{ width: "80%" }} />
-        <div className={styles.mockupLine} style={{ width: "55%", marginTop: 3 }} />
+    <div className="flex flex-col gap-1">
+      <div
+        className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-start border"
+        style={{ borderColor: "rgba(245,158,11,0.2)", background: "rgba(245,158,11,0.08)" }}
+      >
+        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "80%" }} />
+        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "55%", marginTop: 3 }} />
       </div>
-      <div className={`${styles.mockupBubble} ${styles.mockupBubbleUser}`}>
-        <div className={styles.mockupLine} style={{ width: "65%", background: "rgba(255,255,255,0.1)" }} />
+      <div className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-end bg-white/[0.06] border border-white/[0.08]">
+        <div
+          className="h-1.5 rounded-sm"
+          style={{ width: "65%", background: "rgba(255,255,255,0.1)" }}
+        />
       </div>
-      <div className={`${styles.mockupBubble} ${styles.mockupBubbleAi}`} style={{ borderColor: "rgba(245,158,11,0.2)", background: "rgba(245,158,11,0.08)" }}>
-        <div className={styles.mockupLine} style={{ width: "90%" }} />
-        <div className={styles.mockupLine} style={{ width: "70%", marginTop: 3 }} />
+      <div
+        className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-start border"
+        style={{ borderColor: "rgba(245,158,11,0.2)", background: "rgba(245,158,11,0.08)" }}
+      >
+        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "90%" }} />
+        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "70%", marginTop: 3 }} />
       </div>
     </div>
   );
@@ -91,46 +115,66 @@ export default function ThreeModesSection({
   register: (el: HTMLElement | null) => void;
 }) {
   return (
-    <section ref={register} id={copy.id} className={styles.chapter}>
-      <div className={styles.chapterDarkInner}>
-      <div className={styles.chapterHeader}>
-        <div className={styles.chapterNumber}>{copy.number}</div>
-        <p className={styles.chapterKicker}>{copy.kicker}</p>
-        <h2 className={styles.chapterTitle}>{copy.title}</h2>
-        {copy.body.map((text) => (
-          <p key={text} className={styles.chapterBody}>{text}</p>
-        ))}
-      </div>
-
-      <motion.div
-        className={styles.chapterContent}
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className={styles.modesGrid}>
-          {THREE_MODES.map((mode, i) => {
-            const Mockup = MOCKUPS[i];
-            return (
-              <Link key={mode.key} href={mode.link} className={styles.modeCard}>
-                <div className={styles.modeMockup}>
-                  <Mockup />
-                </div>
-                <div className={styles.modeInfo}>
-                  <div className={styles.modeBadge} style={{ color: mode.accent }}>
-                    {mode.badge}
-                  </div>
-                  <h3 className={styles.modeTitle}>{mode.title}</h3>
-                  <p className={styles.modeDesc}>{mode.description}</p>
-                  <p className={styles.modeArrow}>Explore →</p>
-                </div>
-              </Link>
-            );
-          })}
+    <section
+      ref={register}
+      id={copy.id}
+      className="relative z-[2] py-20 border-t border-white/10 max-lg:py-[60px]"
+    >
+      <ChapterPanel variant="dark">
+        <div className="max-w-[1120px] mb-12">
+          <div className="font-IBMPlexMono text-[11px] tracking-[0.18em] text-[#1bff1b] mb-4">
+            {copy.number}
+          </div>
+          <p className="font-IBMPlexMono text-[11px] tracking-[0.14em] uppercase text-white/55 mb-3">
+            {copy.kicker}
+          </p>
+          <h2 className="m-0 font-EuclidCircularA text-[clamp(28px,3.5vw,52px)] font-medium leading-[1.1]">
+            {copy.title}
+          </h2>
+          {copy.body.map((text) => (
+            <p
+              key={text}
+              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-[1.7] text-white/55"
+            >
+              {text}
+            </p>
+          ))}
         </div>
-      </motion.div>
-      </div>
+
+        <motion.div
+          className="max-w-[1120px]"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-1">
+            {THREE_MODES.map((mode, i) => {
+              const Mockup = MOCKUPS[i];
+              return (
+                <Link key={mode.key} href={mode.link} className={styles.modeCard}>
+                  <div className="aspect-[16/10] bg-white/[0.03] border-b border-white/10 relative overflow-hidden p-4">
+                    <Mockup />
+                  </div>
+                  <div className="p-5 flex-1">
+                    <div
+                      className="font-IBMPlexMono text-[10px] tracking-[0.18em] uppercase mb-2"
+                      style={{ color: mode.accent }}
+                    >
+                      {mode.badge}
+                    </div>
+                    <h3 className="text-[18px] font-medium mb-2">{mode.title}</h3>
+                    <p className="text-[13px] leading-[1.6] text-white/55">{mode.description}</p>
+                    <p className="mt-3 font-IBMPlexMono text-[11px] text-[#1bff1b]">
+                      Explore &rarr;
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </motion.div>
+      </ChapterPanel>
     </section>
   );
 }

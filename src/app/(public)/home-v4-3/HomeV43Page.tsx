@@ -1,18 +1,18 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
-import styles from "./HomeV43.module.css";
 import { CHAPTERS } from "./content";
-import ScrollBackground from "./sections/ScrollBackground";
+import ClosingSection from "./sections/ClosingSection";
+import DataAssetsSection from "./sections/DataAssetsSection";
 import HeroSection from "./sections/HeroSection";
 import LogoWall from "./sections/LogoWall";
-import TwoWorldsSection from "./sections/TwoWorldsSection";
-import TwoAgentsSection from "./sections/TwoAgentsSection";
-import WorldModelSection from "./sections/WorldModelSection";
+import ScrollBackground from "./sections/ScrollBackground";
 import ThreeModesSection from "./sections/ThreeModesSection";
-import DataAssetsSection from "./sections/DataAssetsSection";
+import TwoAgentsSection from "./sections/TwoAgentsSection";
+import TwoWorldsSection from "./sections/TwoWorldsSection";
 import UseCasesSection from "./sections/UseCasesSection";
-import ClosingSection from "./sections/ClosingSection";
+import WorldModelSection from "./sections/WorldModelSection";
 
 const SECTION_COMPONENTS = [
   TwoWorldsSection,
@@ -138,42 +138,56 @@ export default function HomeV43Page() {
   }, []);
 
   return (
-    <main ref={pageRef} className={styles.page}>
+    <main ref={pageRef} className="relative min-h-screen bg-[#09090b] text-white">
       {/* Fixed scroll background */}
       <ScrollBackground activeScene={activeScene} />
 
-      {/* Scene 0: Hero — full-width centered */}
+      {/* Scene 0: Hero -- full-width centered */}
       <HeroSection register={registerScene(0)} />
 
       {/* Chapters area: nav + content */}
-      <div className={styles.chaptersArea}>
+      <div className="flex max-w-[1400px] mx-auto">
         {/* Sticky side navigation */}
-        <nav className={styles.sideNav}>
+        <nav className="sticky top-[120px] self-start shrink-0 w-[160px] z-50 flex-col gap-0.5 pt-20 pr-4 hidden lg:flex">
           {CHAPTERS.map((ch, i) => (
             <button
               key={ch.id}
               type="button"
-              className={`${styles.navItem} ${i === activeChapter ? styles.navItemActive : ""}`}
+              className="flex items-center gap-2.5 py-1.5 cursor-pointer bg-none border-none text-left transition-opacity duration-200"
               onClick={() => scrollToChapter(i)}
             >
-              <span className={styles.navNumber}>{ch.number}</span>
-              <span className={styles.navLabel}>{ch.navLabel}</span>
+              <span
+                className={cn(
+                  "font-IBMPlexMono text-[10px] tracking-[0.12em] min-w-[20px] transition-colors duration-200",
+                  i === activeChapter ? "text-[#1bff1b]" : "text-white/25",
+                )}
+              >
+                {ch.number}
+              </span>
+              <span
+                className={cn(
+                  "font-IBMPlexMono text-[10px] tracking-[0.08em] uppercase whitespace-nowrap transition-colors duration-200",
+                  i === activeChapter ? "text-white/85" : "text-white/25",
+                )}
+              >
+                {ch.navLabel}
+              </span>
             </button>
           ))}
         </nav>
 
         {/* Chapters 01-06 */}
-        <div className={styles.chaptersContent}>
+        <div className="flex-1 min-w-0">
           {SECTION_COMPONENTS.map((Component, i) => (
             <Component key={CHAPTERS[i].id} register={registerChapter(i)} />
           ))}
         </div>
       </div>
 
-      {/* Logo wall — between chapters and closing */}
+      {/* Logo wall -- between chapters and closing */}
       <LogoWall />
 
-      {/* Closing — full-width, like Hero */}
+      {/* Closing -- full-width, like Hero */}
       <ClosingSection register={registerScene(7)} />
     </main>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import styles from "../HomeV43.module.css";
 import { ALL_BG_PROMPTS } from "../content";
@@ -18,20 +19,20 @@ type ScrollBackgroundProps = {
 
 export default function ScrollBackground({ activeScene }: ScrollBackgroundProps) {
   return (
-    <div className={styles.bgLayer} aria-hidden="true">
+    <div className="fixed inset-0 z-[1] pointer-events-none" aria-hidden="true">
       {ALL_BG_PROMPTS.map((prompt, idx) => {
-        // Skip hero (idx 0) — HeroSection renders its own bg
+        // Skip hero (idx 0) -- HeroSection renders its own bg
         if (idx === 0) return null;
         const light = isLightScene(idx);
         const active = idx === activeScene;
         return (
           <Image
             key={prompt}
-            className={[
-              styles.bgImage,
+            className={cn(
+              "object-cover opacity-0 transition-opacity duration-[1200ms] ease-in-out",
               light ? styles.bgImageLight : styles.bgImageDark,
-              active ? styles.bgImageActive : "",
-            ].join(" ")}
+              active && "opacity-[0.15]",
+            )}
             src={`/api/imagegen/dev/${encodeURIComponent(prompt)}?ratio=landscape`}
             alt=""
             fill

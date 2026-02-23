@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import styles from "../HomeV43.module.css";
+import ChapterPanel from "../components/ChapterPanel";
 import { CHAPTERS } from "../content";
 
 const copy = CHAPTERS[0];
@@ -12,50 +12,68 @@ export default function TwoWorldsSection({
   register: (el: HTMLElement | null) => void;
 }) {
   return (
-    <section ref={register} id={copy.id} className={styles.chapter}>
-      <div className={styles.chapterDarkInner}>
-      <div className={styles.chapterHeader}>
-        <div className={styles.chapterNumber}>{copy.number}</div>
-        <p className={styles.chapterKicker}>{copy.kicker}</p>
-        <h2 className={styles.chapterTitleNarrative}>{copy.title}</h2>
-        {copy.body.map((text, i) => (
-          <p
-            key={text}
-            className={styles.chapterBody}
-            style={i === 0 ? { fontStyle: "italic", color: "rgba(255,255,255,0.35)", marginTop: 4 } : undefined}
-          >
-            {text}
+    <section
+      ref={register}
+      id={copy.id}
+      className="relative z-[2] py-20 border-t border-white/10 max-lg:py-[60px]"
+    >
+      <ChapterPanel variant="dark">
+        <div className="max-w-[1120px] mb-12">
+          <div className="font-IBMPlexMono text-[11px] tracking-[0.18em] text-[#1bff1b] mb-4">
+            {copy.number}
+          </div>
+          <p className="font-IBMPlexMono text-[11px] tracking-[0.14em] uppercase text-white/55 mb-3">
+            {copy.kicker}
           </p>
-        ))}
-      </div>
-
-      <motion.div
-        className={styles.chapterContent}
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className={styles.twoWorldsGrid}>
-          <div className={styles.worldCard}>
-            <p className={styles.worldCardLabel}>[1.A] OBJECTIVE WORLD</p>
-            <h3 className={styles.worldCardTitle}>Measurable</h3>
-            <p className={styles.worldCardBody}>
-              Quantifiable. The domain of traditional AI agents — automating tasks, processing data, executing workflows.
+          <h2 className="m-0 font-EuclidCircularA text-[clamp(22px,2.5vw,38px)] font-medium leading-[1.25]">
+            {copy.title}
+          </h2>
+          {copy.body.map((text, i) => (
+            <p
+              key={text}
+              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-[1.7] text-white/55"
+              style={
+                i === 0
+                  ? { fontStyle: "italic", color: "rgba(255,255,255,0.35)", marginTop: 4 }
+                  : undefined
+              }
+            >
+              {text}
             </p>
-          </div>
-          <div className={styles.worldCard}>
-            <p className={styles.worldCardLabel}>[1.B] SUBJECTIVE WORLD</p>
-            <h3 className={styles.worldCardTitle} style={{ color: "#1bff1b" }}>
-              Emotional
-            </h3>
-            <p className={styles.worldCardBody}>
-              Contextual. The domain of human decisions — why people choose, hesitate, trust, and act.
-            </p>
-          </div>
+          ))}
         </div>
-      </motion.div>
-      </div>
+
+        <motion.div
+          className="max-w-[1120px]"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="grid grid-cols-2 gap-0.5 max-lg:grid-cols-1">
+            <div className="p-8 border border-white/10">
+              <p className="font-IBMPlexMono text-[10px] tracking-[0.18em] uppercase text-white/55 mb-3">
+                [1.A] OBJECTIVE WORLD
+              </p>
+              <h3 className="text-[20px] font-medium mb-2">Measurable</h3>
+              <p className="text-sm leading-[1.65] text-white/55">
+                Quantifiable. The domain of traditional AI agents — automating tasks, processing
+                data, executing workflows.
+              </p>
+            </div>
+            <div className="p-8 border border-white/10">
+              <p className="font-IBMPlexMono text-[10px] tracking-[0.18em] uppercase text-white/55 mb-3">
+                [1.B] SUBJECTIVE WORLD
+              </p>
+              <h3 className="text-[20px] font-medium mb-2 text-[#1bff1b]">Emotional</h3>
+              <p className="text-sm leading-[1.65] text-white/55">
+                Contextual. The domain of human decisions — why people choose, hesitate, trust, and
+                act.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </ChapterPanel>
     </section>
   );
 }
