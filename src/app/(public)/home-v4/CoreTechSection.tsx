@@ -37,7 +37,9 @@ export function CoreTechSection() {
         >
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-px bg-[#2d8a4e]" />
-            <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">{t("label")}</span>
+            <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">
+              {t("label")}
+            </span>
           </div>
           <h2
             className={cn(
@@ -48,7 +50,9 @@ export function CoreTechSection() {
           >
             {t("title")}
           </h2>
-          <p className="mt-4 text-white/55 text-sm md:text-base leading-relaxed max-w-3xl">{t("subtitle")}</p>
+          <p className="mt-4 text-zinc-300 text-sm md:text-base leading-relaxed max-w-3xl">
+            {t("subtitle")}
+          </p>
 
           <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 items-stretch">
             <div className="lg:col-span-7 rounded-2xl border border-white/[0.1] bg-black/25 backdrop-blur-sm p-4 md:p-6">
@@ -56,20 +60,54 @@ export function CoreTechSection() {
                 <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" fill="none">
                   {NODE_POSITIONS.map((node, i) => (
                     <g key={node.key}>
-                      <line x1="50" y1="50" x2={node.x} y2={node.y} stroke="rgba(255,255,255,0.18)" strokeWidth="0.35" />
+                      <line
+                        x1="50"
+                        y1="50"
+                        x2={node.x}
+                        y2={node.y}
+                        stroke="rgba(255,255,255,0.18)"
+                        strokeWidth="0.35"
+                      />
                       {i === activeNode && (
-                        <line x1="50" y1="50" x2={node.x} y2={node.y} stroke={activeColor} strokeWidth="0.55" />
+                        <line
+                          x1="50"
+                          y1="50"
+                          x2={node.x}
+                          y2={node.y}
+                          stroke={activeColor}
+                          strokeWidth="0.55"
+                        />
                       )}
                     </g>
                   ))}
-                  <circle cx="50" cy="50" r="18" stroke="rgba(255,255,255,0.18)" strokeWidth="0.4" />
-                  <circle cx="50" cy="50" r="31" stroke="rgba(255,255,255,0.12)" strokeWidth="0.35" />
-                  <circle cx="50" cy="50" r="41" stroke="rgba(255,255,255,0.08)" strokeWidth="0.35" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="18"
+                    stroke="rgba(255,255,255,0.18)"
+                    strokeWidth="0.4"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="31"
+                    stroke="rgba(255,255,255,0.12)"
+                    strokeWidth="0.35"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="41"
+                    stroke="rgba(255,255,255,0.08)"
+                    strokeWidth="0.35"
+                  />
                 </svg>
 
                 <motion.div
                   className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20 bg-black/45 flex items-center justify-center"
-                  animate={{ boxShadow: [`0 0 0 0 ${activeColor}55`, `0 0 0 16px ${activeColor}00`] }}
+                  animate={{
+                    boxShadow: [`0 0 0 0 ${activeColor}55`, `0 0 0 16px ${activeColor}00`],
+                  }}
                   transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
                 >
                   <span className="font-IBMPlexMono text-xs" style={{ color: activeColor }}>
@@ -87,11 +125,18 @@ export function CoreTechSection() {
                       onClick={() => setActiveNode(i)}
                       className={cn(
                         "absolute -translate-x-1/2 -translate-y-1/2 rounded-full border px-2.5 py-1 transition-all duration-250",
-                        active ? "border-white/45 bg-white/14" : "border-white/[0.14] bg-black/35 hover:border-white/30",
+                        active
+                          ? "border-white/45 bg-white/14"
+                          : "border-white/[0.14] bg-black/35 hover:border-white/30",
                       )}
                       style={{ left: `${node.x}%`, top: `${node.y}%` }}
                     >
-                      <span className={cn("font-EuclidCircularA text-xs", active ? "text-white" : "text-white/70")}>
+                      <span
+                        className={cn(
+                          "font-EuclidCircularA text-xs",
+                          active ? "text-white" : "text-white/70",
+                        )}
+                      >
                         {t(`nodes.${node.key}`)}
                       </span>
                     </button>
@@ -101,8 +146,12 @@ export function CoreTechSection() {
             </div>
 
             <div className="lg:col-span-5 rounded-2xl border border-white/[0.1] bg-black/25 backdrop-blur-sm p-5">
-              <p className="font-IBMPlexMono text-[10px] uppercase tracking-[0.2em] text-white/45">Model Dimensions</p>
-              <h3 className="mt-2 font-EuclidCircularA text-xl text-white">{t(`nodes.${NODE_POSITIONS[activeNode].key}`)}</h3>
+              <p className="font-IBMPlexMono text-[10px] uppercase tracking-[0.2em] text-white/45">
+                Model Dimensions
+              </p>
+              <h3 className="mt-2 font-EuclidCircularA text-xl text-white">
+                {t(`nodes.${NODE_POSITIONS[activeNode].key}`)}
+              </h3>
 
               <div className="mt-5 space-y-2.5">
                 {features.map((feature, index) => (
@@ -121,7 +170,10 @@ export function CoreTechSection() {
               </div>
 
               <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5">
-                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: activeColor }} />
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ backgroundColor: activeColor }}
+                />
                 <span className="font-IBMPlexMono text-[11px] text-white/70">{t("filing")}</span>
               </div>
             </div>

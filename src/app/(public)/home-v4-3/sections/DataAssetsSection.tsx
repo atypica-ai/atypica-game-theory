@@ -93,7 +93,7 @@ function PanelAssetMockup() {
   return (
     <div className="relative w-full h-full grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 content-start">
       {["Moderator", "Persona A", "Persona B", "Persona C"].map((name, i) => (
-        <div key={name} style={{ display: "contents" }}>
+        <div key={name} className="contents">
           <div className="flex items-center gap-1.5 py-1">
             <span
               className="w-2 h-2 rounded-full"
@@ -133,23 +133,23 @@ export default function DataAssetsSection({
     <section
       ref={register}
       id={copy.id}
-      className="relative z-2 py-20 border-t border-white/10 max-lg:py-15"
+      className="relative z-2 py-20 border-t border-zinc-800 max-lg:py-15"
     >
       <ChapterPanel variant="light">
-        <div className="max-w-[1120px] mb-12">
+        <div className="mb-12">
           <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#15b025] mb-4">
             {copy.number}
           </div>
-          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-black/55 mb-3">
+          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500 mb-3">
             {copy.kicker}
           </p>
-          <h2 className="m-0 font-EuclidCircularA text-[clamp(28px,3.5vw,52px)] font-medium leading-[1.1]">
+          <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">
             {copy.title}
           </h2>
           {copy.body.map((text) => (
             <p
               key={text}
-              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-relaxed text-black/55"
+              className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-500"
             >
               {text}
             </p>
@@ -157,7 +157,6 @@ export default function DataAssetsSection({
         </div>
 
         <motion.div
-          className="max-w-[1120px]"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
@@ -167,17 +166,19 @@ export default function DataAssetsSection({
             {DATA_ASSETS.map((asset, i) => {
               const Mockup = ASSET_MOCKUPS[i];
               return (
-                <div key={asset.key} className="border border-black/10 bg-white flex flex-col">
-                  <div className="aspect-video bg-[#f5f5f3] border-b border-black/10 relative overflow-hidden p-4">
+                <div key={asset.key} className="border border-zinc-200 bg-white flex flex-col">
+                  <div className="aspect-video bg-[#f5f5f3] border-b border-zinc-200 relative overflow-hidden p-4">
                     <Mockup />
                   </div>
                   <div className="p-5 flex-1">
                     <h3 className="text-lg font-medium text-gray-900 mb-1.5">{asset.title}</h3>
-                    <p className="text-sm leading-relaxed text-black/55 mb-4">{asset.description}</p>
+                    <p className="text-sm leading-relaxed text-zinc-500 mb-4">
+                      {asset.description}
+                    </p>
                     <div className="grid grid-cols-2 gap-2">
                       {asset.stats.map((stat) => (
-                        <div key={stat.label} className="border border-black/10 py-2 px-2.5">
-                          <div className="font-IBMPlexMono text-[9px] tracking-[0.1em] uppercase text-black/55">
+                        <div key={stat.label} className="border border-zinc-200 py-2 px-2.5">
+                          <div className="font-IBMPlexMono text-[9px] tracking-[0.1em] uppercase text-zinc-500">
                             {stat.label}
                           </div>
                           <div className="text-sm font-medium text-gray-900 mt-0.5">

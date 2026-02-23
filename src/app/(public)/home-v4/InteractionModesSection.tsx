@@ -2,8 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 
 const INTERACTION_HERO_PROMPT =
@@ -70,7 +70,7 @@ export function InteractionModesSection() {
           >
             {t("title")}
           </h2>
-          <p className="mt-3 text-white/55 text-sm md:text-base max-w-2xl leading-relaxed">
+          <p className="mt-3 text-zinc-300 text-sm md:text-base max-w-2xl leading-relaxed">
             {t("subtitle")}
           </p>
 
@@ -78,7 +78,9 @@ export function InteractionModesSection() {
             <div className="lg:col-span-3 rounded-2xl border border-white/[0.1] bg-black/25 backdrop-blur-sm p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-EuclidCircularA text-sm text-white/90">{t("methodsTitle")}</h3>
-                <span className="text-[10px] font-IBMPlexMono text-white/45 uppercase">{t("methodsTag")}</span>
+                <span className="text-[10px] font-IBMPlexMono text-white/45 uppercase">
+                  {t("methodsTag")}
+                </span>
               </div>
               <div className="space-y-2">
                 {methods.map((method, i) => {
@@ -128,7 +130,9 @@ export function InteractionModesSection() {
 
                 <motion.div
                   className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                  animate={{ boxShadow: [`0 0 0 0 ${activeAccent}55`, `0 0 0 16px ${activeAccent}00`] }}
+                  animate={{
+                    boxShadow: [`0 0 0 0 ${activeAccent}55`, `0 0 0 16px ${activeAccent}00`],
+                  }}
                   transition={{ repeat: Infinity, duration: 1.8, ease: "easeOut" }}
                   style={{ backgroundColor: activeAccent }}
                 />
@@ -136,8 +140,12 @@ export function InteractionModesSection() {
                 <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
                   <div className="rounded-xl border border-white/[0.1] bg-black/25 p-4 flex flex-col justify-between">
                     <div>
-                      <p className="font-IBMPlexMono text-[10px] uppercase tracking-[0.18em] text-white/45">Method Channel</p>
-                      <p className="mt-3 font-EuclidCircularA text-white text-lg">{methods[activeMethod]}</p>
+                      <p className="font-IBMPlexMono text-[10px] uppercase tracking-[0.18em] text-white/45">
+                        Method Channel
+                      </p>
+                      <p className="mt-3 font-EuclidCircularA text-white text-lg">
+                        {methods[activeMethod]}
+                      </p>
                     </div>
                     <div className="mt-6 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
                       <motion.div
@@ -146,15 +154,21 @@ export function InteractionModesSection() {
                         initial={{ width: "12%" }}
                         animate={{ width: `${42 + activeMethod * 10}%` }}
                         transition={{ duration: 0.45, ease: "easeOut" }}
-                        style={{ backgroundColor: METHOD_ACCENTS[activeMethod % METHOD_ACCENTS.length] }}
+                        style={{
+                          backgroundColor: METHOD_ACCENTS[activeMethod % METHOD_ACCENTS.length],
+                        }}
                       />
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-white/[0.1] bg-black/25 p-4 flex flex-col justify-between">
                     <div>
-                      <p className="font-IBMPlexMono text-[10px] uppercase tracking-[0.18em] text-white/45">Input Modality</p>
-                      <p className="mt-3 font-EuclidCircularA text-white text-lg">{modalities[activeModality]}</p>
+                      <p className="font-IBMPlexMono text-[10px] uppercase tracking-[0.18em] text-white/45">
+                        Input Modality
+                      </p>
+                      <p className="mt-3 font-EuclidCircularA text-white text-lg">
+                        {modalities[activeModality]}
+                      </p>
                     </div>
                     <div className="mt-6 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
                       <motion.div
@@ -163,7 +177,10 @@ export function InteractionModesSection() {
                         initial={{ width: "10%" }}
                         animate={{ width: `${35 + activeModality * 11}%` }}
                         transition={{ duration: 0.45, ease: "easeOut" }}
-                        style={{ backgroundColor: MODALITY_ACCENTS[activeModality % MODALITY_ACCENTS.length] }}
+                        style={{
+                          backgroundColor:
+                            MODALITY_ACCENTS[activeModality % MODALITY_ACCENTS.length],
+                        }}
                       />
                     </div>
                   </div>
@@ -177,7 +194,9 @@ export function InteractionModesSection() {
                       animate={{ opacity: [0.35, 1, 0.35] }}
                       transition={{ delay: idx * 0.18, duration: 1.8, repeat: Infinity }}
                     >
-                      <span className="font-IBMPlexMono text-[10px] text-white/70 uppercase tracking-wider">{word}</span>
+                      <span className="font-IBMPlexMono text-[10px] text-white/70 uppercase tracking-wider">
+                        {word}
+                      </span>
                     </motion.div>
                   ))}
                 </div>
@@ -186,8 +205,12 @@ export function InteractionModesSection() {
 
             <div className="lg:col-span-3 rounded-2xl border border-white/[0.1] bg-black/25 backdrop-blur-sm p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-EuclidCircularA text-sm text-white/90">{t("modalitiesTitle")}</h3>
-                <span className="text-[10px] font-IBMPlexMono text-white/45 uppercase">{t("modalitiesTag")}</span>
+                <h3 className="font-EuclidCircularA text-sm text-white/90">
+                  {t("modalitiesTitle")}
+                </h3>
+                <span className="text-[10px] font-IBMPlexMono text-white/45 uppercase">
+                  {t("modalitiesTag")}
+                </span>
               </div>
               <div className="space-y-2">
                 {modalities.map((modality, i) => {

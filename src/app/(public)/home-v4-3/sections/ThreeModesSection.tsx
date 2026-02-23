@@ -66,7 +66,7 @@ function DeepMockup() {
               backgroundColor: i < 3 ? "rgba(147,197,253,0.5)" : "rgba(147,197,253,0.2)",
             }}
           />
-          <span className="font-IBMPlexMono text-[8px] text-white/40">{stage}</span>
+          <span className="font-IBMPlexMono text-[8px] text-zinc-500">{stage}</span>
           <div
             className="ml-auto h-1 rounded-sm bg-white/8"
             style={{
@@ -118,23 +118,23 @@ export default function ThreeModesSection({
     <section
       ref={register}
       id={copy.id}
-      className="relative z-2 py-20 border-t border-white/10 max-lg:py-15"
+      className="relative z-2 py-20 border-t border-zinc-800 max-lg:py-15"
     >
       <ChapterPanel variant="dark">
-        <div className="max-w-[1120px] mb-12">
+        <div className="mb-12">
           <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
             {copy.number}
           </div>
-          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-white/55 mb-3">
+          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">
             {copy.kicker}
           </p>
-          <h2 className="m-0 font-EuclidCircularA text-[clamp(28px,3.5vw,52px)] font-medium leading-[1.1]">
+          <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">
             {copy.title}
           </h2>
           {copy.body.map((text) => (
             <p
               key={text}
-              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-relaxed text-white/55"
+              className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-300"
             >
               {text}
             </p>
@@ -142,7 +142,6 @@ export default function ThreeModesSection({
         </div>
 
         <motion.div
-          className="max-w-[1120px]"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
@@ -153,7 +152,7 @@ export default function ThreeModesSection({
               const Mockup = MOCKUPS[i];
               return (
                 <Link key={mode.key} href={mode.link} className={styles.modeCard}>
-                  <div className="aspect-video bg-white/3 border-b border-white/10 relative overflow-hidden p-4">
+                  <div className="aspect-video bg-zinc-800/60 border-b border-zinc-800 relative overflow-hidden p-4">
                     <Mockup />
                   </div>
                   <div className="p-5 flex-1">
@@ -164,10 +163,8 @@ export default function ThreeModesSection({
                       {mode.badge}
                     </div>
                     <h3 className="text-lg font-medium mb-2">{mode.title}</h3>
-                    <p className="text-sm leading-relaxed text-white/55">{mode.description}</p>
-                    <p className="mt-3 font-IBMPlexMono text-xs text-[#1bff1b]">
-                      Explore &rarr;
-                    </p>
+                    <p className="text-sm leading-relaxed text-zinc-300">{mode.description}</p>
+                    <p className="mt-3 font-IBMPlexMono text-xs text-[#1bff1b]">Explore &rarr;</p>
                   </div>
                 </Link>
               );

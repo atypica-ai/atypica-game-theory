@@ -54,7 +54,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-flex items-center gap-2 py-1 px-3.5 border border-[rgba(27,255,27,0.3)] bg-white/4 backdrop-blur-sm font-IBMPlexMono text-xs tracking-[0.17em] uppercase text-[#1bff1b]">
+          <span className="inline-flex items-center gap-2 py-1 px-3.5 border border-[rgba(27,255,27,0.3)] bg-zinc-800 backdrop-blur-sm font-IBMPlexMono text-xs tracking-[0.17em] uppercase text-[#1bff1b]">
             <motion.span
               className="w-1.5 h-1.5 rounded-full bg-[#15b025]"
               animate={{ opacity: [1, 0.4, 1] }}
@@ -65,18 +65,18 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
         </motion.div>
 
         <motion.h1
-          className="mt-7 font-EuclidCircularA text-[clamp(48px,7vw,112px)] font-medium leading-[0.95] text-white"
+          className="mt-7 font-EuclidCircularA text-5xl sm:text-7xl lg:text-8xl xl:text-[112px] font-medium leading-[0.95] text-white"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
         >
           The Agent That
           <br />
-          <span className="italic text-[#1bff1b]">Understands</span> Humans
+          <span className="italic font-InstrumentSerif text-[#1bff1b]">Understands</span> Humans
         </motion.h1>
 
         <motion.p
-          className="mt-5 max-w-[52ch] text-[clamp(15px,1.1vw,18px)] leading-relaxed text-white/50"
+          className="mt-5 max-w-[52ch] text-base lg:text-lg leading-relaxed text-zinc-400"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
@@ -99,7 +99,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
           </Link>
           <Link
             href="#two-worlds"
-            className="inline-flex items-center h-11 px-6 text-white/50 text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:text-white/85"
+            className="inline-flex items-center h-11 px-6 text-zinc-400 text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:text-zinc-100"
           >
             {HERO.secondaryCta}
           </Link>
@@ -114,7 +114,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
           {HERO.badges.map((badge) => (
             <span
               key={badge}
-              className="py-1 px-3.5 border border-white/12 font-IBMPlexMono text-xs tracking-[0.06em] text-white/45"
+              className="py-1 px-3.5 border border-zinc-700 font-IBMPlexMono text-xs tracking-[0.06em] text-zinc-400"
             >
               {badge}
             </span>

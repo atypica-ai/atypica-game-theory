@@ -13,7 +13,7 @@ export default function LogoWall() {
         {repeated.map((client, i) => (
           <span
             key={`${client}-${i}`}
-            className="font-EuclidCircularA text-xl font-light text-white/30 whitespace-nowrap tracking-wide"
+            className="font-EuclidCircularA text-xl font-light text-zinc-500 whitespace-nowrap tracking-wide"
           >
             {client}
           </span>

@@ -16,10 +16,7 @@ export function ManifestoSection() {
   const t = useTranslations("HomePageV4.Manifesto");
   const [splitX, setSplitX] = useState(52);
   const smoothSplitX = useSpring(splitX, { stiffness: 140, damping: 26 });
-  const splitClipPath = useTransform(
-    smoothSplitX,
-    (value) => `inset(0 0 0 ${value}%)`,
-  );
+  const splitClipPath = useTransform(smoothSplitX, (value) => `inset(0 0 0 ${value}%)`);
   const splitLeft = useTransform(smoothSplitX, (value) => `${value}%`);
 
   const handleMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -38,7 +35,7 @@ export function ManifestoSection() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
         >
-          <p className="text-white/55 text-sm md:text-base max-w-2xl leading-relaxed mb-8 md:mb-10">
+          <p className="text-zinc-300 text-sm md:text-base max-w-2xl leading-relaxed mb-8 md:mb-10">
             {t("prelude")}
           </p>
 
@@ -56,10 +53,7 @@ export function ManifestoSection() {
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
 
-              <motion.div
-                className="absolute inset-0"
-                style={{ clipPath: splitClipPath }}
-              >
+              <motion.div className="absolute inset-0" style={{ clipPath: splitClipPath }}>
                 <Image
                   src={`/api/imagegen/dev/${encodeURIComponent(SUBJECTIVE_PROMPT)}?ratio=landscape`}
                   alt=""

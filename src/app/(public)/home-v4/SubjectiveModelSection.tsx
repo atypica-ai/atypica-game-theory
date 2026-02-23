@@ -36,7 +36,9 @@ export function SubjectiveModelSection() {
         >
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-px bg-[#2d8a4e]" />
-            <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">{t("label")}</span>
+            <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">
+              {t("label")}
+            </span>
           </div>
 
           <h2
@@ -70,12 +72,17 @@ export function SubjectiveModelSection() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
                   <div className="inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 bg-black/35 mb-3">
-                    <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: active.accent }} />
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: active.accent }}
+                    />
                     <span className="font-IBMPlexMono text-[10px] text-white/70 uppercase tracking-[0.18em]">
                       SAMPLE ENGINE
                     </span>
                   </div>
-                  <h3 className="font-EuclidCircularA text-2xl md:text-3xl text-white">{t(`${active.key}.title`)}</h3>
+                  <h3 className="font-EuclidCircularA text-2xl md:text-3xl text-white">
+                    {t(`${active.key}.title`)}
+                  </h3>
                   <p className="mt-2.5 text-sm md:text-base text-white/65 max-w-2xl leading-relaxed">
                     {t(`${active.key}.description`)}
                   </p>
@@ -104,10 +111,17 @@ export function SubjectiveModelSection() {
                       )}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-EuclidCircularA text-white text-sm">{t(`${model.key}.title`)}</span>
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: model.accent }} />
+                        <span className="font-EuclidCircularA text-white text-sm">
+                          {t(`${model.key}.title`)}
+                        </span>
+                        <span
+                          className="h-1.5 w-1.5 rounded-full"
+                          style={{ backgroundColor: model.accent }}
+                        />
                       </div>
-                      <p className="mt-1.5 text-xs text-white/55 leading-relaxed">{t(`${model.key}.stat`)}</p>
+                      <p className="mt-1.5 text-xs text-zinc-300 leading-relaxed">
+                        {t(`${model.key}.stat`)}
+                      </p>
                     </button>
                   );
                 })}

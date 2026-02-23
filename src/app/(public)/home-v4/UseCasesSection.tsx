@@ -38,7 +38,9 @@ export function UseCasesSection() {
         >
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-px bg-[#2d8a4e]" />
-            <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">{t("label")}</span>
+            <span className="font-IBMPlexMono text-xs text-[#2d8a4e] uppercase tracking-[0.2em]">
+              {t("label")}
+            </span>
           </div>
           <h2
             className={cn(
@@ -68,9 +70,15 @@ export function UseCasesSection() {
                           : "border-white/[0.08] bg-white/[0.02] hover:border-white/20",
                       )}
                     >
-                      <span className="font-IBMPlexMono text-[10px] text-white/45">{String(index + 1).padStart(2, "0")}</span>
-                      <p className="mt-1.5 text-sm text-white leading-snug">{t(`cases.${key}.title`)}</p>
-                      <p className="mt-1.5 text-xs text-white/55 leading-relaxed line-clamp-2">{t(`cases.${key}.description`)}</p>
+                      <span className="font-IBMPlexMono text-[10px] text-white/45">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <p className="mt-1.5 text-sm text-white leading-snug">
+                        {t(`cases.${key}.title`)}
+                      </p>
+                      <p className="mt-1.5 text-xs text-zinc-200 leading-relaxed line-clamp-2">
+                        {t(`cases.${key}.description`)}
+                      </p3
                     </button>
                   );
                 })}
@@ -98,10 +106,16 @@ export function UseCasesSection() {
                 <div className="absolute inset-x-0 bottom-0 p-4 md:p-5">
                   <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/35 px-3 py-1 mb-2.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#4ade80]" />
-                    <span className="font-IBMPlexMono text-[10px] text-white/70 uppercase tracking-[0.18em]">Active Scenario</span>
+                    <span className="font-IBMPlexMono text-[10px] text-white/70 uppercase tracking-[0.18em]">
+                      Active Scenario
+                    </span>
                   </div>
-                  <h3 className="font-EuclidCircularA text-xl md:text-2xl text-white">{t(`cases.${activeCase}.title`)}</h3>
-                  <p className="mt-2 text-sm text-white/65 leading-relaxed">{t(`cases.${activeCase}.description`)}</p>
+                  <h3 className="font-EuclidCircularA text-xl md:text-2xl text-white">
+                    {t(`cases.${activeCase}.title`)}
+                  </h3>
+                  <p className="mt-2 text-sm text-white/65 leading-relaxed">
+                    {t(`cases.${activeCase}.description`)}
+                  </p>
                 </div>
               </div>
             </div>

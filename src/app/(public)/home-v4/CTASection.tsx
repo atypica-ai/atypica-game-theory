@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -62,7 +62,9 @@ export function CTASection() {
           >
             {t("title")}
           </h2>
-          <p className="mt-5 text-white/55 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">{t("subtitle")}</p>
+          <p className="mt-5 text-zinc-300 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+            {t("subtitle")}
+          </p>
 
           <div className="mt-8 mx-auto max-w-2xl rounded-xl border border-white/[0.14] bg-black/30 backdrop-blur-sm p-4">
             {lines.map((line, index) => (
@@ -93,7 +95,7 @@ export function CTASection() {
             <Button
               variant="ghost"
               size="lg"
-              className="rounded-full px-8 h-14 text-white/55 hover:text-white hover:bg-white/10 font-EuclidCircularA text-base"
+              className="rounded-full px-8 h-14 text-zinc-300 hover:text-white hover:bg-white/10 font-EuclidCircularA text-base"
               asChild
             >
               <Link href="/pricing">{t("secondaryCta")}</Link>

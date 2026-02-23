@@ -8,11 +8,7 @@ export const HERO = {
   body: "Most agents do tasks. Atypica does something harder — it models why people choose, hesitate, and decide.",
   cta: "Start a Study",
   secondaryCta: "How It Works",
-  badges: [
-    "1M+ AI Personas",
-    "85% Behavioral Accuracy",
-    "9 Enterprise Clients",
-  ],
+  badges: ["1M+ AI Personas", "85% Behavioral Accuracy", "Trusted by Global Enterprises"],
 } as const;
 
 /* ─── Chapters ─── */
@@ -32,9 +28,9 @@ export const CHAPTERS: Chapter[] = [
     number: "01",
     navLabel: "Two Worlds",
     kicker: "THE CORE PROBLEM",
-    title: "We don\u2019t react to reality. We react to the model inside our heads.",
+    title: "The world in our heads is not a precise replica of reality.",
     body: [
-      "\u2014 Daniel Kahneman",
+      "\u2014 Daniel Kahneman, Thinking, Fast and Slow",
       "The objective world can be measured. The subjective world \u2014 emotions, values, hesitations \u2014 must be modeled. Most AI agents work in the objective world, doing tasks for you. Atypica is the other kind: it simulates the subjective world to understand people.",
     ],
   },
@@ -64,9 +60,7 @@ export const CHAPTERS: Chapter[] = [
     navLabel: "Three Modes",
     kicker: "PRODUCT",
     title: "Three Ways to Understand",
-    body: [
-      "From autonomous signal absorption to full-auto research to live human-AI dialogue.",
-    ],
+    body: ["From autonomous signal absorption to full-auto research to live human-AI dialogue."],
   },
   {
     id: "data-assets",
@@ -99,21 +93,23 @@ export const SIMULATOR = {
     {
       key: "persona" as const,
       label: "AI Persona",
-      sub: "2C Consumer Simulation",
-      description: "Virtual consumers built from real behavioral data. Each carries unique values, risk profiles, and decision logic.",
+      sub: "Consumer Simulation",
+      description:
+        "Virtual consumers built from real behavioral data. Each carries unique values, risk profiles, and decision logic.",
     },
     {
       key: "sage" as const,
       label: "AI Sage",
-      sub: "2B Expert Simulation",
-      description: "Domain experts with two-layer memory — core knowledge and working knowledge that grows through every consultation.",
+      sub: "Expert Simulation",
+      description:
+        "Domain experts with two-layer memory — core knowledge and working knowledge that grows through every consultation.",
     },
   ],
 };
 
 export const RESEARCHER = {
   tag: "AI RESEARCHER",
-  title: "Five Research Methods",
+  title: "Research Methods",
   description:
     "The Researcher asks the right questions, probes deeper, draws out what people struggle to articulate. Part interviewer, part analyst — always listening.",
   methods: [
@@ -131,7 +127,8 @@ export const WORLD_MODEL_LAYERS = [
   {
     key: "expression",
     label: "Expression",
-    description: "How people express themselves — social media, public statements, self-presentation.",
+    description:
+      "How people express themselves — social media, public statements, self-presentation.",
     product: "Scout Agent",
     radius: 42,
   },
@@ -160,15 +157,50 @@ export const WORLD_MODEL_LAYERS = [
 
 export const WORLD_MODEL_DIMENSIONS = [
   { key: "values", label: "Value Systems", x: 50, y: 6, description: "What matters and why" },
-  { key: "risk", label: "Risk Preferences", x: 88, y: 28, description: "How people weigh uncertainty" },
-  { key: "emotion", label: "Emotional Triggers", x: 88, y: 72, description: "What moves people to act" },
-  { key: "decision", label: "Decision Pathways", x: 50, y: 94, description: "How choices actually get made" },
-  { key: "social", label: "Social Influence", x: 12, y: 72, description: "The invisible pull of others" },
-  { key: "cognitive", label: "Cognitive Frames", x: 12, y: 28, description: "Mental models that shape perception" },
+  {
+    key: "risk",
+    label: "Risk Preferences",
+    x: 88,
+    y: 28,
+    description: "How people weigh uncertainty",
+  },
+  {
+    key: "emotion",
+    label: "Emotional Triggers",
+    x: 88,
+    y: 72,
+    description: "What moves people to act",
+  },
+  {
+    key: "decision",
+    label: "Decision Pathways",
+    x: 50,
+    y: 94,
+    description: "How choices actually get made",
+  },
+  {
+    key: "social",
+    label: "Social Influence",
+    x: 12,
+    y: 72,
+    description: "The invisible pull of others",
+  },
+  {
+    key: "cognitive",
+    label: "Cognitive Frames",
+    x: 12,
+    y: 28,
+    description: "Mental models that shape perception",
+  },
 ] as const;
 
 export const DIMENSION_PALETTE = [
-  "#1bff1b", "#93c5fd", "#f59e0b", "#f472b6", "#22d3ee", "#a78bfa",
+  "#1bff1b",
+  "#93c5fd",
+  "#f59e0b",
+  "#f472b6",
+  "#22d3ee",
+  "#a78bfa",
 ] as const;
 
 /* ─── 04: Three Modes ─── */
@@ -178,7 +210,8 @@ export const THREE_MODES = [
     key: "signal",
     title: "Signal Mode",
     badge: "SIGNAL",
-    description: "Always-on intelligence. The agent continuously absorbs signals from social media, surfaces trends, and delivers findings without being asked.",
+    description:
+      "Always-on intelligence. The agent continuously absorbs signals from social media, surfaces trends, and delivers findings without being asked.",
     link: "/newstudy",
     accent: "#1bff1b",
   },
@@ -186,7 +219,8 @@ export const THREE_MODES = [
     key: "deep",
     title: "Deep Mode",
     badge: "DEEP",
-    description: "End-to-end AI research — from study design to interviews to insight delivery. Weeks of work compressed into minutes.",
+    description:
+      "End-to-end AI research — from study design to interviews to insight delivery. Weeks of work compressed into minutes.",
     link: "/newstudy",
     accent: "#93c5fd",
   },
@@ -194,7 +228,8 @@ export const THREE_MODES = [
     key: "live",
     title: "Live Mode",
     badge: "LIVE",
-    description: "AI Researcher leads deep interviews with real people or virtual personas. Conversations become structured insights.",
+    description:
+      "AI Researcher leads deep interviews with real people or virtual personas. Conversations become structured insights.",
     link: "/newstudy",
     accent: "#f59e0b",
   },
@@ -206,7 +241,8 @@ export const DATA_ASSETS = [
   {
     key: "persona",
     title: "AI Persona",
-    description: "Virtual consumers built from real behavioral data and social science models. Callable, verifiable, always consistent.",
+    description:
+      "Virtual consumers built from real behavioral data and social science models. Callable, verifiable, always consistent.",
     stats: [
       { label: "AI Samples", value: "1,000,000+" },
       { label: "Human Baselines", value: "70,000+" },
@@ -218,7 +254,8 @@ export const DATA_ASSETS = [
   {
     key: "sage",
     title: "AI Sage",
-    description: "Domain experts with two-layer memory architecture. Core knowledge stays stable; working knowledge grows through every consultation.",
+    description:
+      "Domain experts with two-layer memory architecture. Core knowledge stays stable; working knowledge grows through every consultation.",
     stats: [
       { label: "Industries", value: "Healthcare, Finance, CPG, Tech" },
       { label: "Cost Reduction", value: "~85%" },
@@ -230,7 +267,8 @@ export const DATA_ASSETS = [
   {
     key: "panel",
     title: "AI Panel",
-    description: "Next-gen research panels combining AI samples with real respondents. Simulate, compare, and scale.",
+    description:
+      "Next-gen research panels combining AI samples with real respondents. Simulate, compare, and scale.",
     stats: [
       { label: "Panel Size", value: "3\u20138 personas" },
       { label: "Modes", value: "Focus, Debate, Roundtable" },
@@ -244,10 +282,18 @@ export const DATA_ASSETS = [
 /* ─── 06: Use Cases ─── */
 
 export const USE_CASE_TABLE = [
-  { scenario: "Consumer Insight & U&A", tools: "Scout + Interview + Persona", agent: "Study Agent" },
+  {
+    scenario: "Consumer Insight & U&A",
+    tools: "Scout + Interview + Persona",
+    agent: "Study Agent",
+  },
   { scenario: "Concept Testing", tools: "PersonaImport + Interview + Panel", agent: "Study Agent" },
   { scenario: "Brand Strategy", tools: "Social Trends + Report", agent: "Product R&D" },
-  { scenario: "Attribution Analysis", tools: "Interview + Reasoning + Report", agent: "Study Agent" },
+  {
+    scenario: "Attribution Analysis",
+    tools: "Interview + Reasoning + Report",
+    agent: "Study Agent",
+  },
   { scenario: "Pricing Strategy", tools: "Interview (WTP) + Panel", agent: "Study Agent" },
   { scenario: "Social Listening", tools: "Scout (5 platforms) + Trends", agent: "Product R&D" },
   { scenario: "User Experience & VOC", tools: "Scout + Interview + Report", agent: "Study Agent" },
@@ -261,7 +307,8 @@ export const CUSTOMER_STORIES = [
     key: "food",
     client: "Global Food Brand",
     challenge: "Needed consumer feedback on 20+ product concepts across 5 markets in 2 weeks.",
-    solution: "AI Persona interviews + Panel discussions replaced 3 months of traditional research.",
+    solution:
+      "AI Persona interviews + Panel discussions replaced 3 months of traditional research.",
     result: "80% cost reduction, 6x faster, concept selected outperformed control by 23%.",
   },
   {
@@ -299,8 +346,15 @@ export const CLOSING = {
 /* ─── Client list ─── */
 
 export const CLIENTS = [
-  "Mars", "Bosch", "Lenovo", "Fonterra", "Ant Group",
-  "Huawei", "L\u2019Or\u00e9al", "WPP", "Proya",
+  "Mars",
+  "Bosch",
+  "Lenovo",
+  "Fonterra",
+  "Ant Group",
+  "Huawei",
+  "L\u2019Or\u00e9al",
+  "WPP",
+  "Proya",
 ] as const;
 
 /* ─── Image prompts ─── */

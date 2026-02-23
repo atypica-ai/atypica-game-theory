@@ -18,10 +18,7 @@ export function ThesisSection() {
   const t = useTranslations("HomePageV4.Thesis");
   const [activeRole, setActiveRole] = useState<(typeof roleKeys)[number]>("simulator");
 
-  const accent = useMemo(
-    () => (activeRole === "simulator" ? "#4ade80" : "#93c5fd"),
-    [activeRole],
-  );
+  const accent = useMemo(() => (activeRole === "simulator" ? "#4ade80" : "#93c5fd"), [activeRole]);
 
   return (
     <section className="relative py-20 md:py-28 bg-[#0a0a0c]">
@@ -49,7 +46,9 @@ export function ThesisSection() {
           >
             {t("title")}
           </h2>
-          <p className="mt-4 text-white/55 text-sm md:text-base max-w-3xl leading-relaxed">{t("description")}</p>
+          <p className="mt-4 text-zinc-300 text-sm md:text-base max-w-3xl leading-relaxed">
+            {t("description")}
+          </p>
 
           <div className="mt-8 hidden lg:grid grid-cols-12 gap-4 items-stretch">
             <button
@@ -73,10 +72,18 @@ export function ThesisSection() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  <span className="font-IBMPlexMono text-[10px] uppercase tracking-[0.18em] text-[#4ade80]">{t("simulator.tag")}</span>
-                  <h3 className="mt-2 font-EuclidCircularA text-white text-2xl">{t("simulator.title")}</h3>
-                  <p className="mt-2 text-white/65 text-sm leading-relaxed">{t("simulator.description")}</p>
-                  <p className="mt-3 font-IBMPlexMono text-xs text-[#4ade80]/80">{t("simulator.stat")}</p>
+                  <span className="font-IBMPlexMono text-[10px] uppercase tracking-[0.18em] text-[#4ade80]">
+                    {t("simulator.tag")}
+                  </span>
+                  <h3 className="mt-2 font-EuclidCircularA text-white text-2xl">
+                    {t("simulator.title")}
+                  </h3>
+                  <p className="mt-2 text-white/65 text-sm leading-relaxed">
+                    {t("simulator.description")}
+                  </p>
+                  <p className="mt-3 font-IBMPlexMono text-xs text-[#4ade80]/80">
+                    {t("simulator.stat")}
+                  </p>
                 </div>
               </div>
             </button>
@@ -112,12 +119,21 @@ export function ThesisSection() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  <span className="font-IBMPlexMono text-[10px] uppercase tracking-[0.18em] text-[#93c5fd]">{t("researcher.tag")}</span>
-                  <h3 className="mt-2 font-EuclidCircularA text-white text-2xl">{t("researcher.title")}</h3>
-                  <p className="mt-2 text-white/65 text-sm leading-relaxed">{t("researcher.description")}</p>
+                  <span className="font-IBMPlexMono text-[10px] uppercase tracking-[0.18em] text-[#93c5fd]">
+                    {t("researcher.tag")}
+                  </span>
+                  <h3 className="mt-2 font-EuclidCircularA text-white text-2xl">
+                    {t("researcher.title")}
+                  </h3>
+                  <p className="mt-2 text-white/65 text-sm leading-relaxed">
+                    {t("researcher.description")}
+                  </p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {(t.raw("researcher.items") as string[]).map((item) => (
-                      <span key={item} className="px-2.5 py-1 rounded-full border border-white/[0.14] text-[11px] text-white/70">
+                      <span
+                        key={item}
+                        className="px-2.5 py-1 rounded-full border border-white/[0.14] text-[11px] text-white/70"
+                      >
                         {item}
                       </span>
                     ))}
@@ -131,7 +147,10 @@ export function ThesisSection() {
             {roleKeys.map((key) => {
               const isSimulator = key === "simulator";
               return (
-                <div key={key} className="relative rounded-2xl overflow-hidden border border-white/[0.12]">
+                <div
+                  key={key}
+                  className="relative rounded-2xl overflow-hidden border border-white/[0.12]"
+                >
                   <div className="relative aspect-[16/10]">
                     <Image
                       src={`/api/imagegen/dev/${encodeURIComponent(isSimulator ? SIMULATOR_PROMPT : RESEARCHER_PROMPT)}?ratio=landscape`}
@@ -143,11 +162,20 @@ export function ThesisSection() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
                   </div>
                   <div className="absolute inset-x-0 bottom-0 p-4">
-                    <span className={cn("font-IBMPlexMono text-[10px] uppercase tracking-[0.18em]", isSimulator ? "text-[#4ade80]" : "text-[#93c5fd]")}> 
+                    <span
+                      className={cn(
+                        "font-IBMPlexMono text-[10px] uppercase tracking-[0.18em]",
+                        isSimulator ? "text-[#4ade80]" : "text-[#93c5fd]",
+                      )}
+                    >
                       {t(`${key}.tag`)}
                     </span>
-                    <h3 className="mt-1.5 font-EuclidCircularA text-white text-xl">{t(`${key}.title`)}</h3>
-                    <p className="mt-1.5 text-white/65 text-sm leading-relaxed">{t(`${key}.description`)}</p>
+                    <h3 className="mt-1.5 font-EuclidCircularA text-white text-xl">
+                      {t(`${key}.title`)}
+                    </h3>
+                    <p className="mt-1.5 text-white/65 text-sm leading-relaxed">
+                      {t(`${key}.description`)}
+                    </p>
                   </div>
                 </div>
               );
