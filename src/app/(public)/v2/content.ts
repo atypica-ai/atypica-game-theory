@@ -31,7 +31,6 @@ export const CHAPTERS: Chapter[] = [
     title: "The world in our heads is not a precise replica of reality.",
     body: [
       "\u2014 Daniel Kahneman, Thinking, Fast and Slow",
-      "The objective world can be measured. The subjective world \u2014 emotions, values, hesitations \u2014 must be modeled. Most AI agents work in the objective world, doing tasks for you. Atypica is the other kind: it simulates the subjective world to understand people.",
     ],
   },
   {

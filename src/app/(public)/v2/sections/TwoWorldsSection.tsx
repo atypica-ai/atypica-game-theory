@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import ChapterPanel from "../components/ChapterPanel";
 import { CHAPTERS } from "../content";
@@ -16,55 +15,65 @@ export default function TwoWorldsSection({
     <section
       ref={register}
       id={copy.id}
-      className="relative z-2 py-20 border-t border-zinc-800 max-lg:py-15"
+      className="relative z-2 py-24 border-t border-zinc-800 max-lg:py-16"
     >
       <ChapterPanel variant="dark">
-        <div className="mb-12">
-          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b]">
             {copy.number}
-          </div>
-          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">
+          </span>
+          <span className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500">
             {copy.kicker}
-          </p>
-          <h2 className="m-0 font-EuclidCircularA text-2xl lg:text-3xl xl:text-4xl font-medium leading-tight">
-            {copy.title}
-          </h2>
-          {copy.body.map((text, i) => (
-            <p
-              key={text}
-              className={cn(
-                "mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-300",
-                i === 0 && "italic text-zinc-600 mt-1",
-              )}
-            >
-              {text}
-            </p>
-          ))}
+          </span>
         </div>
 
+        {/* Quote */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6 }}
+          className="mb-16"
+        >
+          <h2 className="m-0 font-InstrumentSerif italic text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-[1.15] text-white max-w-[720px]">
+            &ldquo;{copy.title}&rdquo;
+          </h2>
+          <p className="mt-5 font-IBMPlexMono text-sm tracking-[0.04em] text-zinc-500">
+            {copy.body[0]}
+          </p>
+        </motion.div>
+
+        {/* Two Worlds — large typographic contrast */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <div className="grid grid-cols-2 gap-0.5 max-lg:grid-cols-1">
-            <div className="p-8 border border-zinc-800">
-              <p className="font-IBMPlexMono text-xs tracking-[0.18em] uppercase text-zinc-300 mb-3">
-                [1.A] OBJECTIVE WORLD
-              </p>
-              <h3 className="text-xl font-medium mb-2">Measurable</h3>
-              <p className="text-sm leading-relaxed text-zinc-300">
+          <div className="grid grid-cols-2 max-lg:grid-cols-1 gap-0">
+            {/* Objective */}
+            <div className="py-8 pr-10 max-lg:pr-0 max-lg:pb-8 border-r border-zinc-800 max-lg:border-r-0 max-lg:border-b">
+              <span className="font-IBMPlexMono text-[10px] tracking-[0.14em] uppercase text-zinc-600">
+                [1.A] The Objective World
+              </span>
+              <h3 className="mt-3 font-EuclidCircularA text-4xl lg:text-5xl font-light text-zinc-600 leading-none">
+                Measurable
+              </h3>
+              <p className="mt-4 text-sm leading-relaxed text-zinc-500 max-w-[36ch]">
                 Quantifiable. The domain of traditional AI agents — automating tasks, processing
                 data, executing workflows.
               </p>
             </div>
-            <div className="p-8 border border-zinc-800">
-              <p className="font-IBMPlexMono text-xs tracking-[0.18em] uppercase text-zinc-300 mb-3">
-                [1.B] SUBJECTIVE WORLD
-              </p>
-              <h3 className="text-xl font-medium mb-2 text-[#1bff1b]">Emotional</h3>
-              <p className="text-sm leading-relaxed text-zinc-300">
+
+            {/* Subjective */}
+            <div className="py-8 pl-10 max-lg:pl-0 max-lg:pt-8">
+              <span className="font-IBMPlexMono text-[10px] tracking-[0.14em] uppercase text-zinc-500">
+                [1.B] The Subjective World
+              </span>
+              <h3 className="mt-3 font-EuclidCircularA text-4xl lg:text-5xl font-medium text-[#1bff1b] leading-none">
+                Emotional
+              </h3>
+              <p className="mt-4 text-sm leading-relaxed text-zinc-300 max-w-[36ch]">
                 Contextual. The domain of human decisions — why people choose, hesitate, trust, and
                 act.
               </p>
