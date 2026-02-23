@@ -406,7 +406,7 @@ export const CLIENTS = [
 /* ─── Image prompts ─── */
 
 export const HERO_PROMPT =
-  "A single massive translucent polyhedron with internal fractures, suspended in vast dark blue-gray void. Inside it, barely visible green particle streams flow slowly like veins. The surface catches cold light. Extremely sparse luminous particles drift in the surrounding emptiness. Cold palette: dark indigo-black background, steel gray and cool white on the form, faint green glow from within. Film grain texture. No text.";
+  "Abstract emotional topology: soft drifting gradients, fractured signal ribbons, tiny pixel silhouettes appearing and dissolving at edges. Organic but controlled, with subtle green pulse accents and analog film texture. Vast negative space. No text.";
 
 /** Background images that shift as user scrolls — one per chapter (01-06) + closing */
 export const BG_PROMPTS = [

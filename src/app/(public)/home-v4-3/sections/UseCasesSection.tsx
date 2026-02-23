@@ -189,7 +189,7 @@ function StoryTechnical() {
     <div className="grid grid-cols-[1fr_1fr] gap-8 max-lg:grid-cols-1">
       {/* Code-like panel */}
       <div className="bg-zinc-900 p-5 font-IBMPlexMono text-xs leading-relaxed">
-        <div className="text-zinc-500 mb-2">// MCP Integration</div>
+        <div className="text-zinc-500 mb-2">{"// MCP Integration"}</div>
         <div>
           <span className="text-[#8b5cf6]">const</span>{" "}
           <span className="text-zinc-300">sentiment</span>{" "}
@@ -211,7 +211,7 @@ function StoryTechnical() {
         </div>
         <div className="text-zinc-500">{"})"}</div>
         <div className="mt-2 text-zinc-500">
-          // → {"{"} prediction: 0.73, confidence: &quot;high&quot; {"}"}
+          {"// → { prediction: 0.73, confidence: \"high\" }"}
         </div>
       </div>
 
