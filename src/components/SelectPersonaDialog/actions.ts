@@ -7,6 +7,7 @@ import { Persona } from "@/prisma/client";
 import { PersonaWhereInput } from "@/prisma/models";
 import { prismaRO } from "@/prisma/prisma";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
+import { PersonasSearchResult } from "@/search/types";
 import { getServerSession } from "next-auth";
 import { Locale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -43,23 +44,31 @@ export async function fetchPersonasWithMeili({
   let totalPages = 0;
   if (searchQuery) {
     // 统一使用 Meilisearch 搜索
-    const searchResults = isPrivate
-      ? // 搜索用户自己的 personas（所有 tier）
-        await searchPersonasFromMeili({
-          query: searchQuery,
-          userId: userId,
-          locales: [locale],
-          page,
-          pageSize,
-        })
-      : // 搜索公开的 personas（tier 1, 2）
-        await searchPersonasFromMeili({
-          query: searchQuery,
-          tiers: [PersonaTier.Tier1, PersonaTier.Tier2],
-          locales: [locale],
-          page,
-          pageSize,
-        });
+    let searchResults: PersonasSearchResult;
+    try {
+      searchResults = isPrivate
+        ? // 搜索用户自己的 personas（所有 tier）
+          await searchPersonasFromMeili({
+            query: searchQuery,
+            userId: userId,
+            locales: [locale],
+            page,
+            pageSize,
+          })
+        : // 搜索公开的 personas（tier 1, 2）
+          await searchPersonasFromMeili({
+            query: searchQuery,
+            tiers: [PersonaTier.Tier1, PersonaTier.Tier2],
+            locales: [locale],
+            page,
+            pageSize,
+          });
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error searching personas with meilisearch: ${(error as Error).message}`,
+      };
+    }
 
     totalCount = searchResults.totalHits;
     totalPages = searchResults.totalPages;

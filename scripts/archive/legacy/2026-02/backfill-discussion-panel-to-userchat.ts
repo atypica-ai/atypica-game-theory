@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Backfill personaPanelId from DiscussionTimeline to UserChat.context
 //
 // Problem: When discussions are created via panel projects, the UserChat that triggered
