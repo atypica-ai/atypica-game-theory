@@ -15,25 +15,18 @@ function PersonaAssetMockup() {
         className="w-9 h-9 rounded-full border"
         style={{
           borderColor: "rgba(27,255,27,0.3)",
-          background: "rgba(27,255,27,0.06)",
+          background: "rgba(27,255,27,0.08)",
         }}
       />
       <div className="flex-1 flex flex-col gap-[3px] items-center">
-        <div
-          className="h-1.5 rounded-sm"
-          style={{ width: "45%", background: "rgba(0,0,0,0.08)" }}
-        />
-        <div
-          className="h-1.5 rounded-sm"
-          style={{ width: "30%", background: "rgba(0,0,0,0.05)" }}
-        />
+        <div className="h-1.5 rounded-sm bg-white/8" style={{ width: "45%" }} />
+        <div className="h-1.5 rounded-sm bg-white/6" style={{ width: "30%" }} />
       </div>
       <div className="flex gap-1 flex-wrap justify-center">
         {["Tier-2", "Female", "25-34", "Urban"].map((tag) => (
           <span
             key={tag}
-            className="py-0.5 px-2 font-IBMPlexMono border"
-            style={{ borderColor: "rgba(0,0,0,0.1)", color: "rgba(0,0,0,0.4)", fontSize: 7 }}
+            className="py-0.5 px-2 font-IBMPlexMono text-[7px] border border-zinc-700 text-zinc-500"
           >
             {tag}
           </span>
@@ -46,43 +39,19 @@ function PersonaAssetMockup() {
 function SageAssetMockup() {
   return (
     <div className="relative w-full h-full flex flex-col gap-1.5">
-      <div
-        className="py-2 px-2.5 border"
-        style={{ borderColor: "rgba(0,0,0,0.08)", background: "rgba(147,197,253,0.04)" }}
-      >
-        <div
-          className="font-IBMPlexMono text-[8px] tracking-[0.08em] uppercase mb-1"
-          style={{ color: "rgba(0,0,0,0.3)" }}
-        >
+      <div className="py-2 px-2.5 border border-zinc-700 bg-[rgba(147,197,253,0.04)]">
+        <div className="font-IBMPlexMono text-[8px] tracking-[0.08em] uppercase mb-1 text-zinc-500">
           CORE MEMORY
         </div>
-        <div
-          className="h-1.5 rounded-sm"
-          style={{ width: "80%", background: "rgba(0,0,0,0.06)" }}
-        />
-        <div
-          className="h-1.5 rounded-sm mt-[3px]"
-          style={{ width: "60%", background: "rgba(0,0,0,0.04)" }}
-        />
+        <div className="h-1.5 rounded-sm bg-white/8" style={{ width: "80%" }} />
+        <div className="h-1.5 rounded-sm bg-white/6 mt-[3px]" style={{ width: "60%" }} />
       </div>
-      <div
-        className="py-2 px-2.5 border"
-        style={{ borderColor: "rgba(0,0,0,0.06)", background: "rgba(147,197,253,0.02)" }}
-      >
-        <div
-          className="font-IBMPlexMono text-[8px] tracking-[0.08em] uppercase mb-1"
-          style={{ color: "rgba(0,0,0,0.25)" }}
-        >
+      <div className="py-2 px-2.5 border border-zinc-700/60 bg-[rgba(147,197,253,0.02)]">
+        <div className="font-IBMPlexMono text-[8px] tracking-[0.08em] uppercase mb-1 text-zinc-600">
           WORKING MEMORY
         </div>
-        <div
-          className="h-1.5 rounded-sm"
-          style={{ width: "70%", background: "rgba(0,0,0,0.05)" }}
-        />
-        <div
-          className="h-1.5 rounded-sm mt-[3px]"
-          style={{ width: "45%", background: "rgba(0,0,0,0.03)" }}
-        />
+        <div className="h-1.5 rounded-sm bg-white/6" style={{ width: "70%" }} />
+        <div className="h-1.5 rounded-sm bg-white/4 mt-[3px]" style={{ width: "45%" }} />
       </div>
     </div>
   );
@@ -99,21 +68,12 @@ function PanelAssetMockup() {
               className="w-2 h-2 rounded-full"
               style={{ backgroundColor: colors[i], opacity: 0.5 }}
             />
-            <span className="font-IBMPlexMono text-[8px]" style={{ color: "rgba(0,0,0,0.35)" }}>
-              {name}
-            </span>
+            <span className="font-IBMPlexMono text-[8px] text-zinc-500">{name}</span>
           </div>
-          <div
-            className="py-1.5 px-2 self-center"
-            style={{
-              borderColor: "rgba(0,0,0,0.06)",
-              background: "rgba(0,0,0,0.02)",
-              border: "1px solid rgba(0,0,0,0.06)",
-            }}
-          >
+          <div className="py-1.5 px-2 self-center border border-zinc-700 bg-zinc-800/50">
             <div
-              className="h-1.5 rounded-sm"
-              style={{ width: `${55 + i * 10}%`, background: "rgba(0,0,0,0.06)" }}
+              className="h-1.5 rounded-sm bg-white/8"
+              style={{ width: `${55 + i * 10}%` }}
             />
           </div>
         </div>
@@ -135,12 +95,12 @@ export default function DataAssetsSection({
       id={copy.id}
       className="relative z-2 py-20 border-t border-zinc-800 max-lg:py-15"
     >
-      <ChapterPanel variant="light">
+      <ChapterPanel variant="dark">
         <div className="mb-12">
-          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#15b025] mb-4">
+          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
             {copy.number}
           </div>
-          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500 mb-3">
+          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">
             {copy.kicker}
           </p>
           <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">
@@ -149,7 +109,7 @@ export default function DataAssetsSection({
           {copy.body.map((text) => (
             <p
               key={text}
-              className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-500"
+              className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-300"
             >
               {text}
             </p>
@@ -166,22 +126,22 @@ export default function DataAssetsSection({
             {DATA_ASSETS.map((asset, i) => {
               const Mockup = ASSET_MOCKUPS[i];
               return (
-                <div key={asset.key} className="border border-zinc-200 bg-white flex flex-col">
-                  <div className="aspect-video bg-[#f5f5f3] border-b border-zinc-200 relative overflow-hidden p-4">
+                <div key={asset.key} className="border border-zinc-800 bg-zinc-900 flex flex-col">
+                  <div className="aspect-video bg-zinc-800/60 border-b border-zinc-800 relative overflow-hidden p-4">
                     <Mockup />
                   </div>
                   <div className="p-5 flex-1">
-                    <h3 className="text-lg font-medium text-gray-900 mb-1.5">{asset.title}</h3>
-                    <p className="text-sm leading-relaxed text-zinc-500 mb-4">
+                    <h3 className="text-lg font-medium text-white mb-1.5">{asset.title}</h3>
+                    <p className="text-sm leading-relaxed text-zinc-300 mb-4">
                       {asset.description}
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {asset.stats.map((stat) => (
-                        <div key={stat.label} className="border border-zinc-200 py-2 px-2.5">
-                          <div className="font-IBMPlexMono text-[9px] tracking-[0.1em] uppercase text-zinc-500">
+                        <div key={stat.label} className="border border-zinc-800 py-2 px-2.5">
+                          <div className="font-IBMPlexMono text-[9px] tracking-[0.1em] uppercase text-zinc-400">
                             {stat.label}
                           </div>
-                          <div className="text-sm font-medium text-gray-900 mt-0.5">
+                          <div className="text-sm font-medium text-white mt-0.5">
                             {stat.value}
                           </div>
                         </div>

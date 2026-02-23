@@ -41,14 +41,14 @@ function SimulatorMockup() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-3 p-1">
+    <div className="flex flex-col gap-3 p-3">
       {/* 3-step progress */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         {BUILD_STEPS.map((label, i) => (
-          <div key={label} className="flex items-center gap-1 flex-1">
+          <div key={label} className="flex items-center gap-1.5 flex-1">
             <div
               className={cn(
-                "w-5 h-5 rounded-full grid place-items-center text-[7px] font-IBMPlexMono transition-colors duration-500",
+                "w-6 h-6 rounded-full grid place-items-center text-[10px] font-IBMPlexMono transition-colors duration-500",
                 i < step
                   ? "bg-[#1bff1b]/30 text-[#1bff1b]"
                   : i === step
@@ -60,7 +60,7 @@ function SimulatorMockup() {
             </div>
             <span
               className={cn(
-                "font-IBMPlexMono text-[7px] tracking-wide transition-colors duration-500",
+                "font-IBMPlexMono text-[10px] tracking-wide transition-colors duration-500",
                 i <= step ? "text-zinc-300" : "text-zinc-600",
               )}
             >
@@ -89,32 +89,32 @@ function SimulatorMockup() {
             transition={{ duration: 0.4 }}
             className="border border-[rgba(27,255,27,0.15)] bg-[rgba(27,255,27,0.03)] p-3"
           >
-            <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-7 h-7 rounded-full bg-[rgba(27,255,27,0.12)] border border-[rgba(27,255,27,0.25)] grid place-items-center text-[8px] text-[#1bff1b]">
+            <div className="flex items-center gap-2.5 mb-2.5">
+              <div className="w-8 h-8 rounded-full bg-[rgba(27,255,27,0.12)] border border-[rgba(27,255,27,0.25)] grid place-items-center text-[10px] text-[#1bff1b]">
                 AI
               </div>
               <div>
-                <div className="text-[10px] font-medium text-zinc-200">Persona #1042</div>
-                <div className="font-IBMPlexMono text-[7px] text-zinc-500">
+                <div className="text-xs font-medium text-zinc-200">Persona #1042</div>
+                <div className="font-IBMPlexMono text-[10px] text-zinc-500">
                   Tier 2 · Female · 25-34
                 </div>
               </div>
             </div>
-            <div className="flex gap-1 flex-wrap mb-2">
+            <div className="flex gap-1.5 flex-wrap mb-2.5">
               {PERSONA_TAGS.map((tag) => (
                 <span
                   key={tag}
-                  className="py-0.5 px-1.5 font-IBMPlexMono text-[6px] border border-[rgba(27,255,27,0.2)] text-[rgba(27,255,27,0.6)]"
+                  className="py-0.5 px-2 font-IBMPlexMono text-[9px] border border-[rgba(27,255,27,0.2)] text-[rgba(27,255,27,0.6)]"
                 >
                   {tag}
                 </span>
               ))}
             </div>
             {/* Mini dimension bars */}
-            <div className="grid grid-cols-3 gap-x-3 gap-y-1">
+            <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
               {DIMENSIONS.map((d) => (
-                <div key={d.label} className="flex items-center gap-1">
-                  <span className="font-IBMPlexMono text-[6px] text-zinc-500 w-10 shrink-0">
+                <div key={d.label} className="flex items-center gap-1.5">
+                  <span className="font-IBMPlexMono text-[9px] text-zinc-500 w-12 shrink-0">
                     {d.label}
                   </span>
                   <div className="flex-1 h-1 bg-zinc-800 overflow-hidden">
@@ -135,7 +135,7 @@ function SimulatorMockup() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="border border-zinc-800 bg-zinc-800/30 p-3 space-y-2"
+            className="border border-zinc-800 bg-zinc-800/30 p-3 space-y-2.5"
           >
             {/* Skeleton lines with stagger animation */}
             {[0.7, 0.5, 0.85].map((w, i) => (
@@ -193,7 +193,7 @@ function ResearcherMockup() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-1.5 p-1">
+    <div className="flex flex-col gap-2 p-3">
       {/* Progress bar */}
       <div className="flex items-center gap-2 mb-1">
         <div className="flex-1 h-0.5 bg-zinc-800 overflow-hidden">
@@ -203,20 +203,20 @@ function ResearcherMockup() {
             transition={{ duration: 0.4 }}
           />
         </div>
-        <span className="font-IBMPlexMono text-[7px] text-zinc-500">
+        <span className="font-IBMPlexMono text-[10px] text-zinc-500">
           {visibleCount}/{INTERVIEW_MESSAGES.length}
         </span>
       </div>
 
-      {/* Chat messages */}
-      {INTERVIEW_MESSAGES.slice(0, visibleCount).map((msg, i) => (
+      {/* Chat messages — sliding window: show max 3 at a time */}
+      {INTERVIEW_MESSAGES.slice(Math.max(0, visibleCount - 3), visibleCount).map((msg, i) => (
         <motion.div
-          key={i}
+          key={Math.max(0, visibleCount - 3) + i}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           className={cn(
-            "py-1.5 px-2.5 rounded-lg max-w-[82%] text-[8px] leading-[1.5]",
+            "py-1.5 px-2 rounded-sm max-w-[82%] text-[11px] leading-relaxed",
             msg.role === "researcher"
               ? "self-start bg-[rgba(147,197,253,0.12)] border border-[rgba(147,197,253,0.2)] text-zinc-300"
               : "self-end bg-zinc-800 border border-zinc-700 text-zinc-400",
@@ -302,7 +302,7 @@ export default function TwoAgentsSection({
               <p className="text-sm leading-relaxed text-zinc-300 mb-5">{SIMULATOR.description}</p>
 
               {/* Animated persona building mockup */}
-              <div className="mb-4 border border-zinc-800 bg-zinc-900 min-h-[180px]">
+              <div className="mb-4 border border-zinc-800 bg-zinc-900 min-h-[195px] overflow-hidden">
                 <SimulatorMockup />
               </div>
 
@@ -333,7 +333,7 @@ export default function TwoAgentsSection({
               <p className="text-sm leading-relaxed text-zinc-300 mb-5">{RESEARCHER.description}</p>
 
               {/* Animated interview mockup */}
-              <div className="mb-4 border border-zinc-800 bg-zinc-900 min-h-[180px]">
+              <div className="mb-4 border border-zinc-800 bg-zinc-900 min-h-[195px] overflow-hidden">
                 <ResearcherMockup />
               </div>
 
