@@ -5,6 +5,7 @@ import styles from "./HomeV43.module.css";
 import { CHAPTERS } from "./content";
 import ScrollBackground from "./sections/ScrollBackground";
 import HeroSection from "./sections/HeroSection";
+import LogoWall from "./sections/LogoWall";
 import TwoWorldsSection from "./sections/TwoWorldsSection";
 import TwoAgentsSection from "./sections/TwoAgentsSection";
 import WorldModelSection from "./sections/WorldModelSection";
@@ -141,12 +142,12 @@ export default function HomeV43Page() {
       {/* Fixed scroll background */}
       <ScrollBackground activeScene={activeScene} />
 
-      {/* Scene 0: Hero — full-width centered, no nav offset */}
+      {/* Scene 0: Hero — full-width centered */}
       <HeroSection register={registerScene(0)} />
 
       {/* Chapters area: nav + content */}
       <div className={styles.chaptersArea}>
-        {/* Sticky side navigation — scrolls in with chapters, then sticks */}
+        {/* Sticky side navigation */}
         <nav className={styles.sideNav}>
           {CHAPTERS.map((ch, i) => (
             <button
@@ -166,11 +167,14 @@ export default function HomeV43Page() {
           {SECTION_COMPONENTS.map((Component, i) => (
             <Component key={CHAPTERS[i].id} register={registerChapter(i)} />
           ))}
-
-          {/* Closing */}
-          <ClosingSection register={registerScene(7)} />
         </div>
       </div>
+
+      {/* Logo wall — between chapters and closing */}
+      <LogoWall />
+
+      {/* Closing — full-width, like Hero */}
+      <ClosingSection register={registerScene(7)} />
     </main>
   );
 }

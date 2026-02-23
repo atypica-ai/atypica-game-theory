@@ -125,6 +125,57 @@
   mix-blend-mode: multiply;
 }
 
+/* ─── Logo wall (between Hero and chapters) ─── */
+
+.logoWall {
+  position: relative;
+  z-index: 2;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 180px 0 96px;
+  overflow: hidden;
+  /* Fade edges */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+.logoTrack {
+  display: flex;
+  gap: 56px;
+  width: max-content;
+  animation: logoScroll 25s linear infinite;
+}
+
+.logoItem {
+  font-family: "EuclidCircularA", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.3);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+@keyframes logoScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 /* ─── Hero section (dark) ─── */
 
 .hero {
@@ -849,8 +900,14 @@
 .closing {
   position: relative;
   z-index: 2;
-  padding: 80px 0;
-  border-top: 1px solid var(--line-white);
+  padding: 96px 24px 180px;
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
+
+.closingFull {
+  position: relative;
+  z-index: 2;
 }
 
 .clientSection {
