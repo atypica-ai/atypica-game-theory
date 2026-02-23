@@ -168,7 +168,7 @@ export const WORLD_MODEL_DIMENSIONS = [
 ] as const;
 
 export const DIMENSION_PALETTE = [
-  "#4ade80", "#93c5fd", "#f59e0b", "#f472b6", "#22d3ee", "#a78bfa",
+  "#1bff1b", "#93c5fd", "#f59e0b", "#f472b6", "#22d3ee", "#a78bfa",
 ] as const;
 
 /* ─── 04: Three Modes ─── */
@@ -180,7 +180,7 @@ export const THREE_MODES = [
     badge: "SIGNAL",
     description: "Always-on intelligence. The agent continuously absorbs signals from social media, surfaces trends, and delivers findings without being asked.",
     link: "/newstudy",
-    accent: "#4ade80",
+    accent: "#1bff1b",
   },
   {
     key: "deep",
@@ -213,7 +213,7 @@ export const DATA_ASSETS = [
       { label: "Accuracy", value: "85%" },
       { label: "Tier System", value: "0\u20133" },
     ],
-    accent: "#4ade80",
+    accent: "#1bff1b",
   },
   {
     key: "sage",

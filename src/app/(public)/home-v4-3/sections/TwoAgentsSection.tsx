@@ -13,7 +13,7 @@ function PersonaMockup() {
     <div className={styles.mockupPersona}>
       <div
         className={styles.mockupPersonaAvatar}
-        style={{ borderColor: "rgba(74,222,128,0.3)", background: "rgba(74,222,128,0.08)" }}
+        style={{ borderColor: "rgba(27,255,27,0.3)", background: "rgba(27,255,27,0.08)" }}
       />
       <div className={styles.mockupLines}>
         <div className={styles.mockupLine} style={{ width: "50%", margin: "0 auto" }} />
@@ -24,7 +24,7 @@ function PersonaMockup() {
           <span
             key={tag}
             className={styles.mockupPersonaTag}
-            style={{ borderColor: "rgba(74,222,128,0.2)", color: "rgba(74,222,128,0.6)" }}
+            style={{ borderColor: "rgba(27,255,27,0.2)", color: "rgba(27,255,27,0.6)" }}
           >
             {tag}
           </span>
@@ -84,7 +84,7 @@ export default function TwoAgentsSection({
         <div className={styles.agentsGrid}>
           {/* Simulator card */}
           <div className={styles.agentCard}>
-            <div className={styles.agentTag} style={{ color: "#4ade80" }}>
+            <div className={styles.agentTag} style={{ color: "#1bff1b" }}>
               {SIMULATOR.tag}
             </div>
             <h3 className={styles.agentTitle}>{SIMULATOR.title}</h3>

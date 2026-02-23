@@ -12,7 +12,7 @@ import {
 
 const copy = CHAPTERS[2];
 
-const LAYER_COLORS = ["#4ade80", "#93c5fd", "#f59e0b", "#a78bfa"] as const;
+const LAYER_COLORS = ["#1bff1b", "#93c5fd", "#f59e0b", "#a78bfa"] as const;
 
 export default function WorldModelSection({
   register,

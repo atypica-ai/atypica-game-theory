@@ -46,7 +46,7 @@ export default function TwoWorldsSection({
           </div>
           <div className={styles.worldCard}>
             <p className={styles.worldCardLabel}>[1.B] SUBJECTIVE WORLD</p>
-            <h3 className={styles.worldCardTitle} style={{ color: "#4ade80" }}>
+            <h3 className={styles.worldCardTitle} style={{ color: "#1bff1b" }}>
               Emotional
             </h3>
             <p className={styles.worldCardBody}>

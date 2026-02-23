@@ -16,20 +16,20 @@ function SignalMockup() {
         {/* Trend lines */}
         <polyline
           points="0,70 30,65 50,50 80,55 100,35 130,40 160,25 200,30"
-          stroke="rgba(74,222,128,0.3)"
+          stroke="rgba(27,255,27,0.3)"
           strokeWidth="1.5"
           fill="none"
         />
         <polyline
           points="0,80 40,75 70,60 100,65 140,50 170,45 200,50"
-          stroke="rgba(74,222,128,0.15)"
+          stroke="rgba(27,255,27,0.15)"
           strokeWidth="1"
           fill="none"
         />
         {/* Signal dots */}
-        <circle cx="100" cy="35" r="2" fill="rgba(74,222,128,0.5)" />
-        <circle cx="160" cy="25" r="2" fill="rgba(74,222,128,0.5)" />
-        <circle cx="50" cy="50" r="1.5" fill="rgba(74,222,128,0.3)" />
+        <circle cx="100" cy="35" r="2" fill="rgba(27,255,27,0.5)" />
+        <circle cx="160" cy="25" r="2" fill="rgba(27,255,27,0.5)" />
+        <circle cx="50" cy="50" r="1.5" fill="rgba(27,255,27,0.3)" />
         {/* Platform labels */}
         <text x="8" y="15" fontSize="6" fill="rgba(255,255,255,0.2)" fontFamily="monospace">XIAOHONGSHU</text>
         <text x="8" y="25" fontSize="6" fill="rgba(255,255,255,0.2)" fontFamily="monospace">TIKTOK</text>

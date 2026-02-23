@@ -16,8 +16,8 @@ function PersonaAssetMockup() {
         style={{
           width: 36,
           height: 36,
-          borderColor: "rgba(74,222,128,0.3)",
-          background: "rgba(74,222,128,0.06)",
+          borderColor: "rgba(27,255,27,0.3)",
+          background: "rgba(27,255,27,0.06)",
         }}
       />
       <div className={styles.mockupLines} style={{ alignItems: "center" }}>
@@ -61,7 +61,7 @@ function SageAssetMockup() {
 }
 
 function PanelAssetMockup() {
-  const colors = ["#4ade80", "#93c5fd", "#f59e0b", "#f472b6"];
+  const colors = ["#1bff1b", "#93c5fd", "#f59e0b", "#f472b6"];
   return (
     <div className={styles.mockupPanel} style={{ height: "100%" }}>
       {["Moderator", "Persona A", "Persona B", "Persona C"].map((name, i) => (
