@@ -68,7 +68,7 @@ function DeepMockup() {
           />
           <span className="font-IBMPlexMono text-[8px] text-white/40">{stage}</span>
           <div
-            className="ml-auto h-1 rounded-sm bg-white/[0.08]"
+            className="ml-auto h-1 rounded-sm bg-white/8"
             style={{
               width: i < 3 ? `${30 + i * 15}px` : "20px",
               backgroundColor: i < 3 ? "rgba(147,197,253,0.2)" : "rgba(147,197,253,0.08)",
@@ -87,10 +87,10 @@ function LiveMockup() {
         className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-start border"
         style={{ borderColor: "rgba(245,158,11,0.2)", background: "rgba(245,158,11,0.08)" }}
       >
-        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "80%" }} />
-        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "55%", marginTop: 3 }} />
+        <div className="h-1.5 rounded-sm bg-white/8" style={{ width: "80%" }} />
+        <div className="h-1.5 rounded-sm bg-white/8" style={{ width: "55%", marginTop: 3 }} />
       </div>
-      <div className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-end bg-white/[0.06] border border-white/[0.08]">
+      <div className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-end bg-white/6 border border-white/8">
         <div
           className="h-1.5 rounded-sm"
           style={{ width: "65%", background: "rgba(255,255,255,0.1)" }}
@@ -100,8 +100,8 @@ function LiveMockup() {
         className="py-1.5 px-2.5 rounded-lg max-w-[75%] self-start border"
         style={{ borderColor: "rgba(245,158,11,0.2)", background: "rgba(245,158,11,0.08)" }}
       >
-        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "90%" }} />
-        <div className="h-1.5 rounded-sm bg-white/[0.08]" style={{ width: "70%", marginTop: 3 }} />
+        <div className="h-1.5 rounded-sm bg-white/8" style={{ width: "90%" }} />
+        <div className="h-1.5 rounded-sm bg-white/8" style={{ width: "70%", marginTop: 3 }} />
       </div>
     </div>
   );
@@ -118,14 +118,14 @@ export default function ThreeModesSection({
     <section
       ref={register}
       id={copy.id}
-      className="relative z-[2] py-20 border-t border-white/10 max-lg:py-[60px]"
+      className="relative z-2 py-20 border-t border-white/10 max-lg:py-15"
     >
       <ChapterPanel variant="dark">
         <div className="max-w-[1120px] mb-12">
-          <div className="font-IBMPlexMono text-[11px] tracking-[0.18em] text-[#1bff1b] mb-4">
+          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
             {copy.number}
           </div>
-          <p className="font-IBMPlexMono text-[11px] tracking-[0.14em] uppercase text-white/55 mb-3">
+          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-white/55 mb-3">
             {copy.kicker}
           </p>
           <h2 className="m-0 font-EuclidCircularA text-[clamp(28px,3.5vw,52px)] font-medium leading-[1.1]">
@@ -134,7 +134,7 @@ export default function ThreeModesSection({
           {copy.body.map((text) => (
             <p
               key={text}
-              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-[1.7] text-white/55"
+              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-relaxed text-white/55"
             >
               {text}
             </p>
@@ -153,19 +153,19 @@ export default function ThreeModesSection({
               const Mockup = MOCKUPS[i];
               return (
                 <Link key={mode.key} href={mode.link} className={styles.modeCard}>
-                  <div className="aspect-[16/10] bg-white/[0.03] border-b border-white/10 relative overflow-hidden p-4">
+                  <div className="aspect-video bg-white/3 border-b border-white/10 relative overflow-hidden p-4">
                     <Mockup />
                   </div>
                   <div className="p-5 flex-1">
                     <div
-                      className="font-IBMPlexMono text-[10px] tracking-[0.18em] uppercase mb-2"
+                      className="font-IBMPlexMono text-xs tracking-[0.18em] uppercase mb-2"
                       style={{ color: mode.accent }}
                     >
                       {mode.badge}
                     </div>
-                    <h3 className="text-[18px] font-medium mb-2">{mode.title}</h3>
-                    <p className="text-[13px] leading-[1.6] text-white/55">{mode.description}</p>
-                    <p className="mt-3 font-IBMPlexMono text-[11px] text-[#1bff1b]">
+                    <h3 className="text-lg font-medium mb-2">{mode.title}</h3>
+                    <p className="text-sm leading-relaxed text-white/55">{mode.description}</p>
+                    <p className="mt-3 font-IBMPlexMono text-xs text-[#1bff1b]">
                       Explore &rarr;
                     </p>
                   </div>

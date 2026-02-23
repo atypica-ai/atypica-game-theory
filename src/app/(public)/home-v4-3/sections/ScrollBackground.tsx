@@ -19,7 +19,7 @@ type ScrollBackgroundProps = {
 
 export default function ScrollBackground({ activeScene }: ScrollBackgroundProps) {
   return (
-    <div className="fixed inset-0 z-[1] pointer-events-none" aria-hidden="true">
+    <div className="fixed inset-0 z-1 pointer-events-none" aria-hidden="true">
       {ALL_BG_PROMPTS.map((prompt, idx) => {
         // Skip hero (idx 0) -- HeroSection renders its own bg
         if (idx === 0) return null;
@@ -29,9 +29,9 @@ export default function ScrollBackground({ activeScene }: ScrollBackgroundProps)
           <Image
             key={prompt}
             className={cn(
-              "object-cover opacity-0 transition-opacity duration-[1200ms] ease-in-out",
+              "object-cover opacity-0 transition-opacity duration-1200 ease-in-out",
               light ? styles.bgImageLight : styles.bgImageDark,
-              active && "opacity-[0.15]",
+              active && "opacity-15",
             )}
             src={`/api/imagegen/dev/${encodeURIComponent(prompt)}?ratio=landscape`}
             alt=""

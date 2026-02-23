@@ -46,7 +46,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
 
       {/* Content */}
       <motion.div
-        className="relative z-[1] px-6 pb-[8vh] max-w-[1400px] mx-auto max-lg:px-[5vw] max-lg:pb-[5vh]"
+        className="relative z-1 px-6 pb-[8vh] max-w-[1400px] mx-auto max-lg:px-[5vw] max-lg:pb-[5vh]"
         style={{ y: textY, opacity: bgOpacity }}
       >
         <motion.div
@@ -54,7 +54,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-flex items-center gap-2 py-[5px] px-3.5 border border-[rgba(27,255,27,0.3)] bg-white/[0.04] backdrop-blur-[4px] font-IBMPlexMono text-[11px] tracking-[0.17em] uppercase text-[#1bff1b]">
+          <span className="inline-flex items-center gap-2 py-1 px-3.5 border border-[rgba(27,255,27,0.3)] bg-white/4 backdrop-blur-sm font-IBMPlexMono text-xs tracking-[0.17em] uppercase text-[#1bff1b]">
             <motion.span
               className="w-1.5 h-1.5 rounded-full bg-[#15b025]"
               animate={{ opacity: [1, 0.4, 1] }}
@@ -76,7 +76,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
         </motion.h1>
 
         <motion.p
-          className="mt-5 max-w-[52ch] text-[clamp(15px,1.1vw,18px)] leading-[1.7] text-white/50"
+          className="mt-5 max-w-[52ch] text-[clamp(15px,1.1vw,18px)] leading-relaxed text-white/50"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
@@ -92,14 +92,14 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
         >
           <Link
             href="/newstudy"
-            className="inline-flex items-center gap-2 h-11 px-6 bg-[#1bff1b] text-black font-medium text-[13px] tracking-[0.04em] no-underline transition-colors duration-200 hover:bg-[#15b025]"
+            className="inline-flex items-center gap-2 h-11 px-6 bg-[#1bff1b] text-black font-medium text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:bg-[#15b025]"
           >
             {HERO.cta}
             <span aria-hidden="true">&rarr;</span>
           </Link>
           <Link
             href="#two-worlds"
-            className="inline-flex items-center h-11 px-6 text-white/50 text-[13px] tracking-[0.04em] no-underline transition-colors duration-200 hover:text-white/85"
+            className="inline-flex items-center h-11 px-6 text-white/50 text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:text-white/85"
           >
             {HERO.secondaryCta}
           </Link>
@@ -114,7 +114,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
           {HERO.badges.map((badge) => (
             <span
               key={badge}
-              className="py-[5px] px-3.5 border border-white/[0.12] font-IBMPlexMono text-[11px] tracking-[0.06em] text-white/45"
+              className="py-1 px-3.5 border border-white/12 font-IBMPlexMono text-xs tracking-[0.06em] text-white/45"
             >
               {badge}
             </span>

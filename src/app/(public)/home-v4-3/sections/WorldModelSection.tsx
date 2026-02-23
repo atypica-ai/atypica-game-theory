@@ -37,14 +37,14 @@ export default function WorldModelSection({
     <section
       ref={register}
       id={copy.id}
-      className="relative z-[2] py-20 border-t border-white/10 max-lg:py-[60px]"
+      className="relative z-2 py-20 border-t border-white/10 max-lg:py-15"
     >
       <ChapterPanel variant="dark">
         <div className="max-w-[1120px] mb-12">
-          <div className="font-IBMPlexMono text-[11px] tracking-[0.18em] text-[#1bff1b] mb-4">
+          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
             {copy.number}
           </div>
-          <p className="font-IBMPlexMono text-[11px] tracking-[0.14em] uppercase text-white/55 mb-3">
+          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-white/55 mb-3">
             {copy.kicker}
           </p>
           <h2 className="m-0 font-EuclidCircularA text-[clamp(28px,3.5vw,52px)] font-medium leading-[1.1]">
@@ -53,7 +53,7 @@ export default function WorldModelSection({
           {copy.body.map((text) => (
             <p
               key={text}
-              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-[1.7] text-white/55"
+              className="mt-4 max-w-[64ch] text-[clamp(15px,1.1vw,18px)] leading-relaxed text-white/55"
             >
               {text}
             </p>
@@ -69,7 +69,7 @@ export default function WorldModelSection({
         >
           <div className="grid grid-cols-[7fr_5fr] gap-6 items-start max-lg:grid-cols-1">
             {/* Orbit diagram */}
-            <div className="relative border border-white/10 bg-white/[0.03] p-5">
+            <div className="relative border border-white/10 bg-white/3 p-5">
               <div className="relative w-full aspect-square max-w-[520px] mx-auto">
                 <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" fill="none">
                   {/* 4 concentric layer rings */}
@@ -130,7 +130,7 @@ export default function WorldModelSection({
 
                 {/* Center core */}
                 <motion.div
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[52px] h-[52px] rounded-full border border-white/20 bg-white/[0.06] grid place-items-center font-IBMPlexMono text-[10px] tracking-[0.08em]"
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-13 h-13 rounded-full border border-white/20 bg-white/6 grid place-items-center font-IBMPlexMono text-xs tracking-[0.08em]"
                   animate={{
                     boxShadow: [`0 0 0 0 ${activeColor}44`, `0 0 0 12px ${activeColor}00`],
                   }}
@@ -145,8 +145,8 @@ export default function WorldModelSection({
                     key={n.key}
                     type="button"
                     className={cn(
-                      "absolute -translate-x-1/2 -translate-y-1/2 border border-white/15 bg-white/[0.05] py-1 px-2.5 text-[11px] tracking-[0.03em] cursor-pointer whitespace-nowrap text-white/70 transition-[border-color,background] duration-200",
-                      i === activeNode && "border-white/40 bg-white/[0.12] text-white",
+                      "absolute -translate-x-1/2 -translate-y-1/2 border border-white/15 bg-white/5 py-1 px-2.5 text-xs tracking-[0.03em] cursor-pointer whitespace-nowrap text-white/70 transition-[border-color,background] duration-200",
+                      i === activeNode && "border-white/40 bg-white/12 text-white",
                     )}
                     style={{ left: `${n.x}%`, top: `${n.y}%` }}
                     onMouseEnter={() => {
@@ -162,23 +162,23 @@ export default function WorldModelSection({
             </div>
 
             {/* Right panel */}
-            <div className="border border-white/10 bg-white/[0.03] p-6">
+            <div className="border border-white/10 bg-white/3 p-6">
               {showingLayer && displayLayer ? (
                 <>
-                  <p className="font-IBMPlexMono text-[10px] tracking-[0.16em] uppercase text-white/55">
+                  <p className="font-IBMPlexMono text-xs tracking-[0.16em] uppercase text-white/55">
                     Model Layer
                   </p>
                   <h3
-                    className="mt-2.5 text-[20px] font-medium"
+                    className="mt-2.5 text-xl font-medium"
                     style={{ color: LAYER_COLORS[activeLayer] }}
                   >
                     {displayLayer.label}
                   </h3>
-                  <p className="mt-1.5 text-sm leading-[1.6] text-white/55">
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/55">
                     {displayLayer.description}
                   </p>
                   <p
-                    className="mt-3 font-IBMPlexMono text-[11px]"
+                    className="mt-3 font-IBMPlexMono text-xs"
                     style={{ color: LAYER_COLORS[activeLayer] }}
                   >
                     &rarr; {displayLayer.product}
@@ -186,13 +186,13 @@ export default function WorldModelSection({
                 </>
               ) : (
                 <>
-                  <p className="font-IBMPlexMono text-[10px] tracking-[0.16em] uppercase text-white/55">
+                  <p className="font-IBMPlexMono text-xs tracking-[0.16em] uppercase text-white/55">
                     Dimension
                   </p>
-                  <h3 className="mt-2.5 text-[20px] font-medium" style={{ color: activeColor }}>
+                  <h3 className="mt-2.5 text-xl font-medium" style={{ color: activeColor }}>
                     {node.label}
                   </h3>
-                  <p className="mt-1.5 text-sm leading-[1.6] text-white/55">{node.description}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/55">{node.description}</p>
                 </>
               )}
 
@@ -203,8 +203,8 @@ export default function WorldModelSection({
                     key={layer.key}
                     type="button"
                     className={cn(
-                      "flex items-center gap-2.5 border border-white/10 bg-white/[0.02] py-2.5 px-3.5 text-[13px] text-white/55 cursor-pointer transition-[border-color,background,color] duration-200",
-                      activeLayer === i && "border-white/30 bg-white/[0.08] text-white",
+                      "flex items-center gap-2.5 border border-white/10 bg-white/2 py-2.5 px-3.5 text-sm text-white/55 cursor-pointer transition-[border-color,background,color] duration-200",
+                      activeLayer === i && "border-white/30 bg-white/8 text-white",
                     )}
                     onMouseEnter={() => setActiveLayer(i)}
                     onMouseLeave={() => setActiveLayer(-1)}
@@ -214,7 +214,7 @@ export default function WorldModelSection({
                       style={{ backgroundColor: LAYER_COLORS[i] }}
                     />
                     <span>{layer.label}</span>
-                    <span className="ml-auto font-IBMPlexMono text-[10px] text-white/55">
+                    <span className="ml-auto font-IBMPlexMono text-xs text-white/55">
                       {layer.product}
                     </span>
                   </button>
@@ -223,7 +223,7 @@ export default function WorldModelSection({
 
               {/* Dimension list */}
               <div className="mt-4 grid gap-1.5">
-                <p className="font-IBMPlexMono text-[10px] tracking-[0.16em] uppercase text-white/55">
+                <p className="font-IBMPlexMono text-xs tracking-[0.16em] uppercase text-white/55">
                   6 Dimensions
                 </p>
                 {WORLD_MODEL_DIMENSIONS.map((dim, i) => (
@@ -231,10 +231,8 @@ export default function WorldModelSection({
                     key={dim.key}
                     type="button"
                     className={cn(
-                      "flex items-center gap-2.5 border border-white/10 bg-white/[0.02] py-2.5 px-3.5 text-[13px] text-white/55 cursor-pointer transition-[border-color,background,color] duration-200",
-                      activeNode === i &&
-                        !showingLayer &&
-                        "border-white/30 bg-white/[0.08] text-white",
+                      "flex items-center gap-2.5 border border-white/10 bg-white/2 py-2.5 px-3.5 text-sm text-white/55 cursor-pointer transition-[border-color,background,color] duration-200",
+                      activeNode === i && !showingLayer && "border-white/30 bg-white/8 text-white",
                     )}
                     onMouseEnter={() => {
                       setActiveNode(i);

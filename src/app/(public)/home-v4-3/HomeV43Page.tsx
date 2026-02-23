@@ -148,7 +148,7 @@ export default function HomeV43Page() {
       {/* Chapters area: nav + content */}
       <div className="flex max-w-[1400px] mx-auto">
         {/* Sticky side navigation */}
-        <nav className="sticky top-[120px] self-start shrink-0 w-[160px] z-50 flex-col gap-0.5 pt-20 pr-4 hidden lg:flex">
+        <nav className="sticky top-30 self-start shrink-0 w-40 z-50 flex-col gap-0.5 pt-20 pr-4 hidden lg:flex">
           {CHAPTERS.map((ch, i) => (
             <button
               key={ch.id}
@@ -158,7 +158,7 @@ export default function HomeV43Page() {
             >
               <span
                 className={cn(
-                  "font-IBMPlexMono text-[10px] tracking-[0.12em] min-w-[20px] transition-colors duration-200",
+                  "font-IBMPlexMono text-xs tracking-[0.12em] min-w-5 transition-colors duration-200",
                   i === activeChapter ? "text-[#1bff1b]" : "text-white/25",
                 )}
               >
@@ -166,7 +166,7 @@ export default function HomeV43Page() {
               </span>
               <span
                 className={cn(
-                  "font-IBMPlexMono text-[10px] tracking-[0.08em] uppercase whitespace-nowrap transition-colors duration-200",
+                  "font-IBMPlexMono text-xs tracking-[0.08em] uppercase whitespace-nowrap transition-colors duration-200",
                   i === activeChapter ? "text-white/85" : "text-white/25",
                 )}
               >
