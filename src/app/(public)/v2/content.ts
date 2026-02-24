@@ -50,23 +50,6 @@ export const WORLD_MODEL_LAYERS = [
   { key: "behavior", radius: 15 },
 ] as const;
 
-export const WORLD_MODEL_DIMENSIONS = [
-  { key: "values", x: 50, y: 6 },
-  { key: "risk", x: 88, y: 28 },
-  { key: "emotion", x: 88, y: 72 },
-  { key: "decision", x: 50, y: 94 },
-  { key: "social", x: 12, y: 72 },
-  { key: "cognitive", x: 12, y: 28 },
-] as const;
-
-export const DIMENSION_PALETTE = [
-  "#1bff1b",
-  "#93c5fd",
-  "#f59e0b",
-  "#f472b6",
-  "#22d3ee",
-  "#a78bfa",
-] as const;
 
 /* ─── 04: Three Modes ─── */
 

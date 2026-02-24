@@ -378,7 +378,7 @@
       "titleLine1": "The AI That",
       "titleAccent": "Understands",
       "titleEnd": " Humans",
-      "body": "Most AI does tasks. Atypica models why people choose, hesitate, and decide.",
+      "body": "Most AI is built to do tasks for people. We believe in a second form — AI that understands the subjective world of humans.",
       "cta": "Start a Study",
       "secondaryCta": "How It Works",
       "badgePersonas": "1M+ AI Personas",
@@ -395,37 +395,44 @@
     },
     "twoWorlds": {
       "kicker": "TWO WORLDS",
-      "quote": "The world in our heads is not a precise replica of reality.",
-      "attribution": "— Daniel Kahneman, Thinking, Fast and Slow",
+      "quote": "We do not react to reality, but to the models of reality in our heads.",
+      "attribution": "— Daniel Kahneman",
       "objectiveLabel": "[1.A] Measurable",
       "objectiveTitle": "Objective",
       "objectiveDesc": "The domain of traditional AI — automating tasks, processing data, executing workflows.",
       "subjectiveLabel": "[1.B] Emotional",
       "subjectiveTitle": "Subjective",
-      "subjectiveDesc": "The domain of human decisions — why people choose, hesitate, trust, and act."
+      "subjectiveDesc": "Motivations, preferences, fears, and value hierarchies — understanding these is the key to solving business and social problems."
     },
     "twoAgents": {
       "kicker": "TWO AGENTS",
       "title": "Simulate × Research",
-      "body": "One AI becomes the person. Another asks the right questions.",
+      "body": "One AI simulates people. Another researches them — both real and virtual.",
       "simulator": {
         "tag": "AI SIMULATOR",
-        "title": "AI Simulator",
-        "description": "Becomes a specific person — not a statistical average. Reconstructs how they choose and why they hesitate.",
-        "consumer2c": { "label": "2C Consumer", "description": "Everyday consumers with real purchase behavior, emotional triggers, and brand preferences." },
-        "professional2b": { "label": "2B Professional", "description": "Business buyers with domain expertise, procurement logic, and ROI-driven decision frameworks." },
-        "expert": { "label": "Industry Expert", "description": "Domain experts with two-layer memory — core knowledge and working knowledge that grows through consultation." }
+        "description": "Through the Subjective World Model, simulates a real user — not a statistical average.",
+        "consumer2c": {
+          "label": "2C Consumer",
+          "description": "Simulates everyday consumers and their purchase behavior."
+        },
+        "professional2b": {
+          "label": "2B Professional",
+          "description": "Simulates business buyers in professional procurement scenarios."
+        },
+        "expert": {
+          "label": "Industry Expert",
+          "description": "Simulates domain experts with industry know-how."
+        }
       },
       "researcher": {
         "tag": "AI RESEARCHER",
-        "title": "AI Researcher",
-        "description": "Asks the right questions, probes deeper, draws out what people struggle to articulate.",
+        "description": "Asks questions, guides, and analyzes — works with both real and simulated users.",
         "oneToOne": "One-to-One Interview",
         "oneToMany": "One-to-Many Interview",
         "expertDiscussion": "Expert Discussion",
         "focusGroup": "Focus Group",
-        "multiParty": "Multi-Party Co-Creation",
-        "observation": "Behavior Observation"
+        "multiParty": "Multi-Party Co-Creation Session",
+        "observation": "Continuous Behavior Observation"
       },
       "mockup": {
         "stepParse": "Parse",
@@ -452,41 +459,38 @@
     "worldModel": {
       "kicker": "FOUNDATION MODEL",
       "title": "Subjective World Model",
-      "body": "Trained on 1M+ real human data samples. Four layers of structure that model who people are — not just what they do.",
+      "body": "Trained on 1M real human data samples to simulate the subjective structure of specific individuals. Core hypothesis: human behavior is driven not by knowledge, but by the structure of one's subjective world.",
       "center": "SWM",
-      "datasetTitle": "Four Layers of the Human Subject",
-      "datasetBody": "Each layer captures a different facet of human subjectivity. Together, they produce a model that doesn't just predict — it understands.",
-      "contradiction": "Contradictions between layers are the signal. A person who says they value autonomy but needs external validation to decide is not inconsistent — they are human.",
+      "datasetTitle": "Four-Layer Dataset",
+      "datasetBody": "We define the subjective world not as a single semantic distribution, but as a hierarchical system driven by four structural layers.",
       "layers": {
         "expression": {
           "label": "Expression",
-          "question": "What do they say, and how?",
-          "description": "Language patterns, emotional baseline, declared values — including where declarations contradict actual choices."
+          "question": "How people express themselves",
+          "sources": "Social media, cross-platform expression corpora",
+          "description": "Linguistic style, emotional distribution, value orientation, and identity signals."
         },
         "story": {
           "label": "Story",
-          "question": "What narrative explains their choices?",
-          "description": "Motivation logic, causal stories about success and failure, core fears that drive decisions."
+          "question": "How people explain themselves",
+          "sources": "In-depth interviews, semi-structured interviews",
+          "description": "Motivational logic, causal attribution patterns, and self-concept structure."
         },
         "cognition": {
           "label": "Cognition",
-          "question": "What decision logic under pressure?",
-          "description": "Risk profiles, cognitive biases, value hierarchies — measured, not self-reported."
+          "question": "How people make decisions",
+          "sources": "Behavioral judgment surveys, psychological paradigm tests",
+          "description": "Risk preferences, cognitive biases, value hierarchies, and probabilistic reasoning."
         },
         "behavior": {
           "label": "Behavior",
-          "question": "What do they actually do?",
-          "description": "Real transactions and economic games. Calibrates the full model — exposing where cognition collapses under real constraints."
+          "question": "How people actually act",
+          "sources": "Economic game experiments, real transaction behaviors",
+          "description": "Calibrates how expression and judgment translate into real-world actions under practical constraints."
         }
       },
-      "dimensions": {
-        "values": { "label": "Value Systems", "description": "What matters and why" },
-        "risk": { "label": "Risk Preferences", "description": "How people weigh uncertainty" },
-        "emotion": { "label": "Emotional Triggers", "description": "What moves people to act" },
-        "decision": { "label": "Decision Pathways", "description": "How choices actually get made" },
-        "social": { "label": "Social Influence", "description": "The invisible pull of others" },
-        "cognitive": { "label": "Cognitive Frames", "description": "Mental models that shape perception" }
-      },
+      "sourcesLabel": "Data Sources",
+      "objectiveLabel": "Objective",
       "crossTitle": "What People Say vs. What They Actually Do",
       "crossBody": "The most valuable insight lives in the distance between expression and behavior.",
       "chartStated": "Stated",
@@ -500,15 +504,23 @@
       },
       "crossExamples": {
         "price": { "says": "\"I compare prices.\"", "does": "Pays premium on child education." },
-        "social": { "says": "\"Others don't sway me.\"", "does": "62% of purchases follow social exposure within 48h." },
-        "brand": { "says": "\"I switch for deals.\"", "does": "78% repurchase rate on premium brands." }
+        "social": {
+          "says": "\"Others don't sway me.\"",
+          "does": "62% of purchases follow social exposure within 48h."
+        },
+        "brand": {
+          "says": "\"I switch for deals.\"",
+          "does": "78% repurchase rate on premium brands."
+        }
       },
       "matrixTitle": "Cross-Layer Consistency",
       "matrixNote": "Expression↔Behavior gap is the largest signal — expressions serve identity performance more than self-disclosure.",
       "enablesTitle": "What This Enables",
-      "enableSimulation": "Simulation — test products on synthetic consumers.",
-      "enableCounterfactual": "Counterfactual — change one variable, see decisions shift.",
-      "enableStressTest": "Stress Test — adverse scenarios, map value reshuffling."
+      "enables": {
+        "simulation": { "title": "Simulation", "desc": "Test products on synthetic consumers before they reach real ones." },
+        "counterfactual": { "title": "Counterfactual", "desc": "Change one variable, see how decisions shift across the population." },
+        "stressTest": { "title": "Stress Test", "desc": "Adverse scenarios — map how value hierarchies reshuffle under pressure." }
+      }
     },
     "workflow": {
       "kicker": "WORKFLOW",
@@ -516,73 +528,35 @@
       "body": "Choose your goal. We assemble the workflow.",
       "centerDefault": "Hover a use case to see its workflow",
       "goals": {
-        "consumerInsight": { "label": "Consumer Insight", "desc": "Understand who buys and why" },
-        "conceptTesting": { "label": "Concept Testing", "desc": "Validate ideas before launch" },
-        "brandStrategy": { "label": "Brand Strategy", "desc": "Position and differentiate" },
-        "pricing": { "label": "Pricing Strategy", "desc": "Find the right price point" },
-        "socialListening": { "label": "Social Listening", "desc": "Monitor real-time sentiment" },
-        "userExperience": { "label": "User Experience", "desc": "Map the customer journey" },
-        "socialSimulation": { "label": "Social Simulation", "desc": "Model population behavior" },
-        "eventPrediction": { "label": "Event Prediction", "desc": "Forecast outcomes" }
-      },
-      "steps": {
-        "scout": "Scout",
-        "interview": "Interview",
-        "analyze": "Analyze",
-        "report": "Report",
-        "brief": "Brief",
-        "buildPersonas": "Build Personas",
-        "test": "Test",
-        "position": "Position",
-        "research": "Research",
-        "simulate": "Simulate",
-        "optimize": "Optimize",
-        "monitor": "Monitor",
-        "detect": "Detect",
-        "alert": "Alert",
-        "observe": "Observe",
-        "map": "Map",
-        "recommend": "Recommend",
-        "buildPopulation": "Build Population",
-        "multiPerspective": "Multi-Perspective",
-        "predict": "Predict",
-        "validate": "Validate"
-      },
-      "modes": {
-        "signal": "Signal",
-        "deep": "Deep",
-        "live": "Live",
-        "auto": "Auto"
-      },
-      "mockup": {
-        "mapLabel": "SIGNAL MAP",
-        "cleanBeauty": "Clean Beauty",
-        "priceSensitivity": "Price Sensitivity",
-        "kolMentions": "KOL Mentions",
-        "brandRecall": "Brand Recall",
-        "sustainability": "Sustainability",
-        "peerReviews": "Peer Reviews",
-        "packaging": "Packaging",
-        "tabBrief": "Brief",
-        "tabIntent": "Intent",
-        "tabExecute": "Execute",
-        "researchQuestion": "RESEARCH QUESTION",
-        "briefQuestion": "How do Gen-Z consumers perceive clean beauty brands?",
-        "submit": "Submit →",
-        "studyPlan": "STUDY PLAN",
-        "planStep1": "Scout 3 platforms for signals",
-        "planStep2": "Interview 6 AI personas",
-        "planStep3": "Generate insight report",
-        "confirmPlan": "Confirm Plan ✓",
-        "executing": "EXECUTING",
-        "execScout": "Scout",
-        "execInterview": "Interview ×6",
-        "execAnalyze": "Analyze",
-        "execReport": "Report",
-        "liveMsg1": "What does 'clean beauty' mean to you personally?",
-        "liveMsg2": "For me it's about transparency — knowing what's actually in the product.",
-        "liveMsg3": "When did you first start paying attention to ingredients?",
-        "listening": "Listening..."
+        "consumerInsight": {
+          "label": "Consumer Insight",
+          "desc": "Segmentation, personas, and need-state insights"
+        },
+        "conceptTesting": {
+          "label": "Concept Testing",
+          "desc": "Concept testing and value proposition validation"
+        },
+        "brandStrategy": {
+          "label": "Brand Strategy",
+          "desc": "Diagnosis, positioning, and mental mapping"
+        },
+        "pricing": { "label": "Pricing Strategy", "desc": "WTP research and pricing architecture" },
+        "socialListening": {
+          "label": "Social Listening",
+          "desc": "Sentiment monitoring and trend intelligence"
+        },
+        "userExperience": {
+          "label": "User Experience",
+          "desc": "VOC, journey mapping, and experience optimization"
+        },
+        "socialSimulation": {
+          "label": "Social Simulation",
+          "desc": "Model collective behavior and social dynamics"
+        },
+        "eventPrediction": {
+          "label": "Event Prediction",
+          "desc": "Multi-perspective simulation and signal tracking"
+        }
       }
     },
     "dataAssets": {
@@ -591,22 +565,19 @@
       "body": "Callable. Verifiable. Built on real behavioral data.",
       "persona": {
         "title": "AI Persona",
-        "subtitle": "Virtual Consumer Library",
-        "description": "Virtual consumers built from real behavioral data. Consistent personality, cognitive biases, and decision frameworks.",
+        "description": "Built on real behavioral data and social science models. Each Persona maintains consistent personality, cognitive biases, and decision frameworks. Upload your own interview data to build a private Persona library.",
         "heroStatValue": "1M+",
         "heroStatLabel": "AI Samples"
       },
       "sage": {
         "title": "AI Sage",
-        "subtitle": "Virtual Expert Library",
-        "description": "Domain experts with two-layer memory. Core knowledge stays stable, working knowledge grows through every consultation.",
+        "description": "Vertical industry expert simulation. Upload documents to rapidly build domain experts. Active learning identifies knowledge gaps and fills them automatically.",
         "heroStatValue": "85%",
         "heroStatLabel": "Cost Reduction"
       },
       "panel": {
         "title": "AI Panel",
-        "subtitle": "Next-Gen Research Panel",
-        "description": "Real respondents provide baseline calibration, AI provides scale. No traditional panel company can offer this.",
+        "description": "Real respondents provide baseline calibration. AI samples provide scale. Real-time expandable samples no traditional panel company can offer.",
         "heroStatValue": "10K+",
         "heroStatLabel": "Unique Panels"
       }
@@ -617,14 +588,38 @@
       "body": "From creators to investors — find your workflow.",
       "viewCases": "View Cases",
       "roles": {
-        "creators": { "title": "Creators", "desc": "Discover what will go viral and optimize content strategy." },
-        "influencers": { "title": "Influencers", "desc": "Turn influence into sustainable income with data-driven insights." },
-        "marketers": { "title": "Marketers", "desc": "Validate campaigns with real consumer insights before launch." },
-        "startupOwners": { "title": "Startup Owners", "desc": "Kill bad ideas early — validate before spending." },
-        "consultants": { "title": "Consultants", "desc": "Back recommendations with real consumer research." },
-        "productManagers": { "title": "Product Managers", "desc": "Build products users actually want." },
-        "researcher": { "title": "Researcher", "desc": "Scale qualitative research with AI-augmented interviews." },
-        "investor": { "title": "Investor", "desc": "Predict market outcomes with multi-perspective simulation." }
+        "creators": {
+          "title": "Creators",
+          "desc": "Discover what will go viral and optimize content strategy."
+        },
+        "influencers": {
+          "title": "Influencers",
+          "desc": "Turn influence into sustainable income with data-driven insights."
+        },
+        "marketers": {
+          "title": "Marketers",
+          "desc": "Validate campaigns with real consumer insights before launch."
+        },
+        "startupOwners": {
+          "title": "Startup Owners",
+          "desc": "Kill bad ideas early — validate before spending."
+        },
+        "consultants": {
+          "title": "Consultants",
+          "desc": "Back recommendations with real consumer research."
+        },
+        "productManagers": {
+          "title": "Product Managers",
+          "desc": "Build products users actually want."
+        },
+        "researcher": {
+          "title": "Researcher",
+          "desc": "AI-augmented social science — interviews, simulations, and ethnography."
+        },
+        "investor": {
+          "title": "Investor",
+          "desc": "Multi-perspective simulation and continuous signal tracking for event prediction."
+        }
       },
       "customerStoriesLabel": "Customer Stories",
       "categoryEnterprise": "Enterprise",

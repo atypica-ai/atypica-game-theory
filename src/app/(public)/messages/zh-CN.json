@@ -378,11 +378,11 @@
       "titleLine1": "理解人的",
       "titleAccent": "AI",
       "titleEnd": "",
-      "body": "大多数 AI 替人干活。Atypica 做更难的事——模拟人为什么选择、犹豫和决定。",
+      "body": "大多数 AI 替人干活。我们相信 AI 还有第二种形态——理解人的主观世界。",
       "cta": "开始研究",
       "secondaryCta": "了解更多",
       "badgePersonas": "100万+ AI 人设",
-      "badgeAccuracy": "85% 行为一致性",
+      "badgeAccuracy": "85% 仿真准确率",
       "badgeTrusted": "全球企业信赖"
     },
     "nav": {
@@ -402,30 +402,28 @@
       "objectiveDesc": "传统 AI 的领域——自动化任务、处理数据、执行工作流。",
       "subjectiveLabel": "[1.B] 情感化的",
       "subjectiveTitle": "主观世界",
-      "subjectiveDesc": "人类决策的领域——人为什么选择、犹豫、信任和行动。"
+      "subjectiveDesc": "人的动机、偏好、恐惧与价值排序——理解这些，是解决商业与社会问题的钥匙。"
     },
     "twoAgents": {
       "kicker": "两个 AI",
       "title": "模拟 × 研究",
-      "body": "一个 AI 成为用户，另一个 AI 发问和分析。",
+      "body": "一个 AI 模拟用户，另一个研究用户——同时适用于真实和虚拟用户。",
       "simulator": {
         "tag": "AI SIMULATOR",
-        "title": "AI Simulator",
-        "description": "模拟一个真实的人——不是统计平均值。重建他们如何选择、为何犹豫。",
-        "consumer2c": { "label": "2C 消费者", "description": "具有真实购买行为、情感触发点和品牌偏好的日常消费者。" },
-        "professional2b": { "label": "2B 专业买家", "description": "具有领域专长、采购逻辑和 ROI 驱动决策框架的商业买家。" },
-        "expert": { "label": "行业专家", "description": "双层记忆的领域专家——核心知识稳定，工作知识随咨询增长。" }
+        "description": "通过「主观世界模型」，模拟一个真实的人——不是统计平均值。",
+        "consumer2c": { "label": "2C 消费者", "description": "模拟日常购买场景中的消费者。" },
+        "professional2b": { "label": "2B 专业买家", "description": "模拟专业采购场景中的商业买家。" },
+        "expert": { "label": "行业专家", "description": "模拟具有行业 Know-how 的领域专家。" }
       },
       "researcher": {
         "tag": "AI RESEARCHER",
-        "title": "AI Researcher",
-        "description": "发问、深挖、提取人们难以清楚表达的东西。",
-        "oneToOne": "一对一深度访谈",
+        "description": "像研究员一样发问、引导、分析——可对真实和模拟用户进行研究。",
+        "oneToOne": "一对一访谈",
         "oneToMany": "一对多访谈",
         "expertDiscussion": "专家讨论",
         "focusGroup": "焦点小组",
-        "multiParty": "多方共创",
-        "observation": "行为观察"
+        "multiParty": "多方共创会",
+        "observation": "连续行为观察"
       },
       "mockup": {
         "stepParse": "解析",
@@ -452,41 +450,38 @@
     "worldModel": {
       "kicker": "FOUNDATION MODEL",
       "title": "主观世界模型",
-      "body": "基于 100 万+ 真人数据训练。四层结构建模人是谁——而不只是预测人做什么。",
+      "body": "基于 100 万真人语料训练，模拟具体个体的主观结构。核心假设：人的行为并非由知识驱动，而是由主观世界结构驱动。",
       "center": "SWM",
-      "datasetTitle": "人类主体的四个层次",
-      "datasetBody": "每个层次捕捉人类主观性的不同面向。四层交叉校准，产出的模型不只预测——它理解。",
-      "contradiction": "层间矛盾就是信号。一个人说自己重视自主，但做重大决定时需要外部认可——这不是矛盾，这是人。",
+      "datasetTitle": "四层递进式数据集",
+      "datasetBody": "我们不将主观世界视为单一语义分布，而是一个由四层结构共同驱动的分层系统。",
       "layers": {
         "expression": {
           "label": "表达层",
-          "question": "他们说什么，怎么说？",
-          "description": "语言模式、情绪基线、声明的价值观——包括声明与实际选择矛盾的部分。"
+          "question": "人如何表达自己",
+          "sources": "社交媒体、多平台公开表达语料",
+          "description": "语言风格、情绪分布、价值取向与身份标签。"
         },
         "story": {
           "label": "叙事层",
-          "question": "什么叙事解释他们的选择？",
-          "description": "动机逻辑、关于成败的因果故事、驱动决策的核心恐惧。"
+          "question": "人如何解释自己",
+          "sources": "深度访谈、半结构化访谈",
+          "description": "动机逻辑、因果归因模式与自我认知结构。"
         },
         "cognition": {
           "label": "判断层",
-          "question": "压力下的决策逻辑是什么？",
-          "description": "风险偏好、认知偏差、价值排序——测量而非自述。"
+          "question": "人如何做选择",
+          "sources": "行为判断问卷、心理学范式测试",
+          "description": "风险偏好、认知偏差、价值排序与概率判断方式。"
         },
         "behavior": {
           "label": "行动层",
-          "question": "他们实际做了什么？",
-          "description": "真实交易与经济博弈实验。校准全模型——暴露认知在现实约束下的崩塌之处。"
+          "question": "人如何真正行动",
+          "sources": "经济博弈实验、真实交易行为",
+          "description": "校准表达与判断在现实约束下的实际行动结果。"
         }
       },
-      "dimensions": {
-        "values": { "label": "价值体系", "description": "什么重要，为什么" },
-        "risk": { "label": "风险偏好", "description": "人们如何衡量不确定性" },
-        "emotion": { "label": "情绪触发点", "description": "什么驱动人采取行动" },
-        "decision": { "label": "决策路径", "description": "选择是如何做出的" },
-        "social": { "label": "社会影响", "description": "他人无形的影响力" },
-        "cognitive": { "label": "认知框架", "description": "塑造认知的心智模型" }
-      },
+      "sourcesLabel": "数据来源",
+      "objectiveLabel": "建模目标",
       "crossTitle": "人们说什么 vs. 实际做什么",
       "crossBody": "最有价值的洞察，藏在表达与行为的距离之间。",
       "chartStated": "表达",
@@ -506,9 +501,11 @@
       "matrixTitle": "层间一致性",
       "matrixNote": "表达↔行为 差距最大——表达更多服务于身份管理，而非真实自我披露。",
       "enablesTitle": "模型能做什么",
-      "enableSimulation": "模拟 — 用虚拟消费者测试新产品。",
-      "enableCounterfactual": "反事实 — 改一个变量，看决策如何变化。",
-      "enableStressTest": "压力测试 — 极端场景下，价值排序如何重组。"
+      "enables": {
+        "simulation": { "title": "模拟", "desc": "用虚拟消费者测试新产品，在真实用户之前验证。" },
+        "counterfactual": { "title": "反事实", "desc": "改变一个变量，观察整个人群的决策如何偏移。" },
+        "stressTest": { "title": "压力测试", "desc": "极端场景下，价值排序如何重组。" }
+      }
     },
     "workflow": {
       "kicker": "工作流",
@@ -516,73 +513,14 @@
       "body": "选择你的目标，我们组装工作流。",
       "centerDefault": "悬停查看工作流",
       "goals": {
-        "consumerInsight": { "label": "消费者洞察", "desc": "理解谁在买、为什么买" },
-        "conceptTesting": { "label": "概念测试", "desc": "上市前验证创意" },
-        "brandStrategy": { "label": "品牌策略", "desc": "定位与差异化" },
-        "pricing": { "label": "定价策略", "desc": "找到最佳价格点" },
-        "socialListening": { "label": "舆情监测", "desc": "实时追踪情绪" },
-        "userExperience": { "label": "用户体验", "desc": "描绘用户旅程" },
-        "socialSimulation": { "label": "社会仿真", "desc": "模拟群体行为" },
-        "eventPrediction": { "label": "事件预测", "desc": "预测事件结果" }
-      },
-      "steps": {
-        "scout": "扫描",
-        "interview": "访谈",
-        "analyze": "分析",
-        "report": "报告",
-        "brief": "需求",
-        "buildPersonas": "构建人设",
-        "test": "测试",
-        "position": "定位",
-        "research": "研究",
-        "simulate": "模拟",
-        "optimize": "优化",
-        "monitor": "监测",
-        "detect": "探测",
-        "alert": "预警",
-        "observe": "观察",
-        "map": "地图",
-        "recommend": "建议",
-        "buildPopulation": "构建人群",
-        "multiPerspective": "多视角",
-        "predict": "预测",
-        "validate": "验证"
-      },
-      "modes": {
-        "signal": "Signal",
-        "deep": "Deep",
-        "live": "Live",
-        "auto": "Auto"
-      },
-      "mockup": {
-        "mapLabel": "信号地图",
-        "cleanBeauty": "纯净美妆",
-        "priceSensitivity": "价格敏感度",
-        "kolMentions": "KOL 提及",
-        "brandRecall": "品牌认知",
-        "sustainability": "可持续性",
-        "peerReviews": "同伴评价",
-        "packaging": "包装",
-        "tabBrief": "概要",
-        "tabIntent": "意图",
-        "tabExecute": "执行",
-        "researchQuestion": "研究问题",
-        "briefQuestion": "Z世代消费者如何看待纯净美妆品牌？",
-        "submit": "提交 →",
-        "studyPlan": "研究计划",
-        "planStep1": "扫描 3 个平台的信号",
-        "planStep2": "访谈 6 个 AI 人设",
-        "planStep3": "生成洞察报告",
-        "confirmPlan": "确认计划 ✓",
-        "executing": "执行中",
-        "execScout": "扫描",
-        "execInterview": "访谈 ×6",
-        "execAnalyze": "分析",
-        "execReport": "报告",
-        "liveMsg1": "「纯净美妆」对你个人意味着什么？",
-        "liveMsg2": "对我来说是透明度——知道产品里到底有什么。",
-        "liveMsg3": "你什么时候开始关注成分的？",
-        "listening": "聆听中..."
+        "consumerInsight": { "label": "消费者洞察", "desc": "消费者细分、画像与需求洞察" },
+        "conceptTesting": { "label": "概念测试", "desc": "概念测试与价值主张验证" },
+        "brandStrategy": { "label": "品牌策略", "desc": "品牌诊断、定位与心智地图" },
+        "pricing": { "label": "定价策略", "desc": "愿付价研究与价格架构设计" },
+        "socialListening": { "label": "舆情监测", "desc": "舆情监测与趋势情报" },
+        "userExperience": { "label": "用户体验", "desc": "VOC、客户旅程与体验优化" },
+        "socialSimulation": { "label": "社会仿真", "desc": "模拟社会群体行为与动态" },
+        "eventPrediction": { "label": "事件预测", "desc": "多视角模拟与持续信号跟踪" }
       }
     },
     "dataAssets": {
@@ -591,22 +529,19 @@
       "body": "可调用。可验证。基于真实行为数据构建。",
       "persona": {
         "title": "AI Persona",
-        "subtitle": "虚拟消费者样本库",
-        "description": "基于真实行为数据构建的虚拟消费者。一致的人格、认知偏差和决策框架。",
+        "description": "基于真实行为数据与社会科学模型构建。每个 Persona 维持一致的人格、认知偏差和决策框架。企业可上传自有访谈数据，生成专属私有 Persona 库。",
         "heroStatValue": "100万+",
         "heroStatLabel": "AI 样本"
       },
       "sage": {
         "title": "AI Sage",
-        "subtitle": "虚拟专家样本库",
-        "description": "双层记忆的领域专家。核心知识稳定，工作知识随咨询增长。",
+        "description": "支持垂直行业专家模拟。企业可上传专业文档，快速构建专属领域专家。通过主动学习机制自动识别知识盲区并补全。",
         "heroStatValue": "85%",
         "heroStatLabel": "成本降低"
       },
       "panel": {
         "title": "AI Panel",
-        "subtitle": "新一代智能调研 Panel",
-        "description": "真实受访者校准基线，AI 提供规模。传统 Panel 公司无法提供的实时可扩展样本。",
+        "description": "真实受访者提供基准校验，AI 虚拟样本提供规模放大。传统 Panel 公司无法提供的实时可扩展样本。",
         "heroStatValue": "1万+",
         "heroStatLabel": "独立 Panel"
       }
@@ -623,8 +558,8 @@
         "startupOwners": { "title": "创业者", "desc": "尽早淘汰坏想法——花钱之前先验证。" },
         "consultants": { "title": "咨询顾问", "desc": "用真实消费者研究支撑你的建议。" },
         "productManagers": { "title": "产品经理", "desc": "做用户真正想要的产品。" },
-        "researcher": { "title": "研究员", "desc": "用 AI 增强访谈规模化定性研究。" },
-        "investor": { "title": "投资人", "desc": "用多视角模拟预测市场结果。" }
+        "researcher": { "title": "研究员", "desc": "AI 增强的社会科学研究——访谈、模拟与人物志。" },
+        "investor": { "title": "投资人", "desc": "多视角模拟与持续信号跟踪，预测事件结果。" }
       },
       "customerStoriesLabel": "客户故事",
       "categoryEnterprise": "企业",
