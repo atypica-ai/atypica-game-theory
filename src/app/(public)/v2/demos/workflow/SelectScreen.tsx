@@ -32,8 +32,15 @@ export default function SelectScreen({
 
   return (
     <div className="flex flex-col h-full px-5 py-4">
-      <span className="font-IBMPlexMono text-xs tracking-wider uppercase mb-1" style={{ color: L.textMuted }}>{title}</span>
-      <span className="text-sm mb-4" style={{ color: L.textFaint }}>{desc}</span>
+      <span
+        className="font-IBMPlexMono text-xs tracking-wider uppercase mb-1"
+        style={{ color: L.textMuted }}
+      >
+        {title}
+      </span>
+      <span className="text-sm mb-4" style={{ color: L.textFaint }}>
+        {desc}
+      </span>
 
       <div className="flex-1 flex flex-col gap-2">
         {personas.map((p, i) => (
@@ -50,14 +57,29 @@ export default function SelectScreen({
           >
             <HippyGhostAvatar seed={p.seed} className="size-8 rounded-full shrink-0" />
             <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium block" style={{ color: L.text }}>{p.name}</span>
-              <span className="text-xs" style={{ color: L.textMuted }}>{p.role}</span>
+              <span className="text-sm font-medium block" style={{ color: L.text }}>
+                {p.name}
+              </span>
+              <span className="text-xs" style={{ color: L.textMuted }}>
+                {p.role}
+              </span>
             </div>
-            <div className="w-4 h-4 rounded-full border shrink-0"
-              style={{ borderColor: i === selected ? accent : L.border, background: i === selected ? accent : "transparent" }}>
+            <div
+              className="w-4 h-4 rounded-full border shrink-0"
+              style={{
+                borderColor: i === selected ? accent : L.border,
+                background: i === selected ? accent : "transparent",
+              }}
+            >
               {i === selected && (
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 8l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path
+                    d="M4 8l3 3 5-5"
+                    stroke="white"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               )}
             </div>
@@ -65,8 +87,13 @@ export default function SelectScreen({
         ))}
       </div>
 
-      <motion.div className="shrink-0 mt-3 self-end px-4 py-1.5 text-xs font-medium rounded text-white"
-        style={{ background: accent }} initial={{ opacity: 0 }} animate={{ opacity: selected >= 0 ? 1 : 0.4 }} transition={{ duration: 0.3 }}>
+      <motion.div
+        className="shrink-0 mt-3 self-end px-4 py-1.5 text-xs font-medium rounded text-white"
+        style={{ background: accent }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: selected >= 0 ? 1 : 0.4 }}
+        transition={{ duration: 0.3 }}
+      >
         {buttonText} →
       </motion.div>
     </div>

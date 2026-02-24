@@ -35,6 +35,7 @@ Closing          — CTA + 客户列表
 **Body**: The objective world can be measured. The subjective world — emotions, values, hesitations — must be modeled. Most AI agents work in the objective world, doing tasks for you. Atypica is the other kind: it simulates the subjective world to understand people.
 
 **交互元素**: 左右对比卡片
+
 - 左: [2.A] OBJECTIVE WORLD — "Measurable. Quantifiable. The domain of traditional AI agents — automating tasks, processing data, executing workflows."
 - 右: [2.B] SUBJECTIVE WORLD — "Emotional. Contextual. The domain of human decisions — why people choose, hesitate, trust, and act."
 
@@ -47,6 +48,7 @@ Closing          — CTA + 客户列表
 **Body**: The Simulator becomes a specific person — reconstructing how they choose, why they hesitate, what tips the balance. The Researcher asks the right questions, probes deeper, draws out what people struggle to articulate.
 
 **左卡片 — AI Simulator**:
+
 - Tag: AI SIMULATOR
 - Title: Persona + Sage
 - Description: The Simulator becomes a specific person — not a statistical average. It reconstructs how they choose, why they hesitate, and what tips the balance.
@@ -56,6 +58,7 @@ Closing          — CTA + 客户列表
 - 配图: Persona卡片UI mockup + Sage知识层mockup (CSS/SVG)
 
 **右卡片 — AI Researcher**:
+
 - Tag: AI RESEARCHER
 - Title: Five Research Methods
 - Description: The Researcher asks the right questions, probes deeper, draws out what people struggle to articulate. Part interviewer, part analyst — always listening.
@@ -76,6 +79,7 @@ Closing          — CTA + 客户列表
 **Body**: Four layers of understanding, from surface expression to deep behavior. Six dimensions that define any person's decision-making world.
 
 **交互元素 — 环形图**:
+
 - 4层同心环（从外到内）:
   - Expression (r=42) — "How people express themselves" → Scout Agent
   - Story (r=33) — "How people explain themselves" → Interview System
@@ -102,18 +106,21 @@ Closing          — CTA + 客户列表
 **三列卡片**（每个可点击跳转 /newstudy）:
 
 **Signal Mode** (accent: #4ade80):
+
 - Badge: SIGNAL
 - Description: Always-on intelligence. The agent continuously absorbs signals from social media, surfaces trends, and delivers findings without being asked.
 - Mockup: 趋势线SVG图（模拟社媒信号流）
 - → /newstudy
 
 **Deep Mode** (accent: #93c5fd):
+
 - Badge: DEEP
 - Description: End-to-end AI research — from study design to interviews to insight delivery. Weeks of work compressed into minutes.
 - Mockup: 流水线阶段图（Plan → Interview → Analyze → Report）
 - → /newstudy
 
 **Live Mode** (accent: #f59e0b):
+
 - Badge: LIVE
 - Description: AI Researcher leads deep interviews with real people or virtual personas. Conversations become structured insights.
 - Mockup: 对话界面 mockup
@@ -132,16 +139,19 @@ Closing          — CTA + 客户列表
 **三列卡片**:
 
 **AI Persona** (accent: #4ade80):
+
 - Description: Virtual consumers built from real behavioral data and social science models. Callable, verifiable, always consistent.
 - Stats: AI Samples: 1,000,000+ / Human Baselines: 70,000+ / Accuracy: 85% / Tier System: 0–3
 - Mockup: 人物卡片UI（头像圆圈+标签）
 
 **AI Sage** (accent: #93c5fd):
+
 - Description: Domain experts with two-layer memory architecture. Core knowledge stays stable; working knowledge grows through every consultation.
 - Stats: Industries: Healthcare, Finance, CPG, Tech / Cost Reduction: ~85% / Memory: Core + Working / Knowledge Gaps: Auto-detected
 - Mockup: 知识层级UI（Core Memory + Working Memory）
 
 **AI Panel** (accent: #f59e0b):
+
 - Description: Next-gen research panels combining AI samples with real respondents. Simulate, compare, and scale.
 - Stats: Panel Size: 3–8 personas / Modes: Focus, Debate, Roundtable / Calibration: Real respondents / Output: Summary + Minutes
 - Mockup: 多人讨论UI（多个头像圆点+消息）
@@ -157,18 +167,18 @@ Closing          — CTA + 客户列表
 
 **商业场景表格**:
 
-| Scenario | Core Tools | Agent |
-|----------|-----------|-------|
-| Consumer Insight & U&A | Scout + Interview + Persona | Study Agent |
-| Concept Testing | PersonaImport + Interview + Panel | Study Agent |
-| Brand Strategy | Social Trends + Report | Product R&D |
-| Attribution Analysis | Interview + Reasoning + Report | Study Agent |
-| Pricing Strategy | Interview (WTP) + Panel | Study Agent |
-| Social Listening | Scout (5 platforms) + Trends | Product R&D |
-| User Experience & VOC | Scout + Interview + Report | Study Agent |
-| Sales Training | PersonaImport + Persona Chat | Direct Use |
-| Academic Research | Scout + Persona + Panel | Study Agent |
-| Market Intelligence | MCP + Trends + Reasoning | Fast Insight |
+| Scenario               | Core Tools                        | Agent        |
+| ---------------------- | --------------------------------- | ------------ |
+| Consumer Insight & U&A | Scout + Interview + Persona       | Study Agent  |
+| Concept Testing        | PersonaImport + Interview + Panel | Study Agent  |
+| Brand Strategy         | Social Trends + Report            | Product R&D  |
+| Attribution Analysis   | Interview + Reasoning + Report    | Study Agent  |
+| Pricing Strategy       | Interview (WTP) + Panel           | Study Agent  |
+| Social Listening       | Scout (5 platforms) + Trends      | Product R&D  |
+| User Experience & VOC  | Scout + Interview + Report        | Study Agent  |
+| Sales Training         | PersonaImport + Persona Chat      | Direct Use   |
+| Academic Research      | Scout + Persona + Panel           | Study Agent  |
+| Market Intelligence    | MCP + Trends + Reasoning          | Fast Insight |
 
 **4个客户故事**（2×2网格）:
 
@@ -186,6 +196,7 @@ Mars · Bosch · Lenovo · Fonterra · Ant Group · Huawei · L'Oréal · WPP ·
 （每个名字在独立的border框内，灰白色，统一大小）
 
 **CTA**:
+
 - Title: Ready to Understand Your Users?
 - Body: Let agents model every consumer's subjective world. The harder problem — we've already started.
 - Primary CTA: Request a Demo →

@@ -3,8 +3,8 @@
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { L } from "../theme";
 
 export type DiscussionEvent = {
@@ -43,12 +43,15 @@ export default function DiscussionScreen({
     setMsgCount(0);
     setParticipated(new Set());
     const timers = events.map((evt, i) =>
-      setTimeout(() => {
-        setMsgCount(i + 1);
-        if (evt.type === "persona" && evt.seed) {
-          setParticipated((prev) => new Set([...prev, evt.seed!]));
-        }
-      }, (i + 1) * 1000),
+      setTimeout(
+        () => {
+          setMsgCount(i + 1);
+          if (evt.type === "persona" && evt.seed) {
+            setParticipated((prev) => new Set([...prev, evt.seed!]));
+          }
+        },
+        (i + 1) * 1000,
+      ),
     );
     return () => timers.forEach(clearTimeout);
   }, [events]);
@@ -89,7 +92,10 @@ export default function DiscussionScreen({
           <span className="font-IBMPlexMono text-xs" style={{ color: L.textMuted }}>
             {t("workflow.demos.ui.inProgress")}
           </span>
-          <span className="font-IBMPlexMono text-xs ml-auto tabular-nums" style={{ color: L.textFaint }}>
+          <span
+            className="font-IBMPlexMono text-xs ml-auto tabular-nums"
+            style={{ color: L.textFaint }}
+          >
             {msgCount}/{events.length}
           </span>
         </div>
@@ -103,11 +109,17 @@ export default function DiscussionScreen({
             className="py-1.5 px-2 text-xs leading-relaxed rounded"
             style={{
               background:
-                evt.type === "moderator" ? `${accent}08` :
-                evt.type === "summary" ? L.bgSub : "transparent",
+                evt.type === "moderator"
+                  ? `${accent}08`
+                  : evt.type === "summary"
+                    ? L.bgSub
+                    : "transparent",
               border:
-                evt.type === "moderator" ? `1px solid ${accent}20` :
-                evt.type === "summary" ? `1px solid ${L.border}` : "none",
+                evt.type === "moderator"
+                  ? `1px solid ${accent}20`
+                  : evt.type === "summary"
+                    ? `1px solid ${L.border}`
+                    : "none",
               color: evt.type === "summary" ? L.textMuted : L.text,
               fontStyle: evt.type === "summary" ? "italic" : "normal",
             }}
@@ -116,9 +128,17 @@ export default function DiscussionScreen({
               {evt.type === "moderator" && "🎙 "}
               {evt.type === "summary" && "📋 "}
               {evt.type === "persona" && evt.seed && (
-                <HippyGhostAvatar seed={evt.seed} className="size-3.5 rounded-full inline-block align-text-bottom mr-0.5" />
+                <HippyGhostAvatar
+                  seed={evt.seed}
+                  className="size-3.5 rounded-full inline-block align-text-bottom mr-0.5"
+                />
               )}
-              {evt.type === "moderator" ? "Moderator" : evt.type === "persona" ? evt.name : "Summary"}:
+              {evt.type === "moderator"
+                ? "Moderator"
+                : evt.type === "persona"
+                  ? evt.name
+                  : "Summary"}
+              :
             </span>
             {evt.text}
           </motion.div>
@@ -136,7 +156,10 @@ export default function DiscussionScreen({
 
         {/* Progress bar */}
         <div>
-          <span className="font-IBMPlexMono text-xs block mb-1" style={{ color: L.textMuted, fontSize: "10px" }}>
+          <span
+            className="font-IBMPlexMono text-xs block mb-1"
+            style={{ color: L.textMuted, fontSize: "10px" }}
+          >
             Progress
           </span>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: L.border }}>

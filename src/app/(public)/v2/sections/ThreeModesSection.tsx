@@ -31,13 +31,26 @@ export default function ThreeModesSection({
     >
       <ChapterPanel variant="dark">
         <div className="mb-10">
-          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">{copy.number}</div>
-          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">{t("workflow.kicker")}</p>
-          <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">{t("workflow.title")}</h2>
-          <p className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-300">{t("workflow.body")}</p>
+          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
+            {copy.number}
+          </div>
+          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">
+            {t("workflow.kicker")}
+          </p>
+          <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">
+            {t("workflow.title")}
+          </h2>
+          <p className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-300">
+            {t("workflow.body")}
+          </p>
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.5 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+        >
           {/* Full-width demo area */}
           <div className="border border-zinc-700 overflow-hidden rounded-lg mb-4">
             <AnimatePresence mode="wait">
@@ -68,18 +81,25 @@ export default function ThreeModesSection({
                 onClick={() => setActiveGoal(i)}
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: g.accent }} />
-                  <span className={cn(
-                    "font-IBMPlexMono text-xs tracking-[0.04em] font-medium transition-colors duration-200 truncate",
-                    activeGoal === i ? "text-zinc-100" : "text-zinc-400",
-                  )}>
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: g.accent }}
+                  />
+                  <span
+                    className={cn(
+                      "font-IBMPlexMono text-xs tracking-[0.04em] font-medium transition-colors duration-200 truncate",
+                      activeGoal === i ? "text-zinc-100" : "text-zinc-400",
+                    )}
+                  >
                     {t(`workflow.goals.${g.key}.label`)}
                   </span>
                 </div>
-                <p className={cn(
-                  "text-xs leading-relaxed mt-1 pl-[14px] transition-colors duration-200 line-clamp-2 max-sm:hidden",
-                  activeGoal === i ? "text-zinc-400" : "text-zinc-600",
-                )}>
+                <p
+                  className={cn(
+                    "text-xs leading-relaxed mt-1 pl-[14px] transition-colors duration-200 line-clamp-2 max-sm:hidden",
+                    activeGoal === i ? "text-zinc-400" : "text-zinc-600",
+                  )}
+                >
                   {t(`workflow.goals.${g.key}.desc`)}
                 </p>
               </button>

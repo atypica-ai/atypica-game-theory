@@ -55,13 +55,31 @@ export default function ProductFrame({
           {/* Right: help + menu icons (like real GlobalHeader) */}
           <div className="flex items-center gap-2.5 shrink-0">
             {/* Help icon */}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={L.textFaint} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={L.textFaint}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <circle cx="12" cy="12" r="10" />
               <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
             {/* Menu bars icon (matches GlobalHeader MenuBarsIcon) */}
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={L.textMuted} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={L.textMuted}
+              strokeWidth="1.3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="12" x2="17" y2="12" />
               <line x1="3" y1="18" x2="13" y2="18" />

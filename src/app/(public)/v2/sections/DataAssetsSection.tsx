@@ -47,10 +47,7 @@ export default function DataAssetsSection({
             {DATA_ASSET_KEYS.map((assetKey) => {
               const accent = DATA_ASSET_ACCENTS[assetKey];
               return (
-                <div
-                  key={assetKey}
-                  className="border border-zinc-800 p-6"
-                >
+                <div key={assetKey} className="border border-zinc-800 p-6">
                   {/* Big stat */}
                   <span
                     className="font-EuclidCircularA text-5xl lg:text-6xl font-light block"

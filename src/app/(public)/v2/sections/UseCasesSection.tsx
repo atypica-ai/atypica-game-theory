@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import { useState } from "react";
 import ChapterPanel from "../components/ChapterPanel";
 import {
   CATEGORY_COLORS,
@@ -18,14 +18,22 @@ import {
 const copy = CHAPTERS[5];
 
 const ROLE_IMAGE_PROMPTS: Record<string, string> = {
-  creators: "Bird's eye view of a content creator workspace with a phone showing a trending video feed, a ring light circle, and scattered story cards on a dark surface, minimalist flat design, green and black color scheme, clean geometric shapes, no text",
-  influencers: "Top-down view of a social media influencer desk with an audience heatmap, fan mail envelopes, and a phone showing follower growth curve, minimalist flat design, amber and black color scheme, clean geometric shapes, no text",
-  marketers: "Overhead view of a campaign war room table with consumer journey sticky notes, A/B test comparison cards, and a funnel diagram, minimalist flat design, blue and black color scheme, clean geometric shapes, no text",
-  startupOwners: "Bird's eye view of a founder's desk with napkin sketches of a product idea, a lean canvas card, and early prototype wireframes, minimalist flat design, pink and black color scheme, clean geometric shapes, no text",
-  consultants: "Top-down view of a strategy consulting workspace with client presentation slides, a SWOT matrix card, and recommendation priority ranking, minimalist flat design, cyan and black color scheme, clean geometric shapes, no text",
-  productManagers: "Overhead view of a product manager workspace with user feedback cards, a feature prioritization matrix, and a roadmap timeline ribbon, minimalist flat design, purple and black color scheme, clean geometric shapes, no text",
-  researcher: "Bird's eye view of an academic research desk with interview transcript pages, color-coded thematic analysis cards, and a citation network diagram, minimalist flat design, green and black color scheme, clean geometric shapes, no text",
-  investor: "Top-down view of a prediction analyst workspace with multi-source signal cards, a confidence gauge dial, and scenario divergence arrows on a dark surface, minimalist flat design, orange and black color scheme, clean geometric shapes, no text",
+  creators:
+    "Bird's eye view of a content creator workspace with a phone showing a trending video feed, a ring light circle, and scattered story cards on a dark surface, minimalist flat design, green and black color scheme, clean geometric shapes, no text",
+  influencers:
+    "Top-down view of a social media influencer desk with an audience heatmap, fan mail envelopes, and a phone showing follower growth curve, minimalist flat design, amber and black color scheme, clean geometric shapes, no text",
+  marketers:
+    "Overhead view of a campaign war room table with consumer journey sticky notes, A/B test comparison cards, and a funnel diagram, minimalist flat design, blue and black color scheme, clean geometric shapes, no text",
+  startupOwners:
+    "Bird's eye view of a founder's desk with napkin sketches of a product idea, a lean canvas card, and early prototype wireframes, minimalist flat design, pink and black color scheme, clean geometric shapes, no text",
+  consultants:
+    "Top-down view of a strategy consulting workspace with client presentation slides, a SWOT matrix card, and recommendation priority ranking, minimalist flat design, cyan and black color scheme, clean geometric shapes, no text",
+  productManagers:
+    "Overhead view of a product manager workspace with user feedback cards, a feature prioritization matrix, and a roadmap timeline ribbon, minimalist flat design, purple and black color scheme, clean geometric shapes, no text",
+  researcher:
+    "Bird's eye view of an academic research desk with interview transcript pages, color-coded thematic analysis cards, and a citation network diagram, minimalist flat design, green and black color scheme, clean geometric shapes, no text",
+  investor:
+    "Top-down view of a prediction analyst workspace with multi-source signal cards, a confidence gauge dial, and scenario divergence arrows on a dark surface, minimalist flat design, orange and black color scheme, clean geometric shapes, no text",
 };
 
 /* ── Story #0: Chart-driven ── */
@@ -98,10 +106,36 @@ function StoryPureQuote() {
       <div className="flex items-center justify-center">
         <div className="relative w-full max-w-[280px]">
           <svg viewBox="0 0 200 140" className="w-full" fill="none">
-            <rect x="30" y="20" width="140" height="100" rx="4" stroke="rgba(59,130,246,0.2)" strokeWidth="1" strokeDasharray="4 3" />
-            <rect x="45" y="35" width="60" height="50" rx="2" stroke="rgba(59,130,246,0.15)" strokeWidth="0.8" />
+            <rect
+              x="30"
+              y="20"
+              width="140"
+              height="100"
+              rx="4"
+              stroke="rgba(59,130,246,0.2)"
+              strokeWidth="1"
+              strokeDasharray="4 3"
+            />
+            <rect
+              x="45"
+              y="35"
+              width="60"
+              height="50"
+              rx="2"
+              stroke="rgba(59,130,246,0.15)"
+              strokeWidth="0.8"
+            />
             <circle cx="130" cy="60" r="18" stroke="rgba(59,130,246,0.15)" strokeWidth="0.8" />
-            <text x="100" y="132" textAnchor="middle" fontSize="7" fill="rgba(0,0,0,0.2)" fontFamily="var(--font-ibm-plex-mono)">{t("solutions.storyUI.prototypeLabel")}</text>
+            <text
+              x="100"
+              y="132"
+              textAnchor="middle"
+              fontSize="7"
+              fill="rgba(0,0,0,0.2)"
+              fontFamily="var(--font-ibm-plex-mono)"
+            >
+              {t("solutions.storyUI.prototypeLabel")}
+            </text>
           </svg>
           <div className="absolute top-2 -right-2 bg-white border border-zinc-200 py-1 px-2 text-xs text-zinc-500 shadow-sm">
             &ldquo;{t("solutions.storyUI.gripAngle")}&rdquo;
@@ -179,7 +213,9 @@ function StoryProcessFlow() {
       >
         &ldquo;{t("solutions.stories.university.quote")}&rdquo;
       </blockquote>
-      <p className="text-sm leading-relaxed text-zinc-500">{t("solutions.stories.university.body")}</p>
+      <p className="text-sm leading-relaxed text-zinc-500">
+        {t("solutions.stories.university.body")}
+      </p>
     </div>
   );
 }
@@ -194,8 +230,7 @@ function StoryTechnical() {
         <div className="text-zinc-500 mb-2">{"// MCP Integration"}</div>
         <div>
           <span className="text-[#8b5cf6]">const</span>{" "}
-          <span className="text-zinc-300">sentiment</span>{" "}
-          <span className="text-zinc-500">=</span>{" "}
+          <span className="text-zinc-300">sentiment</span> <span className="text-zinc-500">=</span>{" "}
           <span className="text-[#8b5cf6]">await</span>{" "}
           <span className="text-zinc-300">atypica</span>
           <span className="text-zinc-500">.</span>
@@ -206,15 +241,17 @@ function StoryTechnical() {
           event: <span className="text-[#16a34a]">&quot;US Election 2024&quot;</span>,
         </div>
         <div className="pl-4 text-zinc-400">
-          perspectives: <span className="text-[#93c5fd]">[&quot;voter&quot;, &quot;analyst&quot;, &quot;expert&quot;]</span>,
+          perspectives:{" "}
+          <span className="text-[#93c5fd]">
+            [&quot;voter&quot;, &quot;analyst&quot;, &quot;expert&quot;]
+          </span>
+          ,
         </div>
         <div className="pl-4 text-zinc-400">
           signal: <span className="text-[#16a34a]">&quot;continuous&quot;</span>
         </div>
         <div className="text-zinc-500">{"})"}</div>
-        <div className="mt-2 text-zinc-500">
-          {"// → { prediction: 0.73, confidence: \"high\" }"}
-        </div>
+        <div className="mt-2 text-zinc-500">{'// → { prediction: 0.73, confidence: "high" }'}</div>
       </div>
       <div className="flex flex-col justify-center">
         <span className="font-IBMPlexMono text-xs tracking-[0.1em] uppercase text-zinc-500 mb-3">
@@ -226,7 +263,9 @@ function StoryTechnical() {
         >
           &ldquo;{t("solutions.stories.prediction.quote")}&rdquo;
         </blockquote>
-        <p className="text-sm leading-relaxed text-zinc-500 mb-4">{t("solutions.stories.prediction.body")}</p>
+        <p className="text-sm leading-relaxed text-zinc-500 mb-4">
+          {t("solutions.stories.prediction.body")}
+        </p>
         <div className="flex gap-4">
           {(["metric1", "metric2", "metric3"] as const).map((mk) => (
             <div key={mk} className="border border-zinc-200 py-2 px-3">
@@ -344,9 +383,7 @@ export default function UseCasesSection({
                   type="button"
                   className={cn(
                     "border rounded-lg p-3 text-left cursor-pointer transition-all duration-200 bg-transparent flex items-center gap-3",
-                    i === activeStory
-                      ? "border-zinc-400"
-                      : "border-zinc-200 hover:border-zinc-300",
+                    i === activeStory ? "border-zinc-400" : "border-zinc-200 hover:border-zinc-300",
                   )}
                   onClick={() => setActiveStory(i)}
                 >

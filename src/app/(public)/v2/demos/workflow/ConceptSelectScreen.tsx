@@ -29,13 +29,19 @@ export default function ConceptSelectScreen({
     setValidating(false);
     const t1 = setTimeout(() => setSelected(0), 1500);
     const t2 = setTimeout(() => setValidating(true), 2500);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [concepts]);
 
   return (
     <div className="flex flex-col h-full p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: L.textMuted }}>
+        <span
+          className="font-IBMPlexMono text-xs tracking-wider uppercase"
+          style={{ color: L.textMuted }}
+        >
           Select Concept
         </span>
         <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>
@@ -57,13 +63,21 @@ export default function ConceptSelectScreen({
             }}
           >
             {/* Radio indicator */}
-            <div className="w-4 h-4 rounded-full border mt-0.5 shrink-0 grid place-items-center"
-              style={{ borderColor: i === selected ? accent : L.border }}>
-              {i === selected && <div className="w-2 h-2 rounded-full" style={{ background: accent }} />}
+            <div
+              className="w-4 h-4 rounded-full border mt-0.5 shrink-0 grid place-items-center"
+              style={{ borderColor: i === selected ? accent : L.border }}
+            >
+              {i === selected && (
+                <div className="w-2 h-2 rounded-full" style={{ background: accent }} />
+              )}
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium block" style={{ color: L.text }}>{c.title}</span>
-              <span className="text-xs leading-relaxed" style={{ color: L.textMuted }}>{c.desc}</span>
+              <span className="text-sm font-medium block" style={{ color: L.text }}>
+                {c.title}
+              </span>
+              <span className="text-xs leading-relaxed" style={{ color: L.textMuted }}>
+                {c.desc}
+              </span>
             </div>
           </motion.div>
         ))}
@@ -77,9 +91,15 @@ export default function ConceptSelectScreen({
           className="shrink-0 mt-3 flex items-center gap-2 p-2.5 rounded-lg"
           style={{ background: `${accent}06`, border: `1px solid ${accent}15` }}
         >
-          <motion.span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: accent }}
-            animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
-          <span className="text-xs" style={{ color: accent }}>{validationLabel}</span>
+          <motion.span
+            className="w-1.5 h-1.5 rounded-full shrink-0"
+            style={{ background: accent }}
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 0.8, repeat: Infinity }}
+          />
+          <span className="text-xs" style={{ color: accent }}>
+            {validationLabel}
+          </span>
         </motion.div>
       )}
     </div>

@@ -22,11 +22,22 @@ export default function ResearchPlanScreen({
     <div className="flex flex-col h-full px-5 py-4">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={accent}
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
           <polyline points="14 2 14 8 20 8" />
         </svg>
-        <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: L.textMuted }}>
+        <span
+          className="font-IBMPlexMono text-xs tracking-wider uppercase"
+          style={{ color: L.textMuted }}
+        >
           {t("workflow.demos.ui.planLabel")}
         </span>
       </div>
@@ -72,7 +83,10 @@ export default function ResearchPlanScreen({
       </div>
 
       {/* Action buttons */}
-      <div className="shrink-0 flex items-center justify-end gap-2 mt-3 pt-3" style={{ borderTop: `1px solid ${L.borderLight}` }}>
+      <div
+        className="shrink-0 flex items-center justify-end gap-2 mt-3 pt-3"
+        style={{ borderTop: `1px solid ${L.borderLight}` }}
+      >
         <div
           className="px-3 py-1.5 text-xs rounded"
           style={{ border: `1px solid ${L.border}`, color: L.textMuted }}

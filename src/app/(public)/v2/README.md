@@ -38,14 +38,14 @@ src/app/(public)/v2/
 
 ## Chapter Structure
 
-| # | Nav Label | Section | Variant |
-|---|-----------|---------|---------|
-| 01 | Worlds | Two Worlds: "Objective" / "Subjective" as big titles | dark |
-| 02 | Model | Foundation Model: kicker + "Subjective World Model" title + 4-layer dataset + cross-layer gap | dark |
-| 03 | Agents | AI Simulator (2C/2B/Expert) \| AI Researcher (6 research forms) | dark |
-| 04 | Workflow | Use Cases × Workflow: left selector (8 goals) + right interactive demos | dark |
-| 05 | Assets | Data Assets: 3 showoff stat cards (Persona/Sage/Panel) | dark |
-| 06 | Solutions | 8 role cards + customer stories below | light |
+| #   | Nav Label | Section                                                                                       | Variant |
+| --- | --------- | --------------------------------------------------------------------------------------------- | ------- |
+| 01  | Worlds    | Two Worlds: "Objective" / "Subjective" as big titles                                          | dark    |
+| 02  | Model     | Foundation Model: kicker + "Subjective World Model" title + 4-layer dataset + cross-layer gap | dark    |
+| 03  | Agents    | AI Simulator (2C/2B/Expert) \| AI Researcher (6 research forms)                               | dark    |
+| 04  | Workflow  | Use Cases × Workflow: left selector (8 goals) + right interactive demos                       | dark    |
+| 05  | Assets    | Data Assets: 3 showoff stat cards (Persona/Sage/Panel)                                        | dark    |
+| 06  | Solutions | 8 role cards + customer stories below                                                         | light   |
 
 ## Layout Architecture
 

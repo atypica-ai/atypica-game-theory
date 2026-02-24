@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
@@ -54,7 +54,10 @@ export default function FocusGroupDemo() {
     // Cursor moves to a persona card, clicks → dialog opens
     setCursor({ x: 60, y: 100, visible: true, clicking: false });
     schedule(() => setCursor({ x: 60, y: 100, visible: true, clicking: true }), 400);
-    schedule(() => { setCursor((c) => ({ ...c, visible: false, clicking: false })); setPhase("dialog"); }, 700);
+    schedule(() => {
+      setCursor((c) => ({ ...c, visible: false, clicking: false }));
+      setPhase("dialog");
+    }, 700);
   }
 
   function submitDialog() {
@@ -67,15 +70,18 @@ export default function FocusGroupDemo() {
   // Discussion auto-advance
   useEffect(() => {
     if (phase !== "discussion") return;
-    const t = setTimeout(() => {
-      if (msgCount < EVENTS.length) {
-        const evt = EVENTS[msgCount];
-        if (evt.type === "persona") setParticipated((prev) => new Set([...prev, evt.seed]));
-        setMsgCount((c) => c + 1);
-      } else {
-        setPhase("report");
-      }
-    }, msgCount === 0 ? 600 : 1000);
+    const t = setTimeout(
+      () => {
+        if (msgCount < EVENTS.length) {
+          const evt = EVENTS[msgCount];
+          if (evt.type === "persona") setParticipated((prev) => new Set([...prev, evt.seed]));
+          setMsgCount((c) => c + 1);
+        } else {
+          setPhase("report");
+        }
+      },
+      msgCount === 0 ? 600 : 1000,
+    );
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, msgCount]);
@@ -119,7 +125,13 @@ export default function FocusGroupDemo() {
       className="h-[400px]"
       sidebarActiveIndex={1}
       accentColor={L.blue}
-      breadcrumb={<><BreadcrumbSegment text="Panel" /><BreadcrumbSeparator /><BreadcrumbSegment text="Consumer Research" active /></>}
+      breadcrumb={
+        <>
+          <BreadcrumbSegment text="Panel" />
+          <BreadcrumbSeparator />
+          <BreadcrumbSegment text="Consumer Research" active />
+        </>
+      }
     >
       {/* Dialog overlay — outside scroll container, covers entire content area */}
       <AnimatePresence>
@@ -139,10 +151,24 @@ export default function FocusGroupDemo() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.2 }}
             >
-              <p className="text-sm font-medium" style={{ color: L.text }}>New Focus Group</p>
-              <div className="rounded p-2 text-xs leading-relaxed" style={{ background: L.bgSub, border: `1px solid ${L.borderLight}`, color: L.textSub }}>
+              <p className="text-sm font-medium" style={{ color: L.text }}>
+                New Focus Group
+              </p>
+              <div
+                className="rounded p-2 text-xs leading-relaxed"
+                style={{
+                  background: L.bgSub,
+                  border: `1px solid ${L.borderLight}`,
+                  color: L.textSub,
+                }}
+              >
                 {t("twoAgents.mockup.modQ")}
-                <motion.span className="inline-block w-0.5 h-3.5 ml-0.5 align-middle" style={{ background: L.blue }} animate={{ opacity: [1, 0] }} transition={{ duration: 0.6, repeat: Infinity }} />
+                <motion.span
+                  className="inline-block w-0.5 h-3.5 ml-0.5 align-middle"
+                  style={{ background: L.blue }}
+                  animate={{ opacity: [1, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity }}
+                />
               </div>
               <button
                 type="button"
@@ -163,11 +189,22 @@ export default function FocusGroupDemo() {
         <AnimatePresence mode="wait">
           {/* ── Panel Detail Page ── */}
           {(phase === "panel" || phase === "dialog") && (
-            <motion.div key="panel" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="p-4">
+            <motion.div
+              key="panel"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="p-4"
+            >
               {/* Panel title */}
               <div className="mb-3">
-                <p className="text-sm font-medium" style={{ color: L.text }}>Consumer Research Panel</p>
-                <p className="text-xs mt-0.5" style={{ color: L.textFaint }}>{PERSONAS.length} personas · 0 discussions</p>
+                <p className="text-sm font-medium" style={{ color: L.text }}>
+                  Consumer Research Panel
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: L.textFaint }}>
+                  {PERSONAS.length} personas · 0 discussions
+                </p>
               </div>
 
               {/* Persona grid (3×2) */}
@@ -180,8 +217,12 @@ export default function FocusGroupDemo() {
                     onClick={startFlow}
                   >
                     <HippyGhostAvatar seed={p.seed} className="size-8 rounded-full" />
-                    <span className="font-IBMPlexMono text-xs" style={{ color: L.textSub }}>{p.name}</span>
-                    <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>#{p.role}</span>
+                    <span className="font-IBMPlexMono text-xs" style={{ color: L.textSub }}>
+                      {p.name}
+                    </span>
+                    <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>
+                      #{p.role}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -190,13 +231,32 @@ export default function FocusGroupDemo() {
 
           {/* ── Discussion (3-column, fixed height) ── */}
           {phase === "discussion" && (
-            <motion.div key="discussion" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="flex h-full">
+            <motion.div
+              key="discussion"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex h-full"
+            >
               {/* Left: avatars only (narrow) */}
-              <div className="w-[52px] shrink-0 py-2.5 px-1.5 flex flex-col gap-1.5 items-center" style={{ borderRight: `1px solid ${L.border}` }}>
+              <div
+                className="w-[52px] shrink-0 py-2.5 px-1.5 flex flex-col gap-1.5 items-center"
+                style={{ borderRight: `1px solid ${L.border}` }}
+              >
                 {PERSONAS.map((p) => (
                   <div key={p.seed} className="relative">
                     <HippyGhostAvatar seed={p.seed} className="size-5 rounded-full" />
-                    <span className={cn("absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border", participated.has(p.seed) ? "bg-green-500" : "")} style={{ borderColor: L.bg, background: participated.has(p.seed) ? "#16a34a" : L.border }} />
+                    <span
+                      className={cn(
+                        "absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border",
+                        participated.has(p.seed) ? "bg-green-500" : "",
+                      )}
+                      style={{
+                        borderColor: L.bg,
+                        background: participated.has(p.seed) ? "#16a34a" : L.border,
+                      }}
+                    />
                   </div>
                 ))}
               </div>
@@ -204,9 +264,21 @@ export default function FocusGroupDemo() {
               {/* Center: Timeline */}
               <div className="flex-1 p-3 flex flex-col gap-2 overflow-hidden min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <motion.span className="w-1.5 h-1.5 rounded-full" style={{ background: L.blue }} animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
-                  <span className="font-IBMPlexMono text-xs" style={{ color: L.textMuted }}>In Progress</span>
-                  <span className="font-IBMPlexMono text-xs ml-auto tabular-nums" style={{ color: L.textFaint }}>{msgCount}/{EVENTS.length}</span>
+                  <motion.span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: L.blue }}
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                  <span className="font-IBMPlexMono text-xs" style={{ color: L.textMuted }}>
+                    In Progress
+                  </span>
+                  <span
+                    className="font-IBMPlexMono text-xs ml-auto tabular-nums"
+                    style={{ color: L.textFaint }}
+                  >
+                    {msgCount}/{EVENTS.length}
+                  </span>
                 </div>
                 {EVENTS.slice(0, msgCount).map((evt, i) => (
                   <motion.div
@@ -216,8 +288,18 @@ export default function FocusGroupDemo() {
                     transition={{ duration: 0.25 }}
                     className="py-1.5 px-2 text-xs leading-relaxed rounded"
                     style={{
-                      background: evt.type === "moderator" ? L.blueBg : evt.type === "summary" ? L.bgSub : "transparent",
-                      border: evt.type === "moderator" ? `1px solid ${L.blueBorder}` : evt.type === "summary" ? `1px solid ${L.border}` : "none",
+                      background:
+                        evt.type === "moderator"
+                          ? L.blueBg
+                          : evt.type === "summary"
+                            ? L.bgSub
+                            : "transparent",
+                      border:
+                        evt.type === "moderator"
+                          ? `1px solid ${L.blueBorder}`
+                          : evt.type === "summary"
+                            ? `1px solid ${L.border}`
+                            : "none",
                       color: evt.type === "summary" ? L.textMuted : L.text,
                       fontStyle: evt.type === "summary" ? "italic" : "normal",
                     }}
@@ -225,41 +307,100 @@ export default function FocusGroupDemo() {
                     <span className="font-IBMPlexMono text-xs mr-1" style={{ color: L.textMuted }}>
                       {evt.type === "moderator" && "🎙 "}
                       {evt.type === "summary" && "📋 "}
-                      {evt.type === "persona" && <HippyGhostAvatar seed={evt.seed} className="size-3.5 rounded-full inline-block align-text-bottom mr-0.5" />}
-                      {evt.type === "moderator" ? t("twoAgents.mockup.moderator") : evt.type === "persona" ? evt.name : "Summary"}:
+                      {evt.type === "persona" && (
+                        <HippyGhostAvatar
+                          seed={evt.seed}
+                          className="size-3.5 rounded-full inline-block align-text-bottom mr-0.5"
+                        />
+                      )}
+                      {evt.type === "moderator"
+                        ? t("twoAgents.mockup.moderator")
+                        : evt.type === "persona"
+                          ? evt.name
+                          : "Summary"}
+                      :
                     </span>
                     {evt.text}
                   </motion.div>
                 ))}
               </div>
-
             </motion.div>
           )}
 
           {/* ── Report (scrolls within fixed container) ── */}
           {phase === "report" && (
-            <motion.div key="report" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} className="p-4 space-y-3 cursor-pointer" onClick={() => { setPhase("panel"); setMsgCount(0); setParticipated(new Set()); }}>
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+            <motion.div
+              key="report"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="p-4 space-y-3 cursor-pointer"
+              onClick={() => {
+                setPhase("panel");
+                setMsgCount(0);
+                setParticipated(new Set());
+              }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+              >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-sm">📊</span>
-                  <span className="text-sm font-medium" style={{ color: L.text }}>{t("twoAgents.mockup.reportTitle")}</span>
+                  <span className="text-sm font-medium" style={{ color: L.text }}>
+                    {t("twoAgents.mockup.reportTitle")}
+                  </span>
                 </div>
                 <div className="flex items-center gap-0.5 mb-3">
                   {PERSONAS.slice(0, 5).map((p, i) => (
-                    <HippyGhostAvatar key={p.seed} seed={p.seed} className={cn("size-5 rounded-full", i > 0 && "-ml-1")} />
+                    <HippyGhostAvatar
+                      key={p.seed}
+                      seed={p.seed}
+                      className={cn("size-5 rounded-full", i > 0 && "-ml-1")}
+                    />
                   ))}
-                  <span className="text-xs ml-2" style={{ color: L.textFaint }}>{PERSONAS.length} participants</span>
+                  <span className="text-xs ml-2" style={{ color: L.textFaint }}>
+                    {PERSONAS.length} participants
+                  </span>
                 </div>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.15 }} className="p-3 rounded-lg" style={{ background: L.bgSub, border: `1px solid ${L.borderLight}` }}>
-                <span className="font-IBMPlexMono text-xs block mb-1.5" style={{ color: L.textFaint }}>Summary</span>
-                <p className="text-sm leading-relaxed" style={{ color: L.text }}>{t("twoAgents.mockup.modSummary")}</p>
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.15 }}
+                className="p-3 rounded-lg"
+                style={{ background: L.bgSub, border: `1px solid ${L.borderLight}` }}
+              >
+                <span
+                  className="font-IBMPlexMono text-xs block mb-1.5"
+                  style={{ color: L.textFaint }}
+                >
+                  Summary
+                </span>
+                <p className="text-sm leading-relaxed" style={{ color: L.text }}>
+                  {t("twoAgents.mockup.modSummary")}
+                </p>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.3 }} className="p-3 rounded-lg" style={{ background: L.blueBg, border: `1px solid ${L.blueBorder}` }}>
-                <span className="font-IBMPlexMono text-xs tracking-[0.08em] block mb-1.5" style={{ color: L.blue }}>{t("twoAgents.mockup.insightLabel")}</span>
-                <p className="text-sm leading-relaxed" style={{ color: L.text }}>{t("twoAgents.mockup.insightText")}</p>
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.3 }}
+                className="p-3 rounded-lg"
+                style={{ background: L.blueBg, border: `1px solid ${L.blueBorder}` }}
+              >
+                <span
+                  className="font-IBMPlexMono text-xs tracking-[0.08em] block mb-1.5"
+                  style={{ color: L.blue }}
+                >
+                  {t("twoAgents.mockup.insightLabel")}
+                </span>
+                <p className="text-sm leading-relaxed" style={{ color: L.text }}>
+                  {t("twoAgents.mockup.insightText")}
+                </p>
               </motion.div>
             </motion.div>
           )}

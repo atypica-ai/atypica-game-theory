@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { L } from "../theme";
 
 // Fake post data for scout browsing effect
@@ -33,11 +33,7 @@ const PLATFORM_ROWS = [
  * Shows horizontal scrollable rows of social media post cards, stacked vertically.
  * Each row represents a different platform search result.
  */
-export default function ScoutScreen({
-  postLabels,
-}: {
-  postLabels: [string, string, string];
-}) {
+export default function ScoutScreen({ postLabels }: { postLabels: [string, string, string] }) {
   const t = useTranslations("HomeAtypicaV2");
   const accent = L.green;
   const [visibleRows, setVisibleRows] = useState(0);
@@ -62,7 +58,10 @@ export default function ScoutScreen({
   return (
     <div className="flex flex-col h-full">
       {/* Status bar */}
-      <div className="shrink-0 flex items-center gap-2 px-4 py-2.5" style={{ borderBottom: `1px solid ${L.borderLight}` }}>
+      <div
+        className="shrink-0 flex items-center gap-2 px-4 py-2.5"
+        style={{ borderBottom: `1px solid ${L.borderLight}` }}
+      >
         <motion.span
           className="w-2 h-2 rounded-full"
           style={{ background: accent }}
@@ -113,7 +112,8 @@ export default function ScoutScreen({
             <div className="flex gap-2 overflow-x-auto pb-1">
               {Array.from({ length: row.postCount }, (_, pi) => {
                 const seed = ri * 10 + pi;
-                const palette = GRADIENT_PALETTES[(ri * row.postCount + pi) % GRADIENT_PALETTES.length];
+                const palette =
+                  GRADIENT_PALETTES[(ri * row.postCount + pi) % GRADIENT_PALETTES.length];
                 return (
                   <div
                     key={pi}
@@ -123,16 +123,27 @@ export default function ScoutScreen({
                     {/* Post image placeholder (gradient) */}
                     <div
                       className="w-full h-[70px]"
-                      style={{ background: `linear-gradient(135deg, ${palette[0]}40, ${palette[1]}30)` }}
+                      style={{
+                        background: `linear-gradient(135deg, ${palette[0]}40, ${palette[1]}30)`,
+                      }}
                     />
                     <div className="px-1.5 py-1.5">
-                      <span className="font-IBMPlexMono text-xs block truncate" style={{ color: L.textSub, fontSize: "10px" }}>
+                      <span
+                        className="font-IBMPlexMono text-xs block truncate"
+                        style={{ color: L.textSub, fontSize: "10px" }}
+                      >
                         user_{seed + 100}
                       </span>
-                      <span className="text-xs block truncate mt-0.5" style={{ color: L.textFaint, fontSize: "10px" }}>
+                      <span
+                        className="text-xs block truncate mt-0.5"
+                        style={{ color: L.textFaint, fontSize: "10px" }}
+                      >
                         {postLabels[pi % 3]}
                       </span>
-                      <span className="text-xs mt-1 block" style={{ color: L.textFaint, fontSize: "10px" }}>
+                      <span
+                        className="text-xs mt-1 block"
+                        style={{ color: L.textFaint, fontSize: "10px" }}
+                      >
                         ❤️ {fakeEngagement(seed)}
                       </span>
                     </div>
@@ -150,10 +161,7 @@ export default function ScoutScreen({
             animate={{ opacity: [0.3, 0.7, 0.3] }}
             transition={{ duration: 1, repeat: Infinity }}
           >
-            <motion.span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: accent }}
-            />
+            <motion.span className="w-1.5 h-1.5 rounded-full" style={{ background: accent }} />
             <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>
               Searching next platform...
             </span>

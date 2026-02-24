@@ -27,10 +27,19 @@ type MetricDef = {
 };
 
 const METRICS: MetricDef[] = [
-  { key: "personas", getValue: (t) => String(rampMetric(t, 0.3, 47)).replace(/\B(?=(\d{3})+(?!\d))/g, ",") },
-  { key: "interviews", getValue: (t) => String(rampMetric(t, 1.7, 12)).replace(/\B(?=(\d{3})+(?!\d))/g, ",") },
+  {
+    key: "personas",
+    getValue: (t) => String(rampMetric(t, 0.3, 47)).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+  },
+  {
+    key: "interviews",
+    getValue: (t) => String(rampMetric(t, 1.7, 12)).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+  },
   { key: "signals", getValue: (t) => `${fastMetric(t, 2.1, 847, 120)}` },
-  { key: "insights", getValue: (t) => String(rampMetric(t, 3.9, 8)).replace(/\B(?=(\d{3})+(?!\d))/g, ",") },
+  {
+    key: "insights",
+    getValue: (t) => String(rampMetric(t, 3.9, 8)).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+  },
   { key: "panels", getValue: (t) => `${fastMetric(t, 5.2, 64, 18)}` },
 ];
 

@@ -6,11 +6,7 @@ type ChapterPanelProps = {
   children: React.ReactNode;
 };
 
-export default function ChapterPanel({
-  variant = "dark",
-  className,
-  children,
-}: ChapterPanelProps) {
+export default function ChapterPanel({ variant = "dark", className, children }: ChapterPanelProps) {
   return (
     <div
       className={cn(

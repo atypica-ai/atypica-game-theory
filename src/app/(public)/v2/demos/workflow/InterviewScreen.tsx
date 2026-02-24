@@ -2,8 +2,8 @@
 
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { L } from "../theme";
 
 /**
@@ -75,16 +75,29 @@ export default function InterviewScreen({
             className="w-5 h-5 rounded-full grid place-items-center shrink-0 mt-0.5"
             style={{ background: L.bgSub, border: `1px solid ${L.border}` }}
           >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={L.textMuted} strokeWidth="2" strokeLinecap="round">
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={L.textMuted}
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
               <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
           </div>
-          <div className="rounded-lg px-3 py-2" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
+          <div
+            className="rounded-lg px-3 py-2"
+            style={{ background: "white", border: `1px solid ${L.borderLight}` }}
+          >
             <span className="font-IBMPlexMono text-xs block mb-1" style={{ color: L.textFaint }}>
               atypica.AI
             </span>
-            <p className="text-sm leading-relaxed" style={{ color: L.text }}>{question}</p>
+            <p className="text-sm leading-relaxed" style={{ color: L.text }}>
+              {question}
+            </p>
           </div>
         </motion.div>
 
@@ -97,8 +110,14 @@ export default function InterviewScreen({
               transition={{ duration: 0.3 }}
               className="flex items-start gap-2 max-w-[85%] self-end flex-row-reverse"
             >
-              <HippyGhostAvatar seed={personaSeed} className="size-5 rounded-full shrink-0 mt-0.5" />
-              <div className="rounded-lg px-3 py-2" style={{ background: `${accent}08`, border: `1px solid ${accent}20` }}>
+              <HippyGhostAvatar
+                seed={personaSeed}
+                className="size-5 rounded-full shrink-0 mt-0.5"
+              />
+              <div
+                className="rounded-lg px-3 py-2"
+                style={{ background: `${accent}08`, border: `1px solid ${accent}20` }}
+              >
                 <span className="font-IBMPlexMono text-xs block mb-1" style={{ color: accent }}>
                   {personaName}
                 </span>
@@ -108,7 +127,11 @@ export default function InterviewScreen({
               </div>
             </motion.div>
           ) : (
-            <motion.div className="flex items-center gap-1.5 self-end mr-7" animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity }}>
+            <motion.div
+              className="flex items-center gap-1.5 self-end mr-7"
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
               {[0, 0.15, 0.3].map((delay, i) => (
                 <motion.span
                   key={i}
@@ -141,7 +164,15 @@ export default function InterviewScreen({
           className="w-8 h-8 rounded-full grid place-items-center"
           style={{ background: `${accent}10`, border: `1px solid ${accent}20` }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={accent}
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
             <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
             <path d="M19 10v2a7 7 0 01-14 0v-2" />
           </svg>

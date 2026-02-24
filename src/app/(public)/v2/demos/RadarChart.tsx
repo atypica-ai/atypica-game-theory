@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { L } from "./theme";
 
 const DIMS = 7;
-const CX = 100, CY = 100, R = 58;
+const CX = 100,
+  CY = 100,
+  R = 58;
 
 const DIM_LABELS = ["Demo", "Geo", "Psych", "Behav", "Needs", "Tech", "Social"];
 const SCORES = [2.5, 1.2, 2.8, 2.1, 1.5, 0.8, 2.0];

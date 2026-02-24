@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import ChapterPanel from "../components/ChapterPanel";
 import { CHAPTERS, SAGE_CAPABILITY_KEYS, SIMULATOR_PERSONA_KEYS } from "../content";
-import PersonaBuilderDemo from "../demos/PersonaBuilderDemo";
 import FocusGroupDemo from "../demos/FocusGroupDemo";
+import PersonaBuilderDemo from "../demos/PersonaBuilderDemo";
 
 const copy = CHAPTERS[2];
 
@@ -24,10 +24,18 @@ export default function TwoAgentsSection({
     >
       <ChapterPanel variant="dark">
         <div className="mb-12">
-          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">{copy.number}</div>
-          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">{t("twoAgents.kicker")}</p>
-          <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">{t("twoAgents.title")}</h2>
-          <p className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-300">{t("twoAgents.body")}</p>
+          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
+            {copy.number}
+          </div>
+          <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">
+            {t("twoAgents.kicker")}
+          </p>
+          <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">
+            {t("twoAgents.title")}
+          </h2>
+          <p className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-300">
+            {t("twoAgents.body")}
+          </p>
         </div>
 
         <motion.div
@@ -52,9 +60,16 @@ export default function TwoAgentsSection({
 
               <div className="grid gap-2">
                 {SIMULATOR_PERSONA_KEYS.map((personaKey) => (
-                  <div key={personaKey} className="border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600">
-                    <div className="text-sm font-medium">{t(`twoAgents.simulator.${personaKey}.label`)}</div>
-                    <div className="text-sm leading-normal text-zinc-300 mt-1">{t(`twoAgents.simulator.${personaKey}.description`)}</div>
+                  <div
+                    key={personaKey}
+                    className="border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600"
+                  >
+                    <div className="text-sm font-medium">
+                      {t(`twoAgents.simulator.${personaKey}.label`)}
+                    </div>
+                    <div className="text-sm leading-normal text-zinc-300 mt-1">
+                      {t(`twoAgents.simulator.${personaKey}.description`)}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -75,8 +90,13 @@ export default function TwoAgentsSection({
 
               <div className="grid gap-1.5">
                 {SAGE_CAPABILITY_KEYS.map((capKey, i) => (
-                  <div key={capKey} className="flex items-center gap-2.5 border border-zinc-800 py-2.5 px-3.5 text-sm transition-colors duration-200 hover:border-zinc-600">
-                    <span className="font-IBMPlexMono text-xs text-zinc-300 min-w-[18px]">{String(i + 1).padStart(2, "0")}</span>
+                  <div
+                    key={capKey}
+                    className="flex items-center gap-2.5 border border-zinc-800 py-2.5 px-3.5 text-sm transition-colors duration-200 hover:border-zinc-600"
+                  >
+                    <span className="font-IBMPlexMono text-xs text-zinc-300 min-w-[18px]">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
                     <span>{t(`twoAgents.researcher.${capKey}`)}</span>
                   </div>
                 ))}

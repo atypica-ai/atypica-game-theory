@@ -30,7 +30,6 @@ export const SAGE_CAPABILITY_KEYS = [
 
 export const PERSONA_TAG_KEYS = ["tagGenZ", "tagUrban", "tagPriceSensitive", "tagSocial"] as const;
 
-
 /* ─── 03: World Model ─── */
 
 export const WORLD_MODEL_LAYERS = [
@@ -39,7 +38,6 @@ export const WORLD_MODEL_LAYERS = [
   { key: "cognition", radius: 24 },
   { key: "behavior", radius: 15 },
 ] as const;
-
 
 /* ─── 04: Workflow (Use Cases × Workflow) ─── */
 
@@ -79,10 +77,7 @@ export const SOLUTION_ROLES = [
 
 export const CUSTOMER_STORY_KEYS = ["food", "tools", "university", "prediction"] as const;
 
-export const CUSTOMER_STORY_META: Record<
-  string,
-  { category: string; avatarPrompt: string }
-> = {
+export const CUSTOMER_STORY_META: Record<string, { category: string; avatarPrompt: string }> = {
   food: {
     category: "enterprise",
     avatarPrompt:
