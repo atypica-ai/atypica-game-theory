@@ -2,34 +2,35 @@
 
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { useMessages, useTranslations } from "next-intl";
 import Image from "next/image";
 import React, { useState } from "react";
 import ChapterPanel from "../components/ChapterPanel";
-import { CHAPTERS, CUSTOMER_STORIES, USE_CASE_CATEGORIES } from "../content";
+import {
+  CATEGORY_COLORS,
+  CHAPTERS,
+  CUSTOMER_STORY_KEYS,
+  CUSTOMER_STORY_META,
+  USE_CASE_CATEGORIES,
+} from "../content";
 
 const copy = CHAPTERS[5];
-
-const CATEGORY_COLORS: Record<string, string> = {
-  enterprise: "#16a34a",
-  academic: "#d97706",
-  prediction: "#8b5cf6",
-} as const;
 
 /* ── Story #0: Chart-driven — big bar chart left, quote + metrics right ── */
 
 function StoryChartDriven() {
-  const s = CUSTOMER_STORIES[0];
+  const t = useTranslations("HomeAtypicaV2");
   const bars = [
-    { label: "R&D Cycle", before: 90, after: 15 },
-    { label: "Concepts", before: 20, after: 95 },
-    { label: "Test Time", before: 85, after: 17 },
+    { label: t("useCases.storyUI.rdCycle"), before: 90, after: 15 },
+    { label: t("useCases.storyUI.concepts"), before: 20, after: 95 },
+    { label: t("useCases.storyUI.testTime"), before: 85, after: 17 },
   ];
   return (
     <div className="grid grid-cols-[1fr_1fr] gap-8 max-lg:grid-cols-1">
       {/* Chart */}
       <div>
         <p className="font-IBMPlexMono text-[10px] tracking-[0.1em] uppercase text-zinc-400 mb-3">
-          Before vs After
+          {t("useCases.storyUI.beforeVsAfter")}
         </p>
         <div className="flex items-end gap-6 h-40">
           {bars.map((b, i) => (
@@ -54,10 +55,10 @@ function StoryChartDriven() {
         </div>
         <div className="flex gap-4 mt-3">
           <span className="flex items-center gap-1.5 text-[10px] text-zinc-400">
-            <span className="w-2.5 h-2.5 bg-zinc-200" /> Before
+            <span className="w-2.5 h-2.5 bg-zinc-200" /> {t("useCases.storyUI.before")}
           </span>
           <span className="flex items-center gap-1.5 text-[10px] text-zinc-400">
-            <span className="w-2.5 h-2.5 bg-[#16a34a]" /> With Atypica
+            <span className="w-2.5 h-2.5 bg-[#16a34a]" /> {t("useCases.storyUI.withAtypica")}
           </span>
         </div>
       </div>
@@ -65,15 +66,15 @@ function StoryChartDriven() {
       {/* Quote + body */}
       <div className="flex flex-col justify-center">
         <span className="font-IBMPlexMono text-xs tracking-[0.1em] uppercase text-zinc-500 mb-3">
-          {s.client}
+          {t("useCases.stories.food.client")}
         </span>
         <blockquote
           className="text-base leading-relaxed text-zinc-800 italic border-l-2 pl-4 mb-4"
           style={{ borderColor: "#16a34a" }}
         >
-          &ldquo;{s.quote}&rdquo;
+          &ldquo;{t("useCases.stories.food.quote")}&rdquo;
         </blockquote>
-        <p className="text-sm leading-relaxed text-zinc-500">{s.body}</p>
+        <p className="text-sm leading-relaxed text-zinc-500">{t("useCases.stories.food.body")}</p>
       </div>
     </div>
   );
@@ -82,7 +83,7 @@ function StoryChartDriven() {
 /* ── Story #1: Pure quote — centered, large typography ── */
 
 function StoryPureQuote() {
-  const s = CUSTOMER_STORIES[1];
+  const t = useTranslations("HomeAtypicaV2");
   return (
     <div className="grid grid-cols-[1fr_1fr] gap-8 h-full max-lg:grid-cols-1">
       {/* Left: product feedback mockup */}
@@ -94,14 +95,14 @@ function StoryPureQuote() {
             <rect x="30" y="20" width="140" height="100" rx="4" stroke="rgba(59,130,246,0.2)" strokeWidth="1" strokeDasharray="4 3" />
             <rect x="45" y="35" width="60" height="50" rx="2" stroke="rgba(59,130,246,0.15)" strokeWidth="0.8" />
             <circle cx="130" cy="60" r="18" stroke="rgba(59,130,246,0.15)" strokeWidth="0.8" />
-            <text x="100" y="132" textAnchor="middle" fontSize="7" fill="rgba(0,0,0,0.2)" fontFamily="var(--font-ibm-plex-mono)">PROTOTYPE v3.2</text>
+            <text x="100" y="132" textAnchor="middle" fontSize="7" fill="rgba(0,0,0,0.2)" fontFamily="var(--font-ibm-plex-mono)">{t("useCases.storyUI.prototypeLabel")}</text>
           </svg>
           {/* Feedback bubbles */}
           <div className="absolute top-2 -right-2 bg-white border border-zinc-200 py-1 px-2 text-[9px] text-zinc-500 shadow-sm">
-            &ldquo;Grip angle needs work&rdquo;
+            &ldquo;{t("useCases.storyUI.gripAngle")}&rdquo;
           </div>
           <div className="absolute bottom-6 -left-2 bg-white border border-zinc-200 py-1 px-2 text-[9px] text-zinc-500 shadow-sm">
-            &ldquo;Weight balance is right&rdquo;
+            &ldquo;{t("useCases.storyUI.weightBalance")}&rdquo;
           </div>
         </div>
       </div>
@@ -109,21 +110,23 @@ function StoryPureQuote() {
       {/* Right: quote + metrics */}
       <div className="flex flex-col justify-center">
         <span className="font-IBMPlexMono text-xs tracking-[0.1em] uppercase text-zinc-400 mb-3">
-          {s.client}
+          {t("useCases.stories.tools.client")}
         </span>
         <blockquote
           className="text-base leading-relaxed text-zinc-800 italic border-l-2 pl-4 mb-4"
           style={{ borderColor: "#3b82f6" }}
         >
-          &ldquo;{s.quote}&rdquo;
+          &ldquo;{t("useCases.stories.tools.quote")}&rdquo;
         </blockquote>
         <div className="flex gap-3">
-          {s.metrics.map((m) => (
-            <div key={m.label} className="border border-zinc-200 py-2 px-3">
+          {(["metric1", "metric2", "metric3"] as const).map((mk) => (
+            <div key={mk} className="border border-zinc-200 py-2 px-3">
               <div className="font-IBMPlexMono text-[9px] tracking-[0.1em] uppercase text-zinc-400">
-                {m.label}
+                {t(`useCases.stories.tools.${mk}Label`)}
               </div>
-              <div className="text-sm font-medium text-zinc-800 mt-0.5">{m.value}</div>
+              <div className="text-sm font-medium text-zinc-800 mt-0.5">
+                {t(`useCases.stories.tools.${mk}Value`)}
+              </div>
             </div>
           ))}
         </div>
@@ -135,21 +138,21 @@ function StoryPureQuote() {
 /* ── Story #2: Process flow — step-by-step pipeline with description ── */
 
 function StoryProcessFlow() {
-  const s = CUSTOMER_STORIES[2];
+  const t = useTranslations("HomeAtypicaV2");
   const steps = [
-    { label: "1-on-1 Interviews" },
-    { label: "Build AI Personas" },
-    { label: "Assemble AI Panel" },
-    { label: "Simulate Policies" },
+    { label: t("useCases.storyUI.stepInterviews") },
+    { label: t("useCases.storyUI.stepBuildPersonas") },
+    { label: t("useCases.storyUI.stepAssemblePanel") },
+    { label: t("useCases.storyUI.stepSimulatePolicies") },
   ];
   return (
     <div>
       <div className="flex items-center gap-2 mb-5">
         <span className="font-IBMPlexMono text-xs tracking-[0.1em] uppercase text-zinc-500">
-          {s.client}
+          {t("useCases.stories.university.client")}
         </span>
         <span className="text-zinc-300 mx-1">/</span>
-        <span className="text-sm italic text-zinc-500">20,000 households</span>
+        <span className="text-sm italic text-zinc-500">{t("useCases.storyUI.households")}</span>
       </div>
 
       {/* Horizontal pipeline */}
@@ -165,7 +168,7 @@ function StoryProcessFlow() {
               </span>
               <span className="text-sm text-zinc-700 whitespace-nowrap">{step.label}</span>
             </div>
-            {i < steps.length - 1 && <span className="text-zinc-300 mx-1">→</span>}
+            {i < steps.length - 1 && <span className="text-zinc-300 mx-1">&rarr;</span>}
           </div>
         ))}
       </div>
@@ -174,9 +177,9 @@ function StoryProcessFlow() {
         className="text-base leading-relaxed text-zinc-800 italic border-l-2 pl-4 mb-3"
         style={{ borderColor: "#d97706" }}
       >
-        &ldquo;{s.quote}&rdquo;
+        &ldquo;{t("useCases.stories.university.quote")}&rdquo;
       </blockquote>
-      <p className="text-sm leading-relaxed text-zinc-500">{s.body}</p>
+      <p className="text-sm leading-relaxed text-zinc-500">{t("useCases.stories.university.body")}</p>
     </div>
   );
 }
@@ -184,7 +187,7 @@ function StoryProcessFlow() {
 /* ── Story #3: API integration — code-like, technical ── */
 
 function StoryTechnical() {
-  const s = CUSTOMER_STORIES[3];
+  const t = useTranslations("HomeAtypicaV2");
   return (
     <div className="grid grid-cols-[1fr_1fr] gap-8 max-lg:grid-cols-1">
       {/* Code-like panel */}
@@ -218,22 +221,24 @@ function StoryTechnical() {
       {/* Description */}
       <div className="flex flex-col justify-center">
         <span className="font-IBMPlexMono text-xs tracking-[0.1em] uppercase text-zinc-500 mb-3">
-          {s.client}
+          {t("useCases.stories.prediction.client")}
         </span>
         <blockquote
           className="text-base leading-relaxed text-zinc-800 italic border-l-2 pl-4 mb-4"
           style={{ borderColor: "#8b5cf6" }}
         >
-          &ldquo;{s.quote}&rdquo;
+          &ldquo;{t("useCases.stories.prediction.quote")}&rdquo;
         </blockquote>
-        <p className="text-sm leading-relaxed text-zinc-500 mb-4">{s.body}</p>
+        <p className="text-sm leading-relaxed text-zinc-500 mb-4">{t("useCases.stories.prediction.body")}</p>
         <div className="flex gap-4">
-          {s.metrics.map((m) => (
-            <div key={m.label} className="border border-zinc-200 py-2 px-3">
+          {(["metric1", "metric2", "metric3"] as const).map((mk) => (
+            <div key={mk} className="border border-zinc-200 py-2 px-3">
               <div className="font-IBMPlexMono text-[9px] tracking-[0.1em] uppercase text-zinc-400">
-                {m.label}
+                {t(`useCases.stories.prediction.${mk}Label`)}
               </div>
-              <div className="text-sm font-medium text-zinc-800 mt-0.5">{m.value}</div>
+              <div className="text-sm font-medium text-zinc-800 mt-0.5">
+                {t(`useCases.stories.prediction.${mk}Value`)}
+              </div>
             </div>
           ))}
         </div>
@@ -251,6 +256,16 @@ export default function UseCasesSection({
 }: {
   register: (el: HTMLElement | null) => void;
 }) {
+  const t = useTranslations("HomeAtypicaV2");
+  const messages = useMessages();
+
+  type CatItemText = { name: string; desc: string };
+  type CatRaw = Record<string, CatItemText | string>;
+  const catRawData = (
+    (messages.HomeAtypicaV2 as unknown as Record<string, Record<string, unknown>>)
+      .useCases.categories as Record<string, CatRaw>
+  );
+
   const [activeStory, setActiveStory] = useState(0);
   const StoryView = STORY_VIEWS[activeStory];
 
@@ -266,10 +281,10 @@ export default function UseCasesSection({
             {copy.number}
           </div>
           <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500 mb-3">
-            {copy.kicker}
+            {t("useCases.kicker")}
           </p>
           <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">
-            {copy.title}
+            {t("useCases.title")}
           </h2>
         </div>
 
@@ -295,28 +310,31 @@ export default function UseCasesSection({
                     className="font-IBMPlexMono text-xs tracking-[0.1em] uppercase font-medium"
                     style={{ color: cat.color }}
                   >
-                    {cat.label}
+                    {catRawData[cat.key].label as string}
                   </span>
                 </div>
 
                 {/* Scenarios as flowing list */}
                 <div className="space-y-3">
-                  {cat.items.map((item) => (
-                    <div key={item.name} className="group">
-                      <div
-                        className="text-sm font-medium text-zinc-800 mb-0.5 flex items-center gap-2"
-                      >
-                        <span
-                          className="w-1 h-1 rounded-full shrink-0"
-                          style={{ backgroundColor: cat.color }}
-                        />
-                        {item.name}
+                  {cat.items.map((itemKey) => {
+                    const item = catRawData[cat.key][itemKey] as CatItemText;
+                    return (
+                      <div key={itemKey} className="group">
+                        <div
+                          className="text-sm font-medium text-zinc-800 mb-0.5 flex items-center gap-2"
+                        >
+                          <span
+                            className="w-1 h-1 rounded-full shrink-0"
+                            style={{ backgroundColor: cat.color }}
+                          />
+                          {item.name}
+                        </div>
+                        <p className="text-xs leading-relaxed text-zinc-400 pl-3">
+                          {item.desc}
+                        </p>
                       </div>
-                      <p className="text-xs leading-relaxed text-zinc-400 pl-3">
-                        {item.desc}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -324,7 +342,7 @@ export default function UseCasesSection({
 
           {/* Customer Stories */}
           <p className="font-IBMPlexMono text-xs tracking-[0.16em] uppercase text-zinc-500 mb-4">
-            Customer Stories
+            {t("useCases.customerStoriesLabel")}
           </p>
 
           {/* Large story card */}
@@ -344,41 +362,50 @@ export default function UseCasesSection({
 
           {/* 4 selector cards with profile avatars */}
           <div className="grid grid-cols-4 gap-3 max-lg:grid-cols-2">
-            {CUSTOMER_STORIES.map((s, i) => (
-              <button
-                key={s.key}
-                type="button"
-                className={cn(
-                  "border rounded-lg p-3 text-left cursor-pointer transition-all duration-200 bg-transparent flex items-center gap-3",
-                  i === activeStory
-                    ? "border-zinc-400"
-                    : "border-zinc-200 hover:border-zinc-300",
-                )}
-                onClick={() => setActiveStory(i)}
-              >
-                {/* Profile avatar */}
-                <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 relative bg-zinc-100">
-                  <Image
-                    src={`/api/imagegen/dev/${encodeURIComponent(s.avatarPrompt)}?ratio=square`}
-                    alt={s.client}
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <span className="font-IBMPlexMono text-[10px] tracking-[0.08em] uppercase text-zinc-500 block truncate">
-                    {s.client}
-                  </span>
-                  <span
-                    className="font-IBMPlexMono text-[9px] tracking-[0.06em]"
-                    style={{ color: CATEGORY_COLORS[s.category] }}
-                  >
-                    {s.category === "enterprise" ? "Enterprise" : s.category === "academic" ? "Academic" : "Prediction"}
-                  </span>
-                </div>
-              </button>
-            ))}
+            {CUSTOMER_STORY_KEYS.map((storyKey, i) => {
+              const meta = CUSTOMER_STORY_META[storyKey];
+              return (
+                <button
+                  key={storyKey}
+                  type="button"
+                  className={cn(
+                    "border rounded-lg p-3 text-left cursor-pointer transition-all duration-200 bg-transparent flex items-center gap-3",
+                    i === activeStory
+                      ? "border-zinc-400"
+                      : "border-zinc-200 hover:border-zinc-300",
+                  )}
+                  onClick={() => setActiveStory(i)}
+                >
+                  {/* Profile avatar */}
+                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 relative bg-zinc-100">
+                    <Image
+                      src={`/api/imagegen/dev/${encodeURIComponent(meta.avatarPrompt)}?ratio=square`}
+                      alt={t(`useCases.stories.${storyKey}.client`)}
+                      fill
+                      className="object-cover"
+                      sizes="40px"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="font-IBMPlexMono text-[10px] tracking-[0.08em] uppercase text-zinc-500 block truncate">
+                      {t(`useCases.stories.${storyKey}.client`)}
+                    </span>
+                    <span
+                      className="font-IBMPlexMono text-[9px] tracking-[0.06em]"
+                      style={{ color: CATEGORY_COLORS[meta.category] }}
+                    >
+                      {t(
+                        meta.category === "enterprise"
+                          ? "useCases.categoryEnterprise"
+                          : meta.category === "academic"
+                            ? "useCases.categoryAcademic"
+                            : "useCases.categoryPrediction",
+                      )}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </motion.div>
       </ChapterPanel>

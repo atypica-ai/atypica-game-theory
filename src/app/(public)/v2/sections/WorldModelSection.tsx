@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import ChapterPanel from "../components/ChapterPanel";
 import {
@@ -20,6 +21,7 @@ export default function WorldModelSection({
 }: {
   register: (el: HTMLElement | null) => void;
 }) {
+  const t = useTranslations("HomeAtypicaV2");
   const [activeLayer, setActiveLayer] = useState(-1);
 
   return (
@@ -34,19 +36,14 @@ export default function WorldModelSection({
             {copy.number}
           </div>
           <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500 mb-3">
-            {copy.kicker}
+            {t("worldModel.kicker")}
           </p>
           <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">
-            {copy.title}
+            {t("worldModel.title")}
           </h2>
-          {copy.body.map((text) => (
-            <p
-              key={text}
-              className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-500"
-            >
-              {text}
-            </p>
-          ))}
+          <p className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-500">
+            {t("worldModel.body")}
+          </p>
         </div>
 
         <motion.div
@@ -101,7 +98,7 @@ export default function WorldModelSection({
                 }}
                 transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
               >
-                <span className="text-[#16a34a] font-medium">SWM</span>
+                <span className="text-[#16a34a] font-medium">{t("worldModel.center")}</span>
               </motion.div>
 
               {/* Dimension labels */}
@@ -111,7 +108,7 @@ export default function WorldModelSection({
                   className="absolute -translate-x-1/2 -translate-y-1/2 font-IBMPlexMono text-[9px] tracking-[0.06em] text-zinc-400 pointer-events-none whitespace-nowrap"
                   style={{ left: `${n.x}%`, top: `${n.y}%` }}
                 >
-                  {n.label}
+                  {t(`worldModel.dimensions.${n.key}.label`)}
                 </span>
               ))}
             </div>
@@ -141,11 +138,11 @@ export default function WorldModelSection({
                         activeLayer === i ? "text-gray-900" : "text-zinc-600",
                       )}
                     >
-                      {layer.label}
+                      {t(`worldModel.layers.${layer.key}.label`)}
                     </span>
                   </div>
                   <p className="mt-1 text-sm leading-relaxed text-zinc-400 pl-[18px]">
-                    {layer.description}
+                    {t(`worldModel.layers.${layer.key}.description`)}
                   </p>
                 </div>
               ))}

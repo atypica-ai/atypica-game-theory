@@ -371,5 +371,327 @@
       "affiliateProgram": "https://friends.atypica.ai",
       "sage": "/sage/profile/jv62NzUkJjfsbhxq"
     }
+  },
+  "HomeAtypicaV2": {
+    "hero": {
+      "kicker": "ATYPICA 2.0",
+      "titleLine1": "The Agent That",
+      "titleAccent": "Understands",
+      "titleEnd": " Humans",
+      "body": "Most agents do tasks. Atypica does something harder — it models why people choose, hesitate, and decide.",
+      "cta": "Start a Study",
+      "secondaryCta": "How It Works",
+      "badgePersonas": "1M+ AI Personas",
+      "badgeAccuracy": "85% Behavioral Accuracy",
+      "badgeTrusted": "Trusted by Global Enterprises"
+    },
+    "nav": {
+      "twoWorlds": "Two Worlds",
+      "twoAgents": "Two Agents",
+      "worldModel": "World Model",
+      "threeModes": "Three Modes",
+      "dataAssets": "Data Assets",
+      "useCases": "Use Cases"
+    },
+    "twoWorlds": {
+      "kicker": "THE CORE PROBLEM",
+      "quote": "The world in our heads is not a precise replica of reality.",
+      "attribution": "— Daniel Kahneman, Thinking, Fast and Slow",
+      "objectiveLabel": "[1.A] The Objective World",
+      "objectiveTitle": "Measurable",
+      "objectiveDesc": "Quantifiable. The domain of traditional AI agents — automating tasks, processing data, executing workflows.",
+      "subjectiveLabel": "[1.B] The Subjective World",
+      "subjectiveTitle": "Emotional",
+      "subjectiveDesc": "Contextual. The domain of human decisions — why people choose, hesitate, trust, and act."
+    },
+    "twoAgents": {
+      "kicker": "CORE ARCHITECTURE",
+      "title": "Simulate × Research",
+      "body": "The Simulator becomes a specific person — reconstructing how they choose, why they hesitate, what tips the balance. The Researcher asks the right questions, probes deeper, draws out what people struggle to articulate.",
+      "simulator": {
+        "tag": "AI SIMULATOR",
+        "title": "Persona + Sage",
+        "description": "The Simulator becomes a specific person — not a statistical average. It reconstructs how they choose, why they hesitate, and what tips the balance.",
+        "persona": {
+          "label": "AI Persona",
+          "sub": "Consumer Simulation",
+          "description": "Virtual consumers built from real behavioral data. Each carries unique values, risk profiles, and decision logic."
+        },
+        "sage": {
+          "label": "AI Sage",
+          "sub": "Expert Simulation",
+          "description": "Domain experts with two-layer memory — core knowledge and working knowledge that grows through every consultation."
+        }
+      },
+      "researcher": {
+        "tag": "AI RESEARCHER",
+        "title": "Research Methods",
+        "description": "The Researcher asks the right questions, probes deeper, draws out what people struggle to articulate. Part interviewer, part analyst — always listening.",
+        "interview": "1-on-1 Interview",
+        "oneToMany": "One-to-Many",
+        "focusGroup": "Focus Group",
+        "panel": "Panel Discussion",
+        "observation": "Behavioral Observation"
+      },
+      "mockup": {
+        "stepParse": "Parse",
+        "stepAnalyze": "Analyze",
+        "stepGenerate": "Generate",
+        "personaName": "Persona #1042",
+        "personaMeta": "Tier 2 · Female · 25-34",
+        "tagGenZ": "Gen-Z",
+        "tagUrban": "Urban",
+        "tagPriceSensitive": "Price-sensitive",
+        "tagSocial": "Social",
+        "dimValues": "Values",
+        "dimRisk": "Risk",
+        "dimEmotion": "Emotion",
+        "dimDecision": "Decision",
+        "dimSocial": "Social",
+        "dimCognitive": "Cognitive",
+        "interviewQ1": "What factors influence your purchase decisions most?",
+        "interviewA1": "Honestly, peer reviews matter more than ads...",
+        "interviewQ2": "Can you walk me through a recent example?",
+        "interviewA2": "Last month I spent 2 weeks comparing options before..."
+      }
+    },
+    "worldModel": {
+      "kicker": "FOUNDATION",
+      "title": "Subjective World Model",
+      "body": "Four layers of understanding, from surface expression to deep behavior. Six dimensions that define any person's decision-making world.",
+      "center": "SWM",
+      "layers": {
+        "expression": {
+          "label": "Expression",
+          "description": "How people express themselves — social media, public statements, self-presentation."
+        },
+        "story": {
+          "label": "Story",
+          "description": "How people explain themselves — narratives, interviews, personal histories."
+        },
+        "cognition": {
+          "label": "Cognition",
+          "description": "How people make decisions — values, biases, mental models, judgment patterns."
+        },
+        "behavior": {
+          "label": "Behavior",
+          "description": "How people actually act — purchase decisions, real choices, long-term patterns."
+        }
+      },
+      "dimensions": {
+        "values": { "label": "Value Systems", "description": "What matters and why" },
+        "risk": { "label": "Risk Preferences", "description": "How people weigh uncertainty" },
+        "emotion": { "label": "Emotional Triggers", "description": "What moves people to act" },
+        "decision": { "label": "Decision Pathways", "description": "How choices actually get made" },
+        "social": { "label": "Social Influence", "description": "The invisible pull of others" },
+        "cognitive": { "label": "Cognitive Frames", "description": "Mental models that shape perception" }
+      }
+    },
+    "threeModes": {
+      "kicker": "PRODUCT",
+      "title": "Three Ways to Understand",
+      "body": "From autonomous signal absorption to full-auto research to live human-AI dialogue.",
+      "explore": "Explore",
+      "signal": {
+        "title": "Signal Mode",
+        "badge": "SIGNAL",
+        "description": "Always-on intelligence. The agent continuously absorbs signals from social media, surfaces trends, and delivers findings without being asked.",
+        "mapLabel": "SIGNAL MAP",
+        "cleanBeauty": "Clean Beauty",
+        "priceSensitivity": "Price Sensitivity",
+        "kolMentions": "KOL Mentions",
+        "brandRecall": "Brand Recall",
+        "sustainability": "Sustainability",
+        "peerReviews": "Peer Reviews",
+        "packaging": "Packaging"
+      },
+      "deep": {
+        "title": "Deep Mode",
+        "badge": "DEEP",
+        "description": "End-to-end AI research — from study design to interviews to insight delivery. Weeks of work compressed into minutes.",
+        "tabBrief": "Brief",
+        "tabIntent": "Intent",
+        "tabExecute": "Execute",
+        "researchQuestion": "RESEARCH QUESTION",
+        "briefQuestion": "How do Gen-Z consumers perceive clean beauty brands?",
+        "submit": "Submit →",
+        "studyPlan": "STUDY PLAN",
+        "planStep1": "Scout 3 platforms for signals",
+        "planStep2": "Interview 6 AI personas",
+        "planStep3": "Generate insight report",
+        "confirmPlan": "Confirm Plan ✓",
+        "executing": "EXECUTING",
+        "execScout": "Scout",
+        "execInterview": "Interview ×6",
+        "execAnalyze": "Analyze",
+        "execReport": "Report"
+      },
+      "live": {
+        "title": "Live Mode",
+        "badge": "LIVE",
+        "description": "AI Researcher leads deep interviews with real people or virtual personas. Conversations become structured insights.",
+        "msg1": "What does 'clean beauty' mean to you personally?",
+        "msg2": "For me it's about transparency — knowing what's actually in the product.",
+        "msg3": "When did you first start paying attention to ingredients?",
+        "listening": "Listening..."
+      }
+    },
+    "dataAssets": {
+      "kicker": "ASSETS",
+      "title": "Assets of the Subjective World",
+      "body": "Callable, verifiable, always consistent — built on real behavioral data and social science models.",
+      "persona": {
+        "title": "AI Persona",
+        "subtitle": "Virtual Consumer Library",
+        "description": "Callable, verifiable virtual consumers built from real behavioral data. Each maintains consistent personality traits, cognitive biases, and decision frameworks.",
+        "heroStatValue": "1M+",
+        "heroStatLabel": "AI Samples",
+        "detail1Value": "70,000+",
+        "detail1Label": "Human baselines",
+        "detail2Value": "85%",
+        "detail2Label": "Behavioral accuracy",
+        "detail3Value": "Tier 0–3",
+        "detail3Label": "Fidelity system",
+        "note": "Enterprises can upload their own interview data to build private persona libraries."
+      },
+      "sage": {
+        "title": "AI Sage",
+        "subtitle": "Virtual Expert Library",
+        "description": "Domain experts with two-layer memory — core knowledge stays stable, working knowledge grows through every consultation. Auto-detects knowledge gaps and fills them.",
+        "heroStatValue": "85%",
+        "heroStatLabel": "Cost Reduction",
+        "detail1Value": "4+",
+        "detail1Label": "Industry verticals",
+        "detail2Value": "Core + Working",
+        "detail2Label": "Memory architecture",
+        "detail3Value": "PDF, Audio, URL",
+        "detail3Label": "Import sources",
+        "note": "Compared to traditional expert networks ($500–2,000/hr), cost reduced by ~85%."
+      },
+      "panel": {
+        "title": "AI Panel",
+        "subtitle": "Next-Gen Research Panel",
+        "description": "AI virtual samples and real respondents together — real respondents provide baseline calibration, AI provides scale. No traditional panel company can offer this.",
+        "heroStatValue": "3–8",
+        "heroStatLabel": "Personas per Panel",
+        "detail1Value": "3 modes",
+        "detail1Label": "Focus · Debate · Roundtable",
+        "detail2Value": "Real + AI",
+        "detail2Label": "Calibration source",
+        "detail3Value": "Auto",
+        "detail3Label": "Summary + Minutes",
+        "note": "Real-time scalable samples that combine human ground truth with AI amplification."
+      }
+    },
+    "useCases": {
+      "kicker": "APPLICATION",
+      "title": "Every Scenario Where Understanding People Matters",
+      "customerStoriesLabel": "Customer Stories",
+      "categoryEnterprise": "Enterprise",
+      "categoryAcademic": "Academic",
+      "categoryPrediction": "Prediction",
+      "categories": {
+        "enterprise": {
+          "label": "Enterprise Services",
+          "consumerInsight": { "name": "Consumer Insight & U&A", "desc": "Segmentation, persona, JTBD, need-state discovery, qualitative interviews + insight reports" },
+          "conceptTesting": { "name": "Concept Testing & Innovation", "desc": "New product concept tests, packaging / naming / value prop validation, innovation opportunity maps" },
+          "brandStrategy": { "name": "Brand Strategy & Positioning", "desc": "Brand diagnostics, positioning & narrative, mental maps, communication propositions, audience definition" },
+          "attribution": { "name": "Attribution Analysis", "desc": "Drivers analysis, content / product / experience impact on conversion, decision-path decomposition" },
+          "pricing": { "name": "Pricing & Business Model", "desc": "Pricing model design (subscription / usage / tiered), WTP research, price architecture & upgrade paths" },
+          "socialListening": { "name": "Social Listening & Trends", "desc": "Sentiment monitoring, trend reports, consumer voice synthesis across 5 platforms" },
+          "userExperience": { "name": "User Experience & VOC", "desc": "VOC systems, customer journey & pain-point mapping, experience improvement roadmaps" },
+          "salesTraining": { "name": "Sales Training & Simulation", "desc": "Simulate target buyers for sales training, role-play exercises with AI personas" }
+        },
+        "academic": {
+          "label": "Academic Research",
+          "socialSimulation": { "name": "Social Simulation", "desc": "Large-scale population modeling, policy impact testing through virtual communities" },
+          "ethnography": { "name": "Ethnography & Persona", "desc": "AI-augmented ethnographic studies, digital persona construction from interview data" },
+          "aiInterviews": { "name": "AI-Augmented Interviews", "desc": "Scalable qualitative research — 1-on-1 deep interviews powered by AI interviewer agents" }
+        },
+        "prediction": {
+          "label": "Investment & Prediction",
+          "eventOutcome": { "name": "Event Outcome Prediction", "desc": "Macro / political / tech / market event forecasting via multi-perspective simulation" },
+          "multiPerspective": { "name": "Multi-Perspective Consensus", "desc": "Persona + expert viewpoint simulation, consensus generation across diverse perspectives" },
+          "signalTracking": { "name": "Continuous Signal Tracking", "desc": "Signal tape — ongoing sentiment monitoring with real-time judgment updates" },
+          "postPrediction": { "name": "Post-Prediction Validation", "desc": "Retrospective accuracy analysis, model calibration, prediction quality scoring" }
+        }
+      },
+      "stories": {
+        "food": {
+          "client": "Global Food Brand",
+          "quote": "We went from months of concept testing to days — and the AI-selected concept outperformed our control by 23%.",
+          "body": "Regular AI consumer feedback collection, validated by real interviews. Co-created chocolate concepts with AI consumers for Lunar New Year, building a concept library filtered by preference, emotional resonance, and market potential.",
+          "metric1Label": "R&D Cycle",
+          "metric1Value": "Months → Days",
+          "metric2Label": "Concepts",
+          "metric2Value": "6× more",
+          "metric3Label": "Testing Time",
+          "metric3Value": "−80%"
+        },
+        "tools": {
+          "client": "Power Tools Brand",
+          "quote": "Professional users are expensive and hard to recruit. Now we have an always-on virtual panel that gives real-time feedback on our CAD prototypes.",
+          "body": "Built Tier-3 AI Personas from real prosumer interview data. Product teams get instant professional user feedback on concepts, interfaces, and prototypes without recruitment overhead.",
+          "metric1Label": "Recruitment",
+          "metric1Value": "Zero",
+          "metric2Label": "Feedback",
+          "metric2Value": "Real-time",
+          "metric3Label": "Persona Tier",
+          "metric3Value": "Tier 3"
+        },
+        "university": {
+          "client": "University Research Team",
+          "quote": "We simulated policy responses across 20,000 households in days — traditional methods would have taken years.",
+          "body": "Interviewed core family members (couples and parents) via 1-on-1 sessions to create AI Personas, then assembled them into AI Panels. The team tested different policy measures for improving birth rates through virtual panel discussions.",
+          "metric1Label": "Households",
+          "metric1Value": "20,000",
+          "metric2Label": "Method",
+          "metric2Value": "Interview → Panel",
+          "metric3Label": "Speed",
+          "metric3Value": "Years → Days"
+        },
+        "prediction": {
+          "client": "IOIIO.BET",
+          "quote": "We call the Subjective World Model via MCP to analyze sentiment on Polymarket events — and place bets based on what the model sees.",
+          "body": "An independent developer integrated Atypica's subjective world model through MCP protocol, feeding continuous sentiment signals into prediction algorithms for real-time event forecasting.",
+          "metric1Label": "Integration",
+          "metric1Value": "MCP API",
+          "metric2Label": "Signal",
+          "metric2Value": "Continuous",
+          "metric3Label": "Use",
+          "metric3Value": "Polymarket"
+        }
+      },
+      "storyUI": {
+        "beforeVsAfter": "Before vs After",
+        "before": "Before",
+        "withAtypica": "With Atypica",
+        "rdCycle": "R&D Cycle",
+        "concepts": "Concepts",
+        "testTime": "Test Time",
+        "gripAngle": "Grip angle needs work",
+        "weightBalance": "Weight balance is right",
+        "prototypeLabel": "PROTOTYPE v3.2",
+        "households": "20,000 households",
+        "stepInterviews": "1-on-1 Interviews",
+        "stepBuildPersonas": "Build AI Personas",
+        "stepAssemblePanel": "Assemble AI Panel",
+        "stepSimulatePolicies": "Simulate Policies"
+      }
+    },
+    "closing": {
+      "title": "Ready to Understand Your Users?",
+      "body": "Let agents model every consumer's subjective world. The harder problem — we've already started.",
+      "cta": "Request a Demo",
+      "secondaryCta": "Read Documentation"
+    },
+    "hud": {
+      "scene": "SCENE",
+      "sampling": "SAMPLING",
+      "feedback": "FEEDBACK",
+      "confidence": "CONFIDENCE",
+      "state": "STATE",
+      "running": "RUNNING"
+    }
   }
 }

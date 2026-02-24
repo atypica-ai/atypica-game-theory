@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import ChapterPanel from "../components/ChapterPanel";
 import { CHAPTERS } from "../content";
 
@@ -11,6 +12,8 @@ export default function TwoWorldsSection({
 }: {
   register: (el: HTMLElement | null) => void;
 }) {
+  const t = useTranslations("HomeAtypicaV2");
+
   return (
     <section
       ref={register}
@@ -23,7 +26,7 @@ export default function TwoWorldsSection({
             {copy.number}
           </span>
           <span className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500">
-            {copy.kicker}
+            {t("twoWorlds.kicker")}
           </span>
         </div>
 
@@ -36,10 +39,10 @@ export default function TwoWorldsSection({
           className="mb-16"
         >
           <h2 className="m-0 font-InstrumentSerif italic text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-[1.15] text-white max-w-[720px]">
-            &ldquo;{copy.title}&rdquo;
+            &ldquo;{t("twoWorlds.quote")}&rdquo;
           </h2>
           <p className="mt-5 font-IBMPlexMono text-sm tracking-[0.04em] text-zinc-500">
-            {copy.body[0]}
+            {t("twoWorlds.attribution")}
           </p>
         </motion.div>
 
@@ -54,28 +57,26 @@ export default function TwoWorldsSection({
             {/* Objective */}
             <div className="py-8 pr-10 max-lg:pr-0 max-lg:pb-8 border-r border-zinc-800 max-lg:border-r-0 max-lg:border-b">
               <span className="font-IBMPlexMono text-[10px] tracking-[0.14em] uppercase text-zinc-600">
-                [1.A] The Objective World
+                {t("twoWorlds.objectiveLabel")}
               </span>
               <h3 className="mt-3 font-EuclidCircularA text-4xl lg:text-5xl font-light text-zinc-600 leading-none">
-                Measurable
+                {t("twoWorlds.objectiveTitle")}
               </h3>
               <p className="mt-4 text-sm leading-relaxed text-zinc-500 max-w-[36ch]">
-                Quantifiable. The domain of traditional AI agents — automating tasks, processing
-                data, executing workflows.
+                {t("twoWorlds.objectiveDesc")}
               </p>
             </div>
 
             {/* Subjective */}
             <div className="py-8 pl-10 max-lg:pl-0 max-lg:pt-8">
               <span className="font-IBMPlexMono text-[10px] tracking-[0.14em] uppercase text-zinc-500">
-                [1.B] The Subjective World
+                {t("twoWorlds.subjectiveLabel")}
               </span>
               <h3 className="mt-3 font-EuclidCircularA text-4xl lg:text-5xl font-medium text-[#1bff1b] leading-none">
-                Emotional
+                {t("twoWorlds.subjectiveTitle")}
               </h3>
               <p className="mt-4 text-sm leading-relaxed text-zinc-300 max-w-[36ch]">
-                Contextual. The domain of human decisions — why people choose, hesitate, trust, and
-                act.
+                {t("twoWorlds.subjectiveDesc")}
               </p>
             </div>
           </div>

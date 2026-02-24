@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import { startTransition, useCallback, useEffect, useRef, useState } from "react";
 import SystemStageHUD from "./components/SystemStageHUD";
 import { CHAPTERS } from "./content";
@@ -25,6 +26,7 @@ const SECTION_COMPONENTS = [
 ];
 
 export default function HomeV43Page() {
+  const t = useTranslations("HomeAtypicaV2");
   const pageRef = useRef<HTMLElement>(null);
 
   // Background scene tracking: hero(0), chapters(1-6), closing(7)
@@ -171,7 +173,7 @@ export default function HomeV43Page() {
                   i === activeChapter ? "text-zinc-100" : "text-zinc-600",
                 )}
               >
-                {ch.navLabel}
+                {t(`nav.${ch.key}`)}
               </span>
             </button>
           ))}

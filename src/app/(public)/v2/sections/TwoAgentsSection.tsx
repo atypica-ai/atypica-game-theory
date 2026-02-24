@@ -2,28 +2,31 @@
 
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import ChapterPanel from "../components/ChapterPanel";
-import { CHAPTERS, RESEARCHER, SIMULATOR } from "../content";
+import {
+  CHAPTERS,
+  PERSONA_DIMENSIONS,
+  PERSONA_TAG_KEYS,
+  RESEARCHER_METHOD_KEYS,
+  SIMULATOR_ROLE_KEYS,
+} from "../content";
 
 const copy = CHAPTERS[1];
 
 /* ── Simulator Mockup: Persona Building Process ── */
 
-const BUILD_STEPS = ["Parse", "Analyze", "Generate"] as const;
-const PERSONA_TAGS = ["Gen-Z", "Urban", "Price-sensitive", "Social"];
-const DIMENSIONS = [
-  { label: "Values", score: 2.4 },
-  { label: "Risk", score: 1.8 },
-  { label: "Emotion", score: 2.7 },
-  { label: "Decision", score: 2.1 },
-  { label: "Social", score: 1.5 },
-  { label: "Cognitive", score: 2.0 },
-];
-
 function SimulatorMockup() {
+  const t = useTranslations("HomeAtypicaV2");
   const [step, setStep] = useState(0);
   const [showPersona, setShowPersona] = useState(false);
+
+  const buildSteps = [
+    t("twoAgents.mockup.stepParse"),
+    t("twoAgents.mockup.stepAnalyze"),
+    t("twoAgents.mockup.stepGenerate"),
+  ];
 
   useEffect(() => {
     // Cycle: step0 → step1 → step2 → show persona → pause → reset
@@ -44,8 +47,8 @@ function SimulatorMockup() {
     <div className="flex flex-col gap-3 p-3">
       {/* 3-step progress */}
       <div className="flex items-center gap-1.5">
-        {BUILD_STEPS.map((label, i) => (
-          <div key={label} className="flex items-center gap-1.5 flex-1">
+        {buildSteps.map((label, i) => (
+          <div key={i} className="flex items-center gap-1.5 flex-1">
             <div
               className={cn(
                 "w-6 h-6 rounded-full grid place-items-center text-[10px] font-IBMPlexMono transition-colors duration-500",
@@ -66,7 +69,7 @@ function SimulatorMockup() {
             >
               {label}
             </span>
-            {i < BUILD_STEPS.length - 1 && (
+            {i < buildSteps.length - 1 && (
               <div
                 className={cn(
                   "flex-1 h-px transition-colors duration-500",
@@ -94,28 +97,30 @@ function SimulatorMockup() {
                 AI
               </div>
               <div>
-                <div className="text-xs font-medium text-zinc-200">Persona #1042</div>
+                <div className="text-xs font-medium text-zinc-200">
+                  {t("twoAgents.mockup.personaName")}
+                </div>
                 <div className="font-IBMPlexMono text-[10px] text-zinc-500">
-                  Tier 2 · Female · 25-34
+                  {t("twoAgents.mockup.personaMeta")}
                 </div>
               </div>
             </div>
             <div className="flex gap-1.5 flex-wrap mb-2.5">
-              {PERSONA_TAGS.map((tag) => (
+              {PERSONA_TAG_KEYS.map((key) => (
                 <span
-                  key={tag}
+                  key={key}
                   className="py-0.5 px-2 font-IBMPlexMono text-[9px] border border-[rgba(27,255,27,0.2)] text-[rgba(27,255,27,0.6)]"
                 >
-                  {tag}
+                  {t(`twoAgents.mockup.${key}`)}
                 </span>
               ))}
             </div>
             {/* Mini dimension bars */}
             <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
-              {DIMENSIONS.map((d) => (
-                <div key={d.label} className="flex items-center gap-1.5">
+              {PERSONA_DIMENSIONS.map((d) => (
+                <div key={d.key} className="flex items-center gap-1.5">
                   <span className="font-IBMPlexMono text-[9px] text-zinc-500 w-12 shrink-0">
-                    {d.label}
+                    {t(`twoAgents.mockup.${d.key}`)}
                   </span>
                   <div className="flex-1 h-1 bg-zinc-800 overflow-hidden">
                     <motion.div
@@ -156,16 +161,17 @@ function SimulatorMockup() {
 
 /* ── Researcher Mockup: Live Interview ── */
 
-const INTERVIEW_MESSAGES = [
-  { role: "researcher", text: "What factors influence your purchase decisions most?" },
-  { role: "persona", text: "Honestly, peer reviews matter more than ads..." },
-  { role: "researcher", text: "Can you walk me through a recent example?" },
-  { role: "persona", text: "Last month I spent 2 weeks comparing options before..." },
-] as const;
-
 function ResearcherMockup() {
+  const t = useTranslations("HomeAtypicaV2");
   const [visibleCount, setVisibleCount] = useState(0);
   const [typing, setTyping] = useState(false);
+
+  const messages = [
+    { role: "researcher" as const, text: t("twoAgents.mockup.interviewQ1") },
+    { role: "persona" as const, text: t("twoAgents.mockup.interviewA1") },
+    { role: "researcher" as const, text: t("twoAgents.mockup.interviewQ2") },
+    { role: "persona" as const, text: t("twoAgents.mockup.interviewA2") },
+  ];
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -173,7 +179,7 @@ function ResearcherMockup() {
       setVisibleCount(0);
       setTyping(false);
 
-      INTERVIEW_MESSAGES.forEach((_, i) => {
+      messages.forEach((_, i) => {
         timers.push(setTimeout(() => setTyping(true), i * 1800 + 400));
         timers.push(
           setTimeout(
@@ -186,10 +192,11 @@ function ResearcherMockup() {
         );
       });
       // Reset cycle
-      timers.push(setTimeout(run, INTERVIEW_MESSAGES.length * 1800 + 3000));
+      timers.push(setTimeout(run, messages.length * 1800 + 3000));
     };
     run();
     return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -199,17 +206,17 @@ function ResearcherMockup() {
         <div className="flex-1 h-0.5 bg-zinc-800 overflow-hidden">
           <motion.div
             className="h-full bg-[#93c5fd]/50"
-            animate={{ width: `${(visibleCount / INTERVIEW_MESSAGES.length) * 100}%` }}
+            animate={{ width: `${(visibleCount / messages.length) * 100}%` }}
             transition={{ duration: 0.4 }}
           />
         </div>
         <span className="font-IBMPlexMono text-[10px] text-zinc-500">
-          {visibleCount}/{INTERVIEW_MESSAGES.length}
+          {visibleCount}/{messages.length}
         </span>
       </div>
 
       {/* Chat messages — sliding window: show max 3 at a time */}
-      {INTERVIEW_MESSAGES.slice(Math.max(0, visibleCount - 3), visibleCount).map((msg, i) => (
+      {messages.slice(Math.max(0, visibleCount - 3), visibleCount).map((msg, i) => (
         <motion.div
           key={Math.max(0, visibleCount - 3) + i}
           initial={{ opacity: 0, y: 6 }}
@@ -259,6 +266,8 @@ export default function TwoAgentsSection({
 }: {
   register: (el: HTMLElement | null) => void;
 }) {
+  const t = useTranslations("HomeAtypicaV2");
+
   return (
     <section
       ref={register}
@@ -271,19 +280,14 @@ export default function TwoAgentsSection({
             {copy.number}
           </div>
           <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">
-            {copy.kicker}
+            {t("twoAgents.kicker")}
           </p>
           <h2 className="m-0 font-EuclidCircularA text-3xl lg:text-4xl xl:text-5xl font-medium leading-[1.1]">
-            {copy.title}
+            {t("twoAgents.title")}
           </h2>
-          {copy.body.map((text) => (
-            <p
-              key={text}
-              className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-300"
-            >
-              {text}
-            </p>
-          ))}
+          <p className="mt-4 max-w-[64ch] text-base lg:text-lg leading-relaxed text-zinc-300">
+            {t("twoAgents.body")}
+          </p>
         </div>
 
         <motion.div
@@ -296,10 +300,12 @@ export default function TwoAgentsSection({
             {/* Simulator card */}
             <div className="border border-zinc-800 p-7">
               <div className="font-IBMPlexMono text-xs tracking-[0.18em] uppercase mb-3 text-[#1bff1b]">
-                {SIMULATOR.tag}
+                {t("twoAgents.simulator.tag")}
               </div>
-              <h3 className="text-xl font-medium mb-2">{SIMULATOR.title}</h3>
-              <p className="text-sm leading-relaxed text-zinc-300 mb-5">{SIMULATOR.description}</p>
+              <h3 className="text-xl font-medium mb-2">{t("twoAgents.simulator.title")}</h3>
+              <p className="text-sm leading-relaxed text-zinc-300 mb-5">
+                {t("twoAgents.simulator.description")}
+              </p>
 
               {/* Animated persona building mockup */}
               <div className="mb-4 border border-zinc-800 bg-zinc-900 min-h-[195px] overflow-hidden">
@@ -307,17 +313,19 @@ export default function TwoAgentsSection({
               </div>
 
               <div className="grid gap-2">
-                {SIMULATOR.roles.map((role) => (
+                {SIMULATOR_ROLE_KEYS.map((roleKey) => (
                   <div
-                    key={role.key}
+                    key={roleKey}
                     className="border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600"
                   >
-                    <div className="text-sm font-medium">{role.label}</div>
+                    <div className="text-sm font-medium">
+                      {t(`twoAgents.simulator.${roleKey}.label`)}
+                    </div>
                     <div className="font-IBMPlexMono text-xs tracking-[0.06em] text-zinc-300 mt-0.5">
-                      {role.sub}
+                      {t(`twoAgents.simulator.${roleKey}.sub`)}
                     </div>
                     <div className="text-sm leading-normal text-zinc-300 mt-1.5">
-                      {role.description}
+                      {t(`twoAgents.simulator.${roleKey}.description`)}
                     </div>
                   </div>
                 ))}
@@ -327,10 +335,12 @@ export default function TwoAgentsSection({
             {/* Researcher card */}
             <div className="border border-zinc-800 p-7">
               <div className="font-IBMPlexMono text-xs tracking-[0.18em] uppercase mb-3 text-[#93c5fd]">
-                {RESEARCHER.tag}
+                {t("twoAgents.researcher.tag")}
               </div>
-              <h3 className="text-xl font-medium mb-2">{RESEARCHER.title}</h3>
-              <p className="text-sm leading-relaxed text-zinc-300 mb-5">{RESEARCHER.description}</p>
+              <h3 className="text-xl font-medium mb-2">{t("twoAgents.researcher.title")}</h3>
+              <p className="text-sm leading-relaxed text-zinc-300 mb-5">
+                {t("twoAgents.researcher.description")}
+              </p>
 
               {/* Animated interview mockup */}
               <div className="mb-4 border border-zinc-800 bg-zinc-900 min-h-[195px] overflow-hidden">
@@ -338,15 +348,15 @@ export default function TwoAgentsSection({
               </div>
 
               <div className="grid gap-1.5">
-                {RESEARCHER.methods.map((method, i) => (
+                {RESEARCHER_METHOD_KEYS.map((methodKey, i) => (
                   <div
-                    key={method.key}
+                    key={methodKey}
                     className="flex items-center gap-2.5 border border-zinc-800 py-2.5 px-3.5 text-sm transition-colors duration-200 hover:border-zinc-600"
                   >
                     <span className="font-IBMPlexMono text-xs text-zinc-300 min-w-[18px]">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span>{method.label}</span>
+                    <span>{t(`twoAgents.researcher.${methodKey}`)}</span>
                   </div>
                 ))}
               </div>

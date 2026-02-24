@@ -1,12 +1,14 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
-import { HERO, HERO_PROMPT } from "../content";
+import { HERO_BADGE_KEYS, HERO_PROMPT } from "../content";
 
 export default function HeroSection({ register }: { register: (el: HTMLElement | null) => void }) {
+  const t = useTranslations("HomeAtypicaV2");
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -49,7 +51,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
 
       {/* Content — full-width padding, not constrained to 1400px */}
       <motion.div
-        className="relative z-1 w-full max-w-[1400px] mx-auto px-6 pb-[10vh] max-lg:px-[5vw] max-lg:pb-[6vh]"
+        className="relative z-1 w-full container mx-auto px-6 pb-[10vh] max-lg:px-[5vw] max-lg:pb-[6vh]"
         style={{ y: textY, opacity: bgOpacity }}
       >
         <motion.div
@@ -63,7 +65,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
               animate={{ opacity: [1, 0.4, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
-            {HERO.kicker}
+            {t("hero.kicker")}
           </span>
         </motion.div>
 
@@ -73,9 +75,12 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
         >
-          The Agent That
+          {t("hero.titleLine1")}
           <br />
-          <span className="italic font-InstrumentSerif text-[#1bff1b]">Understands</span> Humans
+          <span className="italic font-InstrumentSerif text-[#1bff1b]">
+            {t("hero.titleAccent")}
+          </span>
+          {t("hero.titleEnd")}
         </motion.h1>
 
         <motion.p
@@ -84,7 +89,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
         >
-          {HERO.body}
+          {t("hero.body")}
         </motion.p>
 
         <motion.div
@@ -97,14 +102,14 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
             href="/newstudy"
             className="inline-flex items-center gap-2 h-11 px-6 bg-[#1bff1b] text-black font-medium text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:bg-[#15b025]"
           >
-            {HERO.cta}
+            {t("hero.cta")}
             <span aria-hidden="true">&rarr;</span>
           </Link>
           <Link
             href="#two-worlds"
             className="inline-flex items-center h-11 px-6 text-zinc-400 text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:text-zinc-100"
           >
-            {HERO.secondaryCta}
+            {t("hero.secondaryCta")}
           </Link>
         </motion.div>
 
@@ -114,12 +119,12 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          {HERO.badges.map((badge) => (
+          {HERO_BADGE_KEYS.map((key) => (
             <span
-              key={badge}
+              key={key}
               className="py-1 px-3.5 border border-zinc-700 font-IBMPlexMono text-xs tracking-[0.06em] text-zinc-400"
             >
-              {badge}
+              {t(`hero.${key}`)}
             </span>
           ))}
         </motion.div>

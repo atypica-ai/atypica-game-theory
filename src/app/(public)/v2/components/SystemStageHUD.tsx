@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 function metricValue(time: number, seed: number) {
@@ -7,6 +8,7 @@ function metricValue(time: number, seed: number) {
 }
 
 export default function SystemStageHUD({ activeScene }: { activeScene: number }) {
+  const t = useTranslations("HomeAtypicaV2");
   const [time, setTime] = useState(0);
   const [clock, setClock] = useState("");
 
@@ -31,31 +33,31 @@ export default function SystemStageHUD({ activeScene }: { activeScene: number })
   return (
     <div className="fixed bottom-5 right-5 z-50 border border-zinc-800 bg-[rgba(9,9,11,0.75)] backdrop-blur-sm px-3 py-2.5 grid gap-1 font-IBMPlexMono text-[10px] tracking-[0.08em] uppercase text-zinc-500 max-lg:hidden">
       <div>
-        SCENE{" "}
+        {t("hud.scene")}{" "}
         <span className="inline-block w-7 text-zinc-300">
           {String(activeScene).padStart(2, "0")}
         </span>
       </div>
       <div>
-        SAMPLING{" "}
+        {t("hud.sampling")}{" "}
         <span className="inline-block w-7 text-zinc-300">
           {Math.round(metricValue(time, 0.3) * 100)}%
         </span>
       </div>
       <div>
-        FEEDBACK{" "}
+        {t("hud.feedback")}{" "}
         <span className="inline-block w-7 text-zinc-300">
           {Math.round(metricValue(time, 1.1) * 100)}%
         </span>
       </div>
       <div>
-        CONFIDENCE{" "}
+        {t("hud.confidence")}{" "}
         <span className="inline-block w-7 text-zinc-300">
           {Math.round(metricValue(time, 1.8) * 100)}%
         </span>
       </div>
       <div>
-        STATE <span className="text-zinc-300">RUNNING</span>
+        {t("hud.state")} <span className="text-zinc-300">{t("hud.running")}</span>
       </div>
       <div className="text-zinc-600">{clock}</div>
     </div>
