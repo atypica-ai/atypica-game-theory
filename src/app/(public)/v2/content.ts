@@ -32,14 +32,6 @@ export const RESEARCHER_METHOD_KEYS = [
 
 export const PERSONA_TAG_KEYS = ["tagGenZ", "tagUrban", "tagPriceSensitive", "tagSocial"] as const;
 
-export const PERSONA_DIMENSIONS = [
-  { key: "dimValues", score: 2.4 },
-  { key: "dimRisk", score: 1.8 },
-  { key: "dimEmotion", score: 2.7 },
-  { key: "dimDecision", score: 2.1 },
-  { key: "dimSocial", score: 1.5 },
-  { key: "dimCognitive", score: 2.0 },
-] as const;
 
 /* ─── 03: World Model ─── */
 

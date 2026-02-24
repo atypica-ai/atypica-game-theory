@@ -22,7 +22,15 @@ src/app/(public)/v2/
 │   ├── LogoWall.tsx            # Infinite scroll logo wall (between chapters & closing)
 │   ├── ClosingSection.tsx      # Full-width CTA
 │   └── ScrollBackground.tsx    # Global fixed bg image switching (skips hero)
+├── demos/                      # Interactive product demos (standalone components)
+│   ├── theme.ts                # Shared light color tokens
+│   ├── ProductFrame.tsx        # App container (sidebar + header + content)
+│   ├── AnimCursor.tsx          # Animated mouse cursor overlay
+│   ├── RadarChart.tsx          # 7-dimension radar chart (SVG)
+│   ├── PersonaBuilderDemo.tsx  # AI Simulator demo (Persona import workflow)
+│   └── FocusGroupDemo.tsx      # AI Researcher demo (Panel focus group workflow)
 └── docs/                       # Design docs
+    ├── interactive-demo-guide.md  # HOW-TO: building interactive demos
     ├── content-plan.md
     ├── design-decisions.md
     └── design-reference.md
@@ -65,10 +73,11 @@ All colors use Tailwind zinc scale tokens — **no raw `white/xx` or `black/xx` 
 
 ## Animated Mockups
 
-All functional sections use code-based animated UI mockups (no static images):
+All functional sections use code-based animated UI mockups (no static images).
+See **[docs/interactive-demo-guide.md](docs/interactive-demo-guide.md)** for the full HOW-TO on building demos.
 
-- **SimulatorMockup** (03): 3-step progress (Parse→Analyze→Generate) + persona card reveal with dimension bars
-- **ResearcherMockup** (03): Live interview chat with typing indicators, sliding window (max 3 messages)
+- **PersonaBuilderDemo** (03): Light-theme ProductFrame. Persona homepage → cursor drags PDF → 3-step processing → scroll-reveal radar chart + persona card + supplementary questions. Uses HippyGhostAvatar.
+- **FocusGroupDemo** (03): Light-theme ProductFrame. Panel detail with persona grid → dialog to create focus group → 3-column discussion (participants | timeline | analysis) → scroll-reveal report with insights. Uses HippyGhostAvatar.
 - **Workflow Demos** (04): 3 mock shell types — MockStudyUI (split chat+console), MockInterviewUI (focused persona chat), MockSignalUI (dashboard). 8 use cases × 3 steps each, click-triggered auto-cycling, light theme, TypeText animation, page-slide transitions
 
 ## Solutions Section (06)
