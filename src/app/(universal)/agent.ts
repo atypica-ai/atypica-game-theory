@@ -1,5 +1,6 @@
 import {
-  appendStepToStreamingMessage,
+  appendChunkToStreamingMessage,
+  createDebouncePersistentMessage,
   persistentAIMessageToDB,
   prepareMessagesForStreaming,
 } from "@/ai/messageUtils";
@@ -10,6 +11,7 @@ import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { loadTeamMemory, loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
+import { confirmPanelResearchPlanTool } from "@/app/(panel)/tools/confirmPanelResearchPlan";
 import { requestSelectPersonasTool } from "@/app/(panel)/tools/requestSelectPersonas";
 import { updatePanelTool } from "@/app/(panel)/tools/updatePanel";
 import { setBedrockCache } from "@/app/(study)/agents/utils";
@@ -29,7 +31,14 @@ import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
-import { smoothStream, stepCountIs, streamText, UIMessageStreamWriter } from "ai";
+import {
+  ReasoningUIPart,
+  smoothStream,
+  stepCountIs,
+  streamText,
+  TextStreamPart,
+  UIMessageStreamWriter,
+} from "ai";
 import { createBashTool } from "bash-tool";
 import type { Locale } from "next-intl";
 import { after, NextResponse } from "next/server";
@@ -52,6 +61,10 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
   streamWriter?: UIMessageStreamWriter,
 ) {
   const universalChatId = userChat.id;
+
+  // Create debounced message persistence (5s debounce)
+  const { debouncePersistentMessage, immediatePersistentMessage } =
+    createDebouncePersistentMessage(universalChatId, 5000, logger);
 
   // Start managed run — writes runId to DB, starts watcher, returns abort signal
   const {
@@ -186,6 +199,7 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
       userChatId: universalChatId,
       ...agentToolArgs,
     }),
+    [UniversalToolName.confirmPanelResearchPlan]: confirmPanelResearchPlanTool,
 
     [UniversalToolName.toolCallError]: toolCallError,
   };
@@ -215,16 +229,58 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
       delayInMs: 30,
       chunking: /[\u4E00-\u9FFF]|\S+\s+/,
     }),
+
+    /**
+     * onChunk: Incremental message persistence with debouncing
+     * Save tool call inputs to DB BEFORE tool execution starts, so frontend polling can see them.
+     * Text/reasoning/tool-input deltas are debounced (5s); other chunk types trigger immediate save.
+     */
+    onChunk: async ({ chunk }: { chunk: TextStreamPart<UniversalToolSet> }) => {
+      appendChunkToStreamingMessage(streamingMessage, chunk);
+      await debouncePersistentMessage(streamingMessage, {
+        immediate:
+          chunk.type !== "text-delta" &&
+          chunk.type !== "reasoning-delta" &&
+          chunk.type !== "tool-input-delta",
+      });
+    },
+
     onStepFinish: async (step) => {
-      // Save AI response to database
-      appendStepToStreamingMessage(streamingMessage, step);
-      if (streamingMessage.parts?.length) {
-        await persistentAIMessageToDB({
-          mode: "override",
-          userChatId: universalChatId,
-          message: streamingMessage,
-        });
+      // Flush any pending debounced messages
+      await immediatePersistentMessage();
+
+      // Fix reasoning parts — chunk-level reasoning lacks providerMetadata (signature),
+      // only available at step level. Replace the last reasoning part with the complete version.
+      {
+        const reasoning = step.content.find((part) => part.type === "reasoning");
+        if (reasoning) {
+          const lastReasoningPartIndex = streamingMessage.parts.findLastIndex(
+            (part) => part.type === "reasoning",
+          );
+          if (lastReasoningPartIndex !== -1) {
+            streamingMessage.parts[lastReasoningPartIndex] = {
+              ...streamingMessage.parts[lastReasoningPartIndex],
+              text: reasoning.text,
+              providerMetadata: reasoning.providerMetadata,
+            } as ReasoningUIPart;
+            await persistentAIMessageToDB({
+              mode: "override",
+              userChatId: universalChatId,
+              message: streamingMessage,
+            });
+          }
+        }
       }
+
+      // Old pattern — replaced by onChunk incremental persistence
+      // appendStepToStreamingMessage(streamingMessage, step);
+      // if (streamingMessage.parts?.length) {
+      //   await persistentAIMessageToDB({
+      //     mode: "override",
+      //     userChatId: universalChatId,
+      //     message: streamingMessage,
+      //   });
+      // }
 
       // Track token usage
       const { tokens, extra } = calculateStepTokensUsage(step);

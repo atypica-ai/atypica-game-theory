@@ -125,6 +125,34 @@
       "personaCount": "{count, plural, =1 {1 persona} other {# personas}}",
       "redirecting": "Redirecting in {seconds}s..."
     },
+    "ResearchWizard": {
+      "title": "New Research",
+      "step1Title": "Setup Research",
+      "step2Title": "Confirm Plan",
+      "step3Title": "Executing",
+      "researchType": "Research Type",
+      "question": "Research Question",
+      "questionPlaceholder": "e.g., How do consumers perceive domestic beauty brands?",
+      "required": "Required",
+      "cancel": "Cancel",
+      "next": "Next",
+      "back": "Back",
+      "start": "Start Research",
+      "confirmPlan": {
+        "generating": "Generating conversation plan",
+        "researchType": "Research Type",
+        "question": "Research Question",
+        "participants": "Participants",
+        "executionPlan": "Conversation Plan",
+        "confirm": "Confirm & Start",
+        "confirming": "Confirming..."
+      },
+      "executing": {
+        "title": "Research in Progress",
+        "description": "Agent is executing the research, please wait...",
+        "redirecting": "Redirecting to research details..."
+      }
+    },
     "InterviewsPage": {
       "title": "Interviews",
       "completedOf": "{completed} of {total} completed",

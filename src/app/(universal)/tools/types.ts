@@ -1,4 +1,8 @@
 import {
+  ConfirmPanelResearchPlanInput,
+  ConfirmPanelResearchPlanOutput,
+} from "@/app/(panel)/tools/confirmPanelResearchPlan/types";
+import {
   RequestSelectPersonasToolInput,
   RequestSelectPersonasToolOutput,
 } from "@/app/(panel)/tools/requestSelectPersonas/types";
@@ -48,6 +52,7 @@ export enum UniversalToolName {
   // Panel
   requestSelectPersonas = "requestSelectPersonas",
   updatePanel = "updatePanel",
+  confirmPanelResearchPlan = "confirmPanelResearchPlan",
 
   // Error handling
   toolCallError = "toolCallError",
@@ -77,6 +82,10 @@ export type UniversalUITools = {
   [UniversalToolName.updatePanel]: {
     input: UpdatePanelToolInput;
     output: UpdatePanelToolOutput;
+  };
+  [UniversalToolName.confirmPanelResearchPlan]: {
+    input: ConfirmPanelResearchPlanInput;
+    output: ConfirmPanelResearchPlanOutput;
   };
 };
 

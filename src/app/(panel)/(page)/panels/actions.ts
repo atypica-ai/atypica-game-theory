@@ -7,7 +7,7 @@ import { createUniversalUserChat } from "@/app/(universal)/universal/actions";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import type { Persona, UserChatExtra } from "@/prisma/client";
+import type { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getToolName, isToolUIPart } from "ai";
 import { getLocale } from "next-intl/server";
@@ -123,25 +123,58 @@ export async function deletePersonaPanel(
  */
 export async function createPanelViaAgent(
   description: string,
+  options: {
+    targetSize?: number;
+    tags?: string[];
+    mode: "auto" | "manual";
+  },
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
     const locale = await getLocale();
+    const { targetSize, tags, mode } = options;
+    const tagsStr = tags?.length ? tags.join(", ") : "";
+
     const content =
-      locale === "zh-CN"
-        ? `我想创建一个 Persona Panel。我的需求是：${description}
+      mode === "auto"
+        ? locale === "zh-CN"
+          ? `我想创建一个 Persona Panel。我的需求是：${description}
+${targetSize ? `目标人数：${targetSize} 人` : ""}
+${tagsStr ? `关键词：${tagsStr}` : ""}
 
 请严格按以下步骤执行，每完成一步立即调用下一个工具，不要输出分析文本：
-1. searchPersonas — 根据我的需求搜索合适的人选
+1. searchPersonas — 根据我的需求搜索合适的人选${targetSize ? `，目标找到约 ${targetSize} 人` : ""}
 2. requestSelectPersonas — 将步骤 1 搜索到的 persona ID 列表作为 personaIds 参数传入，让我确认选择
 3. 等我选择完成后，调用 updatePanel，用确认的 personaIds 和一个描述性标题保存 Panel
 
 立即开始步骤 1。`
-        : `I want to create a Persona Panel. My needs: ${description}
+          : `I want to create a Persona Panel. My needs: ${description}
+${targetSize ? `Target size: ${targetSize} personas` : ""}
+${tagsStr ? `Keywords: ${tagsStr}` : ""}
 
 Execute these steps strictly in order. Call the next tool immediately — do NOT output intermediate text:
-1. searchPersonas — search for suitable personas based on my needs
+1. searchPersonas — search for suitable personas based on my needs${targetSize ? `, target ~${targetSize} personas` : ""}
 2. requestSelectPersonas — pass the persona IDs from step 1 as the personaIds parameter
 3. After user confirms, call updatePanel with the confirmed personaIds and a descriptive title
+
+Start step 1 now.`
+        : // Manual mode — skip search, go straight to persona selector
+          locale === "zh-CN"
+          ? `我想创建一个 Persona Panel。我的需求是：${description}
+${targetSize ? `目标人数：${targetSize} 人` : ""}
+${tagsStr ? `关键词：${tagsStr}` : ""}
+
+请严格按以下步骤执行，每完成一步立即调用下一个工具，不要输出分析文本：
+1. requestSelectPersonas — 直接打开选择器让我手动选择 Persona（传空 personaIds 数组）
+2. 等我选择完成后，调用 updatePanel，用确认的 personaIds 和一个描述性标题保存 Panel
+
+立即开始步骤 1。`
+          : `I want to create a Persona Panel. My needs: ${description}
+${targetSize ? `Target size: ${targetSize} personas` : ""}
+${tagsStr ? `Keywords: ${tagsStr}` : ""}
+
+Execute these steps strictly in order. Call the next tool immediately — do NOT output intermediate text:
+1. requestSelectPersonas — open the selector for manual persona selection (pass empty personaIds array)
+2. After user confirms, call updatePanel with the confirmed personaIds and a descriptive title
 
 Start step 1 now.`;
 
@@ -290,12 +323,12 @@ export async function fetchPanelCreationProgress(
     }
 
     // Check for errors (no runId and no progress)
-    const extra = userChat.extra as UserChatExtra | null;
-    const hasError = typeof extra?.error === "string" && extra.error !== "";
+    const hasError =
+      typeof userChat.extra?.error === "string" && userChat.extra.error !== "";
     if (hasError) {
       return {
         success: true,
-        data: { status: "error", errorMessage: extra?.error ?? "Unknown error" },
+        data: { status: "error", errorMessage: userChat.extra?.error ?? "Unknown error" },
       };
     }
 
@@ -366,11 +399,7 @@ export async function submitPanelCreationToolResult(
     after(
       executeUniversalAgent({
         userId: user.id,
-        userChat: {
-          id: userChat.id,
-          token: userChat.token,
-          extra: userChat.extra as UserChatExtra,
-        },
+        userChat,
         statReport,
         logger,
         locale,

@@ -2,6 +2,7 @@ import "server-only";
 
 import { toolCallError } from "@/ai/tools/error";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
+import { confirmPanelResearchPlanTool } from "@/app/(panel)/tools/confirmPanelResearchPlan";
 import { requestSelectPersonasTool } from "@/app/(panel)/tools/requestSelectPersonas";
 import { updatePanelTool } from "@/app/(panel)/tools/updatePanel";
 import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
@@ -45,6 +46,7 @@ export type UniversalToolSet = Partial<{
   [UniversalToolName.generatePodcast]: ReturnType<typeof generatePodcastTool>;
   [UniversalToolName.requestSelectPersonas]: typeof requestSelectPersonasTool;
   [UniversalToolName.updatePanel]: ReturnType<typeof updatePanelTool>;
+  [UniversalToolName.confirmPanelResearchPlan]: typeof confirmPanelResearchPlanTool;
   [UniversalToolName.toolCallError]: typeof toolCallError;
 }>;
 

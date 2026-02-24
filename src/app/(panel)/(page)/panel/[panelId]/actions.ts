@@ -20,7 +20,7 @@ export interface PersonaPanelWithDetails {
   personaIds: number[];
   personas: Pick<
     Persona,
-    "id" | "name" | "token" | "tags" | "source" | "prompt" | "extra" | "createdAt"
+    "id" | "name" | "token" | "tags" | "source" | "prompt" | "extra" | "tier" | "createdAt"
   >[];
   createdAt: Date;
   updatedAt: Date;
@@ -70,6 +70,7 @@ export async function fetchPersonaPanelById(
         source: true,
         prompt: true,
         extra: true,
+        tier: true,
         createdAt: true,
       },
     });

@@ -48,6 +48,9 @@ async function ProjectPage({ userChatToken }: { userChatToken: string }) {
       interviewBatches={researchResult.success ? researchResult.data.interviewBatches : []}
       totalPersonas={researchResult.success ? researchResult.data.totalPersonas : 0}
       initialProgress={progressResult.success ? progressResult.data : null}
+      initialPendingConfirmPlan={
+        researchResult.success ? researchResult.data.pendingConfirmPlan : null
+      }
     />
   );
 }

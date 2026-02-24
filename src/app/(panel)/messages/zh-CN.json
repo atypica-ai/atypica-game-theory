@@ -125,6 +125,34 @@
       "personaCount": "{count} 个人物",
       "redirecting": "{seconds}秒后自动跳转..."
     },
+    "ResearchWizard": {
+      "title": "新建研究",
+      "step1Title": "配置研究",
+      "step2Title": "确认计划",
+      "step3Title": "执行中",
+      "researchType": "研究类型",
+      "question": "研究问题",
+      "questionPlaceholder": "例如：如何看待国潮美妆产品？",
+      "required": "必填",
+      "cancel": "取消",
+      "next": "下一步",
+      "back": "返回",
+      "start": "开始研究",
+      "confirmPlan": {
+        "generating": "正在生成对话计划",
+        "researchType": "研究类型",
+        "question": "研究问题",
+        "participants": "参与人数",
+        "executionPlan": "对话计划",
+        "confirm": "确认并开始",
+        "confirming": "确认中..."
+      },
+      "executing": {
+        "title": "研究进行中",
+        "description": "Agent 正在执行研究，请稍候...",
+        "redirecting": "即将跳转到研究详情页..."
+      }
+    },
     "InterviewsPage": {
       "title": "访谈",
       "completedOf": "已完成 {completed}/{total}",

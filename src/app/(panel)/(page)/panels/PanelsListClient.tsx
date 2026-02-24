@@ -1,6 +1,7 @@
 "use client";
 import { RequestSelectPersonasMessage } from "@/app/(panel)/tools/requestSelectPersonas/RequestSelectPersonasMessage";
 import { TAddUniversalUIToolResult, UniversalToolName } from "@/app/(universal)/tools/types";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,17 +21,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, formatDate } from "@/lib/utils";
+import { PersonaExtra } from "@/prisma/client";
 import {
   AlertCircle,
   ArrowRight,
   CheckCircle2,
+  ExternalLink,
+  Hand,
   Loader2,
   MessageCircle,
   Plus,
   Sparkles,
   Trash2,
+  Upload,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -46,7 +59,28 @@ import {
   submitPanelCreationToolResult,
 } from "./actions";
 
+type WizardStep = "define" | "choose";
 type WizardPhase = "input" | "running";
+
+/** Build compact extra summary based on role */
+function buildExtraSummary(extra: PersonaExtra): string {
+  if (!extra) return "";
+  const parts: string[] = [];
+  if (extra.role === "consumer") {
+    if (extra.ageRange) parts.push(extra.ageRange);
+    if (extra.location) parts.push(extra.location);
+    if (extra.title) parts.push(extra.title);
+  } else if (extra.role === "buyer") {
+    if (extra.title) parts.push(extra.title);
+    if (extra.industry) parts.push(extra.industry);
+    if (extra.organization) parts.push(extra.organization);
+  } else if (extra.role === "expert") {
+    if (extra.title) parts.push(extra.title);
+    if (extra.industry) parts.push(extra.industry);
+    if (extra.experience) parts.push(extra.experience);
+  }
+  return parts.join(" · ");
+}
 
 export function PersonaPanelsListClient() {
   const t = useTranslations("PersonaPanel");
@@ -56,11 +90,17 @@ export function PersonaPanelsListClient() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [description, setDescription] = useState("");
   const [deletingPanelId, setDeletingPanelId] = useState<number | null>(null);
   const [panelToDelete, setPanelToDelete] = useState<PersonaPanelWithDetails | null>(null);
 
-  // Wizard state
+  // Wizard Step 1 - Define
+  const [wizardStep, setWizardStep] = useState<WizardStep>("define");
+  const [targetSize, setTargetSize] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [isDescriptionConfirmed, setIsDescriptionConfirmed] = useState(false);
+
+  // Wizard Step 2 - Choose (agent running)
   const [wizardPhase, setWizardPhase] = useState<WizardPhase>("input");
   const [chatToken, setChatToken] = useState<string | null>(null);
   const [progress, setProgress] = useState<PanelCreationProgress | null>(null);
@@ -95,12 +135,10 @@ export function PersonaPanelsListClient() {
 
   const confirmDelete = useCallback(async () => {
     if (!panelToDelete) return;
-
     setDeletingPanelId(panelToDelete.id);
     const result = await deletePersonaPanel(panelToDelete.id);
     setDeletingPanelId(null);
     setPanelToDelete(null);
-
     if (result.success) {
       toast.success(t("ListPage.deleteSuccess"));
       await loadPanels();
@@ -109,44 +147,67 @@ export function PersonaPanelsListClient() {
     }
   }, [panelToDelete, t, loadPanels]);
 
-  // Submit description → create agent chat
-  const handleCreatePanel = useCallback(async () => {
-    if (!description.trim()) return;
-    setCreating(true);
-    const result = await createPanelViaAgent(description.trim());
-    if (result.success) {
-      setChatToken(result.data.token);
-      setWizardPhase("running");
-      setCreating(false);
-    } else {
-      toast.error(result.message ?? t("ListPage.loadingFailed"));
-      setCreating(false);
+  // Step 1: Confirm description → extract tags
+  const handleConfirmDescription = useCallback(() => {
+    const text = description.trim();
+    if (!text) return;
+
+    // Simple keyword extraction from description
+    const roughWords = text
+      .toLowerCase()
+      .split(/[^a-zA-Z0-9\u4e00-\u9fa5]+/g)
+      .filter((w) => w && w.length >= 2);
+    const unique: string[] = [];
+    for (const w of roughWords) {
+      if (!unique.includes(w)) unique.push(w);
     }
-  }, [description, t]);
+    setTags(unique.slice(0, 8));
+    setIsDescriptionConfirmed(true);
+  }, [description]);
+
+  // Step 2: Launch agent (auto or manual mode)
+  const handleLaunchAgent = useCallback(
+    async (mode: "auto" | "manual") => {
+      if (!description.trim()) return;
+      setCreating(true);
+      setWizardStep("choose");
+      const result = await createPanelViaAgent(description.trim(), {
+        targetSize: targetSize ? parseInt(targetSize, 10) : undefined,
+        tags: tags.length > 0 ? tags : undefined,
+        mode,
+      });
+      if (result.success) {
+        setChatToken(result.data.token);
+        setWizardPhase("running");
+      } else {
+        toast.error(result.message ?? t("ListPage.loadingFailed"));
+        setWizardStep("define");
+      }
+      setCreating(false);
+    },
+    [description, targetSize, tags, t],
+  );
 
   // Poll progress when wizard is running
   useEffect(() => {
     if (wizardPhase !== "running" || !chatToken) return;
-    if (progress?.status === "selectingPersonas") return; // pause polling while user selects
+    if (progress?.status === "selectingPersonas") return;
     pollingRef.current = true;
     let timeoutId: NodeJS.Timeout;
-
     const poll = async () => {
       if (!pollingRef.current) return;
       const result = await fetchPanelCreationProgress(chatToken);
       if (!pollingRef.current) return;
-
       if (result.success) {
         setProgress(result.data);
         if (result.data.status === "completed") {
           await loadPanels();
-          return; // stop polling
+          return;
         }
-        if (result.data.status === "error") return; // stop polling
+        if (result.data.status === "error") return;
       }
       timeoutId = setTimeout(poll, 3000);
     };
-
     poll();
     return () => {
       pollingRef.current = false;
@@ -164,7 +225,6 @@ export function PersonaPanelsListClient() {
         UniversalToolName.requestSelectPersonas,
         output as Record<string, unknown>,
       );
-      // Optimistic transition — show saving immediately instead of waiting for next poll
       setProgress((prev) => (prev ? { ...prev, status: "saving" } : { status: "saving" }));
     },
     [chatToken],
@@ -172,15 +232,18 @@ export function PersonaPanelsListClient() {
 
   // Reset wizard state
   const resetWizard = useCallback(() => {
+    setWizardStep("define");
     setWizardPhase("input");
     setChatToken(null);
     setProgress(null);
     setDescription("");
+    setTargetSize("");
+    setTags([]);
+    setIsDescriptionConfirmed(false);
     setAutoCloseCountdown(null);
     pollingRef.current = false;
   }, []);
 
-  // Handle dialog close
   const handleDialogClose = useCallback(
     (open: boolean) => {
       if (creating) return;
@@ -208,7 +271,6 @@ export function PersonaPanelsListClient() {
     return () => clearInterval(interval);
   }, [progress?.status, progress?.panelId]);
 
-  // Navigate when countdown reaches 0
   useEffect(() => {
     if (autoCloseCountdown !== 0 || !progress?.panelId) return;
     setShowCreateDialog(false);
@@ -219,13 +281,13 @@ export function PersonaPanelsListClient() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-sm text-muted-foreground">Loading...</div>
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
-  // Step indicator for running phase
-  const STEPS = ["search", "select", "save", "done"] as const;
+  // ─── Step indicator ────────────────────────────────────────────
+  const AGENT_STEPS = ["search", "select", "save", "done"] as const;
   const getActiveStep = (status: string): number => {
     if (status === "searching") return 0;
     if (status === "selectingPersonas") return 1;
@@ -237,17 +299,13 @@ export function PersonaPanelsListClient() {
   const renderStepIndicator = (status: string) => {
     const active = getActiveStep(status);
     return (
-      <div className="flex gap-2 mb-4">
-        {STEPS.map((_, i) => (
+      <div className="flex gap-1.5 mb-4">
+        {AGENT_STEPS.map((_, i) => (
           <div
             key={i}
             className={cn(
-              "flex-1 h-px rounded-full transition-colors duration-300",
-              i < active
-                ? "bg-foreground/15"
-                : i === active
-                  ? "bg-foreground/8"
-                  : "bg-foreground/3",
+              "flex-1 h-0.5 rounded-full transition-all duration-500",
+              i < active ? "bg-foreground/15" : i === active ? "bg-foreground/8" : "bg-muted",
             )}
           />
         ))}
@@ -255,9 +313,10 @@ export function PersonaPanelsListClient() {
     );
   };
 
-  // Render wizard dialog content based on phase and progress
+  // ─── Wizard content ────────────────────────────────────────────
   const renderWizardContent = () => {
-    if (wizardPhase === "input") {
+    // Step 1: Define Panel
+    if (wizardStep === "define" && wizardPhase === "input") {
       return (
         <>
           <DialogHeader>
@@ -268,35 +327,156 @@ export function PersonaPanelsListClient() {
               {t("ListPage.createDescription")}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 mt-2">
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("ListPage.createPlaceholder")}
-              className="min-h-[120px] text-sm resize-none"
-              autoFocus
-            />
-            <div className="flex justify-end">
-              <Button
-                onClick={handleCreatePanel}
-                disabled={!description.trim() || creating}
-                size="sm"
-                className="gap-1.5"
-              >
-                {creating ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+
+          <div className="space-y-4 mt-3">
+            {/* Target size + description in one sentence */}
+            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="text-muted-foreground">
+                  {locale === "zh-CN" ? "创建一个包含" : "Create a panel of"}
+                </span>
+                <Select value={targetSize} onValueChange={setTargetSize}>
+                  <SelectTrigger className="h-7 w-20 text-sm font-medium">
+                    <SelectValue placeholder={locale === "zh-CN" ? "人数" : "Size"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {Array.from({ length: 50 }, (_, i) => (
+                      <SelectItem key={i + 1} value={String(i + 1)} className="text-sm">
+                        {i + 1}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-muted-foreground">
+                  {locale === "zh-CN" ? "个 Persona 的 Panel" : "personas"}
+                </span>
+              </div>
+
+              <Textarea
+                value={description}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  if (isDescriptionConfirmed) {
+                    setIsDescriptionConfirmed(false);
+                    setTags([]);
+                  }
+                }}
+                placeholder={t("ListPage.createPlaceholder")}
+                className="min-h-[100px] text-sm resize-none"
+                autoFocus
+              />
+
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-muted-foreground">
+                  {description.length} {locale === "zh-CN" ? "字符" : "chars"}
+                </span>
+                {!isDescriptionConfirmed ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleConfirmDescription}
+                    disabled={!description.trim()}
+                    className="h-7 text-xs gap-1.5"
+                  >
+                    <Sparkles className="size-3" />
+                    {locale === "zh-CN" ? "提取关键词" : "Extract Keywords"}
+                  </Button>
                 ) : (
-                  <Sparkles className="size-3.5" />
+                  <span className="text-[11px] text-primary flex items-center gap-1">
+                    <CheckCircle2 className="size-3" />
+                    {locale === "zh-CN" ? "已提取" : "Extracted"}
+                  </span>
                 )}
-                {creating ? t("ListPage.creating") : t("ListPage.create")}
-              </Button>
+              </div>
             </div>
+
+            {/* Tags */}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 animate-in fade-in-0 slide-in-from-bottom-1 duration-200">
+                {tags.map((tag) => (
+                  <Badge key={tag} variant="outline" className="text-[10px] font-normal">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Choose mode — only show after description confirmed */}
+            {isDescriptionConfirmed && (
+              <div className="space-y-2 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+                <p className="text-xs text-muted-foreground font-medium">
+                  {locale === "zh-CN" ? "选择 Persona 的方式" : "How to find Personas"}
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => handleLaunchAgent("auto")}
+                    disabled={creating}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
+                      "hover:border-foreground/20 hover:bg-accent transition-all",
+                      "text-left group",
+                      creating && "opacity-50 pointer-events-none",
+                    )}
+                  >
+                    <Sparkles className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    <span className="text-xs font-medium">
+                      {locale === "zh-CN" ? "自动搜索" : "Auto Search"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/70 text-center leading-relaxed">
+                      {locale === "zh-CN"
+                        ? "AI 根据描述自动匹配"
+                        : "AI matches based on description"}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => handleLaunchAgent("manual")}
+                    disabled={creating}
+                    className={cn(
+                      "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
+                      "hover:border-foreground/20 transition-all",
+                      "text-left group",
+                      creating && "opacity-50 pointer-events-none",
+                    )}
+                  >
+                    <Hand className="size-4 text-muted-foreground" />
+                    <span className="text-xs font-medium">
+                      {locale === "zh-CN" ? "手动选择" : "Manual Select"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/70 text-center leading-relaxed">
+                      {locale === "zh-CN"
+                        ? "从 Persona 库中搜索选择"
+                        : "Browse and pick from library"}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Import PDF shortcut */}
+                <Link
+                  href="/persona"
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                >
+                  <Upload className="size-3.5" />
+                  {locale === "zh-CN"
+                    ? "从访谈 PDF 导入 Persona →"
+                    : "Import Personas from interview PDF →"}
+                  <ExternalLink className="size-3 ml-auto" />
+                </Link>
+              </div>
+            )}
+
+            {/* Loading indicator when creating */}
+            {creating && (
+              <div className="flex items-center justify-center gap-2 py-2">
+                <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">{t("ListPage.creating")}</span>
+              </div>
+            )}
           </div>
         </>
       );
     }
 
-    // Running phase — render based on progress status
+    // Step 2: Agent running
     const status = progress?.status ?? "searching";
 
     if (status === "searching") {
@@ -314,10 +494,7 @@ export function PersonaPanelsListClient() {
                 <div
                   key={i}
                   className="h-2.5 rounded-full bg-muted animate-pulse"
-                  style={{
-                    animationDelay: `${i * 150}ms`,
-                    width: `${85 - i * 15}%`,
-                  }}
+                  style={{ animationDelay: `${i * 150}ms`, width: `${85 - i * 15}%` }}
                 />
               ))}
             </div>
@@ -342,9 +519,7 @@ export function PersonaPanelsListClient() {
                 type: `tool-${UniversalToolName.requestSelectPersonas}`,
                 toolCallId: progress.toolCallId,
                 state: "input-available",
-                input: {
-                  personaIds: progress.candidatePersonaIds ?? [],
-                },
+                input: { personaIds: progress.candidatePersonaIds ?? [] },
               }}
               addToolResult={handleToolResult}
             />
@@ -363,7 +538,7 @@ export function PersonaPanelsListClient() {
             </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-8 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            <Loader2 className="size-5 animate-spin text-primary/60" />
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
             <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
           </div>
         </>
@@ -381,9 +556,9 @@ export function PersonaPanelsListClient() {
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
             <div className="relative flex items-center justify-center">
-              <div className="absolute w-32 h-32 rounded-full bg-green-500 blur-[50px] opacity-20" />
-              <div className="relative flex items-center justify-center size-12 rounded-full bg-green-500/10">
-                <CheckCircle2 className="size-6 text-green-500" />
+              <div className="absolute w-32 h-32 rounded-full bg-primary blur-[50px] opacity-10" />
+              <div className="relative flex items-center justify-center size-12 rounded-full bg-primary/10">
+                <CheckCircle2 className="size-6 text-primary" />
               </div>
             </div>
             {progress?.panelTitle && <p className="text-sm font-medium">{progress.panelTitle}</p>}
@@ -429,13 +604,7 @@ export function PersonaPanelsListClient() {
                 {progress.errorMessage}
               </p>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                resetWizard();
-              }}
-            >
+            <Button variant="outline" size="sm" onClick={resetWizard}>
               {t("CreatePanelWizard.retry")}
             </Button>
           </div>
@@ -443,10 +612,10 @@ export function PersonaPanelsListClient() {
       );
     }
 
-    // Fallback — should not happen
     return null;
   };
 
+  // ─── Main render ───────────────────────────────────────────────
   return (
     <>
       <div className="flex-1 overflow-y-auto scrollbar-thin">
@@ -463,9 +632,9 @@ export function PersonaPanelsListClient() {
               {/* New Panel Card */}
               <button
                 onClick={() => setShowCreateDialog(true)}
-                className="group border border-dashed border-border rounded-lg p-5 hover:border-green-500/30 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[150px]"
+                className="group border border-dashed border-border rounded-lg p-5 hover:border-foreground/20 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[180px]"
               >
-                <div className="size-10 rounded-full border border-border flex items-center justify-center group-hover:border-green-500/50 group-hover:bg-green-500/5 transition-all">
+                <div className="size-10 rounded-full border border-border flex items-center justify-center group-hover:border-foreground/20 group-hover:bg-accent transition-all">
                   <Plus className="size-5 text-muted-foreground" />
                 </div>
                 <div className="text-sm text-center space-y-1">
@@ -496,41 +665,47 @@ export function PersonaPanelsListClient() {
 
                       {/* Instruction */}
                       {panel.instruction && (
-                        <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-3">
+                        <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-2">
                           {panel.instruction}
                         </p>
                       )}
 
-                      {/* Personas preview */}
+                      {/* Personas preview with avatars */}
                       {panel.personas.length > 0 && (
-                        <div className="space-y-1.5 pt-1 border-t border-border/50">
-                          {panel.personas.slice(0, 3).map((persona) => (
-                            <div key={persona.id} className="flex items-baseline gap-2 min-w-0">
-                              <span className="text-xs font-medium shrink-0">
-                                {persona.name}
-                              </span>
-                              {Array.isArray(persona.tags) && persona.tags.length > 0 && (
-                                <span className="text-[11px] text-muted-foreground/60 truncate">
-                                  {(persona.tags as string[]).slice(0, 2).map((t) => `#${t}`).join(" ")}
+                        <div className="space-y-2 pt-2 border-t border-border/50">
+                          {panel.personas.slice(0, 3).map((persona) => {
+                            const extraStr = buildExtraSummary(persona.extra);
+                            return (
+                              <div key={persona.id} className="flex items-center gap-2 min-w-0">
+                                <HippyGhostAvatar
+                                  seed={persona.id}
+                                  className="size-5 rounded-full shrink-0"
+                                />
+                                <span className="text-xs font-medium shrink-0 truncate max-w-20">
+                                  {persona.name}
                                 </span>
-                              )}
-                            </div>
-                          ))}
+                                {extraStr && (
+                                  <span className="text-[10px] text-muted-foreground/60 truncate">
+                                    {extraStr}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
                           {panel.personas.length > 3 && (
-                            <span className="text-xs text-muted-foreground/50">
+                            <span className="text-[10px] text-muted-foreground/50">
                               {t("ListPage.andMore", { count: panel.personas.length - 3 })}
                             </span>
                           )}
                         </div>
                       )}
 
-                      {/* Footer: usage stats + arrow */}
+                      {/* Footer */}
                       <div className="flex items-center justify-between pt-1">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
-                          <span>
-                            {t("personaCount", { count: panel.personas.length })}
-                          </span>
-                          {(panel.usageCount.discussions > 0 || panel.usageCount.interviews > 0) && (
+                          <span>{t("personaCount", { count: panel.personas.length })}</span>
+                          {(panel.usageCount.discussions > 0 ||
+                            panel.usageCount.interviews > 0) && (
                             <>
                               <span>·</span>
                               <span>
@@ -601,7 +776,7 @@ export function PersonaPanelsListClient() {
         <DialogContent className="sm:max-w-lg">{renderWizardContent()}</DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation */}
       <AlertDialog open={!!panelToDelete} onOpenChange={() => setPanelToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

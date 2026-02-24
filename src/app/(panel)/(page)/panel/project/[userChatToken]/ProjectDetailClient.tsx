@@ -1,20 +1,24 @@
 "use client";
+import { ConfirmPlanMessage } from "@/app/(panel)/tools/confirmPanelResearchPlan/ConfirmPlanMessage";
+import type { ConfirmPanelResearchPlanOutput } from "@/app/(panel)/tools/confirmPanelResearchPlan/types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ExternalLink, Loader2, MessageSquare, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   DiscussionSummary,
   InterviewBatch,
   PanelDiscussionDetail,
+  PendingConfirmPlan,
   ProjectProgress,
 } from "./actions";
 import {
   fetchDiscussionDetail,
   fetchProjectProgress,
   fetchProjectResearchByToken,
+  submitResearchConfirmation,
 } from "./actions";
 import { DiscussionView } from "./DiscussionView";
 import { InterviewsView } from "./InterviewsView";
@@ -34,6 +38,7 @@ export interface ProjectDetailClientProps {
   interviewBatches: InterviewBatch[];
   totalPersonas: number;
   initialProgress: ProjectProgress | null;
+  initialPendingConfirmPlan: PendingConfirmPlan | null;
 }
 
 type TabType = "discussion" | "interviews";
@@ -47,12 +52,14 @@ export function ProjectDetailClient({
   interviewBatches,
   totalPersonas,
   initialProgress,
+  initialPendingConfirmPlan,
 }: ProjectDetailClientProps) {
   const t = useTranslations("PersonaPanel.ProjectDetailPage");
   const [projectDiscussions, setProjectDiscussions] = useState(discussions);
   const [projectInterviewBatches, setProjectInterviewBatches] = useState(interviewBatches);
   const [projectTotalPersonas, setProjectTotalPersonas] = useState(totalPersonas);
   const [progress, setProgress] = useState(initialProgress);
+  const [pendingConfirmPlan, setPendingConfirmPlan] = useState(initialPendingConfirmPlan);
   const [runtimeStatus, setRuntimeStatus] = useState<"running" | "completed">(
     project.backgroundToken ? "running" : "completed",
   );
@@ -134,6 +141,7 @@ export function ProjectDetailClient({
         setProjectDiscussions(researchResult.data.discussions);
         setProjectInterviewBatches(researchResult.data.interviewBatches);
         setProjectTotalPersonas(researchResult.data.totalPersonas);
+        setPendingConfirmPlan(researchResult.data.pendingConfirmPlan);
 
         if (
           selectedDiscussionIndex === 0 &&
@@ -153,6 +161,16 @@ export function ProjectDetailClient({
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [currentDiscussionDetail, project.token, selectedDiscussionIndex]);
+
+  // Handle research plan confirmation
+  const handleConfirmPlan = useCallback(
+    (output: ConfirmPanelResearchPlanOutput) => {
+      if (!pendingConfirmPlan) return;
+      submitResearchConfirmation(project.token, pendingConfirmPlan.toolCallId, output);
+      setPendingConfirmPlan(null); // Clear immediately — polling will pick up the new state
+    },
+    [pendingConfirmPlan, project.token],
+  );
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -246,74 +264,89 @@ export function ProjectDetailClient({
       </div>
 
       {/* Content area */}
-      {availableTabs.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-xl border border-border rounded-lg p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              {isRunning ? (
-                <Loader2 className="size-4 animate-spin text-muted-foreground" />
-              ) : (
-                <span className="size-2 rounded-full bg-muted-foreground/60" />
-              )}
-              <p className="text-sm font-medium">
-                {isRunning ? t("agentRunning") : t("noContent")}
-              </p>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {availableTabs.length === 0 && pendingConfirmPlan ? (
+          /* Pending research plan confirmation */
+          <div className="flex-1 flex items-center justify-center p-6 h-full">
+            <div className="w-full max-w-xl border border-border rounded-lg p-5">
+              <ConfirmPlanMessage
+                input={pendingConfirmPlan.input}
+                onConfirm={handleConfirmPlan}
+              />
             </div>
-
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>
-                {t("status")}: {statusLabel}
-              </p>
-              <p>
-                {t("phase")}: {phaseLabel}
-              </p>
-              {progress?.latestStep && (
-                <p>
-                  {t("latestStep")}: {progress.latestStep}
-                </p>
-              )}
-            </div>
-
-            {progress?.recentSteps && progress.recentSteps.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">{t("recentSteps")}</p>
-                <div className="space-y-1">
-                  {progress.recentSteps.slice(0, 4).map((step, i) => (
-                    <p key={`${step}-${i}`} className="text-xs text-muted-foreground">
-                      {i + 1}. {step}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {progress?.lastMessage && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">{t("agentOutput")}</p>
-                <p className="text-xs text-muted-foreground line-clamp-3">{progress.lastMessage}</p>
-              </div>
-            )}
-
-            <p className="text-xs text-muted-foreground/60">{t("noContentDescription")}</p>
           </div>
-        </div>
-      ) : activeTab === "discussion" && currentDiscussionDetail ? (
-        <DiscussionView
-          timeline={currentDiscussionDetail.timeline}
-          personas={currentDiscussionDetail.personas}
-        />
-      ) : activeTab === "discussion" ? (
-        <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin mr-2" />
-          {t("agentRunning")}
-        </div>
-      ) : activeTab === "interviews" ? (
-        <InterviewsView
-          userChatToken={project.token}
-          interviewBatches={projectInterviewBatches}
-          totalPersonas={projectTotalPersonas}
-        />
-      ) : null}
+        ) : availableTabs.length === 0 ? (
+          /* Agent running — no research output yet */
+          <div className="flex-1 flex items-center justify-center p-6 h-full">
+            <div className="w-full max-w-xl border border-border rounded-lg p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                {isRunning ? (
+                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                ) : (
+                  <span className="size-2 rounded-full bg-muted-foreground/60" />
+                )}
+                <p className="text-sm font-medium">
+                  {isRunning ? t("agentRunning") : t("noContent")}
+                </p>
+              </div>
+
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>
+                  {t("status")}: {statusLabel}
+                </p>
+                <p>
+                  {t("phase")}: {phaseLabel}
+                </p>
+                {progress?.latestStep && (
+                  <p>
+                    {t("latestStep")}: {progress.latestStep}
+                  </p>
+                )}
+              </div>
+
+              {progress?.recentSteps && progress.recentSteps.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground">{t("recentSteps")}</p>
+                  <div className="space-y-1">
+                    {progress.recentSteps.slice(0, 4).map((step, i) => (
+                      <p key={`${step}-${i}`} className="text-xs text-muted-foreground">
+                        {i + 1}. {step}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {progress?.lastMessage && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground">{t("agentOutput")}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-3">
+                    {progress.lastMessage}
+                  </p>
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground/60">{t("noContentDescription")}</p>
+            </div>
+          </div>
+        ) : activeTab === "discussion" && currentDiscussionDetail ? (
+          <DiscussionView
+            timeline={currentDiscussionDetail.timeline}
+            personas={currentDiscussionDetail.personas}
+          />
+        ) : activeTab === "discussion" ? (
+          <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground h-full">
+            <Loader2 className="size-4 animate-spin mr-2" />
+            {t("agentRunning")}
+          </div>
+        ) : activeTab === "interviews" ? (
+          <InterviewsView
+            userChatToken={project.token}
+            interviewBatches={projectInterviewBatches}
+            totalPersonas={projectTotalPersonas}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }

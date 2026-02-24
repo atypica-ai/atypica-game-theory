@@ -1,12 +1,23 @@
 "use server";
-import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
+import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import {
+  confirmPanelResearchPlanInputSchema,
+  type ConfirmPanelResearchPlanInput,
+  type ConfirmPanelResearchPlanOutput,
+} from "@/app/(panel)/tools/confirmPanelResearchPlan/types";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import { UserChatContext } from "@/app/(study)/context/types";
+import { executeUniversalAgent } from "@/app/(universal)/agent";
+import { UniversalToolName } from "@/app/(universal)/tools/types";
+import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import type { AgentStatisticsExtra, Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
+import { getLocale } from "next-intl/server";
+import { after } from "next/server";
 
 export interface DiscussionSummary {
   token: string;
@@ -234,10 +245,16 @@ export async function fetchProjectContextByToken(userChatToken: string): Promise
   });
 }
 
+export interface PendingConfirmPlan {
+  toolCallId: string;
+  input: ConfirmPanelResearchPlanInput;
+}
+
 type ProjectToolData = {
   discussions: DiscussionSummary[];
   interviewBatches: InterviewBatch[];
   totalPersonas: number;
+  pendingConfirmPlan: PendingConfirmPlan | null;
 };
 
 function extractDiscussionParticipantIds(events: DiscussionTimelineEvent[]) {
@@ -291,8 +308,13 @@ async function fetchProjectToolData({
       discussions: [],
       interviewBatches: [],
       totalPersonas: 0,
+      pendingConfirmPlan: null,
     };
   }
+
+  // Track confirmPanelResearchPlan state
+  let pendingConfirmPlan: PendingConfirmPlan | null = null;
+  let confirmPlanHasOutput = false;
 
   const discussionCalls = new Map<
     string,
@@ -358,6 +380,18 @@ async function fetchProjectToolData({
           personas,
           createdAt: dbMessage.createdAt,
         });
+      }
+
+      if (toolName === UniversalToolName.confirmPanelResearchPlan) {
+        if (part.state === "input-available") {
+          const parsed = confirmPanelResearchPlanInputSchema.safeParse(part.input);
+          if (parsed.success) {
+            pendingConfirmPlan = { toolCallId: part.toolCallId, input: parsed.data };
+          }
+        }
+        if (part.state === "output-available") {
+          confirmPlanHasOutput = true;
+        }
       }
     }
   }
@@ -483,6 +517,7 @@ async function fetchProjectToolData({
     discussions,
     interviewBatches,
     totalPersonas: allPersonaIds.length,
+    pendingConfirmPlan: confirmPlanHasOutput ? null : pendingConfirmPlan,
   };
 }
 
@@ -586,5 +621,82 @@ export async function fetchInterviewMessages(
     const messages: UIMessage[] = interviewUserChat.messages.map(convertDBMessageToAIMessage);
 
     return { success: true, data: messages };
+  });
+}
+
+/**
+ * Submit confirmation tool result for research plan, then re-execute agent.
+ */
+export async function submitResearchConfirmation(
+  userChatToken: string,
+  toolCallId: string,
+  output: ConfirmPanelResearchPlanOutput,
+): Promise<ServerActionResult<void>> {
+  return withAuth(async (user) => {
+    const userChat = await prisma.userChat.findUnique({
+      where: { token: userChatToken, userId: user.id },
+      select: { id: true, token: true, extra: true },
+    });
+
+    if (!userChat) {
+      return { success: false, code: "not_found", message: "Chat not found" };
+    }
+
+    const lastAssistantMessage = await prisma.chatMessage.findFirst({
+      where: { userChatId: userChat.id, role: "assistant" },
+      orderBy: { id: "desc" },
+      select: { messageId: true },
+    });
+
+    if (!lastAssistantMessage) {
+      return { success: false, code: "not_found", message: "No assistant message found" };
+    }
+
+    // Persist tool result
+    await persistentAIMessageToDB({
+      mode: "append",
+      userChatId: userChat.id,
+      message: {
+        id: lastAssistantMessage.messageId,
+        role: "assistant",
+        parts: [
+          {
+            type: `tool-${UniversalToolName.confirmPanelResearchPlan}` as `tool-${string}`,
+            toolCallId,
+            state: "output-available",
+            input: {},
+            output,
+          },
+        ],
+      },
+    });
+
+    // Re-execute the agent in the background
+    const locale = await getLocale();
+    const logger = rootLogger.child({ userChatId: userChat.id, userChatToken: userChat.token });
+    const { statReport } = initGenericUserChatStatReporter({
+      userId: user.id,
+      userChatId: userChat.id,
+      logger,
+    });
+
+    after(
+      executeUniversalAgent({
+        userId: user.id,
+        userChat,
+        statReport,
+        logger,
+        locale,
+      })
+        .then(() => logger.info("research plan confirmed, agent re-execution completed"))
+        .catch((error) =>
+          logger.error({
+            msg: "research plan confirmed, agent re-execution error",
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        ),
+    );
+
+    return { success: true, data: undefined };
   });
 }
