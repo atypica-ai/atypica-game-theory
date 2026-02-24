@@ -10,10 +10,10 @@ import {
   PERSONA_DIMENSIONS,
   PERSONA_TAG_KEYS,
   RESEARCHER_METHOD_KEYS,
-  SIMULATOR_ROLE_KEYS,
+  SIMULATOR_PERSONA_KEYS,
 } from "../content";
 
-const copy = CHAPTERS[1];
+const copy = CHAPTERS[2];
 
 /* ── Simulator Mockup: Persona Building Process ── */
 
@@ -51,7 +51,7 @@ function SimulatorMockup() {
           <div key={i} className="flex items-center gap-1.5 flex-1">
             <div
               className={cn(
-                "w-6 h-6 rounded-full grid place-items-center text-[10px] font-IBMPlexMono transition-colors duration-500",
+                "w-6 h-6 rounded-full grid place-items-center text-xs font-IBMPlexMono transition-colors duration-500",
                 i < step
                   ? "bg-[#1bff1b]/30 text-[#1bff1b]"
                   : i === step
@@ -63,7 +63,7 @@ function SimulatorMockup() {
             </div>
             <span
               className={cn(
-                "font-IBMPlexMono text-[10px] tracking-wide transition-colors duration-500",
+                "font-IBMPlexMono text-xs tracking-wide transition-colors duration-500",
                 i <= step ? "text-zinc-300" : "text-zinc-600",
               )}
             >
@@ -93,14 +93,14 @@ function SimulatorMockup() {
             className="border border-[rgba(27,255,27,0.15)] bg-[rgba(27,255,27,0.03)] p-3"
           >
             <div className="flex items-center gap-2.5 mb-2.5">
-              <div className="w-8 h-8 rounded-full bg-[rgba(27,255,27,0.12)] border border-[rgba(27,255,27,0.25)] grid place-items-center text-[10px] text-[#1bff1b]">
+              <div className="w-8 h-8 rounded-full bg-[rgba(27,255,27,0.12)] border border-[rgba(27,255,27,0.25)] grid place-items-center text-xs text-[#1bff1b]">
                 AI
               </div>
               <div>
                 <div className="text-xs font-medium text-zinc-200">
                   {t("twoAgents.mockup.personaName")}
                 </div>
-                <div className="font-IBMPlexMono text-[10px] text-zinc-500">
+                <div className="font-IBMPlexMono text-xs text-zinc-500">
                   {t("twoAgents.mockup.personaMeta")}
                 </div>
               </div>
@@ -109,7 +109,7 @@ function SimulatorMockup() {
               {PERSONA_TAG_KEYS.map((key) => (
                 <span
                   key={key}
-                  className="py-0.5 px-2 font-IBMPlexMono text-[9px] border border-[rgba(27,255,27,0.2)] text-[rgba(27,255,27,0.6)]"
+                  className="py-0.5 px-2 font-IBMPlexMono text-xs border border-[rgba(27,255,27,0.2)] text-[rgba(27,255,27,0.6)]"
                 >
                   {t(`twoAgents.mockup.${key}`)}
                 </span>
@@ -119,7 +119,7 @@ function SimulatorMockup() {
             <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
               {PERSONA_DIMENSIONS.map((d) => (
                 <div key={d.key} className="flex items-center gap-1.5">
-                  <span className="font-IBMPlexMono text-[9px] text-zinc-500 w-12 shrink-0">
+                  <span className="font-IBMPlexMono text-xs text-zinc-500 w-14 shrink-0">
                     {t(`twoAgents.mockup.${d.key}`)}
                   </span>
                   <div className="flex-1 h-1 bg-zinc-800 overflow-hidden">
@@ -210,7 +210,7 @@ function ResearcherMockup() {
             transition={{ duration: 0.4 }}
           />
         </div>
-        <span className="font-IBMPlexMono text-[10px] text-zinc-500">
+        <span className="font-IBMPlexMono text-xs text-zinc-500">
           {visibleCount}/{messages.length}
         </span>
       </div>
@@ -223,7 +223,7 @@ function ResearcherMockup() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           className={cn(
-            "py-1.5 px-2 rounded-sm max-w-[82%] text-[11px] leading-relaxed",
+            "py-1.5 px-2 rounded-sm max-w-[82%] text-xs leading-relaxed",
             msg.role === "researcher"
               ? "self-start bg-[rgba(147,197,253,0.12)] border border-[rgba(147,197,253,0.2)] text-zinc-300"
               : "self-end bg-zinc-800 border border-zinc-700 text-zinc-400",
@@ -299,11 +299,10 @@ export default function TwoAgentsSection({
           <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
             {/* Simulator card */}
             <div className="border border-zinc-800 p-7">
-              <div className="font-IBMPlexMono text-xs tracking-[0.18em] uppercase mb-3 text-[#1bff1b]">
+              <h3 className="font-IBMPlexMono text-lg tracking-[0.08em] uppercase mb-2 text-[#1bff1b]">
                 {t("twoAgents.simulator.tag")}
-              </div>
-              <h3 className="text-xl font-medium mb-2">{t("twoAgents.simulator.title")}</h3>
-              <p className="text-sm leading-relaxed text-zinc-300 mb-5">
+              </h3>
+              <p className="text-sm leading-relaxed text-zinc-400 mb-5">
                 {t("twoAgents.simulator.description")}
               </p>
 
@@ -313,19 +312,16 @@ export default function TwoAgentsSection({
               </div>
 
               <div className="grid gap-2">
-                {SIMULATOR_ROLE_KEYS.map((roleKey) => (
+                {SIMULATOR_PERSONA_KEYS.map((personaKey) => (
                   <div
-                    key={roleKey}
+                    key={personaKey}
                     className="border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600"
                   >
                     <div className="text-sm font-medium">
-                      {t(`twoAgents.simulator.${roleKey}.label`)}
+                      {t(`twoAgents.simulator.${personaKey}.label`)}
                     </div>
-                    <div className="font-IBMPlexMono text-xs tracking-[0.06em] text-zinc-300 mt-0.5">
-                      {t(`twoAgents.simulator.${roleKey}.sub`)}
-                    </div>
-                    <div className="text-sm leading-normal text-zinc-300 mt-1.5">
-                      {t(`twoAgents.simulator.${roleKey}.description`)}
+                    <div className="text-sm leading-normal text-zinc-300 mt-1">
+                      {t(`twoAgents.simulator.${personaKey}.description`)}
                     </div>
                   </div>
                 ))}
@@ -334,11 +330,10 @@ export default function TwoAgentsSection({
 
             {/* Researcher card */}
             <div className="border border-zinc-800 p-7">
-              <div className="font-IBMPlexMono text-xs tracking-[0.18em] uppercase mb-3 text-[#93c5fd]">
+              <h3 className="font-IBMPlexMono text-lg tracking-[0.08em] uppercase mb-2 text-[#93c5fd]">
                 {t("twoAgents.researcher.tag")}
-              </div>
-              <h3 className="text-xl font-medium mb-2">{t("twoAgents.researcher.title")}</h3>
-              <p className="text-sm leading-relaxed text-zinc-300 mb-5">
+              </h3>
+              <p className="text-sm leading-relaxed text-zinc-400 mb-5">
                 {t("twoAgents.researcher.description")}
               </p>
 

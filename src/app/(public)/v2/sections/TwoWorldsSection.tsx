@@ -56,7 +56,7 @@ export default function TwoWorldsSection({
           <div className="grid grid-cols-2 max-lg:grid-cols-1 gap-0">
             {/* Objective */}
             <div className="py-8 pr-10 max-lg:pr-0 max-lg:pb-8 border-r border-zinc-800 max-lg:border-r-0 max-lg:border-b">
-              <span className="font-IBMPlexMono text-[10px] tracking-[0.14em] uppercase text-zinc-600">
+              <span className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-600">
                 {t("twoWorlds.objectiveLabel")}
               </span>
               <h3 className="mt-3 font-EuclidCircularA text-4xl lg:text-5xl font-light text-zinc-600 leading-none">
@@ -69,7 +69,7 @@ export default function TwoWorldsSection({
 
             {/* Subjective */}
             <div className="py-8 pl-10 max-lg:pl-0 max-lg:pt-8">
-              <span className="font-IBMPlexMono text-[10px] tracking-[0.14em] uppercase text-zinc-500">
+              <span className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500">
                 {t("twoWorlds.subjectiveLabel")}
               </span>
               <h3 className="mt-3 font-EuclidCircularA text-4xl lg:text-5xl font-medium text-[#1bff1b] leading-none">

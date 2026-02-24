@@ -376,9 +376,9 @@
     "hero": {
       "kicker": "ATYPICA 2.0",
       "titleLine1": "理解人的",
-      "titleAccent": "Agent",
+      "titleAccent": "AI",
       "titleEnd": "",
-      "body": "大多数 Agent 的使命是替人干活。我们相信 Agent 还存在第二种形态——通过模拟，去理解人的主观世界。",
+      "body": "大多数 AI 替人干活。Atypica 做更难的事——模拟人为什么选择、犹豫和决定。",
       "cta": "开始研究",
       "secondaryCta": "了解更多",
       "badgePersonas": "100万+ AI 人设",
@@ -386,52 +386,46 @@
       "badgeTrusted": "全球企业信赖"
     },
     "nav": {
-      "twoWorlds": "两个世界",
-      "twoAgents": "两个 Agent",
-      "worldModel": "世界模型",
-      "threeModes": "三种模式",
-      "dataAssets": "数据资产",
-      "useCases": "使用场景"
+      "twoWorlds": "世界",
+      "worldModel": "模型",
+      "twoAgents": "AI",
+      "workflow": "工作流",
+      "dataAssets": "资产",
+      "solutions": "方案"
     },
     "twoWorlds": {
-      "kicker": "核心命题",
+      "kicker": "两个世界",
       "quote": "我们并不是对现实做反应，而是对我们头脑中的模型做反应。",
       "attribution": "—— Daniel Kahneman",
-      "objectiveLabel": "[1.A] 客观世界",
-      "objectiveTitle": "可量化的",
-      "objectiveDesc": "可衡量的。传统 AI Agent 的领域——自动化任务、处理数据、执行工作流。",
-      "subjectiveLabel": "[1.B] 主观世界",
-      "subjectiveTitle": "情感化的",
-      "subjectiveDesc": "情境化的。人类决策的领域——人为什么选择、犹豫、信任和行动。"
+      "objectiveLabel": "[1.A] 可量化的",
+      "objectiveTitle": "客观世界",
+      "objectiveDesc": "传统 AI 的领域——自动化任务、处理数据、执行工作流。",
+      "subjectiveLabel": "[1.B] 情感化的",
+      "subjectiveTitle": "主观世界",
+      "subjectiveDesc": "人类决策的领域——人为什么选择、犹豫、信任和行动。"
     },
     "twoAgents": {
-      "kicker": "核心架构",
+      "kicker": "两个 AI",
       "title": "模拟 × 研究",
-      "body": "模拟者（AI Simulator）通过「主观世界模型」模拟真实用户。研究者（AI Researcher）像研究员一样发问、引导、分析用户的表达。",
+      "body": "一个 AI 成为用户，另一个 AI 发问和分析。",
       "simulator": {
-        "tag": "AI 模拟者",
-        "title": "Persona + Sage",
-        "description": "通过「主观世界模型」，Agent 模拟一个真实用户——2C 消费者的日常购买，2B 消费者的专业购买。",
-        "persona": {
-          "label": "AI Persona",
-          "sub": "消费者模拟",
-          "description": "基于真实行为数据与社会科学模型构建的虚拟消费者样本库。可调用、可验证。"
-        },
-        "sage": {
-          "label": "AI Sage",
-          "sub": "专家模拟",
-          "description": "支持垂直行业专家模拟。企业可上传专业文档快速构建专属领域专家，通过主动学习机制自动识别知识盲区并补全。"
-        }
+        "tag": "AI SIMULATOR",
+        "title": "AI Simulator",
+        "description": "模拟一个真实的人——不是统计平均值。重建他们如何选择、为何犹豫。",
+        "consumer2c": { "label": "2C 消费者", "description": "具有真实购买行为、情感触发点和品牌偏好的日常消费者。" },
+        "professional2b": { "label": "2B 专业买家", "description": "具有领域专长、采购逻辑和 ROI 驱动决策框架的商业买家。" },
+        "expert": { "label": "行业专家", "description": "双层记忆的领域专家——核心知识稳定，工作知识随咨询增长。" }
       },
       "researcher": {
-        "tag": "AI 研究者",
-        "title": "研究方法",
-        "description": "Agent 像研究员一样发问、引导、分析用户的表达，可以对真实和模拟用户进行多种形式的研究。",
-        "interview": "一对一深度访谈",
+        "tag": "AI RESEARCHER",
+        "title": "AI Researcher",
+        "description": "发问、深挖、提取人们难以清楚表达的东西。",
+        "oneToOne": "一对一深度访谈",
         "oneToMany": "一对多访谈",
+        "expertDiscussion": "专家讨论",
         "focusGroup": "焦点小组",
-        "panel": "多对多共创会",
-        "observation": "连续行为观察"
+        "multiParty": "多方共创",
+        "observation": "行为观察"
       },
       "mockup": {
         "stepParse": "解析",
@@ -456,26 +450,33 @@
       }
     },
     "worldModel": {
-      "kicker": "基座",
+      "kicker": "FOUNDATION MODEL",
       "title": "主观世界模型",
-      "body": "基于 100 万个真人语料训练的主观世界模型。我们将主观世界定义为一个分层结构系统，由四层递进式数据集刻画。",
+      "body": "基于 100 万+ 真人数据训练。四层结构建模人是谁——而不只是预测人做什么。",
       "center": "SWM",
+      "datasetTitle": "人类主体的四个层次",
+      "datasetBody": "每个层次捕捉人类主观性的不同面向。四层交叉校准，产出的模型不只预测——它理解。",
+      "contradiction": "层间矛盾就是信号。一个人说自己重视自主，但做重大决定时需要外部认可——这不是矛盾，这是人。",
       "layers": {
         "expression": {
           "label": "表达层",
-          "description": "人如何表达自己——社交媒体、多平台公开表达语料。建模语言风格、情绪分布、价值取向与身份标签。"
+          "question": "他们说什么，怎么说？",
+          "description": "语言模式、情绪基线、声明的价值观——包括声明与实际选择矛盾的部分。"
         },
         "story": {
           "label": "叙事层",
-          "description": "人如何解释自己——深度访谈、半结构化访谈、长期跟踪记录。建模动机逻辑、因果归因模式与自我认知结构。"
+          "question": "什么叙事解释他们的选择？",
+          "description": "动机逻辑、关于成败的因果故事、驱动决策的核心恐惧。"
         },
         "cognition": {
           "label": "判断层",
-          "description": "人如何做选择——行为判断问卷、心理学范式测试、决策偏好测量。建模风险偏好、认知偏差、价值排序。"
+          "question": "压力下的决策逻辑是什么？",
+          "description": "风险偏好、认知偏差、价值排序——测量而非自述。"
         },
         "behavior": {
           "label": "行动层",
-          "description": "人如何真正行动——经济博弈实验、真实交易行为、长期决策记录。校准表达与判断在现实约束下的实际行动。"
+          "question": "他们实际做了什么？",
+          "description": "真实交易与经济博弈实验。校准全模型——暴露认知在现实约束下的崩塌之处。"
         }
       },
       "dimensions": {
@@ -485,17 +486,75 @@
         "decision": { "label": "决策路径", "description": "选择是如何做出的" },
         "social": { "label": "社会影响", "description": "他人无形的影响力" },
         "cognitive": { "label": "认知框架", "description": "塑造认知的心智模型" }
-      }
+      },
+      "crossTitle": "人们说什么 vs. 实际做什么",
+      "crossBody": "最有价值的洞察，藏在表达与行为的距离之间。",
+      "chartStated": "表达",
+      "chartActual": "行为",
+      "chartDomains": {
+        "price": "价格",
+        "brand": "品牌",
+        "social": "社交",
+        "education": "教育",
+        "selfCare": "护肤"
+      },
+      "crossExamples": {
+        "price": { "says": "「我会比价。」", "does": "在孩子教育上毫不犹豫付溢价。" },
+        "social": { "says": "「不在乎别人。」", "does": "62% 大额消费在社媒曝光 48h 内发生。" },
+        "brand": { "says": "「有优惠就换。」", "does": "高端品牌复购率 78%。" }
+      },
+      "matrixTitle": "层间一致性",
+      "matrixNote": "表达↔行为 差距最大——表达更多服务于身份管理，而非真实自我披露。",
+      "enablesTitle": "模型能做什么",
+      "enableSimulation": "模拟 — 用虚拟消费者测试新产品。",
+      "enableCounterfactual": "反事实 — 改一个变量，看决策如何变化。",
+      "enableStressTest": "压力测试 — 极端场景下，价值排序如何重组。"
     },
-    "threeModes": {
-      "kicker": "产品",
-      "title": "三种理解方式",
-      "body": "从自主信号吸收到全自动研究再到实时人机对话。",
-      "explore": "探索",
-      "signal": {
-        "title": "信号模式",
-        "badge": "SIGNAL",
-        "description": "主动吸收信号，随时主动进行研究，提供结果。无需指令，Agent 持续感知与输出洞察。",
+    "workflow": {
+      "kicker": "工作流",
+      "title": "用例 × 工作流",
+      "body": "选择你的目标，我们组装工作流。",
+      "centerDefault": "悬停查看工作流",
+      "goals": {
+        "consumerInsight": { "label": "消费者洞察", "desc": "理解谁在买、为什么买" },
+        "conceptTesting": { "label": "概念测试", "desc": "上市前验证创意" },
+        "brandStrategy": { "label": "品牌策略", "desc": "定位与差异化" },
+        "pricing": { "label": "定价策略", "desc": "找到最佳价格点" },
+        "socialListening": { "label": "舆情监测", "desc": "实时追踪情绪" },
+        "userExperience": { "label": "用户体验", "desc": "描绘用户旅程" },
+        "socialSimulation": { "label": "社会仿真", "desc": "模拟群体行为" },
+        "eventPrediction": { "label": "事件预测", "desc": "预测事件结果" }
+      },
+      "steps": {
+        "scout": "扫描",
+        "interview": "访谈",
+        "analyze": "分析",
+        "report": "报告",
+        "brief": "需求",
+        "buildPersonas": "构建人设",
+        "test": "测试",
+        "position": "定位",
+        "research": "研究",
+        "simulate": "模拟",
+        "optimize": "优化",
+        "monitor": "监测",
+        "detect": "探测",
+        "alert": "预警",
+        "observe": "观察",
+        "map": "地图",
+        "recommend": "建议",
+        "buildPopulation": "构建人群",
+        "multiPerspective": "多视角",
+        "predict": "预测",
+        "validate": "验证"
+      },
+      "modes": {
+        "signal": "Signal",
+        "deep": "Deep",
+        "live": "Live",
+        "auto": "Auto"
+      },
+      "mockup": {
         "mapLabel": "信号地图",
         "cleanBeauty": "纯净美妆",
         "priceSensitivity": "价格敏感度",
@@ -503,12 +562,7 @@
         "brandRecall": "品牌认知",
         "sustainability": "可持续性",
         "peerReviews": "同伴评价",
-        "packaging": "包装"
-      },
-      "deep": {
-        "title": "深度模式",
-        "badge": "DEEP",
-        "description": "全自动 AI 研究——用多智能体自动完成从研究设计、数据生成到洞察输出的端到端市场研究，将数周研究压缩到分钟级。",
+        "packaging": "包装",
         "tabBrief": "概要",
         "tabIntent": "意图",
         "tabExecute": "执行",
@@ -524,109 +578,63 @@
         "execScout": "扫描",
         "execInterview": "访谈 ×6",
         "execAnalyze": "分析",
-        "execReport": "报告"
-      },
-      "live": {
-        "title": "实时模式",
-        "badge": "LIVE",
-        "description": "用 AI Researcher 主导与真人或 AI Simulator 进行深度访谈，把「对话」直接转化为结构化洞察与可行动结论。",
-        "msg1": "「纯净美妆」对你个人意味着什么？",
-        "msg2": "对我来说是透明度——知道产品里到底有什么。",
-        "msg3": "你什么时候开始关注成分的？",
+        "execReport": "报告",
+        "liveMsg1": "「纯净美妆」对你个人意味着什么？",
+        "liveMsg2": "对我来说是透明度——知道产品里到底有什么。",
+        "liveMsg3": "你什么时候开始关注成分的？",
         "listening": "聆听中..."
       }
     },
     "dataAssets": {
-      "kicker": "资产",
+      "kicker": "数据资产",
       "title": "主观世界资产",
-      "body": "基于真实行为数据与社会科学模型构建——可调用、可验证、可扩展。",
+      "body": "可调用。可验证。基于真实行为数据构建。",
       "persona": {
         "title": "AI Persona",
         "subtitle": "虚拟消费者样本库",
-        "description": "基于真实行为数据与社会科学模型构建的可调用、可验证的虚拟消费者样本库。每个 Persona 维持一致的人格特征、认知偏差和决策框架。",
+        "description": "基于真实行为数据构建的虚拟消费者。一致的人格、认知偏差和决策框架。",
         "heroStatValue": "100万+",
-        "heroStatLabel": "AI 样本",
-        "detail1Value": "7万+",
-        "detail1Label": "真人样本",
-        "detail2Value": "85%",
-        "detail2Label": "行为仿真准确率",
-        "detail3Value": "Tier 0–3",
-        "detail3Label": "保真度体系",
-        "note": "企业可上传自有访谈数据，生成专属私有 Persona 库。"
+        "heroStatLabel": "AI 样本"
       },
       "sage": {
         "title": "AI Sage",
         "subtitle": "虚拟专家样本库",
-        "description": "基于真实行为数据与社会科学模型构建的可调用、可验证的虚拟专家样本库。支持垂直行业专家模拟，通过「主动学习机制」自动识别知识盲区并补全。",
+        "description": "双层记忆的领域专家。核心知识稳定，工作知识随咨询增长。",
         "heroStatValue": "85%",
-        "heroStatLabel": "成本降低",
-        "detail1Value": "4+",
-        "detail1Label": "垂直行业",
-        "detail2Value": "核心 + 工作",
-        "detail2Label": "双层记忆架构",
-        "detail3Value": "PDF, 音频, URL",
-        "detail3Label": "快速导入",
-        "note": "相比传统专家网络（$500–2,000/小时），成本降低约 85%。"
+        "heroStatLabel": "成本降低"
       },
       "panel": {
         "title": "AI Panel",
         "subtitle": "新一代智能调研 Panel",
-        "description": "由 AI 虚拟样本与真实受访者共同构成。真实受访者提供基准校验，AI 虚拟样本提供规模放大。提供任何传统 Panel 公司无法提供的「实时可扩展样本」。",
-        "heroStatValue": "3–8",
-        "heroStatLabel": "每面板人设数",
-        "detail1Value": "3 种模式",
-        "detail1Label": "聚焦 · 辩论 · 圆桌",
-        "detail2Value": "真人 + AI",
-        "detail2Label": "基准校验",
-        "detail3Value": "自动",
-        "detail3Label": "摘要 + 纪要",
-        "note": "两者结合，提供实时可扩展的「人类真实数据 + AI 放大」样本。"
+        "description": "真实受访者校准基线，AI 提供规模。传统 Panel 公司无法提供的实时可扩展样本。",
+        "heroStatValue": "1万+",
+        "heroStatLabel": "独立 Panel"
       }
     },
-    "useCases": {
-      "kicker": "应用",
-      "title": "覆盖所有「理解人」的场景",
+    "solutions": {
+      "kicker": "解决方案",
+      "title": "为每个角色打造",
+      "body": "从创作者到投资人——找到你的工作流。",
+      "viewCases": "查看案例",
+      "roles": {
+        "creators": { "title": "创作者", "desc": "发现爆款内容趋势，优化内容策略。" },
+        "influencers": { "title": "网红 / KOL", "desc": "用数据驱动洞察，将影响力转化为可持续收入。" },
+        "marketers": { "title": "营销人员", "desc": "上市前用真实消费者洞察验证营销活动。" },
+        "startupOwners": { "title": "创业者", "desc": "尽早淘汰坏想法——花钱之前先验证。" },
+        "consultants": { "title": "咨询顾问", "desc": "用真实消费者研究支撑你的建议。" },
+        "productManagers": { "title": "产品经理", "desc": "做用户真正想要的产品。" },
+        "researcher": { "title": "研究员", "desc": "用 AI 增强访谈规模化定性研究。" },
+        "investor": { "title": "投资人", "desc": "用多视角模拟预测市场结果。" }
+      },
       "customerStoriesLabel": "客户故事",
       "categoryEnterprise": "企业",
       "categoryAcademic": "学术",
       "categoryPrediction": "预测",
-      "categories": {
-        "enterprise": {
-          "label": "企业服务",
-          "consumerInsight": { "name": "市场研究与消费者洞察", "desc": "消费者细分、画像（Persona）、U&A、JTBD、需求洞察、定性访谈 + 洞察报告" },
-          "conceptTesting": { "name": "产品概念测试与创新研究", "desc": "新品概念测试、包装/命名/价值主张验证、创新机会地图" },
-          "brandStrategy": { "name": "品牌策略与传播洞察", "desc": "品牌诊断、定位与叙事、心智地图、传播主张、客户人群" },
-          "attribution": { "name": "归因分析", "desc": "驱动因素分析（Drivers Analysis）、内容/产品/体验对转化的影响解释、决策路径拆解" },
-          "pricing": { "name": "定价策略与商业模式设计", "desc": "定价模型设计（订阅/用量/分层）、愿付价研究（WTP）、价格架构与升级路径" },
-          "socialListening": { "name": "社媒舆情与趋势情报", "desc": "舆情监测、趋势报告、消费者声音归纳" },
-          "userExperience": { "name": "用户体验与 VOC", "desc": "VOC 体系、客户旅程与痛点、体验改进路线图" },
-          "salesTraining": { "name": "销售培训与场景模拟", "desc": "模拟销售对象进行培训和演练" }
-        },
-        "academic": {
-          "label": "学术社会科学研究",
-          "socialSimulation": { "name": "社会模拟", "desc": "大规模人口建模、通过虚拟社区测试政策影响" },
-          "ethnography": { "name": "人物志与采访", "desc": "AI 增强的人物志研究、基于访谈数据的数字画像构建" },
-          "aiInterviews": { "name": "AI 增强访谈", "desc": "可规模化的定性研究——由 AI 访谈 Agent 驱动的一对一深度访谈" }
-        },
-        "prediction": {
-          "label": "投资与市场预测",
-          "eventOutcome": { "name": "事件结果预测", "desc": "宏观/政治/科技/市场事件结果预测" },
-          "multiPerspective": { "name": "多观点模拟与共识", "desc": "多观点（persona/expert）模拟与共识生成" },
-          "signalTracking": { "name": "持续信号跟踪", "desc": "Signal Tape——持续信号跟踪与判断更新" },
-          "postPrediction": { "name": "预测事后验证", "desc": "预测结果的事后验证与准确度分析" }
-        }
-      },
       "stories": {
         "food": {
           "client": "国际食品品牌",
           "quote": "新品研发周期从「以月计算」缩短到「以天计算」，新品研发数量增加 6 倍。",
-          "body": "通过 Atypica 进行定期的 AI 消费者反馈收集，并通过真人采访验证。围绕农历新年场景与 AI 消费者共创巧克力新品概念，通过对用户偏好、情绪共鸣与市场潜力的综合筛选，最终确定并落地新年新品方案。",
-          "metric1Label": "研发周期",
-          "metric1Value": "月 → 天",
-          "metric2Label": "概念数",
-          "metric2Value": "6 倍增长",
-          "metric3Label": "测试时间",
-          "metric3Value": "−80%"
+          "body": "通过 Atypica 进行定期的 AI 消费者反馈收集，并通过真人采访验证。围绕农历新年场景与 AI 消费者共创巧克力新品概念，通过对用户偏好、情绪共鸣与市场潜力的综合筛选，最终确定并落地新年新品方案。"
         },
         "tools": {
           "client": "电动工具品牌",
@@ -642,13 +650,7 @@
         "university": {
           "client": "高校研究团队",
           "quote": "通过 Atypica 对 2 万户家庭进行访谈，调研中国年轻家庭生育率低的问题。",
-          "body": "首先通过 1 对 1 真人访谈核心家庭成员（夫妻及双方父母）形成 AI Persona，再将这些 Persona 组建成 AI Panel 形成虚拟 Panel Discussion。通过这种方式测试不同措施在提升家庭生育意愿方面的可能性。",
-          "metric1Label": "家庭数",
-          "metric1Value": "20,000",
-          "metric2Label": "方法",
-          "metric2Value": "访谈 → Panel",
-          "metric3Label": "速度",
-          "metric3Value": "年 → 天"
+          "body": "首先通过 1 对 1 真人访谈核心家庭成员（夫妻及双方父母）形成 AI Persona，再将这些 Persona 组建成 AI Panel 形成虚拟 Panel Discussion。通过这种方式测试不同措施在提升家庭生育意愿方面的可能性。"
         },
         "prediction": {
           "client": "IOIIO.BET",
@@ -681,15 +683,17 @@
     },
     "closing": {
       "title": "准备好理解你的用户了吗？",
-      "body": "让 Agent 为每一个消费者的主观世界建模。这个更难的问题——我们已经开始了。",
+      "body": "让 AI 为每一个消费者的主观世界建模。这个更难的问题——我们已经开始了。",
       "cta": "预约演示",
       "secondaryCta": "阅读文档"
     },
     "hud": {
       "scene": "场景",
-      "sampling": "采样",
-      "feedback": "反馈",
-      "confidence": "置信度",
+      "personas": "人设",
+      "interviews": "访谈",
+      "signals": "信号",
+      "insights": "洞察",
+      "panels": "面板",
       "state": "状态",
       "running": "运行中"
     }

@@ -18,8 +18,8 @@ import WorldModelSection from "./sections/WorldModelSection";
 
 const SECTION_COMPONENTS = [
   TwoWorldsSection,
-  TwoAgentsSection,
   WorldModelSection,
+  TwoAgentsSection,
   ThreeModesSection,
   DataAssetsSection,
   UseCasesSection,

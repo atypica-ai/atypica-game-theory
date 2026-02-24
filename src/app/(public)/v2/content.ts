@@ -10,22 +10,23 @@ export const HERO_BADGE_KEYS = ["badgePersonas", "badgeAccuracy", "badgeTrusted"
 
 export const CHAPTERS = [
   { id: "two-worlds", number: "01", key: "twoWorlds" },
-  { id: "two-agents", number: "02", key: "twoAgents" },
-  { id: "world-model", number: "03", key: "worldModel" },
-  { id: "three-modes", number: "04", key: "threeModes" },
+  { id: "world-model", number: "02", key: "worldModel" },
+  { id: "two-agents", number: "03", key: "twoAgents" },
+  { id: "workflow", number: "04", key: "workflow" },
   { id: "data-assets", number: "05", key: "dataAssets" },
-  { id: "use-cases", number: "06", key: "useCases" },
+  { id: "solutions", number: "06", key: "solutions" },
 ] as const;
 
 /* ─── 02: Two Agents ─── */
 
-export const SIMULATOR_ROLE_KEYS = ["persona", "sage"] as const;
+export const SIMULATOR_PERSONA_KEYS = ["consumer2c", "professional2b", "expert"] as const;
 
 export const RESEARCHER_METHOD_KEYS = [
-  "interview",
+  "oneToOne",
   "oneToMany",
+  "expertDiscussion",
   "focusGroup",
-  "panel",
+  "multiParty",
   "observation",
 ] as const;
 
@@ -69,10 +70,99 @@ export const DIMENSION_PALETTE = [
 
 /* ─── 04: Three Modes ─── */
 
-export const THREE_MODES = [
-  { key: "signal", link: "/newstudy", accent: "#1bff1b" },
-  { key: "deep", link: "/newstudy", accent: "#93c5fd" },
-  { key: "live", link: "/newstudy", accent: "#f59e0b" },
+/* ─── 04: Workflow (Use Cases × Workflow) ─── */
+
+export type WorkflowStep = { key: string; mode: "signal" | "deep" | "live" | "auto" };
+
+export const WORKFLOW_GOALS = [
+  {
+    key: "consumerInsight",
+    accent: "#1bff1b",
+    primaryMockup: "signal" as const,
+    steps: [
+      { key: "scout", mode: "signal" as const },
+      { key: "interview", mode: "live" as const },
+      { key: "analyze", mode: "deep" as const },
+      { key: "report", mode: "auto" as const },
+    ],
+  },
+  {
+    key: "conceptTesting",
+    accent: "#93c5fd",
+    primaryMockup: "deep" as const,
+    steps: [
+      { key: "brief", mode: "deep" as const },
+      { key: "buildPersonas", mode: "auto" as const },
+      { key: "test", mode: "live" as const },
+      { key: "report", mode: "auto" as const },
+    ],
+  },
+  {
+    key: "brandStrategy",
+    accent: "#f59e0b",
+    primaryMockup: "live" as const,
+    steps: [
+      { key: "scout", mode: "signal" as const },
+      { key: "interview", mode: "live" as const },
+      { key: "analyze", mode: "deep" as const },
+      { key: "position", mode: "auto" as const },
+    ],
+  },
+  {
+    key: "pricing",
+    accent: "#f472b6",
+    primaryMockup: "deep" as const,
+    steps: [
+      { key: "research", mode: "deep" as const },
+      { key: "simulate", mode: "auto" as const },
+      { key: "test", mode: "live" as const },
+      { key: "optimize", mode: "auto" as const },
+    ],
+  },
+  {
+    key: "socialListening",
+    accent: "#22d3ee",
+    primaryMockup: "signal" as const,
+    steps: [
+      { key: "monitor", mode: "signal" as const },
+      { key: "detect", mode: "signal" as const },
+      { key: "analyze", mode: "deep" as const },
+      { key: "alert", mode: "auto" as const },
+    ],
+  },
+  {
+    key: "userExperience",
+    accent: "#a78bfa",
+    primaryMockup: "live" as const,
+    steps: [
+      { key: "observe", mode: "signal" as const },
+      { key: "interview", mode: "live" as const },
+      { key: "map", mode: "deep" as const },
+      { key: "recommend", mode: "auto" as const },
+    ],
+  },
+  {
+    key: "socialSimulation",
+    accent: "#fb923c",
+    primaryMockup: "deep" as const,
+    steps: [
+      { key: "buildPopulation", mode: "auto" as const },
+      { key: "simulate", mode: "deep" as const },
+      { key: "observe", mode: "signal" as const },
+      { key: "report", mode: "auto" as const },
+    ],
+  },
+  {
+    key: "eventPrediction",
+    accent: "#4ade80",
+    primaryMockup: "signal" as const,
+    steps: [
+      { key: "monitor", mode: "signal" as const },
+      { key: "multiPerspective", mode: "deep" as const },
+      { key: "predict", mode: "auto" as const },
+      { key: "validate", mode: "deep" as const },
+    ],
+  },
 ] as const;
 
 type SignalBlock = { id: string; labelKey: string; weight: number };
@@ -117,33 +207,17 @@ export const DATA_ASSET_ACCENTS: Record<string, string> = {
   panel: "#f59e0b",
 };
 
-/* ─── 06: Use Cases ─── */
+/* ─── 06: Solutions ─── */
 
-export const USE_CASE_CATEGORIES = [
-  {
-    key: "enterprise" as const,
-    color: "#16a34a",
-    items: [
-      "consumerInsight",
-      "conceptTesting",
-      "brandStrategy",
-      "attribution",
-      "pricing",
-      "socialListening",
-      "userExperience",
-      "salesTraining",
-    ] as const,
-  },
-  {
-    key: "academic" as const,
-    color: "#d97706",
-    items: ["socialSimulation", "ethnography", "aiInterviews"] as const,
-  },
-  {
-    key: "prediction" as const,
-    color: "#8b5cf6",
-    items: ["eventOutcome", "multiPerspective", "signalTracking", "postPrediction"] as const,
-  },
+export const SOLUTION_ROLES = [
+  { key: "creators", link: "/creators", accent: "#1bff1b" },
+  { key: "influencers", link: "/influencers", accent: "#f59e0b" },
+  { key: "marketers", link: "/marketers", accent: "#93c5fd" },
+  { key: "startupOwners", link: "/startup-owners", accent: "#f472b6" },
+  { key: "consultants", link: "/consultants", accent: "#22d3ee" },
+  { key: "productManagers", link: "/product-managers", accent: "#a78bfa" },
+  { key: "researcher", link: "/solutions", accent: "#4ade80" },
+  { key: "investor", link: "/solutions", accent: "#fb923c" },
 ] as const;
 
 export const CUSTOMER_STORY_KEYS = ["food", "tools", "university", "prediction"] as const;
@@ -201,8 +275,8 @@ export const HERO_PROMPT =
 
 export const BG_PROMPTS = [
   "Split-field diagram on warm white paper: left side precise measurement grids and calibration lines in graphite, right side soft emotional topology with drifting signal ribbons. A single green dividing line separates both worlds. Minimal, scientific, no text.",
-  "Two parallel decision rails in a minimal system space: one deterministic rail with rigid geometry, one adaptive rail with organic flowing paths. Pixel agents as tiny dots flowing along both tracks. Monochrome with subtle green routing indicators, no text.",
   "Subjective world model topology viewed from above: six dimensional axes radiating from a central core, concentric influence rings, parameter mesh with thin connection lines. Black on white with selective green node highlights, scientific diagram aesthetic, no text.",
+  "Two parallel decision rails in a minimal system space: one deterministic rail with rigid geometry, one adaptive rail with organic flowing paths. Pixel agents as tiny dots flowing along both tracks. Monochrome with subtle green routing indicators, no text.",
   "Minimal product mode diagram on warm cream paper: four parallel operational channels arranged vertically, each with distinct geometric patterns \u2014 continuous waves, automated pipelines, conversational nodes, and structural meshes. Thin graphite lines, subtle green accent markers, scientific diagram aesthetic, no text.",
   "Multi-method research instrument field on dark matte surface: diverse analytical tools arranged in a semicircle, thin connecting lines between method nodes and modality channels. Charcoal and steel tones, sparse green highlights, analog instrument aesthetic, no text.",
   "Abstract scenario matrix on dark charcoal ground: nine interconnected chambers with flowing signal traces between them, each containing a tiny abstract symbol. Dark graphite and subtle green accents, retro scientific catalog aesthetic, no text.",

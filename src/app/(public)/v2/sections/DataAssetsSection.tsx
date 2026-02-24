@@ -36,73 +36,43 @@ export default function DataAssetsSection({
           </p>
         </div>
 
-        {/* Three assets — horizontal bands separated by lines */}
+        {/* Three assets — showoff stats */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.5 }}
-          className="space-y-0"
         >
-          {DATA_ASSET_KEYS.map((assetKey, idx) => {
-            const accent = DATA_ASSET_ACCENTS[assetKey];
-            return (
-              <div
-                key={assetKey}
-                className="py-10 first:pt-0 last:pb-0"
-                style={{ borderTop: idx > 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}
-              >
-                {/* Row 1: Title + hero stat */}
-                <div className="flex items-baseline justify-between gap-8 mb-4 max-lg:flex-col max-lg:gap-2">
-                  <div>
-                    <h3 className="font-EuclidCircularA text-2xl lg:text-3xl font-medium">
-                      <span style={{ color: accent }}>
-                        {t(`dataAssets.${assetKey}.title`)}
-                      </span>
-                    </h3>
-                    <p className="font-IBMPlexMono text-xs tracking-[0.08em] uppercase text-zinc-500 mt-1">
-                      {t(`dataAssets.${assetKey}.subtitle`)}
-                    </p>
-                  </div>
-                  <div className="text-right max-lg:text-left">
-                    <span
-                      className="font-EuclidCircularA text-4xl lg:text-5xl font-light"
-                      style={{ color: accent }}
-                    >
-                      {t(`dataAssets.${assetKey}.heroStatValue`)}
-                    </span>
-                    <span className="block font-IBMPlexMono text-[10px] tracking-[0.1em] uppercase text-zinc-500 mt-1">
-                      {t(`dataAssets.${assetKey}.heroStatLabel`)}
-                    </span>
-                  </div>
-                </div>
+          <div className="grid grid-cols-3 gap-5 max-lg:grid-cols-1">
+            {DATA_ASSET_KEYS.map((assetKey) => {
+              const accent = DATA_ASSET_ACCENTS[assetKey];
+              return (
+                <div
+                  key={assetKey}
+                  className="border border-zinc-800 p-6"
+                >
+                  {/* Big stat */}
+                  <span
+                    className="font-EuclidCircularA text-5xl lg:text-6xl font-light block"
+                    style={{ color: accent }}
+                  >
+                    {t(`dataAssets.${assetKey}.heroStatValue`)}
+                  </span>
+                  <span className="block font-IBMPlexMono text-xs tracking-[0.1em] uppercase text-zinc-500 mt-1 mb-5">
+                    {t(`dataAssets.${assetKey}.heroStatLabel`)}
+                  </span>
 
-                {/* Row 2: Description + detail stats inline */}
-                <div className="grid grid-cols-[1fr_auto] gap-10 items-start max-lg:grid-cols-1 max-lg:gap-4">
-                  <div>
-                    <p className="text-sm leading-relaxed text-zinc-300 max-w-[56ch]">
-                      {t(`dataAssets.${assetKey}.description`)}
-                    </p>
-                    <p className="mt-2 text-xs leading-relaxed text-zinc-500 italic">
-                      {t(`dataAssets.${assetKey}.note`)}
-                    </p>
-                  </div>
-                  <div className="flex gap-6 max-lg:gap-4">
-                    {(["detail1", "detail2", "detail3"] as const).map((dk) => (
-                      <div key={dk} className="text-right max-lg:text-left">
-                        <span className="block text-lg font-medium text-white">
-                          {t(`dataAssets.${assetKey}.${dk}Value`)}
-                        </span>
-                        <span className="block font-IBMPlexMono text-[9px] tracking-[0.08em] uppercase text-zinc-500 mt-0.5">
-                          {t(`dataAssets.${assetKey}.${dk}Label`)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  {/* Title + description */}
+                  <h3 className="text-lg font-medium mb-1" style={{ color: accent }}>
+                    {t(`dataAssets.${assetKey}.title`)}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-zinc-400">
+                    {t(`dataAssets.${assetKey}.description`)}
+                  </p>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </motion.div>
       </ChapterPanel>
     </section>
