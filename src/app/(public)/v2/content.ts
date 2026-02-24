@@ -19,15 +19,13 @@ export const CHAPTERS = [
 
 /* ─── 02: Two Agents ─── */
 
-export const SIMULATOR_PERSONA_KEYS = ["consumer2c", "professional2b", "expert"] as const;
+export const SIMULATOR_PERSONA_KEYS = ["consumer2c", "professional2b"] as const;
 
-export const RESEARCHER_METHOD_KEYS = [
-  "oneToOne",
-  "oneToMany",
-  "expertDiscussion",
-  "focusGroup",
-  "multiParty",
-  "observation",
+export const SAGE_CAPABILITY_KEYS = [
+  "workshop",
+  "expertConsult",
+  "knowledgeGap",
+  "memoryBuild",
 ] as const;
 
 export const PERSONA_TAG_KEYS = ["tagGenZ", "tagUrban", "tagPriceSensitive", "tagSocial"] as const;

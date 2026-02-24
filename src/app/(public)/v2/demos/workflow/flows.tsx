@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useTranslations } from "next-intl";
+import ConceptSelectScreen from "./ConceptSelectScreen";
 import DiscussionScreen from "./DiscussionScreen";
 import FeedbackScreen from "./FeedbackScreen";
 import InterviewScreen from "./InterviewScreen";
@@ -103,27 +104,23 @@ function ConceptTestingReport() {
   />;
 }
 
-// ── Product R&D steps ──
-function ProductRnDInput() {
-  const t = useTranslations("HomeAtypicaV2");
-  return <StudyInputScreen question={t("workflow.demos.productRnD.question")} refStudy={t("workflow.demos.productRnD.refStudy")} />;
-}
+// ── Product R&D steps (Scout → Inspiration+Validate → Report) ──
 function ProductRnDScout() {
   const t = useTranslations("HomeAtypicaV2");
   return <ScoutScreen postLabels={[
     t("workflow.demos.productRnD.scoutPost1"), t("workflow.demos.productRnD.scoutPost2"), t("workflow.demos.productRnD.scoutPost3"),
   ]} />;
 }
-function ProductRnDChat() {
+function ProductRnDInspiration() {
   const t = useTranslations("HomeAtypicaV2");
   return <StudyChatScreen
-    userMsg={t("workflow.demos.productRnD.chatUserMsg")}
-    aiReply={t("workflow.demos.productRnD.chatAiReply")}
+    userMsg={t("workflow.demos.productRnD.inspirationUserMsg")}
+    aiReply={t("workflow.demos.productRnD.inspirationAiReply")}
     tools={[
       { name: "scoutTrends", status: "done", result: "3 platforms" },
       { name: "audienceCall", status: "done", result: "validated" },
-      { name: "reasoning", status: "running" },
-      { name: "generateReport", status: "pending" },
+      { name: "scoutTrends", status: "done", result: "uniqueness ✓" },
+      { name: "generateReport", status: "running" },
     ]}
   />;
 }
@@ -346,12 +343,10 @@ export const FLOWS: Record<string, FlowDef> = {
 
   productRnD: {
     steps: [
-      { breadcrumb: ["Study", "New Study"], sidebarActive: 0, duration: 3500,
-        render: () => <ProductRnDInput /> },
       { breadcrumb: ["Study", "Trend Scout"], sidebarActive: 0, duration: 5000,
         render: () => <ProductRnDScout /> },
-      { breadcrumb: ["Study", "Console"], sidebarActive: 0, duration: 5000,
-        render: () => <ProductRnDChat /> },
+      { breadcrumb: ["Study", "Inspiration"], sidebarActive: 0, duration: 5500,
+        render: () => <ProductRnDInspiration /> },
       { breadcrumb: ["Study", "Product Concept"], sidebarActive: 0, duration: 5500,
         render: () => <ProductRnDReport /> },
     ],

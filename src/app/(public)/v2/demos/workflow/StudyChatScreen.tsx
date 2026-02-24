@@ -75,7 +75,7 @@ export default function StudyChatScreen({
         </span>
         {tools.map((tool, i) => (
           <motion.div
-            key={tool.name}
+            key={i}
             initial={{ opacity: 0, x: 4 }}
             animate={{ opacity: i < visibleTools ? 1 : 0, x: i < visibleTools ? 0 : 4 }}
             transition={{ duration: 0.3 }}

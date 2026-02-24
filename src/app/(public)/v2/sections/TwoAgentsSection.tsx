@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import ChapterPanel from "../components/ChapterPanel";
-import { CHAPTERS, RESEARCHER_METHOD_KEYS, SIMULATOR_PERSONA_KEYS } from "../content";
+import { CHAPTERS, SAGE_CAPABILITY_KEYS, SIMULATOR_PERSONA_KEYS } from "../content";
 import PersonaBuilderDemo from "../demos/PersonaBuilderDemo";
 import FocusGroupDemo from "../demos/FocusGroupDemo";
 
@@ -37,7 +37,7 @@ export default function TwoAgentsSection({
           transition={{ duration: 0.5 }}
         >
           <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
-            {/* ── AI Simulator ── */}
+            {/* ── Left: AI Persona ── */}
             <div className="border border-zinc-800 p-7">
               <h3 className="font-IBMPlexMono text-lg tracking-[0.08em] uppercase mb-2 text-[#1bff1b]">
                 {t("twoAgents.simulator.tag")}
@@ -60,7 +60,7 @@ export default function TwoAgentsSection({
               </div>
             </div>
 
-            {/* ── AI Researcher ── */}
+            {/* ── Right: AI Sage ── */}
             <div className="border border-zinc-800 p-7">
               <h3 className="font-IBMPlexMono text-lg tracking-[0.08em] uppercase mb-2 text-[#93c5fd]">
                 {t("twoAgents.researcher.tag")}
@@ -74,10 +74,10 @@ export default function TwoAgentsSection({
               </div>
 
               <div className="grid gap-1.5">
-                {RESEARCHER_METHOD_KEYS.map((methodKey, i) => (
-                  <div key={methodKey} className="flex items-center gap-2.5 border border-zinc-800 py-2.5 px-3.5 text-sm transition-colors duration-200 hover:border-zinc-600">
+                {SAGE_CAPABILITY_KEYS.map((capKey, i) => (
+                  <div key={capKey} className="flex items-center gap-2.5 border border-zinc-800 py-2.5 px-3.5 text-sm transition-colors duration-200 hover:border-zinc-600">
                     <span className="font-IBMPlexMono text-xs text-zinc-300 min-w-[18px]">{String(i + 1).padStart(2, "0")}</span>
-                    <span>{t(`twoAgents.researcher.${methodKey}`)}</span>
+                    <span>{t(`twoAgents.researcher.${capKey}`)}</span>
                   </div>
                 ))}
               </div>

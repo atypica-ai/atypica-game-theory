@@ -4,7 +4,6 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
-import AnimCursor from "./AnimCursor";
 import ProductFrame, { BreadcrumbSegment, BreadcrumbSeparator } from "./ProductFrame";
 import RadarChart from "./RadarChart";
 import { L } from "./theme";
@@ -18,9 +17,7 @@ export default function PersonaBuilderDemo() {
   const t = useTranslations("HomeAtypicaV2");
   const [phase, setPhase] = useState<Phase>("home");
   const [procStep, setProcStep] = useState(0);
-  const [cursor, setCursor] = useState({ x: 0, y: 0, visible: false, clicking: false });
   const scrollRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const steps = [t("twoAgents.mockup.stepParse"), t("twoAgents.mockup.stepAnalyze"), t("twoAgents.mockup.stepGenerate")];
@@ -29,20 +26,11 @@ export default function PersonaBuilderDemo() {
   function clearTimers() { timersRef.current.forEach(clearTimeout); timersRef.current = []; }
   function schedule(fn: () => void, ms: number) { timersRef.current.push(setTimeout(fn, ms)); }
 
-  function getCenterX() {
-    const el = containerRef.current;
-    return el ? el.offsetWidth / 2 : 160;
-  }
-
   function startImport() {
     clearTimers();
-    const cx = getCenterX();
-    // Cursor appears top-right, carries file toward the Upload button, drops it, proceeds
-    setCursor({ x: cx + 70, y: 20, visible: true, clicking: false });
-    schedule(() => setCursor({ x: cx, y: 165, visible: true, clicking: false }), 600);
-    schedule(() => setCursor({ x: cx, y: 165, visible: true, clicking: true }), 1000);
-    schedule(() => { setPhase("flying"); setCursor((c) => ({ ...c, clicking: false })); }, 1200);
-    schedule(() => { setCursor((c) => ({ ...c, visible: false })); setPhase("processing"); setProcStep(0); }, 1800);
+    // PDF file flies in from outside, lands on the upload button, then processing begins
+    setPhase("flying");
+    schedule(() => { setPhase("processing"); setProcStep(0); }, 1000);
   }
 
   useEffect(() => {
@@ -73,9 +61,8 @@ export default function PersonaBuilderDemo() {
       accentColor={L.green}
       breadcrumb={<><BreadcrumbSegment text="Persona" /><BreadcrumbSeparator /><BreadcrumbSegment text="Import" active /></>}
     >
-      <div ref={containerRef} className="h-full relative">
+      <div className="h-full relative">
         <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden">
-          <AnimCursor x={cursor.x} y={cursor.y} visible={cursor.visible} clicking={cursor.clicking} />
 
           <AnimatePresence mode="wait">
             {/* ── Persona Home Page ── */}
@@ -103,14 +90,14 @@ export default function PersonaBuilderDemo() {
                     View My Personas →
                   </div>
 
-                  {/* Flying PDF */}
+                  {/* Flying PDF — enters from top-right, lands on the upload button */}
                   {phase === "flying" && (
                     <motion.div
-                      className="absolute px-2.5 py-1.5 flex items-center gap-1.5 shadow-md rounded z-10"
+                      className="absolute px-2.5 py-1.5 flex items-center gap-1.5 shadow-lg rounded z-10"
                       style={{ background: L.bgCard, border: `1px solid ${L.border}` }}
-                      initial={{ x: 80, y: -50, opacity: 0, scale: 0.7, rotate: -10 }}
+                      initial={{ x: 120, y: -80, opacity: 0, scale: 0.6, rotate: -15 }}
                       animate={{ x: 0, y: 5, opacity: 1, scale: 1, rotate: 0 }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                     >
                       <span className="text-xs">📄</span>
                       <span className="font-IBMPlexMono text-xs" style={{ color: L.text }}>transcript.pdf</span>

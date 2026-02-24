@@ -409,21 +409,18 @@
       "title": "模拟 × 研究",
       "body": "一个 AI 模拟用户，另一个研究用户——同时适用于真实和虚拟用户。",
       "simulator": {
-        "tag": "AI SIMULATOR",
+        "tag": "AI PERSONA",
         "description": "通过「主观世界模型」，模拟一个真实的人——不是统计平均值。",
-        "consumer2c": { "label": "2C 消费者", "description": "模拟日常购买场景中的消费者。" },
-        "professional2b": { "label": "2B 专业买家", "description": "模拟专业采购场景中的商业买家。" },
-        "expert": { "label": "行业专家", "description": "模拟具有行业 Know-how 的领域专家。" }
+        "consumer2c": { "label": "消费者模拟", "description": "模拟日常消费场景中的消费者购买行为与决策。" },
+        "professional2b": { "label": "B2B 买家模拟", "description": "模拟专业采购场景中的商业买家决策与评估。" }
       },
       "researcher": {
-        "tag": "AI RESEARCHER",
-        "description": "像研究员一样发问、引导、分析——可对真实和模拟用户进行研究。",
-        "oneToOne": "一对一访谈",
-        "oneToMany": "一对多访谈",
-        "expertDiscussion": "专家讨论",
-        "focusGroup": "焦点小组",
-        "multiParty": "多方共创会",
-        "observation": "连续行为观察"
+        "tag": "AI SAGE",
+        "description": "从文档和数据中构建领域专家——随时可用的工作坊知识伙伴。",
+        "workshop": "工作坊 & 共创",
+        "expertConsult": "专家咨询",
+        "knowledgeGap": "知识盲区发现",
+        "memoryBuild": "持久记忆构建"
       },
       "mockup": {
         "stepParse": "解析",
@@ -594,17 +591,11 @@
           "reportFinding": "概念与目标人群产生共鸣，但 ¥249 定价触发犹豫。建议以 ¥199 上市并强调科学背书。"
         },
         "productRnD": {
-          "question": "探索面向健康意识千禧一代的植物蛋白零食创新机会",
-          "refStudy": "蛋白质市场分析",
           "scoutPost1": "这款抹茶蛋白棒改变了我的生活",
           "scoutPost2": "为什么口感比口味更重要",
           "scoutPost3": "我戒不掉的零食",
-          "chatUserMsg": "跨界灵感：哪些产品与我们共享目标受众？",
-          "chatAiReply": "发现灵感：手工茶文化（共享受众：注重健康的千禧一代）。龙井茶薄脆概念——熟悉的舒适形态+纯净蛋白...",
-          "tool1Name": "scoutTrends", "tool1Status": "done", "tool1Result": "3 个平台",
-          "tool2Name": "audienceCall", "tool2Status": "done", "tool2Result": "已验证",
-          "tool3Name": "reasoning", "tool3Status": "running", "tool3Result": "",
-          "tool4Name": "generateReport", "tool4Status": "pending", "tool4Result": "",
+          "inspirationUserMsg": "跨界灵感：哪些产品与我们的健康千禧受众共享？",
+          "inspirationAiReply": "灵感已验证：手工茶文化（共享受众）。创新：龙井茶薄脆 × 纯净蛋白——熟悉的舒适形态，全新价值维度...",
           "reportTitle": "产品创新概念",
           "stat1Label": "机会数", "stat1Value": "8",
           "stat2Label": "首要缺口", "stat2Value": "口味",

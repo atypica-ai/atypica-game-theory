@@ -409,30 +409,24 @@
       "title": "Simulate × Research",
       "body": "One AI simulates people. Another researches them — both real and virtual.",
       "simulator": {
-        "tag": "AI SIMULATOR",
+        "tag": "AI PERSONA",
         "description": "Through the Subjective World Model, simulates a real user — not a statistical average.",
         "consumer2c": {
-          "label": "2C Consumer",
-          "description": "Simulates everyday consumers and their purchase behavior."
+          "label": "Consumer Simulation",
+          "description": "Simulates everyday consumers and their purchase behavior in daily scenarios."
         },
         "professional2b": {
-          "label": "2B Professional",
-          "description": "Simulates business buyers in professional procurement scenarios."
-        },
-        "expert": {
-          "label": "Industry Expert",
-          "description": "Simulates domain experts with industry know-how."
+          "label": "B2B Buyer Simulation",
+          "description": "Simulates business buyers in professional procurement and decision-making scenarios."
         }
       },
       "researcher": {
-        "tag": "AI RESEARCHER",
-        "description": "Asks questions, guides, and analyzes — works with both real and simulated users.",
-        "oneToOne": "One-to-One Interview",
-        "oneToMany": "One-to-Many Interview",
-        "expertDiscussion": "Expert Discussion",
-        "focusGroup": "Focus Group",
-        "multiParty": "Multi-Party Co-Creation Session",
-        "observation": "Continuous Behavior Observation"
+        "tag": "AI SAGE",
+        "description": "Build domain experts from documents and data — a workshop-ready knowledge partner.",
+        "workshop": "Workshop & Co-Creation",
+        "expertConsult": "Expert Consultation",
+        "knowledgeGap": "Knowledge Gap Discovery",
+        "memoryBuild": "Persistent Memory Building"
       },
       "mockup": {
         "stepParse": "Parse",
@@ -609,17 +603,11 @@
           "reportFinding": "Concept resonates with target audience, but $35 price point triggers hesitation. Recommend launch at $28 with science-backed proof points."
         },
         "productRnD": {
-          "question": "Explore innovation opportunities in plant-based protein snacks for health-conscious millennials",
-          "refStudy": "Protein Market Analysis",
           "scoutPost1": "This matcha protein bar changed my life",
           "scoutPost2": "Why texture matters more than flavor",
           "scoutPost3": "The snack I can't stop buying",
-          "chatUserMsg": "Cross-domain inspiration: what products share our target audience?",
-          "chatAiReply": "Inspiration found: artisanal tea culture (shared audience: health-conscious millennials). Longjing tea cracker concept — familiar comfort format meets clean protein...",
-          "tool1Name": "scoutTrends", "tool1Status": "done", "tool1Result": "3 platforms",
-          "tool2Name": "audienceCall", "tool2Status": "done", "tool2Result": "validated",
-          "tool3Name": "reasoning", "tool3Status": "running", "tool3Result": "",
-          "tool4Name": "generateReport", "tool4Status": "pending", "tool4Result": "",
+          "inspirationUserMsg": "Cross-domain inspiration: what products share our health-conscious millennial audience?",
+          "inspirationAiReply": "Inspiration validated: artisanal tea culture (shared audience). Innovation: Longjing tea cracker × clean protein — familiar comfort format, new value dimension...",
           "reportTitle": "Product Innovation Concept",
           "stat1Label": "Opportunities", "stat1Value": "8",
           "stat2Label": "Top Gap", "stat2Value": "Taste",

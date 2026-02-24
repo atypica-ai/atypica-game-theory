@@ -7,22 +7,10 @@ import { L } from "../theme";
 
 type ReportVariant = "insight" | "verdict" | "concept" | "journey" | "pricing" | "paper" | "dashboard" | "default";
 
-/**
- * Report screen with 8 distinct visual styles — one per use case.
- * Each variant has a unique layout AND varying widths (some centered-narrow, some full).
- * Content scrolls within the fixed container, auto-scrolls to reveal.
- */
 export type StatItem = { label: string; value: string };
 
-/**
- * Report screen with 8 distinct visual styles — one per use case.
- * All content passed as props — no dynamic i18n key construction.
- */
 export default function ReportScreen({
-  title,
-  finding,
-  stats,
-  variant = "default",
+  title, finding, stats, variant = "default",
 }: {
   title: string;
   finding: string;
@@ -39,73 +27,56 @@ export default function ReportScreen({
     return () => clearTimeout(timer);
   }, [title]);
 
-  const props: ReportProps = { scrollRef, title, finding, stats, accent };
-
+  const p: RP = { scrollRef, title, finding, stats, accent };
   switch (variant) {
-    case "insight": return <InsightReport {...props} />;
-    case "verdict": return <VerdictReport {...props} />;
-    case "concept": return <ConceptReport {...props} />;
-    case "journey": return <JourneyReport {...props} />;
-    case "pricing": return <PricingReport {...props} />;
-    case "paper": return <PaperReport {...props} />;
-    case "dashboard": return <DashboardReport {...props} />;
-    default: return <InsightReport {...props} />;
+    case "insight": return <InsightReport {...p} />;
+    case "verdict": return <VerdictReport {...p} />;
+    case "concept": return <ConceptReport {...p} />;
+    case "journey": return <JourneyReport {...p} />;
+    case "pricing": return <PricingReport {...p} />;
+    case "paper": return <PaperReport {...p} />;
+    case "dashboard": return <DashboardReport {...p} />;
+    default: return <InsightReport {...p} />;
   }
 }
 
-type ReportProps = {
-  scrollRef: React.RefObject<HTMLDivElement | null>;
-  title: string;
-  finding: string;
-  stats: { label: string; value: string }[];
-  accent: string;
-};
+type RP = { scrollRef: React.RefObject<HTMLDivElement | null>; title: string; finding: string; stats: StatItem[]; accent: string };
 
 /* ═══════════════════════════════════════════════
-   Variant 1: Insight — Big headline + data grid + trend arrows
-   Used by: Consumer Insight
+   1. Insight — Editorial Magazine with Pull Quotes
+   Matches "insights" prompt: user quotes dominate as oversized pull quotes
    ═══════════════════════════════════════════════ */
-function InsightReport({ scrollRef, title, finding, stats, accent }: ReportProps) {
+function InsightReport({ scrollRef, title, finding, stats, accent }: RP) {
   return (
     <div ref={scrollRef} className="h-full overflow-y-auto">
-      {/* Hero banner */}
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}
-        className="px-5 pt-5 pb-4"
-        style={{ background: `linear-gradient(180deg, ${accent}08, transparent)` }}
-      >
-        <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: accent }}>Report</span>
+      {/* Header */}
+      <div className="px-5 pt-5 pb-3">
+        <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: accent }}>Insight Report</span>
         <h3 className="text-base font-medium mt-1" style={{ color: L.text }}>{title}</h3>
+      </div>
+
+      {/* Pull quote — the signature visual element */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+        className="mx-5 py-4 px-4 mb-3"
+        style={{ background: `${accent}05`, borderLeft: `3px solid ${accent}` }}>
+        <p className="text-base leading-relaxed italic" style={{ color: L.text }}>
+          &ldquo;{finding}&rdquo;
+        </p>
       </motion.div>
 
-      {/* Big stat hero */}
-      {stats[0] && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="px-5 pb-4">
-          <span className="text-3xl font-medium" style={{ color: accent }}>{stats[0].value}</span>
-          <span className="text-sm ml-2" style={{ color: L.textMuted }}>{stats[0].label}</span>
-        </motion.div>
-      )}
-
-      {/* Stats grid */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="px-5 pb-4 grid grid-cols-3 gap-2">
-        {stats.slice(0, 3).map((s, i) => (
-          <div key={i} className="py-2 px-2.5 rounded" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
-            <span className="font-IBMPlexMono text-xs block" style={{ color: L.textFaint }}>{s.label}</span>
-            <span className="text-sm font-medium mt-0.5 block" style={{ color: L.text }}>{s.value}</span>
+      {/* Stats row */}
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+        className="px-5 pb-3 grid grid-cols-3 gap-2">
+        {stats.map((s, i) => (
+          <div key={i} className="text-center py-2">
+            <span className="text-lg font-medium block" style={{ color: L.text }}>{s.value}</span>
+            <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>{s.label}</span>
           </div>
         ))}
       </motion.div>
 
-      {/* Key finding with accent bar */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="px-5 pb-4">
-        <div className="p-3 rounded-lg" style={{ background: `${accent}06`, border: `1px solid ${accent}15` }}>
-          <span className="font-IBMPlexMono text-xs block mb-1.5" style={{ color: accent }}>Key Finding</span>
-          <p className="text-sm leading-relaxed" style={{ color: L.text }}>{finding}</p>
-        </div>
-      </motion.div>
-
-      {/* Podcast player */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }} className="px-5 pb-5">
+      {/* Podcast */}
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="px-5 pb-5">
         <PodcastBar accent={accent} />
       </motion.div>
     </div>
@@ -113,99 +84,41 @@ function InsightReport({ scrollRef, title, finding, stats, accent }: ReportProps
 }
 
 /* ═══════════════════════════════════════════════
-   Variant 2: Verdict — Big approval score circle + thumbs breakdown
-   Used by: Concept Testing
+   2. Verdict — Split-Screen Comparison (A vs B)
+   Matches "testing" prompt: side-by-side comparison layout
    ═══════════════════════════════════════════════ */
-function VerdictReport({ scrollRef, title, finding, stats, accent }: ReportProps) {
-  const approval = stats.find(s => s.label.includes("Approval") || s.label.includes("认可"))?.value ?? "67%";
-  return (
-    <div ref={scrollRef} className="h-full overflow-y-auto p-5">
-    <div className="max-w-[280px] mx-auto space-y-3">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-        <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: accent }}>Concept Test</span>
-        <h3 className="text-base font-medium mt-1" style={{ color: L.text }}>{title}</h3>
-      </motion.div>
-
-      {/* Big approval score */}
-      <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: "spring" }} className="flex justify-center">
-        <div className="relative w-20 h-20">
-          <svg width="80" height="80" viewBox="0 0 80 80">
-            <circle cx="40" cy="40" r="34" fill="none" stroke={L.bgSub} strokeWidth="4" />
-            <motion.circle cx="40" cy="40" r="34" fill="none" stroke={accent} strokeWidth="4" strokeLinecap="round"
-              strokeDasharray={213.6} initial={{ strokeDashoffset: 213.6 }} animate={{ strokeDashoffset: 213.6 * (1 - 0.67) }}
-              transition={{ duration: 1, delay: 0.3 }} transform="rotate(-90 40 40)" />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-lg font-medium" style={{ color: L.text }}>{approval}</span>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Verdict cards */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="grid grid-cols-2 gap-2">
-        {stats.slice(1).map((s, i) => (
-          <div key={i} className="p-2.5 rounded text-center" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
-            <span className="text-sm font-medium block" style={{ color: L.text }}>{s.value}</span>
-            <span className="text-xs" style={{ color: L.textFaint }}>{s.label}</span>
-          </div>
-        ))}
-      </motion.div>
-
-      {/* Finding */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
-        className="text-sm leading-relaxed pl-3" style={{ color: L.textMuted, borderLeft: `2px solid ${accent}40` }}>
-        {finding}
-      </motion.div>
-    </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════
-   Variant 3: Product Concept — PPT-style hero banner + innovation reasoning
-   Used by: Product R&D
-   ═══════════════════════════════════════════════ */
-function ConceptReport({ scrollRef, title, finding, stats, accent }: ReportProps) {
+function VerdictReport({ scrollRef, title, finding, stats, accent }: RP) {
   return (
     <div ref={scrollRef} className="h-full overflow-y-auto">
-      {/* Full-bleed hero section (PPT style) */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}
-        className="px-5 py-5" style={{ background: `linear-gradient(135deg, ${L.text}08, ${accent}06)` }}>
-        <span className="font-IBMPlexMono text-xs tracking-wider uppercase block mb-2" style={{ color: accent }}>Product Innovation</span>
-        <h3 className="text-lg font-medium leading-tight" style={{ color: L.text }}>{title}</h3>
-        <p className="text-xs mt-1.5" style={{ color: L.textMuted }}>Cross-domain inspiration · Audience validated</p>
-      </motion.div>
+      <div className="max-w-[320px] mx-auto p-5 space-y-3">
+        <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: accent }}>Concept Test</span>
+        <h3 className="text-base font-medium" style={{ color: L.text }}>{title}</h3>
 
-      <div className="px-5 py-3 space-y-3">
-        {/* Stats in horizontal band */}
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex gap-3">
-          {stats.map((s, i) => (
-            <div key={i} className="flex-1 text-center py-2 rounded" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
-              <span className="text-base font-medium block" style={{ color: accent }}>{s.value}</span>
-              <span className="text-xs" style={{ color: L.textFaint }}>{s.label}</span>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Innovation reasoning flow */}
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="space-y-1.5">
-          <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>Innovation Path</span>
-          <div className="flex items-center gap-1.5 text-xs" style={{ color: L.textMuted }}>
-            <span className="px-2 py-1 rounded" style={{ background: `${accent}08`, border: `1px solid ${accent}15`, color: accent }}>Product</span>
-            <span>→</span>
-            <span className="px-2 py-1 rounded" style={{ background: L.bgSub }}>Trend Scout</span>
-            <span>→</span>
-            <span className="px-2 py-1 rounded" style={{ background: L.bgSub }}>Inspiration</span>
-            <span>→</span>
-            <span className="px-2 py-1 rounded font-medium" style={{ background: `${accent}08`, border: `1px solid ${accent}15`, color: accent }}>Concept</span>
+        {/* Split comparison — the signature visual */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          className="grid grid-cols-2 gap-px" style={{ background: L.border }}>
+          <div className="p-3 space-y-1.5" style={{ background: L.bg }}>
+            <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>Positive</span>
+            <span className="text-lg font-medium block" style={{ color: accent }}>{stats[0]?.value}</span>
+            <span className="text-xs" style={{ color: L.textMuted }}>{stats[0]?.label}</span>
+          </div>
+          <div className="p-3 space-y-1.5" style={{ background: L.bg }}>
+            <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>Barrier</span>
+            <span className="text-lg font-medium block" style={{ color: "#dc2626" }}>{stats[2]?.value}</span>
+            <span className="text-xs" style={{ color: L.textMuted }}>{stats[2]?.label}</span>
           </div>
         </motion.div>
 
-        {/* Core finding */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-          className="p-3 rounded-lg" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
-          <span className="font-IBMPlexMono text-xs block mb-1" style={{ color: accent }}>Concept Brief</span>
-          <p className="text-sm leading-relaxed" style={{ color: L.text }}>{finding}</p>
+        {/* Winner highlight */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+          className="py-2 px-3 rounded text-center" style={{ background: `${accent}06`, border: `1px solid ${accent}20` }}>
+          <span className="text-sm font-medium" style={{ color: accent }}>WTP: {stats[1]?.value}</span>
+        </motion.div>
+
+        {/* Finding */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
+          className="text-sm leading-relaxed" style={{ color: L.textMuted, borderLeft: `2px solid ${accent}40`, paddingLeft: 12 }}>
+          {finding}
         </motion.div>
       </div>
     </div>
@@ -213,221 +126,247 @@ function ConceptReport({ scrollRef, title, finding, stats, accent }: ReportProps
 }
 
 /* ═══════════════════════════════════════════════
-   Variant 4: Journey — Horizontal journey map with pain markers
-   Used by: UX & VOC
+   3. Concept — Pitch Deck Heroes
+   Matches "productRnD" prompt: full-width hero sections, text-5xl data, 16:9 PPT style
    ═══════════════════════════════════════════════ */
-function JourneyReport({ scrollRef, title, finding, stats, accent }: ReportProps) {
-  const stages = ["Discover", "Consider", "Purchase", "Post"];
-  const painIndex = 2; // Purchase stage has pain point
+function ConceptReport({ scrollRef, title, finding, stats, accent }: RP) {
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto p-5">
-    <div className="max-w-[320px] mx-auto space-y-3">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: accent }}>VOC Report</span>
-        <h3 className="text-base font-medium mt-1" style={{ color: L.text }}>{title}</h3>
+    <div ref={scrollRef} className="h-full overflow-y-auto">
+      {/* Full-bleed hero (PPT slide feel) */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}
+        className="px-5 py-6" style={{ background: `linear-gradient(135deg, ${L.text}06, ${accent}04)` }}>
+        <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: accent }}>Product Innovation</span>
+        <h3 className="text-lg font-medium leading-tight mt-1" style={{ color: L.text }}>{title}</h3>
       </motion.div>
 
-      {/* Journey map */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-        className="flex items-center gap-1 py-3">
-        {stages.map((stage, i) => (
-          <React.Fragment key={stage}>
-            <div className="flex-1 text-center">
-              <div className={`w-8 h-8 rounded-full grid place-items-center mx-auto mb-1 ${i === painIndex ? "ring-2" : ""}`}
-                style={{
-                  background: i === painIndex ? "#dc262610" : `${accent}08`,
-                  border: `1px solid ${i === painIndex ? "#dc262640" : `${accent}20`}`,
-                }}>
-                <span className="text-xs" style={{ color: i === painIndex ? "#dc2626" : accent }}>
-                  {i === painIndex ? "✕" : "✓"}
-                </span>
-              </div>
-              <span className="text-xs block" style={{ color: i === painIndex ? "#dc2626" : L.text }}>{stage}</span>
-              {i === painIndex && <span className="text-xs block mt-0.5" style={{ color: "#dc2626" }}>⚠ Drop-off</span>}
-            </div>
-            {i < stages.length - 1 && (
-              <div className="w-6 h-px" style={{ background: i < painIndex ? accent : L.border }} />
-            )}
-          </React.Fragment>
-        ))}
+      {/* Big data number — signature of pitch deck style */}
+      {stats[0] && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+          className="px-5 py-3 text-center">
+          <span className="text-3xl font-medium" style={{ color: accent }}>{stats[0].value}</span>
+          <span className="text-sm block mt-0.5" style={{ color: L.textMuted }}>{stats[0].label}</span>
+        </motion.div>
+      )}
+
+      {/* Innovation flow */}
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+        className="px-5 pb-3">
+        <div className="flex items-center gap-1.5 text-xs" style={{ color: L.textMuted }}>
+          <span className="px-2 py-1 rounded" style={{ background: `${accent}08`, color: accent }}>Product</span>
+          <span>→</span>
+          <span className="px-2 py-1 rounded" style={{ background: L.bgSub }}>Scout</span>
+          <span>→</span>
+          <span className="px-2 py-1 rounded" style={{ background: L.bgSub }}>Inspiration</span>
+          <span>→</span>
+          <span className="px-2 py-1 rounded font-medium" style={{ background: `${accent}08`, color: accent }}>Concept</span>
+        </div>
       </motion.div>
 
-      {/* Stats */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="grid grid-cols-3 gap-2">
-        {stats.map((s, i) => (
-          <div key={i} className="py-2 px-2 rounded text-center" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
-            <span className="text-sm font-medium block" style={{ color: i === 0 ? "#dc2626" : L.text }}>{s.value}</span>
-            <span className="text-xs" style={{ color: L.textFaint }}>{s.label}</span>
-          </div>
-        ))}
-      </motion.div>
-
-      {/* Finding */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-        className="p-3 rounded-lg" style={{ background: L.bgSub, border: `1px solid ${L.borderLight}` }}>
+      {/* Brief */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
+        className="mx-5 p-3 rounded-lg mb-4" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
         <p className="text-sm leading-relaxed" style={{ color: L.text }}>{finding}</p>
       </motion.div>
     </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   4. Journey — Timeline Spine (Planning-style)
+   Matches "planning" prompt: vertical timeline as visual backbone
+   ═══════════════════════════════════════════════ */
+function JourneyReport({ scrollRef, title, finding, stats, accent }: RP) {
+  const stages = ["Discover", "Consider", "Purchase", "Post"];
+  const painIndex = 2;
+  return (
+    <div ref={scrollRef} className="h-full overflow-y-auto p-5">
+      <div className="max-w-[300px] mx-auto space-y-3">
+        <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: accent }}>VOC Journey</span>
+        <h3 className="text-base font-medium" style={{ color: L.text }}>{title}</h3>
+
+        {/* Vertical timeline spine — the signature visual */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          className="space-y-0">
+          {stages.map((stage, i) => {
+            const isPain = i === painIndex;
+            const nodeColor = isPain ? "#dc2626" : accent;
+            return (
+              <div key={stage} className="flex items-start gap-3">
+                {/* Spine */}
+                <div className="flex flex-col items-center">
+                  <div className="w-3 h-3 rounded-full shrink-0" style={{ background: nodeColor, opacity: isPain ? 1 : 0.6 }} />
+                  {i < stages.length - 1 && <div className="w-px h-8" style={{ background: L.border }} />}
+                </div>
+                {/* Content */}
+                <div className="pb-2 -mt-0.5">
+                  <span className="text-sm font-medium" style={{ color: isPain ? "#dc2626" : L.text }}>{stage}</span>
+                  {isPain && <span className="text-xs block mt-0.5" style={{ color: "#dc2626" }}>⚠ Drop-off point</span>}
+                </div>
+              </div>
+            );
+          })}
+        </motion.div>
+
+        {/* Stats */}
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="grid grid-cols-3 gap-2">
+          {stats.map((s, i) => (
+            <div key={i} className="py-2 px-2 rounded text-center" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
+              <span className="text-sm font-medium block" style={{ color: i === 0 ? "#dc2626" : L.text }}>{s.value}</span>
+              <span className="text-xs" style={{ color: L.textFaint }}>{s.label}</span>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Finding */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
+          className="text-sm leading-relaxed" style={{ color: L.textMuted, borderLeft: `2px solid ${accent}40`, paddingLeft: 12 }}>
+          {finding}
+        </motion.div>
+      </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════
-   Variant 5: Pricing — Tier comparison table
-   Used by: Pricing & Attribution
+   5. Pricing — Split-Screen Comparison + Tier Cards
+   Matches "testing" prompt: A vs B side-by-side, winner highlight
    ═══════════════════════════════════════════════ */
-function PricingReport({ scrollRef, title, finding, stats, accent }: ReportProps) {
+function PricingReport({ scrollRef, title, finding, stats, accent }: RP) {
   const tiers = [
-    { name: "Free", price: "$0", highlight: false },
-    { name: "Pro", price: "$49", highlight: true },
-    { name: "Enterprise", price: "$99", highlight: false },
+    { name: "Free", price: "$0", best: false },
+    { name: "Pro", price: "$49", best: true },
+    { name: "Enterprise", price: "$99", best: false },
   ];
   return (
     <div ref={scrollRef} className="h-full overflow-y-auto p-5">
-    <div className="max-w-[300px] mx-auto space-y-3">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <div className="max-w-[300px] mx-auto space-y-3">
         <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: accent }}>Pricing Analysis</span>
-        <h3 className="text-base font-medium mt-1" style={{ color: L.text }}>{title}</h3>
-      </motion.div>
+        <h3 className="text-base font-medium" style={{ color: L.text }}>{title}</h3>
 
-      {/* Tier comparison */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="grid grid-cols-3 gap-2">
-        {tiers.map((tier) => (
-          <div key={tier.name} className="p-2.5 rounded-lg text-center relative"
-            style={{
-              background: tier.highlight ? `${accent}06` : "white",
-              border: `1px solid ${tier.highlight ? `${accent}30` : L.borderLight}`,
-            }}>
-            {tier.highlight && (
-              <span className="absolute -top-2 left-1/2 -translate-x-1/2 font-IBMPlexMono text-xs px-2 py-0.5 rounded-full text-white" style={{ background: accent, fontSize: "9px" }}>
-                Best
-              </span>
-            )}
-            <span className="text-xs block" style={{ color: L.textFaint }}>{tier.name}</span>
-            <span className="text-base font-medium block mt-0.5" style={{ color: tier.highlight ? accent : L.text }}>{tier.price}</span>
-          </div>
-        ))}
-      </motion.div>
+        {/* Tier cards */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          className="grid grid-cols-3 gap-2">
+          {tiers.map((t) => (
+            <div key={t.name} className="p-2.5 rounded text-center relative"
+              style={{ background: t.best ? `${accent}06` : "white", border: `1px solid ${t.best ? `${accent}30` : L.borderLight}` }}>
+              {t.best && <span className="absolute -top-2 left-1/2 -translate-x-1/2 font-IBMPlexMono px-2 py-0.5 rounded-full text-white" style={{ background: accent, fontSize: "9px" }}>Best</span>}
+              <span className="text-xs block" style={{ color: L.textFaint }}>{t.name}</span>
+              <span className="text-base font-medium block mt-0.5" style={{ color: t.best ? accent : L.text }}>{t.price}</span>
+            </div>
+          ))}
+        </motion.div>
 
-      {/* Conversion stats */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="flex gap-2">
-        {stats.map((s, i) => (
-          <div key={i} className="flex-1 py-2 px-2 rounded text-center" style={{ background: L.bgSub, border: `1px solid ${L.borderLight}` }}>
-            <span className="text-sm font-medium block" style={{ color: L.text }}>{s.value}</span>
-            <span className="text-xs" style={{ color: L.textFaint }}>{s.label}</span>
-          </div>
-        ))}
-      </motion.div>
+        {/* Conversion stats */}
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+          className="flex gap-2">
+          {stats.map((s, i) => (
+            <div key={i} className="flex-1 py-2 px-2 rounded text-center" style={{ background: L.bgSub }}>
+              <span className="text-sm font-medium block" style={{ color: L.text }}>{s.value}</span>
+              <span className="text-xs" style={{ color: L.textFaint }}>{s.label}</span>
+            </div>
+          ))}
+        </motion.div>
 
-      {/* Finding */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-        className="text-sm leading-relaxed pl-3" style={{ color: L.textMuted, borderLeft: `2px solid ${accent}40` }}>
-        {finding}
-      </motion.div>
-    </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+          className="text-sm leading-relaxed" style={{ color: L.textMuted, borderLeft: `2px solid ${accent}40`, paddingLeft: 12 }}>
+          {finding}
+        </motion.div>
+      </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════
-   Variant 6: Paper — Academic abstract style
-   Used by: Academic Research
+   6. Paper — Chapter Book with Large Numbers
+   Matches "misc" prompt: large chapter numbers, dimension-based structure
    ═══════════════════════════════════════════════ */
-function PaperReport({ scrollRef, title, finding, stats, accent }: ReportProps) {
+function PaperReport({ scrollRef, title, finding, stats, accent }: RP) {
   return (
     <div ref={scrollRef} className="h-full overflow-y-auto p-5">
-    <div className="max-w-[260px] mx-auto space-y-3">
-      {/* Paper title (serif-style) */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center pb-2" style={{ borderBottom: `1px solid ${L.border}` }}>
-        <h3 className="text-base font-medium leading-tight" style={{ color: L.text }}>{title}</h3>
-        <p className="text-xs mt-1" style={{ color: L.textFaint }}>atypica.AI Research Lab · 2024</p>
-      </motion.div>
+      <div className="max-w-[260px] mx-auto space-y-3">
+        {/* Large chapter number as background — signature visual */}
+        <div className="relative">
+          <span className="text-5xl font-medium absolute -top-1 -left-1 select-none" style={{ color: `${L.border}60` }}>01</span>
+          <div className="pt-6">
+            <h3 className="text-base font-medium leading-tight" style={{ color: L.text }}>{title}</h3>
+            <p className="text-xs mt-1" style={{ color: L.textFaint }}>atypica.AI Research · 2024</p>
+          </div>
+        </div>
 
-      {/* Abstract */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <span className="font-IBMPlexMono text-xs tracking-wider uppercase block mb-1.5" style={{ color: L.textFaint }}>Abstract</span>
-        <p className="text-sm leading-relaxed italic" style={{ color: L.textSub }}>{finding}</p>
-      </motion.div>
+        {/* Abstract */}
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          style={{ borderTop: `1px solid ${L.border}`, paddingTop: 12 }}>
+          <span className="font-IBMPlexMono text-xs tracking-wider uppercase block mb-1.5" style={{ color: L.textFaint }}>Abstract</span>
+          <p className="text-sm leading-relaxed italic" style={{ color: L.textSub }}>{finding}</p>
+        </motion.div>
 
-      {/* Key metrics */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
-        <span className="font-IBMPlexMono text-xs tracking-wider uppercase block mb-1.5" style={{ color: L.textFaint }}>Key Metrics</span>
-        <div className="space-y-1.5">
+        {/* Metrics as alternating rows */}
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+          <span className="font-IBMPlexMono text-xs tracking-wider uppercase block mb-1.5" style={{ color: L.textFaint }}>Key Metrics</span>
           {stats.map((s, i) => (
             <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded" style={{ background: i % 2 === 0 ? L.bgSub : "transparent" }}>
               <span className="text-sm" style={{ color: L.text }}>{s.label}</span>
               <span className="text-sm font-medium font-IBMPlexMono" style={{ color: accent }}>{s.value}</span>
             </div>
           ))}
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Podcast */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-        <PodcastBar accent={accent} />
-      </motion.div>
-    </div>
+        {/* Podcast */}
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <PodcastBar accent={accent} />
+        </motion.div>
+      </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════
-   Variant 7: Dashboard — Gauge + signals + consensus
-   Used by: Investment Prediction
+   7. Dashboard — Metric Card Grid (FastInsight style)
+   Matches "fastInsight" prompt: compact metric cards, Bloomberg Terminal density
    ═══════════════════════════════════════════════ */
-function DashboardReport({ scrollRef, title, finding, stats, accent }: ReportProps) {
+function DashboardReport({ scrollRef, title, finding, stats, accent }: RP) {
   const direction = stats.find(s => s.label.includes("Direction") || s.label.includes("方向"))?.value ?? "Bullish";
   const confidence = stats.find(s => s.label.includes("Confidence") || s.label.includes("置信"))?.value ?? "68%";
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto p-5">
-    <div className="max-w-[320px] mx-auto space-y-3">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+    <div ref={scrollRef} className="h-full overflow-y-auto p-4">
+      <div className="max-w-[340px] mx-auto space-y-2.5">
         <span className="font-IBMPlexMono text-xs tracking-wider uppercase" style={{ color: accent }}>Consensus</span>
-        <h3 className="text-base font-medium mt-1" style={{ color: L.text }}>{title}</h3>
-      </motion.div>
+        <h3 className="text-sm font-medium" style={{ color: L.text }}>{title}</h3>
 
-      {/* Direction + Confidence hero */}
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
-        className="flex items-center gap-4 p-3 rounded-lg" style={{ background: `${accent}06`, border: `1px solid ${accent}15` }}>
-        <div className="text-center">
-          <span className="text-2xl block">📈</span>
-          <span className="text-sm font-medium block mt-1" style={{ color: accent }}>{direction}</span>
-        </div>
-        <div className="flex-1">
-          <span className="text-xs block" style={{ color: L.textFaint }}>Confidence</span>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: L.bgSub }}>
-              <motion.div className="h-full rounded-full" style={{ background: accent }}
-                initial={{ width: 0 }} animate={{ width: confidence }} transition={{ duration: 1, delay: 0.3 }} />
+        {/* Compact metric card grid — signature of FastInsight density */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
+          className="grid grid-cols-3 gap-1.5">
+          {stats.map((s, i) => (
+            <div key={i} className="py-2 px-2 rounded" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
+              <span className="text-base font-medium block" style={{ color: i === 0 ? accent : L.text }}>{s.value}</span>
+              <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>{s.label}</span>
             </div>
-            <span className="font-IBMPlexMono text-sm font-medium" style={{ color: accent }}>{confidence}</span>
-          </div>
-        </div>
-      </motion.div>
+          ))}
+        </motion.div>
 
-      {/* Source agreement cards */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="grid grid-cols-3 gap-2">
-        {stats.map((s, i) => (
-          <div key={i} className="py-2 px-2 rounded text-center" style={{ background: "white", border: `1px solid ${L.borderLight}` }}>
-            <span className="text-sm font-medium block" style={{ color: L.text }}>{s.value}</span>
-            <span className="text-xs" style={{ color: L.textFaint }}>{s.label}</span>
+        {/* Direction + confidence bar */}
+        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className="flex items-center gap-3 p-2.5 rounded" style={{ background: `${accent}05` }}>
+          <span className="text-sm font-medium" style={{ color: accent }}>📈 {direction}</span>
+          <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: L.bgSub }}>
+            <motion.div className="h-full rounded-full" style={{ background: accent }}
+              initial={{ width: 0 }} animate={{ width: confidence }} transition={{ duration: 0.8, delay: 0.4 }} />
           </div>
-        ))}
-      </motion.div>
+          <span className="font-IBMPlexMono text-xs" style={{ color: accent }}>{confidence}</span>
+        </motion.div>
 
-      {/* Finding */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.55 }}
-        className="p-3 rounded-lg" style={{ background: L.bgSub, border: `1px solid ${L.borderLight}` }}>
-        <p className="text-sm leading-relaxed" style={{ color: L.text }}>{finding}</p>
-      </motion.div>
-    </div>
+        {/* Finding — tight spacing */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+          className="text-sm leading-relaxed p-2.5 rounded" style={{ background: L.bgSub, color: L.text }}>
+          {finding}
+        </motion.div>
+      </div>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════
-   Shared: Podcast player bar
-   ═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════ */
 function PodcastBar({ accent }: { accent: string }) {
   return (
     <div className="flex items-center gap-2.5 p-2.5 rounded-lg" style={{ background: L.bgSub, border: `1px solid ${L.borderLight}` }}>
@@ -446,4 +385,3 @@ function PodcastBar({ accent }: { accent: string }) {
     </div>
   );
 }
-

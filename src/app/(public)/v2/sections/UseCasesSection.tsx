@@ -18,14 +18,14 @@ import {
 const copy = CHAPTERS[5];
 
 const ROLE_IMAGE_PROMPTS: Record<string, string> = {
-  creators: "Bird's eye view of a digital workspace with trending topics dashboard and content calendar grid, minimalist flat design, green and black color scheme, clean geometric shapes, no text",
-  influencers: "Top-down view of social media analytics dashboard with audience persona cards arranged in a grid, warm amber and black colors, simplified data visualization, no text",
-  marketers: "Overhead perspective of campaign testing interface showing A/B test results side by side with consumer feedback panels, blue and black palette, minimal modern design, no text",
-  startupOwners: "Bird's eye view of concept validation workspace with idea cards and market data charts arranged on a desk surface, pink and black scheme, clean geometric layout, no text",
-  consultants: "Top-down view of research report workspace with charts, graphs, and presentation slides spread across desk, cyan and black colors, professional minimalist style, no text",
-  productManagers: "Overhead view of user research dashboard with feedback cards and product roadmap timeline, purple and black palette, organized grid layout, no text",
-  researcher: "Bird's eye view of interview analysis workspace with transcript cards and coding analysis panels arranged systematically, green and black scheme, academic minimalist style, no text",
-  investor: "Top-down perspective of prediction dashboard with multi-panel simulation interface showing diverging scenarios, orange and black colors, analytical data visualization, no text",
+  creators: "Bird's eye view of a content creator workspace with a phone showing a trending video feed, a ring light circle, and scattered story cards on a dark surface, minimalist flat design, green and black color scheme, clean geometric shapes, no text",
+  influencers: "Top-down view of a social media influencer desk with an audience heatmap, fan mail envelopes, and a phone showing follower growth curve, minimalist flat design, amber and black color scheme, clean geometric shapes, no text",
+  marketers: "Overhead view of a campaign war room table with consumer journey sticky notes, A/B test comparison cards, and a funnel diagram, minimalist flat design, blue and black color scheme, clean geometric shapes, no text",
+  startupOwners: "Bird's eye view of a founder's desk with napkin sketches of a product idea, a lean canvas card, and early prototype wireframes, minimalist flat design, pink and black color scheme, clean geometric shapes, no text",
+  consultants: "Top-down view of a strategy consulting workspace with client presentation slides, a SWOT matrix card, and recommendation priority ranking, minimalist flat design, cyan and black color scheme, clean geometric shapes, no text",
+  productManagers: "Overhead view of a product manager workspace with user feedback cards, a feature prioritization matrix, and a roadmap timeline ribbon, minimalist flat design, purple and black color scheme, clean geometric shapes, no text",
+  researcher: "Bird's eye view of an academic research desk with interview transcript pages, color-coded thematic analysis cards, and a citation network diagram, minimalist flat design, green and black color scheme, clean geometric shapes, no text",
+  investor: "Top-down view of a prediction analyst workspace with multi-source signal cards, a confidence gauge dial, and scenario divergence arrows on a dark surface, minimalist flat design, orange and black color scheme, clean geometric shapes, no text",
 };
 
 /* ── Story #0: Chart-driven ── */
@@ -306,12 +306,9 @@ export default function UseCasesSection({
                   <h3 className="text-sm font-medium mb-1" style={{ color: role.accent }}>
                     {t(`solutions.roles.${role.key}.title`)}
                   </h3>
-                  <p className="text-xs leading-relaxed text-zinc-500 mb-3">
+                  <p className="text-sm leading-relaxed text-zinc-500">
                     {t(`solutions.roles.${role.key}.desc`)}
                   </p>
-                  <span className="font-IBMPlexMono text-xs text-[#15b025]">
-                    {t("solutions.viewCases")} &rarr;
-                  </span>
                 </div>
               </Link>
             ))}
