@@ -43,134 +43,18 @@ export const WORLD_MODEL_LAYERS = [
 ] as const;
 
 
-/* ─── 04: Three Modes ─── */
-
 /* ─── 04: Workflow (Use Cases × Workflow) ─── */
 
-export type WorkflowStep = { key: string; mode: "signal" | "deep" | "live" | "auto" };
-
 export const WORKFLOW_GOALS = [
-  {
-    key: "consumerInsight",
-    accent: "#1bff1b",
-    primaryMockup: "signal" as const,
-    steps: [
-      { key: "scout", mode: "signal" as const },
-      { key: "interview", mode: "live" as const },
-      { key: "analyze", mode: "deep" as const },
-      { key: "report", mode: "auto" as const },
-    ],
-  },
-  {
-    key: "conceptTesting",
-    accent: "#93c5fd",
-    primaryMockup: "deep" as const,
-    steps: [
-      { key: "brief", mode: "deep" as const },
-      { key: "buildPersonas", mode: "auto" as const },
-      { key: "test", mode: "live" as const },
-      { key: "report", mode: "auto" as const },
-    ],
-  },
-  {
-    key: "brandStrategy",
-    accent: "#f59e0b",
-    primaryMockup: "live" as const,
-    steps: [
-      { key: "scout", mode: "signal" as const },
-      { key: "interview", mode: "live" as const },
-      { key: "analyze", mode: "deep" as const },
-      { key: "position", mode: "auto" as const },
-    ],
-  },
-  {
-    key: "pricing",
-    accent: "#f472b6",
-    primaryMockup: "deep" as const,
-    steps: [
-      { key: "research", mode: "deep" as const },
-      { key: "simulate", mode: "auto" as const },
-      { key: "test", mode: "live" as const },
-      { key: "optimize", mode: "auto" as const },
-    ],
-  },
-  {
-    key: "socialListening",
-    accent: "#22d3ee",
-    primaryMockup: "signal" as const,
-    steps: [
-      { key: "monitor", mode: "signal" as const },
-      { key: "detect", mode: "signal" as const },
-      { key: "analyze", mode: "deep" as const },
-      { key: "alert", mode: "auto" as const },
-    ],
-  },
-  {
-    key: "userExperience",
-    accent: "#a78bfa",
-    primaryMockup: "live" as const,
-    steps: [
-      { key: "observe", mode: "signal" as const },
-      { key: "interview", mode: "live" as const },
-      { key: "map", mode: "deep" as const },
-      { key: "recommend", mode: "auto" as const },
-    ],
-  },
-  {
-    key: "socialSimulation",
-    accent: "#fb923c",
-    primaryMockup: "deep" as const,
-    steps: [
-      { key: "buildPopulation", mode: "auto" as const },
-      { key: "simulate", mode: "deep" as const },
-      { key: "observe", mode: "signal" as const },
-      { key: "report", mode: "auto" as const },
-    ],
-  },
-  {
-    key: "eventPrediction",
-    accent: "#4ade80",
-    primaryMockup: "signal" as const,
-    steps: [
-      { key: "monitor", mode: "signal" as const },
-      { key: "multiPerspective", mode: "deep" as const },
-      { key: "predict", mode: "auto" as const },
-      { key: "validate", mode: "deep" as const },
-    ],
-  },
+  { key: "consumerInsight", accent: "#1bff1b" },
+  { key: "conceptTesting", accent: "#3b82f6" },
+  { key: "productRnD", accent: "#f59e0b" },
+  { key: "uxVoc", accent: "#a78bfa" },
+  { key: "salesTraining", accent: "#22d3ee" },
+  { key: "pricingAttribution", accent: "#f472b6" },
+  { key: "academicResearch", accent: "#fb923c" },
+  { key: "investmentPrediction", accent: "#4ade80" },
 ] as const;
-
-type SignalBlock = { id: string; labelKey: string; weight: number };
-
-export const SIGNAL_SNAPSHOTS: SignalBlock[][] = [
-  [
-    { id: "clean", labelKey: "cleanBeauty", weight: 5 },
-    { id: "price", labelKey: "priceSensitivity", weight: 3 },
-    { id: "kol", labelKey: "kolMentions", weight: 2 },
-    { id: "brand", labelKey: "brandRecall", weight: 4 },
-    { id: "sustain", labelKey: "sustainability", weight: 2 },
-    { id: "peer", labelKey: "peerReviews", weight: 3 },
-    { id: "pack", labelKey: "packaging", weight: 1 },
-  ],
-  [
-    { id: "clean", labelKey: "cleanBeauty", weight: 3 },
-    { id: "price", labelKey: "priceSensitivity", weight: 5 },
-    { id: "kol", labelKey: "kolMentions", weight: 4 },
-    { id: "brand", labelKey: "brandRecall", weight: 2 },
-    { id: "sustain", labelKey: "sustainability", weight: 3 },
-    { id: "peer", labelKey: "peerReviews", weight: 2 },
-    { id: "pack", labelKey: "packaging", weight: 2 },
-  ],
-  [
-    { id: "clean", labelKey: "cleanBeauty", weight: 4 },
-    { id: "price", labelKey: "priceSensitivity", weight: 2 },
-    { id: "kol", labelKey: "kolMentions", weight: 5 },
-    { id: "brand", labelKey: "brandRecall", weight: 3 },
-    { id: "sustain", labelKey: "sustainability", weight: 4 },
-    { id: "peer", labelKey: "peerReviews", weight: 1 },
-    { id: "pack", labelKey: "packaging", weight: 3 },
-  ],
-];
 
 /* ─── 05: Data Assets ─── */
 
