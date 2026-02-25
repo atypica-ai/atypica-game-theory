@@ -409,18 +409,23 @@
       "title": "模拟 × 研究",
       "body": "一个 AI 模拟用户，另一个研究用户——同时适用于真实和虚拟用户。",
       "simulator": {
-        "tag": "AI PERSONA",
+        "tag": "AI SIMULATOR",
         "description": "通过「主观世界模型」，模拟一个真实的人——不是统计平均值。",
-        "consumer2c": { "label": "消费者模拟", "description": "模拟日常消费场景中的消费者购买行为与决策。" },
-        "professional2b": { "label": "B2B 买家模拟", "description": "模拟专业采购场景中的商业买家决策与评估。" }
+        "personaLabel": "AI PERSONA",
+        "sageLabel": "AI SAGE",
+        "consumer2c": { "label": "消费者", "description": "模拟日常购买场景中的消费者。" },
+        "professional2b": { "label": "B2B 买家", "description": "模拟专业采购场景中的商业买家。" },
+        "expert": { "label": "行业专家", "description": "模拟具有行业 Know-how 的领域专家。" }
       },
       "researcher": {
-        "tag": "AI SAGE",
-        "description": "从文档和数据中构建领域专家——随时可用的工作坊知识伙伴。",
-        "workshop": "工作坊 & 共创",
-        "expertConsult": "专家咨询",
-        "knowledgeGap": "知识盲区发现",
-        "memoryBuild": "持久记忆构建"
+        "tag": "AI RESEARCHER",
+        "description": "像研究员一样发问、引导、分析——可对真实和模拟用户进行研究。",
+        "oneToOne": "一对一访谈",
+        "oneToMany": "一对多访谈",
+        "expertDiscussion": "专家讨论",
+        "focusGroup": "焦点小组",
+        "multiParty": "多方共创会",
+        "observation": "连续行为观察"
       },
       "mockup": {
         "stepParse": "解析",

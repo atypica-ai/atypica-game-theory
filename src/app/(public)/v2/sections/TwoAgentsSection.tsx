@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import ChapterPanel from "../components/ChapterPanel";
-import { CHAPTERS, SAGE_CAPABILITY_KEYS, SIMULATOR_PERSONA_KEYS } from "../content";
+import { CHAPTERS, RESEARCHER_METHOD_KEYS, SIMULATOR_PERSONA_KEYS } from "../content";
 import FocusGroupDemo from "../demos/FocusGroupDemo";
 import PersonaBuilderDemo from "../demos/PersonaBuilderDemo";
 
@@ -45,7 +45,7 @@ export default function TwoAgentsSection({
           transition={{ duration: 0.5 }}
         >
           <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
-            {/* ── Left: AI Persona ── */}
+            {/* ── Left: AI Simulator ── */}
             <div className="border border-zinc-800 p-7">
               <h3 className="font-IBMPlexMono text-lg tracking-[0.08em] uppercase mb-2 text-[#1bff1b]">
                 {t("twoAgents.simulator.tag")}
@@ -54,28 +54,49 @@ export default function TwoAgentsSection({
                 {t("twoAgents.simulator.description")}
               </p>
 
-              <div className="mb-4">
+              <div className="mb-5">
                 <PersonaBuilderDemo />
               </div>
 
-              <div className="grid gap-2">
-                {SIMULATOR_PERSONA_KEYS.map((personaKey) => (
-                  <div
-                    key={personaKey}
-                    className="border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600"
-                  >
-                    <div className="text-sm font-medium">
-                      {t(`twoAgents.simulator.${personaKey}.label`)}
+              {/* AI Persona */}
+              <div className="mb-3">
+                <div className="font-IBMPlexMono text-xs tracking-[0.12em] uppercase text-zinc-400 mb-2">
+                  {t("twoAgents.simulator.personaLabel")}
+                </div>
+                <div className="grid gap-2">
+                  {SIMULATOR_PERSONA_KEYS.map((personaKey) => (
+                    <div
+                      key={personaKey}
+                      className="border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600"
+                    >
+                      <div className="text-sm font-medium">
+                        {t(`twoAgents.simulator.${personaKey}.label`)}
+                      </div>
+                      <div className="text-sm leading-normal text-zinc-300 mt-1">
+                        {t(`twoAgents.simulator.${personaKey}.description`)}
+                      </div>
                     </div>
-                    <div className="text-sm leading-normal text-zinc-300 mt-1">
-                      {t(`twoAgents.simulator.${personaKey}.description`)}
-                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* AI Sage */}
+              <div>
+                <div className="font-IBMPlexMono text-xs tracking-[0.12em] uppercase text-zinc-400 mb-2">
+                  {t("twoAgents.simulator.sageLabel")}
+                </div>
+                <div className="border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600">
+                  <div className="text-sm font-medium">
+                    {t("twoAgents.simulator.expert.label")}
                   </div>
-                ))}
+                  <div className="text-sm leading-normal text-zinc-300 mt-1">
+                    {t("twoAgents.simulator.expert.description")}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* ── Right: AI Sage ── */}
+            {/* ── Right: AI Researcher ── */}
             <div className="border border-zinc-800 p-7">
               <h3 className="font-IBMPlexMono text-lg tracking-[0.08em] uppercase mb-2 text-[#93c5fd]">
                 {t("twoAgents.researcher.tag")}
@@ -84,20 +105,20 @@ export default function TwoAgentsSection({
                 {t("twoAgents.researcher.description")}
               </p>
 
-              <div className="mb-4">
+              <div className="mb-5">
                 <FocusGroupDemo />
               </div>
 
               <div className="grid gap-1.5">
-                {SAGE_CAPABILITY_KEYS.map((capKey, i) => (
+                {RESEARCHER_METHOD_KEYS.map((methodKey, i) => (
                   <div
-                    key={capKey}
+                    key={methodKey}
                     className="flex items-center gap-2.5 border border-zinc-800 py-2.5 px-3.5 text-sm transition-colors duration-200 hover:border-zinc-600"
                   >
                     <span className="font-IBMPlexMono text-xs text-zinc-300 min-w-[18px]">
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span>{t(`twoAgents.researcher.${capKey}`)}</span>
+                    <span>{t(`twoAgents.researcher.${methodKey}`)}</span>
                   </div>
                 ))}
               </div>

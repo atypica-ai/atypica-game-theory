@@ -12,28 +12,21 @@ import {
   CHAPTERS,
   CUSTOMER_STORY_KEYS,
   CUSTOMER_STORY_META,
+  ROLE_BG_PROMPTS,
   SOLUTION_ROLES,
 } from "../content";
 
 const copy = CHAPTERS[5];
 
-const ROLE_IMAGE_PROMPTS: Record<string, string> = {
-  creators:
-    "Bird's eye view of a content creator workspace with a phone showing a trending video feed, a ring light circle, and scattered story cards on a dark surface, minimalist flat design, green and black color scheme, clean geometric shapes, no text",
-  influencers:
-    "Top-down view of a social media influencer desk with an audience heatmap, fan mail envelopes, and a phone showing follower growth curve, minimalist flat design, amber and black color scheme, clean geometric shapes, no text",
-  marketers:
-    "Overhead view of a campaign war room table with consumer journey sticky notes, A/B test comparison cards, and a funnel diagram, minimalist flat design, blue and black color scheme, clean geometric shapes, no text",
-  startupOwners:
-    "Bird's eye view of a founder's desk with napkin sketches of a product idea, a lean canvas card, and early prototype wireframes, minimalist flat design, pink and black color scheme, clean geometric shapes, no text",
-  consultants:
-    "Top-down view of a strategy consulting workspace with client presentation slides, a SWOT matrix card, and recommendation priority ranking, minimalist flat design, cyan and black color scheme, clean geometric shapes, no text",
-  productManagers:
-    "Overhead view of a product manager workspace with user feedback cards, a feature prioritization matrix, and a roadmap timeline ribbon, minimalist flat design, purple and black color scheme, clean geometric shapes, no text",
-  researcher:
-    "Bird's eye view of an academic research desk with interview transcript pages, color-coded thematic analysis cards, and a citation network diagram, minimalist flat design, green and black color scheme, clean geometric shapes, no text",
-  investor:
-    "Top-down view of a prediction analyst workspace with multi-source signal cards, a confidence gauge dial, and scenario divergence arrows on a dark surface, minimalist flat design, orange and black color scheme, clean geometric shapes, no text",
+const ROLE_AVATAR_IDS: Record<string, number> = {
+  creators: 8,
+  influencers: 158,
+  marketers: 70,
+  startupOwners: 155,
+  consultants: 83,
+  productManagers: 43,
+  researcher: 19,
+  investor: 127,
 };
 
 /* ── Story #0: Chart-driven ── */
@@ -325,24 +318,37 @@ export default function UseCasesSection({
           transition={{ duration: 0.5 }}
         >
           {/* Role cards (replaces old scenario map) */}
-          <div className="grid grid-cols-4 gap-4 mb-12 max-lg:grid-cols-2 max-sm:grid-cols-1">
+          <div className="grid grid-cols-4 gap-5 mb-12 max-lg:grid-cols-2 max-sm:grid-cols-1">
             {SOLUTION_ROLES.map((role) => (
               <Link
                 key={role.key}
                 href={role.link}
                 className="group border border-zinc-200 hover:border-zinc-400 transition-colors duration-200 overflow-hidden block"
               >
-                <div className="aspect-[4/3] bg-zinc-100 relative overflow-hidden">
+                <div className="relative aspect-square overflow-hidden bg-[#f0ece6]">
+                  {/* AI-generated retro-scientific background */}
                   <Image
-                    src={`/api/imagegen/dev/${encodeURIComponent(ROLE_IMAGE_PROMPTS[role.key] ?? role.key)}?ratio=landscape`}
-                    alt={t(`solutions.roles.${role.key}.title`)}
+                    src={`/api/imagegen/dev/${encodeURIComponent(ROLE_BG_PROMPTS[role.key])}?ratio=square`}
+                    alt=""
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="object-cover"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
+                  {/* avatar */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="relative w-[72%] aspect-square">
+                      <Image
+                        src={`https://api.hippyghosts.io/~/storage/images/raw/${ROLE_AVATAR_IDS[role.key]}`}
+                        alt={t(`solutions.roles.${role.key}.title`)}
+                        fill
+                        className="object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-300"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="text-sm font-medium mb-1" style={{ color: role.accent }}>
+                  <h3 className="text-base font-medium text-zinc-900 mb-1">
                     {t(`solutions.roles.${role.key}.title`)}
                   </h3>
                   <p className="text-sm leading-relaxed text-zinc-500">

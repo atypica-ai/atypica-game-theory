@@ -409,24 +409,32 @@
       "title": "Simulate × Research",
       "body": "One AI simulates people. Another researches them — both real and virtual.",
       "simulator": {
-        "tag": "AI PERSONA",
+        "tag": "AI SIMULATOR",
         "description": "Through the Subjective World Model, simulates a real user — not a statistical average.",
+        "personaLabel": "AI PERSONA",
+        "sageLabel": "AI SAGE",
         "consumer2c": {
-          "label": "Consumer Simulation",
-          "description": "Simulates everyday consumers and their purchase behavior in daily scenarios."
+          "label": "Consumer",
+          "description": "Simulates everyday consumers and their purchase behavior."
         },
         "professional2b": {
-          "label": "B2B Buyer Simulation",
-          "description": "Simulates business buyers in professional procurement and decision-making scenarios."
+          "label": "B2B Buyer",
+          "description": "Simulates business buyers in professional procurement scenarios."
+        },
+        "expert": {
+          "label": "Industry Expert",
+          "description": "Simulates domain experts with industry know-how."
         }
       },
       "researcher": {
-        "tag": "AI SAGE",
-        "description": "Build domain experts from documents and data — a workshop-ready knowledge partner.",
-        "workshop": "Workshop & Co-Creation",
-        "expertConsult": "Expert Consultation",
-        "knowledgeGap": "Knowledge Gap Discovery",
-        "memoryBuild": "Persistent Memory Building"
+        "tag": "AI RESEARCHER",
+        "description": "Asks questions, guides, and analyzes — works with both real and simulated users.",
+        "oneToOne": "One-to-One Interview",
+        "oneToMany": "One-to-Many Interview",
+        "expertDiscussion": "Expert Discussion",
+        "focusGroup": "Focus Group",
+        "multiParty": "Multi-Party Co-Creation Session",
+        "observation": "Continuous Behavior Observation"
       },
       "mockup": {
         "stepParse": "Parse",
