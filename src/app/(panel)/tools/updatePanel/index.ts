@@ -11,7 +11,7 @@ import {
 } from "./types";
 
 /**
- * updatePanel — server-side tool that overwrites panel personaIds.
+ * updatePanel — server-side tool that merges persona IDs into a panel.
  * Looks up the existing panel from UserChat context via recordPersonaPanelContext.
  */
 export const updatePanelTool = ({
@@ -25,7 +25,7 @@ export const updatePanelTool = ({
   tool({
     description:
       "Update the persona panel with the given persona IDs. " +
-      "This overwrites the panel's persona list. Always call this after requestSelectPersonas to save the user's selection. " +
+      "This merges (appends) new personas into the panel's existing list. Always call this after requestSelectPersonas to save the user's selection. " +
       "Can also be called to update the panel title.",
     inputSchema: updatePanelInputSchema,
     outputSchema: updatePanelOutputSchema,
@@ -39,22 +39,24 @@ export const updatePanelTool = ({
         personaIds,
       });
 
-      // Overwrite personaIds (recordPersonaPanelContext merges, we want overwrite)
+      // Merge new personaIds with existing ones (deduplicated)
+      const mergedIds = [...new Set([...panel.personaIds, ...personaIds])];
+
       const updated = await prisma.personaPanel.update({
         where: { id: panel.id },
         data: {
-          personaIds,
+          personaIds: mergedIds,
           ...(title ? { title } : {}),
         },
       });
 
-      logger.info({ msg: "Panel updated", panelId: updated.id, personaCount: personaIds.length });
+      logger.info({ msg: "Panel updated", panelId: updated.id, personaCount: mergedIds.length });
 
       return {
         panelId: updated.id,
-        personaIds,
+        personaIds: mergedIds,
         title: updated.title || `Panel #${updated.id}`,
-        plainText: `Panel "${updated.title}" updated with ${personaIds.length} personas (panelId: ${updated.id}). Link: /panel/${updated.id}`,
+        plainText: `Panel "${updated.title}" updated with ${mergedIds.length} personas (panelId: ${updated.id}). Link: /panel/${updated.id}`,
       };
     },
   });
