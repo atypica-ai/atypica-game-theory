@@ -3,7 +3,7 @@ import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messa
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { executeUniversalAgent } from "@/app/(universal)/agent";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
-import { createUniversalUserChat } from "@/app/(universal)/universal/actions";
+import { createUniversalUserChatAction } from "@/app/(universal)/universal/actions";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -178,7 +178,7 @@ Execute these steps strictly in order. Call the next tool immediately — do NOT
 
 Start step 1 now.`;
 
-    const createResult = await createUniversalUserChat({
+    const createResult = await createUniversalUserChatAction({
       role: "user",
       content,
     });

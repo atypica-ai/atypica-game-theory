@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createUniversalUserChat } from "./actions";
+import { createUniversalUserChatAction } from "./actions";
 
 export function UniversalChatPageClient() {
   const t = useTranslations("UniversalAgent");
@@ -85,7 +85,7 @@ export function UniversalChatPageClient() {
     const content = prompt(t("newChatPrompt"));
     if (!content || content.trim() === "") return;
 
-    const result = await createUniversalUserChat({
+    const result = await createUniversalUserChatAction({
       role: "user",
       content: content.trim(),
     });

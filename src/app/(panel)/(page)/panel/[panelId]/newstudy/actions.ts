@@ -3,7 +3,7 @@
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { executeUniversalAgent } from "@/app/(universal)/agent";
-import { createUniversalUserChat } from "@/app/(universal)/universal/actions";
+import { createUniversalUserChatAction } from "@/app/(universal)/universal/actions";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -78,7 +78,7 @@ Please follow these steps:
 
 Start step 1 immediately.`;
 
-    const createResult = await createUniversalUserChat({
+    const createResult = await createUniversalUserChatAction({
       role: "user",
       content: instruction,
     });

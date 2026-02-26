@@ -1,59 +1,58 @@
 "use server";
-
-import { convertDBMessagesToAIMessages, persistentAIMessageToDB } from "@/ai/messageUtils";
+import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
+import { UserChatContext } from "@/app/(study)/context/types";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { truncateForTitle } from "@/lib/textUtils";
-import { createUserChat } from "@/lib/userChat/lib";
-import { UserChatKind, type UserChat, type UserChatExtra } from "@/prisma/client";
-import { prisma, prismaRO } from "@/prisma/prisma";
-import { generateId } from "ai";
+import {
+  ChatMessageAttachment,
+  UserChatKind,
+  type UserChat,
+  type UserChatExtra,
+} from "@/prisma/client";
+import { prismaRO } from "@/prisma/prisma";
+import { createUniversalUserChat } from "../lib";
 
 /**
- * Create new Universal chat
+ * Create new Universal chat (server action wrapper)
  */
-export async function createUniversalUserChat({
-  role,
-  content,
-}: {
-  role: "user" | "assistant";
-  content: string;
-}): Promise<
+export async function createUniversalUserChatAction(
+  {
+    role,
+    content,
+    attachments,
+    context,
+  }: {
+    role: "user" | "assistant";
+    content: string;
+    attachments?: ChatMessageAttachment[];
+    context?: UserChatContext;
+  },
+  extra?: UserChatExtra,
+): Promise<
   ServerActionResult<Omit<UserChat, "kind"> & { kind: Extract<UserChatKind, "universal"> }>
 > {
   return withAuth(async (user) => {
-    const userChat = await prisma.$transaction(async (tx) => {
-      const userChat = await createUserChat({
+    try {
+      const userChat = await createUniversalUserChat({
         userId: user.id,
-        title: truncateForTitle(content, {
-          maxDisplayWidth: 100,
-          suffix: "...",
-        }),
-        kind: "universal",
-        tx,
+        role,
+        content,
+        attachments,
+        context,
+        extra,
       });
 
-      await persistentAIMessageToDB({
-        mode: "append",
-        userChatId: userChat.id,
-        message: {
-          id: generateId(),
-          role,
-          parts: [{ type: "text", text: content }],
-        },
-        tx,
-      });
-
-      return userChat;
-    });
-
-    return {
-      success: true,
-      data: {
-        ...userChat,
-        kind: "universal",
-      },
-    };
+      return {
+        success: true,
+        data: userChat,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        message: errorMessage,
+      };
+    }
   });
 }
 

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createUniversalChatDirect } from "@/app/(universal)/lib";
+import { createUniversalUserChat } from "@/app/(universal)/lib";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
@@ -35,7 +35,7 @@ export async function handleCreateChat(
       userId,
     });
 
-    const userChat = await createUniversalChatDirect({
+    const userChat = await createUniversalUserChat({
       userId,
       role: "user",
       content,
