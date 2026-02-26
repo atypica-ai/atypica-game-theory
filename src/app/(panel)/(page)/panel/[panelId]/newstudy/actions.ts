@@ -1,24 +1,36 @@
 "use server";
 
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { executeUniversalAgent } from "@/app/(universal)/agent";
 import { createUniversalUserChat } from "@/app/(universal)/universal/actions";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { detectInputLanguage } from "@/lib/textUtils";
+import { prisma } from "@/prisma/prisma";
 import { getLocale } from "next-intl/server";
 
 /**
  * Create a new research project via Universal Agent.
  * Agent will: generate plan → confirmPanelResearchPlan → execute discussion/interview → generateReport
  */
-export async function createResearchViaAgent(
+export async function createUniversalAgentFromPanel(
   panelId: number,
   researchType: "focusGroup" | "userInterview" | "expertInterview",
   question: string,
   personas: Array<{ id: number; name: string }>,
 ): Promise<ServerActionResult<{ token: string }>> {
   return withAuth(async (user) => {
+    // Verify panel ownership
+    const panel = await prisma.personaPanel.findUnique({
+      where: { id: panelId, userId: user.id },
+      select: { id: true },
+    });
+    if (!panel) {
+      return { success: false, code: "not_found" as const, message: "PersonaPanel not found" };
+    }
+
     const locale = await getLocale();
 
     // Format persona list for agent context
@@ -74,6 +86,17 @@ Start step 1 immediately.`;
     if (!createResult.success) {
       return { success: false, code: createResult.code, message: createResult.message };
     }
+
+    const defaultLocale = await detectInputLanguage({
+      text: question,
+      fallbackLocale: locale,
+    });
+
+    // Attach panelId and locale to UserChat context so project detail page can verify ownership
+    await mergeUserChatContext({
+      id: createResult.data.id,
+      context: { personaPanelId: panelId, defaultLocale },
+    });
 
     const logger = rootLogger.child({
       userChatId: createResult.data.id,

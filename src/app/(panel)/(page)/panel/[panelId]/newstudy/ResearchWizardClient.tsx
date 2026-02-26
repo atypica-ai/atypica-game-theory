@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { createResearchViaAgent } from "./actions";
+import { createUniversalAgentFromPanel } from "./actions";
 
 type ResearchType = "focusGroup" | "userInterview" | "expertInterview";
 
@@ -54,7 +54,7 @@ export function ResearchWizardClient({
     if (!question.trim()) return;
 
     setSubmitting(true);
-    const result = await createResearchViaAgent(panelId, researchType, question.trim(), personas);
+    const result = await createUniversalAgentFromPanel(panelId, researchType, question.trim(), personas);
 
     if (result.success) {
       // Redirect immediately to project detail page
