@@ -131,18 +131,19 @@ export async function fetchDailyStatistics(
       GROUP BY date;
     `;
 
-    // Daily studies broken down by kind
+    // Daily studies broken down by kind (analystKind stored in UserChat.context)
     const studiesByKindQuery = prismaRO.$queryRaw<
       [{ date: Date; kind: AnalystKind; total: bigint }]
     >`
-      SELECT DATE(uc."createdAt" AT TIME ZONE ${timezone})::date as date, a.kind, COUNT(uc.id) as total
-      FROM "UserChat" uc
-      JOIN "Analyst" a ON a."studyUserChatId" = uc.id
-      WHERE uc.kind = 'study'
-        AND uc."createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
-        AND uc."createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
-        AND a.kind IS NOT NULL
-      GROUP BY date, a.kind;
+      SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date,
+             "context"->>'analystKind' as kind,
+             COUNT(id) as total
+      FROM "UserChat"
+      WHERE kind = 'study'
+        AND "createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
+        AND "createdAt" <= (${endTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
+        AND "context"->>'analystKind' IS NOT NULL
+      GROUP BY date, "context"->>'analystKind';
     `;
 
     // Daily studies broken down by feedback rating
