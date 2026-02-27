@@ -42,7 +42,11 @@ export PG_CONFIG=/opt/homebrew/bin/pg_config
 # export PG_CONFIG=/usr/local/bin/pg_config
 ```
 
-> **注意：** 如果编译过程中遇到问题，可以尝试不设置 `PG_CONFIG` 环境变量，或者反之。根据实际情况调整。
+> **注意：** 如果编译过程中遇到问题，可以尝试不设置 `PG_CONFIG` 环境变量，或者反之。根据实际情况调整。如果是装了特定版本的 postgresql，可能需要这么写：
+
+```bash
+export PG_CONFIG=/opt/homebrew/opt/postgresql@15/bin/pg_config
+```
 
 编译并安装：
 
