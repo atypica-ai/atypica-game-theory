@@ -66,11 +66,16 @@ on:
     paths:
       - 'src/app/(open)/skills/atypica-research/**'
       - 'src/app/(open)/skills/atypica-agent/**'
+  workflow_dispatch:
+    branches: [main]
 
 jobs:
   publish-research:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'src/app/(open)/skills/atypica-research/')
+    # Note: paths filter in 'on' section already ensures this job only runs when
+    # atypica-research files change. The if condition is redundant but kept for clarity.
+    # Alternative: remove if condition entirely, rely on paths filter + always run both jobs
+    if: contains(github.event.head_commit.modified, 'src/app/(open)/skills/atypica-research/') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout main repo
         uses: actions/checkout@v4
@@ -130,7 +135,10 @@ jobs:
 
   publish-agent:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'src/app/(open)/skills/atypica-agent/')
+    # Note: paths filter in 'on' section already ensures this job only runs when
+    # atypica-agent files change. The if condition is redundant but kept for clarity.
+    # Alternative: remove if condition entirely, rely on paths filter + always run both jobs
+    if: contains(github.event.head_commit.modified, 'src/app/(open)/skills/atypica-agent/') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout main repo
         uses: actions/checkout@v4
