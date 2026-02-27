@@ -2,14 +2,24 @@ import "server-only";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import {
+  getMessagesInputSchema,
+  getPersonaInputSchema,
+  getPodcastInputSchema,
+  getReportInputSchema,
+  handleGetMessages,
+  handleGetPersona,
+  handleGetPodcast,
+  handleGetReport,
+  handleSearchPersonas,
+  searchPersonasInputSchema,
+} from "../shared/tools";
+import {
   createChatInputSchema,
   handleCreateChat,
-  sendMessageInputSchema,
+  handleListChats,
   handleSendMessage,
   listChatsInputSchema,
-  handleListChats,
-  getMessagesInputSchema,
-  handleGetMessages,
+  sendMessageInputSchema,
 } from "./tools";
 
 /**
@@ -71,6 +81,46 @@ export function createUniversalMcpServer(): McpServer {
       inputSchema: getMessagesInputSchema,
     },
     handleGetMessages,
+  );
+
+  server.registerTool(
+    "atypica_universal_get_report",
+    {
+      title: "Get Report",
+      description: "Retrieve a generated research report by token",
+      inputSchema: getReportInputSchema,
+    },
+    handleGetReport,
+  );
+
+  server.registerTool(
+    "atypica_universal_get_podcast",
+    {
+      title: "Get Podcast",
+      description: "Retrieve a generated podcast by token",
+      inputSchema: getPodcastInputSchema,
+    },
+    handleGetPodcast,
+  );
+
+  server.registerTool(
+    "atypica_universal_search_personas",
+    {
+      title: "Search Personas",
+      description: "Search for personas by query, tier, or list all available personas",
+      inputSchema: searchPersonasInputSchema,
+    },
+    handleSearchPersonas,
+  );
+
+  server.registerTool(
+    "atypica_universal_get_persona",
+    {
+      title: "Get Persona Details",
+      description: "Retrieve full details of a specific persona by ID",
+      inputSchema: getPersonaInputSchema,
+    },
+    handleGetPersona,
   );
 
   return server;

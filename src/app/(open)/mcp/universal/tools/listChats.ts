@@ -63,7 +63,9 @@ export async function handleListChats(
     }));
 
     return {
-      content: [{ type: "text", text: `Found ${totalCount} universal chats (showing ${data.length})` }],
+      content: [
+        { type: "text", text: `Found ${totalCount} universal chats (showing ${data.length})` },
+      ],
       structuredContent: {
         data,
         pagination: {

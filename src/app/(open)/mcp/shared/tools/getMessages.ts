@@ -13,7 +13,7 @@ import {
 import { z } from "zod";
 
 export const getMessagesInputSchema = z.object({
-  userChatToken: z.string().describe("The universal or study chat session token"),
+  userChatToken: z.string().describe("The study or universal chat session token"),
   tail: z
     .number()
     .int()
@@ -36,32 +36,36 @@ export async function handleGetMessages(
     const { userChatToken, tail } = args;
     const userId = context.userId;
 
-    // Verify ownership and check background status — same filter as universal API
+    // Verify ownership and check background status
     const userChat = await prismaRO.userChat.findUnique({
       where: {
         token: userChatToken,
         userId,
-        kind: { in: ["universal", "study"] },
+        kind: { in: ["study", "universal"] },
       },
-      select: { id: true, userId: true, backgroundToken: true },
+      select: { id: true, extra: true },
     });
 
     if (!userChat) {
       throw new Error("Chat not found");
     }
 
-    const isRunning = !!userChat.backgroundToken;
+    const isRunning = !!(userChat.extra as { runId?: string })?.runId;
 
+    // Query all messages for this study
     const dbMessages = await prismaRO.chatMessage.findMany({
       where: { userChatId: userChat.id },
       orderBy: { id: "asc" },
     });
 
+    // Use convertDBMessagesToAIMessages for proper format conversion
     let messages = await convertDBMessagesToAIMessages(dbMessages);
 
+    // Apply tail logic: keep last N parts across all messages
     if (tail !== undefined) {
       let remaining = tail;
       const result = [];
+      // Traverse messages from end to start
       for (let i = messages.length - 1; i >= 0; i--) {
         const msg = messages[i];
         const partsCount = msg.parts.length;
@@ -69,9 +73,11 @@ export async function handleGetMessages(
         if (remaining <= 0) break;
 
         if (remaining >= partsCount) {
+          // Keep all parts from this message
           result.unshift(msg);
           remaining -= partsCount;
         } else {
+          // Keep only the last 'remaining' parts from this message
           result.unshift({
             ...msg,
             parts: msg.parts.slice(-remaining),
@@ -89,6 +95,7 @@ export async function handleGetMessages(
       })
       .join("\n");
 
+    // Limit text length to avoid overwhelming the AI
     const maxLength = 3000;
     if (messagesText.length > maxLength) {
       messagesText = "...\n" + messagesText.slice(-maxLength);

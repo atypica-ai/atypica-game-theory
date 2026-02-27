@@ -1,4 +1,4 @@
+export * from "../../shared/tools";
 export * from "./createChat";
-export * from "./sendMessage";
 export * from "./listChats";
-export * from "./getMessages";
+export * from "./sendMessage";
