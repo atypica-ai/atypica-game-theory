@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -64,7 +65,7 @@ export function MemoryDialog({ open, onOpenChange, memory, onMemoryUpdated }: Me
       setIsEditing(false);
       setEditValue("");
       onMemoryUpdated();
-    } else {
+    } else if (!result.success) {
       toast.error(t("updateError"), {
         description: result.message,
       });
@@ -84,60 +85,46 @@ export function MemoryDialog({ open, onOpenChange, memory, onMemoryUpdated }: Me
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col p-0">
-        <div className="px-6 pt-6">
-          <DialogHeader>
-            <DialogTitle>{t("dialogTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("dialogDescription")}
-              <br />
-              {t("lastUpdated")}: {formatDate(memory.updatedAt, locale)}
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+      <DialogContent className="sm:max-w-3xl lg:max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{t("dialogTitle")}</DialogTitle>
+          <DialogDescription className="text-muted-foreground text-sm">
+            {t("dialogDescription")} — {t("lastUpdated")}: {formatDate(memory.updatedAt, locale)}
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-4 px-6 py-4">
+        <div className="space-y-4">
           <div className="space-y-2">
             <div className="text-sm font-medium">{t("memoryContent")}</div>
             <div className="p-4 bg-muted rounded-lg text-sm whitespace-pre-wrap max-h-[50vh] overflow-y-auto">
               {memory.core || t("noMemoryContent")}
             </div>
           </div>
-        </div>
 
-        {/* Edit Button or Floating Input Box */}
-        <div className="px-6 pb-6 relative">
           {!isEditing ? (
-            <Button
-              onClick={handleEditClick}
-              variant="outline"
-              className="rounded-full h-10 w-10 p-0"
-              size="icon"
-            >
+            <Button onClick={handleEditClick} variant="outline" size="icon" className="h-10 w-10">
               <EditIcon className="h-4 w-4" />
             </Button>
           ) : (
             <form onSubmit={handleSubmit} className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 bg-background border rounded-full px-4 py-2 shadow-sm">
-                <Input
-                  ref={inputRef}
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={t("editPlaceholder")}
-                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent flex-1"
-                  disabled={isSubmitting}
-                />
-                <Button
-                  type="submit"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-full shrink-0"
-                  disabled={isSubmitting || !editValue.trim()}
-                >
-                  <ArrowRightIcon className="h-4 w-4" />
-                </Button>
-              </div>
+              <Input
+                ref={inputRef}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={t("editPlaceholder")}
+                className="flex-1"
+                disabled={isSubmitting}
+              />
+              <Button
+                type="submit"
+                variant="secondary"
+                size="icon"
+                className="shrink-0"
+                disabled={isSubmitting || !editValue.trim()}
+              >
+                <ArrowRightIcon className="h-4 w-4" />
+              </Button>
             </form>
           )}
         </div>

@@ -146,22 +146,32 @@ export default function AccountSidebar() {
 
     // 所有团队成员都可以访问团队页面（包括 owner 和普通成员）
     if (teamStatus?.teamRole) {
+      const teamChildren: SidebarItem[] = [
+        {
+          label: t("teamInfo"),
+          href: "/team",
+          icon: <InfoIcon className="mr-2 h-4 w-4" />,
+        },
+        {
+          label: t("teamApiKeys"),
+          href: "/team/api-keys",
+          icon: <KeyIcon className="mr-2 h-4 w-4" />,
+        },
+      ];
+
+      if (teamStatus.teamRole === "owner") {
+        teamChildren.push({
+          label: t("teamCapabilities"),
+          href: "/team/capabilities",
+          icon: <SparklesIcon className="mr-2 h-4 w-4" />,
+        });
+      }
+
       sidebarItems.push({
         label: t("teamManagement"),
         href: "/team",
         icon: <UsersIcon className="mr-2 h-4 w-4" />,
-        children: [
-          {
-            label: t("teamInfo"),
-            href: "/team",
-            icon: <InfoIcon className="mr-2 h-4 w-4" />,
-          },
-          {
-            label: t("teamApiKeys"),
-            href: "/team/api-keys",
-            icon: <KeyIcon className="mr-2 h-4 w-4" />,
-          },
-        ],
+        children: teamChildren,
       });
     }
 
