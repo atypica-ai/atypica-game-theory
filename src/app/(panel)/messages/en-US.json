@@ -63,6 +63,15 @@
         "productRnD": "Product R&D",
         "default": "Research"
       },
+      "stats": {
+        "artifacts": "{count, plural, =1 {1 artifact} other {# artifacts}}",
+        "interviews": "{count, plural, =1 {1 interview} other {# interviews}}",
+        "discussions": "{count, plural, =1 {1 discussion} other {# discussions}}"
+      },
+      "confirmDeleteProject": "Delete Project",
+      "deleteProjectWarning": "Delete this research project? This cannot be undone.",
+      "deleteProjectSuccess": "Project deleted",
+      "cannotDeleteProjectWithContent": "Cannot delete project with existing content",
       "addPersona": "Add Persona",
       "confirmRemovePersona": "Remove Persona",
       "removePersonaWarning": "Remove \"{name}\" from this panel?",

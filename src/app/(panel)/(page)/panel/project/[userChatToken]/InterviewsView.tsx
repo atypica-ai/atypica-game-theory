@@ -42,7 +42,6 @@ export function InterviewsView({
   );
 
   const completedCount = interviews.filter((i) => i.status === "completed").length;
-  const inProgressCount = interviews.filter((i) => i.status === "in-progress").length;
   const hasRunning = interviewBatches.some((batch) =>
     batch.interviews.some((interview) => interview.status === "in-progress"),
   );

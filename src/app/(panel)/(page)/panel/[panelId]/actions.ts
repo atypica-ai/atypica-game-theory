@@ -1,10 +1,13 @@
 "use server";
 
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { UserChatContext } from "@/app/(study)/context/types";
+import { StudyToolName } from "@/app/(study)/tools/types";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import type { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { getToolName, isToolUIPart } from "ai";
 
 export interface PersonaPanelWithDetails {
   id: number;
@@ -31,6 +34,11 @@ export interface ResearchProject {
   backgroundToken: string | null;
   createdAt: Date;
   updatedAt: Date;
+  stats: {
+    artifacts: number;
+    interviews: number;
+    discussions: number;
+  };
 }
 
 export async function fetchPersonaPanelById(
@@ -106,11 +114,64 @@ export async function fetchResearchProjectsByPanelId(
         backgroundToken: true,
         createdAt: true,
         updatedAt: true,
+        messages: {
+          where: { role: "assistant" },
+          select: { messageId: true, role: true, parts: true, extra: true },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return { success: true, data: userChats };
+    // Calculate stats for each project by analyzing tool calls in messages
+    const projectsWithStats = userChats.map((chat) => {
+      let artifactsCount = 0;
+      let interviewsCount = 0;
+      let discussionsCount = 0;
+
+      for (const dbMessage of chat.messages) {
+        const message = convertDBMessageToAIMessage(dbMessage);
+        for (const part of message.parts) {
+          if (!isToolUIPart(part)) continue;
+          const toolName = getToolName(part);
+
+          // Count artifacts (reports + podcasts with output)
+          if (
+            (toolName === StudyToolName.generateReport ||
+              toolName === StudyToolName.generatePodcast) &&
+            part.state === "output-available"
+          ) {
+            artifactsCount++;
+          }
+
+          // Count interviews
+          if (toolName === StudyToolName.interviewChat) {
+            interviewsCount++;
+          }
+
+          // Count discussions
+          if (toolName === StudyToolName.discussionChat) {
+            discussionsCount++;
+          }
+        }
+      }
+
+      return {
+        token: chat.token,
+        title: chat.title,
+        kind: chat.kind,
+        context: chat.context as UserChatContext,
+        backgroundToken: chat.backgroundToken,
+        createdAt: chat.createdAt,
+        updatedAt: chat.updatedAt,
+        stats: {
+          artifacts: artifactsCount,
+          interviews: interviewsCount,
+          discussions: discussionsCount,
+        },
+      };
+    });
+
+    return { success: true, data: projectsWithStats };
   });
 }
 
@@ -138,5 +199,69 @@ export async function updatePanelPersonas(
     });
 
     return { success: true, data: { personaIds: updated.personaIds } };
+  });
+}
+
+export async function deleteResearchProject(
+  projectToken: string,
+): Promise<ServerActionResult<{ token: string }>> {
+  return withAuth(async (user) => {
+    const userChat = await prisma.userChat.findUnique({
+      where: {
+        token: projectToken,
+        userId: user.id,
+        kind: "universal", // 这里强制加一个 universal 没事，因为其实现在可以删除的就是创建 panel 的那个 userChat
+      },
+      select: {
+        id: true,
+        token: true,
+        messages: {
+          where: { role: "assistant" },
+          select: { messageId: true, role: true, parts: true, extra: true },
+        },
+      },
+    });
+
+    if (!userChat) {
+      return { success: false, code: "not_found", message: "Project not found" };
+    }
+
+    // Check if project has any content
+    let hasContent = false;
+    for (const dbMessage of userChat.messages) {
+      const message = convertDBMessageToAIMessage(dbMessage);
+      for (const part of message.parts) {
+        if (!isToolUIPart(part)) continue;
+        const toolName = getToolName(part);
+
+        // Cannot delete if has artifacts, interviews, or discussions
+        if (
+          (toolName === StudyToolName.generateReport ||
+            toolName === StudyToolName.generatePodcast) &&
+          part.state === "output-available"
+        ) {
+          hasContent = true;
+          break;
+        }
+        if (toolName === StudyToolName.interviewChat || toolName === StudyToolName.discussionChat) {
+          hasContent = true;
+          break;
+        }
+      }
+      if (hasContent) break;
+    }
+
+    if (hasContent) {
+      return {
+        success: false,
+        code: "forbidden",
+        message: "Cannot delete project with existing content",
+      };
+    }
+
+    // No content, safe to delete (messages/statistics cascade automatically)
+    await prisma.userChat.delete({ where: { id: userChat.id } });
+
+    return { success: true, data: { token: projectToken } };
   });
 }

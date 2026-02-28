@@ -63,6 +63,15 @@
         "productRnD": "产品研发",
         "default": "研究"
       },
+      "stats": {
+        "artifacts": "{count} 个产物",
+        "interviews": "{count} 次访谈",
+        "discussions": "{count} 次讨论"
+      },
+      "confirmDeleteProject": "删除项目",
+      "deleteProjectWarning": "确定删除此研究项目？此操作无法撤销。",
+      "deleteProjectSuccess": "项目已删除",
+      "cannotDeleteProjectWithContent": "无法删除包含内容的项目",
       "addPersona": "添加人物",
       "confirmRemovePersona": "移除人物",
       "removePersonaWarning": "从 Panel 中移除「{name}」？",

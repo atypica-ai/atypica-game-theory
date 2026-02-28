@@ -56,7 +56,6 @@ export function ProjectDetailClient({
   initialPendingConfirmPlan,
 }: ProjectDetailClientProps) {
   const t = useTranslations("PersonaPanel.ProjectDetailPage");
-  const tWizard = useTranslations("PersonaPanel.ResearchWizard");
   const [projectDiscussions, setProjectDiscussions] = useState(discussions);
   const [projectInterviewBatches, setProjectInterviewBatches] = useState(interviewBatches);
   const [projectTotalPersonas, setProjectTotalPersonas] = useState(totalPersonas);
@@ -345,7 +344,7 @@ export function ProjectDetailClient({
                   state: "input-available",
                   input: pendingConfirmPlan.input,
                 }}
-                addToolResult={async ({ tool, toolCallId, output }) => {
+                addToolResult={async ({ output }) => {
                   await handleConfirmPlan(output as ConfirmPanelResearchPlanOutput);
                 }}
               />

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
 import { PersonaExtra } from "@/prisma/client";
-import { ExternalLink, Plus, X } from "lucide-react";
+import { ExternalLink, Plus, Trash2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import {
+  deleteResearchProject,
   fetchPersonaPanelById,
   PersonaPanelWithDetails,
   ResearchProject,
@@ -80,6 +81,24 @@ export function PanelDetailClient({
     PersonaPanelWithDetails["personas"][number] | null
   >(null);
   const [showAddPersona, setShowAddPersona] = useState(false);
+  const [deletingProjectToken, setDeletingProjectToken] = useState<string | null>(null);
+
+  const handleDeleteProject = async (projectToken: string) => {
+    setDeletingProjectToken(projectToken);
+    const result = await deleteResearchProject(projectToken);
+    setDeletingProjectToken(null);
+
+    if (result.success) {
+      toast.success(t("DetailPage.deleteProjectSuccess"));
+      router.refresh();
+    } else {
+      const message =
+        result.code === "forbidden"
+          ? t("DetailPage.cannotDeleteProjectWithContent")
+          : result.message;
+      toast.error(message);
+    }
+  };
 
   const handleAddPersonas = async (tokens: string[]) => {
     if (tokens.length === 0) return;
@@ -162,33 +181,95 @@ export function PanelDetailClient({
             </div>
           ) : (
             <div className="border border-border rounded-lg divide-y divide-border">
-              {projects.map((project) => (
-                <Link
-                  key={project.token}
-                  href={`/panel/project/${project.token}`}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors group"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm truncate">
-                        {project.title || project.token.slice(0, 8)}
-                      </span>
-                      {project.backgroundToken && (
-                        <span className="relative flex size-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                          <span className="relative inline-flex rounded-full size-2 bg-green-500" />
+              {projects.map((project) => {
+                const { artifacts, interviews, discussions } = project.stats;
+                const hasResearchContent = interviews > 0 || discussions > 0;
+                const canDelete = artifacts === 0 && interviews === 0 && discussions === 0;
+
+                // Determine link href: project detail page if has research, otherwise agent page
+                const href = hasResearchContent
+                  ? `/panel/project/${project.token}`
+                  : `/universal/${project.token}`;
+
+                return (
+                  <Link
+                    key={project.token}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm truncate">
+                          {project.title || project.token.slice(0, 8)}
                         </span>
+                        {project.backgroundToken && (
+                          <span className="relative flex size-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full size-2 bg-green-500" />
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                        <span>{getKindLabel(project.kind)}</span>
+                        <span>·</span>
+                        <span>{formatDate(project.createdAt, locale)}</span>
+                      </div>
+                      {(artifacts > 0 || interviews > 0 || discussions > 0) && (
+                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground/70">
+                          {artifacts > 0 && (
+                            <span>{t("DetailPage.stats.artifacts", { count: artifacts })}</span>
+                          )}
+                          {interviews > 0 && (
+                            <>
+                              {artifacts > 0 && <span>·</span>}
+                              <span>{t("DetailPage.stats.interviews", { count: interviews })}</span>
+                            </>
+                          )}
+                          {discussions > 0 && (
+                            <>
+                              {(artifacts > 0 || interviews > 0) && <span>·</span>}
+                              <span>
+                                {t("DetailPage.stats.discussions", { count: discussions })}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-                      <span>{getKindLabel(project.kind)}</span>
-                      <span>·</span>
-                      <span>{formatDate(project.createdAt, locale)}</span>
+
+                    {/* Right side buttons - flex layout */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {canDelete && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ConfirmDialog
+                            title={t("DetailPage.confirmDeleteProject")}
+                            description={t("DetailPage.deleteProjectWarning")}
+                            onConfirm={() => handleDeleteProject(project.token)}
+                            variant="destructive"
+                          >
+                            <button
+                              disabled={deletingProjectToken === project.token}
+                              className={cn(
+                                "size-7 rounded-md flex items-center justify-center hover:bg-muted",
+                                deletingProjectToken === project.token && "opacity-50",
+                              )}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                            >
+                              <Trash2 className="size-3.5 text-muted-foreground" />
+                            </button>
+                          </ConfirmDialog>
+                        </div>
+                      )}
+                      <ExternalLink className="size-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors" />
                     </div>
-                  </div>
-                  <ExternalLink className="size-3.5 text-muted-foreground/0 group-hover:text-muted-foreground transition-colors shrink-0" />
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
