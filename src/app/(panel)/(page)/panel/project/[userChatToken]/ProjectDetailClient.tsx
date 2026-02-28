@@ -1,7 +1,8 @@
 "use client";
-import { ConfirmPlanMessage } from "@/app/(panel)/tools/confirmPanelResearchPlan/ConfirmPlanMessage";
+import { ConfirmPanelResearchPlanMessage } from "@/app/(panel)/tools/confirmPanelResearchPlan/ConfirmPanelResearchPlanMessage";
 import type { ConfirmPanelResearchPlanOutput } from "@/app/(panel)/tools/confirmPanelResearchPlan/types";
-import { Badge } from "@/components/ui/badge";
+import { UniversalToolName } from "@/app/(universal)/tools/types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ExternalLink, Loader2, MessageSquare, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -55,6 +56,7 @@ export function ProjectDetailClient({
   initialPendingConfirmPlan,
 }: ProjectDetailClientProps) {
   const t = useTranslations("PersonaPanel.ProjectDetailPage");
+  const tWizard = useTranslations("PersonaPanel.ResearchWizard");
   const [projectDiscussions, setProjectDiscussions] = useState(discussions);
   const [projectInterviewBatches, setProjectInterviewBatches] = useState(interviewBatches);
   const [projectTotalPersonas, setProjectTotalPersonas] = useState(totalPersonas);
@@ -82,6 +84,11 @@ export function ProjectDetailClient({
   const [selectedDiscussionIndex, setSelectedDiscussionIndex] = useState(0);
   const [currentDiscussionDetail, setCurrentDiscussionDetail] =
     useState<PanelDiscussionDetail | null>(discussionDetail);
+
+  // Interview batch selector
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(
+    projectInterviewBatches[0]?.id ?? null,
+  );
   const statusLabel = progress?.status === "running" ? t("statusRunning") : t("statusCompleted");
   const phaseLabelMap: Record<NonNullable<typeof progress>["phase"], string> = {
     planning: t("phasePlanning"),
@@ -164,9 +171,9 @@ export function ProjectDetailClient({
 
   // Handle research plan confirmation
   const handleConfirmPlan = useCallback(
-    (output: ConfirmPanelResearchPlanOutput) => {
+    async (output: ConfirmPanelResearchPlanOutput) => {
       if (!pendingConfirmPlan) return;
-      submitResearchConfirmation(project.token, pendingConfirmPlan.toolCallId, output);
+      await submitResearchConfirmation(project.token, pendingConfirmPlan.toolCallId, output);
       setPendingConfirmPlan(null); // Clear immediately — polling will pick up the new state
     },
     [pendingConfirmPlan, project.token],
@@ -174,108 +181,81 @@ export function ProjectDetailClient({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Top bar */}
-      <div className="border-b border-border px-6 py-4">
-        <Link
-          href={`/panel/${panelId}`}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
-        >
-          <ArrowLeft className="size-3" />
-          {panelTitle || t("backToPanel")}
-        </Link>
-        <div className="flex items-center gap-3">
-          <h1 className="text-base font-medium tracking-tight line-clamp-2 flex-1">
-            {project.title}
-          </h1>
-          {isRunning && (
-            <Badge variant="outline" className="text-xs font-normal gap-1 shrink-0">
-              <span className="size-1.5 rounded-full bg-green-500 animate-pulse" />
-              {t("agentRunning")}
-            </Badge>
-          )}
-        </div>
+      {/* Top bar — centered title layout */}
+      <div className="border-b border-border px-6 py-3">
+        {/* Title row - three columns */}
+        <div className="flex items-center gap-4 mb-3">
+          {/* Left: Back button + Panel name */}
+          <Link
+            href={`/panel/${panelId}`}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0 inline-flex items-center gap-1.5"
+          >
+            <ArrowLeft className="size-3" />
+            {panelTitle || t("backToPanel")}
+          </Link>
 
-        {/* Tab nav + agent chat link */}
-        <div className="flex items-center gap-1 mt-3">
-          {hasDiscussions && (
-            <button
-              onClick={() => setActiveTab("discussion")}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                activeTab === "discussion"
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-              )}
-            >
-              <MessageSquare className="size-3" />
-              {t("discussion")}
-              {projectDiscussions.length > 1 && (
-                <span className="text-muted-foreground/60 ml-0.5">
-                  ({projectDiscussions.length})
-                </span>
-              )}
-            </button>
-          )}
-          {hasInterviews && (
-            <button
-              onClick={() => setActiveTab("interviews")}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                activeTab === "interviews"
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-              )}
-            >
-              <Users className="size-3" />
-              {t("interviews")}
-            </button>
-          )}
+          {/* Center: Project Title */}
+          <div className="flex-1 text-center min-w-0 px-8">
+            <h1 className="text-base font-medium tracking-tight truncate">{project.title}</h1>
+          </div>
 
-          <div className="flex-1" />
-
-          {/* Discussion selector if multiple */}
-          {activeTab === "discussion" && projectDiscussions.length > 1 && (
-            <div className="flex items-center gap-1">
-              {projectDiscussions.map((d, i) => (
-                <button
-                  key={d.token}
-                  onClick={() => setSelectedDiscussionIndex(i)}
-                  className={cn(
-                    "size-6 rounded text-xs font-medium transition-colors",
-                    i === selectedDiscussionIndex
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground hover:bg-muted/50",
-                  )}
-                >
-                  {i + 1}
-                </button>
-              ))}
-            </div>
-          )}
-
+          {/* Right: View Agent Chat */}
           <Link
             href={`/universal/${project.token}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0 inline-flex items-center gap-1"
           >
             {t("viewAgentChat")}
             <ExternalLink className="size-3" />
           </Link>
         </div>
+
+        {/* Research items row - flat list */}
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
+          {/* Discussions */}
+          {projectDiscussions.map((discussion, index) => (
+            <button
+              key={discussion.token}
+              onClick={() => {
+                setActiveTab("discussion");
+                setSelectedDiscussionIndex(index);
+              }}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap shrink-0",
+                activeTab === "discussion" && selectedDiscussionIndex === index
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+              )}
+            >
+              <MessageSquare className="size-3" />
+              {t("discussionNumber", { number: index + 1 })}
+            </button>
+          ))}
+
+          {/* Interviews */}
+          {projectInterviewBatches.map((batch, index) => (
+            <button
+              key={batch.id}
+              onClick={() => {
+                setActiveTab("interviews");
+                setSelectedBatchId(batch.id);
+              }}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap shrink-0",
+                activeTab === "interviews" && selectedBatchId === batch.id
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+              )}
+            >
+              <Users className="size-3" />
+              {t("interviewNumber", { number: index + 1 })}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {availableTabs.length === 0 && pendingConfirmPlan ? (
-          /* Pending research plan confirmation */
-          <div className="flex-1 flex items-center justify-center p-6 h-full">
-            <div className="w-full max-w-xl border border-border rounded-lg p-5">
-              <ConfirmPlanMessage
-                input={pendingConfirmPlan.input}
-                onConfirm={handleConfirmPlan}
-              />
-            </div>
-          </div>
-        ) : availableTabs.length === 0 ? (
+        {availableTabs.length === 0 ? (
           /* Agent running — no research output yet */
           <div className="flex-1 flex items-center justify-center p-6 h-full">
             <div className="w-full max-w-xl border border-border rounded-lg p-5 space-y-4">
@@ -344,9 +324,35 @@ export function ProjectDetailClient({
             userChatToken={project.token}
             interviewBatches={projectInterviewBatches}
             totalPersonas={projectTotalPersonas}
+            selectedBatchId={selectedBatchId}
+            onBatchSelect={setSelectedBatchId}
           />
         ) : null}
       </div>
+
+      {/* Confirm Plan Dialog */}
+      <Dialog open={!!pendingConfirmPlan} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Confirm Research Plan</DialogTitle>
+          </DialogHeader>
+          {pendingConfirmPlan && (
+            <div className="overflow-y-auto flex-1 -mx-6 px-6">
+              <ConfirmPanelResearchPlanMessage
+                toolInvocation={{
+                  type: `tool-${UniversalToolName.confirmPanelResearchPlan}`,
+                  toolCallId: pendingConfirmPlan.toolCallId,
+                  state: "input-available",
+                  input: pendingConfirmPlan.input,
+                }}
+                addToolResult={async ({ tool, toolCallId, output }) => {
+                  await handleConfirmPlan(output as ConfirmPanelResearchPlanOutput);
+                }}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

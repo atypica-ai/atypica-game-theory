@@ -1,6 +1,6 @@
 "use client";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
@@ -19,18 +19,19 @@ interface InterviewsViewProps {
   userChatToken: string;
   interviewBatches: InterviewBatch[];
   totalPersonas: number;
+  selectedBatchId: string | null;
+  onBatchSelect: (batchId: string) => void;
 }
 
 export function InterviewsView({
   userChatToken,
   interviewBatches: initialInterviewBatches,
   totalPersonas,
+  selectedBatchId,
+  onBatchSelect,
 }: InterviewsViewProps) {
   const t = useTranslations("PersonaPanel.InterviewsPage");
   const [interviewBatches, setInterviewBatches] = useState(initialInterviewBatches);
-  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(
-    initialInterviewBatches[0]?.id ?? null,
-  );
   const selectedBatch = useMemo(
     () => interviewBatches.find((batch) => batch.id === selectedBatchId) ?? null,
     [interviewBatches, selectedBatchId],
@@ -76,9 +77,9 @@ export function InterviewsView({
 
   useEffect(() => {
     if (!selectedBatchId && interviewBatches.length > 0) {
-      setSelectedBatchId(interviewBatches[0].id);
+      onBatchSelect(interviewBatches[0].id);
     }
-  }, [interviewBatches, selectedBatchId]);
+  }, [interviewBatches, selectedBatchId, onBatchSelect]);
 
   useEffect(() => {
     const selected = interviews.find((interview) => interview.personaId === selectedPersonaId);
@@ -99,101 +100,72 @@ export function InterviewsView({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Compact progress bar */}
-      <div className="border-b border-border px-6 py-3">
-        {interviewBatches.length > 1 && (
-          <div className="flex items-center gap-1 mb-3">
-            {interviewBatches.map((batch, index) => (
-              <button
-                key={batch.id}
-                onClick={() => setSelectedBatchId(batch.id)}
-                className={cn(
-                  "h-6 px-2 rounded text-xs font-medium transition-colors",
-                  selectedBatchId === batch.id
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:bg-muted/50",
-                )}
-              >
-                #{index + 1}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {completedCount > 0 && (
-              <Badge variant="outline" className="text-xs font-normal gap-1 border-green-500/30">
-                <CheckCircle2 className="size-3 text-green-500" />
-                {completedCount} {t("completed")}
-              </Badge>
-            )}
-            {inProgressCount > 0 && (
-              <Badge variant="outline" className="text-xs font-normal gap-1">
-                <Loader2 className="size-3 animate-spin" />
-                {inProgressCount} {t("inProgress")}
-              </Badge>
-            )}
-          </div>
-          <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-green-500 rounded-full transition-all duration-700"
-              style={{
-                width: `${totalPersonas > 0 ? (completedCount / totalPersonas) * 100 : 0}%`,
-              }}
-            />
-          </div>
-          <span className="text-xs text-muted-foreground tabular-nums shrink-0">
-            {t("completedOf", { completed: completedCount, total: totalPersonas })}
-          </span>
-        </div>
-      </div>
-
-      {/* Left-right layout */}
+      {/* Two-column layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: Persona list */}
-        <div className="w-48 lg:w-56 border-r border-border overflow-y-auto scrollbar-thin py-3 px-3 gap-1 flex flex-col">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2 mb-2">
+        {/* Left: Interview list */}
+        <div className="w-48 lg:w-56 border-r border-border py-3 px-3 flex flex-col">
+          {/* Progress section - fixed */}
+          <div className="space-y-2 pb-3 border-b border-border">
+            <div className="text-xs text-muted-foreground">
+              {completedCount}/{totalPersonas} {t("completed")}
+            </div>
+            <div className="h-1 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-500 rounded-full transition-all duration-700"
+                style={{
+                  width: `${totalPersonas > 0 ? (completedCount / totalPersonas) * 100 : 0}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Interview list header - fixed */}
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2 pt-3">
             {t("title")}
           </div>
-          {interviews.map((interview) => {
-            const isSelected = selectedPersonaId === interview.personaId;
-            const StatusIcon =
-              interview.status === "completed"
-                ? CheckCircle2
-                : interview.status === "in-progress"
-                  ? Loader2
-                  : Circle;
-            const statusColor =
-              interview.status === "completed"
-                ? "text-green-500"
-                : interview.status === "in-progress"
-                  ? "text-amber-500 animate-spin"
-                  : "text-muted-foreground/30";
 
-            return (
-              <button
-                key={`${interview.personaId}-${interview.id ?? "pending"}`}
-                onClick={() => setSelectedPersonaId(interview.personaId)}
-                className={cn(
-                  "flex items-center gap-2.5 px-2 py-2 rounded-md text-left transition-colors w-full",
-                  isSelected
-                    ? "bg-muted/60 text-foreground"
-                    : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
-                )}
-              >
-                <HippyGhostAvatar seed={interview.personaId} className="size-6 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-medium truncate">{interview.personaName}</div>
-                  {interview.messageCount > 0 && (
-                    <div className="text-xs text-muted-foreground/60">
-                      {t("messages", { count: interview.messageCount })}
-                    </div>
+          {/* Interview list - scrollable */}
+          <div className="flex-1 overflow-y-auto scrollbar-thin pt-1 space-y-1">
+            {interviews.map((interview) => {
+              const isSelected = selectedPersonaId === interview.personaId;
+              const StatusIcon =
+                interview.status === "completed"
+                  ? CheckCircle2
+                  : interview.status === "in-progress"
+                    ? Loader2
+                    : Circle;
+              const statusColor =
+                interview.status === "completed"
+                  ? "text-green-500"
+                  : interview.status === "in-progress"
+                    ? "text-amber-500 animate-spin"
+                    : "text-muted-foreground/30";
+
+              return (
+                <button
+                  key={`${interview.personaId}-${interview.id ?? "pending"}`}
+                  onClick={() => setSelectedPersonaId(interview.personaId)}
+                  className={cn(
+                    "flex items-center gap-2.5 px-2 py-2 rounded-md text-left transition-colors w-full",
+                    isSelected
+                      ? "bg-muted/60 text-foreground"
+                      : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
                   )}
-                </div>
-                <StatusIcon className={cn("size-3.5 shrink-0", statusColor)} />
-              </button>
-            );
-          })}
+                >
+                  <HippyGhostAvatar seed={interview.personaId} className="size-6 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium truncate">{interview.personaName}</div>
+                    {interview.messageCount > 0 && (
+                      <div className="text-xs text-muted-foreground/60">
+                        {t("messages", { count: interview.messageCount })}
+                      </div>
+                    )}
+                  </div>
+                  <StatusIcon className={cn("size-3.5 shrink-0", statusColor)} />
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Center + Right: Interview content */}
@@ -295,56 +267,68 @@ function InterviewContent({ interview }: { interview: PanelInterview }) {
         </div>
       </div>
 
-      {/* Right: Analysis */}
-      <div className="hidden lg:flex flex-col w-72 border-l border-border overflow-y-auto scrollbar-thin py-4 px-4 gap-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {t("analysis")}
-        </div>
-
-        {/* Stats */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">{t("status")}</span>
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-xs font-normal gap-1",
-                interview.status === "completed" && "border-green-500/30",
-              )}
-            >
-              {interview.status === "completed" ? (
+      {/* Right: Status + Outputs */}
+      <div className="hidden lg:flex flex-col w-72 border-l border-border">
+        {/* Status - fixed */}
+        <div className="flex items-center justify-between py-3 px-4 border-b border-border shrink-0">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            {t("status")}
+          </span>
+          <div className="flex items-center gap-1.5">
+            {interview.status === "completed" ? (
+              <>
                 <CheckCircle2 className="size-3 text-green-500" />
-              ) : interview.status === "in-progress" ? (
-                <Loader2 className="size-3 animate-spin" />
-              ) : (
-                <Circle className="size-3" />
-              )}
-              {t(
-                interview.status === "completed"
-                  ? "completed"
-                  : interview.status === "in-progress"
-                    ? "inProgress"
-                    : "pending",
-              )}
-            </Badge>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">{t("messagesCount")}</span>
-            <span className="font-medium tabular-nums">{messages.length}</span>
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  {t("completed")}
+                </span>
+              </>
+            ) : interview.status === "in-progress" ? (
+              <>
+                <Loader2 className="size-3 animate-spin text-amber-500" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  {t("inProgress")}
+                </span>
+              </>
+            ) : (
+              <>
+                <Circle className="size-3 text-muted-foreground/50" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  {t("pending")}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Conclusion */}
-        {interview.conclusion && (
-          <div className="space-y-2">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {t("conclusion")}
-            </div>
-            <div className="text-xs leading-relaxed bg-muted/50 rounded-lg p-3 border">
+        {/* Tabs - all tabs visible */}
+        <Tabs defaultValue="conclusion" className="flex-1 flex flex-col overflow-hidden">
+          <TabsList className="w-full h-auto p-0 bg-transparent border-b border-border justify-start shrink-0">
+            {interview.conclusion && (
+              <TabsTrigger
+                value="conclusion"
+                className="text-xs font-medium uppercase tracking-wide py-2.5 px-3 rounded-none border-b border-transparent data-[state=active]:border-foreground/60 data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {t("conclusion")}
+              </TabsTrigger>
+            )}
+            <TabsTrigger
+              value="artifacts"
+              className="text-xs font-medium uppercase tracking-wide py-2.5 px-3 rounded-none border-b border-transparent data-[state=active]:border-foreground/60 data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("artifacts")}
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab contents - scrollable */}
+          {interview.conclusion && (
+            <TabsContent value="conclusion" className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs leading-relaxed">
               <Streamdown mode="static">{interview.conclusion}</Streamdown>
-            </div>
-          </div>
-        )}
+            </TabsContent>
+          )}
+          <TabsContent value="artifacts" className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs text-muted-foreground/60 italic">
+            {t("artifactsPlaceholder")}
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );

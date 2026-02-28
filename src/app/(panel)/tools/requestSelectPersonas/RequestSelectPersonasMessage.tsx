@@ -5,9 +5,9 @@ import {
   TUniversalMessageWithTool,
   UniversalToolName,
 } from "@/app/(universal)/tools/types";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { SelectPersonaDialog } from "@/components/SelectPersonaDialog";
 import { Button } from "@/components/ui/button";
-import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { CheckIcon, Loader2Icon, PlusIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -99,17 +99,17 @@ export function RequestSelectPersonasMessage({
     <>
       <div className="space-y-3">
         {personas.length > 0 ? (
-          <div className="space-y-1 max-h-[320px] overflow-y-auto scrollbar-thin">
+          <div className="space-y-1 max-h-[320px] overflow-y-auto overflow-x-hidden scrollbar-thin">
             {personas.map((persona) => (
               <div
                 key={persona.id}
-                className="group flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors"
+                className="group flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors min-w-0"
               >
                 <HippyGhostAvatar seed={persona.id} className="size-6 shrink-0" />
                 <div className="flex-1 min-w-0 flex items-baseline gap-2">
                   <span className="text-sm font-medium truncate">{persona.name}</span>
                   {persona.tags?.length > 0 && (
-                    <span className="text-[11px] text-muted-foreground/60 truncate shrink-0">
+                    <span className="text-[11px] text-muted-foreground/60 truncate">
                       {persona.tags
                         .slice(0, 2)
                         .map((tag) => `#${tag}`)
@@ -119,7 +119,7 @@ export function RequestSelectPersonasMessage({
                 </div>
                 <button
                   onClick={() => removePersona(persona.id)}
-                  className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-all"
+                  className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground transition-all shrink-0"
                 >
                   <XIcon className="size-3" />
                 </button>

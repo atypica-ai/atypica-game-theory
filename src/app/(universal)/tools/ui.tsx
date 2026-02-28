@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmPanelResearchPlanMessage } from "@/app/(panel)/tools/confirmPanelResearchPlan/ConfirmPanelResearchPlanMessage";
 import { RequestSelectPersonasMessage } from "@/app/(panel)/tools/requestSelectPersonas/RequestSelectPersonasMessage";
 import { UpdatePanelResultMessage } from "@/app/(panel)/tools/updatePanel/UpdatePanelResultMessage";
 import { GeneratePodcastResultMessage } from "@/app/(study)/tools/generatePodcast/GeneratePodcastResultMessage";
@@ -28,6 +29,10 @@ export function UniversalToolUIPartDisplay({
     case `tool-${UniversalToolName.requestSelectPersonas}`:
       return (
         <RequestSelectPersonasMessage toolInvocation={toolUIPart} addToolResult={addToolResult} />
+      );
+    case `tool-${UniversalToolName.confirmPanelResearchPlan}`:
+      return (
+        <ConfirmPanelResearchPlanMessage toolInvocation={toolUIPart} addToolResult={addToolResult} />
       );
   }
 

@@ -365,7 +365,7 @@ export function PanelDetailClient({
                     Persona Profile
                   </div>
                   <div className="text-xs leading-relaxed p-4 bg-muted/30 rounded-lg border max-h-72 overflow-y-auto">
-                    <Streamdown>{extractSummaryFromPrompt(selectedPersona.prompt)}</Streamdown>
+                    <Streamdown mode="static">{extractSummaryFromPrompt(selectedPersona.prompt)}</Streamdown>
                   </div>
                 </div>
               </div>

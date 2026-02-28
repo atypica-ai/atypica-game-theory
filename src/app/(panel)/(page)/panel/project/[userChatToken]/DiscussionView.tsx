@@ -1,7 +1,7 @@
 "use client";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
@@ -61,51 +61,53 @@ export function DiscussionView({ timeline: initialTimeline, personas }: PanelDis
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Status bar */}
-      <div className="border-b border-border px-6 py-3 flex items-center gap-3">
-        {isComplete ? (
-          <Badge variant="outline" className="text-xs font-normal gap-1 border-green-500/30">
-            <CheckCircle2 className="size-3 text-green-500" />
-            {t("complete")}
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="text-xs font-normal gap-1">
-            <Loader2 className="size-3 animate-spin" />
-            {t("inProgress")}
-          </Badge>
-        )}
-        <span className="text-xs text-muted-foreground">
-          {participatedIds.size}/{personas.length} {t("participants")}
-        </span>
-      </div>
-
       {/* Three-column layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Personas sidebar */}
-        <div className="hidden md:flex flex-col w-48 lg:w-56 border-r border-border overflow-y-auto scrollbar-thin py-3 px-3 gap-1">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2 mb-2">
+        <div className="hidden md:flex flex-col w-48 lg:w-56 border-r border-border py-3 px-3">
+          {/* Progress section - fixed */}
+          <div className="space-y-2 pb-3 border-b border-border">
+            <div className="text-xs text-muted-foreground">
+              {participatedIds.size}/{personas.length} {t("participated")}
+            </div>
+            <div className="h-1 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-500 rounded-full transition-all duration-500"
+                style={{
+                  width: `${personas.length > 0 ? (participatedIds.size / personas.length) * 100 : 0}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Personas list header - fixed */}
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2 pt-3">
             {t("participants")}
           </div>
-          {personas.map((persona) => {
-            const participated = participatedIds.has(persona.id);
-            return (
-              <div
-                key={persona.id}
-                className={cn(
-                  "flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm",
-                  participated ? "text-foreground" : "text-muted-foreground/60",
-                )}
-              >
-                <HippyGhostAvatar seed={persona.id} className="size-6 shrink-0" />
-                <span className="truncate text-xs flex-1">{persona.name}</span>
-                {participated ? (
-                  <CheckCircle2 className="size-3.5 text-green-500 shrink-0" />
-                ) : (
-                  <Circle className="size-3.5 text-muted-foreground/30 shrink-0" />
-                )}
-              </div>
-            );
-          })}
+
+          {/* Personas list - scrollable */}
+          <div className="flex-1 overflow-y-auto scrollbar-thin pt-1 space-y-1">
+            {personas.map((persona) => {
+              const participated = participatedIds.has(persona.id);
+              return (
+                <div
+                  key={persona.id}
+                  className={cn(
+                    "flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm",
+                    participated ? "text-foreground" : "text-muted-foreground/60",
+                  )}
+                >
+                  <HippyGhostAvatar seed={persona.id} className="size-6 shrink-0" />
+                  <span className="truncate text-xs flex-1">{persona.name}</span>
+                  {participated ? (
+                    <CheckCircle2 className="size-3.5 text-green-500 shrink-0" />
+                  ) : (
+                    <Circle className="size-3.5 text-muted-foreground/30 shrink-0" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Center: Timeline */}
@@ -128,58 +130,74 @@ export function DiscussionView({ timeline: initialTimeline, personas }: PanelDis
           </div>
         </div>
 
-        {/* Right: Summary & Analysis */}
-        <div className="hidden lg:flex flex-col w-72 border-l border-border overflow-y-auto scrollbar-thin py-4 px-4 gap-4">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            {t("analysis")}
-          </div>
-
-          {/* Stats */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t("participants")}</span>
-              <span className="font-medium tabular-nums">
-                {participatedIds.size}/{personas.length}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">{t("events")}</span>
-              <span className="font-medium tabular-nums">{events.length}</span>
-            </div>
-            {/* Progress bar */}
-            <div className="h-1 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-500 rounded-full transition-all duration-500"
-                style={{
-                  width: `${personas.length > 0 ? (participatedIds.size / personas.length) * 100 : 0}%`,
-                }}
-              />
+        {/* Right: Status + Outputs */}
+        <div className="hidden lg:flex flex-col w-72 border-l border-border">
+          {/* Status - fixed */}
+          <div className="flex items-center justify-between py-3 px-4 border-b border-border shrink-0">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              {t("status")}
+            </span>
+            <div className="flex items-center gap-1.5">
+              {isComplete ? (
+                <>
+                  <CheckCircle2 className="size-3 text-green-500" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {t("complete")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Loader2 className="size-3 animate-spin text-amber-500" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {t("inProgress")}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Summary */}
-          {summary && (
-            <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                {t("summary")}
-              </div>
-              <div className="text-xs leading-relaxed bg-muted/50 rounded-lg p-3 border">
-                <Streamdown>{summary}</Streamdown>
-              </div>
-            </div>
-          )}
+          {/* Tabs - all tabs visible */}
+          <Tabs defaultValue="summary" className="flex-1 flex flex-col overflow-hidden">
+            <TabsList className="w-full h-auto p-0 bg-transparent border-b border-border justify-start shrink-0">
+              {summary && (
+                <TabsTrigger
+                  value="summary"
+                  className="text-xs font-medium uppercase tracking-wide py-2.5 px-3 rounded-none border-b border-transparent data-[state=active]:border-foreground/60 data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {t("summary")}
+                </TabsTrigger>
+              )}
+              {minutes && (
+                <TabsTrigger
+                  value="minutes"
+                  className="text-xs font-medium uppercase tracking-wide py-2.5 px-3 rounded-none border-b border-transparent data-[state=active]:border-foreground/60 data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {t("minutes")}
+                </TabsTrigger>
+              )}
+              <TabsTrigger
+                value="artifacts"
+                className="text-xs font-medium uppercase tracking-wide py-2.5 px-3 rounded-none border-b border-transparent data-[state=active]:border-foreground/60 data-[state=active]:text-foreground text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Artifacts
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Minutes */}
-          {minutes && (
-            <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                {t("minutes")}
-              </div>
-              <div className="text-xs leading-relaxed bg-muted/50 rounded-lg p-3 border">
-                <Streamdown>{minutes}</Streamdown>
-              </div>
-            </div>
-          )}
+            {/* Tab contents - scrollable */}
+            {summary && (
+              <TabsContent value="summary" className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs leading-relaxed">
+                <Streamdown mode="static">{summary}</Streamdown>
+              </TabsContent>
+            )}
+            {minutes && (
+              <TabsContent value="minutes" className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs leading-relaxed">
+                <Streamdown mode="static">{minutes}</Streamdown>
+              </TabsContent>
+            )}
+            <TabsContent value="artifacts" className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs text-muted-foreground/60 italic">
+              {t("artifactsPlaceholder")}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
@@ -199,7 +217,7 @@ function TimelineEvent({ event }: { event: DiscussionTimelineEvent }) {
             {event.author === "user" ? "Core Question" : "Moderator Question"}
           </div>
           <div className="text-sm">
-            <Streamdown>{event.content}</Streamdown>
+            <Streamdown mode="static">{event.content}</Streamdown>
           </div>
         </div>
       </div>

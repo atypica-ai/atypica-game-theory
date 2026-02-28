@@ -12,7 +12,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,13 +20,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn, formatDate } from "@/lib/utils";
 import { PersonaExtra } from "@/prisma/client";
@@ -95,10 +87,7 @@ export function PersonaPanelsListClient() {
 
   // Wizard Step 1 - Define
   const [wizardStep, setWizardStep] = useState<WizardStep>("define");
-  const [targetSize, setTargetSize] = useState("");
   const [description, setDescription] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [isDescriptionConfirmed, setIsDescriptionConfirmed] = useState(false);
 
   // Wizard Step 2 - Choose (agent running)
   const [wizardPhase, setWizardPhase] = useState<WizardPhase>("input");
@@ -147,33 +136,13 @@ export function PersonaPanelsListClient() {
     }
   }, [panelToDelete, t, loadPanels]);
 
-  // Step 1: Confirm description → extract tags
-  const handleConfirmDescription = useCallback(() => {
-    const text = description.trim();
-    if (!text) return;
-
-    // Simple keyword extraction from description
-    const roughWords = text
-      .toLowerCase()
-      .split(/[^a-zA-Z0-9\u4e00-\u9fa5]+/g)
-      .filter((w) => w && w.length >= 2);
-    const unique: string[] = [];
-    for (const w of roughWords) {
-      if (!unique.includes(w)) unique.push(w);
-    }
-    setTags(unique.slice(0, 8));
-    setIsDescriptionConfirmed(true);
-  }, [description]);
-
-  // Step 2: Launch agent (auto or manual mode)
+  // Launch agent (auto or manual mode)
   const handleLaunchAgent = useCallback(
     async (mode: "auto" | "manual") => {
       if (!description.trim()) return;
       setCreating(true);
       setWizardStep("choose");
       const result = await createPanelViaAgent(description.trim(), {
-        targetSize: targetSize ? parseInt(targetSize, 10) : undefined,
-        tags: tags.length > 0 ? tags : undefined,
         mode,
       });
       if (result.success) {
@@ -185,7 +154,7 @@ export function PersonaPanelsListClient() {
       }
       setCreating(false);
     },
-    [description, targetSize, tags, t],
+    [description, t],
   );
 
   // Poll progress when wizard is running
@@ -237,9 +206,6 @@ export function PersonaPanelsListClient() {
     setChatToken(null);
     setProgress(null);
     setDescription("");
-    setTargetSize("");
-    setTags([]);
-    setIsDescriptionConfirmed(false);
     setAutoCloseCountdown(null);
     pollingRef.current = false;
   }, []);
@@ -287,28 +253,38 @@ export function PersonaPanelsListClient() {
   }
 
   // ─── Step indicator ────────────────────────────────────────────
-  const AGENT_STEPS = ["search", "select", "save", "done"] as const;
-  const getActiveStep = (status: string): number => {
-    if (status === "searching") return 0;
-    if (status === "selectingPersonas") return 1;
-    if (status === "saving") return 2;
-    if (status === "completed") return 3;
+  const getProgressPercent = (status: string): number => {
+    if (status === "searching") return 25;
+    if (status === "selectingPersonas") return 50;
+    if (status === "saving") return 75;
+    if (status === "completed") return 100;
     return 0;
   };
 
-  const renderStepIndicator = (status: string) => {
-    const active = getActiveStep(status);
+  const getStepLabel = (status: string, locale: string): string => {
+    if (status === "searching") return locale === "zh-CN" ? "步骤 1/3" : "Step 1 of 3";
+    if (status === "selectingPersonas") return locale === "zh-CN" ? "步骤 2/3" : "Step 2 of 3";
+    if (status === "saving") return locale === "zh-CN" ? "步骤 3/3" : "Step 3 of 3";
+    if (status === "completed") return locale === "zh-CN" ? "完成" : "Completed";
+    return "";
+  };
+
+  const renderProgressBar = (status: string) => {
+    const percent = getProgressPercent(status);
+    const stepLabel = getStepLabel(status, locale);
+
     return (
-      <div className="flex gap-1.5 mb-4">
-        {AGENT_STEPS.map((_, i) => (
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 font-medium uppercase tracking-wider">
+          <span>{stepLabel}</span>
+          <span>{percent}%</span>
+        </div>
+        <div className="h-1 bg-muted rounded-full overflow-hidden">
           <div
-            key={i}
-            className={cn(
-              "flex-1 h-0.5 rounded-full transition-all duration-500",
-              i < active ? "bg-foreground/15" : i === active ? "bg-foreground/8" : "bg-muted",
-            )}
+            className="h-full bg-foreground/12 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${percent}%` }}
           />
-        ))}
+        </div>
       </div>
     );
   };
@@ -329,140 +305,65 @@ export function PersonaPanelsListClient() {
           </DialogHeader>
 
           <div className="space-y-4 mt-3">
-            {/* Target size + description in one sentence */}
-            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-muted-foreground">
-                  {locale === "zh-CN" ? "创建一个包含" : "Create a panel of"}
-                </span>
-                <Select value={targetSize} onValueChange={setTargetSize}>
-                  <SelectTrigger className="h-7 w-20 text-sm font-medium">
-                    <SelectValue placeholder={locale === "zh-CN" ? "人数" : "Size"} />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {Array.from({ length: 50 }, (_, i) => (
-                      <SelectItem key={i + 1} value={String(i + 1)} className="text-sm">
-                        {i + 1}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <span className="text-muted-foreground">
-                  {locale === "zh-CN" ? "个 Persona 的 Panel" : "personas"}
-                </span>
-              </div>
+            {/* Description */}
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t("ListPage.createPlaceholder")}
+              className="min-h-[100px] text-sm resize-none"
+              autoFocus
+            />
 
-              <Textarea
-                value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value);
-                  if (isDescriptionConfirmed) {
-                    setIsDescriptionConfirmed(false);
-                    setTags([]);
-                  }
-                }}
-                placeholder={t("ListPage.createPlaceholder")}
-                className="min-h-[100px] text-sm resize-none"
-                autoFocus
-              />
-
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] text-muted-foreground">
-                  {description.length} {locale === "zh-CN" ? "字符" : "chars"}
-                </span>
-                {!isDescriptionConfirmed ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleConfirmDescription}
-                    disabled={!description.trim()}
-                    className="h-7 text-xs gap-1.5"
-                  >
-                    <Sparkles className="size-3" />
-                    {locale === "zh-CN" ? "提取关键词" : "Extract Keywords"}
-                  </Button>
-                ) : (
-                  <span className="text-[11px] text-primary flex items-center gap-1">
-                    <CheckCircle2 className="size-3" />
-                    {locale === "zh-CN" ? "已提取" : "Extracted"}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Tags */}
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 animate-in fade-in-0 slide-in-from-bottom-1 duration-200">
-                {tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-[10px] font-normal">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            )}
-
-            {/* Choose mode — only show after description confirmed */}
-            {isDescriptionConfirmed && (
-              <div className="space-y-2 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-                <p className="text-xs text-muted-foreground font-medium">
-                  {locale === "zh-CN" ? "选择 Persona 的方式" : "How to find Personas"}
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => handleLaunchAgent("auto")}
-                    disabled={creating}
-                    className={cn(
-                      "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
-                      "hover:border-foreground/20 hover:bg-accent transition-all",
-                      "text-left group",
-                      creating && "opacity-50 pointer-events-none",
-                    )}
-                  >
-                    <Sparkles className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    <span className="text-xs font-medium">
-                      {locale === "zh-CN" ? "自动搜索" : "Auto Search"}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/70 text-center leading-relaxed">
-                      {locale === "zh-CN"
-                        ? "AI 根据描述自动匹配"
-                        : "AI matches based on description"}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => handleLaunchAgent("manual")}
-                    disabled={creating}
-                    className={cn(
-                      "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
-                      "hover:border-foreground/20 transition-all",
-                      "text-left group",
-                      creating && "opacity-50 pointer-events-none",
-                    )}
-                  >
-                    <Hand className="size-4 text-muted-foreground" />
-                    <span className="text-xs font-medium">
-                      {locale === "zh-CN" ? "手动选择" : "Manual Select"}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/70 text-center leading-relaxed">
-                      {locale === "zh-CN"
-                        ? "从 Persona 库中搜索选择"
-                        : "Browse and pick from library"}
-                    </span>
-                  </button>
-                </div>
-
-                {/* Import PDF shortcut */}
-                <Link
-                  href="/persona"
-                  className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            {/* Choose mode */}
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground font-medium">
+                {t("ListPage.selectMode")}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => handleLaunchAgent("auto")}
+                  disabled={creating}
+                  className={cn(
+                    "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
+                    "hover:border-foreground/20 hover:bg-accent transition-all",
+                    "text-left group",
+                    creating && "opacity-50 pointer-events-none",
+                  )}
                 >
-                  <Upload className="size-3.5" />
-                  {locale === "zh-CN"
-                    ? "从访谈 PDF 导入 Persona →"
-                    : "Import Personas from interview PDF →"}
-                  <ExternalLink className="size-3 ml-auto" />
-                </Link>
+                  <Sparkles className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <span className="text-xs font-medium">{t("ListPage.autoSearch")}</span>
+                  <span className="text-[10px] text-muted-foreground/70 text-center leading-relaxed">
+                    {t("ListPage.autoSearchDesc")}
+                  </span>
+                </button>
+                <button
+                  onClick={() => handleLaunchAgent("manual")}
+                  disabled={creating}
+                  className={cn(
+                    "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
+                    "hover:border-foreground/20 transition-all",
+                    "text-left group",
+                    creating && "opacity-50 pointer-events-none",
+                  )}
+                >
+                  <Hand className="size-4 text-muted-foreground" />
+                  <span className="text-xs font-medium">{t("ListPage.manualSelect")}</span>
+                  <span className="text-[10px] text-muted-foreground/70 text-center leading-relaxed">
+                    {t("ListPage.manualSelectDesc")}
+                  </span>
+                </button>
               </div>
-            )}
+
+              {/* Import PDF shortcut */}
+              <Link
+                href="/persona"
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              >
+                <Upload className="size-3.5" />
+                {t("ListPage.importFromPDF")}
+                <ExternalLink className="size-3 ml-auto" />
+              </Link>
+            </div>
 
             {/* Loading indicator when creating */}
             {creating && (
@@ -482,23 +383,25 @@ export function PersonaPanelsListClient() {
     if (status === "searching") {
       return (
         <>
-          {renderStepIndicator(status)}
           <DialogHeader>
             <DialogTitle className="text-lg tracking-tight">
               {t("ListPage.createNewPanel")}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-8 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            <div className="w-full max-w-xs space-y-2.5">
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="h-2.5 rounded-full bg-muted animate-pulse"
-                  style={{ animationDelay: `${i * 150}ms`, width: `${85 - i * 15}%` }}
-                />
-              ))}
+          <div className="mt-4 space-y-4">
+            {renderProgressBar(status)}
+            <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+              <div className="w-full max-w-xs space-y-2.5">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="h-2.5 rounded-full bg-muted animate-pulse"
+                    style={{ animationDelay: `${i * 150}ms`, width: `${85 - i * 15}%` }}
+                  />
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.searching")}</p>
             </div>
-            <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.searching")}</p>
           </div>
         </>
       );
@@ -507,22 +410,24 @@ export function PersonaPanelsListClient() {
     if (status === "selectingPersonas" && progress?.toolCallId) {
       return (
         <>
-          {renderStepIndicator(status)}
           <DialogHeader>
             <DialogTitle className="text-lg tracking-tight">
               {t("CreatePanelWizard.selectPersonas")}
             </DialogTitle>
           </DialogHeader>
-          <div className="mt-2 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            <RequestSelectPersonasMessage
-              toolInvocation={{
-                type: `tool-${UniversalToolName.requestSelectPersonas}`,
-                toolCallId: progress.toolCallId,
-                state: "input-available",
-                input: { personaIds: progress.candidatePersonaIds ?? [] },
-              }}
-              addToolResult={handleToolResult}
-            />
+          <div className="mt-4 space-y-4">
+            {renderProgressBar(status)}
+            <div className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+              <RequestSelectPersonasMessage
+                toolInvocation={{
+                  type: `tool-${UniversalToolName.requestSelectPersonas}`,
+                  toolCallId: progress.toolCallId,
+                  state: "input-available",
+                  input: { personaIds: progress.candidatePersonaIds ?? [] },
+                }}
+                addToolResult={handleToolResult}
+              />
+            </div>
           </div>
         </>
       );
@@ -531,15 +436,17 @@ export function PersonaPanelsListClient() {
     if (status === "saving") {
       return (
         <>
-          {renderStepIndicator(status)}
           <DialogHeader>
             <DialogTitle className="text-lg tracking-tight">
               {t("ListPage.createNewPanel")}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-8 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            <Loader2 className="size-5 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
+          <div className="mt-4 space-y-4">
+            {renderProgressBar(status)}
+            <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
+            </div>
           </div>
         </>
       );
@@ -548,39 +455,41 @@ export function PersonaPanelsListClient() {
     if (status === "completed") {
       return (
         <>
-          {renderStepIndicator(status)}
           <DialogHeader>
             <DialogTitle className="text-lg tracking-tight">
               {t("CreatePanelWizard.completed")}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            <div className="relative flex items-center justify-center">
-              <div className="absolute w-32 h-32 rounded-full bg-primary blur-[50px] opacity-10" />
-              <div className="relative flex items-center justify-center size-12 rounded-full bg-primary/10">
-                <CheckCircle2 className="size-6 text-primary" />
+          <div className="mt-4 space-y-4">
+            {renderProgressBar(status)}
+            <div className="flex flex-col items-center justify-center py-4 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+              <div className="relative flex items-center justify-center">
+                <div className="absolute w-32 h-32 rounded-full bg-primary blur-[50px] opacity-10" />
+                <div className="relative flex items-center justify-center size-12 rounded-full bg-primary/10">
+                  <CheckCircle2 className="size-6 text-primary" />
+                </div>
               </div>
-            </div>
-            {progress?.panelTitle && <p className="text-sm font-medium">{progress.panelTitle}</p>}
-            {typeof progress?.personaCount === "number" && (
-              <p className="text-xs text-muted-foreground">
-                {t("CreatePanelWizard.personaCount", { count: progress.personaCount })}
-              </p>
-            )}
-            <div className="flex flex-col items-center gap-2 mt-2">
-              {progress?.panelId && (
-                <Button asChild size="sm" className="gap-1.5">
-                  <Link href={`/panel/${progress.panelId}`}>
-                    <ArrowRight className="size-3.5" />
-                    {t("CreatePanelWizard.viewPanel")}
-                  </Link>
-                </Button>
-              )}
-              {autoCloseCountdown !== null && autoCloseCountdown > 0 && (
+              {progress?.panelTitle && <p className="text-sm font-medium">{progress.panelTitle}</p>}
+              {typeof progress?.personaCount === "number" && (
                 <p className="text-xs text-muted-foreground">
-                  {t("CreatePanelWizard.redirecting", { seconds: autoCloseCountdown })}
+                  {t("CreatePanelWizard.personaCount", { count: progress.personaCount })}
                 </p>
               )}
+              <div className="flex flex-col items-center gap-2 mt-2">
+                {progress?.panelId && (
+                  <Button asChild size="sm" className="gap-1.5">
+                    <Link href={`/panel/${progress.panelId}`}>
+                      <ArrowRight className="size-3.5" />
+                      {t("CreatePanelWizard.viewPanel")}
+                    </Link>
+                  </Button>
+                )}
+                {autoCloseCountdown !== null && autoCloseCountdown > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("CreatePanelWizard.redirecting", { seconds: autoCloseCountdown })}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </>
