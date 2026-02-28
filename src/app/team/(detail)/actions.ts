@@ -18,7 +18,7 @@ import { TeamConfigName, TeamConfigValue } from "../teamConfig/types";
  * @param teamId - 团队
  * @param userId - Team Owner 的团队用户身份
  */
-async function verifyTeamOwnership(
+export async function verifyTeamOwnership(
   teamId: number,
   userId: number,
 ): Promise<

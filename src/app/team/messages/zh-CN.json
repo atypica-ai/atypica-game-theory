@@ -136,6 +136,28 @@
         "networkError": "网络错误"
       }
     },
+    "Capabilities": {
+      "title": "团队能力",
+      "description": "管理团队的背景知识和功能设置",
+      "memory": {
+        "title": "团队记忆",
+        "description": "这是 atypica.AI 记住的关于你们团队的信息，将帮助 AI 更好地为团队提供个性化服务。",
+        "noMemory": "暂无团队记忆。可通过背景访谈或手动录入来创建。",
+        "dialogTitle": "管理团队记忆",
+        "dialogDescription": "直接编辑团队记忆内容，保存后将创建新版本。",
+        "lastUpdated": "最后更新",
+        "memoryContent": "记忆内容",
+        "noMemoryContent": "暂无记忆内容。",
+        "editPlaceholder": "- [Profile] 团队名称: ...\n- [Preference] ...",
+        "saveButton": "保存为新版本",
+        "savingButton": "保存中...",
+        "saveSuccess": "团队记忆已保存",
+        "saveError": "保存失败",
+        "changeNotesPlaceholder": "变更说明（可选）",
+        "changeNoteLabel": "变更说明",
+        "cancel": "取消"
+      }
+    },
     "Actions": {
       "createTeam": {
         "forbidden": "只有个人用户可以创建团队",

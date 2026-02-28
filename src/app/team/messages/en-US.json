@@ -136,6 +136,28 @@
         "networkError": "Network error"
       }
     },
+    "Capabilities": {
+      "title": "Team Capabilities",
+      "description": "Manage your team's background knowledge and settings",
+      "memory": {
+        "title": "Team Memory",
+        "description": "This is what atypica.AI remembers about your team. It helps AI provide more personalized service for your team.",
+        "noMemory": "No team memory yet. Create one via the context builder interview or manually.",
+        "dialogTitle": "Manage Team Memory",
+        "dialogDescription": "Directly edit the team memory content. Saving will create a new version.",
+        "lastUpdated": "Last updated",
+        "memoryContent": "Memory content",
+        "noMemoryContent": "No memory content yet.",
+        "editPlaceholder": "- [Profile] Team name: ...\n- [Preference] ...",
+        "saveButton": "Save as new version",
+        "savingButton": "Saving...",
+        "saveSuccess": "Team memory saved",
+        "saveError": "Failed to save",
+        "changeNotesPlaceholder": "Change notes (optional)",
+        "changeNoteLabel": "Change notes",
+        "cancel": "Cancel"
+      }
+    },
     "Actions": {
       "createTeam": {
         "forbidden": "Only individual users can create teams",
