@@ -13,7 +13,7 @@ import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import type { AgentStatisticsExtra, Persona, UserChatExtra } from "@/prisma/client";
+import type { Persona, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
 import { getLocale } from "next-intl/server";

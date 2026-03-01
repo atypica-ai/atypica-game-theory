@@ -115,6 +115,7 @@
       "phaseInterviews": "Running Interviews",
       "phaseSynthesizing": "Synthesizing",
       "phaseCompleted": "Completed",
+      "idle": "Idle",
       "latestStep": "Latest Step",
       "recentSteps": "Recent Steps",
       "agentOutput": "Latest Agent Output"

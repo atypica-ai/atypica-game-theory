@@ -242,7 +242,13 @@ export function PanelDetailClient({
                     {/* Right side buttons - flex layout */}
                     <div className="flex items-center gap-1.5 shrink-0">
                       {canDelete && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
                           <ConfirmDialog
                             title={t("DetailPage.confirmDeleteProject")}
                             description={t("DetailPage.deleteProjectWarning")}
@@ -255,10 +261,6 @@ export function PanelDetailClient({
                                 "size-7 rounded-md flex items-center justify-center hover:bg-muted",
                                 deletingProjectToken === project.token && "opacity-50",
                               )}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
                             >
                               <Trash2 className="size-3.5 text-muted-foreground" />
                             </button>

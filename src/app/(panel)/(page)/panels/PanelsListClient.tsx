@@ -23,6 +23,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn, formatDate } from "@/lib/utils";
 import { PersonaExtra } from "@/prisma/client";
+import useSWR from "swr";
 import {
   AlertCircle,
   ArrowRight,
@@ -39,14 +40,13 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   createPanelViaAgent,
   deletePersonaPanel,
   fetchPanelCreationProgress,
   fetchUserPersonaPanels,
-  PanelCreationProgress,
   PersonaPanelWithDetails,
   submitPanelCreationToolResult,
 } from "./actions";
@@ -92,9 +92,31 @@ export function PersonaPanelsListClient() {
   // Wizard Step 2 - Choose (agent running)
   const [wizardPhase, setWizardPhase] = useState<WizardPhase>("input");
   const [chatToken, setChatToken] = useState<string | null>(null);
-  const [progress, setProgress] = useState<PanelCreationProgress | null>(null);
-  const pollingRef = useRef(false);
   const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
+
+  // Use SWR for panel creation progress polling
+  const { data: progress } = useSWR(
+    wizardPhase === "running" && chatToken ? ["panel:creationProgress", chatToken] : null,
+    async () => {
+      const result = await fetchPanelCreationProgress(chatToken!);
+      if (!result.success) throw new Error(result.message);
+      return result.data;
+    },
+    {
+      refreshInterval: (data) => {
+        if (data?.status === "selectingPersonas") return 0;
+        if (data?.status === "completed" || data?.status === "error") return 0;
+        return 3000;
+      },
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      onSuccess: async (data) => {
+        if (data.status === "completed") {
+          await loadPanels();
+        }
+      },
+    },
+  );
 
   const loadPanels = useCallback(async () => {
     setLoading(true);
@@ -157,32 +179,6 @@ export function PersonaPanelsListClient() {
     [description, t],
   );
 
-  // Poll progress when wizard is running
-  useEffect(() => {
-    if (wizardPhase !== "running" || !chatToken) return;
-    if (progress?.status === "selectingPersonas") return;
-    pollingRef.current = true;
-    let timeoutId: NodeJS.Timeout;
-    const poll = async () => {
-      if (!pollingRef.current) return;
-      const result = await fetchPanelCreationProgress(chatToken);
-      if (!pollingRef.current) return;
-      if (result.success) {
-        setProgress(result.data);
-        if (result.data.status === "completed") {
-          await loadPanels();
-          return;
-        }
-        if (result.data.status === "error") return;
-      }
-      timeoutId = setTimeout(poll, 3000);
-    };
-    poll();
-    return () => {
-      pollingRef.current = false;
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [wizardPhase, chatToken, loadPanels, progress?.status]);
 
   // Submit tool result from persona selector
   const handleToolResult: TAddUniversalUIToolResult = useCallback(
@@ -194,7 +190,7 @@ export function PersonaPanelsListClient() {
         UniversalToolName.requestSelectPersonas,
         output as Record<string, unknown>,
       );
-      setProgress((prev) => (prev ? { ...prev, status: "saving" } : { status: "saving" }));
+      // SWR will pick up the status change on next poll
     },
     [chatToken],
   );
@@ -204,10 +200,8 @@ export function PersonaPanelsListClient() {
     setWizardStep("define");
     setWizardPhase("input");
     setChatToken(null);
-    setProgress(null);
     setDescription("");
     setAutoCloseCountdown(null);
-    pollingRef.current = false;
   }, []);
 
   const handleDialogClose = useCallback(

@@ -115,6 +115,7 @@
       "phaseInterviews": "执行访谈中",
       "phaseSynthesizing": "汇总中",
       "phaseCompleted": "已完成",
+      "idle": "空闲",
       "latestStep": "最新步骤",
       "recentSteps": "最近步骤",
       "agentOutput": "最新输出"

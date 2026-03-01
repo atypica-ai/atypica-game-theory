@@ -9,6 +9,7 @@ import { ArrowLeft, ExternalLink, Loader2, MessageSquare, Users } from "lucide-r
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 import type {
   DiscussionSummary,
   InterviewBatch,
@@ -57,15 +58,49 @@ export function ProjectDetailClient({
   initialPendingConfirmPlan,
 }: ProjectDetailClientProps) {
   const t = useTranslations("PersonaPanel.ProjectDetailPage");
-  const [projectDiscussions, setProjectDiscussions] = useState(discussions);
-  const [projectInterviewBatches, setProjectInterviewBatches] = useState(interviewBatches);
-  const [projectTotalPersonas, setProjectTotalPersonas] = useState(totalPersonas);
-  const [progress, setProgress] = useState(initialProgress);
-  const [pendingConfirmPlan, setPendingConfirmPlan] = useState(initialPendingConfirmPlan);
-  const [runtimeStatus, setRuntimeStatus] = useState<"running" | "completed">(
-    project.extra?.runId ? "running" : "completed",
+  // Use SWR for project progress polling
+  const { data: progress } = useSWR(
+    ["projectProgress", project.token],
+    async () => {
+      const result = await fetchProjectProgress(project.token);
+      if (!result.success) throw new Error(result.message);
+      return result.data;
+    },
+    {
+      fallbackData: initialProgress ?? undefined,
+      refreshInterval: (data) => (data?.status === "running" ? 5000 : 0),
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
   );
-  const isRunning = runtimeStatus === "running";
+
+  const isRunning = progress?.status === "running";
+
+  // Use SWR for research data polling
+  const { data: researchData } = useSWR(
+    ["projectResearch", project.token],
+    async () => {
+      const result = await fetchProjectResearchByToken(project.token);
+      if (!result.success) throw new Error(result.message);
+      return result.data;
+    },
+    {
+      fallbackData: {
+        discussions,
+        interviewBatches,
+        totalPersonas,
+        pendingConfirmPlan: initialPendingConfirmPlan,
+      },
+      refreshInterval: isRunning ? 5000 : 0,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+
+  const projectDiscussions = researchData?.discussions ?? [];
+  const projectInterviewBatches = researchData?.interviewBatches ?? [];
+  const projectTotalPersonas = researchData?.totalPersonas ?? 0;
+  const pendingConfirmPlan = researchData?.pendingConfirmPlan ?? null;
 
   const hasDiscussions = projectDiscussions.length > 0;
   const hasInterviews = projectInterviewBatches.length > 0;
@@ -78,18 +113,18 @@ export function ProjectDetailClient({
     return tabs;
   }, [hasDiscussions, hasInterviews]);
 
+  // State classification for clear logic flow
+  const hasContent = availableTabs.length > 0;
+
   const [activeTab, setActiveTab] = useState<TabType>(availableTabs[0] ?? "discussion");
 
   // Discussion selector (when multiple discussions exist)
   const [selectedDiscussionIndex, setSelectedDiscussionIndex] = useState(0);
-  const [currentDiscussionDetail, setCurrentDiscussionDetail] =
-    useState<PanelDiscussionDetail | null>(discussionDetail);
 
   // Interview batch selector
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(
     projectInterviewBatches[0]?.id ?? null,
   );
-  const statusLabel = progress?.status === "running" ? t("statusRunning") : t("statusCompleted");
   const phaseLabelMap: Record<NonNullable<typeof progress>["phase"], string> = {
     planning: t("phasePlanning"),
     researching: t("phaseResearching"),
@@ -111,70 +146,28 @@ export function ProjectDetailClient({
     setSelectedDiscussionIndex(0);
   }, [projectDiscussions.length, selectedDiscussionIndex]);
 
-  useEffect(() => {
-    const selectedDiscussion = projectDiscussions[selectedDiscussionIndex];
-    if (!selectedDiscussion) {
-      setCurrentDiscussionDetail(null);
-      return;
-    }
-    if (currentDiscussionDetail?.timeline.token === selectedDiscussion.token) return;
-
-    let canceled = false;
-    const loadDiscussion = async () => {
-      const result = await fetchDiscussionDetail(selectedDiscussion.token);
-      if (!canceled && result.success) {
-        setCurrentDiscussionDetail(result.data);
-      }
-    };
-    loadDiscussion();
-    return () => {
-      canceled = true;
-    };
-  }, [currentDiscussionDetail?.timeline.token, projectDiscussions, selectedDiscussionIndex]);
-
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    const poll = async () => {
-      timeoutId = setTimeout(poll, 5000);
-      const [progressResult, researchResult] = await Promise.all([
-        fetchProjectProgress(project.token),
-        fetchProjectResearchByToken(project.token),
-      ]);
-      if (progressResult.success) {
-        setProgress(progressResult.data);
-        setRuntimeStatus(progressResult.data.status);
-      }
-      if (researchResult.success) {
-        setProjectDiscussions(researchResult.data.discussions);
-        setProjectInterviewBatches(researchResult.data.interviewBatches);
-        setProjectTotalPersonas(researchResult.data.totalPersonas);
-        setPendingConfirmPlan(researchResult.data.pendingConfirmPlan);
-
-        if (
-          selectedDiscussionIndex === 0 &&
-          researchResult.data.discussions.length > 0 &&
-          !currentDiscussionDetail
-        ) {
-          const firstDetail = await fetchDiscussionDetail(researchResult.data.discussions[0].token);
-          if (firstDetail.success) {
-            setCurrentDiscussionDetail(firstDetail.data);
-          }
-        }
-      }
-    };
-
-    poll();
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [currentDiscussionDetail, project.token, selectedDiscussionIndex]);
+  // Use SWR for discussion detail (load on selection change)
+  const selectedDiscussion = projectDiscussions[selectedDiscussionIndex];
+  const { data: currentDiscussionDetail } = useSWR(
+    selectedDiscussion ? ["discussionDetail", selectedDiscussion.token] : null,
+    async () => {
+      const result = await fetchDiscussionDetail(selectedDiscussion!.token);
+      if (!result.success) throw new Error(result.message);
+      return result.data;
+    },
+    {
+      fallbackData: discussionDetail ?? undefined,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   // Handle research plan confirmation
   const handleConfirmPlan = useCallback(
     async (output: ConfirmPanelResearchPlanOutput) => {
       if (!pendingConfirmPlan) return;
       await submitResearchConfirmation(project.token, pendingConfirmPlan.toolCallId, output);
-      setPendingConfirmPlan(null); // Clear immediately — polling will pick up the new state
+      // SWR will pick up the change on next poll
     },
     [pendingConfirmPlan, project.token],
   );
@@ -182,9 +175,9 @@ export function ProjectDetailClient({
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Top bar — centered title layout */}
-      <div className="border-b border-border px-6 py-3">
+      <div className="border-b border-border px-6 py-3 space-y-3">
         {/* Title row - three columns */}
-        <div className="flex items-center gap-4 mb-3">
+        <div className="flex items-center gap-4">
           {/* Left: Back button + Panel name */}
           <Link
             href={`/panel/${panelId}`}
@@ -202,6 +195,8 @@ export function ProjectDetailClient({
           {/* Right: View Agent Chat */}
           <Link
             href={`/universal/${project.token}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0 inline-flex items-center gap-1"
           >
             {t("viewAgentChat")}
@@ -210,103 +205,93 @@ export function ProjectDetailClient({
         </div>
 
         {/* Research items row - flat list */}
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
-          {/* Discussions */}
-          {projectDiscussions.map((discussion, index) => (
-            <button
-              key={discussion.token}
-              onClick={() => {
-                setActiveTab("discussion");
-                setSelectedDiscussionIndex(index);
-              }}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap shrink-0",
-                activeTab === "discussion" && selectedDiscussionIndex === index
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-              )}
-            >
-              <MessageSquare className="size-3" />
-              {t("discussionNumber", { number: index + 1 })}
-            </button>
-          ))}
+        {projectDiscussions?.length ? (
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
+            {/* Discussions */}
+            {projectDiscussions.map((discussion, index) => (
+              <button
+                key={discussion.token}
+                onClick={() => {
+                  setActiveTab("discussion");
+                  setSelectedDiscussionIndex(index);
+                }}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap shrink-0",
+                  activeTab === "discussion" && selectedDiscussionIndex === index
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                )}
+              >
+                <MessageSquare className="size-3" />
+                {t("discussionNumber", { number: index + 1 })}
+              </button>
+            ))}
 
-          {/* Interviews */}
-          {projectInterviewBatches.map((batch, index) => (
-            <button
-              key={batch.id}
-              onClick={() => {
-                setActiveTab("interviews");
-                setSelectedBatchId(batch.id);
-              }}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap shrink-0",
-                activeTab === "interviews" && selectedBatchId === batch.id
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-              )}
-            >
-              <Users className="size-3" />
-              {t("interviewNumber", { number: index + 1 })}
-            </button>
-          ))}
-        </div>
+            {/* Interviews */}
+            {projectInterviewBatches.map((batch, index) => (
+              <button
+                key={batch.id}
+                onClick={() => {
+                  setActiveTab("interviews");
+                  setSelectedBatchId(batch.id);
+                }}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap shrink-0",
+                  activeTab === "interviews" && selectedBatchId === batch.id
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                )}
+              >
+                <Users className="size-3" />
+                {t("interviewNumber", { number: index + 1 })}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {/* Content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {availableTabs.length === 0 ? (
-          /* Agent running — no research output yet */
-          <div className="flex-1 flex items-center justify-center p-6 h-full">
-            <div className="w-full max-w-xl border border-border rounded-lg p-5 space-y-4">
-              <div className="flex items-center gap-2">
-                {isRunning ? (
-                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                ) : (
-                  <span className="size-2 rounded-full bg-muted-foreground/60" />
-                )}
-                <p className="text-sm font-medium">
-                  {isRunning ? t("agentRunning") : t("noContent")}
-                </p>
-              </div>
-
-              <div className="text-xs text-muted-foreground space-y-1">
-                <p>
-                  {t("status")}: {statusLabel}
-                </p>
-                <p>
-                  {t("phase")}: {phaseLabel}
-                </p>
-                {progress?.latestStep && (
-                  <p>
-                    {t("latestStep")}: {progress.latestStep}
-                  </p>
+        {!hasContent ? (
+          /* No research output yet - show status with link to agent chat */
+          <div className="flex-1 flex items-center justify-center p-6">
+            <div className="flex items-center gap-2">
+              {/* Status indicator with Atypica green */}
+              <div className="relative flex items-center justify-center">
+                <span
+                  className={cn(
+                    "size-2 rounded-full transition-colors",
+                    isRunning ? "bg-[#1bff1b]" : "bg-zinc-400",
+                  )}
+                />
+                {isRunning && (
+                  <span className="absolute size-2 rounded-full bg-[#1bff1b] animate-ping opacity-75" />
                 )}
               </div>
 
-              {progress?.recentSteps && progress.recentSteps.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">{t("recentSteps")}</p>
-                  <div className="space-y-1">
-                    {progress.recentSteps.slice(0, 4).map((step, i) => (
-                      <p key={`${step}-${i}`} className="text-xs text-muted-foreground">
-                        {i + 1}. {step}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Current status */}
+              <p
+                className={cn(
+                  "text-sm font-medium transition-colors",
+                  isRunning ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {isRunning ? phaseLabel : t("idle")}
+              </p>
 
-              {progress?.lastMessage && (
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">{t("agentOutput")}</p>
-                  <p className="text-xs text-muted-foreground line-clamp-3">
-                    {progress.lastMessage}
-                  </p>
-                </div>
-              )}
+              {/* Separator */}
+              <span className="text-muted-foreground/40">·</span>
 
-              <p className="text-xs text-muted-foreground/60">{t("noContentDescription")}</p>
+              {/* Link to agent chat */}
+              <Link
+                href={`/universal/${project.token}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
+              >
+                {t("viewAgentChat")}
+                <ExternalLink className="size-3" />
+              </Link>
             </div>
           </div>
         ) : activeTab === "discussion" && currentDiscussionDetail ? (

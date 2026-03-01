@@ -6,45 +6,39 @@ import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Streamdown } from "streamdown";
-import { fetchDiscussionTimeline } from "../actions";
-import type { PanelDiscussionDetail } from "./actions";
+import useSWR from "swr";
+import { fetchDiscussionDetail, type PanelDiscussionDetail } from "./actions";
 
-export function DiscussionView({ timeline: initialTimeline, personas }: PanelDiscussionDetail) {
+export function DiscussionView({
+  timeline: initialTimeline,
+  personas: initialPersonas,
+}: PanelDiscussionDetail) {
   const t = useTranslations("PersonaPanel.DiscussionDetailPage");
-  const [events, setEvents] = useState<DiscussionTimelineEvent[]>(initialTimeline.events);
-  const [summary, setSummary] = useState(initialTimeline.summary);
-  const [minutes, setMinutes] = useState(initialTimeline.minutes);
+
+  // Use SWR for discussion detail polling
+  const { data: discussionDetail } = useSWR(
+    ["panel:discussionDetail", initialTimeline.token],
+    async () => {
+      const result = await fetchDiscussionDetail(initialTimeline.token);
+      if (!result.success) throw new Error(result.message);
+      return result.data;
+    },
+    {
+      fallbackData: { timeline: initialTimeline, personas: initialPersonas },
+      refreshInterval: (data) => (data?.timeline.summary === "" ? 5000 : 0),
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+
+  const timeline = discussionDetail?.timeline ?? initialTimeline;
+  const personas = discussionDetail?.personas ?? initialPersonas;
+  const events = timeline.events;
+  const summary = timeline.summary;
+  const minutes = timeline.minutes;
   const isComplete = summary !== "";
-
-  // Poll for updates
-  const fetchUpdate = useCallback(async () => {
-    try {
-      const result = await fetchDiscussionTimeline(initialTimeline.token);
-      if (!result.success) return;
-      setEvents(result.data.events);
-      if (result.data.summary) setSummary(result.data.summary);
-      if ("minutes" in result.data && typeof result.data.minutes === "string") {
-        setMinutes(result.data.minutes);
-      }
-    } catch {
-      // silently ignore polling errors
-    }
-  }, [initialTimeline.token]);
-
-  useEffect(() => {
-    if (isComplete) return;
-    let timeoutId: NodeJS.Timeout;
-    const poll = async () => {
-      timeoutId = setTimeout(poll, 5000);
-      await fetchUpdate();
-    };
-    poll();
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [fetchUpdate, isComplete]);
 
   // Track which personas have spoken
   const participatedIds = useMemo(() => {

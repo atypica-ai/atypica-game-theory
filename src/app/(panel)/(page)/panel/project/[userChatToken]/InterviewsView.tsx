@@ -3,11 +3,11 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 import { cn } from "@/lib/utils";
-import type { UIMessage } from "ai";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Streamdown } from "streamdown";
+import useSWR from "swr";
 import {
   fetchInterviewBatchesByProjectToken,
   fetchInterviewMessages,
@@ -31,7 +31,31 @@ export function InterviewsView({
   onBatchSelect,
 }: InterviewsViewProps) {
   const t = useTranslations("PersonaPanel.InterviewsPage");
-  const [interviewBatches, setInterviewBatches] = useState(initialInterviewBatches);
+
+  // Use SWR for interview batches polling
+  const { data: interviewBatches = initialInterviewBatches } = useSWR(
+    ["panel:interviewBatches", userChatToken],
+    async () => {
+      const result = await fetchInterviewBatchesByProjectToken(userChatToken);
+      if (!result.success) throw new Error(result.message);
+      return result.data.interviewBatches;
+    },
+    {
+      fallbackData: initialInterviewBatches,
+      refreshInterval: (data) => {
+        const hasRunning = data?.some((batch) =>
+          batch.interviews.some((interview) => interview.status === "in-progress"),
+        );
+        const hasPending = data?.some((batch) =>
+          batch.interviews.some((interview) => interview.status === "pending"),
+        );
+        return hasRunning || hasPending ? 5000 : 0;
+      },
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+
   const selectedBatch = useMemo(
     () => interviewBatches.find((batch) => batch.id === selectedBatchId) ?? null,
     [interviewBatches, selectedBatchId],
@@ -42,37 +66,6 @@ export function InterviewsView({
   );
 
   const completedCount = interviews.filter((i) => i.status === "completed").length;
-  const hasRunning = interviewBatches.some((batch) =>
-    batch.interviews.some((interview) => interview.status === "in-progress"),
-  );
-  const hasPending = interviewBatches.some((batch) =>
-    batch.interviews.some((interview) => interview.status === "pending"),
-  );
-
-  // Poll for status updates while any interview is in progress
-  const fetchUpdate = useCallback(async () => {
-    try {
-      const result = await fetchInterviewBatchesByProjectToken(userChatToken);
-      if (result.success) {
-        setInterviewBatches(result.data.interviewBatches);
-      }
-    } catch {
-      // silently ignore
-    }
-  }, [userChatToken]);
-
-  useEffect(() => {
-    if (!hasRunning && !hasPending) return;
-    let timeoutId: NodeJS.Timeout;
-    const poll = async () => {
-      timeoutId = setTimeout(poll, 5000);
-      await fetchUpdate();
-    };
-    poll();
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [fetchUpdate, hasPending, hasRunning]);
 
   useEffect(() => {
     if (!selectedBatchId && interviewBatches.length > 0) {
@@ -182,44 +175,23 @@ export function InterviewsView({
 
 function InterviewContent({ interview }: { interview: PanelInterview }) {
   const t = useTranslations("PersonaPanel.InterviewsPage");
-  const [messages, setMessages] = useState<UIMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchMessages = useCallback(async () => {
-    if (!interview.interviewUserChat?.token) {
-      setMessages([]);
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const result = await fetchInterviewMessages(interview.interviewUserChat.token);
-      if (result.success) {
-        setMessages(result.data);
-      }
-    } catch {
-      // ignore
-    } finally {
-      setIsLoading(false);
-    }
-  }, [interview.interviewUserChat?.token]);
-
-  useEffect(() => {
-    setIsLoading(true);
-    setMessages([]);
-    fetchMessages();
-
-    if (interview.status !== "in-progress") return;
-    let timeoutId: NodeJS.Timeout;
-    const poll = async () => {
-      timeoutId = setTimeout(poll, 5000);
-      await fetchMessages();
-    };
-    const startPoll = setTimeout(() => poll(), 5000);
-    return () => {
-      clearTimeout(startPoll);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [fetchMessages, interview.id, interview.status]);
+  // Use SWR for interview messages polling
+  const { data: messages = [], isLoading } = useSWR(
+    interview.interviewUserChat?.token
+      ? ["panel:interviewMessages", interview.interviewUserChat.token, interview.id]
+      : null,
+    async () => {
+      const result = await fetchInterviewMessages(interview.interviewUserChat!.token);
+      if (!result.success) throw new Error(result.message);
+      return result.data;
+    },
+    {
+      refreshInterval: interview.status === "in-progress" ? 5000 : 0,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
