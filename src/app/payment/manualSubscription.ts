@@ -152,7 +152,7 @@ export async function createManualPaymentRecord({
   // - For personal subscriptions: quantity = months
   // - For team subscriptions: quantity = seats × months
   // Business logic (e.g., resetTeamMonthlyTokens) reads seats from Subscription.extra.seats, NOT from PaymentLine
-  const quantity = seats ? seats * months : months;
+  const quantity = seats !== undefined ? seats * months : months;
   const amount = product.price * quantity;
 
   // Create payment record and payment line in transaction
