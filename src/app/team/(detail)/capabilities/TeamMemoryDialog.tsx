@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/utils";
@@ -42,13 +41,11 @@ export function TeamMemoryDialog({
   const locale = useLocale();
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(memory.core);
-  const [changeNotes, setChangeNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleEditClick = () => {
     setIsEditing(true);
     setEditContent(memory.core);
-    setChangeNotes("");
   };
 
   const handleSave = async () => {
@@ -60,7 +57,6 @@ export function TeamMemoryDialog({
     setIsSubmitting(true);
     const result = await saveTeamMemoryAction({
       content: editContent,
-      changeNotes: changeNotes || undefined,
     });
 
     if (result.success && result.data) {
@@ -87,35 +83,27 @@ export function TeamMemoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-3xl lg:max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-3xl lg:max-w-5xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t("dialogTitle")}</DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">
             {t("dialogDescription")} — {t("lastUpdated")}: {formatDate(memory.updatedAt, locale)}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 min-h-0 flex flex-col gap-4">
           {isEditing ? (
             <>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t("memoryContent")}</Label>
+              <div className="flex-1 min-h-0 flex flex-col gap-2">
+                <Label className="shrink-0 text-sm font-medium">{t("memoryContent")}</Label>
                 <Textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
-                  className="min-h-[300px] font-mono text-sm"
+                  className="flex-1 resize-none font-mono text-sm"
                   placeholder={t("editPlaceholder")}
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">{t("changeNoteLabel")}</Label>
-                <Input
-                  value={changeNotes}
-                  onChange={(e) => setChangeNotes(e.target.value)}
-                  placeholder={t("changeNotesPlaceholder")}
-                />
-              </div>
-              <div className="flex gap-2">
+              <div className="shrink-0 flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setIsEditing(false)}
@@ -127,22 +115,24 @@ export function TeamMemoryDialog({
                   onClick={handleSave}
                   disabled={isSubmitting || editContent === memory.core}
                 >
-                  <SaveIcon className="h-4 w-4 mr-2" />
+                  <SaveIcon className="h-4 w-4" />
                   {isSubmitting ? t("savingButton") : t("saveButton")}
                 </Button>
               </div>
             </>
           ) : (
             <>
-              <div className="space-y-2">
-                <div className="text-sm font-medium">{t("memoryContent")}</div>
-                <div className="p-4 bg-muted rounded-lg text-sm whitespace-pre-wrap max-h-[50vh] overflow-y-auto">
+              <div className="flex-1 min-h-0 flex flex-col gap-2">
+                <div className="shrink-0 text-sm font-medium">{t("memoryContent")}</div>
+                <div className="flex-1 min-h-0 p-4 bg-muted rounded-lg text-sm whitespace-pre-wrap overflow-y-auto">
                   {memory.core || t("noMemoryContent")}
                 </div>
               </div>
-              <Button onClick={handleEditClick} variant="outline" size="icon" className="h-10 w-10">
-                <EditIcon className="h-4 w-4" />
-              </Button>
+              <div className="shrink-0">
+                <Button onClick={handleEditClick} variant="outline" size="icon" className="h-10 w-10">
+                  <EditIcon className="h-4 w-4" />
+                </Button>
+              </div>
             </>
           )}
         </div>

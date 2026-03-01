@@ -51,7 +51,6 @@ export async function getTeamMemoryVersionsAction(): Promise<
 
 export async function saveTeamMemoryAction(data: {
   content: string;
-  changeNotes?: string;
 }): Promise<ServerActionResult<Memory>> {
   return withAuth(async (user, userType, team) => {
     try {
@@ -85,7 +84,7 @@ export async function saveTeamMemoryAction(data: {
           version: nextVersion,
           core: data.content,
           working: latestMemory ? latestMemory.working : [],
-          changeNotes: data.changeNotes || "Manual update from team memory editor",
+          changeNotes: "Edited from team capabilities",
         },
       });
 

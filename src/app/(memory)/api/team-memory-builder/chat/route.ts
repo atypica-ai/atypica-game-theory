@@ -5,9 +5,9 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import authOptions from "@/app/(auth)/authOptions";
 import { contextBuilderSystem } from "@/app/(memory)/team/memory-builder/prompt";
 import { contextBuilderTools } from "@/app/(memory)/team/memory-builder/tools";
-import authOptions from "@/app/(auth)/authOptions";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { correctUserInputMessage } from "@/lib/userChat/lib";

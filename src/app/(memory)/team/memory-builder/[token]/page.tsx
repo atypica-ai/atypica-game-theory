@@ -37,7 +37,9 @@ async function ContextBuilderChatPage({
     }),
   )) as Parameters<typeof ContextBuilderChatClient>[0]["initialMessages"];
 
-  return <ContextBuilderChatClient userChatToken={userChatToken} initialMessages={initialMessages} />;
+  return (
+    <ContextBuilderChatClient userChatToken={userChatToken} initialMessages={initialMessages} />
+  );
 }
 
 export default async function ContextBuilderChatPageWithLoading({

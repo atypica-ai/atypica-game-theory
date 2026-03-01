@@ -32,7 +32,7 @@ export async function createContextBuilderChat(): Promise<
   try {
     const userChat = await createUserChat({
       userId: session.user.id,
-      title: "背景访谈",
+      title: "Team Context Interview",
       kind: "misc",
     });
 

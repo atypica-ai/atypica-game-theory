@@ -1,20 +1,20 @@
 "use client";
 
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
+import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { TContextBuilderUITools } from "@/app/(memory)/team/memory-builder/tools/types";
+import { saveTeamMemoryAction } from "@/app/team/(detail)/capabilities/actions";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
-import { TMessageWithPlainTextTool } from "@/ai/tools/types";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
-import { useLocale } from "next-intl";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { saveTeamMemoryAction } from "@/app/team/(detail)/capabilities/actions";
 
 type CONTEXT_BUILDER_UI_MESSAGE = TMessageWithPlainTextTool<
   TContextBuilderUITools,
@@ -94,6 +94,7 @@ export function ContextBuilderChatClient({
   }, [initialMessages]);
 
   const router = useRouter();
+  const t = useTranslations("Team.MemoryBuilder.chatPage");
   const [editedMemory, setEditedMemory] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const memoryInitializedRef = useRef(false);
@@ -105,32 +106,28 @@ export function ContextBuilderChatClient({
     }
   }, [interviewState, memory]);
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
+    setIsSaving(true);
     if (editedMemory !== memory) {
-      setIsSaving(true);
       try {
         const result = await saveTeamMemoryAction({
           content: editedMemory,
-          changeNotes:
-            locale === "zh-CN"
-              ? "背景档案构建完成后编辑"
-              : "Edited during context builder confirmation",
         });
         if (!result.success) {
-          toast.error(locale === "zh-CN" ? "保存失败" : "Failed to save memory", {
+          toast.error(t("saveFailed"), {
             description: result.message,
           });
           setIsSaving(false);
           return;
         }
       } catch {
-        toast.error(locale === "zh-CN" ? "发生错误" : "An unexpected error occurred");
+        toast.error(t("unexpectedError"));
         setIsSaving(false);
         return;
       }
     }
     router.push("/newstudy");
-  };
+  }, [editedMemory, memory, router, t]);
 
   const chatArea = (
     <FitToViewport>
@@ -153,12 +150,10 @@ export function ContextBuilderChatClient({
       >
         <div className="shrink-0 space-y-2 mb-6">
           <h1 className="text-3xl md:text-4xl font-EuclidCircularA font-medium text-center tracking-tight">
-            {locale === "zh-CN" ? "团队的背景档案" : "Your Team's Background Profile"}
+            {t("profileTitle")}
           </h1>
           <div className="text-sm text-zinc-600 dark:text-zinc-400 text-center">
-            {locale === "zh-CN"
-              ? "你可以直接在这里修改，确认后将保存为团队能力并退出。"
-              : "You can edit directly here. Clicking confirm will save this to your team's capabilities and exit."}
+            {t("editHint")}
           </div>
         </div>
 
@@ -168,19 +163,18 @@ export function ContextBuilderChatClient({
             onChange={(e) => setEditedMemory(e.target.value)}
             disabled={isSaving}
             className="flex-1 resize-none bg-muted p-6 rounded-2xl text-sm font-mono whitespace-pre-wrap leading-relaxed shadow-sm h-full"
-            placeholder={locale === "zh-CN" ? "记忆内容..." : "Memory content..."}
+            placeholder={t("memoryPlaceholder")}
           />
         </div>
 
         <div className="shrink-0 mt-8 flex justify-center">
-          <Button onClick={handleConfirm} disabled={isSaving} size="lg" className="px-10 rounded-full">
-            {isSaving
-              ? locale === "zh-CN"
-                ? "保存中..."
-                : "Saving..."
-              : locale === "zh-CN"
-                ? "确认档案"
-                : "Confirm Profile"}
+          <Button
+            onClick={handleConfirm}
+            disabled={isSaving}
+            size="lg"
+            className="px-10 rounded-full"
+          >
+            {isSaving ? t("savingButton") : t("confirmButton")}
           </Button>
         </div>
       </motion.div>

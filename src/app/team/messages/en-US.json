@@ -143,6 +143,7 @@
         "title": "Team Memory",
         "description": "This is what atypica.AI remembers about your team. It helps AI provide more personalized service for your team.",
         "noMemory": "No team memory yet. Create one via the context builder interview or manually.",
+        "createMemoryButton": "Start Context Interview",
         "dialogTitle": "Manage Team Memory",
         "dialogDescription": "Directly edit the team memory content. Saving will create a new version.",
         "lastUpdated": "Last updated",
@@ -153,9 +154,26 @@
         "savingButton": "Saving...",
         "saveSuccess": "Team memory saved",
         "saveError": "Failed to save",
-        "changeNotesPlaceholder": "Change notes (optional)",
-        "changeNoteLabel": "Change notes",
         "cancel": "Cancel"
+      }
+    },
+    "MemoryBuilder": {
+      "startPage": {
+        "title": "Build team memory",
+        "subtitle": "One 10-minute conversation. AI understands your business from then on.",
+        "startButton": "Start Interview",
+        "startingButton": "Creating...",
+        "createFailed": "Creation failed",
+        "createFailedRetry": "Creation failed, please try again"
+      },
+      "chatPage": {
+        "profileTitle": "Your Team's Background Profile",
+        "editHint": "You can edit directly here. Clicking confirm will save this to your team's capabilities and exit.",
+        "memoryPlaceholder": "Memory content...",
+        "confirmButton": "Confirm Profile",
+        "savingButton": "Saving...",
+        "saveFailed": "Failed to save memory",
+        "unexpectedError": "An unexpected error occurred"
       }
     },
     "Actions": {
