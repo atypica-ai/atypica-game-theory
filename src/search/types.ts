@@ -103,3 +103,52 @@ export interface PersonasSearchResult {
   totalPages: number;
   totalHits: number;
 }
+
+/**
+ * Project 类型
+ */
+export type ProjectType = "study" | "universal" | "interview" | "panel";
+
+/**
+ * Meilisearch 中的 Project 文档结构
+ * 只存储搜索必需的字段，完整数据从数据库查询
+ */
+export interface ProjectDocument {
+  slug: string; // "study-{id}" | "universal-{id}" | "interview-{id}" | "panel-{id}"
+  type: ProjectType;
+
+  // 搜索字段
+  title: string;
+  description: string;
+
+  // 过滤字段
+  userId: number;
+  teamId: number | null; // 预留
+
+  // 排序字段
+  createdAt: number; // Unix timestamp
+}
+
+/**
+ * Projects 搜索参数
+ */
+export interface ProjectsSearchParams {
+  query: string;
+  type?: ProjectType;
+  userId?: number;
+  page?: number;
+  pageSize?: number;
+}
+
+/**
+ * Projects 搜索结果
+ */
+export interface ProjectsSearchResult {
+  hits: ProjectDocument[];
+  query: string;
+  processingTimeMs: number;
+  hitsPerPage: number;
+  page: number;
+  totalPages: number;
+  totalHits: number;
+}

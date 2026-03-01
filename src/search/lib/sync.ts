@@ -1,9 +1,18 @@
 import "server-only";
 
 import { rootLogger } from "@/lib/logging";
-import { AnalystPodcast, AnalystReport, FeaturedItemResourceType, Persona } from "@/prisma/client";
+import { UserChatContext } from "@/app/(study)/context/types";
+import {
+  AnalystPodcast,
+  AnalystReport,
+  FeaturedItemResourceType,
+  InterviewProject,
+  Persona,
+  PersonaPanel,
+  UserChat,
+} from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
-import { ArtifactDocument, ArtifactType, PersonaDocument } from "../types";
+import { ArtifactDocument, ArtifactType, PersonaDocument, ProjectDocument, ProjectType } from "../types";
 import { INDEXES, meilisearchClient } from "./client";
 
 const logger = rootLogger.child({ module: "search-sync" });
@@ -284,6 +293,161 @@ export async function deletePersona(id: number): Promise<void> {
   } catch (error) {
     logger.error({
       msg: "Failed to delete persona",
+      id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+
+// ============================================================
+// Projects — study, universal, interview, panel
+// ============================================================
+
+/**
+ * 将 study UserChat 转换为 Project 文档
+ */
+export function studyUserChatToDocument(userChat: UserChat): ProjectDocument {
+  const context = userChat.context as UserChatContext | undefined;
+  return {
+    slug: `study-${userChat.id}`,
+    type: "study",
+    title: userChat.title,
+    description: context?.studyTopic || "",
+    userId: userChat.userId,
+    teamId: null,
+    createdAt: userChat.createdAt.getTime(),
+  };
+}
+
+/**
+ * 将 universal UserChat 转换为 Project 文档
+ */
+export function universalUserChatToDocument(userChat: UserChat): ProjectDocument {
+  return {
+    slug: `universal-${userChat.id}`,
+    type: "universal",
+    title: userChat.title,
+    description: "",
+    userId: userChat.userId,
+    teamId: null,
+    createdAt: userChat.createdAt.getTime(),
+  };
+}
+
+/**
+ * 将 InterviewProject 转换为 Project 文档
+ */
+export function interviewProjectToDocument(project: InterviewProject): ProjectDocument {
+  return {
+    slug: `interview-${project.id}`,
+    type: "interview",
+    title: "",
+    description: project.brief,
+    userId: project.userId,
+    teamId: null,
+    createdAt: project.createdAt.getTime(),
+  };
+}
+
+/**
+ * 将 PersonaPanel 转换为 Project 文档
+ */
+export function personaPanelToDocument(panel: PersonaPanel): ProjectDocument {
+  return {
+    slug: `panel-${panel.id}`,
+    type: "panel",
+    title: panel.title,
+    description: panel.instruction,
+    userId: panel.userId,
+    teamId: null,
+    createdAt: panel.createdAt.getTime(),
+  };
+}
+
+/**
+ * 同步单个 Project 到 Meilisearch
+ */
+export async function syncProject({
+  type,
+  id,
+}: {
+  type: ProjectType;
+  id: number;
+}): Promise<void> {
+  try {
+    logger.info({ msg: "Starting project sync", type, id });
+
+    let document: ProjectDocument | null = null;
+
+    if (type === "study" || type === "universal") {
+      const userChat = await prismaRO.userChat.findUnique({ where: { id } });
+      if (!userChat) {
+        logger.warn({ msg: "UserChat not found for project sync", type, id });
+        return;
+      }
+      document =
+        type === "study"
+          ? studyUserChatToDocument(userChat)
+          : universalUserChatToDocument(userChat);
+    } else if (type === "interview") {
+      const project = await prismaRO.interviewProject.findUnique({ where: { id } });
+      if (!project) {
+        logger.warn({ msg: "InterviewProject not found for project sync", id });
+        return;
+      }
+      document = interviewProjectToDocument(project);
+    } else if (type === "panel") {
+      const panel = await prismaRO.personaPanel.findUnique({ where: { id } });
+      if (!panel) {
+        logger.warn({ msg: "PersonaPanel not found for project sync", id });
+        return;
+      }
+      document = personaPanelToDocument(panel);
+    }
+
+    if (!document) return;
+
+    const index = meilisearchClient.index(INDEXES.PROJECTS);
+    const task = index.addDocuments([document]);
+
+    logger.info({ msg: "Project document added to Meilisearch", type, id });
+    await task.waitTask({ timeout: 5000 }).catch(() => {
+      logger.warn({ msg: "Failed to wait for project sync task", type, id });
+    });
+    logger.info({ msg: "Project sync completed", type, id });
+  } catch (error) {
+    logger.error({
+      msg: "Failed to sync project",
+      type,
+      id,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    throw error;
+  }
+}
+
+/**
+ * 从 Meilisearch 删除 Project
+ */
+export async function deleteProject({
+  type,
+  id,
+}: {
+  type: ProjectType;
+  id: number;
+}): Promise<void> {
+  try {
+    const slug = `${type}-${id}`;
+    const index = meilisearchClient.index(INDEXES.PROJECTS);
+
+    await index.deleteDocument(slug);
+    logger.info({ msg: "Project deleted from search", type, id, slug });
+  } catch (error) {
+    logger.error({
+      msg: "Failed to delete project",
+      type,
       id,
       error: error instanceof Error ? error.message : String(error),
     });

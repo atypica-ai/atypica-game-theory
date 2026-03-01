@@ -8,6 +8,9 @@ import {
   PersonaDocument,
   PersonasSearchParams,
   PersonasSearchResult,
+  ProjectDocument,
+  ProjectsSearchParams,
+  ProjectsSearchResult,
 } from "../types";
 import { INDEXES, meilisearchClient } from "./client";
 
@@ -203,6 +206,65 @@ export async function getPersonasFacets(query: string = "") {
   } catch (error) {
     logger.error({
       msg: "Failed to get personas facets",
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+
+/**
+ * 搜索 Projects
+ * 只返回匹配的文档，前端用 slug 解析 type+id 去数据库查完整数据
+ */
+export async function searchProjects(
+  params: ProjectsSearchParams,
+): Promise<ProjectsSearchResult> {
+  const { query, type, userId, page = 1, pageSize = 20 } = params;
+
+  try {
+    const index = meilisearchClient.index<ProjectDocument>(INDEXES.PROJECTS);
+
+    const filters: string[] = [];
+
+    if (type) {
+      filters.push(`type = "${type}"`);
+    }
+
+    if (userId !== undefined) {
+      filters.push(`userId = ${userId}`);
+    }
+
+    const searchResults = await index.search(query, {
+      filter: filters.length > 0 ? filters : undefined,
+      limit: pageSize,
+      offset: (page - 1) * pageSize,
+      sort: ["createdAt:desc"],
+      attributesToHighlight: ["title", "description"],
+      attributesToCrop: ["description"],
+      cropLength: 200,
+    });
+
+    logger.info({
+      msg: "Projects search executed",
+      query,
+      filters: filters.length > 0 ? filters : "none",
+      hits: searchResults.hits.length,
+      processingTime: searchResults.processingTimeMs,
+    });
+
+    return {
+      hits: searchResults.hits,
+      query: searchResults.query,
+      processingTimeMs: searchResults.processingTimeMs,
+      hitsPerPage: pageSize,
+      page,
+      totalPages: Math.ceil(searchResults.estimatedTotalHits / pageSize),
+      totalHits: searchResults.estimatedTotalHits,
+    };
+  } catch (error) {
+    logger.error({
+      msg: "Projects search failed",
+      query,
       error: error instanceof Error ? error.message : String(error),
     });
     throw error;

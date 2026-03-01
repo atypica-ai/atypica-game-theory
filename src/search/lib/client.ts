@@ -107,6 +107,9 @@ export const INDEXES = {
   get PERSONAS() {
     return getIndexesConfig().personas || "personas";
   },
+  get PROJECTS() {
+    return getIndexesConfig().projects || "projects";
+  },
 } as const;
 
 /**
@@ -205,6 +208,48 @@ export async function initializePersonasIndex() {
     ],
 
     // 分面搜索配置
+    faceting: {
+      maxValuesPerFacet: 100,
+    },
+  });
+
+  return index;
+}
+
+/**
+ * 初始化 Projects 索引配置
+ * 需要在首次使用前调用，或者通过脚本初始化
+ */
+export async function initializeProjectsIndex() {
+  const indexName = INDEXES.PROJECTS;
+
+  try {
+    await meilisearchAdminClient.getIndex(indexName);
+  } catch {
+    await meilisearchAdminClient.createIndex(indexName, {
+      primaryKey: "slug",
+    });
+  }
+
+  const index = meilisearchAdminClient.index(indexName);
+
+  await index.updateSettings({
+    searchableAttributes: ["title", "description"],
+
+    filterableAttributes: ["type", "userId", "teamId"],
+
+    sortableAttributes: ["createdAt"],
+
+    displayedAttributes: [
+      "slug",
+      "type",
+      "title",
+      "description",
+      "userId",
+      "teamId",
+      "createdAt",
+    ],
+
     faceting: {
       maxValuesPerFacet: 100,
     },
