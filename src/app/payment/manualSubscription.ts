@@ -148,6 +148,10 @@ export async function createManualPaymentRecord({
   const orderNo = `ATP${randomPart}${timestamp}`;
 
   // Calculate quantity and amount
+  // IMPORTANT: PaymentLine.quantity is ONLY for billing calculation
+  // - For personal subscriptions: quantity = months
+  // - For team subscriptions: quantity = seats × months
+  // Business logic (e.g., resetTeamMonthlyTokens) reads seats from Subscription.extra.seats, NOT from PaymentLine
   const quantity = seats ? seats * months : months;
   const amount = product.price * quantity;
 

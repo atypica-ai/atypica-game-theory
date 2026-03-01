@@ -444,6 +444,9 @@ model PaymentLine {
   product         Product       @relation(fields: [productId], references: [id])
   productName     String        @db.VarChar(64)
   description     String        @db.VarChar(255)
+  /// Quantity from Stripe invoice/session - ONLY for billing calculation, NOT for business logic.
+  /// For team subscriptions: may be seats × months (e.g., 10 seats × 12 months = 120)
+  /// Actual seats count is stored in Subscription.extra.seats, NOT here.
   quantity        Int
   price           Float
   currency        Currency      @default(CNY)
