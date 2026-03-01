@@ -4,15 +4,18 @@ import { MeiliSearch } from "meilisearch";
 
 /**
  * Meilisearch 客户端配置
- * 使用云端托管的 Meilisearch 实例
- * 延迟初始化，避免构建时检查环境变量
+ *
+ * 两个客户端，职责分离：
+ * - meilisearchClient:      API Key，运行时使用（搜索、文档读写）
+ * - meilisearchAdminClient: Master Key，仅管理工具使用（创建索引、配置 settings）
  */
+
+// ============================================================
+// Runtime Client (API Key) — 搜索、添加/删除文档
+// ============================================================
 
 let _meilisearchClient: MeiliSearch | null = null;
 
-/**
- * 获取 Meilisearch 客户端实例（延迟初始化）
- */
 function getMeilisearchClient(): MeiliSearch {
   if (_meilisearchClient) {
     return _meilisearchClient;
@@ -22,26 +25,69 @@ function getMeilisearchClient(): MeiliSearch {
     throw new Error("MEILISEARCH_HOST environment variable is required");
   }
 
-  if (!process.env.MEILISEARCH_MASTER_KEY) {
-    throw new Error("MEILISEARCH_MASTER_KEY environment variable is required");
+  if (!process.env.MEILISEARCH_API_KEY) {
+    throw new Error("MEILISEARCH_API_KEY environment variable is required");
   }
 
   _meilisearchClient = new MeiliSearch({
     host: process.env.MEILISEARCH_HOST,
-    apiKey: process.env.MEILISEARCH_MASTER_KEY,
-    timeout: 10000, // 10 秒超时
+    apiKey: process.env.MEILISEARCH_API_KEY,
+    timeout: 10000,
   });
 
   return _meilisearchClient;
 }
 
 /**
- * Meilisearch 客户端实例（服务端使用，拥有完全权限）
- * 通过 getter 实现延迟初始化
+ * 运行时客户端（API Key）
+ * 用于搜索和文档操作，不能创建/删除索引或管理 API Key
  */
 export const meilisearchClient = new Proxy({} as MeiliSearch, {
   get(_target, prop) {
     const client = getMeilisearchClient();
+    const value = client[prop as keyof MeiliSearch];
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});
+
+// ============================================================
+// Admin Client (Master Key) — 仅用于索引管理（scripts/admin 工具）
+// ============================================================
+
+let _meilisearchAdminClient: MeiliSearch | null = null;
+
+function getMeilisearchAdminClient(): MeiliSearch {
+  if (_meilisearchAdminClient) {
+    return _meilisearchAdminClient;
+  }
+
+  if (!process.env.MEILISEARCH_HOST) {
+    throw new Error("MEILISEARCH_HOST environment variable is required");
+  }
+
+  if (!process.env.MEILISEARCH_MASTER_KEY) {
+    throw new Error(
+      "MEILISEARCH_MASTER_KEY environment variable is required (only needed for index management in scripts)",
+    );
+  }
+
+  _meilisearchAdminClient = new MeiliSearch({
+    host: process.env.MEILISEARCH_HOST,
+    apiKey: process.env.MEILISEARCH_MASTER_KEY,
+    timeout: 10000,
+  });
+
+  return _meilisearchAdminClient;
+}
+
+/**
+ * 管理客户端（Master Key）
+ * 仅用于创建/配置索引，只在 scripts/admin 工具中使用
+ * 运行时服务不要使用此客户端
+ */
+export const meilisearchAdminClient = new Proxy({} as MeiliSearch, {
+  get(_target, prop) {
+    const client = getMeilisearchAdminClient();
     const value = client[prop as keyof MeiliSearch];
     return typeof value === "function" ? value.bind(client) : value;
   },
@@ -72,16 +118,16 @@ export async function initializeArtifactsIndex() {
 
   try {
     // 尝试获取索引，如果不存在会抛出错误
-    await meilisearchClient.getIndex(indexName);
+    await meilisearchAdminClient.getIndex(indexName);
   } catch {
     // 索引不存在，创建新索引
-    await meilisearchClient.createIndex(indexName, {
+    await meilisearchAdminClient.createIndex(indexName, {
       primaryKey: "slug",
     });
   }
 
   // 配置索引设置
-  const index = meilisearchClient.index(indexName);
+  const index = meilisearchAdminClient.index(indexName);
 
   await index.updateSettings({
     // 可搜索字段（按优先级排序）
@@ -124,16 +170,16 @@ export async function initializePersonasIndex() {
 
   try {
     // 尝试获取索引，如果不存在会抛出错误
-    await meilisearchClient.getIndex(indexName);
+    await meilisearchAdminClient.getIndex(indexName);
   } catch {
     // 索引不存在，创建新索引
-    await meilisearchClient.createIndex(indexName, {
+    await meilisearchAdminClient.createIndex(indexName, {
       primaryKey: "slug",
     });
   }
 
   // 配置索引设置
-  const index = meilisearchClient.index(indexName);
+  const index = meilisearchAdminClient.index(indexName);
 
   await index.updateSettings({
     // 可搜索字段（按优先级排序）

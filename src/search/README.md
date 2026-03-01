@@ -13,22 +13,28 @@
 ```bash
 # Meilisearch 配置
 MEILISEARCH_HOST=https://your-instance.meilisearch.io
-MEILISEARCH_MASTER_KEY=your-master-key
+MEILISEARCH_API_KEY=your-api-key        # 运行时使用（搜索、文档读写）
+MEILISEARCH_MASTER_KEY=your-master-key  # 仅管理脚本使用（创建索引）
 
 # 索引名称配置（可选，默认值如下）
 MEILISEARCH_INDEXES={"artifacts":"artifacts","personas":"personas"}
 ```
 
+**Key 说明：**
+- **API Key**（`MEILISEARCH_API_KEY`）— 运行时服务使用，权限：搜索、添加/删除文档
+- **Master Key**（`MEILISEARCH_MASTER_KEY`）— 仅在 `scripts/admin/search-management.ts` 等管理工具中使用，权限：创建/删除索引、配置 settings
+
 **获取 Meilisearch Cloud:**
 1. 访问 https://www.meilisearch.com/cloud
 2. 注册并创建项目
-3. 复制 Host 和 Master Key
+3. 在 Settings → API Keys 中获取 API Key 和 Master Key
 
 **本地 Docker:**
 ```bash
 docker run -d -p 7700:7700 \
   -e MEILI_MASTER_KEY="test-key" \
   getmeili/meilisearch:latest
+# 本地开发时 API Key 和 Master Key 可以用同一个 test-key
 ```
 
 ### 2. 初始化
@@ -122,7 +128,8 @@ pnpm tsx scripts/admin/search-management.ts sync-personas
 
 检查 `.env.local` 中的：
 - `MEILISEARCH_HOST` 格式是否正确（需要 https:// 前缀）
-- `MEILISEARCH_MASTER_KEY` 是否正确
+- `MEILISEARCH_API_KEY` 是否正确（运行时搜索/文档操作）
+- `MEILISEARCH_MASTER_KEY` 是否正确（仅管理脚本 init 命令需要）
 
 ### 数据不同步？
 
