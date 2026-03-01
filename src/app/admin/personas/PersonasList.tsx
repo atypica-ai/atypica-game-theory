@@ -27,6 +27,7 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
 import { UserChat } from "@/prisma/client";
 import { EyeIcon, FileTextIcon, Loader2Icon, SearchIcon, XIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -49,6 +50,7 @@ export default function PersonasList({
   scoutUserChat?: UserChat;
   initialParams: Record<string, string | number | boolean>;
 }) {
+  const { status } = useSession();
   const router = useRouter();
   const [selectedPersona, setSelectedPersona] = useState<TAdminPersona | null>(null);
   const [personas, setPersonas] = useState<TAdminPersona[]>([]);
@@ -126,8 +128,12 @@ export default function PersonasList({
   }, [currentPage, searchQuery, scoutUserChat?.id, selectedTiers, selectedLocales]);
 
   useEffect(() => {
-    fetchPersonasForPage();
-  }, [fetchPersonasForPage]);
+    if (status === "unauthenticated") {
+      router.push("/auth/signin?callbackUrl=/admin/personas");
+    } else if (status === "authenticated") {
+      fetchPersonasForPage();
+    }
+  }, [status, router, fetchPersonasForPage]);
 
   const handleSearch = useCallback(
     (e: FormEvent) => {

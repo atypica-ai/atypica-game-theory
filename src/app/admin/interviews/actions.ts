@@ -2,8 +2,11 @@
 
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
+import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
+import { InterviewProjectWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
+import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
 import { TokensLogResourceType } from "@/tokens/types";
 
 export type InterviewProjectData = {
@@ -19,31 +22,86 @@ export type InterviewProjectData = {
   createdAt: Date;
 };
 
+/**
+ * 判断是否是 token（16位字母数字）
+ */
+function isToken(query: string): boolean {
+  return /^[a-zA-Z0-9]{16}$/.test(query);
+}
+
+/**
+ * 判断是否是 email
+ */
+function isEmail(query: string): boolean {
+  return query.includes("@");
+}
+
+/**
+ * 从 slug 提取 ID（格式：interview-123）
+ */
+function extractIdFromSlug(slug: string): number {
+  const match = slug.match(/^interview-(\d+)$/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
 export async function fetchInterviewProjects(
   page: number = 1,
   pageSize: number = 10,
   searchQuery: string = "",
 ): Promise<ServerActionResult<InterviewProjectData[]>> {
-  // Ensure only admins with proper permissions can access this data
   await checkAdminAuth([AdminPermission.MANAGE_INTERVIEWS]);
 
-  // Calculate pagination
   const skip = (page - 1) * pageSize;
+  let where: InterviewProjectWhereInput = {};
+  let totalCount = 0;
+  let orderedIds: number[] | null = null;
+  let useDatabasePagination = true;
 
-  // Build where condition for search
-  const whereCondition = searchQuery
-    ? {
-        OR: [
-          { brief: { contains: searchQuery } },
-          { token: searchQuery },
-          { user: { email: { contains: searchQuery } } },
-        ],
+  // 三层搜索：token 精确匹配 → email 精确匹配 → 关键词走 MeiliSearch
+  if (searchQuery) {
+    const trimmedQuery = searchQuery.trim();
+
+    if (isToken(trimmedQuery)) {
+      where = { token: trimmedQuery };
+    } else if (isEmail(trimmedQuery)) {
+      where = { user: { email: trimmedQuery } };
+    } else if (trimmedQuery) {
+      try {
+        const searchResults = await searchProjectsFromMeili({
+          query: trimmedQuery,
+          type: "interview",
+          page,
+          pageSize,
+        });
+
+        if (searchResults.hits.length === 0) {
+          return {
+            success: true,
+            data: [],
+            pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+          };
+        }
+
+        orderedIds = searchResults.hits.map((hit) => extractIdFromSlug(hit.slug));
+        where = { id: { in: orderedIds } };
+        totalCount = searchResults.totalHits;
+        useDatabasePagination = false;
+      } catch (error) {
+        rootLogger.error({
+          msg: "MeiliSearch interview search failed",
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return {
+          success: true,
+          data: [],
+          pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+        };
       }
-    : {};
+    }
+  }
 
-  // Get projects with user info and session counts
   const projects = await prisma.interviewProject.findMany({
-    where: whereCondition,
+    where,
     include: {
       user: {
         select: {
@@ -58,12 +116,14 @@ export async function fetchInterviewProjects(
         },
       },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
-    skip,
-    take: pageSize,
+    orderBy: useDatabasePagination ? { createdAt: "desc" } : undefined,
+    skip: useDatabasePagination ? skip : undefined,
+    take: useDatabasePagination ? pageSize : undefined,
   });
+
+  if (useDatabasePagination) {
+    totalCount = await prisma.interviewProject.count({ where });
+  }
 
   // Get token consumption for each project
   const projectIds = projects.map((p) => p.id);
@@ -79,18 +139,24 @@ export async function fetchInterviewProjects(
     },
   });
 
-  // Create a map for quick lookup
   const tokenMap = new Map<number, number>();
   tokenConsumption.forEach((tc) => {
     if (tc.resourceId && tc._sum.value) {
-      // TokensLog中consume类型的value是负数，所以需要取绝对值
       tokenMap.set(tc.resourceId, Math.abs(tc._sum.value));
     }
   });
 
-  // Transform the data
-  const interviewProjectsData: InterviewProjectData[] = projects.map((project) => {
-    // Count human vs AI persona sessions
+  // MeiliSearch 搜索时，按返回的顺序排序
+  const sortedProjects = orderedIds
+    ? (() => {
+        const idToProject = new Map(projects.map((p) => [p.id, p]));
+        return orderedIds
+          .map((id) => idToProject.get(id))
+          .filter((p): p is (typeof projects)[0] => p !== undefined);
+      })()
+    : projects;
+
+  const interviewProjectsData: InterviewProjectData[] = sortedProjects.map((project) => {
     const humanSessionsCount = project.sessions.filter((s) => s.intervieweeUserId !== null).length;
     const aiPersonaSessionsCount = project.sessions.filter(
       (s) => s.intervieweePersonaId !== null,
@@ -108,11 +174,6 @@ export async function fetchInterviewProjects(
       totalTokens: tokenMap.get(project.id) || 0,
       createdAt: project.createdAt,
     };
-  });
-
-  // Get total count for pagination
-  const totalCount = await prisma.interviewProject.count({
-    where: whereCondition,
   });
 
   return {
