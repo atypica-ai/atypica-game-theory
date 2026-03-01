@@ -3,14 +3,14 @@
     "title": "我的 Panel",
     "subtitle": "管理和复用您的 Panel，用于讨论和访谈",
     "panelId": "Panel #{id}",
-    "personaCount": "{count} 个人物",
-    "personas": "人物",
+    "personaCount": "{count} 个 Persona",
+    "personas": "Personas",
     "discussions": "{count, plural, =0 {未使用} =1 {1 次讨论} other {# 次讨论}}",
     "interviews": "{count, plural, =0 {未访谈} =1 {1 次访谈} other {# 次访谈}}",
     "ListPage": {
       "createNewPanel": "创建新 Panel",
       "createNewPanelDescription": "开始新讨论以创建可复用的 Panel",
-      "createDescription": "描述您需要什么样的人物组合",
+      "createDescription": "描述您需要什么样的 Persona 组合",
       "createPlaceholder": "例如：我需要对可持续时尚感兴趣的 Z 世代科技爱好者",
       "createPanelOf": "创建一个包含",
       "sizeLabel": "人数",
@@ -43,6 +43,7 @@
       "researchProjects": "研究项目",
       "noProjects": "暂无研究项目",
       "noProjectsDescription": "创建新的研究项目，开始使用此 Panel 进行分析",
+      "quickResearch": "快捷研究",
       "newProject": "新建项目",
       "newProjectDescription": "描述您的研究问题或目标",
       "newProjectPlaceholder": "例如：Z世代消费者的关键购买因素是什么？",
@@ -72,14 +73,14 @@
       "deleteProjectWarning": "确定删除此研究项目？此操作无法撤销。",
       "deleteProjectSuccess": "项目已删除",
       "cannotDeleteProjectWithContent": "无法删除包含内容的项目",
-      "addPersona": "添加人物",
-      "confirmRemovePersona": "移除人物",
+      "addPersona": "添加 Persona",
+      "confirmRemovePersona": "移除 Persona",
       "removePersonaWarning": "从 Panel 中移除「{name}」？",
       "removeSuccess": "已移除",
       "running": "进行中",
       "attributes": {
-        "description": "人物描述",
-        "heading": "人物属性",
+        "description": "Persona 描述",
+        "heading": "Persona 属性",
         "role": "角色",
         "roleType": {
           "consumer": "消费者",
@@ -140,18 +141,18 @@
       "addMore": "添加 Persona",
       "confirm": "确认（{count}）",
       "personaCount": "已选择 {count} 个 Persona",
-      "panelUpdated": "Panel「{title}」已创建，包含 {count} 个人物",
+      "panelUpdated": "Panel「{title}」已创建，包含 {count} 个 Persona",
       "viewPanel": "查看 Panel"
     },
     "CreatePanelWizard": {
-      "searching": "正在搜索匹配的人物...",
-      "selectPersonas": "查看并选择 Panel 中的人物",
+      "searching": "正在搜索匹配的 Persona...",
+      "selectPersonas": "查看并选择 Panel 中的 Persona",
       "saving": "正在创建 Panel...",
       "completed": "Panel 创建成功！",
       "error": "出现错误",
       "retry": "重试",
       "viewPanel": "查看 Panel",
-      "personaCount": "{count} 个人物",
+      "personaCount": "{count} 个 Persona",
       "redirecting": "{seconds}秒后自动跳转..."
     },
     "ResearchWizard": {
@@ -198,7 +199,7 @@
       "loading": "加载对话中...",
       "noMessages": "暂无消息",
       "noInterviews": "尚未进行任何访谈",
-      "selectInterview": "选择一个人物查看访谈内容"
+      "selectInterview": "选择一个 Persona 查看访谈内容"
     }
   }
 }
