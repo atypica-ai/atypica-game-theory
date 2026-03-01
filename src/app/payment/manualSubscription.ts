@@ -1,8 +1,9 @@
 import "server-only";
 
 import { rootLogger } from "@/lib/logging";
-import { SubscriptionExtra, SubscriptionPlan } from "@/prisma/client";
+import { Currency, PaymentStatus, SubscriptionExtra, SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { ProductName } from "./data";
 import { resetTeamMonthlyTokens, resetUserMonthlyTokens } from "./monthlyTokens";
 
 const logger = rootLogger.child({ api: "manual-subscription" });
@@ -76,24 +77,156 @@ export function generateSubscriptionPeriods(
 }
 
 /**
+ * Create a manual payment record for subscriptions (admin tool use only)
+ *
+ * @param userId - User ID who owns the payment
+ * @param plan - Subscription plan
+ * @param months - Number of months
+ * @param seats - Number of seats (for team subscriptions only)
+ * @param currency - Payment currency (default: CNY)
+ * @param paidAt - Payment date (should be subscription start date for manual payments)
+ * @returns Payment record ID and details
+ */
+export async function createManualPaymentRecord({
+  userId,
+  plan,
+  months,
+  seats,
+  currency = Currency.CNY,
+  paidAt,
+}: {
+  userId: number;
+  plan: "pro" | "max" | "super" | "team" | "superteam";
+  months: number;
+  seats?: number;
+  currency?: Currency;
+  paidAt: Date;
+}): Promise<{
+  paymentRecordId: number;
+  orderNo: string;
+  productName: string;
+  price: number;
+  quantity: number;
+  amount: number;
+  currency: Currency;
+}> {
+  // Determine product name based on plan
+  let productName: ProductName;
+  if (plan === "pro") {
+    productName = ProductName.PRO1MONTH;
+  } else if (plan === "max") {
+    productName = ProductName.MAX1MONTH;
+  } else if (plan === "super") {
+    productName = ProductName.SUPER1MONTH;
+  } else if (plan === "team") {
+    productName = ProductName.TEAMSEAT1MONTH;
+  } else if (plan === "superteam") {
+    productName = ProductName.SUPERTEAMSEAT1MONTH;
+  } else {
+    throw new Error(`Invalid plan: ${plan}`);
+  }
+
+  // Find product
+  const product = await prisma.product.findUnique({
+    where: {
+      name_currency: {
+        name: productName,
+        currency: currency,
+      },
+    },
+  });
+
+  if (!product) {
+    throw new Error(`Product not found: ${productName} (${currency})`);
+  }
+
+  // Generate order number (same format as normal orders: ATP{randomPart}{timestamp})
+  const timestamp = Date.now().toString();
+  const randomPart = Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0");
+  const orderNo = `ATP${randomPart}${timestamp}`;
+
+  // Calculate quantity and amount
+  const quantity = seats ? seats * months : months;
+  const amount = product.price * quantity;
+
+  // Create payment record and payment line in transaction
+  const paymentRecord = await prisma.$transaction(async (tx) => {
+    const newPaymentRecord = await tx.paymentRecord.create({
+      data: {
+        userId: userId,
+        orderNo: orderNo,
+        amount: amount,
+        currency: currency,
+        status: PaymentStatus.succeeded,
+        paymentMethod: "manual",
+        description: `Manual payment - ${productName} × ${quantity}`,
+        paidAt: paidAt,
+        createdAt: paidAt,
+        updatedAt: paidAt,
+      },
+    });
+
+    await tx.paymentLine.create({
+      data: {
+        paymentRecordId: newPaymentRecord.id,
+        productId: product.id,
+        productName: product.name,
+        description: product.description,
+        quantity: quantity,
+        price: product.price,
+        currency: currency,
+      },
+    });
+
+    logger.info({
+      msg: `Created manual payment record ${newPaymentRecord.id}`,
+      paymentRecordId: newPaymentRecord.id,
+      userId,
+      orderNo,
+      amount,
+      currency,
+      productName,
+      quantity,
+    });
+
+    return newPaymentRecord;
+  });
+
+  return {
+    paymentRecordId: paymentRecord.id,
+    orderNo: paymentRecord.orderNo,
+    productName,
+    price: product.price,
+    quantity,
+    amount,
+    currency,
+  };
+}
+
+/**
  * Manually add subscription for a personal user (admin tool use only)
  * Creates consecutive monthly subscription records
  *
  * @param userId - User ID (must be a personal user, not team member)
- * @param plan - Subscription plan (pro or max only)
+ * @param plan - Subscription plan (pro, max, or super)
  * @param startsAt - Start date of the first subscription
  * @param months - Number of months to add (each month creates one subscription record)
+ * @param paymentRecordId - Optional payment record ID to associate with subscriptions
  */
 export async function manuallyAddSubscription({
   userId,
   plan,
   startsAt,
   months,
+  paymentRecordId,
 }: {
   userId: number;
   plan: "pro" | "max" | "super";
   startsAt: Date;
   months: number;
+  paymentRecordId?: number;
 }): Promise<void> {
   // Validate months parameter
   if (months < 1 || !Number.isInteger(months)) {
@@ -169,7 +302,7 @@ export async function manuallyAddSubscription({
         plan: subscriptionPlan,
         startsAt: period.startsAt,
         endsAt: period.endsAt,
-        // No paymentRecordId or stripeSubscriptionId for manual subscriptions
+        ...(paymentRecordId ? { paymentRecordId } : {}),
       },
     });
 
@@ -209,14 +342,12 @@ export async function manuallyAddSubscription({
  * Manually add team subscription (admin tool use only)
  * Creates consecutive monthly subscription records for a team
  *
- * Note: This function creates subscriptions without associating a userId.
- * Unlike payment-based subscriptions that require a team identity user,
- * admin-created subscriptions only need to be associated with the team.
- *
  * @param teamId - Team ID
  * @param seats - Number of seats for the subscription
+ * @param plan - Subscription plan (team or superteam)
  * @param startsAt - Start date of the first subscription
  * @param months - Number of months to add (each month creates one subscription record)
+ * @param paymentRecordId - Optional payment record ID to associate with subscriptions
  */
 export async function manuallyAddTeamSubscription({
   teamId,
@@ -224,12 +355,14 @@ export async function manuallyAddTeamSubscription({
   plan,
   startsAt,
   months,
+  paymentRecordId,
 }: {
   teamId: number;
   seats: number;
   plan: "team" | "superteam";
   startsAt: Date;
   months: number;
+  paymentRecordId?: number;
 }): Promise<void> {
   // Validate months parameter
   if (months < 1 || !Number.isInteger(months)) {
@@ -291,20 +424,32 @@ export async function manuallyAddTeamSubscription({
     );
   }
 
+  // If paymentRecordId is provided, get the userId from PaymentRecord
+  let paymentUserId: number | undefined = undefined;
+  if (paymentRecordId) {
+    const paymentRecord = await prisma.paymentRecord.findUnique({
+      where: { id: paymentRecordId },
+      select: { userId: true },
+    });
+    if (!paymentRecord) {
+      throw new Error(`PaymentRecord with ID ${paymentRecordId} not found`);
+    }
+    paymentUserId = paymentRecord.userId;
+  }
+
   // Create subscription records (one per month)
   const subscriptions = [];
   for (const period of subscriptionPeriods) {
     const subscription = await prisma.subscription.create({
       data: {
-        // No userId for admin-created team subscriptions.
-        // If userId were to be set, it should be a team user (with teamIdAsMember),
-        // NOT a personal user (team.ownerUserId).
+        // If paymentRecordId is provided, use the userId from PaymentRecord (should be a team user)
+        ...(paymentUserId ? { userId: paymentUserId } : {}),
         teamId,
         plan: subscriptionPlan,
         startsAt: period.startsAt,
         endsAt: period.endsAt,
         extra: { seats } satisfies SubscriptionExtra,
-        // No paymentRecordId or stripeSubscriptionId for manual subscriptions
+        ...(paymentRecordId ? { paymentRecordId } : {}),
       },
     });
 

@@ -221,7 +221,8 @@ async function listTeams(ownerEmail: string) {
 
 async function addSubscription(args: string[]) {
   loadEnvConfig(process.cwd());
-  const { manuallyAddSubscription } = await import("@/app/payment/manualSubscription");
+  const { manuallyAddSubscription, createManualPaymentRecord } =
+    await import("@/app/payment/manualSubscription");
   const { prisma } = await import("@/prisma/prisma");
 
   try {
@@ -245,7 +246,7 @@ async function addSubscription(args: string[]) {
       process.exit(1);
     }
 
-    const { email, plan, start: startDateStr, months: monthsStr } = params;
+    const { email, plan, start: startDateStr, months: monthsStr, currency } = params;
 
     // Validate plan
     if (plan !== "pro" && plan !== "max" && plan !== "super") {
@@ -267,6 +268,12 @@ async function addSubscription(args: string[]) {
       process.exit(1);
     }
 
+    // Validate currency (optional, defaults to CNY)
+    if (currency && currency !== "CNY" && currency !== "USD") {
+      console.error(`Error: Invalid currency "${currency}". Must be "CNY" or "USD"`);
+      process.exit(1);
+    }
+
     // Find user by email
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
@@ -283,12 +290,25 @@ async function addSubscription(args: string[]) {
       process.exit(1);
     }
 
-    // Add subscription (manuallyAddSubscription will check for overlapping subscriptions)
+    // Import Currency type
+    const { Currency } = await import("@/prisma/client");
+
+    // Create payment record first
+    const payment = await createManualPaymentRecord({
+      userId: user.id,
+      plan: plan as "pro" | "max" | "super",
+      months,
+      currency: (currency as typeof Currency.CNY | typeof Currency.USD) || Currency.CNY,
+      paidAt: startDate,
+    });
+
+    // Add subscription with payment record ID
     await manuallyAddSubscription({
       userId: user.id,
       plan: plan as "pro" | "max" | "super",
       startsAt: startDate,
       months,
+      paymentRecordId: payment.paymentRecordId,
     });
 
     console.log(`Subscription added successfully:`);
@@ -297,6 +317,14 @@ async function addSubscription(args: string[]) {
     console.log(`  Plan: ${plan}`);
     console.log(`  Start Date: ${startDate.toISOString()}`);
     console.log(`  Months: ${months}`);
+    console.log(``);
+    console.log(`Payment Record:`);
+    console.log(`  Payment Record ID: ${payment.paymentRecordId}`);
+    console.log(`  Order No: ${payment.orderNo}`);
+    console.log(`  Product: ${payment.productName}`);
+    console.log(`  Price per month: ${payment.price} ${payment.currency}`);
+    console.log(`  Quantity: ${payment.quantity} month(s)`);
+    console.log(`  Total Amount: ${payment.amount} ${payment.currency}`);
   } catch (error) {
     console.error(`Error adding subscription: ${(error as Error).message}`);
     process.exit(1);
@@ -305,7 +333,8 @@ async function addSubscription(args: string[]) {
 
 async function addTeamSubscription(args: string[]) {
   loadEnvConfig(process.cwd());
-  const { manuallyAddTeamSubscription } = await import("@/app/payment/manualSubscription");
+  const { manuallyAddTeamSubscription, createManualPaymentRecord } =
+    await import("@/app/payment/manualSubscription");
   const { prisma } = await import("@/prisma/prisma");
 
   try {
@@ -314,6 +343,10 @@ async function addTeamSubscription(args: string[]) {
     // Validate required parameters
     if (!params.teamId) {
       console.error("Error: Missing --teamId parameter");
+      process.exit(1);
+    }
+    if (!params.plan) {
+      console.error("Error: Missing --plan parameter");
       process.exit(1);
     }
     if (!params.seats) {
@@ -335,6 +368,7 @@ async function addTeamSubscription(args: string[]) {
       seats: seatsStr,
       start: startDateStr,
       months: monthsStr,
+      currency,
     } = params;
 
     // Parse teamId
@@ -370,6 +404,12 @@ async function addTeamSubscription(args: string[]) {
       process.exit(1);
     }
 
+    // Validate currency (optional, defaults to CNY)
+    if (currency && currency !== "CNY" && currency !== "USD") {
+      console.error(`Error: Invalid currency "${currency}". Must be "CNY" or "USD"`);
+      process.exit(1);
+    }
+
     // Check if team exists
     const team = await prisma.team.findUnique({
       where: { id: teamId },
@@ -381,22 +421,60 @@ async function addTeamSubscription(args: string[]) {
       process.exit(1);
     }
 
-    // Add team subscription
+    // Import Currency type
+    const { Currency } = await import("@/prisma/client");
+
+    // Find a team user for this team (usually the owner's team identity)
+    const teamUser = await prisma.user.findFirst({
+      where: {
+        teamIdAsMember: teamId,
+        personalUserId: team.ownerUserId,
+      },
+    });
+
+    if (!teamUser) {
+      console.error(`Error: No team user found for team ${teamId}`);
+      console.error(`Team must have at least one team user (identity user)`);
+      process.exit(1);
+    }
+
+    // Create payment record first (using team user's ID, not owner's ID)
+    const payment = await createManualPaymentRecord({
+      userId: teamUser.id,
+      plan: plan as "team" | "superteam",
+      months,
+      seats,
+      currency: (currency as typeof Currency.CNY | typeof Currency.USD) || Currency.CNY,
+      paidAt: startDate,
+    });
+
+    // Add team subscription with payment record ID
     await manuallyAddTeamSubscription({
       teamId,
       seats,
       plan: plan as "team" | "superteam",
       startsAt: startDate,
       months,
+      paymentRecordId: payment.paymentRecordId,
     });
 
     console.log(`Team subscription added successfully:`);
     console.log(`  Team ID: ${teamId}`);
     console.log(`  Team Name: ${team.name}`);
     console.log(`  Owner Email: ${team.ownerUser.email}`);
+    console.log(`  Plan: ${plan}`);
     console.log(`  Seats: ${seats}`);
     console.log(`  Start Date: ${startDate.toISOString()}`);
     console.log(`  Months: ${months}`);
+    console.log(``);
+    console.log(`Payment Record:`);
+    console.log(`  Payment Record ID: ${payment.paymentRecordId}`);
+    console.log(`  Order No: ${payment.orderNo}`);
+    console.log(`  Product: ${payment.productName}`);
+    console.log(`  Price per seat: ${payment.price} ${payment.currency}`);
+    console.log(`  Seats: ${seats}`);
+    console.log(`  Quantity: ${payment.quantity} (${seats} seats × ${months} months)`);
+    console.log(`  Total Amount: ${payment.amount} ${payment.currency}`);
   } catch (error) {
     console.error(`Error adding team subscription: ${(error as Error).message}`);
     process.exit(1);
@@ -413,10 +491,10 @@ async function main() {
     console.error("  pnpm tsx scripts/admintool.ts create-team <owner-email> <team-name>");
     console.error("  pnpm tsx scripts/admintool.ts list-teams <owner-email>");
     console.error(
-      "  pnpm tsx scripts/admintool.ts add-subscription --email <email> --plan <pro|max|super> --start <YYYY-MM-DD> --months <number>",
+      "  pnpm tsx scripts/admintool.ts add-subscription --email <email> --plan <pro|max|super> --start <YYYY-MM-DD> --months <number> [--currency <CNY|USD>]",
     );
     console.error(
-      "  pnpm tsx scripts/admintool.ts add-team-subscription --teamId <id> --plan <team|superteam> --seats <number> --start <YYYY-MM-DD> --months <number>",
+      "  pnpm tsx scripts/admintool.ts add-team-subscription --teamId <id> --plan <team|superteam> --seats <number> --start <YYYY-MM-DD> --months <number> [--currency <CNY|USD>]",
     );
     process.exit(1);
   }
