@@ -430,8 +430,8 @@ model PaymentRecord {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  paymentLines PaymentLine[]
-  subscription Subscription?
+  paymentLines  PaymentLine[]
+  subscriptions Subscription[]
 
   @@index([userId])
 }
@@ -475,7 +475,7 @@ model Subscription {
   /// [SubscriptionExtra]
   extra    Json             @default("{}")
 
-  paymentRecordId      Int?           @unique //一个支付记录只能生成一条 Subscription
+  paymentRecordId      Int? // 一个支付记录可以关联多条 Subscription（例如：一次性支付12个月，生成12条月度订阅记录）
   paymentRecord        PaymentRecord? @relation(fields: [paymentRecordId], references: [id])
   stripeSubscriptionId String?        @db.VarChar(50)
 
