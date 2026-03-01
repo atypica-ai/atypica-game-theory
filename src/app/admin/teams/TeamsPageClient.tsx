@@ -240,8 +240,7 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
               <TableHead>Owner</TableHead>
               <TableHead className="text-right">Members / Seats</TableHead>
               <TableHead>⚙️</TableHead>
-              <TableHead className="text-right">Subscriptions</TableHead>
-              <TableHead className="text-right">Payments</TableHead>
+              <TableHead className="text-right">Subscription</TableHead>
               <TableHead className="text-right">Tokens</TableHead>
               <TableHead>⚙️</TableHead>
               <TableHead>Created At</TableHead>
@@ -251,7 +250,7 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
           <TableBody>
             {teams.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="text-center text-sm">
+                <TableCell colSpan={10} className="text-center text-sm">
                   No teams found
                 </TableCell>
               </TableRow>
@@ -279,10 +278,11 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
                     </Button>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm text-right">
-                    {team._count.subscriptions}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-right">
-                    {team._count.paymentRecords}
+                    <div>订阅: {team._count.subscriptions}</div>
+                    <div>付款: {team._count.paymentRecords}</div>
+                    <div className="text-xs text-muted-foreground">
+                      ¥{team.totalPaymentAmount.toLocaleString()}
+                    </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm text-right">
                     {formatTokensNumber(

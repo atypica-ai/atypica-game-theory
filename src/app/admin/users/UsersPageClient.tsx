@@ -315,7 +315,7 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead className="text-right">Paid</TableHead>
+              <TableHead className="text-right">Subscription</TableHead>
               <TableHead className="text-center">Tokens</TableHead>
               <TableHead>Last Login</TableHead>
               <TableHead>Onboarding</TableHead>
@@ -363,9 +363,12 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                     </div>
                   ) : null}
                 </TableCell>
-                {/* TODO: 去要按照 currency 区分 */}
                 <TableCell className="whitespace-nowrap text-sm text-right">
-                  {user.paymentRecords.reduce((acc, r) => acc + r.amount, 0)}
+                  <div>订阅: {user._count.subscriptions}</div>
+                  <div>付款: {user._count.paymentRecords}</div>
+                  <div className="text-xs text-muted-foreground">
+                    ¥{user.totalPaymentAmount.toLocaleString()}
+                  </div>
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-sm text-right pr-6">
                   <div className="inline-block align-middle mr-2">

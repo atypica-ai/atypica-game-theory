@@ -71,6 +71,7 @@ export default function StatisticsPage() {
         date: format(new Date(day.date), "MM-dd"),
         Users: day.users.total,
         Payments: day.payments.total,
+        "Payment Amount": day.payments.amount,
         Studies: day.studies.total,
       }))
       .reverse();
@@ -82,6 +83,7 @@ export default function StatisticsPage() {
       (acc, day) => {
         acc.users += day.users.total;
         acc.payments += day.payments.total;
+        acc.paymentAmount += day.payments.amount;
         acc.studies += day.studies.total;
 
         for (const kind of Object.keys(acc.studiesByKind)) {
@@ -96,6 +98,7 @@ export default function StatisticsPage() {
       {
         users: 0,
         payments: 0,
+        paymentAmount: 0,
         studies: 0,
         studiesByKind: {
           [AnalystKind.testing]: 0,
@@ -268,7 +271,7 @@ export default function StatisticsPage() {
         <CardHeader>
           <CardTitle>Totals for Selected Period</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
           <div className="p-4 rounded-lg bg-muted">
             <p className="text-sm text-muted-foreground">New Users</p>
             <p className="text-3xl font-bold">{totalStats.users.toLocaleString()}</p>
@@ -276,6 +279,10 @@ export default function StatisticsPage() {
           <div className="p-4 rounded-lg bg-muted">
             <p className="text-sm text-muted-foreground">Successful Payments</p>
             <p className="text-3xl font-bold">{totalStats.payments.toLocaleString()}</p>
+          </div>
+          <div className="p-4 rounded-lg bg-muted">
+            <p className="text-sm text-muted-foreground">Payment Amount</p>
+            <p className="text-3xl font-bold">¥{totalStats.paymentAmount.toLocaleString()}</p>
           </div>
           <div className="p-4 rounded-lg bg-muted">
             <p className="text-sm text-muted-foreground">Total Studies</p>

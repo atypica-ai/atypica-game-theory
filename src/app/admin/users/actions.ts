@@ -27,6 +27,8 @@ export async function fetchUsers(
     (Pick<User, "id" | "name" | "email" | "createdAt" | "emailVerified"> & {
       tokensAccount: { permanentBalance: number; monthlyBalance: number } | null;
       paymentRecords: { id: number; amount: number; currency: Currency }[];
+      _count: { subscriptions: number; paymentRecords: number };
+      totalPaymentAmount: number;
       adminUser: { role: AdminRole; permissions: AdminPermission[] } | null;
       profile: {
         lastLogin: UserLastLogin;
@@ -92,6 +94,11 @@ export async function fetchUsers(
             permissions: true,
           },
         },
+        _count: {
+          select: {
+            subscriptions: true,
+          },
+        },
       },
     }),
     prisma.user.count({ where }),
@@ -99,22 +106,30 @@ export async function fetchUsers(
 
   return {
     success: true,
-    data: users.map((user) => ({
-      ...user,
-      adminUser: user.adminUser
-        ? {
-            ...user.adminUser,
-            permissions: user.adminUser.permissions as AdminPermission[],
-          }
-        : null,
-      profile: user.profile
-        ? {
-            lastLogin: user.profile.lastLogin as UserLastLogin,
-            onboarding: user.profile.onboarding as UserOnboardingData,
-            extra: user.profile.extra as UserProfileExtra,
-          }
-        : null,
-    })),
+    data: users.map((user) => {
+      const totalPaymentAmount = user.paymentRecords.reduce((sum, pr) => sum + pr.amount, 0);
+      return {
+        ...user,
+        _count: {
+          subscriptions: user._count.subscriptions,
+          paymentRecords: user.paymentRecords.length,
+        },
+        totalPaymentAmount,
+        adminUser: user.adminUser
+          ? {
+              ...user.adminUser,
+              permissions: user.adminUser.permissions as AdminPermission[],
+            }
+          : null,
+        profile: user.profile
+          ? {
+              lastLogin: user.profile.lastLogin as UserLastLogin,
+              onboarding: user.profile.onboarding as UserOnboardingData,
+              extra: user.profile.extra as UserProfileExtra,
+            }
+          : null,
+      };
+    }),
     pagination: {
       page,
       pageSize,

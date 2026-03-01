@@ -15,6 +15,7 @@ export type DailyStatistics = {
   };
   payments: {
     total: number;
+    amount: number;
   };
   studies: {
     total: number;
@@ -77,7 +78,7 @@ export async function fetchDailyStatistics(
       statsMap.set(dateStr, {
         date: dateStr,
         users: { total: 0 },
-        payments: { total: 0 },
+        payments: { total: 0, amount: 0 },
         studies: {
           total: 0,
           byKind: {
@@ -111,9 +112,11 @@ export async function fetchDailyStatistics(
       GROUP BY date;
     `;
 
-    // Daily successful payments
-    const paymentQuery = prismaRO.$queryRaw<[{ date: Date; total: bigint }]>`
-      SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date, COUNT(id) as total
+    // Daily successful payments (count and amount)
+    const paymentQuery = prismaRO.$queryRaw<[{ date: Date; total: bigint; amount: number }]>`
+      SELECT DATE("createdAt" AT TIME ZONE ${timezone})::date as date,
+             COUNT(id) as total,
+             SUM(amount) as amount
       FROM "PaymentRecord"
       WHERE "status" = 'succeeded'
         AND "createdAt" >= (${startTimestampInUserTZ}::timestamp AT TIME ZONE ${timezone})
@@ -185,7 +188,10 @@ export async function fetchDailyStatistics(
 
     paymentResults.forEach((row) => {
       const dayStats = statsMap.get(formatDate(row.date));
-      if (dayStats) dayStats.payments.total = Number(row.total);
+      if (dayStats) {
+        dayStats.payments.total = Number(row.total);
+        dayStats.payments.amount = Number(row.amount) || 0;
+      }
     });
 
     totalStudiesResults.forEach((row) => {

@@ -20,6 +20,7 @@ export async function fetchTeams(
       ownerUser: Pick<User, "id" | "email">;
       tokensAccount: { permanentBalance: number; monthlyBalance: number } | null;
       _count: { members: number; subscriptions: number; paymentRecords: number };
+      totalPaymentAmount: number;
     })[]
   >
 > {
@@ -70,25 +71,31 @@ export async function fetchTeams(
     prisma.team.count({ where }),
   ]);
 
-  // Get payment records count for each team (through team members)
+  // Get payment records count and total amount for each team (through team members)
   const teamsWithPaymentCount = await Promise.all(
     teams.map(async (team) => {
-      const paymentRecordsCount = await prisma.paymentRecord.count({
+      const paymentRecords = await prisma.paymentRecord.findMany({
         where: {
           status: "succeeded",
           user: {
             teamIdAsMember: team.id,
           },
         },
+        select: {
+          id: true,
+          amount: true,
+        },
       });
+      const totalPaymentAmount = paymentRecords.reduce((sum, pr) => sum + pr.amount, 0);
       const { members, ...teamWithoutMembers } = team;
       return {
         ...teamWithoutMembers,
         _count: {
           ...team._count,
           members: members.length, // Count of active members (personalUserId not null)
-          paymentRecords: paymentRecordsCount,
+          paymentRecords: paymentRecords.length,
         },
+        totalPaymentAmount,
       };
     }),
   );

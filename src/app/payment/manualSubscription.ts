@@ -181,6 +181,8 @@ export async function createManualPaymentRecord({
         quantity: quantity,
         price: product.price,
         currency: currency,
+        createdAt: paidAt,
+        updatedAt: paidAt,
       },
     });
 
