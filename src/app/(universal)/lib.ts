@@ -3,10 +3,13 @@ import "server-only";
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
+import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { ChatMessageAttachment, UserChat, UserChatExtra, UserChatKind } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { syncProject as syncProjectToMeili } from "@/search/lib/sync";
+import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
 import { getLocale } from "next-intl/server";
 
@@ -71,6 +74,17 @@ export async function createUniversalUserChat({
 
     return chat;
   });
+
+  // 同步到 Meilisearch（创建时 title 已就绪）
+  waitUntil(
+    syncProjectToMeili({ type: "universal", id: userChat.id }).catch((error) => {
+      rootLogger.error({
+        msg: "Failed to sync universal to search",
+        userChatId: userChat.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }),
+  );
 
   return {
     ...userChat,

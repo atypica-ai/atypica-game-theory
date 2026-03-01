@@ -9,6 +9,7 @@ import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { createUserChat, generateChatTitle } from "@/lib/userChat/lib";
 import { ChatMessageAttachment, UserChat, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { syncProject as syncProjectToMeili } from "@/search/lib/sync";
 import { waitUntil } from "@vercel/functions";
 import { generateId } from "ai";
 import { getLocale } from "next-intl/server";
@@ -176,6 +177,17 @@ export async function saveAnalystFromPlan({
         studyTopic: topic,
       },
     });
+
+    // 同步到 Meilisearch
+    waitUntil(
+      syncProjectToMeili({ type: "study", id: userChat.id }).catch((error) => {
+        rootLogger.error({
+          msg: "Failed to sync study to search",
+          userChatId: userChat.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }),
+    );
 
     const logger = rootLogger.child({
       userChatToken,

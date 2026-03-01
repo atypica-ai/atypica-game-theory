@@ -91,8 +91,19 @@ pnpm tsx scripts/admin/search-management.ts sync-projects --limit 100
 
 ## 自动同步
 
-- **Report 和 Podcast** 生成后会**自动同步**到 Meilisearch，无需手动操作
-- **Persona** 创建/更新后需要手动同步（或实现自动同步钩子）
+每条记录在创建/数据就绪后自动推送到 Meilisearch：
+
+| 类型 | 同步时机 | 文件 | 方法 |
+|------|----------|------|------|
+| Report | 报告生成完成后 | `src/app/(study)/tools/generateReport/index.ts` | `execute()` 内 `waitUntil(syncReport())` |
+| Report | Admin feature/unfeature | `src/app/admin/studies/reports/actions.ts` | `featureReportAction()` 内 `waitUntil(syncReport())` |
+| Podcast | 播客生成完成后 | `src/app/(study)/tools/generatePodcast/index.ts` | `execute()` 内 `waitUntil(syncPodcast())` |
+| Podcast | Admin feature/unfeature | `src/app/admin/studies/podcasts/actions.ts` | `featurePodcastAction()` 内 `waitUntil(syncPodcast())` |
+| Persona | 创建后异步处理 | `src/app/(persona)/lib.ts` | `createPersona()` 内 `after(syncPersona())` |
+| Study | studyTopic 设置后 | `src/app/(study)/study/lib.ts` | `saveAnalystFromPlan()` 内 `waitUntil(syncProject({ type: "study" }))` |
+| Universal | UserChat 创建时 | `src/app/(universal)/lib.ts` | `createUniversalUserChat()` 内 `waitUntil(syncProject({ type: "universal" }))` |
+| Interview | Project 创建时 | `src/app/(interviewProject)/actions.ts` | `createInterviewProject()` 内 `waitUntil(syncProject({ type: "interview" }))` |
+| Panel | title 生成完成后 | `src/app/(panel)/lib/persistence.ts` | `createPersonaPanel()` 内 `after(generateTitle().then(syncProject()))` |
 
 ## 搜索功能
 

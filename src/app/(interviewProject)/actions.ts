@@ -16,6 +16,7 @@ import {
 } from "@/prisma/client";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
+import { syncProject as syncProjectToMeili } from "@/search/lib/sync";
 import { getUserTokens } from "@/tokens/lib";
 import { waitUntil } from "@vercel/functions";
 import { Locale } from "next-intl";
@@ -145,6 +146,17 @@ export async function createInterviewProject(
         hasPresetQuestions: Boolean(presetQuestions),
       },
     });
+
+    // 同步到 Meilisearch
+    waitUntil(
+      syncProjectToMeili({ type: "interview", id: project.id }).catch((error) => {
+        rootLogger.error({
+          msg: "Failed to sync interview project to search",
+          projectId: project.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }),
+    );
 
     // Auto-generate questions if no preset questions provided
     if (!presetQuestions) {

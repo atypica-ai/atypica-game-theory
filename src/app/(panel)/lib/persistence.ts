@@ -6,6 +6,7 @@ import { detectInputLanguage } from "@/lib/textUtils";
 import { PersonaPanel } from "@/prisma/client";
 import { DiscussionTimelineUpdateInput } from "@/prisma/generated/internal/prismaNamespace";
 import { prisma } from "@/prisma/prisma";
+import { syncProject as syncProjectToMeili } from "@/search/lib/sync";
 import { OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import { Locale } from "next-intl";
@@ -68,14 +69,24 @@ export async function createPersonaPanel({
     });
     rootLogger.info(`Panel config saved with id: ${personaPanel.id}`);
 
-    // Generate title asynchronously
+    // Generate title asynchronously, then sync to Meilisearch
     after(
-      generatePersonaPanelTitle(personaPanel.id).catch((error) => {
-        rootLogger.error({
-          msg: `Failed to generate title for panel ${personaPanel.id}`,
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }),
+      generatePersonaPanelTitle(personaPanel.id)
+        .then(() =>
+          syncProjectToMeili({ type: "panel", id: personaPanel.id }).catch((error) => {
+            rootLogger.error({
+              msg: "Failed to sync panel to search",
+              panelId: personaPanel.id,
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }),
+        )
+        .catch((error) => {
+          rootLogger.error({
+            msg: `Failed to generate title for panel ${personaPanel.id}`,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }),
     );
 
     return personaPanel;
