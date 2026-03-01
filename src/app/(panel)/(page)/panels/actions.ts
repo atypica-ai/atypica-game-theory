@@ -8,7 +8,9 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import type { Persona } from "@/prisma/client";
+import { PersonaPanelWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
+import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
 import { getToolName, isToolUIPart } from "ai";
 import { getLocale } from "next-intl/server";
 import { after } from "next/server";
@@ -30,13 +32,48 @@ export interface PersonaPanelWithDetails {
   };
 }
 
-export async function fetchUserPersonaPanels(): Promise<
-  ServerActionResult<PersonaPanelWithDetails[]>
-> {
+/**
+ * 从 slug 提取 ID（格式：panel-123）
+ */
+function extractPanelIdFromSlug(slug: string): number {
+  const match = slug.match(/^panel-(\d+)$/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+export async function fetchUserPersonaPanels(
+  searchQuery?: string,
+): Promise<ServerActionResult<PersonaPanelWithDetails[]>> {
   return withAuth(async (user) => {
+    let where: PersonaPanelWhereInput = { userId: user.id };
+    let orderedIds: number[] | null = null;
+
+    if (searchQuery?.trim()) {
+      try {
+        const searchResults = await searchProjectsFromMeili({
+          query: searchQuery.trim(),
+          type: "panel",
+          userId: user.id,
+          pageSize: 100,
+        });
+
+        if (searchResults.hits.length === 0) {
+          return { success: true, data: [] };
+        }
+
+        orderedIds = searchResults.hits.map((hit) => extractPanelIdFromSlug(hit.slug));
+        where = { userId: user.id, id: { in: orderedIds } };
+      } catch (error) {
+        rootLogger.error({
+          msg: "MeiliSearch panel search failed",
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return { success: true, data: [] };
+      }
+    }
+
     const panels = await prisma.personaPanel.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
+      where,
+      orderBy: orderedIds ? undefined : { createdAt: "desc" },
       include: {
         discussionTimelines: { select: { id: true } },
         analystInterviews: { select: { id: true } },
@@ -76,7 +113,17 @@ export async function fetchUserPersonaPanels(): Promise<
       },
     }));
 
-    return { success: true, data: panelsWithDetails };
+    // MeiliSearch 搜索时，按返回的顺序排序
+    const sortedPanels = orderedIds
+      ? (() => {
+          const idToPanel = new Map(panelsWithDetails.map((p) => [p.id, p]));
+          return orderedIds
+            .map((id) => idToPanel.get(id))
+            .filter((p): p is PersonaPanelWithDetails => p !== undefined);
+        })()
+      : panelsWithDetails;
+
+    return { success: true, data: sortedPanels };
   });
 }
 

@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn, formatDate } from "@/lib/utils";
 import { PersonaExtra } from "@/prisma/client";
 import useSWR from "swr";
+import { Input } from "@/components/ui/input";
 import {
   AlertCircle,
   ArrowRight,
@@ -33,14 +34,16 @@ import {
   Loader2,
   MessageCircle,
   Plus,
+  SearchIcon,
   Sparkles,
   Trash2,
   Upload,
+  XIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   createPanelViaAgent,
@@ -80,6 +83,8 @@ export function PersonaPanelsListClient() {
   const router = useRouter();
   const [panels, setPanels] = useState<PersonaPanelWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
   const [creating, setCreating] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [deletingPanelId, setDeletingPanelId] = useState<number | null>(null);
@@ -120,18 +125,28 @@ export function PersonaPanelsListClient() {
 
   const loadPanels = useCallback(async () => {
     setLoading(true);
-    const result = await fetchUserPersonaPanels();
+    const result = await fetchUserPersonaPanels(searchQuery || undefined);
     if (result.success) {
       setPanels(result.data);
     } else {
       toast.error(t("ListPage.loadingFailed"));
     }
     setLoading(false);
-  }, [t]);
+  }, [t, searchQuery]);
 
   useEffect(() => {
     loadPanels();
   }, [loadPanels]);
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    setSearchQuery(inputRef.current?.value ?? "");
+  };
+
+  const clearSearch = () => {
+    if (inputRef.current) inputRef.current.value = "";
+    setSearchQuery("");
+  };
 
   const handleDeletePanel = useCallback(
     (panel: PersonaPanelWithDetails) => {
@@ -528,6 +543,29 @@ export function PersonaPanelsListClient() {
             <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
             <p className="mt-1.5 text-sm text-muted-foreground">{t("subtitle")}</p>
           </div>
+
+          {/* Search */}
+          <form onSubmit={handleSearch} className="flex gap-2 max-w-xl">
+            <div className="relative flex-1">
+              <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                ref={inputRef}
+                defaultValue={searchQuery}
+                placeholder={t("ListPage.searchPlaceholder")}
+                className="pl-8"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+                >
+                  <XIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <Button type="submit">{t("ListPage.search")}</Button>
+          </form>
 
           {/* Panels Grid */}
           {panels.length > 0 ? (

@@ -78,7 +78,9 @@
       "updating": "Updating",
       "processing": "Processing",
       "starting": "Starting...",
-      "loadingFailed": "Failed to load AI Personas"
+      "loadingFailed": "Failed to load AI Personas",
+      "searchPlaceholder": "Search personas...",
+      "search": "Search"
     },
     "personaChat": {
       "details": "Details",

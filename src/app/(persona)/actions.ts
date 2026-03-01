@@ -13,6 +13,7 @@ import {
   UserChat,
 } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { waitUntil } from "@vercel/functions";
 import { generateId, UIMessage } from "ai";
 import { notFound } from "next/navigation";
@@ -245,7 +246,17 @@ export async function fetchFollowUpInterviewChat(
   };
 }
 
-export async function fetchUserPersonas(): Promise<
+/**
+ * 从 slug 提取 ID（格式：persona-123）
+ */
+function extractPersonaIdFromSlug(slug: string): number {
+  const match = slug.match(/^persona-(\d+)$/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+export async function fetchUserPersonas(
+  searchQuery?: string,
+): Promise<
   ServerActionResult<
     Array<
       Pick<Persona, "name" | "source" | "personaImportId" | "tier" | "createdAt"> & {
@@ -257,16 +268,38 @@ export async function fetchUserPersonas(): Promise<
   >
 > {
   return withAuth(async (user) => {
+    let orderedIds: number[] | null = null;
+    let whereId: { in: number[] } | undefined = undefined;
+
+    if (searchQuery?.trim()) {
+      try {
+        const searchResults = await searchPersonasFromMeili({
+          query: searchQuery.trim(),
+          userId: user.id,
+          pageSize: 100,
+        });
+
+        if (searchResults.hits.length === 0) {
+          return { success: true, data: [] };
+        }
+
+        orderedIds = searchResults.hits.map((hit) => extractPersonaIdFromSlug(hit.slug));
+        whereId = { in: orderedIds };
+      } catch {
+        return { success: true, data: [] };
+      }
+    }
+
     const personas = await prisma.persona.findMany({
       where: {
+        ...(whereId ? { id: whereId } : {}),
         personaImport: {
           userId: user.id,
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: orderedIds ? undefined : { createdAt: "desc" },
       select: {
+        id: true,
         token: true,
         name: true,
         source: true,
@@ -278,15 +311,26 @@ export async function fetchUserPersonas(): Promise<
       },
     });
 
-    return {
-      success: true,
-      data: personas.map(({ personaImport, token, tags, ...persona }) => ({
-        ...persona,
-        token,
-        tags,
-        personaImportProcessing: Boolean(personaImport?.extra && personaImport.extra.processing),
-      })),
-    };
+    const mappedPersonas = personas.map(({ personaImport, token, tags, id, ...persona }) => ({
+      ...persona,
+      id,
+      token,
+      tags,
+      personaImportProcessing: Boolean(personaImport?.extra && personaImport.extra.processing),
+    }));
+
+    // MeiliSearch 搜索时，按返回的顺序排序
+    if (orderedIds) {
+      const idToPersona = new Map(mappedPersonas.map((p) => [p.id, p]));
+      return {
+        success: true,
+        data: orderedIds
+          .map((id) => idToPersona.get(id))
+          .filter((p): p is (typeof mappedPersonas)[0] => p !== undefined),
+      };
+    }
+
+    return { success: true, data: mappedPersonas };
   });
 }
 

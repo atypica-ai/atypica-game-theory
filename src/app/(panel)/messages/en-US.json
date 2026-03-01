@@ -26,6 +26,8 @@
       "importFromPDF": "Import Personas from interview PDF →",
       "create": "Create",
       "creating": "Creating...",
+      "searchPlaceholder": "Search panels...",
+      "search": "Search",
       "startDiscussion": "Start Discussion",
       "andMore": "+{count} more",
       "loadingFailed": "Failed to load persona panels",

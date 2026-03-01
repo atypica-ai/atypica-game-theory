@@ -26,6 +26,8 @@
       "importFromPDF": "从访谈 PDF 导入 Persona →",
       "create": "创建",
       "creating": "创建中...",
+      "searchPlaceholder": "搜索 Panel...",
+      "search": "搜索",
       "startDiscussion": "开始讨论",
       "andMore": "还有 {count} 个",
       "loadingFailed": "加载 Panel 失败",

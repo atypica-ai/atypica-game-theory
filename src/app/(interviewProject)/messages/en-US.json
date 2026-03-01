@@ -46,7 +46,9 @@
       "humanSessions": "Human",
       "aiSessions": "AI Persona",
       "loadFailed": "Failed to load projects",
-      "optimizing": "Optimizing"
+      "optimizing": "Optimizing",
+      "searchPlaceholder": "Search interview projects...",
+      "search": "Search"
     },
     "projectDetails": {
       "title": "Interview Project",

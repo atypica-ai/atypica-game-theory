@@ -14,6 +14,11 @@ import "../mock-server-only";
  *   pnpm tsx scripts/admin/search-management.ts init-personas
  *   pnpm tsx scripts/admin/search-management.ts sync-personas
  *   pnpm tsx scripts/admin/search-management.ts sync-personas --start-from-persona-id 1000
+ *   pnpm tsx scripts/admin/search-management.ts init-projects
+ *   pnpm tsx scripts/admin/search-management.ts sync-projects
+ *   pnpm tsx scripts/admin/search-management.ts sync-projects --only-panels
+ *   pnpm tsx scripts/admin/search-management.ts sync-projects --only-studies --only-interviews
+ *   pnpm tsx scripts/admin/search-management.ts sync-projects --start-from-panel-id 100
  */
 
 import { rootLogger } from "@/lib/logging";
@@ -536,7 +541,14 @@ export async function syncAllPersonas(options?: {
 export async function syncAllProjects(options?: {
   filter?: Record<string, unknown>;
   limit?: number;
-  startFromId?: number;
+  startFromStudyId?: number; // 断点续传：从某个 study UserChat ID 开始
+  startFromUniversalId?: number; // 断点续传：从某个 universal UserChat ID 开始
+  startFromInterviewId?: number; // 断点续传：从某个 InterviewProject ID 开始
+  startFromPanelId?: number; // 断点续传：从某个 PersonaPanel ID 开始
+  syncStudies?: boolean; // 是否同步 studies，默认 true
+  syncUniversals?: boolean; // 是否同步 universals，默认 true
+  syncInterviews?: boolean; // 是否同步 interviews，默认 true
+  syncPanels?: boolean; // 是否同步 panels，默认 true
 }): Promise<{
   studyCount: number;
   universalCount: number;
@@ -552,10 +564,33 @@ export async function syncAllProjects(options?: {
   const { INDEXES, meilisearchClient } = await import("@/search/lib/client");
   const { prismaRO } = await import("@/prisma/prisma");
 
-  const { filter, limit, startFromId } = options || {};
+  const {
+    filter,
+    limit,
+    startFromStudyId,
+    startFromUniversalId,
+    startFromInterviewId,
+    startFromPanelId,
+    syncStudies = true,
+    syncUniversals = true,
+    syncInterviews = true,
+    syncPanels = true,
+  } = options || {};
   const BATCH_SIZE = 500;
 
-  logger.info({ msg: "Starting full projects sync", filter, limit, startFromId });
+  logger.info({
+    msg: "Starting full projects sync",
+    filter,
+    limit,
+    startFromStudyId,
+    startFromUniversalId,
+    startFromInterviewId,
+    startFromPanelId,
+    syncStudies,
+    syncUniversals,
+    syncInterviews,
+    syncPanels,
+  });
 
   try {
     const index = meilisearchClient.index(INDEXES.PROJECTS);
@@ -573,10 +608,14 @@ export async function syncAllProjects(options?: {
     let panelCount = 0;
 
     // 1. Sync study UserChats
-    {
+    if (syncStudies) {
       const ids = (
         await prismaRO.userChat.findMany({
-          where: { kind: "study", ...filter, ...(startFromId ? { id: { gt: startFromId } } : {}) },
+          where: {
+            kind: "study",
+            ...filter,
+            ...(startFromStudyId ? { id: { gt: startFromStudyId } } : {}),
+          },
           select: { id: true },
           orderBy: { id: "asc" },
           take: limit,
@@ -592,18 +631,29 @@ export async function syncAllProjects(options?: {
 
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          await waitForTaskWithRetry(task, { batchNumber: Math.floor(i / BATCH_SIZE) + 1, batchType: "study" });
+          await waitForTaskWithRetry(task, {
+            batchNumber: Math.floor(i / BATCH_SIZE) + 1,
+            batchType: "study",
+          });
           studyCount += documents.length;
-          logger.info({ msg: "Study batch synced", totalSynced: studyCount, lastProcessedId: Math.max(...chats.map((c) => c.id)) });
+          logger.info({
+            msg: "Study batch synced",
+            totalSynced: studyCount,
+            lastProcessedId: Math.max(...chats.map((c) => c.id)),
+          });
         }
       }
     }
 
     // 2. Sync universal UserChats
-    {
+    if (syncUniversals) {
       const ids = (
         await prismaRO.userChat.findMany({
-          where: { kind: "universal", ...filter, ...(startFromId ? { id: { gt: startFromId } } : {}) },
+          where: {
+            kind: "universal",
+            ...filter,
+            ...(startFromUniversalId ? { id: { gt: startFromUniversalId } } : {}),
+          },
           select: { id: true },
           orderBy: { id: "asc" },
           take: limit,
@@ -619,18 +669,28 @@ export async function syncAllProjects(options?: {
 
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          await waitForTaskWithRetry(task, { batchNumber: Math.floor(i / BATCH_SIZE) + 1, batchType: "universal" });
+          await waitForTaskWithRetry(task, {
+            batchNumber: Math.floor(i / BATCH_SIZE) + 1,
+            batchType: "universal",
+          });
           universalCount += documents.length;
-          logger.info({ msg: "Universal batch synced", totalSynced: universalCount, lastProcessedId: Math.max(...chats.map((c) => c.id)) });
+          logger.info({
+            msg: "Universal batch synced",
+            totalSynced: universalCount,
+            lastProcessedId: Math.max(...chats.map((c) => c.id)),
+          });
         }
       }
     }
 
     // 3. Sync InterviewProjects
-    {
+    if (syncInterviews) {
       const ids = (
         await prismaRO.interviewProject.findMany({
-          where: { ...filter, ...(startFromId ? { id: { gt: startFromId } } : {}) },
+          where: {
+            ...filter,
+            ...(startFromInterviewId ? { id: { gt: startFromInterviewId } } : {}),
+          },
           select: { id: true },
           orderBy: { id: "asc" },
           take: limit,
@@ -641,23 +701,32 @@ export async function syncAllProjects(options?: {
 
       for (let i = 0; i < ids.length; i += BATCH_SIZE) {
         const batchIds = ids.slice(i, i + BATCH_SIZE);
-        const projects = await prismaRO.interviewProject.findMany({ where: { id: { in: batchIds } } });
+        const projects = await prismaRO.interviewProject.findMany({
+          where: { id: { in: batchIds } },
+        });
         const documents = projects.map((p) => interviewProjectToDocument(p));
 
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          await waitForTaskWithRetry(task, { batchNumber: Math.floor(i / BATCH_SIZE) + 1, batchType: "interview" });
+          await waitForTaskWithRetry(task, {
+            batchNumber: Math.floor(i / BATCH_SIZE) + 1,
+            batchType: "interview",
+          });
           interviewCount += documents.length;
-          logger.info({ msg: "Interview batch synced", totalSynced: interviewCount, lastProcessedId: Math.max(...projects.map((p) => p.id)) });
+          logger.info({
+            msg: "Interview batch synced",
+            totalSynced: interviewCount,
+            lastProcessedId: Math.max(...projects.map((p) => p.id)),
+          });
         }
       }
     }
 
     // 4. Sync PersonaPanels
-    {
+    if (syncPanels) {
       const ids = (
         await prismaRO.personaPanel.findMany({
-          where: { ...filter, ...(startFromId ? { id: { gt: startFromId } } : {}) },
+          where: { ...filter, ...(startFromPanelId ? { id: { gt: startFromPanelId } } : {}) },
           select: { id: true },
           orderBy: { id: "asc" },
           take: limit,
@@ -673,9 +742,16 @@ export async function syncAllProjects(options?: {
 
         if (documents.length > 0) {
           const task = index.addDocuments(documents);
-          await waitForTaskWithRetry(task, { batchNumber: Math.floor(i / BATCH_SIZE) + 1, batchType: "panel" });
+          await waitForTaskWithRetry(task, {
+            batchNumber: Math.floor(i / BATCH_SIZE) + 1,
+            batchType: "panel",
+          });
           panelCount += documents.length;
-          logger.info({ msg: "Panel batch synced", totalSynced: panelCount, lastProcessedId: Math.max(...panels.map((p) => p.id)) });
+          logger.info({
+            msg: "Panel batch synced",
+            totalSynced: panelCount,
+            lastProcessedId: Math.max(...panels.map((p) => p.id)),
+          });
         }
       }
     }
@@ -706,18 +782,18 @@ function parseArgs(args: string[]): {
   startFromReportId?: number;
   startFromPodcastId?: number;
   startFromPersonaId?: number;
+  startFromStudyId?: number;
+  startFromUniversalId?: number;
+  startFromInterviewId?: number;
+  startFromPanelId?: number;
   onlyReports?: boolean;
   onlyPodcasts?: boolean;
+  onlyStudies?: boolean;
+  onlyUniversals?: boolean;
+  onlyInterviews?: boolean;
+  onlyPanels?: boolean;
 } {
-  const result: {
-    filter?: string;
-    limit?: number;
-    startFromReportId?: number;
-    startFromPodcastId?: number;
-    startFromPersonaId?: number;
-    onlyReports?: boolean;
-    onlyPodcasts?: boolean;
-  } = {};
+  const result: ReturnType<typeof parseArgs> = {};
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -748,10 +824,42 @@ function parseArgs(args: string[]): {
         result.startFromPersonaId = id;
       }
       i++;
+    } else if (arg === "--start-from-study-id" && i + 1 < args.length) {
+      const id = parseInt(args[i + 1], 10);
+      if (!isNaN(id) && id > 0) {
+        result.startFromStudyId = id;
+      }
+      i++;
+    } else if (arg === "--start-from-universal-id" && i + 1 < args.length) {
+      const id = parseInt(args[i + 1], 10);
+      if (!isNaN(id) && id > 0) {
+        result.startFromUniversalId = id;
+      }
+      i++;
+    } else if (arg === "--start-from-interview-id" && i + 1 < args.length) {
+      const id = parseInt(args[i + 1], 10);
+      if (!isNaN(id) && id > 0) {
+        result.startFromInterviewId = id;
+      }
+      i++;
+    } else if (arg === "--start-from-panel-id" && i + 1 < args.length) {
+      const id = parseInt(args[i + 1], 10);
+      if (!isNaN(id) && id > 0) {
+        result.startFromPanelId = id;
+      }
+      i++;
     } else if (arg === "--only-reports") {
       result.onlyReports = true;
     } else if (arg === "--only-podcasts") {
       result.onlyPodcasts = true;
+    } else if (arg === "--only-studies") {
+      result.onlyStudies = true;
+    } else if (arg === "--only-universals") {
+      result.onlyUniversals = true;
+    } else if (arg === "--only-interviews") {
+      result.onlyInterviews = true;
+    } else if (arg === "--only-panels") {
+      result.onlyPanels = true;
     }
   }
 
@@ -776,9 +884,7 @@ async function main() {
   ];
 
   if (!command || !validCommands.includes(command)) {
-    console.error(
-      "Usage: pnpm tsx scripts/admin/search-management.ts [command]",
-    );
+    console.error("Usage: pnpm tsx scripts/admin/search-management.ts [command]");
     console.error("");
     console.error("Commands:");
     console.error("  init-artifacts  - Initialize Meilisearch artifacts index");
@@ -786,7 +892,9 @@ async function main() {
     console.error("  init-personas   - Initialize Meilisearch personas index");
     console.error("  sync-personas   - Sync all personas to Meilisearch");
     console.error("  init-projects   - Initialize Meilisearch projects index");
-    console.error("  sync-projects   - Sync all projects (study, universal, interview, panel) to Meilisearch");
+    console.error(
+      "  sync-projects   - Sync all projects (study, universal, interview, panel) to Meilisearch",
+    );
     console.error("");
     console.error("Common options:");
     console.error("  --filter, -f               - JSON filter (e.g., '{\"userId\":2}')");
@@ -800,6 +908,18 @@ async function main() {
     console.error("");
     console.error("Personas sync options:");
     console.error("  --start-from-persona-id    - Resume persona sync from specific ID");
+    console.error("");
+    console.error("Projects sync options:");
+    console.error("  --start-from-study-id      - Resume study sync from specific UserChat ID");
+    console.error("  --start-from-universal-id  - Resume universal sync from specific UserChat ID");
+    console.error(
+      "  --start-from-interview-id  - Resume interview sync from specific InterviewProject ID",
+    );
+    console.error("  --start-from-panel-id      - Resume panel sync from specific PersonaPanel ID");
+    console.error("  --only-studies             - Sync only studies");
+    console.error("  --only-universals          - Sync only universals");
+    console.error("  --only-interviews          - Sync only interviews");
+    console.error("  --only-panels              - Sync only panels");
     process.exit(1);
   }
 
@@ -970,21 +1090,46 @@ async function main() {
         }
       }
 
+      // 如果指定了 --only-* 则只同步对应类型，否则全部同步
+      const hasOnlyFlag =
+        args.onlyStudies || args.onlyUniversals || args.onlyInterviews || args.onlyPanels;
+      const syncStudies = hasOnlyFlag ? !!args.onlyStudies : true;
+      const syncUniversals = hasOnlyFlag ? !!args.onlyUniversals : true;
+      const syncInterviews = hasOnlyFlag ? !!args.onlyInterviews : true;
+      const syncPanels = hasOnlyFlag ? !!args.onlyPanels : true;
+
       logger.info({
         msg: "Starting full projects sync",
         filter: projectFilter,
         limit: args.limit,
+        startFromStudyId: args.startFromStudyId,
+        startFromUniversalId: args.startFromUniversalId,
+        startFromInterviewId: args.startFromInterviewId,
+        startFromPanelId: args.startFromPanelId,
+        syncStudies,
+        syncUniversals,
+        syncInterviews,
+        syncPanels,
       });
 
       const result = await syncAllProjects({
         filter: projectFilter,
         limit: args.limit,
+        startFromStudyId: args.startFromStudyId,
+        startFromUniversalId: args.startFromUniversalId,
+        startFromInterviewId: args.startFromInterviewId,
+        startFromPanelId: args.startFromPanelId,
+        syncStudies,
+        syncUniversals,
+        syncInterviews,
+        syncPanels,
       });
 
       logger.info({
         msg: "Full projects sync completed",
         ...result,
-        totalCount: result.studyCount + result.universalCount + result.interviewCount + result.panelCount,
+        totalCount:
+          result.studyCount + result.universalCount + result.interviewCount + result.panelCount,
       });
     }
 

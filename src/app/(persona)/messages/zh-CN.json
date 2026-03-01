@@ -78,7 +78,9 @@
       "updating": "更新中",
       "processing": "处理中",
       "starting": "启动中...",
-      "loadingFailed": "加载 AI 人设失败"
+      "loadingFailed": "加载 AI 人设失败",
+      "searchPlaceholder": "搜索 Persona...",
+      "search": "搜索"
     },
     "personaChat": {
       "details": "详情",

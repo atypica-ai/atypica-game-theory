@@ -14,8 +14,10 @@ import {
   InterviewSessionExtra,
   User,
 } from "@/prisma/client";
+import { InterviewProjectWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
+import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
 import { syncProject as syncProjectToMeili } from "@/search/lib/sync";
 import { getUserTokens } from "@/tokens/lib";
 import { waitUntil } from "@vercel/functions";
@@ -46,9 +48,19 @@ function createQuestionsSnapshot(
 }
 
 /**
+ * 从 slug 提取 ID（格式：interview-123）
+ */
+function extractInterviewIdFromSlug(slug: string): number {
+  const match = slug.match(/^interview-(\d+)$/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+/**
  * Fetch user's interview projects
  */
-export async function fetchUserInterviewProjects(): Promise<
+export async function fetchUserInterviewProjects(
+  searchQuery?: string,
+): Promise<
   ServerActionResult<
     (Omit<InterviewProject, "questions" | "extra"> & {
       questions: InterviewProjectQuestion[];
@@ -63,8 +75,35 @@ export async function fetchUserInterviewProjects(): Promise<
   >
 > {
   return withAuth(async (user) => {
+    let where: InterviewProjectWhereInput = { userId: user.id };
+    let orderedIds: number[] | null = null;
+
+    if (searchQuery?.trim()) {
+      try {
+        const searchResults = await searchProjectsFromMeili({
+          query: searchQuery.trim(),
+          type: "interview",
+          userId: user.id,
+          pageSize: 100,
+        });
+
+        if (searchResults.hits.length === 0) {
+          return { success: true, data: [] };
+        }
+
+        orderedIds = searchResults.hits.map((hit) => extractInterviewIdFromSlug(hit.slug));
+        where = { userId: user.id, id: { in: orderedIds } };
+      } catch (error) {
+        rootLogger.error({
+          msg: "MeiliSearch interview search failed",
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return { success: true, data: [] };
+      }
+    }
+
     const projects = await prismaRO.interviewProject.findMany({
-      where: { userId: user.id },
+      where,
       include: {
         sessions: {
           select: {
@@ -76,25 +115,36 @@ export async function fetchUserInterviewProjects(): Promise<
           orderBy: { createdAt: "desc" },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: orderedIds ? undefined : { createdAt: "desc" },
     });
-    return {
-      success: true,
-      data: projects.map(({ sessions, questions, extra, ...project }) => {
-        const humanSessions = sessions.filter((s) => s.intervieweeUserId).length;
-        const personaSessions = sessions.filter((s) => s.intervieweePersonaId).length;
-        return {
-          ...project,
-          questions: questions as InterviewProjectQuestion[],
-          extra: extra as InterviewProjectExtra,
-          sessionStats: {
-            humanSessions,
-            personaSessions,
-            total: sessions.length,
-          },
-        };
-      }),
-    };
+
+    const mappedProjects = projects.map(({ sessions, questions, extra, ...project }) => {
+      const humanSessions = sessions.filter((s) => s.intervieweeUserId).length;
+      const personaSessions = sessions.filter((s) => s.intervieweePersonaId).length;
+      return {
+        ...project,
+        questions: questions as InterviewProjectQuestion[],
+        extra: extra as InterviewProjectExtra,
+        sessionStats: {
+          humanSessions,
+          personaSessions,
+          total: sessions.length,
+        },
+      };
+    });
+
+    // MeiliSearch 搜索时，按返回的顺序排序
+    if (orderedIds) {
+      const idToProject = new Map(mappedProjects.map((p) => [p.id, p]));
+      return {
+        success: true,
+        data: orderedIds
+          .map((id) => idToProject.get(id))
+          .filter((p): p is (typeof mappedProjects)[0] => p !== undefined),
+      };
+    }
+
+    return { success: true, data: mappedProjects };
   });
 }
 

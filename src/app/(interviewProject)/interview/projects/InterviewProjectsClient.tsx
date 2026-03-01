@@ -2,6 +2,7 @@
 import { fetchUserInterviewProjects } from "@/app/(interviewProject)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -19,12 +20,14 @@ import {
   CalendarIcon,
   Loader2Icon,
   PlusIcon,
+  SearchIcon,
   SparklesIcon,
   UsersIcon,
+  XIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: boolean }) {
@@ -34,10 +37,13 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
     ExtractServerActionData<typeof fetchUserInterviewProjects>
   >([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const loadProjects = useCallback(async () => {
+    setLoading(true);
     try {
-      const result = await fetchUserInterviewProjects();
+      const result = await fetchUserInterviewProjects(searchQuery || undefined);
       if (!result.success) throw result;
       setProjects(result.data);
     } catch (error) {
@@ -45,11 +51,21 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, searchQuery]);
 
   useEffect(() => {
     loadProjects();
   }, [loadProjects]);
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    setSearchQuery(inputRef.current?.value ?? "");
+  };
+
+  const clearSearch = () => {
+    if (inputRef.current) inputRef.current.value = "";
+    setSearchQuery("");
+  };
 
   const NewProjectCard = () => (
     <Card className="transition-all duration-300 hover:shadow-md border-dashed border-primary/30 min-w-80">
@@ -106,6 +122,29 @@ export function InterviewProjectsClient({ isCreateEnabled }: { isCreateEnabled: 
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">{t("description")}</p>
         </div>
+
+        {/* Search */}
+        <form onSubmit={handleSearch} className="flex gap-2 max-w-xl mx-auto">
+          <div className="relative flex-1">
+            <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={inputRef}
+              defaultValue={searchQuery}
+              placeholder={t("searchPlaceholder")}
+              className="pl-8"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <Button type="submit">{t("search")}</Button>
+        </form>
 
         {/* Projects Grid */}
         {projects.length > 0 ? (
