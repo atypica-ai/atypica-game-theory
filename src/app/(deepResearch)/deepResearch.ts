@@ -9,7 +9,7 @@ import { AgentToolConfigArgs, PlainTextToolResult, StatReporter } from "@/ai/too
 import { StreamChunkCallback } from "@/lib/mcp/types";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
-import { prisma } from "@/prisma/prisma";
+import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { waitUntil } from "@vercel/functions";
 import { generateId, StepResult, tool, ToolSet } from "ai";
 import { Locale } from "next-intl";
@@ -25,7 +25,7 @@ import {
 /**
  * Executes deep research using Grok model with web search and X search tools
  * Streams the response in real-time via callback and returns final result
- * Creates and manages UserChat with backgroundToken for concurrency control
+ * Creates and manages UserChat with runtime management for concurrency control
  *
  * @param query - The research query
  * @param userId - The user ID to associate the chat with
@@ -39,14 +39,14 @@ async function executeDeepResearch({
   locale,
   logger,
   statReport,
-  abortSignal,
+  externalAbortSignal,
   onStreamChunk,
 }: DeepResearchInput & {
   userId: number;
   locale: Locale;
   logger: Logger;
   statReport: StatReporter;
-  abortSignal: AbortSignal;
+  externalAbortSignal: AbortSignal;
   onStreamChunk?: StreamChunkCallback;
 }): Promise<DeepResearchOutput> {
   // Create UserChat for this research session
@@ -57,32 +57,28 @@ async function executeDeepResearch({
   });
   const userChatId = userChat.id;
 
-  // Set backgroundToken for concurrency control (similar to interviewChat pattern)
-  const backgroundToken = new Date().valueOf().toString();
-  await prisma.userChat.update({
-    where: { id: userChatId },
-    data: { backgroundToken },
-  });
+  // Start managed run — writes runId to DB, starts watcher, returns abort signal
+  const {
+    runId,
+    abortSignal: managedAbortSignal,
+    cleanup: cleanupRun,
+  } = await startManagedRun({ userChatId, logger });
 
-  const toolLogger = logger.child({ userChatId, backgroundToken });
+  // Combine external abort (from MCP/tool caller) and managed abort (from watcher)
+  const combinedAbortSignal = AbortSignal.any([externalAbortSignal, managedAbortSignal]);
+
+  const toolLogger = logger.child({ userChatId, runId });
 
   try {
-    // Save user query message with backgroundToken verification
-    await prisma.$transaction(async (tx) => {
-      // Verify backgroundToken matches before saving
-      await tx.userChat.findUniqueOrThrow({
-        where: { id: userChatId, backgroundToken },
-      });
-      await persistentAIMessageToDB({
-        mode: "append",
-        userChatId,
-        message: {
-          id: generateId(),
-          role: "user",
-          parts: [{ type: "text", text: query }],
-        },
-        tx,
-      });
+    // Save user query message
+    await persistentAIMessageToDB({
+      mode: "append",
+      userChatId,
+      message: {
+        id: generateId(),
+        role: "user",
+        parts: [{ type: "text", text: query }],
+      },
     });
 
     const { name: resolvedExpert, executor } = resolveExpert(expert);
@@ -100,17 +96,10 @@ async function executeDeepResearch({
       appendStepToStreamingMessage(streamingMessage, step);
 
       // 2. 立即保存消息
-      await prisma.$transaction(async (tx) => {
-        // Verify backgroundToken matches before saving
-        await tx.userChat.findUniqueOrThrow({
-          where: { id: userChatId, backgroundToken },
-        });
-        await persistentAIMessageToDB({
-          mode: "override",
-          userChatId,
-          message: streamingMessage,
-          tx,
-        });
+      await persistentAIMessageToDB({
+        mode: "override",
+        userChatId,
+        message: streamingMessage,
       });
 
       // 3. MCP 模式：发送 notification
@@ -149,7 +138,7 @@ async function executeDeepResearch({
       locale,
       logger: toolLogger,
       statReport,
-      abortSignal,
+      abortSignal: combinedAbortSignal,
       streamingMessageId: streamingMessage.id,
       onStepFinish,
     });
@@ -167,31 +156,16 @@ async function executeDeepResearch({
 
     // ⚠️ 不需要再次保存 assistant 消息，已经在 onStepFinish 里保存了
 
-    // Clear backgroundToken at the end
-    try {
-      await prisma.userChat.update({
-        where: { id: userChatId, backgroundToken },
-        data: { backgroundToken: null },
-      });
-    } catch (error) {
-      toolLogger.error({ error: (error as Error).message }, "Error clearing backgroundToken");
-    }
+    await cleanupRun();
     return {
-      // result: finalResult,
       plainText: finalResult,
     };
   } catch (error) {
-    // Clear backgroundToken on error
+    // Record error and clear runId atomically
     try {
-      await prisma.userChat.update({
-        where: { id: userChatId, backgroundToken },
-        data: { backgroundToken: null },
-      });
-    } catch (clearError) {
-      toolLogger.error(
-        { error: (clearError as Error).message },
-        "Error clearing backgroundToken on error",
-      );
+      await failUserChatRun({ userChatId, runId, error: (error as Error).message });
+    } catch {
+      // failUserChatRun itself failed — don't block
     }
 
     // Enhanced error logging for AI SDK errors
@@ -248,7 +222,7 @@ export const deepResearchTool = ({
         locale,
         logger,
         statReport,
-        abortSignal,
+        externalAbortSignal: abortSignal,
         onStreamChunk,
       });
     },

@@ -12,7 +12,7 @@ import { prisma } from "@/prisma/prisma";
 import { generateId, UIMessage } from "ai";
 import { ExpertName } from "../experts/types";
 
-type DeepResearchUserChat = Omit<UserChat, "kind"> & {
+type DeepResearchUserChat = Omit<UserChat, "kind" | "backgroundToken"> & {
   kind: "misc";
   context: UserChatContext;
   messages?: UIMessage[];
@@ -104,7 +104,6 @@ export async function fetchDeepResearchUserChatAction(userChatToken: string): Pr
         extra: true,
         createdAt: true,
         updatedAt: true,
-        backgroundToken: true,
         messages: {
           orderBy: { id: "asc" },
         },

@@ -18,6 +18,7 @@ import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
 import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
+import { startManagedRun } from "@/lib/userChat/runtime";
 import { InterviewProjectQuestion, InterviewSessionExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
@@ -46,28 +47,19 @@ function fixEmptyTextIssue(message: Omit<UIMessage, "role">) {
 async function saveMessage({
   message,
   userChatId,
-  backgroundToken,
   logger,
 }: {
   message: UIMessage;
   userChatId: number;
-  backgroundToken: string;
   logger: Logger;
 }) {
   try {
-    // const { id: messageId, role, content, parts: _parts } = message;
-    // const parts = _parts?.length ? _parts : [{ type: "text", text: content }];
-    await prisma.$transaction(async (tx) => {
-      // 先确保 backgroundToken 是当前的
-      await tx.userChat.findUniqueOrThrow({
-        where: { id: userChatId, kind: "interviewSession", backgroundToken },
-      });
-      await persistentAIMessageToDB({ mode: "append", userChatId, message, tx }); // 其实这里 override 也 ok，但是，append 也没问题
-    });
+    await persistentAIMessageToDB({ mode: "append", userChatId, message });
   } catch (error) {
-    logger.error(
-      `Error saving interview messages with token ${backgroundToken}: ${(error as Error).message}`,
-    );
+    logger.error({
+      msg: "Error saving interview message",
+      error: (error as Error).message,
+    });
   }
 }
 
@@ -100,11 +92,16 @@ export async function runAutoPersonaInterview({
       ? (persona.locale as Locale)
       : await detectInputLanguage({ text: project.brief });
 
-  // Set background token to prevent concurrent executions
-  const backgroundToken = new Date().valueOf().toString();
-  const userChat = await prisma.userChat.update({
+  // Query userChat for token (needed for logger context)
+  const userChat = await prisma.userChat.findUniqueOrThrow({
     where: { id: userChatId, kind: "interviewSession" },
-    data: { backgroundToken },
+    select: { token: true },
+  });
+
+  // Start managed run — writes runId to DB, starts watcher, returns abort signal
+  const { runId, abortSignal, cleanup: cleanupRun } = await startManagedRun({
+    userChatId,
+    logger: rootLogger,
   });
 
   // Check and set interview session status if needed
@@ -128,6 +125,7 @@ export async function runAutoPersonaInterview({
     userChatId,
     userChatToken: userChat.token,
     interviewSessionId: sessionId,
+    runId,
   });
 
   const { statReport } = initInterviewProjectStatReporter({
@@ -155,7 +153,7 @@ export async function runAutoPersonaInterview({
     maxTurns: MAX_CONVERSATION_TURNS,
   });
 
-  const saveParams = { userChatId, backgroundToken, logger };
+  const saveParams = { userChatId, logger };
 
   try {
     let conversationTurns = 0;
@@ -170,17 +168,6 @@ export async function runAutoPersonaInterview({
     };
 
     while (conversationTurns < MAX_CONVERSATION_TURNS) {
-      // Check if another process took over (background token changed)
-      const currentUserChat = await prisma.userChat.findUnique({
-        where: { id: userChatId },
-        select: { backgroundToken: true },
-      });
-
-      if (currentUserChat?.backgroundToken !== backgroundToken) {
-        logger.info("Background token changed, stopping auto interview");
-        return;
-      }
-
       // Determine who should speak next
       const shouldEndInterview = conversationTurns >= MAX_CONVERSATION_TURNS - 2;
 
@@ -192,6 +179,7 @@ export async function runAutoPersonaInterview({
           interviewSessionId: sessionId,
           statReport,
           logger,
+          abortSignal,
         });
         fixEmptyTextIssue(messaage);
         await saveMessage({ message: { ...messaage, role: "user" }, ...saveParams });
@@ -207,6 +195,7 @@ export async function runAutoPersonaInterview({
           interviewSessionId: sessionId,
           statReport,
           logger,
+          abortSignal,
         });
         fixEmptyTextIssue(messaage);
         await saveMessage({ message: { ...messaage, role: "assistant" }, ...saveParams });
@@ -262,17 +251,7 @@ export async function runAutoPersonaInterview({
     logger.error(`Fatal error in auto persona interview: ${(error as Error).message}`);
     throw error;
   } finally {
-    // Clear background token when done
-    try {
-      await prisma.userChat.update({
-        where: { id: userChatId, kind: "interviewSession", backgroundToken },
-        data: { backgroundToken: null },
-      });
-    } catch (error) {
-      logger.error(
-        `Error clearing background token ${backgroundToken}: ${(error as Error).message}`,
-      );
-    }
+    await cleanupRun();
   }
 }
 
@@ -282,12 +261,14 @@ async function generatePersonaResponse({
   interviewSessionId,
   statReport,
   logger,
+  abortSignal,
 }: {
   systemPrompt: string;
   messages: UIMessage[];
   interviewSessionId: number;
   statReport: StatReporter;
   logger: Logger;
+  abortSignal: AbortSignal;
 }) {
   const modelName = "gemini-2.5-flash";
   const reduceTokens: TReduceTokens = { model: modelName, ratio: 10 };
@@ -306,6 +287,7 @@ async function generatePersonaResponse({
       messages: fixAndConvertToModelMessages(messages, {
         tools: {},
       }),
+      abortSignal,
       stopWhen: stepCountIs(1),
 
       onStepFinish: async (step) => {
@@ -349,6 +331,7 @@ async function generateInterviewerResponse({
   interviewSessionId,
   statReport,
   logger,
+  abortSignal,
 }: {
   systemPrompt: string;
   messages: UIMessage[];
@@ -356,6 +339,7 @@ async function generateInterviewerResponse({
   interviewSessionId: number;
   statReport: StatReporter;
   logger: Logger;
+  abortSignal: AbortSignal;
 }) {
   // persona 访谈只使用 endInterview，所有问题通过自然对话进行
   const { endInterview } = interviewSessionTools({
@@ -388,6 +372,7 @@ async function generateInterviewerResponse({
       messages: fixAndConvertToModelMessages(messages, {
         tools,
       }),
+      abortSignal,
 
       toolChoice: shouldEndInterview
         ? { type: "tool", toolName: InterviewToolName.endInterview }

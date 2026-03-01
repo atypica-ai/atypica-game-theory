@@ -43,7 +43,7 @@ export async function handleListChats(
           id: true,
           token: true,
           title: true,
-          backgroundToken: true,
+          extra: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -57,7 +57,7 @@ export async function handleListChats(
       chatId: chat.id,
       token: chat.token,
       title: chat.title,
-      isRunning: !!chat.backgroundToken,
+      isRunning: !!chat.extra?.runId,
       createdAt: chat.createdAt.toISOString(),
       updatedAt: chat.updatedAt.toISOString(),
     }));
