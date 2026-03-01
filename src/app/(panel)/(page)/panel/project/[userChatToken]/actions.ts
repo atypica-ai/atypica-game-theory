@@ -13,7 +13,7 @@ import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import type { AgentStatisticsExtra, Persona } from "@/prisma/client";
+import type { AgentStatisticsExtra, Persona, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getToolName, isToolUIPart, type UIMessage } from "ai";
 import { getLocale } from "next-intl/server";
@@ -50,7 +50,7 @@ export interface PanelInterview {
   messageCount: number;
   interviewUserChat: {
     token: string;
-    backgroundToken: string | null;
+    extra: UserChatExtra;
   } | null;
   createdAt: Date;
 }
@@ -108,7 +108,7 @@ export async function fetchProjectProgress(
   return withAuth(async (user) => {
     const project = await prisma.userChat.findUnique({
       where: { token: userChatToken, userId: user.id },
-      select: { id: true, backgroundToken: true, updatedAt: true },
+      select: { id: true, extra: true, updatedAt: true },
     });
 
     if (!project) {
@@ -130,7 +130,7 @@ export async function fetchProjectProgress(
 
     const recentSteps: string[] = [];
     for (const stat of recentStepStats) {
-      const extra = stat.extra as AgentStatisticsExtra;
+      const extra = stat.extra;
       const toolCalls = Array.isArray(extra.toolCalls)
         ? extra.toolCalls.filter((item): item is string => typeof item === "string")
         : [];
@@ -160,7 +160,7 @@ export async function fetchProjectProgress(
       recentAssistantMessage?.content?.replace(/\s+/g, " ").trim().slice(0, 180) || null;
 
     const latestStep = recentSteps[0] ?? null;
-    const status: ProjectProgress["status"] = project.backgroundToken ? "running" : "completed";
+    const status: ProjectProgress["status"] = project.extra?.runId ? "running" : "completed";
     const phase = detectPhase(recentSteps, status === "running");
     const updatedAt =
       recentAssistantMessage?.updatedAt && recentAssistantMessage.updatedAt > project.updatedAt
@@ -189,7 +189,7 @@ export async function fetchProjectContextByToken(userChatToken: string): Promise
       token: string;
       title: string;
       kind: string;
-      backgroundToken: string | null;
+      extra: UserChatExtra;
       context: UserChatContext;
       createdAt: Date;
     };
@@ -202,7 +202,7 @@ export async function fetchProjectContextByToken(userChatToken: string): Promise
         token: true,
         title: true,
         kind: true,
-        backgroundToken: true,
+        extra: true,
         context: true,
         createdAt: true,
       },
@@ -236,7 +236,7 @@ export async function fetchProjectContextByToken(userChatToken: string): Promise
           token: userChat.token,
           title: userChat.title,
           kind: userChat.kind,
-          backgroundToken: userChat.backgroundToken,
+          extra: userChat.extra,
           context,
           createdAt: userChat.createdAt,
         },
@@ -272,10 +272,10 @@ function extractDiscussionParticipantIds(events: DiscussionTimelineEvent[]) {
 
 function toPanelInterviewStatus(params: {
   conclusion: string;
-  interviewBackgroundToken: string | null | undefined;
+  interviewRunning: boolean;
 }): PanelInterview["status"] {
   if (params.conclusion !== "") return "completed";
-  if (params.interviewBackgroundToken) return "in-progress";
+  if (params.interviewRunning) return "in-progress";
   return "pending";
 }
 
@@ -300,8 +300,8 @@ async function fetchProjectToolData({
   if (!userChat) return null;
 
   const panelId =
-    typeof (userChat.context as UserChatContext).personaPanelId === "number"
-      ? (userChat.context as UserChatContext).personaPanelId
+    typeof userChat.context.personaPanelId === "number"
+      ? userChat.context.personaPanelId
       : null;
   if (!panelId) {
     return {
@@ -457,7 +457,7 @@ async function fetchProjectToolData({
             interviewUserChat: {
               select: {
                 token: true,
-                backgroundToken: true,
+                extra: true,
                 _count: { select: { messages: true } },
               },
             },
@@ -498,14 +498,14 @@ async function fetchProjectToolData({
         personaName: row.persona?.name ?? persona.name,
         status: toPanelInterviewStatus({
           conclusion: row.conclusion,
-          interviewBackgroundToken: row.interviewUserChat?.backgroundToken,
+          interviewRunning: !!row.interviewUserChat?.extra?.runId,
         }),
         conclusion: row.conclusion,
         messageCount: row.interviewUserChat?._count.messages ?? 0,
         interviewUserChat: row.interviewUserChat
           ? {
               token: row.interviewUserChat.token,
-              backgroundToken: row.interviewUserChat.backgroundToken,
+              extra: row.interviewUserChat.extra,
             }
           : null,
         createdAt: row.createdAt,

@@ -5,7 +5,7 @@ import { UserChatContext } from "@/app/(study)/context/types";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import type { Persona } from "@/prisma/client";
+import type { Persona, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getToolName, isToolUIPart } from "ai";
 
@@ -31,7 +31,7 @@ export interface ResearchProject {
   title: string;
   kind: string;
   context: UserChatContext;
-  backgroundToken: string | null;
+  extra: UserChatExtra;
   createdAt: Date;
   updatedAt: Date;
   stats: {
@@ -111,7 +111,7 @@ export async function fetchResearchProjectsByPanelId(
         title: true,
         kind: true,
         context: true,
-        backgroundToken: true,
+        extra: true,
         createdAt: true,
         updatedAt: true,
         messages: {
@@ -159,8 +159,8 @@ export async function fetchResearchProjectsByPanelId(
         token: chat.token,
         title: chat.title,
         kind: chat.kind,
-        context: chat.context as UserChatContext,
-        backgroundToken: chat.backgroundToken,
+        context: chat.context,
+        extra: chat.extra,
         createdAt: chat.createdAt,
         updatedAt: chat.updatedAt,
         stats: {

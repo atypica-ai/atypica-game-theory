@@ -4,6 +4,7 @@ import type { ConfirmPanelResearchPlanOutput } from "@/app/(panel)/tools/confirm
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import type { UserChatExtra } from "@/prisma/client";
 import { ArrowLeft, ExternalLink, Loader2, MessageSquare, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -31,7 +32,7 @@ export interface ProjectDetailClientProps {
     token: string;
     title: string;
     kind: string;
-    backgroundToken: string | null;
+    extra: UserChatExtra;
     createdAt: Date;
   };
   discussions: DiscussionSummary[];
@@ -62,7 +63,7 @@ export function ProjectDetailClient({
   const [progress, setProgress] = useState(initialProgress);
   const [pendingConfirmPlan, setPendingConfirmPlan] = useState(initialPendingConfirmPlan);
   const [runtimeStatus, setRuntimeStatus] = useState<"running" | "completed">(
-    project.backgroundToken ? "running" : "completed",
+    project.extra?.runId ? "running" : "completed",
   );
   const isRunning = runtimeStatus === "running";
 
