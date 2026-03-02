@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { ArrowRightIcon, PlusIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -69,16 +71,19 @@ export function ContextBuilderChatClient({
     return "active";
   }, [messages]);
 
-  // Extract memory from endInterview tool result
-  const memory = useMemo(() => {
+  // Extract memory and recommendTopics from endInterview tool result
+  const { memory, recommendTopics } = useMemo(() => {
     for (const message of messages) {
       for (const part of message.parts ?? []) {
         if (part.type === "tool-endInterview" && part.state === "output-available") {
-          return part.input.memory;
+          return {
+            memory: part.input.memory,
+            recommendTopics: part.input.recommendTopics ?? [],
+          };
         }
       }
     }
-    return "";
+    return { memory: "", recommendTopics: [] as string[] };
   }, [messages]);
 
   // Automatically start the conversation when the component mounts.
@@ -97,6 +102,7 @@ export function ContextBuilderChatClient({
   const t = useTranslations("Team.MemoryBuilder.chatPage");
   const [editedMemory, setEditedMemory] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const memoryInitializedRef = useRef(false);
 
   useEffect(() => {
@@ -126,8 +132,12 @@ export function ContextBuilderChatClient({
         return;
       }
     }
-    router.push("/newstudy");
-  }, [editedMemory, memory, router, t]);
+    if (recommendTopics.length > 0) {
+      setShowSuggestions(true);
+    } else {
+      router.push("/newstudy");
+    }
+  }, [editedMemory, memory, recommendTopics, router, t]);
 
   const chatArea = (
     <FitToViewport>
@@ -181,5 +191,68 @@ export function ContextBuilderChatClient({
     </FitToViewport>
   );
 
-  return interviewState === "completed" ? memoryArea : chatArea;
+  const suggestionsArea = (
+    <FitToViewport>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-xl mx-auto w-full px-6 py-24 md:py-40 space-y-8"
+      >
+        <div className="space-y-4">
+          <div className="w-12 h-1 bg-[#1bff1b]" />
+          <h1 className="text-3xl md:text-4xl font-EuclidCircularA font-medium tracking-tight">
+            {t("suggestionsTitle")}
+          </h1>
+          <p className="text-base text-muted-foreground">
+            {t("suggestionsSubtitle")}
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {recommendTopics.map((topic, index) => (
+            <motion.button
+              key={`topic-${index}`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + index * 0.06 }}
+              onClick={() =>
+                router.push(`/newstudy?brief=${encodeURIComponent(topic)}`)
+              }
+              className={cn(
+                "group w-full text-left p-4 rounded-lg border border-border",
+                "hover:border-foreground/20 transition-all duration-200",
+                "flex items-center justify-between gap-4",
+              )}
+            >
+              <span className="text-sm font-medium">{topic}</span>
+              <ArrowRightIcon className="size-3.5 shrink-0 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+            </motion.button>
+          ))}
+
+          <motion.button
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + recommendTopics.length * 0.06 }}
+            onClick={() => router.push("/newstudy")}
+            className={cn(
+              "group w-full text-left p-4 rounded-lg border border-dashed border-border",
+              "hover:border-foreground/20 transition-all duration-200",
+              "flex items-center gap-3",
+            )}
+          >
+            <div className="size-6 rounded-full border border-border flex items-center justify-center shrink-0">
+              <PlusIcon className="size-3 text-muted-foreground" />
+            </div>
+            <span className="text-sm text-muted-foreground">
+              {t("suggestionsNewTopic")}
+            </span>
+          </motion.button>
+        </div>
+      </motion.div>
+    </FitToViewport>
+  );
+
+  if (interviewState === "active") return chatArea;
+  if (showSuggestions) return suggestionsArea;
+  return memoryArea;
 }

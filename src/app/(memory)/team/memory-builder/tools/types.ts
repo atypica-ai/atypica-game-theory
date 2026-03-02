@@ -7,6 +7,11 @@ export const endInterviewInputSchema = z.object({
     .describe(
       "User's personal memory in Markdown format, including: professional background, company information, work context, goals, challenges, target audience, verification methods, and key insights from the interview. ",
     ),
+  recommendTopics: z
+    .array(z.string())
+    .describe(
+      "2 research topic suggestions (short strings) in the user's language, based on the interview. Each topic should be concrete and compelling so the user wants to start a new study immediately.",
+    ),
 });
 
 export const endInterviewOutputSchema = z.object({

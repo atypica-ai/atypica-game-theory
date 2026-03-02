@@ -173,7 +173,10 @@
         "confirmButton": "确认档案",
         "savingButton": "保存中...",
         "saveFailed": "保存失败",
-        "unexpectedError": "发生错误"
+        "unexpectedError": "发生错误",
+        "suggestionsTitle": "为你推荐的研究主题",
+        "suggestionsSubtitle": "基于你的背景档案，点击任意主题直接开始深度分析，或创建自定义研究：",
+        "suggestionsNewTopic": "开始自定义研究"
       }
     },
     "Actions": {

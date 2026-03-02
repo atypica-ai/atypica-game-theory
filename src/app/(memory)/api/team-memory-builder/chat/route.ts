@@ -15,6 +15,7 @@ import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
+import { getLocale } from "next-intl/server";
 import { after, NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
   // 动态检测用户输入的语言
   const locale = await detectInputLanguage({
     text: newMessage.lastPart.type === "text" ? newMessage.lastPart.text : "",
+    fallbackLocale: await getLocale(),
   });
 
   const userChat = await prisma.userChat.findUnique({
@@ -114,7 +116,7 @@ export async function POST(req: Request) {
   }
 
   const streamTextResult = streamText({
-    model: llm("gemini-3-pro"),
+    model: llm("gemini-3.1-pro"),
     providerOptions: defaultProviderOptions(),
     system: contextBuilderSystem({ locale }),
     messages: coreMessages,

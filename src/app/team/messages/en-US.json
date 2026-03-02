@@ -173,7 +173,10 @@
         "confirmButton": "Confirm Profile",
         "savingButton": "Saving...",
         "saveFailed": "Failed to save memory",
-        "unexpectedError": "An unexpected error occurred"
+        "unexpectedError": "An unexpected error occurred",
+        "suggestionsTitle": "Recommended Research Topics",
+        "suggestionsSubtitle": "Based on your profile, click any topic to start in-depth analysis, or create a custom study:",
+        "suggestionsNewTopic": "Start custom research"
       }
     },
     "Actions": {

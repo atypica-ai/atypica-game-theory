@@ -50,9 +50,9 @@ export function contextBuilderSystem(params: { locale: string }): string {
    - 如果用户提到报告设计、品牌风格等需求，则记录下来
    - 如果用户说没有，则直接进入下一步
 3. 调用 endInterview 工具：
-   - 输入：memory（string）
-   - 将收集到的信息根据不同类别整理成结构清晰的 Markdown 文本
-   - 这些信息会被保存到用户的长期 Memory 中，用于后续所有研究
+   - 输入：memory（string）和 recommendTopics（string[]）
+   - memory：将收集到的信息根据不同类别整理成结构清晰的 Markdown 文本，保存到用户的长期 Memory 中
+   - recommendTopics：2 个研究主题（用户语言）。优先能激发用户点击、动手的研究角度：紧扣其行业/角色/目标/挑战，或提供跨行业启发、趋势关联；每条要具体、有吸引力，让用户想立刻开始新研究。
 
 ## 品牌报告设计风格（仅在用户主动提及时收集）
 如果用户明确提到需要定制报告设计风格，按以下方式处理：
@@ -161,9 +161,9 @@ When you have collected enough core information (typically after 3 turns), prepa
    - If the user mentions report design, brand style, or other needs, record them
    - If the user says no, proceed directly to the next step
 3. Call the endInterview tool:
-   - Input: memory (string)
-   - Organize the collected information into a clear, well‑structured Markdown document grouped by category
-   - This content will be saved into the user’s long‑term Memory and used in subsequent research
+   - Input: memory (string) and recommendTopics (string[])
+   - memory: Organize the collected information into a clear, well‑structured Markdown document grouped by category; saved to the user’s long‑term Memory
+   - recommendTopics: 2 research topics (user’s language). Prioritize angles that trigger curiosity and the urge to start: directly tied to their industry, role, goals, or challenges, or offering cross-industry inspiration and trend relevance; each should be concrete and compelling so the user wants to press and begin a new study.
 
 ## Brand Report Design Style (Only collect if user specifically mentions it)
 If the user explicitly mentions needing customized report design style, handle it as follows:
