@@ -11,6 +11,7 @@ import {
   availableCoupons,
   createPaymentRecord,
   generateOrderNo,
+  getOrCreateStripeCustomerIdForUser,
   getStripePriceIdForUser,
   requirePersonalUser,
   requireTeamlUser,
@@ -73,12 +74,14 @@ export async function createSubscriptionStripeSession({
     userProfileExtra,
   });
   // const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
+  const stripeCustomerId = await getOrCreateStripeCustomerIdForUser({
+    userId,
+    email: user.email,
+    currency,
+  });
   const session = await stripe.checkout.sessions.create({
-    customer_email: user.email,
-    // 不再给 user 固定 stripeCustomerId, 一个 customer 只支持一种 currency，如果有 usd 的 subscription 就没法用 rmb 充值了，所以，索性简单点每次都重新创建
-    // customer: stripeCustomerId,
-    // 如果是固定 stripe customer id 并且开启 automatic_tax，必须配置 customer_update 的策略
-    // customer_update: { name: "auto", address: "auto", shipping: "auto" },
+    customer: stripeCustomerId,
+    customer_update: { name: "auto", address: "auto", shipping: "auto" },
     automatic_tax: { enabled: true },
     client_reference_id: orderNo,
     currency: currency,
@@ -172,11 +175,14 @@ export async function createPaymentStripeSession({
     throw new Error("Price ID is missing");
   }
 
-  // const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
+  const stripeCustomerId = await getOrCreateStripeCustomerIdForUser({
+    userId,
+    email: user.email,
+    currency,
+  });
   const session = await stripe.checkout.sessions.create({
-    customer_email: user.email,
-    // customer: stripeCustomerId,
-    // customer_update: { name: "auto", address: "auto", shipping: "auto" },
+    customer: stripeCustomerId,
+    customer_update: { name: "auto", address: "auto", shipping: "auto" },
     automatic_tax: { enabled: true },
     client_reference_id: orderNo,
     currency: currency,
@@ -289,10 +295,14 @@ export async function createTeamSubscriptionStripeSession({
     userId: userId, // 不是 personnalUser, 而是当前用户
     userProfileExtra: personalUserProfileExtra,
   });
+  const stripeCustomerId = await getOrCreateStripeCustomerIdForUser({
+    userId,
+    email: personalUserEmail,
+    currency,
+  });
   const session = await stripe.checkout.sessions.create({
-    customer_email: personalUserEmail,
-    // customer: stripeCustomerId,
-    // customer_update: { name: "auto", address: "auto", shipping: "auto" },
+    customer: stripeCustomerId,
+    customer_update: { name: "auto", address: "auto", shipping: "auto" },
     automatic_tax: { enabled: true },
     client_reference_id: orderNo,
     currency: currency,

@@ -34,6 +34,10 @@ export type DeprecatedUserExtra = Partial<{
 
 export type UserProfileExtra = Partial<{
   lastTrack: number; // timestamp of last trackUser
+  stripeCustomerIds: Partial<{
+    USD: string;
+    CNY: string;
+  }>;
   acquisition: {
     utm?: {
       utm_source?: string;

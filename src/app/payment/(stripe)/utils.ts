@@ -4,11 +4,73 @@ import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { PaymentMethod, ProductName, StripeMetadata } from "@/app/payment/data";
 import { trackEventServerSide } from "@/lib/analytics/server";
 import { rootLogger } from "@/lib/logging";
-import { PaymentRecord, PaymentStatus, Product, UserProfileExtra } from "@/prisma/client";
+import { Currency, PaymentRecord, PaymentStatus, Product, UserProfileExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { InputJsonValue } from "@prisma/client/runtime/client";
 import { after } from "next/server";
 import Stripe from "stripe";
+
+type StripeCurrencyKey = Extract<Currency, "USD" | "CNY">;
+
+function getStoredStripeCustomerId(extra: UserProfileExtra, currency: StripeCurrencyKey) {
+  return extra.stripeCustomerIds?.[currency] ?? null;
+}
+
+export async function getOrCreateStripeCustomerIdForUser({
+  userId,
+  email,
+  currency,
+}: {
+  userId: number;
+  email: string;
+  currency: StripeCurrencyKey;
+}) {
+  const profile = await prisma.userProfile.findUniqueOrThrow({
+    where: { userId },
+  });
+
+  const existingCustomerId = getStoredStripeCustomerId(profile.extra, currency);
+  if (existingCustomerId) {
+    return existingCustomerId;
+  }
+
+  const stripe = stripeClient();
+  const createdCustomer = await stripe.customers.create({
+    email,
+    metadata: { userId: userId.toString() },
+  });
+
+  const customerId = createdCustomer.id;
+
+  return prisma.$transaction(async (tx) => {
+    // Serialize updates on this profile to avoid customer ID switching.
+    await tx.$queryRaw`SELECT id FROM "UserProfile" WHERE id = ${profile.id} FOR UPDATE`;
+    const latestProfile = await tx.userProfile.findUniqueOrThrow({
+      where: { id: profile.id },
+      select: { extra: true },
+    });
+    const latestExtra = latestProfile.extra;
+    const latestCustomerId = getStoredStripeCustomerId(latestExtra, currency);
+    if (latestCustomerId) {
+      return latestCustomerId;
+    }
+
+    await tx.userProfile.update({
+      where: { id: profile.id },
+      data: {
+        extra: {
+          ...latestExtra,
+          stripeCustomerIds: {
+            ...(latestExtra.stripeCustomerIds ?? {}),
+            [currency]: customerId,
+          },
+        },
+      },
+    });
+
+    return customerId;
+  });
+}
 
 export async function requirePersonalUser(userId: number) {
   const { tokensAccount, profile, email, ...user } = await prisma.user.findUniqueOrThrow({
