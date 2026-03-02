@@ -1,5 +1,5 @@
 "use client";
-import { fetchPaymentRecords } from "@/app/account/actions";
+import { fetchPaymentRecords, getStripeInvoiceUrl } from "@/app/account/actions";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import {
@@ -12,9 +12,9 @@ import {
 } from "@/components/ui/table";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { formatDate } from "@/lib/utils";
-import { DownloadIcon } from "lucide-react";
+import { DownloadIcon, LoaderIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
+import { useCallback, useState } from "react";
 import useSWR from "swr";
 
 interface PaymentHistoryClientProps {
@@ -24,6 +24,7 @@ interface PaymentHistoryClientProps {
 export function PaymentHistory({ initialSearchParams }: PaymentHistoryClientProps) {
   const t = useTranslations("AccountPage.paymentRecordsSection");
   const locale = useLocale();
+  const [loadingInvoiceId, setLoadingInvoiceId] = useState<number | null>(null);
 
   // Use query params hook for URL synchronization
   const {
@@ -55,6 +56,18 @@ export function PaymentHistory({ initialSearchParams }: PaymentHistoryClientProp
 
   const paymentRecords = data?.paymentRecords ?? [];
   const pagination = data?.pagination ?? null;
+
+  const handleInvoiceClick = useCallback(async (paymentRecordId: number) => {
+    setLoadingInvoiceId(paymentRecordId);
+    try {
+      const result = await getStripeInvoiceUrl(paymentRecordId);
+      if (result.success) {
+        window.open(result.data, "_blank");
+      }
+    } finally {
+      setLoadingInvoiceId(null);
+    }
+  }, []);
 
   return (
     <div className="p-6">
@@ -99,12 +112,20 @@ export function PaymentHistory({ initialSearchParams }: PaymentHistoryClientProp
                     {formatDate(item.createdAt, locale)}
                   </TableCell>
                   <TableCell className="text-center">
-                    {item.stripeInvoice?.hosted_invoice_url ? (
-                      <Button variant="outline" size="sm" className="text-xs h-7" asChild>
-                        <Link href={item.stripeInvoice.hosted_invoice_url} target="_blank">
+                    {item.stripeInvoiceId ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7"
+                        disabled={loadingInvoiceId === item.id}
+                        onClick={() => handleInvoiceClick(item.id)}
+                      >
+                        {loadingInvoiceId === item.id ? (
+                          <LoaderIcon className="size-4 animate-spin" />
+                        ) : (
                           <DownloadIcon className="size-4" />
-                          {t("downloadInvoice")}
-                        </Link>
+                        )}
+                        {t("downloadInvoice")}
                       </Button>
                     ) : null}
                   </TableCell>

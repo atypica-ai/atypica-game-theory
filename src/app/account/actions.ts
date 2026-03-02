@@ -225,10 +225,9 @@ export async function fetchPaymentRecords(
       | "pingxxCredential"
       | "pingxxChargeId"
       | "pingxxCharge"
-      | "stripeInvoiceId"
       | "stripeInvoice"
       | "stripeSession"
-    > & { stripeInvoice: Stripe.Invoice | null })[]
+    > & { paymentMethod: PaymentMethod })[]
   >
 > {
   return withAuth(async (user) => {
@@ -247,7 +246,7 @@ export async function fetchPaymentRecords(
           paymentMethod: true,
           description: true,
           paidAt: true,
-          stripeInvoice: true,
+          stripeInvoiceId: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -262,9 +261,8 @@ export async function fetchPaymentRecords(
 
     return {
       success: true,
-      data: paymentRecords.map(({ stripeInvoice, paymentMethod, ...paymentRecord }) => ({
+      data: paymentRecords.map(({ paymentMethod, ...paymentRecord }) => ({
         ...paymentRecord,
-        stripeInvoice: stripeInvoice as unknown as Stripe.Invoice | null,
         paymentMethod: paymentMethod as PaymentMethod,
       })),
       pagination: {
@@ -274,6 +272,28 @@ export async function fetchPaymentRecords(
         totalPages: Math.ceil(totalCount / pageSize),
       },
     };
+  });
+}
+
+export async function getStripeInvoiceUrl(
+  paymentRecordId: number,
+): Promise<ServerActionResult<string>> {
+  return withAuth(async (user) => {
+    const record = await prismaRO.paymentRecord.findFirst({
+      where: { id: paymentRecordId, userId: user.id },
+      select: { stripeInvoiceId: true },
+    });
+    if (!record?.stripeInvoiceId) {
+      return { success: false, message: "Invoice not found", code: "not_found" };
+    }
+
+    const stripe = stripeClient();
+    const invoice = await stripe.invoices.retrieve(record.stripeInvoiceId);
+    if (!invoice.hosted_invoice_url) {
+      return { success: false, message: "Invoice URL not available", code: "not_found" };
+    }
+
+    return { success: true, data: invoice.hosted_invoice_url };
   });
 }
 
