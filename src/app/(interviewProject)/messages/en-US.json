@@ -47,6 +47,7 @@
       "aiSessions": "AI Persona",
       "loadFailed": "Failed to load projects",
       "optimizing": "Optimizing",
+      "questions": "{count} Questions",
       "searchPlaceholder": "Search interview projects...",
       "search": "Search"
     },

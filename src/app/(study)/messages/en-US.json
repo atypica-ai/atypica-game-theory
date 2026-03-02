@@ -167,7 +167,6 @@
     "title": "My Projects",
     "description": "Browse and access your studies",
     "noTopic": "Study topic not yet defined",
-    "viewStudy": "View Study",
     "startNewStudy": "Start New Study",
     "noSearchResults": "No studies match your search",
     "searchPlaceholder": "Search studies",
@@ -183,8 +182,7 @@
     },
     "newStudyCard": {
       "title": "New Research",
-      "description": "Start exploring a new topic with AI-powered research and analysis",
-      "badge": "Quick Start"
+      "description": "Start exploring a new topic with AI-powered research and analysis"
     },
     "stats": {
       "reports": "{count} reports",

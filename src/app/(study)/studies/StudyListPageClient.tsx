@@ -1,7 +1,6 @@
 "use client";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
@@ -77,15 +76,15 @@ export function StudyListPageClient({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin p-4 md:p-8 space-y-4 md:space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold text-center">{t("title")}</h1>
-      <p className="text-muted-foreground mt-1 text-center text-sm md:text-base">
-        {t("description")}
-      </p>
+    <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <div className="container mx-auto max-w-6xl px-8 py-8 space-y-6">
+        <div className="text-center space-y-3">
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground max-w-xl mx-auto">{t("description")}</p>
+        </div>
 
-      {/* Search bar */}
-      <div className="container mx-auto max-w-xl">
-        <form onSubmit={handleSearch} className="flex gap-2">
+        {/* Search bar */}
+        <form onSubmit={handleSearch} className="flex gap-2 max-w-xl mx-auto">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -106,78 +105,59 @@ export function StudyListPageClient({
           </div>
           <Button type="submit">{t("search") || "Search"}</Button>
         </form>
-      </div>
 
-      <div className="container mx-auto">
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2Icon className="size-8 animate-spin" />
-          </div>
-        ) : studies.length === 0 ? (
-          <div className="text-center py-12">
-            {searchQuery ? (
-              <p className="text-muted-foreground">{t("noSearchResults")}</p>
-            ) : (
-              <EmptyStudyState />
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 w-full">
-              {/* New Study Quick Action Card */}
-              <Card className="flex flex-col h-full border-2 border-dashed border-zinc-200 dark:border-zinc-700 bg-linear-to-br from-zinc-50 to-zinc-50/50 dark:from-zinc-900/50 dark:to-zinc-900/30">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="bg-zinc-600 dark:bg-zinc-500 rounded-xl p-2.5 shadow-sm">
-                      <NotebookTextIcon className="h-5 w-5 text-white" />
+        <div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2Icon className="size-8 animate-spin" />
+            </div>
+          ) : studies.length === 0 ? (
+            <div className="text-center py-12">
+              {searchQuery ? (
+                <p className="text-muted-foreground">{t("noSearchResults")}</p>
+              ) : (
+                <EmptyStudyState />
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* New Study Card */}
+                <NewStudyButton>
+                  <div className="group border border-dashed border-border rounded-lg p-5 hover:border-foreground/20 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[180px] cursor-pointer">
+                    <div className="size-10 rounded-full border border-border flex items-center justify-center group-hover:border-foreground/20 group-hover:bg-accent transition-all">
+                      <NotebookTextIcon className="size-5 text-muted-foreground" />
                     </div>
-                    <div className="flex flex-col">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {t("newStudyCard.title")}
-                      </h3>
-                      <div className=" text-zinc-700 dark:text-zinc-300 text-xs font-medium w-fit">
-                        {t("newStudyCard.badge")}
+                    <div className="text-sm text-center space-y-1">
+                      <div className="font-medium">{t("newStudyCard.title")}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {t("newStudyCard.description")}
                       </div>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col justify-center pb-4">
-                  <p className="text-sm text-muted-foreground text-center leading-relaxed mb-6">
-                    {t("newStudyCard.description")}
-                  </p>
-                  <div className="flex items-center justify-center">
-                    <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800/30 rounded-full flex items-center justify-center">
-                      <div className="w-0 h-0 border-l-8 border-l-zinc-600 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent ml-1"></div>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-0">
-                  <NewStudyButton>
-                    <Button className="w-full bg-zinc-600 dark:bg-zinc-500 hover:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-medium py-2.5">
-                      <NotebookTextIcon className="h-4 w-4" />
-                      {t("startNewStudy")}
-                    </Button>
-                  </NewStudyButton>
-                </CardFooter>
-              </Card>
+                </NewStudyButton>
 
-              {studies.map((study) => (
-                <StudyCard key={study.id} study={study} />
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
-              <div className="mt-8 flex justify-center">
-                <Pagination
-                  currentPage={pagination.page}
-                  totalPages={pagination.totalPages}
-                  onPageChange={(page) => setParam("page", page)}
-                />
+                {studies.map((study) => (
+                  <StudyCard key={study.id} study={study} />
+                ))}
               </div>
-            )}
-          </>
-        )}
+
+              {/* Pagination */}
+              {pagination && pagination.totalPages > 1 && (
+                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+                  <Pagination
+                    currentPage={pagination.page}
+                    totalPages={pagination.totalPages}
+                    onPageChange={(page) => setParam("page", page)}
+                  />
+                  <div className="text-sm text-muted-foreground">
+                    Total: {pagination.totalCount.toLocaleString()}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

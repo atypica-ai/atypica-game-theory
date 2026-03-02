@@ -47,6 +47,7 @@
       "aiSessions": "AI 人设",
       "loadFailed": "加载项目失败",
       "optimizing": "优化中",
+      "questions": "{count} 个问题",
       "searchPlaceholder": "搜索访谈项目...",
       "search": "搜索"
     },

@@ -12,7 +12,7 @@ import {
   PersonaImportExtra,
   UserChat,
 } from "@/prisma/client";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { waitUntil } from "@vercel/functions";
 import { generateId, UIMessage } from "ai";
@@ -254,9 +254,15 @@ function extractPersonaIdFromSlug(slug: string): number {
   return match ? parseInt(match[1], 10) : 0;
 }
 
-export async function fetchUserPersonas(
-  searchQuery?: string,
-): Promise<
+export async function fetchUserPersonas({
+  searchQuery,
+  page = 1,
+  pageSize = 11,
+}: {
+  searchQuery?: string;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<
   ServerActionResult<
     Array<
       Pick<Persona, "name" | "source" | "personaImportId" | "tier" | "createdAt"> & {
@@ -268,36 +274,52 @@ export async function fetchUserPersonas(
   >
 > {
   return withAuth(async (user) => {
+    const skip = (page - 1) * pageSize;
     let orderedIds: number[] | null = null;
     let whereId: { in: number[] } | undefined = undefined;
+    let totalCount = 0;
+    let useDatabasePagination = true;
 
     if (searchQuery?.trim()) {
       try {
         const searchResults = await searchPersonasFromMeili({
           query: searchQuery.trim(),
           userId: user.id,
-          pageSize: 100,
+          page,
+          pageSize,
         });
 
         if (searchResults.hits.length === 0) {
-          return { success: true, data: [] };
+          return {
+            success: true,
+            data: [],
+            pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+          };
         }
 
         orderedIds = searchResults.hits.map((hit) => extractPersonaIdFromSlug(hit.slug));
         whereId = { in: orderedIds };
+        totalCount = searchResults.totalHits;
+        useDatabasePagination = false;
       } catch {
-        return { success: true, data: [] };
+        return {
+          success: true,
+          data: [],
+          pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+        };
       }
     }
 
-    const personas = await prisma.persona.findMany({
-      where: {
-        ...(whereId ? { id: whereId } : {}),
-        personaImport: {
-          userId: user.id,
-        },
-      },
+    const where = {
+      ...(whereId ? { id: whereId } : {}),
+      personaImport: { userId: user.id },
+    };
+
+    const personas = await prismaRO.persona.findMany({
+      where,
       orderBy: orderedIds ? undefined : { createdAt: "desc" },
+      skip: useDatabasePagination ? skip : undefined,
+      take: useDatabasePagination ? pageSize : undefined,
       select: {
         id: true,
         token: true,
@@ -311,6 +333,10 @@ export async function fetchUserPersonas(
       },
     });
 
+    if (useDatabasePagination) {
+      totalCount = await prismaRO.persona.count({ where });
+    }
+
     const mappedPersonas = personas.map(({ personaImport, token, tags, id, ...persona }) => ({
       ...persona,
       id,
@@ -320,17 +346,25 @@ export async function fetchUserPersonas(
     }));
 
     // MeiliSearch 搜索时，按返回的顺序排序
-    if (orderedIds) {
-      const idToPersona = new Map(mappedPersonas.map((p) => [p.id, p]));
-      return {
-        success: true,
-        data: orderedIds
-          .map((id) => idToPersona.get(id))
-          .filter((p): p is (typeof mappedPersonas)[0] => p !== undefined),
-      };
-    }
+    const sortedPersonas = orderedIds
+      ? (() => {
+          const idToPersona = new Map(mappedPersonas.map((p) => [p.id, p]));
+          return orderedIds
+            .map((id) => idToPersona.get(id))
+            .filter((p): p is (typeof mappedPersonas)[0] => p !== undefined);
+        })()
+      : mappedPersonas;
 
-    return { success: true, data: mappedPersonas };
+    return {
+      success: true,
+      data: sortedPersonas,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+    };
   });
 }
 

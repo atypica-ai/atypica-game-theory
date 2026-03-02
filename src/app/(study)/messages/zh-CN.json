@@ -167,7 +167,6 @@
     "title": "我的项目",
     "description": "浏览和访问您的研究",
     "noTopic": "研究主题尚未明确",
-    "viewStudy": "查看研究",
     "startNewStudy": "开始新研究",
     "noSearchResults": "没有符合您搜索条件的研究",
     "searchPlaceholder": "搜索研究主题",
@@ -183,8 +182,7 @@
     },
     "newStudyCard": {
       "title": "新研究",
-      "description": "开始探索新主题，通过AI驱动的研究和分析获得洞察",
-      "badge": "快速开始"
+      "description": "开始探索新主题，通过AI驱动的研究和分析获得洞察"
     },
     "stats": {
       "reports": "{count} 个报告",

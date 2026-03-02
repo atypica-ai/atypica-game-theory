@@ -1,5 +1,6 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
+import { parseServerSearchParams } from "@/hooks/use-list-query-params.server";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
@@ -18,20 +19,27 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-async function PanelListPage() {
+interface PanelListPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+async function PanelListPage({ searchParams }: PanelListPageProps) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     const callbackUrl = "/panels";
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
-  return <PersonaPanelsListClient />;
+  const params = await searchParams;
+  const initialSearchParams = parseServerSearchParams(params);
+
+  return <PersonaPanelsListClient initialSearchParams={initialSearchParams} />;
 }
 
-export default async function PanelListPageWithLoading() {
+export default async function PanelListPageWithLoading(props: PanelListPageProps) {
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <PanelListPage />
+      <PanelListPage searchParams={props.searchParams} />
     </Suspense>
   );
 }

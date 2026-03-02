@@ -21,6 +21,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Pagination } from "@/components/ui/pagination";
+import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { cn, formatDate } from "@/lib/utils";
 import { PersonaExtra } from "@/prisma/client";
 import useSWR from "swr";
@@ -77,14 +79,35 @@ function buildExtraSummary(extra: PersonaExtra): string {
   return parts.join(" · ");
 }
 
-export function PersonaPanelsListClient() {
+export function PersonaPanelsListClient({
+  initialSearchParams,
+}: {
+  initialSearchParams: Record<string, string | number | boolean>;
+}) {
   const t = useTranslations("PersonaPanel");
   const locale = useLocale();
   const router = useRouter();
   const [panels, setPanels] = useState<PersonaPanelWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [pagination, setPagination] = useState<{
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    values: { page: currentPage, search: searchQuery },
+    setParam,
+    setParams,
+  } = useListQueryParams<{ page: number; search: string }>({
+    params: {
+      page: createParamConfig.number(1),
+      search: createParamConfig.string(""),
+    },
+    initialValues: initialSearchParams,
+  });
   const [creating, setCreating] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [deletingPanelId, setDeletingPanelId] = useState<number | null>(null);
@@ -125,14 +148,18 @@ export function PersonaPanelsListClient() {
 
   const loadPanels = useCallback(async () => {
     setLoading(true);
-    const result = await fetchUserPersonaPanels(searchQuery || undefined);
+    const result = await fetchUserPersonaPanels({
+      searchQuery: searchQuery || undefined,
+      page: currentPage,
+    });
     if (result.success) {
       setPanels(result.data);
+      if (result.pagination) setPagination(result.pagination);
     } else {
       toast.error(t("ListPage.loadingFailed"));
     }
     setLoading(false);
-  }, [t, searchQuery]);
+  }, [t, searchQuery, currentPage]);
 
   useEffect(() => {
     loadPanels();
@@ -140,12 +167,12 @@ export function PersonaPanelsListClient() {
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    setSearchQuery(inputRef.current?.value ?? "");
+    setParams({ search: inputRef.current?.value ?? "", page: 1 });
   };
 
   const clearSearch = () => {
     if (inputRef.current) inputRef.current.value = "";
-    setSearchQuery("");
+    setParams({ search: "", page: 1 });
   };
 
   const handleDeletePanel = useCallback(
@@ -252,14 +279,6 @@ export function PersonaPanelsListClient() {
     resetWizard();
     router.push(`/panel/${progress.panelId}`);
   }, [autoCloseCountdown, progress?.panelId, resetWizard, router]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
 
   // ─── Step indicator ────────────────────────────────────────────
   const getProgressPercent = (status: string): number => {
@@ -537,15 +556,15 @@ export function PersonaPanelsListClient() {
   return (
     <>
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="mx-auto max-w-5xl px-6 py-10 space-y-6">
+        <div className="container mx-auto max-w-6xl px-8 py-8 space-y-6">
           {/* Header */}
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">{t("subtitle")}</p>
+          <div className="text-center space-y-3">
+            <h1 className="text-2xl font-bold">{t("title")}</h1>
+            <p className="text-muted-foreground max-w-xl mx-auto">{t("subtitle")}</p>
           </div>
 
           {/* Search */}
-          <form onSubmit={handleSearch} className="flex gap-2 max-w-xl">
+          <form onSubmit={handleSearch} className="flex gap-2 max-w-xl mx-auto">
             <div className="relative flex-1">
               <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -568,7 +587,11 @@ export function PersonaPanelsListClient() {
           </form>
 
           {/* Panels Grid */}
-          {panels.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : panels.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* New Panel Card */}
               <button
@@ -707,6 +730,20 @@ export function PersonaPanelsListClient() {
                 <ArrowRight className="size-3.5" />
                 {t("ListPage.startDiscussion")}
               </button>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                onPageChange={(page) => setParam("page", page)}
+              />
+              <div className="text-sm text-muted-foreground">
+                Total: {pagination.totalCount.toLocaleString()}
+              </div>
             </div>
           )}
         </div>

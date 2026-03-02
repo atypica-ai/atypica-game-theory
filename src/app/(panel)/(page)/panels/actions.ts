@@ -9,7 +9,7 @@ import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import type { Persona } from "@/prisma/client";
 import { PersonaPanelWhereInput } from "@/prisma/models";
-import { prisma } from "@/prisma/prisma";
+import { prisma, prismaRO } from "@/prisma/prisma";
 import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
 import { getToolName, isToolUIPart } from "ai";
 import { getLocale } from "next-intl/server";
@@ -40,12 +40,21 @@ function extractPanelIdFromSlug(slug: string): number {
   return match ? parseInt(match[1], 10) : 0;
 }
 
-export async function fetchUserPersonaPanels(
-  searchQuery?: string,
-): Promise<ServerActionResult<PersonaPanelWithDetails[]>> {
+export async function fetchUserPersonaPanels({
+  searchQuery,
+  page = 1,
+  pageSize = 11,
+}: {
+  searchQuery?: string;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<ServerActionResult<PersonaPanelWithDetails[]>> {
   return withAuth(async (user) => {
+    const skip = (page - 1) * pageSize;
     let where: PersonaPanelWhereInput = { userId: user.id };
     let orderedIds: number[] | null = null;
+    let totalCount = 0;
+    let useDatabasePagination = true;
 
     if (searchQuery?.trim()) {
       try {
@@ -53,37 +62,54 @@ export async function fetchUserPersonaPanels(
           query: searchQuery.trim(),
           type: "panel",
           userId: user.id,
-          pageSize: 100,
+          page,
+          pageSize,
         });
 
         if (searchResults.hits.length === 0) {
-          return { success: true, data: [] };
+          return {
+            success: true,
+            data: [],
+            pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+          };
         }
 
         orderedIds = searchResults.hits.map((hit) => extractPanelIdFromSlug(hit.slug));
         where = { userId: user.id, id: { in: orderedIds } };
+        totalCount = searchResults.totalHits;
+        useDatabasePagination = false;
       } catch (error) {
         rootLogger.error({
           msg: "MeiliSearch panel search failed",
           error: error instanceof Error ? error.message : String(error),
         });
-        return { success: true, data: [] };
+        return {
+          success: true,
+          data: [],
+          pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+        };
       }
     }
 
-    const panels = await prisma.personaPanel.findMany({
+    const panels = await prismaRO.personaPanel.findMany({
       where,
       orderBy: orderedIds ? undefined : { createdAt: "desc" },
+      skip: useDatabasePagination ? skip : undefined,
+      take: useDatabasePagination ? pageSize : undefined,
       include: {
         discussionTimelines: { select: { id: true } },
         analystInterviews: { select: { id: true } },
       },
     });
 
+    if (useDatabasePagination) {
+      totalCount = await prismaRO.personaPanel.count({ where });
+    }
+
     const allPersonaIds = panels.flatMap((panel) => panel.personaIds);
     const uniquePersonaIds = [...new Set(allPersonaIds)];
 
-    const personas = await prisma.persona.findMany({
+    const personas = await prismaRO.persona.findMany({
       where: { id: { in: uniquePersonaIds } },
       select: {
         id: true,
@@ -123,7 +149,16 @@ export async function fetchUserPersonaPanels(
         })()
       : panelsWithDetails;
 
-    return { success: true, data: sortedPanels };
+    return {
+      success: true,
+      data: sortedPanels,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+    };
   });
 }
 

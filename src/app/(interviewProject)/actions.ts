@@ -58,9 +58,15 @@ function extractInterviewIdFromSlug(slug: string): number {
 /**
  * Fetch user's interview projects
  */
-export async function fetchUserInterviewProjects(
-  searchQuery?: string,
-): Promise<
+export async function fetchUserInterviewProjects({
+  searchQuery,
+  page = 1,
+  pageSize = 11,
+}: {
+  searchQuery?: string;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<
   ServerActionResult<
     (Omit<InterviewProject, "questions" | "extra"> & {
       questions: InterviewProjectQuestion[];
@@ -75,8 +81,11 @@ export async function fetchUserInterviewProjects(
   >
 > {
   return withAuth(async (user) => {
+    const skip = (page - 1) * pageSize;
     let where: InterviewProjectWhereInput = { userId: user.id };
     let orderedIds: number[] | null = null;
+    let totalCount = 0;
+    let useDatabasePagination = true;
 
     if (searchQuery?.trim()) {
       try {
@@ -84,21 +93,32 @@ export async function fetchUserInterviewProjects(
           query: searchQuery.trim(),
           type: "interview",
           userId: user.id,
-          pageSize: 100,
+          page,
+          pageSize,
         });
 
         if (searchResults.hits.length === 0) {
-          return { success: true, data: [] };
+          return {
+            success: true,
+            data: [],
+            pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+          };
         }
 
         orderedIds = searchResults.hits.map((hit) => extractInterviewIdFromSlug(hit.slug));
         where = { userId: user.id, id: { in: orderedIds } };
+        totalCount = searchResults.totalHits;
+        useDatabasePagination = false;
       } catch (error) {
         rootLogger.error({
           msg: "MeiliSearch interview search failed",
           error: error instanceof Error ? error.message : String(error),
         });
-        return { success: true, data: [] };
+        return {
+          success: true,
+          data: [],
+          pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+        };
       }
     }
 
@@ -116,7 +136,13 @@ export async function fetchUserInterviewProjects(
         },
       },
       orderBy: orderedIds ? undefined : { createdAt: "desc" },
+      skip: useDatabasePagination ? skip : undefined,
+      take: useDatabasePagination ? pageSize : undefined,
     });
+
+    if (useDatabasePagination) {
+      totalCount = await prismaRO.interviewProject.count({ where });
+    }
 
     const mappedProjects = projects.map(({ sessions, questions, extra, ...project }) => {
       const humanSessions = sessions.filter((s) => s.intervieweeUserId).length;
@@ -134,17 +160,25 @@ export async function fetchUserInterviewProjects(
     });
 
     // MeiliSearch 搜索时，按返回的顺序排序
-    if (orderedIds) {
-      const idToProject = new Map(mappedProjects.map((p) => [p.id, p]));
-      return {
-        success: true,
-        data: orderedIds
-          .map((id) => idToProject.get(id))
-          .filter((p): p is (typeof mappedProjects)[0] => p !== undefined),
-      };
-    }
+    const sortedProjects = orderedIds
+      ? (() => {
+          const idToProject = new Map(mappedProjects.map((p) => [p.id, p]));
+          return orderedIds
+            .map((id) => idToProject.get(id))
+            .filter((p): p is (typeof mappedProjects)[0] => p !== undefined);
+        })()
+      : mappedProjects;
 
-    return { success: true, data: mappedProjects };
+    return {
+      success: true,
+      data: sortedProjects,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+    };
   });
 }
 
