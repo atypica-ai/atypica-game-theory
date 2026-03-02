@@ -28,6 +28,7 @@ export function RequestSelectPersonasMessage({
   const t = useTranslations("PersonaPanel.CreatePanelTool");
   const [personas, setPersonas] = useState<PanelPersonaSummary[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
   const [selectDialogOpen, setSelectDialogOpen] = useState(false);
 
   // Pre-populate personas from input personaIds (if provided by searchPersonas)
@@ -78,17 +79,21 @@ export function RequestSelectPersonasMessage({
       },
     });
 
+    setConfirmed(true);
     setSubmitting(false);
   }, [addToolResult, personas, toolInvocation.toolCallId]);
 
-  // Output available — read-only summary
-  if (toolInvocation.state === "output-available") {
-    const output = toolInvocation.output;
+  // Output available or just confirmed — read-only summary
+  if (confirmed || toolInvocation.state === "output-available") {
+    const count =
+      toolInvocation.state === "output-available"
+        ? toolInvocation.output.personaIds.length
+        : personas.length;
     return (
       <div className="p-3 rounded-lg border border-green-500/20 bg-green-500/5">
         <div className="flex items-center gap-2 text-sm">
           <CheckIcon className="size-4 text-green-600" />
-          <span>{t("personaCount", { count: output.personaIds.length })}</span>
+          <span>{t("personaCount", { count })}</span>
         </div>
       </div>
     );

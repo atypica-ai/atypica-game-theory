@@ -123,7 +123,7 @@ export function PersonaPanelsListClient({
   const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
 
   // Use SWR for panel creation progress polling
-  const { data: progress } = useSWR(
+  const { data: progress, mutate: mutateProgress } = useSWR(
     wizardPhase === "running" && chatToken ? ["panel:creationProgress", chatToken] : null,
     async () => {
       const result = await fetchPanelCreationProgress(chatToken!);
@@ -232,9 +232,10 @@ export function PersonaPanelsListClient({
         UniversalToolName.requestSelectPersonas,
         output as Record<string, unknown>,
       );
-      // SWR will pick up the status change on next poll
+      // Immediately re-fetch progress so UI transitions from selectingPersonas → saving
+      mutateProgress();
     },
-    [chatToken],
+    [chatToken, mutateProgress],
   );
 
   // Reset wizard state

@@ -30,6 +30,7 @@ export function ConfirmPanelResearchPlanMessage({
   const [question, setQuestion] = useState(toolInvocation.input?.question ?? "");
   const [executionPlan, setExecutionPlan] = useState(toolInvocation.input?.executionPlan ?? "");
   const [submitting, setSubmitting] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
   const researchTypeIcons = {
     focusGroup: Users,
@@ -56,6 +57,7 @@ export function ConfirmPanelResearchPlanMessage({
       },
     });
 
+    setConfirmed(true);
     setSubmitting(false);
   }, [
     addToolResult,
@@ -66,8 +68,8 @@ export function ConfirmPanelResearchPlanMessage({
     personaCount,
   ]);
 
-  // Output available — read-only summary
-  if (toolInvocation.state === "output-available") {
+  // Output available or just confirmed — read-only summary
+  if (confirmed || toolInvocation.state === "output-available") {
     return (
       <div className="p-3 rounded-lg border border-green-500/20 bg-green-500/5">
         <div className="flex items-center gap-2 text-sm">
