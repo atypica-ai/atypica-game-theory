@@ -386,6 +386,44 @@ async function _trackUserServerSide({
       `Failed to send identify user request: ${(error as Error).message}`,
     );
   }
+
+  // Intercom doesn't support nested objects in custom attributes.
+  // Send a second identify exclusively to Intercom with flattened traits (e.g. onboarding__role, acquisition__utm_source).
+  {
+    const flattenTraits: typeof traits = {};
+    // flatten onboarding & acquisition with __ prefix for destinations that don't support nesting (e.g. Intercom)
+    for (const prefix of ["onboarding", "acquisition"] as const) {
+      const nested = traits[prefix];
+      if (nested && typeof nested === "object") {
+        for (const [k, v] of Object.entries(nested)) {
+          if (v != null && v !== "") {
+            flattenTraits[`${prefix}__${k}`] = v;
+          }
+        }
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { onboarding: _, acquisition: __, ...restTraits } = traits;
+    try {
+      analytics.identify({
+        userId: userId.toString(),
+        traits: {
+          ...restTraits,
+          ...flattenTraits,
+        },
+        context,
+        integrations: {
+          All: false,
+          "Atypica Intercom": true,
+        },
+      });
+    } catch (error) {
+      rootLogger.error(
+        { userId },
+        `Failed to send identify user request: ${(error as Error).message}`,
+      );
+    }
+  }
 }
 
 export function trackUserServerSide(args: {
