@@ -1,5 +1,6 @@
-import { loadEnvConfig } from "@next/env";
 import "../../mock-server-only";
+
+import { loadEnvConfig } from "@next/env";
 
 type CurrencyKey = "USD" | "CNY";
 
@@ -41,8 +42,7 @@ async function main() {
   });
 
   type GroupValue = {
-    customerIds: Set<string>;
-    paymentRecordIds: number[];
+    customerId: string; // most recent (records are ordered by createdAt desc)
     targetUserId: number;
     currency: CurrencyKey;
   };
@@ -57,18 +57,13 @@ async function main() {
     const customerId = extractStripeCustomerId(record.stripeInvoice);
     if (!customerId) continue;
 
+    extractedCount++;
     const targetUserId = record.userId;
     const key = `${targetUserId}:${record.currency}`;
-    const group = groups.get(key) ?? {
-      customerIds: new Set<string>(),
-      paymentRecordIds: [],
-      targetUserId,
-      currency: record.currency,
-    };
-    group.customerIds.add(customerId);
-    group.paymentRecordIds.push(record.id);
-    groups.set(key, group);
-    extractedCount++;
+    // Only keep the first (most recent) customerId per user+currency
+    if (!groups.has(key)) {
+      groups.set(key, { customerId, targetUserId, currency: record.currency });
+    }
   }
 
   const targetUserIds = Array.from(new Set(Array.from(groups.values()).map((g) => g.targetUserId)));
@@ -86,26 +81,16 @@ async function main() {
   });
   const userMap = new Map(users.map((user) => [user.id, user]));
 
-  let conflictCount = 0;
   let missingProfileCount = 0;
   let updatedCount = 0;
-  let skippedSameCount = 0;
+  let skippedExistingCount = 0;
 
   for (const group of groups.values()) {
-    if (group.customerIds.size > 1) {
-      conflictCount++;
-      console.log(
-        `[CONFLICT] user=${group.targetUserId} currency=${group.currency} candidates=${Array.from(group.customerIds).join(",")}`,
-      );
-      continue;
-    }
-
-    const candidateCustomerId = Array.from(group.customerIds)[0]!;
     const targetUser = userMap.get(group.targetUserId);
     if (!targetUser?.profile) {
       missingProfileCount++;
       console.log(
-        `[MISSING_PROFILE] user=${group.targetUserId} currency=${group.currency} candidate=${candidateCustomerId}`,
+        `[MISSING_PROFILE] user=${group.targetUserId} currency=${group.currency} candidate=${group.customerId}`,
       );
       continue;
     }
@@ -113,14 +98,7 @@ async function main() {
     const extra = (targetUser.profile.extra ?? {}) as UserProfileExtraLike;
     const existing = extra.stripeCustomerIds?.[group.currency];
     if (existing) {
-      if (existing === candidateCustomerId) {
-        skippedSameCount++;
-      } else {
-        conflictCount++;
-        console.log(
-          `[CONFLICT_EXISTING] user=${group.targetUserId} currency=${group.currency} existing=${existing} candidate=${candidateCustomerId}`,
-        );
-      }
+      skippedExistingCount++;
       continue;
     }
 
@@ -128,14 +106,14 @@ async function main() {
       ...extra,
       stripeCustomerIds: {
         ...(extra.stripeCustomerIds ?? {}),
-        [group.currency]: candidateCustomerId,
+        [group.currency]: group.customerId,
       },
     };
 
     if (isDryRun) {
       updatedCount++;
       console.log(
-        `[DRY_RUN_UPDATE] user=${group.targetUserId} currency=${group.currency} customerId=${candidateCustomerId}`,
+        `[DRY_RUN_UPDATE] user=${group.targetUserId} currency=${group.currency} customerId=${group.customerId}`,
       );
       continue;
     }
@@ -151,8 +129,6 @@ async function main() {
 
   const scannedCount = paymentRecords.length;
   const groupsCount = groups.size;
-  const skippedNoActionCount =
-    groupsCount - updatedCount - conflictCount - missingProfileCount - skippedSameCount;
 
   console.log("");
   console.log("Summary");
@@ -160,16 +136,13 @@ async function main() {
   console.log(`- extracted customer ids: ${extractedCount}`);
   console.log(`- grouped user+currency pairs: ${groupsCount}`);
   console.log(`- updated: ${updatedCount}`);
-  console.log(`- skipped existing same: ${skippedSameCount}`);
-  console.log(`- skipped no-action: ${skippedNoActionCount}`);
+  console.log(`- skipped existing: ${skippedExistingCount}`);
   console.log(`- missing profile: ${missingProfileCount}`);
-  console.log(`- conflicts: ${conflictCount}`);
 }
 
 if (require.main === module) {
-  main()
-    .catch((error) => {
-      console.error("stripe customer backfill failed:", error);
-      process.exit(1);
-    });
+  main().catch((error) => {
+    console.error("stripe customer backfill failed:", error);
+    process.exit(1);
+  });
 }
