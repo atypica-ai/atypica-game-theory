@@ -21,123 +21,59 @@ async function main() {
   const { prisma } = await import("@/prisma/prisma");
 
   console.log("Starting stripe customerId backfill by currency");
-  if (isDryRun) {
-    console.log("DRY RUN mode enabled");
-  }
+  if (isDryRun) console.log("DRY RUN mode enabled");
 
+  // Step 1: Get the most recent customerId per user+currency
   const paymentRecords = await prisma.paymentRecord.findMany({
-    where: {
-      paymentMethod: "stripe",
-      status: "succeeded",
-    },
-    select: {
-      id: true,
-      userId: true,
-      currency: true,
-      stripeInvoice: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+    where: { paymentMethod: "stripe", status: "succeeded" },
+    select: { userId: true, currency: true, stripeInvoice: true },
+    orderBy: { createdAt: "desc" },
   });
 
-  type GroupValue = {
-    customerId: string; // most recent (records are ordered by createdAt desc)
-    targetUserId: number;
-    currency: CurrencyKey;
-  };
-
-  const groups = new Map<string, GroupValue>();
-  let extractedCount = 0;
-
-  for (const record of paymentRecords) {
-    if (record.currency !== "USD" && record.currency !== "CNY") {
-      continue;
-    }
-    const customerId = extractStripeCustomerId(record.stripeInvoice);
+  const best = new Map<string, { userId: number; currency: CurrencyKey; customerId: string }>();
+  for (const r of paymentRecords) {
+    if (r.currency !== "USD" && r.currency !== "CNY") continue;
+    const customerId = extractStripeCustomerId(r.stripeInvoice);
     if (!customerId) continue;
-
-    extractedCount++;
-    const targetUserId = record.userId;
-    const key = `${targetUserId}:${record.currency}`;
-    // Only keep the first (most recent) customerId per user+currency
-    if (!groups.has(key)) {
-      groups.set(key, { customerId, targetUserId, currency: record.currency });
-    }
+    const key = `${r.userId}:${r.currency}`;
+    if (!best.has(key)) best.set(key, { userId: r.userId, currency: r.currency, customerId });
   }
 
-  const targetUserIds = Array.from(new Set(Array.from(groups.values()).map((g) => g.targetUserId)));
-  const users = await prisma.user.findMany({
-    where: { id: { in: targetUserIds } },
-    select: {
-      id: true,
-      profile: {
-        select: {
-          id: true,
-          extra: true,
-        },
-      },
-    },
-  });
-  const userMap = new Map(users.map((user) => [user.id, user]));
+  console.log(`Found ${best.size} user+currency pairs from ${paymentRecords.length} records`);
 
-  let missingProfileCount = 0;
-  let updatedCount = 0;
-  let skippedExistingCount = 0;
+  // Step 2: Write each one, reading fresh profile every time
+  let updated = 0;
+  let skipped = 0;
+  let missing = 0;
 
-  for (const group of groups.values()) {
-    const targetUser = userMap.get(group.targetUserId);
-    if (!targetUser?.profile) {
-      missingProfileCount++;
-      console.log(
-        `[MISSING_PROFILE] user=${group.targetUserId} currency=${group.currency} candidate=${group.customerId}`,
-      );
+  for (const { userId, currency, customerId } of best.values()) {
+    const profile = await prisma.userProfile.findUnique({ where: { userId } });
+    if (!profile) {
+      missing++;
+      console.log(`[MISSING] user=${userId} currency=${currency}`);
       continue;
     }
 
-    const extra = (targetUser.profile.extra ?? {}) as UserProfileExtraLike;
-    const existing = extra.stripeCustomerIds?.[group.currency];
-    if (existing) {
-      skippedExistingCount++;
+    const extra = (profile.extra ?? {}) as UserProfileExtraLike;
+    if (extra.stripeCustomerIds?.[currency]) {
+      skipped++;
       continue;
     }
 
     const nextExtra: UserProfileExtraLike = {
       ...extra,
-      stripeCustomerIds: {
-        ...(extra.stripeCustomerIds ?? {}),
-        [group.currency]: group.customerId,
-      },
+      stripeCustomerIds: { ...(extra.stripeCustomerIds ?? {}), [currency]: customerId },
     };
 
     if (isDryRun) {
-      updatedCount++;
-      console.log(
-        `[DRY_RUN_UPDATE] user=${group.targetUserId} currency=${group.currency} customerId=${group.customerId}`,
-      );
-      continue;
+      console.log(`[DRY_RUN] user=${userId} currency=${currency} customerId=${customerId}`);
+    } else {
+      await prisma.userProfile.update({ where: { id: profile.id }, data: { extra: nextExtra } });
     }
-
-    await prisma.userProfile.update({
-      where: { id: targetUser.profile.id },
-      data: {
-        extra: nextExtra,
-      },
-    });
-    updatedCount++;
+    updated++;
   }
 
-  const scannedCount = paymentRecords.length;
-  const groupsCount = groups.size;
-
-  console.log("");
-  console.log("Summary");
-  console.log(`- scanned payment records: ${scannedCount}`);
-  console.log(`- extracted customer ids: ${extractedCount}`);
-  console.log(`- grouped user+currency pairs: ${groupsCount}`);
-  console.log(`- updated: ${updatedCount}`);
-  console.log(`- skipped existing: ${skippedExistingCount}`);
-  console.log(`- missing profile: ${missingProfileCount}`);
+  console.log(`\nSummary: updated=${updated} skipped=${skipped} missing=${missing}`);
 }
 
 if (require.main === module) {
