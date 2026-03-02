@@ -414,7 +414,7 @@ async function _trackUserServerSide({
         context,
         integrations: {
           All: false,
-          "Atypica Intercom": true,
+          Intercom: true,
         },
       });
     } catch (error) {
