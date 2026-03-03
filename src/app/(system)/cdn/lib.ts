@@ -5,7 +5,6 @@
  * ~~todo 还需要处理下海外站点请求国内对象存储的资源，客户端问题还好，主要是后端取数据给模型用的时候，可能会有问题~~
  * 目前海外没问题，由于国内和海外用了同一个CDN，这个CDN是连接国内站点的，国内站点访问两边的资源都没问题，代理会配置规则，所以只要用了CDN域名，海外访问就没问题。
  */
-
 export function getProxyCdnOrigin(): string {
   if (typeof window !== "undefined") {
     return (window.document.documentElement.getAttribute("data-proxy-cdn-origin") ?? "") as string;
@@ -15,6 +14,9 @@ export function getProxyCdnOrigin(): string {
   }
 }
 
+/**
+ * 生成 /cdn/proxy-object?objectUrl=&mimeType= 形式的链接，在服务器上下载文件，缓存返回
+ */
 export function proxiedObjectCdnUrl({
   name,
   objectUrl,
@@ -52,6 +54,7 @@ export function proxiedImageCdnUrl(args: {
 }): string;
 
 /**
+ * 生成 /cdn/proxy-image?url=xxx (或 ?objectUrl=xxx) 形式的链接，在服务器上下载图片，处理尺寸以后，缓存返回
  *
  * @param src: 任意图片 src, 通过代理访问
  * @param objectUrl: AWS_S3_CONFIG 里面配置过的 S3 object url, 无需签名

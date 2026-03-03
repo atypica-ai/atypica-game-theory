@@ -276,3 +276,26 @@ export async function getS3Object(objectUrl: string): Promise<{
     mimeType,
   };
 }
+
+/**
+ * Convert S3 signed URL to Aliyun CDN URL for global acceleration
+ *
+ * Aliyun CDN uses conditional routing based on the region parameter:
+ * - ?region=us-east-1 → routes to US origin
+ * - ?region=cn-north-1 → routes to China origin
+ *
+ * @param objectUrl - S3 object URL (e.g., https://bucket.s3.region.amazonaws.com/key)
+ * @returns CDN URL with region parameter for routing
+ */
+export async function s3SignedCdnUrl(objectUrl: string) {
+  const signedUrl = await s3SignedUrl(objectUrl);
+  const s3Config = AWS_S3_CONFIG.find((config) => signedUrl.startsWith(config.origin));
+  if (!s3Config || !s3Config.cdnOrigin) {
+    throw new Error(`No cdnOrigin configuration found for URL: ${objectUrl}`);
+  }
+  const urlObj = new URL(signedUrl.replace(s3Config.origin, s3Config.cdnOrigin));
+  // Add region parameter for CDN routing rules
+  urlObj.searchParams.set("region", s3Config.region);
+  const cdnUrl = urlObj.toString();
+  return cdnUrl;
+}

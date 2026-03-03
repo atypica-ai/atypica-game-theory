@@ -1,17 +1,15 @@
 import "server-only";
 
 import { rootLogger } from "@/lib/logging";
-import { proxiedFetch } from "@/lib/proxy/fetch";
-import { getDeployRegion } from "@/lib/request/deployRegion";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { resizeImageToWebP } from "./image";
-import { s3SignedUrl } from "./s3";
+import { s3SignedCdnUrl } from "./s3";
 
 export async function fileUrlToDataUrl({
   objectUrl,
-  mimeType,
+  mimeType: originalMimeType,
 }: {
   objectUrl: string;
   mimeType: string;
@@ -20,19 +18,21 @@ export async function fileUrlToDataUrl({
   // if (!fs.existsSync(cacheDir)) {
   const hash = createHash("sha256").update(objectUrl).digest("hex");
   await fs.promises.mkdir(path.join(cacheDir, hash), { recursive: true });
-  let buffer: Buffer;
-  const url = await s3SignedUrl(objectUrl);
-  const fileName = objectUrl.split("/").pop() as string;
+
+  let fileName = objectUrl.split("/").pop() as string;
+  let mimeType = originalMimeType;
+  if (mimeType.startsWith("image/")) {
+    fileName = `${fileName}.webp`;
+    mimeType = "image/webp";
+  }
+
   const cacheFileFullPath = path.join(cacheDir, hash, fileName);
+  let buffer: Buffer;
   if (fs.existsSync(cacheFileFullPath)) {
     buffer = await fs.promises.readFile(cacheFileFullPath);
   } else {
-    let response;
-    if (getDeployRegion() === "mainland" && !/amazonaws\.com\.cn/.test(objectUrl)) {
-      response = await proxiedFetch(url);
-    } else {
-      response = await fetch(url);
-    }
+    const url = await s3SignedCdnUrl(objectUrl);
+    const response = await fetch(url);
     if (!response.ok) {
       const errorMsg = `Failed to fetch file: ${url} ${response.status} ${response.statusText}`;
       rootLogger.error(errorMsg);
@@ -46,11 +46,12 @@ export async function fileUrlToDataUrl({
           minShortSide: 800,
           maxLongSide: 4000,
         });
-        // 更新 mimeType 为 webp
-        mimeType = "image/webp";
+        // 更新 mimeType 为 webp, 这里不需要了，上面已经实现了
+        // mimeType = "image/webp";
       } catch (error) {
         rootLogger.error(`Failed to process image: ${error}`);
-        // 如果图片处理失败，使用原始文件
+        // 如果图片处理失败（说明不支持），使用原始文件，但文件名保留 .webp 后缀，这样下次可以命中缓存
+        mimeType = originalMimeType;
       }
     }
     await fs.promises.writeFile(cacheFileFullPath, buffer);
