@@ -33,6 +33,23 @@ export async function createUniversalUserChat({
   context?: UserChatContext;
   extra?: UserChatExtra;
 }): Promise<Omit<UserChat, "kind"> & { kind: Extract<UserChatKind, "universal"> }> {
+  // Assign IDs to attachments (chat-level monotonic increment)
+  let attachmentsWithIds: (ChatMessageAttachment & { id: number })[] | undefined;
+  if (attachments && attachments.length > 0) {
+    const existingAttachments = context?.attachments ?? [];
+    const nextId = Math.max(0, ...existingAttachments.map((a) => a.id)) + 1;
+    attachmentsWithIds = attachments.map((att, i) => ({
+      ...att,
+      id: nextId + i,
+    }));
+  }
+
+  // Build message text with attachment markers
+  const attachmentMarkers = attachmentsWithIds
+    ?.map((a) => `[#${a.id} ${a.name}]`)
+    .join("\n");
+  const messageText = attachmentMarkers ? `${attachmentMarkers}\n${content}` : content;
+
   // Detect default locale from input
   const defaultLocale = await detectInputLanguage({
     text: content,
@@ -58,7 +75,7 @@ export async function createUniversalUserChat({
       message: {
         id: generateId(),
         role,
-        parts: [{ type: "text", text: content }],
+        parts: [{ type: "text", text: messageText }],
       },
       tx,
     });
@@ -67,7 +84,7 @@ export async function createUniversalUserChat({
       id: chat.id,
       context: {
         defaultLocale,
-        ...(attachments ? { attachments } : {}),
+        ...(attachmentsWithIds ? { attachments: attachmentsWithIds } : {}),
       },
       tx,
     });

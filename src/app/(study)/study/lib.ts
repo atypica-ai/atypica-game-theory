@@ -59,6 +59,23 @@ export async function createStudyUserChat({
     }
   }
 
+  // Assign IDs to attachments (chat-level monotonic increment)
+  let attachmentsWithIds: (ChatMessageAttachment & { id: number })[] | undefined;
+  if (attachments && attachments.length > 0) {
+    const existingAttachments = context?.attachments ?? [];
+    const nextId = Math.max(0, ...existingAttachments.map((a) => a.id)) + 1;
+    attachmentsWithIds = attachments.map((att, i) => ({
+      ...att,
+      id: nextId + i,
+    }));
+  }
+
+  // Build message text with attachment markers
+  const attachmentMarkers = attachmentsWithIds
+    ?.map((a) => `[#${a.id} ${a.name}]`)
+    .join("\n");
+  const messageText = attachmentMarkers ? `${attachmentMarkers}\n${content}` : content;
+
   // 根据用户输入决定模型的默认语言
   const defaultLocale = await detectInputLanguage({
     text: content,
@@ -83,16 +100,15 @@ export async function createStudyUserChat({
       message: {
         id: generateId(),
         role,
-        parts: [{ type: "text", text: content }],
+        parts: [{ type: "text", text: messageText }],
       },
-      // attachments, // attachments 只保存在 analyst 上，然后在 baseAgentRequest 中提前处理好了以后，插入 messages 中
       tx,
     });
     await mergeUserChatContext({
       id: userChat.id,
       context: {
         defaultLocale,
-        attachments,
+        attachments: attachmentsWithIds,
       },
       tx,
     });
