@@ -6,6 +6,8 @@ import {
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
+import { fetchAttachmentFileTool } from "@/ai/tools/fetchAttachmentFile";
+import { attachmentRulesPrompt } from "@/ai/tools/fetchAttachmentFile/prompt";
 import {
   dySearchTool,
   insSearchTool,
@@ -16,9 +18,8 @@ import { reasoningThinkingTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
-import { recordPersonaPanelContext } from "@/app/(study)/context/utils";
+import { mergeUserChatContext, recordPersonaPanelContext } from "@/app/(study)/context/utils";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { startManagedRun } from "@/lib/userChat/runtime";
@@ -26,7 +27,6 @@ import { ChatMessageAttachment, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { google } from "@ai-sdk/google";
 import {
-  FileUIPart,
   generateId,
   generateText,
   ModelMessage,
@@ -56,7 +56,6 @@ type TReduceTokens = {
 export const interviewChatTool = ({
   userId,
   userChatId,
-  attachments,
   locale,
   abortSignal,
   statReport,
@@ -64,7 +63,6 @@ export const interviewChatTool = ({
 }: {
   userId: number;
   userChatId: number;
-  attachments?: ChatMessageAttachment[]; // 让 personas 看附件内容
 } & AgentToolConfigArgs) =>
   tool({
     description:
@@ -74,13 +72,27 @@ export const interviewChatTool = ({
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ personas, instruction }): Promise<InterviewChatResult> => {
+    execute: async ({ personas, instruction, attachmentIds }): Promise<InterviewChatResult> => {
       const personaPanel = await recordPersonaPanelContext({
         userId,
         userChatId,
         personaIds: personas.map((p) => p.id),
       });
       const panelId = personaPanel.id;
+
+      // Resolve attachment IDs from parent study chat
+      type AttachmentWithId = ChatMessageAttachment & { id: number };
+      let resolvedAttachments: AttachmentWithId[] = [];
+      if (attachmentIds?.length) {
+        const parentChat = await prisma.userChat.findUnique({
+          where: { id: userChatId },
+          select: { context: true },
+        });
+        const parentAttachments = parentChat?.context?.attachments ?? [];
+        resolvedAttachments = attachmentIds
+          .map((id) => parentAttachments.find((a) => a.id === id))
+          .filter((a): a is AttachmentWithId => !!a);
+      }
 
       const single = async ({
         id: personaId,
@@ -109,6 +121,7 @@ export const interviewChatTool = ({
             personaPanelId: panelId,
             instruction,
             locale,
+            attachments: resolvedAttachments.length > 0 ? resolvedAttachments : undefined,
           });
           const interviewLog = logger.child({
             userChatId: interviewUserChatId,
@@ -119,11 +132,11 @@ export const interviewChatTool = ({
             AbortSignal.timeout(10 * 60 * 1000), // 10 分钟超时
           ]);
           await runInterview({
+            userId,
             locale,
             analystInterviewId,
             interviewUserChatId,
             prompt,
-            attachments,
             abortSignal: mergedAbortSignal,
             statReport,
             logger: interviewLog,
@@ -207,12 +220,14 @@ export async function prepareDBForInterview({
   personaPanelId,
   instruction,
   locale,
+  attachments,
 }: {
   userId: number;
   personaId: number;
   personaPanelId: number;
   instruction: string;
   locale: Locale;
+  attachments?: (ChatMessageAttachment & { id: number })[];
 }) {
   const persona = await prisma.persona.findUniqueOrThrow({ where: { id: personaId } });
   const personaPrompt = personaAgentSystem({ persona, locale });
@@ -243,6 +258,12 @@ export async function prepareDBForInterview({
       where: { id: interview.id },
       data: { interviewUserChatId },
     });
+    if (attachments?.length) {
+      await mergeUserChatContext({
+        id: interviewUserChatId,
+        context: { attachments },
+      });
+    }
   } else {
     // 否则需要先清空现在的聊天记录
     await prisma.chatMessage.deleteMany({
@@ -262,6 +283,7 @@ export async function prepareDBForInterview({
 }
 
 type ChatProps = {
+  userId: number;
   analystInterviewId: number;
   interviewUserChatId: number;
   prompt: {
@@ -270,7 +292,6 @@ type ChatProps = {
     interviewerProloguePrompt: string;
     interviewerAttachmentPrompt: string;
   };
-  attachments?: ChatMessageAttachment[];
 } & AgentToolConfigArgs;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -307,34 +328,31 @@ function setBedrockCache(model: `claude-${string}`, coreMessages: ModelMessage[]
 
 async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) {
   const {
+    userId,
     locale,
     analystInterviewId,
+    interviewUserChatId,
     prompt: { interviewerPrompt },
     abortSignal,
     statReport,
     logger,
   } = chatProps;
-  const hasAttachments = !!messages.find(
-    (message) => message.parts.some((part) => part.type === "file"),
-    // (message) => (message.experimental_attachments ?? []).length > 0,
-  );
-  const reduceTokens: TReduceTokens = hasAttachments
-    ? { model: "gemini-2.5-flash", ratio: 10 }
-    : { model: "gemini-2.5-flash", ratio: 10 };
-  // : { model: "gpt-4.1-mini", ratio: 10 }; // 总结的不好
-  // : { model: "grok-3-mini", ratio: 10 }; // 总结的不好
-
+  const reduceTokens: TReduceTokens = { model: "gemini-3-flash", ratio: 10 };
+  // { model: "gpt-4.1-mini", ratio: 10 }; // 总结的不好
+  // { model: "grok-3-mini", ratio: 10 }; // 总结的不好
   // gpt 无法使用 pdf 文件，claude 和 gemini 可以, 并且，3.7 比较消耗 tokens，改用 gemini 和 gpt 吧
   // null as TReduceTokens;
   // const coreMessages = setBedrockCache("claude-3-7-sonnet", convertToCoreMessages(messages));
+  const agentToolArgs = { locale, abortSignal, statReport, logger };
   const tools = {
-    [StudyToolName.reasoningThinking]: reasoningThinkingTool({
-      locale,
-      abortSignal,
-      statReport,
-      logger,
-    }),
+    [StudyToolName.reasoningThinking]: reasoningThinkingTool(agentToolArgs),
     [StudyToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
+    // 需要配合下面的 attachmentRulesPrompt 一起使用
+    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({
+      userId,
+      userChatId: interviewUserChatId,
+      ...agentToolArgs,
+    }),
   };
   const coreMessages = fixAndConvertToModelMessages(messages, {
     tools,
@@ -362,7 +380,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
       providerOptions: defaultProviderOptions(),
 
       // maxRetries: 0, // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
-      system: interviewerPrompt,
+      system: `${interviewerPrompt}\n\n${attachmentRulesPrompt({ locale })}`,
 
       temperature: 0.3,
       messages: coreMessages,
@@ -374,7 +392,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
         const { tokens, extra } = calculateStepTokensUsage({ usage, ...step }, { reduceTokens });
         logger.info({
           msg: "chatWithInterviewer streamText onStepFinish",
-          toolCalls: toolCalls.map((call) => call.toolName),
+          toolCalls: toolCalls.map((call) => call?.toolName ?? "unknown"),
           usage: extra.usage,
           cache: extra.cache,
         });
@@ -427,14 +445,17 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
 
 async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
   const {
+    userId,
+    locale,
     analystInterviewId,
+    interviewUserChatId,
     prompt: { personaPrompt },
     abortSignal,
     statReport,
     logger,
   } = chatProps;
 
-  const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
+  const reduceTokens: TReduceTokens = { model: "gemini-3-flash", ratio: 10 };
   const tools = {
     [StudyToolName.tiktokSearch]: tiktokSearchTool,
     [StudyToolName.dySearch]: dySearchTool,
@@ -450,16 +471,24 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
           }),
         }
       : {}),
+    // 需要配合下面的 attachmentRulesPrompt 一起使用
+    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({
+      userId,
+      userChatId: interviewUserChatId,
+      locale,
+      abortSignal,
+      statReport,
+      logger,
+    }),
   };
 
   const streamTextPromise = new Promise<Omit<UIMessage, "role">>(async (resolve, reject) => {
-    // const hasAttachments = !!messages.find((message) => (message.experimental_attachments ?? []).length > 0);
     const response = streamText({
       // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
       model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
 
       providerOptions: defaultProviderOptions(),
-      system: personaPrompt,
+      system: `${personaPrompt}\n\n${attachmentRulesPrompt({ locale })}`,
 
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       temperature: 0.3,
@@ -559,8 +588,7 @@ async function saveMessage({
 }
 
 export async function runInterview(chatProps: ChatProps) {
-  const { analystInterviewId, interviewUserChatId, prompt, attachments, logger, abortSignal } =
-    chatProps;
+  const { analystInterviewId, interviewUserChatId, prompt, logger, abortSignal } = chatProps;
   const managed = await startManagedRun({ userChatId: interviewUserChatId, logger });
   // 父级 abort 时（用户取消、超时等），需要同步清理 sub-tool 的 managed run，否则 runId 会残留在 DB
   // 注：scoutTaskChat / createSubAgent 等其他 managed sub-tool 用 try/finally 包裹，abort 抛错后由 finally 清理；
@@ -568,28 +596,41 @@ export async function runInterview(chatProps: ChatProps) {
   abortSignal.addEventListener("abort", async () => {
     await managed.cleanup();
   });
-  const fileParts: FileUIPart[] = await Promise.all(
-    (attachments ?? []).map(async ({ name, objectUrl, mimeType }: ChatMessageAttachment) => {
-      const url = await fileUrlToDataUrl({ objectUrl, mimeType });
-      return { type: "file", filename: name, url, mediaType: mimeType };
-    }),
-  );
+  // Read attachments from interview chat context and build markers
+  const interviewChatRecord = await prisma.userChat.findUnique({
+    where: { id: interviewUserChatId },
+    select: { context: true },
+  });
+  const attachments = interviewChatRecord?.context?.attachments ?? [];
+  const attachmentMarkers = attachments.map((a) => `[#${a.id} ${a.name}]`).join("\n");
   const personaAgent = {
     messages: [
       {
         id: generateId(),
         role: "user",
-        parts: [{ type: "text", text: prompt.interviewerProloguePrompt }, ...fileParts],
+        parts: [
+          {
+            type: "text",
+            text: attachmentMarkers
+              ? `${attachmentMarkers}\n${prompt.interviewerProloguePrompt}`
+              : prompt.interviewerProloguePrompt,
+          },
+        ],
       },
     ] as UIMessage[],
   };
   const interviewer = {
-    messages: (fileParts.length
+    messages: (attachmentMarkers
       ? [
           {
             id: generateId(),
             role: "user",
-            parts: [{ type: "text", text: prompt.interviewerAttachmentPrompt }, ...fileParts],
+            parts: [
+              {
+                type: "text",
+                text: `${attachmentMarkers}\n${prompt.interviewerAttachmentPrompt}`,
+              },
+            ],
           },
         ]
       : []) as UIMessage[],

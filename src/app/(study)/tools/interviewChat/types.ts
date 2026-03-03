@@ -19,6 +19,12 @@ export const interviewChatInputSchema = z.object({
       "Interview focus and specific questions or topics to explore based on the study objectives",
     )
     .transform(fixMalformedUnicodeString),
+  attachmentIds: z
+    .array(z.number())
+    .optional()
+    .describe(
+      "IDs of user-uploaded attachments to share with interview personas (e.g. [1, 2] for [#1] and [#2])",
+    ),
 });
 
 export type InterviewChatToolInput = z.infer<typeof interviewChatInputSchema>;

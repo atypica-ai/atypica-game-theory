@@ -72,11 +72,11 @@ async function planStudy({
 }
 
 export const planStudyTool = ({
-  // studyUserChatId,
+  // userChatId,
   teamStudySystemPrompt,
   ...toolCallConfigArgs
 }: {
-  studyUserChatId: number;
+  userChatId: number;
   teamStudySystemPrompt?: Record<string, string> | null;
 } & AgentToolConfigArgs) =>
   tool({
