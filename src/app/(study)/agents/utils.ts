@@ -159,6 +159,9 @@ export async function shouldDecidePersonaTier({
   return true;
 }
 
+/**
+ * @deprecated attachments are now lazy-loaded via fetchAttachmentFile tool)
+ */
 export async function waitUntilAttachmentsProcessed({
   userId,
   userChatContext,

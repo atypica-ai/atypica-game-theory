@@ -1,4 +1,5 @@
 import { toolCallError } from "@/ai/tools/error";
+import { fetchAttachmentFileTool } from "@/ai/tools/fetchAttachmentFile";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { UserChatContext } from "@/app/(study)/context/types";
@@ -126,6 +127,7 @@ export async function createStudyAgentConfig(
             StudyToolName.generateReport,
             StudyToolName.generatePodcast,
             StudyToolName.reasoningThinking,
+            StudyToolName.fetchAttachmentFile,
             StudyToolName.toolCallError,
           ];
         } else {
@@ -156,56 +158,37 @@ export async function createStudyAgentConfig(
  * Build study tools with all research capabilities
  * Note: createSubAgent tool is added dynamically in base if MCP clients are available
  */
-function buildStudyTools(params: {
+function buildStudyTools({
+  studyUserChatId,
+  // userChatContext,
+  userId,
+  agentToolArgs,
+}: {
   studyUserChatId: number;
   userChatContext: UserChatContext;
   userId: number;
   agentToolArgs: AgentToolConfigArgs;
 }) {
-  const { studyUserChatId, userChatContext, userId, agentToolArgs } = params;
+  const contextfulAgentToolArgs = {
+    userId,
+    userChatId: studyUserChatId,
+    ...agentToolArgs,
+  };
 
   return {
     [StudyToolName.requestInteraction]: requestInteractionTool,
     [StudyToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
-    [StudyToolName.webSearch]: webSearchTool({
-      provider: "tavily",
-      studyUserChatId,
-      ...agentToolArgs,
-    }),
+    [StudyToolName.webSearch]: webSearchTool({ provider: "tavily", ...agentToolArgs }),
     [StudyToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
-    [StudyToolName.searchPersonas]: searchPersonasTool({
-      userId,
-      userChatId: studyUserChatId,
-      ...agentToolArgs,
-    }),
-    [StudyToolName.scoutTaskChat]: scoutTaskChatTool({ userId, ...agentToolArgs }),
-    [StudyToolName.buildPersona]: buildPersonaTool({
-      userId,
-      userChatId: studyUserChatId,
-      ...agentToolArgs,
-    }),
-    [StudyToolName.interviewChat]: interviewChatTool({
-      userId,
-      userChatId: studyUserChatId,
-      attachments: userChatContext.attachments,
-      ...agentToolArgs,
-    }),
-    [StudyToolName.discussionChat]: discussionChatTool({
-      userId,
-      userChatId: studyUserChatId,
-      ...agentToolArgs,
-    }),
-    [StudyToolName.generateReport]: generateReportTool({
-      userId,
-      userChatId: studyUserChatId,
-      ...agentToolArgs,
-    }),
-    [StudyToolName.generatePodcast]: generatePodcastTool({
-      userId,
-      userChatId: studyUserChatId,
-      ...agentToolArgs,
-    }),
-    [StudyToolName.planStudy]: planStudyTool({ studyUserChatId, ...agentToolArgs }),
+    [StudyToolName.searchPersonas]: searchPersonasTool({ ...contextfulAgentToolArgs }),
+    [StudyToolName.scoutTaskChat]: scoutTaskChatTool({ ...contextfulAgentToolArgs }),
+    [StudyToolName.buildPersona]: buildPersonaTool({ ...contextfulAgentToolArgs }),
+    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({ ...contextfulAgentToolArgs }),
+    [StudyToolName.interviewChat]: interviewChatTool({ ...contextfulAgentToolArgs }),
+    [StudyToolName.discussionChat]: discussionChatTool({ ...contextfulAgentToolArgs }),
+    [StudyToolName.generateReport]: generateReportTool({ ...contextfulAgentToolArgs }),
+    [StudyToolName.generatePodcast]: generatePodcastTool({ ...contextfulAgentToolArgs }),
+    [StudyToolName.planStudy]: planStudyTool({ ...contextfulAgentToolArgs }),
     [StudyToolName.toolCallError]: toolCallError,
   };
 }

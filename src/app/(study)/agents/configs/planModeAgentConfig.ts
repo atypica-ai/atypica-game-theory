@@ -1,6 +1,7 @@
 import "server-only";
 
 import { toolCallError } from "@/ai/tools/error";
+import { fetchAttachmentFileTool } from "@/ai/tools/fetchAttachmentFile";
 import { webFetchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { planModeSystem } from "@/app/(study)/prompt/planMode";
@@ -50,7 +51,11 @@ export async function createPlanModeAgentConfig(
     logger,
   };
 
-  const tools = buildPlanModeTools(agentToolArgs);
+  const tools = buildPlanModeTools({
+    userId: params.userId,
+    studyUserChatId: params.studyUserChatId,
+    agentToolArgs,
+  });
 
   return {
     modelName: "claude-sonnet-4-5",
@@ -75,11 +80,21 @@ export async function createPlanModeAgentConfig(
   };
 }
 
-function buildPlanModeTools(params: AgentToolConfigArgs) {
+function buildPlanModeTools(params: {
+  userId: number;
+  studyUserChatId: number;
+  agentToolArgs: AgentToolConfigArgs;
+}) {
+  const { userId, studyUserChatId, agentToolArgs } = params;
   return {
     [StudyToolName.requestInteraction]: requestInteractionTool,
     [StudyToolName.makeStudyPlan]: makeStudyPlanTool,
-    [StudyToolName.webFetch]: webFetchTool(params),
+    [StudyToolName.webFetch]: webFetchTool(agentToolArgs),
+    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({
+      userId,
+      userChatId: studyUserChatId,
+      ...agentToolArgs,
+    }),
     // [StudyToolName.reasoningThinking]: reasoningThinkingTool(params),  // 这个不需要了，因为开启了 reasoningConfig
     [StudyToolName.toolCallError]: toolCallError,
   };

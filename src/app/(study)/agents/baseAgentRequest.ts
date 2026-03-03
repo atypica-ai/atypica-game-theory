@@ -21,7 +21,6 @@ import { generateChatTitle } from "@/lib/userChat/lib";
 import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { safeAbort } from "@/lib/utils";
 import {
-  ImagePart,
   JSONValue,
   ModelMessage,
   PrepareStepFunction,
@@ -31,7 +30,6 @@ import {
   stepCountIs,
   StepResult,
   streamText,
-  TextPart,
   TextStreamPart,
   ToolChoice,
   UIMessageStreamWriter,
@@ -42,12 +40,7 @@ import { Logger } from "pino";
 import { UserChatContext } from "../context/types";
 import { notifyStudyInterruption } from "./notify";
 import { buildReferenceStudyContext } from "./referenceContext";
-import {
-  fixReasoningPartsInModelMessages,
-  outOfBalance,
-  setBedrockCache,
-  waitUntilAttachmentsProcessed,
-} from "./utils";
+import { fixReasoningPartsInModelMessages, outOfBalance, setBedrockCache } from "./utils";
 
 /**
  * Base context shared by all agent types.
@@ -208,15 +201,16 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // =============================================================================
   // Phase 3: Universal Attachment Processing
   // =============================================================================
-
   // Process attachments if analyst is provided (universal for all agents)
-  const parsedAttachments = await waitUntilAttachmentsProcessed({
-    userId,
-    userChatContext,
-    locale,
-    streamWriter,
-    streamingMessage,
-  });
+  // const parsedAttachments = await waitUntilAttachmentsProcessed({
+  //   userId,
+  //   userChatContext,
+  //   locale,
+  //   streamWriter,
+  //   streamingMessage,
+  // });
+  // (Phase 3 removed: attachments are now lazy-loaded via fetchAttachmentFile tool)
+  // =============================================================================
 
   // =============================================================================
   // Phase 4: Universal MCP and Team System Prompt
@@ -292,41 +286,27 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // =============================================================================
   // Phase 5: Build Model Messages
   // =============================================================================
-
-  // Prepend attachments (universal)
-  if (parsedAttachments.length) {
-    modelMessages = [
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text:
-              locale === "zh-CN"
-                ? "用户上传的参考资料（请作为研究背景参考，无需直接回复）："
-                : "User-uploaded reference materials (for research context, no direct response needed):",
-          },
-          ...parsedAttachments
-            .map((parsedAttachment) => {
-              if (parsedAttachment.type === "image") {
-                return {
-                  type: "image",
-                  image: parsedAttachment.dataUrl,
-                  mediaType: parsedAttachment.mimeType,
-                } as ImagePart;
-              } else {
-                return {
-                  type: "text",
-                  text: parsedAttachment.text,
-                } as TextPart;
-              }
-            })
-            .filter(Boolean),
-        ],
-      },
-      ...modelMessages,
-    ];
-  }
+  // if (parsedAttachments.length) {
+  //   const text =
+  //     locale === "zh-CN"
+  //       ? "用户上传的参考资料（请作为研究背景参考，无需直接回复）："
+  //       : "User-uploaded reference materials (for research context, no direct response needed):";
+  //   const fileParts = parsedAttachments
+  //     .map((parsedAttachment) => {
+  //       if (parsedAttachment.type === "image") {
+  //         const { dataUrl, mimeType } = parsedAttachment;
+  //         return { type: "image", image: dataUrl, mediaType: mimeType } as ImagePart;
+  //       } else {
+  //         return { type: "text", text: parsedAttachment.text } as TextPart;
+  //       }
+  //     })
+  //     .filter(Boolean);
+  //   modelMessages = [
+  //     { role: "user", content: [{ type: "text", text }, ...fileParts] },
+  //     ...modelMessages,
+  //   ];
+  // }
+  // (Attachment prepending removed: now lazy-loaded via fetchAttachmentFile tool)
 
   // Prepend reference study context (universal)
   if (userChatContext?.referenceUserChats) {
