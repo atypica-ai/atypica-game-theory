@@ -1,6 +1,6 @@
 import "server-only";
 
-import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
+import { AgentToolConfigArgs } from "@/ai/tools/types";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
 import { parseAttachmentText } from "@/lib/attachments/processing";
 import { prisma } from "@/prisma/prisma";
@@ -22,10 +22,16 @@ export const fetchAttachmentFileTool = ({
   tool({
     description:
       "Read the content of a user-uploaded attachment file by its ID (shown as [#N filename] in messages). " +
-      "Use head_tail mode to preview large files before reading in full.",
+      "Use head_tail mode to preview large files before reading in full. Also supports reading image files.",
     inputSchema: fetchAttachmentFileInputSchema,
     outputSchema: fetchAttachmentFileOutputSchema,
-    toModelOutput: (result: PlainTextToolResult) => {
+    toModelOutput: (result: FetchAttachmentFileToolResult) => {
+      if (result.image) {
+        return {
+          type: "content",
+          value: [{ type: "media", data: result.image.data, mediaType: result.image.mimeType }],
+        };
+      }
       return { type: "text", value: result.plainText };
     },
     execute: async ({ attachmentId, mode, limit }): Promise<FetchAttachmentFileToolResult> => {
@@ -50,13 +56,19 @@ export const fetchAttachmentFileTool = ({
         return { plainText: `[Error] File record not found for attachment #${attachmentId}.` };
       }
 
-      // 4. Image files: return base64 dataUrl
+      // 4. Image files: return as image data for model to "see"
       if (file.mimeType.startsWith("image/")) {
         const dataUrl = await fileUrlToDataUrl({
           objectUrl: file.objectUrl,
           mimeType: file.mimeType,
         });
-        return { plainText: dataUrl };
+        // dataUrl format: "data:image/webp;base64,xxxxx"
+        const base64Data = dataUrl.split(",")[1];
+        const mimeType = dataUrl.match(/^data:([^;]+)/)?.[1] ?? file.mimeType;
+        return {
+          plainText: `[Image: ${attachment.name} (${mimeType})]`,
+          image: { data: base64Data, mimeType },
+        };
       }
 
       // 5. Text files: lazy process on first access

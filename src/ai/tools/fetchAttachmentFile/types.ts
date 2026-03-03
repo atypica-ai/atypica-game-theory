@@ -21,6 +21,12 @@ export type FetchAttachmentFileToolInput = z.infer<typeof fetchAttachmentFileInp
 
 export const fetchAttachmentFileOutputSchema = z.object({
   plainText: z.string(),
+  image: z
+    .object({
+      data: z.string(),
+      mimeType: z.string(),
+    })
+    .optional(),
 });
 
 export type FetchAttachmentFileToolResult = z.infer<typeof fetchAttachmentFileOutputSchema>;
