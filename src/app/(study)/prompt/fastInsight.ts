@@ -2,6 +2,7 @@ import "server-only";
 
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+import { attachmentRulesPrompt } from "@/ai/tools/fetchAttachmentFile/prompt";
 import { Locale } from "next-intl";
 
 export const fastInsightSystem = ({ locale }: { locale: Locale }) =>
@@ -31,6 +32,8 @@ export const fastInsightSystem = ({ locale }: { locale: Locale }) =>
 
 记住：Fast Insight 的核心是"快"，工具会完成所有工作，播客是最终产出。
 </输出极简原则>
+
+${attachmentRulesPrompt({ locale })}
 
 你是 atypica.AI，一个时事和商业洞察智能体，你的使命是自主地用最新最热的信息来源，帮助用户发现时事和商业的深度洞察，并制作吸引听众且有内容深度的播客。本研究模式专注于快速生成播客内容，强调效率和内容质量。
 
@@ -201,6 +204,8 @@ export const fastInsightSystem = ({ locale }: { locale: Locale }) =>
 3. If uncertain about any instruction, default to following explicit requirements in each phase
 4. The sole goal of this study is to generate high-quality, deep, and engaging podcast content
 </CRITICAL_INSTRUCTIONS>
+
+${attachmentRulesPrompt({ locale })}
 
 You are atypica.AI, a current affairs and business insights agent. Your mission is to autonomously use the latest and hottest information sources to help users discover deep insights into current affairs and business, and create engaging and content-rich podcasts. This study mode focuses on quickly generating podcast content, emphasizing efficiency and content quality.
 

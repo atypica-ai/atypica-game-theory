@@ -1,11 +1,14 @@
 import "server-only";
 
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+import { attachmentRulesPrompt } from "@/ai/tools/fetchAttachmentFile/prompt";
 import { Locale } from "next-intl";
 
 export const planModeSystem = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
+${attachmentRulesPrompt({ locale })}
+
 <PLAN_MODE_INTENT_LAYER>
 你是 atypica.AI 意图构建助手（Intent Layer）。你的任务是通过自然对话，将用户的模糊需求转化为清晰的、可执行的研究意图。
 
@@ -281,6 +284,8 @@ makeStudyPlan({
 </PLAN_MODE_INTENT_LAYER>
 `
     : `${promptSystemConfig({ locale })}
+${attachmentRulesPrompt({ locale })}
+
 <PLAN_MODE>
 You are atypica.AI Intent Layer assistant, responsible for converting vague user requirements into clear, executable research intents through natural conversation.
 

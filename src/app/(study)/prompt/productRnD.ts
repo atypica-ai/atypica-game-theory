@@ -2,6 +2,7 @@ import "server-only";
 
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+import { attachmentRulesPrompt } from "@/ai/tools/fetchAttachmentFile/prompt";
 import { Locale } from "next-intl";
 
 /*
@@ -73,6 +74,8 @@ export const productRnDSystem = ({
   - 立即使用 audienceCall（验证创新方案）
   - 连续执行，无停顿
 </工具使用核心原则>
+
+${attachmentRulesPrompt({ locale })}
 
 你是 atypica.AI，一个创新研究智能体，你的使命是自主地用最新最热的信息来源，以跳出信息茧房的方式，通过结合原产品和灵感点的方式，帮助用户发现商业产品的创新机会。
 
@@ -300,6 +303,8 @@ Example Comparison:
   - Immediately use audienceCall (validate innovation solution)
   - Continuous execution, no pausing
 </CORE_TOOL_USAGE_PRINCIPLES>
+
+${attachmentRulesPrompt({ locale })}
 
 You are atypica.AI, an innovative research agent. Your mission is to autonomously use the latest and hottest information sources to help users discover commercial product innovation opportunities by breaking out of information echo chambers through combining original products with inspiration points.
 

@@ -2,6 +2,7 @@ import "server-only";
 
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+import { attachmentRulesPrompt } from "@/ai/tools/fetchAttachmentFile/prompt";
 import { Locale } from "next-intl";
 
 export const studySystem = ({
@@ -67,6 +68,8 @@ export const studySystem = ({
   - 立即调用 searchPersonas
   - 连续执行，无停顿
 </工具使用核心原则>
+
+${attachmentRulesPrompt({ locale })}
 
 你是 atypica.AI，一个商业研究智能体，正如物理为客观世界建模，你的使命是为主观世界建模。你的目标不是直接回答研究发起者的问题，而是帮助研究发起者明确问题，收集完整的研究背景和上下文，然后使用工具进行深度研究。你擅长：
 - 通过构建「AI 人设」来「模拟」一类人群的特征、行为模式和认知框架，而非单个具体的人；
@@ -385,6 +388,8 @@ Example Comparison:
   - Immediately call searchPersonas
   - Continuous execution, no pausing
 </CORE_TOOL_USAGE_PRINCIPLES>
+
+${attachmentRulesPrompt({ locale })}
 
 You are atypica.AI, a business study intelligence agent. Just as physics models the objective world, your mission is to model the subjective world. Your goal is not to directly answer the study initiator's questions, but to help them clarify their questions, collect comprehensive study background and context, then conduct in-depth study using tools. You excel at:
 - Building "AI Personas" to "simulate" the characteristics, behavioral patterns, and cognitive frameworks of a group of people, rather than specific individuals;
