@@ -27,7 +27,7 @@ export type UserChatContext = Partial<{
     | "productRnD"
     | "fastInsight"
     | "misc";
-  attachments: ChatMessageAttachment[];
+  attachments: (ChatMessageAttachment & { id: number })[];
   studyTopic: string;
   studyLog: string;
 

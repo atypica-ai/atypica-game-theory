@@ -7,6 +7,10 @@ import { WebSearchToolInput, WebSearchToolResult } from "@/ai/tools/experts/webS
 import { SocialPostCommentToolResult, SocialPostToolResult } from "@/ai/tools/social/types";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { RequestPaymentResult } from "@/ai/tools/user/payment/types";
+import {
+  FetchAttachmentFileToolInput,
+  FetchAttachmentFileToolResult,
+} from "@/ai/tools/fetchAttachmentFile/types";
 import { DeepResearchInput, DeepResearchOutput } from "@/app/(deepResearch)/types";
 import {
   RequestInteractionResult,
@@ -48,6 +52,7 @@ export enum StudyToolName {
   scoutSocialTrends = "scoutSocialTrends",
   audienceCall = "audienceCall",
   createSubAgent = "createSubAgent",
+  fetchAttachmentFile = "fetchAttachmentFile",
 
   makeStudyPlan = "makeStudyPlan",
   saveAnalyst = "saveAnalyst",
@@ -113,6 +118,10 @@ export type StudyUITools = {
   [StudyToolName.createSubAgent]: {
     input: CreateSubAgentToolInput;
     output: CreateSubAgentResult;
+  };
+  [StudyToolName.fetchAttachmentFile]: {
+    input: FetchAttachmentFileToolInput;
+    output: FetchAttachmentFileToolResult;
   };
   [StudyToolName.saveAnalyst]: { input: SaveAnalystToolInput; output: SaveAnalystToolResult };
   [StudyToolName.saveInterviewConclusion]: {

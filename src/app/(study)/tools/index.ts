@@ -1,6 +1,7 @@
 import "server-only";
 
 import { toolCallError } from "@/ai/tools/error";
+import { fetchAttachmentFileTool } from "@/ai/tools/fetchAttachmentFile";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { ToolSet } from "ai";
@@ -39,6 +40,7 @@ export type StudyToolSet = Partial<{
   [StudyToolName.audienceCall]: ReturnType<typeof audienceCallTool>;
   [StudyToolName.scoutSocialTrends]: ReturnType<typeof scoutSocialTrendsTool>;
   [StudyToolName.createSubAgent]: ReturnType<typeof createSubAgentTool>;
+  [StudyToolName.fetchAttachmentFile]: ReturnType<typeof fetchAttachmentFileTool>;
   [StudyToolName.toolCallError]: typeof toolCallError;
 }>;
 
