@@ -114,15 +114,12 @@ export const DiscussionChatConsole = ({
 
           if (event.type === "moderator-selection") {
             return (
-              <div
-                key={`${event.type}-${index}`}
-                className="flex items-center gap-2 text-xs text-muted-foreground"
-              >
-                <span>🎯</span>
-                <span>
+              <div key={`${event.type}-${index}`} className="flex items-center gap-3">
+                <div className="shrink-0 size-8 flex items-center justify-center">🎯</div>
+                <div className="flex-1 text-xs text-muted-foreground">
                   Moderator selected: <strong>{event.selectedPersonaName}</strong>
                   {event.reasoning && ` - ${event.reasoning}`}
-                </span>
+                </div>
               </div>
             );
           }

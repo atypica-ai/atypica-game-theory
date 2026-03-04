@@ -6,7 +6,7 @@ import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { trackEvent } from "@/lib/analytics/segment";
 import { truncateForTitle } from "@/lib/textUtils";
-import { UserChat } from "@/prisma/client";
+import { ChatMessageAttachment, UserChat } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { motion } from "framer-motion";
@@ -38,6 +38,7 @@ export function NewStudyChatClient({
     });
   }, 2000);
 
+  const pendingAttachmentsRef = useRef<ChatMessageAttachment[]>([]);
   const extraRequestPayload = useMemo(() => ({ userChatToken: userChat.token }), [userChat.token]);
 
   const useChatHelpers = useChat({
@@ -58,10 +59,16 @@ export function NewStudyChatClient({
         setTimeout(() => {
           trackStudyBriefUpdated(message.lastPart.type === "text" ? message.lastPart.text : "");
         }, 100);
+        // Read and consume pending attachments
+        const attachments =
+          pendingAttachmentsRef.current.length > 0 ? pendingAttachmentsRef.current : undefined;
+        pendingAttachmentsRef.current = [];
+
         const body: ClientMessagePayload = {
           id,
           message,
           ...extraRequestPayload,
+          attachments,
         };
         return { body };
       },
@@ -123,6 +130,8 @@ export function NewStudyChatClient({
         useChatHelpers={useChatHelpers}
         useChatRef={useChatRef}
         showTimer={true}
+        showFileUpload={true}
+        pendingAttachmentsRef={pendingAttachmentsRef}
         locale={locale}
       />
     </FitToViewport>

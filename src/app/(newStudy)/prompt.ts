@@ -1,6 +1,7 @@
 import "server-only";
 
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+import { attachmentRulesPrompt } from "@/ai/tools/readAttachment/prompt";
 import { Locale } from "next-intl";
 
 export const newStudySystem = ({ locale }: { locale: Locale }) =>
@@ -45,6 +46,8 @@ export const newStudySystem = ({ locale }: { locale: Locale }) =>
 - **用户视角**：像用户自己在全面描述他们的研究需求一样写作
 
 这个 brief 是纯文本格式，不使用 Markdown 格式，应全面涵盖：用户的具体研究背景、想要解决的问题、研究目标、期望的成果、已有的知识基础、研究动机、可能的挑战等所有在对话中涉及的内容。
+
+${attachmentRulesPrompt({ locale })}
 `
     : `${promptSystemConfig({ locale })}
 You are an AI study planning assistant. Your goal is to help users organize and write a clear study brief through a focused, structured conversation. This brief will be passed to another professional research agent for detailed research.
@@ -86,4 +89,6 @@ Key principles:
 - **User perspective**: Write as if the user themselves were comprehensively describing their research needs
 
 This brief is in plain text format, without Markdown formatting, and should comprehensively cover: the user's specific research background, problems they want to solve, research objectives, expected outcomes, existing knowledge base, research motivation, potential challenges, and all other content discussed during the conversation.
+
+${attachmentRulesPrompt({ locale })}
 `;

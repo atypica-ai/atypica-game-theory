@@ -179,16 +179,25 @@ export function DiscussionView({
 
             {/* Tab contents - scrollable */}
             {summary && (
-              <TabsContent value="summary" className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs leading-relaxed">
+              <TabsContent
+                value="summary"
+                className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs leading-relaxed"
+              >
                 <Streamdown mode="static">{summary}</Streamdown>
               </TabsContent>
             )}
             {minutes && (
-              <TabsContent value="minutes" className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs leading-relaxed">
+              <TabsContent
+                value="minutes"
+                className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs leading-relaxed"
+              >
                 <Streamdown mode="static">{minutes}</Streamdown>
               </TabsContent>
             )}
-            <TabsContent value="artifacts" className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs text-muted-foreground/60 italic">
+            <TabsContent
+              value="artifacts"
+              className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3 mt-0 text-xs text-muted-foreground/60 italic"
+            >
               {t("artifactsPlaceholder")}
             </TabsContent>
           </Tabs>
@@ -250,12 +259,12 @@ function TimelineEvent({ event }: { event: DiscussionTimelineEvent }) {
 
   if (event.type === "moderator-selection") {
     return (
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>🎯</span>
-        <span>
+      <div className="flex items-center gap-3">
+        <div className="shrink-0 size-8 flex items-center justify-center">🎯</div>
+        <div className="flex-1 text-xs text-muted-foreground">
           Moderator selected: <strong>{event.selectedPersonaName}</strong>
           {event.reasoning && ` - ${event.reasoning}`}
-        </span>
+        </div>
       </div>
     );
   }

@@ -1,16 +1,20 @@
 import { ClientMessagePayload, isSystemMessage } from "@/ai/messageUtilsClient";
 import { PlainTextUITools, TMessageWithPlainTextTool } from "@/ai/tools/types";
+import { FileAttachment } from "@/components/chat/FileAttachment";
+import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { RecordButton } from "@/components/chat/RecordButton";
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { useDevice } from "@/hooks/use-device";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
+import { useFileUploadManager } from "@/hooks/use-file-upload-manager";
 import { getDisplayWidth } from "@/lib/textUtils";
 import { cn } from "@/lib/utils";
+import { ChatMessageAttachment } from "@/prisma/client";
 import { useChat } from "@ai-sdk/react";
 import { getToolOrDynamicToolName, isToolOrDynamicToolUIPart, isToolUIPart } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckIcon, Keyboard, Loader2Icon, Send, XIcon } from "lucide-react";
+import { CheckIcon, Keyboard, Loader2Icon, PaperclipIcon, Send, XIcon } from "lucide-react";
 import { Locale, useTranslations } from "next-intl";
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -141,6 +145,8 @@ export function FocusedInterviewChat<
   useChatRef,
   renderToolUIPart,
   showTimer = true,
+  showFileUpload = false,
+  pendingAttachmentsRef,
   topRightButton,
   progressBar,
   className = "",
@@ -160,6 +166,8 @@ export function FocusedInterviewChat<
   >;
   renderToolUIPart?: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   showTimer?: boolean;
+  showFileUpload?: boolean;
+  pendingAttachmentsRef?: React.MutableRefObject<ChatMessageAttachment[]>;
   topRightButton?: React.ReactNode;
   progressBar?: React.ReactNode;
   className?: string;
@@ -167,6 +175,10 @@ export function FocusedInterviewChat<
   // const locale = useLocale();
   const { isMobile } = useDevice();
   const t = useTranslations("Components.FocusedInterviewChat");
+
+  // File upload
+  const { uploadedFiles, handleFileUploaded, handleRemoveFile, clearFiles } =
+    useFileUploadManager();
 
   const [timeLeft, setTimeLeft] = useState(DEFAULT_TIME_LEFT);
   const [hasTimedOut, setHasTimedOut] = useState(false);
@@ -188,11 +200,22 @@ export function FocusedInterviewChat<
       if (!messageContent) return;
       setLastUserMessage({ content: messageContent });
 
+      // Write pending attachments to ref for transport to read
+      if (pendingAttachmentsRef && uploadedFiles.length > 0) {
+        pendingAttachmentsRef.current = uploadedFiles.map((f) => ({
+          objectUrl: f.objectUrl,
+          name: f.name,
+          mimeType: f.mimeType,
+          size: f.size,
+        }));
+      }
+
       useChatRef.current.sendMessage({
         text: messageContent,
         // metadata: { shouldCorrectUserMessage: true },
       });
       setInput("");
+      clearFiles();
       if (textareaRef.current) {
         // 回复 textarea 的高度
         textareaRef.current.style.height = "auto";
@@ -210,7 +233,7 @@ export function FocusedInterviewChat<
         }
       }, 50);
     },
-    [input, showTextInput, useChatRef],
+    [input, showTextInput, useChatRef, pendingAttachmentsRef, uploadedFiles, clearFiles],
   );
 
   const handleTranscriptInternal = useCallback(
@@ -448,8 +471,43 @@ export function FocusedInterviewChat<
           </div>
         )}
 
+        {/* Uploaded files preview */}
+        {showFileUpload && uploadedFiles.length > 0 && (
+          <div className="flex flex-wrap gap-2 justify-center">
+            {uploadedFiles.map((file, index) => (
+              <FileAttachment
+                key={`${file.objectUrl}-${index}`}
+                attachment={{
+                  url: file.url,
+                  mediaType: file.mimeType,
+                  filename: file.name,
+                }}
+                onRemove={() => handleRemoveFile(index)}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Bottom buttons area */}
         <div className="flex items-center justify-center gap-4">
+          {/* File Upload Button */}
+          {showFileUpload && (
+            <FileUploadButton
+              onFileUploadedAction={handleFileUploaded}
+              existingFiles={uploadedFiles}
+              disabled={userTextInputDisabled}
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                className="rounded-full transition-all duration-200 w-10 h-10 flex items-center justify-center bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-600"
+                disabled={userTextInputDisabled}
+              >
+                <PaperclipIcon className="h-5 w-5" />
+              </Button>
+            </FileUploadButton>
+          )}
+
           {/* Record Button */}
           <RecordButton
             onTranscript={handleTranscriptInternal}

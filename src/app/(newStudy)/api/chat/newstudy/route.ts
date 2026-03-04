@@ -10,9 +10,11 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import authOptions from "@/app/(auth)/authOptions";
 import { newStudySystem } from "@/app/(newStudy)/prompt";
 import { newStudyTools } from "@/app/(newStudy)/tools";
+import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { correctUserInputMessage } from "@/lib/userChat/lib";
+import { ChatMessageAttachment } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getUserTokens } from "@/tokens/lib";
 import { AnthropicProviderOptions } from "@ai-sdk/anthropic";
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error }, { status: 400 });
   }
 
-  const { message: newMessage, userChatToken } = parseResult.data;
+  const { message: newMessage, userChatToken, attachments } = parseResult.data;
 
   // 动态检测用户输入的语言
   const locale = await detectInputLanguage({
@@ -67,6 +69,28 @@ export async function POST(req: NextRequest) {
 
   const userChatId = userChat.id;
 
+  // Handle attachments: assign IDs, prepend markers, store in context
+  let messageLastPart = newMessage.lastPart;
+  if (attachments && attachments.length > 0 && newMessage.role === "user") {
+    const existingAttachments = userChat.context.attachments ?? [];
+    const nextId = Math.max(0, ...existingAttachments.map((a) => a.id)) + 1;
+    const attachmentsWithIds: (ChatMessageAttachment & { id: number })[] = attachments.map(
+      (att, i) => ({ ...att, id: nextId + i }),
+    );
+
+    // Prepend [#N filename] markers to user text
+    const markers = attachmentsWithIds.map((a) => `[#${a.id} ${a.name}]`).join("\n");
+    if (messageLastPart.type === "text") {
+      messageLastPart = { type: "text", text: `${markers}\n${messageLastPart.text}` };
+    }
+
+    // Store attachments in context
+    await mergeUserChatContext({
+      id: userChatId,
+      context: { attachments: [...existingAttachments, ...attachmentsWithIds] },
+    });
+  }
+
   // Persist the new message
   await persistentAIMessageToDB({
     mode: "append",
@@ -74,7 +98,7 @@ export async function POST(req: NextRequest) {
     message: {
       id: newMessage.id ?? generateId(),
       role: newMessage.role,
-      parts: [newMessage.lastPart],
+      parts: [messageLastPart],
       metadata: newMessage.metadata,
     },
   });
@@ -116,7 +140,16 @@ export async function POST(req: NextRequest) {
     logger: chatLogger,
   });
 
-  const tools = { ...newStudyTools({ locale }) };
+  const tools = {
+    ...newStudyTools({
+      locale,
+      userId,
+      userChatId,
+      abortSignal,
+      statReport,
+      logger: chatLogger,
+    }),
+  };
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
     tools,
   });

@@ -1,12 +1,22 @@
 import "server-only";
 
+import { readAttachmentTool } from "@/ai/tools/readAttachment";
 import { webFetchTool } from "@/ai/tools/tools";
-import { BasicToolName, PlainTextToolResult } from "@/ai/tools/types";
+import { AgentToolConfigArgs, BasicToolName, PlainTextToolResult } from "@/ai/tools/types";
 import { tool } from "ai";
 import { Locale } from "next-intl";
 import { endInterviewInputSchema, endInterviewOutputSchema } from "./types";
 
-export const newStudyTools = ({ locale }: { locale: Locale }) => ({
+export const newStudyTools = ({
+  locale,
+  userId,
+  userChatId,
+  ...agentArgs
+}: {
+  locale: Locale;
+  userId: number;
+  userChatId: number;
+} & Omit<AgentToolConfigArgs, "locale">) => ({
   endInterview: tool({
     description: "End the planning session and generate the user's study brief",
     inputSchema: endInterviewInputSchema,
@@ -24,4 +34,5 @@ export const newStudyTools = ({ locale }: { locale: Locale }) => ({
     },
   }),
   [BasicToolName.webFetch]: webFetchTool({ locale }),
+  readAttachment: readAttachmentTool({ userId, userChatId, locale, ...agentArgs }),
 });
