@@ -2,7 +2,7 @@ import "server-only";
 
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
-import { attachmentRulesPrompt } from "@/ai/tools/fetchAttachmentFile/prompt";
+import { attachmentRulesPrompt } from "@/ai/tools/readAttachment/prompt";
 import { Locale } from "next-intl";
 
 export const fastInsightSystem = ({ locale }: { locale: Locale }) =>

@@ -209,7 +209,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   //   streamWriter,
   //   streamingMessage,
   // });
-  // (Phase 3 removed: attachments are now lazy-loaded via fetchAttachmentFile tool)
+  // (Phase 3 removed: attachments are now lazy-loaded via readAttachment tool)
   // =============================================================================
 
   // =============================================================================
@@ -306,7 +306,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   //     ...modelMessages,
   //   ];
   // }
-  // (Attachment prepending removed: now lazy-loaded via fetchAttachmentFile tool)
+  // (Attachment prepending removed: now lazy-loaded via readAttachment tool)
 
   // Prepend reference study context (universal)
   if (userChatContext?.referenceUserChats) {

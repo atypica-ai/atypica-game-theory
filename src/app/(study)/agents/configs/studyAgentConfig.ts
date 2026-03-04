@@ -1,5 +1,5 @@
 import { toolCallError } from "@/ai/tools/error";
-import { fetchAttachmentFileTool } from "@/ai/tools/fetchAttachmentFile";
+import { readAttachmentTool } from "@/ai/tools/readAttachment";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { UserChatContext } from "@/app/(study)/context/types";
@@ -127,7 +127,7 @@ export async function createStudyAgentConfig(
             StudyToolName.generateReport,
             StudyToolName.generatePodcast,
             StudyToolName.reasoningThinking,
-            StudyToolName.fetchAttachmentFile,
+            StudyToolName.readAttachment,
             StudyToolName.toolCallError,
           ];
         } else {
@@ -183,7 +183,7 @@ function buildStudyTools({
     [StudyToolName.searchPersonas]: searchPersonasTool({ ...contextfulAgentToolArgs }),
     [StudyToolName.scoutTaskChat]: scoutTaskChatTool({ ...contextfulAgentToolArgs }),
     [StudyToolName.buildPersona]: buildPersonaTool({ ...contextfulAgentToolArgs }),
-    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({ ...contextfulAgentToolArgs }),
+    [StudyToolName.readAttachment]: readAttachmentTool({ ...contextfulAgentToolArgs }),
     [StudyToolName.interviewChat]: interviewChatTool({ ...contextfulAgentToolArgs }),
     [StudyToolName.discussionChat]: discussionChatTool({ ...contextfulAgentToolArgs }),
     [StudyToolName.generateReport]: generateReportTool({ ...contextfulAgentToolArgs }),

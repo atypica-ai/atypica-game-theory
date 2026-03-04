@@ -1,7 +1,7 @@
 import "server-only";
 
 import { toolCallError } from "@/ai/tools/error";
-import { fetchAttachmentFileTool } from "@/ai/tools/fetchAttachmentFile";
+import { readAttachmentTool } from "@/ai/tools/readAttachment";
 import { webFetchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { planModeSystem } from "@/app/(study)/prompt/planMode";
@@ -90,7 +90,7 @@ function buildPlanModeTools(params: {
     [StudyToolName.requestInteraction]: requestInteractionTool,
     [StudyToolName.makeStudyPlan]: makeStudyPlanTool,
     [StudyToolName.webFetch]: webFetchTool(agentToolArgs),
-    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({
+    [StudyToolName.readAttachment]: readAttachmentTool({
       userId,
       userChatId: studyUserChatId,
       ...agentToolArgs,

@@ -8,9 +8,9 @@ import { SocialPostCommentToolResult, SocialPostToolResult } from "@/ai/tools/so
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { RequestPaymentResult } from "@/ai/tools/user/payment/types";
 import {
-  FetchAttachmentFileToolInput,
-  FetchAttachmentFileToolResult,
-} from "@/ai/tools/fetchAttachmentFile/types";
+  ReadAttachmentToolInput,
+  ReadAttachmentToolResult,
+} from "@/ai/tools/readAttachment/types";
 import { DeepResearchInput, DeepResearchOutput } from "@/app/(deepResearch)/types";
 import {
   RequestInteractionResult,
@@ -52,7 +52,7 @@ export enum StudyToolName {
   scoutSocialTrends = "scoutSocialTrends",
   audienceCall = "audienceCall",
   createSubAgent = "createSubAgent",
-  fetchAttachmentFile = "fetchAttachmentFile",
+  readAttachment = "readAttachment",
 
   makeStudyPlan = "makeStudyPlan",
   saveAnalyst = "saveAnalyst",
@@ -119,9 +119,9 @@ export type StudyUITools = {
     input: CreateSubAgentToolInput;
     output: CreateSubAgentResult;
   };
-  [StudyToolName.fetchAttachmentFile]: {
-    input: FetchAttachmentFileToolInput;
-    output: FetchAttachmentFileToolResult;
+  [StudyToolName.readAttachment]: {
+    input: ReadAttachmentToolInput;
+    output: ReadAttachmentToolResult;
   };
   [StudyToolName.saveAnalyst]: { input: SaveAnalystToolInput; output: SaveAnalystToolResult };
   [StudyToolName.saveInterviewConclusion]: {

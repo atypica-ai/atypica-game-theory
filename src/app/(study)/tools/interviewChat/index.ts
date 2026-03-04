@@ -6,8 +6,8 @@ import {
   persistentAIMessageToDB,
 } from "@/ai/messageUtils";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
-import { fetchAttachmentFileTool } from "@/ai/tools/fetchAttachmentFile";
-import { attachmentRulesPrompt } from "@/ai/tools/fetchAttachmentFile/prompt";
+import { readAttachmentTool } from "@/ai/tools/readAttachment";
+import { attachmentRulesPrompt } from "@/ai/tools/readAttachment/prompt";
 import {
   dySearchTool,
   insSearchTool,
@@ -348,7 +348,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
     [StudyToolName.reasoningThinking]: reasoningThinkingTool(agentToolArgs),
     [StudyToolName.saveInterviewConclusion]: saveInterviewConclusionTool(analystInterviewId),
     // 需要配合下面的 attachmentRulesPrompt 一起使用
-    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({
+    [StudyToolName.readAttachment]: readAttachmentTool({
       userId,
       userChatId: interviewUserChatId,
       ...agentToolArgs,
@@ -472,7 +472,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
         }
       : {}),
     // 需要配合下面的 attachmentRulesPrompt 一起使用
-    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({
+    [StudyToolName.readAttachment]: readAttachmentTool({
       userId,
       userChatId: interviewUserChatId,
       locale,

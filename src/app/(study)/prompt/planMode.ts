@@ -1,7 +1,7 @@
 import "server-only";
 
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
-import { attachmentRulesPrompt } from "@/ai/tools/fetchAttachmentFile/prompt";
+import { attachmentRulesPrompt } from "@/ai/tools/readAttachment/prompt";
 import { Locale } from "next-intl";
 
 export const planModeSystem = ({ locale }: { locale: Locale }) =>

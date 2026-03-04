@@ -160,7 +160,7 @@ export async function shouldDecidePersonaTier({
 }
 
 /**
- * @deprecated attachments are now lazy-loaded via fetchAttachmentFile tool)
+ * @deprecated attachments are now lazy-loaded via readAttachment tool)
  */
 export async function waitUntilAttachmentsProcessed({
   userId,

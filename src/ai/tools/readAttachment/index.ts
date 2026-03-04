@@ -6,12 +6,12 @@ import { parseAttachmentText } from "@/lib/attachments/processing";
 import { prisma } from "@/prisma/prisma";
 import { tool } from "ai";
 import {
-  fetchAttachmentFileInputSchema,
-  fetchAttachmentFileOutputSchema,
-  FetchAttachmentFileToolResult,
+  readAttachmentInputSchema,
+  readAttachmentOutputSchema,
+  ReadAttachmentToolResult,
 } from "./types";
 
-export const fetchAttachmentFileTool = ({
+export const readAttachmentTool = ({
   userId,
   userChatId,
   logger,
@@ -23,9 +23,9 @@ export const fetchAttachmentFileTool = ({
     description:
       "Read the content of a user-uploaded attachment file by its ID (shown as [#N filename] in messages). " +
       "Use head_tail mode to preview large files before reading in full. Also supports reading image files.",
-    inputSchema: fetchAttachmentFileInputSchema,
-    outputSchema: fetchAttachmentFileOutputSchema,
-    toModelOutput: (result: FetchAttachmentFileToolResult) => {
+    inputSchema: readAttachmentInputSchema,
+    outputSchema: readAttachmentOutputSchema,
+    toModelOutput: (result: ReadAttachmentToolResult) => {
       if (result.image) {
         return {
           type: "content",
@@ -34,7 +34,7 @@ export const fetchAttachmentFileTool = ({
       }
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ attachmentId, mode, limit }): Promise<FetchAttachmentFileToolResult> => {
+    execute: async ({ attachmentId, mode, limit }): Promise<ReadAttachmentToolResult> => {
       // 1. Read fresh attachments from UserChat context
       const userChat = await prisma.userChat.findUnique({
         where: { id: userChatId },

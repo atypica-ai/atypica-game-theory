@@ -1,5 +1,5 @@
 import { toolCallError } from "@/ai/tools/error";
-import { fetchAttachmentFileTool } from "@/ai/tools/fetchAttachmentFile";
+import { readAttachmentTool } from "@/ai/tools/readAttachment";
 import { webFetchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { UserChatContext } from "@/app/(study)/context/types";
@@ -100,7 +100,7 @@ export async function createProductRnDAgentConfig(
           activeTools = [
             StudyToolName.generateReport,
             StudyToolName.generatePodcast,
-            StudyToolName.fetchAttachmentFile,
+            StudyToolName.readAttachment,
             StudyToolName.toolCallError,
           ];
         }
@@ -139,7 +139,7 @@ function buildProductRnDTools(params: {
       userChatId: studyUserChatId,
       ...agentToolArgs,
     }),
-    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({
+    [StudyToolName.readAttachment]: readAttachmentTool({
       userId,
       userChatId: studyUserChatId,
       ...agentToolArgs,

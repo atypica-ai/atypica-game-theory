@@ -1,5 +1,5 @@
 import { toolCallError } from "@/ai/tools/error";
-import { fetchAttachmentFileTool } from "@/ai/tools/fetchAttachmentFile";
+import { readAttachmentTool } from "@/ai/tools/readAttachment";
 import { webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
@@ -102,7 +102,7 @@ export async function createFastInsightAgentConfig(
           activeTools = [
             StudyToolName.generateReport,
             StudyToolName.generatePodcast,
-            StudyToolName.fetchAttachmentFile,
+            StudyToolName.readAttachment,
             StudyToolName.toolCallError,
           ];
         } else {
@@ -149,7 +149,7 @@ function buildFastInsightTools(params: {
       ...agentToolArgs,
     }),
     [StudyToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
-    [StudyToolName.fetchAttachmentFile]: fetchAttachmentFileTool({
+    [StudyToolName.readAttachment]: readAttachmentTool({
       userId,
       userChatId: studyUserChatId,
       ...agentToolArgs,

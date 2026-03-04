@@ -1,6 +1,6 @@
 import z from "zod/v3";
 
-export const fetchAttachmentFileInputSchema = z.object({
+export const readAttachmentInputSchema = z.object({
   attachmentId: z
     .number()
     .describe("The attachment ID shown as [#N filename] in messages, e.g. 1 for [#1 ...]"),
@@ -17,9 +17,9 @@ export const fetchAttachmentFileInputSchema = z.object({
     .describe("Character limit per segment (for head/tail/head_tail modes)"),
 });
 
-export type FetchAttachmentFileToolInput = z.infer<typeof fetchAttachmentFileInputSchema>;
+export type ReadAttachmentToolInput = z.infer<typeof readAttachmentInputSchema>;
 
-export const fetchAttachmentFileOutputSchema = z.object({
+export const readAttachmentOutputSchema = z.object({
   plainText: z.string(),
   image: z
     .object({
@@ -29,4 +29,4 @@ export const fetchAttachmentFileOutputSchema = z.object({
     .optional(),
 });
 
-export type FetchAttachmentFileToolResult = z.infer<typeof fetchAttachmentFileOutputSchema>;
+export type ReadAttachmentToolResult = z.infer<typeof readAttachmentOutputSchema>;
