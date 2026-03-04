@@ -1,3 +1,4 @@
+import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 // 给 chat 类型的 tool call 用的组件，比如 scout chat 和 interview chat
@@ -34,7 +35,9 @@ export const StreamSteps = <UI_MESSAGE extends TMessageWithPlainTextTool>({
           {parts.map((part, i) => {
             // 小红书搜索任务之类的，是多个 step 一起显示，搜索结果和总结，所以需要显示超过1条在一起，更好
             if (part.type === "text") {
-              return <PlainText key={i}>{part.text}</PlainText>;
+              return !isSystemMessage(part.text) ? (
+                <PlainText key={i}>{part.text}</PlainText>
+              ) : null;
             } else if (part.type === "reasoning") {
               return <PlainText key={i}>{part.text}</PlainText>;
               // } else if (part.type === "source") {

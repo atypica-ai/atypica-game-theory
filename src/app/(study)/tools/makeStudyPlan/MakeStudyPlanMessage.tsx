@@ -3,7 +3,6 @@ import { StudyToolName, StudyUITools, TAddStudyUIToolResult } from "@/app/(study
 import { LoadingPulse } from "@/components/LoadingPulse";
 import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics/segment";
-import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
 import { CheckIcon, FileTextIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";

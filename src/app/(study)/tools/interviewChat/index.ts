@@ -13,7 +13,7 @@ import {
   tiktokSearchTool,
   twitterSearchTool,
 } from "@/ai/tools/social";
-import { reasoningThinkingTool } from "@/ai/tools/tools";
+import { reasoningThinkingTool, webFetchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
@@ -24,7 +24,6 @@ import { createUserChat } from "@/lib/userChat/lib";
 import { startManagedRun } from "@/lib/userChat/runtime";
 import { ChatMessageAttachment, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { google } from "@ai-sdk/google";
 import {
   generateId,
   generateText,
@@ -456,22 +455,25 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
     logger,
   } = chatProps;
 
-  const reduceTokens: TReduceTokens = { model: "gemini-3-flash", ratio: 10 };
+  // const reduceTokens: TReduceTokens = { model: "gemini-3-flash", ratio: 10 };
+  const reduceTokens: TReduceTokens = { model: "gpt-5-mini", ratio: 10 };
   const tools = {
     [StudyToolName.tiktokSearch]: tiktokSearchTool,
     [StudyToolName.dySearch]: dySearchTool,
     [StudyToolName.insSearch]: insSearchTool,
     [StudyToolName.twitterSearch]: twitterSearchTool,
     // [StudyToolName.xhsSearch]: xhsSearchTool, // 因为有 grounding 了，tools 可以去掉一些
-    ...(reduceTokens && reduceTokens.model.startsWith("gemini")
-      ? {
-          google_search: google.tools.googleSearch({
-            mode: "MODE_DYNAMIC",
-            // threshold 越小，使用搜索的可能性就越高
-            dynamicThreshold: messages.length <= 2 ? 0.1 : messages.length <= 4 ? 0.3 : 0.5,
-          }),
-        }
-      : {}),
+    [StudyToolName.webFetch]: webFetchTool({ locale }),
+    // 这个 google_search remote tool 不能和其他的 local tool 一起使用
+    // ...(reduceTokens && reduceTokens.model.startsWith("gemini")
+    //   ? {
+    //       google_search: google.tools.googleSearch({
+    //         mode: "MODE_DYNAMIC",
+    //         // threshold 越小，使用搜索的可能性就越高
+    //         dynamicThreshold: messages.length <= 2 ? 0.1 : messages.length <= 4 ? 0.3 : 0.5,
+    //       }),
+    //     }
+    //   : {}),
     // 需要配合下面的 attachmentRulesPrompt 一起使用
     [StudyToolName.readAttachment]: readAttachmentTool({
       userId,
