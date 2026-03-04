@@ -7,7 +7,6 @@ import {
 } from "@/ai/messageUtils";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { readAttachmentTool } from "@/ai/tools/readAttachment";
-import { attachmentRulesPrompt } from "@/ai/tools/readAttachment/prompt";
 import {
   dySearchTool,
   insSearchTool,
@@ -38,7 +37,7 @@ import {
 } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { interviewerAttachment, interviewerPrologue, interviewerSystem } from "./prompt";
+import { interviewerPrologue, interviewerSystem } from "./prompt";
 import { saveInterviewConclusionTool } from "./saveInterviewConclusion";
 import {
   interviewChatInputSchema,
@@ -230,19 +229,23 @@ export async function prepareDBForInterview({
   attachments?: (ChatMessageAttachment & { id: number })[];
 }) {
   const persona = await prisma.persona.findUniqueOrThrow({ where: { id: personaId } });
-  const personaPrompt = personaAgentSystem({ persona, locale });
-  const interviewerPrompt = interviewerSystem({ instruction, locale });
+  const personaSystemPrompt = personaAgentSystem({ persona, locale });
+  const interviewerSystemPrompt = interviewerSystem({ instruction, locale });
   const interviewerProloguePrompt = interviewerPrologue({ locale });
-  const interviewerAttachmentPrompt = interviewerAttachment({ persona, locale });
   const conclusion = ""; // conclusion 被用于判断是否结束，开始前一定要清空
-  const interview = await prisma.analystInterview.create({
-    data: {
-      personaPanelId,
-      personaId,
-      instruction,
-      conclusion,
-    },
+  let interview = await prisma.analystInterview.findFirst({
+    where: { personaPanelId, personaId },
   });
+  if (!interview) {
+    interview = await prisma.analystInterview.create({
+      data: {
+        personaPanelId,
+        personaId,
+        instruction,
+        conclusion,
+      },
+    });
+  }
   let interviewUserChatId = interview.interviewUserChatId;
   if (!interviewUserChatId) {
     const interviewUserChat = await createUserChat({
@@ -274,10 +277,9 @@ export async function prepareDBForInterview({
     analystInterviewId: interview.id,
     interviewUserChatId,
     prompt: {
-      personaPrompt,
-      interviewerPrompt,
+      personaSystemPrompt,
+      interviewerSystemPrompt,
       interviewerProloguePrompt,
-      interviewerAttachmentPrompt,
     },
   };
 }
@@ -287,10 +289,9 @@ type ChatProps = {
   analystInterviewId: number;
   interviewUserChatId: number;
   prompt: {
-    personaPrompt: string;
-    interviewerPrompt: string;
+    personaSystemPrompt: string;
+    interviewerSystemPrompt: string;
     interviewerProloguePrompt: string;
-    interviewerAttachmentPrompt: string;
   };
 } & AgentToolConfigArgs;
 
@@ -332,7 +333,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
     locale,
     analystInterviewId,
     interviewUserChatId,
-    prompt: { interviewerPrompt },
+    prompt: { interviewerSystemPrompt },
     abortSignal,
     statReport,
     logger,
@@ -380,7 +381,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
       providerOptions: defaultProviderOptions(),
 
       // maxRetries: 0, // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
-      system: `${interviewerPrompt}\n\n${attachmentRulesPrompt({ locale })}`,
+      system: interviewerSystemPrompt,
 
       temperature: 0.3,
       messages: coreMessages,
@@ -449,7 +450,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
     locale,
     analystInterviewId,
     interviewUserChatId,
-    prompt: { personaPrompt },
+    prompt: { personaSystemPrompt },
     abortSignal,
     statReport,
     logger,
@@ -488,7 +489,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
       model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
 
       providerOptions: defaultProviderOptions(),
-      system: `${personaPrompt}\n\n${attachmentRulesPrompt({ locale })}`,
+      system: personaSystemPrompt,
 
       // maxRetries: 0,  // 不要自动重试？不，gemini 偶尔连不上，还是得自动重试，慢是慢了点
       temperature: 0.3,
@@ -588,7 +589,8 @@ async function saveMessage({
 }
 
 export async function runInterview(chatProps: ChatProps) {
-  const { analystInterviewId, interviewUserChatId, prompt, logger, abortSignal } = chatProps;
+  const { analystInterviewId, interviewUserChatId, locale, prompt, logger, abortSignal } =
+    chatProps;
   const managed = await startManagedRun({ userChatId: interviewUserChatId, logger });
   // 父级 abort 时（用户取消、超时等），需要同步清理 sub-tool 的 managed run，否则 runId 会残留在 DB
   // 注：scoutTaskChat / createSubAgent 等其他 managed sub-tool 用 try/finally 包裹，abort 抛错后由 finally 清理；
@@ -603,39 +605,46 @@ export async function runInterview(chatProps: ChatProps) {
   });
   const attachments = interviewChatRecord?.context?.attachments ?? [];
   const attachmentMarkers = attachments.map((a) => `[#${a.id} ${a.name}]`).join("\n");
+
   const personaAgent = {
     messages: [
       {
         id: generateId(),
         role: "user",
-        parts: [
-          {
-            type: "text",
-            text: attachmentMarkers
-              ? `${attachmentMarkers}\n${prompt.interviewerProloguePrompt}`
-              : prompt.interviewerProloguePrompt,
-          },
-        ],
+        parts: [{ type: "text", text: prompt.interviewerProloguePrompt }],
       },
     ] as UIMessage[],
   };
   const interviewer = {
-    messages: (attachmentMarkers
-      ? [
-          {
-            id: generateId(),
-            role: "user",
-            parts: [
-              {
-                type: "text",
-                text: `${attachmentMarkers}\n${prompt.interviewerAttachmentPrompt}`,
-              },
-            ],
-          },
-        ]
-      : []) as UIMessage[],
+    messages: [] as UIMessage[],
   };
+
+  if (attachmentMarkers) {
+    personaAgent.messages[0].parts.unshift({ type: "text", text: attachmentMarkers });
+    const attachmentPrologue =
+      locale === "zh-CN"
+        ? `
+<系统消息>
+${attachmentMarkers}
+这是本次访谈的附件，接下来话题交给受访对象
+</系统消息>
+`
+        : `
+<System Message>
+${attachmentMarkers}
+These are attachments for this interview. The conversation will now be handed over to the interviewee
+</System Message>
+`;
+    interviewer.messages.unshift({
+      id: generateId(),
+      role: "user",
+      parts: [{ type: "text", text: attachmentPrologue }],
+    });
+  }
+
   const saveParams = { analystInterviewId, interviewUserChatId, runId: managed.runId, logger };
+  // 保存一下 interviewer 的开场白，这样可以把 attachmentMarkers 等上下文也永久保存下来
+  await saveMessage({ message: { ...personaAgent.messages[0] }, ...saveParams });
 
   while (true) {
     const personaReply = await chatWithPersona(chatProps, personaAgent.messages);

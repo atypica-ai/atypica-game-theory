@@ -1,5 +1,5 @@
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
-import { Persona } from "@/prisma/client";
+import { attachmentRulesPrompt } from "@/ai/tools/readAttachment/prompt";
 import { Locale } from "next-intl";
 
 export const interviewerSystem = ({
@@ -11,6 +11,8 @@ export const interviewerSystem = ({
 }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
+${attachmentRulesPrompt({ locale })}
+
 你是一位专业的访谈员，你的任务是进行一次深入的访谈，遵循专业的访谈方法学。我希望你能以对话式、富有同理心且引人入胜的方式提出问题，挖掘受访者的真实想法和深层需求。
 
 <访谈要求>
@@ -56,6 +58,8 @@ ${instruction}
 记住，你的目标是收集深度洞察而非表面信息，请灵活运用上述方法，创造专业而自然的访谈体验。
 `
     : `${promptSystemConfig({ locale })}
+${attachmentRulesPrompt({ locale })}
+
 You are a professional interviewer, and your task is to conduct an in-depth interview following professional interview methodology. I need you to ask questions in a conversational, empathetic, and engaging manner to uncover the interviewee's genuine thoughts and deep-seated needs.
 
 <Interview Requirements>
@@ -103,30 +107,17 @@ Remember, your goal is to collect deep insights rather than surface-level inform
 
 export const interviewerPrologue = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
-    ? `${promptSystemConfig({ locale })}
+    ? `
 您好！很高兴今天能有机会与您交流。
 
 这次对话旨在了解您的真实体验和想法，没有对错之分，您分享的每一个观点对我们都非常宝贵。整个过程会像朋友间的自然交流，大约持续10-15分钟。
 
 在我们开始前，请您简单介绍一下自己（如您的职业、兴趣或与今天话题相关的经历）。这有助于我更好地理解您的背景和观点。
 `
-    : `${promptSystemConfig({ locale })}
+    : `
 Hello! I'm delighted to have this opportunity to chat with you today.
 
 This conversation aims to understand your authentic experiences and thoughts. There are no right or wrong answers—every perspective you share is incredibly valuable to us. The entire process will feel like a natural conversation between friends, lasting about 10-15 minutes.
 
 Before we begin, could you briefly introduce yourself (such as your profession, interests, or any experiences related to today's topic)? This will help me better understand your background and perspective.
-`;
-
-export const interviewerAttachment = ({ persona, locale }: { persona: Persona; locale: Locale }) =>
-  locale === "zh-CN"
-    ? `${promptSystemConfig({ locale })}
-<系统消息>
-这是本次访谈的附件，接下来话题交给受访对象${persona.name}
-</系统消息>
-`
-    : `${promptSystemConfig({ locale })}
-<System Message>
-This is an attachment for this interview. The conversation will now be handed over to the interviewee ${persona.name}
-</System Message>
 `;

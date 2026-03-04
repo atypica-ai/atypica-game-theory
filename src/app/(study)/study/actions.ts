@@ -164,6 +164,10 @@ export async function fetchAttachmentsInStudy({
  * 这个方法接收一个 personaId 用于过滤，同时不需要权限，这是安全的。
  * 前端无法通过遍历 personaId 来获取所有 analystInterview，
  * personaId 仅用于过滤 studyUserChatToken 对应研究里的所有访谈（这些访谈在拥有 studyUserChatToken 的情况下，都是直接可读的）
+ *
+ * 其实这个方法可能有问题，因为现在 interview chat 里面没有强制的数据库约束，让一个 persona 只能被访谈一次。
+ * 如果第一次访谈失败了，但 user chat 和 interview chat 还在，那第二次发起访谈的时候，系统取到的还是第一次有问题的内容，导致前端永远显示不出来。
+ * 当然，好在是 prepareDBForInterview 里，会先 findFirst 一下，大概率没问题
  */
 export async function fetchPersonaInterviewInStudy({
   userChatToken,

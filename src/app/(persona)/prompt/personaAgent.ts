@@ -1,10 +1,13 @@
 import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+import { attachmentRulesPrompt } from "@/ai/tools/readAttachment/prompt";
 import { Persona } from "@/prisma/client";
 import { Locale } from "next-intl";
 
 export const personaAgentSystem = ({ persona, locale }: { persona: Persona; locale: Locale }) =>
   locale === "zh-CN"
     ? `${promptSystemConfig({ locale })}
+${attachmentRulesPrompt({ locale })}
+
 <name>${persona.name}</name>
 
 <role>
@@ -44,6 +47,8 @@ ${(persona.tags ?? []).join(", ")}
 </task>
 `
     : `${promptSystemConfig({ locale })}
+${attachmentRulesPrompt({ locale })}
+
 <name>${persona.name}</name>
 
 <role>

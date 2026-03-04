@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics/segment";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
-import { CheckCircle2Icon, FileTextIcon, XCircleIcon } from "lucide-react";
+import { CheckIcon, FileTextIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -85,23 +85,16 @@ export const MakeStudyPlanMessage = <
         <div className="prose prose-sm dark:prose-invert max-w-none mb-3 text-xs">
           <Streamdown mode="static">{planContent}</Streamdown>
         </div>
-        <div
-          className={cn(
-            "flex items-center gap-2 text-xs p-2 rounded-md",
-            confirmed
-              ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400"
-              : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400",
-          )}
-        >
+        <div className="flex items-center gap-2 text-xs pt-3 border-t border-zinc-200 dark:border-zinc-700 text-muted-foreground">
           {confirmed ? (
             <>
-              <CheckCircle2Icon className="size-4" />
-              <span>{t("confirmed")}</span>
+              <CheckIcon className="size-3.5 text-green-600 dark:text-green-500" />
+              <span>{t("planConfirmedStatus")}</span>
             </>
           ) : (
             <>
-              <XCircleIcon className="size-4" />
-              <span>{t("cancelled")}</span>
+              <XIcon className="size-3.5" />
+              <span>{t("planCancelledStatus")}</span>
             </>
           )}
         </div>
