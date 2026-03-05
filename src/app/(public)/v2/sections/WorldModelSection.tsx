@@ -8,7 +8,7 @@ import { CHAPTERS, WORLD_MODEL_LAYERS } from "../content";
 
 const copy = CHAPTERS[1];
 
-const LAYER_COLORS = ["#16a34a", "#3b82f6", "#d97706", "#8b5cf6"] as const;
+const LAYER_COLORS = ["var(--ghost-green)", "#3b82f6", "#d97706", "#8b5cf6"] as const;
 
 /* ── Decorative Orbit (no labels, no interaction) ── */
 
@@ -34,7 +34,7 @@ function OrbitDecoration() {
         animate={{ boxShadow: ["0 0 0 0 rgba(27,255,27,0.15)", "0 0 0 10px rgba(27,255,27,0)"] }}
         transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
       >
-        <span className="text-[#1bff1b] font-medium text-[10px]">SWM</span>
+        <span className="text-ghost-green font-medium text-[10px]">SWM</span>
       </motion.div>
     </div>
   );
@@ -194,7 +194,7 @@ export default function WorldModelSection({
            ════════════════════════════════════════ */}
         <div className="grid grid-cols-[1fr_280px] gap-12 items-center max-lg:grid-cols-1 max-lg:gap-8 mb-20">
           <div>
-            <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
+            <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-ghost-green mb-4">
               {copy.number}
             </div>
             <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">
@@ -222,7 +222,7 @@ export default function WorldModelSection({
           transition={{ duration: 0.5 }}
         >
           <div className="border-t border-zinc-800 pt-12">
-            <p className="font-IBMPlexMono text-sm tracking-[0.14em] uppercase text-[#1bff1b]/60 mb-2">
+            <p className="font-IBMPlexMono text-sm tracking-[0.14em] uppercase text-ghost-green/60 mb-2">
               {t("worldModel.datasetTitle")}
             </p>
             <p className="max-w-[64ch] text-sm leading-relaxed text-zinc-300 mb-10">
@@ -324,7 +324,7 @@ export default function WorldModelSection({
                             className={cn(
                               "text-sm text-center py-4 px-5 border-b border-zinc-800/60",
                               cell === "Low ↗"
-                                ? "text-[#1bff1b] bg-[rgba(27,255,27,0.03)] font-medium"
+                                ? "text-ghost-green bg-ghost-green/[0.03] font-medium"
                                 : cell === "—"
                                   ? "text-zinc-700"
                                   : cell === "Domain-specific"

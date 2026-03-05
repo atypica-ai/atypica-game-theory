@@ -31,7 +31,7 @@ export default function ThreeModesSection({
     >
       <ChapterPanel variant="dark">
         <div className="mb-10">
-          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
+          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-ghost-green mb-4">
             {copy.number}
           </div>
           <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">

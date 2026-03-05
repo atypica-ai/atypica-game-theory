@@ -55,7 +55,7 @@ function StoryChartDriven() {
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                 />
                 <motion.div
-                  className="flex-1 bg-[#16a34a]"
+                  className="flex-1 bg-ghost-green"
                   initial={{ height: 0 }}
                   animate={{ height: `${b.after}%` }}
                   transition={{ duration: 0.5, delay: i * 0.1 + 0.2 }}
@@ -70,7 +70,7 @@ function StoryChartDriven() {
             <span className="w-2.5 h-2.5 bg-zinc-200" /> {t("solutions.storyUI.before")}
           </span>
           <span className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <span className="w-2.5 h-2.5 bg-[#16a34a]" /> {t("solutions.storyUI.withAtypica")}
+            <span className="w-2.5 h-2.5 bg-ghost-green" /> {t("solutions.storyUI.withAtypica")}
           </span>
         </div>
       </div>
@@ -80,7 +80,7 @@ function StoryChartDriven() {
         </span>
         <blockquote
           className="text-base leading-relaxed text-zinc-800 italic border-l-2 pl-4 mb-4"
-          style={{ borderColor: "#16a34a" }}
+          style={{ borderColor: "var(--ghost-green)" }}
         >
           &ldquo;{t("solutions.stories.food.quote")}&rdquo;
         </blockquote>
@@ -231,7 +231,7 @@ function StoryTechnical() {
           <span className="text-zinc-500">({"{"}</span>
         </div>
         <div className="pl-4 text-zinc-400">
-          event: <span className="text-[#16a34a]">&quot;US Election 2024&quot;</span>,
+          event: <span className="text-ghost-green">&quot;US Election 2024&quot;</span>,
         </div>
         <div className="pl-4 text-zinc-400">
           perspectives:{" "}
@@ -241,7 +241,7 @@ function StoryTechnical() {
           ,
         </div>
         <div className="pl-4 text-zinc-400">
-          signal: <span className="text-[#16a34a]">&quot;continuous&quot;</span>
+          signal: <span className="text-ghost-green">&quot;continuous&quot;</span>
         </div>
         <div className="text-zinc-500">{"})"}</div>
         <div className="mt-2 text-zinc-500">{'// → { prediction: 0.73, confidence: "high" }'}</div>
@@ -297,7 +297,7 @@ export default function UseCasesSection({
     >
       <ChapterPanel variant="light">
         <div className="mb-12">
-          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#15b025] mb-4">
+          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-ghost-green mb-4">
             {copy.number}
           </div>
           <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500 mb-3">

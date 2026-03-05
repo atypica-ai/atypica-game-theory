@@ -9,7 +9,7 @@ export const L = {
   textSub: "#3d3830",
   textMuted: "#7a7068",
   textFaint: "#a8a098",
-  green: "#16a34a",
+  green: "var(--ghost-green)",
   greenLight: "#22c55e",
   greenBg: "rgba(22,163,74,0.06)",
   greenBorder: "rgba(22,163,74,0.15)",

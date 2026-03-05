@@ -22,7 +22,7 @@ export default function ClosingSection({
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-2 h-11 px-6 bg-[#1bff1b] text-black font-medium text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:bg-[#15b025]"
+            className="inline-flex items-center gap-2 h-11 px-6 bg-ghost-green text-black font-medium text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:bg-[#15b025]"
           >
             {t("closing.cta")}
             <span aria-hidden="true">&rarr;</span>

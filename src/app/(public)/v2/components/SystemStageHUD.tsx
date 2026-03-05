@@ -92,7 +92,7 @@ export default function SystemStageHUD({ activeScene }: { activeScene: number })
         </div>
       ))}
       <div>
-        {t("hud.state")} <span className="text-[#1bff1b]">{t("hud.running")}</span>
+        {t("hud.state")} <span className="text-ghost-green">{t("hud.running")}</span>
       </div>
       <div className="text-zinc-600">{clock}</div>
     </div>

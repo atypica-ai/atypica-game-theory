@@ -22,7 +22,7 @@ export default function TwoWorldsSection({
     >
       <ChapterPanel variant="dark">
         <div className="flex items-center gap-3 mb-6">
-          <span className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b]">
+          <span className="font-IBMPlexMono text-xs tracking-[0.18em] text-ghost-green">
             {copy.number}
           </span>
           <span className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500">
@@ -72,7 +72,7 @@ export default function TwoWorldsSection({
               <span className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500">
                 {t("twoWorlds.subjectiveLabel")}
               </span>
-              <h3 className="mt-3 font-EuclidCircularA text-4xl lg:text-5xl font-medium text-[#1bff1b] leading-none">
+              <h3 className="mt-3 font-EuclidCircularA text-4xl lg:text-5xl font-medium text-ghost-green leading-none">
                 {t("twoWorlds.subjectiveTitle")}
               </h3>
               <p className="mt-4 text-sm leading-relaxed text-zinc-300 max-w-[36ch]">

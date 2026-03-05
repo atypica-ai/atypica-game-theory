@@ -199,7 +199,7 @@ export function ContextBuilderChatClient({
         className="max-w-xl mx-auto w-full px-6 py-24 md:py-40 space-y-8"
       >
         <div className="space-y-4">
-          <div className="w-12 h-1 bg-[#1bff1b]" />
+          <div className="w-12 h-1 bg-ghost-green" />
           <h1 className="text-3xl md:text-4xl font-EuclidCircularA font-medium tracking-tight">
             {t("suggestionsTitle")}
           </h1>

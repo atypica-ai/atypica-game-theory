@@ -26,11 +26,11 @@ export const AboutEN: React.FC = () => {
             <h1 className="relative mb-6">
               <span
                 className="max-sm:hidden absolute top-1/2 -translate-y-1/2 rounded-full -left-10 size-5"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               <span
                 className="sm:hidden absolute left-1/2 -translate-x-1/2 rounded-full -top-2 w-16 h-0.5"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               <span className="font-EuclidCircularA font-normal text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.3]">
                 Using <span className="font-bold">Language Models</span> to Model the{" "}
@@ -57,7 +57,7 @@ export const AboutEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               Multi-Agent Collaboration System
             </h2>
@@ -120,7 +120,7 @@ export const AboutEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               Core Technologies
             </h2>
@@ -167,7 +167,7 @@ export const AboutEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               Research Methods
             </h2>
@@ -227,7 +227,7 @@ export const AboutEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               GEA: Generative Enterprise Architecture
             </h2>
@@ -240,7 +240,7 @@ export const AboutEN: React.FC = () => {
             <div className="space-y-6">
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   Dual-Agent Architecture
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -260,7 +260,7 @@ export const AboutEN: React.FC = () => {
 
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   Messages as Source of Truth
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -287,7 +287,7 @@ export const AboutEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               Research Types
             </h2>
@@ -334,7 +334,7 @@ export const AboutEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               Research Process
             </h2>
@@ -359,7 +359,7 @@ export const AboutEN: React.FC = () => {
                   key={item.step}
                   className="border border-border rounded-lg p-4 text-center hover:border-foreground/20 transition-all"
                 >
-                  <div className="text-lg font-semibold mb-2" style={{ color: "#1bff1b" }}>
+                  <div className="text-lg font-semibold mb-2" style={{ color: "var(--ghost-green)" }}>
                     {item.step}
                   </div>
                   <p className="text-sm text-foreground/80">{item.title}</p>
@@ -389,7 +389,7 @@ export const AboutEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               Technical Evolution
             </h2>
@@ -442,7 +442,7 @@ export const AboutEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               HippyGhosts Community
             </h2>
@@ -457,7 +457,7 @@ export const AboutEN: React.FC = () => {
                     <a
                       href="https://hippyghosts.io"
                       className="font-semibold hover:underline"
-                      style={{ color: "#1bff1b" }}
+                      style={{ color: "var(--ghost-green)" }}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -503,7 +503,7 @@ function AgentCard({
   return (
     <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
       <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-        <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+        <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
         {title}
       </h3>
       <p className="text-sm text-foreground/80 leading-relaxed mb-4">{description}</p>
@@ -531,7 +531,7 @@ function TechCard({
   return (
     <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
       <h3 className="font-semibold text-xl mb-2 flex items-center gap-2">
-        <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+        <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
         {title}
       </h3>
       <p className="text-sm text-muted-foreground mb-4">{description}</p>

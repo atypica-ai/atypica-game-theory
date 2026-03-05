@@ -261,11 +261,11 @@ export function ProjectDetailClient({
                 <span
                   className={cn(
                     "size-2 rounded-full transition-colors",
-                    isRunning ? "bg-[#1bff1b]" : "bg-zinc-400",
+                    isRunning ? "bg-ghost-green" : "bg-zinc-400",
                   )}
                 />
                 {isRunning && (
-                  <span className="absolute size-2 rounded-full bg-[#1bff1b] animate-ping opacity-75" />
+                  <span className="absolute size-2 rounded-full bg-ghost-green animate-ping opacity-75" />
                 )}
               </div>
 

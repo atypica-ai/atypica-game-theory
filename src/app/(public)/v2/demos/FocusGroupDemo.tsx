@@ -254,7 +254,7 @@ export default function FocusGroupDemo() {
                       )}
                       style={{
                         borderColor: L.bg,
-                        background: participated.has(p.seed) ? "#16a34a" : L.border,
+                        background: participated.has(p.seed) ? "var(--ghost-green)" : L.border,
                       }}
                     />
                   </div>

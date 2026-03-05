@@ -98,7 +98,7 @@ export function CountdownRedirect({ studyBrief, userChatId }: CountdownRedirectP
           disabled={isPending || countdown === 0}
           variant="ghost"
           size="sm"
-          className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 text-xs hover:bg-[#1bff1b]/10"
+          className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 text-xs hover:bg-ghost-green/10"
         >
           {isPending && <RotateCwIcon className="h-3 w-3 animate-spin mr-1" />}
           {isPending ? t("starting") : t("startImmediately")}

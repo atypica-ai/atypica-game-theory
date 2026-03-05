@@ -76,7 +76,7 @@ export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
         {/* Launch Guide */}
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <span className="size-2 rounded-full bg-[#1bff1b] shadow-[0_0_12px_#1bff1b] animate-pulse" />
+            <span className="size-1.5 rounded-full bg-ghost-green shadow-[0_0_6px] shadow-ghost-green animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
               {t("DetailPage.readyToStart")}
             </span>
@@ -96,9 +96,7 @@ export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
               )}
             >
               <Icon className="size-4" />
-              <span className="text-xs font-medium text-center leading-tight">
-                {label}
-              </span>
+              <span className="text-xs font-medium text-center leading-tight">{label}</span>
             </button>
           ))}
         </div>

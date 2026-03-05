@@ -73,7 +73,7 @@ export default function DiscussionScreen({
               className={cn("absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border")}
               style={{
                 borderColor: L.bg,
-                background: participated.has(p.seed) ? "#16a34a" : L.border,
+                background: participated.has(p.seed) ? "var(--ghost-green)" : L.border,
               }}
             />
           </div>

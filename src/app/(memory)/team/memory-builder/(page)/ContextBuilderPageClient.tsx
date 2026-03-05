@@ -46,7 +46,7 @@ export default function ContextBuilderPageClient() {
         )}
       >
         <div className="flex-1 text-center md:text-left space-y-6">
-          <div className="w-12 h-1 bg-[#1bff1b]"></div>
+          <div className="w-12 h-1 bg-ghost-green"></div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-EuclidCircularA font-medium tracking-tight">
             {t("title")}
           </h1>

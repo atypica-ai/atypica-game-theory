@@ -26,11 +26,11 @@ export const JoinUsEN: React.FC = () => {
             <h1 className="relative mb-6">
               <span
                 className="max-sm:hidden absolute top-1/2 -translate-y-1/2 rounded-full -left-10 size-5"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               <span
                 className="sm:hidden absolute left-1/2 -translate-x-1/2 rounded-full -top-2 w-16 h-0.5"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               <span className="font-EuclidCircularA font-normal text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.3]">
                 Join <span className="font-bold">atypica.AI</span>
@@ -84,7 +84,7 @@ export const JoinUsEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               Growth
             </h2>
@@ -99,7 +99,7 @@ export const JoinUsEN: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   What You&apos;ll Do
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -124,7 +124,7 @@ export const JoinUsEN: React.FC = () => {
 
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   You Should Have
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -141,7 +141,7 @@ export const JoinUsEN: React.FC = () => {
                     opportunities
                   </li>
                 </ul>
-                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "#1bff1b" }}>
+                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "var(--ghost-green)" }}>
                   &ldquo;Social media is the funnel&rdquo; - growth happens where the conversations
                   are, not in ad dashboards.
                 </p>
@@ -156,7 +156,7 @@ export const JoinUsEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               Product
             </h2>
@@ -170,7 +170,7 @@ export const JoinUsEN: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   What You&apos;ll Design
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -186,7 +186,7 @@ export const JoinUsEN: React.FC = () => {
 
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   You Should Have
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -202,7 +202,7 @@ export const JoinUsEN: React.FC = () => {
                   </li>
                   <li>• English fluency for global product thinking</li>
                 </ul>
-                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "#1bff1b" }}>
+                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "var(--ghost-green)" }}>
                   &ldquo;Minimum lovable product&rdquo; - if users don&apos;t love it enough to share
                   it, keep iterating.
                 </p>
@@ -217,7 +217,7 @@ export const JoinUsEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               R&D
             </h2>
@@ -231,7 +231,7 @@ export const JoinUsEN: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   What You&apos;ll Build
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -247,7 +247,7 @@ export const JoinUsEN: React.FC = () => {
 
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   You Should Have
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -258,7 +258,7 @@ export const JoinUsEN: React.FC = () => {
                     • Product sense: understand what makes AI features feel magical vs clunky
                   </li>
                 </ul>
-                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "#1bff1b" }}>
+                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "var(--ghost-green)" }}>
                   &ldquo;Ship fast, learn faster&rdquo; - velocity is a feature in AI products.
                 </p>
               </div>
@@ -272,7 +272,7 @@ export const JoinUsEN: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               Meet the Builders
             </h2>
@@ -328,7 +328,7 @@ export const JoinUsEN: React.FC = () => {
               <a
                 href="mailto:xd@atypica.ai"
                 className="inline-block px-8 py-3 rounded-full font-semibold text-white transition-all hover:opacity-90"
-                style={{ backgroundColor: "#1bff1b", color: "#000" }}
+                style={{ backgroundColor: "var(--ghost-green)", color: "#000" }}
               >
                 xd@atypica.ai
               </a>

@@ -24,7 +24,7 @@ export default function TwoAgentsSection({
     >
       <ChapterPanel variant="dark">
         <div className="mb-12">
-          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-[#1bff1b] mb-4">
+          <div className="font-IBMPlexMono text-xs tracking-[0.18em] text-ghost-green mb-4">
             {copy.number}
           </div>
           <p className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-300 mb-3">
@@ -47,7 +47,7 @@ export default function TwoAgentsSection({
           <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
             {/* ── Left: AI Simulator ── */}
             <div className="border border-zinc-800 p-7">
-              <h3 className="font-IBMPlexMono text-lg tracking-[0.08em] uppercase mb-2 text-[#1bff1b]">
+              <h3 className="font-IBMPlexMono text-lg tracking-[0.08em] uppercase mb-2 text-ghost-green">
                 {t("twoAgents.simulator.tag")}
               </h3>
               <p className="text-sm leading-relaxed text-zinc-300 mb-5">

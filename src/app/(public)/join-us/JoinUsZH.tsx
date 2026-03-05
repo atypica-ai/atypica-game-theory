@@ -26,11 +26,11 @@ export const JoinUsZH: React.FC = () => {
             <h1 className="relative mb-6">
               <span
                 className="max-sm:hidden absolute top-1/2 -translate-y-1/2 rounded-full -left-10 size-5"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               <span
                 className="sm:hidden absolute left-1/2 -translate-x-1/2 rounded-full -top-2 w-16 h-0.5"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               <span className="font-EuclidCircularA font-normal text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.3]">
                 加入 <span className="font-bold">atypica.AI</span>
@@ -82,7 +82,7 @@ export const JoinUsZH: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               增长
             </h2>
@@ -96,7 +96,7 @@ export const JoinUsZH: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   你将负责
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -115,7 +115,7 @@ export const JoinUsZH: React.FC = () => {
 
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   你需要具备
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -124,7 +124,7 @@ export const JoinUsZH: React.FC = () => {
                   <li>• 产品直觉：理解功能如何成为故事，故事如何驱动增长</li>
                   <li>• 适应高速发布文化：新功能 = 新的内容机会</li>
                 </ul>
-                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "#1bff1b" }}>
+                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "var(--ghost-green)" }}>
                   &ldquo;社交媒体就是转化漏斗&rdquo; - 增长发生在对话的地方，而不是广告后台。
                 </p>
               </div>
@@ -138,7 +138,7 @@ export const JoinUsZH: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               产品
             </h2>
@@ -152,7 +152,7 @@ export const JoinUsZH: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   你将设计
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -165,7 +165,7 @@ export const JoinUsZH: React.FC = () => {
 
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   你需要具备
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -174,7 +174,7 @@ export const JoinUsZH: React.FC = () => {
                   <li>• 适应快节奏：在 AI 领域，功能要快速发布，否则就过时了</li>
                   <li>• 英文流畅，具备全球化产品思维</li>
                 </ul>
-                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "#1bff1b" }}>
+                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "var(--ghost-green)" }}>
                   &ldquo;最小可爱产品&rdquo; - 如果用户不爱到愿意分享，就继续迭代。
                 </p>
               </div>
@@ -188,7 +188,7 @@ export const JoinUsZH: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               研发
             </h2>
@@ -202,7 +202,7 @@ export const JoinUsZH: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   你将构建
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -215,7 +215,7 @@ export const JoinUsZH: React.FC = () => {
 
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "#1bff1b" }}></span>
+                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
                   你需要具备
                 </h3>
                 <ul className="space-y-3 text-sm text-foreground/80">
@@ -224,7 +224,7 @@ export const JoinUsZH: React.FC = () => {
                   <li>• 倾向快速发布：原型 → 测试 → 迭代，快速循环</li>
                   <li>• 产品感知：理解什么让 AI 功能感觉神奇，什么让它笨拙</li>
                 </ul>
-                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "#1bff1b" }}>
+                <p className="text-sm text-muted-foreground italic mt-6 border-l-2 pl-3" style={{ borderColor: "var(--ghost-green)" }}>
                   &ldquo;快速发布，更快学习&rdquo; - 在 AI 产品中，速度本身就是功能。
                 </p>
               </div>
@@ -238,7 +238,7 @@ export const JoinUsZH: React.FC = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-3 relative">
               <span
                 className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-8 rounded-full"
-                style={{ backgroundColor: "#1bff1b" }}
+                style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               认识我们的构建者
             </h2>
@@ -292,7 +292,7 @@ export const JoinUsZH: React.FC = () => {
               <a
                 href="mailto:xd@atypica.ai"
                 className="inline-block px-8 py-3 rounded-full font-semibold text-white transition-all hover:opacity-90"
-                style={{ backgroundColor: "#1bff1b", color: "#000" }}
+                style={{ backgroundColor: "var(--ghost-green)", color: "#000" }}
               >
                 xd@atypica.ai
               </a>

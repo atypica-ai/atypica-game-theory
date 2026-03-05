@@ -39,7 +39,7 @@ export default function Stars() {
     <div>
       {stars.map((item, key) => (
         <div
-          className="fixed w-[5px] h-[5px] bg-[#17ff19] opacity-0"
+          className="fixed w-[5px] h-[5px] bg-ghost-green opacity-0"
           key={key}
           style={{
             animation: "fadein 3s linear 0s infinite normal forwards",

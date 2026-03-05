@@ -59,9 +59,9 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-flex items-center gap-2 py-1 px-3.5 border border-[rgba(27,255,27,0.3)] bg-zinc-800/80 backdrop-blur-sm font-IBMPlexMono text-xs tracking-[0.17em] uppercase text-[#1bff1b]">
+          <span className="inline-flex items-center gap-2 py-1 px-3.5 border border-ghost-green/[0.3] bg-zinc-800/80 backdrop-blur-sm font-IBMPlexMono text-xs tracking-[0.17em] uppercase text-ghost-green">
             <motion.span
-              className="w-1.5 h-1.5 rounded-full bg-[#15b025]"
+              className="w-1.5 h-1.5 rounded-full bg-ghost-green"
               animate={{ opacity: [1, 0.4, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
@@ -77,7 +77,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
         >
           {t("hero.titleLine1")}
           <br />
-          <span className="italic font-InstrumentSerif text-[#1bff1b]">
+          <span className="italic font-InstrumentSerif text-ghost-green">
             {t("hero.titleAccent")}
           </span>
           {t("hero.titleEnd")}
@@ -100,7 +100,7 @@ export default function HeroSection({ register }: { register: (el: HTMLElement |
         >
           <Link
             href="/newstudy"
-            className="inline-flex items-center gap-2 h-11 px-6 bg-[#1bff1b] text-black font-medium text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:bg-[#15b025]"
+            className="inline-flex items-center gap-2 h-11 px-6 bg-ghost-green text-black font-medium text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:bg-[#15b025]"
           >
             {t("hero.cta")}
             <span aria-hidden="true">&rarr;</span>

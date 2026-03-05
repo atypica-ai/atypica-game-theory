@@ -50,7 +50,7 @@ export function NewStudyChatIntro() {
           disabled={isPending}
           variant="ghost"
           size="lg"
-          className="hover:bg-[#1bff1b]/10 rounded-full"
+          className="hover:bg-ghost-green/10 rounded-full"
         >
           {isPending && <RotateCwIcon className="h-4 w-4 animate-spin" />}
           {isPending ? t("starting") : t("startPlanning")}

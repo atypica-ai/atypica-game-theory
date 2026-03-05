@@ -60,7 +60,7 @@ export function PanelDetailClient({ panel }: { panel: PanelData }) {
                   </div>
                   {roleLabel && (
                     <Badge variant="outline" className="shrink-0 flex items-center gap-1.5">
-                      <span className="size-1.5 rounded-full bg-[#1bff1b]" />
+                      <span className="size-1.5 rounded-full bg-ghost-green" />
                       {roleLabel}
                     </Badge>
                   )}

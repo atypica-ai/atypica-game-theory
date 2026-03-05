@@ -44,7 +44,7 @@ export const WORLD_MODEL_LAYERS = [
 /* ─── 04: Workflow (Use Cases × Workflow) ─── */
 
 export const WORKFLOW_GOALS = [
-  { key: "consumerInsight", accent: "#1bff1b" },
+  { key: "consumerInsight", accent: "var(--ghost-green)" },
   { key: "conceptTesting", accent: "#3b82f6" },
   { key: "productRnD", accent: "#f59e0b" },
   { key: "uxVoc", accent: "#a78bfa" },
@@ -59,7 +59,7 @@ export const WORKFLOW_GOALS = [
 export const DATA_ASSET_KEYS = ["persona", "sage", "panel"] as const;
 
 export const DATA_ASSET_ACCENTS: Record<string, string> = {
-  persona: "#1bff1b",
+  persona: "var(--ghost-green)",
   sage: "#93c5fd",
   panel: "#f59e0b",
 };
@@ -67,7 +67,7 @@ export const DATA_ASSET_ACCENTS: Record<string, string> = {
 /* ─── 06: Solutions ─── */
 
 export const SOLUTION_ROLES = [
-  { key: "creators", link: "/creators", accent: "#1bff1b" },
+  { key: "creators", link: "/creators", accent: "var(--ghost-green)" },
   { key: "influencers", link: "/influencers", accent: "#f59e0b" },
   { key: "marketers", link: "/marketers", accent: "#93c5fd" },
   { key: "startupOwners", link: "/startup-owners", accent: "#f472b6" },
@@ -103,7 +103,7 @@ export const CUSTOMER_STORY_META: Record<string, { category: string; avatarPromp
 };
 
 export const CATEGORY_COLORS: Record<string, string> = {
-  enterprise: "#16a34a",
+  enterprise: "var(--ghost-green)",
   academic: "#d97706",
   prediction: "#8b5cf6",
 };

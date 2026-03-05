@@ -162,7 +162,7 @@ export default function HomeV43Page() {
               <span
                 className={cn(
                   "font-IBMPlexMono text-xs tracking-[0.12em] min-w-5 transition-colors duration-200",
-                  i === activeChapter ? "text-[#1bff1b]" : "text-zinc-600",
+                  i === activeChapter ? "text-ghost-green" : "text-zinc-600",
                 )}
               >
                 {ch.number}
