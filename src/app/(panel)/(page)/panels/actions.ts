@@ -539,20 +539,21 @@ export async function fetchAllResearchProjects({
   page = 1,
   pageSize = 10,
   searchQuery,
+  panelId,
 }: {
   page?: number;
   pageSize?: number;
   searchQuery?: string;
+  panelId?: number;
 } = {}): Promise<ServerActionResult<ResearchProjectWithPanel[]>> {
   return withAuth(async (user) => {
     const skip = (page - 1) * pageSize;
     let where: Prisma.UserChatWhereInput = {
       userId: user.id,
       kind: { in: ["study", "universal"] },
-      context: {
-        path: ["personaPanelId"],
-        not: Prisma.AnyNull,
-      },
+      context: panelId
+        ? { path: ["personaPanelId"], equals: panelId }
+        : { path: ["personaPanelId"], not: Prisma.AnyNull },
     };
     let totalCount = 0;
     let orderedIds: number[] | null = null;

@@ -3,7 +3,6 @@
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
-import { UserChatContext } from "@/app/(study)/context/types";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { executeUniversalAgent } from "@/app/(universal)/agent";
 import { createUniversalUserChatAction } from "@/app/(universal)/universal/actions";
@@ -11,7 +10,7 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
-import type { Persona, UserChatExtra } from "@/prisma/client";
+import type { Persona } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { getToolName, isToolUIPart } from "ai";
 import { getLocale } from "next-intl/server";
@@ -30,21 +29,6 @@ export interface PersonaPanelWithDetails {
   usageCount: {
     discussions: number;
     interviews: number;
-  };
-}
-
-export interface ResearchProject {
-  token: string;
-  title: string;
-  kind: string;
-  context: UserChatContext;
-  extra: UserChatExtra;
-  createdAt: Date;
-  updatedAt: Date;
-  stats: {
-    artifacts: number;
-    interviews: number;
-    discussions: number;
   };
 }
 
@@ -101,85 +85,6 @@ export async function fetchPersonaPanelById(
         },
       },
     };
-  });
-}
-
-export async function fetchResearchProjectsByPanelId(
-  panelId: number,
-): Promise<ServerActionResult<ResearchProject[]>> {
-  return withAuth(async (user) => {
-    const userChats = await prisma.userChat.findMany({
-      where: {
-        userId: user.id,
-        kind: { in: ["study", "universal"] },
-        context: { path: ["personaPanelId"], equals: panelId },
-      },
-      select: {
-        token: true,
-        title: true,
-        kind: true,
-        context: true,
-        extra: true,
-        createdAt: true,
-        updatedAt: true,
-        messages: {
-          where: { role: "assistant" },
-          select: { messageId: true, role: true, parts: true, extra: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    // Calculate stats for each project by analyzing tool calls in messages
-    const projectsWithStats = userChats.map((chat) => {
-      let artifactsCount = 0;
-      let interviewsCount = 0;
-      let discussionsCount = 0;
-
-      for (const dbMessage of chat.messages) {
-        const message = convertDBMessageToAIMessage(dbMessage);
-        for (const part of message.parts) {
-          if (!isToolUIPart(part)) continue;
-          const toolName = getToolName(part);
-
-          // Count artifacts (reports + podcasts with output)
-          if (
-            (toolName === StudyToolName.generateReport ||
-              toolName === StudyToolName.generatePodcast) &&
-            part.state === "output-available"
-          ) {
-            artifactsCount++;
-          }
-
-          // Count interviews
-          if (toolName === StudyToolName.interviewChat) {
-            interviewsCount++;
-          }
-
-          // Count discussions
-          if (toolName === StudyToolName.discussionChat) {
-            discussionsCount++;
-          }
-        }
-      }
-
-      return {
-        token: chat.token,
-        title: chat.title,
-        kind: chat.kind,
-        context: chat.context,
-        extra: chat.extra,
-        createdAt: chat.createdAt,
-        updatedAt: chat.updatedAt,
-        stats: {
-          artifacts: artifactsCount,
-          interviews: interviewsCount,
-          discussions: discussionsCount,
-        },
-      };
-    });
-
-    return { success: true, data: projectsWithStats };
   });
 }
 

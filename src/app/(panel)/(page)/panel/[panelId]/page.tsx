@@ -8,7 +8,7 @@ import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { fetchPersonaPanelById, fetchResearchProjectsByPanelId } from "./actions";
+import { fetchPersonaPanelById } from "./actions";
 import { PanelDetailClient } from "./PanelDetailClient";
 
 export const dynamic = "force-dynamic";
@@ -35,10 +35,7 @@ export async function generateMetadata({
 }
 
 async function PanelDetailPage({ panelId }: { panelId: number }) {
-  const [panelResult, projectsResult] = await Promise.all([
-    fetchPersonaPanelById(panelId),
-    fetchResearchProjectsByPanelId(panelId),
-  ]);
+  const panelResult = await fetchPersonaPanelById(panelId);
 
   if (!panelResult.success) {
     if (panelResult.code === "forbidden") {
@@ -47,12 +44,7 @@ async function PanelDetailPage({ panelId }: { panelId: number }) {
     return <NotFound />;
   }
 
-  return (
-    <PanelDetailClient
-      panel={panelResult.data}
-      projects={projectsResult.success ? projectsResult.data : []}
-    />
-  );
+  return <PanelDetailClient panel={panelResult.data} />;
 }
 
 export default async function PanelDetailPageWithLoading({
