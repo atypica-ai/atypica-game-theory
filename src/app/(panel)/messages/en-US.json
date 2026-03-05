@@ -193,6 +193,106 @@
         "redirecting": "Redirecting to research details..."
       }
     },
+    "HomePage": {
+      "tagline": "AI Panel",
+      "headline": "AI Panel: Research with AI Personas",
+      "description": "Select from 300K personas, launch discussions, reuse across projects.",
+      "createPanel": "Create Panel",
+      "myPanels": "My AI Panels",
+      "myPersonas": "My AI Personas",
+      "features": {
+        "panelLibrary": {
+          "title": "Centralized Persona Library",
+          "description": "Manage your personal and team AI personas, and supplement from a 300K public library anytime.",
+          "detail1": "Import interviews / research materials to generate Personas",
+          "detail2": "Filter personas by research objectives",
+          "detail3": "Unified entry for 1-on-1 and group chats"
+        },
+        "panelCreation": {
+          "title": "Panel Composition & Reuse",
+          "description": "Combine multiple personas into a Panel for the same research scenarios, reducing ad-hoc recruitment costs.",
+          "detail1": "Compose Personas by scenario (e.g. urban users / core users)",
+          "detail2": "Panel as participant pool for research projects",
+          "detail3": "Support for reuse and version management"
+        },
+        "panelDiscussion": {
+          "title": "Group Discussion & Consensus",
+          "description": "Launch a Panel group chat in one click, let personas discuss under the same topic to converge viewpoints quickly.",
+          "detail1": "Multi-persona multi-round conversations",
+          "detail2": "Multiple discussion formats (roundtable / debate etc.)",
+          "detail3": "Closer to real focus group feedback structures"
+        },
+        "panelResearch": {
+          "title": "Research Workflow Integration",
+          "description": "Deep integration with Study / AI Interview, making Panel the infrastructure for insight production.",
+          "detail1": "Auto-recommend Panels from research briefs",
+          "detail2": "Share Panel assets across projects",
+          "detail3": "Export discussion minutes and key points"
+        }
+      },
+      "dimensions": {
+        "title": "Panel Design Dimensions",
+        "description": "Build Panels from multiple dimensions to match real users and cover key research questions.",
+        "demographic": {
+          "title": "Demographics",
+          "description": "Incorporate age, occupation, income and other demographic info so the Panel covers key segments."
+        },
+        "geographic": {
+          "title": "Geography & Markets",
+          "description": "Build Panels by city or region to compare feedback across different markets."
+        },
+        "psychological": {
+          "title": "Motivation & Psychology",
+          "description": "Construct behavior-driven Panel perspectives around motivations, attitudes and values."
+        },
+        "behavioral": {
+          "title": "Behavior & Decision Paths",
+          "description": "Define Panel decision characteristics using typical behavior chains (purchase, renewal, churn)."
+        },
+        "needs": {
+          "title": "Needs & Pain Points",
+          "description": "Aggregate Personas around core needs and pain points into Panels with clear research themes."
+        },
+        "tech": {
+          "title": "Tech Acceptance",
+          "description": "Build Panels sensitive to different product forms based on digitization level and tech acceptance."
+        },
+        "social": {
+          "title": "Social Influence",
+          "description": "Construct Panels closer to real communication chains using social roles and influence dimensions."
+        }
+      },
+      "steps": {
+        "title": "From Persona to Panel Workflow",
+        "description": "Transform scattered personas into reusable Panel research assets with clear steps.",
+        "step1": {
+          "title": "Import / Select Personas",
+          "description": "Import interviews or search the public library to build persona assets relevant to your business."
+        },
+        "step2": {
+          "title": "Compose into Panel",
+          "description": "Select a group of Personas by scenario (e.g. feature testing / market entry) and save as a reusable Panel."
+        },
+        "step3": {
+          "title": "Launch Panel Discussion",
+          "description": "Let Personas in the Panel engage in multi-round group chats or structured discussions on specific questions."
+        },
+        "step4": {
+          "title": "Capture Insights",
+          "description": "Output key insights, consensus and disagreements from Panel discussions to support decision-making."
+        },
+        "step5": {
+          "title": "Reuse & Iterate",
+          "description": "Reuse Panels across projects and continuously optimize persona composition with new data."
+        }
+      },
+      "cta": {
+        "title": "Ready to start your next research with Panel?",
+        "description": "Build your personas first, then use Panel to organize conversations. Whether it's product decisions, market insights, or co-creation, Panel adds context to every conversation.",
+        "createFirst": "Create your first Panel",
+        "managePersonas": "Manage my AI personas"
+      }
+    },
     "InterviewsPage": {
       "title": "Interviews",
       "completedOf": "{completed} of {total} completed",

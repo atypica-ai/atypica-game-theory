@@ -193,6 +193,106 @@
         "redirecting": "即将跳转到研究详情页..."
       }
     },
+    "HomePage": {
+      "tagline": "AI Panel",
+      "headline": "AI Panel：让 AI Persona 成为你的研究团队",
+      "description": "从 30 万 AI Persona 中自由组合，瞬间启动 1v1 或群组访谈，跨项目复用研究资产。",
+      "createPanel": "创建 Panel",
+      "myPanels": "我的 AI Panel",
+      "myPersonas": "我的 AI Persona",
+      "features": {
+        "panelLibrary": {
+          "title": "AI 人设库中心化管理",
+          "description": "统一管理我的 / 团队 AI Persona，并随时从 30 万公共人设库中补充，避免一次性临时创建。",
+          "detail1": "导入访谈 / 研究资料生成 Persona",
+          "detail2": "按研究目标筛选合适人设",
+          "detail3": "支持单聊 & 群聊的统一入口"
+        },
+        "panelCreation": {
+          "title": "Panel 组合与复用",
+          "description": "将多个人设组合成 Panel，为同一类研究场景复用，减少每次临时招募参与者的开销。",
+          "detail1": "按场景组合 Persona（如城市人群 / 核心用户）",
+          "detail2": "Panel 作为研究项目的参与者池",
+          "detail3": "支持多次复用与版本管理"
+        },
+        "panelDiscussion": {
+          "title": "群聊讨论与共识生成",
+          "description": "一键发起 Panel 群聊，让多个人设在同一话题下展开讨论，帮助你快速收敛观点与假设。",
+          "detail1": "多 Persona 多轮对话",
+          "detail2": "支持多种讨论结构（圆桌 / 辩论等）",
+          "detail3": "更接近真实焦点小组的反馈结构"
+        },
+        "panelResearch": {
+          "title": "面向研究工作流的集成",
+          "description": "未来与 Study / AI Interview 深度打通，使 Panel 成为洞察生产的基础设施。",
+          "detail1": "从研究 Brief 自动推荐 Panel",
+          "detail2": "跨项目共享 Panel 资产",
+          "detail3": "支持导出讨论纪要与要点"
+        }
+      },
+      "dimensions": {
+        "title": "Panel 设计维度",
+        "description": "从多个维度构建 Panel，使其既贴近真实用户，又能覆盖关键研究问题。",
+        "demographic": {
+          "title": "人群画像维度",
+          "description": "结合年龄、职业、收入等人口学信息，让 Panel 能覆盖关键细分人群。"
+        },
+        "geographic": {
+          "title": "地域与市场差异",
+          "description": "按城市 / 区域构建 Panel，对比不同市场的反馈差异。"
+        },
+        "psychological": {
+          "title": "动机与心理模型",
+          "description": "围绕动机、态度与价值观，构建行为驱动的 Panel 视角。"
+        },
+        "behavioral": {
+          "title": "行为与决策路径",
+          "description": "结合典型行为链路（如下单、续费、流失）定义 Panel 的决策特征。"
+        },
+        "needs": {
+          "title": "需求与痛点簇",
+          "description": "围绕核心需求与痛点，将 Persona 聚合成具备清晰研究主题的 Panel。"
+        },
+        "tech": {
+          "title": "产品与技术接受度",
+          "description": "按数字化程度、技术接受度，构建对不同产品形态敏感的 Panel。"
+        },
+        "social": {
+          "title": "社交关系与影响力",
+          "description": "结合社交角色与影响力维度，构建更接近真实传播链路的 Panel。"
+        }
+      },
+      "steps": {
+        "title": "从 Persona 到 Panel 的工作流",
+        "description": "用清晰的步骤把零散的人设转化为可持续复用的 Panel 研究资产。",
+        "step1": {
+          "title": "导入 / 选择 Persona",
+          "description": "先通过导入访谈或从公库中搜索，沉淀出与你业务高度相关的人设资产。"
+        },
+        "step2": {
+          "title": "组合成 Panel",
+          "description": "按场景（如新功能测试 / 市场进入）选择一组 Persona，保存为可复用 Panel。"
+        },
+        "step3": {
+          "title": "发起 Panel 讨论",
+          "description": "针对具体问题或假设，让 Panel 内的 Persona 展开多轮群聊或结构化讨论。"
+        },
+        "step4": {
+          "title": "沉淀洞察与结论",
+          "description": "结合 Panel 讨论过程，输出洞察要点、共识与争议点，辅助决策。"
+        },
+        "step5": {
+          "title": "持续复用与迭代",
+          "description": "在不同项目中复用 Panel，并根据新数据不断优化其中的人设组合。"
+        }
+      },
+      "cta": {
+        "title": "准备好用 Panel 开始下一轮研究了吗？",
+        "description": "先沉淀好人设，再用 Panel 组织对话。无论是产品决策、市场洞察还是创作者共创，Panel 都可以让你的每一次对话更有上下文。",
+        "createFirst": "创建第一个 Panel",
+        "managePersonas": "管理我的 AI 人设"
+      }
+    },
     "InterviewsPage": {
       "title": "访谈",
       "completedOf": "已完成 {completed}/{total}",

@@ -7,7 +7,7 @@ import type { ResearchProjectWithPanel } from "./actions";
 
 export function ProjectCard({
   project,
-  locale,
+  // locale,
 }: {
   project: ResearchProjectWithPanel;
   locale: Locale;
