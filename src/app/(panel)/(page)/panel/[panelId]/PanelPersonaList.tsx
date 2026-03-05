@@ -50,7 +50,7 @@ export function PanelPersonaList({ panelId, personaIds, personas }: PanelPersona
     <>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium tracking-tight text-muted-foreground uppercase">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
             {t("personas")}
           </h2>
           <button

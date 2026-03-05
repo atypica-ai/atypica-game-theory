@@ -50,9 +50,12 @@
     },
     "DetailPage": {
       "viewDetails": "View Details",
+      "recentProjects": "Recent Projects",
       "researchProjects": "Research Projects",
       "noProjects": "No research projects yet",
       "noProjectsDescription": "Start a new research project to begin analyzing with this panel",
+      "readyToStart": "Ready to get started?",
+      "launchStudy": "Launch a Study With This Panel",
       "quickResearch": "Quick Research",
       "newProject": "New Project",
       "newProjectDescription": "Describe your research question or objective",

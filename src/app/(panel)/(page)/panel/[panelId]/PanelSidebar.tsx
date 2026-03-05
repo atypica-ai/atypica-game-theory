@@ -3,7 +3,6 @@ import {
   fetchAllResearchProjects,
   ResearchProjectWithPanel,
 } from "@/app/(panel)/(page)/panels/actions";
-import { ProjectCard } from "@/app/(panel)/(page)/panels/ProjectCard";
 import { Pagination } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
 import { Loader2, MessageCircle, Mic, Users } from "lucide-react";
@@ -11,6 +10,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { type ResearchType } from "./actions";
 import { NewPanelProjectDialog } from "./NewPanelProjectDialog";
+import { SidebarProjectCard } from "./SidebarProjectCard";
 
 interface PanelSidebarProps {
   panelId: number;
@@ -72,11 +72,20 @@ export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
   return (
     <>
       {/* Quick Research — fixed */}
-      <div className="shrink-0 pb-6">
-        <h3 className="text-sm font-medium tracking-tight text-muted-foreground uppercase">
-          {t("DetailPage.quickResearch")}
-        </h3>
-        <div className="grid grid-cols-3 gap-2 mt-3">
+      <div className="shrink-0 pb-6 space-y-4">
+        {/* Launch Guide */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <span className="size-2 rounded-full bg-[#1bff1b] shadow-[0_0_12px_#1bff1b] animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+              {t("DetailPage.readyToStart")}
+            </span>
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight">{t("DetailPage.launchStudy")}</h2>
+        </div>
+
+        {/* Research Type Buttons */}
+        <div className="grid grid-cols-3 gap-2">
           {researchCubes.map(({ type, icon: Icon, label }) => (
             <button
               key={type}
@@ -86,8 +95,8 @@ export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
                 "hover:border-foreground/20 hover:bg-accent transition-all",
               )}
             >
-              <Icon className="size-4 text-muted-foreground" />
-              <span className="text-xs font-medium text-muted-foreground text-center leading-tight">
+              <Icon className="size-4" />
+              <span className="text-xs font-medium text-center leading-tight">
                 {label}
               </span>
             </button>
@@ -95,10 +104,10 @@ export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
         </div>
       </div>
 
-      {/* Research Projects — scrollable */}
+      {/* Recent Projects — scrollable */}
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        <h3 className="shrink-0 text-sm font-medium tracking-tight text-muted-foreground uppercase mb-3">
-          {t("DetailPage.researchProjects")}
+        <h3 className="shrink-0 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-3">
+          {t("DetailPage.recentProjects")}
         </h3>
 
         <div className="flex-1 overflow-y-auto pb-12">
@@ -111,7 +120,7 @@ export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
           ) : (
             <div className="space-y-3">
               {projects.map((project) => (
-                <ProjectCard key={project.token} project={project} locale={locale} />
+                <SidebarProjectCard key={project.token} project={project} locale={locale} />
               ))}
             </div>
           )}

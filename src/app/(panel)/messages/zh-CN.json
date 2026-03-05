@@ -50,9 +50,12 @@
     },
     "DetailPage": {
       "viewDetails": "查看详情",
+      "recentProjects": "近期项目",
       "researchProjects": "研究项目",
       "noProjects": "暂无研究项目",
       "noProjectsDescription": "创建新的研究项目，开始使用此 Panel 进行分析",
+      "readyToStart": "准备开始吗？",
+      "launchStudy": "使用该 Panel 启动研究",
       "quickResearch": "快捷研究",
       "newProject": "新建项目",
       "newProjectDescription": "描述您的研究问题或目标",
