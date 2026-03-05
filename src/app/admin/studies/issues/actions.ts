@@ -47,7 +47,8 @@ export async function fetchIssueStudies(
   const skip = (page - 1) * pageSize;
 
   // Find UserChats that have extra.runId (meaning they're in progress)
-  const runIdFilter = { extra: { path: ["runId"], not: Prisma.JsonNull } };
+  // Note: Use AnyNull to match both missing field and explicit null
+  const runIdFilter = { extra: { path: ["runId"], not: Prisma.AnyNull } };
   const studies = await prismaRO.userChat.findMany({
     where: {
       kind: "study",

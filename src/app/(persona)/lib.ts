@@ -2,6 +2,7 @@ import "server-only";
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { llm } from "@/ai/provider";
+import { VALID_LOCALES } from "@/i18n/routing";
 import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
 import { Persona, PersonaExtra } from "@/prisma/client";
@@ -140,7 +141,11 @@ async function clearPersonaEmbedding(persona: Persona) {
 
 export async function extractPersonaAttributes(persona: Persona): Promise<void> {
   try {
-    const locale = (persona.locale as Locale) ?? (await getLocale());
+    const locale: Locale =
+      persona.locale && VALID_LOCALES.includes(persona.locale)
+        ? persona.locale
+        : // 如果出问题，locale 不对，就英文优先
+          "en-US";
     const attributesResult = await generateObject({
       model: llm("gpt-5-mini"),
       providerOptions: {

@@ -103,7 +103,8 @@
         "title": "职位",
         "organization": "组织",
         "experience": "经验"
-      }
+      },
+      "sourceNote": "数据来源：基于 {source} 真实发言与互动行为分析"
     },
     "ProjectDetailPage": {
       "backToPanel": "返回 Panel",

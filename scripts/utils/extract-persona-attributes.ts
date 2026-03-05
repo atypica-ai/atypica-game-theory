@@ -1,4 +1,4 @@
-// pnpm tsx scripts/utils/extract-persona-attributes.ts
+// pnpm tsx scripts/utils/extract-persona-attributes.ts [--userId 123]
 
 import { loadEnvConfig } from "@next/env";
 import "../mock-server-only";
@@ -12,14 +12,41 @@ async function main() {
   const { prisma } = await import("@/prisma/prisma");
   const { Prisma } = await import("@/prisma/client");
 
-  console.log("Starting persona attribute extraction...");
+  // Parse arguments
+  const args = process.argv.slice(2);
+  const userIdIndex = args.indexOf("--userId");
+  const userId =
+    userIdIndex >= 0 && args[userIdIndex + 1] ? parseInt(args[userIdIndex + 1], 10) : undefined;
 
-  // 只处理 tier > 0 且 extra 为空或没有 role 字段的 personas
+  console.log("Starting persona attribute extraction...");
+  if (userId) {
+    console.log(`Filtering by userId: ${userId}`);
+  }
+
+  // Build where clause
+  let personaIds: number[] | undefined;
+  if (userId) {
+    // Get all panels for this user
+    const panels = await prisma.personaPanel.findMany({
+      where: { userId },
+      select: { personaIds: true },
+    });
+    const allIds = panels.flatMap((p) => p.personaIds);
+    personaIds = [...new Set(allIds)];
+    console.log(`Found ${personaIds.length} personas from user's panels`);
+  }
+
+  // 只处理 tier > 0 且缺少 role 或 quote 字段的 personas
   const totalCount = await prisma.persona.count({
     where: {
+      ...(personaIds ? { id: { in: personaIds } } : {}),
       tier: { gt: 0 },
       locale: { not: null },
-      OR: [{ extra: { equals: {} } }, { extra: { path: ["role"], equals: Prisma.JsonNull } }],
+      OR: [
+        { extra: { equals: {} } },
+        { extra: { path: ["role"], equals: Prisma.AnyNull } },
+        { extra: { path: ["quote"], equals: Prisma.AnyNull } },
+      ],
     },
   });
 
@@ -35,9 +62,14 @@ async function main() {
     // 获取当前批次的 personas
     const personas = await prisma.persona.findMany({
       where: {
+        ...(personaIds ? { id: { in: personaIds } } : {}),
         tier: { gt: 0 },
         locale: { not: null },
-        OR: [{ extra: { equals: {} } }, { extra: { path: ["role"], equals: Prisma.JsonNull } }],
+        OR: [
+          { extra: { equals: {} } },
+          { extra: { path: ["role"], equals: Prisma.AnyNull } },
+          { extra: { path: ["quote"], equals: Prisma.AnyNull } },
+        ],
       },
       orderBy: { id: "asc" },
       // skip, 每次都是过滤 extra 为空的，所以，其实就不用 skip 了，对吧?

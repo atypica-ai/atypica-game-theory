@@ -57,6 +57,12 @@ export const personaScoringSchema = z.object({
 export const personaAttributesSchema = z
   .object({
     role: z.enum(["consumer", "buyer", "expert"]).describe("Persona role type"),
+    quote: z
+      .string()
+      .describe(
+        "First-person quote showing personality and speaking style (~120 Chinese chars or ~80 English words)",
+      )
+      .nullish(),
     ageRange: z
       .enum(["0-17", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"])
       .describe(
@@ -86,6 +92,12 @@ export const personaAttributesPrompt = ({ locale }: { locale: Locale }) =>
 - buyer: 企业采购者
 - expert: 领域专家
 
+# quote (重要)
+用第一人称写这个 persona 会说的话，体现他的个性、偏好、语气和关注点。
+- 长度：约 120 个中文字
+- 风格：自然口语化，像真人在说话
+- 内容：包含背景、态度、偏好、决策习惯
+
 # 其他字段 (根据 role 选择 2-3 个)
 - ageRange: 年龄段，只能从这 7 个值中选一个：0-17, 18-24, 25-34, 35-44, 45-54, 55-64, 65+
   (13 岁选 0-17，30 岁选 25-34 或 35-44，不能自创范围)
@@ -107,6 +119,12 @@ Extract key attributes from AI Persona. All fields optional, only extract clear 
 - consumer: individual consumer
 - buyer: B2B buyer
 - expert: domain expert
+
+# quote (important)
+Write a first-person quote that this persona would say, reflecting their personality, preferences, tone, and concerns.
+- Length: ~80 English words
+- Style: Natural and conversational, like a real person speaking
+- Content: Include background, attitude, preferences, decision-making habits
 
 # Other fields (choose 2-3 based on role)
 - ageRange: Choose ONE from: 0-17, 18-24, 25-34, 35-44, 45-54, 55-64, 65+

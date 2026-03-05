@@ -103,7 +103,8 @@
         "title": "Title",
         "organization": "Organization",
         "experience": "Experience"
-      }
+      },
+      "sourceNote": "Data source: Based on real posts and interactions from {source}"
     },
     "ProjectDetailPage": {
       "backToPanel": "Back to Panel",
