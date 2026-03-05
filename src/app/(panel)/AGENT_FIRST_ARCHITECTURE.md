@@ -2,70 +2,138 @@
 
 ## Core Concept
 
-All Panel workflows are **Agent-driven** — the AI Agent executes tool chains in the background, while the frontend renders traditional UI by polling Agent state from `UserChat.messages`.
+All Panel workflows are **Agent-driven** — the AI Agent executes tool chains while the frontend streams real-time state via `useChat`. No polling needed.
 
 **User sees**: Forms, buttons, progress bars, cards
-**System runs**: Agent → tool calls → messages → frontend polls & renders
+**System runs**: Agent → tool calls → streamed messages → frontend derives status & renders
+
+## Execution Modes
+
+### Panel Creation: Always Sync
+
+Panel creation uses `executionMode: "sync"` throughout:
+
+- The agent lifecycle is tied to the HTTP connection
+- Dialog close / page refresh → `req.signal` aborts → agent stops → `runId` cleared in DB
+- When the user re-opens, they can safely trigger a new execution (regenerate/continue) without a stale agent running in the background
+- **No polling needed** — the frontend always has the real-time stream
+
+Why sync works: every step is short (search → select → save). Once `updatePanel` completes, the dialog redirects.
+
+### Research Project: Dynamic (Sync → Background)
+
+Research projects use a **dynamic executionMode** via `executionModeRef`:
+
+- **Plan phase** (regenerate/continue): `"sync"` — agent stops when page closes, safe to re-trigger on next visit. Every step before discussion is short.
+- **After confirm** (addToolResult → sendMessage): `undefined` — agent runs in background so discussion/interview continues even if user refreshes. On re-open, check `runId` to avoid duplicate execution.
+
+```typescript
+const executionModeRef = useRef<"sync" | undefined>("sync");
+
+// In addToolResult (after user confirms plan):
+executionModeRef.current = undefined; // switch to background
+useChatRef.current.sendMessage();     // agent continues in background
+```
+
+Why dynamic: discussion/interview execution is long-running (minutes). If sync, closing the tab would abort mid-discussion. Background mode lets the agent finish even if the user navigates away.
 
 ## Panel Creation Flow
 
 ```
-User: Fill description + target size → Extract keywords → Choose mode (Auto/Manual)
+User: Fill description → Choose mode (Auto/Manual)
   ↓
-Agent Chat created with instruction
+createPanelViaAgent: creates UserChat with instruction (does NOT execute agent)
   ↓
-Auto mode:  Agent → searchPersonas → requestSelectPersonas → user confirms → updatePanel
-Manual mode: Agent → requestSelectPersonas (empty) → user picks manually → updatePanel
+Frontend: useChat → setMessages(initialMessages) → regenerate()
+  → POST /api/chat/universal (executionMode: "sync")
+  → Agent streams: searchPersonas → requestSelectPersonas (human-in-the-loop) → updatePanel
   ↓
-Frontend polls fetchPanelCreationProgress(chatToken):
-  "searching" → skeleton animation
-  "selectingPersonas" → render persona selector (human-in-the-loop)
-  "saving" → spinner
-  "completed" → success page → auto-redirect to /panel/[id]
+Frontend derives status from streamed messages:
+  "searching" → spinner + real-time agent text
+  "selectingPersonas" → persona selector (addToolResult + sendMessage to continue)
+  "saving" → spinner + real-time agent text
+  "completed" → success → auto-redirect to /panel/[id]
 ```
 
-## Research Creation Flow
+## Research Project Flow
 
 ```
-User: /panel/[panelId]/newstudy → Pick type + question → Submit
+User: /panel/[panelId] → Pick type + question → Submit
   ↓
-Step 1 (Setup): User fills research type + question
-Step 2 (Confirm): Agent generates plan → confirmPanelResearchPlan tool (human-in-the-loop)
-                   User can edit question & execution plan inline, then confirm
-Step 3 (Execute): Agent runs discussionChat / interviewChat → auto-redirect to project page
+createUniversalAgentFromPanel: creates UserChat with instruction (does NOT execute agent)
+  → redirect to /panel/project/[token]
   ↓
-Frontend polls fetchResearchWizardProgress(chatToken):
-  "creating" → spinner (agent generating plan)
-  "confirming" → render editable plan confirmation UI
-  "executing" → spinner → redirect to /panel/project/[token]
+Project Detail Page loads → fetch messages → determine view:
+
+  Has discussion/interview data? → Results View (SWR polls discussion/interview data)
+  No data yet? → Agent View:
+    - Check runId: if agent already running in background, skip trigger
+    - Last message is user msg → regenerate(sync)
+    - Last message is assistant msg → sendMessage(CONTINUE, sync)
+    - Agent streams: plan → confirmPanelResearchPlan (human-in-the-loop)
+    - User confirms → addToolResult switches executionMode to background
+    - Agent continues: discussionChat/interviewChat → generateReport (background)
+    ↓
+  Once discussionChat/interviewChat tool call appears → switch to Results View
+  (useChat connection stays alive; agent stream continues in parallel)
 ```
 
 ## Key Design Patterns
 
 ### Human-in-the-Loop Tools
 
-Tools without `execute()` — frontend renders UI, user submits output:
+Tools without `execute()` — frontend renders UI, user submits output via `addToolResult`:
 
 - `requestSelectPersonas` — persona selector for panel creation
 - `confirmPanelResearchPlan` — editable research plan confirmation
 
-### State from Messages
+### State from Messages (Frontend)
 
-Frontend never stores business state. All status derived from analyzing `UserChat.messages`:
+Frontend never stores business state. All status derived from scanning `messages` in reverse:
 
 ```typescript
-// Scan tool calls in messages to determine current step
-for (const part of msg.parts) {
-  if (toolName === "confirmPanelResearchPlan" && part.state === "input-available")
-    → status: "confirming"
-  if (toolName === "discussionChat" && part.state === "output-available")
-    → status: "completed"
+function deriveStatus(messages) {
+  for (const part of latestParts) {
+    if (toolName === "updatePanel" && state === "output-available") → "completed"
+    if (toolName === "requestSelectPersonas" && state === "input-available") → "selectingPersonas"
+    if (toolName === "searchPersonas") → "searching"
+  }
 }
 ```
 
-### Polling Pattern
+### Real-time Agent Activity
 
-Frontend polls Server Actions every 3 seconds. No WebSocket needed.
+During waiting states (searching, saving), the dialog shows the agent's latest activity:
+- Text output → last ~80 characters of agent text
+- Tool execution → `exec searchPersonas`, `exec updatePanel`
+
+### Sync Lifecycle (Panel Creation + Project Plan Phase)
+
+```
+regenerate(sync) ──→ POST /api/chat/universal
+                       ↓
+              executeUniversalAgent(requestAbortSignal: req.signal)
+                       ↓
+              AbortSignal.any([managedRunSignal, requestAbortSignal])
+                       ↓
+              streamText({ abortSignal: combinedSignal })
+                       ↓
+              Page close → req.signal abort → agent stops → runId cleared
+```
+
+### Background Lifecycle (Project Execution Phase)
+
+```
+sendMessage(undefined) ──→ POST /api/chat/universal (no executionMode)
+                             ↓
+              executeUniversalAgent(requestAbortSignal: req.signal)
+                             ↓
+              AbortSignal uses only managedRunSignal (not req.signal)
+                             ↓
+              Page close → stream stops but agent keeps running in background
+                             ↓
+              Re-open page → check runId → skip trigger → SWR polls results
+```
 
 ## Persona Display
 
@@ -84,6 +152,5 @@ All personas use `HippyGhostAvatar` component with `seed={persona.id}`.
 ```
 /panels                          → Panel list (create + manage)
 /panel/[panelId]                 → Panel detail (personas + projects)
-/panel/[panelId]/newstudy        → Research wizard (3-step)
 /panel/project/[userChatToken]   → Project detail (discussion/interviews)
 ```

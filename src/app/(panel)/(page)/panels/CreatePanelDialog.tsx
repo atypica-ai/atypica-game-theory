@@ -145,9 +145,19 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
   const [creating, setCreating] = useState(false);
   const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
 
-  // useChat — connect to /api/chat/universal with executionMode:"sync"
-  // Sync mode ties the agent lifecycle to the HTTP connection:
-  // dialog close / page refresh → request abort → agent stops.
+  // useChat — connect to /api/chat/universal with executionMode:"sync".
+  //
+  // Why sync: The agent lifecycle is tied to the HTTP connection. When the user
+  // closes the dialog or refreshes the page, req.signal aborts → agent stops →
+  // runId is cleared in DB (via onError → failUserChatRun).
+  //
+  // This means when the user re-opens the dialog or navigates back, they can
+  // safely trigger a new execution (regenerate/continue) without worrying about
+  // a stale agent running in the background. No polling needed — the frontend
+  // always has the real-time stream, and closed connections cleanly stop the agent.
+  //
+  // This pattern works because every step before the final result is short
+  // (search → select → save). Once updatePanel completes, the dialog redirects.
   const transport = useMemo(
     () =>
       chatToken
