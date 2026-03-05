@@ -147,7 +147,14 @@
       "summary": "总结",
       "minutes": "会议记录",
       "artifacts": "产物",
-      "artifactsPlaceholder": "报告和播客将在此展示"
+      "artifactsPlaceholder": "报告和播客将在此展示",
+      "atypicaModerator": "Atypica 主持人",
+      "aiModerator": "AI 主持人",
+      "expand": "展开全文",
+      "collapse": "收起",
+      "expandAll": "展开全部",
+      "viewReason": "查看原因",
+      "collapseReason": "收起原因"
     },
     "CreatePanelTool": {
       "title": "选择 Personas",

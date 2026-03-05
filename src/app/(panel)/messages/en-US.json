@@ -147,7 +147,14 @@
       "summary": "Summary",
       "minutes": "Minutes",
       "artifacts": "Artifacts",
-      "artifactsPlaceholder": "Reports and podcasts will appear here"
+      "artifactsPlaceholder": "Reports and podcasts will appear here",
+      "atypicaModerator": "Atypica Moderator",
+      "aiModerator": "AI Moderator",
+      "expand": "Show more",
+      "collapse": "Show less",
+      "expandAll": "Expand all",
+      "viewReason": "View reasoning",
+      "collapseReason": "Hide reasoning"
     },
     "CreatePanelTool": {
       "title": "Select Personas",
