@@ -5,8 +5,8 @@ import {
 } from "@/app/(panel)/(page)/panels/actions";
 import { Pagination } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { Loader2, MessageCircle, Mic, Users } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { Loader2Icon, MessageCircleIcon, MicIcon, UsersIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { type ResearchType } from "./actions";
 import { NewPanelProjectDialog } from "./NewPanelProjectDialog";
@@ -19,7 +19,6 @@ interface PanelSidebarProps {
 
 export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
   const t = useTranslations("PersonaPanel");
-  const locale = useLocale();
 
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectDefaultType, setNewProjectDefaultType] = useState<ResearchType>("focusGroup");
@@ -56,15 +55,15 @@ export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
   };
 
   const researchCubes = [
-    { type: "focusGroup" as const, icon: Users, label: t("DetailPage.projectType.focusGroup") },
+    { type: "focusGroup" as const, icon: UsersIcon, label: t("DetailPage.projectType.focusGroup") },
     {
       type: "userInterview" as const,
-      icon: MessageCircle,
+      icon: MessageCircleIcon,
       label: t("DetailPage.projectType.userInterview"),
     },
     {
       type: "expertInterview" as const,
-      icon: Mic,
+      icon: MicIcon,
       label: t("DetailPage.projectType.expertInterview"),
     },
   ];
@@ -111,14 +110,20 @@ export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
         <div className="flex-1 overflow-y-auto pb-12">
           {loading ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
             </div>
           ) : projects.length === 0 ? (
             <p className="text-xs text-muted-foreground/60">{t("DetailPage.noProjects")}</p>
           ) : (
             <div className="space-y-3">
               {projects.map((project) => (
-                <SidebarProjectCard key={project.token} project={project} locale={locale} />
+                <SidebarProjectCard
+                  key={project.token}
+                  project={project}
+                  onDeleted={(token) =>
+                    setProjects((prev) => prev.filter((p) => p.token !== token))
+                  }
+                />
               ))}
             </div>
           )}

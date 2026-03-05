@@ -22,13 +22,13 @@ import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, isToolUIPart } from "ai";
 import {
-  AlertCircle,
-  CheckCircle2,
-  ExternalLink,
-  Hand,
-  Loader2,
-  Sparkles,
-  Upload,
+  AlertCircleIcon,
+  CheckCircle2Icon,
+  ExternalLinkIcon,
+  HandIcon,
+  Loader2Icon,
+  SparklesIcon,
+  UploadIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -171,7 +171,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
   const {
     addToolOutput: _addToolOutput,
     messages,
-    status,
+    // status,
     error,
     ...useChatHelpers
   } = useChat<TUniversalMessageWithTool>({
@@ -352,7 +352,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
                     (creating || !description.trim()) && "opacity-50 pointer-events-none",
                   )}
                 >
-                  <Sparkles className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <SparklesIcon className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                   <span className="text-xs font-medium">{t("ListPage.autoSearch")}</span>
                   <span className="text-xs text-muted-foreground/70 text-center leading-relaxed">
                     {t("ListPage.autoSearchDesc")}
@@ -368,7 +368,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
                     (creating || !description.trim()) && "opacity-50 pointer-events-none",
                   )}
                 >
-                  <Hand className="size-4 text-muted-foreground" />
+                  <HandIcon className="size-4 text-muted-foreground" />
                   <span className="text-xs font-medium">{t("ListPage.manualSelect")}</span>
                   <span className="text-xs text-muted-foreground/70 text-center leading-relaxed">
                     {t("ListPage.manualSelectDesc")}
@@ -380,15 +380,15 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
                 href="/persona"
                 className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
               >
-                <Upload className="size-3.5" />
+                <UploadIcon className="size-3.5" />
                 {t("ListPage.importFromPDF")}
-                <ExternalLink className="size-3 ml-auto" />
+                <ExternalLinkIcon className="size-3 ml-auto" />
               </Link>
             </div>
 
             {creating && (
               <div className="flex items-center justify-center gap-2 py-2">
-                <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+                <Loader2Icon className="size-3.5 animate-spin text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">{t("ListPage.creating")}</span>
               </div>
             )}
@@ -413,7 +413,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
           </DialogHeader>
           <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
             <div className="flex items-center justify-center size-12 rounded-full bg-destructive/10">
-              <AlertCircle className="size-6 text-destructive" />
+              <AlertCircleIcon className="size-6 text-destructive" />
             </div>
             {errorMessage && (
               <p className="text-xs text-muted-foreground text-center max-w-sm">{errorMessage}</p>
@@ -437,7 +437,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
           <div className="mt-4 space-y-4">
             {renderProgressBar(phase)}
             <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.searching")}</p>
               {agentText && (
                 <p className="text-xs text-muted-foreground/60 text-center max-w-sm leading-relaxed line-clamp-2">
@@ -493,7 +493,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
           <div className="mt-4 space-y-4">
             {renderProgressBar(phase)}
             <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
               {agentText && (
                 <p className="text-xs text-muted-foreground/60 text-center max-w-sm leading-relaxed line-clamp-2">
@@ -520,7 +520,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
               <div className="relative flex items-center justify-center">
                 <div className="absolute w-32 h-32 rounded-full bg-primary blur-[50px] opacity-10" />
                 <div className="relative flex items-center justify-center size-12 rounded-full bg-primary/10">
-                  <CheckCircle2 className="size-6 text-primary" />
+                  <CheckCircle2Icon className="size-6 text-primary" />
                 </div>
               </div>
               {creationStatus.panelTitle && (

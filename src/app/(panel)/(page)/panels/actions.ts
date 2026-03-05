@@ -1,6 +1,6 @@
 "use server";
 import { UserChatContext } from "@/app/(study)/context/types";
-import { createUniversalUserChatAction } from "@/app/(universal)/universal/actions";
+import { createUniversalUserChat } from "@/app/(universal)/lib";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -269,13 +269,11 @@ Execute these steps strictly in order. Call the next tool immediately — do NOT
 
 Start step 1 now.`;
 
-    const createResult = await createUniversalUserChatAction({
+    const createResult = await createUniversalUserChat({
+      userId: user.id,
       role: "user",
       content,
     });
-    if (!createResult.success) {
-      return { success: false, code: createResult.code, message: createResult.message };
-    }
 
     // Agent execution is now triggered by the frontend via useChat.regenerate()
     // with executionMode:"sync". This enables real-time streaming and ties the
@@ -286,7 +284,7 @@ Start step 1 now.`;
     // const { statReport } = initGenericUserChatStatReporter({ userId: user.id, userChatId: createResult.data.id, logger });
     // await executeUniversalAgent({ userId: user.id, userChat: createResult.data, statReport, logger, locale });
 
-    return { success: true, data: { token: createResult.data.token } };
+    return { success: true, data: { token: createResult.token } };
   });
 }
 

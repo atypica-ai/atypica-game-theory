@@ -5,7 +5,7 @@ import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { executeUniversalAgent } from "@/app/(universal)/agent";
-import { createUniversalUserChatAction } from "@/app/(universal)/universal/actions";
+import { createUniversalUserChat } from "@/app/(universal)/lib";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
@@ -184,14 +184,11 @@ Please follow these steps:
 
 Start step 1 immediately.`;
 
-    const createResult = await createUniversalUserChatAction({
+    const createResult = await createUniversalUserChat({
+      userId: user.id,
       role: "user",
       content: instruction,
     });
-
-    if (!createResult.success) {
-      return { success: false, code: createResult.code, message: createResult.message };
-    }
 
     const defaultLocale = await detectInputLanguage({
       text: question,
@@ -200,29 +197,29 @@ Start step 1 immediately.`;
 
     // Attach panelId and locale to UserChat context so project detail page can verify ownership
     await mergeUserChatContext({
-      id: createResult.data.id,
+      id: createResult.id,
       context: { personaPanelId: panelId, defaultLocale },
     });
 
     const logger = rootLogger.child({
-      userChatId: createResult.data.id,
-      userChatToken: createResult.data.token,
+      userChatId: createResult.id,
+      userChatToken: createResult.token,
     });
     const { statReport } = initGenericUserChatStatReporter({
       userId: user.id,
-      userChatId: createResult.data.id,
+      userChatId: createResult.id,
       logger,
     });
 
     await executeUniversalAgent({
       userId: user.id,
-      userChat: createResult.data,
+      userChat: createResult,
       statReport,
       logger,
       locale,
     });
 
-    return { success: true, data: { token: createResult.data.token } };
+    return { success: true, data: { token: createResult.token } };
   });
 }
 
