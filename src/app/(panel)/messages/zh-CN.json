@@ -110,7 +110,6 @@
       "sourceNote": "数据来源：基于 {source} 真实发言与互动行为分析"
     },
     "ProjectDetailPage": {
-      "backToPanel": "返回 Panel",
       "agentRunning": "Agent 运行中",
       "viewAgentChat": "查看 Agent 对话",
       "discussion": "讨论",
@@ -136,23 +135,19 @@
       "agentOutput": "最新输出"
     },
     "DiscussionDetailPage": {
-      "participants": "参与者",
       "participated": "参与",
       "complete": "已完成",
       "inProgress": "进行中",
       "starting": "讨论正在开始...",
-      "status": "状态",
-      "analysis": "分析",
-      "events": "发言",
       "summary": "总结",
       "minutes": "会议记录",
       "artifacts": "产物",
       "artifactsPlaceholder": "报告和播客将在此展示",
+      "clickToView": "点击查看",
       "atypicaModerator": "Atypica 主持人",
       "aiModerator": "AI 主持人",
       "expand": "展开全文",
       "collapse": "收起",
-      "expandAll": "展开全部",
       "viewReason": "查看原因",
       "collapseReason": "收起原因"
     },

@@ -5,7 +5,7 @@ import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { UserChatExtra } from "@/prisma/client";
-import { ArrowLeft, ExternalLink, Loader2, MessageSquare, Users } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -97,8 +97,8 @@ export function ProjectDetailClient({
     },
   );
 
-  const projectDiscussions = researchData?.discussions ?? [];
-  const projectInterviewBatches = researchData?.interviewBatches ?? [];
+  const projectDiscussions = useMemo(() => researchData?.discussions ?? [], [researchData?.discussions]);
+  const projectInterviewBatches = useMemo(() => researchData?.interviewBatches ?? [], [researchData?.interviewBatches]);
   const projectTotalPersonas = researchData?.totalPersonas ?? 0;
   const pendingConfirmPlan = researchData?.pendingConfirmPlan ?? null;
 
@@ -172,91 +172,50 @@ export function ProjectDetailClient({
     [pendingConfirmPlan, project.token],
   );
 
+  // Build flat selector items for DiscussionView
+  const selectorItems = useMemo(() => {
+    const items: { label: string; icon: "discussion" | "interview" }[] = [];
+    for (let i = 0; i < projectDiscussions.length; i++) {
+      items.push({ label: t("discussionNumber", { number: i + 1 }), icon: "discussion" });
+    }
+    for (let i = 0; i < projectInterviewBatches.length; i++) {
+      items.push({ label: t("interviewNumber", { number: i + 1 }), icon: "interview" });
+    }
+    return items;
+  }, [projectDiscussions.length, projectInterviewBatches.length, t]);
+
+  // Current selected index in the flat list
+  const selectorSelectedIndex =
+    activeTab === "discussion"
+      ? selectedDiscussionIndex
+      : projectDiscussions.length +
+        projectInterviewBatches.findIndex((b) => b.id === selectedBatchId);
+
+  const handleSelectorSelect = useCallback(
+    (index: number) => {
+      if (index < projectDiscussions.length) {
+        setActiveTab("discussion");
+        setSelectedDiscussionIndex(index);
+      } else {
+        const batchIndex = index - projectDiscussions.length;
+        const batch = projectInterviewBatches[batchIndex];
+        if (batch) {
+          setActiveTab("interviews");
+          setSelectedBatchId(batch.id);
+        }
+      }
+    },
+    [projectDiscussions.length, projectInterviewBatches],
+  );
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Top bar — centered title layout */}
-      <div className="border-b border-border px-6 py-3 space-y-3">
-        {/* Title row - three columns */}
-        <div className="flex items-center gap-4">
-          {/* Left: Back button + Panel name */}
-          <Link
-            href={`/panel/${panelId}`}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0 inline-flex items-center gap-1.5"
-          >
-            <ArrowLeft className="size-3" />
-            {panelTitle || t("backToPanel")}
-          </Link>
-
-          {/* Center: Project Title */}
-          <div className="flex-1 text-center min-w-0 px-8">
-            <h1 className="text-base font-medium tracking-tight truncate">{project.title}</h1>
-          </div>
-
-          {/* Right: View Agent Chat */}
-          <Link
-            href={`/universal/${project.token}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0 inline-flex items-center gap-1"
-          >
-            {t("viewAgentChat")}
-            <ExternalLink className="size-3" />
-          </Link>
-        </div>
-
-        {/* Research items row - flat list */}
-        {projectDiscussions?.length ? (
-          <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
-            {/* Discussions */}
-            {projectDiscussions.map((discussion, index) => (
-              <button
-                key={discussion.token}
-                onClick={() => {
-                  setActiveTab("discussion");
-                  setSelectedDiscussionIndex(index);
-                }}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap shrink-0",
-                  activeTab === "discussion" && selectedDiscussionIndex === index
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                )}
-              >
-                <MessageSquare className="size-3" />
-                {t("discussionNumber", { number: index + 1 })}
-              </button>
-            ))}
-
-            {/* Interviews */}
-            {projectInterviewBatches.map((batch, index) => (
-              <button
-                key={batch.id}
-                onClick={() => {
-                  setActiveTab("interviews");
-                  setSelectedBatchId(batch.id);
-                }}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap shrink-0",
-                  activeTab === "interviews" && selectedBatchId === batch.id
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                )}
-              >
-                <Users className="size-3" />
-                {t("interviewNumber", { number: index + 1 })}
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
-
-      {/* Content area */}
+      {/* Content area — no header, full height */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {!hasContent ? (
           /* No research output yet - show status with link to agent chat */
           <div className="flex-1 flex items-center justify-center p-6">
             <div className="flex items-center gap-2">
-              {/* Status indicator with Atypica green */}
               <div className="relative flex items-center justify-center">
                 <span
                   className={cn(
@@ -268,8 +227,6 @@ export function ProjectDetailClient({
                   <span className="absolute size-2 rounded-full bg-ghost-green animate-ping opacity-75" />
                 )}
               </div>
-
-              {/* Current status */}
               <p
                 className={cn(
                   "text-sm font-medium transition-colors",
@@ -278,11 +235,7 @@ export function ProjectDetailClient({
               >
                 {isRunning ? phaseLabel : t("idle")}
               </p>
-
-              {/* Separator */}
               <span className="text-muted-foreground/40">·</span>
-
-              {/* Link to agent chat */}
               <Link
                 href={`/universal/${project.token}`}
                 target="_blank"
@@ -298,6 +251,17 @@ export function ProjectDetailClient({
           <DiscussionView
             timeline={currentDiscussionDetail.timeline}
             personas={currentDiscussionDetail.personas}
+            panel={{ id: panelId, title: panelTitle }}
+            project={project}
+            selector={
+              selectorItems.length > 1
+                ? {
+                    items: selectorItems,
+                    selectedIndex: selectorSelectedIndex,
+                    onSelect: handleSelectorSelect,
+                  }
+                : undefined
+            }
           />
         ) : activeTab === "discussion" ? (
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground h-full">

@@ -110,7 +110,6 @@
       "sourceNote": "Data source: Based on real posts and interactions from {source}"
     },
     "ProjectDetailPage": {
-      "backToPanel": "Back to Panel",
       "agentRunning": "Agent Running",
       "viewAgentChat": "View Agent Chat",
       "discussion": "Discussion",
@@ -136,23 +135,19 @@
       "agentOutput": "Latest Agent Output"
     },
     "DiscussionDetailPage": {
-      "participants": "Participants",
       "participated": "participated",
       "complete": "Complete",
       "inProgress": "In Progress",
       "starting": "Discussion is starting...",
-      "status": "Status",
-      "analysis": "Analysis",
-      "events": "Events",
       "summary": "Summary",
       "minutes": "Minutes",
       "artifacts": "Artifacts",
       "artifactsPlaceholder": "Reports and podcasts will appear here",
+      "clickToView": "Click to view",
       "atypicaModerator": "Atypica Moderator",
       "aiModerator": "AI Moderator",
       "expand": "Show more",
       "collapse": "Show less",
-      "expandAll": "Expand all",
       "viewReason": "View reasoning",
       "collapseReason": "Hide reasoning"
     },
