@@ -5,23 +5,16 @@ import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { UserChatExtra } from "@/prisma/client";
+import { getToolName, isToolUIPart } from "ai";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import useSWR from "swr";
-import type {
-  DiscussionSummary,
-  InterviewBatch,
-  PanelDiscussionDetail,
-  PendingConfirmPlan,
-  ProjectProgress,
-} from "./actions";
 import {
-  fetchDiscussionDetail,
-  fetchProjectProgress,
-  fetchProjectResearchByToken,
+  fetchProjectMessages,
   submitResearchConfirmation,
+  type PendingConfirmPlan,
 } from "./actions";
 import { DiscussionView } from "./DiscussionView";
 import { InterviewsView } from "./InterviewsView";
@@ -36,248 +29,210 @@ export interface ProjectDetailClientProps {
     extra: UserChatExtra;
     createdAt: Date;
   };
-  discussions: DiscussionSummary[];
-  discussionDetail: PanelDiscussionDetail | null;
-  interviewBatches: InterviewBatch[];
-  totalPersonas: number;
-  initialProgress: ProjectProgress | null;
-  initialPendingConfirmPlan: PendingConfirmPlan | null;
 }
 
-type TabType = "discussion" | "interviews";
+type ActiveView =
+  | { type: "discussion"; timelineToken: string }
+  | { type: "interviews"; personaIds: number[] };
 
-export function ProjectDetailClient({
-  panelId,
-  panelTitle,
-  project,
-  discussions,
-  discussionDetail,
-  interviewBatches,
-  totalPersonas,
-  initialProgress,
-  initialPendingConfirmPlan,
-}: ProjectDetailClientProps) {
+export function ProjectDetailClient({ panelId, panelTitle, project }: ProjectDetailClientProps) {
   const t = useTranslations("PersonaPanel.ProjectDetailPage");
-  // Use SWR for project progress polling
-  const { data: progress } = useSWR(
-    ["projectProgress", project.token],
+  const isRunning = !!project.extra?.runId;
+
+  // Poll project messages — frontend extracts tool calls
+  const { data: messages } = useSWR(
+    ["projectMessages", project.token],
     async () => {
-      const result = await fetchProjectProgress(project.token);
+      const result = await fetchProjectMessages(project.token);
       if (!result.success) throw new Error(result.message);
       return result.data;
     },
     {
-      fallbackData: initialProgress ?? undefined,
-      refreshInterval: (data) => (data?.status === "running" ? 5000 : 0),
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
-
-  const isRunning = progress?.status === "running";
-
-  // Use SWR for research data polling
-  const { data: researchData } = useSWR(
-    ["projectResearch", project.token],
-    async () => {
-      const result = await fetchProjectResearchByToken(project.token);
-      if (!result.success) throw new Error(result.message);
-      return result.data;
-    },
-    {
-      fallbackData: {
-        discussions,
-        interviewBatches,
-        totalPersonas,
-        pendingConfirmPlan: initialPendingConfirmPlan,
-      },
       refreshInterval: isRunning ? 5000 : 0,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
     },
   );
 
-  const projectDiscussions = useMemo(() => researchData?.discussions ?? [], [researchData?.discussions]);
-  const projectInterviewBatches = useMemo(() => researchData?.interviewBatches ?? [], [researchData?.interviewBatches]);
-  const projectTotalPersonas = researchData?.totalPersonas ?? 0;
-  const pendingConfirmPlan = researchData?.pendingConfirmPlan ?? null;
+  // Extract tool calls from messages
+  const { timelineTokens, interviewPersonaIds, pendingConfirmPlan } = useMemo(() => {
+    if (!messages)
+      return {
+        timelineTokens: [] as string[],
+        interviewPersonaIds: [] as number[],
+        pendingConfirmPlan: null as PendingConfirmPlan | null,
+      };
 
-  const hasDiscussions = projectDiscussions.length > 0;
-  const hasInterviews = projectInterviewBatches.length > 0;
+    const tokens: string[] = [];
+    const pIds: number[] = [];
+    let pending: PendingConfirmPlan | null = null;
+    let confirmHasOutput = false;
 
-  // Determine available tabs and default
-  const availableTabs = useMemo(() => {
-    const tabs: TabType[] = [];
-    if (hasDiscussions) tabs.push("discussion");
-    if (hasInterviews) tabs.push("interviews");
-    return tabs;
-  }, [hasDiscussions, hasInterviews]);
+    for (const message of messages) {
+      for (const part of message.parts) {
+        if (!isToolUIPart(part)) continue;
+        const name = getToolName(part);
 
-  // State classification for clear logic flow
-  const hasContent = availableTabs.length > 0;
+        if (name === "discussionChat") {
+          const output =
+            part.state === "output-available"
+              ? (part.output as Record<string, unknown> | null)
+              : null;
+          const input = (part.input as Record<string, unknown>) ?? {};
+          const token =
+            (typeof output?.timelineToken === "string" ? output.timelineToken : null) ??
+            (typeof input.timelineToken === "string" ? input.timelineToken : null);
+          if (token && !tokens.includes(token)) tokens.push(token);
+        }
 
-  const [activeTab, setActiveTab] = useState<TabType>(availableTabs[0] ?? "discussion");
+        if (name === "interviewChat") {
+          const input = part.input as Record<string, unknown> | null;
+          const rawPersonas = Array.isArray(input?.personas) ? input.personas : [];
+          for (const item of rawPersonas) {
+            if (item && typeof item === "object" && "id" in item && typeof item.id === "number") {
+              if (!pIds.includes(item.id)) pIds.push(item.id);
+            }
+          }
+        }
 
-  // Discussion selector (when multiple discussions exist)
-  const [selectedDiscussionIndex, setSelectedDiscussionIndex] = useState(0);
+        if (name === "confirmPanelResearchPlan") {
+          if (part.state === "input-available") {
+            pending = {
+              toolCallId: part.toolCallId,
+              input: part.input as PendingConfirmPlan["input"],
+            };
+          }
+          if (part.state === "output-available") confirmHasOutput = true;
+        }
+      }
+    }
 
-  // Interview batch selector
-  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(
-    projectInterviewBatches[0]?.id ?? null,
-  );
-  const phaseLabelMap: Record<NonNullable<typeof progress>["phase"], string> = {
-    planning: t("phasePlanning"),
-    researching: t("phaseResearching"),
-    discussion: t("phaseDiscussion"),
-    interviews: t("phaseInterviews"),
-    synthesizing: t("phaseSynthesizing"),
-    completed: t("phaseCompleted"),
-  };
-  const phaseLabel = progress ? phaseLabelMap[progress.phase] : t("phasePlanning");
+    return {
+      timelineTokens: tokens,
+      interviewPersonaIds: pIds,
+      pendingConfirmPlan: confirmHasOutput ? null : pending,
+    };
+  }, [messages]);
 
-  useEffect(() => {
-    if (availableTabs.length === 0) return;
-    if (availableTabs.includes(activeTab)) return;
-    setActiveTab(availableTabs[0]);
-  }, [activeTab, availableTabs]);
+  const hasDiscussions = timelineTokens.length > 0;
+  const hasInterviews = interviewPersonaIds.length > 0;
+  const hasContent = hasDiscussions || hasInterviews;
 
-  useEffect(() => {
-    if (selectedDiscussionIndex < projectDiscussions.length) return;
-    setSelectedDiscussionIndex(0);
-  }, [projectDiscussions.length, selectedDiscussionIndex]);
+  // Build flat selector items
+  const selectorItems = useMemo(() => {
+    const items: { label: string }[] = [];
+    for (let i = 0; i < timelineTokens.length; i++) {
+      items.push({ label: t("discussionNumber", { number: i + 1 }) });
+    }
+    if (interviewPersonaIds.length > 0) {
+      items.push({ label: t("interviewNumber", { number: 1 }) });
+    }
+    return items;
+  }, [timelineTokens.length, interviewPersonaIds.length, t]);
 
-  // Use SWR for discussion detail (load on selection change)
-  const selectedDiscussion = projectDiscussions[selectedDiscussionIndex];
-  const { data: currentDiscussionDetail } = useSWR(
-    selectedDiscussion ? ["discussionDetail", selectedDiscussion.token] : null,
-    async () => {
-      const result = await fetchDiscussionDetail(selectedDiscussion!.token);
-      if (!result.success) throw new Error(result.message);
-      return result.data;
+  // Active view state
+  const [activeView, setActiveView] = useState<ActiveView | null>(null);
+
+  // Derive current view — auto-select first available if none selected
+  const currentView = useMemo<ActiveView | null>(() => {
+    if (activeView) return activeView;
+    if (hasDiscussions) return { type: "discussion", timelineToken: timelineTokens[0] };
+    if (hasInterviews) return { type: "interviews", personaIds: interviewPersonaIds };
+    return null;
+  }, [activeView, hasDiscussions, hasInterviews, timelineTokens, interviewPersonaIds]);
+
+  const selectorSelectedIndex = useMemo(() => {
+    if (!currentView) return 0;
+    if (currentView.type === "discussion") {
+      return timelineTokens.indexOf(currentView.timelineToken);
+    }
+    return timelineTokens.length; // interview is after all discussions
+  }, [currentView, timelineTokens]);
+
+  const handleSelectorSelect = useCallback(
+    (index: number) => {
+      if (index < timelineTokens.length) {
+        setActiveView({ type: "discussion", timelineToken: timelineTokens[index] });
+      } else {
+        setActiveView({ type: "interviews", personaIds: interviewPersonaIds });
+      }
     },
-    {
-      fallbackData: discussionDetail ?? undefined,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
+    [timelineTokens, interviewPersonaIds],
   );
 
-  // Handle research plan confirmation
   const handleConfirmPlan = useCallback(
     async (output: ConfirmPanelResearchPlanOutput) => {
       if (!pendingConfirmPlan) return;
       await submitResearchConfirmation(project.token, pendingConfirmPlan.toolCallId, output);
-      // SWR will pick up the change on next poll
     },
     [pendingConfirmPlan, project.token],
   );
 
-  // Build flat selector items for DiscussionView
-  const selectorItems = useMemo(() => {
-    const items: { label: string; icon: "discussion" | "interview" }[] = [];
-    for (let i = 0; i < projectDiscussions.length; i++) {
-      items.push({ label: t("discussionNumber", { number: i + 1 }), icon: "discussion" });
-    }
-    for (let i = 0; i < projectInterviewBatches.length; i++) {
-      items.push({ label: t("interviewNumber", { number: i + 1 }), icon: "interview" });
-    }
-    return items;
-  }, [projectDiscussions.length, projectInterviewBatches.length, t]);
-
-  // Current selected index in the flat list
-  const selectorSelectedIndex =
-    activeTab === "discussion"
-      ? selectedDiscussionIndex
-      : projectDiscussions.length +
-        projectInterviewBatches.findIndex((b) => b.id === selectedBatchId);
-
-  const handleSelectorSelect = useCallback(
-    (index: number) => {
-      if (index < projectDiscussions.length) {
-        setActiveTab("discussion");
-        setSelectedDiscussionIndex(index);
-      } else {
-        const batchIndex = index - projectDiscussions.length;
-        const batch = projectInterviewBatches[batchIndex];
-        if (batch) {
-          setActiveTab("interviews");
-          setSelectedBatchId(batch.id);
+  const selector =
+    selectorItems.length > 1
+      ? {
+          items: selectorItems,
+          selectedIndex: selectorSelectedIndex,
+          onSelect: handleSelectorSelect,
         }
-      }
-    },
-    [projectDiscussions.length, projectInterviewBatches],
-  );
+      : undefined;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Content area — no header, full height */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {!hasContent ? (
-          /* No research output yet - show status with link to agent chat */
-          <div className="flex-1 flex items-center justify-center p-6">
-            <div className="flex items-center gap-2">
-              <div className="relative flex items-center justify-center">
-                <span
-                  className={cn(
-                    "size-2 rounded-full transition-colors",
-                    isRunning ? "bg-ghost-green" : "bg-zinc-400",
-                  )}
-                />
-                {isRunning && (
-                  <span className="absolute size-2 rounded-full bg-ghost-green animate-ping opacity-75" />
-                )}
-              </div>
-              <p
+      {!hasContent ? (
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="flex items-center gap-2">
+            <div className="relative flex items-center justify-center">
+              <span
                 className={cn(
-                  "text-sm font-medium transition-colors",
-                  isRunning ? "text-foreground" : "text-muted-foreground",
+                  "size-2 rounded-full transition-colors",
+                  isRunning ? "bg-ghost-green" : "bg-zinc-400",
                 )}
-              >
-                {isRunning ? phaseLabel : t("idle")}
-              </p>
-              <span className="text-muted-foreground/40">·</span>
-              <Link
-                href={`/universal/${project.token}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
-              >
-                {t("viewAgentChat")}
-                <ExternalLink className="size-3" />
-              </Link>
+              />
+              {isRunning && (
+                <span className="absolute size-2 rounded-full bg-ghost-green animate-ping opacity-75" />
+              )}
             </div>
+            <p
+              className={cn(
+                "text-sm font-medium transition-colors",
+                isRunning ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
+              {isRunning ? t("agentRunning") : t("idle")}
+            </p>
+            <span className="text-muted-foreground/40">·</span>
+            <Link
+              href={`/universal/${project.token}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
+            >
+              {t("viewAgentChat")}
+              <ExternalLink className="size-3" />
+            </Link>
           </div>
-        ) : activeTab === "discussion" && currentDiscussionDetail ? (
-          <DiscussionView
-            timeline={currentDiscussionDetail.timeline}
-            personas={currentDiscussionDetail.personas}
-            panel={{ id: panelId, title: panelTitle }}
-            project={project}
-            selector={
-              selectorItems.length > 1
-                ? {
-                    items: selectorItems,
-                    selectedIndex: selectorSelectedIndex,
-                    onSelect: handleSelectorSelect,
-                  }
-                : undefined
-            }
-          />
-        ) : activeTab === "discussion" ? (
-          <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground h-full">
-            <Loader2 className="size-4 animate-spin mr-2" />
-            {t("agentRunning")}
-          </div>
-        ) : activeTab === "interviews" ? (
-          <InterviewsView
-            userChatToken={project.token}
-            interviewBatches={projectInterviewBatches}
-            totalPersonas={projectTotalPersonas}
-            selectedBatchId={selectedBatchId}
-            onBatchSelect={setSelectedBatchId}
-          />
-        ) : null}
-      </div>
+        </div>
+      ) : currentView?.type === "discussion" ? (
+        <DiscussionView
+          timelineToken={currentView.timelineToken}
+          panel={{ id: panelId, title: panelTitle }}
+          project={project}
+          selector={selector}
+        />
+      ) : currentView?.type === "interviews" ? (
+        <InterviewsView
+          panel={{ id: panelId, title: panelTitle }}
+          project={project}
+          personaIds={currentView.personaIds}
+          selector={selector}
+        />
+      ) : (
+        <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin mr-2" />
+          {t("agentRunning")}
+        </div>
+      )}
 
       {/* Confirm Plan Dialog */}
       <Dialog open={!!pendingConfirmPlan} onOpenChange={() => {}}>

@@ -5,13 +5,8 @@ import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import {
-  fetchDiscussionDetail,
-  fetchProjectContextByToken,
-  fetchProjectProgress,
-  fetchProjectResearchByToken,
-} from "./actions";
-import { ProjectDetailClient, type ProjectDetailClientProps } from "./ProjectDetailClient";
+import { fetchProjectContextByToken } from "./actions";
+import { ProjectDetailClient } from "./ProjectDetailClient";
 
 export const dynamic = "force-dynamic";
 
@@ -25,34 +20,7 @@ async function ProjectPage({ userChatToken }: { userChatToken: string }) {
 
   const { panelId, panelTitle, project } = projectContextResult.data;
 
-  const researchResult = await fetchProjectResearchByToken(userChatToken);
-  const progressResult = await fetchProjectProgress(userChatToken);
-
-  let discussionDetail: ProjectDetailClientProps["discussionDetail"] = null;
-
-  if (researchResult.success && researchResult.data.discussions.length > 0) {
-    const firstDiscussion = researchResult.data.discussions[0];
-    const detailResult = await fetchDiscussionDetail(firstDiscussion.token);
-    if (detailResult.success) {
-      discussionDetail = detailResult.data;
-    }
-  }
-
-  return (
-    <ProjectDetailClient
-      panelId={panelId}
-      panelTitle={panelTitle}
-      project={project}
-      discussions={researchResult.success ? researchResult.data.discussions : []}
-      discussionDetail={discussionDetail}
-      interviewBatches={researchResult.success ? researchResult.data.interviewBatches : []}
-      totalPersonas={researchResult.success ? researchResult.data.totalPersonas : 0}
-      initialProgress={progressResult.success ? progressResult.data : null}
-      initialPendingConfirmPlan={
-        researchResult.success ? researchResult.data.pendingConfirmPlan : null
-      }
-    />
-  );
+  return <ProjectDetailClient panelId={panelId} panelTitle={panelTitle} project={project} />;
 }
 
 export default async function ProjectPageWithLoading({

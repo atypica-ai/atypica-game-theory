@@ -1,5 +1,6 @@
 "use client";
 
+import { CollapsibleText } from "@/app/(panel)/components/CollapsibleText";
 import { Badge } from "@/components/ui/badge";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { ExtractServerActionData } from "@/lib/serverAction";
@@ -69,9 +70,9 @@ export function PanelDetailClient({ panel }: { panel: PanelData }) {
                 {/* Divider + Details */}
                 <div className="mt-4 border-t border-border pt-4 space-y-3">
                   {panel.instruction && (
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    <CollapsibleText text={panel.instruction} className="text-sm text-muted-foreground leading-relaxed">
                       {panel.instruction}
-                    </p>
+                    </CollapsibleText>
                   )}
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span>{t("personaCount", { count: panel.personas.length })}</span>
@@ -106,3 +107,4 @@ export function PanelDetailClient({ panel }: { panel: PanelData }) {
     </FitToViewport>
   );
 }
+
