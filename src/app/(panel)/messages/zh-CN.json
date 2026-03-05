@@ -36,9 +36,17 @@
       "cannotDeleteUsedPanel": "无法删除正在使用的 Panel",
       "confirmDelete": "删除 Panel",
       "deleteWarning": "确定要删除 Panel #{id} 吗？此操作无法撤销。",
-      "cancel": "取消",
-      "delete": "删除",
-      "deleting": "删除中..."
+      "personaPanels": "Persona Panels",
+      "panelsCount": "{count} 个 panel",
+      "newPanel": "新建 Panel",
+      "researchProjects": "研究项目",
+      "projectsCount": "{count} 个项目",
+      "comingSoon": "即将推出",
+      "projectsEmptyDescription": "从您的 Panel 创建研究项目后，它们将显示在这里。",
+      "noProjectsYet": "暂无研究项目",
+      "searchProjects": "搜索项目...",
+      "viewProject": "查看项目",
+      "projectToken": "项目 {token}"
     },
     "DetailPage": {
       "viewDetails": "查看详情",

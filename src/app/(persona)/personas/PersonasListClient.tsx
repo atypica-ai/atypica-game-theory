@@ -180,13 +180,13 @@ export function PersonasListClient({
                     {persona.tags.slice(0, 3).map((tag, index) => (
                       <span
                         key={index}
-                        className="text-[10px] text-muted-foreground/60 px-1.5 py-0.5 rounded border border-border/50"
+                        className="text-xs text-muted-foreground/60 px-1.5 py-0.5 rounded border border-border/50"
                       >
                         {tag}
                       </span>
                     ))}
                     {persona.tags.length > 3 && (
-                      <span className="text-[10px] text-muted-foreground/50">
+                      <span className="text-xs text-muted-foreground/50">
                         +{persona.tags.length - 3}
                       </span>
                     )}

@@ -111,6 +111,7 @@ export async function fetchResearchProjectsByPanelId(
     const userChats = await prisma.userChat.findMany({
       where: {
         userId: user.id,
+        kind: { in: ["study", "universal"] },
         context: { path: ["personaPanelId"], equals: panelId },
       },
       select: {

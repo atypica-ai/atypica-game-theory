@@ -1,83 +1,24 @@
 "use client";
-import { RequestSelectPersonasMessage } from "@/app/(panel)/tools/requestSelectPersonas/RequestSelectPersonasMessage";
-import { TAddUniversalUIToolResult, UniversalToolName } from "@/app/(universal)/tools/types";
-import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
-import { cn, formatDate } from "@/lib/utils";
-import { PersonaExtra } from "@/prisma/client";
-import useSWR from "swr";
-import { Input } from "@/components/ui/input";
-import {
-  AlertCircle,
-  ArrowRight,
-  CheckCircle2,
-  ExternalLink,
-  Hand,
-  Loader2,
-  MessageCircle,
-  Plus,
-  SearchIcon,
-  Sparkles,
-  Trash2,
-  Upload,
-  XIcon,
-} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Loader2, MessageCircle, Plus, SearchIcon, Sparkles, XIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  createPanelViaAgent,
   deletePersonaPanel,
-  fetchPanelCreationProgress,
+  fetchAllResearchProjects,
   fetchUserPersonaPanels,
   PersonaPanelWithDetails,
-  submitPanelCreationToolResult,
+  ResearchProjectWithPanel,
 } from "./actions";
-
-type WizardStep = "define" | "choose";
-type WizardPhase = "input" | "running";
-
-/** Build compact extra summary based on role */
-function buildExtraSummary(extra: PersonaExtra): string {
-  if (!extra) return "";
-  const parts: string[] = [];
-  if (extra.role === "consumer") {
-    if (extra.ageRange) parts.push(extra.ageRange);
-    if (extra.location) parts.push(extra.location);
-    if (extra.title) parts.push(extra.title);
-  } else if (extra.role === "buyer") {
-    if (extra.title) parts.push(extra.title);
-    if (extra.industry) parts.push(extra.industry);
-    if (extra.organization) parts.push(extra.organization);
-  } else if (extra.role === "expert") {
-    if (extra.title) parts.push(extra.title);
-    if (extra.industry) parts.push(extra.industry);
-    if (extra.experience) parts.push(extra.experience);
-  }
-  return parts.join(" · ");
-}
+import { CreatePanelDialog } from "./CreatePanelDialog";
+import { PanelCard } from "./PanelCard";
+import { ProjectCard } from "./ProjectCard";
 
 export function PersonaPanelsListClient({
   initialSearchParams,
@@ -86,7 +27,6 @@ export function PersonaPanelsListClient({
 }) {
   const t = useTranslations("PersonaPanel");
   const locale = useLocale();
-  const router = useRouter();
   const [panels, setPanels] = useState<PersonaPanelWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<{
@@ -96,6 +36,19 @@ export function PersonaPanelsListClient({
     totalPages: number;
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Research Projects state
+  const [projects, setProjects] = useState<ResearchProjectWithPanel[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectPage, setProjectPage] = useState(1);
+  const [projectSearchQuery, setProjectSearchQuery] = useState("");
+  const projectInputRef = useRef<HTMLInputElement>(null);
+  const [projectsPagination, setProjectsPagination] = useState<{
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  } | null>(null);
 
   const {
     values: { page: currentPage, search: searchQuery },
@@ -108,49 +61,17 @@ export function PersonaPanelsListClient({
     },
     initialValues: initialSearchParams,
   });
-  const [creating, setCreating] = useState(false);
+
+  // Dialog state
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [deletingPanelId, setDeletingPanelId] = useState<number | null>(null);
-  const [panelToDelete, setPanelToDelete] = useState<PersonaPanelWithDetails | null>(null);
-
-  // Wizard Step 1 - Define
-  const [wizardStep, setWizardStep] = useState<WizardStep>("define");
-  const [description, setDescription] = useState("");
-
-  // Wizard Step 2 - Choose (agent running)
-  const [wizardPhase, setWizardPhase] = useState<WizardPhase>("input");
-  const [chatToken, setChatToken] = useState<string | null>(null);
-  const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
-
-  // Use SWR for panel creation progress polling
-  const { data: progress, mutate: mutateProgress } = useSWR(
-    wizardPhase === "running" && chatToken ? ["panel:creationProgress", chatToken] : null,
-    async () => {
-      const result = await fetchPanelCreationProgress(chatToken!);
-      if (!result.success) throw new Error(result.message);
-      return result.data;
-    },
-    {
-      refreshInterval: (data) => {
-        if (data?.status === "selectingPersonas") return 0;
-        if (data?.status === "completed" || data?.status === "error") return 0;
-        return 3000;
-      },
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      onSuccess: async (data) => {
-        if (data.status === "completed") {
-          await loadPanels();
-        }
-      },
-    },
-  );
 
   const loadPanels = useCallback(async () => {
     setLoading(true);
     const result = await fetchUserPersonaPanels({
       searchQuery: searchQuery || undefined,
       page: currentPage,
+      pageSize: 10,
     });
     if (result.success) {
       setPanels(result.data);
@@ -161,9 +82,27 @@ export function PersonaPanelsListClient({
     setLoading(false);
   }, [t, searchQuery, currentPage]);
 
+  const loadProjects = useCallback(async () => {
+    setProjectsLoading(true);
+    const result = await fetchAllResearchProjects({
+      page: projectPage,
+      pageSize: 10,
+      searchQuery: projectSearchQuery || undefined,
+    });
+    if (result.success) {
+      setProjects(result.data);
+      if (result.pagination) setProjectsPagination(result.pagination);
+    }
+    setProjectsLoading(false);
+  }, [projectPage, projectSearchQuery]);
+
   useEffect(() => {
     loadPanels();
   }, [loadPanels]);
+
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -175,606 +114,257 @@ export function PersonaPanelsListClient({
     setParams({ search: "", page: 1 });
   };
 
+  const handleProjectSearch = (e: FormEvent) => {
+    e.preventDefault();
+    setProjectSearchQuery(projectInputRef.current?.value ?? "");
+    setProjectPage(1);
+  };
+
+  const clearProjectSearch = () => {
+    if (projectInputRef.current) projectInputRef.current.value = "";
+    setProjectSearchQuery("");
+    setProjectPage(1);
+  };
+
   const handleDeletePanel = useCallback(
-    (panel: PersonaPanelWithDetails) => {
-      if (panel.usageCount.discussions > 0 || panel.usageCount.interviews > 0) {
-        toast.error(t("ListPage.cannotDeleteUsedPanel"));
-        return;
-      }
-      setPanelToDelete(panel);
-    },
-    [t],
-  );
+    async (panelId: number) => {
+      setDeletingPanelId(panelId);
+      const result = await deletePersonaPanel(panelId);
+      setDeletingPanelId(null);
 
-  const confirmDelete = useCallback(async () => {
-    if (!panelToDelete) return;
-    setDeletingPanelId(panelToDelete.id);
-    const result = await deletePersonaPanel(panelToDelete.id);
-    setDeletingPanelId(null);
-    setPanelToDelete(null);
-    if (result.success) {
-      toast.success(t("ListPage.deleteSuccess"));
-      await loadPanels();
-    } else {
-      toast.error(t("ListPage.deleteFailed"));
-    }
-  }, [panelToDelete, t, loadPanels]);
-
-  // Launch agent (auto or manual mode)
-  const handleLaunchAgent = useCallback(
-    async (mode: "auto" | "manual") => {
-      if (!description.trim()) return;
-      setCreating(true);
-      setWizardStep("choose");
-      const result = await createPanelViaAgent(description.trim(), {
-        mode,
-      });
       if (result.success) {
-        setChatToken(result.data.token);
-        setWizardPhase("running");
+        toast.success(t("ListPage.deleteSuccess"));
+        await loadPanels();
       } else {
-        toast.error(result.message ?? t("ListPage.loadingFailed"));
-        setWizardStep("define");
-      }
-      setCreating(false);
-    },
-    [description, t],
-  );
-
-
-  // Submit tool result from persona selector
-  const handleToolResult: TAddUniversalUIToolResult = useCallback(
-    async ({ toolCallId, output }) => {
-      if (!chatToken) return;
-      await submitPanelCreationToolResult(
-        chatToken,
-        toolCallId,
-        UniversalToolName.requestSelectPersonas,
-        output as Record<string, unknown>,
-      );
-      // Immediately re-fetch progress so UI transitions from selectingPersonas → saving
-      mutateProgress();
-    },
-    [chatToken, mutateProgress],
-  );
-
-  // Reset wizard state
-  const resetWizard = useCallback(() => {
-    setWizardStep("define");
-    setWizardPhase("input");
-    setChatToken(null);
-    setDescription("");
-    setAutoCloseCountdown(null);
-  }, []);
-
-  const handleDialogClose = useCallback(
-    (open: boolean) => {
-      if (creating) return;
-      if (!open) {
-        setShowCreateDialog(false);
-        resetWizard();
+        toast.error(t("ListPage.deleteFailed"));
       }
     },
-    [creating, resetWizard],
+    [t, loadPanels],
   );
-
-  // Auto-redirect countdown after completion
-  useEffect(() => {
-    if (progress?.status !== "completed" || !progress.panelId) return;
-    setAutoCloseCountdown(3);
-    const interval = setInterval(() => {
-      setAutoCloseCountdown((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [progress?.status, progress?.panelId]);
-
-  useEffect(() => {
-    if (autoCloseCountdown !== 0 || !progress?.panelId) return;
-    setShowCreateDialog(false);
-    resetWizard();
-    router.push(`/panel/${progress.panelId}`);
-  }, [autoCloseCountdown, progress?.panelId, resetWizard, router]);
-
-  // ─── Step indicator ────────────────────────────────────────────
-  const getProgressPercent = (status: string): number => {
-    if (status === "searching") return 25;
-    if (status === "selectingPersonas") return 50;
-    if (status === "saving") return 75;
-    if (status === "completed") return 100;
-    return 0;
-  };
-
-  const getStepLabel = (status: string, locale: string): string => {
-    if (status === "searching") return locale === "zh-CN" ? "步骤 1/3" : "Step 1 of 3";
-    if (status === "selectingPersonas") return locale === "zh-CN" ? "步骤 2/3" : "Step 2 of 3";
-    if (status === "saving") return locale === "zh-CN" ? "步骤 3/3" : "Step 3 of 3";
-    if (status === "completed") return locale === "zh-CN" ? "完成" : "Completed";
-    return "";
-  };
-
-  const renderProgressBar = (status: string) => {
-    const percent = getProgressPercent(status);
-    const stepLabel = getStepLabel(status, locale);
-
-    return (
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 font-medium uppercase tracking-wider">
-          <span>{stepLabel}</span>
-          <span>{percent}%</span>
-        </div>
-        <div className="h-1 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full bg-foreground/12 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  // ─── Wizard content ────────────────────────────────────────────
-  const renderWizardContent = () => {
-    // Step 1: Define Panel
-    if (wizardStep === "define" && wizardPhase === "input") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle className="text-lg tracking-tight">
-              {t("ListPage.createNewPanel")}
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              {t("ListPage.createDescription")}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 mt-3">
-            {/* Description */}
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("ListPage.createPlaceholder")}
-              className="min-h-[100px] text-sm resize-none"
-              autoFocus
-            />
-
-            {/* Choose mode */}
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">
-                {t("ListPage.selectMode")}
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => handleLaunchAgent("auto")}
-                  disabled={creating}
-                  className={cn(
-                    "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
-                    "hover:border-foreground/20 hover:bg-accent transition-all",
-                    "text-left group",
-                    creating && "opacity-50 pointer-events-none",
-                  )}
-                >
-                  <Sparkles className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  <span className="text-xs font-medium">{t("ListPage.autoSearch")}</span>
-                  <span className="text-[10px] text-muted-foreground/70 text-center leading-relaxed">
-                    {t("ListPage.autoSearchDesc")}
-                  </span>
-                </button>
-                <button
-                  onClick={() => handleLaunchAgent("manual")}
-                  disabled={creating}
-                  className={cn(
-                    "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
-                    "hover:border-foreground/20 transition-all",
-                    "text-left group",
-                    creating && "opacity-50 pointer-events-none",
-                  )}
-                >
-                  <Hand className="size-4 text-muted-foreground" />
-                  <span className="text-xs font-medium">{t("ListPage.manualSelect")}</span>
-                  <span className="text-[10px] text-muted-foreground/70 text-center leading-relaxed">
-                    {t("ListPage.manualSelectDesc")}
-                  </span>
-                </button>
-              </div>
-
-              {/* Import PDF shortcut */}
-              <Link
-                href="/persona"
-                className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-              >
-                <Upload className="size-3.5" />
-                {t("ListPage.importFromPDF")}
-                <ExternalLink className="size-3 ml-auto" />
-              </Link>
-            </div>
-
-            {/* Loading indicator when creating */}
-            {creating && (
-              <div className="flex items-center justify-center gap-2 py-2">
-                <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">{t("ListPage.creating")}</span>
-              </div>
-            )}
-          </div>
-        </>
-      );
-    }
-
-    // Step 2: Agent running
-    const status = progress?.status ?? "searching";
-
-    if (status === "searching") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle className="text-lg tracking-tight">
-              {t("ListPage.createNewPanel")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4 space-y-4">
-            {renderProgressBar(status)}
-            <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <div className="w-full max-w-xs space-y-2.5">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="h-2.5 rounded-full bg-muted animate-pulse"
-                    style={{ animationDelay: `${i * 150}ms`, width: `${85 - i * 15}%` }}
-                  />
-                ))}
-              </div>
-              <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.searching")}</p>
-            </div>
-          </div>
-        </>
-      );
-    }
-
-    if (status === "selectingPersonas" && progress?.toolCallId) {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle className="text-lg tracking-tight">
-              {t("CreatePanelWizard.selectPersonas")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4 space-y-4">
-            {renderProgressBar(status)}
-            <div className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <RequestSelectPersonasMessage
-                toolInvocation={{
-                  type: `tool-${UniversalToolName.requestSelectPersonas}`,
-                  toolCallId: progress.toolCallId,
-                  state: "input-available",
-                  input: { personaIds: progress.candidatePersonaIds ?? [] },
-                }}
-                addToolResult={handleToolResult}
-              />
-            </div>
-          </div>
-        </>
-      );
-    }
-
-    if (status === "saving") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle className="text-lg tracking-tight">
-              {t("ListPage.createNewPanel")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4 space-y-4">
-            {renderProgressBar(status)}
-            <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
-            </div>
-          </div>
-        </>
-      );
-    }
-
-    if (status === "completed") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle className="text-lg tracking-tight">
-              {t("CreatePanelWizard.completed")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4 space-y-4">
-            {renderProgressBar(status)}
-            <div className="flex flex-col items-center justify-center py-4 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <div className="relative flex items-center justify-center">
-                <div className="absolute w-32 h-32 rounded-full bg-primary blur-[50px] opacity-10" />
-                <div className="relative flex items-center justify-center size-12 rounded-full bg-primary/10">
-                  <CheckCircle2 className="size-6 text-primary" />
-                </div>
-              </div>
-              {progress?.panelTitle && <p className="text-sm font-medium">{progress.panelTitle}</p>}
-              {typeof progress?.personaCount === "number" && (
-                <p className="text-xs text-muted-foreground">
-                  {t("CreatePanelWizard.personaCount", { count: progress.personaCount })}
-                </p>
-              )}
-              <div className="flex flex-col items-center gap-2 mt-2">
-                {progress?.panelId && (
-                  <Button asChild size="sm" className="gap-1.5">
-                    <Link href={`/panel/${progress.panelId}`}>
-                      <ArrowRight className="size-3.5" />
-                      {t("CreatePanelWizard.viewPanel")}
-                    </Link>
-                  </Button>
-                )}
-                {autoCloseCountdown !== null && autoCloseCountdown > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {t("CreatePanelWizard.redirecting", { seconds: autoCloseCountdown })}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      );
-    }
-
-    if (status === "error") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle className="text-lg tracking-tight">
-              {t("CreatePanelWizard.error")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            <div className="flex items-center justify-center size-12 rounded-full bg-destructive/10">
-              <AlertCircle className="size-6 text-destructive" />
-            </div>
-            {progress?.errorMessage && (
-              <p className="text-xs text-muted-foreground text-center max-w-sm">
-                {progress.errorMessage}
-              </p>
-            )}
-            <Button variant="outline" size="sm" onClick={resetWizard}>
-              {t("CreatePanelWizard.retry")}
-            </Button>
-          </div>
-        </>
-      );
-    }
-
-    return null;
-  };
 
   // ─── Main render ───────────────────────────────────────────────
   return (
     <>
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="container mx-auto max-w-6xl px-8 py-8 space-y-6">
-          {/* Header */}
-          <div className="text-center space-y-3">
-            <h1 className="text-2xl font-bold">{t("title")}</h1>
-            <p className="text-muted-foreground max-w-xl mx-auto">{t("subtitle")}</p>
+      <CreatePanelDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onPanelCreated={loadPanels}
+      />
+
+      <FitToViewport>
+        <div
+          className={cn(
+            "container mx-auto max-w-7xl px-4 md:px-8 py-8",
+            "h-full flex flex-col justify-start items-stretch overflow-hidden",
+          )}
+        >
+          {/* Page Header */}
+          <div
+            className={cn(
+              "mb-8",
+              "hidden", // 暂时隐藏，太占空间
+            )}
+          >
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              {t("title")}
+            </h1>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t("subtitle")}</p>
           </div>
 
-          {/* Search */}
-          <form onSubmit={handleSearch} className="flex gap-2 max-w-xl mx-auto">
-            <div className="relative flex-1">
-              <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                ref={inputRef}
-                defaultValue={searchQuery}
-                placeholder={t("ListPage.searchPlaceholder")}
-                className="pl-8"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+          {/* 2-Column Layout */}
+          <div className="flex-1 flex flex-row gap-8 items-stretch overflow-hidden">
+            {/* Left Column - Persona Panels */}
+            <section className="space-y-4 flex-3 flex flex-col items-stretch overflow-hidden">
+              <div className="flex items-center justify-between gap-3 px-1">
+                <div className="space-y-0.5">
+                  <h2 className="text-sm md:text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                    {t("ListPage.personaPanels")}
+                  </h2>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    {pagination
+                      ? t("ListPage.panelsCount", { count: pagination.totalCount })
+                      : t("ListPage.panelsCount", { count: 0 })}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="shrink-0 gap-1 px-2 text-[11px] font-medium tracking-wider uppercase text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                  onClick={() => setShowCreateDialog(true)}
                 >
-                  <XIcon className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            <Button type="submit">{t("ListPage.search")}</Button>
-          </form>
+                  <Plus className="h-3 w-3" />
+                  {t("ListPage.newPanel")}
+                </Button>
+              </div>
 
-          {/* Panels Grid */}
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="size-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : panels.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* New Panel Card */}
-              <button
-                onClick={() => setShowCreateDialog(true)}
-                className="group border border-dashed border-border rounded-lg p-5 hover:border-foreground/20 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[180px]"
+              <div
+                className={cn(
+                  "flex-1 border border-dashed border-zinc-300 dark:border-zinc-700 bg-transparent rounded-3xl",
+                  "relative overflow-hidden",
+                )}
               >
-                <div className="size-10 rounded-full border border-border flex items-center justify-center group-hover:border-foreground/20 group-hover:bg-accent transition-all">
-                  <Plus className="size-5 text-muted-foreground" />
-                </div>
-                <div className="text-sm text-center space-y-1">
-                  <div className="font-medium">{t("ListPage.createNewPanel")}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {t("ListPage.createNewPanelDescription")}
-                  </div>
-                </div>
-              </button>
-
-              {/* Existing Panels */}
-              {panels.map((panel) => (
-                <div
-                  key={panel.id}
-                  className="group relative border border-border rounded-lg hover:border-foreground/20 transition-all duration-300"
+                {/* Search within card */}
+                <form
+                  onSubmit={handleSearch}
+                  className="absolute z-1 left-4 right-4 top-5 bg-background/30 backdrop-blur-md"
                 >
-                  <Link href={`/panel/${panel.id}`} className="block p-4">
-                    <div className="flex flex-col gap-3">
-                      {/* Title + date */}
-                      <div className="space-y-1 pr-6">
-                        <div className="text-sm font-medium leading-snug">
-                          {panel.title || t("panelId", { id: panel.id })}
-                        </div>
+                  <SearchIcon className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    ref={inputRef}
+                    defaultValue={searchQuery}
+                    placeholder={t("ListPage.searchPlaceholder")}
+                    className="pl-8"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={clearSearch}
+                      className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </button>
+                  )}
+                </form>
+
+                {/* Panels List - Scrollable */}
+                <div className="h-full pt-18 pb-20 px-4 overflow-y-auto scrollbar-thin">
+                  {loading ? (
+                    <div className="flex justify-center py-12">
+                      <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : panels.length > 0 ? (
+                    <div className="gap-3 grid grid-cols-1 sm:grid-cols-2">
+                      {panels.map((panel) => (
+                        <PanelCard
+                          key={panel.id}
+                          panel={panel}
+                          locale={locale}
+                          onDelete={handleDeletePanel}
+                          isDeleting={deletingPanelId === panel.id}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                      <div className="size-12 rounded-full border border-dashed border-border flex items-center justify-center">
+                        <MessageCircle className="size-6 text-muted-foreground" />
+                      </div>
+                      <div className="text-center space-y-1">
+                        <div className="text-sm font-medium">{t("ListPage.createNewPanel")}</div>
                         <div className="text-xs text-muted-foreground">
-                          {formatDate(panel.createdAt, locale)}
+                          {t("ListPage.createNewPanelDescription")}
                         </div>
                       </div>
+                      <button
+                        onClick={() => setShowCreateDialog(true)}
+                        className="mt-2 text-sm hover:underline flex items-center gap-1.5"
+                      >
+                        <Plus className="size-3.5" />
+                        {t("ListPage.startDiscussion")}
+                      </button>
+                    </div>
+                  )}
+                </div>
 
-                      {/* Instruction */}
-                      {panel.instruction && (
-                        <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-2">
-                          {panel.instruction}
-                        </p>
-                      )}
+                {/* Pagination */}
+                {pagination && pagination.totalPages > 1 && (
+                  <div className="absolute z-1 bottom-1 left-1/2 translate-x-[-50%] bg-background/30 backdrop-blur-md px-2 py-1 rounded-full overflow-hidden">
+                    <Pagination
+                      currentPage={pagination.page}
+                      totalPages={pagination.totalPages}
+                      onPageChange={(page) => setParam("page", page)}
+                    />
+                  </div>
+                )}
+              </div>
+            </section>
 
-                      {/* Personas preview with avatars */}
-                      {panel.personas.length > 0 && (
-                        <div className="space-y-2 pt-2 border-t border-border/50">
-                          {panel.personas.slice(0, 3).map((persona) => {
-                            const extraStr = buildExtraSummary(persona.extra);
-                            return (
-                              <div key={persona.id} className="flex items-center gap-2 min-w-0">
-                                <HippyGhostAvatar
-                                  seed={persona.id}
-                                  className="size-5 rounded-full shrink-0"
-                                />
-                                <span className="text-xs font-medium shrink-0 truncate max-w-20">
-                                  {persona.name}
-                                </span>
-                                {extraStr && (
-                                  <span className="text-[10px] text-muted-foreground/60 truncate">
-                                    {extraStr}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                          {panel.personas.length > 3 && (
-                            <span className="text-[10px] text-muted-foreground/50">
-                              {t("ListPage.andMore", { count: panel.personas.length - 3 })}
-                            </span>
-                          )}
+            {/* Right Column - Research Projects */}
+            <section className="space-y-4 flex-2 flex flex-col items-stretch overflow-hidden">
+              <div className="flex items-center justify-between gap-3 px-1">
+                <div className="space-y-0.5">
+                  <h2 className="text-sm md:text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                    {t("ListPage.researchProjects")}
+                  </h2>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    {projectsPagination
+                      ? t("ListPage.projectsCount", { count: projectsPagination.totalCount })
+                      : t("ListPage.projectsCount", { count: 0 })}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className={cn(
+                  "flex-1 border border-dashed border-zinc-300 dark:border-zinc-700 bg-transparent rounded-3xl",
+                  "relative overflow-hidden",
+                )}
+              >
+                {/* Search within card */}
+                <form
+                  onSubmit={handleProjectSearch}
+                  className="absolute z-1 left-4 right-4 top-5 bg-background/30 backdrop-blur-md"
+                >
+                  <SearchIcon className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    ref={projectInputRef}
+                    defaultValue={projectSearchQuery}
+                    placeholder={t("ListPage.searchProjects")}
+                    className="pl-8"
+                  />
+                  {projectSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={clearProjectSearch}
+                      className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </button>
+                  )}
+                </form>
+
+                {/* Projects List - Scrollable */}
+                <div className="h-full pt-18 pb-20 px-4 overflow-y-auto scrollbar-thin">
+                  {projectsLoading ? (
+                    <div className="flex justify-center py-12">
+                      <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : projects.length > 0 ? (
+                    <div className="space-y-3">
+                      {projects.map((project) => (
+                        <ProjectCard key={project.token} project={project} locale={locale} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                      <div className="size-12 rounded-full border border-dashed border-border flex items-center justify-center">
+                        <Sparkles className="size-6 text-muted-foreground" />
+                      </div>
+                      <div className="text-center space-y-1">
+                        <div className="text-sm font-medium">{t("ListPage.noProjectsYet")}</div>
+                        <div className="text-xs text-muted-foreground max-w-xs">
+                          {t("ListPage.projectsEmptyDescription")}
                         </div>
-                      )}
-
-                      {/* Footer */}
-                      <div className="flex items-center justify-between pt-1">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
-                          <span>{t("personaCount", { count: panel.personas.length })}</span>
-                          {(panel.usageCount.discussions > 0 ||
-                            panel.usageCount.interviews > 0) && (
-                            <>
-                              <span>·</span>
-                              <span>
-                                {[
-                                  panel.usageCount.discussions > 0 &&
-                                    t("discussions", { count: panel.usageCount.discussions }),
-                                  panel.usageCount.interviews > 0 &&
-                                    t("interviews", { count: panel.usageCount.interviews }),
-                                ]
-                                  .filter(Boolean)
-                                  .join("、")}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        <ArrowRight className="size-3.5 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
                       </div>
                     </div>
-                  </Link>
-
-                  {/* Delete button */}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleDeletePanel(panel);
-                    }}
-                    disabled={deletingPanelId === panel.id}
-                    className={cn(
-                      "absolute top-3 right-3 size-7 rounded-md flex items-center justify-center",
-                      "opacity-0 group-hover:opacity-100 transition-opacity",
-                      "hover:bg-muted",
-                      panel.usageCount.discussions > 0 || panel.usageCount.interviews > 0
-                        ? "cursor-not-allowed opacity-30"
-                        : "",
-                    )}
-                  >
-                    <Trash2 className="size-3.5 text-muted-foreground" />
-                  </button>
+                  )}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="size-12 rounded-full border border-dashed border-border flex items-center justify-center">
-                <MessageCircle className="size-6 text-muted-foreground" />
-              </div>
-              <div className="text-center space-y-1">
-                <div className="text-sm font-medium">{t("ListPage.createNewPanel")}</div>
-                <div className="text-xs text-muted-foreground">
-                  {t("ListPage.createNewPanelDescription")}
-                </div>
-              </div>
-              <button
-                onClick={() => setShowCreateDialog(true)}
-                className="mt-2 text-sm hover:underline flex items-center gap-1.5"
-              >
-                <ArrowRight className="size-3.5" />
-                {t("ListPage.startDiscussion")}
-              </button>
-            </div>
-          )}
 
-          {/* Pagination */}
-          {pagination && pagination.totalPages > 1 && (
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-              <Pagination
-                currentPage={pagination.page}
-                totalPages={pagination.totalPages}
-                onPageChange={(page) => setParam("page", page)}
-              />
-              <div className="text-sm text-muted-foreground">
-                Total: {pagination.totalCount.toLocaleString()}
+                {/* Pagination */}
+                {projectsPagination && projectsPagination.totalPages > 1 && (
+                  <div className="absolute z-1 bottom-1 left-1/2 translate-x-[-50%] bg-background/30 backdrop-blur-md px-2 py-1 rounded-full overflow-hidden">
+                    <Pagination
+                      currentPage={projectsPagination.page}
+                      totalPages={projectsPagination.totalPages}
+                      onPageChange={setProjectPage}
+                    />
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            </section>
+          </div>
         </div>
-      </div>
-
-      {/* Create Panel Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-lg">{renderWizardContent()}</DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!panelToDelete} onOpenChange={() => setPanelToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("ListPage.confirmDelete")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {panelToDelete && t("ListPage.deleteWarning", { id: panelToDelete.id })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("ListPage.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground"
-            >
-              {deletingPanelId ? t("ListPage.deleting") : t("ListPage.delete")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      </FitToViewport>
     </>
   );
 }

@@ -13,7 +13,7 @@ import { ReactNode } from "react";
  * }
  * ```
  */
-export default async function PanelPageLayout({ children }: { children: ReactNode }) {
+export default async function PanelDetailPageLayout({ children }: { children: ReactNode }) {
   return (
     <DefaultLayout header={true} fitToViewport={true}>
       {children}

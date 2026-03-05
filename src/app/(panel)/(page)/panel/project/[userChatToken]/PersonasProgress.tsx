@@ -236,7 +236,7 @@ export function PersonasProgress({
                   </div>
                 )}
                 {/* Status label */}
-                <div className="text-[10px] text-muted-foreground/60 mt-0.5">
+                <div className="text-xs text-muted-foreground/60 mt-0.5">
                   {getStatusLabel(persona.status)}
                 </div>
               </div>

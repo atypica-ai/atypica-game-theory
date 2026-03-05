@@ -1,13 +1,14 @@
 "use server";
 import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
 import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
+import { UserChatContext } from "@/app/(study)/context/types";
 import { executeUniversalAgent } from "@/app/(universal)/agent";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { createUniversalUserChatAction } from "@/app/(universal)/universal/actions";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import type { Persona } from "@/prisma/client";
+import { Persona, Prisma, UserChatExtra, UserChatKind } from "@/prisma/client";
 import { PersonaPanelWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
@@ -40,10 +41,18 @@ function extractPanelIdFromSlug(slug: string): number {
   return match ? parseInt(match[1], 10) : 0;
 }
 
+/**
+ * 从 slug 提取 UserChat ID（格式：study-123, universal-123 等）
+ */
+function extractIdFromSlug(slug: string): number {
+  const match = slug.match(/^(?:study|universal|scout|interview)-(\d+)$/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
 export async function fetchUserPersonaPanels({
   searchQuery,
   page = 1,
-  pageSize = 11,
+  pageSize = 10,
 }: {
   searchQuery?: string;
   page?: number;
@@ -96,9 +105,19 @@ export async function fetchUserPersonaPanels({
       orderBy: orderedIds ? undefined : { createdAt: "desc" },
       skip: useDatabasePagination ? skip : undefined,
       take: useDatabasePagination ? pageSize : undefined,
-      include: {
-        discussionTimelines: { select: { id: true } },
-        analystInterviews: { select: { id: true } },
+      select: {
+        id: true,
+        title: true,
+        instruction: true,
+        personaIds: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            discussionTimelines: true,
+            analystInterviews: true,
+          },
+        },
       },
     });
 
@@ -134,8 +153,8 @@ export async function fetchUserPersonaPanels({
       createdAt: panel.createdAt,
       updatedAt: panel.updatedAt,
       usageCount: {
-        discussions: panel.discussionTimelines.length,
-        interviews: panel.analystInterviews.length,
+        discussions: panel._count.discussionTimelines,
+        interviews: panel._count.analystInterviews,
       },
     }));
 
@@ -168,9 +187,14 @@ export async function deletePersonaPanel(
   return withAuth(async (user) => {
     const panel = await prisma.personaPanel.findUnique({
       where: { id: panelId, userId: user.id },
-      include: {
-        discussionTimelines: { select: { id: true } },
-        analystInterviews: { select: { id: true } },
+      select: {
+        id: true,
+        _count: {
+          select: {
+            discussionTimelines: true,
+            analystInterviews: true,
+          },
+        },
       },
     });
 
@@ -182,7 +206,7 @@ export async function deletePersonaPanel(
       };
     }
 
-    if (panel.discussionTimelines.length > 0 || panel.analystInterviews.length > 0) {
+    if (panel._count.discussionTimelines > 0 || panel._count.analystInterviews > 0) {
       return {
         success: false,
         code: "forbidden",
@@ -484,5 +508,216 @@ export async function submitPanelCreationToolResult(
     );
 
     return { success: true, data: undefined };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Research Projects List (for /panels page right column)
+// ---------------------------------------------------------------------------
+
+export interface ResearchProjectWithPanel {
+  id: number;
+  token: string;
+  title: string;
+  kind: UserChatKind;
+  context: UserChatContext;
+  extra: UserChatExtra;
+  createdAt: Date;
+  updatedAt: Date;
+  panel: {
+    id: number;
+    title: string;
+    personaCount: number;
+  } | null;
+}
+
+/**
+ * Fetch all research projects that have a panelId in context (not limited to specific panel).
+ * Supports pagination and search by project title.
+ */
+export async function fetchAllResearchProjects({
+  page = 1,
+  pageSize = 10,
+  searchQuery,
+}: {
+  page?: number;
+  pageSize?: number;
+  searchQuery?: string;
+} = {}): Promise<ServerActionResult<ResearchProjectWithPanel[]>> {
+  return withAuth(async (user) => {
+    const skip = (page - 1) * pageSize;
+    let where: Prisma.UserChatWhereInput = {
+      userId: user.id,
+      kind: { in: ["study", "universal"] },
+      context: {
+        path: ["personaPanelId"],
+        not: Prisma.AnyNull,
+      },
+    };
+    let totalCount = 0;
+    let orderedIds: number[] | null = null;
+    let useDatabasePagination = true;
+
+    if (searchQuery) {
+      const trimmedQuery = searchQuery.trim();
+      if (trimmedQuery) {
+        // Use MeiliSearch for full-text search
+        // Search both study and universal projects
+        try {
+          const [studyResults, universalResults] = await Promise.all([
+            searchProjectsFromMeili({
+              query: trimmedQuery,
+              type: "study",
+              userId: user.id,
+              page: 1,
+              pageSize: 100, // Get enough results for merging
+            }),
+            searchProjectsFromMeili({
+              query: trimmedQuery,
+              type: "universal",
+              userId: user.id,
+              page: 1,
+              pageSize: 100,
+            }),
+          ]);
+
+          // Merge hits (MeiliSearch already sorts by relevance)
+          // Interleave results to give fair representation to both types
+          const allHits = [];
+          const maxLen = Math.max(studyResults.hits.length, universalResults.hits.length);
+          for (let i = 0; i < maxLen; i++) {
+            if (i < studyResults.hits.length) allHits.push(studyResults.hits[i]);
+            if (i < universalResults.hits.length) allHits.push(universalResults.hits[i]);
+          }
+
+          const totalHits = studyResults.totalHits + universalResults.totalHits;
+
+          if (allHits.length === 0) {
+            return {
+              success: true,
+              data: [],
+              pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+            };
+          }
+
+          // Apply pagination after merging
+          const paginatedHits = allHits.slice(skip, skip + pageSize);
+          orderedIds = paginatedHits.map((hit) => extractIdFromSlug(hit.slug));
+
+          where = {
+            userId: user.id,
+            kind: { in: ["study", "universal"] },
+            context: {
+              path: ["personaPanelId"],
+              not: Prisma.AnyNull,
+            },
+            id: { in: orderedIds },
+          };
+          totalCount = totalHits;
+          useDatabasePagination = false;
+        } catch (error) {
+          rootLogger.error({
+            msg: "MeiliSearch universal projects search failed",
+            error: error instanceof Error ? error.message : String(error),
+          });
+          return {
+            success: true,
+            data: [],
+            pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+          };
+        }
+      }
+    }
+
+    if (useDatabasePagination) {
+      totalCount = await prismaRO.userChat.count({ where });
+    }
+
+    // Fetch paginated results
+    const userChats = await prismaRO.userChat.findMany({
+      where,
+      select: {
+        id: true,
+        token: true,
+        title: true,
+        kind: true,
+        context: true,
+        extra: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: orderedIds ? undefined : { createdAt: "desc" },
+      skip: useDatabasePagination ? skip : undefined,
+      take: useDatabasePagination ? pageSize : undefined,
+    });
+
+    // Get unique panel IDs from all projects
+    const panelIds = Array.from(
+      new Set(
+        userChats
+          .map((chat) => (chat.context as UserChatContext).personaPanelId)
+          .filter((id): id is number => typeof id === "number"),
+      ),
+    );
+
+    // Fetch panel info in batch
+    const panels = await prismaRO.personaPanel.findMany({
+      where: {
+        id: { in: panelIds },
+        userId: user.id,
+      },
+      select: {
+        id: true,
+        title: true,
+        personaIds: true,
+      },
+    });
+
+    const panelMap = new Map(panels.map((p) => [p.id, p]));
+
+    // Build project list with panel info
+    const projectsWithPanel: ResearchProjectWithPanel[] = userChats.map((chat) => {
+      const panelId = (chat.context as UserChatContext).personaPanelId;
+      const panel = typeof panelId === "number" ? panelMap.get(panelId) : null;
+
+      return {
+        id: chat.id,
+        token: chat.token,
+        title: chat.title,
+        kind: chat.kind,
+        context: chat.context,
+        extra: chat.extra,
+        createdAt: chat.createdAt,
+        updatedAt: chat.updatedAt,
+        panel: panel
+          ? {
+              id: panel.id,
+              title: panel.title,
+              personaCount: panel.personaIds.length,
+            }
+          : null,
+      };
+    });
+
+    // MeiliSearch 搜索时，按返回的顺序排序
+    const sortedProjects = orderedIds
+      ? (() => {
+          const idToProject = new Map(projectsWithPanel.map((p) => [p.id, p]));
+          return orderedIds
+            .map((id) => idToProject.get(id))
+            .filter((p): p is ResearchProjectWithPanel => p !== undefined);
+        })()
+      : projectsWithPanel;
+
+    return {
+      success: true,
+      data: sortedProjects,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+    };
   });
 }
