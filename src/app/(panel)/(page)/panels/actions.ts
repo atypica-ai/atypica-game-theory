@@ -1,9 +1,5 @@
 "use server";
-import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
-import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { UserChatContext } from "@/app/(study)/context/types";
-import { executeUniversalAgent } from "@/app/(universal)/agent";
-import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { createUniversalUserChatAction } from "@/app/(universal)/universal/actions";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
@@ -12,9 +8,7 @@ import { Persona, Prisma, UserChatExtra, UserChatKind } from "@/prisma/client";
 import { PersonaPanelWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
-import { getToolName, isToolUIPart } from "ai";
 import { getLocale } from "next-intl/server";
-import { after } from "next/server";
 
 export interface PersonaPanelWithDetails {
   id: number;
@@ -222,8 +216,10 @@ export async function deletePersonaPanel(
 
 /**
  * Create a new Panel via Universal Agent.
- * Creates a UserChat with the user's description + explicit tool-chaining instruction,
- * auto-executes the Agent, and returns the chat token for navigation.
+ * Creates a UserChat with the user's description + explicit tool-chaining instruction.
+ * Does NOT execute the agent — the frontend triggers execution via useChat.regenerate()
+ * with executionMode:"sync", so the agent streams in real-time and stops when the
+ * dialog closes or the page refreshes.
  *
  * The agent will: searchPersonas → requestSelectPersonas (waits for user) → updatePanel.
  */
@@ -281,233 +277,16 @@ Start step 1 now.`;
       return { success: false, code: createResult.code, message: createResult.message };
     }
 
-    const logger = rootLogger.child({
-      userChatId: createResult.data.id,
-      userChatToken: createResult.data.token,
-    });
-    const { statReport } = initGenericUserChatStatReporter({
-      userId: user.id,
-      userChatId: createResult.data.id,
-      logger,
-    });
-    await executeUniversalAgent({
-      userId: user.id,
-      userChat: {
-        id: createResult.data.id,
-        token: createResult.data.token,
-        extra: createResult.data.extra,
-      },
-      statReport,
-      logger,
-      locale,
-    });
+    // Agent execution is now triggered by the frontend via useChat.regenerate()
+    // with executionMode:"sync". This enables real-time streaming and ties the
+    // agent lifecycle to the HTTP connection (dialog close → agent stops).
+    //
+    // Previously the agent was executed server-side here:
+    // const logger = rootLogger.child({ userChatId: createResult.data.id, userChatToken: createResult.data.token });
+    // const { statReport } = initGenericUserChatStatReporter({ userId: user.id, userChatId: createResult.data.id, logger });
+    // await executeUniversalAgent({ userId: user.id, userChat: createResult.data, statReport, logger, locale });
 
     return { success: true, data: { token: createResult.data.token } };
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Panel Creation Progress (Dialog polling)
-// ---------------------------------------------------------------------------
-
-export type PanelCreationProgress = {
-  status: "searching" | "selectingPersonas" | "saving" | "completed" | "error";
-  toolCallId?: string;
-  candidatePersonaIds?: number[];
-  panelId?: number;
-  panelTitle?: string;
-  personaCount?: number;
-  errorMessage?: string;
-};
-
-/**
- * Poll the creation progress of a panel by reading the UserChat messages.
- * Returns a status based on which tool calls have been made and their states.
- */
-export async function fetchPanelCreationProgress(
-  chatToken: string,
-): Promise<ServerActionResult<PanelCreationProgress>> {
-  return withAuth(async (user) => {
-    const userChat = await prisma.userChat.findUnique({
-      where: { token: chatToken, userId: user.id },
-      select: {
-        id: true,
-        extra: true,
-        messages: {
-          where: { role: "assistant" },
-          orderBy: { id: "asc" },
-          select: { messageId: true, role: true, parts: true, extra: true },
-        },
-      },
-    });
-
-    if (!userChat) {
-      return { success: false, code: "not_found", message: "Chat not found" };
-    }
-
-    // No assistant messages yet — still searching
-    if (userChat.messages.length === 0) {
-      return { success: true, data: { status: "searching" } };
-    }
-
-    // Parse all assistant messages for tool calls
-    let searchPersonasOutputPersonaIds: number[] = [];
-    let requestSelectToolCallId: string | undefined;
-    let requestSelectHasOutput = false;
-    let updatePanelOutput: Record<string, unknown> | undefined;
-
-    for (const dbMsg of userChat.messages) {
-      const msg = convertDBMessageToAIMessage(dbMsg);
-      for (const part of msg.parts) {
-        if (!isToolUIPart(part)) continue;
-        const toolName = getToolName(part);
-
-        if (toolName === UniversalToolName.searchPersonas && part.state === "output-available") {
-          const output = part.output as { personas?: Array<{ personaId: number }> } | undefined;
-          if (output?.personas) {
-            searchPersonasOutputPersonaIds = output.personas.map((p) => p.personaId);
-          }
-        }
-
-        if (toolName === UniversalToolName.requestSelectPersonas) {
-          requestSelectToolCallId = part.toolCallId;
-          if (part.state === "output-available") {
-            requestSelectHasOutput = true;
-          }
-        }
-
-        if (toolName === UniversalToolName.updatePanel && part.state === "output-available") {
-          updatePanelOutput = part.output as Record<string, unknown> | undefined;
-        }
-      }
-    }
-
-    // Determine status based on tool call progression
-    if (updatePanelOutput) {
-      return {
-        success: true,
-        data: {
-          status: "completed",
-          panelId:
-            typeof updatePanelOutput.panelId === "number" ? updatePanelOutput.panelId : undefined,
-          panelTitle:
-            typeof updatePanelOutput.title === "string" ? updatePanelOutput.title : undefined,
-          personaCount:
-            typeof updatePanelOutput.personaCount === "number"
-              ? updatePanelOutput.personaCount
-              : undefined,
-        },
-      };
-    }
-
-    if (requestSelectHasOutput) {
-      // User confirmed selection, waiting for updatePanel
-      return { success: true, data: { status: "saving" } };
-    }
-
-    if (requestSelectToolCallId) {
-      // requestSelectPersonas is pending user input
-      return {
-        success: true,
-        data: {
-          status: "selectingPersonas",
-          toolCallId: requestSelectToolCallId,
-          candidatePersonaIds: searchPersonasOutputPersonaIds,
-        },
-      };
-    }
-
-    // Check for errors (no runId and no progress)
-    const hasError = typeof userChat.extra?.error === "string" && userChat.extra.error !== "";
-    if (hasError) {
-      return {
-        success: true,
-        data: { status: "error", errorMessage: userChat.extra?.error ?? "Unknown error" },
-      };
-    }
-
-    // Still searching
-    return { success: true, data: { status: "searching" } };
-  });
-}
-
-/**
- * Submit a tool result for panel creation (human-in-the-loop).
- * Persists the tool output to DB and re-executes the agent.
- */
-export async function submitPanelCreationToolResult(
-  chatToken: string,
-  toolCallId: string,
-  toolName: string,
-  output: Record<string, unknown>,
-): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    const userChat = await prisma.userChat.findUnique({
-      where: { token: chatToken, userId: user.id },
-      select: { id: true, token: true, extra: true },
-    });
-
-    if (!userChat) {
-      return { success: false, code: "not_found", message: "Chat not found" };
-    }
-
-    // Find the last assistant message to append tool result
-    const lastAssistantMessage = await prisma.chatMessage.findFirst({
-      where: { userChatId: userChat.id, role: "assistant" },
-      orderBy: { id: "desc" },
-      select: { messageId: true },
-    });
-
-    if (!lastAssistantMessage) {
-      return { success: false, code: "not_found", message: "No assistant message found" };
-    }
-
-    // Persist tool result
-    await persistentAIMessageToDB({
-      mode: "append",
-      userChatId: userChat.id,
-      message: {
-        id: lastAssistantMessage.messageId,
-        role: "assistant",
-        parts: [
-          {
-            type: `tool-${toolName}` as `tool-${string}`,
-            toolCallId,
-            state: "output-available",
-            input: {},
-            output,
-          },
-        ],
-      },
-    });
-
-    // Re-execute the agent in the background
-    const locale = await getLocale();
-    const logger = rootLogger.child({ userChatId: userChat.id, userChatToken: userChat.token });
-    const { statReport } = initGenericUserChatStatReporter({
-      userId: user.id,
-      userChatId: userChat.id,
-      logger,
-    });
-
-    after(
-      executeUniversalAgent({
-        userId: user.id,
-        userChat,
-        statReport,
-        logger,
-        locale,
-      })
-        .then(() => logger.info("panel creation agent re-execution completed"))
-        .catch((error) =>
-          logger.error({
-            msg: "panel creation agent re-execution error",
-            error: error instanceof Error ? error.message : String(error),
-          }),
-        ),
-    );
-
-    return { success: true, data: undefined };
   });
 }
 

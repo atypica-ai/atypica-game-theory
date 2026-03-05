@@ -169,7 +169,11 @@
       "retry": "Try Again",
       "viewPanel": "View Panel",
       "personaCount": "{count, plural, =1 {1 persona} other {# personas}}",
-      "redirecting": "Redirecting in {seconds}s..."
+      "redirecting": "Redirecting in {seconds}s...",
+      "stepSearching": "Step 1 of 3",
+      "stepSelecting": "Step 2 of 3",
+      "stepSaving": "Step 3 of 3",
+      "stepCompleted": "Completed"
     },
     "ResearchWizard": {
       "title": "New Research",

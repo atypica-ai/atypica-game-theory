@@ -65,6 +65,7 @@ export const clientMessagePayloadSchema = z.object({
     }),
   ]),
   userChatToken: z.string(),
+  executionMode: z.enum(["sync", "background"]).optional(),
   attachments: z
     .array(
       z

@@ -1,6 +1,14 @@
 "use client";
+import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 import { RequestSelectPersonasMessage } from "@/app/(panel)/tools/requestSelectPersonas/RequestSelectPersonasMessage";
-import { TAddUniversalUIToolResult, UniversalToolName } from "@/app/(universal)/tools/types";
+import { RequestSelectPersonasToolInput } from "@/app/(panel)/tools/requestSelectPersonas/types";
+import { UpdatePanelToolOutput } from "@/app/(panel)/tools/updatePanel/types";
+import {
+  TAddUniversalUIToolResult,
+  TUniversalMessageWithTool,
+  UniversalToolName,
+} from "@/app/(universal)/tools/types";
+import { fetchUniversalUserChatByToken } from "@/app/(universal)/universal/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, isToolUIPart } from "ai";
 import {
   AlertCircle,
   CheckCircle2,
@@ -23,17 +33,100 @@ import {
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
-import {
-  createPanelViaAgent,
-  fetchPanelCreationProgress,
-  submitPanelCreationToolResult,
-} from "./actions";
+import { createPanelViaAgent } from "./actions";
 
-type WizardStep = "define" | "choose";
-type WizardPhase = "input" | "running";
+// ---------------------------------------------------------------------------
+// Status derivation from streamed messages
+// ---------------------------------------------------------------------------
+
+type CreationStatus =
+  | { phase: "searching" }
+  | { phase: "selectingPersonas"; toolCallId: string; candidatePersonaIds: number[] }
+  | { phase: "saving" }
+  | { phase: "completed"; panelId?: number; panelTitle?: string; personaCount?: number }
+  | { phase: "error"; message?: string };
+
+function deriveCreationStatus(messages: TUniversalMessageWithTool[]): CreationStatus {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    const parts = msg.parts ?? [];
+    for (let j = parts.length - 1; j >= 0; j--) {
+      const part = parts[j];
+      if (!isToolUIPart(part)) continue;
+
+      // Use part.type for discrimination since getToolName return can't narrow the union
+      if (
+        part.type === (`tool-${UniversalToolName.updatePanel}` as const) &&
+        part.state === "output-available"
+      ) {
+        // part is now narrowed to updatePanel tool with output-available state
+        const output = part.output as UpdatePanelToolOutput;
+        return {
+          phase: "completed",
+          panelId: output.panelId,
+          panelTitle: output.title,
+          personaCount: output.personaIds.length,
+        };
+      }
+
+      if (part.type === (`tool-${UniversalToolName.requestSelectPersonas}` as const)) {
+        if (part.state === "output-available") {
+          return { phase: "saving" };
+        }
+        if (part.state === "input-available") {
+          const input = part.input as RequestSelectPersonasToolInput;
+          const inputIds = (input.personaIds ?? []).filter(
+            (id): id is number => typeof id === "number",
+          );
+          return {
+            phase: "selectingPersonas",
+            toolCallId: part.toolCallId,
+            candidatePersonaIds: inputIds,
+          };
+        }
+        // input-streaming or other states — still searching
+        return { phase: "searching" };
+      }
+
+      if (part.type === (`tool-${UniversalToolName.searchPersonas}` as const)) {
+        return { phase: "searching" };
+      }
+    }
+  }
+  return { phase: "searching" };
+}
+
+/**
+ * Extract the latest agent activity from streamed messages.
+ * Shows either the latest text snippet or the currently executing tool name.
+ */
+function getLatestAgentActivity(messages: TUniversalMessageWithTool[], maxLen = 80): string {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg.role !== "assistant") continue;
+    const parts = msg.parts ?? [];
+    for (let j = parts.length - 1; j >= 0; j--) {
+      const part = parts[j];
+      // Tool currently executing (input-streaming or input-available but no output yet)
+      if (isToolUIPart(part) && part.state !== "output-available") {
+        const toolName = part.type.replace(/^tool-/, "");
+        return `exec ${toolName}`;
+      }
+      if (part.type === "text" && part.text.trim()) {
+        const text = part.text.trim();
+        if (text.length <= maxLen) return text;
+        return "…" + text.slice(-maxLen);
+      }
+    }
+  }
+  return "";
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 interface CreatePanelDialogProps {
   open: boolean;
@@ -44,81 +137,104 @@ interface CreatePanelDialogProps {
 export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: CreatePanelDialogProps) {
   const t = useTranslations("PersonaPanel");
   const router = useRouter();
-  const locale = t("title"); // Get locale from translations
 
   // Wizard states
-  const [wizardStep, setWizardStep] = useState<WizardStep>("define");
+  const [wizardStep, setWizardStep] = useState<"define" | "running">("define");
   const [description, setDescription] = useState("");
-  const [wizardPhase, setWizardPhase] = useState<WizardPhase>("input");
   const [chatToken, setChatToken] = useState<string | null>(null);
-  const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
+  const [autoCloseCountdown, setAutoCloseCountdown] = useState<number | null>(null);
 
-  // Use SWR for panel creation progress polling
-  const { data: progress, mutate: mutateProgress } = useSWR(
-    wizardPhase === "running" && chatToken ? ["panel:creationProgress", chatToken] : null,
-    async () => {
-      const result = await fetchPanelCreationProgress(chatToken!);
-      if (!result.success) throw new Error(result.message);
-      return result.data;
-    },
-    {
-      refreshInterval: (data) => {
-        if (data?.status === "selectingPersonas") return 0;
-        if (data?.status === "completed" || data?.status === "error") return 0;
-        return 3000;
-      },
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      onSuccess: async (data) => {
-        if (data.status === "completed") {
-          onPanelCreated();
-        }
-      },
-    },
+  // useChat — connect to /api/chat/universal with executionMode:"sync"
+  // Sync mode ties the agent lifecycle to the HTTP connection:
+  // dialog close / page refresh → request abort → agent stops.
+  const transport = useMemo(
+    () =>
+      chatToken
+        ? new DefaultChatTransport({
+            api: "/api/chat/universal",
+            prepareSendMessagesRequest({ id, messages: msgs }) {
+              const message = prepareLastUIMessageForRequest(msgs);
+              const body: ClientMessagePayload = {
+                id,
+                message,
+                userChatToken: chatToken,
+                executionMode: "sync",
+              };
+              return { body };
+            },
+          })
+        : undefined,
+    [chatToken],
   );
 
-  // Launch agent (auto or manual mode)
+  const {
+    addToolOutput: _addToolOutput,
+    messages,
+    status,
+    error,
+    ...useChatHelpers
+  } = useChat<TUniversalMessageWithTool>({
+    id: chatToken ?? undefined,
+    transport,
+  });
+
+  const useChatRef = useRef(useChatHelpers);
+  useEffect(() => {
+    useChatRef.current = useChatHelpers;
+  });
+
+  // addToolResult: update tool output + continue conversation
+  const addToolResult: TAddUniversalUIToolResult = useCallback(
+    async (...args) => {
+      await _addToolOutput(...args);
+      useChatRef.current.sendMessage();
+    },
+    [_addToolOutput],
+  );
+
+  // Derive status and streaming text from messages
+  const creationStatus = useMemo(() => deriveCreationStatus(messages), [messages]);
+  const agentText = useMemo(() => getLatestAgentActivity(messages), [messages]);
+
+  // Track if agent error occurred (streaming error or status error)
+  const hasError = error != null || creationStatus.phase === "error";
+
+  // Launch agent
   const handleLaunchAgent = useCallback(
     async (mode: "auto" | "manual") => {
       if (!description.trim()) return;
       setCreating(true);
-      setWizardStep("choose");
-      const result = await createPanelViaAgent(description.trim(), {
-        mode,
-      });
-      if (result.success) {
-        setChatToken(result.data.token);
-        setWizardPhase("running");
-      } else {
+
+      const result = await createPanelViaAgent(description.trim(), { mode });
+      if (!result.success) {
         toast.error(result.message ?? t("ListPage.loadingFailed"));
-        setWizardStep("define");
+        setCreating(false);
+        return;
+      }
+
+      const token = result.data.token;
+      setChatToken(token);
+      setWizardStep("running");
+
+      // Fetch the initial messages (contains the user instruction written by createPanelViaAgent),
+      // load them into useChat, then regenerate() to trigger agent execution with streaming.
+      const chatResult = await fetchUniversalUserChatByToken(token);
+      if (chatResult.success) {
+        // setMessages loads the user instruction into useChat's state.
+        // regenerate() then POSTs to /api/chat/universal which executes the agent.
+        // Because the last message is a user message, regenerate triggers a new assistant response.
+        useChatRef.current.setMessages(chatResult.data.messages as TUniversalMessageWithTool[]);
+        useChatRef.current.regenerate();
       }
       setCreating(false);
     },
     [description, t],
   );
 
-  // Submit tool result from persona selector
-  const handleToolResult: TAddUniversalUIToolResult = useCallback(
-    async ({ toolCallId, output }) => {
-      if (!chatToken) return;
-      await submitPanelCreationToolResult(
-        chatToken,
-        toolCallId,
-        UniversalToolName.requestSelectPersonas,
-        output as Record<string, unknown>,
-      );
-      // Immediately re-fetch progress so UI transitions from selectingPersonas → saving
-      mutateProgress();
-    },
-    [chatToken, mutateProgress],
-  );
-
   // Reset wizard state
   const resetWizard = useCallback(() => {
     setWizardStep("define");
-    setWizardPhase("input");
     setChatToken(null);
     setDescription("");
     setAutoCloseCountdown(null);
@@ -136,8 +252,12 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
   );
 
   // Auto-redirect countdown after completion
+  const completedPanelId =
+    creationStatus.phase === "completed" ? creationStatus.panelId : undefined;
+
   useEffect(() => {
-    if (progress?.status !== "completed" || !progress.panelId) return;
+    if (!completedPanelId) return;
+    onPanelCreated();
     setAutoCloseCountdown(3);
     const interval = setInterval(() => {
       setAutoCloseCountdown((prev) => {
@@ -149,35 +269,33 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [progress?.status, progress?.panelId]);
+  }, [completedPanelId, onPanelCreated]);
 
   useEffect(() => {
-    if (autoCloseCountdown !== 0 || !progress?.panelId) return;
+    if (autoCloseCountdown !== 0 || !completedPanelId) return;
     onOpenChange(false);
     resetWizard();
-    router.push(`/panel/${progress.panelId}`);
-  }, [autoCloseCountdown, progress?.panelId, resetWizard, router, onOpenChange]);
+    router.push(`/panel/${completedPanelId}`);
+  }, [autoCloseCountdown, completedPanelId, resetWizard, router, onOpenChange]);
 
   // ─── Progress Helpers ──────────────────────────────────────────────
-  const getProgressPercent = (status: string): number => {
-    if (status === "searching") return 25;
-    if (status === "selectingPersonas") return 50;
-    if (status === "saving") return 75;
-    if (status === "completed") return 100;
+  const getProgressPercent = (phase: string): number => {
+    if (phase === "searching") return 25;
+    if (phase === "selectingPersonas") return 50;
+    if (phase === "saving") return 75;
+    if (phase === "completed") return 100;
     return 0;
   };
 
-  const getStepLabel = (status: string, locale: string): string => {
-    if (status === "searching") return locale === "zh-CN" ? "步骤 1/3" : "Step 1 of 3";
-    if (status === "selectingPersonas") return locale === "zh-CN" ? "步骤 2/3" : "Step 2 of 3";
-    if (status === "saving") return locale === "zh-CN" ? "步骤 3/3" : "Step 3 of 3";
-    if (status === "completed") return locale === "zh-CN" ? "完成" : "Completed";
-    return "";
-  };
-
-  const renderProgressBar = (status: string) => {
-    const percent = getProgressPercent(status);
-    const stepLabel = getStepLabel(status, locale);
+  const renderProgressBar = (phase: string) => {
+    const percent = getProgressPercent(phase);
+    const stepLabels: Record<string, string> = {
+      searching: t("CreatePanelWizard.stepSearching"),
+      selectingPersonas: t("CreatePanelWizard.stepSelecting"),
+      saving: t("CreatePanelWizard.stepSaving"),
+      completed: t("CreatePanelWizard.stepCompleted"),
+    };
+    const stepLabel = stepLabels[phase] ?? "";
 
     return (
       <div className="space-y-1.5">
@@ -195,10 +313,10 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
     );
   };
 
-  // ─── Wizard Content ────────────────────────────────────────────────
-  const renderWizardContent = () => {
+  // ─── Render ─────────────────────────────────────────────────────────
+  const renderContent = () => {
     // Step 1: Define Panel
-    if (wizardStep === "define" && wizardPhase === "input") {
+    if (wizardStep === "define") {
       return (
         <>
           <DialogHeader>
@@ -211,7 +329,6 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
           </DialogHeader>
 
           <div className="space-y-4 mt-3">
-            {/* Description */}
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -220,7 +337,6 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
               autoFocus
             />
 
-            {/* Choose mode */}
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground font-medium">
                 {t("ListPage.selectMode")}
@@ -228,12 +344,12 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => handleLaunchAgent("auto")}
-                  disabled={creating}
+                  disabled={creating || !description.trim()}
                   className={cn(
                     "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
                     "hover:border-foreground/20 hover:bg-accent transition-all",
                     "text-left group",
-                    creating && "opacity-50 pointer-events-none",
+                    (creating || !description.trim()) && "opacity-50 pointer-events-none",
                   )}
                 >
                   <Sparkles className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -244,12 +360,12 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
                 </button>
                 <button
                   onClick={() => handleLaunchAgent("manual")}
-                  disabled={creating}
+                  disabled={creating || !description.trim()}
                   className={cn(
                     "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
                     "hover:border-foreground/20 transition-all",
                     "text-left group",
-                    creating && "opacity-50 pointer-events-none",
+                    (creating || !description.trim()) && "opacity-50 pointer-events-none",
                   )}
                 >
                   <Hand className="size-4 text-muted-foreground" />
@@ -260,7 +376,6 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
                 </button>
               </div>
 
-              {/* Import PDF shortcut */}
               <Link
                 href="/persona"
                 className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
@@ -271,7 +386,6 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
               </Link>
             </div>
 
-            {/* Loading indicator when creating */}
             {creating && (
               <div className="flex items-center justify-center gap-2 py-2">
                 <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
@@ -283,10 +397,36 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
       );
     }
 
-    // Step 2: Agent running
-    const status = progress?.status ?? "searching";
+    // Step 2+: Agent running — derive UI from messages
+    const { phase } = creationStatus;
 
-    if (status === "searching") {
+    // Check for errors
+    if (hasError) {
+      const errorMessage =
+        error?.message ?? (phase === "error" ? creationStatus.message : undefined);
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle className="text-lg tracking-tight">
+              {t("CreatePanelWizard.error")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center justify-center size-12 rounded-full bg-destructive/10">
+              <AlertCircle className="size-6 text-destructive" />
+            </div>
+            {errorMessage && (
+              <p className="text-xs text-muted-foreground text-center max-w-sm">{errorMessage}</p>
+            )}
+            <Button variant="outline" size="sm" onClick={resetWizard}>
+              {t("CreatePanelWizard.retry")}
+            </Button>
+          </div>
+        </>
+      );
+    }
+
+    if (phase === "searching") {
       return (
         <>
           <DialogHeader>
@@ -295,25 +435,33 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4 space-y-4">
-            {renderProgressBar(status)}
-            <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <div className="w-full max-w-xs space-y-2.5">
-                {[0, 1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="h-2.5 rounded-full bg-muted animate-pulse"
-                    style={{ animationDelay: `${i * 150}ms`, width: `${85 - i * 15}%` }}
-                  />
-                ))}
-              </div>
+            {renderProgressBar(phase)}
+            <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.searching")}</p>
+              {agentText && (
+                <p className="text-xs text-muted-foreground/60 text-center max-w-sm leading-relaxed line-clamp-2">
+                  {agentText}
+                </p>
+              )}
             </div>
           </div>
         </>
       );
     }
 
-    if (status === "selectingPersonas" && progress?.toolCallId) {
+    if (phase === "selectingPersonas") {
+      // Build the typed tool invocation for RequestSelectPersonasMessage
+      const toolInvocation: Extract<
+        TUniversalMessageWithTool["parts"][number],
+        { type: `tool-${typeof UniversalToolName.requestSelectPersonas}` }
+      > = {
+        type: `tool-${UniversalToolName.requestSelectPersonas}`,
+        toolCallId: creationStatus.toolCallId,
+        state: "input-available" as const,
+        input: { personaIds: creationStatus.candidatePersonaIds },
+      };
+
       return (
         <>
           <DialogHeader>
@@ -322,16 +470,11 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4 space-y-4">
-            {renderProgressBar(status)}
+            {renderProgressBar(phase)}
             <div className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
               <RequestSelectPersonasMessage
-                toolInvocation={{
-                  type: `tool-${UniversalToolName.requestSelectPersonas}`,
-                  toolCallId: progress.toolCallId,
-                  state: "input-available",
-                  input: { personaIds: progress.candidatePersonaIds ?? [] },
-                }}
-                addToolResult={handleToolResult}
+                toolInvocation={toolInvocation}
+                addToolResult={addToolResult}
               />
             </div>
           </div>
@@ -339,7 +482,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
       );
     }
 
-    if (status === "saving") {
+    if (phase === "saving") {
       return (
         <>
           <DialogHeader>
@@ -348,17 +491,22 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4 space-y-4">
-            {renderProgressBar(status)}
+            {renderProgressBar(phase)}
             <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
+              {agentText && (
+                <p className="text-xs text-muted-foreground/60 text-center max-w-sm leading-relaxed line-clamp-2">
+                  {agentText}
+                </p>
+              )}
             </div>
           </div>
         </>
       );
     }
 
-    if (status === "completed") {
+    if (phase === "completed") {
       return (
         <>
           <DialogHeader>
@@ -367,7 +515,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
             </DialogTitle>
           </DialogHeader>
           <div className="mt-4 space-y-4">
-            {renderProgressBar(status)}
+            {renderProgressBar(phase)}
             <div className="flex flex-col items-center justify-center py-4 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
               <div className="relative flex items-center justify-center">
                 <div className="absolute w-32 h-32 rounded-full bg-primary blur-[50px] opacity-10" />
@@ -375,16 +523,18 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
                   <CheckCircle2 className="size-6 text-primary" />
                 </div>
               </div>
-              {progress?.panelTitle && <p className="text-sm font-medium">{progress.panelTitle}</p>}
-              {typeof progress?.personaCount === "number" && (
+              {creationStatus.panelTitle && (
+                <p className="text-sm font-medium">{creationStatus.panelTitle}</p>
+              )}
+              {typeof creationStatus.personaCount === "number" && (
                 <p className="text-xs text-muted-foreground">
-                  {t("CreatePanelWizard.personaCount", { count: progress.personaCount })}
+                  {t("CreatePanelWizard.personaCount", { count: creationStatus.personaCount })}
                 </p>
               )}
               <div className="flex flex-col items-center gap-2 mt-2">
-                {progress?.panelId && (
+                {creationStatus.panelId && (
                   <Button asChild size="sm" className="gap-1.5">
-                    <Link href={`/panel/${progress.panelId}`}>
+                    <Link href={`/panel/${creationStatus.panelId}`}>
                       {t("CreatePanelWizard.viewPanel")}
                     </Link>
                   </Button>
@@ -401,37 +551,12 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
       );
     }
 
-    if (status === "error") {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle className="text-lg tracking-tight">
-              {t("CreatePanelWizard.error")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            <div className="flex items-center justify-center size-12 rounded-full bg-destructive/10">
-              <AlertCircle className="size-6 text-destructive" />
-            </div>
-            {progress?.errorMessage && (
-              <p className="text-xs text-muted-foreground text-center max-w-sm">
-                {progress.errorMessage}
-              </p>
-            )}
-            <Button variant="outline" size="sm" onClick={resetWizard}>
-              {t("CreatePanelWizard.retry")}
-            </Button>
-          </div>
-        </>
-      );
-    }
-
     return null;
   };
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="sm:max-w-lg">{renderWizardContent()}</DialogContent>
+      <DialogContent className="sm:max-w-lg">{renderContent()}</DialogContent>
     </Dialog>
   );
 }

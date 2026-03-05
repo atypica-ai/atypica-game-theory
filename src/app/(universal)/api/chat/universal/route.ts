@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const error = { message: "Invalid request", details: parseResult.error.format() };
     return NextResponse.json({ error }, { status: 400 });
   }
-  const { message: newMessage, userChatToken } = parseResult.data;
+  const { message: newMessage, userChatToken, executionMode } = parseResult.data;
 
   // Find and validate userChat
   const userChat = await prisma.userChat.findUnique({
@@ -84,6 +84,11 @@ export async function POST(req: Request) {
     );
   }
 
+  // When executionMode is "sync", pass the request's abort signal to the agent.
+  // This ties the agent's lifecycle to the HTTP connection — if the client
+  // disconnects (e.g. dialog closed, page refreshed), the agent stops.
+  const requestAbortSignal = executionMode === "sync" ? req.signal : undefined;
+
   const stream = createUIMessageStream({
     async execute({ writer }) {
       await executeUniversalAgent(
@@ -93,6 +98,7 @@ export async function POST(req: Request) {
           statReport,
           logger,
           locale,
+          requestAbortSignal,
         },
         writer,
       );

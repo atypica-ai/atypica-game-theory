@@ -51,12 +51,15 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     statReport,
     logger,
     locale,
+    requestAbortSignal,
   }: {
     userId: number;
     userChat: Pick<UserChat, "id" | "token" | "extra">;
     statReport: StatReporter;
     logger: Logger;
     locale: Locale;
+    /** When provided (e.g. executionMode:"sync"), aborting this signal also stops the agent. */
+    requestAbortSignal?: AbortSignal;
   },
   streamWriter?: UIMessageStreamWriter,
 ) {
@@ -69,12 +72,18 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
   // Start managed run — writes runId to DB, starts watcher, returns abort signal
   const {
     runId,
-    abortSignal,
+    abortSignal: managedRunAbortSignal,
     cleanup: cleanupRun,
   } = await startManagedRun({
     userChatId: universalChatId,
     logger,
   });
+
+  // Combine managed-run signal with optional request signal (executionMode:"sync").
+  // Either signal aborting will stop the agent.
+  const abortSignal = requestAbortSignal
+    ? AbortSignal.any([managedRunAbortSignal, requestAbortSignal])
+    : managedRunAbortSignal;
 
   // Get user and team info
   const user = await prisma.user.findUniqueOrThrow({
