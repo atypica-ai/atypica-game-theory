@@ -59,6 +59,18 @@
     "invalidFileType": "请上传 .skill 或 .zip 文件",
     "newChatPrompt": "想聊些什么？",
     "createChatError": "创建对话失败",
-    "inputPlaceholder": "输入消息...（Shift+Enter 换行）"
+    "inputPlaceholder": "输入消息...（Shift+Enter 换行）",
+    "executionTimelineTitle": "执行时间线",
+    "executionOpenDrawer": "执行进度",
+    "executionSelectTask": "请选择一个子代理任务查看执行过程。",
+    "executionSubAgentNotReady": "子代理会话暂未可用。",
+    "executionLoading": "正在加载执行步骤...",
+    "executionWaitingFirstStep": "子代理正在运行，等待第一个里程碑步骤...",
+    "executionNoSteps": "该任务暂未产生可展示的执行步骤。",
+    "executionTechDetails": "技术细节",
+    "executionStageDiscovery": "探索",
+    "executionStageInterview": "访谈",
+    "executionStageSynthesis": "综合",
+    "executionStageDelivery": "交付"
   }
 }

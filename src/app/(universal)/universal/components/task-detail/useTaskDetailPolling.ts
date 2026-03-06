@@ -21,7 +21,7 @@ export function useTaskDetailPolling<TData>({
   shouldContinue,
   onError,
   intervalMs = 5000,
-  hiddenIntervalMs = 20000,
+  hiddenIntervalMs = 30000,
   maxConsecutiveErrors = 3,
 }: UseTaskDetailPollingOptions<TData>) {
   const { isDocumentVisible } = useDocumentVisibility();

@@ -28,6 +28,10 @@ import {
   SearchPersonasToolResult,
 } from "@/app/(study)/tools/searchPersonas/types";
 import { DeepResearchInput, DeepResearchOutput } from "@/app/(deepResearch)/types";
+import {
+  CreateStudySubAgentToolInput,
+  CreateStudySubAgentToolResult,
+} from "@/app/(universal)/tools/createStudySubAgent/types";
 import { UIDataTypes, UIMessage } from "ai";
 
 /**
@@ -57,6 +61,7 @@ export enum UniversalToolName {
   generateReport = "generateReport",
   generatePodcast = "generatePodcast",
   deepResearch = "deepResearch",
+  createStudySubAgent = "createStudySubAgent",
 
   // Panel
   requestSelectPersonas = "requestSelectPersonas",
@@ -91,6 +96,10 @@ export type UniversalUITools = {
   [UniversalToolName.deepResearch]: {
     input: DeepResearchInput;
     output: DeepResearchOutput;
+  };
+  [UniversalToolName.createStudySubAgent]: {
+    input: CreateStudySubAgentToolInput;
+    output: CreateStudySubAgentToolResult;
   };
   [UniversalToolName.generateReport]: {
     input: GenerateReportToolInput;

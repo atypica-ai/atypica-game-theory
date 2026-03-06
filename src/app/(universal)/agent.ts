@@ -6,7 +6,7 @@ import {
 } from "@/ai/messageUtils";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { handleToolCallError, toolCallError } from "@/ai/tools/error";
-import { reasoningThinkingTool, webFetchTool } from "@/ai/tools/tools";
+import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { loadMemoryForAgent } from "@/app/(memory)/lib/loadMemory";
@@ -24,6 +24,7 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { buildUniversalSystemPrompt } from "@/app/(universal)/prompt";
+import { createStudySubAgentTool } from "@/app/(universal)/tools/createStudySubAgent";
 import { listSkillsTool, UniversalToolSet } from "@/app/(universal)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { loadAllSkillsToMemory } from "@/lib/skill/loadToMemory";
@@ -168,7 +169,11 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
   // Merge tools
   const tools: UniversalToolSet = {
     [UniversalToolName.reasoningThinking]: reasoningThinkingTool(agentToolArgs),
-    // [UniversalToolName.webSearch]: webSearchTool({ ...agentToolArgs }),
+    [UniversalToolName.webSearch]: webSearchTool({
+      provider: "tavily",
+      studyUserChatId: universalChatId,
+      ...agentToolArgs,
+    }),
     [UniversalToolName.webFetch]: webFetchTool({ locale }),
 
     // bash and skills
@@ -204,6 +209,11 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
       ...agentToolArgs,
     }),
     [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
+    [UniversalToolName.createStudySubAgent]: createStudySubAgentTool({
+      userId,
+      teamId,
+      ...agentToolArgs,
+    }),
 
     // panel
     [UniversalToolName.requestSelectPersonas]: requestSelectPersonasTool,

@@ -15,6 +15,7 @@ import {
 } from "@/app/(study)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { Tool, ToolSet } from "ai";
+import { createStudySubAgentTool } from "./createStudySubAgent";
 import { listSkillsTool } from "./listSkills";
 
 /**
@@ -42,6 +43,7 @@ export type UniversalToolSet = Partial<{
   [UniversalToolName.discussionChat]: ReturnType<typeof discussionChatTool>;
   [UniversalToolName.interviewChat]: ReturnType<typeof interviewChatTool>;
   [UniversalToolName.deepResearch]: ReturnType<typeof deepResearchTool>;
+  [UniversalToolName.createStudySubAgent]: ReturnType<typeof createStudySubAgentTool>;
   [UniversalToolName.generateReport]: ReturnType<typeof generateReportTool>;
   [UniversalToolName.generatePodcast]: ReturnType<typeof generatePodcastTool>;
   [UniversalToolName.requestSelectPersonas]: typeof requestSelectPersonasTool;

@@ -3,7 +3,6 @@
 import { UniversalTaskStatus, UniversalTaskVM } from "@/app/(universal)/universal/task-vm";
 import { cn } from "@/lib/utils";
 import { CheckCircle2Icon, CircleDotIcon, CircleXIcon, SparklesIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
 
 function StatusIcon({ status }: { status: UniversalTaskStatus }) {
   if (status === "running") return <CircleDotIcon className="size-3.5 text-amber-500 animate-pulse" />;
@@ -34,85 +33,6 @@ function StatusBadge({ status }: { status: UniversalTaskStatus }) {
   );
 }
 
-function getTaskInput(task: UniversalTaskVM): Record<string, unknown> | null {
-  if (task.part.type === "dynamic-tool") return null;
-  if (!task.part.input || typeof task.part.input !== "object") return null;
-  return task.part.input as Record<string, unknown>;
-}
-
-function compact(value: unknown, maxLength = 120): string {
-  if (typeof value === "string") {
-    const normalized = stripMarkdown(value).replace(/\s+/g, " ").trim();
-    return normalized.length > maxLength ? `${normalized.slice(0, maxLength)}...` : normalized;
-  }
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-  if (Array.isArray(value)) return `${value.length} items`;
-  if (value && typeof value === "object") return "Object";
-  return "";
-}
-
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/(\*\*|__)(.*?)\1/g, "$2")
-    .replace(/(\*|_)(.*?)\1/g, "$2")
-    .replace(/~~(.*?)~~/g, "$1")
-    .replace(/^[\s>*-]+/gm, "")
-    .replace(/^\d+\.\s+/gm, "")
-    .trim();
-}
-
-function TypewriterText({
-  text,
-  animate = true,
-  className,
-}: {
-  text: string;
-  animate?: boolean;
-  className?: string;
-}) {
-  const plain = useMemo(() => stripMarkdown(text), [text]);
-  const [visible, setVisible] = useState(animate ? "" : plain);
-
-  useEffect(() => {
-    if (!animate) {
-      setVisible(plain);
-      return;
-    }
-    setVisible("");
-    if (!plain) return;
-
-    let index = 0;
-    const timer = setInterval(() => {
-      index += 1;
-      setVisible(plain.slice(0, index));
-      if (index >= plain.length) clearInterval(timer);
-    }, 14);
-
-    return () => clearInterval(timer);
-  }, [animate, plain]);
-
-  return <div className={className}>{visible}</div>;
-}
-
-function extractTaskParam(task: UniversalTaskVM): { title: string; detail: string } | null {
-  const input = getTaskInput(task);
-  if (!input) return null;
-
-  const titleKeys = ["title", "topic", "query", "objective", "goal", "subject"] as const;
-  const detailKeys = ["instruction", "prompt", "description", "brief", "context"] as const;
-
-  const paramTitle = titleKeys.map((key) => compact(input[key])).find(Boolean) ?? "";
-  const paramDetail = detailKeys.map((key) => compact(input[key], 150)).find(Boolean) ?? "";
-
-  if (paramTitle || paramDetail) return { title: paramTitle, detail: paramDetail };
-  return null;
-}
-
 export function UniversalTaskListPanel({
   tasks,
   selectedTaskCallId,
@@ -127,17 +47,16 @@ export function UniversalTaskListPanel({
       <div className="px-4 py-3 border-b bg-[linear-gradient(90deg,rgba(24,24,27,0.06)_0%,rgba(24,24,27,0.02)_38%,transparent_100%)] dark:bg-[linear-gradient(90deg,rgba(244,244,245,0.08)_0%,rgba(244,244,245,0.02)_38%,transparent_100%)]">
         <div className="text-sm font-medium flex items-center gap-2">
           <SparklesIcon className="size-3.5 text-zinc-500 dark:text-zinc-400" />
-          Tasks
+          SubAgent Tasks
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
         {tasks.length === 0 ? (
-          <div className="text-xs text-muted-foreground p-4">No tasks yet</div>
+          <div className="text-xs text-muted-foreground p-4">No subagent tasks yet</div>
         ) : (
           tasks.map((task) => {
             const selected = task.toolCallId === selectedTaskCallId;
-            const param = extractTaskParam(task);
             return (
               <button
                 key={task.toolCallId}
@@ -160,32 +79,15 @@ export function UniversalTaskListPanel({
                 <div className="relative z-10 flex items-center gap-2">
                   <StatusBadge status={task.status} />
                   <div className="text-[11px] uppercase tracking-wide text-muted-foreground truncate ml-auto font-medium">
-                    {task.kind}
+                    study
                   </div>
                 </div>
                 <div className="relative z-10 mt-2 flex items-start gap-2">
                   <StatusIcon status={task.status} />
-                  <div className="text-sm font-semibold leading-5 line-clamp-2">{task.title}</div>
+                  <div className="text-sm font-semibold leading-5 line-clamp-1">{task.title}</div>
                 </div>
-                {param ? (
-                  <div className="relative z-10 mt-2 border-l border-zinc-300/60 dark:border-zinc-700 pl-2.5">
-                    {param.title ? (
-                      <div className="text-xs text-foreground/90 line-clamp-1">
-                        <span className="text-muted-foreground mr-1">Title:</span>
-                        {param.title}
-                      </div>
-                    ) : null}
-                    {param.detail ? (
-                      <TypewriterText
-                        text={param.detail}
-                        animate={task.status === "running"}
-                        className={cn("text-[11px] text-muted-foreground line-clamp-2", param.title ? "mt-1" : "")}
-                      />
-                    ) : null}
-                  </div>
-                ) : null}
-                <div className="relative z-10 mt-2 text-[11px] text-muted-foreground line-clamp-2">
-                  {task.summary ? task.summary : task.status === "running" ? "Task is processing..." : "No summary."}
+                <div className="relative z-10 mt-1 text-[11px] text-muted-foreground line-clamp-1">
+                  {task.summary || (task.status === "running" ? "Task is processing..." : "No summary.")}
                 </div>
               </button>
             );

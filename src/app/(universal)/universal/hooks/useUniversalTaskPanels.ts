@@ -8,10 +8,6 @@ export function useUniversalTaskPanels(tasks: UniversalTaskVM[]) {
   const [autoFollowLatestTask, setAutoFollowLatestTask] = useState(true);
 
   const hasTasks = tasks.length > 0;
-  const latestDoneReportTask = useMemo(
-    () => tasks.find((task) => task.kind === "report" && task.status === "done") ?? null,
-    [tasks],
-  );
   const allTasksCompleted = useMemo(
     () => hasTasks && tasks.every((task) => task.status !== "running"),
     [hasTasks, tasks],
@@ -24,7 +20,7 @@ export function useUniversalTaskPanels(tasks: UniversalTaskVM[]) {
       return;
     }
 
-    const fallbackTask = tasks.find((task) => task.status === "running") ?? latestDoneReportTask ?? tasks[0];
+    const fallbackTask = tasks.find((task) => task.status === "running") ?? tasks[0];
     if (autoFollowLatestTask) {
       if (selectedTaskCallId !== fallbackTask.toolCallId) {
         setSelectedTaskCallId(fallbackTask.toolCallId);
@@ -35,7 +31,7 @@ export function useUniversalTaskPanels(tasks: UniversalTaskVM[]) {
     if (selectedTaskCallId && !tasks.some((task) => task.toolCallId === selectedTaskCallId)) {
       setSelectedTaskCallId(fallbackTask.toolCallId);
     }
-  }, [autoFollowLatestTask, latestDoneReportTask, selectedTaskCallId, tasks]);
+  }, [autoFollowLatestTask, selectedTaskCallId, tasks]);
 
   const selectedTask = useMemo(
     () => tasks.find((task) => task.toolCallId === selectedTaskCallId) ?? null,

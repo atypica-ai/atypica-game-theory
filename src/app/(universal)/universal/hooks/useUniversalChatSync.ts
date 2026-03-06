@@ -35,10 +35,49 @@ export function useUniversalChatSync({
       ),
     [messages],
   );
+  const hasPendingSubAgentToken = useMemo(
+    () =>
+      messages.some((message) =>
+        message.parts.some((part) => {
+          if (!isToolUIPart(part)) return false;
+          if (getToolName(part) !== UniversalToolName.createStudySubAgent) return false;
+          if (part.state !== "output-available") return true;
+          if (!part.output || typeof part.output !== "object") return true;
+          const output = part.output as Record<string, unknown>;
+          return typeof output.subAgentChatToken !== "string" || output.subAgentChatToken.length === 0;
+        }),
+      ),
+    [messages],
+  );
 
   const [isRunning, setIsRunning] = useState(false);
+  const isRunningRef = useRef(false);
   const chatUpdatedAt = useRef<number | null>(null);
   const { isDocumentVisible } = useDocumentVisibility();
+  const messageSignatureRef = useRef("");
+
+  const buildMessageSignature = useCallback((targetMessages: TUniversalMessageWithTool[]) => {
+    return targetMessages
+      .map((message) => {
+        const parts = message.parts
+          .map((part) => {
+            if (!isToolUIPart(part)) return `${part.type}`;
+            const toolName = getToolName(part);
+            return `${part.type}:${toolName}:${part.state}:${part.toolCallId}`;
+          })
+          .join("|");
+        return `${message.id}:${message.role}:${parts}`;
+      })
+      .join("||");
+  }, []);
+
+  useEffect(() => {
+    isRunningRef.current = isRunning;
+  }, [isRunning]);
+
+  useEffect(() => {
+    messageSignatureRef.current = buildMessageSignature(messages);
+  }, [buildMessageSignature, messages]);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,6 +89,7 @@ export function useUniversalChatSync({
       });
       if (!cancelled && result.success) {
         setIsRunning(result.data.isRunning);
+        isRunningRef.current = result.data.isRunning;
         chatUpdatedAt.current = result.data.chatMessageUpdatedAt.valueOf();
       }
     };
@@ -68,26 +108,40 @@ export function useUniversalChatSync({
     if (!stateResult.success) return;
 
     const { isRunning: nextIsRunning, chatMessageUpdatedAt } = stateResult.data;
-    if (nextIsRunning === isRunning && chatMessageUpdatedAt.valueOf() === chatUpdatedAt.current) {
+    if (
+      nextIsRunning === isRunningRef.current &&
+      chatMessageUpdatedAt.valueOf() === chatUpdatedAt.current &&
+      !hasPendingSubAgentToken
+    ) {
       return;
     }
 
-    setIsRunning(nextIsRunning);
+    if (nextIsRunning !== isRunningRef.current) {
+      setIsRunning(nextIsRunning);
+      isRunningRef.current = nextIsRunning;
+    }
     chatUpdatedAt.current = chatMessageUpdatedAt.valueOf();
 
     const chatResult = await fetchUniversalUserChatByToken(userChatToken);
     if (chatResult.success) {
-      onSetMessages(chatResult.data.messages as TUniversalMessageWithTool[]);
+      const nextMessages = chatResult.data.messages as TUniversalMessageWithTool[];
+      const nextSignature = buildMessageSignature(nextMessages);
+      if (nextSignature !== messageSignatureRef.current) {
+        messageSignatureRef.current = nextSignature;
+        onSetMessages(nextMessages);
+      }
     }
-  }, [isRunning, onSetMessages, userChatKind, userChatToken]);
+  }, [buildMessageSignature, hasPendingSubAgentToken, onSetMessages, userChatKind, userChatToken]);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
 
     const poll = async () => {
-      if (!isRunning || hasPendingHumanInTheLoopTool || status !== "ready") return;
-      timeoutId = setTimeout(poll, isDocumentVisible ? 5000 : 30000);
+      if ((!isRunningRef.current && !hasPendingSubAgentToken) || hasPendingHumanInTheLoopTool || status !== "ready") {
+        return;
+      }
       await refreshUniversalChat();
+      timeoutId = setTimeout(poll, isDocumentVisible ? 5000 : 30000);
     };
 
     poll();
@@ -96,8 +150,8 @@ export function useUniversalChatSync({
     };
   }, [
     hasPendingHumanInTheLoopTool,
+    hasPendingSubAgentToken,
     isDocumentVisible,
-    isRunning,
     refreshUniversalChat,
     status,
   ]);

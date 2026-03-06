@@ -128,6 +128,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   baseContext: BaseAgentContext,
   createAgentConfig: (toolAbortSignal: AbortSignal) => Promise<AgentRequestConfig<TOOLS>>,
   streamWriter?: UIMessageStreamWriter,
+  options?: { executionMode?: "detached" | "blocking" },
 ) {
   const { userId, studyUserChatId, userChatContext, locale, logger, statReport } = baseContext;
 
@@ -663,15 +664,21 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // Phase 9: Consume Stream + Return Stream
   // =============================================================================
 
-  // Ensure the stream is consumed to completion even if the client disconnects.
-  after(
-    streamTextResult
-      .consumeStream()
-      .then(() => logger.info("study consumeStream completed"))
-      .catch((error) =>
-        logger.error({ msg: "study consumeStream error", error: (error as Error).message }),
-      ),
-  );
+  const consume = async () => {
+    try {
+      await streamTextResult.consumeStream();
+      logger.info("study consumeStream completed");
+    } catch (error) {
+      logger.error({ msg: "study consumeStream error", error: (error as Error).message });
+    }
+  };
+
+  if (options?.executionMode === "blocking") {
+    await consume();
+  } else {
+    // Ensure the stream is consumed to completion even if the client disconnects.
+    after(consume());
+  }
 
   // Only merge if streamWriter is provided (for non-MCP scenarios)
   streamWriter?.merge(

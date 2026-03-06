@@ -1,5 +1,5 @@
+import { Embed } from "@/app/(system)/embed/Embed";
 import { AuthProvider } from "@/components/AuthProvider";
-import { LayoutSessionConsumers } from "@/components/LayoutSessionConsumers";
 import Stars from "@/components/Stars";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -14,7 +14,6 @@ import { Instrument_Serif } from "next/font/google";
 import { getProxyCdnOrigin } from "./(system)/cdn/lib";
 import Script from "next/script";
 import "./globals.css";
-import Script from "next/script";
 
 // 配置字体
 const instrumentSerif = Instrument_Serif({
@@ -85,15 +84,6 @@ export default async function RootLayout({
       data-proxy-cdn-origin={getProxyCdnOrigin()}
       suppressHydrationWarning
     >
-            <head>
-        {process.env.NODE_ENV === "development" && (
-          <Script
-            src="//unpkg.com/react-grab/dist/index.global.js"
-            crossOrigin="anonymous"
-            strategy="beforeInteractive"
-          />
-        )}
-      </head>
       <body
         className={cn(
           "font-sans antialiased",
@@ -110,7 +100,6 @@ export default async function RootLayout({
           />
         )}
         <AuthProvider>
-          <LayoutSessionConsumers />
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -122,6 +111,7 @@ export default async function RootLayout({
               {/* <GlobalHeader /> */}
               {children}
               <Toaster richColors={true} />
+              <Embed />
               <Analytics />
             </NextIntlClientProvider>
           </ThemeProvider>

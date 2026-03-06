@@ -3,7 +3,7 @@
 //   pnpm tsx scripts/admintool.ts create-user email@example.com password123
 //   pnpm tsx scripts/admintool.ts make-admin email@example.com
 
-import { AdminRole, TokensLogVerb } from "@/prisma/client";
+import { AdminRole } from "@/prisma/client";
 import { loadEnvConfig } from "@next/env";
 import "../mock-server-only";
 
@@ -331,67 +331,6 @@ async function addSubscription(args: string[]) {
   }
 }
 
-async function addTokens(email: string, amountStr: string) {
-  loadEnvConfig(process.cwd());
-  const { prisma } = await import("@/prisma/prisma");
-
-  try {
-    const amount = parseInt(amountStr, 10);
-    if (isNaN(amount) || amount <= 0) {
-      console.error(`Error: Invalid amount "${amountStr}". Must be a positive integer`);
-      process.exit(1);
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-      include: { tokensAccount: true },
-    });
-
-    if (!user) {
-      console.error(`Error: User with email ${email} not found`);
-      process.exit(1);
-    }
-
-    if (user.teamIdAsMember) {
-      console.error(`Error: ${email} is a team member. Use personal user email to add tokens.`);
-      process.exit(1);
-    }
-
-    await prisma.$transaction(async (tx) => {
-      if (!user.tokensAccount) {
-        await tx.tokensAccount.create({
-          data: {
-            userId: user.id,
-            permanentBalance: 0,
-            monthlyBalance: 0,
-          },
-        });
-      }
-      await tx.tokensAccount.update({
-        where: { userId: user.id },
-        data: {
-          permanentBalance: { increment: amount },
-        },
-      });
-      await tx.tokensLog.create({
-        data: {
-          userId: user.id,
-          value: amount,
-          verb: TokensLogVerb.gift,
-        },
-      });
-    });
-
-    console.log(`Tokens added successfully:`);
-    console.log(`  Email: ${email}`);
-    console.log(`  User ID: ${user.id}`);
-    console.log(`  Amount: ${amount.toLocaleString()} tokens`);
-  } catch (error) {
-    console.error(`Error adding tokens: ${(error as Error).message}`);
-    process.exit(1);
-  }
-}
-
 async function addTeamSubscription(args: string[]) {
   loadEnvConfig(process.cwd());
   const { manuallyAddTeamSubscription, createManualPaymentRecord } =
@@ -557,7 +496,6 @@ async function main() {
     console.error(
       "  pnpm tsx scripts/admintool.ts add-team-subscription --teamId <id> --plan <team|superteam> --seats <number> --start <YYYY-MM-DD> --months <number> [--currency <CNY|USD>]",
     );
-    console.error("  pnpm tsx scripts/admintool.ts add-tokens <email> [amount]");
     process.exit(1);
   }
 
@@ -604,19 +542,10 @@ async function main() {
       await addTeamSubscription(args.slice(1));
       break;
 
-    case "add-tokens":
-      if (args.length < 2) {
-        console.error("Usage: pnpm tsx scripts/admintool.ts add-tokens <email> [amount]");
-        console.error("  amount defaults to 1000000 (100万) if omitted");
-        process.exit(1);
-      }
-      await addTokens(args[1], args[2] ?? "1000000");
-      break;
-
     default:
       console.error(`Unknown command: ${command}`);
       console.error(
-        "Available commands: create-user, make-admin, create-team, list-teams, add-subscription, add-team-subscription, add-tokens",
+        "Available commands: create-user, make-admin, create-team, list-teams, add-subscription, add-team-subscription",
       );
       process.exit(1);
   }

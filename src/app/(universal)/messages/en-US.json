@@ -59,6 +59,18 @@
     "invalidFileType": "Please upload a .skill or .zip file",
     "newChatPrompt": "What would you like to talk about?",
     "createChatError": "Failed to create chat",
-    "inputPlaceholder": "Type your message... (Shift+Enter for new line)"
+    "inputPlaceholder": "Type your message... (Shift+Enter for new line)",
+    "executionTimelineTitle": "Execution Timeline",
+    "executionOpenDrawer": "Execution Progress",
+    "executionSelectTask": "Select a sub-agent task to view execution progress.",
+    "executionSubAgentNotReady": "Sub-agent chat is not available yet.",
+    "executionLoading": "Loading execution steps...",
+    "executionWaitingFirstStep": "Sub-agent is running. Waiting for the first milestone...",
+    "executionNoSteps": "No execution steps found for this task.",
+    "executionTechDetails": "Technical details",
+    "executionStageDiscovery": "discovery",
+    "executionStageInterview": "interview",
+    "executionStageSynthesis": "synthesis",
+    "executionStageDelivery": "delivery"
   }
 }

@@ -19,6 +19,9 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   message: { role, parts },
   renderToolUIPart,
   toolInvocationVariant,
+  hideToolInvocations,
+  shouldShowToolInvocation,
+  renderMessageFooter,
   // extra,
 }: {
   nickname?: string;
@@ -27,6 +30,9 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   extra?: Omit<UI_MESSAGE, "id" | "role" | "parts">;
   renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   toolInvocationVariant?: ToolInvocationVariant;
+  hideToolInvocations?: boolean;
+  shouldShowToolInvocation?: (toolPart: UI_MESSAGE["parts"][number]) => boolean;
+  renderMessageFooter?: (message: Pick<UI_MESSAGE, "role" | "parts">) => ReactNode;
 }) => {
   const fileParts = useMemo(() => {
     return parts?.filter((part) => part.type === "file");
@@ -62,6 +68,9 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
       )}
       <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
         {parts.map((part, i) => {
+          const showToolInvocation = shouldShowToolInvocation
+            ? shouldShowToolInvocation(part as UI_MESSAGE["parts"][number])
+            : !hideToolInvocations;
           if (part.type === "text") {
             return !isSystemMessage(part.text) ? (
               <div key={i} className="text-sm">
@@ -100,19 +109,23 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
             // 通过 MCP 添加的 Tools 会是 dynamic-tools
             return (
               <React.Fragment key={i}>
-                <ToolInvocationMessage
-                  toolInvocation={part}
-                  variant={toolInvocationVariant}
-                />
+                {showToolInvocation ? (
+                  <ToolInvocationMessage
+                    toolInvocation={part}
+                    variant={toolInvocationVariant}
+                  />
+                ) : null}
               </React.Fragment>
             );
           } else if (isToolUIPart(part)) {
             return (
               <React.Fragment key={i}>
-                <ToolInvocationMessage
-                  toolInvocation={part}
-                  variant={toolInvocationVariant}
-                />
+                {showToolInvocation ? (
+                  <ToolInvocationMessage
+                    toolInvocation={part}
+                    variant={toolInvocationVariant}
+                  />
+                ) : null}
                 {/*<ToolInvocationDisplay toolInvocation={part} />*/}
                 {renderToolUIPart(part)}
               </React.Fragment>
@@ -128,6 +141,7 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
             );
           }
         })}
+        {renderMessageFooter ? renderMessageFooter({ role, parts }) : null}
       </div>
     </motion.div>
   );

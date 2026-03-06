@@ -8,6 +8,13 @@
 
 ### 最近架构优化
 
+**SubAgent 任务视图与一致性修复** (2026-03-03)
+- Universal 中栏的 Task 现在以 `createStudySubAgent` 为主键（一次调用 = 一个任务）
+- 任务状态以子会话运行态优先，避免出现“右侧还在跑但中栏已完成”的不一致
+- 右侧 `TaskDetailPanel` 改为 Universal 独立工具渲染层，不直接依赖 StudyProvider
+- `buildPersona` 在 Universal 右侧使用独立卡片渲染（避免 `useStudyContext` runtime error）
+- `scoutTaskChat` 在 Universal 右侧新增 `Scout Task Full Tool Flow`，可直接查看 scout 子会话内的社媒工具调用结果（无需进入 Study Console）
+
 **移除 exportFolder 工具** - 简化了 Agent 工作流和下载机制：
 - Agent 不再需要调用导出工具，只管创建文件
 - 每个 step 完成后自动同步文件到磁盘

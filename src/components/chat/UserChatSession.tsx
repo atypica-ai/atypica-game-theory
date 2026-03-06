@@ -29,6 +29,9 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   renderToolUIPart,
   acceptAttachments,
   toolInvocationVariant,
+  hideToolInvocations,
+  shouldShowToolInvocation,
+  renderMessageFooter,
   // persistMessages = true,
 }: {
   chatTitle?: string;
@@ -46,6 +49,9 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   acceptAttachments: boolean;
   toolInvocationVariant?: ToolInvocationVariant;
+  hideToolInvocations?: boolean;
+  shouldShowToolInvocation?: (toolPart: UI_MESSAGE["parts"][number]) => boolean;
+  renderMessageFooter?: (message: Pick<UI_MESSAGE, "role" | "parts">) => ReactNode;
   persistMessages?: boolean;
 }) {
   const t = useTranslations("Components.UserChatSession");
@@ -127,6 +133,9 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
               extra={extra}
               renderToolUIPart={renderToolUIPart}
               toolInvocationVariant={toolInvocationVariant}
+              hideToolInvocations={hideToolInvocations}
+              shouldShowToolInvocation={shouldShowToolInvocation}
+              renderMessageFooter={renderMessageFooter}
             ></ChatMessage>
           ))}
         {/* AI Compliance Disclaimer */}

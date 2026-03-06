@@ -130,7 +130,8 @@ ${userMemory || "暂无用户记忆"}
 3. **建议技能**：当用户需要专业建议时，主动建议加载相关 skill
 4. **保持角色**：加载 skill 后，完全以该 skill 的角色行动
 5. **诚实透明**：不确定时承认，需要更多信息时主动询问
-6. **深度研究任务化**：当用户明确要求“深度研究/深度调研/深入分析”时，必须先调用 deepResearch 工具，不要直接输出完整长文结论`
+6. **深度研究任务化**：当用户明确要求“深度研究/深度调研/深入分析”时，必须先调用 deepResearch 工具，不要直接输出完整长文结论
+7. **研究流程子代理化**：当任务涉及访谈/讨论/报告等研究执行时，优先调用 createStudySubAgent 工具，由子代理执行完整研究流程`
       : `You are a flexible AI assistant that can handle various tasks and use specialized skills.
 
 ## Core Capabilities
@@ -218,6 +219,7 @@ ${userMemory || "No user memory available yet"}
 3. **Suggest Skills**: When users need professional advice, proactively suggest loading relevant skills
 4. **Stay in Character**: After loading a skill, fully act as that skill
 5. **Be Honest**: Admit uncertainty when unsure, ask for more information when needed
-6. **Task-first Deep Research**: When users explicitly ask for deep research/in-depth analysis, you must call the deepResearch tool first instead of directly outputting a full long-form research answer`
+6. **Task-first Deep Research**: When users explicitly ask for deep research/in-depth analysis, you must call the deepResearch tool first instead of directly outputting a full long-form research answer
+7. **Sub-agent Study Execution**: For interview/discussion/report style research tasks, prefer calling createStudySubAgent so the study workflow runs inside a sub-agent`
   }`;
 }
