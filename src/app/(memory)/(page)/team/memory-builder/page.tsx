@@ -2,9 +2,9 @@ import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
 import { getServerSession } from "next-auth";
 import { forbidden, redirect } from "next/navigation";
-import ContextBuilderPageClient from "./ContextBuilderPageClient";
+import { MemoryBuilderPageClient } from "../../components/MemoryBuilderPageClient";
 
-export default async function ContextBuilderPage() {
+export default async function TeamMemoryBuilderPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
@@ -25,5 +25,5 @@ export default async function ContextBuilderPage() {
     forbidden();
   }
 
-  return <ContextBuilderPageClient />;
+  return <MemoryBuilderPageClient mode="team" />;
 }

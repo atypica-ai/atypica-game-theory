@@ -2,15 +2,14 @@
 
 import { ClientMessagePayload, prepareLastUIMessageForRequest } from "@/ai/messageUtilsClient";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
-import { TContextBuilderUITools } from "@/app/(memory)/team/memory-builder/tools/types";
-import { saveTeamMemoryAction } from "@/app/team/(detail)/capabilities/actions";
+import { TContextBuilderUITools } from "@/app/(memory)/tools/endInterview/types";
 import { FocusedInterviewChat } from "@/components/chat/FocusedInterviewChat";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ArrowRightIcon, PlusIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -23,21 +22,27 @@ type CONTEXT_BUILDER_UI_MESSAGE = TMessageWithPlainTextTool<
   ClientMessagePayload["message"]["metadata"]
 >;
 
-export function ContextBuilderChatClient({
+export function MemoryBuilderChatClient({
+  mode,
   userChatToken,
   initialMessages = [],
+  onSaveMemory,
 }: {
+  mode: "team" | "user";
   userChatToken: string;
   initialMessages?: CONTEXT_BUILDER_UI_MESSAGE[];
+  onSaveMemory: (content: string) => Promise<{ success: boolean; message?: string }>;
 }) {
   const locale = useLocale();
+  const apiEndpoint =
+    mode === "team" ? "/api/team-memory-builder/chat" : "/api/user-memory-builder/chat";
 
   const extraRequestPayload = useMemo(() => ({ userChatToken }), [userChatToken]);
 
   const useChatHelpers = useChat({
     messages: initialMessages,
     transport: new DefaultChatTransport<CONTEXT_BUILDER_UI_MESSAGE>({
-      api: "/api/team-memory-builder/chat",
+      api: apiEndpoint,
       prepareSendMessagesRequest({ messages, id }) {
         const message = prepareLastUIMessageForRequest(messages);
         const body: ClientMessagePayload = {
@@ -58,20 +63,15 @@ export function ContextBuilderChatClient({
 
   const { messages } = useChatHelpers;
 
-  // Determine interview state based on messages content
   const interviewState = useMemo(() => {
     const hasEndInterviewResult = messages.some((message) =>
       message.parts?.some(
         (part) => part.type === "tool-endInterview" && part.state === "output-available",
       ),
     );
-    if (hasEndInterviewResult) {
-      return "completed";
-    }
-    return "active";
+    return hasEndInterviewResult ? "completed" : "active";
   }, [messages]);
 
-  // Extract memory and recommendTopics from endInterview tool result
   const { memory, recommendTopics } = useMemo(() => {
     for (const message of messages) {
       for (const part of message.parts ?? []) {
@@ -86,7 +86,6 @@ export function ContextBuilderChatClient({
     return { memory: "", recommendTopics: [] as string[] };
   }, [messages]);
 
-  // Automatically start the conversation when the component mounts.
   const requestSentRef = useRef(false);
   useEffect(() => {
     if (requestSentRef.current) return;
@@ -99,7 +98,8 @@ export function ContextBuilderChatClient({
   }, [initialMessages]);
 
   const router = useRouter();
-  const t = useTranslations("Team.MemoryBuilder.chatPage");
+  const tKey = mode === "team" ? "Team.MemoryBuilder.chatPage" : "User.MemoryBuilder.chatPage";
+  const t = useTranslations(tKey);
   const [editedMemory, setEditedMemory] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -116,13 +116,9 @@ export function ContextBuilderChatClient({
     setIsSaving(true);
     if (editedMemory !== memory) {
       try {
-        const result = await saveTeamMemoryAction({
-          content: editedMemory,
-        });
+        const result = await onSaveMemory(editedMemory);
         if (!result.success) {
-          toast.error(t("saveFailed"), {
-            description: result.message,
-          });
+          toast.error(t("saveFailed"), { description: result.message });
           setIsSaving(false);
           return;
         }
@@ -137,7 +133,7 @@ export function ContextBuilderChatClient({
     } else {
       router.push("/newstudy");
     }
-  }, [editedMemory, memory, recommendTopics, router, t]);
+  }, [editedMemory, memory, onSaveMemory, recommendTopics, router, t]);
 
   const chatArea = (
     <FitToViewport>
@@ -203,9 +199,7 @@ export function ContextBuilderChatClient({
           <h1 className="text-3xl md:text-4xl font-EuclidCircularA font-medium tracking-tight">
             {t("suggestionsTitle")}
           </h1>
-          <p className="text-base text-muted-foreground">
-            {t("suggestionsSubtitle")}
-          </p>
+          <p className="text-base text-muted-foreground">{t("suggestionsSubtitle")}</p>
         </div>
 
         <div className="space-y-3">
@@ -215,9 +209,7 @@ export function ContextBuilderChatClient({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + index * 0.06 }}
-              onClick={() =>
-                router.push(`/newstudy?brief=${encodeURIComponent(topic)}`)
-              }
+              onClick={() => router.push(`/newstudy?brief=${encodeURIComponent(topic)}`)}
               className={cn(
                 "group w-full text-left p-4 rounded-lg border border-border",
                 "hover:border-foreground/20 transition-all duration-200",
@@ -243,9 +235,7 @@ export function ContextBuilderChatClient({
             <div className="size-6 rounded-full border border-border flex items-center justify-center shrink-0">
               <PlusIcon className="size-3 text-muted-foreground" />
             </div>
-            <span className="text-sm text-muted-foreground">
-              {t("suggestionsNewTopic")}
-            </span>
+            <span className="text-sm text-muted-foreground">{t("suggestionsNewTopic")}</span>
           </motion.button>
         </div>
       </motion.div>

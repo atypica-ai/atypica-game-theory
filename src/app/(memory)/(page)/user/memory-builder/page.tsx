@@ -1,9 +1,9 @@
 import authOptions from "@/app/(auth)/authOptions";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import ContextBuilderPageClient from "./ContextBuilderPageClient";
+import { MemoryBuilderPageClient } from "../../components/MemoryBuilderPageClient";
 
-export default async function ContextBuilderPage() {
+export default async function UserMemoryBuilderPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
@@ -11,5 +11,5 @@ export default async function ContextBuilderPage() {
     redirect(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
-  return <ContextBuilderPageClient />;
+  return <MemoryBuilderPageClient mode="user" />;
 }

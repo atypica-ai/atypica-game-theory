@@ -7,11 +7,12 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createContextBuilderChat } from "../actions";
+import { createMemoryBuilderChat } from "../actions";
 
-export default function ContextBuilderPageClient() {
+export function MemoryBuilderPageClient({ mode }: { mode: "team" | "user" }) {
   const router = useRouter();
-  const t = useTranslations("User.MemoryBuilder.startPage");
+  const tKey = mode === "team" ? "Team.MemoryBuilder.startPage" : "User.MemoryBuilder.startPage";
+  const t = useTranslations(tKey);
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -22,14 +23,14 @@ export default function ContextBuilderPageClient() {
   const handleStart = async () => {
     setLoading(true);
     try {
-      const result = await createContextBuilderChat();
+      const result = await createMemoryBuilderChat({ mode });
       if (result.success) {
-        router.push(`/user/memory-builder/${result.data.userChatToken}`);
+        router.push(`/${mode}/memory-builder/${result.data.userChatToken}`);
       } else {
         toast.error(result.message || t("createFailed"));
       }
     } catch (error) {
-      console.error("Failed to create context builder chat:", error);
+      console.error("Failed to create memory builder chat:", error);
       toast.error(t("createFailedRetry"));
     } finally {
       setLoading(false);
@@ -46,7 +47,7 @@ export default function ContextBuilderPageClient() {
         )}
       >
         <div className="flex-1 text-center md:text-left space-y-6">
-          <div className="w-12 h-1 bg-[#1bff1b]"></div>
+          <div className="w-12 h-1 bg-ghost-green"></div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-EuclidCircularA font-medium tracking-tight">
             {t("title")}
           </h1>

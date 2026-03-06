@@ -1,16 +1,17 @@
 import { convertDBMessagesToAIMessages } from "@/ai/messageUtils";
 import authOptions from "@/app/(auth)/authOptions";
+import { saveTeamMemoryAction } from "@/app/team/(detail)/capabilities/actions";
+import { MemoryBuilderChatClient } from "@/app/(memory)/(page)/components/MemoryBuilderChatClient";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { prisma } from "@/prisma/prisma";
 import { Session } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { ContextBuilderChatClient } from "./ContextBuilderChatClient";
 
 export const dynamic = "force-dynamic";
 
-async function ContextBuilderChatPage({
+async function ChatPage({
   userChatToken,
   sessionUser,
 }: {
@@ -21,28 +22,34 @@ async function ContextBuilderChatPage({
     where: { token: userChatToken, kind: "misc" },
   });
 
-  if (!userChat) {
+  if (!userChat || userChat.userId !== sessionUser.id) {
     redirect("/team/memory-builder");
   }
 
-  if (userChat.userId !== sessionUser.id) {
-    redirect("/team/memory-builder");
-  }
-
-  // Get existing messages for this chat
   const initialMessages = (await convertDBMessagesToAIMessages(
     await prisma.chatMessage.findMany({
       where: { userChatId: userChat.id },
       orderBy: { createdAt: "asc" },
     }),
-  )) as Parameters<typeof ContextBuilderChatClient>[0]["initialMessages"];
+  )) as Parameters<typeof MemoryBuilderChatClient>[0]["initialMessages"];
+
+  async function saveMemory(content: string) {
+    "use server";
+    const result = await saveTeamMemoryAction({ content });
+    return { success: result.success, message: result.success ? undefined : result.message };
+  }
 
   return (
-    <ContextBuilderChatClient userChatToken={userChatToken} initialMessages={initialMessages} />
+    <MemoryBuilderChatClient
+      mode="team"
+      userChatToken={userChatToken}
+      initialMessages={initialMessages}
+      onSaveMemory={saveMemory}
+    />
   );
 }
 
-export default async function ContextBuilderChatPageWithLoading({
+export default async function TeamMemoryBuilderChatPage({
   params,
 }: {
   params: Promise<{ token: string }>;
@@ -56,7 +63,7 @@ export default async function ContextBuilderChatPageWithLoading({
 
   return (
     <Suspense fallback={<PageLoadingFallback />}>
-      <ContextBuilderChatPage userChatToken={token} sessionUser={session.user} />
+      <ChatPage userChatToken={token} sessionUser={session.user} />
     </Suspense>
   );
 }

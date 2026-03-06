@@ -7,8 +7,8 @@ import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { webFetchTool } from "@/ai/tools/tools";
 import authOptions from "@/app/(auth)/authOptions";
-import { contextBuilderSystem } from "@/app/(memory)/team/memory-builder/prompt";
-import { contextBuilderTools } from "@/app/(memory)/team/memory-builder/tools";
+import { contextBuilderSystem } from "@/app/(memory)/prompt/memoryBuilder/team";
+import { endInterviewTool } from "@/app/(memory)/tools/endInterview";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { correctUserInputMessage } from "@/lib/userChat/lib";
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
     //   dynamicThreshold: 0.1,
     // }),
     webFetch: webFetchTool({ locale }),
-    ...contextBuilderTools({ locale, teamId }),
+    ...endInterviewTool({ locale, teamId }),
   };
 
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
