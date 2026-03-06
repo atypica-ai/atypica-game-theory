@@ -7,7 +7,13 @@
       "viewMyProjects": "View My Projects",
       "or": "or",
       "orStartFromScenarios": "Or start from these scenarios",
-      "shortcutsCuratedBy": "Research scenarios curated by atypica Topic Agent · Refreshed hourly"
+      "shortcutsCuratedBy": "Research scenarios curated by atypica Topic Agent · Refreshed hourly",
+      "personalProfileBanner": {
+        "title": "Atypica has a question for you...",
+        "description": "A quick chat helps me tailor insights to your business",
+        "cta": "Reply now",
+        "badge": "1 New Message"
+      }
     },
     "ShareReplayButton": {
       "shareReplay": "Share Replay",

@@ -9,7 +9,7 @@ import { handleToolCallError } from "@/ai/tools/error";
 import { getMcpClientManager } from "@/ai/tools/mcp/client";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
-import { loadUserMemory } from "@/app/(memory)/lib/loadMemory";
+import { loadMemoryForAgent } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { createSubAgentTool, StudyToolSet } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
@@ -330,7 +330,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // Phase 6: Update and Load User Memories
   // =============================================================================
 
-  const userMemory = await loadUserMemory(userId);
+  const userMemory = await loadMemoryForAgent(userId, baseContext.teamId);
   if (userMemory) {
     const text = buildMemoryUsagePrompt({ userMemory, locale });
     modelMessages = [{ role: "user", content: [{ type: "text", text }] }, ...modelMessages];

@@ -9,7 +9,7 @@ import { handleToolCallError, toolCallError } from "@/ai/tools/error";
 import { reasoningThinkingTool, webFetchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
-import { loadTeamMemory, loadUserMemory } from "@/app/(memory)/lib/loadMemory";
+import { loadMemoryForAgent } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { confirmPanelResearchPlanTool } from "@/app/(panel)/tools/confirmPanelResearchPlan";
 import { requestSelectPersonasTool } from "@/app/(panel)/tools/requestSelectPersonas";
@@ -66,8 +66,11 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
   const universalChatId = userChat.id;
 
   // Create debounced message persistence (5s debounce)
-  const { debouncePersistentMessage, immediatePersistentMessage } =
-    createDebouncePersistentMessage(universalChatId, 5000, logger);
+  const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
+    universalChatId,
+    5000,
+    logger,
+  );
 
   // Start managed run — writes runId to DB, starts watcher, returns abort signal
   const {
@@ -100,8 +103,8 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     );
   }
 
-  // Build system prompt with memory
-  const memory = teamId ? await loadTeamMemory(teamId) : await loadUserMemory(userId);
+  // Build system prompt with memory (team + user personal when both exist)
+  const memory = await loadMemoryForAgent(userId, teamId);
   const baseSystemPrompt = await buildUniversalSystemPrompt({
     userId,
     locale,

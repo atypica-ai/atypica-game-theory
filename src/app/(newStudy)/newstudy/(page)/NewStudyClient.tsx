@@ -1,7 +1,7 @@
 "use client";
 import { NewStudyInputBox } from "@/app/(newStudy)/components/NewStudyInputBox";
 import { trackEvent } from "@/lib/analytics/segment";
-import { CommandIcon } from "lucide-react";
+import { ArrowRightIcon, CommandIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -27,7 +27,25 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
   return (
     <div className="hero-grid">
       <div className="relative w-2xl max-w-full mx-auto px-4 py-4">
-        <div className="w-full flex items-center justify-center gap-2 mb-8 mt-12 sm:mt-24 text-2xl font-medium">
+        {/* Personal profile CTA */}
+        <Link
+          href="/user/memory-builder"
+          className="group flex items-center gap-4 py-3 px-4 mt-4 sm:mt-8 mb-8 sm:mb-16 rounded-lg bg-zinc-100 dark:bg-zinc-800"
+        >
+          <span className="size-1.5 rounded-full bg-ghost-green shrink-0" />
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-medium">{t("personalProfileBanner.title")}</span>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {t("personalProfileBanner.description")}
+            </p>
+          </div>
+          <div className="shrink-0 flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap group-hover:text-foreground group-hover:font-medium">
+            {t("personalProfileBanner.cta")}
+            <ArrowRightIcon className="size-3.5" />
+          </div>
+        </Link>
+
+        <div className="w-full flex items-center justify-center gap-2 mb-8 mt-8 text-2xl font-medium">
           <CommandIcon className="size-6" />
           <span>{t("startYourStudy")}</span>
         </div>
@@ -54,7 +72,7 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
         <div className="mt-2 text-xs text-muted-foreground text-center">{t("newStudyHint")}</div>
       </div>
       {/* Shortcuts Grid */}
-      <div className="mt-16 container px-4 mx-auto mb-12 sm:mb-32">
+      <div className="mt-10 container px-4 mx-auto mb-12 sm:mb-32">
         <div className="flex items-center justify-center gap-4 mb-8">
           <div className="h-px flex-1 bg-border max-w-24" />
           <h2 className="text-lg font-medium text-center whitespace-nowrap">
