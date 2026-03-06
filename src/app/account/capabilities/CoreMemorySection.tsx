@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -8,7 +7,7 @@ import { CoreMemoryDialog } from "./CoreMemoryDialog";
 
 export interface MemoryData {
   core: string;
-  working: string;
+  working: string[];
   version: number;
   createdAt: Date;
   updatedAt: Date;

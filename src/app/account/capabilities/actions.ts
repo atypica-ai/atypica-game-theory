@@ -60,7 +60,7 @@ export async function saveUserCoreMemory(
 ): Promise<
   ServerActionResult<{
     core: string;
-    working: string;
+    working: string[];
     version: number;
     createdAt: Date;
     updatedAt: Date;
@@ -101,7 +101,7 @@ export async function saveUserCoreMemory(
     success: true,
     data: {
       core: newMemory.core,
-      working: workingLines.join("\n"),
+      working: workingLines,
       version: newMemory.version,
       createdAt: newMemory.createdAt,
       updatedAt: newMemory.updatedAt,

@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,30 +17,26 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { saveUserCoreMemory } from "./actions";
 
-export interface CoreMemoryData {
-  core: string;
-  updatedAt: Date | null;
-}
-
-export interface CoreMemoryDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  memory: CoreMemoryData;
-  onMemoryUpdated: (updated: {
-    core: string;
-    working: string;
-    version: number;
-    createdAt: Date;
-    updatedAt: Date;
-  }) => void;
-}
-
 export function CoreMemoryDialog({
   open,
   onOpenChange,
   memory,
   onMemoryUpdated,
-}: CoreMemoryDialogProps) {
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  memory: {
+    core: string;
+    updatedAt: Date | null;
+  };
+  onMemoryUpdated: (updated: {
+    core: string;
+    working: string[];
+    version: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }) => void;
+}) {
   const t = useTranslations("AccountPage.capabilities.memory.core");
   const tLastUpdated = useTranslations("AccountPage.capabilities.memory");
   const locale = useLocale();

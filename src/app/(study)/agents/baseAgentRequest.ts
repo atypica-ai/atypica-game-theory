@@ -330,7 +330,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // Phase 6: Update and Load User Memories
   // =============================================================================
 
-  const userMemory = await loadMemoryForAgent(userId, baseContext.teamId);
+  const userMemory = await loadMemoryForAgent({ userId, teamId: baseContext.teamId });
   if (userMemory) {
     const text = buildMemoryUsagePrompt({ userMemory, locale });
     modelMessages = [{ role: "user", content: [{ type: "text", text }] }, ...modelMessages];

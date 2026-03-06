@@ -104,7 +104,7 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
   }
 
   // Build system prompt with memory (team + user personal when both exist)
-  const memory = await loadMemoryForAgent(userId, teamId);
+  const memory = await loadMemoryForAgent({ userId, teamId });
   const baseSystemPrompt = await buildUniversalSystemPrompt({
     userId,
     locale,

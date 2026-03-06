@@ -53,7 +53,13 @@ export async function loadTeamMemory(teamId: number): Promise<string> {
  * - User block (if user has memory): "User's Personal Memory:\n" + user core+working.
  * Order: team first, then user. Empty sections are omitted.
  */
-export async function loadMemoryForAgent(userId: number, teamId?: number | null): Promise<string> {
+export async function loadMemoryForAgent({
+  userId,
+  teamId,
+}: {
+  userId: number;
+  teamId?: number | null;
+}): Promise<string> {
   const [teamContent, userContent] = await Promise.all([
     teamId ? loadTeamMemory(teamId) : Promise.resolve(""),
     loadUserMemory(userId),
