@@ -839,6 +839,8 @@ model Memory {
   version Int
 
   core    String @default("") @db.Text // 核心记忆 (Markdown)
+  // 加 ! 表示使用 ts 原生的 string 类型，否则会被解析成 PrismaJson.string
+  /// ![string[]]
   working Json   @default("[]") // 工作记忆 (来自对话的待整合知识)
 
   changeNotes String @db.Text

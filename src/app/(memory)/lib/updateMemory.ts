@@ -4,15 +4,14 @@ import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { prisma } from "@/prisma/prisma";
 import { generateText, ModelMessage, stepCountIs } from "ai";
 import { Logger } from "pino";
-import { memoryReorganizeSystemPrompt } from "../prompt/memoryReorganize";
 import { memoryUpdateSystemPrompt } from "../prompt/memoryUpdate";
 import { memoryNoUpdateTool } from "../tools/memoryNoUpdate";
 import { memoryUpdateTool } from "../tools/memoryUpdate";
 import { MemoryUpdateToolInput } from "../tools/memoryUpdate/types";
+import { reorganizeMemoryWithCore } from "./reorganizeMemory";
 import { isMemoryThresholdMet } from "./utils";
 
-const MEMORY_UPDATE_MODEL: LLMModelName = "claude-sonnet-4-5";
-const MEMORY_REORGANIZE_MODEL: LLMModelName = "claude-sonnet-4-5";
+const MEMORY_UPDATE_MODEL: LLMModelName = "minimax-m2.1";
 
 /**
  * Main function to update memory.
@@ -45,14 +44,17 @@ export async function updateMemory({
       take: 1,
     });
 
-    let currentContent = latestMemory?.core ?? "";
+    // Both personal and team: read from working (string[]).
+    const workingLines = Array.isArray(latestMemory?.working) ? latestMemory.working : [];
+    let currentContent = workingLines.join("\n");
     let currentVersion = latestMemory?.version ?? 0;
 
     // Step 1: Reorganize if threshold exceeded
     if (isMemoryThresholdMet(currentContent, logger)) {
-      const reorganizedContent = await reorganizeMemoryContent(currentContent, logger);
+      const currentCore = latestMemory?.core ?? "";
+      const newCore = await reorganizeMemoryWithCore(currentCore, currentContent, logger);
 
-      // Create new version with reorganized content
+      // Create new version: updated core + working fully cleared.
       // ⚠️ NOTE: Concurrent reorganization may cause unique constraint violation on (userId/teamId, version)
       // This is acceptable as memory updates are infrequent and one request will succeed
       const newVersion = currentVersion + 1;
@@ -61,49 +63,50 @@ export async function updateMemory({
           userId: userId ?? null,
           teamId: teamId ?? null,
           version: newVersion,
-          core: reorganizedContent,
+          core: newCore,
           working: [],
-          changeNotes: `Reorganized memory from ${currentContent.length} to ${reorganizedContent.length} characters`,
+          changeNotes: `Reorganized: promoted permanent items to core, cleared working (core ${currentCore.length}→${newCore.length} chars, working ${currentContent.length} chars cleared)`,
           extra: {},
         },
       });
 
       logger.info({
-        msg: "Memory reorganized",
+        msg: "Memory reorganized (v2)",
         userId,
         teamId,
-        oldLength: currentContent.length,
-        newLength: reorganizedContent.length,
+        oldCoreLength: currentCore.length,
+        newCoreLength: newCore.length,
+        oldWorkingLength: currentContent.length,
         version: newVersion,
       });
 
-      // Update current content and version for next step
-      currentContent = reorganizedContent;
+      // Working is cleared — step 2 starts fresh
+      currentContent = "";
       currentVersion = newVersion;
     }
 
     // Step 2: Always update with new information from conversation
     const updatedContent = await updateMemoryContent(currentContent, conversationContext, logger);
 
-    // Update latest version with new content
+    const workingLinesFromContent = updatedContent.split("\n").filter((l) => l.trim() !== "");
+
+    // Update latest version with new content (both personal and team: write to working)
     if (latestMemory) {
-      // Update existing version
       latestMemory = await prisma.memory.update({
         where: { id: latestMemory.id },
         data: {
-          core: updatedContent,
+          working: workingLinesFromContent,
           changeNotes: `Updated: added new information from conversation`,
         },
       });
     } else {
-      // Create first version
       latestMemory = await prisma.memory.create({
         data: {
           userId: userId ?? null,
           teamId: teamId ?? null,
           version: 1,
-          core: updatedContent,
-          working: [],
+          core: "",
+          working: workingLinesFromContent,
           changeNotes: "Initial memory created",
           extra: {},
         },
@@ -125,43 +128,6 @@ export async function updateMemory({
     });
     // Don't throw - fail gracefully
   }
-}
-
-/**
- * Reorganize memory content using LLM.
- * Pure function: takes content, returns reorganized content.
- * @todo get locale from context or user settings
- */
-export async function reorganizeMemoryContent(
-  currentContent: string,
-  logger: Logger,
-): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const locale = "en-US";
-
-  const result = await generateText({
-    model: llm(MEMORY_REORGANIZE_MODEL),
-    providerOptions: defaultProviderOptions(),
-    system: memoryReorganizeSystemPrompt,
-    messages: [
-      {
-        role: "user",
-        content: [{ type: "text", text: currentContent }],
-      },
-    ],
-  });
-
-  const reorganizedContent = result.text.trim();
-
-  // Report token usage
-  const tokens = result.usage.totalTokens || 0;
-  logger.info({
-    msg: "Memory reorganize agent completed",
-    tokens,
-    usage: result.usage,
-  });
-
-  return reorganizedContent;
 }
 
 /**

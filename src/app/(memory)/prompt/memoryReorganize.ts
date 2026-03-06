@@ -1,3 +1,14 @@
+/**
+ * @deprecated Use memoryReorganizeV2SystemPrompt from ./memoryReorganizeV2 instead.
+ *
+ * V1 reorganization: only cleaned and pruned working memory, keeping [Profile] and [Preference] lines.
+ * Did not touch core memory.
+ *
+ * Superseded by V2, which cross-references both core and working, promotes permanent items into
+ * core, and discards the rest of working.
+ *
+ * Kept here as historical reference.
+ */
 export const memoryReorganizeSystemPrompt = `
 You are a memory reorganization agent, acting as the brain's memory consolidation module. The memory file has grown too large and needs to be cleaned, reorganized, and pruned.
 Memory Philosophy: Memory is precious and operates within limited capacity. Like a human brain, you must be selective—only store the most critical, persistent information that truly enhances future interactions. Every piece of stored information should be persistent and actionable.
