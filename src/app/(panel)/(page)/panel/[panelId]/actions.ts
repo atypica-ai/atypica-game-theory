@@ -1,12 +1,9 @@
 "use server";
 
 import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
-import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import { executeUniversalAgent } from "@/app/(universal)/agent";
 import { createUniversalUserChat } from "@/app/(universal)/lib";
-import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -201,23 +198,14 @@ Start step 1 immediately.`;
       context: { personaPanelId: panelId, defaultLocale },
     });
 
-    const logger = rootLogger.child({
-      userChatId: createResult.id,
-      userChatToken: createResult.token,
-    });
-    const { statReport } = initGenericUserChatStatReporter({
-      userId: user.id,
-      userChatId: createResult.id,
-      logger,
-    });
-
-    await executeUniversalAgent({
-      userId: user.id,
-      userChat: createResult,
-      statReport,
-      logger,
-      locale,
-    });
+    // Agent execution is now triggered by the frontend via useChat.regenerate()
+    // with executionMode:"sync" for the plan phase, then switches to background
+    // after user confirms the plan.
+    //
+    // Previously the agent was executed server-side here:
+    // const logger = rootLogger.child({ userChatId: createResult.id, userChatToken: createResult.token });
+    // const { statReport } = initGenericUserChatStatReporter({ userId: user.id, userChatId: createResult.id, logger });
+    // await executeUniversalAgent({ userId: user.id, userChat: createResult, statReport, logger, locale });
 
     return { success: true, data: { token: createResult.token } };
   });

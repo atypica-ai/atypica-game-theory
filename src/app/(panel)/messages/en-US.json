@@ -102,7 +102,11 @@
       "viewAgentChat": "View Agent Chat",
       "discussionNumber": "Discussion #{number}",
       "interviewNumber": "Interview #{number}",
-      "idle": "Idle"
+      "idle": "Idle",
+      "retry": "Try Again",
+      "confirmPlan": "Confirm Research Plan",
+      "viewReport": "View Report",
+      "reportInProgress": "Generating..."
     },
     "DiscussionDetailPage": {
       "participated": "participated",

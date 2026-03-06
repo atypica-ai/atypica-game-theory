@@ -1,22 +1,13 @@
 "use server";
-import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
-import { initGenericUserChatStatReporter } from "@/ai/tools/stats";
-import {
-  type ConfirmPanelResearchPlanInput,
-  type ConfirmPanelResearchPlanOutput,
-} from "@/app/(panel)/tools/confirmPanelResearchPlan/types";
+import { convertDBMessageToAIMessage } from "@/ai/messageUtils";
+import { type ConfirmPanelResearchPlanInput } from "@/app/(panel)/tools/confirmPanelResearchPlan/types";
 import { DiscussionTimelineEvent } from "@/app/(panel)/types";
 import { UserChatContext } from "@/app/(study)/context/types";
-import { executeUniversalAgent } from "@/app/(universal)/agent";
-import { UniversalToolName } from "@/app/(universal)/tools/types";
-import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import type { PersonaExtra, UserChatExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { type UIMessage } from "ai";
-import { getLocale } from "next-intl/server";
-import { after } from "next/server";
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -113,32 +104,6 @@ export async function fetchProjectContextByToken(userChatToken: string): Promise
         },
       },
     };
-  });
-}
-
-// ─────────────────────────────────────────────────────────────
-// fetchProjectMessages — poll project messages for tool call extraction
-// ─────────────────────────────────────────────────────────────
-
-export async function fetchProjectMessages(
-  userChatToken: string,
-): Promise<ServerActionResult<UIMessage[]>> {
-  return withAuth(async (user) => {
-    const userChat = await prisma.userChat.findUnique({
-      where: { token: userChatToken, userId: user.id },
-      select: {
-        messages: {
-          orderBy: { id: "asc" },
-        },
-      },
-    });
-
-    if (!userChat) {
-      return { success: false, code: "not_found", message: "Project not found" };
-    }
-
-    const messages: UIMessage[] = userChat.messages.map(convertDBMessageToAIMessage);
-    return { success: true, data: messages };
   });
 }
 
@@ -308,80 +273,3 @@ export async function fetchInterviewMessages({
   });
 }
 
-// ─────────────────────────────────────────────────────────────
-// submitResearchConfirmation — confirm plan + re-execute agent
-// ─────────────────────────────────────────────────────────────
-
-export async function submitResearchConfirmation(
-  userChatToken: string,
-  toolCallId: string,
-  output: ConfirmPanelResearchPlanOutput,
-): Promise<ServerActionResult<void>> {
-  return withAuth(async (user) => {
-    const userChat = await prisma.userChat.findUnique({
-      where: { token: userChatToken, userId: user.id },
-      select: { id: true, token: true, extra: true },
-    });
-
-    if (!userChat) {
-      return { success: false, code: "not_found", message: "Chat not found" };
-    }
-
-    const lastAssistantMessage = await prisma.chatMessage.findFirst({
-      where: { userChatId: userChat.id, role: "assistant" },
-      orderBy: { id: "desc" },
-      select: { messageId: true },
-    });
-
-    if (!lastAssistantMessage) {
-      return { success: false, code: "not_found", message: "No assistant message found" };
-    }
-
-    // Persist tool result
-    await persistentAIMessageToDB({
-      mode: "append",
-      userChatId: userChat.id,
-      message: {
-        id: lastAssistantMessage.messageId,
-        role: "assistant",
-        parts: [
-          {
-            type: `tool-${UniversalToolName.confirmPanelResearchPlan}` as `tool-${string}`,
-            toolCallId,
-            state: "output-available",
-            input: {},
-            output,
-          },
-        ],
-      },
-    });
-
-    // Re-execute the agent in the background
-    const locale = await getLocale();
-    const logger = rootLogger.child({ userChatId: userChat.id, userChatToken: userChat.token });
-    const { statReport } = initGenericUserChatStatReporter({
-      userId: user.id,
-      userChatId: userChat.id,
-      logger,
-    });
-
-    after(
-      executeUniversalAgent({
-        userId: user.id,
-        userChat,
-        statReport,
-        logger,
-        locale,
-      })
-        .then(() => logger.info("research plan confirmed, agent re-execution completed"))
-        .catch((error) =>
-          logger.error({
-            msg: "research plan confirmed, agent re-execution error",
-            error: error instanceof Error ? error.message : String(error),
-          }),
-        ),
-    );
-
-    return { success: true, data: undefined };
-  });
-}

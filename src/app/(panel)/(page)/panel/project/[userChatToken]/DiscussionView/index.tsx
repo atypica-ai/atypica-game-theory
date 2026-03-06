@@ -51,7 +51,10 @@ export function DiscussionView({
     },
   );
 
-  const events = useMemo(() => discussionDetail?.timeline.events ?? [], [discussionDetail?.timeline.events]);
+  const events = useMemo(
+    () => discussionDetail?.timeline.events ?? [],
+    [discussionDetail?.timeline.events],
+  );
   const summary = discussionDetail?.timeline.summary ?? "";
   const minutes = discussionDetail?.timeline.minutes ?? "";
   const personas = useMemo(() => discussionDetail?.personas ?? [], [discussionDetail?.personas]);
@@ -146,10 +149,10 @@ export function DiscussionView({
         {/* Floating header bar */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center px-4 lg:px-6 py-3 bg-background/60 backdrop-blur-sm">
           {/* Left 25% */}
-          <div className="w-1/4 min-w-0">
+          <div className="w-1/4 min-w-0 pr-2">
             <Link
               href={`/panel/${panel.id}`}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 truncate"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5 w-full truncate"
             >
               <ArrowLeft className="size-3 shrink-0" />
               <span className="truncate">{panel.title}</span>
@@ -162,7 +165,7 @@ export function DiscussionView({
           </div>
 
           {/* Right 25% */}
-          <div className="w-1/4 min-w-0 flex justify-end">
+          <div className="w-1/4 min-w-0 flex justify-end pl-2">
             <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-md border border-border/50 bg-background/40">
               <div
                 className={

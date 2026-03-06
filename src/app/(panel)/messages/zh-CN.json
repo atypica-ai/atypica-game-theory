@@ -102,7 +102,11 @@
       "viewAgentChat": "查看 Agent 对话",
       "discussionNumber": "讨论 #{number}",
       "interviewNumber": "访谈 #{number}",
-      "idle": "空闲"
+      "idle": "空闲",
+      "retry": "重试",
+      "confirmPlan": "确认研究计划",
+      "viewReport": "查看报告",
+      "reportInProgress": "正在生成..."
     },
     "DiscussionDetailPage": {
       "participated": "参与",
