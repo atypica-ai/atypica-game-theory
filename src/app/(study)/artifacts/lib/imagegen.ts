@@ -1,13 +1,14 @@
 import "server-only";
 
-import { imageModel } from "@/ai/provider";
+import { imageModel, llm } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { ImageGenerationExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { waitUntil } from "@vercel/functions";
-import { experimental_generateImage as generateImage } from "ai";
+import { experimental_generateImage as generateImage, GeneratedFile, streamText } from "ai";
+import { GoogleGenerativeAIProviderOptions } from "@ai-sdk/google";
 import { createHash } from "crypto";
 import { Logger } from "pino";
 import { z } from "zod/v3";
@@ -130,12 +131,11 @@ async function backgroundGenerateImage({
     let result: { getObjectUrl: string; objectUrl: string; urls?: string[] };
     try {
       // result = await generateMidjourney({ prompt, ratio, promptHash, genLog });
-      result = await generateGPTImage({ prompt, ratio, promptHash, genLog });
+      result = await generateGeminiImage({ prompt, ratio, promptHash, genLog });
     } catch (error) {
       const errorMsg = (error as Error).message;
       if (errorMsg.includes("No image generated")) {
-        // 一个还不知道什么原因的 imagen-4.0-ultra 的错误
-        genLog.warn(`generateGPTImage error: ${errorMsg}, fallback to generateMidjourney`);
+        genLog.warn(`generateGeminiImage error: ${errorMsg}, fallback to generateMidjourney`);
         result = await generateMidjourney({ prompt, ratio, promptHash, genLog });
       } else {
         await prisma.imageGeneration.update({
@@ -251,6 +251,80 @@ export async function generateMidjourney({
   });
 
   return { getObjectUrl, objectUrl, urls };
+}
+
+/**
+ * Generate inline report images using Gemini 3 Pro Image via streamText.
+ * Primary image generator for report HTML img tags.
+ */
+async function generateGeminiImage({
+  prompt,
+  ratio,
+  promptHash,
+  genLog,
+}: {
+  prompt: string;
+  ratio: "square" | "landscape" | "portrait";
+  promptHash: string;
+  genLog: Logger;
+  abortSignal?: AbortSignal;
+}): Promise<{ getObjectUrl: string; objectUrl: string }> {
+  const result = await new Promise<{ text: string; files: GeneratedFile[] }>(
+    async (resolve, reject) => {
+      const startTime = Date.now();
+      const response = streamText({
+        model: llm("gemini-3-pro-image"),
+        providerOptions: {
+          google: {
+            responseModalities: ["IMAGE"],
+            imageConfig: {
+              aspectRatio: ratio === "square" ? "1:1" : ratio === "landscape" ? "16:9" : "9:16",
+              imageSize: "1K",
+            },
+          } satisfies GoogleGenerativeAIProviderOptions,
+        },
+        temperature: 0,
+        prompt,
+        abortSignal: AbortSignal.timeout(300 * 1000),
+        maxRetries: 3,
+        onFinish: async ({ text, files }) => {
+          const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+          genLog.info({ msg: `generateGeminiImage ${promptHash}, ${elapsedSeconds} seconds` });
+          resolve({ text, files });
+        },
+        onError: ({ error }) => {
+          reject(error);
+        },
+      });
+
+      await response
+        .consumeStream()
+        .then(() => {})
+        .catch((error) => reject(error));
+    },
+  );
+
+  let imageFile: GeneratedFile | null = null;
+  if (result.files && result.files.length > 0) {
+    for (const file of result.files) {
+      if (file.mediaType.startsWith("image/")) {
+        imageFile = file;
+        break;
+      }
+    }
+  }
+
+  if (!imageFile) {
+    throw new Error("No image generated");
+  }
+
+  const { getObjectUrl, objectUrl } = await uploadToS3({
+    keySuffix: `imagegen/${promptHash}.png`,
+    fileBody: imageFile.uint8Array,
+    mimeType: imageFile.mediaType,
+  });
+
+  return { getObjectUrl, objectUrl };
 }
 
 /**
