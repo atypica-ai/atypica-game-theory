@@ -31,7 +31,7 @@ export function PersonaCard({ persona, onClick, onRemove }: PersonaCardProps) {
       {/* Tier badge - top right, hidden on hover */}
       <Badge
         variant="outline"
-        className="absolute top-3 right-3 text-[9px] h-4 px-1.5 font-normal text-muted-foreground/60 border-muted-foreground/20 group-hover:opacity-0 transition-opacity"
+        className="absolute top-3 right-3 text-[9px] h-4 px-1.5 font-normal text-muted-foreground group-hover:opacity-0 transition-opacity"
       >
         {getTierLabel(persona.tier)}
       </Badge>
@@ -60,7 +60,7 @@ export function PersonaCard({ persona, onClick, onRemove }: PersonaCardProps) {
           <div className="flex-1 min-w-0 space-y-0.5">
             <div className="text-sm font-medium leading-snug truncate pr-8">{persona.name}</div>
             {persona.extra?.title && (
-              <div className="text-[11px] text-muted-foreground/70 uppercase tracking-wider truncate">
+              <div className="text-[11px] text-muted-foreground truncate">
                 {persona.extra.title}
               </div>
             )}
@@ -69,7 +69,7 @@ export function PersonaCard({ persona, onClick, onRemove }: PersonaCardProps) {
 
         {/* Quote */}
         {persona.extra?.quote && (
-          <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-3">
+          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
             {persona.extra.quote}
           </p>
         )}
@@ -81,7 +81,7 @@ export function PersonaCard({ persona, onClick, onRemove }: PersonaCardProps) {
           {persona.tags.map((tag, i) => (
             <span
               key={i}
-              className="text-xs text-muted-foreground/50 bg-muted/50 px-1.5 py-0.5 rounded"
+              className="text-xs text-muted-foreground bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded"
             >
               {tag}
             </span>

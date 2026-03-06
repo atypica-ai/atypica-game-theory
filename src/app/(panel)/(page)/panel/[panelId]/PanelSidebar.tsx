@@ -80,7 +80,7 @@ export function PanelSidebar({ panelId, personas }: PanelSidebarProps) {
               {t("DetailPage.readyToStart")}
             </span>
           </div>
-          <h2 className="text-2xl font-bold tracking-tight">{t("DetailPage.launchStudy")}</h2>
+          <h2 className="text-base font-semibold">{t("DetailPage.launchStudy")}</h2>
         </div>
 
         {/* Research Type Buttons */}

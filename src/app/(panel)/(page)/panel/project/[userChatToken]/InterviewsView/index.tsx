@@ -1,4 +1,5 @@
 "use client";
+import { CollapsibleText } from "@/app/(panel)/components/CollapsibleText";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import {
   Select,
@@ -8,7 +9,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-import { CollapsibleText } from "@/app/(panel)/components/CollapsibleText";
 import { cn } from "@/lib/utils";
 import type { PersonaExtra } from "@/prisma/client";
 import { ArrowLeft, CheckCircle2, Circle, Loader2 } from "lucide-react";
@@ -59,7 +59,10 @@ export function InterviewsView({
     },
   );
 
-  const interviews = useMemo(() => interviewDetail?.interviews ?? [], [interviewDetail?.interviews]);
+  const interviews = useMemo(
+    () => interviewDetail?.interviews ?? [],
+    [interviewDetail?.interviews],
+  );
   const personas = useMemo(() => interviewDetail?.personas ?? [], [interviewDetail?.personas]);
 
   // Build persona lookup map
@@ -301,7 +304,10 @@ function InterviewMessages({
                         {t("interviewer")}
                       </span>
                     </div>
-                    <CollapsibleText text={content} className="text-sm text-foreground/90 leading-relaxed">
+                    <CollapsibleText
+                      text={content}
+                      className="text-sm text-foreground/90 leading-relaxed"
+                    >
                       <Streamdown mode="static">{content}</Streamdown>
                     </CollapsibleText>
                   </div>
@@ -324,7 +330,10 @@ function InterviewMessages({
                       </span>
                     )}
                   </div>
-                  <CollapsibleText text={content} className="text-sm text-foreground/90 leading-relaxed">
+                  <CollapsibleText
+                    text={content}
+                    className="text-sm text-foreground/90 leading-relaxed"
+                  >
                     <Streamdown mode="static">{content}</Streamdown>
                   </CollapsibleText>
                 </div>

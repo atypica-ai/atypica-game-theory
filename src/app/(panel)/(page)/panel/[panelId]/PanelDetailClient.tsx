@@ -47,41 +47,29 @@ export function PanelDetailClient({ panel }: { panel: PanelData }) {
           {/* Left — header + personas */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Header — fixed */}
-            <div className="shrink-0 pb-6">
-              <div className="rounded-2xl border border-border bg-card p-6">
-                {/* Top: Title + Panel ID | Role Badge */}
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                      {panel.title || t("panelId", { id: panel.id })}
-                    </h1>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">
-                      Panel ID: {panel.id}
-                    </p>
-                  </div>
-                  {roleLabel && (
-                    <Badge variant="outline" className="shrink-0 flex items-center gap-1.5">
-                      <span className="size-1.5 rounded-full bg-ghost-green" />
-                      {roleLabel}
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Divider + Details */}
-                <div className="mt-4 border-t border-border pt-4 space-y-3">
-                  {panel.instruction && (
-                    <CollapsibleText text={panel.instruction} className="text-sm text-muted-foreground leading-relaxed">
-                      {panel.instruction}
-                    </CollapsibleText>
-                  )}
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>{t("personaCount", { count: panel.personas.length })}</span>
-                    <span>·</span>
-                    <span>{t("discussions", { count: panel.usageCount.discussions })}</span>
-                    <span>·</span>
-                    <span>{t("interviews", { count: panel.usageCount.interviews })}</span>
-                  </div>
-                </div>
+            <div className="shrink-0 pb-6 space-y-2">
+              <div className="flex items-center gap-3">
+                <h1 className="text-base font-semibold">
+                  {panel.title || t("panelId", { id: panel.id })}
+                </h1>
+                {roleLabel && (
+                  <Badge variant="outline" className="shrink-0 flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-ghost-green" />
+                    {roleLabel}
+                  </Badge>
+                )}
+              </div>
+              {panel.instruction && (
+                <CollapsibleText text={panel.instruction} className="text-sm text-muted-foreground leading-relaxed">
+                  {panel.instruction}
+                </CollapsibleText>
+              )}
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span>{t("personaCount", { count: panel.personas.length })}</span>
+                <span>·</span>
+                <span>{t("discussions", { count: panel.usageCount.discussions })}</span>
+                <span>·</span>
+                <span>{t("interviews", { count: panel.usageCount.interviews })}</span>
               </div>
             </div>
 
