@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ExternalLink, Loader2, ScrollTextIcon } from "lucide-react";
+import { ExternalLink, FileTextIcon, Loader2, ScrollTextIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Streamdown } from "streamdown";
@@ -16,10 +16,12 @@ export function InterviewSidebar({
   conclusion,
   isComplete,
   projectToken,
+  reports,
 }: {
   conclusion: string;
   isComplete: boolean;
   projectToken: string;
+  reports?: Array<{ reportToken: string; state: "completed" | "in-progress" }>;
 }) {
   const tProject = useTranslations("PersonaPanel.ProjectDetailPage");
   const t = useTranslations("PersonaPanel.InterviewsPage");
@@ -51,12 +53,35 @@ export function InterviewSidebar({
           </Dialog>
         )}
 
-        {/* Artifacts placeholder */}
+        {/* Artifacts */}
         <div className="pt-2">
           <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50 mb-2">
             {t("artifacts")}
           </div>
-          <p className="text-xs text-muted-foreground/60 italic">{t("artifactsPlaceholder")}</p>
+          {reports && reports.length > 0 ? (
+            <div className="space-y-1.5">
+              {reports.map((report) => (
+                <Link
+                  key={report.reportToken}
+                  href={`/artifacts/report/${report.reportToken}/share`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-md border border-border/50 text-xs hover:bg-accent transition-colors"
+                >
+                  {report.state === "completed" ? (
+                    <FileTextIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                  ) : (
+                    <Loader2 className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
+                  )}
+                  <span className={report.state === "completed" ? "text-foreground" : "text-muted-foreground"}>
+                    {report.state === "completed" ? t("clickToView") : t("reportGenerating")}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground/60 italic">{t("artifactsPlaceholder")}</p>
+          )}
         </div>
 
         {/* Loading state */}

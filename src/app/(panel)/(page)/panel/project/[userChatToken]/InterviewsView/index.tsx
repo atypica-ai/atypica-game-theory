@@ -25,6 +25,7 @@ export function InterviewsView({
   project,
   personaIds,
   selector,
+  reports,
 }: {
   panel: { id: number; title: string };
   project: { token: string; title: string };
@@ -34,6 +35,7 @@ export function InterviewsView({
     selectedIndex: number;
     onSelect: (index: number) => void;
   };
+  reports?: Array<{ reportToken: string; state: "completed" | "in-progress" }>;
 }) {
   const t = useTranslations("PersonaPanel.InterviewsPage");
 
@@ -227,6 +229,7 @@ export function InterviewsView({
         conclusion={selectedInterview?.conclusion ?? ""}
         isComplete={isComplete}
         projectToken={project.token}
+        reports={reports}
       />
     </div>
   );

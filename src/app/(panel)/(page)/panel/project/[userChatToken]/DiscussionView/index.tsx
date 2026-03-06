@@ -24,6 +24,7 @@ export function DiscussionView({
   panel,
   project,
   selector,
+  reports,
 }: {
   timelineToken: string;
   panel: { id: number; title: string };
@@ -33,6 +34,7 @@ export function DiscussionView({
     selectedIndex: number;
     onSelect: (index: number) => void;
   };
+  reports?: Array<{ reportToken: string; state: "completed" | "in-progress" }>;
 }) {
   const t = useTranslations("PersonaPanel.DiscussionDetailPage");
 
@@ -213,6 +215,7 @@ export function DiscussionView({
         minutes={minutes}
         isComplete={isComplete}
         projectToken={project.token}
+        reports={reports}
       />
     </div>
   );

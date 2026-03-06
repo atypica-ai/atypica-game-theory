@@ -104,9 +104,7 @@
       "interviewNumber": "访谈 #{number}",
       "idle": "空闲",
       "retry": "重试",
-      "confirmPlan": "确认研究计划",
-      "viewReport": "查看报告",
-      "reportInProgress": "正在生成..."
+      "confirmPlan": "确认研究计划"
     },
     "DiscussionDetailPage": {
       "participated": "参与",
@@ -117,6 +115,7 @@
       "minutes": "会议记录",
       "artifacts": "产物",
       "artifactsPlaceholder": "报告和播客将在此展示",
+      "reportGenerating": "正在生成...",
       "clickToView": "点击查看",
       "atypicaModerator": "Atypica 主持人",
       "aiModerator": "AI 主持人",
@@ -283,6 +282,7 @@
       "conclusion": "结论",
       "artifacts": "产物",
       "artifactsPlaceholder": "报告和播客将在此展示",
+      "reportGenerating": "正在生成...",
       "clickToView": "点击查看",
       "interviewer": "Atypica 访谈员",
       "loading": "加载对话中...",

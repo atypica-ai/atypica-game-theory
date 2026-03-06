@@ -17,7 +17,7 @@ import type { UserChatExtra } from "@/prisma/client";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, isToolUIPart } from "ai";
-import { AlertCircle, ExternalLink, FileText, Loader2 } from "lucide-react";
+import { AlertCircle, ExternalLink, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -390,33 +390,6 @@ export function ProjectDetailClient({
       ) : (
         // ─── Results View ───
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Reports bar */}
-          {reports.length > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2 border-b border-border">
-              {reports.map((report) => (
-                <Link
-                  key={report.reportToken}
-                  href={`/analyst/report/${report.reportToken}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    "inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-md border border-border",
-                    report.state === "completed"
-                      ? "text-foreground hover:bg-accent transition-colors"
-                      : "text-muted-foreground pointer-events-none",
-                  )}
-                >
-                  {report.state === "completed" ? (
-                    <FileText className="size-3" />
-                  ) : (
-                    <Loader2 className="size-3 animate-spin" />
-                  )}
-                  {report.state === "completed" ? t("viewReport") : t("reportInProgress")}
-                </Link>
-              ))}
-            </div>
-          )}
-
           {/* Agent running indicator (when has content but still running) */}
           {isAgentActive && (
             <div className="flex items-center gap-2 px-4 py-1.5 border-b border-border">
@@ -440,6 +413,7 @@ export function ProjectDetailClient({
               panel={{ id: panelId, title: panelTitle }}
               project={project}
               selector={selector}
+              reports={reports}
             />
           ) : currentView?.type === "interviews" ? (
             <InterviewsView
@@ -447,6 +421,7 @@ export function ProjectDetailClient({
               project={project}
               personaIds={currentView.personaIds}
               selector={selector}
+              reports={reports}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
