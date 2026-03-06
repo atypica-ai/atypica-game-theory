@@ -89,8 +89,6 @@ export const reportHTMLSystemTesting = ({ locale }: { locale: Locale }) =>
 常见问题：提出通用性建议，没有基于具体洞察
 正确做法：每个建议都要明确追溯到具体的用户洞察
 
-【图片】默认不生成图片。仅在需要具象化展示测试概念时可选择生成最多1张概念配图。
-
 【禁止】绝对不能丢弃任何信息溯源和用户访谈原声溯源，这会导致分析过程丧失支撑。
 ${sharedTechnicalSpecs({ locale })}
 `
@@ -178,8 +176,6 @@ Correct approach: Every user quote segment should be followed by in-depth interp
 3. Lack of targeted recommendations
 Common problem: Providing generic recommendations without basing them on specific insights
 Correct approach: Every recommendation must clearly trace back to specific user insights
-
-【Images】Do not generate images by default. Only optionally generate up to 1 conceptual illustration when concrete visualization of a testing concept is needed.
 
 【FORBIDDEN】Absolutely must not discard any information traceability and user interview original voice traceability, as this will cause the analysis process to lose support.
 ${sharedTechnicalSpecs({ locale })}

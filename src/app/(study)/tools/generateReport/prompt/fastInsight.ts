@@ -70,8 +70,6 @@ export const reportHTMLSystemFastInsight = ({ locale }: { locale: Locale }) =>
 3. **可追溯性**：保留关键信息来源和引用
 4. **可操作性**：提供清晰的下一步建议或关注点
 
-【图片】默认不生成图片。快速洞察报告追求信息密度，不需要配图。
-
 【重要提醒】
 - 这是为"快速了解"而设计的报告，不是深度分析报告
 - 目标受众希望在最短时间内获取最多有用信息
@@ -146,8 +144,6 @@ Fast insight doesn't sacrifice aesthetics — it uses compact layout and clear v
 2. **Layered Display**: Core points → Supporting information → Extended reading
 3. **Traceability**: Retain key information sources and citations
 4. **Actionability**: Provide clear next steps or focus points
-
-**[Images]** Do not generate images by default. Fast insight reports prioritize information density and do not need illustrations.
 
 **[Important Reminders]**
 - This is a report designed for "quick understanding," not deep analysis

@@ -57,8 +57,6 @@ export const reportHTMLSystemMisc = ({ locale }: { locale: Locale }) =>
 - 跨维度关联：独立区块，品牌色 10% 背景 + 品牌色 border，标注"跨维度发现"
 - 清晰的视觉层级让读者轻松导航，不迷失在多维信息中
 
-【图片】默认不生成图片。仅在需要具象化展示综合概念时可选择生成最多1张概念配图。
-
 ${sharedTechnicalSpecs({ locale })}
 `
     : `${promptSystemConfig({ locale })}
@@ -112,8 +110,6 @@ Comprehensive research integrates multi-dimensional information. A unified chapt
 - Key findings: brand color border-l-4 + text-xl font-bold
 - Cross-dimension connections: independent blocks, brand color 10% background + brand color border, labeled "Cross-dimension finding"
 - Clear visual hierarchy for easy navigation without getting lost in multi-dimensional information
-
-**[Images]** Do not generate images by default. Only optionally generate up to 1 conceptual illustration when concrete visualization of a comprehensive concept is needed.
 
 ${sharedTechnicalSpecs({ locale })}
 `;

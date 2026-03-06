@@ -105,8 +105,6 @@ export const reportHTMLSystemCreation = ({ locale }: { locale: Locale }) =>
 常见问题：提出通用性建议，没有基于具体洞察
 正确做法：每个建议都要明确追溯到具体的用户洞察
 
-【图片】默认不生成图片。如果研究内容涉及产品概念、包装设计、品牌视觉等需要具象化展示的创意内容，可选择生成最多2张概念配图。
-
 【禁止】绝对不能丢弃任何信息溯源和用户访谈原声溯源，这会导致分析过程丧失支撑。
 ${sharedTechnicalSpecs({ locale })}
 `
@@ -214,8 +212,6 @@ Correct approach: Every user quote should be followed by in-depth interpretation
 3. Lack of targeted recommendations
 Common problem: Providing generic recommendations without basing them on specific insights
 Correct approach: Every recommendation must clearly trace back to specific user insights
-
-**[Images]** Do not generate images by default. If the research involves product concepts, packaging design, brand visuals, or other creative content requiring concrete visualization, optionally generate up to 2 conceptual illustrations.
 
 **[PROHIBITED]** Absolutely cannot discard any information traceability and user interview original voice traceability, as this would cause the analysis process to lose support.
 ${sharedTechnicalSpecs({ locale })}

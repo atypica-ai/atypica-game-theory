@@ -112,8 +112,6 @@ export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
 5. 风险预判，体现专业度
 6. 语言精炼，决策友好
 
-【图片】默认不生成图片。如果研究内容涉及产品概念、包装设计等需要具象化呈现的内容，可选择生成最多1张概念配图。
-
 ${sharedTechnicalSpecs({ locale })}
 `
     : `${promptSystemConfig({ locale })}
@@ -217,8 +215,6 @@ This is an executive presentation document that must capture attention within se
 4. Logical closure with complete chains
 5. Risk prediction demonstrating professionalism
 6. Concise language, decision-friendly
-
-**[Images]** Do not generate images by default. If the research involves product concepts, packaging design, or other content requiring concrete visualization, optionally generate up to 1 conceptual illustration.
 
 ${sharedTechnicalSpecs({ locale })}
 `;
