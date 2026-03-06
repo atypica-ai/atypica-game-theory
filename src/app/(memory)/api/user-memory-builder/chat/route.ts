@@ -6,8 +6,8 @@ import {
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import authOptions from "@/app/(auth)/authOptions";
-import { contextBuilderSystem } from "@/app/(memory)/team/memory-builder/prompt";
-import { contextBuilderTools } from "@/app/(memory)/team/memory-builder/tools";
+import { personalContextBuilderSystem } from "@/app/(memory)/user/memory-builder/prompt";
+import { contextBuilderTools } from "@/app/(memory)/user/memory-builder/tools";
 import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { correctUserInputMessage } from "@/lib/userChat/lib";
@@ -24,19 +24,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (session.userType !== "TeamMember" || !session.team) {
-    return NextResponse.json({ error: "Only team owners can use this feature" }, { status: 403 });
-  }
-  const [team, user] = await Promise.all([
-    prisma.team.findUnique({ where: { id: session.team.id }, select: { ownerUserId: true } }),
-    prisma.user.findUnique({ where: { id: session.user.id }, select: { personalUserId: true } }),
-  ]);
-  if (!team || !user || team.ownerUserId !== user.personalUserId) {
-    return NextResponse.json({ error: "Only team owners can use this feature" }, { status: 403 });
-  }
-
   const userId = session.user.id;
-  const teamId = session.team.id;
   const payload = await req.json();
 
   const parseResult = clientMessagePayloadSchema.safeParse(payload);
@@ -90,7 +78,7 @@ export async function POST(req: Request) {
       // Use a low but non-zero threshold so Gemini almost always searches
       dynamicThreshold: 0.1,
     }),
-    ...contextBuilderTools({ locale, teamId }),
+    ...contextBuilderTools({ locale, userId }),
   };
 
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(userChatId, {
@@ -114,11 +102,13 @@ export async function POST(req: Request) {
       }),
     );
   }
-
+  // gemini models fails to call custom tool due to:
+  // error: "Model tried to call unavailable tool 'google:endInterview'. Available tools: google_search, endInterview."
+  // overcome this by specifying in prompt
   const streamTextResult = streamText({
     model: llm("gemini-3-flash"),
     providerOptions: defaultProviderOptions(),
-    system: contextBuilderSystem({ locale }),
+    system: personalContextBuilderSystem({ locale }),
     messages: coreMessages,
 
     tools,
