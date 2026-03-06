@@ -177,7 +177,9 @@ export type LLMModelName =
   | "gpt-5-mini"
   | "gpt-5-mini-responses"
   | "gpt-5-nano"
+  | "gpt-5.1"
   | "gpt-5.2"
+  | "gpt-5.4"
   | "o3-mini"
   | "claude-3-5-haiku"
   | "claude-3-7-sonnet"
@@ -209,7 +211,9 @@ export function llm(modelName: LLMModelName) {
       case "gpt-5-mini":
       case "gpt-5-mini-responses":
       case "gpt-5-nano":
+      case "gpt-5.1":
       case "gpt-5.2":
+      case "gpt-5.4":
         if (process.env.AZURE_EASTUS2_API_KEY) {
           break;
         } else {
@@ -273,8 +277,12 @@ export function llm(modelName: LLMModelName) {
       return azureEastUS2.responses("gpt-5-mini");
     case "gpt-5-nano":
       return azureEastUS2("gpt-5-nano");
+    case "gpt-5.1":
+      return azureEastUS2("gpt-5.1");
     case "gpt-5.2":
       return azureEastUS2("gpt-5.2");
+    case "gpt-5.4":
+      return azureEastUS2("gpt-5.4");
     case "gpt-4.1":
       return azure("gpt-4.1"); // options 支持 parallelToolCalls 参数
     case "gpt-4.1-mini":

@@ -5,6 +5,7 @@ import {
 } from "@/ai/messageUtils";
 import { clientMessagePayloadSchema } from "@/ai/messageUtilsClient";
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import { webFetchTool } from "@/ai/tools/tools";
 import authOptions from "@/app/(auth)/authOptions";
 import { contextBuilderSystem } from "@/app/(memory)/team/memory-builder/prompt";
 import { contextBuilderTools } from "@/app/(memory)/team/memory-builder/tools";
@@ -12,7 +13,6 @@ import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage } from "@/lib/textUtils";
 import { correctUserInputMessage } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
-import { google } from "@ai-sdk/google";
 import { generateId, smoothStream, stepCountIs, streamText } from "ai";
 import { getServerSession } from "next-auth/next";
 import { getLocale } from "next-intl/server";
@@ -85,11 +85,12 @@ export async function POST(req: Request) {
   });
 
   const tools = {
-    google_search: google.tools.googleSearch({
-      mode: "MODE_DYNAMIC",
-      // Use a low but non-zero threshold so Gemini almost always searches
-      dynamicThreshold: 0.1,
-    }),
+    // google_search: google.tools.googleSearch({
+    //   mode: "MODE_DYNAMIC",
+    //   // Use a low but non-zero threshold so Gemini almost always searches
+    //   dynamicThreshold: 0.1,
+    // }),
+    webFetch: webFetchTool({ locale }),
     ...contextBuilderTools({ locale, teamId }),
   };
 
@@ -116,7 +117,8 @@ export async function POST(req: Request) {
   }
 
   const streamTextResult = streamText({
-    model: llm("gemini-3-flash"),
+    // model: llm("gemini-3-flash"),
+    model: llm("claude-haiku-4-5"),
     providerOptions: defaultProviderOptions(),
     system: contextBuilderSystem({ locale }),
     messages: coreMessages,
