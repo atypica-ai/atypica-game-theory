@@ -6,6 +6,8 @@ import {
   RequestSelectPersonasToolInput,
   RequestSelectPersonasToolOutput,
 } from "@/app/(panel)/tools/requestSelectPersonas/types";
+import { CreatePanelToolInput, CreatePanelToolOutput } from "@/app/(panel)/tools/createPanel/types";
+import { ListPanelsToolInput, ListPanelsToolOutput } from "@/app/(panel)/tools/listPanels/types";
 import { UpdatePanelToolInput, UpdatePanelToolOutput } from "@/app/(panel)/tools/updatePanel/types";
 import {
   DiscussionChatResult,
@@ -68,6 +70,8 @@ export enum UniversalToolName {
   createStudySubAgent = "createStudySubAgent",
 
   // Panel
+  listPanels = "listPanels",
+  createPanel = "createPanel",
   requestSelectPersonas = "requestSelectPersonas",
   updatePanel = "updatePanel",
   confirmPanelResearchPlan = "confirmPanelResearchPlan",
@@ -84,6 +88,14 @@ export type UniversalUITools = {
   [UniversalToolName.requestSelectPersonas]: {
     input: RequestSelectPersonasToolInput;
     output: RequestSelectPersonasToolOutput;
+  };
+  [UniversalToolName.listPanels]: {
+    input: ListPanelsToolInput;
+    output: ListPanelsToolOutput;
+  };
+  [UniversalToolName.createPanel]: {
+    input: CreatePanelToolInput;
+    output: CreatePanelToolOutput;
   };
   [UniversalToolName.searchPersonas]: {
     input: SearchPersonasToolInput;

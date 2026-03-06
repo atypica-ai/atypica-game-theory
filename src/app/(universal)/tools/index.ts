@@ -3,6 +3,8 @@ import "server-only";
 import { toolCallError } from "@/ai/tools/error";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { confirmPanelResearchPlanTool } from "@/app/(panel)/tools/confirmPanelResearchPlan";
+import { createPanelTool } from "@/app/(panel)/tools/createPanel";
+import { listPanelsTool } from "@/app/(panel)/tools/listPanels";
 import { requestSelectPersonasTool } from "@/app/(panel)/tools/requestSelectPersonas";
 import { updatePanelTool } from "@/app/(panel)/tools/updatePanel";
 import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
@@ -54,6 +56,8 @@ export type UniversalToolSet = Partial<{
   [UniversalToolName.createStudySubAgent]: ReturnType<typeof createStudySubAgentTool>;
   [UniversalToolName.generateReport]: ReturnType<typeof generateReportTool>;
   [UniversalToolName.generatePodcast]: ReturnType<typeof generatePodcastTool>;
+  [UniversalToolName.listPanels]: ReturnType<typeof listPanelsTool>;
+  [UniversalToolName.createPanel]: ReturnType<typeof createPanelTool>;
   [UniversalToolName.requestSelectPersonas]: typeof requestSelectPersonasTool;
   [UniversalToolName.updatePanel]: ReturnType<typeof updatePanelTool>;
   [UniversalToolName.confirmPanelResearchPlan]: typeof confirmPanelResearchPlanTool;

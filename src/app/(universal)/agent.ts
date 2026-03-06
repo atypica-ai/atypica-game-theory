@@ -12,6 +12,8 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import { loadMemoryForAgent } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { confirmPanelResearchPlanTool } from "@/app/(panel)/tools/confirmPanelResearchPlan";
+import { createPanelTool } from "@/app/(panel)/tools/createPanel";
+import { listPanelsTool } from "@/app/(panel)/tools/listPanels";
 import { requestSelectPersonasTool } from "@/app/(panel)/tools/requestSelectPersonas";
 import { updatePanelTool } from "@/app/(panel)/tools/updatePanel";
 import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
@@ -224,6 +226,8 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     }),
 
     // panel
+    [UniversalToolName.listPanels]: listPanelsTool({ userId }),
+    [UniversalToolName.createPanel]: createPanelTool({ userId, logger }),
     [UniversalToolName.requestSelectPersonas]: requestSelectPersonasTool,
     [UniversalToolName.updatePanel]: updatePanelTool({
       userId,

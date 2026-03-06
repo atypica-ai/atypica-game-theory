@@ -136,8 +136,9 @@ ${userMemory || "暂无用户记忆"}
 7. **Universal 研究主观能动性（强规则）**：研究类问题默认主动拆成 1-2 个互补方向，并并行调用 createStudySubAgent 执行；不需要用户先选择 persona
 8. **确认策略（强规则）**：避免像 study 模块那样反复确认。仅当关键信息缺失时，允许在任务开头最多确认一次；若问题足够简单则直接执行，不需要确认
 9. **研究流程子代理化**：当任务涉及访谈/讨论/报告等研究执行时，优先调用 createStudySubAgent 工具，由子代理执行完整研究流程
-10. **Workspace 协作协议**：当发现 workspace/study-subagents/.../reports/.../meta.json 或 summary.md 时，先读取再决定是否继续生成或直接汇总，避免重复产出
-11. **Workspace 读取防御性原则**：调用 readWorkspaceFile 时默认使用预览模式；除非任务明确要求完整文件，否则不要请求 full=true`
+10. **Panel 使用规则**：当用户提到 panel、persona 面板、已有人群、复用人群或想保存一组 personas 时，优先考虑 listPanels、createPanel、updatePanel；当需要基于现有 panel 做研究时，可以先读取 panel 中的 personaIds，再调用 discussionChat、interviewChat、generateReport 等工具
+11. **Workspace 协作协议**：当发现 workspace/study-subagents/.../reports/.../meta.json 或 summary.md 时，先读取再决定是否继续生成或直接汇总，避免重复产出
+12. **Workspace 读取防御性原则**：调用 readWorkspaceFile 时默认使用预览模式；除非任务明确要求完整文件，否则不要请求 full=true`
       : `You are a flexible AI assistant that can handle various tasks and use specialized skills.
 
 ## Core Capabilities
@@ -231,7 +232,8 @@ ${userMemory || "No user memory available yet"}
 7. **Proactive Universal Research (hard rule)**: For research-style requests, proactively split work into 1-2 complementary angles and run them in parallel via createStudySubAgent; do not require persona selection first
 8. **Confirmation Policy (hard rule)**: Avoid repeated confirmations like study mode. Ask at most one clarification at the beginning only when critical information is missing; skip confirmation for simple questions
 9. **Sub-agent Study Execution**: For interview/discussion/report style research tasks, prefer calling createStudySubAgent so the study workflow runs inside a sub-agent
-10. **Workspace Collaboration Protocol**: When workspace/study-subagents/.../reports/.../meta.json or summary.md exists, read it first before deciding whether to regenerate or summarize to avoid duplicate artifacts
-11. **Defensive Workspace Read Rule**: Keep readWorkspaceFile in preview mode by default; request full=true only when the task explicitly needs complete content`
+10. **Panel Workflow Rule**: When the user mentions panels, reusable persona groups, existing cohorts, or wants to save a set of personas, prefer listPanels, createPanel, and updatePanel. When the task should run on an existing panel, read its personaIds first and then call discussionChat, interviewChat, generateReport, or other study tools as needed
+11. **Workspace Collaboration Protocol**: When workspace/study-subagents/.../reports/.../meta.json or summary.md exists, read it first before deciding whether to regenerate or summarize to avoid duplicate artifacts
+12. **Defensive Workspace Read Rule**: Keep readWorkspaceFile in preview mode by default; request full=true only when the task explicitly needs complete content`
   }`;
 }

@@ -24,24 +24,31 @@ export const updatePanelTool = ({
 }) =>
   tool({
     description:
-      "Update the persona panel with the given persona IDs. " +
-      "This merges (appends) new personas into the panel's existing list. Always call this after requestSelectPersonas to save the user's selection. " +
+      "Update a persona panel with the given persona IDs. " +
+      "If panelId is omitted, this updates the current chat-bound panel and creates one when needed. " +
+      "If panelId is provided, it updates that specific existing panel. " +
+      "Always call this after requestSelectPersonas to save the user's selection. " +
       "Can also be called to update the panel title.",
     inputSchema: updatePanelInputSchema,
     outputSchema: updatePanelOutputSchema,
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text" as const, value: result.plainText };
     },
-    execute: async ({ personaIds, title }): Promise<UpdatePanelToolOutput> => {
-      const panel = await recordPersonaPanelContext({
-        userId,
-        userChatId,
-        personaIds,
-      });
+    execute: async ({ panelId, personaIds, title }): Promise<UpdatePanelToolOutput> => {
+      const panel = panelId
+        ? await prisma.personaPanel.findFirstOrThrow({
+            where: {
+              id: panelId,
+              userId,
+            },
+          })
+        : await recordPersonaPanelContext({
+            userId,
+            userChatId,
+            personaIds,
+          });
 
-      // Merge new personaIds with existing ones (deduplicated)
       const mergedIds = [...new Set([...panel.personaIds, ...personaIds])];
-
       const updated = await prisma.personaPanel.update({
         where: { id: panel.id },
         data: {
