@@ -167,22 +167,63 @@
       "title": "Capabilities",
       "description": "Manage your account capabilities and preferences",
       "memory": {
-        "title": "Memory",
-        "description": "Here's what atypica.AI remembers about you! This summary is regenerated each night and does not include projects, which have their own specific memory.",
-        "noMemory": "No memory found. Memory will be created when first updated.",
-        "dialogTitle": "Manage memory",
-        "dialogDescription": "Here's what atypica.AI remembers about you! This summary is regenerated each night and does not include projects, which have their own specific memory.",
         "lastUpdated": "Last updated",
-        "memoryContent": "Memory Content",
-        "noMemoryContent": "No memory content yet.",
-        "editPlaceholder": "Tell atypica.AI what to remember or update...",
-        "editHint": "Press Cmd/Ctrl + Enter to submit, Esc to cancel",
-        "cancel": "Cancel",
-        "submit": "Submit",
-        "submitting": "Updating...",
-        "emptyRequest": "Request cannot be empty",
-        "updateSuccess": "Memory update requested successfully",
-        "updateError": "Failed to update memory"
+        "core": {
+          "title": "Core memory",
+          "description": "Your stable, long-term profile. Only you can edit this directly.",
+          "noMemory": "No core memory yet. Add content below and save.",
+          "addButton": "Add core memory",
+          "dialogTitle": "Edit core memory",
+          "dialogDescription": "Directly edit your core memory. Saving creates a new version.",
+          "memoryContent": "Core memory content",
+          "noMemoryContent": "No core memory content yet.",
+          "editPlaceholder": "- [Profile] Name: ...\n- [Preference] ...",
+          "saveButton": "Save as new version",
+          "savingButton": "Saving...",
+          "saveSuccess": "Core memory saved",
+          "saveError": "Failed to save",
+          "changeNoteLabel": "Change notes",
+          "changeNotesPlaceholder": "Change notes (optional)",
+          "cancel": "Cancel"
+        },
+        "working": {
+          "title": "Working memory",
+          "description": "Short-term, agent-updated memory (e.g. recent research, projects). Use the input below to ask the AI to update it.",
+          "noMemory": "No working memory yet. Ask the AI to remember something.",
+          "askAiButton": "Ask AI",
+          "dialogTitle": "Manage working memory",
+          "dialogDescription": "Here's what the AI has extracted and remembers. Tell the AI what to add or change below.",
+          "memoryContent": "Working memory content",
+          "noMemoryContent": "No working memory content yet.",
+          "editPlaceholder": "Tell atypica.AI what to remember or update...",
+          "emptyRequest": "Request cannot be empty",
+          "updateSuccess": "Memory update requested successfully",
+          "updateError": "Failed to update memory"
+        }
+      }
+    }
+  },
+  "User": {
+    "MemoryBuilder": {
+      "startPage": {
+        "title": "Build your personal profile",
+        "subtitle": "One 10-minute conversation. AI understands your work background and preferences from then on.",
+        "startButton": "Start Interview",
+        "startingButton": "Creating...",
+        "createFailed": "Creation failed",
+        "createFailedRetry": "Creation failed, please try again"
+      },
+      "chatPage": {
+        "profileTitle": "Your Personal Background Profile",
+        "editHint": "You can edit directly here. Clicking confirm will save this as your personal profile and exit.",
+        "memoryPlaceholder": "Memory content...",
+        "confirmButton": "Confirm Profile",
+        "savingButton": "Saving...",
+        "saveFailed": "Failed to save profile",
+        "unexpectedError": "An unexpected error occurred",
+        "suggestionsTitle": "Recommended Research Topics",
+        "suggestionsSubtitle": "Based on your profile, click any topic to start in-depth analysis, or create a custom study:",
+        "suggestionsNewTopic": "Start custom research"
       }
     }
   }

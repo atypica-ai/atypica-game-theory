@@ -167,22 +167,63 @@
       "title": "功能设置",
       "description": "管理您的账户功能和偏好设置",
       "memory": {
-        "title": "记忆",
-        "description": "这是 atypica.AI 记住的关于您的信息！此摘要每晚重新生成，不包括项目，项目有自己的特定记忆。",
-        "noMemory": "未找到记忆。首次更新时将创建记忆。",
-        "dialogTitle": "管理记忆",
-        "dialogDescription": "这是 atypica.AI 记住的关于您的信息！此摘要每晚重新生成，不包括项目，项目有自己的特定记忆。",
         "lastUpdated": "最后更新",
-        "memoryContent": "记忆内容",
-        "noMemoryContent": "暂无记忆内容。",
-        "editPlaceholder": "告诉 atypica.AI 要记住或更新什么...",
-        "editHint": "按 Cmd/Ctrl + Enter 提交，Esc 取消",
-        "cancel": "取消",
-        "submit": "提交",
-        "submitting": "更新中...",
-        "emptyRequest": "请求不能为空",
-        "updateSuccess": "记忆更新请求已提交",
-        "updateError": "更新记忆失败"
+        "core": {
+          "title": "核心记忆",
+          "description": "您稳定的长期画像。仅您可直接编辑。",
+          "noMemory": "暂无核心记忆。在下方添加内容并保存。",
+          "addButton": "添加核心记忆",
+          "dialogTitle": "编辑核心记忆",
+          "dialogDescription": "直接编辑您的核心记忆。保存将创建新版本。",
+          "memoryContent": "核心记忆内容",
+          "noMemoryContent": "暂无核心记忆内容。",
+          "editPlaceholder": "- [Profile] 姓名: ...\n- [Preference] ...",
+          "saveButton": "保存为新版本",
+          "savingButton": "保存中...",
+          "saveSuccess": "核心记忆已保存",
+          "saveError": "保存失败",
+          "changeNoteLabel": "变更说明",
+          "changeNotesPlaceholder": "变更说明（可选）",
+          "cancel": "取消"
+        },
+        "working": {
+          "title": "工作记忆",
+          "description": "短期、由 AI 更新的记忆（如近期研究、项目）。使用下方输入让 AI 记住或更新。",
+          "noMemory": "暂无工作记忆。让 AI 记住一些内容。",
+          "askAiButton": "让 AI 记住",
+          "dialogTitle": "管理工作记忆",
+          "dialogDescription": "这是 AI 已提取并记住的内容。在下方告诉 AI 要添加或修改什么。",
+          "memoryContent": "工作记忆内容",
+          "noMemoryContent": "暂无工作记忆内容。",
+          "editPlaceholder": "告诉 atypica.AI 要记住或更新什么...",
+          "emptyRequest": "请求不能为空",
+          "updateSuccess": "记忆更新请求已提交",
+          "updateError": "更新记忆失败"
+        }
+      }
+    }
+  },
+  "User": {
+    "MemoryBuilder": {
+      "startPage": {
+        "title": "构建个人档案",
+        "subtitle": "一次 10 分钟对话，AI 从此深刻了解你的工作背景与偏好",
+        "startButton": "开始访谈",
+        "startingButton": "创建中...",
+        "createFailed": "创建失败",
+        "createFailedRetry": "创建失败，请重试"
+      },
+      "chatPage": {
+        "profileTitle": "你的个人背景档案",
+        "editHint": "你可以直接在这里修改，确认后将保存为你的个人档案并退出。",
+        "memoryPlaceholder": "记忆内容...",
+        "confirmButton": "确认档案",
+        "savingButton": "保存中...",
+        "saveFailed": "保存失败",
+        "unexpectedError": "发生错误",
+        "suggestionsTitle": "为你推荐的研究主题",
+        "suggestionsSubtitle": "基于你的背景档案，点击任意主题直接开始深度分析，或创建自定义研究：",
+        "suggestionsNewTopic": "开始自定义研究"
       }
     }
   }

@@ -1,13 +1,8 @@
 "use client";
-import { useTranslations } from "next-intl";
-import { MemorySection } from "./MemorySection";
 
-interface MemoryData {
-  core: string;
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { CoreMemorySection, type MemoryData } from "./CoreMemorySection";
 
 interface CapabilitiesPageClientProps {
   initialMemory: MemoryData | null;
@@ -15,6 +10,7 @@ interface CapabilitiesPageClientProps {
 
 export function CapabilitiesPageClient({ initialMemory }: CapabilitiesPageClientProps) {
   const t = useTranslations("AccountPage.capabilities");
+  const [memory, setMemory] = useState<MemoryData | null>(initialMemory);
 
   return (
     <div className="space-y-6 p-6">
@@ -23,7 +19,7 @@ export function CapabilitiesPageClient({ initialMemory }: CapabilitiesPageClient
         <p className="text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
-      <MemorySection initialMemory={initialMemory} />
+      <CoreMemorySection memory={memory} onMemoryUpdated={setMemory} />
     </div>
   );
 }

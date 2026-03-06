@@ -1,6 +1,6 @@
 "use server";
 
-import { reorganizeMemoryContent } from "@/app/(memory)/lib/updateMemory";
+import { reorganizeMemoryWithCore } from "@/app/(memory)/lib/reorganizeMemory";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { rootLogger } from "@/lib/logging";
@@ -22,6 +22,7 @@ export async function fetchAllMemories(
       id: number;
       version: number;
       core: string;
+      working: string[];
       changeNotes: string;
       createdAt: Date;
       updatedAt: Date;
@@ -57,6 +58,7 @@ export async function fetchAllMemories(
         id: true,
         version: true,
         core: true,
+        working: true,
         changeNotes: true,
         createdAt: true,
         updatedAt: true,
@@ -79,18 +81,23 @@ export async function fetchAllMemories(
 
   return {
     success: true,
-    data: memories.map((m) => ({
-      id: m.id,
-      version: m.version,
-      core: m.core,
-      changeNotes: m.changeNotes,
-      createdAt: m.createdAt,
-      updatedAt: m.updatedAt,
-      userId: m.userId,
-      teamId: m.teamId,
-      userEmail: m.user?.email ?? null,
-      teamName: m.team?.name ?? null,
-    })),
+    data: memories.map((m) => {
+      const workingLines = Array.isArray(m.working) ? (m.working as string[]) : [];
+      // 其实没必要但保险起见还是修复一下数据
+      return {
+        id: m.id,
+        version: m.version,
+        core: m.core,
+        working: workingLines,
+        changeNotes: m.changeNotes,
+        createdAt: m.createdAt,
+        updatedAt: m.updatedAt,
+        userId: m.userId,
+        teamId: m.teamId,
+        userEmail: m.user?.email ?? null,
+        teamName: m.team?.name ?? null,
+      };
+    }),
     pagination: {
       page,
       pageSize,
@@ -144,6 +151,7 @@ export async function fetchMemoryVersions({
       id: true,
       version: true,
       core: true,
+      working: true,
       changeNotes: true,
       createdAt: true,
       updatedAt: true,
@@ -152,68 +160,19 @@ export async function fetchMemoryVersions({
 
   return {
     success: true,
-    data: memories,
-  };
-}
-
-/**
- * Save a new memory version (admin edit).
- */
-export async function saveMemoryVersion({
-  userId,
-  teamId,
-  content,
-  changeNotes,
-}: {
-  userId?: number;
-  teamId?: number;
-  content: string;
-  changeNotes: string;
-}): Promise<ServerActionResult<{ version: number }>> {
-  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
-
-  if (!userId && !teamId) {
-    return {
-      success: false,
-      message: "Either userId or teamId must be provided",
-    };
-  }
-
-  if (userId && teamId) {
-    return {
-      success: false,
-      message: "Cannot provide both userId and teamId",
-    };
-  }
-
-  // Get latest version to determine next version number
-  const latestMemory = await prisma.memory.findFirst({
-    where: userId ? { userId } : { teamId },
-    orderBy: { version: "desc" },
-    take: 1,
-    select: { version: true },
-  });
-
-  const nextVersion = (latestMemory?.version ?? 0) + 1;
-
-  // Create new version
-  await prisma.memory.create({
-    data: {
-      userId: userId ?? null,
-      teamId: teamId ?? null,
-      version: nextVersion,
-      core: content,
-      working: [],
-      changeNotes: changeNotes || `Admin edit: saved as version ${nextVersion}`,
-      extra: {},
-    },
-  });
-
-  revalidatePath("/admin/memory");
-
-  return {
-    success: true,
-    data: { version: nextVersion },
+    data: memories.map((m) => {
+      const workingLines = Array.isArray(m.working) ? (m.working as string[]) : [];
+      const content = workingLines.join("\n");
+      return {
+        id: m.id,
+        version: m.version,
+        core: m.core,
+        working: content,
+        changeNotes: m.changeNotes,
+        createdAt: m.createdAt,
+        updatedAt: m.updatedAt,
+      };
+    }),
   };
 }
 
@@ -257,21 +216,23 @@ export async function reorganizeMemoryVersion({
     };
   }
 
-  // Reorganize the content
-  const reorganizedContent = await reorganizeMemoryContent(latestMemory.core, rootLogger);
+  // Both personal and team: read from core + working, write updated core and clear working.
+  const workingLines = Array.isArray(latestMemory.working) ? latestMemory.working : [];
+  const currentContent = workingLines.join("\n");
+  const currentCore = latestMemory.core ?? "";
 
-  // Get next version number
+  const newCore = await reorganizeMemoryWithCore(currentCore, currentContent, rootLogger);
+
   const nextVersion = latestMemory.version + 1;
 
-  // Create new version with reorganized content
   await prisma.memory.create({
     data: {
       userId: userId ?? null,
       teamId: teamId ?? null,
       version: nextVersion,
-      core: reorganizedContent,
+      core: newCore,
       working: [],
-      changeNotes: `Reorganized memory from ${latestMemory.core.length} to ${reorganizedContent.length} characters`,
+      changeNotes: `Admin reorganized: promoted permanent items to core, cleared working (core ${currentCore.length}→${newCore.length} chars, working ${currentContent.length} chars cleared)`,
       extra: {},
     },
   });

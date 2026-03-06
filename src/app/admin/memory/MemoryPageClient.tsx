@@ -29,9 +29,10 @@ import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { fetchAllMemories } from "./actions";
+import { fetchAllMemories, reorganizeMemoryVersion } from "./actions";
 
 type Memory = ExtractServerActionData<typeof fetchAllMemories>[number];
+type SelectedMemory = Memory & { viewType: "core" | "working" };
 
 export const SearchParamsConfig = {
   page: createParamConfig.number(1),
@@ -56,7 +57,7 @@ export function MemoryPageClient({ initialSearchParams }: MemoryPageClientProps)
   const [error, setError] = useState("");
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
+  const [selectedMemory, setSelectedMemory] = useState<SelectedMemory | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   // Use search params hook for URL synchronization
@@ -100,10 +101,34 @@ export function MemoryPageClient({ initialSearchParams }: MemoryPageClientProps)
     [setParams],
   );
 
-  const handleView = (memory: Memory) => {
-    setSelectedMemory(memory);
+  const handleViewCore = (memory: Memory) => {
+    setSelectedMemory({ ...memory, viewType: "core" });
     setIsViewDialogOpen(true);
   };
+
+  const handleViewWorking = (memory: Memory) => {
+    setSelectedMemory({ ...memory, viewType: "working" });
+    setIsViewDialogOpen(true);
+  };
+
+  const handleReorganize = useCallback(
+    async (memory: Memory) => {
+      setIsLoading(true);
+      const result = await reorganizeMemoryVersion({
+        userId: memory.userId ?? undefined,
+        teamId: memory.teamId ?? undefined,
+      });
+
+      if (!result.success) {
+        setError(result.message ?? "Failed to reorganize memory");
+      } else {
+        // Refresh list to show new version
+        await fetchData();
+      }
+      setIsLoading(false);
+    },
+    [fetchData],
+  );
 
   if (status === "loading" || isLoading) {
     return <div>Loading...</div>;
@@ -149,7 +174,8 @@ export function MemoryPageClient({ initialSearchParams }: MemoryPageClientProps)
             <TableRow>
               <TableHead>User/Team</TableHead>
               <TableHead>Version</TableHead>
-              <TableHead>Content Length</TableHead>
+              <TableHead>Core Len</TableHead>
+              <TableHead>Work Len</TableHead>
               <TableHead>Change Notes</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead>Updated At</TableHead>
@@ -175,7 +201,8 @@ export function MemoryPageClient({ initialSearchParams }: MemoryPageClientProps)
                   )}
                 </TableCell>
                 <TableCell className="font-mono text-sm">{memory.version}</TableCell>
-                <TableCell className="text-sm">{memory.core.length} chars</TableCell>
+                <TableCell className="text-sm">{memory.core.length} charactors</TableCell>
+                <TableCell className="text-sm">{memory.working.length} items</TableCell>
                 <TableCell className="text-sm max-w-md truncate">
                   {memory.changeNotes || "-"}
                 </TableCell>
@@ -185,15 +212,32 @@ export function MemoryPageClient({ initialSearchParams }: MemoryPageClientProps)
                 <TableCell className="text-xs whitespace-nowrap">
                   {formatDate(memory.updatedAt, locale)}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right flex gap-1 justify-end">
                   <Button
                     variant="outline"
                     size="sm"
                     className="h-7 text-xs"
-                    onClick={() => handleView(memory)}
+                    onClick={() => handleViewCore(memory)}
                   >
                     <EyeIcon className="h-3 w-3 mr-1" />
-                    View
+                    Core
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => handleViewWorking(memory)}
+                  >
+                    <EyeIcon className="h-3 w-3 mr-1" />
+                    Working
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => handleReorganize(memory)}
+                  >
+                    Reorg
                   </Button>
                 </TableCell>
               </TableRow>
@@ -215,9 +259,9 @@ export function MemoryPageClient({ initialSearchParams }: MemoryPageClientProps)
         </div>
       )}
 
-      {/* View Dialog */}
+      {/* View Dialog - same width as Capabilities page dialog, read-only */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-3xl lg:max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               Memory Version {selectedMemory?.version}
@@ -235,12 +279,23 @@ export function MemoryPageClient({ initialSearchParams }: MemoryPageClientProps)
                 <p className="text-sm text-muted-foreground mt-1">{selectedMemory.changeNotes}</p>
               </div>
             )}
-            <div>
-              <Label>Content ({selectedMemory?.core.length} characters)</Label>
-              <pre className="mt-2 p-4 bg-muted rounded-lg text-sm font-mono whitespace-pre-wrap overflow-x-auto max-h-[60vh] overflow-y-auto">
-                {selectedMemory?.core || ""}
-              </pre>
-            </div>
+            {selectedMemory && (
+              <div className="space-y-2">
+                <div className="text-sm font-medium">
+                  {selectedMemory.viewType === "core" ? "Core" : "Working"}
+                  Content (
+                  {selectedMemory.viewType === "core"
+                    ? selectedMemory.core.length + " characters"
+                    : selectedMemory.working.length + " items"}{" "}
+                  )
+                </div>
+                <div className="p-4 bg-muted rounded-lg text-sm whitespace-pre-wrap max-h-[50vh] overflow-y-auto">
+                  {selectedMemory.viewType === "core"
+                    ? selectedMemory.core
+                    : selectedMemory.working.join("\n")}
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>

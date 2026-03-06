@@ -16,22 +16,23 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { requestMemoryUpdate } from "./actions";
 
-interface MemoryData {
-  core: string;
-  version: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface MemoryDialogProps {
+interface WorkingMemoryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  memory: MemoryData;
+  working: string[];
+  updatedAt: Date;
   onMemoryUpdated: () => void;
 }
 
-export function MemoryDialog({ open, onOpenChange, memory, onMemoryUpdated }: MemoryDialogProps) {
-  const t = useTranslations("AccountPage.capabilities.memory");
+export function MemoryDialog({
+  open,
+  onOpenChange,
+  working,
+  updatedAt,
+  onMemoryUpdated,
+}: WorkingMemoryDialogProps) {
+  const t = useTranslations("AccountPage.capabilities.memory.working");
+  const tLastUpdated = useTranslations("AccountPage.capabilities.memory");
   const locale = useLocale();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -89,7 +90,8 @@ export function MemoryDialog({ open, onOpenChange, memory, onMemoryUpdated }: Me
         <DialogHeader>
           <DialogTitle>{t("dialogTitle")}</DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm">
-            {t("dialogDescription")} — {t("lastUpdated")}: {formatDate(memory.updatedAt, locale)}
+            {t("dialogDescription")} — {tLastUpdated("lastUpdated")}:{" "}
+            {formatDate(updatedAt, locale)}
           </DialogDescription>
         </DialogHeader>
 
@@ -97,7 +99,7 @@ export function MemoryDialog({ open, onOpenChange, memory, onMemoryUpdated }: Me
           <div className="space-y-2">
             <div className="text-sm font-medium">{t("memoryContent")}</div>
             <div className="p-4 bg-muted rounded-lg text-sm whitespace-pre-wrap max-h-[50vh] overflow-y-auto">
-              {memory.core || t("noMemoryContent")}
+              {working.join("\n") || t("noMemoryContent")}
             </div>
           </div>
 
