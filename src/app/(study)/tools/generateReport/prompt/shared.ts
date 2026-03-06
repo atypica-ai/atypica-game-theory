@@ -75,16 +75,20 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 7. 用户引用是否用了 italic + 比正文大的字号 + border-left？
 
 【图片生成策略】
-- **默认不生成图片**。报告的设计力量来自排版和文字，不依赖配图。
-- 仅在以下极少数场景中可选择生成配图：产品概念可视化、包装设计展示、品牌视觉概念等需要具象化呈现的创意内容
+报告中的图片经常会让读者对报告内容产生误解（比如生成人物的人种；IP；品牌信息；图表等），因此必须遵守：
+- 仅生成以下两种类型的图片：
+  1. 产品概念可视化、包装设计展示需要具象化呈现的创意内容（无品牌）
+  2. 提供情绪/氛围感/装饰性的抽象插图
 - 严格禁止：绘制人物、流程图、架构图、复杂的技术图表等
 - **严格禁止**：绝对禁止使用图片生成API生成任何图表、表格、数据可视化、统计图、流程图等需要基于真实数据的内容。图片生成API无法输入可信数据源，生成的图表会包含虚假数据，具有误导性。
+- 在提示词中不要包含品牌/IP/人物等名称
 
-如确需生成图片：
-语法：\`<img src="/api/imagegen/[英文提示词]?ratio=[比例]" alt="[描述]" class="[样式]" />\`
+报告中生成图片的语法：\`<img src="/api/imagegen/[英文提示词]?ratio=[比例]" alt="[描述]" class="[样式]" />\`
 - 必须限制最大宽度为100%，使用 max-w-full 或 style="max-width: 100%"
 - 图片数量最多1张，不要让图片主导页面
-- 英文提示词使用专业视觉艺术术语，比例：square/landscape/portrait
+- 英文提示词撰写规范：
+  - 使用专业视觉艺术术语，比例：square/landscape/portrait
+  - 用专业详细的语言包含以下内容：1. 风格；2. 图片描述；3. 图片目的/类型；4. 禁止/注意
 
 【技术实现】
 - 使用 Tailwind CSS 构建响应式布局
@@ -170,16 +174,20 @@ Hierarchy established entirely through font properties (not color):
 7. Do user quotes use italic + larger-than-body font size + border-left?
 
 【Image Generation Strategy】
-- **Do not generate images by default.** The report's design power comes from typography and text, not illustrations.
-- Only in rare scenarios may you optionally generate an image: product concept visualization, packaging design display, brand visual concepts — creative content that requires concrete visual representation
+Images in reports often mislead readers (e.g., generated people's ethnicity; IP; brand information; charts, etc.), so the following must be followed:
+- Only generate these two types of images:
+  1. Product concept visualization, packaging design display — creative content that requires concrete visual representation (no brand)
+  2. Abstract illustrations that provide mood/atmosphere/decorative value
 - Strictly prohibit: drawing people, flowcharts, architecture diagrams, complex technical charts, etc.
-- **STRICTLY PROHIBITED**: Absolutely forbidden to use image generation APIs to create any charts, tables, data visualizations, statistical graphs, flowcharts, or any content requiring real data sources.
+- **STRICTLY PROHIBITED**: Absolutely forbidden to use image generation APIs to create any charts, tables, data visualizations, statistical graphs, flowcharts, or any content requiring real data sources. Image generation APIs cannot accept trusted data sources; generated charts would contain false data and be misleading.
+- Do not include brand/IP/person names in prompts
 
-If an image is truly needed:
-Syntax: \`<img src="/api/imagegen/[English prompt]?ratio=[ratio]" alt="[description]" class="[styles]" />\`
+Syntax for generating images in reports: \`<img src="/api/imagegen/[English prompt]?ratio=[ratio]" alt="[description]" class="[styles]" />\`
 - Must limit maximum width to 100% using max-w-full or style="max-width: 100%"
 - Maximum 1 image, do not let images dominate the page
-- Use professional visual art terminology in English prompts, ratios: square/landscape/portrait
+- English prompt writing guidelines:
+  - Use professional visual art terminology, ratios: square/landscape/portrait
+  - Include the following in professional, detailed language: 1. Style; 2. Image description; 3. Image purpose/type; 4. Prohibitions/notes
 
 【Technical Implementation】
 - Use Tailwind CSS for responsive layouts
