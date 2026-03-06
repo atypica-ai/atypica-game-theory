@@ -1,6 +1,6 @@
 import "server-only";
 
-import { imageModel, llm } from "@/ai/provider";
+import { imageModel, llm, LLMModelName } from "@/ai/provider";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
@@ -131,18 +131,19 @@ async function backgroundGenerateImage({
     let result: { getObjectUrl: string; objectUrl: string; urls?: string[] };
     try {
       // result = await generateMidjourney({ prompt, ratio, promptHash, genLog });
-      result = await generateGeminiImage({ prompt, ratio, promptHash, genLog });
-    } catch (error) {
-      const errorMsg = (error as Error).message;
-      if (errorMsg.includes("No image generated")) {
-        genLog.warn(`generateGeminiImage error: ${errorMsg}, fallback to generateMidjourney`);
-        result = await generateMidjourney({ prompt, ratio, promptHash, genLog });
-      } else {
+      result = await generateGeminiImage({ prompt, modelName: "gemini-3-pro-image", ratio, promptHash, genLog });
+    } catch (gemini3Error) {
+      const gemini3Msg = (gemini3Error as Error).message;
+      genLog.warn({ msg: "gemini-3-pro-image failed, fallback to gemini-2.5-flash-image", errorMsg: gemini3Msg });
+      try {
+        result = await generateGeminiImage({ prompt, modelName: "gemini-2.5-flash-image", ratio, promptHash, genLog });
+      } catch (gemini25Error) {
+        const gemini25Msg = (gemini25Error as Error).message;
         await prisma.imageGeneration.update({
           where: { id },
-          data: { extra: { ...recordExtra, error: errorMsg } },
+          data: { extra: { ...recordExtra, error: `Gemini3: ${gemini3Msg}; Gemini2.5: ${gemini25Msg}` } },
         });
-        reject(error);
+        reject(gemini25Error);
         return;
       }
     }
@@ -259,11 +260,13 @@ export async function generateMidjourney({
  */
 async function generateGeminiImage({
   prompt,
+  modelName = "gemini-3-pro-image",
   ratio,
   promptHash,
   genLog,
 }: {
   prompt: string;
+  modelName: Extract<LLMModelName, "gemini-3-pro-image" | "gemini-2.5-flash-image">;
   ratio: "square" | "landscape" | "portrait";
   promptHash: string;
   genLog: Logger;
@@ -273,7 +276,7 @@ async function generateGeminiImage({
     async (resolve, reject) => {
       const startTime = Date.now();
       const response = streamText({
-        model: llm("gemini-3-pro-image"),
+        model: llm(modelName),
         providerOptions: {
           google: {
             responseModalities: ["IMAGE"],
@@ -284,7 +287,7 @@ async function generateGeminiImage({
           } satisfies GoogleGenerativeAIProviderOptions,
         },
         temperature: 0,
-        prompt,
+        prompt: modelName === "gemini-2.5-flash-image" ? `${prompt}\nAvoid any text in the image.` : prompt, // gemini 2.5 tends to generate text on image
         abortSignal: AbortSignal.timeout(300 * 1000),
         maxRetries: 3,
         onFinish: async ({ text, files }) => {
