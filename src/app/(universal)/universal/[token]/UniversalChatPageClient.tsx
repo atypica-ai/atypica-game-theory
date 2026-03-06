@@ -16,6 +16,11 @@ import { useUniversalChatSync } from "@/app/(universal)/universal/hooks/useUnive
 import { useUniversalPanelResize } from "@/app/(universal)/universal/hooks/useUniversalPanelResize";
 import { useUniversalTaskPanels } from "@/app/(universal)/universal/hooks/useUniversalTaskPanels";
 import {
+  UNIVERSAL_BUSY_RETRY_INTERVAL_MS,
+  UNIVERSAL_HIDDEN_POLL_INTERVAL_MS,
+  UNIVERSAL_SUB_AGENT_RUNTIME_VISIBLE_POLL_INTERVAL_MS,
+} from "@/app/(universal)/universal/polling";
+import {
   UniversalTaskStatus,
   extractTasksFromMessages,
 } from "@/app/(universal)/universal/task-vm";
@@ -110,13 +115,21 @@ export function UniversalChatPageClient({
     initialSubAgentRuntimeMap,
   );
   const { isDocumentVisible } = useDocumentVisibility();
+  const subAgentTokens = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          tasks
+            .map((task) => task.subAgentChatToken)
+            .filter((token): token is string => !!token),
+        ),
+      ),
+    [tasks],
+  );
+  const subAgentTokenSignature = useMemo(() => subAgentTokens.join("|"), [subAgentTokens]);
 
   useEffect(() => {
-    const tokens = tasks
-      .map((task) => task.subAgentChatToken)
-      .filter((token): token is string => !!token);
-
-    if (!tokens.length) {
+    if (!subAgentTokens.length) {
       setSubAgentRuntimeMap({});
       return;
     }
@@ -127,12 +140,12 @@ export function UniversalChatPageClient({
     const poll = async () => {
       if (cancelled) return;
       if (useChatHelpers.status !== "ready") {
-        timeoutId = setTimeout(poll, 2000);
+        timeoutId = setTimeout(poll, UNIVERSAL_BUSY_RETRY_INTERVAL_MS);
         return;
       }
 
       const results = await Promise.all(
-        tokens.map(async (token) => {
+        subAgentTokens.map(async (token) => {
           const state = await fetchUserChatStateByTokenAction({
             userChatToken: token,
             kind: "study",
@@ -144,7 +157,12 @@ export function UniversalChatPageClient({
       setSubAgentRuntimeMap(Object.fromEntries(results));
       const hasAnyRunning = results.some(([, isRunning]) => isRunning);
       if (hasAnyRunning) {
-        timeoutId = setTimeout(poll, isDocumentVisible ? 5000 : 30000);
+        timeoutId = setTimeout(
+          poll,
+          isDocumentVisible
+            ? UNIVERSAL_SUB_AGENT_RUNTIME_VISIBLE_POLL_INTERVAL_MS
+            : UNIVERSAL_HIDDEN_POLL_INTERVAL_MS,
+        );
       }
     };
 
@@ -153,7 +171,7 @@ export function UniversalChatPageClient({
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isDocumentVisible, tasks, useChatHelpers.status]);
+  }, [isDocumentVisible, subAgentTokenSignature, subAgentTokens, useChatHelpers.status]);
 
   const tasksWithRuntimeStatus = useMemo(
     () =>
@@ -214,18 +232,14 @@ export function UniversalChatPageClient({
     (toolPart: TUniversalMessageWithTool["parts"][number]) => {
       if (!isToolOrDynamicToolUIPart(toolPart)) return false;
       const toolName = getToolOrDynamicToolName(toolPart);
-      return (
-        toolName === UniversalToolName.webSearch ||
-        toolName === UniversalToolName.requestSelectPersonas ||
-        toolName === UniversalToolName.confirmPanelResearchPlan
-      );
+      return toolName !== UniversalToolName.createStudySubAgent;
     },
     [],
   );
 
   const renderChatSession = (
     <UserChatSession
-      nickname={{ assistant: "Atypica", user: session?.user?.email ?? "You" }}
+      nickname={{ assistant: "Atypica", user: session?.user?.email ?? t("you") }}
       avatar={{
         assistant: <HippyGhostAvatar className="size-8" seed={0} />,
         user: session?.user ? <HippyGhostAvatar className="size-8" seed={session.user.id} /> : undefined,
@@ -238,7 +252,6 @@ export function UniversalChatPageClient({
           addToolResult={addToolResult}
           onOpenReport={({ toolCallId }) => openTaskDetail({ toolCallId, toolName: "" })}
           onOpenTaskDetail={openTaskDetail}
-          interactiveOnly
         />
       )}
       acceptAttachments={false}
@@ -259,14 +272,16 @@ export function UniversalChatPageClient({
     <FitToViewport className="flex flex-col overflow-hidden">
       <div className="w-full mt-2 px-3 py-3 max-w-[1800px] mx-auto flex items-center justify-between">
         <div className="flex-1" />
-        <h1 className="font-medium text-sm text-center flex-1">{userChat.title || "GEA"}</h1>
+        <h1 className="font-medium text-sm text-center flex-1">
+          {userChat.title || t("chatDefaultTitle")}
+        </h1>
         <div className="flex-1 flex justify-end items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setFilesPanelOpen(true)}
             className="size-8"
-            title="View workspace files"
+            title={t("viewWorkspaceFiles")}
           >
             <FolderOpenIcon className="size-4" />
           </Button>

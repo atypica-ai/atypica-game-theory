@@ -21,6 +21,7 @@ export const createStudySubAgentOutputSchema = z.object({
   plainText: z.string(),
   subAgentChatId: z.number(),
   subAgentChatToken: z.string(),
+  workspaceRunDir: z.string().optional(),
 });
 
 export type CreateStudySubAgentToolInput = z.infer<typeof createStudySubAgentInputSchema>;

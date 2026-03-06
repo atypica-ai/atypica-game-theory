@@ -64,6 +64,18 @@ async function getLatestAssistantText(userChatId: number): Promise<string> {
   return "";
 }
 
+async function hasAnyReportToken(userChatId: number): Promise<boolean> {
+  const userChat = await prisma.userChat.findUnique({
+    where: { id: userChatId },
+    select: { context: true },
+  });
+  const context = userChat?.context as { reportTokens?: unknown } | null;
+  const reportTokens = Array.isArray(context?.reportTokens)
+    ? context.reportTokens.filter((token): token is string => typeof token === "string")
+    : [];
+  return reportTokens.length > 0;
+}
+
 export const createStudySubAgentTool = ({
   userId,
   teamId,
@@ -133,7 +145,19 @@ export const createStudySubAgentTool = ({
         });
 
         const runSubAgent = async () => {
-          try {
+          const runOnce = async (forcedInstruction?: string) => {
+            if (forcedInstruction) {
+              await persistentAIMessageToDB({
+                mode: "append",
+                userChatId: chat.id,
+                message: {
+                  id: generateId(),
+                  role: "user",
+                  parts: [{ type: "text", text: forcedInstruction }],
+                },
+              });
+            }
+
             await executeBaseAgentRequest(
               {
                 userId,
@@ -147,12 +171,12 @@ export const createStudySubAgentTool = ({
                 statReport,
               },
               async (toolAbortSignal) => {
-                  const config = await createStudyAgentConfig({
-                    userId,
-                    studyUserChatId: chat.id,
-                    userChatContext: {
-                      defaultLocale: locale,
-                    },
+                const config = await createStudyAgentConfig({
+                  userId,
+                  studyUserChatId: chat.id,
+                  userChatContext: {
+                    defaultLocale: locale,
+                  },
                   locale,
                   logger: subAgentLogger,
                   statReport,
@@ -172,6 +196,17 @@ export const createStudySubAgentTool = ({
               undefined,
               { executionMode: "blocking" },
             );
+          };
+
+          try {
+            await runOnce();
+            if (!(await hasAnyReportToken(chat.id))) {
+              const enforceReportInstruction =
+                locale === "zh-CN"
+                  ? "继续执行并立刻调用 generateReport 产出 reportToken。不要结束在 interview，输出报告后再给出简要总结。"
+                  : "Continue and call generateReport now to produce a reportToken. Do not stop at interview; finish report generation before final summary.";
+              await runOnce(enforceReportInstruction);
+            }
 
             const latestAssistantText = await getLatestAssistantText(chat.id);
             subAgentLogger.info(
@@ -193,8 +228,8 @@ export const createStudySubAgentTool = ({
 
         const resultSummary =
           locale === "zh-CN"
-            ? "Sub-agent 已启动，右侧面板将持续显示执行过程。"
-            : "Sub-agent started. The right panel will stream execution progress.";
+            ? "研究任务已启动，右侧面板将持续更新执行进度。"
+            : "Research task started. The right panel will keep updating progress.";
 
         return {
           status: "running",
@@ -202,6 +237,7 @@ export const createStudySubAgentTool = ({
           plainText: resultSummary,
           subAgentChatId: subAgentChat.id,
           subAgentChatToken: subAgentChat.token,
+          workspaceRunDir: `workspace/study-subagents/${subAgentChat.token}`,
         };
       } catch (error) {
         if (!subAgentChat) {
@@ -219,9 +255,10 @@ export const createStudySubAgentTool = ({
         return {
           status: "failed",
           resultSummary: errorMessage,
-          plainText: `Sub-agent initialization failed: ${errorMessage}`,
+          plainText: `Task initialization failed: ${errorMessage}`,
           subAgentChatId: subAgentChat.id,
           subAgentChatToken: subAgentChat.token,
+          workspaceRunDir: `workspace/study-subagents/${subAgentChat.token}`,
         };
       }
     },

@@ -2,7 +2,9 @@
 
 import { UniversalSubAgentToolPartDisplay } from "@/app/(universal)/universal/components/UniversalSubAgentToolPartDisplay";
 import { useTaskDetailPolling } from "@/app/(universal)/universal/components/task-detail/useTaskDetailPolling";
+import { UNIVERSAL_TASK_DETAIL_VISIBLE_POLL_INTERVAL_MS } from "@/app/(universal)/universal/polling";
 import { fetchUniversalUserChatByToken } from "@/app/(universal)/universal/actions";
+import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import {
   UniversalSubAgentToolPartVM,
   UniversalTaskVM,
@@ -12,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CheckCircle2, ChevronDown, CircleDot, CircleX, Loader2, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 function statusLabel(state: UniversalSubAgentToolPartVM["state"]): "running" | "done" | "error" {
@@ -25,6 +28,16 @@ function StatusIcon({ state }: { state: UniversalSubAgentToolPartVM["state"] }) 
   if (status === "running") return <CircleDot className="size-3.5 text-amber-500 animate-pulse" />;
   if (status === "done") return <CheckCircle2 className="size-3.5 text-emerald-500" />;
   return <CircleX className="size-3.5 text-red-500" />;
+}
+
+function statusBadgeClassName(status: "running" | "done" | "error") {
+  if (status === "running") {
+    return "border-amber-300/55 bg-amber-500/12 text-amber-800 dark:text-amber-300";
+  }
+  if (status === "done") {
+    return "border-emerald-300/55 bg-emerald-500/12 text-emerald-800 dark:text-emerald-300";
+  }
+  return "border-red-300/55 bg-red-500/12 text-red-800 dark:text-red-300";
 }
 
 function stageClassName(stage: UniversalTimelineStage) {
@@ -104,7 +117,6 @@ function ExecutionGridLoader({ label }: { label: string }) {
       <div className="pointer-events-none absolute inset-x-3 top-3 h-[232px] rounded-[28px] border border-border/60 bg-background/30" />
 
       <div className="relative rounded-[28px] border border-border/70 bg-background/85 p-4 backdrop-blur-sm">
-        <div className="execution-grid-scan pointer-events-none absolute inset-y-6 left-0 w-[38%] rounded-[20px]" />
         <div className="mx-auto w-full max-w-[360px]">
           <div
             className="grid gap-[2px]"
@@ -141,36 +153,6 @@ function ExecutionGridLoader({ label }: { label: string }) {
         <Loader2 className="size-3.5 animate-spin" />
         <span>{label}</span>
       </div>
-      <style jsx>{`
-        .execution-grid-scan {
-          background: linear-gradient(
-            90deg,
-            rgba(56, 189, 248, 0) 0%,
-            rgba(56, 189, 248, 0.08) 30%,
-            rgba(52, 211, 153, 0.18) 50%,
-            rgba(56, 189, 248, 0.08) 70%,
-            rgba(56, 189, 248, 0) 100%
-          );
-          animation: execution-grid-scan 2.8s ease-in-out infinite;
-        }
-
-        @keyframes execution-grid-scan {
-          0% {
-            transform: translateX(-130%);
-            opacity: 0;
-          }
-          15% {
-            opacity: 0.85;
-          }
-          85% {
-            opacity: 0.85;
-          }
-          100% {
-            transform: translateX(300%);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 }
@@ -183,6 +165,8 @@ type SubAgentChatMessage = {
 
 type TaskDetailCache = {
   parts: UniversalSubAgentToolPartVM[];
+  latestReportToken: string | null;
+  latestReportCoverUrl: string | null;
 };
 
 export function UniversalTaskDetailPanel({
@@ -195,6 +179,8 @@ export function UniversalTaskDetailPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [taskCacheByToken, setTaskCacheByToken] = useState<Record<string, TaskDetailCache>>({});
   const [openStepByToolCallId, setOpenStepByToolCallId] = useState<Record<string, boolean>>({});
+  const [latestReportToken, setLatestReportToken] = useState<string | null>(null);
+  const [latestReportCoverUrl, setLatestReportCoverUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setOpenStepByToolCallId({});
@@ -204,6 +190,8 @@ export function UniversalTaskDetailPanel({
     const token = task?.subAgentChatToken;
     if (!token) {
       setSubAgentParts([]);
+      setLatestReportToken(null);
+      setLatestReportCoverUrl(null);
       setIsLoading(false);
       return;
     }
@@ -211,11 +199,15 @@ export function UniversalTaskDetailPanel({
     const cached = taskCacheByToken[token];
     if (cached) {
       setSubAgentParts(cached.parts);
+      setLatestReportToken(cached.latestReportToken);
+      setLatestReportCoverUrl(cached.latestReportCoverUrl);
       setIsLoading(false);
       return;
     }
 
     setSubAgentParts([]);
+    setLatestReportToken(null);
+    setLatestReportCoverUrl(null);
     setIsLoading(true);
   }, [task?.subAgentChatToken, taskCacheByToken]);
 
@@ -229,21 +221,45 @@ export function UniversalTaskDetailPanel({
         return {
           token: task.subAgentChatToken,
           parts: [] as UniversalSubAgentToolPartVM[],
+          latestReportToken: null,
+          latestReportCoverUrl: null,
         };
       }
 
       const messages = chatResult.data.messages as SubAgentChatMessage[];
+      const context = chatResult.data.context as { reportTokens?: unknown } | null;
+      const reportTokens = Array.isArray(context?.reportTokens)
+        ? context.reportTokens.filter((token): token is string => typeof token === "string")
+        : [];
+      let latestReportToken: string | null = null;
+      let latestReportCoverUrl: string | null = null;
+      const candidateReportToken = reportTokens.at(-1) ?? null;
+      if (candidateReportToken) {
+        const report = await fetchAnalystReportByToken(candidateReportToken);
+        if (report.success && report.data.generatedAt) {
+          latestReportToken = candidateReportToken;
+          latestReportCoverUrl = report.data.coverCdnHttpUrl ?? null;
+        }
+      }
       return {
         token: task.subAgentChatToken,
         parts: extractSubAgentToolPartsFromMessages(messages),
+        latestReportToken,
+        latestReportCoverUrl,
       };
     },
     onData: (next) => {
       setIsLoading(false);
       setSubAgentParts(next.parts);
+      setLatestReportToken(next.latestReportToken);
+      setLatestReportCoverUrl(next.latestReportCoverUrl);
       setTaskCacheByToken((prev) => ({
         ...prev,
-        [next.token]: { parts: next.parts },
+        [next.token]: {
+          parts: next.parts,
+          latestReportToken: next.latestReportToken,
+          latestReportCoverUrl: next.latestReportCoverUrl,
+        },
       }));
       setOpenStepByToolCallId((prev) => {
         const validPrev = Object.fromEntries(
@@ -265,6 +281,7 @@ export function UniversalTaskDetailPanel({
     },
     shouldContinue: () => task?.status === "running",
     onError: () => setIsLoading(false),
+    intervalMs: UNIVERSAL_TASK_DETAIL_VISIBLE_POLL_INTERVAL_MS,
   });
 
   const stageLabelMap: Record<UniversalTimelineStage, string> = useMemo(
@@ -305,6 +322,31 @@ export function UniversalTaskDetailPanel({
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
+        {latestReportToken ? (
+          <a
+            href={`/artifacts/report/${latestReportToken}/share`}
+            target="_blank"
+            rel="noreferrer"
+            className="mb-4 flex items-center gap-3 rounded-xl border bg-muted/10 px-3 py-2 transition-colors hover:bg-muted/20"
+          >
+            <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md border border-input/40 bg-muted/20">
+              {latestReportCoverUrl ? (
+                <Image
+                  src={latestReportCoverUrl}
+                  alt={t("reportCoverPreviewAlt")}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="h-full w-full" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium">{t("executionReportReady")}</div>
+              <div className="text-xs text-muted-foreground">{t("executionReportOpenPreview")}</div>
+            </div>
+          </a>
+        ) : null}
         {subAgentParts.length === 0 ? (
           isLoading ? (
             <ExecutionGridLoader label={t("executionLoading")} />
@@ -322,17 +364,29 @@ export function UniversalTaskDetailPanel({
               const isLast = index === subAgentParts.length - 1;
               const status = statusLabel(part.state);
               const isRunning = status === "running";
+              const statusText =
+                status === "running"
+                  ? t("statusInProgress")
+                  : status === "done"
+                    ? t("statusCompleted")
+                    : t("statusNeedsAttention");
               return (
                 <div key={`${part.toolCallId}-${part.messageIndex}-${part.partIndex}`} className="relative pl-8">
                   {!isLast ? (
                     <span
                       className={cn(
-                        "absolute left-[10px] top-6 bottom-[-20px] w-px bg-border/80",
-                        isRunning && "bg-amber-400/60",
+                        "absolute left-[10px] top-6 bottom-[-20px] w-px bg-border/80 transition-colors",
+                        isRunning && "bg-amber-400/70 shadow-[0_0_16px_rgba(251,191,36,0.35)]",
                       )}
                     />
                   ) : null}
-                  <span className="absolute left-0 top-1 inline-flex size-5 items-center justify-center rounded-full border bg-background">
+                  <span
+                    className={cn(
+                      "absolute left-0 top-1 inline-flex size-5 items-center justify-center rounded-full border bg-background transition-all",
+                      isRunning &&
+                        "border-amber-300/60 bg-amber-500/10 shadow-[0_0_0_6px_rgba(251,191,36,0.10)]",
+                    )}
+                  >
                     <StatusIcon state={part.state} />
                   </span>
 
@@ -345,7 +399,9 @@ export function UniversalTaskDetailPanel({
                       }))
                     }
                     className={cn(
-                      "w-full text-left rounded-lg border px-3 py-2 transition-colors",
+                      "w-full text-left rounded-xl border px-3 py-3 transition-all",
+                      isRunning &&
+                        "border-amber-300/55 bg-[linear-gradient(180deg,rgba(251,191,36,0.12)_0%,rgba(251,191,36,0.03)_100%)] shadow-[0_8px_24px_rgba(251,191,36,0.08)]",
                       isOpen
                         ? "bg-zinc-100/70 dark:bg-zinc-800/70"
                         : "bg-background hover:bg-zinc-50 dark:hover:bg-zinc-900/40",
@@ -361,13 +417,27 @@ export function UniversalTaskDetailPanel({
                         {stageLabelMap[part.stage]}
                       </span>
                       <span className="text-sm font-medium truncate">{part.semanticTitle}</span>
+                      <span
+                        className={cn(
+                          "ml-auto inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium",
+                          statusBadgeClassName(status),
+                        )}
+                      >
+                        {statusText}
+                      </span>
                       <ChevronDown
                         className={cn(
-                          "ml-auto size-3.5 text-muted-foreground transition-transform",
+                          "size-3.5 text-muted-foreground transition-transform",
                           isOpen && "rotate-180",
                         )}
                       />
                     </div>
+                    {isRunning ? (
+                      <div className="mt-2 flex items-center gap-2 text-xs text-amber-700/90 dark:text-amber-300/90">
+                        <Loader2 className="size-3 animate-spin" />
+                        <span>{t("executionStepRunningHint")}</span>
+                      </div>
+                    ) : null}
                   </button>
 
                   {isOpen ? (
@@ -381,11 +451,11 @@ export function UniversalTaskDetailPanel({
                           {t("executionTechDetails")}
                         </summary>
                         <div className="mt-2 grid grid-cols-[88px_1fr] gap-x-2 gap-y-1 break-all">
-                          <span className="text-foreground/80">tool</span>
+                          <span className="text-foreground/80">{t("executionLabelTool")}</span>
                           <span>{part.toolName}</span>
-                          <span className="text-foreground/80">state</span>
+                          <span className="text-foreground/80">{t("executionLabelState")}</span>
                           <span>{part.state}</span>
-                          <span className="text-foreground/80">callId</span>
+                          <span className="text-foreground/80">{t("executionLabelCallId")}</span>
                           <span>{part.toolCallId}</span>
                         </div>
                       </details>

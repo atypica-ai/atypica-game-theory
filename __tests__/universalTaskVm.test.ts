@@ -100,7 +100,7 @@ describe("extractTasksFromMessages", () => {
       "error-newer",
       "done-older",
     ]);
-    expect(tasks[0].summary).toBe("Sub-agent is running...");
+    expect(tasks[0].summary).toBe("In progress...");
     expect(tasks[1].summary).toBe("boom");
   });
 

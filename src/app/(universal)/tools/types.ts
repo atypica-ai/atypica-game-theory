@@ -32,6 +32,7 @@ import {
   CreateStudySubAgentToolInput,
   CreateStudySubAgentToolResult,
 } from "@/app/(universal)/tools/createStudySubAgent/types";
+import type { WorkspaceFileEntry } from "@/lib/skill/workspaceTools";
 import { UIDataTypes, UIMessage } from "ai";
 
 /**
@@ -50,6 +51,9 @@ export enum UniversalToolName {
   bash = "bash",
   readFile = "readFile",
   writeFile = "writeFile",
+  listWorkspaceFiles = "listWorkspaceFiles",
+  readWorkspaceFile = "readWorkspaceFile",
+  writeWorkspaceFile = "writeWorkspaceFile",
 
   // Skill management
   listSkills = "listSkills",
@@ -116,6 +120,30 @@ export type UniversalUITools = {
   [UniversalToolName.confirmPanelResearchPlan]: {
     input: ConfirmPanelResearchPlanInput;
     output: ConfirmPanelResearchPlanOutput;
+  };
+  [UniversalToolName.listWorkspaceFiles]: {
+    input: { path?: string };
+    output: { success: boolean; path: string; files: WorkspaceFileEntry[]; plainText: string };
+  };
+  [UniversalToolName.readWorkspaceFile]: {
+    input: { path: string; full?: boolean; headChars?: number; tailChars?: number };
+    output: {
+      success: boolean;
+      path: string;
+      content: string;
+      readMode: "preview" | "full";
+      truncated: boolean;
+      head: string;
+      tail: string;
+      totalChars: number;
+      totalBytes: number;
+      returnedChars: number;
+      plainText: string;
+    };
+  };
+  [UniversalToolName.writeWorkspaceFile]: {
+    input: { path: string; content: string };
+    output: { success: boolean; path: string; bytes: number; plainText: string };
   };
 };
 

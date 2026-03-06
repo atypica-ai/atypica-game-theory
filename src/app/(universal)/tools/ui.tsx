@@ -5,11 +5,17 @@ import { UpdatePanelResultMessage } from "@/app/(panel)/tools/updatePanel/Update
 import type { ConfirmPanelResearchPlanInput } from "@/app/(panel)/tools/confirmPanelResearchPlan/types";
 import { GeneratePodcastResultMessage } from "@/app/(study)/tools/generatePodcast/GeneratePodcastResultMessage";
 import { GenerateReportResultMessage } from "@/app/(study)/tools/generateReport/GenerateReportResultMessage";
+import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
+import { fetchUniversalUserChatByToken } from "@/app/(universal)/universal/actions";
+import { UNIVERSAL_REPORT_RETRY_DELAYS_MS } from "@/app/(universal)/universal/polling";
 import { SearchPersonasResultMessage } from "@/app/(study)/tools/searchPersonas/SearchPersonasResultMessage";
 import { ConfirmPlanMessage } from "@/app/(panel)/tools/confirmPanelResearchPlan/ConfirmPlanMessage";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, CircleDot, CircleX } from "lucide-react";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { TAddUniversalUIToolResult, TUniversalMessageWithTool, UniversalToolName } from "./types";
 
 function extractPlainText(toolUIPart: TUniversalMessageWithTool["parts"][number]): string {
@@ -29,14 +35,15 @@ function UniversalMajorTaskResultCard({
   summary: string;
   onOpenDetail: () => void;
 }) {
+  const t = useTranslations("UniversalAgent");
   return (
     <div className="rounded-md border p-3 space-y-2 bg-muted/20">
       <div className="text-xs uppercase tracking-wide text-muted-foreground">{title}</div>
       <div className={cn("text-sm text-muted-foreground", summary ? "line-clamp-4" : "")}>
-        {summary || "Done. Open details in right panel."}
+        {summary || t("taskDoneOpenDetailsHint")}
       </div>
       <Button type="button" size="sm" variant="outline" onClick={onOpenDetail}>
-        View details
+        {t("taskDetailsOpen")}
       </Button>
     </div>
   );
@@ -57,8 +64,9 @@ function getSubAgentCardStatus(
 
 function extractSubAgentTitle(
   toolUIPart: Extract<TUniversalMessageWithTool["parts"][number], { type: `tool-${string}` }>,
+  fallbackTitle: string,
 ): string {
-  if (!toolUIPart.input || typeof toolUIPart.input !== "object") return "SubAgent Task";
+  if (!toolUIPart.input || typeof toolUIPart.input !== "object") return fallbackTitle;
   const input = toolUIPart.input as Record<string, unknown>;
   if (typeof input.subAgentTitle === "string" && input.subAgentTitle.trim()) {
     return input.subAgentTitle.trim();
@@ -66,26 +74,31 @@ function extractSubAgentTitle(
   if (typeof input.taskRequirement === "string" && input.taskRequirement.trim()) {
     return input.taskRequirement.trim();
   }
-  return "SubAgent Task";
+  return fallbackTitle;
 }
 
 function extractSubAgentSummary(
   toolUIPart: Extract<TUniversalMessageWithTool["parts"][number], { type: `tool-${string}` }>,
+  copy: {
+    taskExecutionFailedHint: string;
+    taskStartedWaitingUpdate: string;
+    taskCreatedWaitingFirstUpdate: string;
+  },
 ): string {
   if (toolUIPart.state === "output-error") {
-    return toolUIPart.errorText || "Sub-agent execution failed.";
+    return toolUIPart.errorText || copy.taskExecutionFailedHint;
   }
   if (toolUIPart.state !== "output-available") {
-    return "Sub-agent is preparing and will stream progress shortly.";
+    return copy.taskStartedWaitingUpdate;
   }
   if (!toolUIPart.output || typeof toolUIPart.output !== "object") {
-    return "Sub-agent task created.";
+    return copy.taskCreatedWaitingFirstUpdate;
   }
   const output = toolUIPart.output as Record<string, unknown>;
   if (typeof output.resultSummary === "string" && output.resultSummary.trim()) {
     return output.resultSummary.trim();
   }
-  return "Sub-agent task created.";
+  return copy.taskCreatedWaitingFirstUpdate;
 }
 
 type SubAgentToolUIPart = Extract<
@@ -93,10 +106,17 @@ type SubAgentToolUIPart = Extract<
   { type: `tool-${UniversalToolName.createStudySubAgent}` }
 >;
 
-function getSubAgentStatusLabel(status: "running" | "done" | "error"): string {
-  if (status === "running") return "Running";
-  if (status === "done") return "Done";
-  return "Error";
+function getSubAgentStatusLabel(
+  status: "running" | "done" | "error",
+  labels: {
+    running: string;
+    done: string;
+    error: string;
+  },
+): string {
+  if (status === "running") return labels.running;
+  if (status === "done") return labels.done;
+  return labels.error;
 }
 
 function UniversalSubAgentTaskCard({
@@ -108,9 +128,93 @@ function UniversalSubAgentTaskCard({
   onOpenDetail: () => void;
   statusOverride?: "running" | "done" | "error";
 }) {
+  const t = useTranslations("UniversalAgent");
   const status = statusOverride ?? getSubAgentCardStatus(toolUIPart);
-  const title = extractSubAgentTitle(toolUIPart);
-  const summary = extractSubAgentSummary(toolUIPart);
+  const title = extractSubAgentTitle(toolUIPart, t("taskTitleResearchTask"));
+  const summary = extractSubAgentSummary(toolUIPart, {
+    taskExecutionFailedHint: t("taskExecutionFailedHint"),
+    taskStartedWaitingUpdate: t("taskStartedWaitingUpdate"),
+    taskCreatedWaitingFirstUpdate: t("taskCreatedWaitingFirstUpdate"),
+  });
+  const subAgentChatToken =
+    toolUIPart.output && typeof toolUIPart.output === "object"
+      ? ((toolUIPart.output as Record<string, unknown>).subAgentChatToken as string | undefined) ?? null
+      : null;
+  const [reportCoverUrl, setReportCoverUrl] = useState<string | null>(null);
+  const [reportToken, setReportToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!subAgentChatToken) {
+      setReportCoverUrl(null);
+      setReportToken(null);
+      return;
+    }
+
+    let cancelled = false;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let retryIndex = 0;
+
+    const loadLatestReport = async () => {
+      const result = await fetchUniversalUserChatByToken(subAgentChatToken);
+      if (!result.success || cancelled) return false;
+      const context = result.data.context as { reportTokens?: unknown } | null;
+      const reportTokens = Array.isArray(context?.reportTokens)
+        ? context.reportTokens.filter((token): token is string => typeof token === "string")
+        : [];
+      const candidateReportToken = reportTokens.at(-1) ?? null;
+      if (!candidateReportToken) {
+        setReportToken(null);
+        setReportCoverUrl(null);
+        return false;
+      }
+
+      const report = await fetchAnalystReportByToken(candidateReportToken);
+      if (!report.success || cancelled) return false;
+      if (!report.data.generatedAt) {
+        setReportToken(null);
+        setReportCoverUrl(null);
+        return false;
+      }
+      setReportToken(candidateReportToken);
+      setReportCoverUrl(report.data.coverCdnHttpUrl ?? null);
+      return true;
+    };
+
+    const poll = async () => {
+      try {
+        const foundReport = await loadLatestReport();
+        if (cancelled || foundReport) return;
+
+        const nextDelay = UNIVERSAL_REPORT_RETRY_DELAYS_MS[retryIndex];
+        if (nextDelay !== undefined) {
+          retryIndex += 1;
+          timeoutId = setTimeout(poll, nextDelay);
+        }
+      } catch {
+        if (cancelled) return;
+        const nextDelay = UNIVERSAL_REPORT_RETRY_DELAYS_MS[retryIndex];
+        if (nextDelay !== undefined) {
+          retryIndex += 1;
+          timeoutId = setTimeout(poll, nextDelay);
+          return;
+        }
+        setReportCoverUrl(null);
+        setReportToken(null);
+      }
+    };
+
+    if (status === "done") {
+      poll();
+    } else {
+      setReportCoverUrl(null);
+      setReportToken(null);
+    }
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [status, subAgentChatToken]);
 
   return (
     <button
@@ -128,11 +232,24 @@ function UniversalSubAgentTaskCard({
         )}
         <div className="text-xs uppercase tracking-wide text-muted-foreground truncate">{title}</div>
         <span className="ml-auto text-[10px] font-medium text-muted-foreground">
-          {getSubAgentStatusLabel(status)}
+          {getSubAgentStatusLabel(status, {
+            running: t("statusInProgress"),
+            done: t("statusCompleted"),
+            error: t("statusNeedsAttention"),
+          })}
         </span>
       </div>
       <div className={cn("text-sm text-muted-foreground", summary ? "line-clamp-3" : "")}>{summary}</div>
-      <div className="text-xs text-primary">Open task progress</div>
+      {reportToken ? (
+        <div className="relative w-full max-w-[280px] aspect-video overflow-hidden rounded border border-input/40 bg-muted/20">
+          {reportCoverUrl ? (
+            <Image src={reportCoverUrl} alt={t("reportCoverPreviewAlt")} fill className="object-cover" />
+          ) : (
+            <div className="h-full w-full" />
+          )}
+        </div>
+      ) : null}
+      <div className="text-xs text-primary">{t("taskProgressOpen")}</div>
     </button>
   );
 }
@@ -193,6 +310,7 @@ export function UniversalToolUIPartDisplay({
   onOpenTaskDetail?: (payload: { toolCallId: string; toolName: string }) => void;
   interactiveOnly?: boolean;
 }) {
+  const t = useTranslations("UniversalAgent");
   if (!("toolCallId" in toolUIPart)) {
     return null;
   }
@@ -228,7 +346,7 @@ export function UniversalToolUIPartDisplay({
     case `tool-${UniversalToolName.generatePodcast}`:
       return onOpenTaskDetail ? (
         <UniversalMajorTaskResultCard
-          title="Generate Podcast"
+          title={t("taskTitleGeneratePodcast")}
           summary={extractPlainText(toolUIPart)}
           onOpenDetail={() =>
             onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.generatePodcast })
@@ -240,7 +358,7 @@ export function UniversalToolUIPartDisplay({
     case `tool-${UniversalToolName.interviewChat}`:
       return onOpenTaskDetail ? (
         <UniversalMajorTaskResultCard
-          title="Persona Interview"
+          title={t("taskTitlePersonaInterview")}
           summary={extractPlainText(toolUIPart)}
           onOpenDetail={() =>
             onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.interviewChat })
@@ -250,7 +368,7 @@ export function UniversalToolUIPartDisplay({
     case `tool-${UniversalToolName.discussionChat}`:
       return onOpenTaskDetail ? (
         <UniversalMajorTaskResultCard
-          title="Focus Group Discussion"
+          title={t("taskTitleFocusGroupDiscussion")}
           summary={extractPlainText(toolUIPart)}
           onOpenDetail={() =>
             onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.discussionChat })
@@ -260,7 +378,7 @@ export function UniversalToolUIPartDisplay({
     case `tool-${UniversalToolName.deepResearch}`:
       return onOpenTaskDetail ? (
         <UniversalMajorTaskResultCard
-          title="Deep Research"
+          title={t("taskTitleDeepResearch")}
           summary={extractPlainText(toolUIPart)}
           onOpenDetail={() =>
             onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.deepResearch })

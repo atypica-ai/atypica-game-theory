@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { ReasoningThinkingResultMessage } from "@/ai/tools/experts/reasoningThinking/ReasoningThinkingResultMessage";
 import { WebSearchResultMessage } from "@/ai/tools/experts/webSearch/WebSearchResultMessage";
 import {
@@ -16,7 +17,11 @@ import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types"
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import { UniversalSubAgentToolPartVM } from "@/app/(universal)/universal/task-vm";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { cn } from "@/lib/utils";
+import { Eye, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Streamdown } from "streamdown";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const SOCIAL_POST_TOOLS = new Set<string>([
   StudyToolName.xhsSearch,
@@ -56,7 +61,135 @@ function extractPlainText(part: UniversalSubAgentToolPartVM["part"]): string {
   return "";
 }
 
+function extractReportToken(part: UniversalSubAgentToolPartVM["part"]): string | null {
+  if (part.type === "dynamic-tool") return null;
+  const outputToken =
+    part.output && typeof part.output === "object" && "reportToken" in part.output
+      ? (part.output as { reportToken?: unknown }).reportToken
+      : undefined;
+  if (typeof outputToken === "string" && outputToken) return outputToken;
+
+  const inputToken =
+    part.input && typeof part.input === "object" && "reportToken" in part.input
+      ? (part.input as { reportToken?: unknown }).reportToken
+      : undefined;
+  return typeof inputToken === "string" && inputToken ? inputToken : null;
+}
+
+function UniversalGenerateReportExecutionView({
+  part,
+}: {
+  part: UniversalSubAgentToolPartVM["part"];
+}) {
+  const t = useTranslations("UniversalAgent");
+  const reportToken = extractReportToken(part);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [ratio, setRatio] = useState(100);
+  const [iframeHeight, setIframeHeight] = useState(1200);
+  const [report, setReport] = useState<{
+    token: string;
+    generatedAt: Date | string | null;
+  } | null>(reportToken ? { token: reportToken, generatedAt: null } : null);
+
+  const updateDimensions = useCallback(() => {
+    const containerWidth = containerRef.current?.clientWidth;
+    const containerHeight = containerRef.current?.clientHeight;
+    const nextRatio = Math.max(22, Math.floor((containerWidth ? containerWidth / 1200 : 1) * 100));
+    setRatio(nextRatio);
+    setIframeHeight(containerHeight ? Math.floor((containerHeight / nextRatio) * 100) : 1200);
+  }, []);
+
+  useEffect(() => {
+    updateDimensions();
+    const resizeObserver = new ResizeObserver(() => {
+      updateDimensions();
+    });
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    window.addEventListener("resize", updateDimensions);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateDimensions);
+    };
+  }, [updateDimensions]);
+
+  useEffect(() => {
+    if (!reportToken) {
+      setReport(null);
+      return;
+    }
+
+    let cancelled = false;
+    fetchAnalystReportByToken(reportToken)
+      .then((result) => {
+        if (!result.success || cancelled) return;
+        setReport({
+          token: result.data.token,
+          generatedAt: result.data.generatedAt,
+        });
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [part.state, reportToken]);
+
+  if (!reportToken) {
+    return (
+      <div className="rounded-xl border border-amber-300/40 bg-amber-500/5 p-4 text-sm text-muted-foreground">
+        {t("executionReportPreparing")}
+      </div>
+    );
+  }
+
+  const isGenerated = !!report?.generatedAt;
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-amber-300/35 bg-[linear-gradient(180deg,rgba(251,191,36,0.08)_0%,rgba(251,191,36,0.02)_100%)] p-3">
+      <div className="flex items-center justify-between gap-3">
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+            isGenerated
+              ? "border-emerald-300/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+              : "border-amber-300/50 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+          )}
+        >
+          {isGenerated ? <Eye className="size-3.5" /> : <Loader2 className="size-3.5 animate-spin" />}
+          {isGenerated ? t("executionReportPreviewReady") : t("executionReportGenerating")}
+        </span>
+        <a
+          href={`/artifacts/report/${reportToken}/share`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-foreground/85 transition-colors hover:bg-muted"
+        >
+          <Eye className="size-3.5" />
+          {t("executionReportOpenPreview")}
+        </a>
+      </div>
+
+      <div className="rounded-[20px] border border-border/60 bg-background/90 p-3">
+        <div ref={containerRef} className="h-[340px] overflow-hidden rounded-[14px] border border-border/50 bg-muted/20">
+          <iframe
+            src={`/artifacts/report/${reportToken}/raw?live=1`}
+            className="w-[1200px] border-0 bg-background"
+            style={{
+              transform: `scale(${ratio / 100})`,
+              transformOrigin: "top left",
+              height: iframeHeight,
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UniversalBuildPersonaResult({ part }: { part: UniversalSubAgentToolPartVM["part"] }) {
+  const t = useTranslations("UniversalAgent");
   if (!isOutputAvailablePart(part)) return null;
   const output = part.output as Record<string, unknown>;
   const personas = Array.isArray(output.personas)
@@ -72,12 +205,12 @@ function UniversalBuildPersonaResult({ part }: { part: UniversalSubAgentToolPart
     : [];
 
   if (!personas.length) {
-    return <div className="text-sm text-muted-foreground">No persona built</div>;
+    return <div className="text-sm text-muted-foreground">{t("taskNoPersonaBuilt")}</div>;
   }
 
   return (
     <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-sm">
-      <div className="font-medium mb-2">🤖 已构建 {personas.length} 个 Persona</div>
+      <div className="font-medium mb-2">{t("taskPersonasBuilt", { count: personas.length })}</div>
       <div className="space-y-1">
         {personas.map((persona) => (
           <div className="flex items-center gap-2" key={persona.personaId}>
@@ -168,7 +301,15 @@ export function UniversalSubAgentToolPartDisplay({
     return <ScoutTaskChatResultMessage toolInvocation={part as never} />;
   }
   if (toolName === StudyToolName.generateReport) {
-    return <GenerateReportResultMessage toolInvocation={part as never} />;
+    if (part.state !== "output-available") {
+      return <UniversalGenerateReportExecutionView part={part} />;
+    }
+    return (
+      <div className="space-y-3">
+        <UniversalGenerateReportExecutionView part={part} />
+        <GenerateReportResultMessage toolInvocation={part as never} />
+      </div>
+    );
   }
   if (toolName === StudyToolName.generatePodcast) {
     return <GeneratePodcastResultMessage toolInvocation={part as never} />;

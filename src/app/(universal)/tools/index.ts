@@ -14,6 +14,11 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
+import {
+  listWorkspaceFilesTool,
+  readWorkspaceFileTool,
+  writeWorkspaceFileTool,
+} from "@/lib/skill/workspaceTools";
 import { Tool, ToolSet } from "ai";
 import { createStudySubAgentTool } from "./createStudySubAgent";
 import { listSkillsTool } from "./listSkills";
@@ -38,6 +43,9 @@ export type UniversalToolSet = Partial<{
   [UniversalToolName.bash]: Tool<{ command: string }, CommandResult>;
   [UniversalToolName.readFile]: Tool<{ path: string }, { content: string }>;
   [UniversalToolName.writeFile]: Tool<{ path: string; content: string }, { success: boolean }>;
+  [UniversalToolName.listWorkspaceFiles]: ReturnType<typeof listWorkspaceFilesTool>;
+  [UniversalToolName.readWorkspaceFile]: ReturnType<typeof readWorkspaceFileTool>;
+  [UniversalToolName.writeWorkspaceFile]: ReturnType<typeof writeWorkspaceFileTool>;
   [UniversalToolName.listSkills]: ReturnType<typeof listSkillsTool>;
   [UniversalToolName.searchPersonas]: ReturnType<typeof searchPersonasTool>;
   [UniversalToolName.discussionChat]: ReturnType<typeof discussionChatTool>;

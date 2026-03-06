@@ -28,6 +28,11 @@ import { createStudySubAgentTool } from "@/app/(universal)/tools/createStudySubA
 import { listSkillsTool, UniversalToolSet } from "@/app/(universal)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { loadAllSkillsToMemory } from "@/lib/skill/loadToMemory";
+import {
+  listWorkspaceFilesTool,
+  readWorkspaceFileTool,
+  writeWorkspaceFileTool,
+} from "@/lib/skill/workspaceTools";
 import { loadUserWorkspace, saveUserWorkspace } from "@/lib/skill/workspace";
 import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { UserChat } from "@/prisma/client";
@@ -181,6 +186,9 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     [UniversalToolName.bash]: bashTools.bash,
     [UniversalToolName.readFile]: bashTools.readFile,
     [UniversalToolName.writeFile]: bashTools.writeFile,
+    [UniversalToolName.listWorkspaceFiles]: listWorkspaceFilesTool({ userId }),
+    [UniversalToolName.readWorkspaceFile]: readWorkspaceFileTool({ userId }),
+    [UniversalToolName.writeWorkspaceFile]: writeWorkspaceFileTool({ userId }),
 
     // study agent
     [UniversalToolName.searchPersonas]: searchPersonasTool({

@@ -171,21 +171,21 @@ function getSubAgentTaskTitle(part: ToolUIPart): string {
   return (
     compact(input?.subAgentTitle, TASK_TITLE_MAX_LEN) ||
     compact(input?.taskRequirement, TASK_TITLE_MAX_LEN) ||
-    "Study SubAgent Task"
+    "Research Task"
   );
 }
 
 function getSubAgentTaskSummary(part: ToolUIPart): string {
   const output = getObjectPartOutput(part);
-  if (part.state === "output-error") return part.errorText ?? "Sub-agent task failed.";
-  if (part.state !== "output-available") return "Sub-agent is running...";
+  if (part.state === "output-error") return part.errorText ?? "Execution failed.";
+  if (part.state !== "output-available") return "In progress...";
   if (output?.status === "running") {
-    return compact(output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "Sub-agent is running...";
+    return compact(output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "In progress...";
   }
   if (output?.status === "failed") {
-    return compact(output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "Sub-agent task failed.";
+    return compact(output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "Execution failed.";
   }
-  return compact(output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "Sub-agent execution completed.";
+  return compact(output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "Completed.";
 }
 
 function getSubAgentChatId(part: ToolUIPart): number | null {

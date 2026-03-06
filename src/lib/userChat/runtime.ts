@@ -6,6 +6,8 @@ import { ITXClientDenyList } from "@prisma/client/runtime/client";
 import { Logger } from "pino";
 
 type TxClient = Omit<typeof prisma, ITXClientDenyList>;
+const DEFAULT_MANAGED_RUN_POLL_INTERVAL_MS = 10_000;
+const MANAGED_RUN_PROGRESS_LOG_INTERVAL_MS = 60_000;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -157,7 +159,7 @@ export interface ManagedRun {
 export async function startManagedRun({
   userChatId,
   logger,
-  pollIntervalMs = 5_000,
+  pollIntervalMs = DEFAULT_MANAGED_RUN_POLL_INTERVAL_MS,
   timeoutMs = 3_600_000, // 1 hour
 }: {
   userChatId: number;
@@ -171,6 +173,7 @@ export async function startManagedRun({
   const startTime = Date.now();
   let stopped = false;
   let timer: NodeJS.Timeout | undefined;
+  let lastProgressLogAt = startTime;
 
   const stop = () => {
     if (stopped) return;
@@ -198,8 +201,11 @@ export async function startManagedRun({
           if (!abortController.signal.aborted) abortController.abort();
           return;
         }
-        const elapsedSeconds = Math.floor(elapsedMs / 1000);
-        logger.info({ msg: `managed run ongoing`, runId, elapsedSeconds });
+        if (Date.now() - lastProgressLogAt >= MANAGED_RUN_PROGRESS_LOG_INTERVAL_MS) {
+          const elapsedSeconds = Math.floor(elapsedMs / 1000);
+          logger.info({ msg: "managed run ongoing", runId, elapsedSeconds });
+          lastProgressLogAt = Date.now();
+        }
         timer = setTimeout(tick, pollIntervalMs);
       })
       .catch((err) => {

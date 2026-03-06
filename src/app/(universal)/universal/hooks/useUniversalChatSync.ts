@@ -6,6 +6,10 @@ import { fetchUserChatStateByTokenAction } from "@/lib/userChat/actions";
 import { getToolName, isToolUIPart } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchUniversalUserChatByToken } from "../actions";
+import {
+  UNIVERSAL_CHAT_SYNC_VISIBLE_POLL_INTERVAL_MS,
+  UNIVERSAL_HIDDEN_POLL_INTERVAL_MS,
+} from "../polling";
 
 export function useUniversalChatSync({
   userChatToken,
@@ -56,20 +60,50 @@ export function useUniversalChatSync({
   const { isDocumentVisible } = useDocumentVisibility();
   const messageSignatureRef = useRef("");
 
+  const clip = useCallback((value: string, max = 200) => {
+    return value.length > max ? `${value.slice(0, max)}...` : value;
+  }, []);
+
+  const stableSerialize = useCallback(
+    (value: unknown, max = 400) => {
+      if (value === undefined || value === null) return "";
+      try {
+        return clip(JSON.stringify(value), max);
+      } catch {
+        return clip(String(value), max);
+      }
+    },
+    [clip],
+  );
+
   const buildMessageSignature = useCallback((targetMessages: TUniversalMessageWithTool[]) => {
     return targetMessages
       .map((message) => {
         const parts = message.parts
           .map((part) => {
-            if (!isToolUIPart(part)) return `${part.type}`;
+            if (!isToolUIPart(part)) {
+              if (part.type === "text" || part.type === "reasoning") {
+                return `${part.type}:${part.state}:${clip(part.text, 280)}`;
+              }
+              if (part.type === "file") return `${part.type}:${stableSerialize(part, 240)}`;
+              return `${part.type}`;
+            }
             const toolName = getToolName(part);
-            return `${part.type}:${toolName}:${part.state}:${part.toolCallId}`;
+            return [
+              part.type,
+              toolName,
+              part.state,
+              part.toolCallId,
+              stableSerialize(part.input, 240),
+              stableSerialize(part.output, 280),
+              clip(part.errorText ?? "", 160),
+            ].join(":");
           })
           .join("|");
         return `${message.id}:${message.role}:${parts}`;
       })
       .join("||");
-  }, []);
+  }, [clip, stableSerialize]);
 
   useEffect(() => {
     isRunningRef.current = isRunning;
@@ -141,7 +175,12 @@ export function useUniversalChatSync({
         return;
       }
       await refreshUniversalChat();
-      timeoutId = setTimeout(poll, isDocumentVisible ? 5000 : 30000);
+      timeoutId = setTimeout(
+        poll,
+        isDocumentVisible
+          ? UNIVERSAL_CHAT_SYNC_VISIBLE_POLL_INTERVAL_MS
+          : UNIVERSAL_HIDDEN_POLL_INTERVAL_MS,
+      );
     };
 
     poll();
