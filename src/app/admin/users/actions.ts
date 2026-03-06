@@ -1,8 +1,10 @@
 "use server";
 import { generateImpersonationLoginUrl } from "@/app/(auth)/impersonationLogin";
+import { reorganizeMemoryWithCore } from "@/app/(memory)/lib/reorganizeMemory";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { encryptText } from "@/lib/cipher";
+import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { ServerActionResult } from "@/lib/serverAction";
 import {
@@ -403,4 +405,104 @@ export async function generatePasswordResetLinkForUser(
     success: true,
     data: resetUrl,
   };
+}
+
+/**
+ * Fetch the latest memory version for a user or team.
+ */
+export async function fetchMemoryForOwner({
+  userId,
+  teamId,
+}: {
+  userId?: number;
+  teamId?: number;
+}): Promise<
+  ServerActionResult<{
+    version: number;
+    core: string;
+    working: string[];
+    changeNotes: string;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null>
+> {
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+
+  if (!userId && !teamId) {
+    return { success: false, message: "Either userId or teamId must be provided" };
+  }
+
+  const memory = await prisma.memory.findFirst({
+    where: userId ? { userId } : { teamId },
+    orderBy: { version: "desc" },
+    take: 1,
+    select: {
+      version: true,
+      core: true,
+      working: true,
+      changeNotes: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!memory) {
+    return { success: true, data: null };
+  }
+
+  return {
+    success: true,
+    data: {
+      ...memory,
+      working: Array.isArray(memory.working) ? (memory.working as string[]) : [],
+    },
+  };
+}
+
+/**
+ * Reorganize memory content and save as new version.
+ */
+export async function reorganizeMemoryVersion({
+  userId,
+  teamId,
+}: {
+  userId?: number;
+  teamId?: number;
+}): Promise<ServerActionResult<{ version: number }>> {
+  await checkAdminAuth([AdminPermission.MANAGE_USERS]);
+
+  if (!userId && !teamId) {
+    return { success: false, message: "Either userId or teamId must be provided" };
+  }
+
+  const latestMemory = await prisma.memory.findFirst({
+    where: userId ? { userId } : { teamId },
+    orderBy: { version: "desc" },
+    take: 1,
+  });
+
+  if (!latestMemory) {
+    return { success: false, message: "No memory found to reorganize" };
+  }
+
+  const workingLines = Array.isArray(latestMemory.working) ? latestMemory.working : [];
+  const currentContent = (workingLines as string[]).join("\n");
+  const currentCore = latestMemory.core ?? "";
+
+  const newCore = await reorganizeMemoryWithCore(currentCore, currentContent, rootLogger);
+  const nextVersion = latestMemory.version + 1;
+
+  await prisma.memory.create({
+    data: {
+      userId: userId ?? null,
+      teamId: teamId ?? null,
+      version: nextVersion,
+      core: newCore,
+      working: [],
+      changeNotes: `Admin reorganized: core ${currentCore.length}→${newCore.length} chars, working ${currentContent.length} chars cleared`,
+      extra: {},
+    },
+  });
+
+  return { success: true, data: { version: nextVersion } };
 }

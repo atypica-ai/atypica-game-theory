@@ -27,6 +27,7 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
 import { AdminRole } from "@/prisma/client";
 import {
+  BrainIcon,
   CheckIcon,
   CoinsIcon,
   CopyIcon,
@@ -48,6 +49,7 @@ import {
   updateAdminStatus,
   verifyUserEmail,
 } from "./actions";
+import { AdminMemoryDialog } from "./AdminMemoryDialog";
 
 type User = ExtractServerActionData<typeof fetchUsers>[number];
 
@@ -100,6 +102,8 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
   const [resetUrl, setResetUrl] = useState("");
   const [isGeneratingReset, setIsGeneratingReset] = useState(false);
   const [resetCopied, setResetCopied] = useState(false);
+  const [memoryUserId, setMemoryUserId] = useState<number | undefined>();
+  const [isMemoryDialogOpen, setIsMemoryDialogOpen] = useState(false);
 
   // Use search params hook for URL synchronization
   const {
@@ -332,7 +336,19 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
                   {user.id}
                 </TableCell>
                 <TableCell>
-                  <div className="whitespace-nowrap text-sm font-medium">{user.email}</div>
+                  <div className="flex items-center gap-1.5 whitespace-nowrap">
+                    <span className="text-sm font-medium">{user.email}</span>
+                    <button
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={() => {
+                        setMemoryUserId(user.id);
+                        setIsMemoryDialogOpen(true);
+                      }}
+                      title="View memory"
+                    >
+                      <BrainIcon className="size-3" />
+                    </button>
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     {formatDate(user.createdAt, locale)}
                   </div>
@@ -821,6 +837,13 @@ export function UsersPageClient({ initialSearchParams }: UsersPageClientProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AdminMemoryDialog
+        userId={memoryUserId}
+        label={users.find((u) => u.id === memoryUserId)?.email ?? ""}
+        open={isMemoryDialogOpen}
+        onOpenChange={setIsMemoryDialogOpen}
+      />
     </div>
   );
 }

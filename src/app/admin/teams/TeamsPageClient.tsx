@@ -25,7 +25,7 @@ import {
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { formatDate, formatTokensNumber } from "@/lib/utils";
-import { CoinsIcon, PlusIcon, SearchIcon, SettingsIcon, TrashIcon, UsersIcon } from "lucide-react";
+import { BrainIcon, CoinsIcon, PlusIcon, SearchIcon, SettingsIcon, TrashIcon, UsersIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
 import Link from "next/link";
@@ -38,6 +38,7 @@ import {
   updateTeamSeats,
   updateTeamUnlimitedSeats,
 } from "./actions";
+import { AdminMemoryDialog } from "../users/AdminMemoryDialog";
 
 type Team = ExtractServerActionData<typeof fetchTeams>[number];
 
@@ -76,6 +77,8 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [memoryTeamId, setMemoryTeamId] = useState<number | undefined>();
+  const [isMemoryDialogOpen, setIsMemoryDialogOpen] = useState(false);
 
   // Use search params hook for URL synchronization
   const {
@@ -244,13 +247,14 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
               <TableHead className="text-right">Tokens</TableHead>
               <TableHead>⚙️</TableHead>
               <TableHead>Created At</TableHead>
+              <TableHead>🧠</TableHead>
               <TableHead>⚙️</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {teams.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-sm">
+                <TableCell colSpan={11} className="text-center text-sm">
                   No teams found
                 </TableCell>
               </TableRow>
@@ -312,6 +316,20 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-xs">
                     <div>{formatDate(team.createdAt, locale)}</div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 gap-1 px-2 text-xs"
+                      onClick={() => {
+                        setMemoryTeamId(team.id);
+                        setIsMemoryDialogOpen(true);
+                      }}
+                      title="View memory"
+                    >
+                      <BrainIcon className="size-3" />
+                    </Button>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm">
                     <ConfirmDialog
@@ -420,6 +438,13 @@ export function TeamsPageClient({ initialSearchParams }: TeamsPageClientProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AdminMemoryDialog
+        teamId={memoryTeamId}
+        label={teams.find((t) => t.id === memoryTeamId)?.name ?? ""}
+        open={isMemoryDialogOpen}
+        onOpenChange={setIsMemoryDialogOpen}
+      />
 
       {/* Seats Dialog */}
       <Dialog open={isSeatsDialogOpen} onOpenChange={setIsSeatsDialogOpen}>
