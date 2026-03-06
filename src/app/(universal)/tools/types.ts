@@ -8,6 +8,10 @@ import {
 } from "@/app/(panel)/tools/requestSelectPersonas/types";
 import { UpdatePanelToolInput, UpdatePanelToolOutput } from "@/app/(panel)/tools/updatePanel/types";
 import {
+  DiscussionChatResult,
+  DiscussionChatToolInput,
+} from "@/app/(study)/tools/discussionChat/types";
+import {
   GeneratePodcastResult,
   GeneratePodcastToolInput,
 } from "@/app/(study)/tools/generatePodcast/types";
@@ -16,9 +20,14 @@ import {
   GenerateReportToolInput,
 } from "@/app/(study)/tools/generateReport/types";
 import {
+  InterviewChatResult,
+  InterviewChatToolInput,
+} from "@/app/(study)/tools/interviewChat/types";
+import {
   SearchPersonasToolInput,
   SearchPersonasToolResult,
 } from "@/app/(study)/tools/searchPersonas/types";
+import { DeepResearchInput, DeepResearchOutput } from "@/app/(deepResearch)/types";
 import { UIDataTypes, UIMessage } from "ai";
 
 /**
@@ -70,6 +79,18 @@ export type UniversalUITools = {
   [UniversalToolName.searchPersonas]: {
     input: SearchPersonasToolInput;
     output: SearchPersonasToolResult;
+  };
+  [UniversalToolName.interviewChat]: {
+    input: InterviewChatToolInput;
+    output: InterviewChatResult;
+  };
+  [UniversalToolName.discussionChat]: {
+    input: DiscussionChatToolInput;
+    output: DiscussionChatResult;
+  };
+  [UniversalToolName.deepResearch]: {
+    input: DeepResearchInput;
+    output: DeepResearchOutput;
   };
   [UniversalToolName.generateReport]: {
     input: GenerateReportToolInput;

@@ -129,7 +129,8 @@ ${userMemory || "暂无用户记忆"}
 2. **灵活应对**：根据任务性质选择合适的方法
 3. **建议技能**：当用户需要专业建议时，主动建议加载相关 skill
 4. **保持角色**：加载 skill 后，完全以该 skill 的角色行动
-5. **诚实透明**：不确定时承认，需要更多信息时主动询问`
+5. **诚实透明**：不确定时承认，需要更多信息时主动询问
+6. **深度研究任务化**：当用户明确要求“深度研究/深度调研/深入分析”时，必须先调用 deepResearch 工具，不要直接输出完整长文结论`
       : `You are a flexible AI assistant that can handle various tasks and use specialized skills.
 
 ## Core Capabilities
@@ -216,6 +217,7 @@ ${userMemory || "No user memory available yet"}
 2. **Flexible Approach**: Choose appropriate methods based on task nature
 3. **Suggest Skills**: When users need professional advice, proactively suggest loading relevant skills
 4. **Stay in Character**: After loading a skill, fully act as that skill
-5. **Be Honest**: Admit uncertainty when unsure, ask for more information when needed`
+5. **Be Honest**: Admit uncertainty when unsure, ask for more information when needed
+6. **Task-first Deep Research**: When users explicitly ask for deep research/in-depth analysis, you must call the deepResearch tool first instead of directly outputting a full long-form research answer`
   }`;
 }

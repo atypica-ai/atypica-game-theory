@@ -14,6 +14,7 @@ import { ArrowRightIcon, PlayIcon, SquareIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { ReactNode, RefObject, useCallback, useState } from "react";
 import { ChatMessage } from "./ChatMessage";
+import type { ToolInvocationVariant } from "./ToolInvocationMessage";
 import { FileAttachment } from "./FileAttachment";
 import { FileUploadButton } from "./FileUploadButton";
 
@@ -27,6 +28,7 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   useChatRef,
   renderToolUIPart,
   acceptAttachments,
+  toolInvocationVariant,
   // persistMessages = true,
 }: {
   chatTitle?: string;
@@ -43,6 +45,7 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   >;
   renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   acceptAttachments: boolean;
+  toolInvocationVariant?: ToolInvocationVariant;
   persistMessages?: boolean;
 }) {
   const t = useTranslations("Components.UserChatSession");
@@ -123,6 +126,7 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
               message={{ role, parts }}
               extra={extra}
               renderToolUIPart={renderToolUIPart}
+              toolInvocationVariant={toolInvocationVariant}
             ></ChatMessage>
           ))}
         {/* AI Compliance Disclaimer */}

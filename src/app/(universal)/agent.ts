@@ -14,6 +14,7 @@ import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { confirmPanelResearchPlanTool } from "@/app/(panel)/tools/confirmPanelResearchPlan";
 import { requestSelectPersonasTool } from "@/app/(panel)/tools/requestSelectPersonas";
 import { updatePanelTool } from "@/app/(panel)/tools/updatePanel";
+import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
 import { setBedrockCache } from "@/app/(study)/agents/utils";
 import {
   discussionChatTool,
@@ -202,7 +203,7 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
       userChatId: universalChatId,
       ...agentToolArgs,
     }),
-    // [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
+    [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
 
     // panel
     [UniversalToolName.requestSelectPersonas]: requestSelectPersonasTool,

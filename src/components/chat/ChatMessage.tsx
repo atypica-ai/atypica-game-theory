@@ -8,13 +8,17 @@ import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import React, { ReactNode, useMemo } from "react";
 import { Streamdown } from "streamdown";
 import { FileAttachment } from "./FileAttachment";
-import { ToolInvocationMessage } from "./ToolInvocationMessage";
+import {
+  ToolInvocationMessage,
+  type ToolInvocationVariant,
+} from "./ToolInvocationMessage";
 
 export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   nickname,
   avatar,
   message: { role, parts },
   renderToolUIPart,
+  toolInvocationVariant,
   // extra,
 }: {
   nickname?: string;
@@ -22,6 +26,7 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   message: Pick<UI_MESSAGE, "role" | "parts">;
   extra?: Omit<UI_MESSAGE, "id" | "role" | "parts">;
   renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
+  toolInvocationVariant?: ToolInvocationVariant;
 }) => {
   const fileParts = useMemo(() => {
     return parts?.filter((part) => part.type === "file");
@@ -95,13 +100,19 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
             // 通过 MCP 添加的 Tools 会是 dynamic-tools
             return (
               <React.Fragment key={i}>
-                <ToolInvocationMessage toolInvocation={part} />
+                <ToolInvocationMessage
+                  toolInvocation={part}
+                  variant={toolInvocationVariant}
+                />
               </React.Fragment>
             );
           } else if (isToolUIPart(part)) {
             return (
               <React.Fragment key={i}>
-                <ToolInvocationMessage toolInvocation={part} />
+                <ToolInvocationMessage
+                  toolInvocation={part}
+                  variant={toolInvocationVariant}
+                />
                 {/*<ToolInvocationDisplay toolInvocation={part} />*/}
                 {renderToolUIPart(part)}
               </React.Fragment>
