@@ -5,6 +5,7 @@ import { useTaskDetailPolling } from "@/app/(universal)/universal/components/tas
 import { UNIVERSAL_TASK_DETAIL_VISIBLE_POLL_INTERVAL_MS } from "@/app/(universal)/universal/polling";
 import { fetchUniversalUserChatByToken } from "@/app/(universal)/universal/actions";
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
+import { TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import {
   UniversalSubAgentToolPartVM,
   UniversalTaskVM,
@@ -157,11 +158,8 @@ function ExecutionGridLoader({ label }: { label: string }) {
   );
 }
 
-type SubAgentChatMessage = {
-  id: string;
-  role: string;
-  parts: unknown[];
-};
+// Sub-agent chats are study chats, so their messages conform to TStudyMessageWithTool.
+type SubAgentChatMessage = Pick<TStudyMessageWithTool, "id" | "role" | "parts">;
 
 type TaskDetailCache = {
   parts: UniversalSubAgentToolPartVM[];

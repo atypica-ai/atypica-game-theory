@@ -60,50 +60,57 @@ export function useUniversalChatSync({
   const { isDocumentVisible } = useDocumentVisibility();
   const messageSignatureRef = useRef("");
 
-  const clip = useCallback((value: string, max = 200) => {
-    return value.length > max ? `${value.slice(0, max)}...` : value;
-  }, []);
+  const buildMessageSignature = useCallback((targetMessages: TUniversalMessageWithTool[]) => {
+    // Only serialize the last few messages in detail to avoid O(n) JSON.stringify on long conversations.
+    // Earlier messages are identified by id+role+partCount which is sufficient for change detection.
+    const DETAILED_TAIL = 6;
+    const totalCount = targetMessages.length;
 
-  const stableSerialize = useCallback(
-    (value: unknown, max = 400) => {
+    const clip = (value: string, max: number) =>
+      value.length > max ? `${value.slice(0, max)}...` : value;
+
+    const stableSerialize = (value: unknown, max: number) => {
       if (value === undefined || value === null) return "";
       try {
         return clip(JSON.stringify(value), max);
       } catch {
         return clip(String(value), max);
       }
-    },
-    [clip],
-  );
+    };
 
-  const buildMessageSignature = useCallback((targetMessages: TUniversalMessageWithTool[]) => {
-    return targetMessages
-      .map((message) => {
-        const parts = message.parts
-          .map((part) => {
-            if (!isToolUIPart(part)) {
-              if (part.type === "text" || part.type === "reasoning") {
-                return `${part.type}:${part.state}:${clip(part.text, 280)}`;
-              }
-              if (part.type === "file") return `${part.type}:${stableSerialize(part, 240)}`;
-              return `${part.type}`;
+    const detailSignature = (message: TUniversalMessageWithTool) => {
+      const parts = message.parts
+        .map((part) => {
+          if (!isToolUIPart(part)) {
+            if (part.type === "text" || part.type === "reasoning") {
+              return `${part.type}:${part.state}:${clip(part.text, 280)}`;
             }
-            const toolName = getToolName(part);
-            return [
-              part.type,
-              toolName,
-              part.state,
-              part.toolCallId,
-              stableSerialize(part.input, 240),
-              stableSerialize(part.output, 280),
-              clip(part.errorText ?? "", 160),
-            ].join(":");
-          })
-          .join("|");
-        return `${message.id}:${message.role}:${parts}`;
-      })
-      .join("||");
-  }, [clip, stableSerialize]);
+            return `${part.type}`;
+          }
+          const toolName = getToolName(part);
+          return [
+            part.type,
+            toolName,
+            part.state,
+            part.toolCallId,
+            stableSerialize(part.input, 240),
+            stableSerialize(part.output, 280),
+            clip(part.errorText ?? "", 160),
+          ].join(":");
+        })
+        .join("|");
+      return `${message.id}:${message.role}:${parts}`;
+    };
+
+    const headSummaries = targetMessages
+      .slice(0, Math.max(0, totalCount - DETAILED_TAIL))
+      .map((m) => `${m.id}:${m.role}:${m.parts.length}`);
+    const tailDetails = targetMessages
+      .slice(Math.max(0, totalCount - DETAILED_TAIL))
+      .map(detailSignature);
+
+    return `${totalCount}::${headSummaries.join("|")}||${tailDetails.join("||")}`;
+  }, []);
 
   useEffect(() => {
     isRunningRef.current = isRunning;

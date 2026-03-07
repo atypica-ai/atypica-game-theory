@@ -13,36 +13,67 @@ import { InterviewExecutionView } from "@/app/(study)/study/console/shared/Inter
 import { ScoutExecutionView } from "@/app/(study)/study/console/shared/ScoutExecutionView";
 import { ScoutTaskChatResultMessage } from "@/app/(study)/tools/scoutTaskChat/ScoutTaskChatResultMessage";
 import { SearchPersonasResultMessage } from "@/app/(study)/tools/searchPersonas/SearchPersonasResultMessage";
-import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types";
+import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
-import { UniversalSubAgentToolPartVM } from "@/app/(universal)/universal/task-vm";
+import { StudyToolOrDynamicPart, UniversalSubAgentToolPartVM } from "@/app/(universal)/universal/task-vm";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
+import { ToolUIPart } from "ai";
 import { Eye, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Streamdown } from "streamdown";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const SOCIAL_POST_TOOLS = new Set<string>([
-  StudyToolName.xhsSearch,
-  StudyToolName.dySearch,
-  StudyToolName.tiktokSearch,
-  StudyToolName.insSearch,
-  StudyToolName.xhsUserNotes,
-  StudyToolName.dyUserPosts,
-  StudyToolName.tiktokUserPosts,
-  StudyToolName.insUserPosts,
-  StudyToolName.twitterSearch,
-  StudyToolName.twitterUserPosts,
+// Narrow type aliases derived from the study tool union — no casts needed downstream.
+type SocialPostToolName =
+  | typeof StudyToolName.xhsSearch
+  | typeof StudyToolName.dySearch
+  | typeof StudyToolName.tiktokSearch
+  | typeof StudyToolName.insSearch
+  | typeof StudyToolName.xhsUserNotes
+  | typeof StudyToolName.dyUserPosts
+  | typeof StudyToolName.tiktokUserPosts
+  | typeof StudyToolName.insUserPosts
+  | typeof StudyToolName.twitterSearch
+  | typeof StudyToolName.twitterUserPosts;
+
+type SocialCommentToolName =
+  | typeof StudyToolName.xhsNoteComments
+  | typeof StudyToolName.dyPostComments
+  | typeof StudyToolName.tiktokPostComments
+  | typeof StudyToolName.insPostComments
+  | typeof StudyToolName.twitterPostComments;
+
+type SocialPostPart = Extract<ToolUIPart<StudyUITools>, { type: `tool-${SocialPostToolName}` }>;
+type SocialCommentPart = Extract<ToolUIPart<StudyUITools>, { type: `tool-${SocialCommentToolName}` }>;
+
+const SOCIAL_POST_TOOL_TYPES = new Set<string>([
+  `tool-${StudyToolName.xhsSearch}`,
+  `tool-${StudyToolName.dySearch}`,
+  `tool-${StudyToolName.tiktokSearch}`,
+  `tool-${StudyToolName.insSearch}`,
+  `tool-${StudyToolName.xhsUserNotes}`,
+  `tool-${StudyToolName.dyUserPosts}`,
+  `tool-${StudyToolName.tiktokUserPosts}`,
+  `tool-${StudyToolName.insUserPosts}`,
+  `tool-${StudyToolName.twitterSearch}`,
+  `tool-${StudyToolName.twitterUserPosts}`,
 ]);
 
-const SOCIAL_COMMENT_TOOLS = new Set<string>([
-  StudyToolName.xhsNoteComments,
-  StudyToolName.dyPostComments,
-  StudyToolName.tiktokPostComments,
-  StudyToolName.insPostComments,
-  StudyToolName.twitterPostComments,
+const SOCIAL_COMMENT_TOOL_TYPES = new Set<string>([
+  `tool-${StudyToolName.xhsNoteComments}`,
+  `tool-${StudyToolName.dyPostComments}`,
+  `tool-${StudyToolName.tiktokPostComments}`,
+  `tool-${StudyToolName.insPostComments}`,
+  `tool-${StudyToolName.twitterPostComments}`,
 ]);
+
+function isSocialPostPart(part: ToolUIPart<StudyUITools>): part is SocialPostPart {
+  return SOCIAL_POST_TOOL_TYPES.has(part.type);
+}
+function isSocialCommentPart(part: ToolUIPart<StudyUITools>): part is SocialCommentPart {
+  return SOCIAL_COMMENT_TOOL_TYPES.has(part.type);
+}
 
 function isOutputAvailablePart(part: UniversalSubAgentToolPartVM["part"]) {
   return part.type !== "dynamic-tool" && part.state === "output-available";
@@ -232,7 +263,6 @@ export function UniversalSubAgentToolPartDisplay({
   studyUserChatToken?: string;
   replay?: boolean;
 }) {
-  const toolName = selectedPart.toolName;
   const part = selectedPart.part;
 
   if (part.state === "output-error") {
@@ -243,6 +273,7 @@ export function UniversalSubAgentToolPartDisplay({
     );
   }
 
+  // Dynamic (MCP) tool — handle separately since it has a different output shape.
   if (part.type === "dynamic-tool") {
     if (part.state !== "output-available") return null;
     return (
@@ -252,37 +283,32 @@ export function UniversalSubAgentToolPartDisplay({
     );
   }
 
-  if (toolName === StudyToolName.interviewChat && studyUserChatToken) {
-    const input = part.input as Record<string, unknown> | undefined;
-    const researchTopic =
-      input && typeof input.instruction === "string" ? input.instruction : undefined;
+  // From here, part: ToolUIPart<StudyUITools>. Checking part.type gives fully-typed narrowing.
 
+  if (part.type === `tool-${StudyToolName.interviewChat}` && studyUserChatToken) {
     return (
       <InterviewExecutionView
-        toolInvocation={part as never}
+        toolInvocation={part}
         studyUserChatToken={studyUserChatToken}
         studyUserAvatarSeed={studyUserChatToken}
         replay={replay}
-        researchTopic={researchTopic}
-        renderToolUIPart={(toolPart) => (
-          <StudyToolUIPartDisplay toolUIPart={toolPart as TStudyMessageWithTool["parts"][number]} />
-        )}
+        researchTopic={part.input?.instruction}
+        renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
       />
     );
   }
 
   if (
-    (toolName === StudyToolName.scoutTaskChat || toolName === StudyToolName.scoutSocialTrends) &&
+    (part.type === `tool-${StudyToolName.scoutTaskChat}` ||
+      part.type === `tool-${StudyToolName.scoutSocialTrends}`) &&
     studyUserChatToken
   ) {
     return (
       <ScoutExecutionView
-        toolInvocation={part as never}
+        toolInvocation={part}
         studyUserChatToken={studyUserChatToken}
         replay={replay}
-        renderToolUIPart={(toolPart) => (
-          <StudyToolUIPartDisplay toolUIPart={toolPart as TStudyMessageWithTool["parts"][number]} />
-        )}
+        renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
       />
     );
   }
@@ -291,40 +317,37 @@ export function UniversalSubAgentToolPartDisplay({
     return null;
   }
 
-  if (toolName === StudyToolName.searchPersonas) {
-    return <SearchPersonasResultMessage toolInvocation={part as never} />;
+  if (part.type === `tool-${StudyToolName.searchPersonas}`) {
+    return <SearchPersonasResultMessage toolInvocation={part} />;
   }
-  if (toolName === StudyToolName.buildPersona) {
+  if (part.type === `tool-${StudyToolName.buildPersona}`) {
     return <UniversalBuildPersonaResult part={part} />;
   }
-  if (toolName === StudyToolName.scoutTaskChat) {
-    return <ScoutTaskChatResultMessage toolInvocation={part as never} />;
+  if (part.type === `tool-${StudyToolName.scoutTaskChat}`) {
+    return <ScoutTaskChatResultMessage toolInvocation={part} />;
   }
-  if (toolName === StudyToolName.generateReport) {
-    if (part.state !== "output-available") {
-      return <UniversalGenerateReportExecutionView part={part} />;
-    }
+  if (part.type === `tool-${StudyToolName.generateReport}`) {
     return (
       <div className="space-y-3">
         <UniversalGenerateReportExecutionView part={part} />
-        <GenerateReportResultMessage toolInvocation={part as never} />
+        <GenerateReportResultMessage toolInvocation={part} />
       </div>
     );
   }
-  if (toolName === StudyToolName.generatePodcast) {
-    return <GeneratePodcastResultMessage toolInvocation={part as never} />;
+  if (part.type === `tool-${StudyToolName.generatePodcast}`) {
+    return <GeneratePodcastResultMessage toolInvocation={part} />;
   }
-  if (toolName === StudyToolName.webSearch) {
-    return <WebSearchResultMessage toolInvocation={part as never} />;
+  if (part.type === `tool-${StudyToolName.webSearch}`) {
+    return <WebSearchResultMessage toolInvocation={part} />;
   }
-  if (toolName === StudyToolName.reasoningThinking) {
-    return <ReasoningThinkingResultMessage toolInvocation={part as never} />;
+  if (part.type === `tool-${StudyToolName.reasoningThinking}`) {
+    return <ReasoningThinkingResultMessage toolInvocation={part} />;
   }
-  if (SOCIAL_POST_TOOLS.has(toolName)) {
-    return <SocialPostsResultMessage toolInvocation={part as never} />;
+  if (isSocialPostPart(part)) {
+    return <SocialPostsResultMessage toolInvocation={part} />;
   }
-  if (SOCIAL_COMMENT_TOOLS.has(toolName)) {
-    return <SocialPostCommentsResultMessage toolInvocation={part as never} />;
+  if (isSocialCommentPart(part)) {
+    return <SocialPostCommentsResultMessage toolInvocation={part} />;
   }
 
   const plainText = extractPlainText(part);

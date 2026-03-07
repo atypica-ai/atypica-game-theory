@@ -5,6 +5,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type DraggingMode = "chat-list" | "list-detail" | "chat-detail" | null;
 
+const RESIZE_HANDLE_CLASS_NAME = cn(
+  "relative h-full w-0 shrink-0 cursor-col-resize select-none",
+  "before:absolute before:left-1/2 before:top-0 before:h-full before:w-3 before:-translate-x-1/2 before:content-['']",
+  "[&>span]:absolute [&>span]:left-1/2 [&>span]:top-0 [&>span]:h-full [&>span]:w-px [&>span]:-translate-x-1/2 [&>span]:bg-border",
+  "hover:[&>span]:bg-cyan-400/80 transition-colors",
+);
+
 export function useUniversalPanelResize() {
   const desktopContainerRef = useRef<HTMLDivElement | null>(null);
   const [threeColWidths, setThreeColWidths] = useState({ chat: 45, list: 26, detail: 29 });
@@ -77,13 +84,6 @@ export function useUniversalPanelResize() {
     };
   }, [draggingMode]);
 
-  const resizeHandleClassName = cn(
-    "relative h-full w-0 shrink-0 cursor-col-resize select-none",
-    "before:absolute before:left-1/2 before:top-0 before:h-full before:w-3 before:-translate-x-1/2 before:content-['']",
-    "[&>span]:absolute [&>span]:left-1/2 [&>span]:top-0 [&>span]:h-full [&>span]:w-px [&>span]:-translate-x-1/2 [&>span]:bg-border",
-    "hover:[&>span]:bg-cyan-400/80 transition-colors",
-  );
-
   const startResizeChatBoundary = useCallback((collapseMiddlePanel: boolean) => {
     setDraggingMode(collapseMiddlePanel ? "chat-detail" : "chat-list");
   }, []);
@@ -96,7 +96,7 @@ export function useUniversalPanelResize() {
     threeColWidths,
     twoColWidths,
     isDragging: draggingMode !== null,
-    resizeHandleClassName,
+    resizeHandleClassName: RESIZE_HANDLE_CLASS_NAME,
     startResizeChatBoundary,
     startResizeListBoundary,
   };

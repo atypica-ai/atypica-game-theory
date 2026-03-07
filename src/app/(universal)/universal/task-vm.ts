@@ -1,5 +1,5 @@
 import { TUniversalMessageWithTool, UniversalToolName } from "@/app/(universal)/tools/types";
-import { StudyToolName } from "@/app/(study)/tools/types";
+import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { DynamicToolUIPart, getToolOrDynamicToolName, isToolOrDynamicToolUIPart, ToolUIPart } from "ai";
 
 export type UniversalTaskStatus = "running" | "done" | "error";
@@ -21,10 +21,15 @@ export interface UniversalTaskVM {
   resultSummary: string;
 }
 
+// The narrowed type produced by isToolOrDynamicToolUIPart<StudyUITools>.
+// Using ToolUIPart<StudyUITools> (not the base ToolUIPart) means callers can
+// discriminate by part.type and get fully typed access without any casts.
+export type StudyToolOrDynamicPart = ToolUIPart<StudyUITools> | DynamicToolUIPart;
+
 export type UniversalSubAgentToolPartVM = {
   toolCallId: string;
   toolName: string;
-  state: (DynamicToolUIPart | ToolUIPart)["state"];
+  state: StudyToolOrDynamicPart["state"];
   stage: UniversalTimelineStage;
   semanticTitle: string;
   defaultSummary: string;
@@ -32,7 +37,7 @@ export type UniversalSubAgentToolPartVM = {
   messageId: string;
   messageIndex: number;
   partIndex: number;
-  part: DynamicToolUIPart | ToolUIPart;
+  part: StudyToolOrDynamicPart;
 };
 
 const TASK_TITLE_MAX_LEN = 56;
@@ -237,7 +242,7 @@ export function extractTasksFromMessages(messages: TUniversalMessageWithTool[]):
   });
 }
 
-function extractSummaryForToolPart(part: DynamicToolUIPart | ToolUIPart): string {
+function extractSummaryForToolPart(part: StudyToolOrDynamicPart): string {
   const toolName = getToolOrDynamicToolName(part);
   const semantic = getToolSemanticMeta(toolName);
   if (part.state === "output-error") {
@@ -274,30 +279,30 @@ function extractSummaryForToolPart(part: DynamicToolUIPart | ToolUIPart): string
 }
 
 export function extractSubAgentToolPartsFromMessages(
-  messages: Array<{ id: string; role: string; parts: unknown[] }>,
+  messages: Array<Pick<TStudyMessageWithTool, "id" | "role" | "parts">>,
 ): UniversalSubAgentToolPartVM[] {
   const parts: UniversalSubAgentToolPartVM[] = [];
 
   messages.forEach((message, messageIndex) => {
     if (message.role !== "assistant") return;
     message.parts.forEach((part, partIndex) => {
-      const uiPart = part as Parameters<typeof isToolOrDynamicToolUIPart>[0];
-      if (!isToolOrDynamicToolUIPart(uiPart)) return;
-      const toolPart = part as DynamicToolUIPart | ToolUIPart;
-      const toolName = getToolOrDynamicToolName(toolPart);
+      // isToolOrDynamicToolUIPart<StudyUITools> narrows to ToolUIPart<StudyUITools> | DynamicToolUIPart,
+      // preserving the full parameterized union so downstream callers can discriminate by part.type.
+      if (!isToolOrDynamicToolUIPart(part)) return;
+      const toolName = getToolOrDynamicToolName(part);
       const semantic = getToolSemanticMeta(toolName);
       parts.push({
-        toolCallId: toolPart.toolCallId,
+        toolCallId: part.toolCallId,
         toolName,
-        state: toolPart.state,
+        state: part.state,
         stage: semantic.stage,
         semanticTitle: semantic.title,
         defaultSummary: semantic.defaultSummary,
-        summary: extractSummaryForToolPart(toolPart),
+        summary: extractSummaryForToolPart(part),
         messageId: message.id,
         messageIndex,
         partIndex,
-        part: toolPart,
+        part,
       });
     });
   });

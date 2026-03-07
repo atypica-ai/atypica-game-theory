@@ -9,7 +9,6 @@ import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { fetchUniversalUserChatByToken } from "@/app/(universal)/universal/actions";
 import { UNIVERSAL_REPORT_RETRY_DELAYS_MS } from "@/app/(universal)/universal/polling";
 import { SearchPersonasResultMessage } from "@/app/(study)/tools/searchPersonas/SearchPersonasResultMessage";
-import { ConfirmPlanMessage } from "@/app/(panel)/tools/confirmPanelResearchPlan/ConfirmPlanMessage";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, CircleDot, CircleX } from "lucide-react";
