@@ -62,11 +62,22 @@ function resolveWorkspacePath(userId: number, relativePath: string): string {
   return fullPath;
 }
 
-async function scanWorkspaceDirectory(dir: string, relativePath = ""): Promise<WorkspaceFileEntry[]> {
+const SCAN_MAX_DEPTH = 8;
+const SCAN_MAX_FILES = 500;
+
+async function scanWorkspaceDirectory(
+  dir: string,
+  relativePath = "",
+  depth = 0,
+): Promise<WorkspaceFileEntry[]> {
+  if (depth > SCAN_MAX_DEPTH) return [];
+
   const files: WorkspaceFileEntry[] = [];
   const entries = await fs.readdir(dir, { withFileTypes: true });
 
   for (const entry of entries) {
+    if (files.length >= SCAN_MAX_FILES) break;
+
     const fullPath = path.join(dir, entry.name);
     const relPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
 
@@ -76,8 +87,10 @@ async function scanWorkspaceDirectory(dir: string, relativePath = ""): Promise<W
         name: entry.name,
         type: "directory",
       });
-      const nested = await scanWorkspaceDirectory(fullPath, relPath);
-      files.push(...nested);
+      if (files.length < SCAN_MAX_FILES) {
+        const nested = await scanWorkspaceDirectory(fullPath, relPath, depth + 1);
+        files.push(...nested.slice(0, SCAN_MAX_FILES - files.length));
+      }
     } else if (entry.isFile()) {
       const stats = await fs.stat(fullPath);
       files.push({
@@ -139,11 +152,14 @@ export function listWorkspaceFilesTool({ userId }: { userId: number }) {
       }
 
       const files = await scanWorkspaceDirectory(target);
+      const truncated = files.length >= SCAN_MAX_FILES;
       return {
         success: true,
         path: normalized,
         files,
-        plainText: `Workspace path ${normalized || "."} has ${files.length} entries.`,
+        plainText: truncated
+          ? `Workspace path ${normalized || "."} has ${files.length}+ entries (listing truncated at ${SCAN_MAX_FILES}).`
+          : `Workspace path ${normalized || "."} has ${files.length} entries.`,
       };
     },
   });

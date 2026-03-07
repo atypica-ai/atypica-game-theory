@@ -209,22 +209,19 @@ export const createStudySubAgentTool = ({
             }
 
             const latestAssistantText = await getLatestAssistantText(chat.id);
-            subAgentLogger.info(
-              {
-                latestAssistantText,
-              },
-              "Study sub-agent completed",
-            );
+            subAgentLogger.info({
+              msg: "Study sub-agent completed",
+              latestAssistantText,
+            });
           } catch (error) {
-            subAgentLogger.error(
-              { error: (error as Error).message },
-              "Study sub-agent failed in detached run",
-            );
+            subAgentLogger.error({
+              msg: "Study sub-agent failed in detached run",
+              error: (error as Error).message,
+            });
           }
         };
 
-        const runPromise = runSubAgent();
-        waitUntil(runPromise);
+        waitUntil(runSubAgent().catch(() => {}));
 
         const resultSummary =
           locale === "zh-CN"
@@ -244,14 +241,12 @@ export const createStudySubAgentTool = ({
           throw error;
         }
         const errorMessage = (error as Error).message || "failed to initialize sub-agent";
-        logger.error(
-          {
-            error: errorMessage,
-            subAgentChatId: subAgentChat.id,
-            subAgentChatToken: subAgentChat.token,
-          },
-          "createStudySubAgent initialization failed after chat created",
-        );
+        logger.error({
+          msg: "createStudySubAgent initialization failed after chat created",
+          error: errorMessage,
+          subAgentChatId: subAgentChat.id,
+          subAgentChatToken: subAgentChat.token,
+        });
         return {
           status: "failed",
           resultSummary: errorMessage,
