@@ -93,6 +93,11 @@ const GlobalHeader = React.memo(function GlobalHeader({
   const t = useTranslations("Components.GlobalHeader");
   const searchParams = useSearchParams();
   const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Skip SSR for Drawer and Desktop menus to avoid hydration mismatch
   // (useSession, useTheme, SWR hooks return different values on server vs client)
