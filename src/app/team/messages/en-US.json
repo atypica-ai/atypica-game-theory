@@ -157,28 +157,6 @@
         "cancel": "Cancel"
       }
     },
-    "MemoryBuilder": {
-      "startPage": {
-        "title": "Build team memory",
-        "subtitle": "One 10-minute conversation. AI understands your business from then on.",
-        "startButton": "Start Interview",
-        "startingButton": "Creating...",
-        "createFailed": "Creation failed",
-        "createFailedRetry": "Creation failed, please try again"
-      },
-      "chatPage": {
-        "profileTitle": "Your Team's Background Profile",
-        "editHint": "You can edit directly here. Clicking confirm will save this to your team's capabilities and exit.",
-        "memoryPlaceholder": "Memory content...",
-        "confirmButton": "Confirm Profile",
-        "savingButton": "Saving...",
-        "saveFailed": "Failed to save memory",
-        "unexpectedError": "An unexpected error occurred",
-        "suggestionsTitle": "Recommended Research Topics",
-        "suggestionsSubtitle": "Based on your profile, click any topic to start in-depth analysis, or create a custom study:",
-        "suggestionsNewTopic": "Start custom research"
-      }
-    },
     "Actions": {
       "createTeam": {
         "forbidden": "Only individual users can create teams",

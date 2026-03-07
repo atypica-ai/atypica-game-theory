@@ -11,8 +11,8 @@ import { createMemoryBuilderChat } from "../actions";
 
 export function MemoryBuilderPageClient({ mode }: { mode: "team" | "user" }) {
   const router = useRouter();
-  const tKey = mode === "team" ? "Team.MemoryBuilder.startPage" : "User.MemoryBuilder.startPage";
-  const t = useTranslations(tKey);
+  const t = useTranslations("MemoryBuilder.startPage");
+  const tMode = useTranslations(`MemoryBuilder.startPage.${mode}`);
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -49,10 +49,10 @@ export function MemoryBuilderPageClient({ mode }: { mode: "team" | "user" }) {
         <div className="flex-1 text-center md:text-left space-y-6">
           <div className="w-12 h-1 bg-ghost-green"></div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-EuclidCircularA font-medium tracking-tight">
-            {t("title")}
+            {tMode("title")}
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400">
-            {t("subtitle")}
+            {tMode("subtitle")}
           </p>
           <Button
             size="lg"

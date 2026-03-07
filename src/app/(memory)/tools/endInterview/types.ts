@@ -5,7 +5,7 @@ export const endInterviewInputSchema = z.object({
   memory: z
     .string()
     .describe(
-      "User's personal memory in Markdown format, including: professional background, company information, work context, goals, challenges, target audience, verification methods, and key insights from the interview. ",
+      "Structured Markdown profile based on the interview, covering background, business context, goals, challenges, and key insights collected during the conversation.",
     ),
   recommendTopics: z
     .array(z.string())

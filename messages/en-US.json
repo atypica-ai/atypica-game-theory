@@ -371,6 +371,46 @@
     "description": "Sorry, you do not have permission to access this page. Please confirm your access rights or contact the administrator.",
     "returnHome": "Return Home"
   },
+  "MemoryBuilder": {
+    "startPage": {
+      "startButton": "Start Interview",
+      "startingButton": "Creating...",
+      "createFailed": "Creation failed",
+      "createFailedRetry": "Creation failed, please try again",
+      "team": {
+        "title": "Build team memory",
+        "subtitle": "One 10-minute conversation. AI understands your business from then on."
+      },
+      "user": {
+        "title": "Build your personal profile",
+        "subtitle": "One 10-minute conversation. AI understands your work background and preferences from then on."
+      }
+    },
+    "chatPage": {
+      "memoryPlaceholder": "Memory content...",
+      "confirmButton": "Confirm Profile",
+      "savingButton": "Saving...",
+      "saveFailed": "Failed to save profile",
+      "unexpectedError": "An unexpected error occurred",
+      "suggestionsTitle": "Recommended Research Topics",
+      "suggestionsSubtitle": "Based on your profile, click any topic to start in-depth analysis, or create a custom study:",
+      "suggestionsNewTopic": "Start custom research",
+      "team": {
+        "profileTitle": "Your Team's Background Profile",
+        "editHint": "You can edit directly here. Clicking confirm will save this to your team's capabilities and exit."
+      },
+      "user": {
+        "profileTitle": "Your Personal Background Profile",
+        "editHint": "You can edit directly here. Clicking confirm will save this as your personal profile and exit."
+      }
+    },
+    "hp": {
+      "title": "Atypica has a question for you...",
+      "description": "A quick chat helps me tailor insights to your business",
+      "cta": "Reply now",
+      "badge": "1 New Message"
+    }
+  },
   "MyPodcastsPage": {
     "title": "My Podcasts",
     "subtitle": "Browse and listen to all your research podcasts",

@@ -10,6 +10,7 @@ import "./style.css";
 
 export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
   const t = useTranslations("StudyPage.NewStudy");
+  const tHp = useTranslations("MemoryBuilder.hp");
   const [brief, setBrief] = useState(initialBrief || "");
   const [templateId, setTemplateId] = useState<number | undefined>(undefined);
 
@@ -34,13 +35,13 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
         >
           <span className="size-1.5 rounded-full bg-ghost-green shrink-0" />
           <div className="flex-1 min-w-0">
-            <span className="text-sm font-medium">{t("personalProfileBanner.title")}</span>
+            <span className="text-sm font-medium">{tHp("title")}</span>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {t("personalProfileBanner.description")}
+              {tHp("description")}
             </p>
           </div>
           <div className="shrink-0 flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap group-hover:text-foreground group-hover:font-medium">
-            {t("personalProfileBanner.cta")}
+            {tHp("cta")}
             <ArrowRightIcon className="size-3.5" />
           </div>
         </Link>

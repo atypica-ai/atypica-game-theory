@@ -17,7 +17,7 @@ export const endInterviewTool = ({
 }) => ({
   endInterview: tool({
     description:
-      "End the interview and generate the user's personal memory. Call this when you have gathered sufficient information about their professional background, company, goals, and challenges (typically after 12-18 conversation rounds).",
+      "End the interview and save the background profile. Call this when you have gathered sufficient information about the interviewee's background, goals, and challenges.",
     inputSchema: endInterviewInputSchema,
     outputSchema: endInterviewOutputSchema,
     toModelOutput: (result: PlainTextToolResult) => {

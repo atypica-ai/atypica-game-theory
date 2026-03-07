@@ -202,29 +202,5 @@
         }
       }
     }
-  },
-  "User": {
-    "MemoryBuilder": {
-      "startPage": {
-        "title": "Build your personal profile",
-        "subtitle": "One 10-minute conversation. AI understands your work background and preferences from then on.",
-        "startButton": "Start Interview",
-        "startingButton": "Creating...",
-        "createFailed": "Creation failed",
-        "createFailedRetry": "Creation failed, please try again"
-      },
-      "chatPage": {
-        "profileTitle": "Your Personal Background Profile",
-        "editHint": "You can edit directly here. Clicking confirm will save this as your personal profile and exit.",
-        "memoryPlaceholder": "Memory content...",
-        "confirmButton": "Confirm Profile",
-        "savingButton": "Saving...",
-        "saveFailed": "Failed to save profile",
-        "unexpectedError": "An unexpected error occurred",
-        "suggestionsTitle": "Recommended Research Topics",
-        "suggestionsSubtitle": "Based on your profile, click any topic to start in-depth analysis, or create a custom study:",
-        "suggestionsNewTopic": "Start custom research"
-      }
-    }
   }
 }

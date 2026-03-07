@@ -7,13 +7,7 @@
       "viewMyProjects": "查看我的项目",
       "or": "或",
       "orStartFromScenarios": "或从这些场景快速开始",
-      "shortcutsCuratedBy": "研究场景由 atypica 选题智能体精选生成 · 每小时更新",
-      "personalProfileBanner": {
-        "title": "Atypica 向你发来一条消息...",
-        "description": "聊几分钟，我就能为你提供更贴合的研究洞察",
-        "cta": "马上回复",
-        "badge": "1 条新消息"
-      }
+      "shortcutsCuratedBy": "研究场景由 atypica 选题智能体精选生成 · 每小时更新"
     },
     "ShareReplayButton": {
       "shareReplay": "分享回放",

@@ -98,8 +98,8 @@ export function MemoryBuilderChatClient({
   }, [initialMessages]);
 
   const router = useRouter();
-  const tKey = mode === "team" ? "Team.MemoryBuilder.chatPage" : "User.MemoryBuilder.chatPage";
-  const t = useTranslations(tKey);
+  const t = useTranslations("MemoryBuilder.chatPage");
+  const tMode = useTranslations(`MemoryBuilder.chatPage.${mode}`);
   const [editedMemory, setEditedMemory] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -156,10 +156,10 @@ export function MemoryBuilderChatClient({
       >
         <div className="shrink-0 space-y-2 mb-6">
           <h1 className="text-3xl md:text-4xl font-EuclidCircularA font-medium text-center tracking-tight">
-            {t("profileTitle")}
+            {tMode("profileTitle")}
           </h1>
           <div className="text-sm text-zinc-600 dark:text-zinc-400 text-center">
-            {t("editHint")}
+            {tMode("editHint")}
           </div>
         </div>
 

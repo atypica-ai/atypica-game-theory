@@ -157,28 +157,6 @@
         "cancel": "取消"
       }
     },
-    "MemoryBuilder": {
-      "startPage": {
-        "title": "构建团队记忆",
-        "subtitle": "一次 10 分钟对话，AI 从此理解你们的业务",
-        "startButton": "开始访谈",
-        "startingButton": "创建中...",
-        "createFailed": "创建失败",
-        "createFailedRetry": "创建失败，请重试"
-      },
-      "chatPage": {
-        "profileTitle": "团队的背景档案",
-        "editHint": "你可以直接在这里修改，确认后将保存为团队能力并退出。",
-        "memoryPlaceholder": "记忆内容...",
-        "confirmButton": "确认档案",
-        "savingButton": "保存中...",
-        "saveFailed": "保存失败",
-        "unexpectedError": "发生错误",
-        "suggestionsTitle": "为你推荐的研究主题",
-        "suggestionsSubtitle": "基于你的背景档案，点击任意主题直接开始深度分析，或创建自定义研究：",
-        "suggestionsNewTopic": "开始自定义研究"
-      }
-    },
     "Actions": {
       "createTeam": {
         "forbidden": "只有个人用户可以创建团队",

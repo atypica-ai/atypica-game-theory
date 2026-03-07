@@ -202,29 +202,5 @@
         }
       }
     }
-  },
-  "User": {
-    "MemoryBuilder": {
-      "startPage": {
-        "title": "构建个人档案",
-        "subtitle": "一次 10 分钟对话，AI 从此深刻了解你的工作背景与偏好",
-        "startButton": "开始访谈",
-        "startingButton": "创建中...",
-        "createFailed": "创建失败",
-        "createFailedRetry": "创建失败，请重试"
-      },
-      "chatPage": {
-        "profileTitle": "你的个人背景档案",
-        "editHint": "你可以直接在这里修改，确认后将保存为你的个人档案并退出。",
-        "memoryPlaceholder": "记忆内容...",
-        "confirmButton": "确认档案",
-        "savingButton": "保存中...",
-        "saveFailed": "保存失败",
-        "unexpectedError": "发生错误",
-        "suggestionsTitle": "为你推荐的研究主题",
-        "suggestionsSubtitle": "基于你的背景档案，点击任意主题直接开始深度分析，或创建自定义研究：",
-        "suggestionsNewTopic": "开始自定义研究"
-      }
-    }
   }
 }
