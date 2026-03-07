@@ -21,6 +21,7 @@ import { AlertCircle, ExternalLink, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { stopUserChatRunAction } from "@/lib/userChat/actions";
 import { type PendingConfirmPlan } from "./actions";
 import { DiscussionView } from "./DiscussionView";
 import { InterviewsView } from "./InterviewsView";
@@ -58,9 +59,9 @@ interface ReportInfo {
 
 /**
  * Extract the latest agent activity from streamed messages.
- * Shows either the latest text snippet or the currently executing tool name.
+ * Returns the full text so the display container can handle overflow.
  */
-function getLatestAgentActivity(messages: TUniversalMessageWithTool[], maxLen = 80): string {
+function getLatestAgentActivity(messages: TUniversalMessageWithTool[]): string {
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i];
     if (msg.role !== "assistant") continue;
@@ -72,13 +73,31 @@ function getLatestAgentActivity(messages: TUniversalMessageWithTool[], maxLen = 
         return `exec ${toolName}`;
       }
       if (part.type === "text" && part.text.trim()) {
-        const text = part.text.trim();
-        if (text.length <= maxLen) return text;
-        return "\u2026" + text.slice(-maxLen);
+        return part.text.trim();
       }
     }
   }
   return "";
+}
+
+/** Fixed-height container that auto-scrolls to show the latest content. */
+function AgentActivityText({ text }: { text: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  });
+
+  if (!text) return null;
+
+  return (
+    <div
+      ref={scrollRef}
+      className="max-h-[3.75rem] overflow-hidden text-xs text-muted-foreground max-w-sm leading-relaxed"
+    >
+      {text}
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -93,13 +112,6 @@ export function ProjectDetailClient({
 }: ProjectDetailClientProps) {
   const t = useTranslations("PersonaPanel.ProjectDetailPage");
 
-  // ─── Dynamic executionMode ───
-  // Plan phase (regenerate/continue): "sync" — agent stops when page closes.
-  // After confirm plan (addToolResult -> sendMessage): undefined (background) —
-  // discussion/interview continues even if user refreshes. This is critical
-  // because discussion execution is long-running.
-  const executionModeRef = useRef<"sync" | undefined>("sync");
-
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -110,7 +122,6 @@ export function ProjectDetailClient({
             id,
             message,
             userChatToken: project.token,
-            executionMode: executionModeRef.current,
           };
           return { body };
         },
@@ -135,29 +146,51 @@ export function ProjectDetailClient({
   });
 
   // ─── addToolResult ───
-  // IMPORTANT: When user confirms the research plan, switch executionMode
-  // from "sync" to undefined (background). This ensures that discussion/interview
-  // execution continues in the background even if the user closes or refreshes
-  // the page. Without this switch, closing the page would abort the agent
-  // mid-discussion.
   const addToolResult: TAddUniversalUIToolResult = useCallback(
     async (...args) => {
       await _addToolOutput(...args);
-      executionModeRef.current = undefined;
       useChatRef.current.sendMessage();
     },
     [_addToolOutput],
   );
 
   // ─── Auto-trigger agent on mount ───
+  // Determine whether the plan has already been confirmed by checking
+  // initialMessages for a confirmPanelResearchPlan tool call with output.
+  const isPlanConfirmed = useMemo(() => {
+    for (const msg of initialMessages) {
+      for (const part of msg.parts) {
+        if (
+          isToolUIPart(part) &&
+          part.type.replace(/^tool-/, "") === "confirmPanelResearchPlan" &&
+          part.state === "output-available"
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }, [initialMessages]);
+
   const requestSentRef = useRef(false);
   useEffect(() => {
     if (requestSentRef.current) return;
     requestSentRef.current = true;
 
-    // Don't trigger if agent is already running in background
     const isRunning = !!project.extra?.runId;
-    if (isRunning) return;
+
+    if (isRunning) {
+      if (isPlanConfirmed) {
+        // Research phase — agent is running discussion/interview in background.
+        // Don't interrupt; DiscussionView/InterviewsView use SWR polling.
+        return;
+      }
+      // Plan phase — safe to kill and restart (idempotent).
+      stopUserChatRunAction({ userChatToken: project.token }).then(() => {
+        useChatRef.current.regenerate();
+      });
+      return;
+    }
 
     const lastMessage = initialMessages[initialMessages.length - 1];
     if (!lastMessage) return;
@@ -173,7 +206,7 @@ export function ProjectDetailClient({
       if (hasPendingTool) return;
       useChatRef.current.sendMessage({ text: CONTINUE_ASSISTANT_STEPS });
     }
-  }, [initialMessages, project.extra?.runId]);
+  }, [initialMessages, project.extra?.runId, project.token, isPlanConfirmed]);
 
   // ─── Extract tool calls from messages ───
   const { timelineTokens, interviewPersonaIds, pendingConfirmPlan, reports } = useMemo(() => {
@@ -379,9 +412,7 @@ export function ProjectDetailClient({
                   </Link>
                 </div>
                 {isAgentActive && agentActivity && (
-                  <p className="text-xs text-muted-foreground/60 text-center max-w-sm leading-relaxed line-clamp-2">
-                    {agentActivity}
-                  </p>
+                  <AgentActivityText text={agentActivity} />
                 )}
               </>
             )}
