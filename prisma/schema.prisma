@@ -122,6 +122,7 @@ model User {
   userPersonaChatRelations       UserPersonaChatRelation[]
   interviewSessionsAsInterviewee InterviewSession[]
   awsMarketplaceCustomer         AWSMarketplaceCustomer?
+  pulseRecommendations          UserPulseRecommendation[]
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -945,4 +946,79 @@ model AWSMarketplaceEvent {
 
   @@index([customerId])
   @@index([eventType])
+}
+
+// ===== Pulse System =====
+
+model Pulse {
+  id          Int       @id @default(autoincrement())
+  categoryId  Int
+  category    PulseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  dataSource  String    @db.VarChar(50) // e.g., "xTrend"
+  title       String    @db.VarChar(255)
+  content     String    @db.Text
+  locale      String    @default("en-US") @db.VarChar(16)
+  expireAt    DateTime  @db.Timestamptz(6)
+  heatScore   Float?    // Calculated HEAT score (current engagement)
+  heatDelta   Float?    // HEAT delta (change from yesterday)
+  expired     Boolean   @default(false) // Replaces expireAt logic
+  extra       Json      @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  posts      PulsePost[] // Relation to posts
+
+  @@index([dataSource])
+  @@index([expireAt])
+  @@index([expired, expireAt]) // For expiration pipeline
+  @@index([categoryId, expired]) // Common filter pattern
+  @@index([categoryId, createdAt(sort: Desc)]) // Date range queries per category
+  @@index([categoryId, expired, heatDelta(sort: Desc)]) // Identity carry-over queries
+  @@index([createdAt(sort: Desc), heatScore]) // Treemap window queries
+  @@index([title, categoryId]) // For identity matching
+}
+
+model PulsePost {
+  id          Int       @id @default(autoincrement())
+  pulseId     Int
+  pulse       Pulse     @relation(fields: [pulseId], references: [id], onDelete: Cascade)
+  postId      String    @db.VarChar(255) // X/Twitter post ID
+  content     String    @db.Text // Post content/text for description generation
+  views       Int       @default(0)
+  likes       Int       @default(0)
+  retweets    Int       @default(0)
+  replies     Int       @default(0)
+  extra       Json      @default("{}") // Store post URL, author, etc.
+
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@unique([pulseId, postId]) // Prevent duplicate posts per pulse
+}
+
+model PulseCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100) // e.g., "AI Tech", "Fashion & Beauty"
+  query       String    @db.Text // Query string (used by xTrend only, empty for others)
+  extra       Json      @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  pulses     Pulse[]
+}
+
+model UserPulseRecommendation {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pulseIds      Json      @default("[]") // Array of pulse IDs: number[]
+  recommendation Json     @default("[]") // Array of recommendations: [{id: number, angle: string}]
+  extra         Json      @default("{}") // Store reasoning, metadata, memorybased/random method, etc.
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([userId])
+  @@index([userId, createdAt(sort: Desc)]) // Optimize for getting latest recommendation per user
 }
