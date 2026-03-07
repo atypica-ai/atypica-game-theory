@@ -5,6 +5,12 @@ import { DynamicToolUIPart, getToolOrDynamicToolName, isToolOrDynamicToolUIPart,
 export type UniversalTaskStatus = "running" | "done" | "error";
 export type UniversalTimelineStage = "discovery" | "interview" | "synthesis" | "delivery";
 
+// Derive step key types from the i18n JSON so they stay in sync automatically.
+import universalMessages from "@/app/(universal)/messages/en-US.json";
+type UniversalAgentKey = keyof typeof universalMessages.UniversalAgent;
+export type StepTitleKey = Extract<UniversalAgentKey, `step${string}Title`>;
+export type StepSummaryKey = Extract<UniversalAgentKey, `step${string}Summary`>;
+
 export interface UniversalTaskVM {
   taskId: string;
   toolCallId: string;
@@ -31,8 +37,8 @@ export type UniversalSubAgentToolPartVM = {
   toolName: string;
   state: StudyToolOrDynamicPart["state"];
   stage: UniversalTimelineStage;
-  semanticTitle: string;
-  defaultSummary: string;
+  titleKey: StepTitleKey;
+  defaultSummaryKey: StepSummaryKey;
   summary: string;
   messageId: string;
   messageIndex: number;
@@ -86,70 +92,34 @@ function isMeaninglessSummary(text: string): boolean {
 
 function getToolSemanticMeta(toolName: string): {
   stage: UniversalTimelineStage;
-  title: string;
-  defaultSummary: string;
+  titleKey: StepTitleKey;
+  defaultSummaryKey: StepSummaryKey;
 } {
   if (toolName === StudyToolName.interviewChat) {
-    return {
-      stage: "interview",
-      title: "Run persona interviews",
-      defaultSummary: "Interviewing selected personas for decision and behavior signals.",
-    };
+    return { stage: "interview", titleKey: "stepInterviewTitle", defaultSummaryKey: "stepInterviewSummary" };
   }
   if (toolName === StudyToolName.discussionChat) {
-    return {
-      stage: "interview",
-      title: "Run group discussion",
-      defaultSummary: "Running moderated group discussion and collecting viewpoints.",
-    };
+    return { stage: "interview", titleKey: "stepDiscussionTitle", defaultSummaryKey: "stepDiscussionSummary" };
   }
   if (toolName === StudyToolName.generateReport) {
-    return {
-      stage: "delivery",
-      title: "Generate report",
-      defaultSummary: "Producing report artifact from the collected research evidence.",
-    };
+    return { stage: "delivery", titleKey: "stepReportTitle", defaultSummaryKey: "stepReportSummary" };
   }
   if (toolName === StudyToolName.generatePodcast) {
-    return {
-      stage: "delivery",
-      title: "Generate podcast",
-      defaultSummary: "Producing podcast artifact based on research findings.",
-    };
+    return { stage: "delivery", titleKey: "stepPodcastTitle", defaultSummaryKey: "stepPodcastSummary" };
   }
   if (toolName === StudyToolName.reasoningThinking) {
-    return {
-      stage: "synthesis",
-      title: "Synthesize insights",
-      defaultSummary: "Summarizing patterns and trade-offs from collected inputs.",
-    };
+    return { stage: "synthesis", titleKey: "stepSynthesizeTitle", defaultSummaryKey: "stepSynthesizeSummary" };
   }
   if (toolName === StudyToolName.scoutTaskChat || toolName === StudyToolName.scoutSocialTrends) {
-    return {
-      stage: "discovery",
-      title: "Scout target users",
-      defaultSummary: "Exploring social platforms to identify target users and signals.",
-    };
+    return { stage: "discovery", titleKey: "stepScoutTitle", defaultSummaryKey: "stepScoutSummary" };
   }
   if (toolName === StudyToolName.searchPersonas || toolName === StudyToolName.buildPersona) {
-    return {
-      stage: "discovery",
-      title: "Build persona candidates",
-      defaultSummary: "Assembling persona candidates for downstream research.",
-    };
+    return { stage: "discovery", titleKey: "stepPersonaTitle", defaultSummaryKey: "stepPersonaSummary" };
   }
   if (toolName === StudyToolName.webSearch || toolName === StudyToolName.webFetch) {
-    return {
-      stage: "discovery",
-      title: "Collect web evidence",
-      defaultSummary: "Gathering external evidence from web sources.",
-    };
+    return { stage: "discovery", titleKey: "stepWebEvidenceTitle", defaultSummaryKey: "stepWebEvidenceSummary" };
   }
-  return {
-    stage: "synthesis",
-    title: "Execute research step",
-    defaultSummary: "Completing one step in the research workflow.",
-  };
+  return { stage: "synthesis", titleKey: "stepGenericTitle", defaultSummaryKey: "stepGenericSummary" };
 }
 
 function getObjectPartInput(part: ToolUIPart): Record<string, unknown> | null {
@@ -242,14 +212,14 @@ export function extractTasksFromMessages(messages: TUniversalMessageWithTool[]):
   });
 }
 
+// Returns real content from tool output, or empty string when unavailable.
+// Callers should fall back to t(defaultSummaryKey) for the empty-string case.
 function extractSummaryForToolPart(part: StudyToolOrDynamicPart): string {
-  const toolName = getToolOrDynamicToolName(part);
-  const semantic = getToolSemanticMeta(toolName);
   if (part.state === "output-error") {
-    return compact(part.errorText ?? "", STEP_SUMMARY_MAX_LEN) || `Failed: ${semantic.defaultSummary}`;
+    return compact(part.errorText ?? "", STEP_SUMMARY_MAX_LEN);
   }
   if (part.state !== "output-available") {
-    return semantic.defaultSummary;
+    return "";
   }
 
   if (part.type === "dynamic-tool") {
@@ -257,25 +227,19 @@ function extractSummaryForToolPart(part: StudyToolOrDynamicPart): string {
       typeof part.output === "string" ? part.output : JSON.stringify(part.output),
       STEP_SUMMARY_MAX_LEN,
     );
-    return isMeaninglessSummary(dynamicText) ? semantic.defaultSummary : dynamicText;
+    return isMeaninglessSummary(dynamicText) ? "" : dynamicText;
   }
 
   if (part.output && typeof part.output === "object") {
     const output = part.output as Record<string, unknown>;
     if ("plainText" in output && typeof output.plainText === "string") {
       const summaryFromPlainText = extractFirstSentence(output.plainText, STEP_SUMMARY_MAX_LEN);
-      if (!isMeaninglessSummary(summaryFromPlainText)) {
-        return summaryFromPlainText;
-      }
-      return semantic.defaultSummary;
+      return isMeaninglessSummary(summaryFromPlainText) ? "" : summaryFromPlainText;
     }
   }
 
   const fallback = compact(JSON.stringify(part.output), STEP_SUMMARY_MAX_LEN);
-  if (!isMeaninglessSummary(fallback)) {
-    return fallback;
-  }
-  return semantic.defaultSummary;
+  return isMeaninglessSummary(fallback) ? "" : fallback;
 }
 
 export function extractSubAgentToolPartsFromMessages(
@@ -296,8 +260,8 @@ export function extractSubAgentToolPartsFromMessages(
         toolName,
         state: part.state,
         stage: semantic.stage,
-        semanticTitle: semantic.title,
-        defaultSummary: semantic.defaultSummary,
+        titleKey: semantic.titleKey,
+        defaultSummaryKey: semantic.defaultSummaryKey,
         summary: extractSummaryForToolPart(part),
         messageId: message.id,
         messageIndex,

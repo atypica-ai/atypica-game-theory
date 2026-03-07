@@ -414,7 +414,7 @@ export function UniversalTaskDetailPanel({
                       >
                         {stageLabelMap[part.stage]}
                       </span>
-                      <span className="text-sm font-medium truncate">{part.semanticTitle}</span>
+                      <span className="text-sm font-medium truncate">{t(part.titleKey)}</span>
                       <span
                         className={cn(
                           "ml-auto inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium",

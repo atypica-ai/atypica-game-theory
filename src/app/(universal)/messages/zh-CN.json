@@ -108,6 +108,24 @@
     "taskCreatedWaitingFirstUpdate": "任务已创建，等待首条更新。",
     "taskExecutionFailedHint": "执行失败。请打开执行详情排查。",
     "taskNoPersonaBuilt": "未构建到 Persona",
-    "taskPersonasBuilt": "已构建 {count} 个 Persona"
+    "taskPersonasBuilt": "已构建 {count} 个 Persona",
+    "stepInterviewTitle": "执行用户访谈",
+    "stepInterviewSummary": "正在访谈选定的用户画像，获取决策与行为信号。",
+    "stepDiscussionTitle": "发起群体讨论",
+    "stepDiscussionSummary": "正在组织焦点小组讨论，收集多元观点。",
+    "stepReportTitle": "生成报告",
+    "stepReportSummary": "正在基于研究证据生成报告。",
+    "stepPodcastTitle": "生成播客",
+    "stepPodcastSummary": "正在基于研究发现生成播客内容。",
+    "stepSynthesizeTitle": "洞察综合",
+    "stepSynthesizeSummary": "正在总结收集到的模式与取舍。",
+    "stepScoutTitle": "探索目标用户",
+    "stepScoutSummary": "正在通过社交平台识别目标用户和信号。",
+    "stepPersonaTitle": "构建候选画像",
+    "stepPersonaSummary": "正在为后续研究组装候选用户画像。",
+    "stepWebEvidenceTitle": "收集网络证据",
+    "stepWebEvidenceSummary": "正在从网络来源采集外部证据。",
+    "stepGenericTitle": "执行研究步骤",
+    "stepGenericSummary": "正在完成研究流程中的一个步骤。"
   }
 }

@@ -15,7 +15,7 @@ import { ScoutTaskChatResultMessage } from "@/app/(study)/tools/scoutTaskChat/Sc
 import { SearchPersonasResultMessage } from "@/app/(study)/tools/searchPersonas/SearchPersonasResultMessage";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
-import { StudyToolOrDynamicPart, UniversalSubAgentToolPartVM } from "@/app/(universal)/universal/task-vm";
+import { UniversalSubAgentToolPartVM } from "@/app/(universal)/universal/task-vm";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";

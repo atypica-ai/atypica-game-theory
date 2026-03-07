@@ -108,6 +108,24 @@
     "taskCreatedWaitingFirstUpdate": "Task created. Waiting for the first update.",
     "taskExecutionFailedHint": "Execution failed. Open progress details to troubleshoot.",
     "taskNoPersonaBuilt": "No persona built",
-    "taskPersonasBuilt": "Built {count} personas"
+    "taskPersonasBuilt": "Built {count} personas",
+    "stepInterviewTitle": "Run persona interviews",
+    "stepInterviewSummary": "Interviewing selected personas for decision and behavior signals.",
+    "stepDiscussionTitle": "Run group discussion",
+    "stepDiscussionSummary": "Running moderated group discussion and collecting viewpoints.",
+    "stepReportTitle": "Generate report",
+    "stepReportSummary": "Producing report artifact from the collected research evidence.",
+    "stepPodcastTitle": "Generate podcast",
+    "stepPodcastSummary": "Producing podcast artifact based on research findings.",
+    "stepSynthesizeTitle": "Synthesize insights",
+    "stepSynthesizeSummary": "Summarizing patterns and trade-offs from collected inputs.",
+    "stepScoutTitle": "Scout target users",
+    "stepScoutSummary": "Exploring social platforms to identify target users and signals.",
+    "stepPersonaTitle": "Build persona candidates",
+    "stepPersonaSummary": "Assembling persona candidates for downstream research.",
+    "stepWebEvidenceTitle": "Collect web evidence",
+    "stepWebEvidenceSummary": "Gathering external evidence from web sources.",
+    "stepGenericTitle": "Execute research step",
+    "stepGenericSummary": "Completing one step in the research workflow."
   }
 }
