@@ -28,7 +28,6 @@
       "confirmDelete": "Delete Persona Panel",
       "deleteWarning": "Are you sure you want to delete Panel #{id}? This action cannot be undone.",
       "panelsCount": "{count, plural, =0 {0 panels} =1 {1 panel} other {# panels}}",
-      "newPanel": "New Panel",
       "researchProjects": "Research Projects",
       "projectsCount": "{count, plural, =0 {0 projects} =1 {1 project} other {# projects}}",
       "noProjectsYet": "No research projects yet",
@@ -36,20 +35,17 @@
       "projectToken": "Project {token}"
     },
     "DetailPage": {
-      "viewDetails": "View Details",
       "recentProjects": "Recent Projects",
       "researchProjects": "Research Projects",
       "noProjects": "No research projects yet",
       "noProjectsDescription": "Start a new research project to begin analyzing with this panel",
       "readyToStart": "Ready to get started?",
       "launchStudy": "Launch a Study With This Panel",
-      "quickResearch": "Quick Research",
       "newProject": "New Project",
       "newProjectDescription": "Describe your research question or objective",
       "newProjectPlaceholder": "e.g., What are the key purchasing factors for Gen Z consumers?",
       "creating": "Creating...",
       "create": "Start Research",
-      "selectProjectType": "Project Type",
       "projectType": {
         "userInterview": "User Interview",
         "expertInterview": "Expert Interview",

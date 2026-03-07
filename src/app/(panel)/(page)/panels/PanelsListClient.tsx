@@ -1,17 +1,12 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
 import { Loader2, Plus, SearchIcon, XIcon } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import {
-  deletePersonaPanel,
-  fetchUserPersonaPanels,
-  PersonaPanelWithDetails,
-} from "./actions";
+import { deletePersonaPanel, fetchUserPersonaPanels, PersonaPanelWithDetails } from "./actions";
 import { CreatePanelDialog } from "./CreatePanelDialog";
 import { PanelCard } from "./PanelCard";
 import { ProjectsDrawer } from "./ProjectsDrawer";
@@ -22,7 +17,6 @@ export function PersonaPanelsListClient({
   initialSearchParams: Record<string, string | number | boolean>;
 }) {
   const t = useTranslations("PersonaPanel");
-  const locale = useLocale();
   const [panels, setPanels] = useState<PersonaPanelWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<{
@@ -53,7 +47,7 @@ export function PersonaPanelsListClient({
     const result = await fetchUserPersonaPanels({
       searchQuery: searchQuery || undefined,
       page: currentPage,
-      pageSize: 12,
+      pageSize: 11,
     });
     if (result.success) {
       setPanels(result.data);
@@ -109,46 +103,35 @@ export function PersonaPanelsListClient({
             <h1 className="text-base font-semibold">{t("title")}</h1>
             <p className="text-xs text-muted-foreground mt-0.5">{t("subtitle")}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <ProjectsDrawer />
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5"
-              onClick={() => setShowCreateDialog(true)}
-            >
-              <Plus className="size-3.5" />
-              {t("ListPage.newPanel")}
-            </Button>
-          </div>
+          <ProjectsDrawer />
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="relative max-w-md">
-          <SearchIcon className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            ref={inputRef}
-            defaultValue={searchQuery}
-            placeholder={t("ListPage.searchPlaceholder")}
-            className="pl-8"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
-            >
-              <XIcon className="h-4 w-4" />
-            </button>
+        <div className="flex items-center gap-4">
+          <form onSubmit={handleSearch} className="relative flex-1 max-w-md">
+            <SearchIcon className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={inputRef}
+              defaultValue={searchQuery}
+              placeholder={t("ListPage.searchPlaceholder")}
+              className="pl-8"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-2 top-2.5 text-muted-foreground hover:text-foreground"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+            )}
+          </form>
+          {pagination && (
+            <p className="text-[11px] text-muted-foreground shrink-0">
+              {t("ListPage.panelsCount", { count: pagination.totalCount })}
+            </p>
           )}
-        </form>
-
-        {/* Panel count */}
-        {pagination && (
-          <p className="text-[11px] text-muted-foreground">
-            {t("ListPage.panelsCount", { count: pagination.totalCount })}
-          </p>
-        )}
+        </div>
 
         {/* Panels Grid */}
         {loading ? (
@@ -156,34 +139,47 @@ export function PersonaPanelsListClient({
             <Loader2 className="size-4 animate-spin text-muted-foreground" />
           </div>
         ) : panels.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* New Panel Card */}
+            <button
+              onClick={() => setShowCreateDialog(true)}
+              className="group border border-dashed border-border rounded-lg p-5 hover:border-foreground/20 transition-all duration-300 flex flex-col items-center justify-center gap-3 min-h-[180px] cursor-pointer"
+            >
+              <div className="flex items-center justify-center size-10 rounded-full bg-muted group-hover:bg-accent transition-colors">
+                <Plus className="size-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              </div>
+              <div className="text-center">
+                <div className="text-sm font-medium">{t("ListPage.createNewPanel")}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {t("ListPage.createDescription")}
+                </div>
+              </div>
+            </button>
+
             {panels.map((panel) => (
               <PanelCard
                 key={panel.id}
                 panel={panel}
-                locale={locale}
                 onDelete={handleDeletePanel}
                 isDeleting={deletingPanelId === panel.id}
               />
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="text-center space-y-1">
+          <div className="flex flex-col items-center justify-center text-center p-12 border border-dashed rounded-lg space-y-6">
+            <div className="space-y-1">
               <div className="text-sm font-medium">{t("ListPage.createNewPanel")}</div>
               <div className="text-xs text-muted-foreground">
                 {t("ListPage.createNewPanelDescription")}
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
+            <button
               onClick={() => setShowCreateDialog(true)}
+              className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline"
             >
               <Plus className="size-3.5" />
               {t("ListPage.startDiscussion")}
-            </Button>
+            </button>
           </div>
         )}
 
