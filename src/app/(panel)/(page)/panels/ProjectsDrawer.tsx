@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { ClockIcon, Loader2, SearchIcon, XIcon } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchAllResearchProjects,
@@ -20,7 +20,6 @@ import { ProjectCard } from "./ProjectCard";
 
 export function ProjectsDrawer() {
   const t = useTranslations("PersonaPanel");
-  const locale = useLocale();
 
   const [open, setOpen] = useState(false);
   const [projects, setProjects] = useState<ResearchProjectWithPanel[]>([]);
@@ -120,7 +119,16 @@ export function ProjectsDrawer() {
             ) : projects.length > 0 ? (
               <div className="space-y-3">
                 {projects.map((project) => (
-                  <ProjectCard key={project.token} project={project} locale={locale} />
+                  <ProjectCard
+                    key={project.token}
+                    project={project}
+                    onDeleted={(token) => {
+                      setProjects((prev) => prev.filter((p) => p.token !== token));
+                      if (pagination) {
+                        setPagination({ ...pagination, totalCount: pagination.totalCount - 1 });
+                      }
+                    }}
+                  />
                 ))}
               </div>
             ) : (

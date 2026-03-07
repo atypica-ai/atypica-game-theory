@@ -100,28 +100,45 @@ function deriveCreationStatus(messages: TUniversalMessageWithTool[]): CreationSt
 
 /**
  * Extract the latest agent activity from streamed messages.
- * Shows either the latest text snippet or the currently executing tool name.
+ * Returns the full text so the display container can handle overflow.
  */
-function getLatestAgentActivity(messages: TUniversalMessageWithTool[], maxLen = 80): string {
+function getLatestAgentActivity(messages: TUniversalMessageWithTool[]): string {
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i];
     if (msg.role !== "assistant") continue;
     const parts = msg.parts ?? [];
     for (let j = parts.length - 1; j >= 0; j--) {
       const part = parts[j];
-      // Tool currently executing (input-streaming or input-available but no output yet)
       if (isToolUIPart(part) && part.state !== "output-available") {
         const toolName = part.type.replace(/^tool-/, "");
         return `exec ${toolName}`;
       }
       if (part.type === "text" && part.text.trim()) {
-        const text = part.text.trim();
-        if (text.length <= maxLen) return text;
-        return "…" + text.slice(-maxLen);
+        return part.text.trim();
       }
     }
   }
   return "";
+}
+
+/** Fixed-height container that auto-scrolls to show the latest content. */
+function AgentActivityText({ text }: { text: string }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  });
+
+  if (!text) return null;
+
+  return (
+    <div
+      ref={scrollRef}
+      className="max-h-[3.75rem] overflow-hidden text-xs text-muted-foreground max-w-sm leading-relaxed"
+    >
+      {text}
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -449,11 +466,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
             <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
               <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.searching")}</p>
-              {agentText && (
-                <p className="text-xs text-muted-foreground/60 text-center max-w-sm leading-relaxed line-clamp-2">
-                  {agentText}
-                </p>
-              )}
+              <AgentActivityText text={agentText} />
             </div>
           </div>
         </>
@@ -505,11 +518,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
             <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
               <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
-              {agentText && (
-                <p className="text-xs text-muted-foreground/60 text-center max-w-sm leading-relaxed line-clamp-2">
-                  {agentText}
-                </p>
-              )}
+              <AgentActivityText text={agentText} />
             </div>
           </div>
         </>
