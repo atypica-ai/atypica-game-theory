@@ -1,67 +1,185 @@
+import {
+  BarChart3Icon,
+  BookOpenIcon,
+  BrainIcon,
+  BuildingIcon,
+  ClipboardIcon,
+  CodeIcon,
+  CreditCardIcon,
+  GemIcon,
+  HeadphonesIcon,
+  ImageIcon,
+  KeyIcon,
+  LightbulbIcon,
+  type LucideIcon,
+  MapIcon,
+  MegaphoneIcon,
+  MessageSquareIcon,
+  MicIcon,
+  MicroscopeIcon,
+  PaletteIcon,
+  PaperclipIcon,
+  PlayIcon,
+  RocketIcon,
+  SearchIcon,
+  Share2Icon,
+  ShieldIcon,
+  SparklesIcon,
+  SproutIcon,
+  StarIcon,
+  UsersIcon,
+  WrenchIcon,
+  ZapIcon,
+} from "lucide-react";
 import React from "react";
 import { ChangelogSection } from "./changelog-data-en";
 
-interface ChangelogProps {
+const iconMap: Record<string, LucideIcon> = {
+  star: StarIcon,
+  search: SearchIcon,
+  paperclip: PaperclipIcon,
+  brain: BrainIcon,
+  users: UsersIcon,
+  "bar-chart-3": BarChart3Icon,
+  palette: PaletteIcon,
+  code: CodeIcon,
+  building: BuildingIcon,
+  "message-square": MessageSquareIcon,
+  rocket: RocketIcon,
+  gem: GemIcon,
+  shield: ShieldIcon,
+  "share-2": Share2Icon,
+  "book-open": BookOpenIcon,
+  lightbulb: LightbulbIcon,
+  sparkles: SparklesIcon,
+  wrench: WrenchIcon,
+  "credit-card": CreditCardIcon,
+  map: MapIcon,
+  clipboard: ClipboardIcon,
+  play: PlayIcon,
+  zap: ZapIcon,
+  microscope: MicroscopeIcon,
+  key: KeyIcon,
+  headphones: HeadphonesIcon,
+  mic: MicIcon,
+  megaphone: MegaphoneIcon,
+  image: ImageIcon,
+  sprout: SproutIcon,
+};
+
+function ItemIcon({ name }: { name?: string }) {
+  const Icon = name ? iconMap[name] : null;
+  if (!Icon) return null;
+  return <Icon className="size-3.5 shrink-0 text-muted-foreground" />;
+}
+
+export function Changelog({
+  data,
+  footer,
+  title,
+  subtitle,
+}: {
   data: ChangelogSection[];
   footer: string;
   title: string;
-}
-
-export const Changelog: React.FC<ChangelogProps> = ({ data, footer, title }) => {
+  subtitle?: string;
+}) {
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12 font-sans">
-      <header className="text-center mb-12">
-        <h1 className="text-3xl font-bold mb-2">{title}</h1>
+    <div className="max-w-3xl mx-auto px-6 py-16 md:py-24">
+      {/* Page header */}
+      <header className="mb-16 md:mb-20">
+        <div className="w-10 h-1 bg-ghost-green mb-6" />
+        <h1 className="text-3xl md:text-4xl font-EuclidCircularA font-medium tracking-tight">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="mt-3 text-sm text-muted-foreground">{subtitle}</p>
+        )}
       </header>
 
+      {/* Sections */}
       <div className="space-y-16">
         {data.map((section, sectionIndex) => (
           <section key={sectionIndex}>
-            <h2 className="text-2xl font-bold mb-8">{section.title}</h2>
-            <div className="space-y-10">
+            {/* Section title */}
+            <h2 className="text-base font-semibold font-EuclidCircularA mb-8">
+              {section.title}
+            </h2>
+
+            {/* Versions */}
+            <div className="space-y-12">
               {section.versions.map((version, versionIndex) => (
                 <article key={versionIndex}>
-                  <h3 className="font-semibold text-xl mb-4">
-                    <code>{version.version}</code> —{" "}
-                    <em className="text-gray-600 dark:text-gray-400 font-normal">{version.date}</em>
-                  </h3>
-                  <ul className="list-disc list-outside pl-6 space-y-4 text-gray-800 dark:text-gray-200">
+                  {/* Version + date */}
+                  <div className="flex items-baseline gap-3 mb-6">
+                    <span className="font-IBMPlexMono text-xs tracking-wide text-foreground">
+                      {version.version}
+                    </span>
+                    <span className="font-IBMPlexMono text-xs tracking-wide text-muted-foreground">
+                      {version.date}
+                    </span>
+                  </div>
+
+                  {/* Timeline items */}
+                  <div className="relative ml-[5px] border-l border-border pl-6 space-y-5">
                     {version.items.map((item, itemIndex) => (
-                      <li key={itemIndex}>
-                        <strong
-                          className="font-semibold text-gray-900 dark:text-gray-100"
-                          dangerouslySetInnerHTML={{ __html: item.title }}
-                        />
-                        {item.description && (
-                          <p
-                            className="text-gray-700 dark:text-gray-300 mt-1"
-                            dangerouslySetInnerHTML={{ __html: item.description }}
-                          />
-                        )}
-                        {item.subitems && (
-                          <div className="mt-1 pl-1 space-y-1">
-                            {item.subitems.map((subitem, subitemIndex) => (
-                              <p
-                                key={subitemIndex}
-                                className="text-gray-700 dark:text-gray-300"
-                                dangerouslySetInnerHTML={{ __html: subitem }}
-                              />
-                            ))}
+                      <div key={itemIndex} className="relative">
+                        {/* Green dot on timeline */}
+                        <div className="absolute -left-[calc(1.5rem+3.5px)] top-[7px] size-[7px] rounded-full bg-ghost-green" />
+
+                        {/* Content */}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <ItemIcon name={item.icon} />
+                            <h4
+                              className="text-sm font-semibold leading-relaxed"
+                              dangerouslySetInnerHTML={{ __html: item.title }}
+                            />
                           </div>
-                        )}
-                      </li>
+                          {item.description && (
+                            <p
+                              className="mt-1 text-sm text-muted-foreground leading-relaxed"
+                              dangerouslySetInnerHTML={{
+                                __html: item.description,
+                              }}
+                            />
+                          )}
+                          {item.subitems && (
+                            <ul className="mt-1 space-y-1">
+                              {item.subitems.map((subitem, subitemIndex) => (
+                                <li
+                                  key={subitemIndex}
+                                  className="text-sm text-muted-foreground leading-relaxed flex gap-2"
+                                >
+                                  <span className="text-border mt-1.5 shrink-0">
+                                    &#8226;
+                                  </span>
+                                  <span
+                                    dangerouslySetInnerHTML={{
+                                      __html: subitem,
+                                    }}
+                                  />
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </article>
               ))}
             </div>
           </section>
         ))}
 
-        <footer className="text-center text-gray-500 dark:text-gray-400 pt-8 border-t border-gray-300 dark:border-gray-700">
-          <p>{footer}</p>
+        {/* Footer */}
+        <footer className="pt-8 border-t border-border">
+          <p className="text-xs text-muted-foreground font-IBMPlexMono tracking-wide">
+            {footer}
+          </p>
         </footer>
       </div>
     </div>
   );
-};
+}

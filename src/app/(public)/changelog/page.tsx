@@ -30,6 +30,11 @@ const ChangelogPage: React.FC = async () => {
       data={isZH ? changelogDataZH : changelogDataEN}
       footer={isZH ? changelogFooterZH : changelogFooterEN}
       title={isZH ? "atypica.AI 更新日志" : "atypica.AI Changelog"}
+      subtitle={
+        isZH
+          ? "产品功能更新与改进记录"
+          : "Product updates and improvements"
+      }
     />
   );
 };
