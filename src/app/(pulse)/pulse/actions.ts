@@ -13,15 +13,10 @@ const marketplacePulseSelect = {
   id: true,
   title: true,
   content: true,
+  category: true,
   heatScore: true,
   heatDelta: true,
   createdAt: true,
-  category: {
-    select: {
-      id: true,
-      name: true,
-    },
-  },
 } as const;
 
 type MarketplacePulseRow = Prisma.PulseGetPayload<{
@@ -34,7 +29,6 @@ const TREEMAP_MAX_LOOKBACK_DAYS = 60;
 
 async function fetchMarketplacePulseRows(params: {
   pulseIds?: number[];
-  categoryId?: number;
   categoryName?: string;
   createdAtGte?: Date;
   createdAtLte?: Date;
@@ -56,10 +50,8 @@ async function fetchMarketplacePulseRows(params: {
     where.id = { in: params.pulseIds };
   }
 
-  if (params.categoryId) {
-    where.categoryId = params.categoryId;
-  } else if (params.categoryName) {
-    where.category = { name: params.categoryName };
+  if (params.categoryName) {
+    where.category = params.categoryName;
   }
 
   if (params.createdAtGte || params.createdAtLte) {
@@ -81,7 +73,7 @@ async function fetchMarketplacePulseRows(params: {
 }
 
 function getPulseIdentityKey(row: MarketplacePulseRow): string {
-  return `${row.category.id}|${row.title}`;
+  return `${row.category}|${row.title}`;
 }
 
 function normalizeTreemapLookbackDays(lookbackDays: number): number {
@@ -133,25 +125,19 @@ function buildLatestPulseRowsByIdentity(rows: MarketplacePulseRow[]): {
  * Fetch all pulse categories for the category bar
  */
 export async function fetchPulseCategories(): Promise<
-  ServerActionResult<
-    Array<{
-      id: number;
-      name: string;
-    }>
-  >
+  ServerActionResult<Array<{ name: string }>>
 > {
   try {
-    const categories = await prisma.pulseCategory.findMany({
-      select: {
-        id: true,
-        name: true,
-      },
-      orderBy: { name: "asc" },
+    const result = await prisma.pulse.findMany({
+      where: getNonExpiredPulseFilter(),
+      select: { category: true },
+      distinct: ["category"],
+      orderBy: { category: "asc" },
     });
 
     return {
       success: true,
-      data: categories,
+      data: result.map((r) => ({ name: r.category })),
     };
   } catch (error) {
     return {
@@ -173,7 +159,7 @@ export async function fetchUserRecommendations(): Promise<
         id: number;
         title: string;
         content: string;
-        category: { name: string };
+        category: string;
         createdAt: Date;
         heatScore: number;
         heatDelta: number | null;
@@ -261,7 +247,7 @@ export async function fetchUserRecommendations(): Promise<
               id: p.id,
               title: p.title,
               content: p.content,
-              category: { name: p.category.name },
+              category: p.category,
               createdAt: p.createdAt,
               heatScore: p.heatScore ?? 0,
               heatDelta: p.heatDelta,
@@ -307,7 +293,6 @@ export async function fetchUserRecommendations(): Promise<
  * Fetch pulses by category
  */
 export async function fetchPulsesByCategory(
-  categoryId?: number,
   categoryName?: string,
 ): Promise<
   ServerActionResult<
@@ -315,7 +300,7 @@ export async function fetchPulsesByCategory(
       id: number;
       title: string;
       content: string;
-      category: { name: string };
+      category: string;
       createdAt: Date;
       heatScore: number;
       heatDelta: number | null;
@@ -334,8 +319,7 @@ export async function fetchPulsesByCategory(
 
     const filteredRows = latestRows
       .filter((row) => {
-        if (categoryId) return row.category.id === categoryId;
-        if (categoryName) return row.category.name === categoryName;
+        if (categoryName) return row.category === categoryName;
         return true;
       })
       .sort(sortPulsesByHeatDelta)
@@ -356,7 +340,7 @@ export async function fetchPulsesByCategory(
         id: row.id,
         title: row.title,
         content: row.content,
-        category: { name: row.category.name },
+        category: row.category,
         createdAt: row.createdAt,
         heatScore: row.heatScore ?? 0,
         heatDelta: row.heatDelta,
@@ -386,7 +370,7 @@ export async function fetchPulsesForMapPublic(
     pulses: Array<{
       id: number;
       title: string;
-      category: { name: string };
+      category: string;
       heatScore: number | null;
       heatDelta: number | null;
       createdAt: Date;
@@ -415,7 +399,7 @@ export async function fetchPulsesForMapPublic(
     const pulses = rows.map((row) => ({
       id: row.id,
       title: row.title,
-      category: { name: row.category.name },
+      category: row.category,
       heatScore: row.heatScore,
       heatDelta: row.heatDelta,
       createdAt: row.createdAt,
@@ -439,7 +423,7 @@ export async function fetchPulsesForMapPublic(
     // Group pulses by title+category to find historical versions
     const pulseGroups = new Map<string, typeof pulses>();
     for (const pulse of pulses) {
-      const key = `${pulse.title}|${pulse.category.name}`;
+      const key = `${pulse.title}|${pulse.category}`;
       if (!pulseGroups.has(key)) {
         pulseGroups.set(key, []);
       }
@@ -576,7 +560,7 @@ export async function fetchPulseHeatTreemapDataPublic(
     const rows = await fetchTreemapWindowRows(lookbackDays, locale);
     const { latestRows, historyByIdentity } = buildLatestPulseRowsByIdentity(rows);
 
-    const categories = new Map<number, HeatTreemapCategory>();
+    const categories = new Map<string, HeatTreemapCategory>();
     for (const pulse of latestRows) {
       const identity = getPulseIdentityKey(pulse);
       const allHistory = historyByIdentity.get(identity) ?? [];
@@ -590,9 +574,9 @@ export async function fetchPulseHeatTreemapDataPublic(
 
       const history = [...historyByDay.values()].slice(-5);
 
-      const currentCategory = categories.get(pulse.category.id) ?? {
-        id: pulse.category.id,
-        name: pulse.category.name,
+      const currentCategory = categories.get(pulse.category) ?? {
+        id: 0,
+        name: pulse.category,
         heatScore: 0,
         pulseCount: 0,
         pulses: [],
@@ -609,7 +593,7 @@ export async function fetchPulseHeatTreemapDataPublic(
       });
       currentCategory.heatScore += pulse.heatScore ?? 0;
       currentCategory.pulseCount += 1;
-      categories.set(pulse.category.id, currentCategory);
+      categories.set(pulse.category, currentCategory);
     }
 
     const categoryList = [...categories.values()]

@@ -26,7 +26,7 @@ export default async function LegacyStudyPageRedirect({
     const pulseIdNum = parseInt(pulseId);
     const pulse = await prisma.pulse.findUnique({
       where: { id: pulseIdNum },
-      include: { category: true },
+      select: { id: true, title: true, content: true },
     });
 
     if (!pulse) {

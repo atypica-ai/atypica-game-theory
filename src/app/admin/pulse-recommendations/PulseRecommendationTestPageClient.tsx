@@ -224,7 +224,7 @@ export function PulseRecommendationTestPageClient() {
                             )}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{pulse.category.name}</Badge>
+                            <Badge variant="outline">{pulse.category}</Badge>
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {formatDate(pulse.createdAt, locale)}

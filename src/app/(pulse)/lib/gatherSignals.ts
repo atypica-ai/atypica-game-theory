@@ -2,36 +2,8 @@ import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
 import { getAllDataSources, getDataSource, type DataSourceName } from "../dataSources";
 import { Pulse as DataSourcePulse } from "../dataSources/types";
-import { InputJsonValue, ITXClientDenyList } from "@prisma/client/runtime/client";
+import type { PulseExtra } from "@/prisma/client";
 import { processPulseIdentityAndCarryOver } from "./processPulseIdentity";
-
-/**
- * Ensure PulseCategory exists, create if not found
- * Returns categoryId
- * Must be called within a transaction context
- */
-async function ensureCategoryExists(
-  categoryName: string,
-  tx: Omit<typeof prisma, ITXClientDenyList>,
-): Promise<number> {
-  const existing = await tx.pulseCategory.findUnique({
-    where: { name: categoryName },
-  });
-
-  if (existing) {
-    return existing.id;
-  }
-
-  // Create new category with empty query (query only used by xTrend)
-  const created = await tx.pulseCategory.create({
-    data: {
-      name: categoryName,
-      query: "", // Empty for non-xTrend categories
-    },
-  });
-
-  return created.id;
-}
 
 /**
  * Gather pulses from a specific dataSource by name
@@ -56,35 +28,28 @@ export async function gatherPulsesForDataSource(
       return { success: true, pulseCount: 0, pulseIds: [] };
     }
 
-    // Ensure all categories exist, then save pulses
-    const created = await prisma.$transaction(async (tx) => {
-      const now = new Date();
+    const now = new Date();
 
-      const pulsesToCreate = await Promise.all(
-        result.pulses.map(async (pulse: DataSourcePulse) => {
-          const categoryId = await ensureCategoryExists(pulse.categoryName, tx);
+    const pulsesToCreate = result.pulses.map((pulse: DataSourcePulse) => {
+      // Extract base dataSource name (e.g., "xTrend" from "xTrend:AI Tech")
+      const baseDataSourceName = dataSourceName.includes(":") ? dataSourceName.split(":")[0] : dataSourceName;
 
-          // Extract base dataSource name (e.g., "xTrend" from "xTrend:AI Tech")
-          const baseDataSourceName = dataSourceName.includes(":") ? dataSourceName.split(":")[0] : dataSourceName;
+      // Set expireAt = createdAt + 7 days
+      const expireAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-          // Set expireAt = createdAt + 7 days
-          const expireAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-          return {
-            categoryId,
-            dataSource: baseDataSourceName,
-            title: pulse.title,
-            content: pulse.content,
-            locale: "en-US",
-            expireAt, // createdAt + 7 days
-            extra: (pulse.metadata || {}) as InputJsonValue,
-          };
-        }),
-      );
-
-      // Create all pulses
-      return Promise.all(pulsesToCreate.map((data) => tx.pulse.create({ data })));
+      return {
+        category: pulse.categoryName,
+        dataSource: baseDataSourceName,
+        title: pulse.title,
+        content: pulse.content,
+        locale: "en-US",
+        expireAt,
+        extra: (pulse.metadata || {}) as PulseExtra,
+      };
     });
+
+    // Create all pulses
+    const created = await Promise.all(pulsesToCreate.map((data) => prisma.pulse.create({ data })));
 
     const pulseIds = created.map((p) => p.id);
 
@@ -96,10 +61,7 @@ export async function gatherPulsesForDataSource(
 
     return { success: true, pulseCount: created.length, pulseIds };
   } catch (error) {
-    logger.error(
-      { error: (error as Error).message },
-      "Failed to gather pulses",
-    );
+    logger.error({ msg: "Failed to gather pulses", error: (error as Error).message });
     return { success: false, pulseCount: 0, pulseIds: [] };
   }
 }
@@ -154,5 +116,3 @@ export async function gatherPulsesFromAllDataSources(): Promise<{
 
   return { totalPulses, results, pulseIds: allProcessedPulseIds };
 }
-
-

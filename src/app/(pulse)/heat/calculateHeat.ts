@@ -1,7 +1,7 @@
 "server-only";
 
 import { HEAT_CONFIG } from "./config";
-import type { PulsePost } from "@/prisma/client";
+import type { PulsePostData } from "@/prisma/client";
 
 /**
  * Min-max normalization (0-1 scale)
@@ -17,7 +17,7 @@ function normalize(value: number, min: number, max: number): number {
  * 1. Normalize each dimension to 0-1 using goalposts
  * 2. Apply weighted geometric mean
  */
-export function calculateHeatScore(posts: PulsePost[]): number {
+export function calculateHeatScore(posts: PulsePostData[]): number {
   if (posts.length === 0) return 0;
 
   const postScores: number[] = [];

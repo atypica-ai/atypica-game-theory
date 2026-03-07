@@ -1,7 +1,7 @@
 import { Logger } from "pino";
 
 export interface Pulse {
-  categoryName: string; // Category name (will be used to lookup/create PulseCategory)
+  categoryName: string; // Category name (stored directly on Pulse.category)
   title: string;
   content: string;
   metadata?: Record<string, unknown>;
@@ -16,13 +16,10 @@ export interface DataSource {
   /**
    * Gather pulses for this dataSource
    * Each dataSource handles its own category logic:
-   * - xTrend: Reads PulseCategory table for category-query mappings, uses query field
-   * - Others: Uses predefined categories from code (hardcoded enum/interface)
+   * - xTrend: Reads SystemConfig for category-query mappings
+   * - Others: Uses predefined categories from code
    *
-   * All dataSources return pulses with categoryName. The orchestrator will:
-   * 1. Lookup PulseCategory by name
-   * 2. Create PulseCategory if it doesn't exist (with empty query)
-   * 3. Set categoryId on pulse before saving
+   * All dataSources return pulses with categoryName (stored directly on Pulse.category).
    */
   gatherPulses(logger: Logger): Promise<DataSourceResult>;
 }

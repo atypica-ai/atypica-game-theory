@@ -46,17 +46,9 @@ export async function POST(request: NextRequest) {
     // If pulseIds not provided, query pulses based on query params
     if (!pulseIds || pulseIds.length === 0) {
       const { searchParams } = new URL(request.url);
-      const categoryIdParam = searchParams.get("categoryId");
-      const categoryId = categoryIdParam ? parseInt(categoryIdParam, 10) : undefined;
+      const category = searchParams.get("category") ?? undefined;
       const includeAlreadyScored = searchParams.get("includeAlreadyScored") === "true";
       const onlyUnscored = searchParams.get("onlyUnscored") === "true";
-
-      if (categoryIdParam && isNaN(categoryId!)) {
-        return NextResponse.json(
-          { success: false, error: "Invalid categoryId parameter" },
-          { status: 400 },
-        );
-      }
 
       // Query pulses based on filters
       const todayStart = new Date();
@@ -67,7 +59,7 @@ export async function POST(request: NextRequest) {
           ...(onlyUnscored
             ? {}
             : {
-                ...(categoryId ? { categoryId } : {}),
+                ...(category ? { category } : {}),
                 createdAt: { gte: todayStart },
               }),
           ...(includeAlreadyScored || onlyUnscored ? {} : { heatScore: null }),

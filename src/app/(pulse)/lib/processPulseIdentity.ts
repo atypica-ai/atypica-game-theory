@@ -1,7 +1,7 @@
 "server-only";
 
 import { prisma } from "@/prisma/prisma";
-import { InputJsonValue } from "@prisma/client/runtime/client";
+import type { PulseExtra } from "@/prisma/client";
 import { Logger } from "pino";
 import { matchPulseIdentities } from "./fixPulseIdentity";
 import { EXPIRATION_CONFIG } from "../expiration/config";
@@ -41,7 +41,7 @@ export async function processPulseIdentityAndCarryOver(
     // Get pulses by IDs
     const todayPulses = await prisma.pulse.findMany({
       where: { id: { in: pulseIds } },
-      select: { id: true, title: true, content: true, categoryId: true, extra: true },
+      select: { id: true, title: true, content: true, category: true, extra: true },
     });
 
     if (todayPulses.length === 0) {
@@ -58,23 +58,23 @@ export async function processPulseIdentityAndCarryOver(
     });
 
     // Group by category
-    const pulsesByCategory = new Map<number, typeof todayPulses>();
+    const pulsesByCategory = new Map<string, typeof todayPulses>();
     for (const pulse of todayPulses) {
-      if (!pulsesByCategory.has(pulse.categoryId)) {
-        pulsesByCategory.set(pulse.categoryId, []);
+      if (!pulsesByCategory.has(pulse.category)) {
+        pulsesByCategory.set(pulse.category, []);
       }
-      pulsesByCategory.get(pulse.categoryId)!.push(pulse);
+      pulsesByCategory.get(pulse.category)!.push(pulse);
     }
 
     const allCarriedOverPulseIds: number[] = [];
 
     // Process each category
-    for (const [categoryId, pulses] of pulsesByCategory) {
-      const categoryLogger = processingLogger.child({ categoryId });
+    for (const [category, pulses] of pulsesByCategory) {
+      const categoryLogger = processingLogger.child({ category });
 
       try {
         // STEP 1: Match today's pulses with yesterday's pulses
-        const matchPairs = await matchPulseIdentities(pulses, categoryId, categoryLogger);
+        const matchPairs = await matchPulseIdentities(pulses, category, categoryLogger);
         const matchMap = new Map(matchPairs.map((m) => [m.oldPulseId, m]));
 
         // STEP 2: Update matched pulses - title + matchedYesterdayPulseId
@@ -90,7 +90,7 @@ export async function processPulseIdentityAndCarryOver(
               where: { id: match.newPulseId },
               data: {
                 title: match.oldTitle,
-                extra: updatedExtra as InputJsonValue,
+                extra: updatedExtra as PulseExtra,
               },
             });
 
@@ -107,7 +107,7 @@ export async function processPulseIdentityAndCarryOver(
         // STEP 3: Get yesterday's pulses for carry-over
         const yesterdayPulses = await prisma.pulse.findMany({
           where: {
-            categoryId,
+            category,
             expired: false,
             heatDelta: { not: null },
             createdAt: { gte: yesterdayStart, lt: todayStart },
@@ -134,7 +134,7 @@ export async function processPulseIdentityAndCarryOver(
         // Query today's pulses for this category to get existing titles
         const todayPulsesForCategory = await prisma.pulse.findMany({
           where: {
-            categoryId,
+            category,
             createdAt: { gte: todayStart },
           },
           select: { title: true },
@@ -172,7 +172,7 @@ export async function processPulseIdentityAndCarryOver(
 
               return prisma.pulse.create({
                 data: {
-                  categoryId: pulse.categoryId,
+                  category: pulse.category,
                   dataSource: pulse.dataSource,
                   title: pulse.title,
                   content: pulse.content,
@@ -182,7 +182,7 @@ export async function processPulseIdentityAndCarryOver(
                   heatScore: null,
                   heatDelta: null,
                   expired: false,
-                  extra: updatedExtra as InputJsonValue,
+                  extra: updatedExtra as PulseExtra,
                 },
               });
             }),

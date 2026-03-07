@@ -12,7 +12,7 @@ interface PulseCardProps {
     id: number;
     title: string;
     content: string;
-    category: { name: string };
+    category: string;
     createdAt: Date;
     heatDelta?: number | null;
   };
@@ -66,7 +66,7 @@ export function PulseCard({ pulse, angle, highlighted, onClick }: PulseCardProps
             {pulse.title}
           </CardTitle>
           <Badge variant="outline" className="shrink-0 text-xs max-w-[120px] truncate">
-            {pulse.category.name}
+            {pulse.category}
           </Badge>
         </div>
       </CardHeader>

@@ -24,7 +24,7 @@ type TPulses = ExtractServerActionData<typeof fetchPulsesByCategory>;
 type THeatTreemapData = ExtractServerActionData<typeof fetchPulseHeatTreemapDataPublic>;
 
 interface PulseMarketplaceClientProps {
-  initialCategories: Array<{ id: number; name: string }>;
+  initialCategories: Array<{ name: string }>;
   isAuthenticated: boolean;
 }
 
@@ -52,7 +52,7 @@ export function PulseMarketplaceClient({
   );
 
   const hasRecommendations = (recommendationsData?.recommendations?.length ?? 0) > 0;
-  const [selectedCategory, setSelectedCategory] = useState<"Recommend" | "ALL" | number>("ALL");
+  const [selectedCategory, setSelectedCategory] = useState<"Recommend" | "ALL" | string>("ALL");
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -80,7 +80,7 @@ export function PulseMarketplaceClient({
     selectedCategory !== "Recommend" ? ["pulses", selectedCategory] : null,
     async () => {
       const result = await fetchPulsesByCategory(
-        typeof selectedCategory === "number" ? selectedCategory : undefined,
+        selectedCategory !== "ALL" ? selectedCategory : undefined,
       );
       if (!result.success) {
         throw new Error(result.message || "Failed to load pulses");

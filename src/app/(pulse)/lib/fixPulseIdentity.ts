@@ -34,16 +34,16 @@ export interface PulseMatchPair {
  * Returns ONLY the match pairs - does NOT update anything in database
  * 
  * @param newPulses - Today's newly gathered pulses (simple objects with id, title, content)
- * @param categoryId - Category ID to match within
+ * @param category - Category name to match within
  * @param logger - Logger instance
  * @returns Array of match pairs (newPulseId, oldPulseId, oldTitle)
  */
 export async function matchPulseIdentities(
   newPulses: Array<{ id: number; title: string; content: string }>,
-  categoryId: number,
+  category: string,
   logger: Logger,
 ): Promise<PulseMatchPair[]> {
-  const categoryLogger = logger.child({ categoryId, newPulseCount: newPulses.length });
+  const categoryLogger = logger.child({ category, newPulseCount: newPulses.length });
 
   if (newPulses.length === 0) {
     categoryLogger.debug("No new pulses to match");
@@ -58,7 +58,7 @@ export async function matchPulseIdentities(
 
   const yesterdayPulses = await prisma.pulse.findMany({
     where: {
-      categoryId,
+      category,
       expired: false,
       createdAt: {
         gte: yesterdayStart,

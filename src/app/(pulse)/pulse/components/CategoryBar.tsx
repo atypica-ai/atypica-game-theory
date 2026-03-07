@@ -6,9 +6,9 @@ import { SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface CategoryBarProps {
-  categories: Array<{ id: number; name: string }>;
-  selectedCategory: "Recommend" | "ALL" | number;
-  onCategoryChange: (category: "Recommend" | "ALL" | number) => void;
+  categories: Array<{ name: string }>;
+  selectedCategory: "Recommend" | "ALL" | string;
+  onCategoryChange: (category: "Recommend" | "ALL" | string) => void;
   showRecommend?: boolean;
 }
 
@@ -53,13 +53,13 @@ export function CategoryBar({
       {/* Category buttons */}
       {categories.map((category) => (
         <Button
-          key={category.id}
-          variant={selectedCategory === category.id ? "default" : "outline"}
+          key={category.name}
+          variant={selectedCategory === category.name ? "default" : "outline"}
           size="sm"
-          onClick={() => onCategoryChange(category.id)}
+          onClick={() => onCategoryChange(category.name)}
           className={cn(
             "shrink-0 whitespace-nowrap",
-            selectedCategory === category.id && "bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-ghost-green dark:text-black dark:hover:bg-ghost-green/90",
+            selectedCategory === category.name && "bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-ghost-green dark:text-black dark:hover:bg-ghost-green/90",
           )}
         >
           {category.name}

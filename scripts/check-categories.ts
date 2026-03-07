@@ -15,17 +15,19 @@ const prisma = new PrismaClient({
 });
 
 async function checkCategories() {
-  console.log('Fetching all pulse categories...');
-  const categories = await prisma.pulseCategory.findMany({
-    select: { id: true, name: true },
-    orderBy: { id: 'asc' }
+  console.log('Fetching distinct pulse categories...');
+  const results = await prisma.pulse.findMany({
+    select: { category: true },
+    distinct: ['category'],
+    orderBy: { category: 'asc' },
   });
 
   console.log('\nAll Pulse Categories:');
-  categories.forEach((cat: { id: number; name: string }) => {
-    console.log(`  ID: ${cat.id}, Name: ${cat.name}`);
+  results.forEach((r: { category: string }) => {
+    console.log(`  ${r.category}`);
   });
 
+  console.log(`\nTotal: ${results.length} categories`);
   console.log('\n✅ Done!');
   await prisma.$disconnect();
   await pool.end();

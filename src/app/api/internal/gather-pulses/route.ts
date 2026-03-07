@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             title: true,
-            categoryId: true,
+            category: true,
             extra: true,
           },
         });
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
             pulses: pulsesWithoutHeat.map((p) => ({
               id: p.id,
               title: p.title,
-              categoryId: p.categoryId,
+              category: p.category,
               error: (p.extra as Record<string, unknown>)?.error,
             })),
           });

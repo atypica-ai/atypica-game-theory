@@ -43,17 +43,9 @@ export async function POST(request: NextRequest) {
     // If pulseIds not provided, query pulses based on query params
     if (!pulseIds || pulseIds.length === 0) {
       const { searchParams } = new URL(request.url);
-      const categoryIdParam = searchParams.get("categoryId");
-      const categoryId = categoryIdParam ? parseInt(categoryIdParam, 10) : undefined;
+      const category = searchParams.get("category") ?? undefined;
 
-      if (categoryIdParam && isNaN(categoryId!)) {
-        return NextResponse.json(
-          { success: false, error: "Invalid categoryId parameter" },
-          { status: 400 },
-        );
-      }
-
-      logger.info({ msg: "Starting expiration test", categoryId });
+      logger.info({ msg: "Starting expiration test", category });
 
       // Query pulse IDs by category (if provided)
       const todayStart = new Date();
@@ -61,7 +53,7 @@ export async function POST(request: NextRequest) {
 
       const pulses = await prisma.pulse.findMany({
         where: {
-          ...(categoryId ? { categoryId } : {}),
+          ...(category ? { category } : {}),
           createdAt: { gte: todayStart },
           heatScore: { not: null },
           // Include pulses with null heatDelta (new pulses) - they will be kept by expiration logic

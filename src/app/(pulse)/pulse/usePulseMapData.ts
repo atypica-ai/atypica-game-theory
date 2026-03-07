@@ -7,7 +7,7 @@ import { throwServerActionError } from "@/lib/serverAction";
 interface Pulse {
   id: number;
   title: string;
-  category: { name: string };
+  category: string;
   heatScore: number | null;
   heatDelta: number | null;
   createdAt: Date;

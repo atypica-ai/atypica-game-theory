@@ -78,6 +78,9 @@ declare global {
     type SageChatExtra = sage.SageChatExtra;
     type WorkingMemoryItem = sage.WorkingMemoryItem;
 
+    // Pulse
+    type PulseExtra = client.PulseExtra;
+
     // Locale
     type Locale = LocaleType;
   }

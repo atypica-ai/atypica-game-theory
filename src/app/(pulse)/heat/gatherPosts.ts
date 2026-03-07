@@ -8,8 +8,7 @@ import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { z } from "zod";
 import { prisma } from "@/prisma/prisma";
 import { HEAT_CONFIG } from "./config";
-import type { PulsePost } from "@/prisma/client";
-import { InputJsonValue } from "@prisma/client/runtime/client";
+import type { PulsePostData, PulseExtra } from "@/prisma/client";
 import { createParser } from "@/ai/parser";
 
 const MAX_STEPS = 2;
@@ -120,7 +119,7 @@ async function recordPulseError(
             details,
             timestamp: new Date().toISOString(),
           },
-        } as InputJsonValue,
+        } as PulseExtra,
       },
     });
   } catch (updateError) {
@@ -144,7 +143,7 @@ export async function gatherPostsForPulse(
   pulseId: number,
   title: string,
   logger: Logger,
-): Promise<PulsePost[]> {
+): Promise<PulsePostData[]> {
   const pulseLogger = logger.child({ pulseId, pulseTitle: title });
 
   const allTools: ToolSet = {
@@ -186,7 +185,7 @@ Return empty list if no posts found. Do not make up any posts. Record honestly.
 ${promptSystemConfig({ locale: "en-US" })}
 `;
 
-  return new Promise<PulsePost[]>((resolve, reject) => {
+  return new Promise<PulsePostData[]>((resolve, reject) => {
     const posts: PostData[] = [];
 
     const abortController = new AbortController();
@@ -332,27 +331,38 @@ ${promptSystemConfig({ locale: "en-US" })}
           return;
         }
 
-        // Save posts to database
+        // Save posts to pulse.extra.posts
         try {
-          const savedPosts = await prisma.pulsePost.createManyAndReturn({
-            data: posts.map((post) => ({
-              pulseId,
-              postId: post.postId,
-              content: post.content, // Post content/text
-              views: post.views,
-              likes: post.likes,
-              retweets: post.retweets,
-              replies: post.replies,
-              extra: (post.extra || {}) as InputJsonValue,
-            })),
+          const postsData: PulsePostData[] = posts.map((post) => ({
+            postId: post.postId,
+            content: post.content,
+            views: post.views,
+            likes: post.likes,
+            retweets: post.retweets,
+            replies: post.replies,
+            url: (post.extra as Record<string, string> | undefined)?.url,
+            author: (post.extra as Record<string, string> | undefined)?.author,
+          }));
+
+          const pulse = await prisma.pulse.findUnique({
+            where: { id: pulseId },
+            select: { extra: true },
+          });
+          const currentExtra = (pulse?.extra as PulseExtra) || {};
+
+          await prisma.pulse.update({
+            where: { id: pulseId },
+            data: {
+              extra: { ...currentExtra, posts: postsData } as PulseExtra,
+            },
           });
 
           pulseLogger.info({
-            msg: "Posts gathered and saved successfully",
-            postCount: savedPosts.length,
+            msg: "Posts gathered and saved to pulse.extra",
+            postCount: postsData.length,
           });
 
-          resolve(savedPosts);
+          resolve(postsData);
         } catch (error) {
           const errorMessage = (error as Error).message || String(error);
           pulseLogger.error({

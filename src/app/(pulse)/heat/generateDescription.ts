@@ -3,7 +3,7 @@
 import { llm } from "@/ai/provider";
 import { generateText } from "ai";
 import { Logger } from "pino";
-import type { Pulse, PulsePost } from "@/prisma/client";
+import type { Pulse, PulsePostData } from "@/prisma/client";
 
 /**
  * Generate pulse description from posts using LLM
@@ -16,7 +16,7 @@ import type { Pulse, PulsePost } from "@/prisma/client";
  */
 export async function generateDescriptionFromPosts(
   pulse: Pulse,
-  posts: PulsePost[],
+  posts: PulsePostData[],
   logger: Logger,
 ): Promise<string> {
   const pulseLogger = logger.child({ pulseId: pulse.id, postCount: posts.length });
@@ -30,16 +30,14 @@ export async function generateDescriptionFromPosts(
     // Build context from posts (use post content for description generation)
     const postsContext = posts
       .map((post, index) => {
-        const extra = (post.extra as Record<string, unknown>) || {};
-        const postContent = (post as PulsePost & { content: string }).content || "";
         return `Post ${index + 1}:
-- Content: ${postContent}
+- Content: ${post.content}
 - Views: ${post.views}
 - Likes: ${post.likes}
 - Retweets: ${post.retweets}
 - Replies: ${post.replies}
-${extra.url ? `- URL: ${extra.url}` : ""}
-${extra.author ? `- Author: ${extra.author}` : ""}`;
+${post.url ? `- URL: ${post.url}` : ""}
+${post.author ? `- Author: ${post.author}` : ""}`;
       })
       .join("\n\n");
 

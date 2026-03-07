@@ -18,7 +18,7 @@ interface RecommendationCardProps {
     id: number;
     title: string;
     content: string;
-    category: { name: string };
+    category: string;
     createdAt: Date;
   };
 }
@@ -80,7 +80,7 @@ export function RecommendationCard({ angle, pulse }: RecommendationCardProps) {
         <div className="pt-4 border-t space-y-2">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              {pulse.category.name}
+              {pulse.category}
             </Badge>
             <span className="text-xs text-muted-foreground">
               {formatDate(pulse.createdAt, locale)}

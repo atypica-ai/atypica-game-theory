@@ -31,9 +31,6 @@ export async function processExpirationTest(
         id: { in: pulseIds },
         heatScore: { not: null },
       },
-      include: {
-        category: true,
-      },
     });
 
     if (pulsesWithHeat.length === 0) {
@@ -47,20 +44,20 @@ export async function processExpirationTest(
     });
 
     // Group by category for top N filtering
-    const pulsesByCategory = new Map<number, typeof pulsesWithHeat>();
+    const pulsesByCategory = new Map<string, typeof pulsesWithHeat>();
     for (const pulse of pulsesWithHeat) {
-      if (!pulsesByCategory.has(pulse.categoryId)) {
-        pulsesByCategory.set(pulse.categoryId, []);
+      if (!pulsesByCategory.has(pulse.category)) {
+        pulsesByCategory.set(pulse.category, []);
       }
-      pulsesByCategory.get(pulse.categoryId)!.push(pulse);
+      pulsesByCategory.get(pulse.category)!.push(pulse);
     }
 
     let expired = 0;
     let kept = 0;
 
     // Process each category
-    for (const [categoryId, categoryPulses] of pulsesByCategory) {
-      const categoryLogger = expirationLogger.child({ categoryId });
+    for (const [category, categoryPulses] of pulsesByCategory) {
+      const categoryLogger = expirationLogger.child({ category });
 
       // Filter by delta threshold
       // New pulses (heatDelta: null) are always kept since they're new

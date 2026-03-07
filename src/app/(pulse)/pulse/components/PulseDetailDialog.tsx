@@ -18,7 +18,7 @@ interface PulseDetailDialogProps {
     id: number;
     title: string;
     content: string;
-    category: { name: string };
+    category: string;
     createdAt: Date;
     heatScore?: number;
     heatDelta?: number | null;
@@ -64,7 +64,7 @@ export function PulseDetailDialog({
           {/* Meta Tags */}
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs font-medium border-border text-muted-foreground uppercase tracking-wide">
-              {pulse.category.name}
+              {pulse.category}
             </Badge>
             <span className="text-xs text-muted-foreground">
               {formatDate(pulse.createdAt, "en-US")}

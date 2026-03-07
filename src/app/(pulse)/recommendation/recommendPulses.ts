@@ -39,7 +39,7 @@ async function getFreshPulses(configOverrides?: {
       id: true,
       title: true,
       content: true,
-      category: { select: { name: true } },
+      category: true,
       createdAt: true,
     },
   });
@@ -116,7 +116,7 @@ export async function recommendPulsesForUser(
       const pulsesText = freshPulses
         .map(
           (pulse) =>
-            `Pulse ID: ${pulse.id}\nTitle: ${pulse.title}\nCategory: ${pulse.category.name}\n`,
+            `Pulse ID: ${pulse.id}\nTitle: ${pulse.title}\nCategory: ${pulse.category}\n`,
         )
         .join("\n---\n");
 

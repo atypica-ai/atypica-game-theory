@@ -8,59 +8,25 @@ import { gatherPulsesForDataSource, gatherPulsesFromAllDataSources } from "@/app
 import { processHeatPipeline } from "@/app/(pulse)/heat";
 import { processExpirationTest } from "@/app/(pulse)/expiration";
 import { getAllDataSources } from "@/app/(pulse)/dataSources";
-import { PulseCategory } from "@/prisma/client";
 
-export async function fetchPulseCategories(): Promise<
-  ServerActionResult<Array<PulseCategory & { pulseCount: number }>>
+export async function getDistinctCategories(): Promise<
+  ServerActionResult<Array<{ category: string; pulseCount: number }>>
 > {
   await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
 
-  const categories = await prisma.pulseCategory.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: { select: { pulses: true } },
-    },
+  const results = await prisma.pulse.groupBy({
+    by: ["category"],
+    _count: { id: true },
+    orderBy: { category: "asc" },
   });
 
   return {
     success: true,
-    data: categories.map((c) => ({
-      ...c,
-      pulseCount: c._count.pulses,
+    data: results.map((r) => ({
+      category: r.category,
+      pulseCount: r._count.id,
     })),
   };
-}
-
-export async function createPulseCategory(data: {
-  name: string;
-  query: string;
-}): Promise<ServerActionResult<PulseCategory>> {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
-
-  const category = await prisma.pulseCategory.create({ data });
-  return { success: true, data: category };
-}
-
-export async function updatePulseCategory(
-  id: number,
-  data: Partial<Pick<PulseCategory, "name" | "query">>,
-): Promise<ServerActionResult<PulseCategory>> {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
-
-  const category = await prisma.pulseCategory.update({
-    where: { id },
-    data,
-  });
-  return { success: true, data: category };
-}
-
-export async function deletePulseCategory(
-  id: number,
-): Promise<ServerActionResult<void>> {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
-
-  await prisma.pulseCategory.delete({ where: { id } });
-  return { success: true, data: undefined };
 }
 
 /**
@@ -171,13 +137,13 @@ export async function getAllAvailableDataSources(): Promise<
  * Trigger HEAT calculation pipeline
  * Processes pulses: gather posts → calculate HEAT → generate description
  *
- * @param categoryId - Optional category ID to filter pulses
+ * @param category - Optional category string to filter pulses
  * @param includeAlreadyScored - Whether to include pulses that already have HEAT scores
- * @param onlyUnscored - Process all unscored pulses in current data range (ignores categoryId and date filters)
+ * @param onlyUnscored - Process all unscored pulses in current data range (ignores category and date filters)
  * @param pulseIds - Optional array of pulse IDs to retry (if provided, other params are ignored)
  */
 export async function triggerHeatPipeline(
-  categoryId?: number,
+  category?: string,
   includeAlreadyScored: boolean = false,
   onlyUnscored: boolean = false,
   pulseIds?: number[],
@@ -199,7 +165,7 @@ export async function triggerHeatPipeline(
         ...(onlyUnscored
           ? {}
           : {
-              ...(categoryId ? { categoryId } : {}),
+              ...(category ? { category } : {}),
               createdAt: { gte: todayStart },
             }),
         ...(includeAlreadyScored || onlyUnscored ? {} : { heatScore: null }),
@@ -222,11 +188,11 @@ export async function triggerHeatPipeline(
  * Trigger expiration test
  * Calculates HEAT delta and marks expired pulses
  *
- * @param categoryId - Optional category ID to filter pulses
- * @param pulseIds - Optional array of pulse IDs to retry (if provided, categoryId is ignored)
+ * @param category - Optional category string to filter pulses
+ * @param pulseIds - Optional array of pulse IDs to retry (if provided, category is ignored)
  */
 export async function triggerExpirationTest(
-  categoryId?: number,
+  category?: string,
   pulseIds?: number[],
 ): Promise<ServerActionResult<{ expired: number; kept: number }>> {
   await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
@@ -243,7 +209,7 @@ export async function triggerExpirationTest(
 
     const pulses = await prisma.pulse.findMany({
       where: {
-        ...(categoryId ? { categoryId } : {}),
+        ...(category ? { category } : {}),
         createdAt: { gte: todayStart },
         heatScore: { not: null },
         // Include pulses with null heatDelta (new pulses) - they will be kept by expiration logic
@@ -290,9 +256,15 @@ export async function getPulseStatistics(): Promise<
     prisma.pulse.findMany({
       take: 20,
       orderBy: { createdAt: "desc" },
-      include: {
-        category: { select: { name: true } },
-        _count: { select: { posts: true } },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        heatScore: true,
+        heatDelta: true,
+        expired: true,
+        createdAt: true,
+        extra: true,
       },
     }),
   ]);
@@ -306,12 +278,12 @@ export async function getPulseStatistics(): Promise<
       recentPulses: recentPulses.map((p) => ({
         id: p.id,
         title: p.title,
-        categoryName: p.category.name,
+        categoryName: p.category,
         heatScore: p.heatScore,
         heatDelta: p.heatDelta,
         expired: p.expired,
         createdAt: p.createdAt,
-        postCount: p._count.posts,
+        postCount: (p.extra as { posts?: unknown[] } | null)?.posts?.length ?? 0,
       })),
     },
   };

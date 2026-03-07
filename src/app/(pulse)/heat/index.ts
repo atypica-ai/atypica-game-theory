@@ -7,16 +7,15 @@ import { gatherPostsForPulse } from "./gatherPosts";
 import { calculateHeatScore } from "./calculateHeat";
 import { generateDescriptionFromPosts } from "./generateDescription";
 import { EXPIRATION_CONFIG } from "../expiration/config";
-import { InputJsonValue } from "@prisma/client/runtime/client";
 import { HEAT_CONFIG } from "./config";
-import type { Pulse } from "@/prisma/client";
+import type { Pulse, PulseExtra } from "@/prisma/client";
 
 /**
  * Process a single pulse through the HEAT pipeline
  * Gather posts → Calculate HEAT → Calculate delta → Generate description → Save
  */
 async function processSinglePulse(
-  pulse: Pulse & { category: { id: number; name: string } },
+  pulse: Pulse,
   lookbackStart: Date,
   todayStart: Date,
   logger: Logger,
@@ -24,7 +23,7 @@ async function processSinglePulse(
   const pulseLogger = logger.child({
     pulseId: pulse.id,
     pulseTitle: pulse.title,
-    categoryId: pulse.categoryId,
+    category: pulse.category,
   });
 
   try {
@@ -44,7 +43,7 @@ async function processSinglePulse(
     const yesterdayPulse = await prisma.pulse.findFirst({
       where: {
         title: pulse.title,
-        categoryId: pulse.categoryId,
+        category: pulse.category,
         createdAt: {
           gte: lookbackStart,
           lt: todayStart,
@@ -114,7 +113,7 @@ async function processSinglePulse(
               stack: errorStack,
               timestamp: new Date().toISOString(),
             },
-          } as InputJsonValue,
+          } as PulseExtra,
         },
       });
     } catch (updateError) {
@@ -132,7 +131,7 @@ async function processSinglePulse(
  * Process pulses in batches with a maximum worker count
  */
 async function processPulsesInBatches(
-  pulses: Array<Pulse & { category: { id: number; name: string } }>,
+  pulses: Pulse[],
   lookbackStart: Date,
   todayStart: Date,
   maxWorkers: number,
@@ -205,9 +204,6 @@ export async function processHeatPipeline(
     const pulses = await prisma.pulse.findMany({
       where: {
         id: { in: pulseIds },
-      },
-      include: {
-        category: true,
       },
       orderBy: {
         createdAt: "desc",

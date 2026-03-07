@@ -365,6 +365,30 @@ export type AgentSkillExtra = Partial<{
 //   activeUserSubscriptionId: number;
 // }>;
 
+// Pulse
+export type PulsePostData = {
+  postId: string;
+  content: string;
+  views: number;
+  likes: number;
+  retweets: number;
+  replies: number;
+  url?: string;
+  author?: string;
+};
+
+export type PulseExtra = Partial<{
+  posts: PulsePostData[];
+  carriedOverDays: number;
+  matchedYesterdayPulseId: number;
+  error: {
+    reason: string;
+    details: string;
+    stack?: string;
+    timestamp: string;
+  };
+}>;
+
 // 只覆盖这个不够，findUnique 返回的类型还是原来的
 // import { User as UserPrisma } from "@/prisma/client/index";
 // export type User = Omit<UserPrisma, "lastLogin"> & {

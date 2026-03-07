@@ -20,7 +20,6 @@ type HeatTreemapPulse = {
 };
 
 type HeatTreemapCategory = {
-  id: number;
   name: string;
   heatScore: number;
   pulseCount: number;
@@ -42,7 +41,7 @@ export async function testPulseRecommendation(
       id: number;
       title: string;
       content: string;
-      category: { name: string };
+      category: string;
       createdAt: Date;
     }>;
     recommendation: {
@@ -90,7 +89,7 @@ export async function testPulseRecommendation(
             id: true,
             title: true,
             content: true,
-            category: { select: { name: true } },
+            category: true,
             createdAt: true,
           },
           orderBy: { id: "asc" }, // Maintain order from recommendation
@@ -173,12 +172,7 @@ export async function fetchPulseHeatTreemapData(
         heatScore: true,
         heatDelta: true,
         createdAt: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        category: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -191,7 +185,7 @@ export async function fetchPulseHeatTreemapData(
 
     for (const row of rows) {
       if (row.heatScore === null) continue;
-      const identity = `${row.category.id}|${row.title}`;
+      const identity = `${row.category}|${row.title}`;
       if (!latestByIdentity.has(identity)) {
         latestByIdentity.set(identity, row);
       }
@@ -204,7 +198,7 @@ export async function fetchPulseHeatTreemapData(
       historyByIdentity.set(identity, history);
     }
 
-    const categories = new Map<number, HeatTreemapCategory>();
+    const categories = new Map<string, HeatTreemapCategory>();
     for (const [identity, pulse] of latestByIdentity.entries()) {
       const allHistory = historyByIdentity.get(identity) ?? [];
       const historyByDay = new Map<string, HeatHistoryPoint>();
@@ -217,9 +211,8 @@ export async function fetchPulseHeatTreemapData(
 
       const history = [...historyByDay.values()].slice(-5);
 
-      const currentCategory = categories.get(pulse.category.id) ?? {
-        id: pulse.category.id,
-        name: pulse.category.name,
+      const currentCategory = categories.get(pulse.category) ?? {
+        name: pulse.category,
         heatScore: 0,
         pulseCount: 0,
         pulses: [],
@@ -236,7 +229,7 @@ export async function fetchPulseHeatTreemapData(
       });
       currentCategory.heatScore += pulse.heatScore ?? 0;
       currentCategory.pulseCount += 1;
-      categories.set(pulse.category.id, currentCategory);
+      categories.set(pulse.category, currentCategory);
     }
 
     const categoryList = [...categories.values()]

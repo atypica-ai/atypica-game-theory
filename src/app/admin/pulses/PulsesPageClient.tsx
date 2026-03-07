@@ -8,43 +8,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { throwServerActionError } from "@/lib/serverAction";
 import {
   Loader2Icon,
-  PlusIcon,
   RefreshCwIcon,
-  TrashIcon,
   TrendingUpIcon,
   XCircleIcon,
 } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  createPulseCategory,
-  deletePulseCategory,
-  fetchPulseCategories,
+  getDistinctCategories,
   getAllAvailableDataSources,
   getPulseStatistics,
   triggerAllDataSourcesGathering,
   triggerDataSourceGathering,
   triggerExpirationTest,
   triggerHeatPipeline,
-  updatePulseCategory,
 } from "./actions";
 
-type TPulseCategory = ExtractServerActionData<typeof fetchPulseCategories>[number];
+type TPulseCategory = ExtractServerActionData<typeof getDistinctCategories>[number];
 type TDataSource = ExtractServerActionData<typeof getAllAvailableDataSources>[number];
 type TPulseStatistics = ExtractServerActionData<typeof getPulseStatistics>;
 
@@ -58,10 +42,6 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
   const [dataSources, setDataSources] = useState<TDataSource[]>([]);
   const [statistics, setStatistics] = useState<TPulseStatistics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<TPulseCategory | null>(null);
-  const [formData, setFormData] = useState({ name: "", query: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [triggeringDataSource, setTriggeringDataSource] = useState<string | null>(null);
   const [triggeringAll, setTriggeringAll] = useState(false);
   const [processingHeat, setProcessingHeat] = useState(false);
@@ -69,7 +49,7 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
 
   const loadCategories = async () => {
     try {
-      const result = await fetchPulseCategories();
+      const result = await getDistinctCategories();
       if (!result.success) {
         throwServerActionError(result);
       }
@@ -110,67 +90,6 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
     });
   }, []);
 
-  const handleOpenDialog = (category?: TPulseCategory) => {
-    if (category) {
-      setEditingCategory(category);
-      setFormData({ name: category.name, query: category.query });
-    } else {
-      setEditingCategory(null);
-      setFormData({ name: "", query: "" });
-    }
-    setIsDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setEditingCategory(null);
-    setFormData({ name: "", query: "" });
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      let result;
-      if (editingCategory) {
-        result = await updatePulseCategory(editingCategory.id, formData);
-      } else {
-        result = await createPulseCategory(formData);
-      }
-
-      if (!result.success) {
-        throwServerActionError(result);
-      }
-
-      toast.success(editingCategory ? "Category updated" : "Category created");
-      handleCloseDialog();
-      await loadCategories();
-    } catch {
-      toast.error("Failed to save category");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this category?")) {
-      return;
-    }
-
-    try {
-      const result = await deletePulseCategory(id);
-      if (!result.success) {
-        throwServerActionError(result);
-      }
-
-      toast.success("Category deleted");
-      await loadCategories();
-    } catch {
-      toast.error("Failed to delete category");
-    }
-  };
-
   const handleTriggerDataSource = async (dataSourceName: string) => {
     setTriggeringDataSource(dataSourceName);
     try {
@@ -205,10 +124,10 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
     }
   };
 
-  const handleTriggerHeatPipeline = async (categoryId?: number) => {
+  const handleTriggerHeatPipeline = async (category?: string) => {
     setProcessingHeat(true);
     try {
-      const result = await triggerHeatPipeline(categoryId);
+      const result = await triggerHeatPipeline(category);
       if (!result.success) {
         throwServerActionError(result);
       }
@@ -225,10 +144,10 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
     }
   };
 
-  const handleTriggerExpiration = async (categoryId?: number) => {
+  const handleTriggerExpiration = async (category?: string) => {
     setProcessingExpiration(true);
     try {
-      const result = await triggerExpirationTest(categoryId);
+      const result = await triggerExpirationTest(category);
       if (!result.success) {
         throwServerActionError(result);
       }
@@ -249,10 +168,6 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
           <h1 className="text-2xl font-bold">Pulse Marketplace</h1>
           <p className="text-muted-foreground">Manage pulse categories and test HEAT modules</p>
         </div>
-        <Button onClick={() => handleOpenDialog()}>
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add Category
-        </Button>
       </div>
 
       {/* Statistics Card */}
@@ -441,45 +356,37 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {dataSources
                   .filter((ds) => ds.isCategory && ds.baseName === "xTrend")
-                  .map((ds) => {
-                    const category = categories.find((c) => c.name === ds.categoryName);
-                    return (
-                      <div
-                        key={ds.name}
-                        className="border rounded-lg p-3 space-y-2 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm truncate">{ds.categoryName}</h4>
-                            {category?.query && (
-                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                {category.query}
-                              </p>
-                            )}
-                          </div>
+                  .map((ds) => (
+                    <div
+                      key={ds.name}
+                      className="border rounded-lg p-3 space-y-2 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">{ds.categoryName}</h4>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleTriggerDataSource(ds.name)}
-                          disabled={triggeringDataSource === ds.name || triggeringAll}
-                        >
-                          {triggeringDataSource === ds.name ? (
-                            <>
-                              <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
-                              Gathering...
-                            </>
-                          ) : (
-                            <>
-                              <RefreshCwIcon className="h-3 w-3 mr-1" />
-                              Trigger
-                            </>
-                          )}
-                        </Button>
                       </div>
-                    );
-                  })}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleTriggerDataSource(ds.name)}
+                        disabled={triggeringDataSource === ds.name || triggeringAll}
+                      >
+                        {triggeringDataSource === ds.name ? (
+                          <>
+                            <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
+                            Gathering...
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCwIcon className="h-3 w-3 mr-1" />
+                            Trigger
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -544,7 +451,7 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
         <CardHeader>
           <CardTitle>Categories</CardTitle>
           <CardDescription>
-            Manage categories for xTrend dataSource (categories with queries)
+            Distinct categories found in pulse data
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -554,37 +461,20 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
             </div>
           ) : categories.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No categories found. Create one to get started.
+              No categories found.
             </div>
           ) : (
             <div className="space-y-4">
-              {categories.map((category) => (
+              {categories.map((cat) => (
                 <div
-                  key={category.id}
+                  key={cat.category}
                   className="flex items-start justify-between p-4 border rounded-lg"
                 >
                   <div className="flex-1">
-                    <h3 className="font-semibold">{category.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{category.query}</p>
+                    <h3 className="font-semibold">{cat.category}</h3>
                     <p className="text-xs text-muted-foreground mt-2">
-                      {category.pulseCount} pulse{category.pulseCount !== 1 ? "s" : ""}
+                      {cat.pulseCount} pulse{cat.pulseCount !== 1 ? "s" : ""}
                     </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenDialog(category)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(category.id)}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </Button>
                   </div>
                 </div>
               ))}
@@ -592,73 +482,6 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
           )}
         </CardContent>
       </Card>
-
-      {/* Create/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingCategory ? "Edit Category" : "Add Category"}</DialogTitle>
-            <DialogDescription>
-              {editingCategory
-                ? "Update category name and query for xTrend dataSource"
-                : "Create a new category with query for xTrend dataSource"}
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Category Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., AI Tech, Fashion & Beauty"
-                  required
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="query">Query</Label>
-                <Textarea
-                  id="query"
-                  value={formData.query}
-                  onChange={(e) => setFormData({ ...formData, query: e.target.value })}
-                  placeholder="Query string for xTrend dataSource"
-                  required
-                  rows={4}
-                />
-                <p className="text-xs text-muted-foreground">
-                  This query will be used by xTrend to gather pulses from X/Twitter
-                </p>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCloseDialog}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : editingCategory ? (
-                  "Update"
-                ) : (
-                  "Create"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
