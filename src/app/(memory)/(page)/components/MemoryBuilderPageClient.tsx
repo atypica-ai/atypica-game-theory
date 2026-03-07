@@ -1,5 +1,6 @@
 "use client";
 
+import GlobalFooter from "@/components/layout/GlobalFooter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
@@ -38,33 +39,36 @@ export function MemoryBuilderPageClient({ mode }: { mode: "team" | "user" }) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-24 md:py-40 font-sans">
-      <div
-        className={cn(
-          "flex flex-col md:flex-row items-center gap-8 md:gap-12",
-          "transition-all duration-700",
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
-        )}
-      >
-        <div className="flex-1 text-center md:text-left space-y-6">
-          <div className="w-12 h-1 bg-ghost-green"></div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-EuclidCircularA font-medium tracking-tight">
-            {tMode("title")}
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400">
-            {tMode("subtitle")}
-          </p>
-          <Button
-            size="lg"
-            className="rounded-full has-[>svg]:px-8 px-8 h-12"
-            onClick={handleStart}
-            disabled={loading}
-          >
-            {loading ? t("startingButton") : t("startButton")}
-            {!loading && <ArrowRightIcon className="h-4 w-4" />}
-          </Button>
+    <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <div className="flex flex-col justify-center items-center max-w-2xl mx-auto px-6 py-24 md:py-40 font-sans">
+        <div
+          className={cn(
+            "flex flex-col md:flex-row items-center gap-8 md:gap-12",
+            "transition-all duration-700",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8",
+          )}
+        >
+          <div className="flex-1 text-center md:text-left space-y-6">
+            <div className="w-12 h-1 bg-ghost-green"></div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-EuclidCircularA font-medium tracking-tight">
+              {tMode("title")}
+            </h1>
+            <p className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400">
+              {tMode("subtitle")}
+            </p>
+            <Button
+              size="lg"
+              className="rounded-full has-[>svg]:px-8 px-8 h-12"
+              onClick={handleStart}
+              disabled={loading}
+            >
+              {loading ? t("startingButton") : t("startButton")}
+              {!loading && <ArrowRightIcon className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </div>
+      <GlobalFooter />
     </div>
   );
 }
