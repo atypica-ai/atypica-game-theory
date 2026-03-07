@@ -180,7 +180,12 @@
         "title": "Subscription Notice",
         "description": "Team subscription will auto-renew monthly. You can cancel anytime in your Stripe dashboard."
       },
-      "processing": "Processing..."
+      "processing": "Processing...",
+      "couponChoice": {
+        "useAutoCoupon": "Use discount: {coupon}",
+        "usePromotionCode": "I have a promotion code",
+        "promotionCodeHint": "You can enter your promotion code on the next payment page."
+      }
     },
     "SubscriptionDialog": {
       "proTitle": "Subscribe to Pro Plan",
@@ -208,6 +213,11 @@
       "upgradeNotice": {
         "title": "Pro Plan Upgrade",
         "description": "You are currently subscribed to the Pro plan. When you upgrade, any unused tokens from your Pro plan will be credited towards the cost of the Max plan, and your new Max plan will start immediately."
+      },
+      "couponChoice": {
+        "useAutoCoupon": "Use discount: {coupon}",
+        "usePromotionCode": "I have a promotion code",
+        "promotionCodeHint": "You can enter your promotion code on the next payment page."
       }
     },
     "UserChatSession": {

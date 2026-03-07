@@ -42,14 +42,19 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    const { productName, ...params } = parseResult.data;
+    const { productName, couponId, ...params } = parseResult.data;
     let sessionResponse: { sessionUrl: string };
     if (
       productName === ProductName.PRO1MONTH ||
       productName === ProductName.MAX1MONTH ||
       productName === ProductName.SUPER1MONTH
     ) {
-      sessionResponse = await createSubscriptionStripeSession({ ...params, userId, productName });
+      sessionResponse = await createSubscriptionStripeSession({
+        ...params,
+        userId,
+        productName,
+        couponId,
+      });
     } else if (productName === ProductName.TOKENS1M) {
       sessionResponse = await createPaymentStripeSession({ ...params, userId, productName });
     } else if (
@@ -62,6 +67,7 @@ export async function POST(req: Request) {
         userId,
         productName,
         quantity,
+        couponId,
       });
     } else {
       rootLogger.error({ msg: `Invalid product name`, user: session.user.id, productName });

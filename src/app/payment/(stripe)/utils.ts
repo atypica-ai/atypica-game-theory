@@ -434,37 +434,48 @@ export async function retrieveStripeSubscriptionDetails({
 //   return stripeCustomerId;
 // }
 
-export async function availableCoupons({
-  userId,
-  userProfileExtra,
-}: {
-  userId: number; // 不是 personalUser, 而是当前用户
-  userProfileExtra: UserProfileExtra;
-}) {
-  let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined = undefined;
+/**
+ * 检查用户是否有可用的自动折扣（如 affiliate coupon）
+ * 返回 coupon 信息供前端展示，让用户选择使用自动折扣还是输入自己的促销码
+ *
+ * tolt.via 存在 personal user 的 profile 上：
+ * - team member（personalUserId + teamIdAsMember 都有值）→ 用 personal user 的 profile
+ * - personal user → 用自己的 profile
+ */
+export async function getAvailableCouponInfo(userId: number): Promise<{ couponId: string; label: string } | null> {
   try {
-    if (userProfileExtra.tolt?.via) {
-      // 通过 affiliate 项目进来的用户首次付款享受九折
+    const userData = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        personalUserId: true,
+        teamIdAsMember: true,
+        personalUser: { select: { profile: { select: { extra: true } } } },
+        profile: { select: { extra: true } },
+      },
+    });
+    if (!userData) return null;
+    const effectiveProfile =
+      userData.personalUserId && userData.teamIdAsMember
+        ? userData.personalUser?.profile
+        : userData.profile;
+    if (!effectiveProfile) return null;
+    const profileExtra = effectiveProfile.extra as UserProfileExtra;
+    if (profileExtra.tolt?.via) {
       const successfulPayment = await prisma.paymentRecord.findFirst({
         where: { userId, status: "succeeded" },
         select: { id: true },
       });
       if (!successfulPayment) {
-        rootLogger.info(`User ${userId} eligible for affiliate discount`);
-        discounts = [{ coupon: "AFFILIATE10" }];
-      } else {
-        rootLogger.info(
-          `User ${userId} eligible for affiliate discount but already has a successful payment`,
-        );
+        return { couponId: "AFFILIATE10", label: "10% off (affiliate)" };
       }
     }
   } catch (error) {
     rootLogger.error({
-      msg: "Error fetching available coupons",
+      msg: "Error checking available coupons",
       userId,
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
   }
-  return discounts;
+  return null;
 }

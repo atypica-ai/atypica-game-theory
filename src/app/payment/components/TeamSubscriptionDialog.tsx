@@ -1,4 +1,8 @@
-import { fetchProductPricesAction, TProductPrices } from "@/app/payment/actions";
+import {
+  fetchProductPricesAction,
+  getAvailableCouponInfoAction,
+  TProductPrices,
+} from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +24,8 @@ import {
   Infinity,
   InfoIcon,
   LoaderCircle,
+  TagIcon,
+  TicketIcon,
   UsersIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -51,9 +57,12 @@ export const TeamSubscriptionDialog = ({
   const [productPrices, setProductPrices] = useState<TProductPrices | null>(null);
 
   const { createPaymentLink, loading, error } = usePay();
+  const [couponInfo, setCouponInfo] = useState<{ couponId: string; label: string } | null>(null);
+  const [useCoupon, setUseCoupon] = useState(true);
 
   useEffect(() => {
     fetchProductPricesAction().then(setProductPrices);
+    getAvailableCouponInfoAction().then(setCouponInfo);
   }, []);
 
   const currency = locale === "zh-CN" ? "CNY" : "USD";
@@ -223,6 +232,40 @@ export const TeamSubscriptionDialog = ({
           </div>
         </div>
 
+        {couponInfo && (
+          <div className="flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={() => setUseCoupon(true)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-left text-sm transition-colors ${
+                useCoupon
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <TagIcon className="size-3.5 shrink-0" />
+              <span>{t("couponChoice.useAutoCoupon", { coupon: couponInfo.label })}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setUseCoupon(false)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-left text-sm transition-colors ${
+                !useCoupon
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <TicketIcon className="size-3.5 shrink-0" />
+              <span>{t("couponChoice.usePromotionCode")}</span>
+            </button>
+            {!useCoupon && (
+              <p className="text-xs text-muted-foreground px-3">
+                {t("couponChoice.promotionCodeHint")}
+              </p>
+            )}
+          </div>
+        )}
+
         {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
 
         <DialogFooter className="flex-row justify-end items-center">
@@ -246,6 +289,7 @@ export const TeamSubscriptionDialog = ({
                   currency === "CNY" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
                 productName: productName,
                 quantity: quantity.toString(),
+                couponId: useCoupon && couponInfo ? couponInfo.couponId : undefined,
               });
             }}
             disabled={loading || quantity < 3}

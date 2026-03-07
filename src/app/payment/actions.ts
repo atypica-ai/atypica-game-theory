@@ -1,4 +1,5 @@
 "use server";
+import { getAvailableCouponInfo } from "@/app/payment/(stripe)/utils";
 import { withAuth } from "@/lib/request/withAuth";
 import { Currency } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -76,6 +77,19 @@ export async function fetchProductPricesAction() {
     result[productName][currency] = price;
   });
   return result;
+}
+
+/**
+ * 检查当前用户是否有可用的自动折扣（如 affiliate coupon）
+ * 前端用这个来展示选项：使用自动折扣 or 输入自己的促销码
+ */
+export async function getAvailableCouponInfoAction(): Promise<{
+  couponId: string;
+  label: string;
+} | null> {
+  return withAuth(async (user) => {
+    return getAvailableCouponInfo(user.id);
+  });
 }
 
 /**

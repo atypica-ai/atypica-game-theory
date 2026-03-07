@@ -8,29 +8,37 @@ import { getRequestOrigin } from "@/lib/request/headers";
 import { Currency, SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import {
-  availableCoupons,
   createPaymentRecord,
   generateOrderNo,
+  getAvailableCouponInfo,
   getOrCreateStripeCustomerIdForUser,
   getStripePriceIdForUser,
   requirePersonalUser,
   requireTeamlUser,
 } from "./utils";
 
+async function validateCouponId({ couponId, userId }: { couponId: string; userId: number }) {
+  const available = await getAvailableCouponInfo(userId);
+  if (!available || available.couponId !== couponId) {
+    throw new Error("Invalid coupon");
+  }
+}
+
 export async function createSubscriptionStripeSession({
   userId,
   productName,
   currency,
   successUrl,
+  couponId,
 }: {
   userId: number;
   productName: ProductName.PRO1MONTH | ProductName.MAX1MONTH | ProductName.SUPER1MONTH;
   currency: Currency;
   successUrl: string;
+  couponId?: string;
 }) {
   const {
     user,
-    userProfileExtra,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     monthlyBalance: currentMonthlyBalance,
   } = await requirePersonalUser(userId);
@@ -69,11 +77,11 @@ export async function createSubscriptionStripeSession({
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
-  const discounts = await availableCoupons({
-    userId,
-    userProfileExtra,
-  });
-  // const stripeCustomerId = await stripeCustomerIdForUser(user, user.email);
+  if (couponId) {
+    await validateCouponId({ couponId, userId });
+  }
+  const discounts = couponId ? [{ coupon: couponId }] : undefined;
+  const allow_promotion_codes = couponId ? undefined : true;
   const stripeCustomerId = await getOrCreateStripeCustomerIdForUser({
     userId,
     email: user.email,
@@ -90,11 +98,8 @@ export async function createSubscriptionStripeSession({
     metadata,
     mode: "subscription",
     subscription_data: { metadata },
-    // 个人订阅支持关联自动的优惠券
-    discounts: discounts,
-    // 个人订阅支持用户自己 REDEEM 优惠券
-    // discounts 和 allow_promotion_codes 不能混用，暂时禁用，回头做个界面让用户自己选
-    allow_promotion_codes: discounts ? undefined : true,
+    discounts,
+    allow_promotion_codes,
     line_items: [
       {
         // price_data: priceData,
@@ -234,12 +239,14 @@ export async function createTeamSubscriptionStripeSession({
   quantity,
   currency,
   successUrl,
+  couponId,
 }: {
   userId: number;
   productName: ProductName.TEAMSEAT1MONTH | ProductName.SUPERTEAMSEAT1MONTH;
   quantity: number;
   currency: Currency;
   successUrl: string;
+  couponId?: string;
 }) {
   if (quantity < 3) {
     throw new Error("Minimum 3 seats required for team subscription");
@@ -247,7 +254,6 @@ export async function createTeamSubscriptionStripeSession({
 
   const {
     personalUserEmail,
-    personalUserProfileExtra,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     team,
     teamUser,
@@ -291,10 +297,11 @@ export async function createTeamSubscriptionStripeSession({
   if (!stripePriceId) {
     throw new Error("Price ID is missing");
   }
-  const discounts = await availableCoupons({
-    userId: userId, // 不是 personnalUser, 而是当前用户
-    userProfileExtra: personalUserProfileExtra,
-  });
+  if (couponId) {
+    await validateCouponId({ couponId, userId });
+  }
+  const discounts = couponId ? [{ coupon: couponId }] : undefined;
+  const allow_promotion_codes = couponId ? undefined : true;
   const stripeCustomerId = await getOrCreateStripeCustomerIdForUser({
     userId,
     email: personalUserEmail,
@@ -311,11 +318,8 @@ export async function createTeamSubscriptionStripeSession({
     metadata,
     mode: "subscription",
     subscription_data: { metadata },
-    // 团队订阅支持关联自动的优惠券
-    discounts: discounts,
-    // 团队订阅支持用户自己 REDEEM 优惠券
-    // discounts 和 allow_promotion_codes 不能混用，暂时禁用，回头做个界面让用户自己选
-    allow_promotion_codes: discounts ? undefined : true,
+    discounts,
+    allow_promotion_codes,
     line_items: [
       {
         // price_data: priceData,

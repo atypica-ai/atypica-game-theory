@@ -19,6 +19,7 @@ export const stripeSessionCreatePayloadSchema = z
       .transform((val) => parseInt(val))
       .refine((val) => val > 0)
       .optional(),
+    couponId: z.string().optional(),
   })
   .refine(
     (data) => {

@@ -1,5 +1,9 @@
 import { upgradeFromProToMaxAction } from "@/app/payment/(stripe)/actions";
-import { fetchProductPricesAction, TProductPrices } from "@/app/payment/actions";
+import {
+  fetchProductPricesAction,
+  getAvailableCouponInfoAction,
+  TProductPrices,
+} from "@/app/payment/actions";
 import { ProductName } from "@/app/payment/data";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +24,8 @@ import {
   InfoIcon,
   LoaderCircle,
   StarIcon,
+  TagIcon,
+  TicketIcon,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -51,6 +57,10 @@ export const SubscriptionDialog = ({
   const [loading, setLoading] = useState<boolean>(false);
   const { createPaymentLink, loading: usePayLoading, error: usePayError } = usePay();
 
+  // Coupon 选择：用户可以选用内置 coupon 或不选（在 Stripe 页面输入促销码）
+  const [couponInfo, setCouponInfo] = useState<{ couponId: string; label: string } | null>(null);
+  const [useCoupon, setUseCoupon] = useState(true); // 默认选中使用 coupon
+
   useEffect(() => {
     setError(usePayError);
   }, [usePayError]);
@@ -61,6 +71,7 @@ export const SubscriptionDialog = ({
 
   useEffect(() => {
     fetchProductPricesAction().then(setProductPrices);
+    getAvailableCouponInfoAction().then(setCouponInfo);
   }, []);
 
   const currency = locale === "zh-CN" ? "CNY" : "USD";
@@ -119,10 +130,14 @@ export const SubscriptionDialog = ({
           setLoading(false);
         }
       } else {
-        createPaymentLink({ paymentProvider, productName });
+        createPaymentLink({
+          paymentProvider,
+          productName,
+          couponId: useCoupon && couponInfo ? couponInfo.couponId : undefined,
+        });
       }
     },
-    [createPaymentLink, isUpgradeFromPro],
+    [createPaymentLink, isUpgradeFromPro, useCoupon, couponInfo],
   );
 
   return (
@@ -225,6 +240,40 @@ export const SubscriptionDialog = ({
                 </div>
               </div>
             </div>
+
+            {couponInfo && !isUpgradeFromPro && (
+              <div className="flex flex-col gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setUseCoupon(true)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-left text-sm transition-colors ${
+                    useCoupon
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <TagIcon className="size-3.5 shrink-0" />
+                  <span>{t("couponChoice.useAutoCoupon", { coupon: couponInfo.label })}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUseCoupon(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-left text-sm transition-colors ${
+                    !useCoupon
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <TicketIcon className="size-3.5 shrink-0" />
+                  <span>{t("couponChoice.usePromotionCode")}</span>
+                </button>
+                {!useCoupon && (
+                  <p className="text-xs text-muted-foreground px-3">
+                    {t("couponChoice.promotionCodeHint")}
+                  </p>
+                )}
+              </div>
+            )}
 
             {error && <div className="text-red-500 text-sm text-center mb-4">{error}</div>}
 
