@@ -8,6 +8,7 @@ import {
   HeadphonesIcon,
   MessageCircleIcon,
   MonitorPlayIcon,
+  RadioIcon,
   StarIcon,
   UserIcon,
   UsersIcon,
@@ -168,6 +169,32 @@ export default function AdminDashboard() {
             <h2 className="text-xl font-semibold">Issue Studies</h2>
           </div>
           <p className="text-sm text-muted-foreground">Manage studies with reported issues</p>
+        </Link>
+
+        <Link
+          href="/admin/pulses"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <RadioIcon className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Pulse Marketplace</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Manage pulse categories and trigger gathering
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/pulse-recommendations"
+          className="rounded-lg border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center mb-2">
+            <RadioIcon className="h-5 w-5 mr-2" />
+            <h2 className="text-xl font-semibold">Pulse Recommendations Test</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Test pulse recommendation system for users
+          </p>
         </Link>
 
         <Link
