@@ -6,10 +6,12 @@ import { PulseCard } from "./components/PulseCard";
 import { PulseHeatTreemap } from "./components/PulseHeatTreemap";
 import { PulseDetailDialog } from "./components/PulseDetailDialog";
 import { fetchPulsesByCategory, fetchUserRecommendations, fetchPulseHeatTreemapDataPublic } from "./actions";
-import { Loader2Icon, SearchIcon, ChevronDownIcon } from "lucide-react";
+import { Loader2Icon, SearchIcon, ChevronDownIcon, InboxIcon } from "lucide-react";
 import useSWR from "swr";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { sortPulsesByHeatDeltaSimple } from "./utils/sorting";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -226,23 +228,24 @@ export function PulseMarketplaceClient({
   };
 
   return (
-    <div className="container mx-auto px-4 md:px-6 lg:px-12 xl:px-16 2xl:px-20 py-6 md:py-8 max-w-[96rem]">
+    <div className="container mx-auto max-w-6xl px-4 md:px-8 py-8 md:py-12 space-y-8">
       {/* Header */}
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2" style={{ fontFamily: "var(--font-EuclidCircularA)" }}>
-          Pulse Marketplace
+      <div className="space-y-4">
+        <div className="w-12 h-1 bg-ghost-green" />
+        <h1 className="text-4xl md:text-5xl font-EuclidCircularA font-medium tracking-tight">
+          Atypica Pulse
         </h1>
-        <p className="text-muted-foreground text-sm md:text-base" style={{ fontFamily: "var(--font-EuclidCircularA)" }}>
-          Discover trending topics and personalized recommendations
+        <p className="text-base text-muted-foreground">
+          {t("description")}
         </p>
       </div>
 
       {/* Pulse Heat Treemap Section */}
       {heatTreemapData && heatTreemapData.categories.length > 0 && (
-        <div className="mb-6 md:mb-8">
+        <div>
           {isLoadingHeatTreemap ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2Icon className="h-7 w-7 animate-spin text-muted-foreground" />
+              <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           ) : (
             <PulseHeatTreemap
@@ -255,8 +258,7 @@ export function PulseMarketplaceClient({
       )}
 
       {/* Category Bar with Filters */}
-      <div className="mb-6 md:mb-8 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
-        {/* Category Bar - Left */}
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4">
         <div className="flex-1 min-w-0">
           <CategoryBar
             categories={initialCategories}
@@ -266,68 +268,52 @@ export function PulseMarketplaceClient({
           />
         </div>
 
-        {/* Filter and Search Bar - Right */}
         {selectedCategory !== "Recommend" && (
           <div className="flex items-center gap-2 lg:flex-shrink-0">
-            {/* Search */}
             <div className="relative w-48">
-              <SearchIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
-              <input
+              <SearchIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
                 type="text"
                 placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-md border border-border/50 bg-muted/30 pl-8 pr-3 py-1.5 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:border-border focus:bg-background transition-colors"
+                className="h-8 pl-8 text-xs"
               />
             </div>
 
-            {/* Time Filter */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="inline-flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-foreground/80 hover:border-border hover:bg-background transition-colors outline-none">
-                {timeFilter === "all" && t("allTime")}
-                {timeFilter === "today" && t("today")}
-                {timeFilter === "week" && t("thisWeek")}
-                {timeFilter === "month" && t("thisMonth")}
-                <ChevronDownIcon className="h-3 w-3 opacity-50" />
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                  {timeFilter === "all" && t("allTime")}
+                  {timeFilter === "today" && t("today")}
+                  {timeFilter === "week" && t("thisWeek")}
+                  {timeFilter === "month" && t("thisMonth")}
+                  <ChevronDownIcon className="h-3 w-3" />
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[--radix-dropdown-menu-trigger-width]">
-                <DropdownMenuItem onClick={() => setTimeFilter("all")}>
-                  {t("allTime")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTimeFilter("today")}>
-                  {t("today")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTimeFilter("week")}>
-                  {t("thisWeek")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTimeFilter("month")}>
-                  {t("thisMonth")}
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTimeFilter("all")}>{t("allTime")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTimeFilter("today")}>{t("today")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTimeFilter("week")}>{t("thisWeek")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTimeFilter("month")}>{t("thisMonth")}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Heat Filter */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="inline-flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/30 px-3 py-1.5 text-xs text-foreground/80 hover:border-border hover:bg-background transition-colors outline-none">
-                {heatFilter === "all" && t("allHeat")}
-                {heatFilter === "high" && t("highHeat")}
-                {heatFilter === "medium" && t("mediumHeat")}
-                {heatFilter === "low" && t("lowHeat")}
-                <ChevronDownIcon className="h-3 w-3 opacity-50" />
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                  {heatFilter === "all" && t("allHeat")}
+                  {heatFilter === "high" && t("highHeat")}
+                  {heatFilter === "medium" && t("mediumHeat")}
+                  {heatFilter === "low" && t("lowHeat")}
+                  <ChevronDownIcon className="h-3 w-3" />
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[--radix-dropdown-menu-trigger-width]">
-                <DropdownMenuItem onClick={() => setHeatFilter("all")}>
-                  {t("allHeat")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHeatFilter("high")}>
-                  {t("highHeat")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHeatFilter("medium")}>
-                  {t("mediumHeat")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHeatFilter("low")}>
-                  {t("lowHeat")}
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setHeatFilter("all")}>{t("allHeat")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setHeatFilter("high")}>{t("highHeat")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setHeatFilter("medium")}>{t("mediumHeat")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setHeatFilter("low")}>{t("lowHeat")}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -336,28 +322,23 @@ export function PulseMarketplaceClient({
 
       {/* Content Area */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : selectedCategory === "Recommend" ? (
-        // Recommendations: Grid Layout (same as other categories)
         <div>
           {!isAuthenticated ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-2">{t("signInForRecommendations")}</p>
-              <p className="text-sm text-muted-foreground">
-                {t("recommendationsDescription")}
-              </p>
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <InboxIcon className="h-8 w-8 text-muted-foreground mb-3" />
+              <p className="text-sm text-muted-foreground">{t("signInForRecommendations")}</p>
             </div>
           ) : recommendations.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-2">{t("noRecommendations")}</p>
-              <p className="text-sm text-muted-foreground">
-                {t("recommendationsDescription")}
-              </p>
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <InboxIcon className="h-8 w-8 text-muted-foreground mb-3" />
+              <p className="text-sm text-muted-foreground">{t("noRecommendations")}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {recommendations.map((rec) => (
                 <PulseCard
                   key={rec.pulseId}
@@ -371,11 +352,11 @@ export function PulseMarketplaceClient({
           )}
         </div>
       ) : (
-        // Regular Pulses: Grid Layout
         <div>
           {filteredPulses.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <InboxIcon className="h-8 w-8 text-muted-foreground mb-3" />
+              <p className="text-sm text-muted-foreground">
                 {pulses.length === 0 ? t("noPulsesInCategory") : t("noPulsesMatchFilters")}
               </p>
               {pulses.length > 0 && (
@@ -385,14 +366,14 @@ export function PulseMarketplaceClient({
                     setTimeFilter("all");
                     setHeatFilter("all");
                   }}
-                  className="mt-4 text-sm text-primary hover:underline"
+                  className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {t("clearFilters")}
                 </button>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredPulses.map((pulse) => (
                 <PulseCard
                   key={pulse.id}
@@ -406,7 +387,6 @@ export function PulseMarketplaceClient({
         </div>
       )}
 
-      {/* Pulse Detail Dialog */}
       <PulseDetailDialog
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}

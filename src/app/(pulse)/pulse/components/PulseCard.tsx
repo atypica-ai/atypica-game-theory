@@ -1,11 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
-import { useLocale, useTranslations } from "next-intl";
-import { ChevronUpIcon, ChevronDownIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { ChevronUpIcon, ChevronDownIcon, FlameIcon, CalendarDaysIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+type HeatHistoryPoint = { date: string; heatScore: number };
 
 interface PulseCardProps {
   pulse: {
@@ -14,7 +14,9 @@ interface PulseCardProps {
     content: string;
     category: string;
     createdAt: Date;
+    heatScore?: number;
     heatDelta?: number | null;
+    history?: HeatHistoryPoint[];
   };
   angle?: string;
   highlighted?: boolean;
@@ -29,11 +31,9 @@ function formatHeatDelta(delta: number | null | undefined): string {
 }
 
 export function PulseCard({ pulse, angle, highlighted, onClick }: PulseCardProps) {
-  const locale = useLocale();
   const t = useTranslations("Pulse");
   const heatDelta = pulse.heatDelta;
 
-  // Normalize heatDelta: handle number, string, null, undefined
   let heatDeltaNum: number | null = null;
   if (typeof heatDelta === "number" && !isNaN(heatDelta) && isFinite(heatDelta)) {
     heatDeltaNum = heatDelta;
@@ -49,43 +49,62 @@ export function PulseCard({ pulse, angle, highlighted, onClick }: PulseCardProps
   const isPositive = hasDelta && heatDeltaNum! > 0;
   const isNegative = hasDelta && heatDeltaNum! < 0;
   const isZero = hasDelta && heatDeltaNum! === 0;
-
   return (
-    <Card
+    <div
       data-pulse-id={pulse.id}
       onClick={onClick}
       className={cn(
-        "transition-all duration-500 flex flex-col h-full",
+        "border border-border rounded-lg p-4 flex flex-col gap-3 transition-all duration-300",
+        "hover:border-foreground/20",
         highlighted && "border-primary",
-        onClick && "cursor-pointer"
+        onClick && "cursor-pointer",
       )}
     >
-      <CardHeader>
-        <div className="flex items-start justify-between gap-2 min-w-0">
-          <CardTitle className="text-base font-semibold line-clamp-2 flex-1 min-w-0">
-            {pulse.title}
-          </CardTitle>
-          <Badge variant="outline" className="shrink-0 text-xs max-w-[120px] truncate">
-            {pulse.category}
-          </Badge>
+      {/* Title + Category */}
+      <div className="flex items-start justify-between gap-2 min-w-0">
+        <div className="text-sm font-semibold leading-snug line-clamp-2 flex-1 min-w-0">
+          {pulse.title}
         </div>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <p className="text-sm text-muted-foreground line-clamp-3 flex-1 mb-3">
-          {pulse.content}
-        </p>
-        <div className="flex items-center justify-between mt-auto gap-2">
-          <div className="text-xs text-muted-foreground">
-            {formatDate(pulse.createdAt, locale)}
+        <Badge variant="outline" className="shrink-0 text-xs max-w-[120px] truncate">
+          {pulse.category}
+        </Badge>
+      </div>
+
+      {/* Content */}
+      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
+        {pulse.content}
+      </p>
+
+      {/* Recommendation angle */}
+      {angle && (
+        <div className="text-xs italic text-muted-foreground">
+          {angle}
+        </div>
+      )}
+
+      {/* Footer: icon stats + delta */}
+      <div className="flex items-center pt-3 border-t border-border text-xs text-muted-foreground gap-3">
+        {pulse.heatScore !== undefined && pulse.heatScore > 0 && (
+          <div className="flex items-center gap-1 shrink-0">
+            <FlameIcon className="size-3" />
+            <span>{Math.round(pulse.heatScore).toLocaleString()}</span>
           </div>
+        )}
+        {(pulse.history?.length ?? 0) > 0 && (
+          <div className="flex items-center gap-1 shrink-0">
+            <CalendarDaysIcon className="size-3" />
+            <span>{pulse.history!.length}d</span>
+          </div>
+        )}
+
+        {/* Delta — right-aligned */}
+        <div className="ml-auto shrink-0">
           {isNew ? (
-            <div className="text-xs font-medium shrink-0 text-muted-foreground">
-              {t("new")}
-            </div>
+            <span className="text-xs font-medium text-muted-foreground">{t("new")}</span>
           ) : hasDelta ? (
-            <div
+            <span
               className={cn(
-                "flex items-center gap-1 text-xs font-medium shrink-0",
+                "flex items-center gap-0.5 text-xs font-medium",
                 isPositive && "text-foreground",
                 isNegative && "text-destructive",
                 isZero && "text-muted-foreground",
@@ -93,16 +112,11 @@ export function PulseCard({ pulse, angle, highlighted, onClick }: PulseCardProps
             >
               {isPositive && <ChevronUpIcon className="h-3 w-3" />}
               {isNegative && <ChevronDownIcon className="h-3 w-3" />}
-              <span>{formatHeatDelta(heatDeltaNum)}</span>
-            </div>
+              {formatHeatDelta(heatDeltaNum)}
+            </span>
           ) : null}
         </div>
-        {angle && (
-          <div className="text-xs italic mt-2 text-muted-foreground">
-            {angle}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

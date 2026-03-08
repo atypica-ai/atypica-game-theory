@@ -611,8 +611,9 @@ export async function fetchPulseHeatTreemapDataPublic(
     }
 
     const categoryList = [...categories.values()]
-      .map((category) => ({
+      .map((category, index) => ({
         ...category,
+        id: index + 1,
         pulses: category.pulses.sort((a, b) => b.heatScore - a.heatScore),
       }))
       .sort((a, b) => b.heatScore - a.heatScore);
