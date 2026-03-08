@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { MiniHeatChart } from "./MiniHeatChart";
-import { getHeatDeltaColorClass } from "../lib/treemapColors";
 import { useTranslations } from "next-intl";
 
 interface Pulse {
@@ -31,10 +30,10 @@ interface TreemapTooltipProps {
  * Prominent white border (2-3px), dark background, positioned dynamically
  */
 export function TreemapTooltip({ pulse, heatHistory, position }: TreemapTooltipProps) {
-  const t = useTranslations("PulsePage");
+  const t = useTranslations("Pulse");
   const [adjustedPosition, setAdjustedPosition] = useState(position);
   const history = heatHistory[pulse.id];
-  const deltaColor = getHeatDeltaColorClass(pulse.heatDelta ?? 0);
+
 
   // Adjust position to avoid overflow - Finviz style: tooltip offset from cursor
   useEffect(() => {

@@ -32,7 +32,7 @@ export function PulseMarketplaceClient({
   initialCategories,
   isAuthenticated,
 }: PulseMarketplaceClientProps) {
-  const t = useTranslations("PulsePage");
+  const t = useTranslations("Pulse");
   const locale = useLocale();
 
   // Fetch recommendations first to determine if Recommend tab should be shown
@@ -132,7 +132,7 @@ export function PulseMarketplaceClient({
   const recommendations = (finalRecommendationsData?.recommendations || []).sort((a, b) =>
     sortPulsesByHeatDeltaSimple(a.pulse, b.pulse),
   );
-  const pulses = pulsesData || [];
+  const pulses = useMemo(() => pulsesData || [], [pulsesData]);
 
   // Apply filters
   const filteredPulses = useMemo(() => {
@@ -211,7 +211,7 @@ export function PulseMarketplaceClient({
   };
 
   // Handle start research from detail dialog
-  const handleStartResearch = (pulseId: number) => {
+  const handleStartResearch = () => {
     // Find the pulse data
     const pulse = selectedPulse;
     if (!pulse) return;

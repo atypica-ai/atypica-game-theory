@@ -5,7 +5,6 @@ import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { getColorTheme } from "./colorThemes";
 
 type HeatHistoryPoint = { date: string; heatScore: number };
 
@@ -63,7 +62,6 @@ type RectBounds = { x0: number; y0: number; x1: number; y1: number };
 const WIDTH = 1500;
 const HEIGHT = 840;
 const TOOLTIP_WIDTH = 320;
-const TEXT_FONT_FAMILY = "var(--font-EuclidCircularA), Arial, Helvetica, sans-serif";
 // Canvas doesn't support CSS variables, use actual font name for measurements
 const TEXT_FONT_FAMILY_FOR_MEASUREMENT = "EuclidCircularA, Arial, Helvetica, sans-serif";
 
@@ -83,8 +81,6 @@ const PULSE_SIZE_CONTRAST_EXPONENT = 5.0;
 
 const MAX_TILE_ASPECT_RATIO = 1.0; // Smaller ratio = more square boxes, better for text readability
 const DISPLAY_PULSES_PER_CATEGORY = 8;
-const CATEGORY_BASE_SHARE_FACTOR = 0;
-const CATEGORY_MIN_SHARE_RATIO = 0.2;
 const CATEGORY_WEIGHT_SCALE = 1000;
 const TEXT_BLOCK_HEIGHT_RATIO = 0.52; // Reduced to leave more margin and prevent overflow
 const TITLE_FONT_MAX = 36;
@@ -207,38 +203,6 @@ function wrapWordsToWidth(
 }
 
 /**
- * COLOR SYSTEM - Each category uses one color family
- *
- * COLOR LOGIC:
- * - Each category is assigned a color family (red/blue/green/teal/flesh)
- * - Within the family, specific shades for delta ranges (lighter = falling, darker = rising)
- * - Using distinct color intervals for clear visual distinction
- */
-
-const FAMILY_NAMES = ['red', 'blue', 'green', 'teal', 'flesh'] as const;
-
-/**
- * Calculate if a color is light or dark, return appropriate text color
- * @param hexColor - Hex color string (e.g., '#ffffff')
- * @returns Black text for light backgrounds, white text for dark backgrounds
- */
-function getTextColorForBackground(hexColor: string): string {
-  // Remove # if present
-  const hex = hexColor.replace('#', '');
-
-  // Convert to RGB
-  const r = parseInt(hex.substring(0, 2), 16) / 255;
-  const g = parseInt(hex.substring(2, 4), 16) / 255;
-  const b = parseInt(hex.substring(4, 6), 16) / 255;
-
-  // Calculate relative luminance (WCAG formula)
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-
-  // Return black for light backgrounds, white for dark backgrounds
-  return luminance > 0.5 ? '#000000' : '#ffffff';
-}
-
-/**
  * Create a lighter version of a color for frosted glass gradient effect
  * @param hexColor - Hex color string (e.g., '#8e8e93')
  * @param amount - How much lighter (0-1, default 0.15 for subtle shine)
@@ -255,73 +219,6 @@ function lightenColor(hexColor: string, amount: number = 0.15): string {
   const newB = Math.min(255, Math.round(b + (255 - b) * amount));
 
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
-}
-
-function buildPulseColor(
-  delta: number | null,
-  categoryId: number | undefined,
-  pulseIndexInCategory: number | undefined,
-  colorFamilies: ReturnType<typeof getColorTheme> | undefined
-) {
-  // Fallback to default theme if colorFamilies is undefined (during hydration)
-  const families = colorFamilies ?? getColorTheme('atypicaSystem', false);
-
-  // Select color family based on category ID
-  const familyIndex = categoryId !== undefined ? categoryId % FAMILY_NAMES.length : 1;
-  const familyName = FAMILY_NAMES[familyIndex];
-  const family = families[familyName];
-
-  // For NEW items (null delta), use middle color of the family
-  if (delta === null || delta === undefined) {
-    const middleIndex = Math.floor(family.length / 2);
-    // Add stronger variation for adjacent pulses to ensure visible difference
-    const variation = pulseIndexInCategory !== undefined ? ((pulseIndexInCategory % 5) - 2) * 2 : 0;
-    const adjustedIndex = clamp(middleIndex + variation, 0, family.length - 1);
-    return family[adjustedIndex];
-  }
-
-  // Map delta to distinct color ranges with clear boundaries
-  // Fine-grained mapping for obvious visual differences
-  const clampedDelta = clamp(delta, -1, 1);
-  const numColors = family.length;
-
-  // Use finer intervals to distribute colors more evenly across delta range
-  // This ensures pulses with different deltas get different colors
-  let colorIndex: number;
-
-  if (clampedDelta <= -0.5) {
-    colorIndex = 0;
-  } else if (clampedDelta <= -0.35) {
-    colorIndex = Math.max(1, Math.floor(numColors * 0.15));
-  } else if (clampedDelta <= -0.2) {
-    colorIndex = Math.floor(numColors * 0.28);
-  } else if (clampedDelta <= -0.08) {
-    colorIndex = Math.floor(numColors * 0.38);
-  } else if (clampedDelta <= -0.02) {
-    colorIndex = Math.floor(numColors * 0.45);
-  } else if (clampedDelta <= 0.02) {
-    // Very narrow neutral range
-    colorIndex = Math.floor(numColors * 0.5);
-  } else if (clampedDelta <= 0.08) {
-    colorIndex = Math.floor(numColors * 0.55);
-  } else if (clampedDelta <= 0.2) {
-    colorIndex = Math.floor(numColors * 0.62);
-  } else if (clampedDelta <= 0.35) {
-    colorIndex = Math.floor(numColors * 0.72);
-  } else if (clampedDelta <= 0.5) {
-    colorIndex = Math.floor(numColors * 0.85);
-  } else {
-    colorIndex = numColors - 1;
-  }
-
-  // Add stronger variation based on pulse position to avoid identical adjacent colors
-  // Cycles through -4, -2, 0, +2, +4 for adjacent pulses to ensure visible difference
-  if (pulseIndexInCategory !== undefined) {
-    const variation = ((pulseIndexInCategory % 5) - 2) * 2; // -4, -2, 0, +2, or +4
-    colorIndex = clamp(colorIndex + variation, 0, numColors - 1);
-  }
-
-  return family[colorIndex];
 }
 
 function formatHeatDelta(value: number | null | undefined): string {
@@ -439,16 +336,8 @@ function Sparkline({ history, positive, isNew }: { history: HeatHistoryPoint[]; 
 }
 
 export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseHeatTreemapProps) {
-  const t = useTranslations("PulsePage");
+  const t = useTranslations("Pulse");
   const { resolvedTheme } = useTheme();
-
-  // Load color theme - currently using Atypica system colors (adapts to light/dark mode)
-  // To switch themes, change the parameter: getColorTheme('ancientBabylon') or getColorTheme('default')
-  // Default to light mode if theme is not resolved yet (during hydration)
-  const COLOR_FAMILIES = useMemo(
-    () => getColorTheme('atypicaSystem', resolvedTheme === 'dark'),
-    [resolvedTheme]
-  );
 
   const gapColor = "#1a1b20"; // Black borders between blocks
   const categoryHeaderDefault = resolvedTheme === 'dark' ? "#000000" : "#2d3039"; // Black in dark mode, dark blue-gray in light mode
@@ -824,7 +713,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
         borderColor,
       };
     });
-  }, [pulseNodes, textMeasureCtx, COLOR_FAMILIES]);
+  }, [pulseNodes, textMeasureCtx, resolvedTheme]);
 
   const pulseClipDefs = useMemo(() => {
     return pulseRenderItems.map((item) => {

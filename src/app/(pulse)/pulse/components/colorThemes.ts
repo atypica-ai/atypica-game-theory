@@ -55,10 +55,7 @@ const THEME: ColorTheme = {
 /**
  * 获取当前主题的 color families
  */
-export function getColorTheme(
-  _themeName: string = 'atypicaSystem',
-  isDark: boolean = false
-): ColorFamilies {
+export function getColorTheme(isDark: boolean = false): ColorFamilies {
   if (isDark && THEME.darkModeFamilies) {
     return THEME.darkModeFamilies;
   }

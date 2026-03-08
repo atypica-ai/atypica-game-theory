@@ -26,7 +26,7 @@ interface RecommendationCardProps {
 export function RecommendationCard({ angle, pulse }: RecommendationCardProps) {
   const router = useRouter();
   const locale = useLocale();
-  const t = useTranslations("PulsePage");
+  const t = useTranslations("Pulse");
   const [isStarting, setIsStarting] = useState(false);
 
   const handleStartResearch = async () => {

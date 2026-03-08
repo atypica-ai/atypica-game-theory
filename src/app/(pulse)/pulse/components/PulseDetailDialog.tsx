@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
-import { XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
+import { XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { SparklesIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
@@ -33,7 +33,7 @@ export function PulseDetailDialog({
   pulse,
   onStartResearch,
 }: PulseDetailDialogProps) {
-  const t = useTranslations("PulsePage");
+  const t = useTranslations("Pulse");
   if (!pulse) return null;
 
   // Prepare chart data - only show last 5 days

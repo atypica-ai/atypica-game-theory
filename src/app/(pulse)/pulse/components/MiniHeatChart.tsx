@@ -17,7 +17,7 @@ interface MiniHeatChartProps {
  * Finviz style: white line on dark background, minimal styling
  */
 export function MiniHeatChart({ data }: MiniHeatChartProps) {
-  const t = useTranslations("PulsePage");
+  const t = useTranslations("Pulse");
 
   if (!data || data.length === 0) {
     return (

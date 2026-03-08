@@ -39,7 +39,7 @@ export function TreemapVisualization({
   selectedCategory,
   onCategoryClick,
 }: TreemapVisualizationProps) {
-  const t = useTranslations("PulsePage");
+  const t = useTranslations("Pulse");
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 1200, height: 600 });
   const [hoveredPulse, setHoveredPulse] = useState<{ pulse: Pulse; position: { x: number; y: number } } | null>(null);

@@ -18,7 +18,7 @@ export function CategoryBar({
   onCategoryChange,
   showRecommend = true,
 }: CategoryBarProps) {
-  const t = useTranslations("PulsePage");
+  const t = useTranslations("Pulse");
   return (
     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
       {/* Recommend button - only show if there are recommendations */}

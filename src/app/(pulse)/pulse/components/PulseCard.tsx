@@ -30,7 +30,7 @@ function formatHeatDelta(delta: number | null | undefined): string {
 
 export function PulseCard({ pulse, angle, highlighted, onClick }: PulseCardProps) {
   const locale = useLocale();
-  const t = useTranslations("PulsePage");
+  const t = useTranslations("Pulse");
   const heatDelta = pulse.heatDelta;
 
   // Normalize heatDelta: handle number, string, null, undefined

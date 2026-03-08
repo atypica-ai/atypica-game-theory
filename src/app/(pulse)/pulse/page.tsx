@@ -11,7 +11,7 @@ import authOptions from "@/app/(auth)/authOptions";
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const { getTranslations } = await import("next-intl/server");
-  const t = await getTranslations("PulsePage");
+  const t = await getTranslations("Pulse");
 
   return generatePageMetadata({
     title: t("title"),
