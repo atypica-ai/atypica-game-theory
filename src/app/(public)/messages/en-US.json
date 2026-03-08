@@ -59,8 +59,6 @@
     "purchaseSuperTeam": "Purchase SuperTeam",
     "purchasedTeam": "Already purchased Team",
     "purchasedSuperTeam": "Already purchased SuperTeam",
-    "cannotSwitchFromProToSuper": "Cannot switch from Pro to Super",
-    "cannotSwitchFromMaxToSuper": "Cannot switch from Max to Super",
     "cannotSwitchFromMaxToPro": "Cannot switch from Max to Pro",
     "cannotSwitchFromSuperToPro": "Cannot switch from Super to Pro",
     "cannotSwitchFromSuperToMax": "Cannot switch from Super to Max",

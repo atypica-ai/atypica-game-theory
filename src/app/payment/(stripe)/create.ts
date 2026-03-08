@@ -46,7 +46,7 @@ export async function createSubscriptionStripeSession({
   const { activeSubscription } = await fetchActiveSubscription({ userId });
 
   // Plan switching is not supported. Users must wait for current subscription to expire.
-  // Note: Pro → Max upgrade is handled by upgradeFromProToMaxAction, not this function.
+  // Note: Plan upgrades (Pro→Max, Pro→Super, Max→Super) are handled by upgradeSubscriptionAction, not this function.
   if (activeSubscription) {
     throw new Error(
       `Cannot switch subscription plans. You have an active ${activeSubscription.plan} subscription. Please wait until it expires or contact support.`,

@@ -4,214 +4,360 @@ import { fetchActiveSubscription } from "@/app/account/lib";
 import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
 import {
+  MAX_MONTHLY_GIFT,
+  MAX_MONTHLY_TOKENS,
   PRO_MONTHLY_GIFT,
   PRO_MONTHLY_TOKENS,
   resetUserMonthlyTokens,
 } from "@/app/payment/monthlyTokens";
+import { generateSubscriptionPeriods } from "@/app/payment/manualSubscription";
 import { trackUserServerSide } from "@/lib/analytics/server";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
-import { SubscriptionPlan } from "@/prisma/client";
+import { Currency, SubscriptionPlan } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { createPaymentRecord, getStripePriceIdForUser, requirePersonalUser } from "./utils";
+import {
+  createPaymentRecord,
+  generateOrderNo,
+  getOrCreateStripeCustomerIdForUser,
+  getStripePriceIdForUser,
+  requirePersonalUser,
+} from "./utils";
 
-function generateOrderNo() {
-  // Generate a unique order number
-  const timestamp = Date.now().toString();
-  const randomPart = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, "0");
-  const orderNo = `ATP${randomPart}${timestamp}`;
-  return orderNo;
+const VALID_UPGRADE_PATHS: Record<
+  string,
+  {
+    sourcePlans: SubscriptionPlan[];
+    targetProduct: ProductName;
+  }
+> = {
+  [SubscriptionPlan.max]: {
+    sourcePlans: [SubscriptionPlan.pro],
+    targetProduct: ProductName.MAX1MONTH,
+  },
+  [SubscriptionPlan.super]: {
+    sourcePlans: [SubscriptionPlan.pro, SubscriptionPlan.max],
+    targetProduct: ProductName.SUPER1MONTH,
+  },
+};
+
+function getSourceProductName(plan: SubscriptionPlan): ProductName {
+  switch (plan) {
+    case SubscriptionPlan.pro:
+      return ProductName.PRO1MONTH;
+    case SubscriptionPlan.max:
+      return ProductName.MAX1MONTH;
+    default:
+      throw new Error(`Unsupported source plan: ${plan}`);
+  }
 }
 
-export async function createProToMaxInvoice({ userId }: { userId: number }) {
-  const { monthlyBalance: currentMonthlyBalance } = await requirePersonalUser(userId);
-  const {
-    userType,
-    activeSubscription,
-    stripeSubscriptionId: activeStripeSubscriptionId,
-  } = await fetchActiveSubscription({ userId });
-  if (
-    userType !== "Personal" ||
-    !activeStripeSubscriptionId ||
-    !activeSubscription ||
-    !activeSubscription.paymentRecordId ||
-    activeSubscription.plan !== SubscriptionPlan.pro
-  ) {
+function getMonthlyInitial(plan: SubscriptionPlan): number {
+  switch (plan) {
+    case SubscriptionPlan.pro:
+      return PRO_MONTHLY_TOKENS + PRO_MONTHLY_GIFT;
+    case SubscriptionPlan.max:
+      return MAX_MONTHLY_TOKENS + MAX_MONTHLY_GIFT;
+    default:
+      throw new Error(`Unsupported source plan for discount: ${plan}`);
+  }
+}
+
+/** 校验升级路径 + 计算折扣，preview 和 createInvoice 共用 */
+async function resolveUpgradeContext({
+  userId,
+  targetPlan,
+}: {
+  userId: number;
+  targetPlan: SubscriptionPlan;
+}) {
+  const { user, monthlyBalance: currentMonthlyBalance } = await requirePersonalUser(userId);
+
+  const { userType, activeSubscription, stripeSubscriptionId } = await fetchActiveSubscription({
+    userId,
+  });
+  if (userType !== "Personal" || !activeSubscription || !activeSubscription.paymentRecordId) {
     throw new Error(
-      "Upgrade from PRO to MAX is only available to personal users with an existing PRO subscription, and paymentRecordId exists",
+      "Upgrade is only available to personal users with an active subscription and paymentRecordId",
     );
   }
-  const { currency } = await prisma.paymentRecord.findUniqueOrThrow({
-    where: {
-      id: activeSubscription.paymentRecordId,
-    },
-  });
 
-  const orderNo = generateOrderNo();
-  const [maxProduct, proProduct] = await Promise.all([
-    prisma.product.findUniqueOrThrow({
-      where: { name_currency: { name: ProductName.MAX1MONTH, currency } },
-    }),
-    prisma.product.findUniqueOrThrow({
-      where: { name_currency: { name: ProductName.PRO1MONTH, currency } },
-    }),
-  ]);
-  const proProductPriceInCents = proProduct.price * 100;
-  const maxProductPriceInCents = maxProduct.price * 100;
-
-  const stripe = stripeClient();
-
-  // 获取当前订阅信息
-  const currentSubscription = await stripe.subscriptions.retrieve(activeStripeSubscriptionId);
-  if (!currentSubscription.items.data.length) {
-    throw new Error("No subscription items found");
+  const upgradePath = VALID_UPGRADE_PATHS[targetPlan];
+  if (!upgradePath || !upgradePath.sourcePlans.includes(activeSubscription.plan)) {
+    throw new Error(`Invalid upgrade path: ${activeSubscription.plan} → ${targetPlan}`);
   }
 
-  // 计算折扣
+  const { currency } = await prisma.paymentRecord.findUniqueOrThrow({
+    where: { id: activeSubscription.paymentRecordId },
+  });
+
+  const sourceProductName = getSourceProductName(activeSubscription.plan);
+  const [targetProduct, sourceProduct] = await Promise.all([
+    prisma.product.findUniqueOrThrow({
+      where: { name_currency: { name: upgradePath.targetProduct, currency } },
+    }),
+    prisma.product.findUniqueOrThrow({
+      where: { name_currency: { name: sourceProductName, currency } },
+    }),
+  ]);
+
   const monthlyBalance = Math.max(currentMonthlyBalance, 0);
-  const monthlyInitial = PRO_MONTHLY_TOKENS + PRO_MONTHLY_GIFT;
+  const monthlyInitial = getMonthlyInitial(activeSubscription.plan);
+  const sourceProductPriceInCents = sourceProduct.price * 100;
+  const targetProductPriceInCents = targetProduct.price * 100;
   const discountAmountInCents = Math.floor(
-    proProductPriceInCents * (monthlyBalance / monthlyInitial),
+    sourceProductPriceInCents * (monthlyBalance / monthlyInitial),
   );
 
-  // const maxProductStripePriceId = maxProduct.stripePriceId;
-  const maxProductStripePriceId = getStripePriceIdForUser({
+  return {
+    user,
+    activeSubscription,
+    stripeSubscriptionId,
+    currency,
+    targetProduct,
+    upgradePath,
+    targetProductPriceInCents,
+    discountAmountInCents,
+  };
+}
+
+export async function previewUpgrade({
+  userId,
+  targetPlan,
+}: {
+  userId: number;
+  targetPlan: SubscriptionPlan;
+}): Promise<{
+  targetPrice: number;
+  discount: number;
+  finalPrice: number;
+  currency: string;
+}> {
+  const { currency, targetProductPriceInCents, discountAmountInCents } =
+    await resolveUpgradeContext({ userId, targetPlan });
+
+  return {
+    targetPrice: targetProductPriceInCents / 100,
+    discount: discountAmountInCents / 100,
+    finalPrice: (targetProductPriceInCents - discountAmountInCents) / 100,
+    currency,
+  };
+}
+
+/**
+ * 套餐升级：创建升级 invoice 并执行订阅切换。
+ *
+ * 支持路径：Pro → Max, Pro → Super, Max → Super
+ *
+ * ## 为什么用 standalone invoice 而不是挂到旧 subscription？
+ *
+ * 旧方案把 invoice 挂到旧 subscription 上，再通过 subscriptions.update() 改 price。
+ * 问题：如果用户取消了自动续费（Stripe sub 状态 canceled），update 会失败。
+ * 新方案创建 standalone invoice（不关联任何 subscription），与旧 sub 状态解耦。
+ *
+ * ## 为什么新 subscription 有 trial？
+ *
+ * 升级费用已经通过 standalone invoice 一次性收了（当月的差额）。
+ * 新 subscription 的 trial_end 设为旧订阅的结束时间，
+ * 这样 Stripe 在当前周期内不会重复收费，到期后才开始按新价格自动扣费。
+ * 用户侧看不到 trial——我们的 UI 只读本地 subscription 数据，不展示 Stripe 的 trial 状态。
+ *
+ * ## 执行顺序
+ *
+ * 1. 校验 + 计算折扣（resolveUpgradeContext）
+ * 2. 从旧 subscription 获取 payment method（但不 cancel）
+ * 3. 创建 standalone invoice → 添加 line items → finalize → 付款
+ * 4. 付款成功后：cancel 旧 Stripe sub + 创建新 Stripe sub
+ *    - 如果这一步失败，钱已收，本地记录照常创建，Stripe 侧需人工介入
+ * 5. 创建本地 payment record + 切换本地 subscription + 重置 tokens
+ */
+export async function createUpgradeInvoice({
+  userId,
+  targetPlan,
+}: {
+  userId: number;
+  targetPlan: SubscriptionPlan;
+}) {
+  const {
+    user,
+    activeSubscription,
+    stripeSubscriptionId,
+    currency,
+    targetProduct,
+    upgradePath,
+    targetProductPriceInCents,
+    discountAmountInCents,
+  } = await resolveUpgradeContext({ userId, targetPlan });
+
+  const targetStripePriceId = getStripePriceIdForUser({
     user: { id: userId },
-    product: maxProduct,
+    product: targetProduct,
   });
-  if (!maxProductStripePriceId) {
+  if (!targetStripePriceId) {
     throw new Error("Price ID is missing");
   }
 
+  const orderNo = generateOrderNo();
   const metadata: StripeMetadata = {
     project: "atypica",
     deployRegion: getDeployRegion(),
     orderNo,
-    productName: ProductName.MAX1MONTH,
+    productName: upgradePath.targetProduct,
+    invoiceType: "PlanUpgrade",
   };
 
-  // 创建升级发票（关联到订阅，但设置为手动收费）
+  // 获取 Stripe customer ID
+  const stripeCustomerId = await getOrCreateStripeCustomerIdForUser({
+    userId,
+    email: user.email,
+    currency: currency as Extract<Currency, "USD" | "CNY">,
+  });
+
+  const stripe = stripeClient();
+
+  // 从旧 subscription 获取 payment method（但先不 cancel）
+  if (!stripeSubscriptionId) {
+    throw new Error("No Stripe subscription found for upgrade");
+  }
+  const oldSub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+  const defaultPaymentMethod =
+    typeof oldSub.default_payment_method === "string"
+      ? oldSub.default_payment_method
+      : oldSub.default_payment_method?.id;
+  if (!defaultPaymentMethod) {
+    throw new Error("No payment method found on existing subscription");
+  }
+
+  // ===== 第一步：付款 =====
+  // 先付款，付款失败则旧 subscription 不受影响
   const upgradeInvoice = await stripe.invoices.create({
-    customer: currentSubscription.customer as string,
-    subscription: activeStripeSubscriptionId, // 👈 关联到订阅
+    customer: stripeCustomerId,
+    default_payment_method: defaultPaymentMethod,
+    // Stripe 默认会把 customer 上所有 pending invoice items 拉入新 invoice。
+    // 这里用 exclude 确保只有我们手动添加的 line items 进来，不受其他残留项影响。
+    pending_invoice_items_behavior: "exclude",
     collection_method: "charge_automatically",
-    auto_advance: false, // 👈 不自动 finalize，我们手动控制
-    metadata: {
-      ...metadata,
-      invoiceType: "ProToMaxUpgrade",
-    } as StripeMetadata,
+    auto_advance: false,
+    metadata: metadata as unknown as Record<string, string>,
   });
 
   await stripe.invoiceItems.create({
-    customer: currentSubscription.customer as string,
+    customer: stripeCustomerId,
     invoice: upgradeInvoice.id,
-    amount: maxProductPriceInCents,
+    amount: targetProductPriceInCents,
     currency: currency,
-    description: maxProduct.description,
+    description: targetProduct.description,
     metadata: {
       ...metadata,
       lineType: "Plan",
-    } as StripeMetadata,
+    } as unknown as Record<string, string>,
   });
 
-  // 如果有 token 折扣，添加折扣到发票
   if (discountAmountInCents > 0) {
     await stripe.invoiceItems.create({
-      customer: currentSubscription.customer as string,
+      customer: stripeCustomerId,
       invoice: upgradeInvoice.id,
       amount: -discountAmountInCents,
       currency: currency,
-      description: currency === "CNY" ? `基于剩余token的升级折扣` : `Token-based upgrade discount`,
+      description: currency === "CNY" ? "基于剩余token的升级折扣" : "Token-based upgrade discount",
       metadata: {
         ...metadata,
         lineType: "UpgradeDiscount",
-      } as StripeMetadata,
+      } as unknown as Record<string, string>,
     });
   }
 
-  // 手动 finalize 和支付升级发票
-  const finalizedUpgradeInvoice = await stripe.invoices.finalizeInvoice(upgradeInvoice.id!, {
+  const finalizedInvoice = await stripe.invoices.finalizeInvoice(upgradeInvoice.id!, {
     auto_advance: true,
   });
-  const paidInvoice = await stripe.invoices.pay(finalizedUpgradeInvoice.id!);
+  const paidInvoice = await stripe.invoices.pay(finalizedInvoice.id!);
 
-  // 确保 invoice 成功支付
   if (paidInvoice.status !== "paid") {
     throw new Error("Invoice payment failed");
   }
 
-  // 更新订阅到新价格（下个周期生效）
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const updatedSubscription = await stripe.subscriptions.update(activeStripeSubscriptionId, {
-    items: [
-      {
-        id: currentSubscription.items.data[0].id,
-        price: maxProductStripePriceId,
-      },
-    ],
-    metadata,
-    proration_behavior: "none", // 不要时间比例计费，下个月开始自动扣费，当月已经手动处理了
-    billing_cycle_anchor: "unchanged", // 本次 invoice 是手动扣款的，套餐周期保持不变，下一次自动扣款的时间点保持不变
-  });
+  // ===== 第二步：付款成功，cancel 旧 subscription + 创建新 subscription =====
+  // 新订阅从现在开始，持续一个自然月
+  const now = new Date();
+  now.setMilliseconds(0);
+  const [{ endsAt: newPlanEndsAt }] = generateSubscriptionPeriods(now, 1);
 
-  // 计算最终价格（考虑折扣）
-  const finalPrice = (maxProductPriceInCents - discountAmountInCents) / 100;
-  // invoice 已经支付成功，直接创建一个成功的支付记录，只创建一个 paymentLine，价格是折算后的价格
+  // 即使 Stripe 操作失败，本地记录也必须创建（钱已经收了）
+  let newStripeSubscriptionId: string | null = null;
+  try {
+    // prorate: false — Stripe 默认会按剩余天数生成一笔负数 credit 挂在 customer 上，
+    // 下次产生 invoice 时自动抵扣，以此实现差额付款。
+    // 我们的折扣是按 token 用量算的，不是按时间，所以关掉避免两套折扣逻辑叠加。
+    if (stripeSubscriptionId) {
+      const oldSub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+      if (oldSub.status !== "canceled") {
+        await stripe.subscriptions.cancel(stripeSubscriptionId, { prorate: false });
+      }
+    }
+    const newStripeSubscription = await stripe.subscriptions.create({
+      customer: stripeCustomerId,
+      items: [{ price: targetStripePriceId }],
+      trial_end: Math.floor(newPlanEndsAt.getTime() / 1000),
+      metadata: metadata as unknown as Record<string, string>,
+    });
+    newStripeSubscriptionId = newStripeSubscription.id;
+  } catch (error) {
+    // 付款已成功但 Stripe subscription 切换失败，本地记录照常创建，Stripe 侧需要人工介入
+    rootLogger.error({
+      msg: "Payment succeeded but Stripe subscription switch failed, requires manual intervention",
+      stripeSubscriptionId,
+      userId,
+      error: (error as Error).message,
+    });
+  }
+
+  // 创建本地 payment record
+  const finalPrice = (targetProductPriceInCents - discountAmountInCents) / 100;
   const paymentRecord = await createPaymentRecord({
     userId,
     orderNo,
     status: "succeeded",
     price: finalPrice,
-    product: maxProduct,
+    product: targetProduct,
     quantity: 1,
     stripeInvoice: paidInvoice,
   });
 
-  // 取消现在的 subscription，并创建一个新的 subscription，新的 subscription 开始时间是当前，结束时间和之前的订阅保持一致
-  const now = new Date();
-  now.setMilliseconds(0);
-  const planEndsAt = activeSubscription.endsAt;
+  // 结束旧本地 subscription
   await prisma.subscription.update({
     where: { id: activeSubscription.id },
     data: { endsAt: now },
   });
-  // subscription 取消以后，把 monthlyResetAt 设置成当前时间，resetUserMonthlyTokens 里面会进一步重置
+
+  // 重置 monthlyResetAt
   await prisma.tokensAccount.update({
     where: { userId },
     data: { monthlyResetAt: now },
   });
 
-  let stripeSubscriptionId: string | null;
-  const subscription_details = paidInvoice.parent?.subscription_details;
-  if (!subscription_details) {
-    rootLogger.error(
-      `No subscription details found for invoice ${paidInvoice.id} on paymentRecord ${paymentRecord.id}`,
-    );
-    stripeSubscriptionId = null;
-  } else if (typeof subscription_details.subscription === "string") {
-    stripeSubscriptionId = subscription_details.subscription;
-  } else {
-    stripeSubscriptionId = subscription_details.subscription.id;
-  }
-
+  // 创建新本地 subscription（完整一个自然月）
   await prisma.subscription.create({
     data: {
       userId,
-      plan: SubscriptionPlan.max,
+      plan: targetPlan,
       startsAt: now,
-      endsAt: planEndsAt,
+      endsAt: newPlanEndsAt,
       paymentRecordId: paymentRecord.id,
-      stripeSubscriptionId,
+      stripeSubscriptionId: newStripeSubscriptionId,
     },
   });
 
+  // 重置 tokens
   await resetUserMonthlyTokens({ userId });
 
-  // track user
+  // track
   trackUserServerSide({
     userId,
     traitTypes: ["revenue"],
   });
+}
+
+/** @deprecated Use createUpgradeInvoice({ userId, targetPlan: SubscriptionPlan.max }) */
+export async function createProToMaxInvoice({ userId }: { userId: number }) {
+  return createUpgradeInvoice({ userId, targetPlan: SubscriptionPlan.max });
 }

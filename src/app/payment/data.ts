@@ -37,6 +37,6 @@ export type StripeMetadata = {
   deployRegion: TDeployRegion;
   orderNo: string;
   productName: ProductName;
-  invoiceType?: "ProToMaxUpgrade"; // 升级订阅的时候才有
+  invoiceType?: "ProToMaxUpgrade" | "PlanUpgrade"; // 升级订阅的时候才有
   lineType?: "Plan" | "UpgradeDiscount"; // 升级订阅的时候，有两个 line，一个是
 };

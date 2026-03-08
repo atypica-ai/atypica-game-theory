@@ -211,8 +211,11 @@
       "maxGift": "限时优惠：每月额外赠送300万Token",
       "processing": "处理中...",
       "upgradeNotice": {
-        "title": "Pro套餐升级",
-        "description": "您当前已订阅Pro套餐。当您升级时，Pro套餐中未使用的tokens将抵扣Max套餐的费用，新的Max套餐将立即生效。"
+        "title": "套餐升级",
+        "description": "升级时，当前套餐中未使用的 tokens 将按比例抵扣新套餐的费用，新套餐将立即生效。",
+        "targetPrice": "新套餐价格",
+        "tokenCredit": "未使用 token 抵扣",
+        "totalDue": "本次应付金额"
       },
       "couponChoice": {
         "useAutoCoupon": "使用折扣：{coupon}",

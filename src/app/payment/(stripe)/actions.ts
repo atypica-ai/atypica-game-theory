@@ -4,12 +4,13 @@ import { ProductName } from "@/app/payment/data";
 import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
+import { SubscriptionPlan } from "@/prisma/client";
 import {
   createPaymentStripeSession,
   createSubscriptionStripeSession,
   createTeamSubscriptionStripeSession,
 } from "./create";
-import { createProToMaxInvoice } from "./upgrade";
+import { createUpgradeInvoice, previewUpgrade } from "./upgrade";
 
 export async function createStripeSessionAction({
   productName,
@@ -85,9 +86,12 @@ export async function createStripeSessionAction({
   });
 }
 
-export async function upgradeFromProToMaxAction(): Promise<ServerActionResult<void>> {
+export async function upgradeSubscriptionAction({
+  targetPlan,
+}: {
+  targetPlan: SubscriptionPlan;
+}): Promise<ServerActionResult<void>> {
   return withAuth(async (user) => {
-    // Block AWS Marketplace users from upgrading
     if (user.email.endsWith(AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN)) {
       return {
         success: false,
@@ -96,17 +100,36 @@ export async function upgradeFromProToMaxAction(): Promise<ServerActionResult<vo
     }
 
     try {
-      await createProToMaxInvoice({ userId: user.id });
-      return {
-        success: true,
-        data: undefined,
-      };
+      await createUpgradeInvoice({ userId: user.id, targetPlan });
+      return { success: true, data: undefined };
     } catch (error) {
-      rootLogger.error(`Error upgrading from Pro to Max: ${error}`);
-      return {
-        success: false,
-        message: (error as Error).message,
-      };
+      rootLogger.error({
+        msg: `Error upgrading subscription to ${targetPlan}`,
+        error: (error as Error).message,
+      });
+      return { success: false, message: (error as Error).message };
     }
   });
+}
+
+export async function previewUpgradeAction({
+  targetPlan,
+}: {
+  targetPlan: SubscriptionPlan;
+}): Promise<
+  ServerActionResult<{ targetPrice: number; discount: number; finalPrice: number; currency: string }>
+> {
+  return withAuth(async (user) => {
+    try {
+      const preview = await previewUpgrade({ userId: user.id, targetPlan });
+      return { success: true, data: preview };
+    } catch (error) {
+      return { success: false, message: (error as Error).message };
+    }
+  });
+}
+
+/** @deprecated Use upgradeSubscriptionAction({ targetPlan: SubscriptionPlan.max }) */
+export async function upgradeFromProToMaxAction(): Promise<ServerActionResult<void>> {
+  return upgradeSubscriptionAction({ targetPlan: SubscriptionPlan.max });
 }

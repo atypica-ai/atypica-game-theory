@@ -211,8 +211,11 @@
       "maxGift": "Limited Offer: +3M bonus tokens per month",
       "processing": "Processing...",
       "upgradeNotice": {
-        "title": "Pro Plan Upgrade",
-        "description": "You are currently subscribed to the Pro plan. When you upgrade, any unused tokens from your Pro plan will be credited towards the cost of the Max plan, and your new Max plan will start immediately."
+        "title": "Plan Upgrade",
+        "description": "When you upgrade, any unused tokens from your current plan will be credited towards the cost, and your new plan will start immediately.",
+        "targetPrice": "New plan price",
+        "tokenCredit": "Unused token credit",
+        "totalDue": "Amount due today"
       },
       "couponChoice": {
         "useAutoCoupon": "Use discount: {coupon}",

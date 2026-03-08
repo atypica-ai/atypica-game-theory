@@ -1,4 +1,4 @@
-import { upgradeFromProToMaxAction } from "@/app/payment/(stripe)/actions";
+import { previewUpgradeAction, upgradeSubscriptionAction } from "@/app/payment/(stripe)/actions";
 import {
   fetchProductPricesAction,
   getAvailableCouponInfoAction,
@@ -61,6 +61,14 @@ export const SubscriptionDialog = ({
   const [couponInfo, setCouponInfo] = useState<{ couponId: string; label: string } | null>(null);
   const [useCoupon, setUseCoupon] = useState(true); // 默认选中使用 coupon
 
+  // 升级预览：显示实际支付金额
+  const [upgradePreview, setUpgradePreview] = useState<{
+    targetPrice: number;
+    discount: number;
+    finalPrice: number;
+    currency: string;
+  } | null>(null);
+
   useEffect(() => {
     setError(usePayError);
   }, [usePayError]);
@@ -105,8 +113,29 @@ export const SubscriptionDialog = ({
     });
   }, [open, plan, currency]);
 
-  const isUpgradeFromPro = useMemo(() => {
-    return activeSubscription?.plan === SubscriptionPlan.pro && plan === SubscriptionPlan.max;
+  // 升级模式下，获取预览费用
+  useEffect(() => {
+    if (!open || !plan || !activeSubscription) return;
+    const currentPlan = activeSubscription.plan;
+    const canUpgrade =
+      (currentPlan === SubscriptionPlan.pro &&
+        (plan === SubscriptionPlan.max || plan === SubscriptionPlan.super)) ||
+      (currentPlan === SubscriptionPlan.max && plan === SubscriptionPlan.super);
+    if (!canUpgrade) {
+      setUpgradePreview(null);
+      return;
+    }
+    previewUpgradeAction({ targetPlan: plan }).then((result) => {
+      if (result.success) setUpgradePreview(result.data);
+    });
+  }, [open, plan, activeSubscription]);
+
+  const isUpgrade = useMemo(() => {
+    if (!activeSubscription || !plan) return false;
+    const currentPlan = activeSubscription.plan;
+    if (currentPlan === SubscriptionPlan.pro && (plan === SubscriptionPlan.max || plan === SubscriptionPlan.super)) return true;
+    if (currentPlan === SubscriptionPlan.max && plan === SubscriptionPlan.super) return true;
+    return false;
   }, [activeSubscription, plan]);
 
   const upgradeOrCreatePaymentLink = useCallback(
@@ -117,14 +146,14 @@ export const SubscriptionDialog = ({
       paymentProvider: PaymentProvider;
       productName: ProductName.MAX1MONTH | ProductName.PRO1MONTH | ProductName.SUPER1MONTH;
     }) => {
-      if (isUpgradeFromPro) {
+      if (isUpgrade) {
         setLoading(true);
         try {
-          const result = await upgradeFromProToMaxAction();
+          const result = await upgradeSubscriptionAction({ targetPlan: plan! });
           if (!result.success) throw result;
           setPaymentSuccess(true);
         } catch (error) {
-          console.log("Error upgrading from Pro to Max:", error);
+          console.log("Error upgrading subscription:", error);
           setError((error as Error).message);
         } finally {
           setLoading(false);
@@ -137,7 +166,7 @@ export const SubscriptionDialog = ({
         });
       }
     },
-    [createPaymentLink, isUpgradeFromPro, useCoupon, couponInfo],
+    [createPaymentLink, isUpgrade, plan, useCoupon, couponInfo],
   );
 
   return (
@@ -184,13 +213,40 @@ export const SubscriptionDialog = ({
           </>
         ) : (
           <>
-            {isUpgradeFromPro && (
+            {isUpgrade && (
               <div className="p-3 border rounded-lg mb-1 bg-blue-50 border-blue-200">
                 <div className="flex items-start gap-2">
                   <InfoIcon className="size-4 text-blue-600 mt-0.5 shrink-0" />
                   <div className="text-blue-800">
                     <div className="text-sm font-medium mb-1">{t("upgradeNotice.title")}</div>
                     <div className="text-xs text-blue-700">{t("upgradeNotice.description")}</div>
+                    {upgradePreview && (
+                      <div className="mt-2 text-xs text-blue-800 space-y-0.5">
+                        <div className="flex justify-between">
+                          <span>{t("upgradeNotice.targetPrice")}</span>
+                          <span>
+                            {upgradePreview.currency === "CNY" ? "¥" : "$"}
+                            {upgradePreview.targetPrice}
+                          </span>
+                        </div>
+                        {upgradePreview.discount > 0 && (
+                          <div className="flex justify-between">
+                            <span>{t("upgradeNotice.tokenCredit")}</span>
+                            <span>
+                              -{upgradePreview.currency === "CNY" ? "¥" : "$"}
+                              {upgradePreview.discount.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-semibold border-t border-blue-300 pt-1 mt-1">
+                          <span>{t("upgradeNotice.totalDue")}</span>
+                          <span>
+                            {upgradePreview.currency === "CNY" ? "¥" : "$"}
+                            {upgradePreview.finalPrice.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -241,7 +297,7 @@ export const SubscriptionDialog = ({
               </div>
             </div>
 
-            {couponInfo && !isUpgradeFromPro && (
+            {couponInfo && !isUpgrade && (
               <div className="flex flex-col gap-1.5">
                 <button
                   type="button"
@@ -317,7 +373,7 @@ export const SubscriptionDialog = ({
                     <LoaderCircle className="h-4 w-4 animate-spin" />
                     {t("processing")}
                   </>
-                ) : isUpgradeFromPro ? (
+                ) : isUpgrade ? (
                   t("upgrade")
                 ) : (
                   t("subscribe")

@@ -55,17 +55,11 @@ export function SuperPlanCard({
           <Button className="w-full mb-6" disabled variant="secondary">
             Current Plan
           </Button>
-        ) : !activeSubscription ? (
+        ) : !activeSubscription ||
+          activeSubscription.plan === SubscriptionPlan.pro ||
+          activeSubscription.plan === SubscriptionPlan.max ? (
           <Button className="w-full mb-6" onClick={onUpgrade}>
             {t("upgradeToSuper")}
-          </Button>
-        ) : activeSubscription.plan === SubscriptionPlan.pro ? (
-          <Button className="w-full mb-6 text-xs" disabled>
-            {t("cannotSwitchFromProToSuper")}
-          </Button>
-        ) : activeSubscription.plan === SubscriptionPlan.max ? (
-          <Button className="w-full mb-6 text-xs" disabled>
-            {t("cannotSwitchFromMaxToSuper")}
           </Button>
         ) : (
           <Button className="w-full mb-6" disabled>
