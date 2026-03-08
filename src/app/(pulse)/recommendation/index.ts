@@ -12,6 +12,7 @@
  */
 
 export { recommendPulsesForUser } from "./recommendPulses";
+export { recommendPulsesForActiveUsers } from "./recommendForActiveUsers";
 export { RECOMMEND_CONFIG } from "./config";
 export {
   recommendOutputSchema,

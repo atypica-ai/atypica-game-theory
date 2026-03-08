@@ -8,6 +8,7 @@ import { gatherPulsesForDataSource, gatherPulsesFromAllDataSources } from "@/app
 import { processHeatPipeline } from "@/app/(pulse)/heat";
 import { processExpirationTest } from "@/app/(pulse)/expiration";
 import { getAllDataSources } from "@/app/(pulse)/dataSources";
+import { recommendPulsesForActiveUsers } from "@/app/(pulse)/recommendation";
 
 export async function getDistinctCategories(): Promise<
   ServerActionResult<Array<{ category: string; pulseCount: number }>>
@@ -286,6 +287,23 @@ export async function getPulseStatistics(): Promise<
         postCount: (p.extra as { posts?: unknown[] } | null)?.posts?.length ?? 0,
       })),
     },
+  };
+}
+
+/**
+ * Trigger pulse recommendation
+ *
+ * @param userIds - Optional specific user IDs. If omitted, recommends for all active users.
+ */
+export async function triggerRecommendation(
+  userIds?: number[],
+): Promise<ServerActionResult<{ totalUsers: number; successfulUsers: number; failedUsers: number; totalPulsesRecommended: number }>> {
+  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+
+  const result = await recommendPulsesForActiveUsers(userIds);
+  return {
+    success: true,
+    data: result,
   };
 }
 
