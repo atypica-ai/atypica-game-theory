@@ -40,7 +40,7 @@ import { Logger } from "pino";
 import { UserChatContext } from "../context/types";
 import { notifyStudyInterruption } from "./notify";
 import { buildReferenceStudyContext } from "./referenceContext";
-import { persistReportToWorkspace } from "./reportWorkspace";
+
 import { fixReasoningPartsInModelMessages, outOfBalance, setBedrockCache } from "./utils";
 
 /**
@@ -504,20 +504,6 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
         const reportToken =
           generateReportTool.output.reportToken ?? generateReportTool.input.reportToken;
         if (reportToken) {
-          await persistReportToWorkspace({
-            userId,
-            studyUserChatId,
-            reportToken,
-            logger,
-          }).catch((error) => {
-            logger.error({
-              msg: "[ReportWorkspace] Failed to persist report workspace files",
-              reportToken,
-              studyUserChatId,
-              error: error instanceof Error ? error.message : String(error),
-            });
-          });
-
           // notifyReportCompletion({
           //   reportToken,
           //   studyUserChatId,

@@ -20,7 +20,7 @@ export async function ensureSkillAvailable(skillId: number): Promise<string> {
     },
   });
 
-  const localPath = getSkillLocalPath(skill.userId, skill.name);
+  const localPath = getSkillLocalPath({ userId: skill.userId, skillName: skill.name });
   const skillMdPath = path.join(localPath, "SKILL.md");
 
   try {

@@ -1,8 +1,7 @@
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
-import { getReportCacheFilePath } from "@/app/(study)/artifacts/lib/reportCache";
+import { readReportHtml } from "@/app/(study)/tools/generateReport/persistence";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { prismaRO } from "@/prisma/prisma";
-import { promises as fs } from "fs";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function injectImgTag(html: string, reportToken: string) {
@@ -49,14 +48,12 @@ async function getReportHtml(reportToken: string): Promise<string> {
   }
 
   // If report is generating, read from cache file
-  const cachePath = getReportCacheFilePath(analystReport.userId, reportToken);
-  try {
-    const html = await fs.readFile(cachePath, "utf-8");
-    return cleanHtmlFromMarkdown(html);
-  } catch {
-    // Fallback to database if cache file doesn't exist
-    return cleanHtmlFromMarkdown(analystReport.onePageHtml);
+  const cached = await readReportHtml({ userId: analystReport.userId, reportToken });
+  if (cached) {
+    return cleanHtmlFromMarkdown(cached);
   }
+  // Fallback to database if cache file doesn't exist
+  return cleanHtmlFromMarkdown(analystReport.onePageHtml);
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {

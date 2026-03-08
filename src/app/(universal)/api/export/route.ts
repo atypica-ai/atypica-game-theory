@@ -58,8 +58,8 @@ async function handleFileDownload(userId: number, filePath: string) {
   try {
     // Get actual disk path
     const basePath = filePath.startsWith("workspace/")
-      ? getWorkspaceDiskPath(userId)
-      : getSkillsDiskPath(userId);
+      ? getWorkspaceDiskPath({ userId })
+      : getSkillsDiskPath({ userId });
 
     const relativePath = filePath.replace(/^(workspace|skills)\//, "");
     const targetPath = path.join(basePath, relativePath);
@@ -127,8 +127,8 @@ async function handleFolderDownload(userId: number, folderPath: string) {
   try {
     // Get actual disk path
     const basePath = folderPath.startsWith("workspace/")
-      ? getWorkspaceDiskPath(userId)
-      : getSkillsDiskPath(userId);
+      ? getWorkspaceDiskPath({ userId })
+      : getSkillsDiskPath({ userId });
 
     const relativePath = folderPath.replace(/^(workspace|skills)\//, "");
     const targetPath = path.join(basePath, relativePath);

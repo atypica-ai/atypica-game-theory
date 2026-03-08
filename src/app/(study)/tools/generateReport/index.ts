@@ -12,8 +12,7 @@ import { prisma } from "@/prisma/prisma";
 import { syncReport as syncReportToMeili } from "@/search/lib/sync";
 import { waitUntil } from "@vercel/functions";
 import { FinishReason, ModelMessage, stepCountIs, streamText, tool } from "ai";
-import { promises as fs } from "fs";
-import { getReportCacheDir, getReportCacheFilePath } from "../../artifacts/lib/reportCache";
+import { getReportArtifactPath, initReportDir, writeReportHtml } from "./persistence";
 import { generateReportCoverImage } from "./coverImage";
 import {
   generateReportInputSchema,
@@ -234,9 +233,11 @@ export const generateReportTool = ({
         }),
       );
 
+      const artifactPath = getReportArtifactPath({ reportToken: report.token });
       return {
         reportToken: report.token,
-        plainText: `Report successfully generated. ${hint}`,
+        artifactPath,
+        plainText: `Report successfully generated at ${artifactPath}. ${hint}`,
       };
     },
   });
@@ -264,10 +265,10 @@ async function generateReport({
 } & AgentToolConfigArgs) {
   let onePageHtml = report.onePageHtml; // 如果 report 有内容，就继续使用 report 的 onePageHtml
 
+  await initReportDir({ userId, reportToken: report.token });
+
   const throttleSaveToFile = (() => {
     let timerId: NodeJS.Timeout | null = null;
-    const cacheDir = getReportCacheDir(userId, report.token);
-    const htmlFilePath = getReportCacheFilePath(userId, report.token);
 
     return async (html: string, { immediate }: { immediate?: boolean } = {}) => {
       if (immediate) {
@@ -288,8 +289,7 @@ async function generateReport({
 
       async function saveNow() {
         try {
-          await fs.mkdir(cacheDir, { recursive: true });
-          await fs.writeFile(htmlFilePath, html, "utf-8");
+          await writeReportHtml({ userId, reportToken: report.token, html });
           logger.info("HTML persisted to local cache successfully");
         } catch (error) {
           logger.error({
@@ -454,19 +454,8 @@ async function generateReport({
         });
         throw error;
       } finally {
-        // Cleanup temp file after generation complete
-        try {
-          const cacheDir = getReportCacheDir(userId, report.token);
-          const htmlFilePath = getReportCacheFilePath(userId, report.token);
-          await fs.unlink(htmlFilePath);
-          await fs.rmdir(cacheDir);
-          logger.info("Cleaned up cache directory");
-        } catch (error) {
-          logger.warn({
-            msg: "Failed to cleanup cache directory",
-            error: (error as Error).message,
-          });
-        }
+        // Report HTML persists at workspace/reports/{reportToken}/onePageHtml.html
+        // No cleanup — the file serves as the workspace artifact for agent access.
       }
       break;
     }

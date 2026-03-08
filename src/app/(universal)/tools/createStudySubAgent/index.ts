@@ -18,21 +18,22 @@ import {
   type CreateStudySubAgentToolResult,
 } from "./types";
 
-function buildSubAgentHardRequirementPrompt(locale: string) {
-  if (locale === "zh-CN") {
-    return `
-## SubAgent 强制执行要求（必须遵守）
-1. 在结束任务前，至少执行一次 \`interviewChat\`。
-2. 在结束任务前，必须执行一次 \`generateReport\` 并产出 reportToken。
-3. 只有在完成“访谈 + 报告生成”后，才允许输出最终总结。
-4. 不要向用户请求交互确认，直接自主完成研究与报告产出。`;
-  }
-  return `
-## Mandatory SubAgent Execution Requirements
-1. You MUST run \`interviewChat\` at least once before ending.
-2. You MUST run \`generateReport\` once and produce a reportToken before ending.
-3. You may output the final summary only after both interview and report generation are complete.
-4. Do not pause for user-interaction confirmation; finish the workflow autonomously.`;
+function buildSubAgentHardRequirementPrompt(locale: string): string {
+  return locale === "zh-CN"
+    ? [
+        "## SubAgent 执行要求",
+        "1. 不要向用户请求交互确认，直接自主完成研究。",
+        "2. 至少执行一次研究工具（interviewChat 或 discussionChat）收集数据。",
+        "3. 必须执行一次 generateReport 产出研究报告。",
+        "4. 在最终总结中，汇报你的关键发现、结论，以及产物的位置（如报告路径），供上级 agent 读取。",
+      ].join("\n")
+    : [
+        "## Mandatory SubAgent Execution Requirements",
+        "1. Do not pause for user-interaction confirmation; finish the workflow autonomously.",
+        "2. Run at least one research tool (interviewChat or discussionChat) to collect data.",
+        "3. Run generateReport once to produce a research report.",
+        "4. In your final summary, report your key findings, conclusions, and artifact locations (e.g. report path) so the lead agent can access them.",
+      ].join("\n");
 }
 
 function extractTextFromParts(parts: unknown): string {
@@ -234,7 +235,6 @@ export const createStudySubAgentTool = ({
           plainText: resultSummary,
           subAgentChatId: subAgentChat.id,
           subAgentChatToken: subAgentChat.token,
-          workspaceRunDir: `workspace/study-subagents/${subAgentChat.token}`,
         };
       } catch (error) {
         if (!subAgentChat) {
@@ -253,7 +253,6 @@ export const createStudySubAgentTool = ({
           plainText: `Task initialization failed: ${errorMessage}`,
           subAgentChatId: subAgentChat.id,
           subAgentChatToken: subAgentChat.token,
-          workspaceRunDir: `workspace/study-subagents/${subAgentChat.token}`,
         };
       }
     },

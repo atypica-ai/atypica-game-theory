@@ -9,7 +9,7 @@ export function generateContentHash(text: string): string {
 }
 
 function getFormatContentCachePath(userId: number): string {
-  return path.join(getWorkspaceDiskPath(userId), "format-content");
+  return path.join(getWorkspaceDiskPath({ userId }), "format-content");
 }
 
 function getCacheFilePath(userId: number, hash: string): string {

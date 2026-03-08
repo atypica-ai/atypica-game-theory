@@ -216,7 +216,7 @@ export interface WorkspaceFile {
 export async function listWorkspaceFiles(): Promise<ServerActionResult<WorkspaceFile[]>> {
   return withAuth(async (user) => {
     try {
-      const workspacePath = getWorkspaceDiskPath(user.id);
+      const workspacePath = getWorkspaceDiskPath({ userId: user.id });
       const files: WorkspaceFile[] = [];
 
       async function scanDirectory(dir: string, relativePath = "") {

@@ -69,11 +69,6 @@ export const studySystem = ({
   - 连续执行，无停顿
 </工具使用核心原则>
 
-<Workspace 协作协议>
-• 当生成报告（generateReport）后，必须将结果写入 workspace 的标准路径：study-subagents/{studyUserChatToken}/reports/{reportToken}/
-• 应包含：report.html、summary.md、meta.json，并在上级 reports/ 维护 latest.json
-• 后续任务开始前，优先读取已有 meta.json 与 summary.md，避免重复生成相同报告
-</Workspace 协作协议>
 
 ${attachmentRulesPrompt({ locale })}
 
@@ -395,11 +390,6 @@ Example Comparison:
   - Continuous execution, no pausing
 </CORE_TOOL_USAGE_PRINCIPLES>
 
-<WORKSPACE_COLLABORATION_PROTOCOL>
-- After generateReport, you must write outputs into the standard workspace path: study-subagents/{studyUserChatToken}/reports/{reportToken}/
-- Include report.html, summary.md, meta.json, and keep latest.json under parent reports/
-- Before continuing later steps, read existing meta.json and summary.md first to avoid duplicate report generation
-</WORKSPACE_COLLABORATION_PROTOCOL>
 
 ${attachmentRulesPrompt({ locale })}
 
