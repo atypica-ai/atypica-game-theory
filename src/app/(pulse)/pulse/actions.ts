@@ -170,7 +170,19 @@ export async function fetchUserRecommendations(): Promise<
     createdAt: Date | null;
   }>
 > {
-  return withAuth(async (user) => {
+  // TODO: 推荐功能暂缓，UserPulseRecommendation 表未创建
+  // 启用时：将 withAuth callback 参数改回 (user)，删除提前 return，取消下方注释
+  return withAuth(async () => {
+    return {
+      success: true,
+      data: {
+        recommendations: [],
+        method: null,
+        createdAt: null,
+      },
+    };
+
+    /*
     try {
       // Get latest recommendation for user
       const recommendation = await prisma.userPulseRecommendation.findFirst({
@@ -286,6 +298,7 @@ export async function fetchUserRecommendations(): Promise<
         message: (error as Error).message,
       };
     }
+    */
   });
 }
 

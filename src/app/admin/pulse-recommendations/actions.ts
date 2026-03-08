@@ -96,7 +96,9 @@ export async function testPulseRecommendation(
         })
       : [];
 
-  // Fetch latest recommendation metadata from UserPulseRecommendation
+  // TODO: 推荐功能暂缓，UserPulseRecommendation 表未创建，直接用内存结果
+  // 启用时取消以下注释，并将 return 中的 recommendations 和 recommendation 替换回来
+  /*
   const recommendation = await prisma.userPulseRecommendation.findFirst({
     where: { userId },
     select: {
@@ -113,12 +115,12 @@ export async function testPulseRecommendation(
     | Array<{ id: number; angle: string }>
     | undefined;
 
-  // Map recommendation data from DB format [{id, angle}] to API format [{pulseId, angle}]
   const recommendationsFromDb =
     recommendationData?.map((r) => ({
       pulseId: r.id,
       angle: r.angle,
     })) || result.recommendations;
+  */
 
   return {
     success: true,
@@ -126,16 +128,9 @@ export async function testPulseRecommendation(
       success: result.success,
       pulseCount: result.pulseCount,
       pulseIds: result.pulseIds,
-      recommendations: recommendationsFromDb,
+      recommendations: result.recommendations, // 启用时改为 recommendationsFromDb
       pulses,
-      recommendation: recommendation
-        ? {
-            method: extra?.method,
-            reasoning: extra?.reasoning,
-            createdAt: recommendation.createdAt,
-            updatedAt: recommendation.updatedAt,
-          }
-        : null,
+      recommendation: null, // 启用时改为 recommendation ? { method: extra?.method, reasoning: extra?.reasoning, createdAt: recommendation.createdAt, updatedAt: recommendation.updatedAt } : null
     },
   };
 }

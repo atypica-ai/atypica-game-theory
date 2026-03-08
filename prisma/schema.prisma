@@ -122,7 +122,7 @@ model User {
   userPersonaChatRelations       UserPersonaChatRelation[]
   interviewSessionsAsInterviewee InterviewSession[]
   awsMarketplaceCustomer         AWSMarketplaceCustomer?
-  pulseRecommendations          UserPulseRecommendation[]
+  // pulseRecommendations           UserPulseRecommendation[] // TODO: 推荐功能暂缓
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -666,7 +666,7 @@ model InterviewReport {
 model PersonaPanel {
   id          Int    @id @default(autoincrement())
   userId      Int
-  /// [number[]]
+  /// ![number[]]
   personaIds  Json   @default("[]") // Persona ID 列表
   title       String @default("") @db.VarChar(255)
   instruction String @default("") @db.Text // 用户指令
@@ -951,43 +951,40 @@ model AWSMarketplaceEvent {
 // ===== Pulse System =====
 
 model Pulse {
-  id          Int       @id @default(autoincrement())
-  category    String    @db.VarChar(100) // e.g., "AI Tech", "Fashion & Beauty"
-  dataSource  String    @db.VarChar(50) // e.g., "xTrend"
-  title       String    @db.VarChar(255)
-  content     String    @db.Text
-  locale      String    @default("en-US") @db.VarChar(16)
-  expireAt    DateTime  @db.Timestamptz(6)
-  heatScore   Float?    // Calculated HEAT score (current engagement)
-  heatDelta   Float?    // HEAT delta (change from yesterday)
-  expired     Boolean   @default(false) // Replaces expireAt logic
+  id         Int      @id @default(autoincrement())
+  category   String   @db.VarChar(100) // e.g., "AI Tech", "Fashion & Beauty"
+  dataSource String   @db.VarChar(50) // e.g., "xTrend"
+  title      String   @db.VarChar(255)
+  content    String   @db.Text
+  locale     String   @default("en-US") @db.VarChar(16)
+  expireAt   DateTime @db.Timestamptz(6)
+  heatScore  Float? // Calculated HEAT score (current engagement)
+  heatDelta  Float? // HEAT delta (change from yesterday)
+  expired    Boolean  @default(false) // Replaces expireAt logic
   /// [PulseExtra]
-  extra       Json      @default("{}")
+  extra      Json     @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  @@index([dataSource])
-  @@index([expireAt])
-  @@index([expired, expireAt])
-  @@index([category, expired])
   @@index([category, createdAt(sort: Desc)])
   @@index([category, expired, heatDelta(sort: Desc)])
-  @@index([createdAt(sort: Desc), heatScore])
+  @@index([expired, createdAt(sort: Desc), heatScore])
   @@index([title, category])
 }
 
-model UserPulseRecommendation {
-  id            Int       @id @default(autoincrement())
-  userId        Int
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pulseIds      Json      @default("[]") // Array of pulse IDs: number[]
-  recommendation Json     @default("[]") // Array of recommendations: [{id: number, angle: string}]
-  extra         Json      @default("{}") // Store reasoning, metadata, memorybased/random method, etc.
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([userId])
-  @@index([userId, createdAt(sort: Desc)])
-}
+// TODO: 推荐功能暂缓，启用时取消注释并生成 migration
+// model UserPulseRecommendation {
+//   id             Int  @id @default(autoincrement())
+//   userId         Int
+//   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   pulseIds       Json @default("[]")
+//   recommendation Json @default("[]")
+//   extra          Json @default("{}")
+//
+//   createdAt DateTime @default(now()) @db.Timestamptz(6)
+//   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+//
+//   @@index([userId])
+//   @@index([userId, createdAt(sort: Desc)])
+// }

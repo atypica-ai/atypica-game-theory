@@ -5,7 +5,6 @@ import { llm } from "@/ai/provider";
 import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
 import { generateObject } from "ai";
-import { InputJsonValue } from "@prisma/client/runtime/client";
 import { RECOMMEND_CONFIG } from "./config";
 import { pulseRecommendationPrompt } from "./prompt";
 import {
@@ -180,6 +179,9 @@ export async function recommendPulsesForUser(
     // 4. Store recommendations in UserPulseRecommendation table
     // Always create a new record to maintain history
     const pulseIds = recommendations.map((r) => r.pulseId);
+    // TODO: 推荐功能暂缓，UserPulseRecommendation 表未创建，跳过写入
+    // 启用时取消以下注释，并恢复 InputJsonValue import
+    /*
     const recommendationData: InputJsonValue = recommendations.map((r) => ({
       id: r.pulseId,
       angle: r.angle,
@@ -188,7 +190,6 @@ export async function recommendPulsesForUser(
       method,
       ...(reasoning && { reasoning }),
     };
-
     await prisma.userPulseRecommendation.create({
       data: {
         userId,
@@ -197,9 +198,10 @@ export async function recommendPulsesForUser(
         extra,
       },
     });
+    */
 
     userLogger.info({
-      success: true,
+      msg: "Recommendation generated (not persisted — table not yet created)",
       pulseCount: recommendations.length,
       method,
     });
