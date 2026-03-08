@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
-import { TriangleUpIcon, TriangleDownIcon } from "@radix-ui/react-icons";
+import { ChevronUpIcon, ChevronDownIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PulseCardProps {
@@ -91,8 +91,8 @@ export function PulseCard({ pulse, angle, highlighted, onClick }: PulseCardProps
                 isZero && "text-muted-foreground",
               )}
             >
-              {isPositive && <TriangleUpIcon className="h-3 w-3" />}
-              {isNegative && <TriangleDownIcon className="h-3 w-3" />}
+              {isPositive && <ChevronUpIcon className="h-3 w-3" />}
+              {isNegative && <ChevronDownIcon className="h-3 w-3" />}
               <span>{formatHeatDelta(heatDeltaNum)}</span>
             </div>
           ) : null}

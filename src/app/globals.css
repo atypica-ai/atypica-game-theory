@@ -208,28 +208,4 @@
   background-color: theme(--color-zinc-600);
 }
 
-/* Custom select dropdown styling for pulse filters */
-.pulse-select option {
-  padding: 8px 12px;
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-}
-
-.pulse-select option:hover,
-.pulse-select option:focus {
-  background-color: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
-}
-
-.pulse-select option:checked {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  font-weight: 500;
-}
-
-/* Dark mode adjustments for select options */
-.dark .pulse-select option {
-  background-color: hsl(var(--background));
-}
-
 @import "../components/ai-elements/streamdown.css";
