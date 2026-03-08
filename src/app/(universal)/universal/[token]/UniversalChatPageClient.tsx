@@ -96,10 +96,14 @@ export function UniversalChatPageClient({
     }
   }, [initialMessages]);
 
+  // Pass messages via ref so useUniversalChatSync doesn't re-render on every streaming chunk.
+  const messagesRef = useRef(useChatHelpers.messages as TUniversalMessageWithTool[]);
+  messagesRef.current = useChatHelpers.messages as TUniversalMessageWithTool[];
+
   useUniversalChatSync({
     userChatToken: userChat.token,
     userChatKind: userChat.kind,
-    messages: useChatHelpers.messages as TUniversalMessageWithTool[],
+    messagesRef,
     status: useChatHelpers.status,
     onSetMessages: useChatRef.current.setMessages,
   });
@@ -107,10 +111,18 @@ export function UniversalChatPageClient({
   const [filesPanelOpen, setFilesPanelOpen] = useState(false);
   const [progressDrawerOpen, setProgressDrawerOpen] = useState(false);
 
-  const tasks = useMemo(
-    () => extractTasksFromMessages(useChatHelpers.messages as TUniversalMessageWithTool[]),
-    [useChatHelpers.messages],
-  );
+  // During streaming, createStudySubAgent tool calls don't change — skip recomputation
+  // to keep the same array reference and prevent cascading useMemo/useEffect updates.
+  // Same pattern as study page's ChatBox which returns early during streaming.
+  const stableTasksRef = useRef<ReturnType<typeof extractTasksFromMessages>>([]);
+  const tasks = useMemo(() => {
+    if (useChatHelpers.status === "streaming" || useChatHelpers.status === "submitted") {
+      return stableTasksRef.current;
+    }
+    const next = extractTasksFromMessages(useChatHelpers.messages as TUniversalMessageWithTool[]);
+    stableTasksRef.current = next;
+    return next;
+  }, [useChatHelpers.messages, useChatHelpers.status]);
   const [subAgentRuntimeMap, setSubAgentRuntimeMap] = useState<Record<string, boolean>>(
     initialSubAgentRuntimeMap,
   );
@@ -237,6 +249,24 @@ export function UniversalChatPageClient({
     [],
   );
 
+  const handleOpenReport = useCallback(
+    ({ reportToken }: { toolCallId: string; reportToken: string }) => {
+      window.open(`/artifacts/report/${reportToken}/share`, "_blank");
+    },
+    [],
+  );
+
+  const renderUniversalToolUIPart = useCallback(
+    (toolPart: TUniversalMessageWithTool["parts"][number]) => (
+      <UniversalToolUIPartDisplay
+        toolUIPart={toolPart}
+        addToolResult={addToolResult}
+        onOpenReport={handleOpenReport}
+      />
+    ),
+    [addToolResult, handleOpenReport],
+  );
+
   const renderChatSession = (
     <UserChatSession
       nickname={{ assistant: "Atypica", user: session?.user?.email ?? t("you") }}
@@ -246,14 +276,7 @@ export function UniversalChatPageClient({
       }}
       useChatHelpers={useChatHelpers}
       useChatRef={useChatRef}
-      renderToolUIPart={(toolPart) => (
-        <UniversalToolUIPartDisplay
-          toolUIPart={toolPart}
-          addToolResult={addToolResult}
-          onOpenReport={({ toolCallId }) => openTaskDetail({ toolCallId, toolName: "" })}
-          onOpenTaskDetail={openTaskDetail}
-        />
-      )}
+      renderToolUIPart={renderUniversalToolUIPart}
       acceptAttachments={false}
       toolInvocationVariant="compact"
       hideToolInvocations

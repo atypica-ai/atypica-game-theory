@@ -31,7 +31,7 @@ function UniversalMajorTaskResultCard({
 }: {
   title: string;
   summary: string;
-  onOpenDetail: () => void;
+  onOpenDetail?: () => void;
 }) {
   const t = useTranslations("UniversalAgent");
   return (
@@ -40,9 +40,11 @@ function UniversalMajorTaskResultCard({
       <div className={cn("text-sm text-muted-foreground", summary ? "line-clamp-4" : "")}>
         {summary || t("taskDoneOpenDetailsHint")}
       </div>
-      <Button type="button" size="sm" variant="outline" onClick={onOpenDetail}>
-        {t("taskDetailsOpen")}
-      </Button>
+      {onOpenDetail ? (
+        <Button type="button" size="sm" variant="outline" onClick={onOpenDetail}>
+          {t("taskDetailsOpen")}
+        </Button>
+      ) : null}
     </div>
   );
 }
@@ -342,47 +344,53 @@ export function UniversalToolUIPartDisplay({
         <GenerateReportResultMessage toolInvocation={toolUIPart} onClickReport={onOpenReport} />
       );
     case `tool-${UniversalToolName.generatePodcast}`:
-      return onOpenTaskDetail ? (
+      return (
         <UniversalMajorTaskResultCard
           title={t("taskTitleGeneratePodcast")}
           summary={extractPlainText(toolUIPart)}
-          onOpenDetail={() =>
-            onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.generatePodcast })
+          onOpenDetail={
+            onOpenTaskDetail
+              ? () => onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.generatePodcast })
+              : undefined
           }
         />
-      ) : (
-        <GeneratePodcastResultMessage toolInvocation={toolUIPart} />
       );
     case `tool-${UniversalToolName.interviewChat}`:
-      return onOpenTaskDetail ? (
+      return (
         <UniversalMajorTaskResultCard
           title={t("taskTitlePersonaInterview")}
           summary={extractPlainText(toolUIPart)}
-          onOpenDetail={() =>
-            onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.interviewChat })
+          onOpenDetail={
+            onOpenTaskDetail
+              ? () => onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.interviewChat })
+              : undefined
           }
         />
-      ) : null;
+      );
     case `tool-${UniversalToolName.discussionChat}`:
-      return onOpenTaskDetail ? (
+      return (
         <UniversalMajorTaskResultCard
           title={t("taskTitleFocusGroupDiscussion")}
           summary={extractPlainText(toolUIPart)}
-          onOpenDetail={() =>
-            onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.discussionChat })
+          onOpenDetail={
+            onOpenTaskDetail
+              ? () => onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.discussionChat })
+              : undefined
           }
         />
-      ) : null;
+      );
     case `tool-${UniversalToolName.deepResearch}`:
-      return onOpenTaskDetail ? (
+      return (
         <UniversalMajorTaskResultCard
           title={t("taskTitleDeepResearch")}
           summary={extractPlainText(toolUIPart)}
-          onOpenDetail={() =>
-            onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.deepResearch })
+          onOpenDetail={
+            onOpenTaskDetail
+              ? () => onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.deepResearch })
+              : undefined
           }
         />
-      ) : null;
+      );
     case `tool-${UniversalToolName.updatePanel}`:
       return <UpdatePanelResultMessage toolInvocation={toolUIPart} />;
   }

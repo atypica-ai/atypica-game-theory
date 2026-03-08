@@ -4,61 +4,71 @@ import { TUniversalMessageWithTool, UniversalToolName } from "@/app/(universal)/
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { fetchUserChatStateByTokenAction } from "@/lib/userChat/actions";
 import { getToolName, isToolUIPart } from "ai";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchUniversalUserChatByToken } from "../actions";
 import {
   UNIVERSAL_CHAT_SYNC_VISIBLE_POLL_INTERVAL_MS,
   UNIVERSAL_HIDDEN_POLL_INTERVAL_MS,
 } from "../polling";
 
+/**
+ * Sync the universal chat with server-side state via polling.
+ *
+ * Design: messages are passed via ref (not as a reactive value) to avoid
+ * coupling the hook's effect cycles to the AI SDK's per-chunk streaming
+ * updates. During streaming, the AI SDK manages messages directly — this
+ * hook only activates when status is "ready" and the agent is idle.
+ */
 export function useUniversalChatSync({
   userChatToken,
   userChatKind,
-  messages,
+  messagesRef,
   status,
   onSetMessages,
 }: {
   userChatToken: string;
   userChatKind: "universal" | "study";
-  messages: TUniversalMessageWithTool[];
+  /** Ref to current messages — updated by the caller on every render, but
+   *  read on-demand here to avoid reactive deps on per-chunk changes. */
+  messagesRef: React.RefObject<TUniversalMessageWithTool[]>;
   status: string;
   onSetMessages: (messages: TUniversalMessageWithTool[]) => void;
 }) {
-  const hasPendingHumanInTheLoopTool = useMemo(
-    () =>
-      messages.some((message) =>
-        message.parts.some((part) => {
-          if (!isToolUIPart(part)) return false;
-          const toolName = getToolName(part);
-          const isHumanTool =
-            toolName === UniversalToolName.requestSelectPersonas ||
-            toolName === UniversalToolName.confirmPanelResearchPlan;
-          if (!isHumanTool) return false;
-          return part.state === "input-available" || part.state === "input-streaming";
-        }),
-      ),
-    [messages],
-  );
-  const hasPendingSubAgentToken = useMemo(
-    () =>
-      messages.some((message) =>
-        message.parts.some((part) => {
-          if (!isToolUIPart(part)) return false;
-          if (getToolName(part) !== UniversalToolName.createStudySubAgent) return false;
-          if (part.state !== "output-available") return true;
-          if (!part.output || typeof part.output !== "object") return true;
-          const output = part.output as Record<string, unknown>;
-          return typeof output.subAgentChatToken !== "string" || output.subAgentChatToken.length === 0;
-        }),
-      ),
-    [messages],
-  );
-
   const [isRunning, setIsRunning] = useState(false);
   const isRunningRef = useRef(false);
   const chatUpdatedAt = useRef<number | null>(null);
-  const { isDocumentVisible } = useDocumentVisibility();
   const messageSignatureRef = useRef("");
+  const { isDocumentVisible } = useDocumentVisibility();
+
+  // ── Helpers ─────────────────────────────────────────────────────────
+
+  /** Read current messages from ref and check pending flags on demand.
+   *  No useMemo — avoids re-scanning 26+ messages on every streaming chunk. */
+  const checkPendingFlags = useCallback(() => {
+    const messages = messagesRef.current;
+    const hasPendingHumanInTheLoopTool = messages.some((message) =>
+      message.parts.some((part) => {
+        if (!isToolUIPart(part)) return false;
+        const toolName = getToolName(part);
+        const isHumanTool =
+          toolName === UniversalToolName.requestSelectPersonas ||
+          toolName === UniversalToolName.confirmPanelResearchPlan;
+        if (!isHumanTool) return false;
+        return part.state === "input-available" || part.state === "input-streaming";
+      }),
+    );
+    const hasPendingSubAgentToken = messages.some((message) =>
+      message.parts.some((part) => {
+        if (!isToolUIPart(part)) return false;
+        if (getToolName(part) !== UniversalToolName.createStudySubAgent) return false;
+        if (part.state !== "output-available") return true;
+        if (!part.output || typeof part.output !== "object") return true;
+        const output = part.output as Record<string, unknown>;
+        return typeof output.subAgentChatToken !== "string" || output.subAgentChatToken.length === 0;
+      }),
+    );
+    return { hasPendingHumanInTheLoopTool, hasPendingSubAgentToken };
+  }, [messagesRef]);
 
   const buildMessageSignature = useCallback((targetMessages: TUniversalMessageWithTool[]) => {
     // Only serialize the last few messages in detail to avoid O(n) JSON.stringify on long conversations.
@@ -112,17 +122,14 @@ export function useUniversalChatSync({
     return `${totalCount}::${headSummaries.join("|")}||${tailDetails.join("||")}`;
   }, []);
 
+  // ── Init ────────────────────────────────────────────────────────────
+
   useEffect(() => {
     isRunningRef.current = isRunning;
   }, [isRunning]);
 
   useEffect(() => {
-    messageSignatureRef.current = buildMessageSignature(messages);
-  }, [buildMessageSignature, messages]);
-
-  useEffect(() => {
     let cancelled = false;
-
     const init = async () => {
       const result = await fetchUserChatStateByTokenAction({
         userChatToken,
@@ -134,12 +141,13 @@ export function useUniversalChatSync({
         chatUpdatedAt.current = result.data.chatMessageUpdatedAt.valueOf();
       }
     };
-
     init();
     return () => {
       cancelled = true;
     };
   }, [userChatKind, userChatToken]);
+
+  // ── Refresh (called by poll) ────────────────────────────────────────
 
   const refreshUniversalChat = useCallback(async () => {
     const stateResult = await fetchUserChatStateByTokenAction({
@@ -149,6 +157,7 @@ export function useUniversalChatSync({
     if (!stateResult.success) return;
 
     const { isRunning: nextIsRunning, chatMessageUpdatedAt } = stateResult.data;
+    const { hasPendingSubAgentToken } = checkPendingFlags();
     if (
       nextIsRunning === isRunningRef.current &&
       chatMessageUpdatedAt.valueOf() === chatUpdatedAt.current &&
@@ -172,13 +181,26 @@ export function useUniversalChatSync({
         onSetMessages(nextMessages);
       }
     }
-  }, [buildMessageSignature, hasPendingSubAgentToken, onSetMessages, userChatKind, userChatToken]);
+  }, [buildMessageSignature, checkPendingFlags, onSetMessages, userChatKind, userChatToken]);
+
+  // ── Poll ────────────────────────────────────────────────────────────
+  // Deps are all stable values (status string, boolean, callbacks).
+  // No dependency on `messages` — pending flags are read from ref inside poll.
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
 
+    // Set baseline signature from current messages when polling starts.
+    // This ensures the first fetch can correctly diff against the client state.
+    messageSignatureRef.current = buildMessageSignature(messagesRef.current);
+
     const poll = async () => {
-      if ((!isRunningRef.current && !hasPendingSubAgentToken) || hasPendingHumanInTheLoopTool || status !== "ready") {
+      const { hasPendingHumanInTheLoopTool, hasPendingSubAgentToken } = checkPendingFlags();
+      if (
+        (!isRunningRef.current && !hasPendingSubAgentToken) ||
+        hasPendingHumanInTheLoopTool ||
+        status !== "ready"
+      ) {
         return;
       }
       await refreshUniversalChat();
@@ -194,11 +216,5 @@ export function useUniversalChatSync({
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [
-    hasPendingHumanInTheLoopTool,
-    hasPendingSubAgentToken,
-    isDocumentVisible,
-    refreshUniversalChat,
-    status,
-  ]);
+  }, [buildMessageSignature, checkPendingFlags, isDocumentVisible, messagesRef, refreshUniversalChat, status]);
 }

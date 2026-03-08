@@ -9,10 +9,10 @@ import { GenerateReportExecutionView } from "@/app/(study)/tools/generateReport/
 import { InterviewChatExecutionView } from "@/app/(study)/tools/interviewChat/InterviewChatExecutionView";
 import { ScoutTaskChatExecutionView } from "@/app/(study)/tools/scoutTaskChat/ScoutTaskChatExecutionView";
 import { SearchPersonasExecutionView } from "@/app/(study)/tools/searchPersonas/SearchPersonasExecutionView";
-import { StudyToolName } from "@/app/(study)/tools/types";
+import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useStudyContext } from "./hooks/StudyContext";
 
 export function ToolConsole() {
@@ -24,6 +24,13 @@ export function ToolConsole() {
 
   const polling = !replay;
 
+  const renderToolUIPart = useCallback(
+    (toolPart: TStudyMessageWithTool["parts"][number]) => (
+      <StudyToolUIPartDisplay toolUIPart={toolPart} />
+    ),
+    [],
+  );
+
   switch (activeTool?.type) {
     case `tool-${StudyToolName.scoutTaskChat}`:
     case `tool-${StudyToolName.scoutSocialTrends}`:
@@ -32,7 +39,7 @@ export function ToolConsole() {
           toolInvocation={activeTool}
           studyUserChatToken={studyUserChat.token}
           polling={polling}
-          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
+          renderToolUIPart={renderToolUIPart}
         />
       );
     case `tool-${StudyToolName.interviewChat}`:
@@ -43,7 +50,7 @@ export function ToolConsole() {
           studyUserAvatarSeed={studyUserChat.id}
           polling={polling}
           researchTopic={studyUserChat.context.studyTopic}
-          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
+          renderToolUIPart={renderToolUIPart}
         />
       );
     case `tool-${StudyToolName.discussionChat}`:
@@ -69,7 +76,7 @@ export function ToolConsole() {
           toolInvocation={activeTool}
           parentChatToken={studyUserChat.token}
           polling={polling}
-          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
+          renderToolUIPart={renderToolUIPart}
         />
       );
     default:

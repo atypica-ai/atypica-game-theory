@@ -265,6 +265,13 @@ export function UniversalSubAgentToolPartDisplay({
 }) {
   const part = selectedPart.part;
 
+  const renderToolUIPart = useCallback(
+    (toolPart: Parameters<typeof StudyToolUIPartDisplay>[0]["toolUIPart"]) => (
+      <StudyToolUIPartDisplay toolUIPart={toolPart} />
+    ),
+    [],
+  );
+
   if (part.state === "output-error") {
     return (
       <div className="rounded-md border border-red-200 bg-red-50 text-red-700 p-3 text-xs">
@@ -293,7 +300,7 @@ export function UniversalSubAgentToolPartDisplay({
         studyUserAvatarSeed={studyUserChatToken}
         polling={polling}
         researchTopic={part.input?.instruction}
-        renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
+        renderToolUIPart={renderToolUIPart}
       />
     );
   }
@@ -308,7 +315,7 @@ export function UniversalSubAgentToolPartDisplay({
         toolInvocation={part}
         studyUserChatToken={studyUserChatToken}
         polling={polling}
-        renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
+        renderToolUIPart={renderToolUIPart}
       />
     );
   }
