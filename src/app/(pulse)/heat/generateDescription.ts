@@ -3,7 +3,8 @@
 import { llm } from "@/ai/provider";
 import { generateText } from "ai";
 import { Logger } from "pino";
-import type { Pulse, PulsePostData } from "@/prisma/client";
+import type { Pulse } from "@/prisma/client";
+import type { PulsePostData } from "./types";
 
 /**
  * Generate pulse description from posts using LLM

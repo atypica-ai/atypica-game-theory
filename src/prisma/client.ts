@@ -366,16 +366,7 @@ export type AgentSkillExtra = Partial<{
 // }>;
 
 // Pulse
-export type PulsePostData = {
-  postId: string;
-  content: string;
-  views: number;
-  likes: number;
-  retweets: number;
-  replies: number;
-  url?: string;
-  author?: string;
-};
+import type { PulsePostData } from "@/app/(pulse)/heat/types";
 
 export type PulseExtra = Partial<{
   posts: PulsePostData[];

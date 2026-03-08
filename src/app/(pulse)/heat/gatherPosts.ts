@@ -8,8 +8,9 @@ import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { z } from "zod";
 import { prisma } from "@/prisma/prisma";
 import { HEAT_CONFIG } from "./config";
-import type { PulsePostData, PulseExtra } from "@/prisma/client";
-import { createParser } from "@/ai/parser";
+import type { PulseExtra } from "@/prisma/client";
+import type { PulsePostData } from "./types";
+import { createStructuredExtractor } from "@/ai/structuredExtract";
 
 const MAX_STEPS = 2;
 
@@ -255,7 +256,7 @@ ${promptSystemConfig({ locale: "en-US" })}
         }
 
         try {
-          const parsePosts = createParser(postsSchema);
+          const parsePosts = createStructuredExtractor(postsSchema);
           const parsed = await parsePosts(text, {
             abortSignal: abortController.signal,
             logger: pulseLogger,

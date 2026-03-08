@@ -43,12 +43,12 @@ Extract all relevant information and call the outputParsedData tool with the par
  *   }))
  * });
  * 
- * const parsePosts = createParser(postSchema);
+ * const parsePosts = createStructuredExtractor(postSchema);
  * const result = await parsePosts(text);
  * // result.posts is typed correctly
  * ```
  */
-export function createParser<TSchema extends ZodSchema>(schema: TSchema) {
+export function createStructuredExtractor<TSchema extends ZodSchema>(schema: TSchema) {
   return async (
     text: string,
     options?: {

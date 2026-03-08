@@ -1,7 +1,7 @@
 "server-only";
 
 import { HEAT_CONFIG } from "./config";
-import type { PulsePostData } from "@/prisma/client";
+import type { PulsePostData } from "./types";
 
 /**
  * Min-max normalization (0-1 scale)
