@@ -1,22 +1,24 @@
+"use client";
+
 import { fetchUserChatByToken } from "@/app/(study)/study/actions";
 import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { fetchUserChatStateByTokenAction } from "@/lib/userChat/actions";
 import { ToolUIPart } from "ai";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import { StreamSteps } from "../StreamSteps";
+import { StreamSteps } from "@/app/(study)/study/console/StreamSteps";
 
-export function ScoutExecutionView({
+export function ScoutTaskChatExecutionView({
   toolInvocation,
   studyUserChatToken,
-  replay = false,
+  polling = true,
   renderToolUIPart,
 }: {
   toolInvocation: ToolUIPart<
     Pick<StudyUITools, StudyToolName.scoutTaskChat | StudyToolName.scoutSocialTrends>
   >;
   studyUserChatToken: string;
-  replay?: boolean;
+  polling?: boolean;
   renderToolUIPart: (toolPart: TStudyMessageWithTool["parts"][number]) => ReactNode;
 }) {
   const scoutUserChatToken = toolInvocation.input?.scoutUserChatToken;
@@ -28,8 +30,6 @@ export function ScoutExecutionView({
     const result = await fetchUserChatByToken(scoutUserChatToken, "scout");
     if (result.success) {
       setMessages(result.data.messages as TStudyMessageWithTool[]);
-    } else {
-      console.log(result.message);
     }
   }, [scoutUserChatToken]);
 
@@ -41,7 +41,6 @@ export function ScoutExecutionView({
       kind: "scout",
     });
     if (!result.success) {
-      console.log(result.message);
       return true;
     }
     const { isRunning: newIsRunning, chatMessageUpdatedAt } = result.data;
@@ -54,7 +53,7 @@ export function ScoutExecutionView({
   }, [scoutUserChatToken, isRunning, reloadMessages]);
 
   useEffect(() => {
-    if (replay) {
+    if (!polling) {
       reloadMessages();
       return;
     }
@@ -73,7 +72,7 @@ export function ScoutExecutionView({
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [refreshScoutUserChat, replay, reloadMessages]);
+  }, [refreshScoutUserChat, polling, reloadMessages]);
 
   return (
     <div className="space-y-6 w-full">

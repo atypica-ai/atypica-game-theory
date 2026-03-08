@@ -1,6 +1,7 @@
+"use client";
+
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { AnalystReportShareButton } from "@/app/(study)/study/components/AnalystReportShareButton";
-import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn } from "@/lib/utils";
@@ -8,12 +9,13 @@ import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export const GenerateReportConsole = ({
+export function GenerateReportExecutionView({
   toolInvocation,
+  showDownload = true,
 }: {
   toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.generateReport>>;
-}) => {
-  const { replay } = useStudyContext();
+  showDownload?: boolean;
+}) {
   const t = useTranslations("StudyPage.ToolConsole");
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,19 +30,15 @@ export const GenerateReportConsole = ({
     setIframeHeight(containerHeight ? Math.floor((containerHeight / ratio) * 100) : 1200);
   }, []);
 
-  // Update dimensions when component mounts and when container changes
   useEffect(() => {
     updateDimensions();
-    // Set up ResizeObserver to detect container size changes
     const resizeObserver = new ResizeObserver(() => {
       updateDimensions();
     });
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current);
     }
-    // Set up window resize listener
     window.addEventListener("resize", updateDimensions);
-    // Set up periodic check for size changes
     const intervalId = setInterval(updateDimensions, 2000);
     return () => {
       resizeObserver.disconnect();
@@ -70,7 +68,7 @@ export const GenerateReportConsole = ({
   }, [toolInvocation.input?.reportToken, toolInvocation.state]);
 
   return (
-    <div className={cn("h-full relative", !analystReport?.generatedAt ? "pb-10" : "pb-10")}>
+    <div className={cn("h-full relative pb-10")}>
       <div className="h-full" ref={containerRef}>
         {analystReport && (
           <iframe
@@ -91,14 +89,9 @@ export const GenerateReportConsole = ({
         </div>
       ) : (
         <div className="absolute right-0 bottom-0">
-          {/* <Button asChild variant="ghost" size="sm">
-            <Link href={publicReportUrl} target="_blank">
-              {t("shareReport")}
-            </Link>
-          </Button> */}
-          <AnalystReportShareButton reportToken={analystReport.token} download={!replay} />
+          <AnalystReportShareButton reportToken={analystReport.token} download={showDownload} />
         </div>
       )}
     </div>
   );
-};
+}

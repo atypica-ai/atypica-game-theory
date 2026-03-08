@@ -1,44 +1,77 @@
+"use client";
+
+import { ReasoningThinkingExecutionView } from "@/ai/tools/experts/reasoningThinking/ReasoningThinkingExecutionView";
+import { WebSearchExecutionView } from "@/ai/tools/experts/webSearch/WebSearchExecutionView";
+import { BuildPersonaExecutionView } from "@/app/(study)/tools/buildPersona/BuildPersonaExecutionView";
+import { CreateSubAgentExecutionView } from "@/app/(study)/tools/createSubAgent/CreateSubAgentExecutionView";
+import { DiscussionChatExecutionView } from "@/app/(study)/tools/discussionChat/DiscussionChatExecutionView";
+import { GenerateReportExecutionView } from "@/app/(study)/tools/generateReport/GenerateReportExecutionView";
+import { InterviewChatExecutionView } from "@/app/(study)/tools/interviewChat/InterviewChatExecutionView";
+import { ScoutTaskChatExecutionView } from "@/app/(study)/tools/scoutTaskChat/ScoutTaskChatExecutionView";
+import { SearchPersonasExecutionView } from "@/app/(study)/tools/searchPersonas/SearchPersonasExecutionView";
 import { StudyToolName } from "@/app/(study)/tools/types";
+import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import { ToolInvocationMessage } from "@/components/chat/ToolInvocationMessage";
 import { useMemo } from "react";
-import { BuildPersonaConsole } from "./console/BuildPersonaConsole";
-import { CreateSubAgentConsole } from "./console/CreateSubAgentConsole";
-import { DiscussionChatConsole } from "./console/DiscussionChatConsole";
-import { GenerateReportConsole } from "./console/GenerateReportConsole";
-import { InterviewChatConsole } from "./console/InterviewChatConsole";
-import { ReasoningThinkingConsole } from "./console/ReasoningThinkingConsole";
-import { ScoutTaskChatConsole } from "./console/ScoutTaskChatConsole";
-import { SearchPersonasConsole } from "./console/SearchPersonasConsole";
-import { WebSearchConsole } from "./console/WebSearchConsole";
 import { useStudyContext } from "./hooks/StudyContext";
 
 export function ToolConsole() {
-  const { viewToolInvocation, lastToolInvocation } = useStudyContext();
+  const { viewToolInvocation, lastToolInvocation, studyUserChat, replay } = useStudyContext();
 
   const activeTool = useMemo(() => {
     return viewToolInvocation || lastToolInvocation || null;
   }, [viewToolInvocation, lastToolInvocation]);
 
+  const polling = !replay;
+
   switch (activeTool?.type) {
     case `tool-${StudyToolName.scoutTaskChat}`:
     case `tool-${StudyToolName.scoutSocialTrends}`:
-      return <ScoutTaskChatConsole toolInvocation={activeTool} />;
+      return (
+        <ScoutTaskChatExecutionView
+          toolInvocation={activeTool}
+          studyUserChatToken={studyUserChat.token}
+          polling={polling}
+          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
+        />
+      );
     case `tool-${StudyToolName.interviewChat}`:
-      return <InterviewChatConsole toolInvocation={activeTool} />;
+      return (
+        <InterviewChatExecutionView
+          toolInvocation={activeTool}
+          studyUserChatToken={studyUserChat.token}
+          studyUserAvatarSeed={studyUserChat.id}
+          polling={polling}
+          researchTopic={studyUserChat.context.studyTopic}
+          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
+        />
+      );
     case `tool-${StudyToolName.discussionChat}`:
-      return <DiscussionChatConsole toolInvocation={activeTool} />;
+      return <DiscussionChatExecutionView toolInvocation={activeTool} polling={polling} />;
     case `tool-${StudyToolName.reasoningThinking}`:
-      return <ReasoningThinkingConsole toolInvocation={activeTool} />;
+      return <ReasoningThinkingExecutionView toolInvocation={activeTool} />;
     case `tool-${StudyToolName.generateReport}`:
-      return <GenerateReportConsole toolInvocation={activeTool} />;
+      return <GenerateReportExecutionView toolInvocation={activeTool} showDownload={polling} />;
     case `tool-${StudyToolName.buildPersona}`:
-      return <BuildPersonaConsole toolInvocation={activeTool} />;
+      return <BuildPersonaExecutionView toolInvocation={activeTool} polling={polling} />;
     case `tool-${StudyToolName.searchPersonas}`:
-      return <SearchPersonasConsole toolInvocation={activeTool} />;
+      return (
+        <SearchPersonasExecutionView
+          toolInvocation={activeTool}
+          userChatToken={studyUserChat.token}
+        />
+      );
     case `tool-${StudyToolName.webSearch}`:
-      return <WebSearchConsole toolInvocation={activeTool} />;
+      return <WebSearchExecutionView toolInvocation={activeTool} />;
     case `tool-${StudyToolName.createSubAgent}`:
-      return <CreateSubAgentConsole toolInvocation={activeTool} />;
+      return (
+        <CreateSubAgentExecutionView
+          toolInvocation={activeTool}
+          parentChatToken={studyUserChat.token}
+          polling={polling}
+          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
+        />
+      );
     default:
       return activeTool ? <ToolInvocationMessage toolInvocation={activeTool} /> : null;
   }

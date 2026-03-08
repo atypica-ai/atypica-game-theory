@@ -9,8 +9,8 @@ import {
 } from "@/ai/tools/social/ToolMessage";
 import { GeneratePodcastResultMessage } from "@/app/(study)/tools/generatePodcast/GeneratePodcastResultMessage";
 import { GenerateReportResultMessage } from "@/app/(study)/tools/generateReport/GenerateReportResultMessage";
-import { InterviewExecutionView } from "@/app/(study)/study/console/shared/InterviewExecutionView";
-import { ScoutExecutionView } from "@/app/(study)/study/console/shared/ScoutExecutionView";
+import { InterviewChatExecutionView } from "@/app/(study)/tools/interviewChat/InterviewChatExecutionView";
+import { ScoutTaskChatExecutionView } from "@/app/(study)/tools/scoutTaskChat/ScoutTaskChatExecutionView";
 import { ScoutTaskChatResultMessage } from "@/app/(study)/tools/scoutTaskChat/ScoutTaskChatResultMessage";
 import { SearchPersonasResultMessage } from "@/app/(study)/tools/searchPersonas/SearchPersonasResultMessage";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
@@ -257,11 +257,11 @@ function UniversalBuildPersonaResult({ part }: { part: UniversalSubAgentToolPart
 export function UniversalSubAgentToolPartDisplay({
   selectedPart,
   studyUserChatToken,
-  replay = false,
+  polling = true,
 }: {
   selectedPart: UniversalSubAgentToolPartVM;
   studyUserChatToken?: string;
-  replay?: boolean;
+  polling?: boolean;
 }) {
   const part = selectedPart.part;
 
@@ -287,11 +287,11 @@ export function UniversalSubAgentToolPartDisplay({
 
   if (part.type === `tool-${StudyToolName.interviewChat}` && studyUserChatToken) {
     return (
-      <InterviewExecutionView
+      <InterviewChatExecutionView
         toolInvocation={part}
         studyUserChatToken={studyUserChatToken}
         studyUserAvatarSeed={studyUserChatToken}
-        replay={replay}
+        polling={polling}
         researchTopic={part.input?.instruction}
         renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
       />
@@ -304,10 +304,10 @@ export function UniversalSubAgentToolPartDisplay({
     studyUserChatToken
   ) {
     return (
-      <ScoutExecutionView
+      <ScoutTaskChatExecutionView
         toolInvocation={part}
         studyUserChatToken={studyUserChatToken}
-        replay={replay}
+        polling={polling}
         renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
       />
     );

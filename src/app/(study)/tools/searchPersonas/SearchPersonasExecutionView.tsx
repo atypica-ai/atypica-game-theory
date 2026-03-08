@@ -1,5 +1,6 @@
+"use client";
+
 import { fetchSearchedPersonasInStudy } from "@/app/(study)/study/actions";
-import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { TPersonaForStudy } from "@/app/(study)/tools/buildPersona/types";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
@@ -10,52 +11,57 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { ToolUIPart } from "ai";
 import { LoaderIcon, UserCheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FC, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { HighPrecisionPersonaMethodology } from "./HighPrecisionPersonaMethodology";
 import "./styles/RealPersonCard.css";
 
 type TPersonaDetail = ExtractServerActionData<typeof fetchSearchedPersonasInStudy>[number];
 
-const PersonaGrids: FC<{
-  personas: TPersonaForStudy[];
-}> = ({ personas }) => {
+export function SearchPersonasExecutionView({
+  toolInvocation,
+  userChatToken,
+}: {
+  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.searchPersonas>>;
+  userChatToken: string;
+}) {
   const t = useTranslations("StudyPage.ToolConsole");
-  const { studyUserChat } = useStudyContext();
+
+  if (toolInvocation.state === "input-streaming" || toolInvocation.state === "input-available") {
+    return (
+      <div className="flex gap-2">
+        <div className="text-sm">{t("buildingPersona")}</div>
+        <div className="flex gap-1">
+          <span className="animate-bounce">·</span>
+          <span className="animate-bounce [animation-delay:0.2s]">·</span>
+          <span className="animate-bounce [animation-delay:0.4s]">·</span>
+        </div>
+      </div>
+    );
+  } else if (toolInvocation.state === "output-available") {
+    return <PersonaGrids personas={toolInvocation.output.personas} userChatToken={userChatToken} />;
+  } else {
+    return null;
+  }
+}
+
+function PersonaGrids({
+  personas,
+  userChatToken,
+}: {
+  personas: TPersonaForStudy[];
+  userChatToken: string;
+}) {
+  const t = useTranslations("StudyPage.ToolConsole");
   const [promptPersona, setPromptPersona] = useState<TPersonaDetail | null>(null);
   const [personasDetails, setPersonasDetails] = useState<TPersonaDetail[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // const realPersonaIds = useMemo(() => {
-  //   const isRealPersonPrompt = (prompt: string) => {
-  //     // Count Chinese characters
-  //     const chineseChars = (prompt.match(/[\u4e00-\u9fff]/g) || []).length;
-  //     // Count English words
-  //     const englishText = prompt.replace(/[\u4e00-\u9fff]/g, "");
-  //     const englishWords = englishText.trim() ? englishText.trim().split(/\s+/).length : 0;
-  //     return chineseChars > 700 || englishWords > 500;
-  //   };
-  //   const ids = personasDetails
-  //     .filter((detail) => isRealPersonPrompt(detail.prompt))
-  //     .map((detail) => detail.id);
-  //   return new Set(ids);
-  // }, [personasDetails]);
-  // const isRealPerson = useCallback(
-  //   (personaId: number) => {
-  //     return realPersonaIds.has(personaId);
-  //   },
-  //   [realPersonaIds],
-  // );
-  // const realPersonCount = realPersonaIds.size;
-
   const tier2Count = personasDetails.filter((persona) => persona.tier === 2).length;
-  // const tier3Count = personasDetails.filter((persona) => persona.tier === 3).length;
 
   const onPromptPersona = useCallback(
     (personaToken: string) => {
-      const promptPersona = personasDetails.find((persona) => persona.token === personaToken);
-      if (promptPersona) {
-        setPromptPersona(promptPersona);
-      }
+      const found = personasDetails.find((persona) => persona.token === personaToken);
+      if (found) setPromptPersona(found);
     },
     [personasDetails],
   );
@@ -63,13 +69,12 @@ const PersonaGrids: FC<{
   useEffect(() => {
     setIsLoading(true);
     fetchSearchedPersonasInStudy({
-      userChatToken: studyUserChat.token,
+      userChatToken,
       filterByPersonaIds: personas.map(({ personaId }) => personaId),
     })
       .then((result) => {
         if (!result.success) throw result;
-        const personas = result.data;
-        setPersonasDetails(personas);
+        setPersonasDetails(result.data);
       })
       .catch((error) => {
         console.log(error);
@@ -77,7 +82,7 @@ const PersonaGrids: FC<{
       .finally(() => {
         setIsLoading(false);
       });
-  }, [personas, studyUserChat.token]);
+  }, [personas, userChatToken]);
 
   if (isLoading) {
     return (
@@ -185,28 +190,4 @@ const PersonaGrids: FC<{
       </Dialog>
     </div>
   );
-};
-
-export const SearchPersonasConsole: FC<{
-  toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.searchPersonas>>;
-}> = ({ toolInvocation }) => {
-  const t = useTranslations("StudyPage.ToolConsole");
-
-  if (toolInvocation.state === "input-streaming" || toolInvocation.state === "input-available") {
-    return (
-      <div className="flex gap-2">
-        <div className="text-sm">{t("buildingPersona")}</div>
-        <div className="flex gap-1">
-          <span className="animate-bounce">·</span>
-          <span className="animate-bounce [animation-delay:0.2s]">·</span>
-          <span className="animate-bounce [animation-delay:0.4s]">·</span>
-        </div>
-      </div>
-    );
-  } else if (toolInvocation.state === "output-available") {
-    return <PersonaGrids personas={toolInvocation.output.personas} />;
-  } else {
-    // toolInvocation.state === "output-error"
-    return null;
-  }
-};
+}

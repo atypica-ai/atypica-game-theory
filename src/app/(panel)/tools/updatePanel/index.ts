@@ -62,7 +62,7 @@ export const updatePanelTool = ({
         panelId: updated.id,
         personaIds: mergedIds,
         title: updated.title || `Panel #${updated.id}`,
-        plainText: `Panel "${updated.title}" updated with ${mergedIds.length} personas (panelId: ${updated.id}). Link: /panel/${updated.id}`,
+        plainText: `Panel #${updated.id} updated with ${mergedIds.length} personas.`,
       };
     },
   });

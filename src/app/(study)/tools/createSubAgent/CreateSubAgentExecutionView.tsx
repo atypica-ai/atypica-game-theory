@@ -1,40 +1,37 @@
+"use client";
+
 import { fetchUserChatByToken } from "@/app/(study)/study/actions";
-import { useStudyContext } from "@/app/(study)/study/hooks/StudyContext";
 import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
-import { StudyToolUIPartDisplay } from "@/app/(study)/tools/ui";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useDocumentVisibility } from "@/hooks/use-document-visibility";
 import { fetchUserChatStateByTokenAction } from "@/lib/userChat/actions";
 import { ToolUIPart } from "ai";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { StreamSteps } from "./StreamSteps";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { StreamSteps } from "@/app/(study)/study/console/StreamSteps";
 
-export const CreateSubAgentConsole = ({
+export function CreateSubAgentExecutionView({
   toolInvocation,
+  parentChatToken,
+  polling = true,
+  renderToolUIPart,
 }: {
   toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.createSubAgent>>;
-}) => {
-  const { studyUserChat } = useStudyContext();
+  parentChatToken: string;
+  polling?: boolean;
+  renderToolUIPart: (toolPart: TStudyMessageWithTool["parts"][number]) => ReactNode;
+}) {
   const subAgentChatToken = toolInvocation.input?.subAgentChatToken;
   const [messages, setMessages] = useState<TStudyMessageWithTool[]>([]);
   const [isRunning, setIsRunning] = useState<boolean>(false);
 
-  const { replay } = useStudyContext();
-  // Console 不做回放，直接显示完整内容
-  const messagesDisplay = messages;
-
   const reloadMessages = useCallback(async () => {
     if (!subAgentChatToken) return;
-    // createSubAgent uses "misc" kind
     const result = await fetchUserChatByToken(subAgentChatToken, "misc");
     if (result.success) {
       setMessages(result.data.messages as TStudyMessageWithTool[]);
-    } else {
-      console.log(result.message);
     }
   }, [subAgentChatToken]);
 
-  // Use ref to ensure useCallback gets latest value without triggering updates
   const chatUpdatedAt = useRef<number | null>(null);
   const refreshSubAgentChat = useCallback(async () => {
     if (!subAgentChatToken) return;
@@ -43,7 +40,6 @@ export const CreateSubAgentConsole = ({
       kind: "misc",
     });
     if (!result.success) {
-      console.log(result.message);
       return;
     }
     const { isRunning: newIsRunning, chatMessageUpdatedAt } = result.data;
@@ -56,8 +52,7 @@ export const CreateSubAgentConsole = ({
 
   const { isDocumentVisible } = useDocumentVisibility();
   useEffect(() => {
-    if (replay) {
-      // If replay mode, only fetch once
+    if (!polling) {
       reloadMessages();
       return;
     }
@@ -67,30 +62,30 @@ export const CreateSubAgentConsole = ({
         timeoutId = setTimeout(poll, 30000);
         return;
       }
-      timeoutId = setTimeout(poll, 5000); // Poll every second when visible
+      timeoutId = setTimeout(poll, 5000);
       await refreshSubAgentChat();
     };
     poll();
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [refreshSubAgentChat, replay, reloadMessages, isDocumentVisible]);
+  }, [refreshSubAgentChat, polling, reloadMessages, isDocumentVisible]);
 
   return (
     <div className="space-y-6 w-full">
-      {messagesDisplay.map((message) => (
+      {messages.map((message) => (
         <StreamSteps<TStudyMessageWithTool>
           key={`message-${message.id}`}
           avatar={
             message.role === "assistant" ? (
               <HippyGhostAvatar seed={subAgentChatToken} />
             ) : message.role === "user" ? (
-              <HippyGhostAvatar seed={studyUserChat.token} />
+              <HippyGhostAvatar seed={parentChatToken} />
             ) : undefined
           }
           message={message}
-          renderToolUIPart={(toolPart) => <StudyToolUIPartDisplay toolUIPart={toolPart} />}
-        ></StreamSteps>
+          renderToolUIPart={renderToolUIPart}
+        />
       ))}
       {(toolInvocation.state === "input-streaming" ||
         toolInvocation.state === "input-available" ||
@@ -102,4 +97,4 @@ export const CreateSubAgentConsole = ({
       )}
     </div>
   );
-};
+}

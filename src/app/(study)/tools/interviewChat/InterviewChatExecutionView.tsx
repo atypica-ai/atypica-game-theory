@@ -1,3 +1,5 @@
+"use client";
+
 import { fetchPersonaInterviewInStudy } from "@/app/(study)/study/actions";
 import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
@@ -8,20 +10,20 @@ import { fetchUserChatStateByTokenAction } from "@/lib/userChat/actions";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
 import { ReactNode, useCallback, useEffect, useState } from "react";
-import { StreamSteps } from "../StreamSteps";
+import { StreamSteps } from "@/app/(study)/study/console/StreamSteps";
 
-export function InterviewExecutionView({
+export function InterviewChatExecutionView({
   toolInvocation,
   studyUserChatToken,
   studyUserAvatarSeed,
-  replay = false,
+  polling = true,
   researchTopic,
   renderToolUIPart,
 }: {
   toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.interviewChat>>;
   studyUserChatToken: string;
   studyUserAvatarSeed?: string | number;
-  replay?: boolean;
+  polling?: boolean;
   researchTopic?: string;
   renderToolUIPart: (toolPart: TStudyMessageWithTool["parts"][number]) => ReactNode;
 }) {
@@ -47,7 +49,7 @@ export function InterviewExecutionView({
               personaId={id}
               studyUserChatToken={studyUserChatToken}
               studyUserAvatarSeed={studyUserAvatarSeed}
-              replay={replay}
+              polling={polling}
               renderToolUIPart={renderToolUIPart}
             />
           </TabsContent>
@@ -97,13 +99,13 @@ function SingleInterviewExecution({
   personaId,
   studyUserChatToken,
   studyUserAvatarSeed,
-  replay,
+  polling,
   renderToolUIPart,
 }: {
   personaId: number;
   studyUserChatToken: string;
   studyUserAvatarSeed?: string | number;
-  replay: boolean;
+  polling: boolean;
   renderToolUIPart: (toolPart: TStudyMessageWithTool["parts"][number]) => ReactNode;
 }) {
   const t = useTranslations("StudyPage.ToolConsole");
@@ -124,11 +126,11 @@ function SingleInterviewExecution({
       setMessages((interviewUserChat?.messages || []) as TStudyMessageWithTool[]);
       setPersona(persona);
       setConclusion(conclusion);
-      if (replay) return false;
+      if (!polling) return false;
       if (!interviewUserChat?.token) {
         return !conclusion;
       }
-      if (!replay && interviewUserChat.token) {
+      if (interviewUserChat.token) {
         const stateResult = await fetchUserChatStateByTokenAction({
           userChatToken: interviewUserChat.token,
           kind: "interview",
@@ -144,10 +146,10 @@ function SingleInterviewExecution({
       console.log("Error fetching interview:", (error as Error).message);
       return true;
     }
-  }, [studyUserChatToken, personaId, replay]);
+  }, [studyUserChatToken, personaId, polling]);
 
   useEffect(() => {
-    if (replay) {
+    if (!polling) {
       fetchUpdate();
       return;
     }
@@ -166,7 +168,7 @@ function SingleInterviewExecution({
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [fetchUpdate, replay]);
+  }, [fetchUpdate, polling]);
 
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 

@@ -1,21 +1,17 @@
+"use client";
+
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import { ToolUIPart } from "ai";
-
-import {
-  ExternalLinkIcon,
-  ListIcon,
-  LoaderIcon,
-  MessageSquareIcon,
-  SearchIcon,
-} from "lucide-react";
+import { ExternalLinkIcon, ListIcon, LoaderIcon, MessageSquareIcon, SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { FC } from "react";
 import { Streamdown } from "streamdown";
 
-export const WebSearchConsole: FC<{
+export function WebSearchExecutionView({
+  toolInvocation,
+}: {
   toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.webSearch>>;
-}> = ({ toolInvocation }) => {
+}) {
   const t = useTranslations("Components.WebSearchResultMessage");
 
   return (
@@ -27,9 +23,7 @@ export const WebSearchConsole: FC<{
       </div>
 
       {toolInvocation.state === "input-streaming" || toolInvocation.state === "input-available" ? (
-        <>
-          <LoaderIcon className="animate-spin" size={16} />
-        </>
+        <LoaderIcon className="animate-spin" size={16} />
       ) : toolInvocation.state === "output-available" ? (
         <>
           {toolInvocation.output.answer && (
@@ -80,4 +74,4 @@ export const WebSearchConsole: FC<{
       ) : null}
     </div>
   );
-};
+}

@@ -1,14 +1,17 @@
+"use client";
+
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
 import { ToolUIPart } from "ai";
 import { useTranslations } from "next-intl";
-import { FC } from "react";
 import { Streamdown } from "streamdown";
 
-export const ReasoningThinkingConsole: FC<{
+export function ReasoningThinkingExecutionView({
+  toolInvocation,
+}: {
   toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.reasoningThinking>>;
-}> = ({ toolInvocation }) => {
+}) {
   const t = useTranslations("StudyPage.ToolConsole");
   return (
     <div
@@ -33,4 +36,4 @@ export const ReasoningThinkingConsole: FC<{
       ) : null}
     </div>
   );
-};
+}

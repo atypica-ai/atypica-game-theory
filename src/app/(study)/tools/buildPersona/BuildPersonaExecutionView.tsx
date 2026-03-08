@@ -1,3 +1,5 @@
+"use client";
+
 import { fetchPersonasByScoutUserChatToken } from "@/app/(study)/study/actions";
 import { StudyToolName, StudyUITools } from "@/app/(study)/tools/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
@@ -16,13 +18,17 @@ import { ExtractServerActionData } from "@/lib/serverAction";
 import { ToolUIPart } from "ai";
 import { SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FC, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type TPersonaDetail = ExtractServerActionData<typeof fetchPersonasByScoutUserChatToken>[number];
 
-export const BuildPersonaConsole: FC<{
+export function BuildPersonaExecutionView({
+  toolInvocation,
+  polling = true,
+}: {
   toolInvocation: ToolUIPart<Pick<StudyUITools, StudyToolName.buildPersona>>;
-}> = ({ toolInvocation }) => {
+  polling?: boolean;
+}) {
   const t = useTranslations("StudyPage.ToolConsole");
   const scoutUserChatToken = toolInvocation.input?.scoutUserChatToken;
   const [promptPersona, setPromptPersona] = useState<TPersonaDetail | null>(null);
@@ -30,10 +36,8 @@ export const BuildPersonaConsole: FC<{
 
   const onPromptPersona = useCallback(
     (personaId: number) => {
-      const promptPersona = personasDetails.find((persona) => persona.id === personaId);
-      if (promptPersona) {
-        setPromptPersona(promptPersona);
-      }
+      const found = personasDetails.find((persona) => persona.id === personaId);
+      if (found) setPromptPersona(found);
     },
     [personasDetails],
   );
@@ -43,26 +47,24 @@ export const BuildPersonaConsole: FC<{
     const result = await fetchPersonasByScoutUserChatToken({ scoutUserChatToken });
     if (result.success) {
       setPersonasDetails(result.data);
-    } else {
-      console.log("Failed to fetch personas:", result.message);
     }
   }, [scoutUserChatToken]);
 
   useEffect(() => {
-    if (toolInvocation.state === "output-available") {
+    if (toolInvocation.state === "output-available" || !polling) {
       fetchPersonasInProgress();
       return;
     }
     let timeoutId: NodeJS.Timeout;
     const poll = async () => {
-      timeoutId = setTimeout(poll, 5000); // 要放在前面，不然下面 return () 的时候如果 fetchPersonasInProgress 还没完成就不会 clearTimeout 了
+      timeoutId = setTimeout(poll, 5000);
       await fetchPersonasInProgress();
     };
     poll();
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [toolInvocation.state, fetchPersonasInProgress]);
+  }, [toolInvocation.state, fetchPersonasInProgress, polling]);
 
   return (
     <div>
@@ -90,9 +92,6 @@ export const BuildPersonaConsole: FC<{
                 {t("personaSource")}：{persona.source}
               </CardDescription>
             </CardHeader>
-            {/* <CardContent className="px-1">
-                <div className="line-clamp-2 text-sm">{persona.prompt}</div>
-              </CardContent> */}
             <CardFooter className="mt-auto px-0">
               <div className="flex flex-wrap gap-1.5">
                 {(persona.tags as string[])?.map((tag, index) => (
@@ -105,13 +104,12 @@ export const BuildPersonaConsole: FC<{
           </Card>
         ))}
 
-        {/* Loading Card */}
         {(toolInvocation.state === "input-streaming" ||
           toolInvocation.state === "input-available") && (
           <Card className="flex flex-col p-4 border-dashed border-2 bg-muted/20">
             <CardHeader className="px-0">
               <CardTitle className="flex items-center gap-2 overflow-hidden">
-                <div className="size-6 rounded-full bg-muted animate-pulse"></div>
+                <div className="size-6 rounded-full bg-muted animate-pulse" />
                 <div className="flex-1 flex items-center gap-2">
                   <div className="text-sm text-muted-foreground">{t("buildingPersona")}</div>
                   <div className="flex gap-1">
@@ -124,9 +122,9 @@ export const BuildPersonaConsole: FC<{
             </CardHeader>
             <CardFooter className="mt-auto px-0">
               <div className="flex flex-wrap gap-1.5">
-                <div className="h-5 w-12 bg-muted rounded animate-pulse"></div>
-                <div className="h-5 w-16 bg-muted rounded animate-pulse"></div>
-                <div className="h-5 w-10 bg-muted rounded animate-pulse"></div>
+                <div className="h-5 w-12 bg-muted rounded animate-pulse" />
+                <div className="h-5 w-16 bg-muted rounded animate-pulse" />
+                <div className="h-5 w-10 bg-muted rounded animate-pulse" />
               </div>
             </CardFooter>
           </Card>
@@ -159,4 +157,4 @@ export const BuildPersonaConsole: FC<{
       </Dialog>
     </div>
   );
-};
+}
