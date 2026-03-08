@@ -31,16 +31,34 @@ export const discussionChatTool = ({
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ instruction, personaIds, timelineToken }): Promise<DiscussionChatResult> => {
+    execute: async ({ panelId: inputPanelId, instruction, personaIds, timelineToken }): Promise<DiscussionChatResult> => {
       const discussionLogger = logger.child({ tool: "discussionChat", personaIds, timelineToken });
 
       try {
-        // Save PersonaPanel to database for reuse
-        const personaPanel = await recordPersonaPanelContext({
-          userId,
-          userChatId,
-          personaIds,
-        });
+        let personaPanel;
+        let resolvedPersonaIds = personaIds;
+        if (inputPanelId) {
+          personaPanel = await prisma.personaPanel.findUniqueOrThrow({
+            where: { id: inputPanelId },
+          }).catch(() => {
+            throw new Error(`Panel ${inputPanelId} not found.`);
+          });
+          const allowedIds = new Set(personaPanel.personaIds);
+          resolvedPersonaIds = personaIds.filter((id) => allowedIds.has(id));
+          if (resolvedPersonaIds.length < 2) {
+            return {
+              panelId: personaPanel.id,
+              timelineToken: "",
+              plainText: "Not enough personas from the specified panel to run a discussion (minimum 2).",
+            };
+          }
+        } else {
+          personaPanel = await recordPersonaPanelContext({
+            userId,
+            userChatId,
+            personaIds: resolvedPersonaIds,
+          });
+        }
 
         // Create DiscussionTimeline record first (with empty events) so frontend can start polling
         // Use the token provided from input schema (auto-generated)
@@ -69,10 +87,11 @@ export const discussionChatTool = ({
 
         const plainText =
           locale === "zh-CN"
-            ? `讨论已完成。${personaIds.length}位参与者进行了讨论。\n\n讨论总结：\n${summary}`
-            : `Discussion completed. ${personaIds.length} participants discussed.\n\nDiscussion Summary:\n${summary}`;
+            ? `讨论已完成。${resolvedPersonaIds.length}位参与者进行了讨论。\n\n讨论总结：\n${summary}`
+            : `Discussion completed. ${resolvedPersonaIds.length} participants discussed.\n\nDiscussion Summary:\n${summary}`;
 
         return {
+          panelId: personaPanel.id,
           timelineToken: discussionTimeline.token,
           plainText,
         };

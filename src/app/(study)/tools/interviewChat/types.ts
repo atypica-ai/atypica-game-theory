@@ -2,6 +2,12 @@ import { fixMalformedUnicodeString } from "@/lib/utils";
 import z from "zod/v3";
 
 export const interviewChatInputSchema = z.object({
+  panelId: z
+    .number()
+    .optional()
+    .describe(
+      "If provided, use this existing panel. Persona IDs will be filtered to only those belonging to the panel.",
+    ),
   personas: z
     .array(
       z.object({
@@ -30,6 +36,7 @@ export const interviewChatInputSchema = z.object({
 export type InterviewChatToolInput = z.infer<typeof interviewChatInputSchema>;
 
 export const interviewChatOutputSchema = z.object({
+  panelId: z.number(),
   issues: z.array(
     z.object({
       name: z.string(),

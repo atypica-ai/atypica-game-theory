@@ -19,12 +19,14 @@ import {
 export const searchPersonasTool = ({
   userId,
   userChatId,
+  autoCreatePanel = false,
   locale,
   statReport,
   logger,
 }: AgentToolConfigArgs & {
   userId: number;
   userChatId: number;
+  autoCreatePanel?: boolean;
 }) =>
   tool({
     description:
@@ -94,16 +96,22 @@ export const searchPersonasTool = ({
           personaIds: personas.map((p) => p.personaId),
         });
       }
-      await recordPersonaPanelContext({
-        userId,
-        userChatId,
-        personaIds: personas.map((p) => p.personaId),
-        instruction: searchQueries.join("\n"),
-      });
+      let panelId: number | undefined;
+      if (autoCreatePanel) {
+        const panel = await recordPersonaPanelContext({
+          userId,
+          userChatId,
+          personaIds: personas.map((p) => p.personaId),
+          instruction: searchQueries.join("\n"),
+        });
+        panelId = panel.id;
+      }
 
+      const panelSuffix = panelId ? ` (panelId: ${panelId})` : "";
       return {
+        panelId,
         personas,
-        plainText: `${personas.length} personas found: ${JSON.stringify(personas)}`,
+        plainText: `${personas.length} personas found${panelSuffix}: ${JSON.stringify(personas)}`,
       };
     },
   });

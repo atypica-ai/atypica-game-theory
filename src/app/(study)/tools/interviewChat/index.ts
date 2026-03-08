@@ -70,13 +70,34 @@ export const interviewChatTool = ({
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ personas, instruction, attachmentIds }): Promise<InterviewChatResult> => {
-      const personaPanel = await recordPersonaPanelContext({
-        userId,
-        userChatId,
-        personaIds: personas.map((p) => p.id),
-      });
-      const panelId = personaPanel.id;
+    execute: async ({ panelId: inputPanelId, personas, instruction, attachmentIds }): Promise<InterviewChatResult> => {
+      let resolvedPanelId: number;
+      let resolvedPersonas = personas;
+      if (inputPanelId) {
+        const panel = await prisma.personaPanel.findUniqueOrThrow({
+          where: { id: inputPanelId },
+        }).catch(() => {
+          throw new Error(`Panel ${inputPanelId} not found.`);
+        });
+        resolvedPanelId = panel.id;
+        const allowedIds = new Set(panel.personaIds);
+        resolvedPersonas = personas.filter((p) => allowedIds.has(p.id));
+        if (resolvedPersonas.length === 0) {
+          return {
+            panelId: resolvedPanelId,
+            issues: personas.map((p) => ({ name: p.name, issue: "Persona not in panel" })),
+            plainText: "None of the provided personas belong to the specified panel.",
+          };
+        }
+      } else {
+        const personaPanel = await recordPersonaPanelContext({
+          userId,
+          userChatId,
+          personaIds: personas.map((p) => p.id),
+        });
+        resolvedPanelId = personaPanel.id;
+      }
+      const panelId = resolvedPanelId;
 
       // Resolve attachment IDs from parent study chat
       type AttachmentWithId = ChatMessageAttachment & { id: number };
@@ -153,7 +174,7 @@ export const interviewChatTool = ({
           };
         }
       };
-      const interviewResults = await Promise.all(personas.map(single));
+      const interviewResults = await Promise.all(resolvedPersonas.map(single));
 
       // Generate summary similar to discussionChat
       const successfulInterviews = interviewResults.filter(
@@ -167,10 +188,11 @@ export const interviewChatTool = ({
 
       const plainText =
         locale === "zh-CN"
-          ? `访谈已完成，共 ${personas.length} 位参与者。${failedInterviews.length > 0 ? `其中 ${failedInterviews.length} 位访谈遇到问题。` : ""}\n\n${summary}`
-          : `Interview completed with ${personas.length} participants.${failedInterviews.length > 0 ? ` ${failedInterviews.length} interview(s) encountered issues.` : ""}\n\n${summary}`;
+          ? `访谈已完成，共 ${resolvedPersonas.length} 位参与者。${failedInterviews.length > 0 ? `其中 ${failedInterviews.length} 位访谈遇到问题。` : ""}\n\n${summary}`
+          : `Interview completed with ${resolvedPersonas.length} participants.${failedInterviews.length > 0 ? ` ${failedInterviews.length} interview(s) encountered issues.` : ""}\n\n${summary}`;
 
       return {
+        panelId,
         issues: failedInterviews,
         plainText,
       };

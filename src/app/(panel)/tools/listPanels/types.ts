@@ -22,12 +22,9 @@ const panelSummarySchema = z.object({
       id: z.number(),
       name: z.string(),
       tags: z.array(z.string()),
+      tier: z.number(),
     }),
   ),
-  usageCount: z.object({
-    discussions: z.number(),
-    interviews: z.number(),
-  }),
   createdAt: z.string(),
   updatedAt: z.string(),
   link: z.string(),

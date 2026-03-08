@@ -37,11 +37,9 @@ export const updatePanelTool = ({
     execute: async ({ panelId, personaIds, title }): Promise<UpdatePanelToolOutput> => {
       const panel = panelId
         ? await prisma.personaPanel
-            .findFirstOrThrow({ where: { id: panelId, userId } })
+            .findUniqueOrThrow({ where: { id: panelId } })
             .catch(() => {
-              throw new Error(
-                `Panel ${panelId} not found or does not belong to the current user.`,
-              );
+              throw new Error(`Panel ${panelId} not found.`);
             })
         : await recordPersonaPanelContext({
             userId,

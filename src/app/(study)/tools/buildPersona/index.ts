@@ -28,6 +28,7 @@ type TReduceTokens = {
 export const buildPersonaTool = ({
   userId,
   userChatId,
+  autoCreatePanel = false,
   locale,
   abortSignal,
   statReport,
@@ -35,6 +36,7 @@ export const buildPersonaTool = ({
 }: {
   userId: number;
   userChatId: number;
+  autoCreatePanel?: boolean;
 } & AgentToolConfigArgs) =>
   tool({
     description: `Build AI personas from scout task results. Can optionally accept persona requirements from research plan to guide construction.
@@ -106,15 +108,21 @@ The tool will create 3-5 personas based on collected data and requirements.`,
           personaIds: personas.map((persona) => persona.personaId),
         });
       }
-      await recordPersonaPanelContext({
-        userId,
-        userChatId,
-        personaIds: personas.map((p) => p.personaId),
-        instruction: description,
-      });
+      let panelId: number | undefined;
+      if (autoCreatePanel) {
+        const panel = await recordPersonaPanelContext({
+          userId,
+          userChatId,
+          personaIds: personas.map((p) => p.personaId),
+          instruction: description,
+        });
+        panelId = panel.id;
+      }
+      const panelSuffix = panelId ? ` (panelId: ${panelId})` : "";
       return {
+        panelId,
         personas,
-        plainText: `${personas.length} personas build: ${JSON.stringify(personas)}`,
+        plainText: `${personas.length} personas built${panelSuffix}: ${JSON.stringify(personas)}`,
       };
     },
   });

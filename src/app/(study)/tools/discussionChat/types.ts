@@ -2,6 +2,12 @@ import { generateToken } from "@/lib/utils";
 import z from "zod/v3";
 
 export const discussionChatInputSchema = z.object({
+  panelId: z
+    .number()
+    .optional()
+    .describe(
+      "If provided, use this existing panel. Persona IDs will be filtered to only those belonging to the panel.",
+    ),
   instruction: z
     .string()
     .describe(
@@ -24,6 +30,7 @@ export const discussionChatInputSchema = z.object({
 export type DiscussionChatToolInput = z.infer<typeof discussionChatInputSchema>;
 
 export const discussionChatOutputSchema = z.object({
+  panelId: z.number(),
   timelineToken: z.string().describe("Database record token for loading timeline data"),
   plainText: z.string().describe("Tool output text for LLM reading"),
 });

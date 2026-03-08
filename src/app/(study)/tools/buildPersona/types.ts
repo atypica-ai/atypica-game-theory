@@ -24,6 +24,7 @@ export const buildPersonaInputSchema = z.object({
 export type BuildPersonaToolInput = z.infer<typeof buildPersonaInputSchema>;
 
 export const buildPersonaOutputSchema = z.object({
+  panelId: z.number().optional(),
   personas: z.array(
     z.object({
       personaId: z.number(),

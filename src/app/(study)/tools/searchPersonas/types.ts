@@ -19,6 +19,7 @@ export const searchPersonasInputSchema = z.object({
 export type SearchPersonasToolInput = z.infer<typeof searchPersonasInputSchema>;
 
 export const searchPersonasOutputSchema = z.object({
+  panelId: z.number().optional(),
   personas: z.array(
     z.object({
       personaId: z.number(),
