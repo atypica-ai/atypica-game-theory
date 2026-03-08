@@ -1,31 +1,23 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ExtractServerActionData } from "@/lib/serverAction";
-import { throwServerActionError } from "@/lib/serverAction";
-import {
-  Loader2Icon,
-  RefreshCwIcon,
-  TrendingUpIcon,
-  XCircleIcon,
-} from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { ExtractServerActionData, throwServerActionError } from "@/lib/serverAction";
+import { Loader2Icon, PlayIcon, RefreshCwIcon, TrendingUpIcon, XCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  getDistinctCategories,
   getAllAvailableDataSources,
+  getDistinctCategories,
   getPulseStatistics,
+  getXTrendCategoryConfig,
   triggerAllDataSourcesGathering,
   triggerDataSourceGathering,
   triggerExpirationTest,
+  triggerFullPipeline,
   triggerHeatPipeline,
+  updateXTrendCategoryConfig,
 } from "./actions";
 
 type TPulseCategory = ExtractServerActionData<typeof getDistinctCategories>[number];
@@ -44,8 +36,12 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
   const [isLoading, setIsLoading] = useState(true);
   const [triggeringDataSource, setTriggeringDataSource] = useState<string | null>(null);
   const [triggeringAll, setTriggeringAll] = useState(false);
+  const [runningFullPipeline, setRunningFullPipeline] = useState(false);
   const [processingHeat, setProcessingHeat] = useState(false);
   const [processingExpiration, setProcessingExpiration] = useState(false);
+  const [categoryConfigJson, setCategoryConfigJson] = useState<string>("");
+  const [categoryConfigError, setCategoryConfigError] = useState<string | null>(null);
+  const [savingCategoryConfig, setSavingCategoryConfig] = useState(false);
 
   const loadCategories = async () => {
     try {
@@ -83,9 +79,55 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
     }
   };
 
+  const loadCategoryConfig = async () => {
+    try {
+      const result = await getXTrendCategoryConfig();
+      if (result.success) {
+        const categories = result.data.categories;
+        if (categories.length > 0) {
+          setCategoryConfigJson(JSON.stringify(categories, null, 2));
+        } else {
+          // Show suggested starter config when no categories are configured
+          setCategoryConfigJson(
+            JSON.stringify(
+              [
+                {
+                  name: "AI Tech",
+                  query: "AI agents OR LLM OR Claude OR GPT OR OpenAI OR Anthropic OR Gemini",
+                },
+                {
+                  name: "Creator Economy",
+                  query:
+                    "creator economy OR newsletter OR indie hacker OR solopreneur OR build in public",
+                },
+                {
+                  name: "Consumer Trends",
+                  query: "trending product OR viral brand OR consumer behavior OR Gen Z shopping",
+                },
+                {
+                  name: "Web3 & Crypto",
+                  query: "crypto OR DeFi OR NFT OR blockchain OR Bitcoin OR Ethereum",
+                },
+              ],
+              null,
+              2,
+            ),
+          );
+        }
+      }
+    } catch {
+      toast.error("Failed to load category config");
+    }
+  };
+
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([loadCategories(), loadDataSources(), loadStatistics()]).finally(() => {
+    Promise.all([
+      loadCategories(),
+      loadDataSources(),
+      loadStatistics(),
+      loadCategoryConfig(),
+    ]).finally(() => {
       setIsLoading(false);
     });
   }, []);
@@ -137,10 +179,61 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
       );
       await loadStatistics();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to process HEAT pipeline";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to process HEAT pipeline";
       toast.error(errorMessage);
     } finally {
       setProcessingHeat(false);
+    }
+  };
+
+  const handleRunFullPipeline = async () => {
+    setRunningFullPipeline(true);
+    try {
+      const result = await triggerFullPipeline();
+      if (!result.success) {
+        throwServerActionError(result);
+      }
+      const { totalPulses, heatProcessed, heatErrors, expired, kept } = result.data;
+      toast.success(
+        `Pipeline done: ${totalPulses} gathered, ${heatProcessed} HEAT scored (${heatErrors} errors), ${expired} expired / ${kept} kept`,
+      );
+      await Promise.all([loadCategories(), loadDataSources(), loadStatistics()]);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Pipeline failed");
+    } finally {
+      setRunningFullPipeline(false);
+    }
+  };
+
+  const handleSaveCategoryConfig = async () => {
+    setCategoryConfigError(null);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(categoryConfigJson);
+    } catch {
+      setCategoryConfigError("Invalid JSON");
+      return;
+    }
+    if (
+      !Array.isArray(parsed) ||
+      parsed.some((c) => typeof c.name !== "string" || typeof c.query !== "string")
+    ) {
+      setCategoryConfigError('Must be an array of { "name": string, "query": string }');
+      return;
+    }
+    setSavingCategoryConfig(true);
+    try {
+      const result = await updateXTrendCategoryConfig(parsed as { name: string; query: string }[]);
+      if (!result.success) {
+        throwServerActionError(result);
+      }
+      toast.success("Category config saved");
+      await loadDataSources();
+    } catch {
+      toast.error("Failed to save category config");
+    } finally {
+      setSavingCategoryConfig(false);
     }
   };
 
@@ -152,7 +245,9 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
         throwServerActionError(result);
       }
 
-      toast.success(`Expiration test completed: ${result.data.expired} expired, ${result.data.kept} kept`);
+      toast.success(
+        `Expiration test completed: ${result.data.expired} expired, ${result.data.kept} kept`,
+      );
       await loadStatistics();
     } catch {
       toast.error("Failed to trigger expiration test");
@@ -161,160 +256,203 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
     }
   };
 
+  const anyBusy =
+    runningFullPipeline ||
+    processingHeat ||
+    processingExpiration ||
+    triggeringAll ||
+    triggeringDataSource !== null;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Pulse Marketplace</h1>
-          <p className="text-muted-foreground">Manage pulse categories and test HEAT modules</p>
-        </div>
+    <div className="space-y-4 max-w-4xl">
+      <div>
+        <h1 className="text-base font-semibold">Pulse</h1>
+        <p className="text-sm text-muted-foreground">管理数据源和触发 pipeline</p>
       </div>
 
-      {/* Statistics Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pulse Statistics</CardTitle>
-          <CardDescription>Overview of pulse data and HEAT scores</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2Icon className="h-6 w-6 animate-spin" />
-            </div>
-          ) : statistics ? (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="p-4 border rounded-lg">
-                <div className="text-2xl font-bold">{statistics.total}</div>
-                <div className="text-sm text-muted-foreground">Total Pulses</div>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <div className="text-2xl font-bold">{statistics.withHeat}</div>
-                <div className="text-sm text-muted-foreground">With HEAT Score</div>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <div className="text-2xl font-bold">{statistics.expired}</div>
-                <div className="text-sm text-muted-foreground">Expired</div>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <div className="text-2xl font-bold">{statistics.recentPulses.length}</div>
-                <div className="text-sm text-muted-foreground">Recent Pulses</div>
-              </div>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
+      {/* Stats */}
+      {isLoading ? (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+          <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
+          Loading...
+        </div>
+      ) : (
+        statistics && (
+          <div className="flex gap-6 text-sm">
+            <span>
+              <span className="font-medium">{statistics.total}</span>{" "}
+              <span className="text-muted-foreground">total</span>
+            </span>
+            <span>
+              <span className="font-medium">{statistics.withHeat}</span>{" "}
+              <span className="text-muted-foreground">with HEAT</span>
+            </span>
+            <span>
+              <span className="font-medium">{statistics.expired}</span>{" "}
+              <span className="text-muted-foreground">expired</span>
+            </span>
+          </div>
+        )
+      )}
 
-      {/* HEAT Modules Testing */}
+      {/* Pipeline actions */}
       <Card>
-        <CardHeader>
-          <CardTitle>HEAT Modules</CardTitle>
-          <CardDescription>Test HEAT calculation and expiration modules</CardDescription>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">Pipeline</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border rounded-lg space-y-3">
-              <div>
-                <h3 className="font-semibold mb-1">HEAT Calculation Pipeline</h3>
-                <p className="text-sm text-muted-foreground">
-                  Fix identity → Gather posts → Calculate HEAT → Generate description
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="default"
-                  onClick={() => handleTriggerHeatPipeline()}
-                  disabled={processingHeat || processingExpiration}
-                  className="flex-1"
-                >
-                  {processingHeat ? (
-                    <>
-                      <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <TrendingUpIcon className="h-4 w-4 mr-2" />
-                      Run HEAT Pipeline
-                    </>
-                  )}
-                </Button>
-              </div>
+        <CardContent className="space-y-3">
+          {/* Full pipeline */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">Full Pipeline</p>
+              <p className="text-xs text-muted-foreground">Gather → HEAT → Expiration</p>
             </div>
+            <Button size="sm" onClick={handleRunFullPipeline} disabled={anyBusy}>
+              {runningFullPipeline ? (
+                <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <PlayIcon className="h-3.5 w-3.5" />
+              )}
+              <span className="ml-1.5">{runningFullPipeline ? "Running..." : "Run"}</span>
+            </Button>
+          </div>
 
-            <div className="p-4 border rounded-lg space-y-3">
-              <div>
-                <h3 className="font-semibold mb-1">Expiration Test</h3>
-                <p className="text-sm text-muted-foreground">
-                  Calculate HEAT delta → Apply expiration test → Mark expired pulses
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="default"
-                  onClick={() => handleTriggerExpiration()}
-                  disabled={processingHeat || processingExpiration}
-                  className="flex-1"
-                >
-                  {processingExpiration ? (
-                    <>
-                      <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <XCircleIcon className="h-4 w-4 mr-2" />
-                      Run Expiration Test
-                    </>
-                  )}
-                </Button>
-              </div>
+          <div className="border-t" />
+
+          {/* Individual steps */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm">HEAT Pipeline</p>
+              <p className="text-xs text-muted-foreground">
+                Gather posts → Calculate HEAT → Generate description
+              </p>
             </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleTriggerHeatPipeline()}
+              disabled={anyBusy}
+            >
+              {processingHeat ? (
+                <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <TrendingUpIcon className="h-3.5 w-3.5" />
+              )}
+              <span className="ml-1.5">{processingHeat ? "Running..." : "Run"}</span>
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm">Expiration Test</p>
+              <p className="text-xs text-muted-foreground">
+                Apply delta threshold → Mark expired pulses
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleTriggerExpiration()}
+              disabled={anyBusy}
+            >
+              {processingExpiration ? (
+                <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <XCircleIcon className="h-3.5 w-3.5" />
+              )}
+              <span className="ml-1.5">{processingExpiration ? "Running..." : "Run"}</span>
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Recent Pulses */}
-      {statistics && statistics.recentPulses.length > 0 && (
+      {/* Data Sources */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-medium">Data Sources</CardTitle>
+            <Button size="sm" variant="outline" onClick={handleTriggerAll} disabled={anyBusy}>
+              {triggeringAll ? (
+                <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RefreshCwIcon className="h-3.5 w-3.5" />
+              )}
+              <span className="ml-1.5">{triggeringAll ? "Gathering..." : "Trigger All"}</span>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {dataSources.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No data sources configured.</p>
+          ) : (
+            <div className="space-y-1">
+              {dataSources.map((ds) => (
+                <div key={ds.name} className="flex items-center justify-between py-1.5">
+                  <span className="text-sm">{ds.isCategory ? ds.categoryName : ds.name}</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => handleTriggerDataSource(ds.name)}
+                    disabled={anyBusy}
+                  >
+                    {triggeringDataSource === ds.name ? (
+                      <Loader2Icon className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <RefreshCwIcon className="h-3 w-3" />
+                    )}
+                    <span className="ml-1">
+                      {triggeringDataSource === ds.name ? "..." : "Trigger"}
+                    </span>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* xTrend Category Config */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">xTrend Categories</CardTitle>
+          <CardDescription className="text-xs">
+            {`JSON 数组，每项包含 "name" 和 "query"。保存后 Data Sources 自动更新。`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Textarea
+            value={categoryConfigJson}
+            onChange={(e) => {
+              setCategoryConfigJson(e.target.value);
+              setCategoryConfigError(null);
+            }}
+            className="font-mono text-xs min-h-40 resize-y"
+            placeholder='[{"name": "AI Tech", "query": "AI agents OR LLM OR Claude OR GPT"}]'
+          />
+          {categoryConfigError && <p className="text-xs text-destructive">{categoryConfigError}</p>}
+          <Button size="sm" onClick={handleSaveCategoryConfig} disabled={savingCategoryConfig}>
+            {savingCategoryConfig && <Loader2Icon className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
+            Save
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Categories in DB */}
+      {categories.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Pulses</CardTitle>
-            <CardDescription>Latest pulses with HEAT data</CardDescription>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Categories in DB</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {statistics.recentPulses.map((pulse) => (
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
                 <div
-                  key={pulse.id}
-                  className={`p-3 border rounded-lg ${pulse.expired ? "opacity-50" : ""}`}
+                  key={cat.category}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-muted text-xs"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium">{pulse.title}</h4>
-                        {pulse.expired && (
-                          <span className="text-xs px-2 py-0.5 bg-muted rounded">Expired</span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {pulse.categoryName} • {pulse.postCount} posts
-                      </p>
-                      <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-                        {pulse.heatScore !== null && (
-                          <span>HEAT: {pulse.heatScore.toFixed(0)}</span>
-                        )}
-                        {pulse.heatDelta !== null && (
-                          <span className={pulse.heatDelta >= 0 ? "text-green-600" : "text-red-600"}>
-                            Δ: {pulse.heatDelta >= 0 ? "+" : ""}
-                            {pulse.heatDelta.toFixed(0)}
-                          </span>
-                        )}
-                        <span>
-                          {new Date(pulse.createdAt).toLocaleDateString()}{" "}
-                          {new Date(pulse.createdAt).toLocaleTimeString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <span className="font-medium">{cat.category}</span>
+                  <span className="text-muted-foreground">{cat.pulseCount}</span>
                 </div>
               ))}
             </div>
@@ -322,166 +460,47 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
         </Card>
       )}
 
-      {/* DataSource Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Data Sources</CardTitle>
-          <CardDescription>Trigger pulse gathering from data sources</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Group xTrend categories */}
-          {dataSources.some((ds) => ds.isCategory && ds.baseName === "xTrend") && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-sm">xTrend Categories</h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleTriggerDataSource("xTrend")}
-                  disabled={triggeringDataSource !== null || triggeringAll}
-                >
-                  {triggeringDataSource === "xTrend" ? (
-                    <>
-                      <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
-                      Gathering All...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCwIcon className="h-3 w-3 mr-1" />
-                      Trigger All xTrend
-                    </>
-                  )}
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                {dataSources
-                  .filter((ds) => ds.isCategory && ds.baseName === "xTrend")
-                  .map((ds) => (
-                    <div
-                      key={ds.name}
-                      className="border rounded-lg p-3 space-y-2 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm truncate">{ds.categoryName}</h4>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => handleTriggerDataSource(ds.name)}
-                        disabled={triggeringDataSource === ds.name || triggeringAll}
-                      >
-                        {triggeringDataSource === ds.name ? (
-                          <>
-                            <Loader2Icon className="h-3 w-3 mr-1 animate-spin" />
-                            Gathering...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCwIcon className="h-3 w-3 mr-1" />
-                            Trigger
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {/* Other dataSources (non-category) */}
-          {dataSources.some((ds) => !ds.isCategory) && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm">Other Data Sources</h3>
-              <div className="flex flex-wrap gap-2">
-                {dataSources
-                  .filter((ds) => !ds.isCategory)
-                  .map((ds) => (
-                    <Button
-                      key={ds.name}
-                      variant="outline"
-                      onClick={() => handleTriggerDataSource(ds.name)}
-                      disabled={triggeringDataSource === ds.name || triggeringAll}
-                    >
-                      {triggeringDataSource === ds.name ? (
-                        <>
-                          <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                          Gathering...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCwIcon className="h-4 w-4 mr-2" />
-                          Trigger {ds.name}
-                        </>
-                      )}
-                    </Button>
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {/* Trigger All Button */}
-          <div className="pt-4 border-t">
-            <Button
-              variant="default"
-              className="w-full"
-              onClick={handleTriggerAll}
-              disabled={triggeringAll || triggeringDataSource !== null}
-            >
-              {triggeringAll ? (
-                <>
-                  <Loader2Icon className="h-4 w-4 mr-2 animate-spin" />
-                  Gathering All Data Sources...
-                </>
-              ) : (
-                <>
-                  <RefreshCwIcon className="h-4 w-4 mr-2" />
-                  Trigger All Data Sources
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Categories List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Categories</CardTitle>
-          <CardDescription>
-            Distinct categories found in pulse data
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2Icon className="h-6 w-6 animate-spin" />
-            </div>
-          ) : categories.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No categories found.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {categories.map((cat) => (
+      {/* Recent Pulses */}
+      {statistics && statistics.recentPulses.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Recent Pulses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              {statistics.recentPulses.map((pulse) => (
                 <div
-                  key={cat.category}
-                  className="flex items-start justify-between p-4 border rounded-lg"
+                  key={pulse.id}
+                  className={`flex items-start justify-between py-1.5 ${pulse.expired ? "opacity-40" : ""}`}
                 >
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{cat.category}</h3>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {cat.pulseCount} pulse{cat.pulseCount !== 1 ? "s" : ""}
+                  <div className="flex-1 min-w-0 mr-4">
+                    <p className="text-sm truncate">{pulse.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {pulse.categoryName} · {pulse.postCount} posts
                     </p>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                    {pulse.heatScore !== null && <span>{pulse.heatScore.toFixed(0)}</span>}
+                    {pulse.heatDelta !== null && (
+                      <span
+                        className={
+                          pulse.heatDelta >= 0 ? "text-foreground" : "text-muted-foreground"
+                        }
+                      >
+                        {pulse.heatDelta >= 0 ? "+" : ""}
+                        {(pulse.heatDelta * 100).toFixed(0)}%
+                      </span>
+                    )}
+                    {pulse.expired && (
+                      <span className="px-1.5 py-0.5 rounded bg-muted">expired</span>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -104,14 +104,16 @@ Header: `x-internal-secret: $INTERNAL_API_SECRET`，返回后立即 200，后台
 
 | 方法 | 作用 |
 |------|------|
+| `triggerFullPipeline()` | **一键全流程**：采集 + HEAT + 过期（与 internal API 逻辑一致） |
 | `getDistinctCategories()` | 获取所有类别及脉冲数量 |
 | `getAllAvailableDataSources()` | 列出所有数据源（含工厂展开的） |
 | `triggerDataSourceGathering(name)` | 触发指定数据源采集（支持 `"xTrend"` 或 `"xTrend:AI Tech"`） |
 | `triggerAllDataSourcesGathering()` | 触发所有数据源采集 |
 | `triggerHeatPipeline(category?, includeAlreadyScored?, onlyUnscored?, pulseIds?)` | 触发 HEAT 计算 |
 | `triggerExpirationTest(category?, pulseIds?)` | 触发过期淘汰 |
-| `triggerRecommendation(userIds?)` | 触发推荐（默认全部活跃用户） |
 | `getPulseStatistics()` | 统计总数、有热度数、过期数、最近 20 条 |
+| `getXTrendCategoryConfig()` | 读取 xTrend 类别配置（SystemConfig） |
+| `updateXTrendCategoryConfig(categories)` | 更新 xTrend 类别配置 |
 
 ### 核心模块函数（可直接调用）
 
@@ -127,16 +129,15 @@ Header: `x-internal-secret: $INTERNAL_API_SECRET`，返回后立即 200，后台
 
 ## 冷启动
 
-1. 在 `SystemConfig` 表写入 xTrend 类别配置：
-   ```sql
-   INSERT INTO "SystemConfig" ("key", "value", "createdAt", "updatedAt")
-   VALUES ('pulse:xTrend:categories', '[
-     {"name": "AI Tech", "query": "AI agents OR LLM ..."},
-     {"name": "Creator Economy", "query": "creator economy OR ..."}
-   ]', NOW(), NOW());
+1. 在 `/admin/pulses` 页面的 **xTrend Category Config** 区域，粘贴类别配置并保存：
+   ```json
+   [
+     {"name": "AI Tech", "query": "AI agents OR LLM OR Claude OR GPT OR OpenAI"},
+     {"name": "Creator Economy", "query": "creator economy OR newsletter OR indie hacker OR solopreneur"}
+   ]
    ```
 
-2. 触发首次 pipeline：
+2. 点击 **Run Full Pipeline** 按钮（或通过 internal API 触发）：
    ```bash
    curl -X POST http://localhost:3000/api/internal/gather-pulses \
      -H "x-internal-secret: $INTERNAL_API_SECRET"

@@ -1,13 +1,8 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,14 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { ExtractServerActionData } from "@/lib/serverAction";
-import { throwServerActionError } from "@/lib/serverAction";
+import { ExtractServerActionData, throwServerActionError } from "@/lib/serverAction";
 import { formatDate } from "@/lib/utils";
 import { Loader2Icon, SparklesIcon } from "lucide-react";
+import { useLocale } from "next-intl";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
-import { useLocale } from "next-intl";
 import { testPulseRecommendation } from "./actions";
 
 type TestResult = ExtractServerActionData<typeof testPulseRecommendation>;
@@ -130,7 +123,8 @@ export function PulseRecommendationTestPageClient() {
             <CardHeader>
               <CardTitle>Recommendation Results</CardTitle>
               <CardDescription>
-                Generated {result.pulseCount} pulse recommendation{result.pulseCount !== 1 ? "s" : ""}
+                Generated {result.pulseCount} pulse recommendation
+                {result.pulseCount !== 1 ? "s" : ""}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -147,7 +141,11 @@ export function PulseRecommendationTestPageClient() {
                   <div>
                     <Label className="text-muted-foreground">Method</Label>
                     <div className="mt-1">
-                      <Badge variant={result.recommendation.method === "memory_based" ? "default" : "secondary"}>
+                      <Badge
+                        variant={
+                          result.recommendation.method === "memory_based" ? "default" : "secondary"
+                        }
+                      >
                         {result.recommendation.method}
                       </Badge>
                     </div>
@@ -156,7 +154,9 @@ export function PulseRecommendationTestPageClient() {
                 {result.recommendation?.createdAt && (
                   <div>
                     <Label className="text-muted-foreground">Generated At</Label>
-                    <p className="font-medium">{formatDate(result.recommendation.createdAt, locale)}</p>
+                    <p className="font-medium">
+                      {formatDate(result.recommendation.createdAt, locale)}
+                    </p>
                   </div>
                 )}
               </div>
@@ -181,12 +181,13 @@ export function PulseRecommendationTestPageClient() {
             </CardContent>
           </Card>
 
-              {result.pulses.length > 0 && (
+          {result.pulses.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Recommended Pulses</CardTitle>
                 <CardDescription>
-                  Details of the {result.pulses.length} recommended pulse{result.pulses.length !== 1 ? "s" : ""}
+                  Details of the {result.pulses.length} recommended pulse
+                  {result.pulses.length !== 1 ? "s" : ""}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -202,7 +203,9 @@ export function PulseRecommendationTestPageClient() {
                   </TableHeader>
                   <TableBody>
                     {result.pulses.map((pulse) => {
-                      const recommendation = result.recommendations?.find((r) => r.pulseId === pulse.id);
+                      const recommendation = result.recommendations?.find(
+                        (r) => r.pulseId === pulse.id,
+                      );
                       return (
                         <TableRow key={pulse.id}>
                           <TableCell className="font-mono">{pulse.id}</TableCell>
@@ -217,10 +220,14 @@ export function PulseRecommendationTestPageClient() {
                           <TableCell>
                             {recommendation?.angle ? (
                               <div className="max-w-md">
-                                <p className="text-sm italic text-primary">{recommendation.angle}</p>
+                                <p className="text-sm italic text-primary">
+                                  {recommendation.angle}
+                                </p>
                               </div>
                             ) : (
-                              <span className="text-sm text-muted-foreground">No angle provided</span>
+                              <span className="text-sm text-muted-foreground">
+                                No angle provided
+                              </span>
                             )}
                           </TableCell>
                           <TableCell>

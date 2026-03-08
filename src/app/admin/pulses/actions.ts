@@ -1,14 +1,18 @@
 "use server";
 
+import { getAllDataSources } from "@/app/(pulse)/dataSources";
+import { processExpirationTest } from "@/app/(pulse)/expiration";
+import { processHeatPipeline } from "@/app/(pulse)/heat";
+import {
+  gatherPulsesForDataSource,
+  gatherPulsesFromAllDataSources,
+} from "@/app/(pulse)/lib/gatherSignals";
+import { runDailyPulsePipeline } from "@/app/(pulse)/lib/runDailyPipeline";
+import { recommendPulsesForActiveUsers } from "@/app/(pulse)/recommendation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
-import { gatherPulsesForDataSource, gatherPulsesFromAllDataSources } from "@/app/(pulse)/lib/gatherSignals";
-import { processHeatPipeline } from "@/app/(pulse)/heat";
-import { processExpirationTest } from "@/app/(pulse)/expiration";
-import { getAllDataSources } from "@/app/(pulse)/dataSources";
-import { recommendPulsesForActiveUsers } from "@/app/(pulse)/recommendation";
 
 export async function getDistinctCategories(): Promise<
   ServerActionResult<Array<{ category: string; pulseCount: number }>>
@@ -43,8 +47,8 @@ export async function triggerDataSourceGathering(
   // If it's a base name (no colon), check if it's a factory and trigger all categories
   if (!dataSourceName.includes(":")) {
     const allDataSources = await getAllDataSources();
-    const categoryDataSources = allDataSources.filter(
-      (ds) => ds.name.startsWith(`${dataSourceName}:`),
+    const categoryDataSources = allDataSources.filter((ds) =>
+      ds.name.startsWith(`${dataSourceName}:`),
     );
 
     if (categoryDataSources.length > 0) {
@@ -88,7 +92,10 @@ export async function triggerDataSourceGathering(
  * Trigger pulse gathering for all dataSources
  */
 export async function triggerAllDataSourcesGathering(): Promise<
-  ServerActionResult<{ totalPulses: number; results: Array<{ dataSource: string; pulseCount: number }> }>
+  ServerActionResult<{
+    totalPulses: number;
+    results: Array<{ dataSource: string; pulseCount: number }>;
+  }>
 > {
   await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
 
@@ -297,7 +304,14 @@ export async function getPulseStatistics(): Promise<
  */
 export async function triggerRecommendation(
   userIds?: number[],
-): Promise<ServerActionResult<{ totalUsers: number; successfulUsers: number; failedUsers: number; totalPulsesRecommended: number }>> {
+): Promise<
+  ServerActionResult<{
+    totalUsers: number;
+    successfulUsers: number;
+    failedUsers: number;
+    totalPulsesRecommended: number;
+  }>
+> {
   await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
 
   const result = await recommendPulsesForActiveUsers(userIds);
@@ -307,3 +321,61 @@ export async function triggerRecommendation(
   };
 }
 
+/**
+ * Run the full daily pipeline: gather → HEAT → expiration
+ * Same logic as the internal API /api/internal/gather-pulses
+ */
+export async function triggerFullPipeline(): Promise<
+  ServerActionResult<{
+    totalPulses: number;
+    heatProcessed: number;
+    heatErrors: number;
+    expired: number;
+    kept: number;
+  }>
+> {
+  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+
+  const result = await runDailyPulsePipeline();
+  return { success: true, data: result };
+}
+
+type XTrendCategory = { name: string; query: string };
+
+/**
+ * Get xTrend category config from SystemConfig
+ */
+export async function getXTrendCategoryConfig(): Promise<
+  ServerActionResult<{ categories: XTrendCategory[] }>
+> {
+  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+
+  const config = await prisma.systemConfig.findUnique({
+    where: { key: "pulse:xTrend:categories" },
+  });
+
+  return {
+    success: true,
+    data: { categories: (config?.value as XTrendCategory[]) ?? [] },
+  };
+}
+
+/**
+ * Update xTrend category config in SystemConfig
+ */
+export async function updateXTrendCategoryConfig(
+  categories: XTrendCategory[],
+): Promise<ServerActionResult<{ categories: XTrendCategory[] }>> {
+  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+
+  const config = await prisma.systemConfig.upsert({
+    where: { key: "pulse:xTrend:categories" },
+    update: { value: categories },
+    create: { key: "pulse:xTrend:categories", value: categories },
+  });
+
+  return {
+    success: true,
+    data: { categories: config.value as XTrendCategory[] },
+  };
+}

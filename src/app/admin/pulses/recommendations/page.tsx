@@ -3,4 +3,3 @@ import { PulseRecommendationTestPageClient } from "./PulseRecommendationTestPage
 export default function PulseRecommendationTestPage() {
   return <PulseRecommendationTestPageClient />;
 }
-

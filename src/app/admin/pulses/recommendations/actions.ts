@@ -1,10 +1,10 @@
 "use server";
 
+import { getNonExpiredPulseFilter } from "@/app/(pulse)/lib/pulseFilters";
+import { recommendPulsesForUser } from "@/app/(pulse)/recommendation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
-import { recommendPulsesForUser } from "@/app/(pulse)/recommendation";
-import { getNonExpiredPulseFilter } from "@/app/(pulse)/lib/pulseFilters";
 import { prisma } from "@/prisma/prisma";
 
 type HeatHistoryPoint = { date: string; heatScore: number };
@@ -29,9 +29,7 @@ type HeatTreemapCategory = {
 /**
  * Test pulse recommendation for a specific user
  */
-export async function testPulseRecommendation(
-  userId: number,
-): Promise<
+export async function testPulseRecommendation(userId: number): Promise<
   ServerActionResult<{
     success: boolean;
     pulseCount: number;
@@ -138,9 +136,7 @@ export async function testPulseRecommendation(
 /**
  * Fetch HEAT treemap data for admin visualization
  */
-export async function fetchPulseHeatTreemapData(
-  lookbackDays: number = 30,
-): Promise<
+export async function fetchPulseHeatTreemapData(lookbackDays: number = 30): Promise<
   ServerActionResult<{
     categories: HeatTreemapCategory[];
     updatedAt: string;

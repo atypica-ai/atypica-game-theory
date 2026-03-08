@@ -10,4 +10,3 @@ export default async function PulsesPage({
   const initialSearchParams = parseServerSearchParams(params);
   return <PulsesPageClient initialSearchParams={initialSearchParams} />;
 }
-
