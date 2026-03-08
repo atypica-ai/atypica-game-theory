@@ -3,6 +3,7 @@ import "server-only";
 import { fetchActiveSubscription } from "@/app/account/lib";
 import { stripeClient } from "@/app/payment/(stripe)/lib";
 import { ProductName, StripeMetadata } from "@/app/payment/data";
+import { generateSubscriptionPeriods } from "@/app/payment/manualSubscription";
 import {
   MAX_MONTHLY_GIFT,
   MAX_MONTHLY_TOKENS,
@@ -10,7 +11,6 @@ import {
   PRO_MONTHLY_TOKENS,
   resetUserMonthlyTokens,
 } from "@/app/payment/monthlyTokens";
-import { generateSubscriptionPeriods } from "@/app/payment/manualSubscription";
 import { trackUserServerSide } from "@/lib/analytics/server";
 import { rootLogger } from "@/lib/logging";
 import { getDeployRegion } from "@/lib/request/deployRegion";
@@ -61,6 +61,36 @@ function getMonthlyInitial(plan: SubscriptionPlan): number {
     default:
       throw new Error(`Unsupported source plan for discount: ${plan}`);
   }
+}
+
+/**
+ * 按 Stripe 优先级查找 payment method：
+ * 1. 旧 subscription 的 default_payment_method
+ * 2. customer 的 invoice_settings.default_payment_method
+ * 3. customer 最近添加的 payment method
+ */
+async function resolvePaymentMethod(
+  stripe: ReturnType<typeof stripeClient>,
+  { stripeSubscriptionId, stripeCustomerId }: { stripeSubscriptionId: string | null; stripeCustomerId: string },
+): Promise<string | undefined> {
+  if (stripeSubscriptionId) {
+    const oldSub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+    const pm =
+      typeof oldSub.default_payment_method === "string"
+        ? oldSub.default_payment_method
+        : oldSub.default_payment_method?.id;
+    if (pm) return pm;
+  }
+
+  const customer = await stripe.customers.retrieve(stripeCustomerId);
+  if (!customer.deleted) {
+    const dpm = customer.invoice_settings?.default_payment_method;
+    const pm = typeof dpm === "string" ? dpm : dpm?.id;
+    if (pm) return pm;
+  }
+
+  const paymentMethods = await stripe.paymentMethods.list({ customer: stripeCustomerId, limit: 1 });
+  return paymentMethods.data[0]?.id;
 }
 
 /** 校验升级路径 + 计算折扣，preview 和 createInvoice 共用 */
@@ -157,9 +187,10 @@ export async function previewUpgrade({
  *
  * ## 为什么新 subscription 有 trial？
  *
- * 升级费用已经通过 standalone invoice 一次性收了（当月的差额）。
- * 新 subscription 的 trial_end 设为旧订阅的结束时间，
- * 这样 Stripe 在当前周期内不会重复收费，到期后才开始按新价格自动扣费。
+ * 升级费用已经通过 standalone invoice 一次性收了（按 token 用量折算的差额）。
+ * 升级后给用户完整一个自然月的新套餐（从升级当天起算），
+ * 新 subscription 的 trial_end 设为一个自然月后（generateSubscriptionPeriods），
+ * 这样 Stripe 在这一个月内不会重复收费，到期后才开始按新价格自动扣费。
  * 用户侧看不到 trial——我们的 UI 只读本地 subscription 数据，不展示 Stripe 的 trial 状态。
  *
  * ## 执行顺序
@@ -203,7 +234,6 @@ export async function createUpgradeInvoice({
     deployRegion: getDeployRegion(),
     orderNo,
     productName: upgradePath.targetProduct,
-    invoiceType: "PlanUpgrade",
   };
 
   // 获取 Stripe customer ID
@@ -215,17 +245,12 @@ export async function createUpgradeInvoice({
 
   const stripe = stripeClient();
 
-  // 从旧 subscription 获取 payment method（但先不 cancel）
-  if (!stripeSubscriptionId) {
-    throw new Error("No Stripe subscription found for upgrade");
-  }
-  const oldSub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
-  const defaultPaymentMethod =
-    typeof oldSub.default_payment_method === "string"
-      ? oldSub.default_payment_method
-      : oldSub.default_payment_method?.id;
+  const defaultPaymentMethod = await resolvePaymentMethod(stripe, {
+    stripeSubscriptionId,
+    stripeCustomerId,
+  });
   if (!defaultPaymentMethod) {
-    throw new Error("No payment method found on existing subscription");
+    throw new Error("No payment method found. Please add a payment method first.");
   }
 
   // ===== 第一步：付款 =====
@@ -238,7 +263,12 @@ export async function createUpgradeInvoice({
     pending_invoice_items_behavior: "exclude",
     collection_method: "charge_automatically",
     auto_advance: false,
-    metadata: metadata as unknown as Record<string, string>,
+    // invoiceType 只在 invoice 上标记，webhook 靠它 skip 这张手动扣费的 invoice。
+    // 不能放到 metadata 里共享给 subscription，否则后续续费 invoice 也会被 skip。
+    metadata: {
+      ...metadata,
+      invoiceType: "PlanUpgrade",
+    } as unknown as Record<string, string>,
   });
 
   await stripe.invoiceItems.create({
@@ -297,6 +327,7 @@ export async function createUpgradeInvoice({
     const newStripeSubscription = await stripe.subscriptions.create({
       customer: stripeCustomerId,
       items: [{ price: targetStripePriceId }],
+      default_payment_method: defaultPaymentMethod,
       trial_end: Math.floor(newPlanEndsAt.getTime() / 1000),
       metadata: metadata as unknown as Record<string, string>,
     });
