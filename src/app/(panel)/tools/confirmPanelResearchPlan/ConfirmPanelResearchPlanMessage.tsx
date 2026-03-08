@@ -32,13 +32,18 @@ export function ConfirmPanelResearchPlanMessage({
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
+  const raw = toolInvocation.input?.researchType;
+  const researchType =
+    raw === "focusGroup" || raw === "userInterview" || raw === "expertInterview"
+      ? raw
+      : "focusGroup";
+
   const researchTypeIcons = {
     focusGroup: Users,
     userInterview: MessageCircle,
     expertInterview: Mic,
   } as const;
 
-  const researchType = toolInvocation.input?.researchType ?? "focusGroup";
   const personaCount = toolInvocation.input?.personaCount ?? 0;
   const Icon = researchTypeIcons[researchType];
 
