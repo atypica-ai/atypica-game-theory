@@ -24,7 +24,7 @@ import {
   UniversalTaskStatus,
   extractTasksFromMessages,
 } from "@/app/(universal)/universal/task-vm";
-import { UserChatSession } from "@/components/chat/UserChatSession";
+import { UniversalChatSession } from "@/app/(universal)/universal/components/UniversalChatSession";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
@@ -268,7 +268,7 @@ export function UniversalChatPageClient({
   );
 
   const renderChatSession = (
-    <UserChatSession
+    <UniversalChatSession
       nickname={{ assistant: "Atypica", user: session?.user?.email ?? t("you") }}
       avatar={{
         assistant: <HippyGhostAvatar className="size-8" seed={0} />,
@@ -278,7 +278,6 @@ export function UniversalChatPageClient({
       useChatRef={useChatRef}
       renderToolUIPart={renderUniversalToolUIPart}
       acceptAttachments={false}
-      toolInvocationVariant="compact"
       hideToolInvocations
       shouldShowToolInvocation={shouldShowToolInvocation}
       renderMessageFooter={(message) =>

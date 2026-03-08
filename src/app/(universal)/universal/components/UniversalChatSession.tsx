@@ -1,5 +1,7 @@
 import { CONTINUE_ASSISTANT_STEPS } from "@/ai/messageUtilsClient";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
+import { FileAttachment } from "@/components/chat/FileAttachment";
+import { FileUploadButton } from "@/components/chat/FileUploadButton";
 import { RecordButton } from "@/components/chat/RecordButton";
 import { StatusDisplay } from "@/components/chat/StatusDisplay";
 import { Button } from "@/components/ui/button";
@@ -13,11 +15,14 @@ import { useChat } from "@ai-sdk/react";
 import { ArrowRightIcon, PlayIcon, SquareIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { ReactNode, RefObject, useCallback, useState } from "react";
-import { ChatMessage } from "./ChatMessage";
-import { FileAttachment } from "./FileAttachment";
-import { FileUploadButton } from "./FileUploadButton";
+import { UniversalChatMessage } from "./UniversalChatMessage";
 
-export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
+/**
+ * Extended UserChatSession for Universal Agent.
+ * Adds tool invocation filtering and message footer rendering
+ * for sub-agent task cards.
+ */
+export function UniversalChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   chatTitle,
   nickname,
   avatar,
@@ -27,6 +32,9 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   useChatRef,
   renderToolUIPart,
   acceptAttachments,
+  hideToolInvocations,
+  shouldShowToolInvocation,
+  renderMessageFooter,
   // persistMessages = true,
 }: {
   chatTitle?: string;
@@ -43,6 +51,9 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
   >;
   renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
   acceptAttachments: boolean;
+  hideToolInvocations?: boolean;
+  shouldShowToolInvocation?: (toolPart: UI_MESSAGE["parts"][number]) => boolean;
+  renderMessageFooter?: (message: Pick<UI_MESSAGE, "role" | "parts">) => ReactNode;
   persistMessages?: boolean;
 }) {
   const t = useTranslations("Components.UserChatSession");
@@ -116,14 +127,17 @@ export function UserChatSession<UI_MESSAGE extends TMessageWithPlainTextTool>({
               ),
           )
           .map(({ id, role, parts, ...extra }) => (
-            <ChatMessage
+            <UniversalChatMessage
               key={id}
               nickname={nickname ? nickname[role] : undefined}
               avatar={avatar ? avatar[role] : undefined}
               message={{ role, parts }}
               extra={extra}
               renderToolUIPart={renderToolUIPart}
-            ></ChatMessage>
+              hideToolInvocations={hideToolInvocations}
+              shouldShowToolInvocation={shouldShowToolInvocation}
+              renderMessageFooter={renderMessageFooter}
+            ></UniversalChatMessage>
           ))}
         {/* AI Compliance Disclaimer */}
         {messages.length > 0 && status === "ready" ? (

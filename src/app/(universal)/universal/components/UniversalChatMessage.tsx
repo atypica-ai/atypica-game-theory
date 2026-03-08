@@ -1,20 +1,28 @@
 import { isSystemMessage } from "@/ai/messageUtilsClient";
 import { TMessageWithPlainTextTool } from "@/ai/tools/types";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
+import { FileAttachment } from "@/components/chat/FileAttachment";
 import { cn } from "@/lib/utils";
 import { isToolUIPart } from "ai";
 import { motion } from "framer-motion";
 import { BotIcon, CpuIcon, UserIcon } from "lucide-react";
 import React, { ReactNode, useMemo } from "react";
 import { Streamdown } from "streamdown";
-import { FileAttachment } from "./FileAttachment";
-import { ToolInvocationMessage } from "./ToolInvocationMessage";
+import { UniversalToolInvocationMessage } from "./UniversalToolInvocationMessage";
 
-export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
+/**
+ * Extended ChatMessage for Universal Agent.
+ * Adds tool invocation filtering and message footer rendering
+ * for sub-agent task cards.
+ */
+export const UniversalChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   nickname,
   avatar,
   message: { role, parts },
   renderToolUIPart,
+  hideToolInvocations,
+  shouldShowToolInvocation,
+  renderMessageFooter,
   // extra,
 }: {
   nickname?: string;
@@ -22,6 +30,9 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
   message: Pick<UI_MESSAGE, "role" | "parts">;
   extra?: Omit<UI_MESSAGE, "id" | "role" | "parts">;
   renderToolUIPart: (toolPart: UI_MESSAGE["parts"][number]) => ReactNode;
+  hideToolInvocations?: boolean;
+  shouldShowToolInvocation?: (toolPart: UI_MESSAGE["parts"][number]) => boolean;
+  renderMessageFooter?: (message: Pick<UI_MESSAGE, "role" | "parts">) => ReactNode;
 }) => {
   const fileParts = useMemo(() => {
     return parts?.filter((part) => part.type === "file");
@@ -57,6 +68,9 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
       )}
       <div className={cn("flex-1 overflow-hidden flex flex-col gap-3 px-1")}>
         {parts.map((part, i) => {
+          const showToolInvocation = shouldShowToolInvocation
+            ? shouldShowToolInvocation(part as UI_MESSAGE["parts"][number])
+            : !hideToolInvocations;
           if (part.type === "text") {
             return !isSystemMessage(part.text) ? (
               <div key={i} className="text-sm">
@@ -70,17 +84,6 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
             ) : null;
           } else if (part.type === "reasoning") {
             return (
-              // <div
-              //   key={i}
-              //   className="border-l-2 border-blue-400/40 bg-blue-50/50 dark:bg-blue-950/20 pl-3 pr-3 py-2 rounded-r-md"
-              // >
-              //   <div className="flex items-start gap-2">
-              //     <span className="text-blue-500 dark:text-blue-400 text-base">💭</span>
-              //     <div className="flex-1 text-xs text-blue-900/80 dark:text-blue-100/80 italic">
-              //       <Streamdown mode="static">{part.text}</Streamdown>
-              //     </div>
-              //   </div>
-              // </div>
               <Reasoning
                 key={i}
                 className="w-full"
@@ -95,13 +98,17 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
             // 通过 MCP 添加的 Tools 会是 dynamic-tools
             return (
               <React.Fragment key={i}>
-                <ToolInvocationMessage toolInvocation={part} />
+                {showToolInvocation ? (
+                  <UniversalToolInvocationMessage toolInvocation={part} />
+                ) : null}
               </React.Fragment>
             );
           } else if (isToolUIPart(part)) {
             return (
               <React.Fragment key={i}>
-                <ToolInvocationMessage toolInvocation={part} />
+                {showToolInvocation ? (
+                  <UniversalToolInvocationMessage toolInvocation={part} />
+                ) : null}
                 {/*<ToolInvocationDisplay toolInvocation={part} />*/}
                 {renderToolUIPart(part)}
               </React.Fragment>
@@ -117,6 +124,7 @@ export const ChatMessage = <UI_MESSAGE extends TMessageWithPlainTextTool>({
             );
           }
         })}
+        {renderMessageFooter ? renderMessageFooter({ role, parts }) : null}
       </div>
     </motion.div>
   );
