@@ -94,6 +94,11 @@ const GlobalHeader = React.memo(function GlobalHeader({
   const searchParams = useSearchParams();
   const [signinCallbackUrl, setSigninCallbackUrl] = useState<string>("/");
 
+  // Skip SSR for Drawer and Desktop menus to avoid hydration mismatch
+  // (useSession, useTheme, SWR hooks return different values on server vs client)
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
   useEffect(() => {
     const pathWithParams = window.location.href.replace(window.location.origin, "");
     setSigninCallbackUrl(searchParams.get("callbackUrl") || pathWithParams || "/");
@@ -136,9 +141,9 @@ const GlobalHeader = React.memo(function GlobalHeader({
               </Link>
             </Button>
           ) : null}
-          <GlobalHeaderDrawer direction={drawerDirection} />
+          {isMounted && <GlobalHeaderDrawer direction={drawerDirection} />}
         </div>
-        {!children && (
+        {!children && isMounted && (
           <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <GlobalHeaderMenusDesktop />
           </div>
