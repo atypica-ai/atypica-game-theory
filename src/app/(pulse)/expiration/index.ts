@@ -1,8 +1,8 @@
-"server-only";
+import "server-only";
 
-import { Logger } from "pino";
-import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
+import { prisma } from "@/prisma/prisma";
+import { Logger } from "pino";
 import { EXPIRATION_CONFIG } from "./config";
 
 /**
@@ -62,7 +62,7 @@ export async function processExpirationTest(
       // Filter by delta threshold
       // New pulses (heatDelta: null) are always kept since they're new
       const newPulses = categoryPulses.filter((p) => p.heatDelta === null && p.heatScore !== null);
-      
+
       // Only pulses with calculated heatDelta are subject to threshold check
       // Exclude null deltas explicitly to avoid treating them as 0
       const aboveThreshold = categoryPulses.filter((p) => {
@@ -75,7 +75,9 @@ export async function processExpirationTest(
         return (b.heatDelta ?? 0) - (a.heatDelta ?? 0);
       });
       // Concatenate new pulses and sort by delta descending, then take top N
-      const pulsesToKeep = sortedByDelta.concat(newPulses).slice(0, EXPIRATION_CONFIG.TOP_N_PULSES_PER_CATEGORY);
+      const pulsesToKeep = sortedByDelta
+        .concat(newPulses)
+        .slice(0, EXPIRATION_CONFIG.TOP_N_PULSES_PER_CATEGORY);
 
       // Mark expired pulses:
       // 1. Pulses that failed threshold check (delta < threshold or null but not new)
@@ -124,4 +126,3 @@ export async function processExpirationTest(
     throw error;
   }
 }
-

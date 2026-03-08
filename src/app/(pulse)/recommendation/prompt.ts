@@ -1,4 +1,4 @@
-"server-only";
+import "server-only";
 
 /**
  * System prompt for pulse recommendation agent
@@ -29,4 +29,3 @@ Example angles(Explaining to a third person):
 - "Use this as a market research angle to analyze chocolate flavor preferences in Asian markets for user's recent new chocolate product development project"
 
 Order recommendations by relevance (most relevant first).`;
-

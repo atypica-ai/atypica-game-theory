@@ -956,7 +956,8 @@ model Pulse {
   dataSource String   @db.VarChar(50) // e.g., "xTrend"
   title      String   @db.VarChar(255)
   content    String   @db.Text
-  locale     String   @default("en-US") @db.VarChar(16)
+  /// [Locale]
+  locale     String   @db.VarChar(16)
   expireAt   DateTime @db.Timestamptz(6)
   heatScore  Float? // Calculated HEAT score (current engagement)
   heatDelta  Float? // HEAT delta (change from yesterday)

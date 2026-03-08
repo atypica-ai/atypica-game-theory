@@ -1,10 +1,13 @@
 import { Logger } from "pino";
+import type { Locale } from "next-intl";
+import type { PulseExtra } from "@/prisma/client";
 
 export interface Pulse {
   categoryName: string; // Category name (stored directly on Pulse.category)
+  locale: Locale;       // Locale of the pulse content, set by factory
   title: string;
   content: string;
-  metadata?: Record<string, unknown>;
+  extra?: PulseExtra;
 }
 
 export interface DataSourceResult {

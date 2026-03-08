@@ -1,4 +1,4 @@
-"server-only";
+import "server-only";
 
 /**
  * Configuration constants for pulse expiration system
@@ -14,4 +14,3 @@ export const EXPIRATION_CONFIG = {
   // Lookback window for yesterday's pulses
   YESTERDAY_LOOKBACK_HOURS: 24, // Consider pulses from last 24-48 hours as "yesterday"
 } as const;
-

@@ -127,15 +127,24 @@ Header: `x-internal-secret: $INTERNAL_API_SECRET`，返回后立即 200，后台
 | `recommendPulsesForActiveUsers(userIds?)` | `recommendation/index.ts` — 批量推荐 |
 | `recommendPulsesForUser(userId)` | `recommendation/recommendPulses.ts` — 单用户推荐 |
 
+## 多语言支持
+
+每个 category 有独立的 `locale` 字段，决定这批 pulse 对应哪种语言的用户。前端按用户 locale 过滤展示。
+
+**一次 pipeline（cronjob 或 admin "Run Full Pipeline"）会同时处理所有 category，中英文一起产生。** 不需要分开触发。
+
+只需在 category config 里同时配置两种语言的 category 即可：
+
+```json
+[
+  {"name": "AI Tech",    "query": "AI agents OR LLM OR Claude OR GPT", "locale": "en-US"},
+  {"name": "AI 科技",    "query": "AI智能体 OR 大模型 OR Claude OR GPT", "locale": "zh-CN"}
+]
+```
+
 ## 冷启动
 
-1. 在 `/admin/pulses` 页面的 **xTrend Category Config** 区域，粘贴类别配置并保存：
-   ```json
-   [
-     {"name": "AI Tech", "query": "AI agents OR LLM OR Claude OR GPT OR OpenAI"},
-     {"name": "Creator Economy", "query": "creator economy OR newsletter OR indie hacker OR solopreneur"}
-   ]
-   ```
+1. 在 `/admin/pulses` 页面的 **xTrend Category Config** 区域，粘贴类别配置（中英文 category 都加上）并保存。
 
 2. 点击 **Run Full Pipeline** 按钮（或通过 internal API 触发）：
    ```bash

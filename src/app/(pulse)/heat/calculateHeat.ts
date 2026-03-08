@@ -1,4 +1,4 @@
-"server-only";
+import "server-only";
 
 import { HEAT_CONFIG } from "./config";
 import type { PulsePostData } from "./types";
@@ -41,28 +41,25 @@ export function calculateHeatScore(posts: PulsePostData[]): number {
       likes * HEAT_CONFIG.ENGAGEMENT_WEIGHTS.likes +
       retweets * HEAT_CONFIG.ENGAGEMENT_WEIGHTS.retweets +
       replies * HEAT_CONFIG.ENGAGEMENT_WEIGHTS.replies;
-    
+
     const rawEngagementRate = weightedEngagement / views;
-    const cappedEngagementRate = Math.min(
-      rawEngagementRate,
-      HEAT_CONFIG.MAX_ENGAGEMENT_RATE
-    );
-    
+    const cappedEngagementRate = Math.min(rawEngagementRate, HEAT_CONFIG.MAX_ENGAGEMENT_RATE);
+
     const intensityIndex = normalize(
       cappedEngagementRate,
       HEAT_CONFIG.GOALPOSTS.ENGAGEMENT_MIN,
-      HEAT_CONFIG.GOALPOSTS.ENGAGEMENT_MAX
+      HEAT_CONFIG.GOALPOSTS.ENGAGEMENT_MAX,
     );
 
     // Step 3: Weighted geometric mean (HDI formula)
     const w_r = HEAT_CONFIG.REACH_WEIGHT;
     const w_i = HEAT_CONFIG.INTENSITY_WEIGHT;
-    
+
     const normalizedScore = Math.pow(
       Math.pow(reachIndex, w_r) * Math.pow(intensityIndex, w_i),
-      1 / (w_r + w_i)
+      1 / (w_r + w_i),
     );
-    
+
     // Scale to human-readable range (0-1000)
     const postScore = normalizedScore * HEAT_CONFIG.SCORE_MULTIPLIER;
 
@@ -76,7 +73,7 @@ export function calculateHeatScore(posts: PulsePostData[]): number {
 
 function topKAverage(values: number[], k: number): number {
   if (values.length === 0) return 0;
-  
+
   const sorted = [...values].sort((a, b) => b - a);
   const topK = sorted.slice(0, Math.min(k, sorted.length));
   return topK.reduce((sum, val) => sum + val, 0) / topK.length;

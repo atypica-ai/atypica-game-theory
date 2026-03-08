@@ -1,12 +1,14 @@
+import authOptions from "@/app/(auth)/authOptions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
+import { getServerSession } from "next-auth";
 import { getLocale } from "next-intl/server";
 import { Suspense } from "react";
 import { PulseMarketplaceClient } from "./PulseMarketplaceClient";
 import { fetchPulseCategories } from "./actions";
-import { getServerSession } from "next-auth";
-import authOptions from "@/app/(auth)/authOptions";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -30,10 +32,7 @@ async function PulseMarketplacePage() {
   const isAuthenticated = !!session?.user?.id;
 
   return (
-    <PulseMarketplaceClient
-      initialCategories={categories}
-      isAuthenticated={isAuthenticated}
-    />
+    <PulseMarketplaceClient initialCategories={categories} isAuthenticated={isAuthenticated} />
   );
 }
 
@@ -44,4 +43,3 @@ export default async function PulseMarketplacePageWithLoading() {
     </Suspense>
   );
 }
-

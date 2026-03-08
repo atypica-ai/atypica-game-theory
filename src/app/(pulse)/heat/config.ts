@@ -1,4 +1,4 @@
-"server-only";
+import "server-only";
 
 /**
  * Configuration constants for HEAT calculation pipeline
@@ -9,7 +9,7 @@ export const HEAT_CONFIG = {
     VIEWS_MIN: 0,
     VIEWS_MAX: 5_000_000,
     ENGAGEMENT_MIN: 0,
-    ENGAGEMENT_MAX: 0.15,    // 15%
+    ENGAGEMENT_MAX: 0.15, // 15%
   },
   // Engagement intensity weights (used in engagement rate calculation)
   ENGAGEMENT_WEIGHTS: {
@@ -42,5 +42,3 @@ export const HEAT_CONFIG = {
   // Parallel processing
   MAX_WORKERS: 10, // Maximum concurrent pulse processing
 } as const;
-
-

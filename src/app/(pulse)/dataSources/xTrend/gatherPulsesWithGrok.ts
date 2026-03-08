@@ -1,11 +1,11 @@
-"server-only";
+import "server-only";
 
+import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { xai } from "@ai-sdk/xai";
-import { streamText, ToolSet, TypeValidationError, CoreMessage } from "ai";
-import { Pulse } from "../types";
+import { CoreMessage, streamText, ToolSet, TypeValidationError } from "ai";
 import { Logger } from "pino";
-import { promptSystemConfig } from "@/ai/prompt/systemConfig";
+type RawPulse = { categoryName: string; title: string; content: string };
 
 const SEARCH_LOOPS = 2;
 const MAX_PULSES_PER_LOOP = 6;
@@ -13,8 +13,8 @@ const MAX_PULSES_PER_LOOP = 6;
  * Parse pulses from text output
  * Format: "Title: [title]\nDescription: [description]"
  */
-function parsePulsesFromText(text: string): Pulse[] {
-  const pulses: Pulse[] = [];
+function parsePulsesFromText(text: string): RawPulse[] {
+  const pulses: RawPulse[] = [];
   if (!text) return pulses;
 
   const lines = text.split("\n");
@@ -77,7 +77,7 @@ export async function gatherPulsesWithGrok(
   query: string,
   logger: Logger,
   abortSignal: AbortSignal,
-): Promise<Pulse[]> {
+): Promise<RawPulse[]> {
   const allTools: ToolSet = {
     x_search: xai.tools.xSearch({
       enableImageUnderstanding: true,
@@ -96,17 +96,17 @@ Each topic should have:
 - A brief description of the topic
 
 # Notice
-- Quality over quantity. 
+- Quality over quantity.
 - Ignore Compilation and Roundup post, they post biased and late news sometimes.
 - Search time range is posts created in the last 7 days unless specified otherwise. Anything earlier is ignored.
 - Explore different angles and use varied search terms to cover all trending topics that meet the requirements.
 - Record your findings in the specified format.
 
 # Title Format Requirements
-Titles must include 
-1. unique names (products/tools/concepts) for accurately grouping posts of the same topic with 1 word at best and 3 words at worst 
-+ 
-2. brief context if first part needs supplementary information for readers to understand. 
+Titles must include
+1. unique names (products/tools/concepts) for accurately grouping posts of the same topic with 1 word at best and 3 words at worst
++
+2. brief context if first part needs supplementary information for readers to understand.
 Entire Title Keep under 8 words.
 
 Good: "CGFlow and ActivityDiff: drug discovery AI", "1T-TaS₂: quantum material switching", "Pony Alpha: mysterious new LLM"
@@ -119,7 +119,7 @@ Description: [brief description]
 ${promptSystemConfig({ locale: "en-US" })}
 `;
 
-  const allPulses: Pulse[] = [];
+  const allPulses: RawPulse[] = [];
   const messages: CoreMessage[] = [{ role: "user", content: query }];
 
   // Loop SEARCH_LOOPS times, accumulating all messages so each loop sees everything
@@ -176,7 +176,8 @@ ${promptSystemConfig({ locale: "en-US" })}
       if (loop < SEARCH_LOOPS - 1) {
         messages.push({
           role: "user",
-          content: "Continue exploring different angles and search terms for more trending topics that meet the requirements. Finally, record new findings without duplicating in specified format (without extra md format like **)",
+          content:
+            "Continue exploring different angles and search terms for more trending topics that meet the requirements. Finally, record new findings without duplicating in specified format (without extra md format like **)",
         });
       }
     } catch (error) {
@@ -216,4 +217,3 @@ ${promptSystemConfig({ locale: "en-US" })}
 
   return uniquePulses;
 }
-

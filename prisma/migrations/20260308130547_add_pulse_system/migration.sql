@@ -5,7 +5,7 @@ CREATE TABLE "Pulse" (
     "dataSource" VARCHAR(50) NOT NULL,
     "title" VARCHAR(255) NOT NULL,
     "content" TEXT NOT NULL,
-    "locale" VARCHAR(16) NOT NULL DEFAULT 'en-US',
+    "locale" VARCHAR(16) NOT NULL,
     "expireAt" TIMESTAMPTZ(6) NOT NULL,
     "heatScore" DOUBLE PRECISION,
     "heatDelta" DOUBLE PRECISION,

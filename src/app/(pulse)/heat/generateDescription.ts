@@ -1,9 +1,9 @@
-"server-only";
+import "server-only";
 
 import { llm } from "@/ai/provider";
+import type { Pulse } from "@/prisma/client";
 import { generateText } from "ai";
 import { Logger } from "pino";
-import type { Pulse } from "@/prisma/client";
 import type { PulsePostData } from "./types";
 
 /**
@@ -84,4 +84,3 @@ Generate an accurate description of this trending topic based on these posts.`;
     return pulse.content;
   }
 }
-

@@ -1,16 +1,16 @@
-"server-only";
+import "server-only";
 
+import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { defaultProviderOptions, llm } from "@/ai/provider";
+import { createStructuredExtractor } from "@/ai/structuredExtract";
+import type { PulseExtra } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { xai } from "@ai-sdk/xai";
 import { stepCountIs, streamText, ToolSet, TypeValidationError } from "ai";
 import { Logger } from "pino";
-import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { z } from "zod";
-import { prisma } from "@/prisma/prisma";
 import { HEAT_CONFIG } from "./config";
-import type { PulseExtra } from "@/prisma/client";
 import type { PulsePostData } from "./types";
-import { createStructuredExtractor } from "@/ai/structuredExtract";
 
 const MAX_STEPS = 2;
 
@@ -47,13 +47,14 @@ interface PostData {
   likes: number;
   retweets: number;
   replies: number;
-  extra?: Record<string, unknown>;
+  url?: string;
+  author?: string;
 }
 
 /**
  * Check if a post should be filtered due to suspicious engagement patterns
  * Filters out posts with fake/bought engagement (extremely high engagement rates)
- * 
+ *
  * @param post - Post data to check
  * @returns true if post should be filtered (suspicious), false otherwise
  */
@@ -76,18 +77,12 @@ function shouldFilterPost(post: PostData): boolean {
   }
 
   // Red flag 2: Small post with extreme engagement (likely bought)
-  if (
-    views < HEAT_CONFIG.MIN_VIEWS_FOR_HIGH_ENGAGEMENT &&
-    engagementRate > 0.2
-  ) {
+  if (views < HEAT_CONFIG.MIN_VIEWS_FOR_HIGH_ENGAGEMENT && engagementRate > 0.2) {
     return true;
   }
 
   // Red flag 3: Unnatural retweet/reply patterns
-  if (
-    retweetRate > HEAT_CONFIG.MAX_RETWEET_RATE ||
-    replyRate > HEAT_CONFIG.MAX_REPLY_RATE
-  ) {
+  if (retweetRate > HEAT_CONFIG.MAX_RETWEET_RATE || replyRate > HEAT_CONFIG.MAX_REPLY_RATE) {
     return true;
   }
 
@@ -109,7 +104,7 @@ async function recordPulseError(
       select: { extra: true },
     });
 
-    const currentExtra = (pulse?.extra as Record<string, unknown>) || {};
+    const currentExtra = pulse?.extra ?? {};
     await prisma.pulse.update({
       where: { id: pulseId },
       data: {
@@ -277,18 +272,18 @@ ${promptSystemConfig({ locale: "en-US" })}
           }
 
           // Map parsed posts to PostData format and filter suspicious posts
-          const mappedPosts = parsedPosts.map((p: ParsedPost): PostData => ({
-            postId: p.postId,
-            content: p.content || "",
-            views: p.views || 0,
-            likes: p.likes || 0,
-            retweets: p.retweets || 0,
-            replies: p.replies || 0,
-            extra: {
+          const mappedPosts = parsedPosts.map(
+            (p: ParsedPost): PostData => ({
+              postId: p.postId,
+              content: p.content || "",
+              views: p.views || 0,
+              likes: p.likes || 0,
+              retweets: p.retweets || 0,
+              replies: p.replies || 0,
               url: p.url,
               author: p.author,
-            } as Record<string, unknown>,
-          }));
+            }),
+          );
 
           // Filter out posts with suspicious engagement patterns
           const filteredPosts = mappedPosts.filter((post) => {
@@ -341,20 +336,20 @@ ${promptSystemConfig({ locale: "en-US" })}
             likes: post.likes,
             retweets: post.retweets,
             replies: post.replies,
-            url: (post.extra as Record<string, string> | undefined)?.url,
-            author: (post.extra as Record<string, string> | undefined)?.author,
+            url: post.url,
+            author: post.author,
           }));
 
           const pulse = await prisma.pulse.findUnique({
             where: { id: pulseId },
             select: { extra: true },
           });
-          const currentExtra = (pulse?.extra as PulseExtra) || {};
+          const currentExtra = pulse?.extra ?? {};
 
           await prisma.pulse.update({
             where: { id: pulseId },
             data: {
-              extra: { ...currentExtra, posts: postsData } as PulseExtra,
+              extra: { ...currentExtra, posts: postsData },
             },
           });
 
@@ -395,4 +390,3 @@ ${promptSystemConfig({ locale: "en-US" })}
     });
   });
 }
-

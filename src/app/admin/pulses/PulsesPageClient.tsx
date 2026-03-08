@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ExtractServerActionData, throwServerActionError } from "@/lib/serverAction";
+import { VALID_LOCALES } from "@/i18n/routing";
+import type { Locale } from "next-intl";
 import { Loader2Icon, PlayIcon, RefreshCwIcon, TrendingUpIcon, XCircleIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -94,19 +96,22 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
                 {
                   name: "AI Tech",
                   query: "AI agents OR LLM OR Claude OR GPT OR OpenAI OR Anthropic OR Gemini",
+                  locale: "en-US",
                 },
                 {
                   name: "Creator Economy",
-                  query:
-                    "creator economy OR newsletter OR indie hacker OR solopreneur OR build in public",
+                  query: "creator economy OR newsletter OR indie hacker OR solopreneur OR build in public",
+                  locale: "en-US",
                 },
                 {
                   name: "Consumer Trends",
                   query: "trending product OR viral brand OR consumer behavior OR Gen Z shopping",
+                  locale: "en-US",
                 },
                 {
                   name: "Web3 & Crypto",
                   query: "crypto OR DeFi OR NFT OR blockchain OR Bitcoin OR Ethereum",
+                  locale: "en-US",
                 },
               ],
               null,
@@ -217,14 +222,16 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
     }
     if (
       !Array.isArray(parsed) ||
-      parsed.some((c) => typeof c.name !== "string" || typeof c.query !== "string")
+      parsed.some(
+        (c) => typeof c.name !== "string" || typeof c.query !== "string" || !VALID_LOCALES.includes(c.locale as Locale),
+      )
     ) {
-      setCategoryConfigError('Must be an array of { "name": string, "query": string }');
+      setCategoryConfigError(`Each item must have: "name": string, "query": string, "locale": ${VALID_LOCALES.join(" | ")}`);
       return;
     }
     setSavingCategoryConfig(true);
     try {
-      const result = await updateXTrendCategoryConfig(parsed as { name: string; query: string }[]);
+      const result = await updateXTrendCategoryConfig(parsed as { name: string; query: string; locale: Locale }[]);
       if (!result.success) {
         throwServerActionError(result);
       }
@@ -428,7 +435,7 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
               setCategoryConfigError(null);
             }}
             className="font-mono text-xs min-h-40 resize-y"
-            placeholder='[{"name": "AI Tech", "query": "AI agents OR LLM OR Claude OR GPT"}]'
+            placeholder='[{"name": "AI Tech", "query": "AI agents OR LLM OR Claude OR GPT", "locale": "en-US"}]'
           />
           {categoryConfigError && <p className="text-xs text-destructive">{categoryConfigError}</p>}
           <Button size="sm" onClick={handleSaveCategoryConfig} disabled={savingCategoryConfig}>

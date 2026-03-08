@@ -1,4 +1,4 @@
-"server-only";
+import "server-only";
 
 /**
  * Pulse Recommendation System
@@ -11,14 +11,13 @@
  * - RECOMMEND_CONFIG: Configuration constants for time windows and limits
  */
 
-export { recommendPulsesForUser } from "./recommendPulses";
-export { recommendPulsesForActiveUsers } from "./recommendForActiveUsers";
 export { RECOMMEND_CONFIG } from "./config";
+export { recommendPulsesForActiveUsers } from "./recommendForActiveUsers";
+export { recommendPulsesForUser } from "./recommendPulses";
 export {
-  recommendOutputSchema,
   pulseRecommendationItemSchema,
+  recommendOutputSchema,
+  type PulseRecommendationItem,
   type RecommendOutput,
   type RecommendPulsesResult,
-  type PulseRecommendationItem,
 } from "./types";
-

@@ -1,14 +1,14 @@
-"server-only";
+import "server-only";
 
-import { Logger } from "pino";
-import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
-import { gatherPostsForPulse } from "./gatherPosts";
-import { calculateHeatScore } from "./calculateHeat";
-import { generateDescriptionFromPosts } from "./generateDescription";
+import type { Pulse } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
+import { Logger } from "pino";
 import { EXPIRATION_CONFIG } from "../expiration/config";
+import { calculateHeatScore } from "./calculateHeat";
 import { HEAT_CONFIG } from "./config";
-import type { Pulse, PulseExtra } from "@/prisma/client";
+import { gatherPostsForPulse } from "./gatherPosts";
+import { generateDescriptionFromPosts } from "./generateDescription";
 
 /**
  * Process a single pulse through the HEAT pipeline
@@ -90,7 +90,7 @@ async function processSinglePulse(
   } catch (error) {
     const errorMessage = (error as Error).message || String(error);
     const errorStack = (error as Error).stack;
-    
+
     pulseLogger.error({
       msg: "Failed to process pulse",
       error: errorMessage,
@@ -99,7 +99,7 @@ async function processSinglePulse(
 
     // Save pulse with null HEAT and record error in extra field
     try {
-      const currentExtra = (pulse.extra as Record<string, unknown>) || {};
+      const currentExtra = pulse.extra ?? {};
       await prisma.pulse.update({
         where: { id: pulse.id },
         data: {
@@ -113,7 +113,7 @@ async function processSinglePulse(
               stack: errorStack,
               timestamp: new Date().toISOString(),
             },
-          } as PulseExtra,
+          },
         },
       });
     } catch (updateError) {
@@ -258,4 +258,3 @@ export async function processHeatPipeline(
     throw error;
   }
 }
-

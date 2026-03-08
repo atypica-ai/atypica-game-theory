@@ -8,6 +8,7 @@ import { createStudyUserChatAction } from "@/app/(study)/study/actions";
 import { getNonExpiredPulseFilter } from "../lib/pulseFilters";
 import { sortPulsesByHeatDelta } from "./utils/sorting";
 import { getLocale } from "next-intl/server";
+import type { Locale } from "next-intl";
 
 const marketplacePulseSelect = {
   id: true,
@@ -35,7 +36,7 @@ async function fetchMarketplacePulseRows(params: {
   requireHeatScore?: boolean;
   take?: number;
   orderBy?: Prisma.PulseOrderByWithRelationInput | Prisma.PulseOrderByWithRelationInput[];
-  locale?: string;
+  locale?: Locale;
 }): Promise<MarketplacePulseRow[]> {
   const where: Prisma.PulseWhereInput = {
     ...getNonExpiredPulseFilter(),
@@ -80,7 +81,7 @@ function normalizeTreemapLookbackDays(lookbackDays: number): number {
   return Math.min(Math.max(lookbackDays, TREEMAP_MIN_LOOKBACK_DAYS), TREEMAP_MAX_LOOKBACK_DAYS);
 }
 
-async function fetchTreemapWindowRows(lookbackDays: number, locale?: string): Promise<MarketplacePulseRow[]> {
+async function fetchTreemapWindowRows(lookbackDays: number, locale?: Locale): Promise<MarketplacePulseRow[]> {
   const safeLookback = normalizeTreemapLookbackDays(lookbackDays);
   const start = new Date();
   start.setDate(start.getDate() - safeLookback);

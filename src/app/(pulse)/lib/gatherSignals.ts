@@ -1,8 +1,9 @@
-import { prisma } from "@/prisma/prisma";
+import "server-only";
+
 import { rootLogger } from "@/lib/logging";
+import { prisma } from "@/prisma/prisma";
 import { getAllDataSources, getDataSource, type DataSourceName } from "../dataSources";
 import { Pulse as DataSourcePulse } from "../dataSources/types";
-import type { PulseExtra } from "@/prisma/client";
 import { processPulseIdentityAndCarryOver } from "./processPulseIdentity";
 
 /**
@@ -32,7 +33,9 @@ export async function gatherPulsesForDataSource(
 
     const pulsesToCreate = result.pulses.map((pulse: DataSourcePulse) => {
       // Extract base dataSource name (e.g., "xTrend" from "xTrend:AI Tech")
-      const baseDataSourceName = dataSourceName.includes(":") ? dataSourceName.split(":")[0] : dataSourceName;
+      const baseDataSourceName = dataSourceName.includes(":")
+        ? dataSourceName.split(":")[0]
+        : dataSourceName;
 
       // Set expireAt = createdAt + 7 days
       const expireAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -42,9 +45,9 @@ export async function gatherPulsesForDataSource(
         dataSource: baseDataSourceName,
         title: pulse.title,
         content: pulse.content,
-        locale: "en-US",
+        locale: pulse.locale,
         expireAt,
-        extra: (pulse.metadata || {}) as PulseExtra,
+        extra: pulse.extra ?? {},
       };
     });
 
@@ -78,13 +81,20 @@ export async function gatherPulsesFromAllDataSources(): Promise<{
   const logger = rootLogger.child({ operation: "gatherPulsesFromAll" });
   const dataSources = await getAllDataSources();
 
-  logger.info({ msg: "Starting pulse gathering from all dataSources", dataSourceCount: dataSources.length });
+  logger.info({
+    msg: "Starting pulse gathering from all dataSources",
+    dataSourceCount: dataSources.length,
+  });
 
   // Execute all dataSources in parallel (including category-level xTrend dataSources)
   const promises = dataSources.map(async (dataSource) => {
     // Use the actual dataSource name (could be "xTrend:AI Tech" for category-specific)
     const result = await gatherPulsesForDataSource(dataSource.name).catch((error) => {
-      logger.error({ msg: "Failed to gather pulses from dataSource", dataSource: dataSource.name, error: (error as Error).message });
+      logger.error({
+        msg: "Failed to gather pulses from dataSource",
+        dataSource: dataSource.name,
+        error: (error as Error).message,
+      });
       return { success: false, pulseCount: 0, pulseIds: [] };
     });
 
@@ -103,10 +113,7 @@ export async function gatherPulsesFromAllDataSources(): Promise<{
   // Step 2: Process pulse identity and carry-over for gathered pulse IDs
   const allProcessedPulseIds = [...allPulseIds];
   if (allPulseIds.length > 0) {
-    const { carriedOverPulseIds } = await processPulseIdentityAndCarryOver(
-      allPulseIds,
-      logger,
-    );
+    const { carriedOverPulseIds } = await processPulseIdentityAndCarryOver(allPulseIds, logger);
     allProcessedPulseIds.push(...carriedOverPulseIds);
     logger.info({
       carriedOverPulseIds: carriedOverPulseIds.length,

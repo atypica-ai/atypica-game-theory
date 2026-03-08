@@ -1,11 +1,11 @@
-"server-only";
+import "server-only";
 
-import { Logger } from "pino";
-import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
-import { gatherPulsesFromAllDataSources } from "./gatherSignals";
-import { processHeatPipeline } from "../heat";
+import { prisma } from "@/prisma/prisma";
+import { Logger } from "pino";
 import { processExpirationTest } from "../expiration";
+import { processHeatPipeline } from "../heat";
+import { gatherPulsesFromAllDataSources } from "./gatherSignals";
 
 /**
  * Run the full daily pulse pipeline:
@@ -13,9 +13,7 @@ import { processExpirationTest } from "../expiration";
  * 2. Calculate HEAT scores
  * 3. Process expiration
  */
-export async function runDailyPulsePipeline(
-  parentLogger?: Logger,
-): Promise<{
+export async function runDailyPulsePipeline(parentLogger?: Logger): Promise<{
   totalPulses: number;
   heatProcessed: number;
   heatErrors: number;
@@ -39,7 +37,11 @@ export async function runDailyPulsePipeline(
   // Step 2: HEAT
   logger.info("Step 2: Calculating HEAT scores");
   const heatResult = await processHeatPipeline(allPulseIds, logger);
-  logger.info({ msg: "Step 2 completed", processed: heatResult.processed, errors: heatResult.errors });
+  logger.info({
+    msg: "Step 2 completed",
+    processed: heatResult.processed,
+    errors: heatResult.errors,
+  });
 
   // Log failures
   const pulsesWithoutHeat = await prisma.pulse.findMany({
@@ -54,7 +56,7 @@ export async function runDailyPulsePipeline(
         id: p.id,
         title: p.title,
         category: p.category,
-        error: (p.extra as Record<string, unknown>)?.error,
+        error: p.extra?.error,
       })),
     });
   }
@@ -62,7 +64,11 @@ export async function runDailyPulsePipeline(
   // Step 3: Expiration
   logger.info("Step 3: Processing expiration");
   const expirationResult = await processExpirationTest(allPulseIds, logger);
-  logger.info({ msg: "Step 3 completed", expired: expirationResult.expired, kept: expirationResult.kept });
+  logger.info({
+    msg: "Step 3 completed",
+    expired: expirationResult.expired,
+    kept: expirationResult.kept,
+  });
 
   const result = {
     totalPulses: allPulseIds.length,

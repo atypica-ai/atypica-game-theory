@@ -1,4 +1,4 @@
-"server-only";
+import "server-only";
 
 /**
  * Get filter condition for non-expired pulses
@@ -32,4 +32,3 @@ export function getTopPulsesByHeatFilter() {
     ...getPulsesWithHeatScore(),
   };
 }
-

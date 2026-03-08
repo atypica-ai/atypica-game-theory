@@ -1,9 +1,9 @@
-"server-only";
+import "server-only";
 
-import { prisma } from "@/prisma/prisma";
 import { rootLogger } from "@/lib/logging";
-import { recommendPulsesForUser } from "./recommendPulses";
+import { prisma } from "@/prisma/prisma";
 import { RECOMMEND_CONFIG } from "./config";
+import { recommendPulsesForUser } from "./recommendPulses";
 
 const logger = rootLogger.child({ module: "recommendForActiveUsers" });
 
@@ -19,7 +19,8 @@ async function processUsersInBatches(
     maxPulsesToFilter?: number;
   },
 ): Promise<Array<{ userId: number; success: boolean; pulseCount: number; error?: string }>> {
-  const results: Array<{ userId: number; success: boolean; pulseCount: number; error?: string }> = [];
+  const results: Array<{ userId: number; success: boolean; pulseCount: number; error?: string }> =
+    [];
 
   for (let i = 0; i < userIds.length; i += maxWorkers) {
     const batch = userIds.slice(i, i + maxWorkers);
@@ -29,7 +30,11 @@ async function processUsersInBatches(
           const result = await recommendPulsesForUser(userId, configOverrides);
           return { userId, success: result.success, pulseCount: result.pulseCount };
         } catch (error) {
-          logger.error({ msg: "Failed to recommend pulses for user", userId, error: (error as Error).message });
+          logger.error({
+            msg: "Failed to recommend pulses for user",
+            userId,
+            error: (error as Error).message,
+          });
           return { userId, success: false, pulseCount: 0, error: (error as Error).message };
         }
       }),
@@ -97,7 +102,7 @@ export async function recommendPulsesForActiveUsers(
   const activeDays = configOverrides?.userActiveDays ?? RECOMMEND_CONFIG.USER_ACTIVE_DAYS;
 
   // Resolve target users
-  const targetUserIds = userIds ?? await getActiveUserIds(activeDays);
+  const targetUserIds = userIds ?? (await getActiveUserIds(activeDays));
 
   logger.info({ msg: "Starting batch recommendation", userCount: targetUserIds.length });
 
@@ -106,7 +111,11 @@ export async function recommendPulsesForActiveUsers(
     return { totalUsers: 0, successfulUsers: 0, failedUsers: 0, totalPulsesRecommended: 0 };
   }
 
-  const results = await processUsersInBatches(targetUserIds, RECOMMEND_CONFIG.MAX_WORKERS, configOverrides);
+  const results = await processUsersInBatches(
+    targetUserIds,
+    RECOMMEND_CONFIG.MAX_WORKERS,
+    configOverrides,
+  );
 
   const successful = results.filter((r) => r.success);
   const failed = results.filter((r) => !r.success);

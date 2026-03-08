@@ -11,6 +11,7 @@ import { runDailyPulsePipeline } from "@/app/(pulse)/lib/runDailyPipeline";
 import { recommendPulsesForActiveUsers } from "@/app/(pulse)/recommendation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
+import type { Locale } from "next-intl";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 
@@ -340,7 +341,7 @@ export async function triggerFullPipeline(): Promise<
   return { success: true, data: result };
 }
 
-type XTrendCategory = { name: string; query: string };
+type XTrendCategory = { name: string; query: string; locale: Locale };
 
 /**
  * Get xTrend category config from SystemConfig

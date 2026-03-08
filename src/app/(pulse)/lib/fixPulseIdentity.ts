@@ -1,10 +1,10 @@
-"server-only";
+import "server-only";
 
 import { defaultProviderOptions, llm } from "@/ai/provider";
-import { generateText, tool, ToolSet } from "ai";
-import { z } from "zod";
-import { Logger } from "pino";
 import { prisma } from "@/prisma/prisma";
+import { generateText, tool, ToolSet } from "ai";
+import { Logger } from "pino";
+import { z } from "zod";
 
 /**
  * Match result from identity fixing agent
@@ -32,7 +32,7 @@ export interface PulseMatchPair {
 /**
  * Match today's pulses with yesterday's pulses to identify which are the same topic
  * Returns ONLY the match pairs - does NOT update anything in database
- * 
+ *
  * @param newPulses - Today's newly gathered pulses (simple objects with id, title, content)
  * @param category - Category name to match within
  * @param logger - Logger instance
@@ -165,4 +165,3 @@ Identify matches and call the outputMatches tool.`;
     return [];
   }
 }
-

@@ -1,4 +1,4 @@
-"server-only";
+import "server-only";
 
 /**
  * Configuration constants for pulse recommendation system
@@ -18,4 +18,3 @@ export const RECOMMEND_CONFIG = {
   // Parallel processing
   MAX_WORKERS: 10, // Maximum concurrent user processing
 } as const;
-

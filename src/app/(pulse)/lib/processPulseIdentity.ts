@@ -1,22 +1,22 @@
-"server-only";
+import "server-only";
 
-import { prisma } from "@/prisma/prisma";
 import type { PulseExtra } from "@/prisma/client";
+import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
-import { matchPulseIdentities } from "./fixPulseIdentity";
 import { EXPIRATION_CONFIG } from "../expiration/config";
+import { matchPulseIdentities } from "./fixPulseIdentity";
 
 /**
  * Process pulse identity fixing and carry-over for given pulse IDs
- * 
+ *
  * Flow:
  * 1. Match today's pulses with yesterday's pulses (get ID pairs)
  * 2. Update matched pulses: title + matchedYesterdayPulseId
  * 3. Carry over unmatched yesterday's pulses: non-expired, above threshold, TOP N
  * 4. Create carried-over pulses with incremented carriedOverDays
- * 
+ *
  * ALL extra field updates happen here in ONE place.
- * 
+ *
  * @param pulseIds - Array of pulse IDs to process (typically today's newly gathered pulses)
  * @param logger - Logger instance
  */
@@ -80,8 +80,8 @@ export async function processPulseIdentityAndCarryOver(
         // STEP 2: Update matched pulses - title + matchedYesterdayPulseId
         await Promise.all(
           matchPairs.map(async (match) => {
-            const currentExtra = (pulses.find((p) => p.id === match.newPulseId)?.extra || {}) as Record<string, unknown>;
-            const updatedExtra: Record<string, unknown> = {
+            const currentExtra = pulses.find((p) => p.id === match.newPulseId)?.extra ?? {};
+            const updatedExtra: PulseExtra = {
               ...currentExtra,
               matchedYesterdayPulseId: match.oldPulseId,
             };
@@ -90,7 +90,7 @@ export async function processPulseIdentityAndCarryOver(
               where: { id: match.newPulseId },
               data: {
                 title: match.oldTitle,
-                extra: updatedExtra as PulseExtra,
+                extra: updatedExtra,
               },
             });
 
@@ -102,7 +102,6 @@ export async function processPulseIdentityAndCarryOver(
             });
           }),
         );
-
 
         // STEP 3: Get yesterday's pulses for carry-over
         const yesterdayPulses = await prisma.pulse.findMany({
@@ -159,13 +158,10 @@ export async function processPulseIdentityAndCarryOver(
         if (uniqueTopN.length > 0) {
           const createdPulses = await Promise.all(
             uniqueTopN.map(async (pulse) => {
-              const yesterdayExtra = (pulse.extra || {}) as Record<string, unknown>;
-              const previousDays =
-                typeof yesterdayExtra.carriedOverDays === "number"
-                  ? yesterdayExtra.carriedOverDays
-                  : 0;
+              const yesterdayExtra = pulse.extra ?? {};
+              const previousDays = yesterdayExtra.carriedOverDays ?? 0;
 
-              const updatedExtra: Record<string, unknown> = {
+              const updatedExtra: PulseExtra = {
                 ...yesterdayExtra,
                 carriedOverDays: previousDays + 1,
               };
@@ -182,7 +178,7 @@ export async function processPulseIdentityAndCarryOver(
                   heatScore: null,
                   heatDelta: null,
                   expired: false,
-                  extra: updatedExtra as PulseExtra,
+                  extra: updatedExtra,
                 },
               });
             }),
@@ -221,4 +217,3 @@ export async function processPulseIdentityAndCarryOver(
     return { carriedOverPulseIds: [] };
   }
 }
-

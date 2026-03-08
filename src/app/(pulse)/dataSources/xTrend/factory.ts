@@ -1,11 +1,12 @@
-"server-only";
+import "server-only";
 
 import { prisma } from "@/prisma/prisma";
-import { DataSource, DataSourceFactory, DataSourceResult } from "../types";
+import type { Locale } from "next-intl";
 import { Logger } from "pino";
+import { DataSource, DataSourceFactory, DataSourceResult } from "../types";
 import { gatherPulsesWithGrok } from "./gatherPulsesWithGrok";
 
-type XTrendCategory = { name: string; query: string };
+type XTrendCategory = { name: string; query: string; locale: Locale };
 
 /**
  * Factory that creates one DataSource per xTrend category
@@ -36,13 +37,20 @@ export const xTrendFactory: DataSourceFactory = {
           const pulsesWithCategory = pulses.map((pulse) => ({
             ...pulse,
             categoryName: category.name,
+            locale: category.locale,
           }));
 
-          categoryLogger.info({ msg: "Gathered pulses for category", pulseCount: pulsesWithCategory.length });
+          categoryLogger.info({
+            msg: "Gathered pulses for category",
+            pulseCount: pulsesWithCategory.length,
+          });
 
           return { pulses: pulsesWithCategory };
         } catch (error) {
-          categoryLogger.error({ msg: "Failed to gather pulses for category", error: (error as Error).message });
+          categoryLogger.error({
+            msg: "Failed to gather pulses for category",
+            error: (error as Error).message,
+          });
           return { pulses: [] };
         }
       },

@@ -1,18 +1,18 @@
-"server-only";
+import "server-only";
 
-import { loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { llm } from "@/ai/provider";
-import { prisma } from "@/prisma/prisma";
+import { loadUserMemory } from "@/app/(memory)/lib/loadMemory";
 import { rootLogger } from "@/lib/logging";
+import { prisma } from "@/prisma/prisma";
 import { generateObject } from "ai";
+import { getNonExpiredPulseFilter } from "../lib/pulseFilters";
 import { RECOMMEND_CONFIG } from "./config";
 import { pulseRecommendationPrompt } from "./prompt";
 import {
   recommendOutputSchema,
-  type RecommendPulsesResult,
   type PulseRecommendationItem,
+  type RecommendPulsesResult,
 } from "./types";
-import { getNonExpiredPulseFilter } from "../lib/pulseFilters";
 
 const logger = rootLogger.child({ module: "recommendPulses" });
 
@@ -25,7 +25,8 @@ async function getFreshPulses(configOverrides?: {
   maxPulsesToFilter?: number;
 }) {
   const pulseFreshHours = configOverrides?.pulseFreshHours ?? RECOMMEND_CONFIG.PULSE_FRESH_HOURS;
-  const maxPulsesToFilter = configOverrides?.maxPulsesToFilter ?? RECOMMEND_CONFIG.MAX_PULSES_TO_FILTER;
+  const maxPulsesToFilter =
+    configOverrides?.maxPulsesToFilter ?? RECOMMEND_CONFIG.MAX_PULSES_TO_FILTER;
   const cutoffTime = new Date(Date.now() - pulseFreshHours * 60 * 60 * 1000);
   return await prisma.pulse.findMany({
     where: {
@@ -114,8 +115,7 @@ export async function recommendPulsesForUser(
       // Format pulses for LLM input (include content for better angle generation)
       const pulsesText = freshPulses
         .map(
-          (pulse) =>
-            `Pulse ID: ${pulse.id}\nTitle: ${pulse.title}\nCategory: ${pulse.category}\n`,
+          (pulse) => `Pulse ID: ${pulse.id}\nTitle: ${pulse.title}\nCategory: ${pulse.category}\n`,
         )
         .join("\n---\n");
 
@@ -153,12 +153,10 @@ export async function recommendPulsesForUser(
         const maxRecommendedPulses =
           configOverrides?.maxRecommendedPulses ?? RECOMMEND_CONFIG.MAX_RECOMMENDED_PULSES;
         const shuffled = shuffleArray(freshPulses);
-        recommendations = shuffled
-          .slice(0, maxRecommendedPulses)
-          .map((p) => ({
-            pulseId: p.id,
-            angle: `Explore this trending topic: ${p.title}`,
-          }));
+        recommendations = shuffled.slice(0, maxRecommendedPulses).map((p) => ({
+          pulseId: p.id,
+          angle: `Explore this trending topic: ${p.title}`,
+        }));
         method = "random";
       }
     } else {
@@ -167,12 +165,10 @@ export async function recommendPulsesForUser(
       const maxRecommendedPulses =
         configOverrides?.maxRecommendedPulses ?? RECOMMEND_CONFIG.MAX_RECOMMENDED_PULSES;
       const shuffled = shuffleArray(freshPulses);
-      recommendations = shuffled
-        .slice(0, maxRecommendedPulses)
-        .map((p) => ({
-          pulseId: p.id,
-          angle: `Discover this trending topic: ${p.title}`,
-        }));
+      recommendations = shuffled.slice(0, maxRecommendedPulses).map((p) => ({
+        pulseId: p.id,
+        angle: `Discover this trending topic: ${p.title}`,
+      }));
       method = "random";
     }
 
@@ -228,4 +224,3 @@ export async function recommendPulsesForUser(
     };
   }
 }
-

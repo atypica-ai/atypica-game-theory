@@ -1,4 +1,4 @@
-"server-only";
+import "server-only";
 
 import { z } from "zod";
 
@@ -34,4 +34,3 @@ export interface RecommendPulsesResult {
   pulseIds: number[];
   recommendations: Array<{ pulseId: number; angle: string }>;
 }
-
