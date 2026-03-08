@@ -60,50 +60,10 @@ ${
 ${skillsXml}
 
 **如何使用 Skills：**
-
-你的工作环境：
-\`\`\`
-/workspace/   # 当前目录（可读写，持久化）
-/skills/      # 专家技能库（只读，独立挂载）
-\`\`\`
-
-使用 bash 命令探索和操作：
-
-1. **查看工作区文件**：
-   \`\`\`bash
-   ls -la
-   \`\`\`
-
-2. **查看所有 skills**：
-   \`\`\`bash
-   ls -la /skills/
-   \`\`\`
-   或查看详情：\`for dir in /skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
-
-3. **加载特定 skill**：
-   \`\`\`bash
-   readFile({ path: "/skills/skill-name/SKILL.md" })
-   \`\`\`
-   或使用 bash: \`cat /skills/skill-name/SKILL.md\`
-
-4. **读取参考资料**：
-   \`\`\`bash
-   cat /skills/skill-name/references/core-memory.md
-   \`\`\`
-
-5. **创建或修改文件**（持久化保存）：
-   \`\`\`bash
-   writeFile({ path: "my-project/index.js", content: "..." })
-   \`\`\`
-
-**工作区持久化**：
-- 当前目录（/workspace/）下的所有文件会自动保存
-- 下次对话时，这些文件会自动加载回来
-- /skills/ 目录下的文件是只读的，不要尝试修改
-
-**可用的 bash 命令**：
-- ls, cat, head, tail, grep, find, wc, sort, uniq 等
-- ⚠️ 不支持脚本执行（python, node, php 等）
+- 查看所有 skills：\`ls -la /skills/\`
+- 查看详情：\`for dir in /skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
+- 加载特定 skill：\`readFile({ path: "/skills/skill-name/SKILL.md" })\` 或 \`cat /skills/skill-name/SKILL.md\`
+- 读取参考资料：\`cat /skills/skill-name/references/core-memory.md\`
 
 **重要提示：**
 - Skill 的 description 是判断何时使用的关键
@@ -153,51 +113,10 @@ ${
 ${skillsXml}
 
 **How to Use Skills:**
-
-Your working environment:
-\`\`\`
-/workspace/   # Current directory (read-write, persistent)
-/skills/      # Expert skill library (read-only, separate mount)
-\`\`\`
-
-Use bash commands to explore and operate:
-
-1. **View workspace files**:
-   \`\`\`bash
-   ls -la
-   \`\`\`
-
-2. **View all skills**:
-   \`\`\`bash
-   ls -la /skills/
-   \`\`\`
-   Or view details: \`for dir in /skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
-
-3. **Load a specific skill**:
-   \`\`\`bash
-   readFile({ path: "/skills/skill-name/SKILL.md" })
-   \`\`\`
-   Or use bash: \`cat /skills/skill-name/SKILL.md\`
-
-4. **Read reference materials**:
-   \`\`\`bash
-   cat /skills/skill-name/references/core-memory.md
-   \`\`\`
-
-5. **Create or modify files** (persisted):
-   \`\`\`bash
-   writeFile({ path: "my-project/index.js", content: "..." })
-   \`\`\`
-
-**Workspace Persistence**:
-- All files in the current directory (/workspace/) are automatically saved
-- Next conversation, these files will be loaded back
-- Files under /skills/ are read-only, don't try to modify them
-
-**Available bash commands**:
-- ls, cat, head, tail, grep, find, wc, sort, uniq, etc.
-- ⚠️ Script execution not supported (python, node, php, etc.)
-- ⚠️ Compression commands not supported (tar -z, gzip, bzip2, etc.)
+- View all skills: \`ls -la /skills/\`
+- View details: \`for dir in /skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
+- Load a specific skill: \`readFile({ path: "/skills/skill-name/SKILL.md" })\` or \`cat /skills/skill-name/SKILL.md\`
+- Read reference materials: \`cat /skills/skill-name/references/core-memory.md\`
 
 **Important Notes:**
 - The skill's description is key to knowing when to use it

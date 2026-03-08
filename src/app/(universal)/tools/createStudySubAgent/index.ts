@@ -3,38 +3,25 @@ import "server-only";
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { initStudyStatReporter } from "@/ai/tools/stats";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
-import { executeBaseAgentRequest } from "@/app/(study)/agents/baseAgentRequest";
+import {
+  AgentRequestConfig,
+  executeBaseAgentRequest,
+} from "@/app/(study)/agents/baseAgentRequest";
 import { createStudyAgentConfig } from "@/app/(study)/agents/configs/studyAgentConfig";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { prisma } from "@/prisma/prisma";
+import { createAgentSandbox, SANDBOX_SESSIONS_DIR, sandboxSystemPrompt } from "@/sandbox";
 import { waitUntil } from "@vercel/functions";
 import { generateId, tool } from "ai";
+import { getSubAgentModePrompt } from "./prompt";
 import {
   createStudySubAgentInputSchema,
   createStudySubAgentOutputSchema,
   type CreateStudySubAgentToolResult,
 } from "./types";
-
-function buildSubAgentHardRequirementPrompt(locale: string): string {
-  return locale === "zh-CN"
-    ? [
-        "## SubAgent 执行要求",
-        "1. 不要向用户请求交互确认，直接自主完成研究。",
-        "2. 至少执行一次研究工具（interviewChat 或 discussionChat）收集数据。",
-        "3. 必须执行一次 generateReport 产出研究报告。",
-        "4. 在最终总结中，汇报你的关键发现、结论，以及产物的位置（如报告路径），供上级 agent 读取。",
-      ].join("\n")
-    : [
-        "## Mandatory SubAgent Execution Requirements",
-        "1. Do not pause for user-interaction confirmation; finish the workflow autonomously.",
-        "2. Run at least one research tool (interviewChat or discussionChat) to collect data.",
-        "3. Run generateReport once to produce a research report.",
-        "4. In your final summary, report your key findings, conclusions, and artifact locations (e.g. report path) so the lead agent can access them.",
-      ].join("\n");
-}
 
 function extractTextFromParts(parts: unknown): string {
   if (!Array.isArray(parts)) return "";
@@ -98,6 +85,7 @@ export const createStudySubAgentTool = ({
     execute: async ({
       taskRequirement,
       outputFormat,
+      mode,
       subAgentTitle,
     }): Promise<CreateStudySubAgentToolResult> => {
       let subAgentChat: Awaited<ReturnType<typeof createUserChat>> | null = null;
@@ -183,16 +171,45 @@ export const createStudySubAgentTool = ({
                   statReport,
                   toolAbortSignal,
                 });
+
+                // Remove requestInteraction — sub-agent runs autonomously
                 const toolsWithoutInteraction = Object.fromEntries(
                   Object.entries(config.tools).filter(
                     ([toolName]) => toolName !== StudyToolName.requestInteraction,
                   ),
                 ) as typeof config.tools;
+
+                // Inject bash/readFile/writeFile from sandbox so sub-agent can read/write workspace
+                const sessionDir = `${SANDBOX_SESSIONS_DIR}/${chat.token}`;
+                const { tools: bashTools } = await createAgentSandbox({
+                  userId,
+                  skills: [],
+                  sessionDir,
+                });
+                const tools = {
+                  ...toolsWithoutInteraction,
+                  bash: bashTools.bash,
+                  readFile: bashTools.readFile,
+                  writeFile: bashTools.writeFile,
+                };
+
+                const modePrompt = getSubAgentModePrompt({ mode, locale });
+                const sandboxPrompt = sandboxSystemPrompt({ locale, sessionDir });
+
+                const systemPrompt = [
+                  config.systemPrompt, // study 基础提示词
+                  modePrompt, // 模式执行要求（study/flexible/panel）
+                  sandboxPrompt, // 文件系统说明（目录结构、CWD、命令限制）
+                ].join("\n\n");
+
+                // Type assertion: study config's specialHandlers are typed against
+                // the narrower study TOOLS, but they only reference study tool names
+                // and work correctly with the extended tools set.
                 return {
                   ...config,
-                  tools: toolsWithoutInteraction,
-                  systemPrompt: `${config.systemPrompt}\n\n${buildSubAgentHardRequirementPrompt(locale)}`,
-                };
+                  tools,
+                  systemPrompt,
+                } as AgentRequestConfig<typeof tools>;
               },
               undefined,
               { executionMode: "blocking" },
@@ -201,7 +218,8 @@ export const createStudySubAgentTool = ({
 
           try {
             await runOnce();
-            if (!(await hasAnyReportToken(chat.id))) {
+            // In flexible mode, report is optional — don't force it
+            if (mode !== "flexible" && !(await hasAnyReportToken(chat.id))) {
               const enforceReportInstruction =
                 locale === "zh-CN"
                   ? "继续执行并立刻调用 generateReport 产出 reportToken。不要结束在 interview，输出报告后再给出简要总结。"
@@ -224,10 +242,12 @@ export const createStudySubAgentTool = ({
 
         waitUntil(runSubAgent().catch(() => {}));
 
+        // TODO: lead agent 目前无法知道 sub-agent 何时完成，需要增加完成通知机制
+        const sessionPath = `${SANDBOX_SESSIONS_DIR}/${subAgentChat.token}`;
         const resultSummary =
           locale === "zh-CN"
-            ? "研究任务已启动，右侧面板将持续更新执行进度。"
-            : "Research task started. The right panel will keep updating progress.";
+            ? `研究任务已启动，右侧面板将持续更新执行进度。Sub-agent 工作目录：${sessionPath}/`
+            : `Research task started. The right panel will keep updating progress. Sub-agent workspace: ${sessionPath}/`;
 
         return {
           status: "running",

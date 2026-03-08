@@ -6,6 +6,8 @@ export const SANDBOX_CWD = "/workspace";
 export const SANDBOX_WORKSPACE_DIR = "/workspace";
 // skills 独立挂载，与 workspace 隔离（只读）
 export const SANDBOX_SKILLS_DIR = "/skills";
+// 每个 agent session 的工作目录前缀（相对于 /workspace）
+export const SANDBOX_SESSIONS_DIR = "sessions";
 
 // ── Disk paths (host filesystem) ────────────────────────────────────────
 

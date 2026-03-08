@@ -32,7 +32,7 @@ import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { createAgentSandbox } from "@/sandbox";
+import { createAgentSandbox, SANDBOX_SESSIONS_DIR, sandboxSystemPrompt } from "@/sandbox";
 import { getUserTokens } from "@/tokens/lib";
 import {
   ReasoningUIPart,
@@ -113,7 +113,6 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     userMemory: memory,
   });
   const memoryUsagePrompt = buildMemoryUsagePrompt({ userMemory: memory, locale });
-  const systemPrompt = `${baseSystemPrompt}\n\n${memoryUsagePrompt}`;
 
   // Create bash-tool sandbox with ReadWriteFs (workspace) + OverlayFs (skills)
   const skills = await prisma.agentSkill.findMany({
@@ -121,9 +120,11 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     select: { id: true, name: true },
   });
 
+  const sessionDir = `${SANDBOX_SESSIONS_DIR}/${userChat.token}`;
   const { tools: bashTools } = await createAgentSandbox({
     userId,
     skills,
+    sessionDir,
     onBeforeBashCall: ({ command }) => {
       if (command.match(/python|node|php|ruby|perl|java|go run|\.\/[\w-]+\.sh/i)) {
         logger.warn({ msg: "Blocked script execution attempt", command });
@@ -135,6 +136,18 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
       logger.debug({ msg: "Executing bash command", command });
     },
   });
+
+  const sandboxPrompt = sandboxSystemPrompt({
+    locale,
+    sessionDir,
+    hasSkills: skills.length > 0,
+  });
+
+  const systemPrompt = [
+    baseSystemPrompt, // 角色定义 + skills + 对话指南
+    sandboxPrompt, // 文件系统说明（目录结构、CWD、命令限制）
+    memoryUsagePrompt, // 记忆使用指南
+  ].join("\n\n");
 
   const agentToolArgs: AgentToolConfigArgs = {
     locale,

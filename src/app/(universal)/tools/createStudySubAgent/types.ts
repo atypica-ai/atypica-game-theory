@@ -9,6 +9,12 @@ export const createStudySubAgentInputSchema = z.object({
     .string()
     .min(1)
     .describe("Expected output format for the sub-agent result."),
+  mode: z
+    .enum(["study", "flexible", "panel"])
+    .default("study")
+    .describe(
+      "Execution mode: study = full workflow (search personas → interview/discuss → report), flexible = all tools available without forced flow, panel = personas pre-selected (skip search/build → discuss/interview → report).",
+    ),
   subAgentTitle: z
     .string()
     .optional()

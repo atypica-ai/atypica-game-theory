@@ -5,6 +5,7 @@ import type { BashToolkit, CreateBashToolOptions } from "bash-tool";
 import { createBashTool } from "bash-tool";
 import fs from "fs/promises";
 import { Bash, MountableFs, OverlayFs, ReadWriteFs } from "just-bash";
+import path from "path";
 import {
   getSkillsDiskPath,
   getWorkspaceDiskPath,
@@ -19,18 +20,23 @@ export {
   getSkillsDiskPath,
   getWorkspaceDiskPath,
   SANDBOX_CWD,
+  SANDBOX_SESSIONS_DIR,
   SANDBOX_SKILLS_DIR,
   SANDBOX_WORKSPACE_DIR,
 } from "./paths";
+export { sandboxSystemPrompt } from "./prompt";
 export { cleanupSandboxCache, ensureAllSkillsCached, ensureSkillAvailable } from "./skill";
 
 export async function createAgentSandbox({
   userId,
   skills,
+  sessionDir,
   onBeforeBashCall,
 }: {
   userId: number;
   skills: Array<{ id: number; name: string }>;
+  /** 相对于 /workspace 的 session 目录，如 "sessions/{token}"。设置后 agent 的 cwd 和 destination 都会指向此目录。 */
+  sessionDir?: string;
   onBeforeBashCall?: CreateBashToolOptions["onBeforeBashCall"];
 }): Promise<BashToolkit> {
   // 1. 确保 skills 已缓存到本地磁盘
@@ -39,10 +45,17 @@ export async function createAgentSandbox({
   // 2. 确保 workspace 和 skills 目录存在
   const workspaceDisk = getWorkspaceDiskPath({ userId });
   const skillsDisk = getSkillsDiskPath({ userId });
-  await Promise.all([
+  const mkdirPromises = [
     fs.mkdir(workspaceDisk, { recursive: true }),
     fs.mkdir(skillsDisk, { recursive: true }),
-  ]);
+  ];
+  // 如果指定了 sessionDir，确保 session 子目录也存在
+  if (sessionDir) {
+    mkdirPromises.push(
+      fs.mkdir(path.join(workspaceDisk, sessionDir), { recursive: true }),
+    );
+  }
+  await Promise.all(mkdirPromises);
 
   // 3. 构建虚拟文件系统
   //
@@ -66,14 +79,18 @@ export async function createAgentSandbox({
   );
 
   // 4. 创建 Bash 实例
+  //    cwd 默认 /workspace，有 sessionDir 时指向 /workspace/sessions/{token}
+  const cwd = sessionDir ? path.posix.join(SANDBOX_CWD, sessionDir) : SANDBOX_CWD;
   const bash = new Bash({
     fs: mountableFs,
-    cwd: SANDBOX_CWD, // "/workspace" — agent 的工作目录
+    cwd,
   });
 
   rootLogger.info({
     msg: "[Sandbox] Created agent sandbox",
     userId,
+    cwd,
+    sessionDir,
     workspaceDisk,
     skillsDisk,
     skillCount: skills.length,
@@ -85,6 +102,6 @@ export async function createAgentSandbox({
     onBeforeBashCall,
     // 显式设置 destination：bash-tool 每次命令前会 cd 到此路径。
     // 默认值也是 "/workspace"，但显式设置避免隐式依赖库的默认值。
-    destination: SANDBOX_CWD,
+    destination: cwd,
   });
 }
