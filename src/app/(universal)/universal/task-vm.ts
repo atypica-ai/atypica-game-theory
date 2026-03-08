@@ -1,4 +1,4 @@
-import { TUniversalMessageWithTool, UniversalToolName } from "@/app/(universal)/tools/types";
+import { TUniversalMessageWithTool, UniversalToolName, UniversalUITools } from "@/app/(universal)/tools/types";
 import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { DynamicToolUIPart, getToolOrDynamicToolName, isToolOrDynamicToolUIPart, ToolUIPart } from "ai";
 
@@ -122,55 +122,35 @@ function getToolSemanticMeta(toolName: string): {
   return { stage: "synthesis", titleKey: "stepGenericTitle", defaultSummaryKey: "stepGenericSummary" };
 }
 
-function getObjectPartInput(part: ToolUIPart): Record<string, unknown> | null {
-  if (!part.input || typeof part.input !== "object") return null;
-  return part.input as Record<string, unknown>;
-}
+// Narrowed type for the createStudySubAgent tool part — gives typed input/output access.
+type CreateSubAgentPart = ToolUIPart<Pick<UniversalUITools, UniversalToolName.createStudySubAgent>>;
 
-function getObjectPartOutput(part: ToolUIPart): Record<string, unknown> | null {
-  if (!part.output || typeof part.output !== "object") return null;
-  return part.output as Record<string, unknown>;
-}
-
-function classifySubAgentTaskStatus(part: ToolUIPart): UniversalTaskStatus {
+function classifySubAgentTaskStatus(part: CreateSubAgentPart): UniversalTaskStatus {
   if (part.state === "output-error") return "error";
   if (part.state !== "output-available") return "running";
-  const output = getObjectPartOutput(part);
-  if (output?.status === "failed") return "error";
-  if (output?.status === "running") return "running";
+  if (part.output?.status === "failed") return "error";
+  if (part.output?.status === "running") return "running";
   return "done";
 }
 
-function getSubAgentTaskTitle(part: ToolUIPart): string {
-  const input = getObjectPartInput(part);
+function getSubAgentTaskTitle(part: CreateSubAgentPart): string {
   return (
-    compact(input?.subAgentTitle, TASK_TITLE_MAX_LEN) ||
-    compact(input?.taskRequirement, TASK_TITLE_MAX_LEN) ||
+    compact(part.input?.subAgentTitle, TASK_TITLE_MAX_LEN) ||
+    compact(part.input?.taskRequirement, TASK_TITLE_MAX_LEN) ||
     "Research Task"
   );
 }
 
-function getSubAgentTaskSummary(part: ToolUIPart): string {
-  const output = getObjectPartOutput(part);
+function getSubAgentTaskSummary(part: CreateSubAgentPart): string {
   if (part.state === "output-error") return part.errorText ?? "Execution failed.";
   if (part.state !== "output-available") return "In progress...";
-  if (output?.status === "running") {
-    return compact(output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "In progress...";
+  if (part.output?.status === "running") {
+    return compact(part.output.resultSummary, TASK_SUMMARY_MAX_LEN) || "In progress...";
   }
-  if (output?.status === "failed") {
-    return compact(output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "Execution failed.";
+  if (part.output?.status === "failed") {
+    return compact(part.output.resultSummary, TASK_SUMMARY_MAX_LEN) || "Execution failed.";
   }
-  return compact(output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "Completed.";
-}
-
-function getSubAgentChatId(part: ToolUIPart): number | null {
-  const output = getObjectPartOutput(part);
-  return typeof output?.subAgentChatId === "number" ? output.subAgentChatId : null;
-}
-
-function getSubAgentChatToken(part: ToolUIPart): string | null {
-  const output = getObjectPartOutput(part);
-  return typeof output?.subAgentChatToken === "string" ? output.subAgentChatToken : null;
+  return compact(part.output?.resultSummary, TASK_SUMMARY_MAX_LEN) || "Completed.";
 }
 
 export function extractTasksFromMessages(messages: TUniversalMessageWithTool[]): UniversalTaskVM[] {
@@ -179,10 +159,8 @@ export function extractTasksFromMessages(messages: TUniversalMessageWithTool[]):
     if (message.role !== "assistant") return;
     message.parts.forEach((part, partIndex) => {
       if (!isToolOrDynamicToolUIPart(part)) return;
-      const toolName = getToolOrDynamicToolName(part);
-      if (part.type === "dynamic-tool" || toolName !== UniversalToolName.createStudySubAgent) {
-        return;
-      }
+      // Narrow to createStudySubAgent by checking part.type directly — gives typed input/output.
+      if (part.type !== `tool-${UniversalToolName.createStudySubAgent}`) return;
 
       const summary = getSubAgentTaskSummary(part);
       tasks.push({
@@ -196,8 +174,8 @@ export function extractTasksFromMessages(messages: TUniversalMessageWithTool[]):
         messageId: message.id,
         messageIndex,
         partIndex,
-        subAgentChatId: getSubAgentChatId(part),
-        subAgentChatToken: getSubAgentChatToken(part),
+        subAgentChatId: part.output?.subAgentChatId ?? null,
+        subAgentChatToken: part.output?.subAgentChatToken ?? null,
         resultSummary: summary,
       });
     });

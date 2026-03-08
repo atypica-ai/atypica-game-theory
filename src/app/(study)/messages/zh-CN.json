@@ -141,11 +141,6 @@
       "highPrecisionPersonaCount": "含 {count} 个 AI 人设 (深度访谈)",
       "highPrecisionPersonaCountPlural": "含 {count} 个 AI 人设 (深度访谈)"
     },
-    "Components": {
-      "GenerateReportResultMessage": {
-        "reportGenerated": "报告已生成，点击封面查看完整内容"
-      }
-    },
     "ReportsListPanel": {
       "title": "报告",
       "noReportsYet": "暂无报告"

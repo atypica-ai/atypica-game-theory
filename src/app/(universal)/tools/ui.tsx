@@ -2,26 +2,27 @@
 import { ConfirmPanelResearchPlanMessage } from "@/app/(panel)/tools/confirmPanelResearchPlan/ConfirmPanelResearchPlanMessage";
 import { RequestSelectPersonasMessage } from "@/app/(panel)/tools/requestSelectPersonas/RequestSelectPersonasMessage";
 import { UpdatePanelResultMessage } from "@/app/(panel)/tools/updatePanel/UpdatePanelResultMessage";
-import { GeneratePodcastResultMessage } from "@/app/(study)/tools/generatePodcast/GeneratePodcastResultMessage";
-import { GenerateReportResultMessage } from "@/app/(study)/tools/generateReport/GenerateReportResultMessage";
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
+import { GenerateReportResultMessage } from "@/app/(study)/tools/generateReport/GenerateReportResultMessage";
+import { SearchPersonasResultMessage } from "@/app/(study)/tools/searchPersonas/SearchPersonasResultMessage";
 import { fetchUniversalUserChatByToken } from "@/app/(universal)/universal/actions";
 import { UNIVERSAL_REPORT_RETRY_DELAYS_MS } from "@/app/(universal)/universal/polling";
-import { SearchPersonasResultMessage } from "@/app/(study)/tools/searchPersonas/SearchPersonasResultMessage";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, CircleDot, CircleX } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { TAddUniversalUIToolResult, TUniversalMessageWithTool, UniversalToolName } from "./types";
+import type { UserChatContext } from "@/app/(study)/context/types";
 
 function extractPlainText(toolUIPart: TUniversalMessageWithTool["parts"][number]): string {
   if (!("output" in toolUIPart) || !toolUIPart.output || typeof toolUIPart.output !== "object") {
     return "";
   }
-  const output = toolUIPart.output as Record<string, unknown>;
-  return typeof output.plainText === "string" ? output.plainText : "";
+  const output = toolUIPart.output;
+  if ("plainText" in output && typeof output.plainText === "string") return output.plainText;
+  return "";
 }
 
 function UniversalMajorTaskResultCard({
@@ -49,36 +50,22 @@ function UniversalMajorTaskResultCard({
   );
 }
 
-function getSubAgentCardStatus(
-  toolUIPart: Extract<TUniversalMessageWithTool["parts"][number], { type: `tool-${string}` }>,
-): "running" | "done" | "error" {
+function getSubAgentCardStatus(toolUIPart: SubAgentToolUIPart): "running" | "done" | "error" {
   if (toolUIPart.state === "output-error") return "error";
   if (toolUIPart.state !== "output-available") return "running";
-  if (toolUIPart.output && typeof toolUIPart.output === "object") {
-    const output = toolUIPart.output as Record<string, unknown>;
-    if (output.status === "failed") return "error";
-    if (output.status === "running") return "running";
-  }
+  if (toolUIPart.output?.status === "failed") return "error";
+  if (toolUIPart.output?.status === "running") return "running";
   return "done";
 }
 
-function extractSubAgentTitle(
-  toolUIPart: Extract<TUniversalMessageWithTool["parts"][number], { type: `tool-${string}` }>,
-  fallbackTitle: string,
-): string {
-  if (!toolUIPart.input || typeof toolUIPart.input !== "object") return fallbackTitle;
-  const input = toolUIPart.input as Record<string, unknown>;
-  if (typeof input.subAgentTitle === "string" && input.subAgentTitle.trim()) {
-    return input.subAgentTitle.trim();
-  }
-  if (typeof input.taskRequirement === "string" && input.taskRequirement.trim()) {
-    return input.taskRequirement.trim();
-  }
+function extractSubAgentTitle(toolUIPart: SubAgentToolUIPart, fallbackTitle: string): string {
+  if (toolUIPart.input?.subAgentTitle?.trim()) return toolUIPart.input.subAgentTitle.trim();
+  if (toolUIPart.input?.taskRequirement?.trim()) return toolUIPart.input.taskRequirement.trim();
   return fallbackTitle;
 }
 
 function extractSubAgentSummary(
-  toolUIPart: Extract<TUniversalMessageWithTool["parts"][number], { type: `tool-${string}` }>,
+  toolUIPart: SubAgentToolUIPart,
   copy: {
     taskExecutionFailedHint: string;
     taskStartedWaitingUpdate: string;
@@ -88,17 +75,9 @@ function extractSubAgentSummary(
   if (toolUIPart.state === "output-error") {
     return toolUIPart.errorText || copy.taskExecutionFailedHint;
   }
-  if (toolUIPart.state !== "output-available") {
-    return copy.taskStartedWaitingUpdate;
-  }
-  if (!toolUIPart.output || typeof toolUIPart.output !== "object") {
-    return copy.taskCreatedWaitingFirstUpdate;
-  }
-  const output = toolUIPart.output as Record<string, unknown>;
-  if (typeof output.resultSummary === "string" && output.resultSummary.trim()) {
-    return output.resultSummary.trim();
-  }
-  return copy.taskCreatedWaitingFirstUpdate;
+  if (toolUIPart.state !== "output-available") return copy.taskStartedWaitingUpdate;
+  const resultSummary = toolUIPart.output?.resultSummary?.trim();
+  return resultSummary || copy.taskCreatedWaitingFirstUpdate;
 }
 
 type SubAgentToolUIPart = Extract<
@@ -136,10 +115,7 @@ function UniversalSubAgentTaskCard({
     taskStartedWaitingUpdate: t("taskStartedWaitingUpdate"),
     taskCreatedWaitingFirstUpdate: t("taskCreatedWaitingFirstUpdate"),
   });
-  const subAgentChatToken =
-    toolUIPart.output && typeof toolUIPart.output === "object"
-      ? ((toolUIPart.output as Record<string, unknown>).subAgentChatToken as string | undefined) ?? null
-      : null;
+  const subAgentChatToken = toolUIPart.output?.subAgentChatToken ?? null;
   const [reportCoverUrl, setReportCoverUrl] = useState<string | null>(null);
   const [reportToken, setReportToken] = useState<string | null>(null);
 
@@ -157,10 +133,8 @@ function UniversalSubAgentTaskCard({
     const loadLatestReport = async () => {
       const result = await fetchUniversalUserChatByToken(subAgentChatToken);
       if (!result.success || cancelled) return false;
-      const context = result.data.context as { reportTokens?: unknown } | null;
-      const reportTokens = Array.isArray(context?.reportTokens)
-        ? context.reportTokens.filter((token): token is string => typeof token === "string")
-        : [];
+      const context = result.data.context as UserChatContext | null;
+      const reportTokens = context?.reportTokens ?? [];
       const candidateReportToken = reportTokens.at(-1) ?? null;
       if (!candidateReportToken) {
         setReportToken(null);
@@ -230,7 +204,9 @@ function UniversalSubAgentTaskCard({
         ) : (
           <CircleX className="size-3.5 text-red-500" />
         )}
-        <div className="text-xs uppercase tracking-wide text-muted-foreground truncate">{title}</div>
+        <div className="text-xs uppercase tracking-wide text-muted-foreground truncate">
+          {title}
+        </div>
         <span className="ml-auto text-[10px] font-medium text-muted-foreground">
           {getSubAgentStatusLabel(status, {
             running: t("statusInProgress"),
@@ -239,11 +215,18 @@ function UniversalSubAgentTaskCard({
           })}
         </span>
       </div>
-      <div className={cn("text-sm text-muted-foreground", summary ? "line-clamp-3" : "")}>{summary}</div>
+      <div className={cn("text-sm text-muted-foreground", summary ? "line-clamp-3" : "")}>
+        {summary}
+      </div>
       {reportToken ? (
         <div className="relative w-full max-w-[280px] aspect-video overflow-hidden rounded border border-input/40 bg-muted/20">
           {reportCoverUrl ? (
-            <Image src={reportCoverUrl} alt={t("reportCoverPreviewAlt")} fill className="object-cover" />
+            <Image
+              src={reportCoverUrl}
+              alt={t("reportCoverPreviewAlt")}
+              fill
+              className="object-cover"
+            />
           ) : (
             <div className="h-full w-full" />
           )}
@@ -323,7 +306,10 @@ export function UniversalToolUIPartDisplay({
       );
     case `tool-${UniversalToolName.confirmPanelResearchPlan}`:
       return (
-        <ConfirmPanelResearchPlanMessage toolInvocation={toolUIPart} addToolResult={addToolResult} />
+        <ConfirmPanelResearchPlanMessage
+          toolInvocation={toolUIPart}
+          addToolResult={addToolResult}
+        />
       );
   }
 
@@ -350,7 +336,11 @@ export function UniversalToolUIPartDisplay({
           summary={extractPlainText(toolUIPart)}
           onOpenDetail={
             onOpenTaskDetail
-              ? () => onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.generatePodcast })
+              ? () =>
+                  onOpenTaskDetail({
+                    toolCallId: toolUIPart.toolCallId,
+                    toolName: UniversalToolName.generatePodcast,
+                  })
               : undefined
           }
         />
@@ -362,7 +352,11 @@ export function UniversalToolUIPartDisplay({
           summary={extractPlainText(toolUIPart)}
           onOpenDetail={
             onOpenTaskDetail
-              ? () => onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.interviewChat })
+              ? () =>
+                  onOpenTaskDetail({
+                    toolCallId: toolUIPart.toolCallId,
+                    toolName: UniversalToolName.interviewChat,
+                  })
               : undefined
           }
         />
@@ -374,7 +368,11 @@ export function UniversalToolUIPartDisplay({
           summary={extractPlainText(toolUIPart)}
           onOpenDetail={
             onOpenTaskDetail
-              ? () => onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.discussionChat })
+              ? () =>
+                  onOpenTaskDetail({
+                    toolCallId: toolUIPart.toolCallId,
+                    toolName: UniversalToolName.discussionChat,
+                  })
               : undefined
           }
         />
@@ -386,7 +384,11 @@ export function UniversalToolUIPartDisplay({
           summary={extractPlainText(toolUIPart)}
           onOpenDetail={
             onOpenTaskDetail
-              ? () => onOpenTaskDetail({ toolCallId: toolUIPart.toolCallId, toolName: UniversalToolName.deepResearch })
+              ? () =>
+                  onOpenTaskDetail({
+                    toolCallId: toolUIPart.toolCallId,
+                    toolName: UniversalToolName.deepResearch,
+                  })
               : undefined
           }
         />

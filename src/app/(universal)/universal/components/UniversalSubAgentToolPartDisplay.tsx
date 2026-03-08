@@ -75,9 +75,6 @@ function isSocialCommentPart(part: ToolUIPart<StudyUITools>): part is SocialComm
   return SOCIAL_COMMENT_TOOL_TYPES.has(part.type);
 }
 
-function isOutputAvailablePart(part: UniversalSubAgentToolPartVM["part"]) {
-  return part.type !== "dynamic-tool" && part.state === "output-available";
-}
 
 function extractPlainText(part: UniversalSubAgentToolPartVM["part"]): string {
   if (part.type === "dynamic-tool") {
@@ -86,7 +83,7 @@ function extractPlainText(part: UniversalSubAgentToolPartVM["part"]): string {
   }
   if (part.state !== "output-available") return "";
   if (part.output && typeof part.output === "object" && "plainText" in part.output) {
-    const plainText = (part.output as Record<string, unknown>).plainText;
+    const { plainText } = part.output as { plainText: unknown };
     return typeof plainText === "string" ? plainText : "";
   }
   return "";
@@ -96,13 +93,13 @@ function extractReportToken(part: UniversalSubAgentToolPartVM["part"]): string |
   if (part.type === "dynamic-tool") return null;
   const outputToken =
     part.output && typeof part.output === "object" && "reportToken" in part.output
-      ? (part.output as { reportToken?: unknown }).reportToken
+      ? (part.output as { reportToken: unknown }).reportToken
       : undefined;
   if (typeof outputToken === "string" && outputToken) return outputToken;
 
   const inputToken =
     part.input && typeof part.input === "object" && "reportToken" in part.input
-      ? (part.input as { reportToken?: unknown }).reportToken
+      ? (part.input as { reportToken: unknown }).reportToken
       : undefined;
   return typeof inputToken === "string" && inputToken ? inputToken : null;
 }
@@ -221,19 +218,9 @@ function UniversalGenerateReportExecutionView({
 
 function UniversalBuildPersonaResult({ part }: { part: UniversalSubAgentToolPartVM["part"] }) {
   const t = useTranslations("UniversalAgent");
-  if (!isOutputAvailablePart(part)) return null;
-  const output = part.output as Record<string, unknown>;
-  const personas = Array.isArray(output.personas)
-    ? output.personas.filter(
-        (persona): persona is { personaId: number; name: string; tags?: string[] } =>
-          !!persona &&
-          typeof persona === "object" &&
-          "personaId" in persona &&
-          typeof (persona as { personaId?: unknown }).personaId === "number" &&
-          "name" in persona &&
-          typeof (persona as { name?: unknown }).name === "string",
-      )
-    : [];
+  if (part.type !== `tool-${StudyToolName.buildPersona}`) return null;
+  if (part.state !== "output-available") return null;
+  const personas = part.output?.personas ?? [];
 
   if (!personas.length) {
     return <div className="text-sm text-muted-foreground">{t("taskNoPersonaBuilt")}</div>;

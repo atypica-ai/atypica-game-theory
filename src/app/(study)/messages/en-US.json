@@ -141,11 +141,6 @@
       "highPrecisionPersonaCount": "including {count} AI Persona (Deep Interview)",
       "highPrecisionPersonaCountPlural": "including {count} AI Personas (Deep Interview)"
     },
-    "Components": {
-      "GenerateReportResultMessage": {
-        "reportGenerated": "Report is ready. Click the cover to open."
-      }
-    },
     "ReportsListPanel": {
       "title": "Reports",
       "noReportsYet": "No reports yet"

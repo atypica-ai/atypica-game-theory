@@ -60,11 +60,9 @@ export function useUniversalChatSync({
     const hasPendingSubAgentToken = messages.some((message) =>
       message.parts.some((part) => {
         if (!isToolUIPart(part)) return false;
-        if (getToolName(part) !== UniversalToolName.createStudySubAgent) return false;
+        if (part.type !== `tool-${UniversalToolName.createStudySubAgent}`) return false;
         if (part.state !== "output-available") return true;
-        if (!part.output || typeof part.output !== "object") return true;
-        const output = part.output as Record<string, unknown>;
-        return typeof output.subAgentChatToken !== "string" || output.subAgentChatToken.length === 0;
+        return !part.output?.subAgentChatToken;
       }),
     );
     return { hasPendingHumanInTheLoopTool, hasPendingSubAgentToken };
