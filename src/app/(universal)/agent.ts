@@ -9,6 +9,7 @@ import { handleToolCallError, toolCallError } from "@/ai/tools/error";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { AgentToolConfigArgs, StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
+import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
 import { loadMemoryForAgent } from "@/app/(memory)/lib/loadMemory";
 import { buildMemoryUsagePrompt } from "@/app/(memory)/prompt/memoryUsage";
 import { confirmPanelResearchPlanTool } from "@/app/(panel)/tools/confirmPanelResearchPlan";
@@ -16,7 +17,6 @@ import { createPanelTool } from "@/app/(panel)/tools/createPanel";
 import { listPanelsTool } from "@/app/(panel)/tools/listPanels";
 import { requestSelectPersonasTool } from "@/app/(panel)/tools/requestSelectPersonas";
 import { updatePanelTool } from "@/app/(panel)/tools/updatePanel";
-import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
 import { setBedrockCache } from "@/app/(study)/agents/utils";
 import {
   discussionChatTool,
@@ -26,15 +26,10 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { buildUniversalSystemPrompt } from "@/app/(universal)/prompt";
-import { createStudySubAgentTool } from "@/app/(universal)/tools/createStudySubAgent";
 import { listSkillsTool, UniversalToolSet } from "@/app/(universal)/tools";
+import { createStudySubAgentTool } from "@/app/(universal)/tools/createStudySubAgent";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { loadAllSkillsToMemory } from "@/lib/skill/loadToMemory";
-import {
-  listWorkspaceFilesTool,
-  readWorkspaceFileTool,
-  writeWorkspaceFileTool,
-} from "@/lib/skill/workspaceTools";
 import { loadUserWorkspace, saveUserWorkspace } from "@/lib/skill/workspace";
 import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { UserChat } from "@/prisma/client";
@@ -188,9 +183,6 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     [UniversalToolName.bash]: bashTools.bash,
     [UniversalToolName.readFile]: bashTools.readFile,
     [UniversalToolName.writeFile]: bashTools.writeFile,
-    [UniversalToolName.listWorkspaceFiles]: listWorkspaceFilesTool({ userId }),
-    [UniversalToolName.readWorkspaceFile]: readWorkspaceFileTool({ userId }),
-    [UniversalToolName.writeWorkspaceFile]: writeWorkspaceFileTool({ userId }),
 
     // study agent
     [UniversalToolName.searchPersonas]: searchPersonasTool({

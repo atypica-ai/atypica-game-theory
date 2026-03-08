@@ -7,7 +7,7 @@ import { WebSearchToolInput, WebSearchToolResult } from "@/ai/tools/experts/webS
 import { SocialPostCommentToolResult, SocialPostToolResult } from "@/ai/tools/social/types";
 import { PlainTextToolResult } from "@/ai/tools/types";
 import { RequestPaymentResult } from "@/ai/tools/user/payment/types";
-import type { WorkspaceFileEntry } from "@/lib/skill/workspaceTools";
+
 import {
   ReadAttachmentToolInput,
   ReadAttachmentToolResult,
@@ -67,9 +67,6 @@ export enum StudyToolName {
 
   webFetch = "webFetch",
   webSearch = "webSearch",
-  listWorkspaceFiles = "listWorkspaceFiles",
-  readWorkspaceFile = "readWorkspaceFile",
-  writeWorkspaceFile = "writeWorkspaceFile",
 
   xhsNoteComments = "xhsNoteComments",
   xhsSearch = "xhsSearch",
@@ -149,30 +146,6 @@ export type StudyUITools = {
   };
   [StudyToolName.webFetch]: { input: WebFetchToolInput; output: WebFetchToolResult };
   [StudyToolName.webSearch]: { input: WebSearchToolInput; output: WebSearchToolResult };
-  [StudyToolName.listWorkspaceFiles]: {
-    input: { path?: string };
-    output: { success: boolean; path: string; files: WorkspaceFileEntry[]; plainText: string };
-  };
-  [StudyToolName.readWorkspaceFile]: {
-    input: { path: string; full?: boolean; headChars?: number; tailChars?: number };
-    output: {
-      success: boolean;
-      path: string;
-      content: string;
-      readMode: "preview" | "full";
-      truncated: boolean;
-      head: string;
-      tail: string;
-      totalChars: number;
-      totalBytes: number;
-      returnedChars: number;
-      plainText: string;
-    };
-  };
-  [StudyToolName.writeWorkspaceFile]: {
-    input: { path: string; content: string };
-    output: { success: boolean; path: string; bytes: number; plainText: string };
-  };
   [StudyToolName.xhsNoteComments]: { input: GenericInputType; output: SocialPostCommentToolResult };
   [StudyToolName.xhsSearch]: { input: GenericInputType; output: SocialPostToolResult };
   [StudyToolName.xhsUserNotes]: { input: GenericInputType; output: SocialPostToolResult };

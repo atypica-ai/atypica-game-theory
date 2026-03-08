@@ -4,11 +4,7 @@ import { toolCallError } from "@/ai/tools/error";
 import { readAttachmentTool } from "@/ai/tools/readAttachment";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import {
-  listWorkspaceFilesTool,
-  readWorkspaceFileTool,
-  writeWorkspaceFileTool,
-} from "@/lib/skill/workspaceTools";
+
 import { ToolSet } from "ai";
 import { audienceCallTool } from "./audienceCall";
 import { buildPersonaTool } from "./buildPersona";
@@ -31,9 +27,6 @@ export type StudyToolSet = Partial<{
   [StudyToolName.requestInteraction]: typeof requestInteractionTool;
   [StudyToolName.webFetch]: ReturnType<typeof webFetchTool>;
   [StudyToolName.webSearch]: ReturnType<typeof webSearchTool>;
-  [StudyToolName.listWorkspaceFiles]: ReturnType<typeof listWorkspaceFilesTool>;
-  [StudyToolName.readWorkspaceFile]: ReturnType<typeof readWorkspaceFileTool>;
-  [StudyToolName.writeWorkspaceFile]: ReturnType<typeof writeWorkspaceFileTool>;
   [StudyToolName.saveAnalyst]: ReturnType<typeof saveAnalystTool>;
   [StudyToolName.reasoningThinking]: ReturnType<typeof reasoningThinkingTool>;
   [StudyToolName.searchPersonas]: ReturnType<typeof searchPersonasTool>;

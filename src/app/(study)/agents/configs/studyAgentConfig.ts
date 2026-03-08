@@ -16,11 +16,7 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { StudyToolName } from "@/app/(study)/tools/types";
-import {
-  listWorkspaceFilesTool,
-  readWorkspaceFileTool,
-  writeWorkspaceFileTool,
-} from "@/lib/skill/workspaceTools";
+
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { AgentRequestConfig } from "../baseAgentRequest";
@@ -184,9 +180,6 @@ function buildStudyTools({
     [StudyToolName.requestInteraction]: requestInteractionTool,
     [StudyToolName.webFetch]: webFetchTool({ locale: agentToolArgs.locale }),
     [StudyToolName.webSearch]: webSearchTool({ provider: "tavily", ...agentToolArgs }),
-    [StudyToolName.listWorkspaceFiles]: listWorkspaceFilesTool({ userId }),
-    [StudyToolName.readWorkspaceFile]: readWorkspaceFileTool({ userId }),
-    [StudyToolName.writeWorkspaceFile]: writeWorkspaceFileTool({ userId }),
     [StudyToolName.reasoningThinking]: reasoningThinkingTool({ ...agentToolArgs }),
     [StudyToolName.searchPersonas]: searchPersonasTool({ ...contextfulAgentToolArgs, autoCreatePanel: true }),
     [StudyToolName.scoutTaskChat]: scoutTaskChatTool({ ...contextfulAgentToolArgs }),

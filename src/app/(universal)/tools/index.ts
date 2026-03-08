@@ -2,12 +2,12 @@ import "server-only";
 
 import { toolCallError } from "@/ai/tools/error";
 import { reasoningThinkingTool, webFetchTool, webSearchTool } from "@/ai/tools/tools";
+import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
 import { confirmPanelResearchPlanTool } from "@/app/(panel)/tools/confirmPanelResearchPlan";
 import { createPanelTool } from "@/app/(panel)/tools/createPanel";
 import { listPanelsTool } from "@/app/(panel)/tools/listPanels";
 import { requestSelectPersonasTool } from "@/app/(panel)/tools/requestSelectPersonas";
 import { updatePanelTool } from "@/app/(panel)/tools/updatePanel";
-import { deepResearchTool } from "@/app/(deepResearch)/deepResearch";
 import {
   discussionChatTool,
   generatePodcastTool,
@@ -16,11 +16,6 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
-import {
-  listWorkspaceFilesTool,
-  readWorkspaceFileTool,
-  writeWorkspaceFileTool,
-} from "@/lib/skill/workspaceTools";
 import { Tool, ToolSet } from "ai";
 import { createStudySubAgentTool } from "./createStudySubAgent";
 import { listSkillsTool } from "./listSkills";
@@ -45,9 +40,6 @@ export type UniversalToolSet = Partial<{
   [UniversalToolName.bash]: Tool<{ command: string }, CommandResult>;
   [UniversalToolName.readFile]: Tool<{ path: string }, { content: string }>;
   [UniversalToolName.writeFile]: Tool<{ path: string; content: string }, { success: boolean }>;
-  [UniversalToolName.listWorkspaceFiles]: ReturnType<typeof listWorkspaceFilesTool>;
-  [UniversalToolName.readWorkspaceFile]: ReturnType<typeof readWorkspaceFileTool>;
-  [UniversalToolName.writeWorkspaceFile]: ReturnType<typeof writeWorkspaceFileTool>;
   [UniversalToolName.listSkills]: ReturnType<typeof listSkillsTool>;
   [UniversalToolName.searchPersonas]: ReturnType<typeof searchPersonasTool>;
   [UniversalToolName.discussionChat]: ReturnType<typeof discussionChatTool>;

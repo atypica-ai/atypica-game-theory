@@ -83,7 +83,7 @@
     "js-cookie": "^3.0.5",
     "js-yaml": "^4.1.1",
     "jszip": "^3.10.1",
-    "just-bash": "^2.5.2",
+    "just-bash": "^2.12.5",
     "lucide-react": "^0.479.0",
     "meilisearch": "^0.55.0",
     "motion": "^12.26.2",
