@@ -1,42 +1,22 @@
 import { rootLogger } from "@/lib/logging";
+import { getWorkspaceDiskPath } from "@/sandbox/paths";
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
 
-/**
- * Generate hash from text content
- */
 export function generateContentHash(text: string): string {
   return crypto.createHash("sha256").update(text, "utf-8").digest("hex");
 }
 
-/**
- * Get format-content cache directory path for user
- */
-export function getFormatContentCachePath(userId: number): string {
-  return path.join(
-    process.cwd(),
-    ".next",
-    "cache",
-    "sandbox",
-    "user",
-    String(userId),
-    "workspace",
-    "format-content",
-  );
+function getFormatContentCachePath(userId: number): string {
+  return path.join(getWorkspaceDiskPath(userId), "format-content");
 }
 
-/**
- * Get cache file path for specific content hash
- */
-export function getCacheFilePath(userId: number, hash: string): string {
+function getCacheFilePath(userId: number, hash: string): string {
   return path.join(getFormatContentCachePath(userId), `${hash}.json`);
 }
 
-/**
- * Get processing status file path
- */
-export function getProcessingFilePath(userId: number, hash: string): string {
+function getProcessingFilePath(userId: number, hash: string): string {
   return path.join(getFormatContentCachePath(userId), `${hash}.processing.json`);
 }
 

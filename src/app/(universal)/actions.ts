@@ -3,9 +3,9 @@
 import { uploadToS3 } from "@/lib/attachments/s3";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
-import { getWorkspacePath } from "@/lib/skill/utils";
 import type { AgentSkillExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { getWorkspaceDiskPath } from "@/sandbox/paths";
 import fs from "fs/promises";
 import JSZip from "jszip";
 import path from "path";
@@ -48,9 +48,7 @@ export async function uploadSkillAction(
 
     // 1. 解析 SKILL.md 获取元数据（支持子目录）
     const files = Object.keys(zip.files);
-    const skillMdFileName = files.find(
-      (name) => name.endsWith("SKILL.md") && !zip.files[name].dir,
-    );
+    const skillMdFileName = files.find((name) => name.endsWith("SKILL.md") && !zip.files[name].dir);
 
     if (!skillMdFileName) {
       return {
@@ -218,7 +216,7 @@ export interface WorkspaceFile {
 export async function listWorkspaceFiles(): Promise<ServerActionResult<WorkspaceFile[]>> {
   return withAuth(async (user) => {
     try {
-      const workspacePath = getWorkspacePath(user.id);
+      const workspacePath = getWorkspaceDiskPath(user.id);
       const files: WorkspaceFile[] = [];
 
       async function scanDirectory(dir: string, relativePath = "") {

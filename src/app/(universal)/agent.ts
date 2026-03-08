@@ -29,11 +29,10 @@ import { buildUniversalSystemPrompt } from "@/app/(universal)/prompt";
 import { listSkillsTool, UniversalToolSet } from "@/app/(universal)/tools";
 import { createStudySubAgentTool } from "@/app/(universal)/tools/createStudySubAgent";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
-import { loadAllSkillsToMemory } from "@/lib/skill/loadToMemory";
-import { loadUserWorkspace, saveUserWorkspace } from "@/lib/skill/workspace";
 import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { UserChat } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import { createAgentSandbox } from "@/sandbox";
 import { getUserTokens } from "@/tokens/lib";
 import {
   ReasoningUIPart,
@@ -43,7 +42,6 @@ import {
   TextStreamPart,
   UIMessageStreamWriter,
 } from "ai";
-import { createBashTool } from "bash-tool";
 import type { Locale } from "next-intl";
 import { after, NextResponse } from "next/server";
 import { Logger } from "pino";
@@ -117,46 +115,23 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
   const memoryUsagePrompt = buildMemoryUsagePrompt({ userMemory: memory, locale });
   const systemPrompt = `${baseSystemPrompt}\n\n${memoryUsagePrompt}`;
 
-  // Load all skills to memory and create bash-tool sandbox
+  // Create bash-tool sandbox with ReadWriteFs (workspace) + OverlayFs (skills)
   const skills = await prisma.agentSkill.findMany({
     where: { userId },
     select: { id: true, name: true },
   });
 
-  // Load both skills and user workspace
-  const skillFiles = await loadAllSkillsToMemory(skills);
-  const workspaceFiles = await loadUserWorkspace(userId);
-
-  // Add "workspace/" prefix to workspace files and "skills/" prefix to skill files
-  const workspaceFilesWithPrefix: Record<string, string> = {};
-  for (const [path, content] of Object.entries(workspaceFiles)) {
-    workspaceFilesWithPrefix[`workspace/${path}`] = content;
-  }
-
-  const skillFilesWithPrefix: Record<string, string> = {};
-  for (const [path, content] of Object.entries(skillFiles)) {
-    skillFilesWithPrefix[`skills/${path}`] = content;
-  }
-
-  const { tools: bashTools, sandbox } = await createBashTool({
-    files: {
-      ...workspaceFilesWithPrefix, // Workspace files in workspace/ subdirectory
-      ...skillFilesWithPrefix, // Skills in skills/ subdirectory
-    },
-    destination: "/home/agent", // Set working directory and file destination
+  const { tools: bashTools } = await createAgentSandbox({
+    userId,
+    skills,
     onBeforeBashCall: ({ command }) => {
-      // Block script execution - just-bash already doesn't support it, but add extra safeguard
       if (command.match(/python|node|php|ruby|perl|java|go run|\.\/[\w-]+\.sh/i)) {
-        logger.warn({
-          msg: "Blocked script execution attempt",
-          command,
-        });
+        logger.warn({ msg: "Blocked script execution attempt", command });
         return {
           command:
             "echo 'Error: Script execution is not supported. Use bash commands only (ls, cat, grep, find, head, tail, etc.)'",
         };
       }
-      // Log bash commands for debugging
       logger.debug({ msg: "Executing bash command", command });
     },
   });
@@ -316,12 +291,8 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
         userId,
         ...extra,
       });
-
-      // Sync workspace to disk after each step
-      await saveUserWorkspace(userId, sandbox);
     },
     onFinish: async () => {
-      await saveUserWorkspace(userId, sandbox);
       await cleanupRun();
     },
     onError: async ({ error }) => {

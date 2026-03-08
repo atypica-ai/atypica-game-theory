@@ -1,6 +1,6 @@
 import type { AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
-import { getWorkspacePath } from "@/lib/skill/utils";
+import { getWorkspaceDiskPath } from "@/sandbox/paths";
 import fs from "fs/promises";
 import path from "path";
 import type { Logger } from "pino";
@@ -53,7 +53,7 @@ export async function persistReportToWorkspace({
     return;
   }
 
-  const workspaceRoot = getWorkspacePath(userId);
+  const workspaceRoot = getWorkspaceDiskPath(userId);
   const relativeDir = buildReportWorkspaceRelativeDir(studyUserChat.token, reportToken);
   const reportDir = path.join(workspaceRoot, relativeDir);
   const reportsDir = path.dirname(reportDir);

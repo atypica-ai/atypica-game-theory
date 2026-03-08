@@ -1,7 +1,7 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { getWorkspacePath } from "@/lib/skill/utils";
-import JSZip from "jszip";
+import { getSkillsDiskPath, getWorkspaceDiskPath } from "@/sandbox/paths";
 import fs from "fs/promises";
+import JSZip from "jszip";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import path from "path";
@@ -23,7 +23,10 @@ export async function GET(req: Request) {
   const filePath = searchParams.get("filePath");
 
   if (!folderPath && !filePath) {
-    return NextResponse.json({ error: "Missing folderPath or filePath parameter" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing folderPath or filePath parameter" },
+      { status: 400 },
+    );
   }
 
   const targetParam = folderPath || filePath;
@@ -46,7 +49,6 @@ export async function GET(req: Request) {
 
   // Handle folder download (zip)
   return handleFolderDownload(userId, folderPath!);
-
 }
 
 /**
@@ -55,10 +57,9 @@ export async function GET(req: Request) {
 async function handleFileDownload(userId: number, filePath: string) {
   try {
     // Get actual disk path
-    const basePath =
-      filePath.startsWith("workspace/")
-        ? getWorkspacePath(userId)
-        : path.join(getWorkspacePath(userId), "..", "skills");
+    const basePath = filePath.startsWith("workspace/")
+      ? getWorkspaceDiskPath(userId)
+      : getSkillsDiskPath(userId);
 
     const relativePath = filePath.replace(/^(workspace|skills)\//, "");
     const targetPath = path.join(basePath, relativePath);
@@ -110,7 +111,10 @@ async function handleFileDownload(userId: number, filePath: string) {
   } catch (error) {
     console.error("File download error:", error);
     return NextResponse.json(
-      { error: "Failed to download file", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Failed to download file",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 },
     );
   }
@@ -122,10 +126,9 @@ async function handleFileDownload(userId: number, filePath: string) {
 async function handleFolderDownload(userId: number, folderPath: string) {
   try {
     // Get actual disk path
-    const basePath =
-      folderPath.startsWith("workspace/")
-        ? getWorkspacePath(userId)
-        : path.join(getWorkspacePath(userId), "..", "skills");
+    const basePath = folderPath.startsWith("workspace/")
+      ? getWorkspaceDiskPath(userId)
+      : getSkillsDiskPath(userId);
 
     const relativePath = folderPath.replace(/^(workspace|skills)\//, "");
     const targetPath = path.join(basePath, relativePath);
@@ -181,7 +184,7 @@ async function handleFolderDownload(userId: number, folderPath: string) {
     // Get folder name from folderPath directly
     // workspace/ → workspace.zip
     // workspace/xd-projects → xd-projects.zip
-    const folderName = folderPath.split('/').filter(Boolean).pop() || 'export';
+    const folderName = folderPath.split("/").filter(Boolean).pop() || "export";
     const filename = `${folderName}.zip`;
 
     // Return zip file (convert Buffer to Uint8Array for NextResponse)
@@ -195,7 +198,10 @@ async function handleFolderDownload(userId: number, folderPath: string) {
   } catch (error) {
     console.error("Export error:", error);
     return NextResponse.json(
-      { error: "Failed to export folder", details: error instanceof Error ? error.message : String(error) },
+      {
+        error: "Failed to export folder",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 },
     );
   }
