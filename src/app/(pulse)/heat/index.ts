@@ -3,6 +3,7 @@ import "server-only";
 import { rootLogger } from "@/lib/logging";
 import type { Pulse } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
+import type { Locale } from "next-intl";
 import { Logger } from "pino";
 import { EXPIRATION_CONFIG } from "../expiration/config";
 import { calculateHeatScore } from "./calculateHeat";
@@ -28,7 +29,13 @@ async function processSinglePulse(
 
   try {
     // Gather posts
-    const posts = await gatherPostsForPulse(pulse.id, pulse.title, pulseLogger);
+    const locale = pulse.locale as Locale;
+    const posts = await gatherPostsForPulse({
+      pulseId: pulse.id,
+      title: pulse.title,
+      locale,
+      logger: pulseLogger,
+    });
 
     if (posts.length === 0) {
       pulseLogger.warn("No posts gathered, skipping HEAT calculation");
@@ -67,7 +74,12 @@ async function processSinglePulse(
     }
 
     // Generate description from posts
-    const description = await generateDescriptionFromPosts(pulse, posts, pulseLogger);
+    const description = await generateDescriptionFromPosts({
+      pulse,
+      posts,
+      locale,
+      logger: pulseLogger,
+    });
 
     // Update pulse with HEAT score, delta, and description
     await prisma.pulse.update({

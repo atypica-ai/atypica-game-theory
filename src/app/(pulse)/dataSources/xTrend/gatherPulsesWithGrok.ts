@@ -1,14 +1,16 @@
 import "server-only";
 
-import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { xai } from "@ai-sdk/xai";
-import { CoreMessage, streamText, ToolSet, TypeValidationError } from "ai";
+import { ModelMessage, streamText, ToolSet, TypeValidationError } from "ai";
+import type { Locale } from "next-intl";
 import { Logger } from "pino";
+import { gatherPulsesContinuation, gatherPulsesSystem } from "./prompt";
+
 type RawPulse = { categoryName: string; title: string; content: string };
 
 const SEARCH_LOOPS = 2;
-const MAX_PULSES_PER_LOOP = 6;
+
 /**
  * Parse pulses from text output
  * Format: "Title: [title]\nDescription: [description]"
@@ -27,10 +29,9 @@ function parsePulsesFromText(text: string): RawPulse[] {
     const descMatch = cleanLine.match(/^Description:\s*(.+)$/i);
 
     if (titleMatch) {
-      // Save previous pulse if exists
       if (currentTitle && currentContent) {
         pulses.push({
-          categoryName: "", // Will be set by caller
+          categoryName: "",
           title: currentTitle.trim(),
           content: currentContent.trim(),
         });
@@ -40,15 +41,13 @@ function parsePulsesFromText(text: string): RawPulse[] {
     } else if (descMatch && currentTitle) {
       currentContent = descMatch[1].trim();
     } else if (currentTitle && !currentContent && line.trim()) {
-      // Handle case where description might be on next line without "Description:" prefix
       currentContent = line.trim();
     }
   }
 
-  // Don't forget the last pulse
   if (currentTitle && currentContent) {
     pulses.push({
-      categoryName: "", // Will be set by caller
+      categoryName: "",
       title: currentTitle.trim(),
       content: currentContent.trim(),
     });
@@ -57,9 +56,6 @@ function parsePulsesFromText(text: string): RawPulse[] {
   return pulses;
 }
 
-/**
- * Check if error is TypeValidationError (non-fatal for xAI)
- */
 function isTypeValidationError(error: unknown): boolean {
   return (
     error instanceof TypeValidationError ||
@@ -69,15 +65,20 @@ function isTypeValidationError(error: unknown): boolean {
 }
 
 /**
- * Simplified Grok expert for pulse gathering
+ * Gather trending pulses via Grok with x-search
  * Uses manual loops to ensure Grok continues exploring across all iterations
- * Each loop accumulates messages so Grok knows what it has already collected
  */
-export async function gatherPulsesWithGrok(
-  query: string,
-  logger: Logger,
-  abortSignal: AbortSignal,
-): Promise<RawPulse[]> {
+export async function gatherPulsesWithGrok({
+  query,
+  locale,
+  logger,
+  abortSignal,
+}: {
+  query: string;
+  locale: Locale;
+  logger: Logger;
+  abortSignal: AbortSignal;
+}): Promise<RawPulse[]> {
   const allTools: ToolSet = {
     x_search: xai.tools.xSearch({
       enableImageUnderstanding: true,
@@ -85,47 +86,16 @@ export async function gatherPulsesWithGrok(
     }),
   } as ToolSet;
 
-  const systemPrompt = `
-# Role
-You are a trending topic discovery expert specializing in finding trending topics and insights on X (Twitter).
-
-# Task
-Find (<= ${MAX_PULSES_PER_LOOP}) the MOST trending (at least 10k views) topics based on the user's query within the last 7 days. Use x_search only.
-Each topic should have:
-- A clear, concise title
-- A brief description of the topic
-
-# Notice
-- Quality over quantity.
-- Ignore Compilation and Roundup post, they post biased and late news sometimes.
-- Search time range is posts created in the last 7 days unless specified otherwise. Anything earlier is ignored.
-- Explore different angles and use varied search terms to cover all trending topics that meet the requirements.
-- Record your findings in the specified format.
-
-# Title Format Requirements
-Titles must include
-1. unique names (products/tools/concepts) for accurately grouping posts of the same topic with 1 word at best and 3 words at worst
-+
-2. brief context if first part needs supplementary information for readers to understand.
-Entire Title Keep under 8 words.
-
-Good: "CGFlow and ActivityDiff: drug discovery AI", "1T-TaS₂: quantum material switching", "Pony Alpha: mysterious new LLM"
-Bad: "AI Drug Design Tools"(too general), "Quantum Material Switching", "New LLM Model"
-
-# Output Format
-Output your findings directly in your message. FORBID usage of markdown format, it breaks my parsing. Format each topic as:
-Title: [topic title]
-Description: [brief description]
-${promptSystemConfig({ locale: "en-US" })}
-`;
+  const systemPrompt = gatherPulsesSystem({ locale });
 
   const allPulses: RawPulse[] = [];
-  const messages: CoreMessage[] = [{ role: "user", content: query }];
+  const messages: ModelMessage[] = [{ role: "user", content: query }];
 
-  // Loop SEARCH_LOOPS times, accumulating all messages so each loop sees everything
   for (let loop = 0; loop < SEARCH_LOOPS; loop++) {
     try {
-      const response = await streamText({
+      let loopText = "";
+
+      const response = streamText({
         model: llm("grok-4-1-fast-non-reasoning"),
         system: systemPrompt,
         providerOptions: defaultProviderOptions(),
@@ -140,7 +110,7 @@ ${promptSystemConfig({ locale: "en-US" })}
               error: (error as Error).message,
               loop: loop + 1,
             });
-            return; // Don't throw - let stream continue
+            return;
           }
           logger.error({
             msg: "grokPulseExpert streamText onError",
@@ -150,13 +120,14 @@ ${promptSystemConfig({ locale: "en-US" })}
           });
           throw error;
         },
+        onFinish: ({ text }) => {
+          loopText = text;
+        },
       });
 
-      // Consume stream and get text output
-      const text = await response.text;
+      await response.consumeStream();
 
-      // Parse pulses from this loop's output
-      const loopPulses = parsePulsesFromText(text);
+      const loopPulses = parsePulsesFromText(loopText);
       allPulses.push(...loopPulses);
 
       logger.debug({
@@ -166,18 +137,12 @@ ${promptSystemConfig({ locale: "en-US" })}
         totalPulses: allPulses.length,
       });
 
-      // Add assistant response to messages
-      messages.push({
-        role: "assistant",
-        content: text,
-      });
+      messages.push({ role: "assistant", content: loopText });
 
-      // Add continuation message for next loop (except after last loop)
       if (loop < SEARCH_LOOPS - 1) {
         messages.push({
           role: "user",
-          content:
-            "Continue exploring different angles and search terms for more trending topics that meet the requirements. Finally, record new findings without duplicating in specified format (without extra md format like **)",
+          content: gatherPulsesContinuation({ locale }),
         });
       }
     } catch (error) {
@@ -187,7 +152,7 @@ ${promptSystemConfig({ locale: "en-US" })}
           error: (error as Error).message,
           loop: loop + 1,
         });
-        continue; // Skip this loop but continue to next
+        continue;
       }
 
       logger.error({
@@ -200,7 +165,6 @@ ${promptSystemConfig({ locale: "en-US" })}
     }
   }
 
-  // Deduplicate pulses by title (case-insensitive)
   const uniquePulses = Array.from(
     new Map(allPulses.map((p) => [p.title.toLowerCase(), p])).values(),
   );

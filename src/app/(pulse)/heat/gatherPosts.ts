@@ -1,22 +1,20 @@
 import "server-only";
 
-import { promptSystemConfig } from "@/ai/prompt/systemConfig";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { createStructuredExtractor } from "@/ai/structuredExtract";
 import type { PulseExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { xai } from "@ai-sdk/xai";
 import { stepCountIs, streamText, ToolSet, TypeValidationError } from "ai";
+import type { Locale } from "next-intl";
 import { Logger } from "pino";
 import { z } from "zod";
 import { HEAT_CONFIG } from "./config";
+import { gatherPostsLastStep, gatherPostsSystem } from "./prompt";
 import type { PulsePostData } from "./types";
 
 const MAX_STEPS = 2;
 
-/**
- * Schema for parsing posts from text output
- */
 const postsSchema = z.object({
   posts: z.array(
     z.object({
@@ -32,14 +30,8 @@ const postsSchema = z.object({
   ),
 });
 
-/**
- * Post data structure returned by parser
- */
 type ParsedPost = z.infer<typeof postsSchema>["posts"][number];
 
-/**
- * Post data structure with extra field for database
- */
 interface PostData {
   postId: string;
   content: string;
@@ -51,13 +43,6 @@ interface PostData {
   author?: string;
 }
 
-/**
- * Check if a post should be filtered due to suspicious engagement patterns
- * Filters out posts with fake/bought engagement (extremely high engagement rates)
- *
- * @param post - Post data to check
- * @returns true if post should be filtered (suspicious), false otherwise
- */
 function shouldFilterPost(post: PostData): boolean {
   const views = post.views || 0;
   if (views === 0) return true;
@@ -71,27 +56,13 @@ function shouldFilterPost(post: PostData): boolean {
   const retweetRate = retweets / views;
   const replyRate = replies / views;
 
-  // Red flag 1: Overall engagement too high
-  if (engagementRate > HEAT_CONFIG.MAX_ENGAGEMENT_RATE) {
-    return true;
-  }
-
-  // Red flag 2: Small post with extreme engagement (likely bought)
-  if (views < HEAT_CONFIG.MIN_VIEWS_FOR_HIGH_ENGAGEMENT && engagementRate > 0.2) {
-    return true;
-  }
-
-  // Red flag 3: Unnatural retweet/reply patterns
-  if (retweetRate > HEAT_CONFIG.MAX_RETWEET_RATE || replyRate > HEAT_CONFIG.MAX_REPLY_RATE) {
-    return true;
-  }
+  if (engagementRate > HEAT_CONFIG.MAX_ENGAGEMENT_RATE) return true;
+  if (views < HEAT_CONFIG.MIN_VIEWS_FOR_HIGH_ENGAGEMENT && engagementRate > 0.2) return true;
+  if (retweetRate > HEAT_CONFIG.MAX_RETWEET_RATE || replyRate > HEAT_CONFIG.MAX_REPLY_RATE) return true;
 
   return false;
 }
 
-/**
- * Record error in pulse's extra field
- */
 async function recordPulseError(
   pulseId: number,
   reason: string,
@@ -110,11 +81,7 @@ async function recordPulseError(
       data: {
         extra: {
           ...currentExtra,
-          error: {
-            reason,
-            details,
-            timestamp: new Date().toISOString(),
-          },
+          error: { reason, details, timestamp: new Date().toISOString() },
         } as PulseExtra,
       },
     });
@@ -128,18 +95,18 @@ async function recordPulseError(
 
 /**
  * Gather top posts for a pulse using Grok with x-search
- * Finds the 10 most viewed posts about the pulse topic and extracts engagement metrics
- *
- * @param pulseId - Pulse ID to gather posts for
- * @param title - Pulse title to search for
- * @param logger - Logger instance
- * @returns Array of PulsePost records (already saved to database)
  */
-export async function gatherPostsForPulse(
-  pulseId: number,
-  title: string,
-  logger: Logger,
-): Promise<PulsePostData[]> {
+export async function gatherPostsForPulse({
+  pulseId,
+  title,
+  locale,
+  logger,
+}: {
+  pulseId: number;
+  title: string;
+  locale: Locale;
+  logger: Logger;
+}): Promise<PulsePostData[]> {
   const pulseLogger = logger.child({ pulseId, pulseTitle: title });
 
   const allTools: ToolSet = {
@@ -149,54 +116,23 @@ export async function gatherPostsForPulse(
     }),
   } as ToolSet;
 
-  const systemPrompt = `
-# Role
-You are a social media analytics expert specializing in finding high-engagement posts on X (Twitter).
-
-# Task
-Find the ${HEAT_CONFIG.POSTS_PER_PULSE} MOST viewed posts about a given topic.
-Use x_search to find posts and extract accurate engagement metrics (views, likes, retweets, replies) for each post.
-
-# Requirements
-- Find posts with the highest views only
-- Summarize the post content/text (main text of the post) and Extract accurate engagement metrics, Id, url, and author as schema requires.
-- Continue your search until you have ${HEAT_CONFIG.POSTS_PER_PULSE}, or until I tell you to output.
-
-# Output Format
-Output your findings directly in your message. FORBID usage of markdown format (**, #, etc.), it breaks parsing. Format each post as:
-"""
-Post ID: [post id]
-Content: [post content/text summary in 1 sentence LESS THAN 100 characters]
-Views: [number]
-Likes: [number]
-Retweets: [number]
-Replies: [number]
-URL: [post url]
-Author: [author username]
-"""
-List all posts, one per post in the format above.
-
-# Honesty
-Return empty list if no posts found. Do not make up any posts. Record honestly.
-${promptSystemConfig({ locale: "en-US" })}
-`;
+  const systemPrompt = gatherPostsSystem({ locale });
+  const userMessage =
+    locale === "zh-CN"
+      ? `找到关于「${title}」的 ${HEAT_CONFIG.POSTS_PER_PULSE} 条浏览量最高的帖子。提取帖子内容/正文和互动数据（浏览量、点赞、转发、回复）。`
+      : `Find the ${HEAT_CONFIG.POSTS_PER_PULSE} most viewed posts about: "${title}". Extract the post content/text and engagement metrics (views, likes, retweets, replies) for each post.`;
 
   return new Promise<PulsePostData[]>((resolve, reject) => {
     const posts: PostData[] = [];
-
     const abortController = new AbortController();
+
     const response = streamText({
       model: llm("grok-4-1-fast-non-reasoning"),
       system: systemPrompt,
       providerOptions: defaultProviderOptions(),
       tools: allTools,
       toolChoice: "auto",
-      messages: [
-        {
-          role: "user",
-          content: `Find the ${HEAT_CONFIG.POSTS_PER_PULSE} most viewed posts about: "${title}". Extract the post content/text and engagement metrics (views, likes, retweets, replies) for each post.`,
-        },
-      ],
+      messages: [{ role: "user", content: userMessage }],
       abortSignal: abortController.signal,
       stopWhen: stepCountIs(MAX_STEPS),
       prepareStep: async ({ stepNumber, messages }) => {
@@ -204,23 +140,19 @@ ${promptSystemConfig({ locale: "en-US" })}
           return {
             messages: [
               ...messages,
-              {
-                role: "user" as const,
-                content:
-                  "You have reached the last step. Please output your findings in the specified format. If no posts found, state that clearly.",
-              },
+              { role: "user" as const, content: gatherPostsLastStep({ locale }) },
             ],
           };
         }
         return {};
       },
       onError: async ({ error }: { error: unknown }) => {
-        const isTypeValidationError =
+        const isTypeValidation =
           error instanceof TypeValidationError ||
           (error as Error).name === "TypeValidationError" ||
           (error as Error).message?.includes("Type validation failed");
 
-        if (isTypeValidationError) {
+        if (isTypeValidation) {
           pulseLogger.debug({
             msg: "xAI TypeValidationError ignored",
             error: (error as Error).message,
@@ -237,15 +169,9 @@ ${promptSystemConfig({ locale: "en-US" })}
         reject(error);
       },
       onFinish: async ({ text }: { steps: unknown[]; text: string }) => {
-        // Parse text output using parser module
         if (!text || text.trim().length === 0) {
           pulseLogger.warn("No text output from Grok response");
-          await recordPulseError(
-            pulseId,
-            "no_text_output",
-            "Grok returned empty text response",
-            pulseLogger,
-          );
+          await recordPulseError(pulseId, "no_text_output", "Grok returned empty text response", pulseLogger);
           resolve([]);
           return;
         }
@@ -261,17 +187,11 @@ ${promptSystemConfig({ locale: "en-US" })}
 
           if (parsedPosts.length === 0) {
             pulseLogger.warn("No posts found in parsed response");
-            await recordPulseError(
-              pulseId,
-              "no_posts_found",
-              "Parser found no posts in Grok response",
-              pulseLogger,
-            );
+            await recordPulseError(pulseId, "no_posts_found", "Parser found no posts in Grok response", pulseLogger);
             resolve([]);
             return;
           }
 
-          // Map parsed posts to PostData format and filter suspicious posts
           const mappedPosts = parsedPosts.map(
             (p: ParsedPost): PostData => ({
               postId: p.postId,
@@ -285,7 +205,6 @@ ${promptSystemConfig({ locale: "en-US" })}
             }),
           );
 
-          // Filter out posts with suspicious engagement patterns
           const filteredPosts = mappedPosts.filter((post) => {
             const shouldFilter = shouldFilterPost(post);
             if (shouldFilter) {
@@ -293,9 +212,6 @@ ${promptSystemConfig({ locale: "en-US" })}
                 msg: "Filtered post with suspicious engagement",
                 postId: post.postId,
                 views: post.views,
-                likes: post.likes,
-                retweets: post.retweets,
-                replies: post.replies,
                 engagementRate: (post.likes + post.retweets + post.replies) / (post.views || 1),
               });
             }
@@ -348,9 +264,7 @@ ${promptSystemConfig({ locale: "en-US" })}
 
           await prisma.pulse.update({
             where: { id: pulseId },
-            data: {
-              extra: { ...currentExtra, posts: postsData },
-            },
+            data: { extra: { ...currentExtra, posts: postsData } },
           });
 
           pulseLogger.info({
@@ -361,10 +275,7 @@ ${promptSystemConfig({ locale: "en-US" })}
           resolve(postsData);
         } catch (error) {
           const errorMessage = (error as Error).message || String(error);
-          pulseLogger.error({
-            msg: "Failed to save posts to database",
-            error: errorMessage,
-          });
+          pulseLogger.error({ msg: "Failed to save posts to database", error: errorMessage });
           await recordPulseError(pulseId, "database_save_failed", errorMessage, pulseLogger);
           reject(error);
         }
@@ -372,12 +283,12 @@ ${promptSystemConfig({ locale: "en-US" })}
     });
 
     response.consumeStream().catch(async (error: unknown) => {
-      const isTypeValidationError =
+      const isTypeValidation =
         error instanceof TypeValidationError ||
         (error as Error).name === "TypeValidationError" ||
         (error as Error).message?.includes("Type validation failed");
 
-      if (isTypeValidationError) {
+      if (isTypeValidation) {
         pulseLogger.debug({
           msg: "xAI TypeValidationError ignored in consumeStream",
           error: (error as Error).message,

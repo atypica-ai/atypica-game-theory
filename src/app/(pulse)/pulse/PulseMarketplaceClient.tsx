@@ -1,25 +1,29 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { CategoryBar } from "./components/CategoryBar";
-import { PulseCard } from "./components/PulseCard";
-import { PulseHeatTreemap } from "./components/PulseHeatTreemap";
-import { PulseDetailDialog } from "./components/PulseDetailDialog";
-import { fetchPulsesByCategory, fetchUserRecommendations, fetchPulseHeatTreemapDataPublic } from "./actions";
-import { Loader2Icon, SearchIcon, ChevronDownIcon, InboxIcon } from "lucide-react";
-import useSWR from "swr";
-import { ExtractServerActionData } from "@/lib/serverAction";
-import { sortPulsesByHeatDeltaSimple } from "./utils/sorting";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTranslations, useLocale } from "next-intl";
+import { Input } from "@/components/ui/input";
+import { ExtractServerActionData } from "@/lib/serverAction";
+import { ChevronDownIcon, InboxIcon, Loader2Icon, SearchIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
+import {
+  fetchPulseHeatTreemapDataPublic,
+  fetchPulsesByCategory,
+  fetchUserRecommendations,
+} from "./actions";
+import { CategoryBar } from "./components/CategoryBar";
+import { PulseCard } from "./components/PulseCard";
+import { PulseDetailDialog } from "./components/PulseDetailDialog";
+import { PulseHeatTreemap } from "./components/PulseHeatTreemap";
+import { sortPulsesByHeatDeltaSimple } from "./utils/sorting";
 
 type TRecommendations = ExtractServerActionData<typeof fetchUserRecommendations>;
 type TPulses = ExtractServerActionData<typeof fetchPulsesByCategory>;
@@ -65,14 +69,18 @@ export function PulseMarketplaceClient({
   const [highlightedPulseId, setHighlightedPulseId] = useState<number | null>(null);
 
   // Dialog state for pulse detail
-  const [selectedPulse, setSelectedPulse] = useState<typeof pulses[number] | null>(null);
+  const [selectedPulse, setSelectedPulse] = useState<(typeof pulses)[number] | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   const router = useRouter();
 
   // If user switches to Recommend but there are no recommendations, switch back to ALL
   useEffect(() => {
-    if (selectedCategory === "Recommend" && recommendationsData !== undefined && !hasRecommendations) {
+    if (
+      selectedCategory === "Recommend" &&
+      recommendationsData !== undefined &&
+      !hasRecommendations
+    ) {
       setSelectedCategory("ALL");
     }
   }, [selectedCategory, recommendationsData, hasRecommendations]);
@@ -97,20 +105,21 @@ export function PulseMarketplaceClient({
 
   // Re-fetch recommendations if needed (when switching back to Recommend)
   // Only fetch if user is authenticated
-  const { data: recommendationsDataRefetch, isLoading: isLoadingRecommendations } = useSWR<TRecommendations>(
-    selectedCategory === "Recommend" && isAuthenticated ? "recommendations" : null,
-    async () => {
-      const result = await fetchUserRecommendations();
-      if (!result.success) {
-        throw new Error(result.message || "Failed to load recommendations");
-      }
-      return result.data;
-    },
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  const { data: recommendationsDataRefetch, isLoading: isLoadingRecommendations } =
+    useSWR<TRecommendations>(
+      selectedCategory === "Recommend" && isAuthenticated ? "recommendations" : null,
+      async () => {
+        const result = await fetchUserRecommendations();
+        if (!result.success) {
+          throw new Error(result.message || "Failed to load recommendations");
+        }
+        return result.data;
+      },
+      {
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+      },
+    );
 
   // Use refetched data if available, otherwise use initial data
   const finalRecommendationsData = recommendationsDataRefetch || recommendationsData;
@@ -145,8 +154,7 @@ export function PulseMarketplaceClient({
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (pulse) =>
-          pulse.title.toLowerCase().includes(query) ||
-          pulse.content.toLowerCase().includes(query)
+          pulse.title.toLowerCase().includes(query) || pulse.content.toLowerCase().includes(query),
       );
     }
 
@@ -207,7 +215,7 @@ export function PulseMarketplaceClient({
   };
 
   // Handle card click to open detail dialog
-  const handleCardClick = (pulse: typeof pulses[number]) => {
+  const handleCardClick = (pulse: (typeof pulses)[number]) => {
     setSelectedPulse(pulse);
     setIsDetailDialogOpen(true);
   };
@@ -219,7 +227,7 @@ export function PulseMarketplaceClient({
     if (!pulse) return;
 
     // Build research message based on locale
-    const researchMessage = locale.startsWith('zh')
+    const researchMessage = locale.startsWith("zh")
       ? `请开始研究关于"${pulse.title}"的课题。以下是相关详细信息：【${pulse.content}】。`
       : `Please start a research on the topic of \`${pulse.title}\`. Here are some details: 【${pulse.content}】.`;
 
@@ -233,11 +241,9 @@ export function PulseMarketplaceClient({
       <div className="space-y-4">
         <div className="w-12 h-1 bg-ghost-green" />
         <h1 className="text-4xl md:text-5xl font-EuclidCircularA font-medium tracking-tight">
-          Atypica Pulse
+          {t("title")}
         </h1>
-        <p className="text-base text-muted-foreground">
-          {t("description")}
-        </p>
+        <p className="text-base text-muted-foreground">{t("description")}</p>
       </div>
 
       {/* Pulse Heat Treemap Section */}
@@ -269,7 +275,7 @@ export function PulseMarketplaceClient({
         </div>
 
         {selectedCategory !== "Recommend" && (
-          <div className="flex items-center gap-2 lg:flex-shrink-0">
+          <div className="flex items-center gap-2 lg:shrink-0">
             <div className="relative w-48">
               <SearchIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -292,10 +298,18 @@ export function PulseMarketplaceClient({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTimeFilter("all")}>{t("allTime")}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTimeFilter("today")}>{t("today")}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTimeFilter("week")}>{t("thisWeek")}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTimeFilter("month")}>{t("thisMonth")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTimeFilter("all")}>
+                  {t("allTime")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTimeFilter("today")}>
+                  {t("today")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTimeFilter("week")}>
+                  {t("thisWeek")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTimeFilter("month")}>
+                  {t("thisMonth")}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -310,10 +324,18 @@ export function PulseMarketplaceClient({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setHeatFilter("all")}>{t("allHeat")}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHeatFilter("high")}>{t("highHeat")}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHeatFilter("medium")}>{t("mediumHeat")}</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHeatFilter("low")}>{t("lowHeat")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setHeatFilter("all")}>
+                  {t("allHeat")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setHeatFilter("high")}>
+                  {t("highHeat")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setHeatFilter("medium")}>
+                  {t("mediumHeat")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setHeatFilter("low")}>
+                  {t("lowHeat")}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

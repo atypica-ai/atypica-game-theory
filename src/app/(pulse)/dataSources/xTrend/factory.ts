@@ -29,10 +29,17 @@ export const xTrendFactory: DataSourceFactory = {
         });
 
         try {
-          const query = `Find trending topics, discussions, and insights on X (Twitter) about ${category.name}. Focus on: ${category.query}. Return 5-10 key trending pulses.`;
+          const query = category.locale === "zh-CN"
+            ? `在 X (Twitter) 上搜索关于「${category.name}」的热门话题和讨论。重点关注：${category.query}。返回 5-10 个最热门的话题。`
+            : `Find trending topics, discussions, and insights on X (Twitter) about ${category.name}. Focus on: ${category.query}. Return 5-10 key trending pulses.`;
 
           const abortController = new AbortController();
-          const pulses = await gatherPulsesWithGrok(query, categoryLogger, abortController.signal);
+          const pulses = await gatherPulsesWithGrok({
+            query,
+            locale: category.locale,
+            logger: categoryLogger,
+            abortSignal: abortController.signal,
+          });
 
           const pulsesWithCategory = pulses.map((pulse) => ({
             ...pulse,
