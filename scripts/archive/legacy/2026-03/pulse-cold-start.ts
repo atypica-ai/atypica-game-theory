@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Pulse cold start script
 // Initializes category config, runs full pipeline, and creates 5-day historical data
 //
@@ -37,9 +39,7 @@ async function main() {
   loadEnvConfig(process.cwd());
 
   const { prisma } = await import("@/prisma/prisma");
-  const { runDailyPulsePipeline } = await import(
-    "@/app/(pulse)/lib/runDailyPipeline"
-  );
+  const { runDailyPulsePipeline } = await import("@/app/(pulse)/lib/runDailyPipeline");
 
   // ── Step 1: Initialize SystemConfig ──────────────────────────
   console.log("\n═══ Step 1: Initialize xTrend category config ═══\n");
@@ -122,7 +122,9 @@ async function main() {
     }
   }
 
-  console.log(`Created ${created} historical rows (${todayPulses.length} pulses × ${HISTORY_DAYS} days)`);
+  console.log(
+    `Created ${created} historical rows (${todayPulses.length} pulses × ${HISTORY_DAYS} days)`,
+  );
   console.log("\n═══ Cold start complete ═══\n");
 
   await prisma.$disconnect();
