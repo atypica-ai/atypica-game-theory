@@ -1,3 +1,13 @@
+/**
+ * Task View Model — 从 AI SDK messages 提取 tool call 数据，转换为 UI 可用的纯数据结构。
+ *
+ * 两个核心函数：
+ * - extractTasksFromMessages: 从 universal messages 提取 createSubAgent tool calls → UniversalTaskVM[]
+ *   用于任务列表面板，展示每个 sub-agent 的状态、标题、摘要
+ *
+ * - extractSubAgentToolPartsFromMessages: 从 sub-agent messages 提取 study tool calls → UniversalSubAgentToolPartVM[]
+ *   用于任务详情面板的时间线，展示 sub-agent 执行的每个步骤（discovery → interview → synthesis → delivery）
+ */
 import { TUniversalMessageWithTool, UniversalToolName, UniversalUITools } from "@/app/(universal)/tools/types";
 import { StudyToolName, StudyUITools, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { DynamicToolUIPart, getToolOrDynamicToolName, isToolOrDynamicToolUIPart, ToolUIPart } from "ai";
@@ -14,7 +24,7 @@ export type StepSummaryKey = Extract<UniversalAgentKey, `step${string}Summary`>;
 export interface UniversalTaskVM {
   taskId: string;
   toolCallId: string;
-  toolName: UniversalToolName.createStudySubAgent;
+  toolName: UniversalToolName.createSubAgent;
   status: UniversalTaskStatus;
   title: string;
   summary: string;
@@ -122,8 +132,8 @@ function getToolSemanticMeta(toolName: string): {
   return { stage: "synthesis", titleKey: "stepGenericTitle", defaultSummaryKey: "stepGenericSummary" };
 }
 
-// Narrowed type for the createStudySubAgent tool part — gives typed input/output access.
-type CreateSubAgentPart = ToolUIPart<Pick<UniversalUITools, UniversalToolName.createStudySubAgent>>;
+// Narrowed type for the createSubAgent tool part — gives typed input/output access.
+type CreateSubAgentPart = ToolUIPart<Pick<UniversalUITools, UniversalToolName.createSubAgent>>;
 
 function classifySubAgentTaskStatus(part: CreateSubAgentPart): UniversalTaskStatus {
   if (part.state === "output-error") return "error";
@@ -159,14 +169,14 @@ export function extractTasksFromMessages(messages: TUniversalMessageWithTool[]):
     if (message.role !== "assistant") return;
     message.parts.forEach((part, partIndex) => {
       if (!isToolOrDynamicToolUIPart(part)) return;
-      // Narrow to createStudySubAgent by checking part.type directly — gives typed input/output.
-      if (part.type !== `tool-${UniversalToolName.createStudySubAgent}`) return;
+      // Narrow to createSubAgent by checking part.type directly — gives typed input/output.
+      if (part.type !== `tool-${UniversalToolName.createSubAgent}`) return;
 
       const summary = getSubAgentTaskSummary(part);
       tasks.push({
         taskId: part.toolCallId,
         toolCallId: part.toolCallId,
-        toolName: UniversalToolName.createStudySubAgent,
+        toolName: UniversalToolName.createSubAgent,
         status: classifySubAgentTaskStatus(part),
         title: getSubAgentTaskTitle(part),
         summary,

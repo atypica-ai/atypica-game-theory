@@ -27,7 +27,7 @@ import {
 } from "@/app/(study)/tools";
 import { buildUniversalSystemPrompt } from "@/app/(universal)/prompt";
 import { listSkillsTool, UniversalToolSet } from "@/app/(universal)/tools";
-import { createStudySubAgentTool } from "@/app/(universal)/tools/createStudySubAgent";
+import { createSubAgentTool } from "@/app/(universal)/tools/createSubAgent";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
 import { failUserChatRun, startManagedRun } from "@/lib/userChat/runtime";
 import { UserChat } from "@/prisma/client";
@@ -199,7 +199,7 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
       ...agentToolArgs,
     }),
     [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
-    [UniversalToolName.createStudySubAgent]: createStudySubAgentTool({
+    [UniversalToolName.createSubAgent]: createSubAgentTool({
       userId,
       teamId,
       ...agentToolArgs,

@@ -31,9 +31,9 @@ import {
   SearchPersonasToolResult,
 } from "@/app/(study)/tools/searchPersonas/types";
 import {
-  CreateStudySubAgentToolInput,
-  CreateStudySubAgentToolResult,
-} from "@/app/(universal)/tools/createStudySubAgent/types";
+  CreateSubAgentToolInput,
+  CreateSubAgentToolResult,
+} from "@/app/(universal)/tools/createSubAgent/types";
 import { UIDataTypes, UIMessage } from "ai";
 
 /**
@@ -63,7 +63,7 @@ export enum UniversalToolName {
   generateReport = "generateReport",
   generatePodcast = "generatePodcast",
   deepResearch = "deepResearch",
-  createStudySubAgent = "createStudySubAgent",
+  createSubAgent = "createSubAgent",
 
   // Panel
   listPanels = "listPanels",
@@ -109,9 +109,9 @@ export type UniversalUITools = {
     input: DeepResearchInput;
     output: DeepResearchOutput;
   };
-  [UniversalToolName.createStudySubAgent]: {
-    input: CreateStudySubAgentToolInput;
-    output: CreateStudySubAgentToolResult;
+  [UniversalToolName.createSubAgent]: {
+    input: CreateSubAgentToolInput;
+    output: CreateSubAgentToolResult;
   };
   [UniversalToolName.generateReport]: {
     input: GenerateReportToolInput;

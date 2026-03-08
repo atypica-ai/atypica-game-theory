@@ -18,9 +18,9 @@ import { waitUntil } from "@vercel/functions";
 import { generateId, tool } from "ai";
 import { getSubAgentModePrompt } from "./prompt";
 import {
-  createStudySubAgentInputSchema,
-  createStudySubAgentOutputSchema,
-  type CreateStudySubAgentToolResult,
+  createSubAgentInputSchema,
+  createSubAgentOutputSchema,
+  type CreateSubAgentToolResult,
 } from "./types";
 
 function extractTextFromParts(parts: unknown): string {
@@ -64,7 +64,7 @@ async function hasAnyReportToken(userChatId: number): Promise<boolean> {
   return reportTokens.length > 0;
 }
 
-export const createStudySubAgentTool = ({
+export const createSubAgentTool = ({
   userId,
   teamId,
   locale,
@@ -76,8 +76,8 @@ export const createStudySubAgentTool = ({
   tool({
     description:
       "Create and run a Study sub-agent for one focused research task. Use this as the main execution path for interview/discussion/report style study work.",
-    inputSchema: createStudySubAgentInputSchema,
-    outputSchema: createStudySubAgentOutputSchema,
+    inputSchema: createSubAgentInputSchema,
+    outputSchema: createSubAgentOutputSchema,
     toModelOutput: (result: PlainTextToolResult) => ({
       type: "text",
       value: result.plainText,
@@ -87,7 +87,7 @@ export const createStudySubAgentTool = ({
       outputFormat,
       mode,
       subAgentTitle,
-    }): Promise<CreateStudySubAgentToolResult> => {
+    }): Promise<CreateSubAgentToolResult> => {
       let subAgentChat: Awaited<ReturnType<typeof createUserChat>> | null = null;
 
       try {
@@ -106,7 +106,7 @@ export const createStudySubAgentTool = ({
         });
 
         const subAgentLogger = logger.child({
-          tool: "createStudySubAgent",
+          tool: "createSubAgent",
           subAgentChatId: subAgentChat.id,
           subAgentChatToken: subAgentChat.token,
         });
@@ -262,7 +262,7 @@ export const createStudySubAgentTool = ({
         }
         const errorMessage = (error as Error).message || "failed to initialize sub-agent";
         logger.error({
-          msg: "createStudySubAgent initialization failed after chat created",
+          msg: "createSubAgent initialization failed after chat created",
           error: errorMessage,
           subAgentChatId: subAgentChat.id,
           subAgentChatToken: subAgentChat.token,

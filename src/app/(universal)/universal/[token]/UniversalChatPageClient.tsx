@@ -111,7 +111,7 @@ export function UniversalChatPageClient({
   const [filesPanelOpen, setFilesPanelOpen] = useState(false);
   const [progressDrawerOpen, setProgressDrawerOpen] = useState(false);
 
-  // During streaming, createStudySubAgent tool calls don't change — skip recomputation
+  // During streaming, createSubAgent tool calls don't change — skip recomputation
   // to keep the same array reference and prevent cascading useMemo/useEffect updates.
   // Same pattern as study page's ChatBox which returns early during streaming.
   const stableTasksRef = useRef<ReturnType<typeof extractTasksFromMessages>>([]);
@@ -244,7 +244,7 @@ export function UniversalChatPageClient({
     (toolPart: TUniversalMessageWithTool["parts"][number]) => {
       if (!isToolOrDynamicToolUIPart(toolPart)) return false;
       const toolName = getToolOrDynamicToolName(toolPart);
-      return toolName !== UniversalToolName.createStudySubAgent;
+      return toolName !== UniversalToolName.createSubAgent;
     },
     [],
   );

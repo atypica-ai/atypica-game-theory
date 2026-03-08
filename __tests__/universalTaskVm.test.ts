@@ -10,14 +10,14 @@ import {
 } from "../src/app/(universal)/universal/task-vm";
 
 describe("extractTasksFromMessages", () => {
-  it("extracts only createStudySubAgent tasks and maps title/summary", () => {
+  it("extracts only createSubAgent tasks and maps title/summary", () => {
     const messages = [
       {
         id: "m1",
         role: "assistant",
         parts: [
           {
-            type: `tool-${UniversalToolName.createStudySubAgent}`,
+            type: `tool-${UniversalToolName.createSubAgent}`,
             toolCallId: "task-done",
             state: "output-available",
             input: {
@@ -59,7 +59,7 @@ describe("extractTasksFromMessages", () => {
         role: "assistant",
         parts: [
           {
-            type: `tool-${UniversalToolName.createStudySubAgent}`,
+            type: `tool-${UniversalToolName.createSubAgent}`,
             toolCallId: "done-older",
             state: "output-available",
             input: { taskRequirement: "old" },
@@ -72,7 +72,7 @@ describe("extractTasksFromMessages", () => {
         role: "assistant",
         parts: [
           {
-            type: `tool-${UniversalToolName.createStudySubAgent}`,
+            type: `tool-${UniversalToolName.createSubAgent}`,
             toolCallId: "error-newer",
             state: "output-error",
             errorText: "boom",
@@ -85,7 +85,7 @@ describe("extractTasksFromMessages", () => {
         role: "assistant",
         parts: [
           {
-            type: `tool-${UniversalToolName.createStudySubAgent}`,
+            type: `tool-${UniversalToolName.createSubAgent}`,
             toolCallId: "running-latest",
             state: "input-available",
             input: { taskRequirement: "latest" },
@@ -111,7 +111,7 @@ describe("extractTasksFromMessages", () => {
         role: "assistant",
         parts: [
           {
-            type: `tool-${UniversalToolName.createStudySubAgent}`,
+            type: `tool-${UniversalToolName.createSubAgent}`,
             toolCallId: "task-running-output",
             state: "output-available",
             input: { subAgentTitle: "China short drama" },
@@ -143,7 +143,7 @@ describe("extractTasksFromMessages", () => {
         role: "assistant",
         parts: [
           {
-            type: `tool-${UniversalToolName.createStudySubAgent}`,
+            type: `tool-${UniversalToolName.createSubAgent}`,
             toolCallId: "task-running-no-token",
             state: "output-available",
             input: { subAgentTitle: "SEA short drama" },

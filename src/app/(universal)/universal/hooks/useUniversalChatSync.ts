@@ -60,7 +60,7 @@ export function useUniversalChatSync({
     const hasPendingSubAgentToken = messages.some((message) =>
       message.parts.some((part) => {
         if (!isToolUIPart(part)) return false;
-        if (part.type !== `tool-${UniversalToolName.createStudySubAgent}`) return false;
+        if (part.type !== `tool-${UniversalToolName.createSubAgent}`) return false;
         if (part.state !== "output-available") return true;
         return !part.output?.subAgentChatToken;
       }),

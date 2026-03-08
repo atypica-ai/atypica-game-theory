@@ -1,6 +1,6 @@
 import z from "zod/v3";
 
-export const createStudySubAgentInputSchema = z.object({
+export const createSubAgentInputSchema = z.object({
   taskRequirement: z
     .string()
     .min(1)
@@ -21,7 +21,7 @@ export const createStudySubAgentInputSchema = z.object({
     .describe("Optional title override for the created sub-agent chat."),
 });
 
-export const createStudySubAgentOutputSchema = z.object({
+export const createSubAgentOutputSchema = z.object({
   status: z.enum(["running", "completed", "failed"]),
   resultSummary: z.string(),
   plainText: z.string(),
@@ -29,5 +29,5 @@ export const createStudySubAgentOutputSchema = z.object({
   subAgentChatToken: z.string(),
 });
 
-export type CreateStudySubAgentToolInput = z.infer<typeof createStudySubAgentInputSchema>;
-export type CreateStudySubAgentToolResult = z.infer<typeof createStudySubAgentOutputSchema>;
+export type CreateSubAgentToolInput = z.infer<typeof createSubAgentInputSchema>;
+export type CreateSubAgentToolResult = z.infer<typeof createSubAgentOutputSchema>;

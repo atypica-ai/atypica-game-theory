@@ -82,7 +82,7 @@ function extractSubAgentSummary(
 
 type SubAgentToolUIPart = Extract<
   TUniversalMessageWithTool["parts"][number],
-  { type: `tool-${UniversalToolName.createStudySubAgent}` }
+  { type: `tool-${UniversalToolName.createSubAgent}` }
 >;
 
 function getSubAgentStatusLabel(
@@ -250,7 +250,7 @@ export function renderUniversalSubAgentCardsInMessage({
 
   const subAgentParts = message.parts.filter(
     (part): part is SubAgentToolUIPart =>
-      part.type === `tool-${UniversalToolName.createStudySubAgent}`,
+      part.type === `tool-${UniversalToolName.createSubAgent}`,
   );
 
   if (subAgentParts.length === 0) return null;
@@ -265,7 +265,7 @@ export function renderUniversalSubAgentCardsInMessage({
           onOpenDetail={() =>
             onOpenTaskDetail({
               toolCallId: part.toolCallId,
-              toolName: UniversalToolName.createStudySubAgent,
+              toolName: UniversalToolName.createSubAgent,
             })
           }
         />
