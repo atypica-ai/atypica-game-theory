@@ -12,6 +12,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { Instrument_Serif } from "next/font/google";
 import { getProxyCdnOrigin } from "./(system)/cdn/lib";
+import Script from "next/script";
 import "./globals.css";
 
 // 配置字体
@@ -91,6 +92,13 @@ export default async function RootLayout({
           // "h-dvh flex flex-col items-stretch justify-start",
         )}
       >
+        {process.env.NODE_ENV === "development" && (
+          <Script
+            src="//unpkg.com/react-grab/dist/index.global.js"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
         <AuthProvider>
           <ThemeProvider
             attribute="class"
