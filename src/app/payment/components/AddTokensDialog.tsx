@@ -107,7 +107,7 @@ export const AddTokensDialog = ({
           >
             {loading ? (
               <>
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderCircle className="h-4 w-4 animate-spin" />
                 {t("processing")}
               </>
             ) : (

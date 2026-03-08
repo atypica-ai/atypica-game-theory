@@ -158,6 +158,9 @@ export function PaymentTest({ session, fetchRecords }: PaymentTestProps) {
               <CardTitle>Stripe Payment</CardTitle>
               <CardDescription>Test WAP payments with Stripe</CardDescription>
             </CardHeader>
+            {/* NOTE: These forms POST to /payment/stripe which has been removed.
+                TEST_A/TEST_B were never in the valid product name list anyway.
+                These forms are non-functional. */}
             <CardContent className="flex flex-row gap-4">
               <form action="/payment/stripe" method="POST">
                 <input type="hidden" name="productName" value={ProductName.TEST_A} />

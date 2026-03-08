@@ -288,7 +288,7 @@ export const TeamSubscriptionDialog = ({
                 paymentProvider:
                   currency === "CNY" ? PaymentProvider.StripeCNY : PaymentProvider.Stripe,
                 productName: productName,
-                quantity: quantity.toString(),
+                quantity,
                 couponId: useCoupon && couponInfo ? couponInfo.couponId : undefined,
               });
             }}
@@ -296,7 +296,7 @@ export const TeamSubscriptionDialog = ({
           >
             {loading ? (
               <>
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderCircle className="h-4 w-4 animate-spin" />
                 {t("processing")}
               </>
             ) : (

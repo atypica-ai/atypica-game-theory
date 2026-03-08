@@ -1,12 +1,9 @@
-import { stripeSessionCreatePayloadSchema } from "@/app/payment/(stripe)/types";
+import { createStripeSessionAction } from "@/app/payment/(stripe)/actions";
 import { PingxxNewPaymentParams, ProductName } from "@/app/payment/data";
 import { useDevice } from "@/hooks/use-device";
 import { Currency } from "@/prisma/client";
 import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
-import { z } from "zod/v3";
-
-type StripeSessionCreatePayload = z.input<typeof stripeSessionCreatePayloadSchema>;
 
 export enum PaymentProvider {
   Stripe = "Stripe",
@@ -63,42 +60,38 @@ export function usePay() {
     [isMobile],
   );
 
-  // Stripe payment
+  // Stripe payment via Server Action
   const submitForStripePayment = useCallback(
-    ({ productName, currency, quantity, couponId }: Omit<StripeSessionCreatePayload, "successUrl">) => {
+    async ({
+      productName,
+      currency,
+      quantity,
+      couponId,
+    }: {
+      productName: ProductName;
+      currency: "USD" | "CNY";
+      quantity?: number;
+      couponId?: string;
+    }) => {
       try {
         setLoading(true);
-        const params: StripeSessionCreatePayload = {
+        setError(null);
+        const successUrl = /^\/pricing/.test(window.location.pathname)
+          ? `${window.location.origin}/account`
+          : window.location.href;
+        const result = await createStripeSessionAction({
           productName,
           currency,
-          successUrl: /^\/pricing/.test(window.location.pathname)
-            ? `${window.location.origin}/account`
-            : window.location.href,
-        };
-        if (typeof quantity !== "undefined") {
-          params.quantity = quantity;
+          successUrl,
+          quantity,
+          couponId,
+        });
+        if (!result.success) {
+          throw new Error(result.message);
         }
-        if (couponId) {
-          params.couponId = couponId;
-        }
-        const form = document.createElement("form");
-        form.action = "/payment/stripe";
-        form.method = "POST";
-        const formData = Object.entries(params).map(([key, value]) => ({
-          name: key,
-          value: value.toString(),
-        }));
-        for (const item of formData) {
-          const input = document.createElement("input");
-          input.name = item.name;
-          input.value = item.value;
-          form.appendChild(input);
-        }
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
+        window.location.href = result.data.sessionUrl;
       } catch (err) {
-        setError("Failed to initialize Stripe payment");
+        setError((err as Error).message || "Failed to initialize Stripe payment");
         console.error(err);
         setLoading(false);
       }
@@ -122,7 +115,7 @@ export function usePay() {
         | ProductName.SUPER1MONTH
         | ProductName.TEAMSEAT1MONTH
         | ProductName.SUPERTEAMSEAT1MONTH;
-      quantity?: string;
+      quantity?: number;
       couponId?: string;
     }) => {
       if (!session?.user) {
@@ -130,16 +123,16 @@ export function usePay() {
         return;
       }
       if (paymentProvider === PaymentProvider.Stripe) {
-        submitForStripePayment({
+        await submitForStripePayment({
           productName,
-          currency: Currency.USD,
+          currency: "USD",
           quantity,
           couponId,
         });
       } else if (paymentProvider === PaymentProvider.StripeCNY) {
-        submitForStripePayment({
+        await submitForStripePayment({
           productName,
-          currency: Currency.CNY,
+          currency: "CNY",
           quantity,
           couponId,
         });
