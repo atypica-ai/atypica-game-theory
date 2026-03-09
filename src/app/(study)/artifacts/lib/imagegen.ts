@@ -49,7 +49,7 @@ export async function triggerImagegenInReport(
       const newSrc = `/api/imagegen/${promptHash}?ratio=${ratio}`;
       updatedHtml = updatedHtml.replace(src, newSrc);
 
-      return backgroundGenerateImage({ prompt, ratio, reportToken });
+      return backgroundGenerateImage({ prompt, ratio, reportToken, promptHash });
     }),
   );
   try {
@@ -68,10 +68,12 @@ async function backgroundGenerateImage({
   prompt,
   ratio: _ratio,
   reportToken,
+  promptHash,
 }: {
   prompt: string;
   ratio: string;
   reportToken: string;
+  promptHash: string;
 }) {
   let ratio: z.infer<typeof ratioSchema>;
   try {
@@ -79,10 +81,6 @@ async function backgroundGenerateImage({
   } catch {
     ratio = "square";
   }
-  const promptHash = createHash("sha256")
-    .update(JSON.stringify({ prompt, ratio }))
-    .digest("hex")
-    .substring(0, 40);
 
   const existingImage = await prisma.imageGeneration.findUnique({
     where: { promptHash },
