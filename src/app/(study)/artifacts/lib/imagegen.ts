@@ -27,7 +27,10 @@ export async function triggerImagegenInReport(html: string, reportToken: string)
     matches.map(([match, beforeSrc, src, afterSrc], index) => {
       // Extract prompt and ratio from the URL
       const urlParts = src.split("/");
-      const prompt = urlParts[urlParts.length - 1].split("?")[0];
+      const encodedPrompt = urlParts[urlParts.length - 1].split("?")[0];
+      // Defensive: decode URL-encoded prompt to match Next.js route param decoding
+      // Safe for both cases: already-decoded text passes through unchanged
+      const prompt = decodeURIComponent(encodedPrompt);
       const urlObj = new URL(src, "http://localhost");
       const ratio = urlObj.searchParams.get("ratio") || "";
       return backgroundGenerateImage({ prompt, ratio, reportToken });
