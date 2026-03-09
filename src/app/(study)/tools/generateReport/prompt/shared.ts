@@ -75,10 +75,12 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 7. 用户引用是否用了 italic + 比正文大的字号 + border-left？
 
 【图片生成策略】
+当报告需要达到以下目的时，你需要生成相应类型的图片；否则，不生成图片。
+- 实物参考：图像展示读者需要亲眼看到的内容（产品、界面截图、地点、人物等）。生成产品概念可视化、包装设计展示（无品牌或假想品牌）。
+- 氛围营造：图像建立报告的情感基调，传递严肃、活力、温度、质感或其他氛围。生成提供情绪/氛围感/装饰性的抽象插图。
+  eg: "Abstract emotional topology: soft drifting gradients, fractured signal ribbons, tiny pixel silhouettes appearing and dissolving at edges, no text, .."
+  eg: "Two parallel decision rails in a minimal system space: one deterministic rail with rigid geometry, one adaptive rail with organic flowing paths, no text, .."
 报告中的图片经常会让读者对报告内容产生误解（比如生成人物的人种；IP；品牌信息；图表等），因此必须遵守：
-- 仅生成以下两种类型的图片：
-  1. 产品概念可视化、包装设计展示需要具象化呈现的创意内容（无品牌）
-  2. 提供情绪/氛围感/装饰性的抽象插图
 - 严格禁止：绘制人物、流程图、架构图、复杂的技术图表等
 - **严格禁止**：绝对禁止使用图片生成API生成任何图表、表格、数据可视化、统计图、流程图等需要基于真实数据的内容。图片生成API无法输入可信数据源，生成的图表会包含虚假数据，具有误导性。
 - 在提示词中不要包含品牌/IP/人物等名称
@@ -88,7 +90,7 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 - 图片数量最多1张，不要让图片主导页面
 - 英文提示词撰写规范：
   - 使用专业视觉艺术术语，比例：square/landscape/portrait
-  - 用专业详细的语言包含以下内容：1. 风格；2. 图片描述；3. 图片目的/类型；4. 禁止/注意
+  - 用专业详细的语言包含以下内容：1. 风格；2. 图片描述
 
 【技术实现】
 - 使用 Tailwind CSS 构建响应式布局
@@ -174,10 +176,12 @@ Hierarchy established entirely through font properties (not color):
 7. Do user quotes use italic + larger-than-body font size + border-left?
 
 【Image Generation Strategy】
+When the report needs to achieve the following purposes, you NEED to generate the corresponding type of image; otherwise, do not generate images.
+- Concrete reference — the image shows something the reader needs to actually see to understand or verify (a product, a UI screenshot, a physical location, a face). Generate product concept visualizations, packaging design displays (no brand or hypothetical brand).
+- Mood / tone-setting — the image establishes the emotional register of the report, signaling seriousness, energy, warmth, prestige, or other atmosphere. Generate abstract illustrations that provide mood/atmosphere/decorative value.
+  eg: "Abstract emotional topology: soft drifting gradients, fractured signal ribbons, tiny pixel silhouettes appearing and dissolving at edges, no text, .."
+  eg: "Two parallel decision rails in a minimal system space: one deterministic rail with rigid geometry, one adaptive rail with organic flowing paths, no text, .."
 Images in reports often mislead readers (e.g., generated people's ethnicity; IP; brand information; charts, etc.), so the following must be followed:
-- Only generate these two types of images:
-  1. Product concept visualization, packaging design display — creative content that requires concrete visual representation (no brand)
-  2. Abstract illustrations that provide mood/atmosphere/decorative value
 - Strictly prohibit: drawing people, flowcharts, architecture diagrams, complex technical charts, etc.
 - **STRICTLY PROHIBITED**: Absolutely forbidden to use image generation APIs to create any charts, tables, data visualizations, statistical graphs, flowcharts, or any content requiring real data sources. Image generation APIs cannot accept trusted data sources; generated charts would contain false data and be misleading.
 - Do not include brand/IP/person names in prompts
@@ -187,7 +191,7 @@ Syntax for generating images in reports: \`<img src="/api/imagegen/[English prom
 - Maximum 1 image, do not let images dominate the page
 - English prompt writing guidelines:
   - Use professional visual art terminology, ratios: square/landscape/portrait
-  - Include the following in professional, detailed language: 1. Style; 2. Image description; 3. Image purpose/type; 4. Prohibitions/notes
+  - Include the following in professional, detailed language: 1. Style; 2. Image description
 
 【Technical Implementation】
 - Use Tailwind CSS for responsive layouts

@@ -58,6 +58,7 @@ export const reportHTMLSystemInsights = ({ locale }: { locale: Locale }) =>
 - **编辑式留白** — section 之间 py-16，pull quote 前后 py-8，让每个洞察有呼吸空间
 - **洞察递进** — 从现象到原因到启示，用逐渐加大的字号和加深的品牌色层级表达递进
 - **柔和的氛围背景** — 首屏和关键洞察区域用品牌色 5% 透明度大面积背景，营造人文温度
+- 除非用户要求不要图片，否则根据生图规定生成一张抽象氛围图，让报告不显得那么枯燥。
 
 **执行方式**：
 - 用户原话：text-2xl italic pl-8 border-l-3 品牌色，前后 py-8 留白
@@ -165,6 +166,7 @@ Rigorous business analysis about real people. User voices should be the most vis
 - **Editorial whitespace** — py-16 between sections, py-8 before/after pull quotes, giving each insight breathing room
 - **Insight progression** — From phenomenon to cause to implication, expressed through gradually increasing type size and deepening brand color layers
 - **Soft atmospheric backgrounds** — Hero and key insight areas use brand color at 5% opacity for large backgrounds, creating human warmth
+- Unless the user explicitly requests no images, generate an abstract atmosphere image according to the image generation rules, to make the report less枯燥.
 
 **Execution**:
 - User quotes: text-2xl italic pl-8 border-l-3 brand color, py-8 whitespace before/after

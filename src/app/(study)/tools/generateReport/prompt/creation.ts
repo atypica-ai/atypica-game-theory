@@ -76,6 +76,7 @@ export const reportHTMLSystemCreation = ({ locale }: { locale: Locale }) =>
 - **创意突破标注** — 关键创意灵感用 text-4xl font-serif italic + 品牌色 border-l-4，像杂志的 hero quote
 - **概念卡片** — 每个创意方向用独立卡片包裹，品牌色 10% 背景 + border-l-4 品牌色，内含标题、核心描述、灵感来源
 - **视觉节奏打破** — 在规整的分析段落之间，插入全宽的创意高潮区（大字号 + 品牌色氛围背景）
+- 除非用户要求不要图片，否则根据生图规定生成一到两张抽象氛围图或者创意概念图，让报告不显得那么枯燥。
 
 **执行方式**：
 - 创意方向展示：grid grid-cols-3，允许某个卡片 col-span-2 创造不对称
@@ -182,6 +183,7 @@ Innovation research needs to spark imagination. Break rigid grids; use visual as
 - **Creative breakthrough callouts** — Key creative inspirations in text-4xl font-serif italic + brand color border-l-4, like a magazine hero quote
 - **Concept cards** — Each creative direction wrapped in independent card, brand color 10% background + border-l-4, containing title, core description, inspiration source
 - **Rhythm breaks** — Between structured analysis paragraphs, insert full-width creative climax zones (large type + brand color atmospheric background)
+- Unless the user explicitly requests no images, generate one or two abstract atmosphere images or creative concept images according to the image generation rules, to make the report less枯燥.
 
 **Execution**:
 - Creative direction display: grid grid-cols-3, allow certain cards col-span-2 for asymmetry

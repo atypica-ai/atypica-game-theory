@@ -49,6 +49,7 @@ export const reportHTMLSystemMisc = ({ locale }: { locale: Locale }) =>
 - **维度色带** — 每个维度的关键发现区域用品牌色不同透明度(5%-10%)的背景区分，但文字保持统一的墨色
 - **跨维度关联** — 维度间的关联发现用品牌色 border-l-4 + 特殊标注区块突出
 - **统一的模块节奏** — 每个维度结构一致：章节标记 → 核心发现 → 用户声音 → 小结
+- 除非用户要求不要图片，否则根据生图规定生成一张抽象氛围图，让报告不显得那么枯燥。
 
 **执行方式**：
 - 章节标记：text-5xl font-serif text-gray-200 作为背景数字，叠加 text-3xl 维度标题
@@ -103,6 +104,7 @@ Comprehensive research integrates multi-dimensional information. A unified chapt
 - **Dimension color bands** — Each dimension's key findings area distinguished by brand color at varying opacity (5%-10%) backgrounds, while text remains unified ink color
 - **Cross-dimension connections** — Related findings across dimensions highlighted with brand color border-l-4 + special callout blocks
 - **Unified module rhythm** — Each dimension follows consistent structure: chapter marker → core findings → user voices → summary
+- Unless the user explicitly requests no images, generate an abstract atmosphere image according to the image generation rules, to make the report less枯燥.
 
 **Execution**:
 - Chapter markers: text-5xl font-serif text-gray-200 as background numbers, overlaid with text-3xl dimension titles

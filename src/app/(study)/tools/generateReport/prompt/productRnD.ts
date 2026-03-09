@@ -31,6 +31,7 @@ export const reportHTMLSystemProductRnD = ({ locale }: { locale: Locale }) =>
      - 1-3条重要的市场洞察
      - 3条核心竞争优势
      - （可选）1条主要风险提示
+   - 生成一张产品概念可视化图片，方便用户理解创新产品/概念/包装设计。
 
 2. **创新推理**
   - 目的：用简洁且强逻辑的方式描述创新流程，让读者理解推理过程从而被说服
@@ -140,6 +141,7 @@ Each section's content should be extracted only from <Related Information> (such
      - 1-3 important market insights
      - 3 core competitive advantages
      - (Optional) 1 major risk alert
+   - Generate a product concept visualization image, to help users understand the innovation product/concept/packaging design.
 
 2. **Innovation Source**
    - Document the winding process of this innovation solution from original product key information through divergence to convergence, including some ingenious details, aimed at showing users the ingenuity and charm of the entire innovation process
@@ -200,7 +202,6 @@ This is an executive presentation document that must capture attention within se
 - **Data focus** — Key numbers in text-6xl font-serif + brand color, paired with one-line interpretation (text-xl), forming "data + insight" combinations
 - **High-density information zones** — Use CSS Grid multi-column layouts, tables, visual grouping to organize large volumes of information, compact but not chaotic
 - **Strategic brand color usage** — Key data borders, chapter hero backgrounds, important conclusion markers (non-text elements)
-
 **Execution**:
 - Hero: full-width brand color 5% background, text-5xl title + text-6xl key data + text-xl value proposition
 - Data display: key numbers text-5xl font-serif brand color + border-l-4, with text-base interpretation

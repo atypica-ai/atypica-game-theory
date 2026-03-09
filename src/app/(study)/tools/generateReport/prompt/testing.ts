@@ -65,6 +65,7 @@ export const reportHTMLSystemTesting = ({ locale }: { locale: Locale }) =>
 - **对比卡片** — 相同结构不同内容，品牌色 border-l-4 标注胜出项
 - **用户声音穿插** — 测试过程中的关键原话用 blockquote 大字号(text-xl)穿插在对比分析中
 - **结果聚焦** — 关键测试结论用 text-3xl + 品牌色背景(5%透明度)突出
+- 除非用户要求不要图片，否则根据生图规定生成一张抽象氛围图，让报告不显得那么枯燥。
 
 **执行方式**：
 - 对比区域：grid grid-cols-2 gap-8，每列结构一致
@@ -153,6 +154,7 @@ Testing research demands fairness and persuasiveness. Making differences immedia
 - **Comparison cards** — Same structure, different content; brand color border-l-4 marks the winning option
 - **User voice interspersed** — Key quotes from testing process in blockquote large type (text-xl) interspersed within comparison analysis
 - **Result focus** — Key testing conclusions highlighted with text-3xl + brand color background (5% opacity)
+- Unless the user explicitly requests no images, generate an abstract atmosphere image according to the image generation rules, to make the report less枯燥.
 
 **Execution**:
 - Comparison areas: grid grid-cols-2 gap-8, consistent column structure

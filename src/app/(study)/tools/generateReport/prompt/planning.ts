@@ -68,6 +68,7 @@ export const reportHTMLSystemPlanning = ({ locale }: { locale: Locale }) =>
 - **阶段卡片** — 每个规划阶段是一个卡片，沿时间线排列，包含：阶段标题(text-xl font-bold)、关键任务、用户反馈、预期成果
 - **里程碑强调** — 关键节点用 text-3xl + 品牌色 border-l-4 + 品牌色 5% 背景突出
 - **数字编号系统** — 每个步骤用大号数字(text-4xl font-serif text-品牌色)作为视觉锚点
+- 除非用户要求不要图片，否则根据生图规定生成一张抽象氛围图，让报告不显得那么枯燥。
 
 **执行方式**：
 - 时间线结构：左侧 border-l-2 品牌色，节点用 w-4 h-4 rounded-full bg-品牌色
@@ -164,6 +165,7 @@ Planning research demands systematic thinking. The timeline is the report's skel
 - **Stage cards** — Each planning stage is a card arranged along the timeline, containing: stage title (text-xl font-bold), key tasks, user feedback, expected outcomes
 - **Milestone emphasis** — Key nodes highlighted with text-3xl + brand color border-l-4 + brand color 5% background
 - **Number system** — Each step uses large numbers (text-4xl font-serif text-brand-color) as visual anchors
+- Unless the user explicitly requests no images, generate an abstract atmosphere image according to the image generation rules, to make the report less枯燥.
 
 **Execution**:
 - Timeline structure: left-side border-l-2 brand color, nodes with w-4 h-4 rounded-full bg-brand-color
