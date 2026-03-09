@@ -69,7 +69,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
       let elapsedSeconds = 0;
       const checkImage = async () => {
         elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-        if (elapsedSeconds > 60 * 3) {
+        if (elapsedSeconds > 60 * 5) {
           reject(new Error("timeout"));
           return;
         }
