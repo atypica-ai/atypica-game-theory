@@ -91,7 +91,7 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 - 图片数量最多1张，不要让图片主导页面
 - 英文提示词撰写规范：
   - 使用专业视觉艺术术语，比例：square/landscape/portrait
-  - 用专业详细的语言包含以下内容：1. 风格；2. 图片描述
+  - 用专业详细的语言包含以下内容：1. 风格；2. 图片描述；3. 图片目的/类型；4. 禁止/注意
 
 【技术实现】
 - 使用 Tailwind CSS 构建响应式布局
@@ -192,7 +192,7 @@ Syntax for generating images in reports: \`<img src="/api/imagegen/[English prom
 - Maximum 1 image, do not let images dominate the page
 - English prompt writing guidelines:
   - Use professional visual art terminology, ratios: square/landscape/portrait
-  - Include the following in professional, detailed language: 1. Style; 2. Image description
+  - Include the following in professional, detailed language: 1. Style; 2. Image description; 3. Image purpose/type; 4. Prohibitions/notes
 
 【Technical Implementation】
 - Use Tailwind CSS for responsive layouts
