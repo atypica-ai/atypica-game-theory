@@ -447,16 +447,16 @@ async function generateReport({
       try {
         // Read from cache file
         const cleanedHtml = cleanHtmlFromMarkdown(onePageHtml);
-        // Single database save
+        // Trigger image generation and get HTML with tokens replacing prompts
+        const htmlWithTokens = await triggerImagegenInReport(cleanedHtml, report.token);
+        // Save updated HTML to database
         await prisma.analystReport.update({
           where: { id: report.id },
           data: {
-            onePageHtml: cleanedHtml,
+            onePageHtml: htmlWithTokens,
             generatedAt: new Date(),
           },
         });
-        // Trigger image generation once with final HTML
-        await triggerImagegenInReport(cleanedHtml, report.token);
         logger.info("Report saved to database successfully");
       } catch (error) {
         logger.error({

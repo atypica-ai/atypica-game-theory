@@ -15,8 +15,13 @@ import { z } from "zod/v3";
 
 /**
  * 在 reportGenerationTool 的 throttleSaveHTML 方法里调用
+ * Returns updated HTML with image prompts replaced by tokens (promptHash)
  */
-export async function triggerImagegenInReport(html: string, reportToken: string) {
+export async function triggerImagegenInReport(
+  html: string,
+  reportToken: string,
+): Promise<string> {
+  let updatedHtml = html;
   const imgTagRegex = /<img([^>]*?)src="(\/api\/imagegen\/[^"]*)"([^>]*?)>/g;
   const matches = [...html.matchAll(imgTagRegex)];
   // 用 localhost 作为 base URL，只需要解析相对路径的 query params，不需要真实 origin。
@@ -33,6 +38,17 @@ export async function triggerImagegenInReport(html: string, reportToken: string)
       const prompt = decodeURIComponent(encodedPrompt);
       const urlObj = new URL(src, "http://localhost");
       const ratio = urlObj.searchParams.get("ratio") || "";
+
+      // Calculate promptHash for token-based URL
+      const promptHash = createHash("sha256")
+        .update(JSON.stringify({ prompt, ratio }))
+        .digest("hex")
+        .substring(0, 40);
+
+      // Replace prompt with hash token in HTML
+      const newSrc = `/api/imagegen/${promptHash}?ratio=${ratio}`;
+      updatedHtml = updatedHtml.replace(src, newSrc);
+
       return backgroundGenerateImage({ prompt, ratio, reportToken });
     }),
   );
@@ -43,6 +59,7 @@ export async function triggerImagegenInReport(html: string, reportToken: string)
       `Error in triggerImageGeneration for report ${reportToken}: ${(error as Error).message}`,
     );
   }
+  return updatedHtml;
 }
 
 const ratioSchema = z.enum(["square", "landscape", "portrait"]).default("square");

@@ -3,8 +3,6 @@ import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
-import { createHash } from "crypto";
-import { z } from "zod/v3";
 
 // async function optimizedImageUrl(imageGeneration: ImageGeneration) {
 //   const url = await imageGenerationObjectUrlToHttpUrl(imageGeneration);
@@ -19,22 +17,9 @@ import { z } from "zod/v3";
 //   }
 // }
 
-const ratioSchema = z.enum(["square", "landscape", "portrait"]).default("square");
-
 export async function GET(req: Request, { params }: { params: Promise<{ prompt: string }> }) {
-  const { prompt } = await params;
-  const url = new URL(req.url);
-  let ratio = url.searchParams.get("ratio") as z.infer<typeof ratioSchema> | undefined;
-  try {
-    ratio = ratioSchema.parse(ratio);
-  } catch {
-    ratio = "square";
-  }
-
-  const promptHash = createHash("sha256")
-    .update(JSON.stringify({ prompt, ratio }))
-    .digest("hex")
-    .substring(0, 40);
+  // URL param is now the promptHash token directly (no recalculation needed)
+  const { prompt: promptHash } = await params;
 
   const existingImage = await prisma.imageGeneration.findUnique({
     where: { promptHash },
