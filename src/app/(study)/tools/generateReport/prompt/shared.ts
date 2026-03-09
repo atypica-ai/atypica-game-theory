@@ -86,6 +86,7 @@ export const sharedTechnicalSpecs = ({ locale }: { locale: Locale }) =>
 - 在提示词中不要包含品牌/IP/人物等名称
 
 报告中生成图片的语法：\`<img src="/api/imagegen/[英文提示词]?ratio=[比例]" alt="[描述]" class="[样式]" />\`
+- **重要**：英文提示词必须使用自然语言（如 "Abstract minimalist concept"），不要进行 URL 编码（不要写成 "Abstract%20minimalist%20concept"）
 - 必须限制最大宽度为100%，使用 max-w-full 或 style="max-width: 100%"
 - 图片数量最多1张，不要让图片主导页面
 - 英文提示词撰写规范：
