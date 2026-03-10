@@ -14,7 +14,6 @@ import {
   InterviewSessionExtra,
   User,
 } from "@/prisma/client";
-import { InterviewProjectWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
 import { mergeExtra } from "@/prisma/utils";
 import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
@@ -62,10 +61,12 @@ export async function fetchUserInterviewProjects({
   searchQuery,
   page = 1,
   pageSize = 11,
+  archived = false,
 }: {
   searchQuery?: string;
   page?: number;
   pageSize?: number;
+  archived?: boolean;
 } = {}): Promise<
   ServerActionResult<
     (Omit<InterviewProject, "questions" | "extra"> & {
@@ -82,10 +83,13 @@ export async function fetchUserInterviewProjects({
 > {
   return withAuth(async (user) => {
     const skip = (page - 1) * pageSize;
-    let where: InterviewProjectWhereInput = { userId: user.id };
-    let orderedIds: number[] | null = null;
-    let totalCount = 0;
-    let useDatabasePagination = true;
+    const emptyResult = {
+      success: true as const,
+      data: [],
+      pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+    };
+    let orderedIds: number[];
+    let totalCount: number;
 
     if (searchQuery?.trim()) {
       try {
@@ -93,37 +97,54 @@ export async function fetchUserInterviewProjects({
           query: searchQuery.trim(),
           type: "interview",
           userId: user.id,
+          archived,
           page,
           pageSize,
         });
 
-        if (searchResults.hits.length === 0) {
-          return {
-            success: true,
-            data: [],
-            pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
-          };
-        }
+        if (searchResults.hits.length === 0) return emptyResult;
 
         orderedIds = searchResults.hits.map((hit) => extractInterviewIdFromSlug(hit.slug));
-        where = { userId: user.id, id: { in: orderedIds } };
         totalCount = searchResults.totalHits;
-        useDatabasePagination = false;
       } catch (error) {
         rootLogger.error({
           msg: "MeiliSearch interview search failed",
           error: error instanceof Error ? error.message : String(error),
         });
-        return {
-          success: true,
-          data: [],
-          pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
-        };
+        return emptyResult;
       }
+    } else if (archived) {
+      const [{ count }] = await prismaRO.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*) as count FROM "InterviewProject"
+        WHERE "userId" = ${user.id}
+        AND "extra" @> '{"archived":true}'::jsonb`;
+      totalCount = Number(count);
+      if (totalCount === 0) return emptyResult;
+      const rows = await prismaRO.$queryRaw<{ id: number }[]>`
+        SELECT "id" FROM "InterviewProject"
+        WHERE "userId" = ${user.id}
+        AND "extra" @> '{"archived":true}'::jsonb
+        ORDER BY "createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+      orderedIds = rows.map((r) => r.id);
+    } else {
+      const [{ count }] = await prismaRO.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*) as count FROM "InterviewProject"
+        WHERE "userId" = ${user.id}
+        AND NOT ("extra" @> '{"archived":true}'::jsonb)`;
+      totalCount = Number(count);
+      if (totalCount === 0) return emptyResult;
+      const rows = await prismaRO.$queryRaw<{ id: number }[]>`
+        SELECT "id" FROM "InterviewProject"
+        WHERE "userId" = ${user.id}
+        AND NOT ("extra" @> '{"archived":true}'::jsonb)
+        ORDER BY "createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+      orderedIds = rows.map((r) => r.id);
     }
 
+    if (orderedIds.length === 0) return emptyResult;
+
     const projects = await prismaRO.interviewProject.findMany({
-      where,
+      where: { id: { in: orderedIds } },
       include: {
         sessions: {
           select: {
@@ -135,14 +156,7 @@ export async function fetchUserInterviewProjects({
           orderBy: { createdAt: "desc" },
         },
       },
-      orderBy: orderedIds ? undefined : { createdAt: "desc" },
-      skip: useDatabasePagination ? skip : undefined,
-      take: useDatabasePagination ? pageSize : undefined,
     });
-
-    if (useDatabasePagination) {
-      totalCount = await prismaRO.interviewProject.count({ where });
-    }
 
     const mappedProjects = projects.map(({ sessions, questions, extra, ...project }) => {
       const humanSessions = sessions.filter((s) => s.intervieweeUserId).length;
@@ -159,15 +173,10 @@ export async function fetchUserInterviewProjects({
       };
     });
 
-    // MeiliSearch 搜索时，按返回的顺序排序
+    const idToProject = new Map(mappedProjects.map((p) => [p.id, p]));
     const sortedProjects = orderedIds
-      ? (() => {
-          const idToProject = new Map(mappedProjects.map((p) => [p.id, p]));
-          return orderedIds
-            .map((id) => idToProject.get(id))
-            .filter((p): p is (typeof mappedProjects)[0] => p !== undefined);
-        })()
-      : mappedProjects;
+      .map((id) => idToProject.get(id))
+      .filter((p): p is (typeof mappedProjects)[0] => p !== undefined);
 
     return {
       success: true,
@@ -179,6 +188,31 @@ export async function fetchUserInterviewProjects({
         totalPages: Math.ceil(totalCount / pageSize),
       },
     };
+  });
+}
+
+export async function archiveInterviewProject(
+  projectId: number,
+  archived: boolean,
+): Promise<ServerActionResult<null>> {
+  return withAuth(async (user) => {
+    // 确保 interviewProject 属于用户
+    const project = await prisma.interviewProject.findUnique({
+      where: { id: projectId, userId: user.id },
+      select: { id: true },
+    });
+    if (!project) return { success: false, message: "Not found", code: "not_found" };
+    await mergeExtra({ tableName: "InterviewProject", id: projectId, extra: { archived } });
+    waitUntil(
+      syncProjectToMeili({ type: "interview", id: projectId }).catch((error) => {
+        rootLogger.error({
+          msg: "Failed to sync interview project archive status to search",
+          projectId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }),
+    );
+    return { success: true, data: null };
   });
 }
 

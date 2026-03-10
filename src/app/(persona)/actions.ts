@@ -1,6 +1,7 @@
 "use server";
 import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
 import { trackEventServerSide } from "@/lib/analytics/server";
+import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -13,7 +14,9 @@ import {
   UserChat,
 } from "@/prisma/client";
 import { prisma, prismaRO } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
+import { syncPersona as syncPersonaToMeili } from "@/search/lib/sync";
 import { waitUntil } from "@vercel/functions";
 import { generateId, UIMessage } from "ai";
 import { notFound } from "next/navigation";
@@ -258,14 +261,17 @@ export async function fetchUserPersonas({
   searchQuery,
   page = 1,
   pageSize = 11,
+  archived = false,
 }: {
   searchQuery?: string;
   page?: number;
   pageSize?: number;
+  archived?: boolean;
 } = {}): Promise<
   ServerActionResult<
     Array<
       Pick<Persona, "name" | "source" | "personaImportId" | "tier" | "createdAt"> & {
+        id: number;
         token: string;
         tags: string[];
         personaImportProcessing: boolean;
@@ -275,51 +281,65 @@ export async function fetchUserPersonas({
 > {
   return withAuth(async (user) => {
     const skip = (page - 1) * pageSize;
-    let orderedIds: number[] | null = null;
-    let whereId: { in: number[] } | undefined = undefined;
-    let totalCount = 0;
-    let useDatabasePagination = true;
+    const emptyResult = {
+      success: true as const,
+      data: [],
+      pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+    };
+    let orderedIds: number[];
+    let totalCount: number;
 
     if (searchQuery?.trim()) {
       try {
         const searchResults = await searchPersonasFromMeili({
           query: searchQuery.trim(),
           userId: user.id,
+          archived,
           page,
           pageSize,
         });
-
-        if (searchResults.hits.length === 0) {
-          return {
-            success: true,
-            data: [],
-            pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
-          };
-        }
-
+        if (searchResults.hits.length === 0) return emptyResult;
         orderedIds = searchResults.hits.map((hit) => extractPersonaIdFromSlug(hit.slug));
-        whereId = { in: orderedIds };
         totalCount = searchResults.totalHits;
-        useDatabasePagination = false;
       } catch {
-        return {
-          success: true,
-          data: [],
-          pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
-        };
+        return emptyResult;
       }
+    } else if (archived) {
+      const [{ count }] = await prismaRO.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*) as count FROM "Persona" p
+        JOIN "PersonaImport" pi ON p."personaImportId" = pi."id"
+        WHERE pi."userId" = ${user.id}
+        AND p."extra" @> '{"archived":true}'::jsonb`;
+      totalCount = Number(count);
+      if (totalCount === 0) return emptyResult;
+      const rows = await prismaRO.$queryRaw<{ id: number }[]>`
+        SELECT p."id" FROM "Persona" p
+        JOIN "PersonaImport" pi ON p."personaImportId" = pi."id"
+        WHERE pi."userId" = ${user.id}
+        AND p."extra" @> '{"archived":true}'::jsonb
+        ORDER BY p."createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+      orderedIds = rows.map((r) => r.id);
+    } else {
+      const [{ count }] = await prismaRO.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*) as count FROM "Persona" p
+        JOIN "PersonaImport" pi ON p."personaImportId" = pi."id"
+        WHERE pi."userId" = ${user.id}
+        AND NOT (p."extra" @> '{"archived":true}'::jsonb)`;
+      totalCount = Number(count);
+      if (totalCount === 0) return emptyResult;
+      const rows = await prismaRO.$queryRaw<{ id: number }[]>`
+        SELECT p."id" FROM "Persona" p
+        JOIN "PersonaImport" pi ON p."personaImportId" = pi."id"
+        WHERE pi."userId" = ${user.id}
+        AND NOT (p."extra" @> '{"archived":true}'::jsonb)
+        ORDER BY p."createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+      orderedIds = rows.map((r) => r.id);
     }
 
-    const where = {
-      ...(whereId ? { id: whereId } : {}),
-      personaImport: { userId: user.id },
-    };
+    if (orderedIds.length === 0) return emptyResult;
 
     const personas = await prismaRO.persona.findMany({
-      where,
-      orderBy: orderedIds ? undefined : { createdAt: "desc" },
-      skip: useDatabasePagination ? skip : undefined,
-      take: useDatabasePagination ? pageSize : undefined,
+      where: { id: { in: orderedIds } },
       select: {
         id: true,
         token: true,
@@ -333,10 +353,6 @@ export async function fetchUserPersonas({
       },
     });
 
-    if (useDatabasePagination) {
-      totalCount = await prismaRO.persona.count({ where });
-    }
-
     const mappedPersonas = personas.map(({ personaImport, token, tags, id, ...persona }) => ({
       ...persona,
       id,
@@ -345,15 +361,10 @@ export async function fetchUserPersonas({
       personaImportProcessing: Boolean(personaImport?.extra && personaImport.extra.processing),
     }));
 
-    // MeiliSearch 搜索时，按返回的顺序排序
+    const idToPersona = new Map(mappedPersonas.map((p) => [p.id, p]));
     const sortedPersonas = orderedIds
-      ? (() => {
-          const idToPersona = new Map(mappedPersonas.map((p) => [p.id, p]));
-          return orderedIds
-            .map((id) => idToPersona.get(id))
-            .filter((p): p is (typeof mappedPersonas)[0] => p !== undefined);
-        })()
-      : mappedPersonas;
+      .map((id) => idToPersona.get(id))
+      .filter((p): p is (typeof mappedPersonas)[0] => p !== undefined);
 
     return {
       success: true,
@@ -365,6 +376,31 @@ export async function fetchUserPersonas({
         totalPages: Math.ceil(totalCount / pageSize),
       },
     };
+  });
+}
+
+export async function archivePersona(
+  personaId: number,
+  archived: boolean,
+): Promise<ServerActionResult<null>> {
+  return withAuth(async (user) => {
+    // 确保 persona 属于用户
+    const persona = await prisma.persona.findUnique({
+      where: { id: personaId, personaImport: { userId: user.id } },
+      select: { id: true },
+    });
+    if (!persona) return { success: false, message: "Not found", code: "not_found" };
+    await mergeExtra({ tableName: "Persona", id: personaId, extra: { archived } });
+    waitUntil(
+      syncPersonaToMeili(personaId).catch((error) => {
+        rootLogger.error({
+          msg: "Failed to sync persona archive status to search",
+          personaId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }),
+    );
+    return { success: true, data: null };
   });
 }
 

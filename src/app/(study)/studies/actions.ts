@@ -4,9 +4,11 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { UserChatExtra } from "@/prisma/client";
-import { UserChatWhereInput } from "@/prisma/models";
 import { prisma } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
+import { syncProject as syncProjectToMeili } from "@/search/lib/sync";
+import { waitUntil } from "@vercel/functions";
 
 /**
  * 从 slug 提取 ID（格式：study-123）
@@ -20,10 +22,12 @@ export async function fetchUserStudies({
   page = 1,
   pageSize = 12,
   searchQuery = "",
+  archived = false,
 }: {
   page?: number;
   pageSize?: number;
   searchQuery?: string;
+  archived?: boolean;
 } = {}): Promise<
   ServerActionResult<
     {
@@ -40,56 +44,66 @@ export async function fetchUserStudies({
 > {
   return withAuth(async (user) => {
     const skip = (page - 1) * pageSize;
-    let where: UserChatWhereInput = { userId: user.id, kind: "study" };
-    let totalCount = 0;
-    let orderedIds: number[] | null = null;
-    let useDatabasePagination = true;
+    const emptyResult = {
+      success: true as const,
+      data: [],
+      pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+    };
+    let orderedIds: number[];
+    let totalCount: number;
 
-    if (searchQuery) {
-      const trimmedQuery = searchQuery.trim();
-      if (trimmedQuery) {
-        // 关键词搜索：使用 MeiliSearch，限定当前用户
-        try {
-          const searchResults = await searchProjectsFromMeili({
-            query: trimmedQuery,
-            type: "study",
-            userId: user.id,
-            page,
-            pageSize,
-          });
-
-          if (searchResults.hits.length === 0) {
-            return {
-              success: true,
-              data: [],
-              pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
-            };
-          }
-
-          orderedIds = searchResults.hits.map((hit) => extractIdFromSlug(hit.slug));
-          where = { userId: user.id, kind: "study", id: { in: orderedIds } };
-          totalCount = searchResults.totalHits;
-          useDatabasePagination = false;
-        } catch (error) {
-          rootLogger.error({
-            msg: "MeiliSearch user study search failed",
-            error: error instanceof Error ? error.message : String(error),
-          });
-          return {
-            success: true,
-            data: [],
-            pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
-          };
-        }
+    if (searchQuery?.trim()) {
+      try {
+        const searchResults = await searchProjectsFromMeili({
+          query: searchQuery.trim(),
+          type: "study",
+          userId: user.id,
+          archived,
+          page,
+          pageSize,
+        });
+        if (searchResults.hits.length === 0) return emptyResult;
+        orderedIds = searchResults.hits.map((hit) => extractIdFromSlug(hit.slug));
+        totalCount = searchResults.totalHits;
+      } catch (error) {
+        rootLogger.error({
+          msg: "MeiliSearch user study search failed",
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return emptyResult;
       }
+    } else if (archived) {
+      const [{ count }] = await prisma.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*) as count FROM "UserChat"
+        WHERE "userId" = ${user.id} AND "kind" = 'study'
+        AND "extra" @> '{"archived":true}'::jsonb`;
+      totalCount = Number(count);
+      if (totalCount === 0) return emptyResult;
+      const rows = await prisma.$queryRaw<{ id: number }[]>`
+        SELECT "id" FROM "UserChat"
+        WHERE "userId" = ${user.id} AND "kind" = 'study'
+        AND "extra" @> '{"archived":true}'::jsonb
+        ORDER BY "id" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+      orderedIds = rows.map((r) => r.id);
+    } else {
+      const [{ count }] = await prisma.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*) as count FROM "UserChat"
+        WHERE "userId" = ${user.id} AND "kind" = 'study'
+        AND NOT ("extra" @> '{"archived":true}'::jsonb)`;
+      totalCount = Number(count);
+      if (totalCount === 0) return emptyResult;
+      const rows = await prisma.$queryRaw<{ id: number }[]>`
+        SELECT "id" FROM "UserChat"
+        WHERE "userId" = ${user.id} AND "kind" = 'study'
+        AND NOT ("extra" @> '{"archived":true}'::jsonb)
+        ORDER BY "id" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+      orderedIds = rows.map((r) => r.id);
     }
 
-    if (useDatabasePagination) {
-      totalCount = await prisma.userChat.count({ where });
-    }
+    if (orderedIds.length === 0) return emptyResult;
 
     const studyUserChats = await prisma.userChat.findMany({
-      where,
+      where: { id: { in: orderedIds } },
       select: {
         id: true,
         token: true,
@@ -100,20 +114,12 @@ export async function fetchUserStudies({
         createdAt: true,
         updatedAt: true,
       },
-      orderBy: useDatabasePagination ? { id: "desc" } : undefined,
-      skip: useDatabasePagination ? skip : undefined,
-      take: useDatabasePagination ? pageSize : undefined,
     });
 
-    // MeiliSearch 搜索时，按返回的顺序排序
+    const idToChat = new Map(studyUserChats.map((c) => [c.id, c]));
     const sortedChats = orderedIds
-      ? (() => {
-          const idToChat = new Map(studyUserChats.map((c) => [c.id, c]));
-          return orderedIds
-            .map((id) => idToChat.get(id))
-            .filter((c): c is (typeof studyUserChats)[0] => c !== undefined);
-        })()
-      : studyUserChats;
+      .map((id) => idToChat.get(id))
+      .filter((c): c is (typeof studyUserChats)[0] => c !== undefined);
 
     return {
       success: true,
@@ -129,5 +135,30 @@ export async function fetchUserStudies({
         totalPages: Math.ceil(totalCount / pageSize),
       },
     };
+  });
+}
+
+export async function archiveStudy(
+  userChatId: number,
+  archived: boolean,
+): Promise<ServerActionResult<null>> {
+  return withAuth(async (user) => {
+    // 确保 userChat 属于用户
+    const chat = await prisma.userChat.findUnique({
+      where: { id: userChatId, userId: user.id, kind: "study" },
+      select: { id: true },
+    });
+    if (!chat) return { success: false, message: "Not found", code: "not_found" };
+    await mergeExtra({ tableName: "UserChat", id: userChatId, extra: { archived } });
+    waitUntil(
+      syncProjectToMeili({ type: "study", id: userChatId }).catch((error) => {
+        rootLogger.error({
+          msg: "Failed to sync study archive status to search",
+          userChatId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }),
+    );
+    return { success: true, data: null };
   });
 }

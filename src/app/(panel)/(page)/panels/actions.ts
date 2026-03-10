@@ -5,9 +5,11 @@ import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { Persona, Prisma, UserChatExtra, UserChatKind } from "@/prisma/client";
-import { PersonaPanelWhereInput } from "@/prisma/models";
 import { prisma, prismaRO } from "@/prisma/prisma";
+import { mergeExtra } from "@/prisma/utils";
 import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
+import { syncProject as syncProjectToMeili } from "@/search/lib/sync";
+import { waitUntil } from "@vercel/functions";
 import { getLocale } from "next-intl/server";
 
 export interface PersonaPanelWithDetails {
@@ -47,17 +49,22 @@ export async function fetchUserPersonaPanels({
   searchQuery,
   page = 1,
   pageSize = 10,
+  archived = false,
 }: {
   searchQuery?: string;
   page?: number;
   pageSize?: number;
+  archived?: boolean;
 } = {}): Promise<ServerActionResult<PersonaPanelWithDetails[]>> {
   return withAuth(async (user) => {
     const skip = (page - 1) * pageSize;
-    let where: PersonaPanelWhereInput = { userId: user.id };
-    let orderedIds: number[] | null = null;
-    let totalCount = 0;
-    let useDatabasePagination = true;
+    const emptyResult = {
+      success: true as const,
+      data: [] satisfies PersonaPanelWithDetails[],
+      pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
+    };
+    let orderedIds: number[];
+    let totalCount: number;
 
     if (searchQuery?.trim()) {
       try {
@@ -65,40 +72,54 @@ export async function fetchUserPersonaPanels({
           query: searchQuery.trim(),
           type: "panel",
           userId: user.id,
+          archived,
           page,
           pageSize,
         });
 
-        if (searchResults.hits.length === 0) {
-          return {
-            success: true,
-            data: [],
-            pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
-          };
-        }
+        if (searchResults.hits.length === 0) return emptyResult;
 
         orderedIds = searchResults.hits.map((hit) => extractPanelIdFromSlug(hit.slug));
-        where = { userId: user.id, id: { in: orderedIds } };
         totalCount = searchResults.totalHits;
-        useDatabasePagination = false;
       } catch (error) {
         rootLogger.error({
           msg: "MeiliSearch panel search failed",
           error: error instanceof Error ? error.message : String(error),
         });
-        return {
-          success: true,
-          data: [],
-          pagination: { page, pageSize, totalCount: 0, totalPages: 0 },
-        };
+        return emptyResult;
       }
+    } else if (archived) {
+      const [{ count }] = await prismaRO.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*) as count FROM "PersonaPanel"
+        WHERE "userId" = ${user.id}
+        AND "extra" @> '{"archived":true}'::jsonb`;
+      totalCount = Number(count);
+      if (totalCount === 0) return emptyResult;
+      const rows = await prismaRO.$queryRaw<{ id: number }[]>`
+        SELECT "id" FROM "PersonaPanel"
+        WHERE "userId" = ${user.id}
+        AND "extra" @> '{"archived":true}'::jsonb
+        ORDER BY "createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+      orderedIds = rows.map((r) => r.id);
+    } else {
+      const [{ count }] = await prismaRO.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*) as count FROM "PersonaPanel"
+        WHERE "userId" = ${user.id}
+        AND NOT ("extra" @> '{"archived":true}'::jsonb)`;
+      totalCount = Number(count);
+      if (totalCount === 0) return emptyResult;
+      const rows = await prismaRO.$queryRaw<{ id: number }[]>`
+        SELECT "id" FROM "PersonaPanel"
+        WHERE "userId" = ${user.id}
+        AND NOT ("extra" @> '{"archived":true}'::jsonb)
+        ORDER BY "createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+      orderedIds = rows.map((r) => r.id);
     }
 
+    if (orderedIds.length === 0) return emptyResult;
+
     const panels = await prismaRO.personaPanel.findMany({
-      where,
-      orderBy: orderedIds ? undefined : { createdAt: "desc" },
-      skip: useDatabasePagination ? skip : undefined,
-      take: useDatabasePagination ? pageSize : undefined,
+      where: { id: { in: orderedIds } },
       select: {
         id: true,
         title: true,
@@ -114,10 +135,6 @@ export async function fetchUserPersonaPanels({
         },
       },
     });
-
-    if (useDatabasePagination) {
-      totalCount = await prismaRO.personaPanel.count({ where });
-    }
 
     const allPersonaIds = panels.flatMap((panel) => panel.personaIds);
     const uniquePersonaIds = [...new Set(allPersonaIds)];
@@ -152,15 +169,10 @@ export async function fetchUserPersonaPanels({
       },
     }));
 
-    // MeiliSearch 搜索时，按返回的顺序排序
+    const idToPanel = new Map(panelsWithDetails.map((p) => [p.id, p]));
     const sortedPanels = orderedIds
-      ? (() => {
-          const idToPanel = new Map(panelsWithDetails.map((p) => [p.id, p]));
-          return orderedIds
-            .map((id) => idToPanel.get(id))
-            .filter((p): p is PersonaPanelWithDetails => p !== undefined);
-        })()
-      : panelsWithDetails;
+      .map((id) => idToPanel.get(id))
+      .filter((p): p is PersonaPanelWithDetails => p !== undefined);
 
     return {
       success: true,
@@ -172,6 +184,31 @@ export async function fetchUserPersonaPanels({
         totalPages: Math.ceil(totalCount / pageSize),
       },
     };
+  });
+}
+
+export async function archivePersonaPanel(
+  panelId: number,
+  archived: boolean,
+): Promise<ServerActionResult<null>> {
+  return withAuth(async (user) => {
+    // 确保 panel 属于用户
+    const panel = await prisma.personaPanel.findUnique({
+      where: { id: panelId, userId: user.id },
+      select: { id: true },
+    });
+    if (!panel) return { success: false, message: "Not found", code: "not_found" };
+    await mergeExtra({ tableName: "PersonaPanel", id: panelId, extra: { archived } });
+    waitUntil(
+      syncProjectToMeili({ type: "panel", id: panelId }).catch((error) => {
+        rootLogger.error({
+          msg: "Failed to sync panel archive status to search",
+          panelId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }),
+    );
+    return { success: true, data: null };
   });
 }
 
