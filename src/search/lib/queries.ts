@@ -148,10 +148,11 @@ export async function searchPersonas(params: PersonasSearchParams): Promise<Pers
       filters.push(`teamId = ${teamId}`);
     }
 
+    // 老文档可能没有 archived 字段，用 NOT EXISTS 匹配缺失的情况
     if (archived === true) {
       filters.push(`archived = true`);
     } else if (archived === false) {
-      filters.push(`archived IS NULL OR archived = false`);
+      filters.push(`archived NOT EXISTS OR archived = false`);
     }
 
     // 执行搜索
@@ -238,10 +239,11 @@ export async function searchProjects(params: ProjectsSearchParams): Promise<Proj
       filters.push(`userId = ${userId}`);
     }
 
+    // 老文档可能没有 archived 字段，用 NOT EXISTS 匹配缺失的情况
     if (archived === true) {
       filters.push(`archived = true`);
     } else if (archived === false) {
-      filters.push(`archived IS NULL OR archived = false`);
+      filters.push(`archived NOT EXISTS OR archived = false`);
     }
 
     const searchResults = await index.search(query, {
