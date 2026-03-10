@@ -2,6 +2,7 @@
 import PodcastsListPanel from "@/app/(study)/study/components/PodcastsListPanel";
 import ReportsListPanel from "@/app/(study)/study/components/ReportsListPanel";
 import { ShareReplayButton } from "@/app/(study)/study/components/ShareReplayButton";
+import { ArchiveButton } from "@/components/ArchiveButton";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { ExtractServerActionData } from "@/lib/serverAction";
 import { cn, formatDate } from "@/lib/utils";
@@ -12,7 +13,13 @@ import { fetchUserStudies } from "./actions";
 
 type TStudy = ExtractServerActionData<typeof fetchUserStudies>[number];
 
-export function StudyCard({ study: studyUserChat }: { study: TStudy }) {
+export function StudyCard({
+  study: studyUserChat,
+  onArchive,
+}: {
+  study: TStudy;
+  onArchive?: (id: number) => Promise<{ success: boolean }>;
+}) {
   const t = useTranslations("StudyListPage");
   const locale = useLocale();
 
@@ -92,9 +99,12 @@ export function StudyCard({ study: studyUserChat }: { study: TStudy }) {
         </div>
       </Link>
 
-      {/* Share button — hover only, hide text to keep icon-only in card */}
-      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity [&_span]:hidden">
-        <ShareReplayButton studyUserChat={studyUserChat} />
+      {/* Action buttons — hover only */}
+      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+        {onArchive && <ArchiveButton onArchive={() => onArchive(studyUserChat.id)} />}
+        <div className="[&_span]:hidden">
+          <ShareReplayButton studyUserChat={studyUserChat} />
+        </div>
       </div>
     </div>
   );

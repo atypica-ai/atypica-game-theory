@@ -1,4 +1,5 @@
 "use client";
+import { ArchiveButton } from "@/components/ArchiveButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn, formatDistanceToNow } from "@/lib/utils";
@@ -32,10 +33,12 @@ function buildExtraSummary(extra: PersonaExtra): string {
 export function PanelCard({
   panel,
   onDelete,
+  onArchive,
   isDeleting,
 }: {
   panel: PersonaPanelWithDetails;
   onDelete: (panelId: number) => void;
+  onArchive?: (panelId: number) => Promise<{ success: boolean }>;
   isDeleting: boolean;
 }) {
   const t = useTranslations("PersonaPanel");
@@ -119,48 +122,46 @@ export function PanelCard({
         </div>
       </Link>
 
-      {/* Delete button — top-right, hover only */}
-      {hasUsage ? (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toast.error(t("ListPage.cannotDeleteUsedPanel"));
-          }}
-          className={cn(
-            "absolute top-3 right-3 size-7 rounded-md flex items-center justify-center",
-            "opacity-0 group-hover:opacity-100 transition-opacity",
-            "hover:bg-muted cursor-not-allowed",
-          )}
-        >
-          <Trash2 className="size-3.5 text-muted-foreground" />
-        </button>
-      ) : (
-        <div
-          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <ConfirmDialog
-            title={t("ListPage.confirmDelete")}
-            description={t("ListPage.deleteWarning", { id: panel.id })}
-            onConfirm={() => onDelete(panel.id)}
-            variant="destructive"
+      {/* Action buttons — top-right, hover only */}
+      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+        {onArchive && <ArchiveButton onArchive={() => onArchive(panel.id)} />}
+        {hasUsage ? (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toast.error(t("ListPage.cannotDeleteUsedPanel"));
+            }}
+            className="size-7 rounded-md flex items-center justify-center hover:bg-muted cursor-not-allowed"
           >
-            <button
-              disabled={isDeleting}
-              className={cn(
-                "size-7 rounded-md flex items-center justify-center hover:bg-muted",
-                isDeleting && "opacity-50",
-              )}
+            <Trash2 className="size-3.5 text-muted-foreground" />
+          </button>
+        ) : (
+          <div
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <ConfirmDialog
+              title={t("ListPage.confirmDelete")}
+              description={t("ListPage.deleteWarning", { id: panel.id })}
+              onConfirm={() => onDelete(panel.id)}
+              variant="destructive"
             >
-              <Trash2 className="size-3.5 text-muted-foreground" />
-            </button>
-          </ConfirmDialog>
-        </div>
-      )}
+              <button
+                disabled={isDeleting}
+                className={cn(
+                  "size-7 rounded-md flex items-center justify-center hover:bg-muted",
+                  isDeleting && "opacity-50",
+                )}
+              >
+                <Trash2 className="size-3.5 text-muted-foreground" />
+              </button>
+            </ConfirmDialog>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

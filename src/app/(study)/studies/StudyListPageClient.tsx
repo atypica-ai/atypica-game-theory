@@ -1,14 +1,17 @@
 "use client";
 import { NewStudyButton } from "@/app/(newStudy)/components/NewStudyInputBox";
+import { ArchiveDrawer } from "@/components/ArchiveDrawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
+import { ExtractServerActionData } from "@/lib/serverAction";
 import { Loader2Icon, NotebookTextIcon, SearchIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FormEvent, useRef } from "react";
+import { FormEvent, useCallback, useRef } from "react";
 import useSWR from "swr";
-import { fetchUserStudies } from "./actions";
+import { archiveStudy, fetchUserStudies } from "./actions";
+import { ArchivedStudyItem } from "./ArchivedStudyItem";
 import { StudyCard } from "./StudyCard";
 
 export function StudyListPageClient({
@@ -36,7 +39,7 @@ export function StudyListPageClient({
   });
 
   // Use SWR for data fetching
-  const { data, isLoading } = useSWR(
+  const { data, isLoading, mutate } = useSWR(
     ["studies", currentPage, searchQuery],
     async () => {
       const result = await fetchUserStudies({
@@ -75,10 +78,39 @@ export function StudyListPageClient({
     setParams({ search: "", page: 1 });
   };
 
+  const fetchArchived = useCallback(
+    (params: { page: number; pageSize: number }) => fetchUserStudies({ ...params, archived: true }),
+    [],
+  );
+
+  const handleArchive = useCallback(
+    async (studyId: number) => {
+      const result = await archiveStudy(studyId, true);
+      if (result.success) mutate();
+      return result;
+    },
+    [mutate],
+  );
+
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin">
       <div className="container mx-auto max-w-6xl px-8 py-8 space-y-6">
-        <div className="text-center space-y-3">
+        <div className="relative text-center space-y-3">
+          <div className="absolute right-0 top-0">
+            <ArchiveDrawer<ExtractServerActionData<typeof fetchUserStudies>[number]>
+              fetchArchived={fetchArchived}
+              renderItem={(study, onRefresh) => (
+                <ArchivedStudyItem
+                  key={study.id}
+                  study={study}
+                  onUnarchived={() => {
+                    onRefresh();
+                    mutate();
+                  }}
+                />
+              )}
+            />
+          </div>
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">{t("description")}</p>
         </div>
@@ -138,7 +170,7 @@ export function StudyListPageClient({
                 </NewStudyButton>
 
                 {studies.map((study) => (
-                  <StudyCard key={study.id} study={study} />
+                  <StudyCard key={study.id} study={study} onArchive={handleArchive} />
                 ))}
               </div>
 

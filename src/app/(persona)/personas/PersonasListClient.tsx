@@ -1,5 +1,7 @@
 "use client";
-import { fetchUserPersonas } from "@/app/(persona)/actions";
+import { archivePersona, fetchUserPersonas } from "@/app/(persona)/actions";
+import { ArchiveButton } from "@/components/ArchiveButton";
+import { ArchiveDrawer } from "@/components/ArchiveDrawer";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +14,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ArchivedPersonaItem } from "./ArchivedPersonaItem";
 import { SharePersonaButton } from "./SharePersonaButton";
 
 type PersonaWithStatus = ExtractServerActionData<typeof fetchUserPersonas>[number];
@@ -84,6 +87,21 @@ export function PersonasListClient({
     setParams({ search: "", page: 1 });
   };
 
+  const fetchArchived = useCallback(
+    (params: { page: number; pageSize: number }) =>
+      fetchUserPersonas({ ...params, archived: true }),
+    [],
+  );
+
+  const handleArchive = useCallback(
+    async (personaId: number) => {
+      const result = await archivePersona(personaId, true);
+      if (result.success) loadPersonas();
+      return result;
+    },
+    [loadPersonas],
+  );
+
   const NewPersonaCard = () => (
     <Link
       href="/persona"
@@ -103,7 +121,22 @@ export function PersonasListClient({
     <div className="flex-1 overflow-y-auto scrollbar-thin">
       <div className="container mx-auto px-8 py-8 max-w-6xl space-y-6">
         {/* Header */}
-        <div className="text-center space-y-3">
+        <div className="relative text-center space-y-3">
+          <div className="absolute right-0 top-0">
+            <ArchiveDrawer<PersonaWithStatus>
+              fetchArchived={fetchArchived}
+              renderItem={(persona, onRefresh) => (
+                <ArchivedPersonaItem
+                  key={persona.token}
+                  persona={persona}
+                  onUnarchived={() => {
+                    onRefresh();
+                    loadPersonas();
+                  }}
+                />
+              )}
+            />
+          </div>
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">{t("subtitle")}</p>
         </div>
@@ -201,9 +234,10 @@ export function PersonasListClient({
                   </div>
                 </Link>
 
-                {/* Share button — hover only */}
+                {/* Action buttons — hover only */}
                 {!persona.personaImportProcessing && (
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+                    <ArchiveButton onArchive={() => handleArchive(persona.id)} />
                     <SharePersonaButton persona={{ token: persona.token }} />
                   </div>
                 )}

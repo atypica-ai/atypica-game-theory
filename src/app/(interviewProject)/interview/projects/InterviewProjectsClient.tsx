@@ -1,5 +1,10 @@
 "use client";
-import { fetchUserInterviewProjects } from "@/app/(interviewProject)/actions";
+import {
+  archiveInterviewProject,
+  fetchUserInterviewProjects,
+} from "@/app/(interviewProject)/actions";
+import { ArchiveButton } from "@/components/ArchiveButton";
+import { ArchiveDrawer } from "@/components/ArchiveDrawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
@@ -21,6 +26,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ArchivedInterviewItem } from "./ArchivedInterviewItem";
 
 export function InterviewProjectsClient({
   isCreateEnabled,
@@ -86,6 +92,23 @@ export function InterviewProjectsClient({
     setParams({ search: "", page: 1 });
   };
 
+  const fetchArchived = useCallback(
+    (params: { page: number; pageSize: number }) =>
+      fetchUserInterviewProjects({ ...params, archived: true }),
+    [],
+  );
+
+  const handleArchive = useCallback(
+    async (projectId: number) => {
+      const result = await archiveInterviewProject(projectId, true);
+      if (result.success) loadProjects();
+      return result;
+    },
+    [loadProjects],
+  );
+
+  type TProject = ExtractServerActionData<typeof fetchUserInterviewProjects>[number];
+
   const NewProjectCard = () => (
     <Link
       href={isCreateEnabled ? "/interview/projects/new" : "/pricing"}
@@ -105,7 +128,22 @@ export function InterviewProjectsClient({
     <div className="flex-1 overflow-y-auto scrollbar-thin px-8 py-8">
       <div className="container mx-auto max-w-6xl space-y-6">
         {/* Header */}
-        <div className="text-center space-y-3">
+        <div className="relative text-center space-y-3">
+          <div className="absolute right-0 top-0">
+            <ArchiveDrawer<TProject>
+              fetchArchived={fetchArchived}
+              renderItem={(project, onRefresh) => (
+                <ArchivedInterviewItem
+                  key={project.id}
+                  project={project}
+                  onUnarchived={() => {
+                    onRefresh();
+                    loadProjects();
+                  }}
+                />
+              )}
+            />
+          </div>
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">{t("description")}</p>
         </div>
@@ -185,6 +223,9 @@ export function InterviewProjectsClient({
                       <ArrowRight className="size-3.5 text-muted-foreground/40 group-hover:text-foreground group-hover:translate-x-0.5 transition-all ml-auto shrink-0" />
                     </div>
                   </Link>
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ArchiveButton onArchive={() => handleArchive(project.id)} />
+                  </div>
                 </div>
               );
             })}

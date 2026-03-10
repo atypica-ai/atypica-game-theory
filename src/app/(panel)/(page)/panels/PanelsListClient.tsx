@@ -1,4 +1,5 @@
 "use client";
+import { ArchiveDrawer } from "@/components/ArchiveDrawer";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { createParamConfig, useListQueryParams } from "@/hooks/use-list-query-params";
@@ -6,7 +7,13 @@ import { Loader2, Plus, SearchIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { deletePersonaPanel, fetchUserPersonaPanels, PersonaPanelWithDetails } from "./actions";
+import {
+  archivePersonaPanel,
+  deletePersonaPanel,
+  fetchUserPersonaPanels,
+  PersonaPanelWithDetails,
+} from "./actions";
+import { ArchivedPanelItem } from "./ArchivedPanelItem";
 import { CreatePanelDialog } from "./CreatePanelDialog";
 import { PanelCard } from "./PanelCard";
 import { ProjectsDrawer } from "./ProjectsDrawer";
@@ -72,6 +79,21 @@ export function PersonaPanelsListClient({
     setParams({ search: "", page: 1 });
   };
 
+  const fetchArchived = useCallback(
+    (params: { page: number; pageSize: number }) =>
+      fetchUserPersonaPanels({ ...params, archived: true }),
+    [],
+  );
+
+  const handleArchivePanel = useCallback(
+    async (panelId: number) => {
+      const result = await archivePersonaPanel(panelId, true);
+      if (result.success) await loadPanels();
+      return result;
+    },
+    [loadPanels],
+  );
+
   const handleDeletePanel = useCallback(
     async (panelId: number) => {
       setDeletingPanelId(panelId);
@@ -103,7 +125,22 @@ export function PersonaPanelsListClient({
             <h1 className="text-base font-semibold">{t("title")}</h1>
             <p className="text-xs text-muted-foreground mt-0.5">{t("subtitle")}</p>
           </div>
-          <ProjectsDrawer />
+          <div className="flex items-center gap-2">
+            <ArchiveDrawer<PersonaPanelWithDetails>
+              fetchArchived={fetchArchived}
+              renderItem={(panel, onRefresh) => (
+                <ArchivedPanelItem
+                  key={panel.id}
+                  panel={panel}
+                  onUnarchived={() => {
+                    onRefresh();
+                    loadPanels();
+                  }}
+                />
+              )}
+            />
+            <ProjectsDrawer />
+          </div>
         </div>
 
         {/* Search */}
@@ -161,6 +198,7 @@ export function PersonaPanelsListClient({
                 key={panel.id}
                 panel={panel}
                 onDelete={handleDeletePanel}
+                onArchive={handleArchivePanel}
                 isDeleting={deletingPanelId === panel.id}
               />
             ))}
