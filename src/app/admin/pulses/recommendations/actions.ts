@@ -50,7 +50,7 @@ export async function testPulseRecommendation(userId: number): Promise<
     } | null;
   }>
 > {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   // Verify user exists
   const user = await prisma.user.findUnique({
@@ -142,7 +142,7 @@ export async function fetchPulseHeatTreemapData(lookbackDays: number = 30): Prom
     updatedAt: string;
   }>
 > {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   try {
     const safeLookback = Math.min(Math.max(lookbackDays, 7), 60);

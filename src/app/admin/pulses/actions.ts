@@ -11,14 +11,14 @@ import { runDailyPulsePipeline } from "@/app/(pulse)/lib/runDailyPipeline";
 import { recommendPulsesForActiveUsers } from "@/app/(pulse)/recommendation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import type { Locale } from "next-intl";
 import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
+import type { Locale } from "next-intl";
 
 export async function getDistinctCategories(): Promise<
   ServerActionResult<Array<{ category: string; pulseCount: number }>>
 > {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   const results = await prisma.pulse.groupBy({
     by: ["category"],
@@ -43,7 +43,7 @@ export async function getDistinctCategories(): Promise<
 export async function triggerDataSourceGathering(
   dataSourceName: string,
 ): Promise<ServerActionResult<{ pulseCount: number }>> {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   // If it's a base name (no colon), check if it's a factory and trigger all categories
   if (!dataSourceName.includes(":")) {
@@ -98,7 +98,7 @@ export async function triggerAllDataSourcesGathering(): Promise<
     results: Array<{ dataSource: string; pulseCount: number }>;
   }>
 > {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   const result = await gatherPulsesFromAllDataSources();
   return {
@@ -115,7 +115,7 @@ export async function getAllAvailableDataSources(): Promise<
     Array<{ name: string; isCategory: boolean; baseName?: string; categoryName?: string }>
   >
 > {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   const dataSources = await getAllDataSources();
 
@@ -157,7 +157,7 @@ export async function triggerHeatPipeline(
   onlyUnscored: boolean = false,
   pulseIds?: number[],
 ): Promise<ServerActionResult<{ processed: number; errors: number }>> {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   let targetPulseIds: number[];
 
@@ -204,7 +204,7 @@ export async function triggerExpirationTest(
   category?: string,
   pulseIds?: number[],
 ): Promise<ServerActionResult<{ expired: number; kept: number }>> {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   let targetPulseIds: number[];
 
@@ -256,7 +256,7 @@ export async function getPulseStatistics(): Promise<
     }>;
   }>
 > {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   const [total, withHeat, expired, recentPulses] = await Promise.all([
     prisma.pulse.count(),
@@ -303,9 +303,7 @@ export async function getPulseStatistics(): Promise<
  *
  * @param userIds - Optional specific user IDs. If omitted, recommends for all active users.
  */
-export async function triggerRecommendation(
-  userIds?: number[],
-): Promise<
+export async function triggerRecommendation(userIds?: number[]): Promise<
   ServerActionResult<{
     totalUsers: number;
     successfulUsers: number;
@@ -313,7 +311,7 @@ export async function triggerRecommendation(
     totalPulsesRecommended: number;
   }>
 > {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   const result = await recommendPulsesForActiveUsers(userIds);
   return {
@@ -335,7 +333,7 @@ export async function triggerFullPipeline(): Promise<
     kept: number;
   }>
 > {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   const result = await runDailyPulsePipeline();
   return { success: true, data: result };
@@ -349,7 +347,7 @@ type XTrendCategory = { name: string; query: string; locale: Locale };
 export async function getXTrendCategoryConfig(): Promise<
   ServerActionResult<{ categories: XTrendCategory[] }>
 > {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   const config = await prisma.systemConfig.findUnique({
     where: { key: "pulse:xTrend:categories" },
@@ -367,7 +365,7 @@ export async function getXTrendCategoryConfig(): Promise<
 export async function updateXTrendCategoryConfig(
   categories: XTrendCategory[],
 ): Promise<ServerActionResult<{ categories: XTrendCategory[] }>> {
-  await checkAdminAuth([AdminPermission.MANAGE_CONTENT]);
+  await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
 
   const config = await prisma.systemConfig.upsert({
     where: { key: "pulse:xTrend:categories" },

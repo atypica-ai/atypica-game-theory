@@ -100,7 +100,7 @@ Header: `x-internal-secret: $INTERNAL_API_SECRET`，返回后立即 200，后台
 
 ### Admin Server Actions (`src/app/admin/pulses/actions.ts`)
 
-在 `/admin/pulses` 页面使用，需要 `MANAGE_CONTENT` 权限：
+在 `/admin/pulses` 页面使用，需要 `MANAGE_MAINTENANCE` 权限：
 
 | 方法 | 作用 |
 |------|------|
