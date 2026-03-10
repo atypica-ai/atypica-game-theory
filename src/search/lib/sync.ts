@@ -1,7 +1,7 @@
 import "server-only";
 
-import { rootLogger } from "@/lib/logging";
 import { UserChatContext } from "@/app/(study)/context/types";
+import { rootLogger } from "@/lib/logging";
 import {
   AnalystPodcast,
   AnalystReport,
@@ -12,7 +12,13 @@ import {
   UserChat,
 } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
-import { ArtifactDocument, ArtifactType, PersonaDocument, ProjectDocument, ProjectType } from "../types";
+import {
+  ArtifactDocument,
+  ArtifactType,
+  PersonaDocument,
+  ProjectDocument,
+  ProjectType,
+} from "../types";
 import { INDEXES, meilisearchClient } from "./client";
 
 const logger = rootLogger.child({ module: "search-sync" });
@@ -227,6 +233,7 @@ export function personaToDocument({
     userId: userId,
     teamId: teamId,
 
+    archived: Boolean(persona.extra?.archived),
     createdAt: persona.createdAt.getTime(),
   };
 }
@@ -316,6 +323,7 @@ export function studyUserChatToDocument(userChat: UserChat): ProjectDocument {
     description: context?.studyTopic || "",
     userId: userChat.userId,
     teamId: null,
+    archived: Boolean(userChat.extra?.archived),
     createdAt: userChat.createdAt.getTime(),
   };
 }
@@ -331,6 +339,7 @@ export function universalUserChatToDocument(userChat: UserChat): ProjectDocument
     description: "",
     userId: userChat.userId,
     teamId: null,
+    archived: Boolean(userChat.extra?.archived),
     createdAt: userChat.createdAt.getTime(),
   };
 }
@@ -346,6 +355,7 @@ export function interviewProjectToDocument(project: InterviewProject): ProjectDo
     description: project.brief,
     userId: project.userId,
     teamId: null,
+    archived: Boolean(project.extra?.archived),
     createdAt: project.createdAt.getTime(),
   };
 }
@@ -361,6 +371,7 @@ export function personaPanelToDocument(panel: PersonaPanel): ProjectDocument {
     description: panel.instruction,
     userId: panel.userId,
     teamId: null,
+    archived: Boolean(panel.extra?.archived),
     createdAt: panel.createdAt.getTime(),
   };
 }
@@ -368,13 +379,7 @@ export function personaPanelToDocument(panel: PersonaPanel): ProjectDocument {
 /**
  * 同步单个 Project 到 Meilisearch
  */
-export async function syncProject({
-  type,
-  id,
-}: {
-  type: ProjectType;
-  id: number;
-}): Promise<void> {
+export async function syncProject({ type, id }: { type: ProjectType; id: number }): Promise<void> {
   try {
     logger.info({ msg: "Starting project sync", type, id });
 

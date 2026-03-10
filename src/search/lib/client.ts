@@ -189,7 +189,7 @@ export async function initializePersonasIndex() {
     searchableAttributes: ["name", "tags", "prompt"],
 
     // 可过滤字段
-    filterableAttributes: ["tier", "locale", "userId", "teamId"],
+    filterableAttributes: ["tier", "locale", "userId", "teamId", "archived"],
 
     // 可排序字段
     sortableAttributes: ["createdAt"],
@@ -204,6 +204,7 @@ export async function initializePersonasIndex() {
       "locale",
       "userId",
       "teamId",
+      "archived",
       "createdAt",
     ],
 
@@ -236,7 +237,7 @@ export async function initializeProjectsIndex() {
   await index.updateSettings({
     searchableAttributes: ["title", "description"],
 
-    filterableAttributes: ["type", "userId", "teamId"],
+    filterableAttributes: ["type", "userId", "teamId", "archived"],
 
     sortableAttributes: ["createdAt"],
 
@@ -247,6 +248,7 @@ export async function initializeProjectsIndex() {
       "description",
       "userId",
       "teamId",
+      "archived",
       "createdAt",
     ],
 

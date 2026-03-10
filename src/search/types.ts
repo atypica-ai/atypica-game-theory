@@ -73,6 +73,7 @@ export interface PersonaDocument {
   locale: string;
   userId: number | null; // 创建者 ID (from personaImport)
   teamId: number | null; // 团队 ID（预留）
+  archived: boolean; // 归档标记
 
   // 排序字段
   createdAt: number; // Unix timestamp
@@ -87,6 +88,7 @@ export interface PersonasSearchParams {
   locales?: string[];
   userId?: number;
   teamId?: number;
+  archived?: boolean;
   page?: number;
   pageSize?: number;
 }
@@ -124,6 +126,7 @@ export interface ProjectDocument {
   // 过滤字段
   userId: number;
   teamId: number | null; // 预留
+  archived: boolean; // 归档标记
 
   // 排序字段
   createdAt: number; // Unix timestamp
@@ -136,6 +139,7 @@ export interface ProjectsSearchParams {
   query: string;
   type?: ProjectType;
   userId?: number;
+  archived?: boolean;
   page?: number;
   pageSize?: number;
 }

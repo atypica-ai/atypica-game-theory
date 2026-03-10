@@ -23,6 +23,7 @@ export async function mergeExtra({
     | "InterviewReport"
     | "DiscussionTimeline"
     | "UserChat"
+    | "InterviewProject"
     | "Subscription"
     | "Team"
     | "AttachmentFile";

@@ -105,6 +105,7 @@ export type UserChatExtra = Partial<{
   // Runtime execution ownership marker. If present, this chat is currently running in background.
   runId: string;
   error: string;
+  archived: boolean; // 归档标记
   // 下一步操作建议（从 Analyst.extra 迁移过来）
   recommendedStudies: {
     questions?: Array<{
@@ -186,6 +187,7 @@ export type InterviewProjectExtra = Partial<{
   error: string;
   processing: boolean;
   permanentShareToken: string; // 永久链接令牌，用于验证永久链接
+  archived: boolean; // 归档标记
 }>;
 
 export type InterviewSessionExtra = Partial<{
@@ -326,6 +328,7 @@ export type PersonaExtra = Partial<{
   title: string; // Job title/role (all types) - e.g. "Stay-at-home Parents", "IT Procurement Manager", "Senior Researcher"
   organization: string; // Organization (for buyer & expert) - e.g. "500-1000 employees", "Tsinghua University"
   experience: string; // Experience/seniority (mainly for expert) - e.g. "10 years"
+  archived: boolean; // 归档标记
 }>;
 
 export type PersonaPanelExtra = Partial<{
@@ -335,6 +338,7 @@ export type PersonaPanelExtra = Partial<{
       }
     | false; // false 表示未开始或已完成
   error: string; // 错误信息
+  archived: boolean; // 归档标记
 }>;
 
 export type DiscussionTimelineExtra = Partial<{
