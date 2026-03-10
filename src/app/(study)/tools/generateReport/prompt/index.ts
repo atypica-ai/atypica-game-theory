@@ -41,15 +41,27 @@ export const reportHTMLPrologue = ({
   studyLog,
   instruction,
   lastReport,
+  userMemory,
 }: {
   locale: Locale;
   studyLog: string;
   instruction: string;
   lastReport?: Pick<AnalystReport, "onePageHtml">;
+  userMemory?: string;
 }) =>
   locale === "zh-CN"
     ? `
-研究过程：
+${
+  userMemory
+    ? `
+用户记忆（了解用户的偏好和历史背景）：
+<userMemory>
+${userMemory}
+</userMemory>
+
+`
+    : ""
+}研究过程：
 <studyLog>
 ${studyLog}
 </studyLog>
@@ -83,7 +95,17 @@ ${instruction}
 请直接输出完整HTML代码，从<!DOCTYPE html>开始，不要包含任何解释、前言或markdown标记。
 `
     : `
-Study process:
+${
+  userMemory
+    ? `
+User memory (understand user preferences and historical context):
+<userMemory>
+${userMemory}
+</userMemory>
+
+`
+    : ""
+}Study process:
 <studyLog>
 ${studyLog}
 </studyLog>

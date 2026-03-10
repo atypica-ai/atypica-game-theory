@@ -332,7 +332,7 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   // Phase 6: Update and Load User Memories
   // =============================================================================
 
-  const userMemory = await loadMemoryForAgent({ userId, teamId: baseContext.teamId });
+  const userMemory = await loadMemoryForAgent({ userId });
   if (userMemory) {
     const text = buildMemoryUsagePrompt({ userMemory, locale });
     modelMessages = [{ role: "user", content: [{ type: "text", text }] }, ...modelMessages];
@@ -430,6 +430,21 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     onStepFinish: async (step: StepResult<TOOLS>) => {
       // Provider's raw model ID (e.g., "global.anthropic.claude-sonnet-4-5-xxx")
       const modelId = step.response.modelId;
+
+      // Debug: Log finish reason for this step
+      logger.info({
+        msg: "baseAgentRequest onStepFinish",
+        finishReason: step.finishReason,
+      });
+
+      // Debug: Warn if step was cut off due to token limit
+      if (step.finishReason === "length") {
+        logger.warn({
+          msg: "⚠️ AGENT OUTPUT TRUNCATED: Hit maxTokens limit for this step",
+          maxTokens: agentConfig.maxTokens,
+          usage: step.usage,
+        });
+      }
 
       // Immediate persistence (critical for message consistency)
       await immediatePersistentMessage();
@@ -619,9 +634,55 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     /**
      * onFinish: Cleanup managed run
      */
-    onFinish: async ({ usage, providerMetadata }) => {
+    onFinish: async ({ usage, providerMetadata, finishReason, steps }) => {
       const cache = providerMetadata?.bedrock?.usage;
-      logger.info({ msg: "baseAgentRequest onFinish", usage, cache });
+      const maxStepsConfig = agentConfig.maxSteps ?? 30;
+      const hitMaxSteps = steps.length >= maxStepsConfig;
+      const hasReportOrPodcast = steps.some((step) =>
+        step.toolResults?.some(
+          (toolResult) =>
+            toolResult?.toolName === "generatePodcast" || toolResult?.toolName === "generateReport",
+        ),
+      );
+
+      logger.info({
+        msg: "baseAgentRequest onFinish",
+        finishReason,
+        totalSteps: steps.length,
+        maxStepsConfig,
+        hitMaxSteps,
+        hasReportOrPodcast,
+        usage,
+        cache,
+      });
+
+      // Debug: Warn if agent was stopped due to token limit
+      if (finishReason === "length") {
+        logger.warn({
+          msg: "⚠️ AGENT CONVERSATION TRUNCATED: Hit maxTokens limit",
+          maxTokens: agentConfig.maxTokens,
+          totalSteps: steps.length,
+          usage,
+        });
+      }
+
+      // Debug: Warn if hit max steps limit
+      if (hitMaxSteps && !hasReportOrPodcast) {
+        logger.warn({
+          msg: "⚠️ AGENT STOPPED: Hit maxSteps limit without completing report/podcast",
+          maxSteps: maxStepsConfig,
+          totalSteps: steps.length,
+        });
+      }
+
+      // Debug: Log when stopped after report/podcast generation
+      if (hasReportOrPodcast) {
+        logger.info({
+          msg: "Agent stopped after report/podcast generation (expected)",
+          totalSteps: steps.length,
+        });
+      }
+
       await cleanupRun();
     },
 

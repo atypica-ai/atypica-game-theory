@@ -49,19 +49,22 @@ export async function loadTeamMemory(teamId: number): Promise<string> {
 
 /**
  * Load memory for agent context: when user has both team and personal memory, returns both with clear labels.
- * - Team block (if teamId and team has memory): "Team Memory:\n" + team core+working.
+ * - Team block (if user has team and team has memory): "Team Memory:\n" + team core.
  * - User block (if user has memory): "User's Personal Memory:\n" + user core+working.
  * Order: team first, then user. Empty sections are omitted.
+ *
+ * This function handles all internal logic: queries user's teamId, loads team memory if applicable, loads personal memory.
  */
-export async function loadMemoryForAgent({
-  userId,
-  teamId,
-}: {
-  userId: number;
-  teamId?: number | null;
-}): Promise<string> {
+export async function loadMemoryForAgent({ userId }: { userId: number }): Promise<string> {
+  // Query user to get teamIdAsMember
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { teamIdAsMember: true },
+  });
+
+  // Load team and user memory in parallel
   const [teamContent, userContent] = await Promise.all([
-    teamId ? loadTeamMemory(teamId) : Promise.resolve(""),
+    user?.teamIdAsMember ? loadTeamMemory(user.teamIdAsMember) : Promise.resolve(""),
     loadUserMemory(userId),
   ]);
 

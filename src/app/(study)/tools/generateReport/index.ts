@@ -7,6 +7,7 @@ import { reportHTMLPrologue, reportHTMLSystem } from "./prompt";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
+import { loadMemoryForAgent } from "@/app/(memory)/lib/loadMemory";
 import { AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { syncReport as syncReportToMeili } from "@/search/lib/sync";
@@ -261,6 +262,9 @@ async function generateReport({
 } & AgentToolConfigArgs) {
   let onePageHtml = report.onePageHtml; // 如果 report 有内容，就继续使用 report 的 onePageHtml
 
+  // Load user memory for report context
+  const userMemory = await loadMemoryForAgent({ userId });
+
   await initReportDir({ userId, reportToken: report.token });
 
   const throttleSaveToFile = (() => {
@@ -322,7 +326,7 @@ async function generateReport({
           content: [
             {
               type: "text",
-              text: reportHTMLPrologue({ locale, studyLog, instruction, lastReport }),
+              text: reportHTMLPrologue({ locale, studyLog, instruction, lastReport, userMemory }),
             },
             // ...fileParts,
           ],
