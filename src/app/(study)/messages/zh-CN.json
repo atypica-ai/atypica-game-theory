@@ -59,7 +59,6 @@
       "startNewStudy": "开始新研究",
       "confirm": "确认",
       "referenceContext": "参考研究",
-      "attachments": "附件",
       "researchPlan": "研究计划",
       "researchPlanConfirmation": "研究计划确认",
       "confirmAndStart": "确认并开始执行",
@@ -153,6 +152,15 @@
     },
     "ArtifactsListPanel": {
       "title": "研究产出"
+    },
+    "BottomBar": {
+      "artifacts": "Artifacts",
+      "attachments": "附件",
+      "noAttachments": "暂无附件",
+      "noPanel": "暂无 Panel",
+      "panelTitle": "{count} 位参与者已就绪",
+      "panelDescription": "随时可以发起新的讨论、访谈或深度分析",
+      "goToPanel": "前往 Panel"
     },
     "NextSteps": {
       "artifactsTitle": "研究产出",

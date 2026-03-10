@@ -107,6 +107,105 @@ export function CancelButton({
   );
 }
 
+/**
+ * Compact status indicator for textarea bottom-left corner.
+ * Shows only during active/error states, hidden when ready.
+ */
+export function CompactStatus({
+  status,
+  startedAt,
+  errorMessage,
+}: {
+  status:
+    | "background"
+    | "streaming"
+    | "submitted"
+    | "outOfQuota"
+    | "waitForUser"
+    | "error"
+    | "ready";
+  startedAt?: Date | null;
+  errorMessage: string | null;
+}) {
+  const t = useTranslations("StudyPage.StatusDisplay");
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    if (status === "background" && startedAt) {
+      const startTime = startedAt.getTime();
+      interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [status, startedAt]);
+
+  if (status === "ready") return null;
+
+  if (status === "error") {
+    const isNetworkError = errorMessage && /network|load|加载|网络/i.test(errorMessage);
+    return (
+      <div className="flex items-center gap-1.5 text-xs">
+        <span className="size-1.5 shrink-0 rounded-full bg-destructive" />
+        <span className="text-destructive truncate">
+          {isNetworkError ? t("networkError") : errorMessage}
+        </span>
+        <button
+          className="text-muted-foreground font-medium hover:underline cursor-pointer shrink-0"
+          onClick={() => window.location.reload()}
+        >
+          {t("reload")}
+        </button>
+      </div>
+    );
+  }
+
+  if (status === "outOfQuota") {
+    return (
+      <Link
+        href="/pricing"
+        prefetch
+        className="flex items-center gap-1.5 text-xs text-foreground/70 hover:text-foreground"
+      >
+        <CoinsIcon className="size-3 text-amber-500 shrink-0" />
+        <span className="truncate">{t("addMoreTokens")}</span>
+      </Link>
+    );
+  }
+
+  const label =
+    status === "background"
+      ? t("background")
+      : status === "streaming"
+        ? t("thinking")
+        : status === "submitted"
+          ? t("processing")
+          : status === "waitForUser"
+            ? t("waitForUser")
+            : "";
+
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-foreground/70 font-medium">
+      <span className="size-1.5 shrink-0 rounded-full bg-ghost-green shadow-[0_0_6px] shadow-ghost-green animate-pulse" />
+      <span className="truncate">{label}</span>
+      {status === "background" && elapsedTime > 0 && (
+        <span className="font-mono shrink-0">{formatDuration(elapsedTime)}</span>
+      )}
+      {(status === "streaming" || status === "background" || status === "submitted") && (
+        <span className="flex gap-0.5 shrink-0">
+          <span className="animate-bounce">·</span>
+          <span className="animate-bounce [animation-delay:0.2s]">·</span>
+          <span className="animate-bounce [animation-delay:0.4s]">·</span>
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function StatusDisplay({
   status,
   startedAt,

@@ -13,7 +13,6 @@ import { ChatBox } from "./ChatBox";
 import { ChatReplay } from "./ChatReplay";
 import { NerdStats } from "./components/NerdStats";
 import { ShareReplayButton } from "./components/ShareReplayButton";
-import StudyArtifactsListPanel from "./components/StudyArtifactsListPanel";
 import { StudyProvider, useStudyContext } from "./hooks/StudyContext";
 import { ToolConsole } from "./ToolConsole";
 
@@ -101,7 +100,6 @@ const Agent = () => {
         drawerDirection="left"
       >
         <div className="flex items-center gap-1 sm:gap-2">
-          <StudyArtifactsListPanel download={!replay} />
           <NerdStats />
           {!replay && <ShareReplayButton studyUserChat={studyUserChat} />}
         </div>

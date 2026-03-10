@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { StudyBottomBar } from "./components/StudyBottomBar";
 import { StudyReplayIntro } from "./components/StudyReplayIntro";
 import { useStudyContext } from "./hooks/StudyContext";
 import { useProgressiveMessages } from "./hooks/useProgressiveMessages";
@@ -179,9 +180,12 @@ export function ChatReplay() {
         )}
         <div ref={messagesEndRef} />
       </div>
+      <div className="absolute bottom-0 left-0 right-0 px-4 max-lg:px-1">
+        <StudyBottomBar />
+      </div>
       {!isCompleted && (
         // StudyPageClient 的 left panel 容器是 relative 的
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md">
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[90%] max-w-md">
           <div className="bg-background/95 backdrop-blur-sm border rounded-full shadow-lg pl-4 pr-2 py-1.5 flex items-center gap-3">
             {/* 进度信息 */}
             <div className="text-[10px] text-muted-foreground whitespace-nowrap">

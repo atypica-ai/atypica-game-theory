@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { truncateForTitle } from "@/lib/textUtils";
 import { formatDistanceToNow } from "@/lib/utils";
-import { FileType2Icon, Loader2Icon, MicIcon, PlayIcon } from "lucide-react";
+import { ChevronRightIcon, FileType2Icon, Loader2Icon, MicIcon, PlayIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +12,6 @@ import { useEffect, useRef, useState } from "react";
 import { useStudyContext } from "../hooks/StudyContext";
 import { AnalystReportShareButton } from "./AnalystReportShareButton";
 
-// Custom Artifacts Icon
 const ArtifactsIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -33,45 +32,13 @@ const ArtifactsIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
-// Badge component with auto-refresh logic for total artifact count
-function ArtifactsCountBadge() {
-  const {
-    artifacts: { refreshCount: refreshArtifactsCount, reportCount, podcastCount },
-    lastToolInvocation,
-  } = useStudyContext();
-
-  // Initial fetch
-  useEffect(() => {
-    refreshArtifactsCount();
-  }, [refreshArtifactsCount]);
-
-  // Refresh when tool invocations complete
-  useEffect(() => {
-    if (
-      lastToolInvocation?.type === `tool-${StudyToolName.generateReport}` &&
-      lastToolInvocation.state === "output-available"
-    ) {
-      refreshArtifactsCount();
-    }
-  }, [refreshArtifactsCount, lastToolInvocation]);
-
-  const totalCount = (reportCount ?? 0) + (podcastCount ?? 0);
-  if (totalCount === 0) return null;
-
-  return (
-    <Badge
-      variant="default"
-      className="absolute -top-1 -left-2 size-5 flex items-center justify-center text-xs font-bold font-mono rounded-full p-0 scale-75"
-    >
-      {totalCount}
-    </Badge>
-  );
-}
-
-/**
- * 和 ReportsListPanel 和 PodcastsListPanel 不同的是，这个组件使用 StudyContext 来存出数据
- */
-export default function StudyArtifactsListPanel({ download = false }: { download?: boolean }) {
+export default function StudyArtifactsListPanel({
+  download = false,
+  popoverSide,
+}: {
+  download?: boolean;
+  popoverSide?: "top" | "bottom";
+}) {
   const tReports = useTranslations("StudyPage.ReportsListPanel");
   const tPodcasts = useTranslations("StudyPage.PodcastsListPanel");
   const tArtifacts = useTranslations("StudyPage.ArtifactsListPanel");
@@ -81,6 +48,7 @@ export default function StudyArtifactsListPanel({ download = false }: { download
   const {
     artifacts: {
       refresh: refreshArtifacts,
+      refreshCount: refreshArtifactsCount,
       reports,
       podcasts,
       isLoadingReports,
@@ -88,28 +56,35 @@ export default function StudyArtifactsListPanel({ download = false }: { download
       podcastCount,
       reportCount,
     },
+    lastToolInvocation,
   } = useStudyContext();
 
-  // Track previous podcast count to detect new podcasts
+  const totalCount = (reportCount ?? 0) + (podcastCount ?? 0);
   const prevPodcastCountRef = useRef<number | null>(null);
 
-  // Fetch data when popover opens
   useEffect(() => {
-    if (isOpen) {
-      refreshArtifacts();
+    refreshArtifactsCount();
+  }, [refreshArtifactsCount]);
+
+  useEffect(() => {
+    if (
+      lastToolInvocation?.type === `tool-${StudyToolName.generateReport}` &&
+      lastToolInvocation.state === "output-available"
+    ) {
+      refreshArtifactsCount();
     }
+  }, [refreshArtifactsCount, lastToolInvocation]);
+
+  useEffect(() => {
+    if (isOpen) refreshArtifacts();
   }, [isOpen, refreshArtifacts]);
 
-  // Auto-open panel when new podcast is detected
   useEffect(() => {
-    const prevCount = prevPodcastCountRef.current;
-    const currentCount = podcastCount;
-    // Check if podcast count increased (new podcast added)
-    if (prevCount !== null && currentCount !== null && currentCount > prevCount) {
+    const prev = prevPodcastCountRef.current;
+    if (prev !== null && podcastCount !== null && podcastCount > prev) {
       setIsOpen(true);
     }
-    // Update ref for next comparison
-    prevPodcastCountRef.current = currentCount;
+    prevPodcastCountRef.current = podcastCount;
   }, [podcastCount]);
 
   return (
@@ -118,21 +93,16 @@ export default function StudyArtifactsListPanel({ download = false }: { download
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-2 has-[>svg]:px-2 gap-1.5 relative hover:bg-transparent hover:text-primary"
+          className="h-7 px-2 has-[>svg]:px-2 rounded-sm text-xs text-muted-foreground  bg-background/80 backdrop-blur-sm"
         >
-          <ArtifactsIcon className="shrink-0 size-4" />
-          <span className="text-xs max-sm:hidden whitespace-nowrap">{tArtifacts("title")}</span>
-          <ArtifactsCountBadge />
+          <ArtifactsIcon />
+          <span>{tArtifacts("title")}</span>
+          {totalCount > 0 && <span className="font-medium text-foreground">{totalCount}</span>}
+          <ChevronRightIcon className="size-3" />
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-80 p-0 dark:bg-zinc-800" align="center">
-        {/*
-        <div className="flex items-center gap-2 p-3 border-b border-border/50">
-          <SparklesIcon className="size-4 text-muted-foreground" />
-          <div className="text-sm font-medium">{tArtifacts("title")}</div>
-        </div>
-        */}
+      <PopoverContent className="w-80 p-0 dark:bg-zinc-800" align="start" side={popoverSide}>
         <div className="max-h-80 overflow-y-auto scrollbar-thin">
           {/* Podcasts Section */}
           <div className="border-b border-border/50">
@@ -160,9 +130,7 @@ export default function StudyArtifactsListPanel({ download = false }: { download
                   return (
                     <div key={podcast.id}>
                       <div
-                        className={`border border-input rounded-md p-3 flex items-center justify-between gap-2 ${
-                          isGenerating ? "opacity-60" : ""
-                        }`}
+                        className={`border border-border/60 rounded-md p-3 flex items-center justify-between gap-2 ${isGenerating ? "opacity-60" : ""}`}
                       >
                         <div className="flex-1 text-xs">
                           {isGenerating ? (
@@ -231,7 +199,7 @@ export default function StudyArtifactsListPanel({ download = false }: { download
                     download={download}
                   >
                     <div>
-                      <div className="relative w-full aspect-video cursor-pointer border border-input rounded-md overflow-hidden transition-all hover:border-primary/50 hover:shadow-sm bg-accent/10">
+                      <div className="relative w-full aspect-video cursor-pointer border border-border/60 rounded-md overflow-hidden transition-all hover:border-border bg-zinc-100 dark:bg-zinc-800">
                         {report.coverCdnHttpUrl ? (
                           <Image
                             src={report.coverCdnHttpUrl}
@@ -240,7 +208,7 @@ export default function StudyArtifactsListPanel({ download = false }: { download
                             className="object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground"></div>
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground" />
                         )}
                       </div>
                       <div className="mt-1 ml-1 font-mono text-xs text-muted-foreground">

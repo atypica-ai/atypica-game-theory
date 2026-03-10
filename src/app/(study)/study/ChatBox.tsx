@@ -29,8 +29,9 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchUserChatByToken } from "./actions";
-import { AnalystAttachments } from "./components/AnalystAttachments";
-import { CancelButton, StatusDisplay } from "./components/StatusDisplay";
+import { CancelButton, CompactStatus } from "./components/StatusDisplay";
+import { StudyBottomBar } from "./components/StudyBottomBar";
+import { StudyPanelCTA } from "./components/StudyPanelCTA";
 import { useStudyContext } from "./hooks/StudyContext";
 import { SingleMessage } from "./SingleMessage";
 import { StudyFeedback } from "./StudyFeedback";
@@ -357,9 +358,6 @@ export function ChatBox() {
           </div>
         )}
 
-        {/* Attachments */}
-        <AnalystAttachments />
-
         <div className="flex flex-col items-center gap-4">
           {messages.map((message, index) => (
             <SingleMessage
@@ -407,38 +405,24 @@ export function ChatBox() {
           </div>
         ) : null}
 
-        {/* Study Next Steps */}
+        {/* Study Completion Area */}
         {studyCompleted && uiStatus === "ready" ? (
-          <div className="w-full mt-4">
+          <div className="w-full border-t border-border/50 pt-6 space-y-6">
+            {userChatContext.personaPanelId ? (
+              <StudyPanelCTA panelId={userChatContext.personaPanelId} />
+            ) : null}
             <StudyNextSteps studyUserChatToken={studyUserChatToken} sendMessage={sendMessage} />
-          </div>
-        ) : null}
-
-        {/* Study Feedback */}
-        {studyCompleted && uiStatus === "ready" ? (
-          <div className="w-full mt-4 flex justify-start">
-            <StudyFeedback studyUserChatId={studyUserChatId} />
+            <div className="flex justify-start">
+              <StudyFeedback studyUserChatId={studyUserChatId} />
+            </div>
           </div>
         ) : null}
 
         <div ref={messagesEndRef} />
       </div>
+
       <div className="absolute bottom-0 left-0 right-0 w-full px-4 max-lg:px-1">
-        <div
-          className={cn(
-            "relative flex flex-col items-center justify-center mb-3",
-            // "max-lg:items-start max-lg:mb-1.5",
-          )}
-        >
-          <StatusDisplay
-            status={uiStatus}
-            startedAt={startedAt}
-            errorMessage={error ? error?.message?.toString() || error.toString() : null}
-          />
-          {/*<div className="absolute right-0 bottom-0 px-1 py-1 rounded-full shadow bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
-            <NerdStats />
-          </div>*/}
-        </div>
+        <StudyBottomBar download />
 
         <form onSubmit={handleSubmitMessage} className="relative bg-background rounded-lg">
           <Textarea
@@ -463,6 +447,15 @@ export function ChatBox() {
               }
             }}
           />
+          {/* Status — bottom left */}
+          <div className="absolute left-4 bottom-2.5 w-1/2 max-lg:left-2 max-lg:bottom-1.5">
+            <CompactStatus
+              status={uiStatus}
+              startedAt={startedAt}
+              errorMessage={error ? error?.message?.toString() || error.toString() : null}
+            />
+          </div>
+          {/* Actions — bottom right */}
           <div className="absolute right-2 bottom-2 max-lg:right-1 max-lg:bottom-1 max-lg:scale-90 max-lg:origin-bottom-right flex items-center gap-2">
             {!inputDisabled && !studyCompleted && !input.trim() && (
               <Button

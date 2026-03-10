@@ -59,7 +59,6 @@
       "startNewStudy": "Start New Study",
       "confirm": "Confirm",
       "referenceContext": "Reference Study",
-      "attachments": "Attachments",
       "researchPlan": "Research Plan",
       "researchPlanConfirmation": "Research Plan Confirmation",
       "confirmAndStart": "Confirm and Start",
@@ -153,6 +152,15 @@
     },
     "ArtifactsListPanel": {
       "title": "Study Artifacts"
+    },
+    "BottomBar": {
+      "artifacts": "Artifacts",
+      "attachments": "Files",
+      "noAttachments": "No files attached",
+      "noPanel": "No panel yet",
+      "panelTitle": "{count} participants ready",
+      "panelDescription": "Continue with new discussions, interviews, or deeper analysis",
+      "goToPanel": "Open Panel"
     },
     "NextSteps": {
       "artifactsTitle": "Study Artifacts",

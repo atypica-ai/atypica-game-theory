@@ -21,6 +21,35 @@ import { FileUIPart, UIMessage } from "ai";
 import { UserChatContext } from "../context/types";
 import { createStudyUserChat } from "./lib";
 
+export async function fetchStudyPanelInfo(
+  panelId: number,
+): Promise<
+  ServerActionResult<{
+    panelId: number;
+    personaCount: number;
+    title: string;
+  }>
+> {
+  return withAuth(async (user) => {
+    const panel = await prismaRO.personaPanel.findUnique({
+      where: { id: panelId, userId: user.id },
+    });
+
+    if (!panel) {
+      return { success: false, code: "not_found", message: "Panel not found" };
+    }
+
+    return {
+      success: true,
+      data: {
+        panelId: panel.id,
+        personaCount: panel.personaIds.length,
+        title: panel.title,
+      },
+    };
+  });
+}
+
 export async function createStudyUserChatAction(
   {
     role,
