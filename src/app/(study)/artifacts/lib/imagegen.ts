@@ -15,13 +15,8 @@ import { z } from "zod/v3";
 
 /**
  * 在 reportGenerationTool 的 throttleSaveHTML 方法里调用
- * Returns updated HTML with image prompts replaced by tokens (promptHash)
  */
-export async function triggerImagegenInReport(
-  html: string,
-  reportToken: string,
-): Promise<string> {
-  let updatedHtml = html;
+export async function triggerImagegenInReport(html: string, reportToken: string) {
   const imgTagRegex = /<img([^>]*?)src="(\/api\/imagegen\/[^"]*)"([^>]*?)>/g;
   const matches = [...html.matchAll(imgTagRegex)];
   // 用 localhost 作为 base URL，只需要解析相对路径的 query params，不需要真实 origin。
@@ -32,24 +27,10 @@ export async function triggerImagegenInReport(
     matches.map(([match, beforeSrc, src, afterSrc], index) => {
       // Extract prompt and ratio from the URL
       const urlParts = src.split("/");
-      const encodedPrompt = urlParts[urlParts.length - 1].split("?")[0];
-      // Defensive: decode URL-encoded prompt to match Next.js route param decoding
-      // Safe for both cases: already-decoded text passes through unchanged
-      const prompt = decodeURIComponent(encodedPrompt);
+      const prompt = urlParts[urlParts.length - 1].split("?")[0];
       const urlObj = new URL(src, "http://localhost");
       const ratio = urlObj.searchParams.get("ratio") || "";
-
-      // Calculate promptHash for token-based URL
-      const promptHash = createHash("sha256")
-        .update(JSON.stringify({ prompt, ratio }))
-        .digest("hex")
-        .substring(0, 40);
-
-      // Replace prompt with hash token in HTML
-      const newSrc = `/api/imagegen/${promptHash}?ratio=${ratio}`;
-      updatedHtml = updatedHtml.replace(src, newSrc);
-
-      return backgroundGenerateImage({ prompt, ratio, reportToken, promptHash });
+      return backgroundGenerateImage({ prompt, ratio, reportToken });
     }),
   );
   try {
@@ -59,7 +40,6 @@ export async function triggerImagegenInReport(
       `Error in triggerImageGeneration for report ${reportToken}: ${(error as Error).message}`,
     );
   }
-  return updatedHtml;
 }
 
 const ratioSchema = z.enum(["square", "landscape", "portrait"]).default("square");
@@ -68,12 +48,10 @@ async function backgroundGenerateImage({
   prompt,
   ratio: _ratio,
   reportToken,
-  promptHash,
 }: {
   prompt: string;
   ratio: string;
   reportToken: string;
-  promptHash: string;
 }) {
   let ratio: z.infer<typeof ratioSchema>;
   try {
@@ -81,6 +59,10 @@ async function backgroundGenerateImage({
   } catch {
     ratio = "square";
   }
+  const promptHash = createHash("sha256")
+    .update(JSON.stringify({ prompt, ratio }))
+    .digest("hex")
+    .substring(0, 40);
 
   const existingImage = await prisma.imageGeneration.findUnique({
     where: { promptHash },
