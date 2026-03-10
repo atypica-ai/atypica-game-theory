@@ -46,7 +46,13 @@ export function ArchiveDrawer<T>({
       if (result.success) {
         setItems(result.data);
         if (result.pagination) setPagination(result.pagination);
+      } else {
+        setItems([]);
+        setPagination(null);
       }
+    } catch {
+      setItems([]);
+      setPagination(null);
     } finally {
       setLoading(false);
     }

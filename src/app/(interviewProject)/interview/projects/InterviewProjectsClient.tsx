@@ -192,7 +192,7 @@ export function InterviewProjectsClient({
                   >
                     {/* Brief */}
                     <div className="space-y-1">
-                      <div className="text-sm font-medium leading-snug line-clamp-3">
+                      <div className="text-sm font-medium leading-snug line-clamp-3 group-hover:pr-10 transition-[padding]">
                         {project.brief || t("newProject")}
                       </div>
                       <div className="text-xs text-muted-foreground">

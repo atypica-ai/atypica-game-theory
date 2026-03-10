@@ -12,8 +12,8 @@ import { prisma } from "@/prisma/prisma";
 import { syncReport as syncReportToMeili } from "@/search/lib/sync";
 import { waitUntil } from "@vercel/functions";
 import { FinishReason, ModelMessage, stepCountIs, streamText, tool } from "ai";
-import { getReportArtifactPath, initReportDir, writeReportHtml } from "./persistence";
 import { generateReportCoverImage } from "./coverImage";
+import { getReportArtifactPath, initReportDir, writeReportHtml } from "./persistence";
 import {
   generateReportInputSchema,
   generateReportOutputSchema,
@@ -224,12 +224,8 @@ export const generateReportTool = ({
 
       // 异步同步到 Meilisearch
       waitUntil(
-        syncReportToMeili(report.id).catch((error) => {
-          reportLogger.error({
-            msg: "Failed to sync report to search",
-            reportId: report.id,
-            error: error instanceof Error ? error.message : String(error),
-          });
+        syncReportToMeili(report.id).catch(() => {
+          // 方法里已经 log 了，无需再次 log，这里跳过错误
         }),
       );
 

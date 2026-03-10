@@ -100,7 +100,13 @@ export async function fetchUserStudies({
       orderedIds = rows.map((r) => r.id);
     }
 
-    if (orderedIds.length === 0) return emptyResult;
+    if (orderedIds.length === 0) {
+      return {
+        success: true as const,
+        data: [],
+        pagination: { page, pageSize, totalCount, totalPages: Math.ceil(totalCount / pageSize) },
+      };
+    }
 
     const studyUserChats = await prisma.userChat.findMany({
       where: { id: { in: orderedIds } },
@@ -151,12 +157,8 @@ export async function archiveStudy(
     if (!chat) return { success: false, message: "Not found", code: "not_found" };
     await mergeExtra({ tableName: "UserChat", id: userChatId, extra: { archived } });
     waitUntil(
-      syncProjectToMeili({ type: "study", id: userChatId }).catch((error) => {
-        rootLogger.error({
-          msg: "Failed to sync study archive status to search",
-          userChatId,
-          error: error instanceof Error ? error.message : String(error),
-        });
+      syncProjectToMeili({ type: "study", id: userChatId }).catch(() => {
+        // 方法里已经 log 了，无需再次 log，这里跳过错误
       }),
     );
     return { success: true, data: null };

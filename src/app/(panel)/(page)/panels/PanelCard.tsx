@@ -59,7 +59,7 @@ export function PanelCard({
               />
             ))}
           </div>
-          <div className="flex-1 text-sm font-semibold leading-snug line-clamp-2 pr-6">
+          <div className="flex-1 text-sm font-semibold leading-snug line-clamp-2 group-hover:pr-16 transition-[padding]">
             {panel.title || t("panelId", { id: panel.id })}
           </div>
         </div>

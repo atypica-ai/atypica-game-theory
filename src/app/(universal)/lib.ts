@@ -3,7 +3,6 @@ import "server-only";
 import { persistentAIMessageToDB } from "@/ai/messageUtils";
 import { UserChatContext } from "@/app/(study)/context/types";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
-import { rootLogger } from "@/lib/logging";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
 import { createUserChat } from "@/lib/userChat/lib";
 import { ChatMessageAttachment, UserChat, UserChatExtra, UserChatKind } from "@/prisma/client";
@@ -45,9 +44,7 @@ export async function createUniversalUserChat({
   }
 
   // Build message text with attachment markers
-  const attachmentMarkers = attachmentsWithIds
-    ?.map((a) => `[#${a.id} ${a.name}]`)
-    .join("\n");
+  const attachmentMarkers = attachmentsWithIds?.map((a) => `[#${a.id} ${a.name}]`).join("\n");
   const messageText = attachmentMarkers ? `${attachmentMarkers}\n${content}` : content;
 
   // Detect default locale from input
@@ -94,12 +91,8 @@ export async function createUniversalUserChat({
 
   // 同步到 Meilisearch（创建时 title 已就绪）
   waitUntil(
-    syncProjectToMeili({ type: "universal", id: userChat.id }).catch((error) => {
-      rootLogger.error({
-        msg: "Failed to sync universal to search",
-        userChatId: userChat.id,
-        error: error instanceof Error ? error.message : String(error),
-      });
+    syncProjectToMeili({ type: "universal", id: userChat.id }).catch(() => {
+      // 方法里已经 log 了，无需再次 log，这里跳过错误
     }),
   );
 

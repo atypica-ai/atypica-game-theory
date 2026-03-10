@@ -71,9 +71,7 @@ export async function createStudyUserChat({
   }
 
   // Build message text with attachment markers
-  const attachmentMarkers = attachmentsWithIds
-    ?.map((a) => `[#${a.id} ${a.name}]`)
-    .join("\n");
+  const attachmentMarkers = attachmentsWithIds?.map((a) => `[#${a.id} ${a.name}]`).join("\n");
   const messageText = attachmentMarkers ? `${attachmentMarkers}\n${content}` : content;
 
   // 根据用户输入决定模型的默认语言
@@ -196,12 +194,8 @@ export async function saveAnalystFromPlan({
 
     // 同步到 Meilisearch
     waitUntil(
-      syncProjectToMeili({ type: "study", id: userChat.id }).catch((error) => {
-        rootLogger.error({
-          msg: "Failed to sync study to search",
-          userChatId: userChat.id,
-          error: error instanceof Error ? error.message : String(error),
-        });
+      syncProjectToMeili({ type: "study", id: userChat.id }).catch(() => {
+        // 方法里已经 log 了，无需再次 log，这里跳过错误
       }),
     );
 

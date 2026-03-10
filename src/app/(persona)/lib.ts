@@ -84,7 +84,7 @@ export async function createPersonaWithPostProcess({
       Promise.allSettled([
         createPersonaEmbedding(persona),
         extractPersonaAttributes(persona),
-        syncPersonaToMeili(persona.id),
+        syncPersonaToMeili(persona.id).catch(() => {}),
       ])
         .then((results) => {
           // 上面三个都是自己有错误日志，这里不重复打印了

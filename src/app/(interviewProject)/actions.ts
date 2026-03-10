@@ -141,7 +141,13 @@ export async function fetchUserInterviewProjects({
       orderedIds = rows.map((r) => r.id);
     }
 
-    if (orderedIds.length === 0) return emptyResult;
+    if (orderedIds.length === 0) {
+      return {
+        success: true as const,
+        data: [],
+        pagination: { page, pageSize, totalCount, totalPages: Math.ceil(totalCount / pageSize) },
+      };
+    }
 
     const projects = await prismaRO.interviewProject.findMany({
       where: { id: { in: orderedIds } },
@@ -204,12 +210,8 @@ export async function archiveInterviewProject(
     if (!project) return { success: false, message: "Not found", code: "not_found" };
     await mergeExtra({ tableName: "InterviewProject", id: projectId, extra: { archived } });
     waitUntil(
-      syncProjectToMeili({ type: "interview", id: projectId }).catch((error) => {
-        rootLogger.error({
-          msg: "Failed to sync interview project archive status to search",
-          projectId,
-          error: error instanceof Error ? error.message : String(error),
-        });
+      syncProjectToMeili({ type: "interview", id: projectId }).catch(() => {
+        // 方法里已经 log 了，无需再次 log，这里跳过错误
       }),
     );
     return { success: true, data: null };
@@ -267,12 +269,8 @@ export async function createInterviewProject(
 
     // 同步到 Meilisearch
     waitUntil(
-      syncProjectToMeili({ type: "interview", id: project.id }).catch((error) => {
-        rootLogger.error({
-          msg: "Failed to sync interview project to search",
-          projectId: project.id,
-          error: error instanceof Error ? error.message : String(error),
-        });
+      syncProjectToMeili({ type: "interview", id: project.id }).catch(() => {
+        // 方法里已经 log 了，无需再次 log，这里跳过错误
       }),
     );
 

@@ -73,12 +73,8 @@ export async function createPersonaPanel({
     after(
       generatePersonaPanelTitle(personaPanel.id)
         .then(() =>
-          syncProjectToMeili({ type: "panel", id: personaPanel.id }).catch((error) => {
-            rootLogger.error({
-              msg: "Failed to sync panel to search",
-              panelId: personaPanel.id,
-              error: error instanceof Error ? error.message : String(error),
-            });
+          syncProjectToMeili({ type: "panel", id: personaPanel.id }).catch(() => {
+            // 方法里已经 log 了，无需再次 log，这里跳过错误
           }),
         )
         .catch((error) => {

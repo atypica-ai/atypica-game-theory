@@ -1,7 +1,6 @@
 "use server";
 import { convertDBMessageToAIMessage, persistentAIMessageToDB } from "@/ai/messageUtils";
 import { trackEventServerSide } from "@/lib/analytics/server";
-import { rootLogger } from "@/lib/logging";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -336,7 +335,13 @@ export async function fetchUserPersonas({
       orderedIds = rows.map((r) => r.id);
     }
 
-    if (orderedIds.length === 0) return emptyResult;
+    if (orderedIds.length === 0) {
+      return {
+        success: true as const,
+        data: [],
+        pagination: { page, pageSize, totalCount, totalPages: Math.ceil(totalCount / pageSize) },
+      };
+    }
 
     const personas = await prismaRO.persona.findMany({
       where: { id: { in: orderedIds } },
@@ -392,12 +397,8 @@ export async function archivePersona(
     if (!persona) return { success: false, message: "Not found", code: "not_found" };
     await mergeExtra({ tableName: "Persona", id: personaId, extra: { archived } });
     waitUntil(
-      syncPersonaToMeili(personaId).catch((error) => {
-        rootLogger.error({
-          msg: "Failed to sync persona archive status to search",
-          personaId,
-          error: error instanceof Error ? error.message : String(error),
-        });
+      syncPersonaToMeili(personaId).catch(() => {
+        // 方法里已经 log 了，无需再次 log，这里跳过错误
       }),
     );
     return { success: true, data: null };

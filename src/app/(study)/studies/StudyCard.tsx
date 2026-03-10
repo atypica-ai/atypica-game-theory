@@ -45,7 +45,7 @@ export function StudyCard({
         {/* Title with avatar prefix */}
         <div className="flex items-center gap-2 mb-1">
           <HippyGhostAvatar seed={studyUserChat.id} className="size-8 shrink-0" />
-          <div className="flex-1 text-sm font-medium leading-snug line-clamp-2 pr-6">
+          <div className="flex-1 text-sm font-medium leading-snug line-clamp-2 group-hover:pr-16 transition-[padding]">
             {studyUserChat.title || t("noTopic")}
           </div>
         </div>

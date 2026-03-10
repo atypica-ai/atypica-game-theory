@@ -116,7 +116,13 @@ export async function fetchUserPersonaPanels({
       orderedIds = rows.map((r) => r.id);
     }
 
-    if (orderedIds.length === 0) return emptyResult;
+    if (orderedIds.length === 0) {
+      return {
+        success: true as const,
+        data: [] satisfies PersonaPanelWithDetails[],
+        pagination: { page, pageSize, totalCount, totalPages: Math.ceil(totalCount / pageSize) },
+      };
+    }
 
     const panels = await prismaRO.personaPanel.findMany({
       where: { id: { in: orderedIds } },
@@ -200,12 +206,8 @@ export async function archivePersonaPanel(
     if (!panel) return { success: false, message: "Not found", code: "not_found" };
     await mergeExtra({ tableName: "PersonaPanel", id: panelId, extra: { archived } });
     waitUntil(
-      syncProjectToMeili({ type: "panel", id: panelId }).catch((error) => {
-        rootLogger.error({
-          msg: "Failed to sync panel archive status to search",
-          panelId,
-          error: error instanceof Error ? error.message : String(error),
-        });
+      syncProjectToMeili({ type: "panel", id: panelId }).catch(() => {
+        // 方法里已经 log 了，无需再次 log，这里跳过错误
       }),
     );
     return { success: true, data: null };

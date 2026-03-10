@@ -190,7 +190,7 @@ export function PersonasListClient({
                   {/* Name with avatar prefix */}
                   <div className="flex items-center gap-2 mb-2">
                     <HippyGhostAvatar seed={persona.token} className="size-8 shrink-0" />
-                    <div className="text-sm font-medium leading-snug line-clamp-2 pr-6">
+                    <div className="text-sm font-medium leading-snug line-clamp-2 group-hover:pr-16 transition-[padding]">
                       {persona.name}
                     </div>
                   </div>

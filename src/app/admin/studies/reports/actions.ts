@@ -368,12 +368,8 @@ export async function featureReportAction(reportId: number): Promise<ServerActio
 
   // 同步更新 Meilisearch 中的 isFeatured 状态
   waitUntil(
-    syncReportToMeili(reportId).catch((error) => {
-      rootLogger.error({
-        msg: "Failed to sync report featured status to search",
-        reportId,
-        error: error instanceof Error ? error.message : String(error),
-      });
+    syncReportToMeili(reportId).catch(() => {
+      // 方法里已经 log 了，无需再次 log，这里跳过错误
     }),
   );
 
