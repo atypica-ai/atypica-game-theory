@@ -120,7 +120,7 @@ export async function getArtifactsFacets(query: string = "") {
  * 只返回匹配的文档，前端用 IDs 去数据库查完整数据
  */
 export async function searchPersonas(params: PersonasSearchParams): Promise<PersonasSearchResult> {
-  const { query, tiers, locales, userId, teamId, page = 1, pageSize = 20 } = params;
+  const { query, tiers, locales, userId, teamId, archived, page = 1, pageSize = 20 } = params;
 
   try {
     const index = meilisearchClient.index<PersonaDocument>(INDEXES.PERSONAS);
@@ -146,6 +146,12 @@ export async function searchPersonas(params: PersonasSearchParams): Promise<Pers
 
     if (teamId !== undefined) {
       filters.push(`teamId = ${teamId}`);
+    }
+
+    if (archived === true) {
+      filters.push(`archived = true`);
+    } else if (archived === false) {
+      filters.push(`archived IS NULL OR archived = false`);
     }
 
     // 执行搜索
@@ -216,10 +222,8 @@ export async function getPersonasFacets(query: string = "") {
  * 搜索 Projects
  * 只返回匹配的文档，前端用 slug 解析 type+id 去数据库查完整数据
  */
-export async function searchProjects(
-  params: ProjectsSearchParams,
-): Promise<ProjectsSearchResult> {
-  const { query, type, userId, page = 1, pageSize = 20 } = params;
+export async function searchProjects(params: ProjectsSearchParams): Promise<ProjectsSearchResult> {
+  const { query, type, userId, archived, page = 1, pageSize = 20 } = params;
 
   try {
     const index = meilisearchClient.index<ProjectDocument>(INDEXES.PROJECTS);
@@ -232,6 +236,12 @@ export async function searchProjects(
 
     if (userId !== undefined) {
       filters.push(`userId = ${userId}`);
+    }
+
+    if (archived === true) {
+      filters.push(`archived = true`);
+    } else if (archived === false) {
+      filters.push(`archived IS NULL OR archived = false`);
     }
 
     const searchResults = await index.search(query, {
