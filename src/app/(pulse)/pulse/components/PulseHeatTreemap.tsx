@@ -85,8 +85,8 @@ const CATEGORY_WEIGHT_SCALE = 1000;
 const TEXT_BLOCK_HEIGHT_RATIO = 0.52; // Reduced to leave more margin and prevent overflow
 const TITLE_FONT_MAX = 36;
 const HEAT_DELTA_FONT_MAX = 32;
-const CATEGORY_GAP_PX = 4;
-const PULSE_GAP_PX = 2;
+const CATEGORY_GAP_PX = 10;
+const PULSE_GAP_PX = 0.2;
 const MAP_TEXT_SHADOW_FILTER_ID = "map-text-shadow";
 
 function clamp(value: number, min: number, max: number) {
@@ -339,7 +339,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
   const t = useTranslations("Pulse");
   const { resolvedTheme } = useTheme();
 
-  const gapColor = "#1a1b20"; // Black borders between blocks
+  const gapColor = "#000000"; // Pure black to match pulse borders
   const categoryHeaderDefault = resolvedTheme === 'dark' ? "#000000" : "#2d3039"; // Black in dark mode, dark blue-gray in light mode
   const categoryLabelDefault = "#f8f8f8";
   const updatedBadgeBg = "bg-foreground/10 text-foreground/80";
@@ -922,8 +922,6 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
                 width={width}
                 height={height}
                 fill={`url(#gradient-${node.data.id})`}
-                stroke={item.borderColor}
-                strokeWidth={3}
               />
 
               {item.showTitle ? (
