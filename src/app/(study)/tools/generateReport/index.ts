@@ -5,9 +5,9 @@ import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { triggerImagegenInReport } from "@/app/(study)/artifacts/lib/imagegen";
 import { reportHTMLPrologue, reportHTMLSystem } from "./prompt";
 // import { generateReportScreenshot } from "@/app/(study)/artifacts/lib/screenshot";
+import { loadMemoryForAgent } from "@/app/(memory)/lib/loadMemory";
 import { generateAndSaveStudyLog } from "@/app/(study)/agents/studyLog";
 import { mergeUserChatContext } from "@/app/(study)/context/utils";
-import { loadMemoryForAgent } from "@/app/(memory)/lib/loadMemory";
 import { AnalystReport, AnalystReportExtra } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { syncReport as syncReportToMeili } from "@/search/lib/sync";
@@ -326,12 +326,23 @@ async function generateReport({
           content: [
             {
               type: "text",
-              text: reportHTMLPrologue({ locale, studyLog, instruction, lastReport, userMemory }),
+              text: reportHTMLPrologue({ locale, studyLog, instruction, lastReport }),
             },
             // ...fileParts,
           ],
         },
       ];
+      if (userMemory) {
+        // Keep memory as a separate message so it is easy to trim or summarize here if report prompts get too large.
+        const memoryStr =
+          locale === "zh-CN"
+            ? `用户记忆（了解用户的偏好和历史背景）\n<memory>\n${userMemory}\n</memory>\n`
+            : `User memory (understand user preferences and historical context):\n<memory>\n${userMemory}\n</memory>\n`;
+        messages.unshift({
+          role: "user",
+          content: [{ type: "text", text: memoryStr }],
+        });
+      }
       if (onePageHtml) {
         messages.push({
           role: "assistant",
