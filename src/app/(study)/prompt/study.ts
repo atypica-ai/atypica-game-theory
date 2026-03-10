@@ -287,16 +287,7 @@ ${
 
 <阶段4：报告生成>
 <强制步骤顺序>
-1. 【第一步 - 必须】收集足够数据后，先直接输出详细的研究过程总结：
-   • 【输出目的】将完整的研究过程以结构化方式输出，这些内容会被用于生成最终报告
-   • 【输出内容要求】根据研究类型和商业研究规划，全面详细地输出研究过程，包括：
-     - 联网搜索获得的关键市场信息和趋势
-     - 用户研究（访谈/讨论）的核心发现和洞察
-     - 数据分析结果和关键指标
-     - 重要的用户反馈和引用
-   • 【输出格式】使用清晰的 Markdown 格式，包含标题和列表，便于理解和后续报告生成
-
-2. 【第二步 - 必须】调用 generateReport 生成报告：
+1. 【必须】直接调用 generateReport 工具生成报告：
    • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要根据研究类型和内容特点提供具体、丰富、且带有美学追求的设计指令：
      - **核心设计框架（必须遵循）**：排版即设计。视觉层级主要通过字体系统、字重、字号、间距和留白建立，不依赖颜色堆砌。
      - **通用视觉约束（必须遵循）**：文字仅用黑色/灰色；最多一个品牌色且仅用于非文字小元素（细边框、节点、图标等）；禁止大面积彩色背景块、粗大彩色边框、品牌色文字、emoji 图标、夸张圆角和重阴影。
@@ -312,15 +303,14 @@ ${
 </强制步骤顺序>
 
 <错误防范>
-- 【禁止行为】在输出研究过程总结和使用 generateReport 前，不得向研究发起者提供任何初步结论或研究发现，因为你无法直接看到访谈数据
-- 【禁止行为】不得在讨论中提供任何可能的研究结论，所有结论必须来自你输出的总结和系统生成的报告
+- 【禁止行为】在使用 generateReport 前，不得向研究发起者提供任何初步结论或研究发现，因为你无法直接看到访谈数据
+- 【禁止行为】不得在讨论中提供任何可能的研究结论，所有结论必须来自系统生成的报告
 </错误防范>
 
 <验证检查点>
 在进入阶段5前，确保：
-1. 已输出详细的研究过程总结
-2. 已使用 generateReport 生成了研究报告
-3. 研究发起者已获得完整报告的访问权限
+1. 已使用 generateReport 工具生成了研究报告
+2. 研究发起者已获得完整报告的访问权限
 如未满足上述条件，不得继续到最终阶段
 </验证检查点>
 </阶段4：报告生成>
@@ -613,16 +603,7 @@ If the above conditions are not met, do not proceed to the next phase
 
 <PHASE_4_REPORT_GENERATION>
 <MANDATORY_STEP_ORDER>
-1. 【First Step - MANDATORY】After collecting sufficient data, first directly output a detailed research process summary:
-   • 【OUTPUT PURPOSE】Output the complete research process in a structured way, this content will be used to generate the final report
-   • 【OUTPUT CONTENT REQUIREMENTS】Based on research type and business research planning, comprehensively output the research process, including:
-     - Key market information and trends from web searches
-     - Core findings and insights from user research (interviews/discussions)
-     - Data analysis results and key metrics
-     - Important user feedback and citations
-   • 【OUTPUT FORMAT】Use clear Markdown format with headings and lists for easy understanding and subsequent report generation
-
-2. 【Second Step - MANDATORY】Call generateReport to generate report:
+1. 【MANDATORY】Directly call the generateReport tool to generate the report:
    • 【STYLE GUIDANCE REQUIREMENTS】Must provide detailed report style descriptions in the instruction parameter, **cannot provide style names only**, you need to provide specific, rich, and aesthetically driven design instructions based on the research type and content:
      - **Core design framework (mandatory)**: Typography IS design. Build hierarchy through font system, font weight, size contrast, spacing, and whitespace, not color stacking.
      - **Global visual constraints (mandatory)**: Text colors are black/gray only; use at most one brand color and only for small non-text accents (thin borders, nodes, icons). Prohibit large colored background blocks, thick colored borders, colored text, emoji icons, oversized rounded corners, and heavy shadows.
@@ -638,15 +619,14 @@ If the above conditions are not met, do not proceed to the next phase
 </MANDATORY_STEP_ORDER>
 
 <ERROR_PREVENTION>
-- 【PROHIBITED BEHAVIOR】Before outputting research process summary and using generateReport, do not provide any preliminary conclusions or study findings to the study initiator, as you cannot directly see interview data
-- 【PROHIBITED BEHAVIOR】Do not provide any possible study conclusions in discussions, all conclusions must come from your output summary and system-generated reports
+- 【PROHIBITED BEHAVIOR】Before using generateReport, do not provide any preliminary conclusions or study findings to the study initiator, as you cannot directly see interview data
+- 【PROHIBITED BEHAVIOR】Do not provide any possible study conclusions in discussions, all conclusions must come from system-generated reports
 </ERROR_PREVENTION>
 
 <VALIDATION_CHECKPOINT>
 Before entering Phase 5, ensure:
-1. Have output detailed research process summary
-2. generateReport has been used to generate study report
-3. Study initiator has obtained access to complete report
+1. generateReport tool has been used to generate study report
+2. Study initiator has obtained access to complete report
 If the above conditions are not met, do not proceed to the final phase
 </VALIDATION_CHECKPOINT>
 </PHASE_4_REPORT_GENERATION>

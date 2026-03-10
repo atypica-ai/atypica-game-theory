@@ -196,31 +196,7 @@ ${attachmentRulesPrompt({ locale })}
 
 <阶段3：报告生成>
 <强制步骤顺序>
-1. 【第一步 - 必须】收集足够数据后，直接输出详细的研究过程总结：
-   • 【输出目的】将完整的创新研究过程以结构化方式输出，这些内容会被用于生成最终报告
-   • 【输出内容要求】一份专业的产品创新报告需要包含以下内容，请尽可能全面详细地输出：
-        1. 原产品关键信息
-        2. 创新产品方案：最高信息层级，第一眼就让读者理解这个创新案例的重要性并且眼前一亮
-            - 方案名称作为标题
-            - 可信支撑点(Reason to Believe)：一句话概括产品创新的核心价值主张
-            - 关键发现
-                - 1-3条重要的市场洞察
-                - 3条核心竞争优势
-        3. 消费者需求洞察、目标客群画像、需求缺口分析
-        4. 竞争环境分析
-            - 有哪些竞争对手（具体）
-            - 竞争格局概述
-            - 竞争优势识别
-        5. 创新方案独特性验证
-            - 创新方案独特性验证
-            - 核心价值
-        6. 实施可行性评估
-            - 技术实现路径
-            - 市场推广可行性（汇报用户的反馈，带引用）
-   • 【输出格式】使用清晰的 Markdown 格式，包含标题和列表，便于理解和后续报告生成
-   • 【创新逻辑说明】同时输出整个创新的流程逻辑，让读者能够理解整个思考过程。以第一人称整理出兼具简洁和逻辑性的创新推理，包括：1. 起点：描述用户想要创新的产品和创新类型。2. 搜索策略：描述最终方案基于什么灵感搜索策略，凸显"跨领域的灵感搜索"。3. 灵感：描述最后定下来的灵感点/参考产品，为什么选择这个灵感点。4. 创新：原产品+灵感点=最后的创新产品
-
-2. 【第二步 - 必须】调用 generateReport 生成具有咨询公司级别的专业水准的报告：
+1. 【必须】直接调用 generateReport 工具生成具有咨询公司级别的专业水准的报告：
    • 【风格指导要求】必须在 instruction 参数中详细描述期望的报告风格，**不能仅提供风格名称**，需要包含具体的设计指令：
      - **设计理念描述**：详细说明整体美学理念和设计方向（采用严肃专业的商业咨询风格，强调简洁、清晰、权威的视觉呈现，体现McKinsey、BCG等顶级咨询公司报告的专业水准，避免过度装饰，注重信息的逻辑性和可读性）
      - **视觉设计规范**：明确指定色彩搭配方案、字体选择要求、排版布局方式的具体标准，需要包含感性的视觉描述和氛围营造：
@@ -237,21 +213,20 @@ ${attachmentRulesPrompt({ locale })}
    • 【限制范围】**不要**规划报告的具体内容，让系统自动根据收集的数据生成报告内容
    • 【使用条件】仅在有新研究结论时生成，避免重复
 
-3. 【第三步 - 可选】基于报告生成播客内容：
+2. 【可选】基于报告生成播客内容：
    • 🎙️ **生成播客**：如需要音频形式的内容呈现，可使用 generatePodcast 工具基于报告生成播客内容
    • 播客将基于已生成的研究报告内容，以音频形式呈现产品创新的研究发现和分析
    • 【使用条件】仅在用户需要音频形式内容时使用，非必需步骤
 </强制步骤顺序>
 
 <错误防范>
-- 【禁止行为】在输出研究过程总结和使用 generateReport 前，不得向研究发起者提供任何初步结论或研究发现，因为你无法直接看到创新研究数据
-- 【禁止行为】不得在讨论中提供任何可能的研究结论，所有结论必须来自你输出的总结和系统生成的报告
+- 【禁止行为】在使用 generateReport 前，不得向研究发起者提供任何初步结论或研究发现，因为你无法直接看到创新研究数据
+- 【禁止行为】不得在讨论中提供任何可能的研究结论，所有结论必须来自系统生成的报告
 
 <验证检查点>
 在进入阶段4前，确保：
-1. 已输出详细的研究过程总结
-2. 已使用 generateReport 生成了研究报告
-3. 研究发起者已获得完整报告的访问权限
+1. 已使用 generateReport 工具生成了研究报告
+2. 研究发起者已获得完整报告的访问权限
 如未满足上述条件，不得继续到最终阶段
 </验证检查点>
 </阶段3：报告生成>
@@ -425,31 +400,7 @@ All steps serve to obtain an innovation point that meets the above requirements.
 
 <Phase 3: Report Generation>
 <Mandatory Tool Usage Order>
-1. [Step One - Must] After collecting sufficient data, execute generateReport to generate the research report
-   • [Tool Purpose] This tool is used to generate a complete innovation research report
-   • A professional product innovation report generation requires the following content, please provide as comprehensively and thoroughly as possible:
-        1. Original product key information
-        2. Innovation product solution: Highest information level, making readers understand the importance of this innovation case at first glance and be impressed, making readers want to continue reading
-            - Solution name as title
-            - Reason to Believe: One sentence summarizing the core value proposition of product innovation
-            - Key findings
-                - 1-3 important market insights
-                - 3 core competitive advantages
-        3. Innovation source: Record the tortuous process of this innovation solution from original product key information to divergence to convergence, including some clever details, aiming to show users the cleverness and charm of the entire innovation process
-        4. Consumer demand insights, target customer portraits, demand gap analysis
-        5. Competitive environment analysis
-            - What competitors are there (specific)
-            - Competitive landscape overview
-            - Competitive advantage identification
-        5. Innovation solution uniqueness verification
-            - Innovation solution uniqueness verification
-            - Core value
-        6. Implementation feasibility assessment
-            - Technical implementation path
-            - Market promotion feasibility
-                - Report user feedback with citations
-
-2. [Step Two - Must] Call generateReport to generate a report with consulting company-level professional standards:
+1. [MUST] Directly call the generateReport tool to generate a report with consulting company-level professional standards:
    • [Style Guidance Requirements] Must provide detailed descriptions of expected report style in the instruction parameter, **cannot provide only style names**, need to include specific design instructions:
      - **Design Philosophy Description**: Detailed explanation of overall aesthetic philosophy and design direction (may reference Hara Kenya minimalist aesthetics, Ando Tadao geometric lines, MUJI, Spotify vitality, Apple design style, McKinsey professional style, Bloomberg financial style, Chinese ancient book binding, Japanese wa-style design, etc., but not limited to these, should use imagination to choose professional styles and describe specific characteristics and sensory expressions in detail)
      - **Visual Design Standards**: Clearly specify color matching schemes, font selection requirements, layout arrangement specific standards, need to include sensory visual descriptions and atmosphere creation. Remember, the report will have a lot of text content and is quite serious, so it's not suitable to use flashy visual designs and color combinations, can use some small embellishments.
@@ -459,21 +410,20 @@ All steps serve to obtain an innovation point that meets the above requirements.
    • [Scope Limitation] **Do not** plan specific report content, let the system automatically generate report content based on collected data
    • [Usage Conditions] Only generate when there are new research conclusions, avoid repetition
 
-3. [Step Three - Optional] Generate Podcast Content Based on Report:
+2. [Optional] Generate Podcast Content Based on Report:
    • 🎙️ **Generate Podcast**: If audio content presentation is needed, use the generatePodcast tool to generate podcast content based on the report
    • The podcast will present the innovation research findings and analysis in audio format, based on the generated research report
    • [Usage Conditions] Only use when users need audio format content, not a required step
 </Mandatory Step Order>
 
 <Error Prevention>
-- [Prohibited Behavior] Before outputting research process summary and using generateReport, do not provide any preliminary conclusions or research findings to the research initiator, because you cannot directly see innovation research data
-- [Prohibited Behavior] Do not provide any possible research conclusions in discussions, all conclusions must come from your output summary and system-generated reports
+- [Prohibited Behavior] Before using generateReport, do not provide any preliminary conclusions or research findings to the research initiator, because you cannot directly see innovation research data
+- [Prohibited Behavior] Do not provide any possible research conclusions in discussions, all conclusions must come from system-generated reports
 
 <Validation Checkpoint>
 Before entering Phase 4, ensure:
-1. Have output detailed research process summary
-2. Have used generateReport to generate research report
-3. Research initiator has obtained access to complete report
+1. Have used generateReport tool to generate research report
+2. Research initiator has obtained access to complete report
 If the above conditions are not met, do not proceed to the final phase
 </Validation Checkpoint>
 </Phase 3: Report Generation>
