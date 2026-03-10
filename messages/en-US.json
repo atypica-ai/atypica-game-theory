@@ -441,5 +441,18 @@
     "playPodcast": "Play Podcast",
     "pausePodcast": "Pause Podcast",
     "generatingAudio": "Generating Audio..."
+  },
+  "Archive": {
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "archived": "Archived",
+    "archivedItems": "Archived Items",
+    "confirmArchive": "Archive this item?",
+    "confirmArchiveDescription": "It will be hidden from the list. You can find it in the archive.",
+    "archiveSuccess": "Archived successfully",
+    "unarchiveSuccess": "Restored from archive",
+    "archiveFailed": "Failed to archive",
+    "noArchivedItems": "No archived items",
+    "itemsCount": "{count, plural, =0 {0 items} =1 {1 item} other {# items}}"
   }
 }
