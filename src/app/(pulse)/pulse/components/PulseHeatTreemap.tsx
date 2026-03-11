@@ -5,6 +5,8 @@ import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
+import { useTooltipPosition } from "@/hooks/use-tooltip-position";
+import * as C from "./treemapConstants";
 
 type HeatHistoryPoint = { date: string; heatScore: number };
 
@@ -59,35 +61,9 @@ type TreemapNode = {
 };
 type RectBounds = { x0: number; y0: number; x1: number; y1: number };
 
-const WIDTH = 1500;
-const HEIGHT = 840;
-const TOOLTIP_WIDTH = 320;
-// Canvas doesn't support CSS variables, use actual font name for measurements
-const TEXT_FONT_FAMILY_FOR_MEASUREMENT = "EuclidCircularA, Arial, Helvetica, sans-serif";
-
-// Contrast adjustment variables - adjust these to control visual contrast
-
-// CATEGORY_SIZE_CONTRAST_EXPONENT: Controls contrast for category box sizes
-//   - 1.0 = linear (no contrast enhancement)
-//   - 1.5 = moderate contrast (recommended: smaller than pulse contrast)
-//   - 2.0+ = high contrast
-const CATEGORY_SIZE_CONTRAST_EXPONENT = 1.0;
-
-// PULSE_SIZE_CONTRAST_EXPONENT: Controls contrast for pulse box sizes within categories
-//   - 1.0 = linear (no contrast enhancement)
-//   - 2.0 = squared (moderate contrast)
-//   - 2.5+ = very high contrast (big boxes much bigger, small boxes much smaller)
-const PULSE_SIZE_CONTRAST_EXPONENT = 5.0;
-
-const MAX_TILE_ASPECT_RATIO = 1.0; // Smaller ratio = more square boxes, better for text readability
-const DISPLAY_PULSES_PER_CATEGORY = 8;
-const CATEGORY_WEIGHT_SCALE = 1000;
-const TEXT_BLOCK_HEIGHT_RATIO = 0.52; // Reduced to leave more margin and prevent overflow
-const TITLE_FONT_MAX = 36;
-const HEAT_DELTA_FONT_MAX = 32;
-const CATEGORY_GAP_PX = 10;
-const PULSE_GAP_PX = 2;
-const MAP_TEXT_SHADOW_FILTER_ID = "map-text-shadow";
+// Re-export constants for backward compatibility within this file
+const WIDTH = C.TREEMAP_BASE_WIDTH;
+const HEIGHT = C.TREEMAP_BASE_HEIGHT;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -103,14 +79,14 @@ function insetRectWithFixedGap(
   rect: RectBounds,
   gap: number,
   bounds: RectBounds,
-  epsilon = 0.01,
+  epsilon = C.GAP_INSET_EPSILON,
 ): RectBounds {
-  // Reduce gap to half by dividing by 4 instead of 2
-  const half = gap / 4;
-  const leftInset = rect.x0 <= bounds.x0 + epsilon ? 0 : half;
-  const rightInset = rect.x1 >= bounds.x1 - epsilon ? 0 : half;
-  const topInset = rect.y0 <= bounds.y0 + epsilon ? 0 : half;
-  const bottomInset = rect.y1 >= bounds.y1 - epsilon ? 0 : half;
+  // Reduce gap by factor to prevent excessive spacing between tiles
+  const quarter = gap * C.GAP_REDUCTION_FACTOR;
+  const leftInset = rect.x0 <= bounds.x0 + epsilon ? 0 : quarter;
+  const rightInset = rect.x1 >= bounds.x1 - epsilon ? 0 : quarter;
+  const topInset = rect.y0 <= bounds.y0 + epsilon ? 0 : quarter;
+  const bottomInset = rect.y1 >= bounds.y1 - epsilon ? 0 : quarter;
 
   const x0 = rect.x0 + leftInset;
   const y0 = rect.y0 + topInset;
@@ -141,10 +117,10 @@ function measureTextWidth(
   fontWeight: number,
 ): number {
   if (!ctx) {
-    // Fallback for environments without canvas context.
-    return text.length * fontSize * 0.58;
+    // Fallback: estimate width when canvas unavailable (SSR or initialization)
+    return text.length * fontSize * C.CHAR_WIDTH_ESTIMATION_RATIO;
   }
-  ctx.font = `${fontWeight} ${fontSize}px ${TEXT_FONT_FAMILY_FOR_MEASUREMENT}`;
+  ctx.font = `${fontWeight} ${fontSize}px ${C.TEXT_FONT_FAMILY_FOR_MEASUREMENT}`;
   return ctx.measureText(text).width;
 }
 
@@ -340,16 +316,20 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
   const { resolvedTheme } = useTheme();
 
   const gapColor = "#000000"; // Pure black to match pulse borders
-  const categoryHeaderDefault = resolvedTheme === 'dark' ? "#000000" : "#2d3039"; // Black in dark mode, dark blue-gray in light mode
+  const categoryHeaderDefault = gapColor; // Pure black for both themes
   const categoryLabelDefault = "#f8f8f8";
   const updatedBadgeBg = "bg-foreground/10 text-foreground/80";
 
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [treemapWidth, setTreemapWidth] = useState(WIDTH);
   const treemapHeight = useMemo(() => Math.round((treemapWidth / WIDTH) * HEIGHT), [treemapWidth]);
-  const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const tooltipRafRef = useRef<number | null>(null);
-  const tooltipPointerRef = useRef<{ clientX: number; clientY: number } | null>(null);
+
+  // Tooltip positioning hook - handles viewport-aware positioning and RAF cleanup
+  const { tooltipRef, updatePosition } = useTooltipPosition({
+    offset: C.TOOLTIP_CURSOR_OFFSET,
+    padding: C.TOOLTIP_VIEWPORT_PADDING,
+  });
+
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [hoveredCategoryId, setHoveredCategoryId] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState>(null);
@@ -395,7 +375,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
       if (maxHeat <= minHeat) return 1;
       // Normalize to 0-1, apply 1.0 power (linear, no enhancement), scale to 1-101
       const normalized = (heat - minHeat) / (maxHeat - minHeat);
-      return 1 + Math.pow(normalized, CATEGORY_SIZE_CONTRAST_EXPONENT) * 100;
+      return 1 + Math.pow(normalized, C.CATEGORY_SIZE_CONTRAST_EXPONENT) * 100;
     });
 
     // Step 3: Convert to shares (normalize to sum = 1)
@@ -418,14 +398,14 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
 
     return selectedCategories.map((category) => {
         const categoryShare = categoryShareMap.get(category.id) ?? uniformShare;
-        const categoryWeight = categoryShare * CATEGORY_WEIGHT_SCALE;
-        
+        const categoryWeight = categoryShare * C.CATEGORY_WEIGHT_SCALE;
+
         // Phase 1 (overview): Limit pulses per category for overview
         // Phase 2 (category selected): Show all pulses in the selected category
         const sortedPulses = [...category.pulses].sort((a, b) => (b.heatScore ?? 0) - (a.heatScore ?? 0));
-        const candidatePulses = activeCategoryId 
+        const candidatePulses = activeCategoryId
           ? sortedPulses // Phase 2: Show all pulses
-          : sortedPulses.slice(0, DISPLAY_PULSES_PER_CATEGORY); // Phase 1: Limit to DISPLAY_PULSES_PER_CATEGORY
+          : sortedPulses.slice(0, C.DISPLAY_PULSES_PER_CATEGORY);
         
         // Calculate raw sizes for candidate pulses using PULSE contrast exponent
         const candidateWithSizes = candidatePulses.map((pulse) => ({
@@ -434,7 +414,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
             pulse.heatScore ?? 0,
             heatScoreRange.minScore,
             heatScoreRange.maxScore,
-            PULSE_SIZE_CONTRAST_EXPONENT,
+            C.PULSE_SIZE_CONTRAST_EXPONENT,
           ),
         }));
         
@@ -503,13 +483,13 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
       .size([treemapWidth, treemapHeight])
       .paddingOuter(0)
       .paddingInner(0)
-      .tile(treemapSquarify.ratio(MAX_TILE_ASPECT_RATIO))
+      .tile(treemapSquarify.ratio(C.MAX_TILE_ASPECT_RATIO))
       .round(true)(categoryRoot);
 
     const categoryLayoutNodes = ((categoryRoot.children ?? []) as TreemapNode[]).map((node) => {
       const inset = insetRectWithFixedGap(
         { x0: node.x0, y0: node.y0, x1: node.x1, y1: node.y1 },
-        CATEGORY_GAP_PX,
+        C.CATEGORY_GAP_PX,
         { x0: 0, y0: 0, x1: treemapWidth, y1: treemapHeight },
       );
       return { ...node, ...inset };
@@ -546,7 +526,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
         .size([innerWidth, innerHeight])
         .paddingOuter(0)
         .paddingInner(0)
-        .tile(treemapSquarify.ratio(MAX_TILE_ASPECT_RATIO))
+        .tile(treemapSquarify.ratio(C.MAX_TILE_ASPECT_RATIO))
         .round(false)(pulseRoot);
 
       for (const pulseNode of pulseRoot.children ?? []) {
@@ -558,7 +538,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
         };
         const inset = insetRectWithFixedGap(
           absoluteRect,
-          PULSE_GAP_PX,
+          C.PULSE_GAP_PX,
           { x0: innerX0, y0: innerY0, x1: innerX0 + innerWidth, y1: innerY0 + innerHeight },
         );
         pulseLayoutNodes.push({
@@ -584,7 +564,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
       const paddingY = clamp(height * 0.08, 3, 10);
       const contentWidth = Math.max(0, width - paddingX * 2);
       const contentHeight = Math.max(0, height - paddingY * 2);
-      const maxTextBlockHeight = contentHeight * TEXT_BLOCK_HEIGHT_RATIO;
+      const maxTextBlockHeight = contentHeight * C.TEXT_BLOCK_HEIGHT_RATIO;
       const titleText = node.data.label.toUpperCase();
       const heatDeltaText = formatHeatDelta(node.data.heatDelta);
       const canRenderAnyText = contentWidth >= 30 && contentHeight >= 18;
@@ -606,7 +586,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
         // Solve title + heat as one stacked block.
         // Calculate font size based on box size, allowing smaller fonts for small boxes
         const startingFontSize = Math.min(
-          TITLE_FONT_MAX,
+          C.TITLE_FONT_MAX,
           Math.max(5, Math.floor(Math.min(contentWidth * 0.18, contentHeight * 0.25))),
         );
         for (let fs = startingFontSize; fs >= 4; fs -= 1) {
@@ -633,7 +613,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
           let localGap = 0;
 
           if (canTryHeat) {
-            localHeatFont = clamp(fs * 0.6, 10, HEAT_DELTA_FONT_MAX);
+            localHeatFont = clamp(fs * 0.6, 10, C.HEAT_DELTA_FONT_MAX);
             while (
               localHeatFont >= 10 &&
               measureTextWidth(textMeasureCtx, heatDeltaText, localHeatFont, 700) > contentWidth
@@ -750,58 +730,8 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
     return categoryNodes.find((node) => Number(node.data.id.replace("cat-", "")) === hoveredCategoryId) ?? null;
   }, [categoryNodes, hoveredCategoryId]);
 
-  const syncTooltipPosition = () => {
-    const point = tooltipPointerRef.current;
-    const tooltipEl = tooltipRef.current;
-    if (!point || !tooltipEl) return;
-
-    const tooltipWidth = tooltipEl.offsetWidth || TOOLTIP_WIDTH;
-    const tooltipHeight = tooltipEl.offsetHeight || 260;
-    const offset = 14; // Offset from cursor
-
-    // Calculate position with viewport-relative coordinates (unbounded from treemap)
-    let left = point.clientX + offset;
-    let top = point.clientY + offset;
-
-    // Adjust horizontal position if tooltip would overflow right edge
-    if (left + tooltipWidth > window.innerWidth - 8) {
-      left = point.clientX - tooltipWidth - offset;
-    }
-
-    // Adjust vertical position if tooltip would overflow bottom edge
-    if (top + tooltipHeight > window.innerHeight - 8) {
-      top = point.clientY - tooltipHeight - offset;
-    }
-
-    // Ensure tooltip doesn't go off left or top edges
-    left = Math.max(8, left);
-    top = Math.max(8, top);
-
-    tooltipEl.style.left = `${left}px`;
-    tooltipEl.style.top = `${top}px`;
-  };
-
-  const requestTooltipPositionSync = (clientX: number, clientY: number) => {
-    tooltipPointerRef.current = { clientX, clientY };
-    if (tooltipRafRef.current !== null) return;
-    tooltipRafRef.current = window.requestAnimationFrame(() => {
-      tooltipRafRef.current = null;
-      syncTooltipPosition();
-    });
-  };
-
-  useEffect(() => {
-    if (!tooltip) return;
-    syncTooltipPosition();
-  }, [tooltip]);
-
-  useEffect(() => {
-    return () => {
-      if (tooltipRafRef.current !== null) {
-        window.cancelAnimationFrame(tooltipRafRef.current);
-      }
-    };
-  }, []);
+  // Tooltip positioning is now handled by useTooltipPosition hook
+  // No manual RAF management or cleanup needed
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -865,7 +795,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
         <rect x={0} y={0} width={treemapWidth} height={treemapHeight} fill={gapColor} />
 
         <defs>
-          <filter id={MAP_TEXT_SHADOW_FILTER_ID} x="-20%" y="-20%" width="160%" height="160%">
+          <filter id={C.MAP_TEXT_SHADOW_FILTER_ID} x="-20%" y="-20%" width="160%" height="160%">
             <feDropShadow dx="1" dy="1" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.35" />
           </filter>
           {pulseClipDefs}
@@ -914,11 +844,11 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
           return (
             <g
               key={node.data.id}
-              onMouseMove={(event) => requestTooltipPositionSync(event.clientX, event.clientY)}
+              onMouseMove={(event) => updatePosition(event.clientX, event.clientY)}
               onMouseEnter={(event) => {
                 if (item.parentCategoryId) setHoveredCategoryId(item.parentCategoryId);
                 setTooltip(node.data);
-                requestTooltipPositionSync(event.clientX, event.clientY);
+                updatePosition(event.clientX, event.clientY);
               }}
               onMouseLeave={() => {
                 setTooltip(null);
