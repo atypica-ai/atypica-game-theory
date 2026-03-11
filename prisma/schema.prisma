@@ -169,214 +169,6 @@ model VerificationCode {
   expiresAt DateTime? @db.Timestamptz(6)
 }
 
-model AgentSkill {
-  id          Int    @id @default(autoincrement())
-  userId      Int
-  user        User   @relation("UserAgentSkills", fields: [userId], references: [id], onDelete: Cascade)
-  name        String @db.VarChar(255)
-  description String @db.Text
-  objectUrl   String @db.VarChar(255)
-  /// [AgentSkillExtra]
-  extra       Json   @default("{}")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@unique([userId, name])
-}
-
-model Persona {
-  id              Int            @id @default(autoincrement())
-  token           String         @unique @db.VarChar(64)
-  name            String         @db.VarChar(255)
-  source          String         @db.VarChar(255)
-  /// [string[]]
-  tags            Json           @default("[]") // 存储标签数组
-  /// [string[]]
-  samples         Json           @default("[]") // 存储小红书用户主页链接作为参考样本
-  prompt          String         @db.Text
-  /// [Locale]
-  locale          String?        @db.VarChar(16)
-  tier            Int            @default(0) @db.Integer
-  /// [PersonaExtra]
-  extra           Json           @default("{}")
-  scoutUserChatId Int?           @db.Integer
-  scoutUserChat   UserChat?      @relation(fields: [scoutUserChatId], references: [id], onDelete: SetNull)
-  personaImportId Int?           @db.Integer
-  personaImport   PersonaImport? @relation(fields: [personaImportId], references: [id], onDelete: Cascade)
-
-  embedding Unsupported("halfvec(1024)")? // 使用 Unsupported 类型表示向量
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  interviews               AnalystInterview[]
-  userPersonaChatRelations UserPersonaChatRelation[]
-
-  interviewSessionsAsInterviewee InterviewSession[]
-
-  @@index([embedding])
-  @@index([tier, locale])
-}
-
-model LegacyAnalyst {
-  id              Int     @id @default(autoincrement())
-  userId          Int
-  brief           String  @db.Text
-  role            String  @db.VarChar(255)
-  topic           String  @db.Text
-  studySummary    String  @db.Text // 目前已经用不到了
-  studyLog        String  @default("") @db.Text
-  studyUserChatId Int     @unique @db.Integer
-  /// [ChatMessageAttachment[]]
-  attachments     Json    @default("[]")
-  kind            String? @db.VarChar(16)
-  /// [Locale]
-  locale          String? @db.VarChar(16)
-  extra           Json    @default("{}")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([userId])
-}
-
-model FeaturedItem {
-  id           Int    @id @default(autoincrement())
-  /// [FeaturedItemResourceType]
-  resourceType String @db.VarChar(50)
-  resourceId   Int
-  /// [Locale]
-  locale       String @db.VarChar(16)
-  /// [FeaturedItemExtra]
-  extra        Json   @default("{}")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([resourceType, resourceId])
-}
-
-model AnalystReport {
-  id          Int       @id @default(autoincrement())
-  token       String    @unique @db.VarChar(64)
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  instruction String    @db.Text
-  coverSvg    String    @db.Text
-  onePageHtml String    @db.Text
-  generatedAt DateTime? @db.Timestamptz(6)
-  /// [AnalystReportExtra]
-  extra       Json      @default("{}")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-}
-
-model AnalystPodcast {
-  id          Int       @id @default(autoincrement())
-  token       String    @unique @db.VarChar(64)
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
-  instruction String    @db.Text
-  script      String    @db.Text
-  objectUrl   String?   @db.VarChar(255)
-  generatedAt DateTime? @db.Timestamptz(6)
-  /// [AnalystPodcastExtra]
-  extra       Json      @default("{}")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-}
-
-enum UserChatKind {
-  scout
-  study
-  interview
-  interviewSession
-  sageSession
-  universal
-  misc
-}
-
-model UserChat {
-  id              Int          @id @default(autoincrement())
-  token           String       @unique @db.VarChar(64)
-  userId          Int
-  user            User         @relation(fields: [userId], references: [id])
-  title           String       @db.VarChar(255)
-  kind            UserChatKind
-  backgroundToken String?      @db.VarChar(255) // @deprecated — replaced by extra.runId, pending removal
-  /// [UserChatContext]
-  context         Json         @default("{}")
-  /// [UserChatExtra]
-  extra           Json         @default("{}")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  personas                Persona[]
-  analystInterview        AnalystInterview?
-  statistics              ChatStatistics[]
-  messages                ChatMessage[]
-  personaImport           PersonaImport?
-  userPersonaChatRelation UserPersonaChatRelation?
-  interviewSession        InterviewSession?
-  sageChat                SageChat?
-  sageInterview           SageInterview?
-
-  @@index([userId])
-}
-
-enum MessageRole {
-  system
-  user
-  assistant
-  data
-}
-
-model ChatMessage {
-  id          Int         @id @default(autoincrement())
-  messageId   String      @unique @db.VarChar(64)
-  userChatId  Int
-  userChat    UserChat    @relation(fields: [userChatId], references: [id], onDelete: Cascade)
-  role        MessageRole
-  content     String      @db.Text
-  /// [ChatMessagePart[]]
-  parts       Json        @default("[]")
-  extra       Json        @default("{}")
-  /// [ChatMessageAttachment[]]
-  attachments Json        @default("[]")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([userChatId, id]) // 通过自增 ID 排序
-}
-
-enum ChatStatisticsDimension {
-  tokens
-  duration
-  steps
-  personas
-  interviews
-}
-
-model ChatStatistics {
-  id         Int                     @id @default(autoincrement())
-  userChatId Int
-  userChat   UserChat                @relation(fields: [userChatId], references: [id], onDelete: Cascade)
-  dimension  ChatStatisticsDimension
-  value      Int                     @default(0)
-  /// [AgentStatisticsExtra]
-  extra      Json                    @default("{}")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([userChatId, dimension])
-}
-
 model Product {
   id            Int      @id @default(autoincrement())
   name          String   @db.VarChar(64)
@@ -541,13 +333,140 @@ model TokensLog {
   @@index([teamId, verb, resourceType, resourceId])
 }
 
-model SystemConfig {
-  id    Int    @id @default(autoincrement())
-  key   String @unique @db.VarChar(255)
-  value Json   @default("{}")
+model AgentSkill {
+  id          Int    @id @default(autoincrement())
+  userId      Int
+  user        User   @relation("UserAgentSkills", fields: [userId], references: [id], onDelete: Cascade)
+  name        String @db.VarChar(255)
+  description String @db.Text
+  objectUrl   String @db.VarChar(255)
+  /// [AgentSkillExtra]
+  extra       Json   @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([userId, name])
+}
+
+model AnalystReport {
+  id          Int       @id @default(autoincrement())
+  token       String    @unique @db.VarChar(64)
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  instruction String    @db.Text
+  coverSvg    String    @db.Text
+  onePageHtml String    @db.Text
+  generatedAt DateTime? @db.Timestamptz(6)
+  /// [AnalystReportExtra]
+  extra       Json      @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model AnalystPodcast {
+  id          Int       @id @default(autoincrement())
+  token       String    @unique @db.VarChar(64)
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  instruction String    @db.Text
+  script      String    @db.Text
+  objectUrl   String?   @db.VarChar(255)
+  generatedAt DateTime? @db.Timestamptz(6)
+  /// [AnalystPodcastExtra]
+  extra       Json      @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+enum UserChatKind {
+  scout
+  study
+  interview
+  interviewSession
+  sageSession
+  universal
+  misc
+}
+
+model UserChat {
+  id              Int          @id @default(autoincrement())
+  token           String       @unique @db.VarChar(64)
+  userId          Int
+  user            User         @relation(fields: [userId], references: [id])
+  title           String       @db.VarChar(255)
+  kind            UserChatKind
+  backgroundToken String?      @db.VarChar(255) // @deprecated — replaced by extra.runId, pending removal
+  /// [UserChatContext]
+  context         Json         @default("{}")
+  /// [UserChatExtra]
+  extra           Json         @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  personas                Persona[]
+  analystInterview        AnalystInterview?
+  statistics              ChatStatistics[]
+  messages                ChatMessage[]
+  personaImport           PersonaImport?
+  userPersonaChatRelation UserPersonaChatRelation?
+  interviewSession        InterviewSession?
+  sageChat                SageChat?
+  sageInterview           SageInterview?
+
+  @@index([userId])
+}
+
+enum MessageRole {
+  system
+  user
+  assistant
+  data
+}
+
+model ChatMessage {
+  id          Int         @id @default(autoincrement())
+  messageId   String      @unique @db.VarChar(64)
+  userChatId  Int
+  userChat    UserChat    @relation(fields: [userChatId], references: [id], onDelete: Cascade)
+  role        MessageRole
+  content     String      @db.Text
+  /// [ChatMessagePart[]]
+  parts       Json        @default("[]")
+  extra       Json        @default("{}")
+  /// [ChatMessageAttachment[]]
+  attachments Json        @default("[]")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([userChatId, id]) // 通过自增 ID 排序
+}
+
+enum ChatStatisticsDimension {
+  tokens
+  duration
+  steps
+  personas
+  interviews
+}
+
+model ChatStatistics {
+  id         Int                     @id @default(autoincrement())
+  userChatId Int
+  userChat   UserChat                @relation(fields: [userChatId], references: [id], onDelete: Cascade)
+  dimension  ChatStatisticsDimension
+  value      Int                     @default(0)
+  /// [AgentStatisticsExtra]
+  extra      Json                    @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([userChatId, dimension])
 }
 
 model ImageGeneration {
@@ -576,41 +495,6 @@ model AttachmentFile {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-}
-
-model PersonaImport {
-  id              Int       @id @default(autoincrement())
-  userId          Int
-  user            User      @relation(fields: [userId], references: [id])
-  /// [ChatMessageAttachment[]]
-  attachments     Json      @default("[]")
-  context         String    @default("") @db.Text // parse attachments as context
-  /// [PersonaImportAnalysis]
-  analysis        Json      @default("{}")
-  /// [PersonaImportExtra]
-  extra           Json      @default("{}")
-  extraUserChatId Int?      @unique // interview UserChat for follow up questions, 其实记录在 extra 就行了，加一个字段反而不好
-  extraUserChat   UserChat? @relation(fields: [extraUserChatId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  personas Persona[]
-}
-
-model UserPersonaChatRelation {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  personaId  Int
-  persona    Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
-  userChatId Int      @unique
-  userChat   UserChat @relation(fields: [userChatId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@unique([userId, personaId])
 }
 
 model InterviewProject {
@@ -661,6 +545,75 @@ model InterviewReport {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model PersonaImport {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  user            User      @relation(fields: [userId], references: [id])
+  /// [ChatMessageAttachment[]]
+  attachments     Json      @default("[]")
+  context         String    @default("") @db.Text // parse attachments as context
+  /// [PersonaImportAnalysis]
+  analysis        Json      @default("{}")
+  /// [PersonaImportExtra]
+  extra           Json      @default("{}")
+  extraUserChatId Int?      @unique // interview UserChat for follow up questions, 其实记录在 extra 就行了，加一个字段反而不好
+  extraUserChat   UserChat? @relation(fields: [extraUserChatId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  personas Persona[]
+}
+
+model UserPersonaChatRelation {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  personaId  Int
+  persona    Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  userChatId Int      @unique
+  userChat   UserChat @relation(fields: [userChatId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([userId, personaId])
+}
+
+model Persona {
+  id              Int            @id @default(autoincrement())
+  token           String         @unique @db.VarChar(64)
+  name            String         @db.VarChar(255)
+  source          String         @db.VarChar(255)
+  /// [string[]]
+  tags            Json           @default("[]") // 存储标签数组
+  /// [string[]]
+  samples         Json           @default("[]") // 存储小红书用户主页链接作为参考样本
+  prompt          String         @db.Text
+  /// [Locale]
+  locale          String?        @db.VarChar(16)
+  tier            Int            @default(0) @db.Integer
+  /// [PersonaExtra]
+  extra           Json           @default("{}")
+  scoutUserChatId Int?           @db.Integer
+  scoutUserChat   UserChat?      @relation(fields: [scoutUserChatId], references: [id], onDelete: SetNull)
+  personaImportId Int?           @db.Integer
+  personaImport   PersonaImport? @relation(fields: [personaImportId], references: [id], onDelete: Cascade)
+
+  embedding Unsupported("halfvec(1024)")? // 使用 Unsupported 类型表示向量
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  interviews               AnalystInterview[]
+  userPersonaChatRelations UserPersonaChatRelation[]
+
+  interviewSessionsAsInterviewee InterviewSession[]
+
+  @@index([embedding])
+  @@index([tier, locale])
 }
 
 model PersonaPanel {
@@ -856,24 +809,6 @@ model Memory {
   @@index([teamId, version(sort: Desc)]) // Optimize for getting latest version
 }
 
-model BlogArticle {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(255)
-  content     String    @db.Text
-  slug        String    @db.VarChar(255)
-  publishedAt DateTime? @db.Timestamptz(6)
-  /// [Locale]
-  locale      String    @db.VarChar(16)
-  /// [BlogArticleExtra]
-  extra       Json      @default("{}")
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-
-  @@unique([locale, slug])
-  @@index([locale, publishedAt])
-}
-
 model ResearchTemplate {
   id Int @id @default(autoincrement())
 
@@ -898,6 +833,91 @@ model ResearchTemplate {
 
   @@index([locale, userId])
   @@index([locale, teamId])
+}
+
+// ===== Pulse System =====
+
+model Pulse {
+  id         Int      @id @default(autoincrement())
+  category   String   @db.VarChar(100) // e.g., "AI Tech", "Fashion & Beauty"
+  dataSource String   @db.VarChar(50) // e.g., "xTrend"
+  title      String   @db.VarChar(255)
+  content    String   @db.Text
+  /// [Locale]
+  locale     String   @db.VarChar(16)
+  expireAt   DateTime @db.Timestamptz(6)
+  heatScore  Float? // Calculated HEAT score (current engagement)
+  heatDelta  Float? // HEAT delta (change from yesterday)
+  expired    Boolean  @default(false) // Replaces expireAt logic
+  /// [PulseExtra]
+  extra      Json     @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([category, createdAt(sort: Desc)])
+  @@index([category, expired, heatDelta(sort: Desc)])
+  @@index([expired, createdAt(sort: Desc), heatScore])
+  @@index([title, category])
+}
+
+// TODO: 推荐功能暂缓，启用时取消注释并生成 migration
+// model UserPulseRecommendation {
+//   id             Int  @id @default(autoincrement())
+//   userId         Int
+//   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   pulseIds       Json @default("[]")
+//   recommendation Json @default("[]")
+//   extra          Json @default("{}")
+//
+//   createdAt DateTime @default(now()) @db.Timestamptz(6)
+//   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+//
+//   @@index([userId])
+//   @@index([userId, createdAt(sort: Desc)])
+// }
+
+model FeaturedItem {
+  id           Int    @id @default(autoincrement())
+  /// [FeaturedItemResourceType]
+  resourceType String @db.VarChar(50)
+  resourceId   Int
+  /// [Locale]
+  locale       String @db.VarChar(16)
+  /// [FeaturedItemExtra]
+  extra        Json   @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([resourceType, resourceId])
+}
+
+model SystemConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique @db.VarChar(255)
+  value Json   @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model BlogArticle {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(255)
+  content     String    @db.Text
+  slug        String    @db.VarChar(255)
+  publishedAt DateTime? @db.Timestamptz(6)
+  /// [Locale]
+  locale      String    @db.VarChar(16)
+  /// [BlogArticleExtra]
+  extra       Json      @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([locale, slug])
+  @@index([locale, publishedAt])
 }
 
 // ===== AWS Marketplace Integration =====
@@ -948,30 +968,28 @@ model AWSMarketplaceEvent {
   @@index([eventType])
 }
 
-// ===== Pulse System =====
+// archived
 
-model Pulse {
-  id         Int      @id @default(autoincrement())
-  category   String   @db.VarChar(100) // e.g., "AI Tech", "Fashion & Beauty"
-  dataSource String   @db.VarChar(50) // e.g., "xTrend"
-  title      String   @db.VarChar(255)
-  content    String   @db.Text
+model LegacyAnalyst {
+  id              Int     @id @default(autoincrement())
+  userId          Int
+  brief           String  @db.Text
+  role            String  @db.VarChar(255)
+  topic           String  @db.Text
+  studySummary    String  @db.Text // 目前已经用不到了
+  studyLog        String  @default("") @db.Text
+  studyUserChatId Int     @unique @db.Integer
+  /// [ChatMessageAttachment[]]
+  attachments     Json    @default("[]")
+  kind            String? @db.VarChar(16)
   /// [Locale]
-  locale     String   @db.VarChar(16)
-  expireAt   DateTime @db.Timestamptz(6)
-  heatScore  Float? // Calculated HEAT score (current engagement)
-  heatDelta  Float? // HEAT delta (change from yesterday)
-  expired    Boolean  @default(false) // Replaces expireAt logic
-  /// [PulseExtra]
-  extra      Json     @default("{}")
+  locale          String? @db.VarChar(16)
+  extra           Json    @default("{}")
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
-  @@index([category, createdAt(sort: Desc)])
-  @@index([category, expired, heatDelta(sort: Desc)])
-  @@index([expired, createdAt(sort: Desc), heatScore])
-  @@index([title, category])
+  @@index([userId])
 }
 
 // TODO: 推荐功能暂缓，启用时取消注释并生成 migration
