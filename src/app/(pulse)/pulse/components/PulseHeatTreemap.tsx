@@ -752,16 +752,33 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
 
   const syncTooltipPosition = () => {
     const point = tooltipPointerRef.current;
-    const wrap = wrapRef.current;
     const tooltipEl = tooltipRef.current;
-    if (!point || !wrap || !tooltipEl) return;
+    if (!point || !tooltipEl) return;
 
-    const wrapRect = wrap.getBoundingClientRect();
     const tooltipWidth = tooltipEl.offsetWidth || TOOLTIP_WIDTH;
     const tooltipHeight = tooltipEl.offsetHeight || 260;
-    const left = clamp(point.clientX - wrapRect.left + 14, 8, wrapRect.width - tooltipWidth - 8);
-    const top = clamp(point.clientY - wrapRect.top + 14, 8, wrapRect.height - tooltipHeight - 8);
-    tooltipEl.style.transform = `translate(${left}px, ${top}px)`;
+    const offset = 14; // Offset from cursor
+
+    // Calculate position with viewport-relative coordinates (unbounded from treemap)
+    let left = point.clientX + offset;
+    let top = point.clientY + offset;
+
+    // Adjust horizontal position if tooltip would overflow right edge
+    if (left + tooltipWidth > window.innerWidth - 8) {
+      left = point.clientX - tooltipWidth - offset;
+    }
+
+    // Adjust vertical position if tooltip would overflow bottom edge
+    if (top + tooltipHeight > window.innerHeight - 8) {
+      top = point.clientY - tooltipHeight - offset;
+    }
+
+    // Ensure tooltip doesn't go off left or top edges
+    left = Math.max(8, left);
+    top = Math.max(8, top);
+
+    tooltipEl.style.left = `${left}px`;
+    tooltipEl.style.top = `${top}px`;
   };
 
   const requestTooltipPositionSync = (clientX: number, clientY: number) => {
@@ -1047,7 +1064,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
       {tooltip ? (
         <div
           ref={tooltipRef}
-          className="pointer-events-none absolute z-20 w-[320px] max-w-[320px] border-[4px] border-[#2c3038] bg-[#eceff2] text-[#1f232b]"
+          className="pointer-events-none fixed z-[9999] w-[320px] max-w-[320px] border-[4px] border-[#2c3038] bg-[#eceff2] text-[#1f232b]"
           style={{ left: 0, top: 0 }}
         >
           {/* Header strip - finviz-like neutral top bar */}
