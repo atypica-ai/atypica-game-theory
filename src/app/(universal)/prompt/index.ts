@@ -1,4 +1,7 @@
-import { prisma } from "@/prisma/prisma";
+import {
+  buildUniversalSkillCatalog,
+  buildUniversalSkillsSection,
+} from "@/app/(universal)/skills/catalog";
 import type { Locale } from "next-intl";
 
 /**
@@ -14,31 +17,8 @@ export async function buildUniversalSystemPrompt({
   locale: Locale;
   userMemory?: string;
 }): Promise<string> {
-  // 获取用户的所有 skills
-  const skills = await prisma.agentSkill.findMany({
-    where: { userId },
-    select: {
-      name: true,
-      description: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  // 构建 <available_skills> XML（遵循 Claude Skills 规范）
-  const skillsXml =
-    skills.length > 0
-      ? `<available_skills>
-${skills
-  .map(
-    (skill) => `<skill>
-<name>${skill.name}</name>
-<description>${skill.description}</description>
-<location>/skills/${skill.name}/SKILL.md</location>
-</skill>`,
-  )
-  .join("\n")}
-</available_skills>`
-      : "";
+  const { skills } = await buildUniversalSkillCatalog({ userId });
+  const skillsSection = buildUniversalSkillsSection({ locale, skills });
 
   return locale === "zh-CN"
     ? `
@@ -52,29 +32,7 @@ ${skills
 4. **文件系统操作**：使用 bash, readFile, writeFile 管理 workspace 和技能文件
 5. **专业技能**：加载和使用专业领域的 skills
 
-## 可用的 Skills
-
-${
-  skills.length > 0
-    ? `
-${skillsXml}
-
-**如何使用 Skills：**
-- 查看所有 skills：\`ls -la /skills/\`
-- 查看详情：\`for dir in /skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
-- 加载特定 skill：\`readFile({ path: "/skills/skill-name/SKILL.md" })\` 或 \`cat /skills/skill-name/SKILL.md\`
-- 读取参考资料：\`cat /skills/skill-name/references/core-memory.md\`
-
-**重要提示：**
-- Skill 的 description 是判断何时使用的关键
-- 加载 skill 后，你需要完全进入该角色
-- Skill 中的指示是自包含的，信任它们的指导
-`
-    : `
-你目前没有可用的 skills。用户可以上传 .skill 文件来添加专业能力。
-使用 list_skills 工具查看是否有新的 skills 可用。
-`
-}
+${skillsSection}
 
 ## 用户记忆
 
@@ -105,30 +63,7 @@ You are a flexible AI assistant that can handle various tasks and use specialize
 4. **Filesystem Operations**: Use bash, readFile, writeFile to manage workspace and skill files
 5. **Professional Skills**: Load and use domain-specific skills
 
-## Available Skills
-
-${
-  skills.length > 0
-    ? `
-${skillsXml}
-
-**How to Use Skills:**
-- View all skills: \`ls -la /skills/\`
-- View details: \`for dir in /skills/*/; do echo "=== \${dir} ==="; head -10 "\$dir/SKILL.md" 2>/dev/null; echo; done\`
-- Load a specific skill: \`readFile({ path: "/skills/skill-name/SKILL.md" })\` or \`cat /skills/skill-name/SKILL.md\`
-- Read reference materials: \`cat /skills/skill-name/references/core-memory.md\`
-
-**Important Notes:**
-- The skill's description is key to knowing when to use it
-- After loading a skill, fully embody that role
-- Skill instructions are self-contained - trust their guidance
-`
-    : `
-You currently have no skills available. Users can upload .skill files to add specialized capabilities.
-
-Use the list_skills tool to check if new skills have been added.
-`
-}
+${skillsSection}
 
 ## User Memory
 
