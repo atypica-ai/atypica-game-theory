@@ -2,40 +2,55 @@ import { Locale } from "next-intl";
 
 export type SubAgentMode = "study" | "flexible" | "panel";
 
+/**
+ * study: Full study workflow — search personas, interview/discuss, generate report
+ * flexible: All tools available, no forced stage flow, follow taskRequirement freely
+ * panel: Personas already selected, skip search/build, go straight to discussion/interview → report
+ */
 export const subAgentStudyPrompt = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
-    ? `## SubAgent 执行偏置（study 模式）
-1. 这是研究导向任务，优先考虑先加载研究相关 skill，尤其是 \`atypica-study-executor\`。
-2. 可以自由决定工具和顺序，不要求固定经过 persona 搜索、访谈或报告。
-3. 如果任务本身要求研究交付物、报告或可复用成果，调用 \`generateReport\`；否则可以直接返回结论。
-4. 最终总结面向上级 agent，而不是最终用户。`
-    : `## SubAgent Execution Bias (study mode)
-1. This is a research-oriented task, so prefer loading a research skill first, especially \`atypica-study-executor\`.
-2. You may choose tools and ordering freely. There is no mandatory persona -> interview -> report sequence.
-3. If the task calls for a research deliverable, report, or reusable artifact, call \`generateReport\`; otherwise you may return conclusions directly.
-4. Your final summary is for the lead agent, not the end user.`;
+    ? `## SubAgent 执行要求（study 模式）
+1. 不要向用户请求交互确认，直接自主完成研究。
+2. 先搜索或构建合适的人设（searchPersonas / buildPersona）。
+3. 至少执行一次研究工具（interviewChat 或 discussionChat）收集数据。
+4. 必须执行一次 generateReport 产出研究报告。
+5. 在最终总结中，汇报你的关键发现、结论，以及产物的位置（如报告路径），供上级 agent 读取。`
+    : `## SubAgent Execution Requirements (study mode)
+1. Do not pause for user-interaction confirmation; finish the workflow autonomously.
+2. Search or build suitable personas first (searchPersonas / buildPersona).
+3. Run at least one research tool (interviewChat or discussionChat) to collect data.
+4. Run generateReport once to produce a research report.
+5. In your final summary, report your key findings, conclusions, and artifact locations (e.g. report path) so the lead agent can access them.`;
 
 export const subAgentFlexiblePrompt = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
-    ? `## SubAgent 执行偏置（flexible 模式）
-1. 先判断任务是否需要 skill；只有在 skill 能显著提升结果时才加载。
-2. 根据任务目标自由组合工具，不要被研究流程模板束缚。
-3. 只有任务明确要求时才产出报告或播客类产物。`
-    : `## SubAgent Execution Bias (flexible mode)
-1. First decide whether the task needs a skill; load one only when it materially improves the outcome.
-2. Combine tools freely based on the objective instead of following any study template.
-3. Produce report or podcast artifacts only when the task explicitly asks for them.`;
+    ? `## SubAgent 执行要求（flexible 模式）
+1. 不要向用户请求交互确认，直接自主完成任务。
+2. 你拥有所有研究工具，根据 taskRequirement 自行决定使用哪些工具、以什么顺序执行。
+3. 没有强制阶段流程，灵活选择最合适的工具组合完成任务。
+4. 如果任务需要产出报告，调用 generateReport；如果不需要，可以跳过。
+5. 在最终总结中，汇报你的关键发现、结论，以及产物的位置（如有），供上级 agent 读取。`
+    : `## SubAgent Execution Requirements (flexible mode)
+1. Do not pause for user-interaction confirmation; finish the task autonomously.
+2. You have all research tools available. Decide which tools to use and in what order based on the taskRequirement.
+3. There is no mandatory stage flow — pick the best tool combination for the task.
+4. If the task requires a report, call generateReport; otherwise you may skip it.
+5. In your final summary, report your key findings, conclusions, and artifact locations (if any) so the lead agent can access them.`;
 
 export const subAgentPanelPrompt = ({ locale }: { locale: Locale }) =>
   locale === "zh-CN"
-    ? `## SubAgent 执行偏置（panel 模式）
-1. 默认任务已经有现成的人群上下文或 panel，上来先利用现有上下文，不要重复搜索 persona。
-2. 只有当前上下文明显不足时，才补充 searchPersonas 或其他研究工具。
-3. 是否生成报告由任务目标决定，不强制。`
-    : `## SubAgent Execution Bias (panel mode)
-1. Assume the task already has a useful cohort or panel context. Use that context first instead of re-searching personas.
-2. Only add \`searchPersonas\` or other research tools when the existing context is clearly insufficient.
-3. Report generation is optional and should be driven by the task goal, not forced.`;
+    ? `## SubAgent 执行要求（panel 模式）
+1. 不要向用户请求交互确认，直接自主完成研究。
+2. 人设已经预先选定，不需要搜索或构建人设（跳过 searchPersonas / buildPersona）。
+3. 直接执行 discussionChat 或 interviewChat 收集数据。
+4. 必须执行一次 generateReport 产出研究报告。
+5. 在最终总结中，汇报你的关键发现、结论，以及产物的位置（如报告路径），供上级 agent 读取。`
+    : `## SubAgent Execution Requirements (panel mode)
+1. Do not pause for user-interaction confirmation; finish the workflow autonomously.
+2. Personas are already pre-selected — do NOT search or build personas (skip searchPersonas / buildPersona).
+3. Go directly to discussionChat or interviewChat to collect data.
+4. Run generateReport once to produce a research report.
+5. In your final summary, report your key findings, conclusions, and artifact locations (e.g. report path) so the lead agent can access them.`;
 
 export function getSubAgentModePrompt({
   mode,

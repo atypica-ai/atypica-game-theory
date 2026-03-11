@@ -26,7 +26,6 @@ import {
   searchPersonasTool,
 } from "@/app/(study)/tools";
 import { buildUniversalSystemPrompt } from "@/app/(universal)/prompt";
-import { buildUniversalSkillCatalog } from "@/app/(universal)/skills/catalog";
 import { listSkillsTool, UniversalToolSet } from "@/app/(universal)/tools";
 import { createSubAgentTool } from "@/app/(universal)/tools/createSubAgent";
 import { UniversalToolName } from "@/app/(universal)/tools/types";
@@ -108,16 +107,23 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
 
   // Build system prompt with memory (team + user personal when both exist)
   const memory = await loadMemoryForAgent({ userId });
-  const skillCatalog = await buildUniversalSkillCatalog({ userId });
-  const baseSystemPrompt = await buildUniversalSystemPrompt({ userId, locale, userMemory: memory });
+  const baseSystemPrompt = await buildUniversalSystemPrompt({
+    userId,
+    locale,
+    userMemory: memory,
+  });
   const memoryUsagePrompt = buildMemoryUsagePrompt({ userMemory: memory, locale });
 
   // Create bash-tool sandbox with ReadWriteFs (workspace) + OverlayFs (skills)
+  const skills = await prisma.agentSkill.findMany({
+    where: { userId },
+    select: { id: true, name: true },
+  });
+
   const sessionDir = `${SANDBOX_SESSIONS_DIR}/${userChat.token}`;
   const { tools: bashTools } = await createAgentSandbox({
     userId,
-    skills: skillCatalog.uploadedSkills,
-    builtinSkills: skillCatalog.builtinSkills,
+    skills,
     sessionDir,
     onBeforeBashCall: ({ command }) => {
       if (command.match(/python|node|php|ruby|perl|java|go run|\.\/[\w-]+\.sh/i)) {
@@ -134,7 +140,7 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
   const sandboxPrompt = sandboxSystemPrompt({
     locale,
     sessionDir,
-    hasSkills: skillCatalog.skills.length > 0,
+    hasSkills: skills.length > 0,
   });
 
   const systemPrompt = [
