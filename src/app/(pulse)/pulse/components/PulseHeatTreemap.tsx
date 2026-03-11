@@ -86,7 +86,7 @@ const TEXT_BLOCK_HEIGHT_RATIO = 0.52; // Reduced to leave more margin and preven
 const TITLE_FONT_MAX = 36;
 const HEAT_DELTA_FONT_MAX = 32;
 const CATEGORY_GAP_PX = 10;
-const PULSE_GAP_PX = 0.2;
+const PULSE_GAP_PX = 2;
 const MAP_TEXT_SHADOW_FILTER_ID = "map-text-shadow";
 
 function clamp(value: number, min: number, max: number) {
@@ -547,7 +547,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
         .paddingOuter(0)
         .paddingInner(0)
         .tile(treemapSquarify.ratio(MAX_TILE_ASPECT_RATIO))
-        .round(true)(pulseRoot);
+        .round(false)(pulseRoot);
 
       for (const pulseNode of pulseRoot.children ?? []) {
         const absoluteRect = {
