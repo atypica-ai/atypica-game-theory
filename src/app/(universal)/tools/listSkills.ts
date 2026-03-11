@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { prisma } from "@/prisma/prisma";
+import { buildUniversalSkillCatalog } from "@/app/(universal)/skills/catalog";
 
 /**
  * List skills tool - shows all available skills in user's library
@@ -14,15 +14,7 @@ Returns a list of skills with their names and descriptions. Use this to discover
     inputSchema: z.object({}),
 
     execute: async () => {
-      const skills = await prisma.agentSkill.findMany({
-        where: { userId },
-        select: {
-          name: true,
-          description: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
+      const { skills } = await buildUniversalSkillCatalog({ userId });
 
       if (skills.length === 0) {
         return {
@@ -37,7 +29,7 @@ Returns a list of skills with their names and descriptions. Use this to discover
         skills: skills.map((skill) => ({
           name: skill.name,
           description: skill.description,
-          path: `skills/${skill.name}/SKILL.md`,
+          path: skill.location,
         })),
       };
     },

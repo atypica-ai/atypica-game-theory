@@ -30,11 +30,13 @@ export { cleanupSandboxCache, ensureAllSkillsCached, ensureSkillAvailable } from
 export async function createAgentSandbox({
   userId,
   skills,
+  builtinSkills = [],
   sessionDir,
   onBeforeBashCall,
 }: {
   userId: number;
   skills: Array<{ id: number; name: string }>;
+  builtinSkills?: Array<{ name: string; sourcePath: string }>;
   /** 相对于 /workspace 的 session 目录，如 "sessions/{token}"。设置后 agent 的 cwd 和 destination 都会指向此目录。 */
   sessionDir?: string;
   onBeforeBashCall?: CreateBashToolOptions["onBeforeBashCall"];
@@ -56,6 +58,14 @@ export async function createAgentSandbox({
     );
   }
   await Promise.all(mkdirPromises);
+
+  await Promise.all(
+    builtinSkills.map(async (skill) => {
+      const targetPath = path.join(skillsDisk, skill.name);
+      await fs.rm(targetPath, { recursive: true, force: true });
+      await fs.cp(skill.sourcePath, targetPath, { recursive: true });
+    }),
+  );
 
   // 3. 构建虚拟文件系统
   //
