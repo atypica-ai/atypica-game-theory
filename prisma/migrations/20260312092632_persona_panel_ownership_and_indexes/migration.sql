@@ -39,6 +39,9 @@ ADD COLUMN     "userId" INTEGER;
 ALTER TABLE "PersonaPanel" ADD COLUMN     "teamId" INTEGER,
 ALTER COLUMN "userId" DROP NOT NULL;
 
+-- CreateIndex
+CREATE INDEX "Persona_userId_idx" ON "Persona"("userId");
+
 -- AddForeignKey
 ALTER TABLE "PaymentLine" ADD CONSTRAINT "PaymentLine_paymentRecordId_fkey" FOREIGN KEY ("paymentRecordId") REFERENCES "PaymentRecord"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
