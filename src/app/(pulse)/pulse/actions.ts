@@ -28,12 +28,16 @@ const TREEMAP_DEFAULT_LOOKBACK_DAYS = 30;
 const TREEMAP_MIN_LOOKBACK_DAYS = 7;
 const TREEMAP_MAX_LOOKBACK_DAYS = 60;
 
-async function fetchMarketplacePulseRows(params: {
+/**
+ * Shared pulse query builder used across frontend display and admin operations
+ * Ensures consistent selection logic between what users see and what admins process
+ */
+export async function fetchMarketplacePulseRows(params: {
   pulseIds?: number[];
   categoryName?: string;
   createdAtGte?: Date;
   createdAtLte?: Date;
-  requireHeatScore?: boolean;
+  requireHeatScore?: boolean | null; // null = no filter, true = has score, false = no score
   take?: number;
   orderBy?: Prisma.PulseOrderByWithRelationInput | Prisma.PulseOrderByWithRelationInput[];
   locale?: Locale;
@@ -61,9 +65,12 @@ async function fetchMarketplacePulseRows(params: {
     if (params.createdAtLte) where.createdAt.lte = params.createdAtLte;
   }
 
-  if (params.requireHeatScore) {
+  if (params.requireHeatScore === true) {
     where.heatScore = { not: null };
+  } else if (params.requireHeatScore === false) {
+    where.heatScore = null;
   }
+  // If undefined, no heatScore filter applied
 
   return prisma.pulse.findMany({
     where,

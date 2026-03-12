@@ -8,6 +8,7 @@ import {
   gatherPulsesFromAllDataSources,
 } from "@/app/(pulse)/lib/gatherSignals";
 import { runDailyPulsePipeline } from "@/app/(pulse)/lib/runDailyPipeline";
+import { fetchMarketplacePulseRows } from "@/app/(pulse)/pulse/actions";
 import { recommendPulsesForActiveUsers } from "@/app/(pulse)/recommendation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
@@ -147,14 +148,12 @@ export async function getAllAvailableDataSources(): Promise<
  * Processes pulses: gather posts → calculate HEAT → generate description
  *
  * @param category - Optional category string to filter pulses
- * @param includeAlreadyScored - Whether to include pulses that already have HEAT scores
- * @param onlyUnscored - Process all unscored pulses in current data range (ignores category and date filters)
+ * @param onlyUnscored - true = only unscored pulses (default), false = rerun all pulses
  * @param pulseIds - Optional array of pulse IDs to retry (if provided, other params are ignored)
  */
 export async function triggerHeatPipeline(
   category?: string,
-  includeAlreadyScored: boolean = false,
-  onlyUnscored: boolean = false,
+  onlyUnscored: boolean = true,
   pulseIds?: number[],
 ): Promise<ServerActionResult<{ processed: number; errors: number }>> {
   await checkAdminAuth([AdminPermission.MANAGE_MAINTENANCE]);
@@ -165,22 +164,15 @@ export async function triggerHeatPipeline(
   if (pulseIds && pulseIds.length > 0) {
     targetPulseIds = pulseIds;
   } else {
-    // Query pulses based on filters
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    // Use shared query logic - same as frontend display
+    const now = new Date();
+    const start = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
 
-    const pulses = await prisma.pulse.findMany({
-      where: {
-        ...(onlyUnscored
-          ? {}
-          : {
-              ...(category ? { category } : {}),
-              createdAt: { gte: todayStart },
-            }),
-        ...(includeAlreadyScored || onlyUnscored ? {} : { heatScore: null }),
-        ...(onlyUnscored ? { heatScore: null } : {}),
-      },
-      select: { id: true },
+    const pulses = await fetchMarketplacePulseRows({
+      categoryName: category,
+      createdAtGte: start,
+      requireHeatScore: onlyUnscored ? false : null, // false = unscored only, null = all
+      orderBy: { createdAt: "desc" },
     });
 
     targetPulseIds = pulses.map((p) => p.id);
@@ -212,18 +204,15 @@ export async function triggerExpirationTest(
   if (pulseIds && pulseIds.length > 0) {
     targetPulseIds = pulseIds;
   } else {
-    // Query pulse IDs by category (if provided)
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    // Use shared query logic - same as frontend display
+    const now = new Date();
+    const start = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
 
-    const pulses = await prisma.pulse.findMany({
-      where: {
-        ...(category ? { category } : {}),
-        createdAt: { gte: todayStart },
-        heatScore: { not: null },
-        // Include pulses with null heatDelta (new pulses) - they will be kept by expiration logic
-      },
-      select: { id: true },
+    const pulses = await fetchMarketplacePulseRows({
+      categoryName: category,
+      createdAtGte: start,
+      requireHeatScore: true, // Only pulses with heat scores (expiration test needs them)
+      orderBy: { createdAt: "desc" },
     });
 
     targetPulseIds = pulses.map((p) => p.id);
