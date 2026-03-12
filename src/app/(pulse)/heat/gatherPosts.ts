@@ -100,11 +100,13 @@ export async function gatherPostsForPulse({
   pulseId,
   title,
   locale,
+  abortSignal,
   logger,
 }: {
   pulseId: number;
   title: string;
   locale: Locale;
+  abortSignal: AbortSignal;
   logger: Logger;
 }): Promise<PulsePostData[]> {
   const pulseLogger = logger.child({ pulseId, pulseTitle: title });
@@ -124,7 +126,6 @@ export async function gatherPostsForPulse({
 
   return new Promise<PulsePostData[]>((resolve, reject) => {
     const posts: PostData[] = [];
-    const abortController = new AbortController();
 
     const response = streamText({
       model: llm("grok-4-1-fast-non-reasoning"),
@@ -133,7 +134,7 @@ export async function gatherPostsForPulse({
       tools: allTools,
       toolChoice: "auto",
       messages: [{ role: "user", content: userMessage }],
-      abortSignal: abortController.signal,
+      abortSignal,
       stopWhen: stepCountIs(MAX_STEPS),
       prepareStep: async ({ stepNumber, messages }) => {
         if (stepNumber === MAX_STEPS - 1) {
@@ -179,7 +180,7 @@ export async function gatherPostsForPulse({
         try {
           const parsePosts = createStructuredExtractor(postsSchema);
           const parsed = await parsePosts(text, {
-            abortSignal: abortController.signal,
+            abortSignal,
             logger: pulseLogger,
           });
 

@@ -18,12 +18,19 @@ const PULSE_TIMEOUT_MS = 120_000; // 2 minutes
  * Process a single pulse through the HEAT pipeline
  * Gather posts → Calculate HEAT → Calculate delta → Generate description → Save
  */
-async function processSinglePulse(
-  pulse: Pulse,
-  lookbackStart: Date,
-  todayStart: Date,
-  logger: Logger,
-): Promise<{ success: boolean; error?: string }> {
+async function processSinglePulse({
+  pulse,
+  lookbackStart,
+  todayStart,
+  abortSignal,
+  logger,
+}: {
+  pulse: Pulse;
+  lookbackStart: Date;
+  todayStart: Date;
+  abortSignal: AbortSignal;
+  logger: Logger;
+}): Promise<{ success: boolean; error?: string }> {
   const pulseLogger = logger.child({
     pulseId: pulse.id,
     pulseTitle: pulse.title,
@@ -37,6 +44,7 @@ async function processSinglePulse(
       pulseId: pulse.id,
       title: pulse.title,
       locale,
+      abortSignal,
       logger: pulseLogger,
     });
 
@@ -81,6 +89,7 @@ async function processSinglePulse(
       pulse,
       posts,
       locale,
+      abortSignal,
       logger: pulseLogger,
     });
 
@@ -145,13 +154,19 @@ async function processSinglePulse(
 /**
  * Process pulses in batches with a maximum worker count
  */
-async function processPulsesInBatches(
-  pulses: Pulse[],
-  lookbackStart: Date,
-  todayStart: Date,
-  maxWorkers: number,
-  logger: Logger,
-): Promise<{ processed: number; errors: number }> {
+async function processPulsesInBatches({
+  pulses,
+  lookbackStart,
+  todayStart,
+  maxWorkers,
+  logger,
+}: {
+  pulses: Pulse[];
+  lookbackStart: Date;
+  todayStart: Date;
+  maxWorkers: number;
+  logger: Logger;
+}): Promise<{ processed: number; errors: number }> {
   let processed = 0;
   let errors = 0;
 
@@ -167,19 +182,27 @@ async function processPulsesInBatches(
       msg: "Processing heat calculation batch",
     });
 
-    const batchResults = await Promise.allSettled(
-      batch.map((pulse) => {
-        return Promise.race([
-          processSinglePulse(pulse, lookbackStart, todayStart, logger),
-          new Promise<never>((_, reject) =>
-            setTimeout(
-              () => reject(new Error(`Pulse ${pulse.id} timed out after ${PULSE_TIMEOUT_MS / 1000}s`)),
-              PULSE_TIMEOUT_MS,
-            ),
-          ),
-        ]);
-      }),
+    const abortControllers = batch.map(() => new AbortController());
+    const timeouts = batch.map((pulse, idx) =>
+      setTimeout(() => {
+        abortControllers[idx].abort(new Error(`Pulse ${pulse.id} timed out after ${PULSE_TIMEOUT_MS / 1000}s`));
+      }, PULSE_TIMEOUT_MS),
     );
+
+    const batchResults = await Promise.allSettled(
+      batch.map((pulse, idx) =>
+        processSinglePulse({
+          pulse,
+          lookbackStart,
+          todayStart,
+          abortSignal: abortControllers[idx].signal,
+          logger,
+        }),
+      ),
+    );
+
+    // Clear timeouts for completed pulses
+    timeouts.forEach((t) => clearTimeout(t));
 
     // Process batch results
     for (let j = 0; j < batchResults.length; j++) {
@@ -259,13 +282,13 @@ export async function processHeatPipeline(
     );
 
     // Process pulses in parallel batches
-    const { processed, errors } = await processPulsesInBatches(
+    const { processed, errors } = await processPulsesInBatches({
       pulses,
       lookbackStart,
       todayStart,
-      HEAT_CONFIG.MAX_WORKERS,
-      pipelineLogger,
-    );
+      maxWorkers: HEAT_CONFIG.MAX_WORKERS,
+      logger: pipelineLogger,
+    });
 
     pipelineLogger.info({
       processed,

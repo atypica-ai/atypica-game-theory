@@ -15,11 +15,13 @@ export async function generateDescriptionFromPosts({
   pulse,
   posts,
   locale,
+  abortSignal,
   logger,
 }: {
   pulse: Pulse;
   posts: PulsePostData[];
   locale: Locale;
+  abortSignal: AbortSignal;
   logger: Logger;
 }): Promise<string> {
   const pulseLogger = logger.child({ pulseId: pulse.id, postCount: posts.length });
@@ -52,6 +54,7 @@ ${post.author ? `- Author: ${post.author}` : ""}`;
       model: llm("gpt-5-mini"),
       system: generateDescriptionSystem({ locale }),
       prompt: userPrompt,
+      abortSignal,
     });
 
     const description = result.text.trim();
