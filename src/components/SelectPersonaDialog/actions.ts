@@ -83,7 +83,7 @@ export async function fetchPersonasWithMeili({
     const where: PersonaWhereInput = {
       locale: locale,
       ...(isPrivate
-        ? { tier: { in: [PersonaTier.Tier3] }, personaImport: { userId: userId } }
+        ? { tier: { in: [PersonaTier.Tier3] }, userId: userId }
         : { tier: { in: [PersonaTier.Tier1, PersonaTier.Tier2] } }),
     };
     await Promise.all([
@@ -183,9 +183,7 @@ async function fetchPersonasWithEmbedding({
     const where = {
       tier: { in: [3] },
       locale,
-      personaImport: {
-        userId: session.user.id,
-      },
+      userId: session.user.id,
     };
 
     const [personas, totalCount] = await Promise.all([

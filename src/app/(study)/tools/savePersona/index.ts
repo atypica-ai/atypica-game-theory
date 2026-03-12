@@ -10,9 +10,11 @@ import {
 export const savePersonaTool = ({
   scoutUserChatId,
   personaImportId,
+  userId,
 }: {
   scoutUserChatId?: number;
   personaImportId?: number;
+  userId?: number;
 }) =>
   tool({
     description:
@@ -38,6 +40,7 @@ export const savePersonaTool = ({
         locale,
         scoutUserChatId,
         personaImportId,
+        userId,
       });
       return {
         personaId: persona.id,

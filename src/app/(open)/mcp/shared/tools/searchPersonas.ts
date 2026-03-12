@@ -68,7 +68,7 @@ export async function handleSearchPersonas(
       // No query: fetch all user's personas directly
       const personas = await prismaRO.persona.findMany({
         where: {
-          personaImport: { userId },
+          userId,
           ...(tier !== undefined ? { tier } : {}),
         },
         select: {

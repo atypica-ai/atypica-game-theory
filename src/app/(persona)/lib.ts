@@ -30,6 +30,8 @@ export async function createPersonaWithPostProcess({
   locale,
   scoutUserChatId,
   personaImportId,
+  userId,
+  teamId,
 }: {
   name: string;
   source: string;
@@ -39,6 +41,8 @@ export async function createPersonaWithPostProcess({
   locale?: Locale;
   scoutUserChatId?: number;
   personaImportId?: number;
+  userId?: number;
+  teamId?: number;
 }) {
   const data = {
     name,
@@ -49,6 +53,8 @@ export async function createPersonaWithPostProcess({
     locale,
     scoutUserChatId,
     personaImportId,
+    userId,
+    teamId,
   };
   let persona: Persona | null = null;
   // 通过 personaImport 导入的 persona，只创建一个，只更新不重新创建

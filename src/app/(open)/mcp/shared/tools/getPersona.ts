@@ -42,11 +42,7 @@ export async function handleGetPersona(
         locale: true,
         createdAt: true,
         updatedAt: true,
-        personaImport: {
-          select: {
-            userId: true,
-          },
-        },
+        userId: true,
       },
     });
 
@@ -54,7 +50,7 @@ export async function handleGetPersona(
       throw new Error("Persona not found");
     }
 
-    if (persona.personaImport?.userId !== userId) {
+    if (persona.userId !== userId) {
       throw new Error("Unauthorized: Persona does not belong to user");
     }
 

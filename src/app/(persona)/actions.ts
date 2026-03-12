@@ -391,7 +391,7 @@ export async function archivePersona(
   return withAuth(async (user) => {
     // 确保 persona 属于用户
     const persona = await prisma.persona.findUnique({
-      where: { id: personaId, personaImport: { userId: user.id } },
+      where: { id: personaId, userId: user.id },
       select: { id: true },
     });
     if (!persona) return { success: false, message: "Not found", code: "not_found" };

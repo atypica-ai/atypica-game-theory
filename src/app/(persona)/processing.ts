@@ -343,6 +343,7 @@ async function buildPersonaAgentPrompt(
       tools: {
         [StudyToolName.savePersona]: savePersonaTool({
           personaImportId: personaImport.id,
+          userId: personaImport.userId,
         }),
       },
 
