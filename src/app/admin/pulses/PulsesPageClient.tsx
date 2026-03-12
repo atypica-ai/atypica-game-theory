@@ -171,10 +171,10 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
     }
   };
 
-  const handleTriggerHeatPipeline = async (category?: string) => {
+  const handleTriggerHeatPipeline = async (category?: string, onlyUnscored: boolean = true) => {
     setProcessingHeat(true);
     try {
-      const result = await triggerHeatPipeline(category);
+      const result = await triggerHeatPipeline(category, onlyUnscored);
       if (!result.success) {
         throwServerActionError(result);
       }
@@ -334,19 +334,30 @@ export function PulsesPageClient({ initialSearchParams }: PulsesPageClientProps)
                 Gather posts → Calculate HEAT → Generate description
               </p>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleTriggerHeatPipeline()}
-              disabled={anyBusy}
-            >
-              {processingHeat ? (
-                <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <TrendingUpIcon className="h-3.5 w-3.5" />
-              )}
-              <span className="ml-1.5">{processingHeat ? "Running..." : "Run"}</span>
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleTriggerHeatPipeline(undefined, true)}
+                disabled={anyBusy}
+              >
+                {processingHeat ? (
+                  <Loader2Icon className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <TrendingUpIcon className="h-3.5 w-3.5" />
+                )}
+                <span className="ml-1.5">{processingHeat ? "Running..." : "Process Unscored"}</span>
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => handleTriggerHeatPipeline(undefined, false)}
+                disabled={anyBusy}
+              >
+                <RefreshCwIcon className="h-3.5 w-3.5" />
+                <span className="ml-1.5">Rerun All</span>
+              </Button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
