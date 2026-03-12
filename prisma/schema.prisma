@@ -76,6 +76,8 @@ model Team {
   apiKeys           ApiKey[]           @relation("TeamApiKey")
   memories          Memory[]           @relation("TeamMemory")
   researchTemplates ResearchTemplate[] @relation("TeamResearchTemplates")
+  personas          Persona[]
+  personaPanels     PersonaPanel[]
 }
 
 model User {
@@ -108,6 +110,7 @@ model User {
   subscriptions     Subscription[]
   attachmentFiles   AttachmentFile[]
   personaImports    PersonaImport[]
+  personas          Persona[]
   interviewProjects InterviewProject[]
   sages             Sage[]
   sageChats         SageChat[]
@@ -123,6 +126,7 @@ model User {
   interviewSessionsAsInterviewee InterviewSession[]
   awsMarketplaceCustomer         AWSMarketplaceCustomer?
   // pulseRecommendations           UserPulseRecommendation[] // TODO: 推荐功能暂缓
+  personaPanels                  PersonaPanel[]
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
@@ -131,7 +135,7 @@ model User {
 model UserProfile {
   id         Int  @id @default(autoincrement())
   userId     Int  @unique
-  user       User @relation(fields: [userId], references: [id])
+  user       User @relation(fields: [userId], references: [id], onDelete: Restrict)
   /// [UserLastLogin]
   lastLogin  Json @default("{}")
   /// [UserOnboardingData]
@@ -151,7 +155,7 @@ enum AdminRole {
 model AdminUser {
   id          Int       @id @default(autoincrement())
   userId      Int       @unique
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
   role        AdminRole @default(REGULAR_ADMIN)
   /// [string[]]
   permissions Json      @default("[]")
@@ -201,7 +205,7 @@ enum Currency {
 model PaymentRecord {
   id            Int           @id @default(autoincrement())
   userId        Int
-  user          User          @relation(fields: [userId], references: [id])
+  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict)
   orderNo       String        @unique @db.VarChar(64)
   amount        Float
   currency      Currency
@@ -232,9 +236,9 @@ model PaymentRecord {
 model PaymentLine {
   id              Int           @id @default(autoincrement())
   paymentRecordId Int
-  paymentRecord   PaymentRecord @relation(fields: [paymentRecordId], references: [id])
+  paymentRecord   PaymentRecord @relation(fields: [paymentRecordId], references: [id], onDelete: Cascade)
   productId       Int
-  product         Product       @relation(fields: [productId], references: [id])
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
   productName     String        @db.VarChar(64)
   description     String        @db.VarChar(255)
   /// Quantity from Stripe invoice/session - ONLY for billing calculation, NOT for business logic.
@@ -262,9 +266,9 @@ enum SubscriptionPlan {
 model Subscription {
   id       Int              @id @default(autoincrement())
   userId   Int?
-  user     User?            @relation(fields: [userId], references: [id])
+  user     User?            @relation(fields: [userId], references: [id], onDelete: Restrict)
   teamId   Int?
-  team     Team?            @relation(fields: [teamId], references: [id])
+  team     Team?            @relation(fields: [teamId], references: [id], onDelete: Restrict)
   plan     SubscriptionPlan
   startsAt DateTime         @db.Timestamptz(6)
   endsAt   DateTime         @db.Timestamptz(6)
@@ -272,7 +276,7 @@ model Subscription {
   extra    Json             @default("{}")
 
   paymentRecordId      Int? // 一个支付记录可以关联多条 Subscription（例如：一次性支付12个月，生成12条月度订阅记录）
-  paymentRecord        PaymentRecord? @relation(fields: [paymentRecordId], references: [id])
+  paymentRecord        PaymentRecord? @relation(fields: [paymentRecordId], references: [id], onDelete: Restrict)
   stripeSubscriptionId String?        @db.VarChar(50)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
@@ -287,9 +291,9 @@ model Subscription {
 model TokensAccount {
   id               Int       @id @default(autoincrement())
   userId           Int?      @unique
-  user             User?     @relation(fields: [userId], references: [id])
+  user             User?     @relation(fields: [userId], references: [id], onDelete: Restrict)
   teamId           Int?      @unique
-  team             Team?     @relation(fields: [teamId], references: [id])
+  team             Team?     @relation(fields: [teamId], references: [id], onDelete: Restrict)
   permanentBalance Int       @default(0)
   monthlyBalance   Int       @default(0)
   monthlyResetAt   DateTime? @db.Timestamptz(6)
@@ -297,7 +301,7 @@ model TokensAccount {
   extra            Json      @default("{}")
 
   activeSubscriptionId Int?          @unique
-  activeSubscription   Subscription? @relation(fields: [activeSubscriptionId], references: [id])
+  activeSubscription   Subscription? @relation(fields: [activeSubscriptionId], references: [id], onDelete: Restrict)
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -315,9 +319,9 @@ enum TokensLogVerb {
 model TokensLog {
   id           Int           @id @default(autoincrement())
   userId       Int?
-  user         User?         @relation(fields: [userId], references: [id])
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Restrict)
   teamId       Int?
-  team         Team?         @relation(fields: [teamId], references: [id])
+  team         Team?         @relation(fields: [teamId], references: [id], onDelete: Restrict)
   value        Int
   verb         TokensLogVerb
   /// [TokensLogResourceType]
@@ -353,7 +357,7 @@ model AnalystReport {
   id          Int       @id @default(autoincrement())
   token       String    @unique @db.VarChar(64)
   userId      Int
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
   instruction String    @db.Text
   coverSvg    String    @db.Text
   onePageHtml String    @db.Text
@@ -369,7 +373,7 @@ model AnalystPodcast {
   id          Int       @id @default(autoincrement())
   token       String    @unique @db.VarChar(64)
   userId      Int
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict)
   instruction String    @db.Text
   script      String    @db.Text
   objectUrl   String?   @db.VarChar(255)
@@ -395,7 +399,7 @@ model UserChat {
   id              Int          @id @default(autoincrement())
   token           String       @unique @db.VarChar(64)
   userId          Int
-  user            User         @relation(fields: [userId], references: [id])
+  user            User         @relation(fields: [userId], references: [id], onDelete: Restrict)
   title           String       @db.VarChar(255)
   kind            UserChatKind
   backgroundToken String?      @db.VarChar(255) // @deprecated — replaced by extra.runId, pending removal
@@ -501,7 +505,7 @@ model InterviewProject {
   id        Int    @id @default(autoincrement())
   token     String @unique
   userId    Int
-  user      User   @relation(fields: [userId], references: [id])
+  user      User   @relation(fields: [userId], references: [id], onDelete: Restrict)
   brief     String @db.Text
   /// [InterviewProjectQuestion[]]
   questions Json   @default("[]")
@@ -550,7 +554,7 @@ model InterviewReport {
 model PersonaImport {
   id              Int       @id @default(autoincrement())
   userId          Int
-  user            User      @relation(fields: [userId], references: [id])
+  user            User      @relation(fields: [userId], references: [id], onDelete: Restrict)
   /// [ChatMessageAttachment[]]
   attachments     Json      @default("[]")
   context         String    @default("") @db.Text // parse attachments as context
@@ -585,6 +589,10 @@ model UserPersonaChatRelation {
 model Persona {
   id              Int            @id @default(autoincrement())
   token           String         @unique @db.VarChar(64)
+  userId          Int?
+  user            User?          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  teamId          Int?
+  team            Team?          @relation(fields: [teamId], references: [id], onDelete: Restrict)
   name            String         @db.VarChar(255)
   source          String         @db.VarChar(255)
   /// [string[]]
@@ -618,7 +626,10 @@ model Persona {
 
 model PersonaPanel {
   id          Int    @id @default(autoincrement())
-  userId      Int
+  userId      Int?
+  user        User?  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  teamId      Int?
+  team        Team?  @relation(fields: [teamId], references: [id], onDelete: Restrict)
   /// ![number[]]
   personaIds  Json   @default("[]") // Persona ID 列表
   title       String @default("") @db.VarChar(255)
@@ -638,7 +649,7 @@ model PersonaPanel {
 model AnalystInterview {
   id                  Int          @id @default(autoincrement())
   personaPanelId      Int
-  personaPanel        PersonaPanel @relation(fields: [personaPanelId], references: [id], onDelete: Cascade)
+  personaPanel        PersonaPanel @relation(fields: [personaPanelId], references: [id]) // 不要 cascade，会影响关联的 userchat 数据，先限制删除
   personaId           Int?
   persona             Persona?     @relation(fields: [personaId], references: [id], onDelete: SetNull)
   instruction         String       @db.Text
@@ -656,7 +667,7 @@ model DiscussionTimeline {
   id             Int          @id @default(autoincrement())
   token          String       @unique @db.VarChar(64)
   personaPanelId Int
-  personaPanel   PersonaPanel @relation(fields: [personaPanelId], references: [id], onDelete: Cascade)
+  personaPanel   PersonaPanel @relation(fields: [personaPanelId], references: [id]) // 不要 cascade，会影响关联的 userchat 数据，先限制删除
   instruction    String       @db.Text // 用户指令
   /// [DiscussionTimelineEvent[]]
   events         Json         @default("[]") // TimelineEvent[] 数组
@@ -677,7 +688,7 @@ model Sage {
   id        Int    @id @default(autoincrement())
   token     String @unique @db.VarChar(64)
   userId    Int
-  user      User   @relation(fields: [userId], references: [id])
+  user      User   @relation(fields: [userId], references: [id], onDelete: Restrict)
   name      String @db.VarChar(255)
   domain    String @db.VarChar(255)
   /// [string[]]
@@ -720,7 +731,7 @@ model SageChat {
   sageId     Int
   sage       Sage     @relation(fields: [sageId], references: [id], onDelete: Cascade)
   userId     Int
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Restrict)
   userChatId Int      @unique
   userChat   UserChat @relation(fields: [userChatId], references: [id], onDelete: Cascade)
   /// [SageChatExtra]
@@ -956,7 +967,7 @@ model AWSMarketplaceCustomer {
 model AWSMarketplaceEvent {
   id         Int                    @id @default(autoincrement())
   customerId Int
-  customer   AWSMarketplaceCustomer @relation(fields: [customerId], references: [id])
+  customer   AWSMarketplaceCustomer @relation(fields: [customerId], references: [id], onDelete: Restrict)
 
   eventType String @db.VarChar(64) // subscribe-success, unsubscribe-success, etc.
   eventData Json   @default("{}") // Complete SNS message
