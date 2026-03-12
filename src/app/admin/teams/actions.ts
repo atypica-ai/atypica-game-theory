@@ -257,6 +257,8 @@ export async function deleteTeam(teamId: number): Promise<ServerActionResult<voi
       _count: {
         select: {
           subscriptions: true,
+          personas: true,
+          personaPanels: true,
         },
       },
     },
@@ -274,6 +276,14 @@ export async function deleteTeam(teamId: number): Promise<ServerActionResult<voi
     return {
       success: false,
       message: "Cannot delete team with existing subscriptions",
+    };
+  }
+
+  // Check if team has any personas or panels (onDelete: Restrict)
+  if (team._count.personas > 0 || team._count.personaPanels > 0) {
+    return {
+      success: false,
+      message: "Cannot delete team with existing personas or panels",
     };
   }
 

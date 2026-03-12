@@ -231,6 +231,8 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
       tokensAccount: true,
       tokensLogs: true,
       subscriptions: true,
+      personas: { select: { id: true }, take: 1 },
+      personaPanels: { select: { id: true }, take: 1 },
     },
   });
 
@@ -245,7 +247,9 @@ export async function deleteUserAccount(userId: number): Promise<ServerActionRes
     user.userChats.length > 0 ||
     user.paymentRecords.length > 0 ||
     user.tokensLogs.length > 1 ||
-    user.subscriptions.length > 0
+    user.subscriptions.length > 0 ||
+    user.personas.length > 0 ||
+    user.personaPanels.length > 0
   ) {
     return {
       success: false,

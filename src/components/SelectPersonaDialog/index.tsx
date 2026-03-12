@@ -74,12 +74,12 @@ export function SelectPersonaDialog({
       setIsPrivate(false);
       setCurrentPage(1);
       if (inputRef.current) inputRef.current.value = "";
-      // 默认加载公开 personas
+      // 默认加载公开 + 用户自己的 personas
       loadPersonas(1, "", false);
     }
   }, [open, loadPersonas]);
 
-  // 当 searchQuery、isPrivate 或 currentPage 变化时重新加载
+  // 当 searchQuery、isPrivate（仅看私有）或 currentPage 变化时重新加载
   useEffect(() => {
     if (!open) return;
     loadPersonas(currentPage, searchQuery, isPrivate);

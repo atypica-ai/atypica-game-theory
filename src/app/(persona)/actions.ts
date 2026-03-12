@@ -22,8 +22,8 @@ import { notFound } from "next/navigation";
 import { processPersonaImport } from "./processing";
 
 /**
- * 管理员可以访问 tier 0,1,2,3 (所有personas)
- * 普通用户可以访问 tier 1,2 (高质量的), 目前 tier3 的还不支持
+ * 管理员可以访问所有 personas（包括 tier 0）
+ * 普通用户：公共 persona（userId IS NULL）+ 自己的私有 persona（userId = 当前用户），排除 tier 0
  */
 
 export async function createPersonaImport({
