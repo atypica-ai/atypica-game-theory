@@ -2,6 +2,7 @@ import "server-only";
 
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
+import { Prisma } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
@@ -14,7 +15,12 @@ import { z } from "zod";
 
 export const searchPersonasInputSchema = z.object({
   query: z.string().optional().describe("Search query for persona name or source"),
-  tier: z.number().int().min(0).max(3).optional().describe("Filter by persona tier (0-3)"),
+  privateOnly: z
+    .boolean()
+    .optional()
+    .describe(
+      "When true, only search user's own private personas. When omitted, search both public and user's private personas.",
+    ),
   limit: z.number().int().min(1).max(50).default(10).describe("Max personas to return"),
 });
 
@@ -29,20 +35,21 @@ export async function handleSearchPersonas(
       throw new Error("Missing userId in request context");
     }
 
-    const { query, tier, limit } = args;
+    const { query, privateOnly, limit } = args;
     const userId = context.userId;
 
-    // Use Meilisearch for full-text search
     let allPersonas: Array<{ personaId: number; name: string; source: string; tags: string[] }> =
       [];
 
     if (query) {
-      // Full-text search with Meilisearch
+      // Full-text search with Meilisearch — single query handles public+private via filter
       const searchResults = await searchPersonasFromMeili({
         query,
+        privateOnly: privateOnly || false,
         userId,
         pageSize: limit,
       });
+
       const personaIds = searchResults.hits
         .map((hit) => {
           const match = hit.slug.match(/^persona-(\d+)$/);
@@ -65,18 +72,21 @@ export async function handleSearchPersonas(
           tags: p.tags as string[],
         }));
     } else {
-      // No query: fetch all user's personas directly
+      // No query: fetch directly from DB
+      let where: Prisma.PersonaWhereInput;
+
+      if (privateOnly) {
+        where = { userId, tier: { not: 0 } };
+      } else {
+        where = {
+          OR: [{ userId: null }, { userId }],
+          tier: { not: 0 },
+        };
+      }
+
       const personas = await prismaRO.persona.findMany({
-        where: {
-          userId,
-          ...(tier !== undefined ? { tier } : {}),
-        },
-        select: {
-          id: true,
-          name: true,
-          source: true,
-          tags: true,
-        },
+        where,
+        select: { id: true, name: true, source: true, tags: true },
         orderBy: { id: "desc" },
         take: limit,
       });
@@ -88,35 +98,9 @@ export async function handleSearchPersonas(
       }));
     }
 
-    // Apply tier filter if specified
-    if (tier !== undefined) {
-      const personasWithTier = await prismaRO.persona.findMany({
-        where: {
-          id: { in: allPersonas.map((p) => p.personaId) },
-          tier,
-        },
-        select: {
-          id: true,
-          token: true,
-          name: true,
-          source: true,
-          tier: true,
-          tags: true,
-          createdAt: true,
-        },
-      });
-      const filtered = allPersonas
-        .filter((p) => personasWithTier.some((pt) => pt.id === p.personaId))
-        .slice(0, limit);
-
-      return formatPersonasResult(filtered, personasWithTier);
-    }
-
-    // Get full persona details with tier for result
+    // Get full persona details for result
     const personasWithDetails = await prismaRO.persona.findMany({
-      where: {
-        id: { in: allPersonas.map((p) => p.personaId) },
-      },
+      where: { id: { in: allPersonas.map((p) => p.personaId) } },
       select: {
         id: true,
         token: true,

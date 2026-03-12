@@ -1,7 +1,7 @@
 "use server";
 import { createTextEmbedding } from "@/ai/embedding";
 import authOptions from "@/app/(auth)/authOptions";
-import { PersonaTier } from "@/app/(persona)/types";
+
 import { ServerActionResult } from "@/lib/serverAction";
 import { Persona } from "@/prisma/client";
 import { PersonaWhereInput } from "@/prisma/models";
@@ -21,13 +21,13 @@ type TPersona = Pick<Persona, "name" | "source" | "prompt" | "tier"> & {
 export async function fetchPersonasWithMeili({
   locale,
   searchQuery = "",
-  private: isPrivate = false,
+  privateOnly,
   page = 1,
   pageSize = 12,
 }: {
   locale?: Locale;
   searchQuery?: string;
-  private?: boolean;
+  privateOnly?: boolean;
   page?: number;
   pageSize?: number;
 } = {}): Promise<ServerActionResult<TPersona[]>> {
@@ -46,23 +46,14 @@ export async function fetchPersonasWithMeili({
     // 统一使用 Meilisearch 搜索
     let searchResults: PersonasSearchResult;
     try {
-      searchResults = isPrivate
-        ? // 搜索用户自己的 personas（所有 tier）
-          await searchPersonasFromMeili({
-            query: searchQuery,
-            userId: userId,
-            locales: [locale],
-            page,
-            pageSize,
-          })
-        : // 搜索公开的 personas（tier 1, 2）
-          await searchPersonasFromMeili({
-            query: searchQuery,
-            tiers: [PersonaTier.Tier1, PersonaTier.Tier2],
-            locales: [locale],
-            page,
-            pageSize,
-          });
+      searchResults = await searchPersonasFromMeili({
+        query: searchQuery,
+        privateOnly: privateOnly || false,
+        userId: userId,
+        locales: [locale],
+        page,
+        pageSize,
+      });
     } catch (error) {
       return {
         success: false,
@@ -82,9 +73,12 @@ export async function fetchPersonasWithMeili({
   } else {
     const where: PersonaWhereInput = {
       locale: locale,
-      ...(isPrivate
-        ? { tier: { in: [PersonaTier.Tier3] }, userId: userId }
-        : { tier: { in: [PersonaTier.Tier1, PersonaTier.Tier2] } }),
+      tier: { not: 0 },
+      ...(privateOnly
+        ? { userId: userId }
+        : {
+            OR: [{ userId: null }, { userId: userId }],
+          }),
     };
     await Promise.all([
       prismaRO.persona

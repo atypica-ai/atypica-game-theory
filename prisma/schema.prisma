@@ -602,6 +602,7 @@ model Persona {
   prompt          String         @db.Text
   /// [Locale]
   locale          String?        @db.VarChar(16)
+  /// ![0|1|2|3]
   tier            Int            @default(0) @db.Integer
   /// [PersonaExtra]
   extra           Json           @default("{}")

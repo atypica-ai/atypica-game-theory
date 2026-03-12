@@ -51,7 +51,7 @@ export function SelectPersonaDialog({
         const result = await fetchPersonasWithMeili({
           locale,
           searchQuery: search,
-          private: privateMode,
+          privateOnly: privateMode || undefined,
           page,
         });
         if (!result.success) throw result;

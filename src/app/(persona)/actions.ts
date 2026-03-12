@@ -292,6 +292,7 @@ export async function fetchUserPersonas({
       try {
         const searchResults = await searchPersonasFromMeili({
           query: searchQuery.trim(),
+          privateOnly: true,
           userId: user.id,
           archived,
           page,
@@ -305,33 +306,33 @@ export async function fetchUserPersonas({
       }
     } else if (archived) {
       const [{ count }] = await prismaRO.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(*) as count FROM "Persona" p
-        JOIN "PersonaImport" pi ON p."personaImportId" = pi."id"
-        WHERE pi."userId" = ${user.id}
-        AND p."extra" @> '{"archived":true}'::jsonb`;
+        SELECT COUNT(*) as count FROM "Persona"
+        WHERE "userId" = ${user.id}
+        AND tier != 0
+        AND "extra" @> '{"archived":true}'::jsonb`;
       totalCount = Number(count);
       if (totalCount === 0) return emptyResult;
       const rows = await prismaRO.$queryRaw<{ id: number }[]>`
-        SELECT p."id" FROM "Persona" p
-        JOIN "PersonaImport" pi ON p."personaImportId" = pi."id"
-        WHERE pi."userId" = ${user.id}
-        AND p."extra" @> '{"archived":true}'::jsonb
-        ORDER BY p."createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+        SELECT "id" FROM "Persona"
+        WHERE "userId" = ${user.id}
+        AND tier != 0
+        AND "extra" @> '{"archived":true}'::jsonb
+        ORDER BY "createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
       orderedIds = rows.map((r) => r.id);
     } else {
       const [{ count }] = await prismaRO.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(*) as count FROM "Persona" p
-        JOIN "PersonaImport" pi ON p."personaImportId" = pi."id"
-        WHERE pi."userId" = ${user.id}
-        AND NOT (p."extra" @> '{"archived":true}'::jsonb)`;
+        SELECT COUNT(*) as count FROM "Persona"
+        WHERE "userId" = ${user.id}
+        AND tier != 0
+        AND NOT ("extra" @> '{"archived":true}'::jsonb)`;
       totalCount = Number(count);
       if (totalCount === 0) return emptyResult;
       const rows = await prismaRO.$queryRaw<{ id: number }[]>`
-        SELECT p."id" FROM "Persona" p
-        JOIN "PersonaImport" pi ON p."personaImportId" = pi."id"
-        WHERE pi."userId" = ${user.id}
-        AND NOT (p."extra" @> '{"archived":true}'::jsonb)
-        ORDER BY p."createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
+        SELECT "id" FROM "Persona"
+        WHERE "userId" = ${user.id}
+        AND tier != 0
+        AND NOT ("extra" @> '{"archived":true}'::jsonb)
+        ORDER BY "createdAt" DESC LIMIT ${pageSize} OFFSET ${skip}`;
       orderedIds = rows.map((r) => r.id);
     }
 

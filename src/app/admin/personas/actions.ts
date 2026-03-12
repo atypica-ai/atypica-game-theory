@@ -2,10 +2,11 @@
 
 import { createTextEmbedding } from "@/ai/embedding";
 import { scorePersona } from "@/app/(persona)/lib";
+import { PersonaImportAnalysis } from "@/app/(persona)/types";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
 import { ServerActionResult } from "@/lib/serverAction";
-import { ChatMessageAttachment, Persona, PersonaImport } from "@/prisma/client";
+import { ChatMessageAttachment, Persona, PersonaImport, PersonaImportExtra } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { Locale } from "next-intl";
@@ -74,7 +75,17 @@ export async function fetchAdminPersonasWithEmbedding({
   if (searchQuery && searchQuery.trim()) {
     try {
       const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
-      const personas = await prismaRO.$queryRaw<TPersonaWithImport[]>`
+      const personas = await prismaRO.$queryRaw<
+        (Pick<
+          Persona,
+          "token" | "name" | "source" | "prompt" | "locale" | "tags" | "tier" | "personaImportId"
+        > & {
+          personaImportAnalysis: PersonaImportAnalysis;
+          personaImportExtra: PersonaImportExtra;
+          personaImportCreatedAt: Date;
+          personaImportUserEmail: string;
+        })[]
+      >`
         SELECT
           p.token, p.name, p.source, p.prompt, p.tags, p.locale, p.tier, p.locale,
           pi.id as "personaImportId",
@@ -102,22 +113,23 @@ export async function fetchAdminPersonasWithEmbedding({
       const totalCount = Math.min(40, Number(totalCountResult[0].count));
       return {
         success: true,
-        data: personas.map((row: Record<string, unknown>) => ({
-          token: row.token as string,
-          name: row.name as string,
-          source: row.source as string,
-          prompt: row.prompt as string,
-          locale: row.locale as Locale,
-          tags: row.tags as string[],
-          tier: row.tier as number,
+        data: personas.map((row) => ({
+          token: row.token,
+          name: row.name,
+          source: row.source,
+          prompt: row.prompt,
+          locale: row.locale,
+          tags: row.tags,
+          tier: row.tier,
+          personaImportId: row.personaImportId,
           personaImport: row.personaImportId
             ? {
-                id: row.personaImportId as number,
+                id: row.personaImportId,
                 analysis: row.personaImportAnalysis,
                 extra: row.personaImportExtra,
-                createdAt: row.personaImportCreatedAt as Date,
+                createdAt: row.personaImportCreatedAt,
                 user: row.personaImportUserEmail
-                  ? { email: row.personaImportUserEmail as string }
+                  ? { email: row.personaImportUserEmail }
                   : undefined,
               }
             : null,

@@ -8,11 +8,11 @@ export const searchPersonasInputSchema = z.object({
     .describe(
       "Detailed descriptions of target user profiles to find. Each description should be specific and comprehensive, describing user characteristics, demographics, interests, behaviors, goals, and context. The more detailed and specific, the better the search results (provide 2-3 diverse detailed descriptions)",
     ),
-  usePrivatePersonas: z
+  privateOnly: z
     .boolean()
-    .default(false)
+    .optional()
     .describe(
-      "Set to true only when the user has explicitly chosen to prioritize using their private personas (真人画像) at the beginning of the study.",
+      "Set to true only when the user has explicitly chosen to use only their private personas (真人画像). When omitted, searches both public and private personas.",
     ),
 });
 

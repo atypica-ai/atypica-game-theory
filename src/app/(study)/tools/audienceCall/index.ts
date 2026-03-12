@@ -3,7 +3,7 @@ import "server-only";
 import { defaultProviderOptions, llm } from "@/ai/provider";
 import { reasoningPrologue, reasoningSystem } from "@/ai/tools/experts/reasoningThinking/prompt";
 import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
-import { PersonaTier } from "@/app/(persona)/types";
+
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { prismaRO } from "@/prisma/prisma";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
@@ -155,7 +155,6 @@ async function searchPersonas(locale: Locale, searchQuery: string) {
   // Use Meilisearch for full-text search
   const searchResults = await searchPersonasFromMeili({
     query: searchQuery,
-    tiers: [PersonaTier.Tier1, PersonaTier.Tier2],
     locales: [locale],
     pageSize: 5,
   });

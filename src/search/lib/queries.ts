@@ -120,7 +120,7 @@ export async function getArtifactsFacets(query: string = "") {
  * 只返回匹配的文档，前端用 IDs 去数据库查完整数据
  */
 export async function searchPersonas(params: PersonasSearchParams): Promise<PersonasSearchResult> {
-  const { query, tiers, locales, userId, teamId, archived, page = 1, pageSize = 20 } = params;
+  const { query, locales, teamId, archived, page = 1, pageSize = 20 } = params;
 
   try {
     const index = meilisearchClient.index<PersonaDocument>(INDEXES.PERSONAS);
@@ -128,20 +128,26 @@ export async function searchPersonas(params: PersonasSearchParams): Promise<Pers
     // 构建过滤条件
     const filters: string[] = [];
 
-    if (tiers && tiers.length > 0) {
-      // tier IN [2, 3] -> tier = 2 OR tier = 3
-      const tierFilters = tiers.map((tier) => `tier = ${tier}`).join(" OR ");
+    // Tier filter: explicit tiers (admin) or default exclude tier 0
+    if (params.tiers && params.tiers.length > 0) {
+      const tierFilters = params.tiers.map((tier) => `tier = ${tier}`).join(" OR ");
       filters.push(`(${tierFilters})`);
+    } else {
+      filters.push(`tier != 0`);
+    }
+
+    // Ownership filter: privateOnly / public+private / public only
+    if (params.privateOnly && params.userId !== undefined) {
+      filters.push(`userId = ${params.userId}`);
+    } else if (params.userId !== undefined) {
+      filters.push(`(userId IS NULL OR userId = ${params.userId})`);
+    } else {
+      filters.push(`userId IS NULL`);
     }
 
     if (locales && locales.length > 0) {
-      // locale IN ["zh-CN", "en-US"] -> locale = "zh-CN" OR locale = "en-US"
       const localeFilters = locales.map((locale) => `locale = "${locale}"`).join(" OR ");
       filters.push(`(${localeFilters})`);
-    }
-
-    if (userId !== undefined) {
-      filters.push(`userId = ${userId}`);
     }
 
     if (teamId !== undefined) {

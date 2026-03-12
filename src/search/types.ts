@@ -84,9 +84,10 @@ export interface PersonaDocument {
  */
 export interface PersonasSearchParams {
   query: string;
+  privateOnly?: boolean;
+  userId?: number;
   tiers?: number[];
   locales?: string[];
-  userId?: number;
   teamId?: number;
   archived?: boolean;
   page?: number;

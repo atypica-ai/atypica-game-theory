@@ -8,7 +8,7 @@ import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries"
 import { tool } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
-import { PersonaTier } from "@/app/(persona)/types";
+
 import { TPersonaForStudy } from "../buildPersona/types";
 import {
   searchPersonasInputSchema,
@@ -36,11 +36,11 @@ export const searchPersonasTool = ({
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ searchQueries, usePrivatePersonas }): Promise<SearchPersonasToolResult> => {
+    execute: async ({ searchQueries, privateOnly }): Promise<SearchPersonasToolResult> => {
       // 1. Search: Meilisearch first, fallback to embedding if empty
       const searchResultsSettled = await Promise.allSettled(
         searchQueries.map(async (searchQuery) => {
-          const params = { locale, searchQuery, logger, userId, usePrivatePersonas };
+          const params = { locale, searchQuery, logger, userId, privateOnly };
           let personaIds = await searchPersonaIdsByMeili({ ...params });
           if (personaIds.length === 0) {
             logger.info({
@@ -121,27 +121,22 @@ async function searchPersonaIdsByMeili({
   searchQuery,
   logger,
   userId,
-  usePrivatePersonas,
+  privateOnly,
 }: {
   locale: Locale;
   searchQuery: string;
   logger: Logger;
   userId: number;
-  usePrivatePersonas: boolean;
+  privateOnly?: boolean;
 }): Promise<number[]> {
   try {
-    const searchResults = usePrivatePersonas
-      ? await searchPersonasFromMeili({
-          query: searchQuery,
-          userId,
-          pageSize: 5,
-        })
-      : await searchPersonasFromMeili({
-          query: searchQuery,
-          tiers: [PersonaTier.Tier1, PersonaTier.Tier2],
-          locales: [locale],
-          pageSize: 5,
-        });
+    const searchResults = await searchPersonasFromMeili({
+      query: searchQuery,
+      privateOnly: privateOnly || false,
+      userId,
+      locales: [locale],
+      pageSize: 5,
+    });
 
     return searchResults.hits
       .map((hit) => {
@@ -164,27 +159,24 @@ async function searchPersonaIdsByEmbedding({
   searchQuery,
   logger,
   userId,
-  usePrivatePersonas,
+  privateOnly,
 }: {
   locale: Locale;
   searchQuery: string;
   logger: Logger;
   userId: number;
-  usePrivatePersonas: boolean;
+  privateOnly?: boolean;
 }): Promise<number[]> {
   try {
     const embedding = await createTextEmbedding(searchQuery, "retrieval.query");
 
-    const rows = usePrivatePersonas
+    const rows = privateOnly
       ? await prismaRO.$queryRaw<{ id: number }[]>`
           SELECT "id"
           FROM "Persona"
           WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
-            AND id = ANY(
-              SELECT p."id" FROM "Persona" p
-              JOIN "PersonaImport" pi ON pi."id" = p."personaImportId"
-              WHERE pi."userId" = ${userId}
-            )
+            AND "userId" = ${userId}
+            AND tier != 0
           ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
           LIMIT 5
         `
@@ -193,7 +185,8 @@ async function searchPersonaIdsByEmbedding({
           FROM "Persona"
           WHERE "embedding" <=> ${JSON.stringify(embedding)}::halfvec < 0.9
             AND locale = ${locale}
-            AND tier IN (1, 2)
+            AND ("userId" IS NULL OR "userId" = ${userId})
+            AND tier != 0
           ORDER BY "embedding" <=> ${JSON.stringify(embedding)}::halfvec ASC
           LIMIT 5
         `;

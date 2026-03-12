@@ -50,7 +50,7 @@ export async function handleGetPersona(
       throw new Error("Persona not found");
     }
 
-    if (persona.userId !== userId) {
+    if (persona.userId !== null && persona.userId !== userId) {
       throw new Error("Unauthorized: Persona does not belong to user");
     }
 
