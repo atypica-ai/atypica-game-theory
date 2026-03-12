@@ -57,7 +57,7 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     requestAbortSignal,
   }: {
     userId: number;
-    userChat: Pick<UserChat, "id" | "token" | "extra">;
+    userChat: Pick<UserChat, "id" | "token" | "extra" | "context">;
     statReport: StatReporter;
     logger: Logger;
     locale: Locale;
@@ -67,6 +67,7 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
   streamWriter?: UIMessageStreamWriter,
 ) {
   const universalChatId = userChat.id;
+  const isPanelProject = typeof userChat.context?.personaPanelId === "number";
 
   // Create debounced message persistence (5s debounce)
   const { debouncePersistentMessage, immediatePersistentMessage } = createDebouncePersistentMessage(
@@ -141,6 +142,11 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     baseSystemPrompt, // 角色定义 + skills + 对话指南
     sandboxPrompt, // 文件系统说明（目录结构、CWD、命令限制）
     memoryUsagePrompt, // 记忆使用指南
+    isPanelProject
+      ? locale === "zh-CN"
+        ? "## Panel 项目执行规则\n当前对话绑定了一个 panel 项目。涉及该项目的 research 执行时，必须由当前主 agent 直接调用 discussionChat、interviewChat、generateReport 等工具；不要调用 createSubAgent，也不要把 panel research 下放到子代理。"
+        : "## Panel Project Execution Rule\nThis chat is attached to a panel project. For panel research execution, the lead agent must call discussionChat, interviewChat, generateReport, and related tools directly. Do not call createSubAgent or delegate panel research to a sub-agent."
+      : "",
   ].join("\n\n");
 
   const agentToolArgs: AgentToolConfigArgs = {
@@ -193,12 +199,6 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
       ...agentToolArgs,
     }),
     [UniversalToolName.deepResearch]: deepResearchTool({ userId, ...agentToolArgs }),
-    [UniversalToolName.createSubAgent]: createSubAgentTool({
-      userId,
-      teamId,
-      ...agentToolArgs,
-    }),
-
     // panel
     [UniversalToolName.listPanels]: listPanelsTool({ userId }),
     [UniversalToolName.createPanel]: createPanelTool({ userId, logger }),
@@ -212,6 +212,16 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
 
     [UniversalToolName.toolCallError]: toolCallError,
   };
+
+  // Panel project detail pages derive discussion/interview state from the lead
+  // universal chat's tool calls, so panel research must stay on the lead agent.
+  if (!isPanelProject) {
+    tools[UniversalToolName.createSubAgent] = createSubAgentTool({
+      userId,
+      teamId,
+      ...agentToolArgs,
+    });
+  }
 
   // Load messages
   const { coreMessages, streamingMessage } = await prepareMessagesForStreaming(universalChatId, {
