@@ -623,6 +623,7 @@ model Persona {
 
   @@index([embedding])
   @@index([tier, locale])
+  @@index([userId])
 }
 
 model PersonaPanel {
