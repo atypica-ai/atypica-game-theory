@@ -247,13 +247,6 @@ export async function syncPersona(personaId: number): Promise<void> {
 
     const persona = await prismaRO.persona.findUnique({
       where: { id: personaId },
-      include: {
-        personaImport: {
-          select: {
-            userId: true,
-          },
-        },
-      },
     });
 
     if (!persona) {
@@ -263,8 +256,7 @@ export async function syncPersona(personaId: number): Promise<void> {
 
     logger.info({ msg: "Persona fetched from database", personaId, createdAt: persona.createdAt });
 
-    const userId = persona.personaImport?.userId ?? null;
-    const document = personaToDocument({ persona, userId, teamId: null });
+    const document = personaToDocument({ persona, userId: persona.userId, teamId: persona.teamId });
     // logger.info({ msg: "Persona converted to document", personaId, document });
 
     const index = meilisearchClient.index(INDEXES.PERSONAS);
@@ -370,7 +362,7 @@ export function personaPanelToDocument(panel: PersonaPanel): ProjectDocument {
     title: panel.title,
     description: panel.instruction,
     userId: panel.userId,
-    teamId: null,
+    teamId: panel.teamId,
     archived: Boolean(panel.extra?.archived),
     createdAt: panel.createdAt.getTime(),
   };

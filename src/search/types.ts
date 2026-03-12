@@ -71,8 +71,8 @@ export interface PersonaDocument {
   // 过滤字段
   tier: number;
   locale: string;
-  userId: number | null; // 创建者 ID (from personaImport)
-  teamId: number | null; // 团队 ID（预留）
+  userId: number | null;
+  teamId: number | null;
   archived: boolean; // 归档标记
 
   // 排序字段
@@ -124,8 +124,8 @@ export interface ProjectDocument {
   description: string;
 
   // 过滤字段
-  userId: number;
-  teamId: number | null; // 预留
+  userId: number | null;
+  teamId: number | null;
   archived: boolean; // 归档标记
 
   // 排序字段

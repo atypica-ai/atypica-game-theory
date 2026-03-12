@@ -477,21 +477,14 @@ export async function syncAllPersonas(options?: {
         // 获取这批 personas 的完整数据
         const personas = await prismaRO.persona.findMany({
           where: { id: { in: batchIds } },
-          include: {
-            personaImport: {
-              select: {
-                userId: true,
-              },
-            },
-          },
         });
 
         // 转换为文档
         const documents = personas.map((persona) =>
           personaToDocument({
             persona,
-            userId: persona.personaImport?.userId ?? null,
-            teamId: null,
+            userId: persona.userId ?? null,
+            teamId: persona.teamId ?? null,
           }),
         );
 
