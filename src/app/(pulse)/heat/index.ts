@@ -11,6 +11,9 @@ import { HEAT_CONFIG } from "./config";
 import { gatherPostsForPulse } from "./gatherPosts";
 import { generateDescriptionFromPosts } from "./generateDescription";
 
+// Per-pulse processing timeout (ms) — prevents hung LLM calls from blocking the batch
+const PULSE_TIMEOUT_MS = 120_000; // 2 minutes
+
 /**
  * Process a single pulse through the HEAT pipeline
  * Gather posts → Calculate HEAT → Calculate delta → Generate description → Save
@@ -165,7 +168,17 @@ async function processPulsesInBatches(
     });
 
     const batchResults = await Promise.allSettled(
-      batch.map((pulse) => processSinglePulse(pulse, lookbackStart, todayStart, logger)),
+      batch.map((pulse) => {
+        return Promise.race([
+          processSinglePulse(pulse, lookbackStart, todayStart, logger),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error(`Pulse ${pulse.id} timed out after ${PULSE_TIMEOUT_MS / 1000}s`)),
+              PULSE_TIMEOUT_MS,
+            ),
+          ),
+        ]);
+      }),
     );
 
     // Process batch results
