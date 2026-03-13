@@ -37,8 +37,11 @@ export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) 
         </div>
         <div className="mt-4 h-30">
           <div>
-            <span className="text-3xl font-bold">{locale === "zh-CN" ? "¥15000" : "$2000"}</span>
-            <span className="text-lg">/{t("month")}</span>
+            {/*<span className="text-3xl font-bold">{locale === "zh-CN" ? "¥15000" : "$2000"}</span>*/}
+            {/*<span className="text-lg">/{t("month")}</span>*/}
+            <span className="text-xl font-bold">
+              {locale === "zh-CN" ? "联系我们获取报价" : "Custom Pricing"}
+            </span>
           </div>
           <div className="mt-1 text-sm font-medium">{t("enterpriseUnlimitedSeats")}</div>
           <div className="mt-1 flex items-start">
