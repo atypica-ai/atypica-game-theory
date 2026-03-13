@@ -1,5 +1,5 @@
 "use server";
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystPodcastExtra, FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
@@ -84,7 +84,7 @@ export const pickRandomFeaturedPodcast = unstable_cache(
         createdAt: randomItem.createdAt,
         title: extra.title || "",
         description: extra.description || "",
-        coverUrl: extra.coverObjectUrl ? await getS3SignedCdnUrl(extra.coverObjectUrl) : null,
+        coverUrl: extra.coverObjectUrl ? await s3SignedCdnUrl(extra.coverObjectUrl) : null,
         url: extra.url || "",
         category: extra.category,
         podcast: {
@@ -184,7 +184,7 @@ export const fetchFeaturedPodcasts = unstable_cache(
             createdAt: item.createdAt,
             title: extra.title || "",
             description: extra.description || "",
-            coverUrl: extra.coverObjectUrl ? await getS3SignedCdnUrl(extra.coverObjectUrl) : null,
+            coverUrl: extra.coverObjectUrl ? await s3SignedCdnUrl(extra.coverObjectUrl) : null,
             url: extra.url || "",
             category: extra.category,
             podcast: {

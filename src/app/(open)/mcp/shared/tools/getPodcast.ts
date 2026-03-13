@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
 import { prismaRO } from "@/prisma/prisma";
@@ -63,9 +63,9 @@ export async function handleGetPodcast(
     const metadata = podcast.extra.metadata;
 
     // Get signed CDN URLs for audio and cover
-    const audioUrl = podcast.objectUrl ? await getS3SignedCdnUrl(podcast.objectUrl) : null;
+    const audioUrl = podcast.objectUrl ? await s3SignedCdnUrl(podcast.objectUrl) : null;
     const coverUrl = metadata?.coverObjectUrl
-      ? await getS3SignedCdnUrl(metadata.coverObjectUrl)
+      ? await s3SignedCdnUrl(metadata.coverObjectUrl)
       : undefined;
 
     return {

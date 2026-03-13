@@ -89,7 +89,7 @@ export async function getAttachmentFiles(): Promise<
               thumbnailHttpUrl: file.mimeType.startsWith("image/")
                 ? // await attachmentFileObjectUrlToHttpUrl(file)
                   // proxiedImageCdnUrl({ objectUrl: file.objectUrl, width: 200, quality: 90 })
-                  await getS3SignedCdnUrl(file.objectUrl)
+                  await s3SignedCdnUrl(file.objectUrl)
                 : undefined,
             };
           }),

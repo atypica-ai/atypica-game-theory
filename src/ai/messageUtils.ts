@@ -1,7 +1,7 @@
 import "server-only";
 
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
 import { fileUrlToDataUrl } from "@/lib/attachments/lib";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { ChatMessage, ChatMessageAttachment, ChatMessagePart } from "@/prisma/client";
 import { prisma } from "@/prisma/prisma";
@@ -580,7 +580,7 @@ export async function convertDBMessagesToAIMessages(
           attachments.map(async ({ name, objectUrl, mimeType, size }, index) => {
             const url =
               convertObjectUrl === "HttpUrl"
-                ? await getS3SignedCdnUrl(objectUrl)
+                ? await s3SignedCdnUrl(objectUrl)
                 : convertObjectUrl === "DataUrl"
                   ? await fileUrlToDataUrl({ objectUrl, mimeType })
                   : "";

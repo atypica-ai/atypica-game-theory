@@ -4,7 +4,7 @@ import { generateReportCoverImage } from "@/app/(study)/tools/generateReport/cov
 // import { reportCoverObjectUrlToHttpUrl } from "@/app/(study)/artifacts/report/actions";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage, truncateForTitle } from "@/lib/textUtils";
@@ -222,7 +222,7 @@ export async function fetchAnalystReportsAction(
       const objectUrl = report.extra.coverObjectUrl;
       const featuredInfo = featuredItemsMap.get(report.id);
       if (objectUrl) {
-        const coverCdnHttpUrl = await getS3SignedCdnUrl(objectUrl);
+        const coverCdnHttpUrl = await s3SignedCdnUrl(objectUrl);
         return {
           ...report,
           coverCdnHttpUrl,

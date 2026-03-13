@@ -3,7 +3,7 @@ import { generatePodcastCoverImage } from "@/app/(podcast)/lib/coverImage";
 import { generatePodcastMetadata } from "@/app/(podcast)/lib/generation";
 import { checkAdminAuth } from "@/app/admin/actions";
 import { AdminPermission } from "@/app/admin/types";
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { ServerActionResult } from "@/lib/serverAction";
 import { detectInputLanguage } from "@/lib/textUtils";
@@ -221,7 +221,7 @@ export async function fetchAnalystPodcastsAction(
     sortedPodcasts.map(async (podcast) => {
       const extra = podcast.extra;
       const coverObjectUrl = extra?.metadata?.coverObjectUrl;
-      const coverCdnHttpUrl = coverObjectUrl ? await getS3SignedCdnUrl(coverObjectUrl) : undefined;
+      const coverCdnHttpUrl = coverObjectUrl ? await s3SignedCdnUrl(coverObjectUrl) : undefined;
 
       const featuredInfo = featuredItemsMap.get(podcast.id);
       return {

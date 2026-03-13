@@ -1,5 +1,5 @@
 "use server";
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { ServerActionResult } from "@/lib/serverAction";
 import { FeaturedItemExtra, FeaturedItemResourceType } from "@/prisma/client";
 import { Prisma as PrismaRuntime } from "@/prisma/generated/client";
@@ -171,7 +171,7 @@ async function _fetchPublicFeaturedItemsImpl({
         createdAt: item.createdAt,
         title: extra.title || "",
         description: extra.description || "",
-        coverUrl: extra.coverObjectUrl ? await getS3SignedCdnUrl(extra.coverObjectUrl) : null,
+        coverUrl: extra.coverObjectUrl ? await s3SignedCdnUrl(extra.coverObjectUrl) : null,
         url: extra.url || "",
       };
     }),

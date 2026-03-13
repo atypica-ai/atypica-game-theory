@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { getMcpRequestContext } from "@/lib/mcp";
 import { prismaRO } from "@/prisma/prisma";
@@ -64,9 +64,7 @@ export async function handleGetReport(
     const description = extra.description;
 
     // Get signed CDN URL for cover image
-    const coverUrl = extra.coverObjectUrl
-      ? await getS3SignedCdnUrl(extra.coverObjectUrl)
-      : undefined;
+    const coverUrl = extra.coverObjectUrl ? await s3SignedCdnUrl(extra.coverObjectUrl) : undefined;
 
     return {
       content: [

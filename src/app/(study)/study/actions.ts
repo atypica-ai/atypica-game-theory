@@ -2,7 +2,7 @@
 import { convertDBMessagesToAIMessages, convertDBMessageToAIMessage } from "@/ai/messageUtils";
 import { StudyToolName, TStudyMessageWithTool } from "@/app/(study)/tools/types";
 import { trackEventServerSide } from "@/lib/analytics/server";
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { withAuth } from "@/lib/request/withAuth";
 import { ServerActionResult } from "@/lib/serverAction";
 import { truncateForTitle } from "@/lib/textUtils";
@@ -21,9 +21,7 @@ import { FileUIPart, UIMessage } from "ai";
 import { UserChatContext } from "../context/types";
 import { createStudyUserChat } from "./lib";
 
-export async function fetchStudyPanelInfo(
-  panelId: number,
-): Promise<
+export async function fetchStudyPanelInfo(panelId: number): Promise<
   ServerActionResult<{
     panelId: number;
     personaCount: number;
@@ -179,7 +177,7 @@ export async function fetchAttachmentsInStudy({
   }
   const fileUIParts = await Promise.all(
     (studyUserChat.context.attachments ?? []).map(async ({ name, objectUrl, mimeType }) => {
-      const url = await getS3SignedCdnUrl(objectUrl);
+      const url = await s3SignedCdnUrl(objectUrl);
       return { type: "file" as const, mediaType: mimeType, filename: name, url: url };
     }),
   );
@@ -439,7 +437,7 @@ export async function fetchAnalystReportByToken(token: string): Promise<
 
   const { extra, ...rest } = report;
   const objectUrl = extra.coverObjectUrl;
-  const coverCdnHttpUrl = objectUrl ? await getS3SignedCdnUrl(objectUrl) : undefined;
+  const coverCdnHttpUrl = objectUrl ? await s3SignedCdnUrl(objectUrl) : undefined;
 
   return {
     success: true,
@@ -495,7 +493,7 @@ export async function fetchAnalystReportsOfStudyUserChat({
       const { extra, ...rest } = report;
       const objectUrl = extra.coverObjectUrl;
       if (objectUrl) {
-        const coverCdnHttpUrl = await getS3SignedCdnUrl(objectUrl);
+        const coverCdnHttpUrl = await s3SignedCdnUrl(objectUrl);
         return { ...rest, coverCdnHttpUrl };
       } else {
         return { ...rest, coverCdnHttpUrl: undefined };

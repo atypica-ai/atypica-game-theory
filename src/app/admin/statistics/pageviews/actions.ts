@@ -6,7 +6,7 @@ import {
   PageViewsReport,
   RegionFilter,
 } from "@/lib/analytics/google/reporter";
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { ServerActionResult } from "@/lib/serverAction";
 import { AnalystPodcast, AnalystReport, User, UserChat } from "@/prisma/client";
 import { prismaRO } from "@/prisma/prisma";
@@ -100,7 +100,7 @@ export async function fetchTopPageViewsAction(
       reportDetails.map(async (report) => {
         const objectUrl = report.extra.coverObjectUrl;
         if (objectUrl) {
-          const coverUrl = await getS3SignedCdnUrl(objectUrl);
+          const coverUrl = await s3SignedCdnUrl(objectUrl);
           return { ...report, coverUrl };
         } else {
           return { ...report, coverUrl: undefined };

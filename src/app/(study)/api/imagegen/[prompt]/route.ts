@@ -1,5 +1,5 @@
 // import { imageGenerationObjectUrlToHttpUrl } from "@/app/(study)/artifacts/lib/imagegen";
-import { getS3SignedCdnUrl } from "@/lib/attachments/actions";
+import { s3SignedCdnUrl } from "@/lib/attachments/s3";
 import { rootLogger } from "@/lib/logging";
 import { getRequestOrigin } from "@/lib/request/headers";
 import { prisma } from "@/prisma/prisma";
@@ -44,7 +44,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
   }
 
   if (existingImage.generatedAt) {
-    const imageUrl = await getS3SignedCdnUrl(existingImage.objectUrl);
+    const imageUrl = await s3SignedCdnUrl(existingImage.objectUrl);
     const fullUrl = new URL(
       imageUrl,
       imageUrl.startsWith("http") ? undefined : await getRequestOrigin(),
@@ -75,7 +75,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ prompt: 
         }
         const updatedImage = await prisma.imageGeneration.findUniqueOrThrow({ where: { id } });
         if (updatedImage.generatedAt) {
-          resolve(await getS3SignedCdnUrl(updatedImage.objectUrl));
+          resolve(await s3SignedCdnUrl(updatedImage.objectUrl));
           return;
         } else {
           setTimeout(checkImage, 5000);
