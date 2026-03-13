@@ -77,7 +77,7 @@ export async function createProductRnDAgentConfig(
 
   return {
     // model: "claude-sonnet-4-5",
-    modelName: "minimax-m2.1",
+    modelName: "claude-sonnet-4-6",
     systemPrompt,
     tools,
     maxTokens: 1500, // 限制输出长度（约 500-750 字），工具输出会自动展示

@@ -44,8 +44,8 @@ export function calculateStepTokensUsage(
     //      Vertex 返回 "gemini-2.5-flash"
 
     // MiniMax - 大幅降低（便宜模型）
-    // 匹配: "minimax.minimax-m2", "minimax-m2.1" 等
-    if (modelId.includes("minimax")) {
+    // 匹配: "minimax.minimax-m2", "minimax-m2.1", "moonshotai.kimi-k2.5" 等
+    if (modelId.includes("minimax") || modelId.includes("kimi")) {
       reduceTokens = { modelId, ratio: 10 };
     }
     // Gemini Flash 系列 - 大幅降低（已经很便宜）

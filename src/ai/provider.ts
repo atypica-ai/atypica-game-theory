@@ -181,14 +181,15 @@ export type LLMModelName =
   | "gpt-5.2"
   | "gpt-5.4"
   | "o3-mini"
-  | "claude-3-5-haiku"
+  // | "claude-3-5-haiku"
   | "claude-3-7-sonnet"
   | "claude-sonnet-4"
   | "claude-sonnet-4-5"
   | "claude-sonnet-4-6"
   | "claude-haiku-4-5"
   | "minimax-m2.1"
-  | "kimi-k2"
+  | "kimi-k2-thinking"
+  | "kimi-k2.5"
   // | "gemini-2.5-flash"
   // | "gemini-2.5-pro"
   | "gemini-2.5-flash-image"
@@ -233,7 +234,8 @@ export function llm(modelName: LLMModelName) {
       case "claude-sonnet-4":
       case "claude-sonnet-4-5":
       case "minimax-m2.1":
-      case "kimi-k2":
+      case "kimi-k2-thinking":
+      case "kimi-k2.5":
         if (process.env.AWS_BEDROCK_ACCESS_KEY_ID) {
           break;
         } else {
@@ -293,8 +295,8 @@ export function llm(modelName: LLMModelName) {
       return azure("gpt-4.1-nano");
     case "o3-mini":
       return azure("o3-mini");
-    case "claude-3-5-haiku":
-      return bedrock("us.anthropic.claude-3-5-haiku-20241022-v1:0");
+    // case "claude-3-5-haiku":
+    //   return bedrock("us.anthropic.claude-3-5-haiku-20241022-v1:0");
     case "claude-3-7-sonnet":
       return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0");
     // case "claude-3-7-sonnet-beta":
@@ -309,8 +311,10 @@ export function llm(modelName: LLMModelName) {
       return bedrock("global.anthropic.claude-sonnet-4-5-20250929-v1:0");
     case "minimax-m2.1":
       return bedrock("minimax.minimax-m2");
-    case "kimi-k2":
+    case "kimi-k2-thinking":
       return bedrock("moonshot.kimi-k2-thinking");
+    case "kimi-k2.5":
+      return bedrock("moonshotai.kimi-k2.5");
     // case "gemini-2.5-flash":
     //   return google("gemini-2.5-flash-preview-04-17");
     // case "gemini-2.5-pro":

@@ -184,7 +184,9 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
     (toolUseCount[StudyToolName.generatePodcast] ?? 0) > 0
   ) {
     // 报告生成以后，就换成 minimax 模型，以减少消耗
-    modelName = "minimax-m2.1";
+    // modelName = "minimax-m2.1";  // 不支持图片
+    // modelName = "kimi-k2.5"; 也不支持图片 ...
+    modelName = "gemini-3-flash";
   }
   let providerOptions: NonNullable<typeof agentConfig.providerOptions> =
     agentConfig.providerOptions ?? defaultProviderOptions();
