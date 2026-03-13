@@ -222,7 +222,7 @@ export async function runBuildPersona({
     const toolChoice = "auto";
     const response = streamText({
       // claude-3-7-sonnet 目前会遇到 input tokens context 不够大的问题，但 gpt 4.1 mini 和 gemini 2.5 flash 没问题
-      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-sonnet-4-5"),
 
       providerOptions: defaultProviderOptions(),
 

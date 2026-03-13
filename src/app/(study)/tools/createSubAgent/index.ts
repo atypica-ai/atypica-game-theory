@@ -303,7 +303,7 @@ ${mcpPrompts.length > 0 ? `\n## Available Tools and Context\n${mcpPrompts.join("
   // Run streamText once - it will complete naturally when LLM finishes or max steps reached
   const streamTextPromise = new Promise<string>((resolve, reject) => {
     const response = streamText({
-      model: llm("claude-3-7-sonnet"),
+      model: llm("claude-sonnet-4-5"),
       providerOptions: defaultProviderOptions(),
       system: systemPrompt,
       temperature: 0.5,

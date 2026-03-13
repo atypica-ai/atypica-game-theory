@@ -18,7 +18,7 @@ export async function noQuotaAgentRequest(
 ) {
   // const streamTextResult = streamText({
   //   // model: llm("o3-mini"),
-  //   model: llm("claude-3-7-sonnet"),
+  //   model: llm("claude-sonnet-4-5"),
   //   providerOptions: providerOptions,
   //   system: studySystemNoQuota(),
   //   messages: coreMessages,

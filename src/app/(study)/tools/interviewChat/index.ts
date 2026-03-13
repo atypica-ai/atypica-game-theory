@@ -371,7 +371,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
   // { model: "grok-3-mini", ratio: 10 }; // 总结的不好
   // gpt 无法使用 pdf 文件，claude 和 gemini 可以, 并且，3.7 比较消耗 tokens，改用 gemini 和 gpt 吧
   // null as TReduceTokens;
-  // const coreMessages = setBedrockCache("claude-3-7-sonnet", convertToCoreMessages(messages));
+  // const coreMessages = setBedrockCache("claude-sonnet-4-5", convertToCoreMessages(messages));
   const agentToolArgs = { locale, abortSignal, statReport, logger };
   const tools = {
     [StudyToolName.reasoningThinking]: reasoningThinkingTool(agentToolArgs),
@@ -404,7 +404,7 @@ async function chatWithInterviewer(chatProps: ChatProps, messages: UIMessage[]) 
       model: reduceTokens
         ? llm(reduceTokens.model)
         : // gpt-4.1 系列都不支持 pdf，目前只有 gemini 和 claude 支持
-          llm("claude-3-7-sonnet"),
+          llm("claude-sonnet-4-5"),
 
       providerOptions: defaultProviderOptions(),
 
@@ -517,7 +517,7 @@ async function chatWithPersona(chatProps: ChatProps, messages: UIMessage[]) {
   const streamTextPromise = new Promise<Omit<UIMessage, "role">>(async (resolve, reject) => {
     const response = streamText({
       // gpt 4.1 不支持 pdf，目前只有 gemini 和 claude 支持
-      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-3-7-sonnet"),
+      model: reduceTokens ? llm(reduceTokens.model) : llm("claude-sonnet-4-5"),
 
       providerOptions: defaultProviderOptions(),
       system: personaSystemPrompt,

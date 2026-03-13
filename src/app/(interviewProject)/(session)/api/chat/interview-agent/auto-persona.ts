@@ -352,7 +352,7 @@ async function generateInterviewerResponse({
   const tools = {
     endInterview,
   };
-  // const modelName = "claude-3-7-sonnet";
+  // const modelName = "claude-sonnet-4-5";
   // const modelName = "gpt-5-mini";
   const modelName = "claude-haiku-4-5";
   const reduceTokens: TReduceTokens = { model: modelName, ratio: 3 };

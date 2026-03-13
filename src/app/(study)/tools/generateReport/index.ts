@@ -301,7 +301,7 @@ async function generateReport({
     };
   })();
 
-  let modelName: LLMModelName = "claude-sonnet-4-5";
+  let modelName: LLMModelName = "claude-sonnet-4-6";
   // let modelName: LLMModelName = "gemini-3.1-pro";
   while (true) {
     const streamTextPromise = new Promise<{
@@ -441,7 +441,7 @@ async function generateReport({
     if (finishReason === "length") {
       continue;
     } else if (finishReason === "Too many tokens") {
-      modelName = "claude-3-7-sonnet";
+      modelName = "claude-sonnet-4";
       continue;
     } else {
       try {

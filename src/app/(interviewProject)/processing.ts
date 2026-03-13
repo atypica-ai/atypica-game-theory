@@ -51,7 +51,7 @@ export async function processInterviewQuestionOptimization(projectId: number): P
     // Use streamText with updateQuestions tool
     await new Promise((resolve, reject) => {
       const response = streamText({
-        model: llm("claude-3-7-sonnet"),
+        model: llm("claude-sonnet-4-5"),
 
         providerOptions: defaultProviderOptions(),
 

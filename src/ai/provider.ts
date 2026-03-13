@@ -182,7 +182,7 @@ export type LLMModelName =
   | "gpt-5.4"
   | "o3-mini"
   // | "claude-3-5-haiku"
-  | "claude-3-7-sonnet"
+  // | "claude-3-7-sonnet"
   | "claude-sonnet-4"
   | "claude-sonnet-4-5"
   | "claude-sonnet-4-6"
@@ -230,7 +230,7 @@ export function llm(modelName: LLMModelName) {
         } else {
           return openai(modelName);
         }
-      case "claude-3-7-sonnet":
+      // case "claude-3-7-sonnet":
       case "claude-sonnet-4":
       case "claude-sonnet-4-5":
       case "minimax-m2.1":
@@ -297,8 +297,8 @@ export function llm(modelName: LLMModelName) {
       return azure("o3-mini");
     // case "claude-3-5-haiku":
     //   return bedrock("us.anthropic.claude-3-5-haiku-20241022-v1:0");
-    case "claude-3-7-sonnet":
-      return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0");
+    // case "claude-3-7-sonnet":
+    //   return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0");
     // case "claude-3-7-sonnet-beta":
     //   return bedrock("us.anthropic.claude-3-7-sonnet-20250219-v1:0", {
     //     additionalModelRequestFields: {
