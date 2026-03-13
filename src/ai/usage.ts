@@ -54,7 +54,7 @@ export function calculateStepTokensUsage(
       reduceTokens = { modelId, ratio: 10 };
     }
     // Gemini Pro 系列 - 适度降低
-    // 匹配: "gemini-2.5-pro", "gemini-3.1-pro" 等
+    // 匹配: "gemini-3.1-pro", "gemini-3.1-pro" 等
     else if (modelId.includes("gemini") && modelId.includes("pro")) {
       reduceTokens = { modelId, ratio: 2 };
     }

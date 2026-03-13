@@ -39,7 +39,7 @@ export async function generatePersonaReply({
   logger: Logger;
   round: number;
 }): Promise<string> {
-  const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
+  const reduceTokens: TReduceTokens = { model: "gemini-3-flash", ratio: 10 };
   const tools = {
     ...(reduceTokens && reduceTokens.model.startsWith("gemini")
       ? {

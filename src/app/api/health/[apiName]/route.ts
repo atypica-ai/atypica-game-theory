@@ -174,12 +174,12 @@ const API_CONFIGS = {
     type: "llm-service",
     test: async () => {
       const { text } = await generateText({
-        model: llm("gemini-2.5-flash"),
+        model: llm("gemini-3-flash"),
         prompt: "hello",
       });
       return {
         response: text,
-        model: "gemini-2.5-flash",
+        model: "gemini-3-flash",
         timestamp: new Date().toISOString(),
       };
     },

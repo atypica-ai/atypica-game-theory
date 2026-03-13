@@ -119,7 +119,7 @@ Please analyze the task requirement and select the MCP servers needed to complet
 
   try {
     const result = await generateObject({
-      model: llm("gemini-2.5-flash"),
+      model: llm("gemini-3-flash"),
       schema: toolSelectionSchema,
       system: systemPrompt,
       prompt: userMessage,

@@ -14,6 +14,7 @@ import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { StudyToolName } from "@/app/(study)/tools/types";
 import { createUserChat } from "@/lib/userChat/lib";
+import { startManagedRun } from "@/lib/userChat/runtime";
 import { prisma } from "@/prisma/prisma";
 import {
   generateId,
@@ -29,7 +30,6 @@ import {
   UIMessage,
   UIMessageStreamWriter,
 } from "ai";
-import { startManagedRun } from "@/lib/userChat/runtime";
 import { scoutChatTools, TPlatform } from "../scoutTaskChat/types";
 import { scoutSocialTrendsSummarySystem, scoutSocialTrendsSystem } from "./prompt";
 import {
@@ -220,7 +220,7 @@ async function runScoutSocialTrendsStream({
 
     let toolChoice: ToolChoice<typeof allTools> = "auto";
     let maxSteps = 2; // 不要一下子很多 steps 因为现在会并行调用 tools，每一轮 steps 少一点，方便及时判断 coreMessages 长度
-    let reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
+    let reduceTokens: TReduceTokens = { model: "gemini-3-flash", ratio: 10 };
     if (coreMessages.length > 2 && Object.keys(toolUseCount).length === 0) {
       // 两条消息以后，必须开始使用工具，但是为了不一直使用工具，调用2次先停下来，后面好重新判断 toolUseCount
       toolChoice = "required";
@@ -435,7 +435,7 @@ async function runScoutSocialTrendsSummarize({
   // Create a simple system prompt for summarization
   const summarizationSystemPrompt = scoutSocialTrendsSummarySystem({ locale });
 
-  const reduceTokens: TReduceTokens = { model: "gemini-2.5-flash", ratio: 10 };
+  const reduceTokens: TReduceTokens = { model: "gemini-3-flash", ratio: 10 };
 
   // Use streamText just like the main loop
   const streamTextPromise = new Promise<string>((resolve, reject) => {

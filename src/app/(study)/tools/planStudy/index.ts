@@ -23,7 +23,7 @@ async function planStudy({
 } & AgentToolConfigArgs): Promise<PlanStudyResult> {
   return new Promise(async (resolve, reject) => {
     const response = streamText({
-      model: llm("gemini-2.5-pro"),
+      model: llm("gemini-3.1-pro"),
       providerOptions: defaultProviderOptions(),
       tools: {
         google_search: google.tools.googleSearch({

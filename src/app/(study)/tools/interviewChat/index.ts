@@ -46,7 +46,7 @@ import {
 
 const MAX_MESSAGES_LIMIT = 14; // 访谈双方消息总数限制，到达之后必须 saveInterviewConclusion
 type TReduceTokens = {
-  // model: llm("gemini-2.5-pro"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
+  // model: llm("gemini-3.1-pro"), // 不能这么写，一定要下面每次都重新初始化 llm，不然会卡住
   model: LLMModelName;
   ratio: number;
 } | null;
@@ -70,15 +70,22 @@ export const interviewChatTool = ({
     toModelOutput: (result: PlainTextToolResult) => {
       return { type: "text", value: result.plainText };
     },
-    execute: async ({ panelId: inputPanelId, personas, instruction, attachmentIds }): Promise<InterviewChatResult> => {
+    execute: async ({
+      panelId: inputPanelId,
+      personas,
+      instruction,
+      attachmentIds,
+    }): Promise<InterviewChatResult> => {
       let resolvedPanelId: number;
       let resolvedPersonas = personas;
       if (inputPanelId) {
-        const panel = await prisma.personaPanel.findUniqueOrThrow({
-          where: { id: inputPanelId },
-        }).catch(() => {
-          throw new Error(`Panel ${inputPanelId} not found.`);
-        });
+        const panel = await prisma.personaPanel
+          .findUniqueOrThrow({
+            where: { id: inputPanelId },
+          })
+          .catch(() => {
+            throw new Error(`Panel ${inputPanelId} not found.`);
+          });
         resolvedPanelId = panel.id;
         const allowedIds = new Set(panel.personaIds);
         resolvedPersonas = personas.filter((p) => allowedIds.has(p.id));

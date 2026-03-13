@@ -225,7 +225,7 @@ export async function runScoutTaskChatStream({
         // 最多调用 15 次工具，因为还可能调用 reasoningThinking，额外加 2 次，此时，如果 stopWhen 还没触发，会强制输出一段文本，作为总结，然后结束
         if (toolUses.length >= 15 + 2) {
           return {
-            model: llm("gemini-2.5-pro"),
+            model: llm("gemini-3.1-pro"),
             toolChoice: "none",
             activeTools: [],
             messages: [
@@ -248,7 +248,7 @@ export async function runScoutTaskChatStream({
             `ScoutTaskChat requires ReasoningThinking tool with current tool usage count at ${toolUses.length}`,
           );
           return {
-            model: llm("gemini-2.5-pro"), // 临时换个模型，因为 gemini 2.5 喜欢一次性批量调用一批工具，这里 reduceTokens 没更新，问题不大
+            model: llm("gemini-3.1-pro"), // 临时换个模型，因为 gemini 2.5 喜欢一次性批量调用一批工具，这里 reduceTokens 没更新，问题不大
             toolChoice: "required",
             activeTools: [StudyToolName.reasoningThinking],
           };

@@ -124,7 +124,7 @@ export async function POST(req: Request) {
     // model: llm("claude-3-7-sonnet"),
     // model: llm("gpt-4.1-mini"),
     // model: llm("minimax-m2.1"),
-    model: llm("gemini-2.5-flash"),
+    model: llm("gemini-3-flash"),
     providerOptions: defaultProviderOptions(),
 
     system: personaAgentSystem({ persona, locale }),

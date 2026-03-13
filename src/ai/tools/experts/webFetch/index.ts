@@ -37,7 +37,7 @@ export const webFetchTool = ({ locale }: { locale: Locale }) =>
       });
 
       const { text } = await generateText({
-        model: llm("gemini-2.5-flash"),
+        model: llm("gemini-3-flash"),
         providerOptions: {
           google: {
             // thinkingConfig: { includeThoughts: true, thinkingLevel: "low" },  // 2.5 flash 不支持

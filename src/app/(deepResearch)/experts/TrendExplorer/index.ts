@@ -43,12 +43,12 @@ export const trendExplorerExpert: ExpertExecutor = async ({
     scoutSocialTrends: socialTrendsTool,
   };
   const reduceTokens: TReduceTokens = {
-    model: "gemini-2.5-pro",
+    model: "gemini-3.1-pro",
     ratio: 2,
   };
   const promise = new Promise<ExpertStreamTextResult>((resolve, reject) => {
     const response = streamText({
-      model: llm("gemini-2.5-pro"), // Using Gemini 2.5 Pro model for trend analysis
+      model: llm("gemini-3.1-pro"), // Using Gemini 2.5 Pro model for trend analysis
       system: trendExplorerSystemPrompt({ locale }),
       providerOptions: defaultProviderOptions(),
       tools: allTools,

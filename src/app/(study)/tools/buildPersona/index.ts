@@ -205,10 +205,10 @@ export async function runBuildPersona({
      * - 如果是批量调用 savePersona，目前支持最好的是 gemini-2.5-pro，但是这样太慢
      */
     // const reduceTokens = null as TReduceTokens;
-    // const reduceTokens = { model: "gemini-2.5-pro", ratio: 2 } as TReduceTokens;
+    // const reduceTokens = { model: "gemini-3.1-pro", ratio: 2 } as TReduceTokens;
     const reduceTokens = noPersonaFallback
       ? (null as TReduceTokens)
-      : ({ model: "gemini-2.5-flash", ratio: 10 } as TReduceTokens);
+      : ({ model: "gemini-3-flash", ratio: 10 } as TReduceTokens);
     const maxSteps = 5;
     const temperature = 0.5;
     /**

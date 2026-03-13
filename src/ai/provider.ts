@@ -185,11 +185,12 @@ export type LLMModelName =
   | "claude-3-7-sonnet"
   | "claude-sonnet-4"
   | "claude-sonnet-4-5"
+  | "claude-sonnet-4-6"
   | "claude-haiku-4-5"
   | "minimax-m2.1"
   | "kimi-k2"
-  | "gemini-2.5-flash"
-  | "gemini-2.5-pro"
+  // | "gemini-2.5-flash"
+  // | "gemini-2.5-pro"
   | "gemini-2.5-flash-image"
   | "gemini-3-flash"
   | "gemini-3.1-pro"
@@ -239,8 +240,9 @@ export function llm(modelName: LLMModelName) {
           return openai(modelName);
         }
       case "claude-haiku-4-5":
-      case "gemini-2.5-flash":
-      case "gemini-2.5-pro":
+      case "claude-sonnet-4-6":
+      // case "gemini-2.5-flash":
+      // case "gemini-2.5-pro":
       case "gemini-2.5-flash-image":
       case "gemini-3-flash":
       case "gemini-3.1-pro":
@@ -315,10 +317,12 @@ export function llm(modelName: LLMModelName) {
     //   return google("gemini-2.5-pro-preview-03-25");
     case "claude-haiku-4-5":
       return vertexClaude("claude-haiku-4-5");
-    case "gemini-2.5-flash":
-      return vertex("gemini-2.5-flash");
-    case "gemini-2.5-pro":
-      return vertex("gemini-2.5-pro");
+    case "claude-sonnet-4-6":
+      return vertexClaude("claude-sonnet-4-6");
+    // case "gemini-2.5-flash":
+    //   return vertex("gemini-2.5-flash");
+    // case "gemini-2.5-pro":
+    //   return vertex("gemini-2.5-pro");
     case "gemini-2.5-flash-image":
       return vertexGlobal("gemini-2.5-flash-image");
     case "gemini-3-flash":

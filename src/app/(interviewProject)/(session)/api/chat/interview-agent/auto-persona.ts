@@ -99,7 +99,11 @@ export async function runAutoPersonaInterview({
   });
 
   // Start managed run — writes runId to DB, starts watcher, returns abort signal
-  const { runId, abortSignal, cleanup: cleanupRun } = await startManagedRun({
+  const {
+    runId,
+    abortSignal,
+    cleanup: cleanupRun,
+  } = await startManagedRun({
     userChatId,
     logger: rootLogger,
   });
@@ -270,7 +274,7 @@ async function generatePersonaResponse({
   logger: Logger;
   abortSignal: AbortSignal;
 }) {
-  const modelName = "gemini-2.5-flash";
+  const modelName = "gemini-3-flash";
   const reduceTokens: TReduceTokens = { model: modelName, ratio: 10 };
   const promise = new Promise<Omit<UIMessage, "role">>((resolve, reject) => {
     const streamTextPromise = streamText({

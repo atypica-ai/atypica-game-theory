@@ -128,7 +128,7 @@ export async function runBuildPersonaStreamObject({
   //   persona6: personaBuildSchemaStreamObject(),
   // });
   const response = streamObject({
-    model: llm("gemini-2.5-pro"),
+    model: llm("gemini-3.1-pro"),
     // model: llm("gpt-4.1"), // gpt 可以对一个字段的值进行 stream，这样在 prompt 生成部分的时候就可以看到结果，比较快
     // temperature: 0,
     providerOptions: defaultProviderOptions(),

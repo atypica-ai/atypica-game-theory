@@ -145,7 +145,7 @@ async function extractKnowledge_1_buildSageProfile({
   });
 
   const result = await generateObject({
-    model: llm("gemini-2.5-flash"),
+    model: llm("gemini-3-flash"),
     schema: sageProfileSchema,
     system: buildSageProfileSystemPrompt({ sage, locale }),
     prompt: rawContent,

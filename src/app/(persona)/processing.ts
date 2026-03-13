@@ -223,7 +223,7 @@ async function attachmentToContextWithLLM(
 
   await new Promise((resolve, reject) => {
     const response = streamText({
-      model: llm("gemini-2.5-flash"),
+      model: llm("gemini-3-flash"),
       providerOptions: defaultProviderOptions(),
 
       system: parseAttachmentPrompt({
@@ -436,7 +436,7 @@ async function analyzeInterviewCompleteness(
 
   try {
     const result = await generateObject({
-      // model: llm("gemini-2.5-pro"),
+      // model: llm("gemini-3.1-pro"),
       model: llm("gpt-5"),
       experimental_repairText: async (options) => {
         console.log(options);

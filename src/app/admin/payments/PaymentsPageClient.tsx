@@ -195,9 +195,10 @@ export function PaymentsPageClient({ initialSearchParams }: PaymentsPageClientPr
                       {record.amount.toFixed(2)}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {record.paymentLines.map((line) => (
+                      {/*{record.paymentLines.map((line) => (
                         <div key={line.id}>{line.description}</div>
-                      ))}
+                      ))}*/}
+                      {record.description}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <span
