@@ -117,7 +117,7 @@ export async function generateAndSaveStudyLog({
     ];
 
     const response = streamText({
-      model: llm("gemini-2.5-pro"),
+      model: llm("gemini-3.1-pro"),
       providerOptions: defaultProviderOptions(),
       tools: {
         google_search: google.tools.googleSearch({
