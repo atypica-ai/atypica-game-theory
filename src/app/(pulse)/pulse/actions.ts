@@ -136,8 +136,9 @@ export async function fetchPulseCategories(): Promise<
   ServerActionResult<Array<{ name: string }>>
 > {
   try {
+    const locale = await getLocale();
     const result = await prisma.pulse.findMany({
-      where: getNonExpiredPulseFilter(),
+      where: { ...getNonExpiredPulseFilter(), locale },
       select: { category: true },
       distinct: ["category"],
       orderBy: { category: "asc" },
