@@ -127,6 +127,7 @@ const GlobalHeader = React.memo(function GlobalHeader({
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           {children}
+          {isMounted && session?.user && <TokenBalanceBadge />}
           {session?.user ? (
             <IntercomLauncher />
           ) : sessionStatus != "loading" ? (
@@ -153,6 +154,28 @@ const GlobalHeader = React.memo(function GlobalHeader({
     </>
   );
 });
+
+function TokenBalanceBadge() {
+  const { balance } = useTokensBalance();
+
+  if (balance === null) return null;
+
+  return (
+    <Link
+      href="/account/tokens"
+      className="flex items-center gap-1 px-2 py-1 rounded-sm text-xs hover:bg-accent transition-colors"
+    >
+      <CoinsIcon className="size-3 text-amber-500 shrink-0" />
+      {balance === "Unlimited" ? (
+        <InfinityIcon className="size-3" />
+      ) : (
+        <span className={cn("font-medium", balance <= 0 && "text-destructive")}>
+          {formatTokensNumber(balance)}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 const MenuLink = ({
   className,

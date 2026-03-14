@@ -195,7 +195,7 @@ function PanelItem() {
 
 export function StudyBottomBar({ download = false }: { download?: boolean }) {
   return (
-    <div className="flex items-center gap-x-6 px-1 py-0.5">
+    <div className="flex items-center gap-x-1 sm:gap-x-6 px-1 py-0.5">
       <StudyArtifactsListPanel popoverSide="top" download={download} />
       <AttachmentsItem />
       <PanelItem />

@@ -166,14 +166,20 @@ export function CompactStatus({
 
   if (status === "outOfQuota") {
     return (
-      <Link
-        href="/pricing"
-        prefetch
-        className="flex items-center gap-1.5 text-xs text-foreground/70 hover:text-foreground"
-      >
-        <CoinsIcon className="size-3 text-amber-500 shrink-0" />
-        <span className="truncate">{t("addMoreTokens")}</span>
-      </Link>
+      <div className="flex gap-1.5 text-xs">
+        <CoinsIcon className="size-3 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-1.5">
+          <span className="text-foreground font-medium">{t("outOfQuota")}</span>
+          <span className="hidden sm:inline text-muted-foreground">·</span>
+          <Link
+            href="/pricing"
+            prefetch
+            className="text-foreground font-medium hover:underline"
+          >
+            {t("addMoreTokens")} ›
+          </Link>
+        </div>
+      </div>
     );
   }
 
