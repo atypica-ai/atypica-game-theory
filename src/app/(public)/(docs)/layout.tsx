@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 export default function FeaturesLayout({ children }: { children: ReactNode }) {
   return (
-    <DefaultLayout header={true} footer={true}>
+    <DefaultLayout header={true} footer={true} contained>
       {children}
     </DefaultLayout>
   );
