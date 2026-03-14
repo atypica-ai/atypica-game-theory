@@ -99,9 +99,9 @@ export async function resetUserMonthlyTokens({ userId }: { userId: number }) {
   //   return;
   // }
 
-  let rechargeAmount;
-  let giftAmount;
-  let unlimitedTokens;
+  let rechargeAmount: number;
+  let giftAmount: number;
+  let unlimitedTokens: boolean;
   if (activeSubscription.plan === SubscriptionPlan.pro) {
     rechargeAmount = PRO_MONTHLY_TOKENS; // 2_000_000
     giftAmount = PRO_MONTHLY_GIFT; // 1_000_000

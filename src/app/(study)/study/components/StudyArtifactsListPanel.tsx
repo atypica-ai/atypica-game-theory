@@ -93,7 +93,7 @@ export default function StudyArtifactsListPanel({
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 has-[>svg]:px-2 rounded-sm text-xs text-muted-foreground  bg-background/80 backdrop-blur-sm"
+          className="h-7 px-2 has-[>svg]:px-2 rounded-sm text-xs bg-background/80 backdrop-blur-sm"
         >
           <ArtifactsIcon />
           <span>{tArtifacts("title")}</span>
@@ -108,7 +108,7 @@ export default function StudyArtifactsListPanel({
           <div className="border-b border-border/50">
             <div className="px-3 py-2 flex items-center gap-2 bg-muted/30">
               <MicIcon className="size-3.5 text-muted-foreground" />
-              <span className="text-sm font-medium">{tPodcasts("title")}</span>
+              <span className="text-xs font-medium">{tPodcasts("title")}</span>
               {(podcastCount ?? podcasts.length) > 0 && (
                 <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px]">
                   {podcastCount ?? podcasts.length}
@@ -175,7 +175,7 @@ export default function StudyArtifactsListPanel({
           <div>
             <div className="px-3 py-2 flex items-center gap-2 bg-muted/30">
               <FileType2Icon className="size-3.5 text-muted-foreground" />
-              <span className="text-sm font-medium">{tReports("title")}</span>
+              <span className="text-xs font-medium">{tReports("title")}</span>
               {(reportCount ?? reports.length) > 0 && (
                 <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px]">
                   {reportCount ?? reports.length}

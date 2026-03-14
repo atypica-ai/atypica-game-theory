@@ -45,31 +45,27 @@ function AttachmentsItem() {
       .finally(() => setIsLoading(false));
   }, [studyUserChatToken]);
 
-  return (
+  return attachments.length > 0 ? (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 has-[>svg]:px-2 rounded-sm text-xs text-muted-foreground bg-background/80 backdrop-blur-sm"
+          className="h-7 px-2 has-[>svg]:px-2 rounded-sm text-xs bg-background/80 backdrop-blur-sm"
         >
           <PaperclipIcon />
           <span>{t("attachments")}</span>
-          {attachments.length > 0 && (
-            <span className="font-medium text-foreground">{attachments.length}</span>
-          )}
+          <span className="font-medium text-foreground">{attachments.length}</span>
           <ChevronRightIcon className="size-3" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-0 dark:bg-zinc-800" align="center" side="top">
         <div className="px-3 py-2 flex items-center gap-2 bg-muted/30">
           <PaperclipIcon className="size-3.5 text-muted-foreground" />
-          <span className="text-sm font-medium">{t("attachments")}</span>
-          {attachments.length > 0 && (
-            <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px]">
-              {attachments.length}
-            </Badge>
-          )}
+          <span className="text-xs font-medium">{t("attachments")}</span>
+          <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px]">
+            {attachments.length}
+          </Badge>
         </div>
         <div className="p-2">
           {isLoading ? (
@@ -115,7 +111,7 @@ function AttachmentsItem() {
         </div>
       </PopoverContent>
     </Popover>
-  );
+  ) : null;
 }
 
 // ─── Panel Item ───
@@ -144,17 +140,17 @@ function PanelItem() {
     });
   }, [personaPanelId]);
 
-  return (
+  return panelInfo ? (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 px-2 has-[>svg]:px-2 rounded-sm text-xs text-muted-foreground bg-background/80 backdrop-blur-sm"
+          className="h-7 px-2 has-[>svg]:px-2 rounded-sm text-xs bg-background/80 backdrop-blur-sm"
         >
           <UsersIcon />
           <span>Panel</span>
-          {panelInfo && panelInfo.personaCount > 0 && (
+          {panelInfo.personaCount > 0 && (
             <span className="font-medium text-foreground">{panelInfo.personaCount}</span>
           )}
           <ChevronRightIcon className="size-3" />
@@ -163,8 +159,8 @@ function PanelItem() {
       <PopoverContent className="w-64 p-0 dark:bg-zinc-800" align="end" side="top">
         <div className="px-3 py-2 flex items-center gap-2 bg-muted/30">
           <UsersIcon className="size-3.5 text-muted-foreground" />
-          <span className="text-sm font-medium">Panel</span>
-          {panelInfo && panelInfo.personaCount > 0 && (
+          <span className="text-xs font-medium">Panel</span>
+          {panelInfo.personaCount > 0 && (
             <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px]">
               {panelInfo.personaCount}
             </Badge>
@@ -172,6 +168,7 @@ function PanelItem() {
         </div>
         <div className="p-3">
           {!panelInfo ? (
+            // 这里其实不会出现
             <div className="text-center text-xs text-muted-foreground py-2">{t("noPanel")}</div>
           ) : (
             <div className="space-y-2">
@@ -191,7 +188,7 @@ function PanelItem() {
         </div>
       </PopoverContent>
     </Popover>
-  );
+  ) : null;
 }
 
 // ─── Bottom Bar ───
