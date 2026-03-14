@@ -62,7 +62,7 @@ export default function InterviewProjectHomePageClient() {
   return (
     <div className="bg-white dark:bg-zinc-950">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-24 md:py-32">
+      <section className="py-24 md:py-32 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="space-y-4">
             <h1 className="font-mono text-sm font-medium tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">
@@ -94,8 +94,8 @@ export default function InterviewProjectHomePageClient() {
       </section>
 
       {/* Features Section */}
-      <section className="border-t border-zinc-200 dark:border-zinc-800">
-        <div className="container mx-auto px-4 py-20 md:py-24">
+      <section className="border-t border-zinc-200 dark:border-zinc-800 py-20 md:py-24 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border border-zinc-200 dark:border-zinc-800">
             {features.map((feature, index) => (
               <div
@@ -121,8 +121,8 @@ export default function InterviewProjectHomePageClient() {
       </section>
 
       {/* Process Section */}
-      <section className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/20">
-        <div className="container mx-auto px-4 py-20 md:py-24">
+      <section className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/20 py-20 md:py-24 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16 space-y-4">
               <h2 className="font-sans text-2xl md:text-4xl font-normal tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -171,8 +171,8 @@ export default function InterviewProjectHomePageClient() {
       </section>
 
       {/* CTA Section */}
-      <section className="border-t border-zinc-200 dark:border-zinc-800">
-        <div className="container mx-auto px-4 py-20 md:py-24">
+      <section className="border-t border-zinc-200 dark:border-zinc-800 py-20 md:py-24 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl mx-auto text-center space-y-8">
             <div className="space-y-4">
               <h2 className="text-2xl md:text-4xl font-normal tracking-tight text-zinc-900 dark:text-zinc-100">

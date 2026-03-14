@@ -50,8 +50,8 @@ const processSteps = [
 export function HowItWorks() {
   const t = useTranslations("HomePageV3.HowItWorks");
   return (
-    <section className="py-20 md:py-28">
-      <div className="container mx-auto px-4">
+    <section className="py-20 md:py-28 px-4">
+      <div className="mx-auto max-w-6xl">
         <div className="text-center mb-12 md:mb-16">
           <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 tracking-widest uppercase">
             {t("badge")}

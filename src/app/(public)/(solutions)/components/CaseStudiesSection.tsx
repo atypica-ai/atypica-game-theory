@@ -64,8 +64,8 @@ export function CaseStudiesSection({ tag, title }: CaseStudiesSectionProps) {
   );
 
   return (
-    <section className="py-20 relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-8">
+    <section className="py-20 relative overflow-hidden px-4 sm:px-8">
+      <div className="mx-auto max-w-6xl">
         {/* Section title */}
         <div className="mb-12 text-center">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">

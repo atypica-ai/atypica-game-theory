@@ -33,7 +33,7 @@ export default async function NewStudyPage({
   }
 
   return (
-    <DefaultLayout header={true} footer={true}>
+    <DefaultLayout header={true} footer={true} containedHeader>
       <NewStudyClient initialBrief={brief} />
     </DefaultLayout>
   );

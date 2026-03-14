@@ -109,7 +109,7 @@ export default function FeaturedStudiesClient({
   if (isLoading) {
     return (
       <div className="py-4 md:py-6 px-4 md:px-6">
-        <div className="flex flex-col items-center gap-4 md:gap-6 max-w-screen-2xl mx-auto">
+        <div className="flex flex-col items-center gap-4 md:gap-6 max-w-6xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold text-center">{t("title")}</h1>
           <div className="flex justify-center py-8">
             <Loader2Icon className="size-8 animate-spin" />
@@ -174,7 +174,7 @@ export default function FeaturedStudiesClient({
 
   return (
     <div className="py-4 md:py-6 px-4 md:px-6">
-      <div className=" flex flex-col items-center gap-4 md:gap-6 max-w-screen-2xl mx-auto">
+      <div className=" flex flex-col items-center gap-4 md:gap-6 max-w-6xl mx-auto">
         <h1 className="text-2xl md:text-3xl font-bold text-center">{t("title")}</h1>
         <p className="text-muted-foreground mt-1 text-center text-sm md:text-base max-w-lg">
           {t("description")}

@@ -87,8 +87,8 @@ function AnimatedCounter({
 export function StatsSection() {
   const t = useTranslations("HomePageV3.StatsSection");
   return (
-    <section className="pb-20 md:pb-28">
-      <div className="container mx-auto px-4">
+    <section className="pb-20 md:pb-28 px-4">
+      <div className="mx-auto max-w-6xl">
         <div className="text-center mb-12">
           <h2 className="font-EuclidCircularA font-medium text-3xl md:text-4xl mb-4">
             {t("title")}

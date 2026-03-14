@@ -57,8 +57,8 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="py-20 md:py-32">
-      <div className="container mx-auto px-4 text-center">
+    <section className="py-20 md:py-32 px-4">
+      <div className="mx-auto max-w-6xl text-center">
         <h1
           className={cn(
             "font-EuclidCircularA max-w-5xl mx-auto mb-6",

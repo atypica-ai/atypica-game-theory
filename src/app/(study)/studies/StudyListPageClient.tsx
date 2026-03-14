@@ -93,8 +93,8 @@ export function StudyListPageClient({
   );
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin">
-      <div className="container mx-auto max-w-6xl px-8 py-8 space-y-6">
+    <div className="flex-1 overflow-y-auto scrollbar-thin px-8 py-8">
+      <div className="mx-auto max-w-6xl space-y-6">
         <div className="relative text-center space-y-3">
           <div className="absolute right-0 top-0">
             <ArchiveDrawer<ExtractServerActionData<typeof fetchUserStudies>[number]>

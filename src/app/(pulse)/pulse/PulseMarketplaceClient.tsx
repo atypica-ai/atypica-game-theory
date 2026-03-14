@@ -236,185 +236,187 @@ export function PulseMarketplaceClient({
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 md:px-8 py-8 md:py-12 space-y-8">
-      {/* Header */}
-      <div className="space-y-4">
-        <div className="w-12 h-1 bg-ghost-green" />
-        <h1 className="text-4xl md:text-5xl font-EuclidCircularA font-medium tracking-tight">
-          {t("title")}
-        </h1>
-        <p className="text-base text-muted-foreground">{t("description")}</p>
-      </div>
-
-      {/* Pulse Heat Treemap Section */}
-      {heatTreemapData && heatTreemapData.categories.length > 0 && (
-        <div>
-          {isLoadingHeatTreemap ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <PulseHeatTreemap
-              categories={heatTreemapData.categories}
-              updatedAt={heatTreemapData.updatedAt}
-              onPulseClick={handlePulseClick}
-            />
-          )}
-        </div>
-      )}
-
-      {/* Category Bar with Filters */}
-      <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4">
-        <div className="flex-1 min-w-0">
-          <CategoryBar
-            categories={initialCategories}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            showRecommend={hasRecommendations}
-          />
+    <div className="px-4 md:px-8 py-8 md:py-12">
+      <div className="mx-auto max-w-6xl space-y-8">
+        {/* Header */}
+        <div className="space-y-4">
+          <div className="w-12 h-1 bg-ghost-green" />
+          <h1 className="text-4xl md:text-5xl font-EuclidCircularA font-medium tracking-tight">
+            {t("title")}
+          </h1>
+          <p className="text-base text-muted-foreground">{t("description")}</p>
         </div>
 
-        {selectedCategory !== "Recommend" && (
-          <div className="flex items-center gap-2 lg:shrink-0">
-            <div className="relative w-48">
-              <SearchIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder={t("searchPlaceholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 pl-8 text-xs"
+        {/* Pulse Heat Treemap Section */}
+        {heatTreemapData && heatTreemapData.categories.length > 0 && (
+          <div>
+            {isLoadingHeatTreemap ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <PulseHeatTreemap
+                categories={heatTreemapData.categories}
+                updatedAt={heatTreemapData.updatedAt}
+                onPulseClick={handlePulseClick}
               />
-            </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                  {timeFilter === "all" && t("allTime")}
-                  {timeFilter === "today" && t("today")}
-                  {timeFilter === "week" && t("thisWeek")}
-                  {timeFilter === "month" && t("thisMonth")}
-                  <ChevronDownIcon className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTimeFilter("all")}>
-                  {t("allTime")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTimeFilter("today")}>
-                  {t("today")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTimeFilter("week")}>
-                  {t("thisWeek")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTimeFilter("month")}>
-                  {t("thisMonth")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-                  {heatFilter === "all" && t("allHeat")}
-                  {heatFilter === "high" && t("highHeat")}
-                  {heatFilter === "medium" && t("mediumHeat")}
-                  {heatFilter === "low" && t("lowHeat")}
-                  <ChevronDownIcon className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setHeatFilter("all")}>
-                  {t("allHeat")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHeatFilter("high")}>
-                  {t("highHeat")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHeatFilter("medium")}>
-                  {t("mediumHeat")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHeatFilter("low")}>
-                  {t("lowHeat")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            )}
           </div>
         )}
+
+        {/* Category Bar with Filters */}
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4">
+          <div className="flex-1 min-w-0">
+            <CategoryBar
+              categories={initialCategories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              showRecommend={hasRecommendations}
+            />
+          </div>
+
+          {selectedCategory !== "Recommend" && (
+            <div className="flex items-center gap-2 lg:shrink-0">
+              <div className="relative w-48">
+                <SearchIcon className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder={t("searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8 pl-8 text-xs"
+                />
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                    {timeFilter === "all" && t("allTime")}
+                    {timeFilter === "today" && t("today")}
+                    {timeFilter === "week" && t("thisWeek")}
+                    {timeFilter === "month" && t("thisMonth")}
+                    <ChevronDownIcon className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setTimeFilter("all")}>
+                    {t("allTime")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTimeFilter("today")}>
+                    {t("today")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTimeFilter("week")}>
+                    {t("thisWeek")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTimeFilter("month")}>
+                    {t("thisMonth")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                    {heatFilter === "all" && t("allHeat")}
+                    {heatFilter === "high" && t("highHeat")}
+                    {heatFilter === "medium" && t("mediumHeat")}
+                    {heatFilter === "low" && t("lowHeat")}
+                    <ChevronDownIcon className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setHeatFilter("all")}>
+                    {t("allHeat")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHeatFilter("high")}>
+                    {t("highHeat")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHeatFilter("medium")}>
+                    {t("mediumHeat")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHeatFilter("low")}>
+                    {t("lowHeat")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </div>
+
+        {/* Content Area */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : selectedCategory === "Recommend" ? (
+          <div>
+            {!isAuthenticated ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <InboxIcon className="h-8 w-8 text-muted-foreground mb-3" />
+                <p className="text-sm text-muted-foreground">{t("signInForRecommendations")}</p>
+              </div>
+            ) : recommendations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <InboxIcon className="h-8 w-8 text-muted-foreground mb-3" />
+                <p className="text-sm text-muted-foreground">{t("noRecommendations")}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {recommendations.map((rec) => (
+                  <PulseCard
+                    key={rec.pulseId}
+                    pulse={rec.pulse}
+                    angle={rec.angle}
+                    highlighted={highlightedPulseId === rec.pulseId}
+                    onClick={() => handleCardClick(rec.pulse)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            {filteredPulses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <InboxIcon className="h-8 w-8 text-muted-foreground mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  {pulses.length === 0 ? t("noPulsesInCategory") : t("noPulsesMatchFilters")}
+                </p>
+                {pulses.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setTimeFilter("all");
+                      setHeatFilter("all");
+                    }}
+                    className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {t("clearFilters")}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredPulses.map((pulse) => (
+                  <PulseCard
+                    key={pulse.id}
+                    pulse={pulse}
+                    highlighted={highlightedPulseId === pulse.id}
+                    onClick={() => handleCardClick(pulse)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <PulseDetailDialog
+          open={isDetailDialogOpen}
+          onOpenChange={setIsDetailDialogOpen}
+          pulse={selectedPulse}
+          onStartResearch={handleStartResearch}
+        />
       </div>
-
-      {/* Content Area */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
-        </div>
-      ) : selectedCategory === "Recommend" ? (
-        <div>
-          {!isAuthenticated ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <InboxIcon className="h-8 w-8 text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground">{t("signInForRecommendations")}</p>
-            </div>
-          ) : recommendations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <InboxIcon className="h-8 w-8 text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground">{t("noRecommendations")}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recommendations.map((rec) => (
-                <PulseCard
-                  key={rec.pulseId}
-                  pulse={rec.pulse}
-                  angle={rec.angle}
-                  highlighted={highlightedPulseId === rec.pulseId}
-                  onClick={() => handleCardClick(rec.pulse)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div>
-          {filteredPulses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <InboxIcon className="h-8 w-8 text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground">
-                {pulses.length === 0 ? t("noPulsesInCategory") : t("noPulsesMatchFilters")}
-              </p>
-              {pulses.length > 0 && (
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    setTimeFilter("all");
-                    setHeatFilter("all");
-                  }}
-                  className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {t("clearFilters")}
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredPulses.map((pulse) => (
-                <PulseCard
-                  key={pulse.id}
-                  pulse={pulse}
-                  highlighted={highlightedPulseId === pulse.id}
-                  onClick={() => handleCardClick(pulse)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      <PulseDetailDialog
-        open={isDetailDialogOpen}
-        onOpenChange={setIsDetailDialogOpen}
-        pulse={selectedPulse}
-        onStartResearch={handleStartResearch}
-      />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
+import { getS3CDNUrl } from "@/app/(public)/home-v3/actions";
 import { HeroVideo } from "@/app/(public)/home-v3/HeroVideo";
 import { Button } from "@/components/ui/button";
-import { getS3CDNUrl } from "@/app/(public)/home-v3/actions";
 import {
   ArrowRight,
   BookOpen,
@@ -20,8 +20,8 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function PanelHomePage() {
   const t = useTranslations("PersonaPanel.HomePage");
@@ -37,7 +37,7 @@ export function PanelHomePage() {
   return (
     <div className="bg-background">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 md:py-24">
+      <section className="py-20 md:py-24 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="space-y-4">
             <h1 className="font-mono text-sm font-medium tracking-wider text-muted-foreground uppercase">
@@ -83,8 +83,8 @@ export function PanelHomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="border-t border-border">
-        <div className="container mx-auto px-4 py-20 md:py-24">
+      <section className="border-t border-border py-20 md:py-24 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border border-border">
             {/* Panel Library */}
             <div className="p-6 md:p-10 border-border md:border-r border-b">
@@ -101,15 +101,21 @@ export function PanelHomePage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <FileText className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelLibrary.detail1")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelLibrary.detail1")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Target className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelLibrary.detail2")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelLibrary.detail2")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MessageCircle className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelLibrary.detail3")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelLibrary.detail3")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -130,15 +136,21 @@ export function PanelHomePage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Lightbulb className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelCreation.detail1")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelCreation.detail1")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Network className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelCreation.detail2")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelCreation.detail2")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FileText className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelCreation.detail3")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelCreation.detail3")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -159,15 +171,21 @@ export function PanelHomePage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <MessageCircle className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelDiscussion.detail1")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelDiscussion.detail1")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Target className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelDiscussion.detail2")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelDiscussion.detail2")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelDiscussion.detail3")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelDiscussion.detail3")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -188,15 +206,21 @@ export function PanelHomePage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Target className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelResearch.detail1")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelResearch.detail1")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelResearch.detail2")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelResearch.detail2")}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FileText className="size-4 text-muted-foreground/70" />
-                    <span className="text-sm text-muted-foreground">{t("features.panelResearch.detail3")}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("features.panelResearch.detail3")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -206,42 +230,66 @@ export function PanelHomePage() {
       </section>
 
       {/* Analysis Dimensions Section */}
-      <section className="border-t border-border bg-muted/30">
-        <div className="container mx-auto px-4 py-20 md:py-24">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16 space-y-4">
-              <h2 className="font-sans text-2xl md:text-4xl font-normal tracking-tight text-foreground">
-                {t("dimensions.title")}
-              </h2>
-              <p className="text-base md:text-lg text-muted-foreground">
-                {t("dimensions.description")}
-              </p>
-            </div>
+      <section className="border-t border-border bg-muted/30 py-20 md:py-24 px-4">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="font-sans text-2xl md:text-4xl font-normal tracking-tight text-foreground">
+              {t("dimensions.title")}
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground">
+              {t("dimensions.description")}
+            </p>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <DimensionCard icon={Users} title={t("dimensions.demographic.title")} description={t("dimensions.demographic.description")} />
-              <DimensionCard icon={MapPin} title={t("dimensions.geographic.title")} description={t("dimensions.geographic.description")} />
-              <DimensionCard icon={Brain} title={t("dimensions.psychological.title")} description={t("dimensions.psychological.description")} />
-              <DimensionCard icon={ShoppingCart} title={t("dimensions.behavioral.title")} description={t("dimensions.behavioral.description")} />
-              <DimensionCard icon={Lightbulb} title={t("dimensions.needs.title")} description={t("dimensions.needs.description")} />
-              <DimensionCard icon={Smartphone} title={t("dimensions.tech.title")} description={t("dimensions.tech.description")} />
-              <DimensionCard icon={Network} title={t("dimensions.social.title")} description={t("dimensions.social.description")} />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <DimensionCard
+              icon={Users}
+              title={t("dimensions.demographic.title")}
+              description={t("dimensions.demographic.description")}
+            />
+            <DimensionCard
+              icon={MapPin}
+              title={t("dimensions.geographic.title")}
+              description={t("dimensions.geographic.description")}
+            />
+            <DimensionCard
+              icon={Brain}
+              title={t("dimensions.psychological.title")}
+              description={t("dimensions.psychological.description")}
+            />
+            <DimensionCard
+              icon={ShoppingCart}
+              title={t("dimensions.behavioral.title")}
+              description={t("dimensions.behavioral.description")}
+            />
+            <DimensionCard
+              icon={Lightbulb}
+              title={t("dimensions.needs.title")}
+              description={t("dimensions.needs.description")}
+            />
+            <DimensionCard
+              icon={Smartphone}
+              title={t("dimensions.tech.title")}
+              description={t("dimensions.tech.description")}
+            />
+            <DimensionCard
+              icon={Network}
+              title={t("dimensions.social.title")}
+              description={t("dimensions.social.description")}
+            />
           </div>
         </div>
       </section>
 
       {/* Process Section */}
-      <section className="border-t border-border">
-        <div className="container mx-auto px-4 py-20 md:py-24">
+      <section className="border-t border-border py-20 md:py-24 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16 space-y-4">
               <h2 className="font-sans text-2xl md:text-4xl font-normal tracking-tight text-foreground">
                 {t("steps.title")}
               </h2>
-              <p className="text-base md:text-lg text-muted-foreground">
-                {t("steps.description")}
-              </p>
+              <p className="text-base md:text-lg text-muted-foreground">{t("steps.description")}</p>
             </div>
 
             <div className="relative">
@@ -251,11 +299,31 @@ export function PanelHomePage() {
               />
 
               <div className="space-y-12 md:space-y-16">
-                <StepItem index={0} title={t("steps.step1.title")} description={t("steps.step1.description")} />
-                <StepItem index={1} title={t("steps.step2.title")} description={t("steps.step2.description")} />
-                <StepItem index={2} title={t("steps.step3.title")} description={t("steps.step3.description")} />
-                <StepItem index={3} title={t("steps.step4.title")} description={t("steps.step4.description")} />
-                <StepItem index={4} title={t("steps.step5.title")} description={t("steps.step5.description")} />
+                <StepItem
+                  index={0}
+                  title={t("steps.step1.title")}
+                  description={t("steps.step1.description")}
+                />
+                <StepItem
+                  index={1}
+                  title={t("steps.step2.title")}
+                  description={t("steps.step2.description")}
+                />
+                <StepItem
+                  index={2}
+                  title={t("steps.step3.title")}
+                  description={t("steps.step3.description")}
+                />
+                <StepItem
+                  index={3}
+                  title={t("steps.step4.title")}
+                  description={t("steps.step4.description")}
+                />
+                <StepItem
+                  index={4}
+                  title={t("steps.step5.title")}
+                  description={t("steps.step5.description")}
+                />
               </div>
             </div>
           </div>
@@ -263,8 +331,8 @@ export function PanelHomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="border-t border-border">
-        <div className="container mx-auto px-4 py-20 md:py-24">
+      <section className="border-t border-border py-20 md:py-24 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl mx-auto text-center space-y-8">
             <div className="space-y-4">
               <h2 className="text-2xl md:text-4xl font-normal tracking-tight text-foreground">
@@ -275,11 +343,7 @@ export function PanelHomePage() {
               </p>
             </div>
             <div className="flex flex-col items-center gap-4 max-w-sm mx-auto">
-              <Button
-                size="lg"
-                className="w-full h-12"
-                onClick={() => router.push("/panels")}
-              >
+              <Button size="lg" className="w-full h-12" onClick={() => router.push("/panels")}>
                 {t("cta.createFirst")}
                 <ArrowRight className="h-4 w-4" />
               </Button>

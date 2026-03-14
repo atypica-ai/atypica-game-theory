@@ -11,8 +11,8 @@ type FeaturedPodcastItem = ExtractServerActionData<typeof fetchFeaturedPodcasts>
 export function HighlightPodcast({ podcast }: { podcast: FeaturedPodcastItem }) {
   const t = useTranslations("FeaturedPodcastsPage");
   return (
-    <section className="container mx-auto px-4 py-10 md:py-28">
-      <div className="max-w-6xl mx-auto bg-card border border-border rounded-2xl p-8 sm:p-8 md:p-12 relative overflow-hidden shadow-lg">
+    <section className="py-10 md:py-28 px-4">
+      <div className="mx-auto max-w-6xl bg-card border border-border rounded-2xl p-8 sm:p-8 md:p-12 relative overflow-hidden shadow-lg">
         {/* Share Button - Top Right */}
         {/*<Button
           variant="outline"

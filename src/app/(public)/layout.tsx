@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 export default async function PublicPagesLayout({ children }: { children: ReactNode }) {
   return (
-    <DefaultLayout header={true} footer={true} contained>
+    <DefaultLayout header={true} footer={true} containedHeader>
       {children}
     </DefaultLayout>
   );

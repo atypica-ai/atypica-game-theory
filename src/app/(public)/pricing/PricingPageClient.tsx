@@ -89,7 +89,7 @@ export default function PricingPageClient({
       <Tabs
         value={activeTab}
         onValueChange={(tab) => handleTabChange(tab as TPricingTab)}
-        className="max-w-7xl mx-auto"
+        className="max-w-6xl mx-auto"
       >
         <TabsList className="mx-auto mb-8 h-12 w-full max-w-2xl">
           <TabsTrigger
@@ -170,7 +170,7 @@ export default function PricingPageClient({
         </TabsContent>
       </Tabs>
 
-      <div className="max-w-7xl mx-auto mt-8 bg-muted/50 rounded-lg p-4 flex items-center gap-3 border border-border/50">
+      <div className="max-w-6xl mx-auto mt-8 bg-muted/50 rounded-lg p-4 flex items-center gap-3 border border-border/50">
         <InfoIcon className="size-5 text-primary shrink-0" />
         <p className="text-sm text-foreground/80">{t("averageStudyToken")}</p>
       </div>

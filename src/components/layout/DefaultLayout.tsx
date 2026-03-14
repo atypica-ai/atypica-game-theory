@@ -11,7 +11,7 @@ import { isValidElement, ReactNode } from "react";
  */
 export type DefaultLayoutProps = {
   header?: boolean;
-  contained?: boolean;
+  containedHeader?: boolean;
   children: ReactNode;
 } & (
   | {
@@ -29,7 +29,7 @@ export async function DefaultLayout({
   header = false,
   footer = false,
   fitToViewport = false,
-  contained = false,
+  containedHeader = false,
 }: DefaultLayoutProps) {
   if (fitToViewport && footer) {
     // This case is already handled by the type definition, but a runtime check
@@ -67,7 +67,7 @@ export async function DefaultLayout({
 
   return fitToViewport ? (
     <div className="h-dvh flex flex-col items-stretch justify-start overflow-hidden">
-      {header && <GlobalHeader contained={contained} />}
+      {header && <GlobalHeader contained={containedHeader} />}
       {children}
     </div>
   ) : (
@@ -78,7 +78,7 @@ export async function DefaultLayout({
       )}
     >
       {header && (
-        <GlobalHeader className="h-16 fixed top-0 left-0 right-0 z-10" contained={contained} />
+        <GlobalHeader className="h-16 fixed top-0 left-0 right-0 z-10" contained={containedHeader} />
       )}
       {children}
       {footer && <GlobalFooter />}

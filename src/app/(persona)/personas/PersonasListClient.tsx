@@ -118,8 +118,8 @@ export function PersonasListClient({
   );
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin">
-      <div className="container mx-auto px-8 py-8 max-w-6xl space-y-6">
+    <div className="flex-1 overflow-y-auto scrollbar-thin px-8 py-8">
+      <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div className="relative text-center space-y-3">
           <div className="absolute right-0 top-0">

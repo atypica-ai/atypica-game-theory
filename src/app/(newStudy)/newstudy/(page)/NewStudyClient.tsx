@@ -26,8 +26,8 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
   };
 
   return (
-    <div className="hero-grid">
-      <div className="relative w-2xl max-w-full mx-auto px-4 py-4">
+    <div className="hero-grid px-4">
+      <div className="relative w-2xl max-w-full mx-auto py-4">
         {/* Personal profile CTA */}
         <Link
           href="/user/memory-builder"
@@ -36,9 +36,7 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
           <span className="size-1.5 rounded-full bg-ghost-green shrink-0" />
           <div className="flex-1 min-w-0">
             <span className="text-sm font-medium">{tHp("title")}</span>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {tHp("description")}
-            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">{tHp("description")}</p>
           </div>
           <div className="shrink-0 flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap group-hover:text-foreground group-hover:font-medium">
             {tHp("cta")}
@@ -73,7 +71,7 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
         <div className="mt-2 text-xs text-muted-foreground text-center">{t("newStudyHint")}</div>
       </div>
       {/* Shortcuts Grid */}
-      <div className="mt-10 container px-4 mx-auto mb-12 sm:mb-32">
+      <div className="mt-10 mx-auto max-w-6xl mb-12 sm:mb-32">
         <div className="flex items-center justify-center gap-4 mb-8">
           <div className="h-px flex-1 bg-border max-w-24" />
           <h2 className="text-lg font-medium text-center whitespace-nowrap">

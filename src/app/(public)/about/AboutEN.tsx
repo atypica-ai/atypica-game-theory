@@ -1,8 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import React, { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 export const AboutEN: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -14,8 +14,8 @@ export const AboutEN: React.FC = () => {
   return (
     <div className="relative">
       {/* Hero Section */}
-      <section className="relative min-h-[560px] md:min-h-[640px] lg:min-h-[720px] overflow-hidden">
-        <div className="container mx-auto relative h-full px-4 sm:px-8">
+      <section className="relative min-h-[560px] md:min-h-[640px] lg:min-h-[720px] overflow-hidden px-4 sm:px-8">
+        <div className="mx-auto max-w-6xl relative h-full">
           <div
             className={cn(
               "flex flex-col justify-center items-center text-center min-h-[560px] md:min-h-[640px] lg:min-h-[720px] py-16 md:py-20",
@@ -50,7 +50,7 @@ export const AboutEN: React.FC = () => {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 sm:px-8 space-y-20 md:space-y-32 py-12">
+      <div className="px-4 sm:px-8 py-12 mx-auto max-w-6xl space-y-20 md:space-y-32">
         {/* Multi-Agent System Section */}
         <section>
           <div className="max-w-5xl mx-auto">
@@ -73,7 +73,11 @@ export const AboutEN: React.FC = () => {
               <AgentCard
                 title="Plan Mode Agent"
                 description="Intent clarification layer that transforms vague user needs into executable research plans through flexible dialogue and automatic decision-making."
-                features={["Automatic intent classification", "Framework selection", "Cost estimation"]}
+                features={[
+                  "Automatic intent classification",
+                  "Framework selection",
+                  "Cost estimation",
+                ]}
               />
               <AgentCard
                 title="Study Agent"
@@ -103,7 +107,11 @@ export const AboutEN: React.FC = () => {
               <AgentCard
                 title="Sage Agent"
                 description="Evolving domain expert agent that achieves continuous learning through structured memory documents, knowledge gap tracking, and supplementary interview mechanisms."
-                features={["Memory-based expertise", "Continuous evolution", "Knowledge gap identification"]}
+                features={[
+                  "Memory-based expertise",
+                  "Continuous evolution",
+                  "Knowledge gap identification",
+                ]}
               />
               <AgentCard
                 title="Moderator AI"
@@ -180,7 +188,8 @@ export const AboutEN: React.FC = () => {
                   <span>Interview (One-on-One)</span>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  In-depth one-on-one interviews for capturing individual insights, emotional understanding, and behavioral motivation analysis. Suitable for 5-10 participants.
+                  In-depth one-on-one interviews for capturing individual insights, emotional
+                  understanding, and behavioral motivation analysis. Suitable for 5-10 participants.
                 </p>
                 <ul className="space-y-2">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
@@ -200,7 +209,8 @@ export const AboutEN: React.FC = () => {
                   <span>Discussion (Group)</span>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Group discussion format with Moderator AI guiding 3-8 AI personas in interaction, observing opinion clashes and simulating group decision-making scenarios.
+                  Group discussion format with Moderator AI guiding 3-8 AI personas in interaction,
+                  observing opinion clashes and simulating group decision-making scenarios.
                 </p>
                 <ul className="space-y-2">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
@@ -234,46 +244,68 @@ export const AboutEN: React.FC = () => {
             <div className="h-px bg-border mb-8"></div>
 
             <p className="text-base md:text-lg text-foreground/90 leading-relaxed mb-8">
-              atypica.AI is built on GEA (Generative Enterprise Architecture), designed for exploratory knowledge work where starting points are ambiguous, processes uncertain, and judgment is core.
+              atypica.AI is built on GEA (Generative Enterprise Architecture), designed for
+              exploratory knowledge work where starting points are ambiguous, processes uncertain,
+              and judgment is core.
             </p>
 
             <div className="space-y-6">
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: "var(--ghost-green)" }}
+                  ></span>
                   Dual-Agent Architecture
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Separates reasoning from execution for clearer responsibilities and more flexible collaboration
+                  Separates reasoning from execution for clearer responsibilities and more flexible
+                  collaboration
                 </p>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
                     <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                    <span><strong>Reasoning Agent</strong>: Plans execution paths, prepares context, judges when to adjust direction</span>
+                    <span>
+                      <strong>Reasoning Agent</strong>: Plans execution paths, prepares context,
+                      judges when to adjust direction
+                    </span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
                     <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                    <span><strong>Execute Agent</strong>: Generic executor that depends on Reasoning Agent&apos;s prepared context</span>
+                    <span>
+                      <strong>Execute Agent</strong>: Generic executor that depends on Reasoning
+                      Agent&apos;s prepared context
+                    </span>
                   </li>
                 </ul>
               </div>
 
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: "var(--ghost-green)" }}
+                  ></span>
                   Messages as Source of Truth
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  All research content flows through message streams; database stores only derived states
+                  All research content flows through message streams; database stores only derived
+                  states
                 </p>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
                     <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                    <span><strong>Unified Format</strong>: All tools return plainText for consistent processing</span>
+                    <span>
+                      <strong>Unified Format</strong>: All tools return plainText for consistent
+                      processing
+                    </span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
                     <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                    <span><strong>Generated on Demand</strong>: studyLog generated from messages when needed</span>
+                    <span>
+                      <strong>Generated on Demand</strong>: studyLog generated from messages when
+                      needed
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -359,7 +391,10 @@ export const AboutEN: React.FC = () => {
                   key={item.step}
                   className="border border-border rounded-lg p-4 text-center hover:border-foreground/20 transition-all"
                 >
-                  <div className="text-lg font-semibold mb-2" style={{ color: "var(--ghost-green)" }}>
+                  <div
+                    className="text-lg font-semibold mb-2"
+                    style={{ color: "var(--ghost-green)" }}
+                  >
                     {item.step}
                   </div>
                   <p className="text-sm text-foreground/80">{item.title}</p>
@@ -372,9 +407,7 @@ export const AboutEN: React.FC = () => {
         {/* Platform Statistics */}
         <section className="py-12 md:py-16">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-xl md:text-2xl font-bold mb-8 text-center">
-              Platform Statistics
-            </h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-8 text-center">Platform Statistics</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <StatCard number="300K+" label="AI Personas Created" />
               <StatCard number="+1M" label="Simulated Interviews" />
@@ -503,7 +536,10 @@ function AgentCard({
   return (
     <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
       <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-        <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
+        <span
+          className="size-2 rounded-full"
+          style={{ backgroundColor: "var(--ghost-green)" }}
+        ></span>
         {title}
       </h3>
       <p className="text-sm text-foreground/80 leading-relaxed mb-4">{description}</p>
@@ -531,7 +567,10 @@ function TechCard({
   return (
     <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
       <h3 className="font-semibold text-xl mb-2 flex items-center gap-2">
-        <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
+        <span
+          className="size-2 rounded-full"
+          style={{ backgroundColor: "var(--ghost-green)" }}
+        ></span>
         {title}
       </h3>
       <p className="text-sm text-muted-foreground mb-4">{description}</p>

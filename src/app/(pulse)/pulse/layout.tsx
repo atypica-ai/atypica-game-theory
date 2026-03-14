@@ -1,15 +1,10 @@
 import { DefaultLayout } from "@/components/layout/DefaultLayout";
 import { ReactNode } from "react";
 
-export default async function PulseMarketplaceLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function PulseMarketplaceLayout({ children }: { children: ReactNode }) {
   return (
-    <DefaultLayout header={true} footer={true}>
+    <DefaultLayout header={true} footer={true} containedHeader>
       {children}
     </DefaultLayout>
   );
 }
-

@@ -189,7 +189,7 @@ function TokenBalanceBadge() {
 
 const PRODUCT_ITEMS = [
   { key: "marketResearch", descKey: "marketResearchDesc", href: "/newstudy", icon: SearchIcon },
-  { key: "aiPanel", descKey: "aiPanelDesc", href: "/panels", icon: LayoutPanelLeftIcon },
+  { key: "aiPanel", descKey: "aiPanelDesc", href: "/panel", icon: LayoutPanelLeftIcon },
   { key: "interviewProject", descKey: "interviewProjectDesc", href: "/interview", icon: MicIcon },
   { key: "personaImport", descKey: "personaImportDesc", href: "/persona", icon: Users2Icon },
   { key: "aiSage", descKey: "aiSageDesc", href: "/sage", icon: BrainIcon },

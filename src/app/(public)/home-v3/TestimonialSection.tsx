@@ -40,8 +40,8 @@ export function TestimonialSection() {
   return (
     <>
       {/* Testimonial Section */}
-      <section className="bg-zinc-50 dark:bg-black py-20 md:py-28">
-        <div className="container mx-auto px-4">
+      <section className="bg-zinc-50 dark:bg-black py-20 md:py-28 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight">
               {t("title")}

@@ -195,140 +195,146 @@ export function FeaturedPodcastsClient({
       </section>
 
       {/* More to Discover Section */}
-      <section className="container mx-auto px-4 py-20 md:py-28">
-        <div className="text-center mb-12 md:mb-16">
-          <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight text-foreground mb-4">
-            {t("moreToDiscover")}
-          </h2>
-          <p className="max-w-3xl mx-auto text-lg text-zinc-600 dark:text-zinc-400">
-            {t("moreToDiscoverDescription")}
-          </p>
-        </div>
-
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Business Category */}
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <button
-              onClick={() =>
-                setSelectedCategory(selectedCategory === "business" ? null : "business")
-              }
-              className="w-full p-8 hover:bg-accent/50 transition-colors group text-left"
-            >
-              <div className="flex items-center justify-between gap-6">
-                <div className="flex items-center gap-6 flex-1">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
-                    <Volume2Icon className="w-8 h-8 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-foreground mb-2">{t("business")}</h3>
-                    <p className="text-muted-foreground">{t("businessDescription")}</p>
-                  </div>
-                </div>
-                <div className="text-muted-foreground">
-                  {selectedCategory === "business" ? "−" : "+"}
-                </div>
-              </div>
-            </button>
-
-            {selectedCategory === "business" && (
-              <div className="border-t border-border p-6 bg-muted/20">
-                {categoryFilteredPodcasts.length > 0 ? (
-                  <div className="space-y-3">
-                    {categoryFilteredPodcasts.map((featuredPodcast) => (
-                      <div
-                        key={featuredPodcast.id}
-                        className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
-                      >
-                        <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">
-                          <Volume2Icon className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-foreground line-clamp-1">
-                            {featuredPodcast.title}
-                          </h4>
-                          {/*<p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>*/}
-                        </div>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={featuredPodcast.url} target="_blank">
-                            <PlayIcon className="h-3.5 w-3.5" />
-                          </Link>
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-sm text-muted-foreground py-4">
-                    {t("noBusinessPodcasts")}
-                  </p>
-                )}
-              </div>
-            )}
+      <section className="py-20 md:py-28 px-4">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight text-foreground mb-4">
+              {t("moreToDiscover")}
+            </h2>
+            <p className="max-w-3xl mx-auto text-lg text-zinc-600 dark:text-zinc-400">
+              {t("moreToDiscoverDescription")}
+            </p>
           </div>
 
-          {/* Society & Culture Category */}
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <button
-              onClick={() => setSelectedCategory(selectedCategory === "society" ? null : "society")}
-              className="w-full p-8 hover:bg-accent/50 transition-colors group text-left"
-            >
-              <div className="flex items-center justify-between gap-6">
-                <div className="flex items-center gap-6 flex-1">
-                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
-                    <Volume2Icon className="w-8 h-8 text-primary" />
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Business Category */}
+            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+              <button
+                onClick={() =>
+                  setSelectedCategory(selectedCategory === "business" ? null : "business")
+                }
+                className="w-full p-8 hover:bg-accent/50 transition-colors group text-left"
+              >
+                <div className="flex items-center justify-between gap-6">
+                  <div className="flex items-center gap-6 flex-1">
+                    <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
+                      <Volume2Icon className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-foreground mb-2">
+                        {t("business")}
+                      </h3>
+                      <p className="text-muted-foreground">{t("businessDescription")}</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-foreground mb-2">
-                      {t("societyCulture")}
-                    </h3>
-                    <p className="text-muted-foreground">{t("societyCultureDescription")}</p>
+                  <div className="text-muted-foreground">
+                    {selectedCategory === "business" ? "−" : "+"}
                   </div>
                 </div>
-                <div className="text-muted-foreground">
-                  {selectedCategory === "society" ? "−" : "+"}
-                </div>
-              </div>
-            </button>
+              </button>
 
-            {selectedCategory === "society" && (
-              <div className="border-t border-border p-6 bg-muted/20">
-                {categoryFilteredPodcasts.length > 0 ? (
-                  <div className="space-y-3">
-                    {categoryFilteredPodcasts.map((featuredPodcast) => (
-                      <div
-                        key={featuredPodcast.id}
-                        className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
-                      >
-                        <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">
-                          <Volume2Icon className="w-5 h-5" />
+              {selectedCategory === "business" && (
+                <div className="border-t border-border p-6 bg-muted/20">
+                  {categoryFilteredPodcasts.length > 0 ? (
+                    <div className="space-y-3">
+                      {categoryFilteredPodcasts.map((featuredPodcast) => (
+                        <div
+                          key={featuredPodcast.id}
+                          className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
+                        >
+                          <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">
+                            <Volume2Icon className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-foreground line-clamp-1">
+                              {featuredPodcast.title}
+                            </h4>
+                            {/*<p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>*/}
+                          </div>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={featuredPodcast.url} target="_blank">
+                              <PlayIcon className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-foreground line-clamp-1">
-                            {featuredPodcast.title}
-                          </h4>
-                          {/*<p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>*/}
-                        </div>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={featuredPodcast.url} target="_blank">
-                            <PlayIcon className="h-3.5 w-3.5" />
-                          </Link>
-                        </Button>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      {t("noBusinessPodcasts")}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Society & Culture Category */}
+            <div className="bg-card border border-border rounded-2xl overflow-hidden">
+              <button
+                onClick={() =>
+                  setSelectedCategory(selectedCategory === "society" ? null : "society")
+                }
+                className="w-full p-8 hover:bg-accent/50 transition-colors group text-left"
+              >
+                <div className="flex items-center justify-between gap-6">
+                  <div className="flex items-center gap-6 flex-1">
+                    <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
+                      <Volume2Icon className="w-8 h-8 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-foreground mb-2">
+                        {t("societyCulture")}
+                      </h3>
+                      <p className="text-muted-foreground">{t("societyCultureDescription")}</p>
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-center text-sm text-muted-foreground py-4">
-                    {t("noSocietyCulturePodcasts")}
-                  </p>
-                )}
-              </div>
-            )}
+                  <div className="text-muted-foreground">
+                    {selectedCategory === "society" ? "−" : "+"}
+                  </div>
+                </div>
+              </button>
+
+              {selectedCategory === "society" && (
+                <div className="border-t border-border p-6 bg-muted/20">
+                  {categoryFilteredPodcasts.length > 0 ? (
+                    <div className="space-y-3">
+                      {categoryFilteredPodcasts.map((featuredPodcast) => (
+                        <div
+                          key={featuredPodcast.id}
+                          className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow flex items-center gap-3"
+                        >
+                          <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white shrink-0">
+                            <Volume2Icon className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-foreground line-clamp-1">
+                              {featuredPodcast.title}
+                            </h4>
+                            {/*<p className="text-xs text-muted-foreground">{PLACEHOLDER_DURATION}</p>*/}
+                          </div>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={featuredPodcast.url} target="_blank">
+                              <PlayIcon className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      {t("noSocietyCulturePodcasts")}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto px-4 py-16 border-t border-border">
-        <div className="max-w-3xl mx-auto text-center">
+      <section className="py-16 px-4 border-t border-border">
+        <div className="mx-auto max-w-3xl text-center">
           <h3 className="text-2xl md:text-3xl font-bold mb-4">{t("ctaTitle")}</h3>
           <p className="text-muted-foreground mb-8">{t("ctaDescription")}</p>
           <Button asChild size="lg">

@@ -36,8 +36,8 @@ export function EnterpriseEN() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="py-20 md:py-32">
-        <div className="container mx-auto px-4 text-center">
+      <section className="py-20 md:py-32 px-4">
+        <div className="mx-auto max-w-6xl text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <ShieldCheckIcon className="size-4" />
             Enterprise Ready • SOC2 Compliant
@@ -100,8 +100,8 @@ export function EnterpriseEN() {
       </section>
 
       {/* Core Products */}
-      <section className="py-20 md:py-28 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section className="py-20 md:py-28 bg-muted/30 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
               Core Platform
@@ -204,8 +204,8 @@ export function EnterpriseEN() {
       </section>
 
       {/* Enterprise Features */}
-      <section className="py-20 md:py-28">
-        <div className="container mx-auto px-4">
+      <section className="py-20 md:py-28 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
               Enterprise Capabilities
@@ -251,9 +251,9 @@ export function EnterpriseEN() {
       </section>
 
       {/* Trust & Security Section */}
-      <section className="py-20 md:py-32 bg-zinc-900 text-white overflow-hidden relative">
+      <section className="py-20 md:py-32 bg-zinc-900 text-white overflow-hidden relative px-4">
         <div className="absolute inset-0 bg-[url('/_public/grid.svg')] opacity-10" />
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="mx-auto max-w-6xl relative z-10">
           <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20">
             <div className="flex-1 space-y-8">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-400 text-sm font-medium border border-green-500/20">
@@ -311,8 +311,8 @@ export function EnterpriseEN() {
       </section>
 
       {/* Enterprise Services */}
-      <section className="py-20 md:py-28 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section className="py-20 md:py-28 bg-muted/30 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
               Dedicated Support
@@ -412,8 +412,8 @@ export function EnterpriseEN() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 md:py-32">
-        <div className="container mx-auto px-4">
+      <section className="py-20 md:py-32 px-4">
+        <div className="mx-auto max-w-6xl">
           <div className="max-w-4xl mx-auto text-center bg-linear-to-br from-primary/10 to-primary/5 rounded-3xl p-12 md:p-16">
             <h2 className="font-EuclidCircularA font-medium text-3xl md:text-5xl mb-6">
               Ready to Transform Your Research?

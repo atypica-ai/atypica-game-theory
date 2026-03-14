@@ -34,8 +34,8 @@ export default function InfluencersPage() {
   return (
     <div className="relative">
       {/* Hero Section */}
-      <section className="relative min-h-[560px] md:min-h-[640px] lg:min-h-[720px] overflow-hidden">
-        <div className="container mx-auto relative h-full px-4 sm:px-8">
+      <section className="relative min-h-[560px] md:min-h-[640px] lg:min-h-[720px] overflow-hidden px-4 sm:px-8">
+        <div className="mx-auto max-w-6xl relative h-full">
           <div
             className={cn(
               "flex flex-col justify-center items-center text-center min-h-[560px] md:min-h-[640px] lg:min-h-[720px] py-16 md:py-20",
@@ -81,8 +81,8 @@ export default function InfluencersPage() {
       <CaseStudiesSection tag="influencers" title={t("CaseStudiesSection.title")} />
 
       {/* Use Cases Section */}
-      <section className="py-20 md:py-32 relative overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-8">
+      <section className="py-20 md:py-32 relative overflow-hidden px-4 sm:px-8">
+        <div className="mx-auto max-w-6xl">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-foreground text-center mb-12">
             {t("UseCasesSection.title")}
           </h2>

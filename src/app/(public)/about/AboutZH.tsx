@@ -1,8 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import React, { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 export const AboutZH: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -14,8 +14,8 @@ export const AboutZH: React.FC = () => {
   return (
     <div className="relative">
       {/* Hero Section */}
-      <section className="relative min-h-[560px] md:min-h-[640px] lg:min-h-[720px] overflow-hidden">
-        <div className="container mx-auto relative h-full px-4 sm:px-8">
+      <section className="relative min-h-[560px] md:min-h-[640px] lg:min-h-[720px] overflow-hidden px-4 sm:px-8">
+        <div className="mx-auto max-w-6xl relative h-full">
           <div
             className={cn(
               "flex flex-col justify-center items-center text-center min-h-[560px] md:min-h-[640px] lg:min-h-[720px] py-16 md:py-20",
@@ -33,7 +33,8 @@ export const AboutZH: React.FC = () => {
                 style={{ backgroundColor: "var(--ghost-green)" }}
               ></span>
               <span className="font-EuclidCircularA font-normal text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.3]">
-                用<span className="font-bold">「语言模型」</span>为<span className="font-bold">「主观世界」</span>建模
+                用<span className="font-bold">「语言模型」</span>为
+                <span className="font-bold">「主观世界」</span>建模
               </span>
             </h1>
 
@@ -48,7 +49,7 @@ export const AboutZH: React.FC = () => {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 sm:px-8 space-y-20 md:space-y-32 py-12">
+      <div className="px-4 sm:px-8 py-12 mx-auto max-w-6xl space-y-20 md:space-y-32">
         {/* Multi-Agent System Section */}
         <section>
           <div className="max-w-5xl mx-auto">
@@ -173,7 +174,8 @@ export const AboutZH: React.FC = () => {
                   <span>访谈 (一对一)</span>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  一对一深度访谈形式,用于获取个人洞察、情感理解和行为动机分析。适合 5-10 人的访谈研究。
+                  一对一深度访谈形式,用于获取个人洞察、情感理解和行为动机分析。适合 5-10
+                  人的访谈研究。
                 </p>
                 <ul className="space-y-2">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
@@ -193,7 +195,8 @@ export const AboutZH: React.FC = () => {
                   <span>讨论 (群体)</span>
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  多人群体讨论形式,由主持人 AI 引导 3-8 个 AI 人设进行互动,用于观察观点碰撞、模拟群体决策场景。
+                  多人群体讨论形式,由主持人 AI 引导 3-8 个 AI
+                  人设进行互动,用于观察观点碰撞、模拟群体决策场景。
                 </p>
                 <ul className="space-y-2">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
@@ -227,13 +230,17 @@ export const AboutZH: React.FC = () => {
             <div className="h-px bg-border mb-8"></div>
 
             <p className="text-base md:text-lg text-foreground/90 leading-relaxed mb-8">
-              atypica.AI 基于 GEA (Generative Enterprise Architecture) 构建,专为起点模糊、过程不确定、核心是判断的探索型知识工作而设计。
+              atypica.AI 基于 GEA (Generative Enterprise Architecture)
+              构建,专为起点模糊、过程不确定、核心是判断的探索型知识工作而设计。
             </p>
 
             <div className="space-y-6">
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: "var(--ghost-green)" }}
+                  ></span>
                   双 Agent 架构
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -242,18 +249,25 @@ export const AboutZH: React.FC = () => {
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
                     <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                    <span><strong>推理 Agent</strong>: 规划执行路径、准备上下文、判断何时调整方向</span>
+                    <span>
+                      <strong>推理 Agent</strong>: 规划执行路径、准备上下文、判断何时调整方向
+                    </span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
                     <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                    <span><strong>执行 Agent</strong>: 通用执行器,完全依赖推理 Agent 准备的上下文</span>
+                    <span>
+                      <strong>执行 Agent</strong>: 通用执行器,完全依赖推理 Agent 准备的上下文
+                    </span>
                   </li>
                 </ul>
               </div>
 
               <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
                 <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: "var(--ghost-green)" }}
+                  ></span>
                   消息即真相来源
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -262,11 +276,15 @@ export const AboutZH: React.FC = () => {
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
                     <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                    <span><strong>统一格式</strong>: 所有工具返回 plainText,统一处理</span>
+                    <span>
+                      <strong>统一格式</strong>: 所有工具返回 plainText,统一处理
+                    </span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
                     <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                    <span><strong>按需生成</strong>: studyLog 从消息按需生成</span>
+                    <span>
+                      <strong>按需生成</strong>: studyLog 从消息按需生成
+                    </span>
                   </li>
                 </ul>
               </div>
@@ -298,16 +316,8 @@ export const AboutZH: React.FC = () => {
                 icon="⚡"
               />
               <ResearchTypeCard title="测试" description="产品测试、概念验证和用户反馈" icon="🧪" />
-              <ResearchTypeCard
-                title="洞察"
-                description="消费者行为分析和市场细分"
-                icon="💡"
-              />
-              <ResearchTypeCard
-                title="创意"
-                description="内容创作、命名和营销文案生成"
-                icon="✨"
-              />
+              <ResearchTypeCard title="洞察" description="消费者行为分析和市场细分" icon="💡" />
+              <ResearchTypeCard title="创意" description="内容创作、命名和营销文案生成" icon="✨" />
               <ResearchTypeCard title="规划" description="战略规划和营销活动开发" icon="📋" />
             </div>
           </div>
@@ -344,7 +354,10 @@ export const AboutZH: React.FC = () => {
                   key={item.step}
                   className="border border-border rounded-lg p-4 text-center hover:border-foreground/20 transition-all"
                 >
-                  <div className="text-lg font-semibold mb-2" style={{ color: "var(--ghost-green)" }}>
+                  <div
+                    className="text-lg font-semibold mb-2"
+                    style={{ color: "var(--ghost-green)" }}
+                  >
                     {item.step}
                   </div>
                   <p className="text-sm text-foreground/80">{item.title}</p>
@@ -486,7 +499,10 @@ function AgentCard({
   return (
     <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
       <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-        <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
+        <span
+          className="size-2 rounded-full"
+          style={{ backgroundColor: "var(--ghost-green)" }}
+        ></span>
         {title}
       </h3>
       <p className="text-sm text-foreground/80 leading-relaxed mb-4">{description}</p>
@@ -514,7 +530,10 @@ function TechCard({
   return (
     <div className="border border-border rounded-lg p-6 hover:border-foreground/20 transition-all">
       <h3 className="font-semibold text-xl mb-2 flex items-center gap-2">
-        <span className="size-2 rounded-full" style={{ backgroundColor: "var(--ghost-green)" }}></span>
+        <span
+          className="size-2 rounded-full"
+          style={{ backgroundColor: "var(--ghost-green)" }}
+        ></span>
         {title}
       </h3>
       <p className="text-sm text-muted-foreground mb-4">{description}</p>
