@@ -19,6 +19,31 @@ export const changelogDataZH: ChangelogSection[] = [
     title: "v1.5.x: 研究面板与个人记忆",
     versions: [
       {
+        version: "v1.5.1",
+        date: "2026-03-15",
+        items: [
+          {
+            icon: "activity",
+            title:
+              '新功能: <a href="https://atypica.ai/pulse" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Pulse（趋势脉冲）</a>',
+            description:
+              "实时追踪市场趋势与消费者信号。AI 自动采集热门话题并按相关性评分，在可交互的趋势广场中呈现。支持按类别浏览，按语言过滤。",
+          },
+          {
+            icon: "arrow-up-circle",
+            title: "套餐升级与优惠码",
+            description:
+              "现在可以直接在账户页面升级订阅套餐，实时预览按比例折算后的差价。结账时支持选用联盟推广折扣或自行输入促销码。",
+          },
+          {
+            icon: "archive",
+            title: "项目归档",
+            description:
+              "研究、Panel、Persona 和访谈项目均可归档和恢复。保持工作区整洁，无需永久删除。",
+          },
+        ],
+      },
+      {
         version: "v1.5.0",
         date: "2026-03-01",
         items: [

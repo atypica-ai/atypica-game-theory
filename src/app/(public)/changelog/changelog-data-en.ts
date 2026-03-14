@@ -19,6 +19,31 @@ export const changelogDataEN: ChangelogSection[] = [
     title: "v1.5.x: Research Panels & Personal Memory",
     versions: [
       {
+        version: "v1.5.1",
+        date: "2026-03-15",
+        items: [
+          {
+            icon: "activity",
+            title:
+              'New Feature: <a href="https://atypica.ai/pulse" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Pulse (Trend Intelligence)</a>',
+            description:
+              "Track real-time market trends and consumer signals. AI-powered pipeline collects and scores trending topics by relevance, then surfaces them in an interactive marketplace. Browse what's hot across categories, filtered by your locale.",
+          },
+          {
+            icon: "arrow-up-circle",
+            title: "Plan Upgrade & Promotion Codes",
+            description:
+              "Upgrade your subscription plan directly from your account with a live price preview showing the prorated difference. Plus, you can now choose between an affiliate discount or enter your own promotion code at checkout.",
+          },
+          {
+            icon: "archive",
+            title: "Archive Projects",
+            description:
+              "Studies, Panels, Personas, and Interview Projects can now be archived and restored. Keeps your workspace clean without permanently deleting anything.",
+          },
+        ],
+      },
+      {
         version: "v1.5.0",
         date: "2026-03-01",
         items: [
