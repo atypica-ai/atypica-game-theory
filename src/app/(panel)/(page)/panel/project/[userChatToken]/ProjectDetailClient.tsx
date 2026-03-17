@@ -5,6 +5,7 @@ import {
   prepareLastUIMessageForRequest,
 } from "@/ai/messageUtilsClient";
 import { ConfirmPanelResearchPlanMessage } from "@/app/(panel)/tools/confirmPanelResearchPlan/ConfirmPanelResearchPlanMessage";
+import { UserChatContext } from "@/app/(study)/context/types";
 import {
   TAddUniversalUIToolResult,
   TUniversalMessageWithTool,
@@ -12,17 +13,17 @@ import {
 } from "@/app/(universal)/tools/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { stopUserChatRunAction } from "@/lib/userChat/actions";
 import { cn } from "@/lib/utils";
 import type { UserChatExtra } from "@/prisma/client";
-import { UserChatContext } from "@/app/(study)/context/types";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, isToolUIPart } from "ai";
 import { AlertCircle, ExternalLink, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { stopUserChatRunAction } from "@/lib/userChat/actions";
-import { type PendingConfirmPlan } from "./actions";
+import useSWR from "swr";
+import { fetchUserChatRunStatus, type PendingConfirmPlan } from "./actions";
 import { DiscussionView } from "./DiscussionView";
 import { InterviewsView } from "./InterviewsView";
 
@@ -66,16 +67,16 @@ function getLatestAgentActivity(messages: TUniversalMessageWithTool[]): string {
     const msg = messages[i];
     if (msg.role !== "assistant") continue;
     const parts = msg.parts ?? [];
-    for (let j = parts.length - 1; j >= 0; j--) {
-      const part = parts[j];
-      if (isToolUIPart(part) && part.state !== "output-available") {
-        const toolName = part.type.replace(/^tool-/, "");
-        return `exec ${toolName}`;
-      }
-      if (part.type === "text" && part.text.trim()) {
-        return part.text.trim();
-      }
+    if (parts.length === 0) continue;
+    const part = parts[parts.length - 1];
+    if (isToolUIPart(part)) {
+      const toolName = part.type.replace(/^tool-/, "");
+      return `exec ${toolName}`;
     }
+    if (part.type === "text" && part.text.trim()) {
+      return part.text.trim();
+    }
+    return "";
   }
   return "";
 }
@@ -93,7 +94,7 @@ function AgentActivityText({ text }: { text: string }) {
   return (
     <div
       ref={scrollRef}
-      className="max-h-[3.75rem] overflow-hidden text-xs text-muted-foreground max-w-sm leading-relaxed"
+      className="max-h-15 overflow-hidden text-xs text-muted-foreground max-w-sm leading-relaxed"
     >
       {text}
     </div>
@@ -295,6 +296,12 @@ export function ProjectDetailClient({
   const hasInterviews = interviewPersonaIds.length > 0;
   const hasContent = hasDiscussions || hasInterviews;
 
+  const handleGenerateReport = useCallback(() => {
+    useChatRef.current.sendMessage({
+      text: "Please generate a detailed research report based on the completed research results.",
+    });
+  }, []);
+
   // Build flat selector items
   const selectorItems = useMemo(() => {
     const items: { label: string }[] = [];
@@ -346,9 +353,22 @@ export function ProjectDetailClient({
         }
       : undefined;
 
-  // Derive agent running state from useChat status
+  // Derive agent running state — poll DB for runId so it stays accurate after refresh
   const isStreaming = status === "streaming" || status === "submitted";
-  const isBackgroundRunning = !!project.extra?.runId;
+  const { data: runStatus } = useSWR(
+    ["panel:runStatus", project.token],
+    async () => {
+      const result = await fetchUserChatRunStatus(project.token);
+      return result.success ? result.data.isRunning : false;
+    },
+    {
+      refreshInterval: (isRunning) => (isRunning ? 5000 : 0),
+      fallbackData: !!project.extra?.runId,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
+  const isBackgroundRunning = runStatus ?? !!project.extra?.runId;
   const isAgentActive = isStreaming || isBackgroundRunning;
 
   const agentActivity = useMemo(() => getLatestAgentActivity(messages), [messages]);
@@ -369,11 +389,7 @@ export function ProjectDetailClient({
                 <p className="text-xs text-muted-foreground text-center max-w-sm">
                   {error.message}
                 </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => useChatRef.current.regenerate()}
-                >
+                <Button variant="outline" size="sm" onClick={() => useChatRef.current.regenerate()}>
                   {t("retry")}
                 </Button>
               </div>
@@ -411,9 +427,7 @@ export function ProjectDetailClient({
                     <ExternalLink className="size-3" />
                   </Link>
                 </div>
-                {isAgentActive && agentActivity && (
-                  <AgentActivityText text={agentActivity} />
-                )}
+                {isAgentActive && agentActivity && <AgentActivityText text={agentActivity} />}
               </>
             )}
           </div>
@@ -445,6 +459,8 @@ export function ProjectDetailClient({
               project={project}
               selector={selector}
               reports={reports}
+              onGenerateReport={handleGenerateReport}
+              isAgentActive={isAgentActive}
             />
           ) : currentView?.type === "interviews" ? (
             <InterviewsView
@@ -453,6 +469,8 @@ export function ProjectDetailClient({
               personaIds={currentView.personaIds}
               selector={selector}
               reports={reports}
+              onGenerateReport={handleGenerateReport}
+              isAgentActive={isAgentActive}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">

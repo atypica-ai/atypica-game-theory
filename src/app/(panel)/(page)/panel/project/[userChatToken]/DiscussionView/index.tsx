@@ -25,6 +25,8 @@ export function DiscussionView({
   project,
   selector,
   reports,
+  onGenerateReport,
+  isAgentActive,
 }: {
   timelineToken: string;
   panel: { id: number; title: string };
@@ -35,6 +37,8 @@ export function DiscussionView({
     onSelect: (index: number) => void;
   };
   reports?: Array<{ reportToken: string; state: "completed" | "in-progress" }>;
+  onGenerateReport?: () => void;
+  isAgentActive?: boolean;
 }) {
   const t = useTranslations("PersonaPanel.DiscussionDetailPage");
 
@@ -216,6 +220,8 @@ export function DiscussionView({
         isComplete={isComplete}
         projectToken={project.token}
         reports={reports}
+        onGenerateReport={onGenerateReport}
+        isAgentActive={isAgentActive}
       />
     </div>
   );

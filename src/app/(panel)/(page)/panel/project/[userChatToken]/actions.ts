@@ -108,6 +108,28 @@ export async function fetchProjectContextByToken(userChatToken: string): Promise
 }
 
 // ─────────────────────────────────────────────────────────────
+// fetchUserChatRunStatus — check if agent is running
+// ─────────────────────────────────────────────────────────────
+
+export async function fetchUserChatRunStatus(
+  userChatToken: string,
+): Promise<ServerActionResult<{ isRunning: boolean }>> {
+  return withAuth(async (user) => {
+    const userChat = await prisma.userChat.findUnique({
+      where: { token: userChatToken, userId: user.id },
+      select: { extra: true },
+    });
+    if (!userChat) {
+      return { success: false, code: "not_found", message: "UserChat not found" };
+    }
+    return {
+      success: true,
+      data: { isRunning: !!userChat.extra?.runId },
+    };
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
 // fetchDiscussionDetail — timeline + personas for a discussion
 // ─────────────────────────────────────────────────────────────
 

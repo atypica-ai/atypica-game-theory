@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   Dialog,
   DialogContent,
@@ -7,10 +8,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ExternalLink, FileTextIcon, Loader2, ScrollTextIcon } from "lucide-react";
+import { ExternalLink, FileTextIcon, Loader2, ScrollTextIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Streamdown } from "streamdown";
+import { ReportItem } from "../ReportItem";
 
 export function DiscussionSidebar({
   summary,
@@ -18,12 +20,16 @@ export function DiscussionSidebar({
   isComplete,
   projectToken,
   reports,
+  onGenerateReport,
+  isAgentActive,
 }: {
   summary: string;
   minutes: string;
   isComplete: boolean;
   projectToken: string;
   reports?: Array<{ reportToken: string; state: "completed" | "in-progress" }>;
+  onGenerateReport?: () => void;
+  isAgentActive?: boolean;
 }) {
   const tProject = useTranslations("PersonaPanel.ProjectDetailPage");
   const t = useTranslations("PersonaPanel.DiscussionDetailPage");
@@ -84,28 +90,37 @@ export function DiscussionSidebar({
             {t("artifacts")}
           </div>
           {reports && reports.length > 0 ? (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {reports.map((report) => (
-                <Link
+                <ReportItem
                   key={report.reportToken}
-                  href={`/artifacts/report/${report.reportToken}/share`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-md border border-border/50 text-xs hover:bg-accent transition-colors"
-                >
-                  {report.state === "completed" ? (
-                    <FileTextIcon className="size-3.5 shrink-0 text-muted-foreground" />
-                  ) : (
-                    <Loader2 className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
-                  )}
-                  <span className={report.state === "completed" ? "text-foreground" : "text-muted-foreground"}>
-                    {report.state === "completed" ? t("clickToView") : t("reportGenerating")}
-                  </span>
-                </Link>
+                  reportToken={report.reportToken}
+                  state={report.state}
+                />
               ))}
             </div>
           ) : (
             <p className="text-xs text-muted-foreground/60 italic">{t("artifactsPlaceholder")}</p>
+          )}
+
+          {/* Generate Report button */}
+          {onGenerateReport && (
+            <ConfirmDialog
+              title={t("generateReport")}
+              description={t("generateReportConfirm")}
+              onConfirm={onGenerateReport}
+              confirmLabel={t("generateReport")}
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-center gap-2 text-xs mt-2"
+                disabled={isAgentActive}
+              >
+                <SparklesIcon className="size-3.5" />
+                {t("generateReport")}
+              </Button>
+            </ConfirmDialog>
           )}
         </div>
 

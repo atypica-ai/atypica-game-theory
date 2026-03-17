@@ -26,6 +26,8 @@ export function InterviewsView({
   personaIds,
   selector,
   reports,
+  onGenerateReport,
+  isAgentActive,
 }: {
   panel: { id: number; title: string };
   project: { token: string; title: string };
@@ -36,6 +38,8 @@ export function InterviewsView({
     onSelect: (index: number) => void;
   };
   reports?: Array<{ reportToken: string; state: "completed" | "in-progress" }>;
+  onGenerateReport?: () => void;
+  isAgentActive?: boolean;
 }) {
   const t = useTranslations("PersonaPanel.InterviewsPage");
 
@@ -230,6 +234,8 @@ export function InterviewsView({
         isComplete={isComplete}
         projectToken={project.token}
         reports={reports}
+        onGenerateReport={onGenerateReport}
+        isAgentActive={isAgentActive}
       />
     </div>
   );

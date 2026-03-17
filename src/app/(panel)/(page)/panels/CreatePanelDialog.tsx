@@ -107,16 +107,16 @@ function getLatestAgentActivity(messages: TUniversalMessageWithTool[]): string {
     const msg = messages[i];
     if (msg.role !== "assistant") continue;
     const parts = msg.parts ?? [];
-    for (let j = parts.length - 1; j >= 0; j--) {
-      const part = parts[j];
-      if (isToolUIPart(part) && part.state !== "output-available") {
-        const toolName = part.type.replace(/^tool-/, "");
-        return `exec ${toolName}`;
-      }
-      if (part.type === "text" && part.text.trim()) {
-        return part.text.trim();
-      }
+    if (parts.length === 0) continue;
+    const part = parts[parts.length - 1];
+    if (isToolUIPart(part)) {
+      const toolName = part.type.replace(/^tool-/, "");
+      return `exec ${toolName}`;
     }
+    if (part.type === "text" && part.text.trim()) {
+      return part.text.trim();
+    }
+    return "";
   }
   return "";
 }
