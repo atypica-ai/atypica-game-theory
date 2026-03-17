@@ -11,7 +11,7 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
         "rounded-md border border-input",
         "bg-transparent",
         "px-3 py-2 text-base md:text-sm",
-        "shadow-xs outline-none",
+        "outline-none",
         "placeholder:text-muted-foreground",
         // "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
         "disabled:cursor-not-allowed disabled:opacity-50",
