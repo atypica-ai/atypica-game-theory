@@ -11,6 +11,7 @@ export default function ProductFrame({
   sidebarActiveIndex = 0,
   sidebarCount = 4,
   accentColor = L.green,
+  showSidebar = false,
   breadcrumb,
   children,
   className,
@@ -18,6 +19,7 @@ export default function ProductFrame({
   sidebarActiveIndex?: number;
   sidebarCount?: number;
   accentColor?: string;
+  showSidebar?: boolean;
   breadcrumb: React.ReactNode;
   children: React.ReactNode;
   className?: string;
@@ -27,29 +29,30 @@ export default function ProductFrame({
       className={cn("flex overflow-hidden rounded-lg shadow-sm", className)}
       style={{ background: L.bg, border: `1px solid ${L.border}` }}
     >
-      {/* Thin icon sidebar */}
-      <div
-        className="w-10 shrink-0 flex flex-col items-center gap-2.5 pt-3 pb-2 max-sm:hidden"
-        style={{ background: L.bgSub, borderRight: `1px solid ${L.border}` }}
-      >
-        {Array.from({ length: sidebarCount }, (_, i) => (
-          <div
-            key={i}
-            className="w-5 h-5 rounded"
-            style={{
-              background: i === sidebarActiveIndex ? `${accentColor}15` : "transparent",
-              border: `1px solid ${i === sidebarActiveIndex ? `${accentColor}30` : L.border}`,
-            }}
-          />
-        ))}
-      </div>
+      {showSidebar && (
+        <div
+          className="w-10 shrink-0 flex flex-col items-center gap-2.5 pt-3 pb-2 max-sm:hidden"
+          style={{ background: L.bgSub, borderRight: `1px solid ${L.border}` }}
+        >
+          {Array.from({ length: sidebarCount }, (_, i) => (
+            <div
+              key={i}
+              className="w-5 h-5 rounded"
+              style={{
+                background: i === sidebarActiveIndex ? `${accentColor}15` : "transparent",
+                border: `1px solid ${i === sidebarActiveIndex ? `${accentColor}30` : L.border}`,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header — mimics GlobalHeader */}
         <div
-          className="shrink-0 flex items-center gap-3 px-4 py-2"
-          style={{ borderBottom: `1px solid ${L.border}` }}
+          className="shrink-0 flex items-center gap-3 px-4 py-2.5"
+          style={{ borderBottom: `1px solid ${L.borderLight}`, background: L.bgCard }}
         >
           <div className="flex items-center gap-1.5 flex-1 min-w-0">{breadcrumb}</div>
           {/* Right: help + menu icons (like real GlobalHeader) */}

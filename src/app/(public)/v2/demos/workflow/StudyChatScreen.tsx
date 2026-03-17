@@ -12,12 +12,6 @@ export type ConsoleTool = {
   result?: string;
 };
 
-/**
- * Study Chat + Console split screen — mimics StudyPageClient.
- * Left: chat messages (user right-aligned + AI left-aligned). Right: Console with tool list.
- *
- * All content passed as props — no dynamic i18n key construction.
- */
 export default function StudyChatScreen({
   userMsg,
   aiReply,
@@ -28,65 +22,150 @@ export default function StudyChatScreen({
   tools: ConsoleTool[];
 }) {
   const t = useTranslations("HomeAtypicaV2");
-  const accent = L.green;
   const [visibleTools, setVisibleTools] = useState(0);
 
   useEffect(() => {
     setVisibleTools(0);
-    const timers = tools.map((_, i) => setTimeout(() => setVisibleTools(i + 1), (i + 1) * 700));
+    const timers = tools.map((_, index) =>
+      setTimeout(() => setVisibleTools(index + 1), (index + 1) * 650),
+    );
     return () => timers.forEach(clearTimeout);
   }, [tools]);
 
   return (
-    <div className="flex h-full">
-      {/* Left: Chat */}
-      <div className="flex-1 flex flex-col" style={{ borderRight: `1px solid ${L.border}` }}>
-        <div className="flex-1 p-3 flex flex-col gap-3 overflow-hidden">
-          <div
-            className="self-end max-w-[80%] rounded-lg px-3 py-2 text-xs text-white"
-            style={{ background: accent }}
-          >
-            {userMsg}
-          </div>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="flex items-start gap-2 max-w-[85%]"
-          >
+    <div className="flex h-full flex-col">
+      <div
+        className="flex items-center justify-between border-b px-4 py-2.5"
+        style={{ borderColor: L.borderLight, background: L.bgCard }}
+      >
+        <span className="text-[10px] uppercase tracking-[0.18em]" style={{ color: L.textFaint }}>
+          Study Workspace
+        </span>
+        <div className="inline-flex items-center gap-2 text-[11px]" style={{ color: L.textMuted }}>
+          <span
+            className="size-1.5 rounded-full"
+            style={{ background: "var(--ghost-green)" }}
+          />
+          <span>{t("workflow.demos.ui.inProgress")}</span>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-5">
+        <div className="mx-auto max-w-[360px]">
+          <div className="flex justify-end">
             <div
-              className="w-5 h-5 rounded-full grid place-items-center shrink-0 mt-0.5"
-              style={{ background: L.bgSub, border: `1px solid ${L.border}` }}
+              className="max-w-[82%] rounded-2xl px-3 py-2 text-xs leading-relaxed text-white"
+              style={{ background: L.text }}
             >
-              <span className="text-xs" style={{ color: L.textSub }}>
-                A
-              </span>
+              {userMsg}
             </div>
-            <div className="text-xs leading-relaxed" style={{ color: L.textMuted }}>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="mt-5"
+          >
+            <div className="text-center">
+              <div
+                className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[10px]"
+                style={{ background: L.bgSub, color: L.textMuted, border: `1px solid ${L.border}` }}
+              >
+                <span className="size-1.5 rounded-full" style={{ background: "var(--ghost-green)" }} />
+                atypica.AI
+              </div>
+            </div>
+            <div className="mt-4 px-2 text-center text-base leading-relaxed font-medium" style={{ color: L.text }}>
               <TypeText text={aiReply} speed={15} />
             </div>
           </motion.div>
-        </div>
-        <div
-          className="shrink-0 px-3 py-2 flex items-center gap-2"
-          style={{ borderTop: `1px solid ${L.border}` }}
-        >
-          <div
-            className="flex-1 h-7 rounded px-2.5 flex items-center"
-            style={{ background: "white", border: `1px solid ${L.border}` }}
-          >
-            <span className="text-xs" style={{ color: L.textFaint }}>
-              {t("workflow.demos.ui.followUp")}
-            </span>
+
+          <div className="mt-6 space-y-2">
+            {tools.map((tool, index) => (
+              <motion.div
+                key={`${tool.name}-${index}`}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{
+                  opacity: index < visibleTools ? 1 : 0,
+                  y: index < visibleTools ? 0 : 6,
+                }}
+                transition={{ duration: 0.24 }}
+                className="rounded-lg px-3 py-2.5"
+                style={{ background: L.bgCard, border: `1px solid ${L.borderLight}` }}
+              >
+                <div className="flex items-start gap-2">
+                  {tool.status === "done" ? (
+                    <span className="mt-1 size-1.5 rounded-full" style={{ background: "var(--ghost-green)" }} />
+                  ) : tool.status === "running" ? (
+                    <motion.span
+                      className="mt-1 size-1.5 rounded-full"
+                      style={{ background: L.blue }}
+                      animate={{ opacity: [1, 0.3, 1] }}
+                      transition={{ duration: 0.7, repeat: Infinity }}
+                    />
+                  ) : (
+                    <span className="mt-1 size-1.5 rounded-full" style={{ background: L.border }} />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-IBMPlexMono text-xs" style={{ color: L.text }}>
+                        {tool.name}
+                      </span>
+                      <span className="text-[10px] uppercase tracking-[0.14em]" style={{ color: L.textFaint }}>
+                        {tool.status}
+                      </span>
+                    </div>
+                    {tool.result && (
+                      <p className="mt-1 text-xs leading-relaxed" style={{ color: L.textMuted }}>
+                        {tool.result}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
-          <div className="w-6 h-6 rounded grid place-items-center" style={{ background: accent }}>
+        </div>
+      </div>
+
+      <div
+        className="border-t px-4 py-3"
+        style={{ borderColor: L.borderLight, background: L.bgCard }}
+      >
+        <div
+          className="mx-auto flex max-w-[360px] items-center gap-2 rounded-xl border px-3 py-2"
+          style={{ borderColor: L.border, background: L.bg }}
+        >
+          <button
+            type="button"
+            className="grid h-7 w-7 place-items-center rounded-md"
+            style={{ background: L.bgSub }}
+          >
             <svg
               width="12"
               height="12"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="white"
-              strokeWidth="2.5"
+              stroke={L.textMuted}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            >
+              <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+              <path d="M19 10v2a7 7 0 01-14 0v-2" />
+            </svg>
+          </button>
+          <span className="flex-1 text-xs" style={{ color: L.textFaint }}>
+            {t("workflow.demos.ui.followUp")}
+          </span>
+          <div className="grid h-7 w-7 place-items-center rounded-md" style={{ background: "var(--ghost-green)" }}>
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="black"
+              strokeWidth="2.2"
               strokeLinecap="round"
             >
               <line x1="5" y1="12" x2="19" y2="12" />
@@ -94,56 +173,6 @@ export default function StudyChatScreen({
             </svg>
           </div>
         </div>
-      </div>
-
-      {/* Right: Console */}
-      <div
-        className="w-[140px] shrink-0 p-3 flex flex-col gap-1.5 max-sm:hidden"
-        style={{ background: L.bgSub }}
-      >
-        <span
-          className="font-IBMPlexMono text-xs tracking-wider uppercase mb-1"
-          style={{ color: L.textFaint }}
-        >
-          {t("workflow.demos.ui.console")}
-        </span>
-        {tools.map((tool, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: 4 }}
-            animate={{ opacity: i < visibleTools ? 1 : 0, x: i < visibleTools ? 0 : 4 }}
-            transition={{ duration: 0.3 }}
-            className="flex items-start gap-1.5"
-          >
-            {tool.status === "done" ? (
-              <span className="text-xs mt-px shrink-0" style={{ color: L.textMuted }}>
-                ✓
-              </span>
-            ) : tool.status === "running" ? (
-              <motion.span
-                className="w-1.5 h-1.5 rounded-full mt-1 shrink-0"
-                style={{ background: L.blue }}
-                animate={{ opacity: [1, 0.3, 1] }}
-                transition={{ duration: 0.6, repeat: Infinity }}
-              />
-            ) : (
-              <span
-                className="w-1.5 h-1.5 rounded-full mt-1 shrink-0"
-                style={{ background: L.border }}
-              />
-            )}
-            <div>
-              <span className="font-IBMPlexMono text-xs block" style={{ color: L.text }}>
-                {tool.name}
-              </span>
-              {tool.result && (
-                <span className="font-IBMPlexMono text-xs block" style={{ color: L.textFaint }}>
-                  {tool.result}
-                </span>
-              )}
-            </div>
-          </motion.div>
-        ))}
       </div>
     </div>
   );
