@@ -28,7 +28,7 @@ export const UserInfoCard: FC<UserInfoCardProps> = ({ user, className }) => {
         className,
       )}
     >
-      <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+      <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shrink-0">
         <span className="text-primary-foreground text-xs font-medium">{initial}</span>
       </div>
       <span className="text-sm font-medium">{displayName}</span>

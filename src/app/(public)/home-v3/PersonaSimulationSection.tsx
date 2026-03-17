@@ -62,15 +62,15 @@ export function PersonaSimulationSection() {
             <p className="text-sm opacity-80 mb-6">{t("differentiatorDescription")}</p>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0"></div>
                 <span className="text-sm">{t("differentiatorFeatures.consistency")}</span>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0"></div>
                 <span className="text-sm">{t("differentiatorFeatures.authenticity")}</span>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0"></div>
                 <span className="text-sm">{t("differentiatorFeatures.realism")}</span>
               </div>
             </div>

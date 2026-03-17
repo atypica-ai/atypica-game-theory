@@ -179,11 +179,11 @@ export const AboutZH: React.FC = () => {
                 </p>
                 <ul className="space-y-2">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>个人洞察收集</span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>深度心理分析</span>
                   </li>
                 </ul>
@@ -200,15 +200,15 @@ export const AboutZH: React.FC = () => {
                 </p>
                 <ul className="space-y-2">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>焦点小组: 结构化主题探索</span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>圆桌讨论: 开放式协作讨论</span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>辩论: 论点对抗式交流</span>
                   </li>
                 </ul>
@@ -248,13 +248,13 @@ export const AboutZH: React.FC = () => {
                 </p>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>
                       <strong>推理 Agent</strong>: 规划执行路径、准备上下文、判断何时调整方向
                     </span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>
                       <strong>执行 Agent</strong>: 通用执行器,完全依赖推理 Agent 准备的上下文
                     </span>
@@ -275,13 +275,13 @@ export const AboutZH: React.FC = () => {
                 </p>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>
                       <strong>统一格式</strong>: 所有工具返回 plainText,统一处理
                     </span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>
                       <strong>按需生成</strong>: studyLog 从消息按需生成
                     </span>
@@ -509,7 +509,7 @@ function AgentCard({
       <ul className="space-y-2">
         {features.map((feature) => (
           <li key={feature} className="text-xs text-muted-foreground flex items-center gap-2">
-            <ArrowRight className="size-3 flex-shrink-0" />
+            <ArrowRight className="size-3 shrink-0" />
             {feature}
           </li>
         ))}
@@ -540,7 +540,7 @@ function TechCard({
       <ul className="space-y-2">
         {items.map((item) => (
           <li key={item} className="text-sm text-foreground/80 flex items-start gap-2">
-            <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+            <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
             <span>{item}</span>
           </li>
         ))}

@@ -193,11 +193,11 @@ export const AboutEN: React.FC = () => {
                 </p>
                 <ul className="space-y-2">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>Individual insight collection</span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>Deep psychological analysis</span>
                   </li>
                 </ul>
@@ -214,15 +214,15 @@ export const AboutEN: React.FC = () => {
                 </p>
                 <ul className="space-y-2">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>Focus Group: Structured topic exploration</span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>Roundtable: Open collaborative discussion</span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>Debate: Argument-based confrontation</span>
                   </li>
                 </ul>
@@ -264,14 +264,14 @@ export const AboutEN: React.FC = () => {
                 </p>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>
                       <strong>Reasoning Agent</strong>: Plans execution paths, prepares context,
                       judges when to adjust direction
                     </span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>
                       <strong>Execute Agent</strong>: Generic executor that depends on Reasoning
                       Agent&apos;s prepared context
@@ -294,14 +294,14 @@ export const AboutEN: React.FC = () => {
                 </p>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>
                       <strong>Unified Format</strong>: All tools return plainText for consistent
                       processing
                     </span>
                   </li>
                   <li className="text-sm text-foreground/80 flex items-start gap-2">
-                    <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <span>
                       <strong>Generated on Demand</strong>: studyLog generated from messages when
                       needed
@@ -546,7 +546,7 @@ function AgentCard({
       <ul className="space-y-2">
         {features.map((feature) => (
           <li key={feature} className="text-xs text-muted-foreground flex items-center gap-2">
-            <ArrowRight className="size-3 flex-shrink-0" />
+            <ArrowRight className="size-3 shrink-0" />
             {feature}
           </li>
         ))}
@@ -577,7 +577,7 @@ function TechCard({
       <ul className="space-y-2">
         {items.map((item) => (
           <li key={item} className="text-sm text-foreground/80 flex items-start gap-2">
-            <ArrowRight className="size-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+            <ArrowRight className="size-4 mt-0.5 shrink-0 text-muted-foreground" />
             <span>{item}</span>
           </li>
         ))}

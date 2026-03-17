@@ -238,7 +238,7 @@ function HoverMenu({
       <div
         className={cn(
           "invisible opacity-0 group-hover/menu:visible group-hover/menu:opacity-100 transition-all duration-150 absolute top-full left-0 pt-1 z-50",
-          tapped && "!visible !opacity-100",
+          tapped && "visible! opacity-100!",
         )}
       >
         <div

@@ -57,7 +57,7 @@ export function TestimonialSection() {
                 key={index}
                 className={`${testimonial.bgColor} ${testimonial.textColor} rounded-2xl p-8 flex flex-col ${testimonial.className}`}
               >
-                <div className="h-full flex flex-col flex-grow">
+                <div className="h-full flex flex-col grow">
                   <p className="text-xs uppercase tracking-wider opacity-60 mb-4">
                     {testimonial.id === "timeStat" ? t("timeCategory") : t("customerStoryCategory")}
                   </p>

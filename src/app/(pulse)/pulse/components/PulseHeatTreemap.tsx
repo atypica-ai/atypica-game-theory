@@ -1,11 +1,11 @@
 "use client";
 
+import { useTooltipPosition } from "@/hooks/use-tooltip-position";
 import { cn } from "@/lib/utils";
 import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { useTooltipPosition } from "@/hooks/use-tooltip-position";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as C from "./treemapConstants";
 
 type HeatHistoryPoint = { date: string; heatScore: number };
@@ -138,7 +138,7 @@ function wrapWordsToWidth(
     // Try adding word to current line
     const candidate = line ? `${line} ${word}` : word;
     const candidateWidth = measureTextWidth(ctx, candidate, fontSize, fontWeight);
-    
+
     if (candidateWidth <= maxWidth) {
       // Word fits on current line
       line = candidate;
@@ -167,14 +167,14 @@ function wrapWordsToWidth(
   }
 
   if (line) lines.push(line);
-  
+
   // Validate all lines fit within maxWidth
   for (const lineText of lines) {
     if (measureTextWidth(ctx, lineText, fontSize, fontWeight) > maxWidth) {
       return { lines: [], allWordsFit: false };
     }
   }
-  
+
   return { lines, allWordsFit: true };
 }
 
@@ -185,7 +185,7 @@ function wrapWordsToWidth(
  * @returns Lighter hex color
  */
 function lightenColor(hexColor: string, amount: number = 0.15): string {
-  const hex = hexColor.replace('#', '');
+  const hex = hexColor.replace("#", "");
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
@@ -194,7 +194,7 @@ function lightenColor(hexColor: string, amount: number = 0.15): string {
   const newG = Math.min(255, Math.round(g + (255 - g) * amount));
   const newB = Math.min(255, Math.round(b + (255 - b) * amount));
 
-  return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+  return `#${newR.toString(16).padStart(2, "0")}${newG.toString(16).padStart(2, "0")}${newB.toString(16).padStart(2, "0")}`;
 }
 
 function formatHeatDelta(value: number | null | undefined): string {
@@ -207,7 +207,15 @@ function formatHeatDelta(value: number | null | undefined): string {
   return `${rounded > 0 ? "+" : ""}${rounded}%`;
 }
 
-function Sparkline({ history, positive, isNew }: { history: HeatHistoryPoint[]; positive: boolean; isNew: boolean }) {
+function Sparkline({
+  history,
+  positive,
+  isNew,
+}: {
+  history: HeatHistoryPoint[];
+  positive: boolean;
+  isNew: boolean;
+}) {
   const width = 144;
   const height = 34;
 
@@ -216,7 +224,8 @@ function Sparkline({ history, positive, isNew }: { history: HeatHistoryPoint[]; 
   if (history.length >= 2) {
     const secondLastValue = history[history.length - 2]?.heatScore ?? 0;
     const lastValue = history[history.length - 1]?.heatScore ?? 0;
-    changeMagnitude = secondLastValue > 0 ? Math.abs((lastValue - secondLastValue) / secondLastValue) * 100 : 0;
+    changeMagnitude =
+      secondLastValue > 0 ? Math.abs((lastValue - secondLastValue) / secondLastValue) * 100 : 0;
   }
 
   let strokeColor = "#6b7280";
@@ -269,7 +278,13 @@ function Sparkline({ history, positive, isNew }: { history: HeatHistoryPoint[]; 
   return (
     <svg width={width} height={height} className="block">
       <defs>
-        <linearGradient id={`trend-gradient-${isNew ? 'new' : positive ? 'pos' : 'neg'}`} x1="0" x2="0" y1="0" y2="1">
+        <linearGradient
+          id={`trend-gradient-${isNew ? "new" : positive ? "pos" : "neg"}`}
+          x1="0"
+          x2="0"
+          y1="0"
+          y2="1"
+        >
           <stop offset="0%" stopColor={strokeColor} stopOpacity="0.25" />
           <stop offset="100%" stopColor={strokeColor} stopOpacity="0.02" />
         </linearGradient>
@@ -278,7 +293,7 @@ function Sparkline({ history, positive, isNew }: { history: HeatHistoryPoint[]; 
       {/* Area fill */}
       <path
         d={areaPath}
-        fill={`url(#trend-gradient-${isNew ? 'new' : positive ? 'pos' : 'neg'})`}
+        fill={`url(#trend-gradient-${isNew ? "new" : positive ? "pos" : "neg"})`}
       />
 
       {/* Main trend line */}
@@ -335,7 +350,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
   const [tooltip, setTooltip] = useState<TooltipState>(null);
 
   const allPulses = useMemo(() => categories.flatMap((category) => category.pulses), [categories]);
-  
+
   // Calculate min/max heat scores for size contrast transformation
   const heatScoreRange = useMemo(() => {
     const scores = allPulses.map((pulse) => pulse.heatScore ?? 0).filter((s) => s > 0);
@@ -380,7 +395,9 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
 
     // Step 3: Convert to shares (normalize to sum = 1)
     const totalWeight = enhancedWeights.reduce((sum, w) => sum + w, 0);
-    const categoryShares = enhancedWeights.map((w) => (totalWeight > 0 ? w / totalWeight : uniformShare));
+    const categoryShares = enhancedWeights.map((w) =>
+      totalWeight > 0 ? w / totalWeight : uniformShare,
+    );
 
     // Step 4: Apply minimum size limit (each category at least 85% of average)
     // Very high minimum to ensure near-uniform distribution
@@ -389,7 +406,9 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
 
     // Step 5: Re-normalize after applying minimum
     const adjustedTotal = adjustedShares.reduce((sum, s) => sum + s, 0);
-    const finalShares = adjustedShares.map((s) => (adjustedTotal > 0 ? s / adjustedTotal : uniformShare));
+    const finalShares = adjustedShares.map((s) =>
+      adjustedTotal > 0 ? s / adjustedTotal : uniformShare,
+    );
 
     // Step 6: Create share map for lookup
     const categoryShareMap = new Map<number, number>(
@@ -397,70 +416,76 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
     );
 
     return selectedCategories.map((category) => {
-        const categoryShare = categoryShareMap.get(category.id) ?? uniformShare;
-        const categoryWeight = categoryShare * C.CATEGORY_WEIGHT_SCALE;
+      const categoryShare = categoryShareMap.get(category.id) ?? uniformShare;
+      const categoryWeight = categoryShare * C.CATEGORY_WEIGHT_SCALE;
 
-        // Phase 1 (overview): Limit pulses per category for overview
-        // Phase 2 (category selected): Show all pulses in the selected category
-        const sortedPulses = [...category.pulses].sort((a, b) => (b.heatScore ?? 0) - (a.heatScore ?? 0));
-        const candidatePulses = activeCategoryId
-          ? sortedPulses // Phase 2: Show all pulses
-          : sortedPulses.slice(0, C.DISPLAY_PULSES_PER_CATEGORY);
-        
-        // Calculate raw sizes for candidate pulses using PULSE contrast exponent
-        const candidateWithSizes = candidatePulses.map((pulse) => ({
-          pulse,
-          rawSize: transformScoreWithContrast(
-            pulse.heatScore ?? 0,
-            heatScoreRange.minScore,
-            heatScoreRange.maxScore,
-            C.PULSE_SIZE_CONTRAST_EXPONENT,
-          ),
-        }));
-        
-        const selectedPulseItems = candidateWithSizes;
-        
-        // Calculate sum of selected pulse raw sizes (for normalization)
-        const selectedPulseRawTotal = selectedPulseItems.reduce((sum, item) => sum + item.rawSize, 0);
+      // Phase 1 (overview): Limit pulses per category for overview
+      // Phase 2 (category selected): Show all pulses in the selected category
+      const sortedPulses = [...category.pulses].sort(
+        (a, b) => (b.heatScore ?? 0) - (a.heatScore ?? 0),
+      );
+      const candidatePulses = activeCategoryId
+        ? sortedPulses // Phase 2: Show all pulses
+        : sortedPulses.slice(0, C.DISPLAY_PULSES_PER_CATEGORY);
 
-        return {
-          categoryData: {
-            type: "category",
-            id: `cat-${category.id}`,
-            label: category.name,
-            heatScore: category.heatScore,
-            heatDelta:
-              category.pulses.length === 0
-                ? null
-                : (() => {
-                    const deltas = category.pulses.map((p) => p.heatDelta).filter((d): d is number => d !== null);
-                    return deltas.length > 0 ? deltas.reduce((acc, d) => acc + d, 0) / deltas.length : null;
-                  })(),
-            pulseCount: category.pulseCount,
-            history: [],
-            sizeValue: categoryWeight,
-          } as TreeNodeData,
-          pulses: selectedPulseItems.map(({ pulse, rawSize }, pulseIndex) => {
-            const normalizedSize =
-              selectedPulseRawTotal > 0
-                ? (rawSize / selectedPulseRawTotal) * categoryWeight
-                : categoryWeight / Math.max(1, selectedPulseItems.length);
-            return {
-              type: "pulse",
-              parentCategoryId: category.id,
-              id: `pulse-${pulse.id}`,
-              label: normalizeTitle(pulse.title),
-              rawTitle: pulse.title,
-              heatScore: pulse.heatScore,
-              heatDelta: pulse.heatDelta, // Preserve null for new pulses
-              pulseCount: 1,
-              content: pulse.content,
-              history: pulse.history,
-              sizeValue: normalizedSize,
-              pulseIndexInCategory: pulseIndex, // For color variation to avoid adjacent duplicates
-            } as TreeNodeData;
-          }),
-        };
+      // Calculate raw sizes for candidate pulses using PULSE contrast exponent
+      const candidateWithSizes = candidatePulses.map((pulse) => ({
+        pulse,
+        rawSize: transformScoreWithContrast(
+          pulse.heatScore ?? 0,
+          heatScoreRange.minScore,
+          heatScoreRange.maxScore,
+          C.PULSE_SIZE_CONTRAST_EXPONENT,
+        ),
+      }));
+
+      const selectedPulseItems = candidateWithSizes;
+
+      // Calculate sum of selected pulse raw sizes (for normalization)
+      const selectedPulseRawTotal = selectedPulseItems.reduce((sum, item) => sum + item.rawSize, 0);
+
+      return {
+        categoryData: {
+          type: "category",
+          id: `cat-${category.id}`,
+          label: category.name,
+          heatScore: category.heatScore,
+          heatDelta:
+            category.pulses.length === 0
+              ? null
+              : (() => {
+                  const deltas = category.pulses
+                    .map((p) => p.heatDelta)
+                    .filter((d): d is number => d !== null);
+                  return deltas.length > 0
+                    ? deltas.reduce((acc, d) => acc + d, 0) / deltas.length
+                    : null;
+                })(),
+          pulseCount: category.pulseCount,
+          history: [],
+          sizeValue: categoryWeight,
+        } as TreeNodeData,
+        pulses: selectedPulseItems.map(({ pulse, rawSize }, pulseIndex) => {
+          const normalizedSize =
+            selectedPulseRawTotal > 0
+              ? (rawSize / selectedPulseRawTotal) * categoryWeight
+              : categoryWeight / Math.max(1, selectedPulseItems.length);
+          return {
+            type: "pulse",
+            parentCategoryId: category.id,
+            id: `pulse-${pulse.id}`,
+            label: normalizeTitle(pulse.title),
+            rawTitle: pulse.title,
+            heatScore: pulse.heatScore,
+            heatDelta: pulse.heatDelta, // Preserve null for new pulses
+            pulseCount: 1,
+            content: pulse.content,
+            history: pulse.history,
+            sizeValue: normalizedSize,
+            pulseIndexInCategory: pulseIndex, // For color variation to avoid adjacent duplicates
+          } as TreeNodeData;
+        }),
+      };
     });
   }, [selectedCategories, heatScoreRange, activeCategoryId]);
 
@@ -536,11 +561,12 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
           x1: pulseNode.x1 + innerX0,
           y1: pulseNode.y1 + innerY0,
         };
-        const inset = insetRectWithFixedGap(
-          absoluteRect,
-          C.PULSE_GAP_PX,
-          { x0: innerX0, y0: innerY0, x1: innerX0 + innerWidth, y1: innerY0 + innerHeight },
-        );
+        const inset = insetRectWithFixedGap(absoluteRect, C.PULSE_GAP_PX, {
+          x0: innerX0,
+          y0: innerY0,
+          x1: innerX0 + innerWidth,
+          y1: innerY0 + innerHeight,
+        });
         pulseLayoutNodes.push({
           x0: inset.x0,
           y0: inset.y0,
@@ -592,8 +618,13 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
         for (let fs = startingFontSize; fs >= 4; fs -= 1) {
           const wrappedResult = wrapWordsToWidth(textMeasureCtx, titleWords, contentWidth, fs, 700);
           // Allow up to 3 lines for better text visibility in small boxes
-          if (!wrappedResult.allWordsFit || wrappedResult.lines.length === 0 || wrappedResult.lines.length > 3) continue;
-          
+          if (
+            !wrappedResult.allWordsFit ||
+            wrappedResult.lines.length === 0 ||
+            wrappedResult.lines.length > 3
+          )
+            continue;
+
           // Double-check: verify each line actually fits within width
           let allLinesFit = true;
           for (const lineText of wrappedResult.lines) {
@@ -603,7 +634,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
             }
           }
           if (!allLinesFit) continue;
-          
+
           const wrapped = wrappedResult.lines;
 
           const lineH = fs * 1.08;
@@ -633,7 +664,7 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
           const titleActualHeight = wrapped.length * lineH + lineH * 0.3; // Extra for descenders and spacing
           const heatActualHeight = localShowHeat ? localHeatH + localHeatFont * 0.3 : 0; // Extra for descenders
           const totalH = titleActualHeight + (localShowHeat ? localGap + heatActualHeight : 0);
-          
+
           // Ensure total height fits with additional safety margin
           if (totalH > maxTextBlockHeight * 0.95) continue;
 
@@ -663,13 +694,13 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
       // Unified colors - no color variation, only size matters
       // Light mode: white with frosted glass gradient
       // Dark mode: dark gray, solid color
-      const bgColor = resolvedTheme === 'dark' ? '#2c2c2e' : '#ffffff';
-      const textColor = resolvedTheme === 'dark' ? '#ffffff' : '#000000';
-      const borderColor = '#000000'; // Pure black border for both modes
+      const bgColor = resolvedTheme === "dark" ? "#2c2c2e" : "#ffffff";
+      const textColor = resolvedTheme === "dark" ? "#ffffff" : "#000000";
+      const borderColor = "#000000"; // Pure black border for both modes
 
       // Only apply gradient in light mode for frosted glass effect
-      const lightColor = resolvedTheme === 'dark' ? bgColor : lightenColor(bgColor, 0.08);
-      const midColor = resolvedTheme === 'dark' ? bgColor : lightenColor(bgColor, 0.03);
+      const lightColor = resolvedTheme === "dark" ? bgColor : lightenColor(bgColor, 0.08);
+      const midColor = resolvedTheme === "dark" ? bgColor : lightenColor(bgColor, 0.03);
 
       return {
         node,
@@ -727,7 +758,11 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
 
   const hoveredCategoryNode = useMemo(() => {
     if (hoveredCategoryId === null) return null;
-    return categoryNodes.find((node) => Number(node.data.id.replace("cat-", "")) === hoveredCategoryId) ?? null;
+    return (
+      categoryNodes.find(
+        (node) => Number(node.data.id.replace("cat-", "")) === hoveredCategoryId,
+      ) ?? null
+    );
   }, [categoryNodes, hoveredCategoryId]);
 
   // Tooltip positioning is now handled by useTooltipPosition hook
@@ -771,8 +806,8 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
       }
     };
 
-    el.addEventListener('wheel', handleWheel, { passive: false });
-    return () => el.removeEventListener('wheel', handleWheel);
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
   }, [hoveredCategoryId, activeCategoryId]);
 
   return (
@@ -787,331 +822,352 @@ export function PulseHeatTreemap({ categories, updatedAt, onPulseClick }: PulseH
           borderTop: "none",
         }}
       >
-      <svg
-        viewBox={`0 0 ${treemapWidth} ${treemapHeight}`}
-        className="block h-auto w-full"
-        style={{ shapeRendering: "crispEdges", backgroundColor: gapColor }}
-      >
-        <rect x={0} y={0} width={treemapWidth} height={treemapHeight} fill={gapColor} />
+        <svg
+          viewBox={`0 0 ${treemapWidth} ${treemapHeight}`}
+          className="block h-auto w-full"
+          style={{ shapeRendering: "crispEdges", backgroundColor: gapColor }}
+        >
+          <rect x={0} y={0} width={treemapWidth} height={treemapHeight} fill={gapColor} />
 
-        <defs>
-          <filter id={C.MAP_TEXT_SHADOW_FILTER_ID} x="-20%" y="-20%" width="160%" height="160%">
-            <feDropShadow dx="1" dy="1" stdDeviation="1.5" floodColor="#000000" floodOpacity="0.35" />
-          </filter>
-          {pulseClipDefs}
-          {pulseGradientDefs}
-        </defs>
-
-        {categoryNodes.map((node) => {
-          const width = Math.max(0, node.x1 - node.x0);
-          const height = Math.max(0, node.y1 - node.y0);
-          const categoryId = Number(node.data.id.replace("cat-", ""));
-          const isHovered = hoveredCategoryId === categoryId;
-          const isFocused = activeCategoryId === categoryId;
-          return (
-            <g
-              key={`category-hit-${node.data.id}`}
-              onMouseEnter={() => setHoveredCategoryId(categoryId)}
-              onMouseLeave={() => setHoveredCategoryId(null)}
-              onClick={() => {
-                // Click to zoom in (same as scroll up)
-                if (activeCategoryId === null) {
-                  setTimeout(() => {
-                    setActiveCategoryId(categoryId);
-                  }, 300);
-                }
-              }}
-              style={{ cursor: activeCategoryId === null ? "pointer" : "default" }}
-            >
-              <rect
-                x={node.x0}
-                y={node.y0}
-                width={width}
-                height={height}
-                fill={isHovered || isFocused ? "#f2d21b" : "transparent"}
-                fillOpacity={isHovered || isFocused ? 1 : 0}
+          <defs>
+            <filter id={C.MAP_TEXT_SHADOW_FILTER_ID} x="-20%" y="-20%" width="160%" height="160%">
+              <feDropShadow
+                dx="1"
+                dy="1"
+                stdDeviation="1.5"
+                floodColor="#000000"
+                floodOpacity="0.35"
               />
-            </g>
-          );
-        })}
+            </filter>
+            {pulseClipDefs}
+            {pulseGradientDefs}
+          </defs>
 
-        {pulseRenderItems.map((item) => {
-          const { node, width, height } = item;
-          if (width <= 0 || height <= 0) return null;
+          {categoryNodes.map((node) => {
+            const width = Math.max(0, node.x1 - node.x0);
+            const height = Math.max(0, node.y1 - node.y0);
+            const categoryId = Number(node.data.id.replace("cat-", ""));
+            const isHovered = hoveredCategoryId === categoryId;
+            const isFocused = activeCategoryId === categoryId;
+            return (
+              <g
+                key={`category-hit-${node.data.id}`}
+                onMouseEnter={() => setHoveredCategoryId(categoryId)}
+                onMouseLeave={() => setHoveredCategoryId(null)}
+                onClick={() => {
+                  // Click to zoom in (same as scroll up)
+                  if (activeCategoryId === null) {
+                    setTimeout(() => {
+                      setActiveCategoryId(categoryId);
+                    }, 300);
+                  }
+                }}
+                style={{ cursor: activeCategoryId === null ? "pointer" : "default" }}
+              >
+                <rect
+                  x={node.x0}
+                  y={node.y0}
+                  width={width}
+                  height={height}
+                  fill={isHovered || isFocused ? "#f2d21b" : "transparent"}
+                  fillOpacity={isHovered || isFocused ? 1 : 0}
+                />
+              </g>
+            );
+          })}
 
-          const pulseId = Number(node.data.id.replace("pulse-", ""));
+          {pulseRenderItems.map((item) => {
+            const { node, width, height } = item;
+            if (width <= 0 || height <= 0) return null;
 
-          return (
-            <g
-              key={node.data.id}
-              onMouseMove={(event) => updatePosition(event.clientX, event.clientY)}
-              onMouseEnter={(event) => {
-                if (item.parentCategoryId) setHoveredCategoryId(item.parentCategoryId);
-                setTooltip(node.data);
-                updatePosition(event.clientX, event.clientY);
-              }}
-              onMouseLeave={() => {
-                setTooltip(null);
-                setHoveredCategoryId(null);
-              }}
-              onClick={() => {
-                // When zoomed in, click to scroll to card
-                if (activeCategoryId !== null && onPulseClick) {
-                  onPulseClick(pulseId);
-                }
-              }}
-              style={{ cursor: activeCategoryId !== null ? "pointer" : "default" }}
-            >
-              {/* Always paint every leaf to prevent "black holes" from hidden tiny tiles */}
-              <rect
-                x={node.x0}
-                y={node.y0}
-                width={width}
-                height={height}
-                fill={`url(#gradient-${node.data.id})`}
-              />
+            const pulseId = Number(node.data.id.replace("pulse-", ""));
 
-              {item.showTitle ? (
-                <text
-                  x={Math.round(node.x0 + width / 2)}
-                  textAnchor="middle"
-                  fill={item.textColor}
-                  fontWeight={700}
-                  fontSize={item.titleFontSize}
-                  clipPath={item.clipPathRef}
-                  textRendering="geometricPrecision"
-                >
-                  {item.titleLines.map((line, idx) => (
-                    <tspan
-                      key={`${node.data.id}-line-${idx}`}
-                      x={Math.round(node.x0 + width / 2)}
-                      y={Math.round(item.blockTop + (idx + 1) * item.titleLineHeight)}
-                    >
-                      {line}
-                    </tspan>
-                  ))}
-                </text>
-              ) : null}
+            return (
+              <g
+                key={node.data.id}
+                onMouseMove={(event) => updatePosition(event.clientX, event.clientY)}
+                onMouseEnter={(event) => {
+                  if (item.parentCategoryId) setHoveredCategoryId(item.parentCategoryId);
+                  setTooltip(node.data);
+                  updatePosition(event.clientX, event.clientY);
+                }}
+                onMouseLeave={() => {
+                  setTooltip(null);
+                  setHoveredCategoryId(null);
+                }}
+                onClick={() => {
+                  // When zoomed in, click to scroll to card
+                  if (activeCategoryId !== null && onPulseClick) {
+                    onPulseClick(pulseId);
+                  }
+                }}
+                style={{ cursor: activeCategoryId !== null ? "pointer" : "default" }}
+              >
+                {/* Always paint every leaf to prevent "black holes" from hidden tiny tiles */}
+                <rect
+                  x={node.x0}
+                  y={node.y0}
+                  width={width}
+                  height={height}
+                  fill={`url(#gradient-${node.data.id})`}
+                />
 
-              {item.showHeat ? (
-                <>
-                  {/* Breathing indicator dot for NEW items */}
-                  {(node.data.heatDelta === null || node.data.heatDelta === undefined) && (
-                    <circle
-                      cx={Math.round(node.x0 + width / 2 - item.heatFontSize * 1.5)}
-                      cy={Math.round(item.heatY - item.heatFontSize * 0.3)}
-                      r={item.heatFontSize * 0.15}
-                      fill="#18FF19"
-                    >
-                      <animate
-                        attributeName="opacity"
-                        values="0.3;1;0.3"
-                        dur="1.5s"
-                        repeatCount="indefinite"
-                      />
-                      <animate
-                        attributeName="r"
-                        values={`${item.heatFontSize * 0.12};${item.heatFontSize * 0.18};${item.heatFontSize * 0.12}`}
-                        dur="1.5s"
-                        repeatCount="indefinite"
-                      />
-                    </circle>
-                  )}
+                {item.showTitle ? (
                   <text
                     x={Math.round(node.x0 + width / 2)}
-                    y={Math.round(item.heatY)}
                     textAnchor="middle"
-                    dominantBaseline="alphabetic"
                     fill={item.textColor}
-                    fontWeight={600}
-                    fontSize={item.heatFontSize}
-                    opacity={0.95}
+                    fontWeight={700}
+                    fontSize={item.titleFontSize}
                     clipPath={item.clipPathRef}
                     textRendering="geometricPrecision"
                   >
-                    {item.heatDeltaText}
+                    {item.titleLines.map((line, idx) => (
+                      <tspan
+                        key={`${node.data.id}-line-${idx}`}
+                        x={Math.round(node.x0 + width / 2)}
+                        y={Math.round(item.blockTop + (idx + 1) * item.titleLineHeight)}
+                      >
+                        {line}
+                      </tspan>
+                    ))}
                   </text>
-                </>
-              ) : null}
-            </g>
-          );
-        })}
+                ) : null}
 
-        {categoryNodes.map((node) => {
-          const width = Math.max(0, node.x1 - node.x0);
-          const height = Math.max(0, node.y1 - node.y0);
-          const categoryId = Number(node.data.id.replace("cat-", ""));
-          const isHovered = hoveredCategoryId === categoryId;
-          const isFocused = activeCategoryId === categoryId;
-          return (
-            <g key={`category-overlay-${node.data.id}`} style={{ pointerEvents: "none" }}>
+                {item.showHeat ? (
+                  <>
+                    {/* Breathing indicator dot for NEW items */}
+                    {(node.data.heatDelta === null || node.data.heatDelta === undefined) && (
+                      <circle
+                        cx={Math.round(node.x0 + width / 2 - item.heatFontSize * 1.5)}
+                        cy={Math.round(item.heatY - item.heatFontSize * 0.3)}
+                        r={item.heatFontSize * 0.15}
+                        fill="#18FF19"
+                      >
+                        <animate
+                          attributeName="opacity"
+                          values="0.3;1;0.3"
+                          dur="1.5s"
+                          repeatCount="indefinite"
+                        />
+                        <animate
+                          attributeName="r"
+                          values={`${item.heatFontSize * 0.12};${item.heatFontSize * 0.18};${item.heatFontSize * 0.12}`}
+                          dur="1.5s"
+                          repeatCount="indefinite"
+                        />
+                      </circle>
+                    )}
+                    <text
+                      x={Math.round(node.x0 + width / 2)}
+                      y={Math.round(item.heatY)}
+                      textAnchor="middle"
+                      dominantBaseline="alphabetic"
+                      fill={item.textColor}
+                      fontWeight={600}
+                      fontSize={item.heatFontSize}
+                      opacity={0.95}
+                      clipPath={item.clipPathRef}
+                      textRendering="geometricPrecision"
+                    >
+                      {item.heatDeltaText}
+                    </text>
+                  </>
+                ) : null}
+              </g>
+            );
+          })}
+
+          {categoryNodes.map((node) => {
+            const width = Math.max(0, node.x1 - node.x0);
+            const height = Math.max(0, node.y1 - node.y0);
+            const categoryId = Number(node.data.id.replace("cat-", ""));
+            const isHovered = hoveredCategoryId === categoryId;
+            const isFocused = activeCategoryId === categoryId;
+            return (
+              <g key={`category-overlay-${node.data.id}`} style={{ pointerEvents: "none" }}>
+                <rect
+                  x={node.x0}
+                  y={node.y0}
+                  width={width}
+                  height={height}
+                  fill="none"
+                  // Default border is removed to prevent double-stroked shared boundaries.
+                  stroke={isHovered || isFocused ? "#f2d21b" : "none"}
+                  strokeWidth={isHovered || isFocused ? 1.4 : 0}
+                />
+                <rect
+                  x={node.x0 + 1}
+                  y={node.y0 + 1}
+                  width={Math.max(0, width - 2)}
+                  height={17}
+                  fill={isHovered || isFocused ? "#f2d21b" : categoryHeaderDefault}
+                />
+                <text
+                  x={node.x0 + 4}
+                  y={node.y0 + 13}
+                  fontSize={11}
+                  fontWeight={700}
+                  fill={isHovered || isFocused ? "#0b0c10" : categoryLabelDefault}
+                  textRendering="geometricPrecision"
+                >
+                  {node.data.label.toUpperCase()}
+                </text>
+              </g>
+            );
+          })}
+
+          {hoveredCategoryNode ? (
+            <g style={{ pointerEvents: "none" }}>
               <rect
-                x={node.x0}
-                y={node.y0}
-                width={width}
-                height={height}
+                x={hoveredCategoryNode.x0}
+                y={hoveredCategoryNode.y0}
+                width={Math.max(0, hoveredCategoryNode.x1 - hoveredCategoryNode.x0)}
+                height={Math.max(0, hoveredCategoryNode.y1 - hoveredCategoryNode.y0)}
                 fill="none"
-                // Default border is removed to prevent double-stroked shared boundaries.
-                stroke={isHovered || isFocused ? "#f2d21b" : "none"}
-                strokeWidth={isHovered || isFocused ? 1.4 : 0}
+                stroke="#f2d21b"
+                strokeWidth={1.6}
               />
-              <rect
-                x={node.x0 + 1}
-                y={node.y0 + 1}
-                width={Math.max(0, width - 2)}
-                height={17}
-                fill={isHovered || isFocused ? "#f2d21b" : categoryHeaderDefault}
-              />
-              <text
-                x={node.x0 + 4}
-                y={node.y0 + 13}
-                fontSize={11}
-                fontWeight={700}
-                fill={isHovered || isFocused ? "#0b0c10" : categoryLabelDefault}
-                textRendering="geometricPrecision"
-              >
-                {node.data.label.toUpperCase()}
-              </text>
             </g>
-          );
-        })}
+          ) : null}
+        </svg>
 
-        {hoveredCategoryNode ? (
-          <g style={{ pointerEvents: "none" }}>
-            <rect
-              x={hoveredCategoryNode.x0}
-              y={hoveredCategoryNode.y0}
-              width={Math.max(0, hoveredCategoryNode.x1 - hoveredCategoryNode.x0)}
-              height={Math.max(0, hoveredCategoryNode.y1 - hoveredCategoryNode.y0)}
-              fill="none"
-              stroke="#f2d21b"
-              strokeWidth={1.6}
-            />
-          </g>
-        ) : null}
-      </svg>
-
-      {tooltip ? (
-        <div
-          ref={tooltipRef}
-          className="pointer-events-none fixed z-[9999] w-[320px] max-w-[320px] border-[4px] border-[#2c3038] bg-[#eceff2] text-[#1f232b]"
-          style={{ left: 0, top: 0 }}
-        >
-          {/* Header strip - finviz-like neutral top bar */}
-          <div className="border-b border-[#b8bdc4] bg-[#e4e7ec] px-3 py-1.5">
-            <div className="break-words whitespace-normal text-[12px] font-extrabold uppercase leading-tight tracking-[0.02em] text-[#232831]">
-              {tooltip.rawTitle || tooltip.label}
-            </div>
-          </div>
-
-          {/* Dominant colored row - HEAT section */}
+        {tooltip ? (
           <div
-            className={cn(
-              "px-4 py-3",
-              tooltip.heatDelta === null || tooltip.heatDelta === undefined
-                ? "bg-[#454952]"
-                : tooltip.heatDelta >= 0
-                  ? "bg-[#30cc5a]"
-                  : "bg-[#c6383f]",
-            )}
+            ref={tooltipRef}
+            className="pointer-events-none fixed z-50 w-[320px] max-w-[320px] border-4 border-[#2c3038] bg-[#eceff2] text-[#1f232b]"
+            style={{ left: 0, top: 0 }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="text-[18px] font-bold text-white dark:text-white">{t("heat").toUpperCase()}</div>
+            {/* Header strip - finviz-like neutral top bar */}
+            <div className="border-b border-[#b8bdc4] bg-[#e4e7ec] px-3 py-1.5">
+              <div className="wrap-break-word whitespace-normal text-[12px] font-extrabold uppercase leading-tight tracking-[0.02em] text-[#232831]">
+                {tooltip.rawTitle || tooltip.label}
               </div>
-              <div className="text-right">
-                <div className="text-[18px] font-bold text-white dark:text-white">
-                  {Math.round(tooltip.heatScore).toLocaleString()}
+            </div>
+
+            {/* Dominant colored row - HEAT section */}
+            <div
+              className={cn(
+                "px-4 py-3",
+                tooltip.heatDelta === null || tooltip.heatDelta === undefined
+                  ? "bg-[#454952]"
+                  : tooltip.heatDelta >= 0
+                    ? "bg-[#30cc5a]"
+                    : "bg-[#c6383f]",
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="text-[18px] font-bold text-white dark:text-white">
+                    {t("heat").toUpperCase()}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[18px] font-bold text-white dark:text-white">
+                    {Math.round(tooltip.heatScore).toLocaleString()}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* White section with aligned data rows */}
-          <div className="bg-[#eef1f5]">
-            {/* DELTA row with sparkline */}
-            {tooltip.history.length > 0 ? (
-              <>
-                <div className="flex items-center justify-between border-b border-[#c8cdd4] px-4 py-2.5">
-                  <div className="flex items-center gap-2 flex-1">
-                    <span className="text-[11px] font-bold text-gray-700">{t("delta").toUpperCase()}</span>
-                    <div className="flex-shrink-0">
-                      <Sparkline
-                        history={tooltip.history}
-                        positive={tooltip.heatDelta !== null && tooltip.heatDelta !== undefined && tooltip.heatDelta >= 0}
-                        isNew={tooltip.heatDelta === null || tooltip.heatDelta === undefined}
-                      />
+            {/* White section with aligned data rows */}
+            <div className="bg-[#eef1f5]">
+              {/* DELTA row with sparkline */}
+              {tooltip.history.length > 0 ? (
+                <>
+                  <div className="flex items-center justify-between border-b border-[#c8cdd4] px-4 py-2.5">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-[11px] font-bold text-gray-700">
+                        {t("delta").toUpperCase()}
+                      </span>
+                      <div className="shrink-0">
+                        <Sparkline
+                          history={tooltip.history}
+                          positive={
+                            tooltip.heatDelta !== null &&
+                            tooltip.heatDelta !== undefined &&
+                            tooltip.heatDelta >= 0
+                          }
+                          isNew={tooltip.heatDelta === null || tooltip.heatDelta === undefined}
+                        />
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={cn(
+                          "text-[11px] font-bold",
+                          tooltip.heatDelta === null || tooltip.heatDelta === undefined
+                            ? "text-gray-700"
+                            : tooltip.heatDelta >= 0
+                              ? "text-[#30cc5a]"
+                              : "text-[#c6383f]",
+                        )}
+                      >
+                        {formatHeatDelta(tooltip.heatDelta)}
+                      </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span
-                      className={cn(
-                        "text-[11px] font-bold",
-                        tooltip.heatDelta === null || tooltip.heatDelta === undefined
-                          ? "text-gray-700"
-                          : tooltip.heatDelta >= 0
-                            ? "text-[#30cc5a]"
-                            : "text-[#c6383f]",
-                      )}
-                    >
-                      {formatHeatDelta(tooltip.heatDelta)}
-                    </span>
+                </>
+              ) : (
+                <div className="flex items-center justify-between border-b border-[#c8cdd4] px-4 py-2.5">
+                  <span className="text-[11px] font-bold text-gray-700">
+                    {t("delta").toUpperCase()}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[11px] font-bold",
+                      tooltip.heatDelta === null || tooltip.heatDelta === undefined
+                        ? "text-gray-700"
+                        : tooltip.heatDelta >= 0
+                          ? "text-[#30cc5a]"
+                          : "text-[#c6383f]",
+                    )}
+                  >
+                    {formatHeatDelta(tooltip.heatDelta)}
+                  </span>
+                </div>
+              )}
+
+              {/* Summary section - full content without truncation */}
+              {tooltip.content ? (
+                <div className="px-4 py-3">
+                  <div className="mb-1.5 text-[10px] font-bold uppercase text-gray-600">
+                    {t("summary").toUpperCase()}
+                  </div>
+                  <div
+                    className="max-h-[400px] overflow-y-auto wrap-break-word whitespace-normal text-[11px] leading-relaxed text-gray-700"
+                    style={{ overflowWrap: "anywhere" }}
+                  >
+                    {tooltip.content}
                   </div>
                 </div>
-              </>
-            ) : (
-              <div className="flex items-center justify-between border-b border-[#c8cdd4] px-4 py-2.5">
-                <span className="text-[11px] font-bold text-gray-700">{t("delta").toUpperCase()}</span>
-                <span
-                  className={cn(
-                    "text-[11px] font-bold",
-                    tooltip.heatDelta === null || tooltip.heatDelta === undefined
-                      ? "text-gray-700"
-                      : tooltip.heatDelta >= 0
-                        ? "text-[#30cc5a]"
-                        : "text-[#c6383f]",
-                  )}
-                >
-                  {formatHeatDelta(tooltip.heatDelta)}
-                </span>
-              </div>
-            )}
-
-            {/* Summary section - full content without truncation */}
-            {tooltip.content ? (
-              <div className="px-4 py-3">
-                <div className="mb-1.5 text-[10px] font-bold uppercase text-gray-600">{t("summary").toUpperCase()}</div>
-                <div
-                  className="max-h-[400px] overflow-y-auto break-words whitespace-normal text-[11px] leading-relaxed text-gray-700"
-                  style={{ overflowWrap: "anywhere" }}
-                >
-                  {tooltip.content}
-                </div>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      <div className={cn("pointer-events-none absolute right-2 top-6 rounded px-2 py-1 text-[10px]", updatedBadgeBg)}>
-        {t("updated")} {new Date(updatedAt).toLocaleString()}
+        <div
+          className={cn(
+            "pointer-events-none absolute right-2 top-6 rounded px-2 py-1 text-[10px]",
+            updatedBadgeBg,
+          )}
+        >
+          {t("updated")} {new Date(updatedAt).toLocaleString()}
+        </div>
+
+        {/* Zoom hint overlay - fixed position at bottom center */}
+        {!activeCategoryId && hoveredCategoryId !== null && (
+          <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in rounded-xl bg-popover/95 border border-border px-6 py-3 text-sm font-semibold text-popover-foreground shadow-lg backdrop-blur-md">
+            ↑ Scroll up to zoom in
+          </div>
+        )}
+
+        {activeCategoryId && (
+          <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in rounded-xl bg-popover/95 border border-border px-6 py-3 text-sm font-semibold text-popover-foreground shadow-lg backdrop-blur-md">
+            ↓ Scroll down to zoom out
+          </div>
+        )}
       </div>
-
-      {/* Zoom hint overlay - fixed position at bottom center */}
-      {!activeCategoryId && hoveredCategoryId !== null && (
-        <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in rounded-xl bg-popover/95 border border-border px-6 py-3 text-sm font-semibold text-popover-foreground shadow-lg backdrop-blur-md">
-          ↑ Scroll up to zoom in
-        </div>
-      )}
-
-      {activeCategoryId && (
-        <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 animate-fade-in rounded-xl bg-popover/95 border border-border px-6 py-3 text-sm font-semibold text-popover-foreground shadow-lg backdrop-blur-md">
-          ↓ Scroll down to zoom out
-        </div>
-      )}
-    </div>
-
     </div>
   );
 }
-
