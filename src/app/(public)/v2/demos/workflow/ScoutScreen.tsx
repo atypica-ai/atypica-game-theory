@@ -76,13 +76,13 @@ export default function ScoutScreen({ postLabels }: { postLabels: [string, strin
           {PLATFORM_ROWS.length} {t("workflow.demos.ui.platforms")}
         </span>
         <span className="w-px h-3" style={{ background: L.border }} />
-        <motion.span
-          className="font-IBMPlexMono text-xs tabular-nums"
-          style={{ color: accent }}
-          key={signalCount}
-        >
-          {signalCount}
-        </motion.span>
+          <motion.span
+            className="font-IBMPlexMono text-xs tabular-nums"
+            style={{ color: L.textMuted }}
+            key={signalCount}
+          >
+            {signalCount}
+          </motion.span>
         <span className="font-IBMPlexMono text-xs" style={{ color: L.textMuted }}>
           {t("workflow.demos.ui.signals")}
         </span>
@@ -103,7 +103,7 @@ export default function ScoutScreen({ postLabels }: { postLabels: [string, strin
               <span className="font-IBMPlexMono text-xs" style={{ color: L.textMuted }}>
                 exec search{row.platform}
               </span>
-              <span className="font-IBMPlexMono text-xs ml-auto" style={{ color: accent }}>
+              <span className="font-IBMPlexMono text-xs ml-auto" style={{ color: L.textMuted }}>
                 {row.postCount} results
               </span>
             </div>

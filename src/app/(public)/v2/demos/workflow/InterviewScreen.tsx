@@ -118,7 +118,7 @@ export default function InterviewScreen({
                 className="rounded-lg px-3 py-2"
                 style={{ background: `${accent}08`, border: `1px solid ${accent}20` }}
               >
-                <span className="font-IBMPlexMono text-xs block mb-1" style={{ color: accent }}>
+                <span className="font-IBMPlexMono text-xs block mb-1" style={{ color: L.textMuted }}>
                   {personaName}
                 </span>
                 <p className="text-sm leading-relaxed italic" style={{ color: L.text }}>

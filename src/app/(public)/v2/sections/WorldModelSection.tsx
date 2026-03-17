@@ -298,14 +298,15 @@ export default function WorldModelSection({
                 <p className="font-IBMPlexMono text-sm tracking-[0.08em] uppercase text-zinc-400 mb-3">
                   {t("worldModel.matrixTitle")}
                 </p>
+                <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
                     <tr>
-                      <th className="font-IBMPlexMono text-sm tracking-[0.06em] uppercase text-zinc-500 py-3 px-5 border-b border-zinc-700 text-left w-[180px]" />
+                      <th className="font-IBMPlexMono text-xs sm:text-sm tracking-[0.06em] uppercase text-zinc-500 py-2.5 px-2 sm:py-3 sm:px-5 border-b border-zinc-700 text-left" />
                       {MATRIX_COLS.map((h) => (
                         <th
                           key={h}
-                          className="font-IBMPlexMono text-sm tracking-[0.06em] uppercase text-zinc-400 py-3 px-5 border-b border-zinc-700 text-center"
+                          className="font-IBMPlexMono text-xs sm:text-sm tracking-[0.06em] uppercase text-zinc-400 py-2.5 px-2 sm:py-3 sm:px-5 border-b border-zinc-700 text-center"
                         >
                           {h}
                         </th>
@@ -315,14 +316,14 @@ export default function WorldModelSection({
                   <tbody>
                     {MATRIX_ROWS.map((row) => (
                       <tr key={row.row}>
-                        <td className="font-IBMPlexMono text-sm text-zinc-300 py-4 px-5 border-b border-zinc-800/60 bg-zinc-800/20">
+                        <td className="font-IBMPlexMono text-xs sm:text-sm text-zinc-300 py-3 px-2 sm:py-4 sm:px-5 border-b border-zinc-800/60 bg-zinc-800/20">
                           {row.row}
                         </td>
                         {row.cols.map((cell, ci) => (
                           <td
                             key={`${row.row}-${ci}`}
                             className={cn(
-                              "text-sm text-center py-4 px-5 border-b border-zinc-800/60",
+                              "text-xs sm:text-sm text-center py-3 px-2 sm:py-4 sm:px-5 border-b border-zinc-800/60",
                               cell === "Low ↗"
                                 ? "text-ghost-green bg-ghost-green/[0.03] font-medium"
                                 : cell === "—"
@@ -339,6 +340,7 @@ export default function WorldModelSection({
                     ))}
                   </tbody>
                 </table>
+                </div>
                 <p className="text-sm text-zinc-300 mt-3 leading-relaxed">
                   {t("worldModel.matrixNote")}
                 </p>

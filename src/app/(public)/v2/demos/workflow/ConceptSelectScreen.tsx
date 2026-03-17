@@ -97,7 +97,7 @@ export default function ConceptSelectScreen({
             animate={{ opacity: [1, 0.3, 1] }}
             transition={{ duration: 0.8, repeat: Infinity }}
           />
-          <span className="text-xs" style={{ color: accent }}>
+          <span className="text-xs" style={{ color: L.textMuted }}>
             {validationLabel}
           </span>
         </motion.div>

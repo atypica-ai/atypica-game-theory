@@ -52,6 +52,10 @@ const STORY_CATEGORY_KEYS = {
   prediction: "solutions.categoryPrediction",
 } as const;
 
+function getAccentTextOnLight(accent: string) {
+  return accent === "var(--ghost-green)" ? "#18181b" : accent;
+}
+
 const STORY_LINKS: Partial<Record<StoryKey, string>> = {
   prediction: "https://ioiio.bet",
 };
@@ -65,12 +69,12 @@ const ROLE_STORY_MAP: Partial<Record<RoleKey, StoryKey>> = {
 
 function SectionLabel({ children, accent }: { children: ReactNode; accent?: string }) {
   return (
-    <p
-      className="font-IBMPlexMono text-xs tracking-[0.16em] uppercase"
-      style={{ color: accent ?? "#71717a" }}
-    >
-      {children}
-    </p>
+    <div className="inline-flex items-center gap-2">
+      {accent && <span className="h-px w-4 shrink-0" style={{ backgroundColor: accent }} />}
+      <p className="font-IBMPlexMono text-xs tracking-[0.16em] uppercase text-zinc-500">
+        {children}
+      </p>
+    </div>
   );
 }
 
@@ -422,7 +426,7 @@ function UniversityVisual() {
           >
             <div
               className="grid size-7 shrink-0 place-items-center rounded-full border border-current bg-white font-IBMPlexMono text-[11px]"
-              style={{ color: accent }}
+              style={{ color: getAccentTextOnLight(accent) }}
             >
               {index + 1}
             </div>
@@ -493,7 +497,7 @@ function PredictionVisual() {
           </span>
           <span
             className="font-IBMPlexMono text-[11px] tracking-[0.12em] uppercase"
-            style={{ color: accent }}
+            style={{ color: getAccentTextOnLight(accent) }}
           >
             0.73 CONF
           </span>
@@ -594,7 +598,7 @@ function StoryCard({
               <div className="min-w-0 shrink-0 self-start lg:pr-6 lg:text-right xl:pr-8">
                 <div
                   className="font-EuclidCircularA text-5xl leading-none lg:text-6xl"
-                  style={{ color: accent }}
+                  style={{ color: getAccentTextOnLight(accent) }}
                 >
                   {t(`solutions.stories.${storyKey}.heroStatValue`)}
                 </div>
@@ -685,7 +689,7 @@ function StorySelector({
           </div>
           <div
             className="mt-3 font-EuclidCircularA text-3xl leading-none"
-            style={{ color: accent }}
+            style={{ color: getAccentTextOnLight(accent) }}
           >
             {t(`solutions.stories.${storyKey}.heroStatValue`)}
           </div>
@@ -762,7 +766,7 @@ export default function UseCasesSection({
       <ChapterPanel variant="light">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(260px,360px)] lg:items-end">
           <div>
-            <div className="font-IBMPlexMono mb-4 text-xs tracking-[0.18em] text-ghost-green">
+            <div className="font-IBMPlexMono mb-4 text-xs tracking-[0.18em] text-zinc-500">
               {copy.number}
             </div>
             <p className="font-IBMPlexMono mb-3 text-xs tracking-[0.14em] uppercase text-zinc-500">

@@ -77,7 +77,7 @@ function InsightReport({ scrollRef, title, finding, stats, accent }: RP) {
       <div className="px-5 pt-5 pb-3">
         <span
           className="font-IBMPlexMono text-xs tracking-wider uppercase"
-          style={{ color: accent }}
+          style={{ color: L.textFaint }}
         >
           Insight Report
         </span>
@@ -141,7 +141,7 @@ function VerdictReport({ scrollRef, title, finding, stats, accent }: RP) {
       <div className="max-w-[320px] mx-auto p-5 space-y-3">
         <span
           className="font-IBMPlexMono text-xs tracking-wider uppercase"
-          style={{ color: accent }}
+          style={{ color: L.textFaint }}
         >
           Concept Test
         </span>
@@ -161,7 +161,7 @@ function VerdictReport({ scrollRef, title, finding, stats, accent }: RP) {
             <span className="font-IBMPlexMono text-xs" style={{ color: L.textFaint }}>
               Positive
             </span>
-            <span className="text-lg font-medium block" style={{ color: accent }}>
+            <span className="text-lg font-medium block" style={{ color: L.text }}>
               {stats[0]?.value}
             </span>
             <span className="text-xs" style={{ color: L.textMuted }}>
@@ -189,7 +189,7 @@ function VerdictReport({ scrollRef, title, finding, stats, accent }: RP) {
           className="py-2 px-3 rounded text-center"
           style={{ background: `${accent}06`, border: `1px solid ${accent}20` }}
         >
-          <span className="text-sm font-medium" style={{ color: accent }}>
+          <span className="text-sm font-medium" style={{ color: L.text }}>
             WTP: {stats[1]?.value}
           </span>
         </motion.div>
@@ -226,7 +226,7 @@ function ConceptReport({ scrollRef, title, finding, stats, accent }: RP) {
       >
         <span
           className="font-IBMPlexMono text-xs tracking-wider uppercase"
-          style={{ color: accent }}
+          style={{ color: L.textFaint }}
         >
           Product Innovation
         </span>
@@ -243,7 +243,7 @@ function ConceptReport({ scrollRef, title, finding, stats, accent }: RP) {
           transition={{ delay: 0.25 }}
           className="px-5 py-3 text-center"
         >
-          <span className="text-3xl font-medium" style={{ color: accent }}>
+          <span className="text-3xl font-medium" style={{ color: L.text }}>
             {stats[0].value}
           </span>
           <span className="text-sm block mt-0.5" style={{ color: L.textMuted }}>
@@ -260,7 +260,7 @@ function ConceptReport({ scrollRef, title, finding, stats, accent }: RP) {
         className="px-5 pb-3"
       >
         <div className="flex items-center gap-1.5 text-xs" style={{ color: L.textMuted }}>
-          <span className="px-2 py-1 rounded" style={{ background: `${accent}08`, color: accent }}>
+          <span className="px-2 py-1 rounded" style={{ background: `${accent}08`, color: L.textSub }}>
             Product
           </span>
           <span>→</span>
@@ -274,7 +274,7 @@ function ConceptReport({ scrollRef, title, finding, stats, accent }: RP) {
           <span>→</span>
           <span
             className="px-2 py-1 rounded font-medium"
-            style={{ background: `${accent}08`, color: accent }}
+            style={{ background: `${accent}08`, color: L.textSub }}
           >
             Concept
           </span>
@@ -309,7 +309,7 @@ function JourneyReport({ scrollRef, title, finding, stats, accent }: RP) {
       <div className="max-w-[300px] mx-auto space-y-3">
         <span
           className="font-IBMPlexMono text-xs tracking-wider uppercase"
-          style={{ color: accent }}
+          style={{ color: L.textFaint }}
         >
           VOC Journey
         </span>
@@ -414,7 +414,7 @@ function PricingReport({ scrollRef, title, finding, stats, accent }: RP) {
       <div className="max-w-[300px] mx-auto space-y-3">
         <span
           className="font-IBMPlexMono text-xs tracking-wider uppercase"
-          style={{ color: accent }}
+          style={{ color: L.textFaint }}
         >
           Pricing Analysis
         </span>
@@ -451,7 +451,7 @@ function PricingReport({ scrollRef, title, finding, stats, accent }: RP) {
               </span>
               <span
                 className="text-base font-medium block mt-0.5"
-                style={{ color: t.best ? accent : L.text }}
+                style={{ color: L.text }}
               >
                 {t.price}
               </span>
@@ -561,7 +561,7 @@ function PaperReport({ scrollRef, title, finding, stats, accent }: RP) {
               <span className="text-sm" style={{ color: L.text }}>
                 {s.label}
               </span>
-              <span className="text-sm font-medium font-IBMPlexMono" style={{ color: accent }}>
+              <span className="text-sm font-medium font-IBMPlexMono" style={{ color: L.text }}>
                 {s.value}
               </span>
             </div>
@@ -596,7 +596,7 @@ function DashboardReport({ scrollRef, title, finding, stats, accent }: RP) {
       <div className="max-w-[340px] mx-auto space-y-2.5">
         <span
           className="font-IBMPlexMono text-xs tracking-wider uppercase"
-          style={{ color: accent }}
+          style={{ color: L.textFaint }}
         >
           Consensus
         </span>
@@ -619,7 +619,7 @@ function DashboardReport({ scrollRef, title, finding, stats, accent }: RP) {
             >
               <span
                 className="text-base font-medium block"
-                style={{ color: i === 0 ? accent : L.text }}
+                style={{ color: L.text }}
               >
                 {s.value}
               </span>
@@ -638,7 +638,7 @@ function DashboardReport({ scrollRef, title, finding, stats, accent }: RP) {
           className="flex items-center gap-3 p-2.5 rounded"
           style={{ background: `${accent}05` }}
         >
-          <span className="text-sm font-medium" style={{ color: accent }}>
+          <span className="text-sm font-medium" style={{ color: L.text }}>
             📈 {direction}
           </span>
           <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: L.bgSub }}>
@@ -650,7 +650,7 @@ function DashboardReport({ scrollRef, title, finding, stats, accent }: RP) {
               transition={{ duration: 0.8, delay: 0.4 }}
             />
           </div>
-          <span className="font-IBMPlexMono text-xs" style={{ color: accent }}>
+          <span className="font-IBMPlexMono text-xs" style={{ color: L.textMuted }}>
             {confidence}
           </span>
         </motion.div>

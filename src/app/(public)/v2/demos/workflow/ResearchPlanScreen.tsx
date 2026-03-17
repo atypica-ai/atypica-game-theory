@@ -62,7 +62,7 @@ export default function ResearchPlanScreen({
               initial={{ background: "transparent" }}
               animate={{ background: `${accent}10` }}
               transition={{ delay: i * 0.35 + 0.2 }}
-              style={{ border: `1px solid ${L.border}`, color: accent }}
+              style={{ border: `1px solid ${L.border}`, color: L.textSub }}
             >
               {i + 1}
             </motion.span>
@@ -71,7 +71,7 @@ export default function ResearchPlanScreen({
             </span>
             <motion.span
               className="ml-auto text-xs mt-0.5"
-              style={{ color: accent }}
+              style={{ color: L.textMuted }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: i * 0.35 + 0.3 }}

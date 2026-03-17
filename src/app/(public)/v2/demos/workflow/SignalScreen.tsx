@@ -54,7 +54,7 @@ export default function SignalScreen({
         <span className="w-px h-3" style={{ background: L.border }} />
         <motion.span
           className="font-IBMPlexMono text-xs tabular-nums"
-          style={{ color: accent }}
+          style={{ color: L.textMuted }}
           key={signalCount}
         >
           {847 + signalCount}
@@ -76,7 +76,7 @@ export default function SignalScreen({
             </span>
             <span
               className="font-IBMPlexMono text-sm font-medium"
-              style={{ color: src.up ? accent : "#dc2626" }}
+              style={{ color: src.up ? L.text : "#dc2626" }}
             >
               {src.value}
             </span>

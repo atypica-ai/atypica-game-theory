@@ -406,6 +406,8 @@
       "kicker": "两个 AI",
       "title": "模拟 × 研究",
       "body": "一个 AI 模拟用户，另一个研究用户——同时适用于真实和虚拟用户。",
+      "openLink": "打开",
+      "comingSoon": "即将上线",
       "simulator": {
         "tag": "AI SIMULATOR",
         "description": "通过「主观世界模型」，模拟一个真实的人——不是统计平均值。",
@@ -526,6 +528,7 @@
       "kicker": "工作流",
       "title": "用例 × 工作流",
       "body": "选择你的目标，我们组装工作流。",
+      "openInProduct": "进入产品",
       "centerDefault": "点击用例查看工作流",
       "goals": {
         "consumerInsight": { "label": "消费者洞察", "desc": "消费者细分、画像、JTBD 与需求洞察" },
@@ -618,6 +621,7 @@
           "reportFinding": "概念与目标人群产生共鸣，但 ¥249 定价触发犹豫。建议以 ¥199 上市并强调科学背书。"
         },
         "productRnD": {
+          "question": "梳理新品趋势，生成新的概念方向，并验证哪条路线最适合成为我们的品牌方案。",
           "scoutPost1": "这款抹茶蛋白棒改变了我的生活",
           "scoutPost2": "为什么口感比口味更重要",
           "scoutPost3": "我戒不掉的零食",
@@ -763,6 +767,7 @@
       "kicker": "数据资产",
       "title": "主观世界资产",
       "body": "可调用。可验证。基于真实行为数据构建。",
+      "openLink": "打开",
       "persona": {
         "title": "AI Persona",
         "description": "基于真实行为数据与社会科学模型构建。每个 Persona 维持一致的人格、认知偏差和决策框架。企业可上传自有访谈数据，生成专属私有 Persona 库。",
@@ -932,6 +937,7 @@
       "title": "准备好理解你的用户了吗？",
       "body": "让 AI 为每一个消费者的主观世界建模。这个更难的问题——我们已经开始了。",
       "cta": "预约演示",
+      "ctaLoading": "正在打开留资流程",
       "secondaryCta": "阅读文档"
     },
     "hud": {

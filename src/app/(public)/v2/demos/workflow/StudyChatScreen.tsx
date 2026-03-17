@@ -58,7 +58,7 @@ export default function StudyChatScreen({
               className="w-5 h-5 rounded-full grid place-items-center shrink-0 mt-0.5"
               style={{ background: L.bgSub, border: `1px solid ${L.border}` }}
             >
-              <span className="text-xs" style={{ color: accent }}>
+              <span className="text-xs" style={{ color: L.textSub }}>
                 A
               </span>
             </div>
@@ -116,7 +116,7 @@ export default function StudyChatScreen({
             className="flex items-start gap-1.5"
           >
             {tool.status === "done" ? (
-              <span className="text-xs mt-px shrink-0" style={{ color: accent }}>
+              <span className="text-xs mt-px shrink-0" style={{ color: L.textMuted }}>
                 ✓
               </span>
             ) : tool.status === "running" ? (

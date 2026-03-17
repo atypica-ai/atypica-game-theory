@@ -214,7 +214,7 @@ export default function PersonaBuilderDemo() {
                   <span className="font-IBMPlexMono text-xs" style={{ color: L.textSub }}>
                     transcript.pdf
                   </span>
-                  <span className="text-xs ml-auto font-IBMPlexMono" style={{ color: L.green }}>
+                  <span className="text-xs ml-auto font-IBMPlexMono" style={{ color: L.textMuted }}>
                     12,847 chars
                   </span>
                 </div>
@@ -230,7 +230,7 @@ export default function PersonaBuilderDemo() {
                               : i === procStep
                                 ? `${L.green}10`
                                 : L.bgSub,
-                          color: i <= procStep ? L.green : L.textFaint,
+                          color: i <= procStep ? L.textSub : L.textFaint,
                         }}
                       >
                         {i < procStep ? "✓" : i + 1}
@@ -290,7 +290,7 @@ export default function PersonaBuilderDemo() {
                       </span>
                       <span
                         className="font-IBMPlexMono text-sm font-medium"
-                        style={{ color: L.green }}
+                        style={{ color: L.text }}
                       >
                         68%
                       </span>
@@ -336,7 +336,7 @@ export default function PersonaBuilderDemo() {
                       <span
                         key={key}
                         className="py-0.5 px-1.5 font-IBMPlexMono text-xs rounded"
-                        style={{ border: `1px solid ${L.greenBorder}`, color: L.green }}
+                        style={{ border: `1px solid ${L.greenBorder}`, color: L.textSub }}
                       >
                         {t(`twoAgents.mockup.${key}`)}
                       </span>

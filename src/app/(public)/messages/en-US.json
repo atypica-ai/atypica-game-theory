@@ -406,6 +406,8 @@
       "kicker": "TWO AGENTS",
       "title": "Simulate × Research",
       "body": "One AI simulates people. Another researches them — both real and virtual.",
+      "openLink": "Open",
+      "comingSoon": "Coming Soon",
       "simulator": {
         "tag": "AI SIMULATOR",
         "description": "Through the Subjective World Model, simulates a real user — not a statistical average.",
@@ -547,6 +549,7 @@
       "kicker": "WORKFLOW",
       "title": "Use Cases × Workflow",
       "body": "Choose your goal. We assemble the workflow.",
+      "openInProduct": "Open",
       "centerDefault": "Click a use case to see its workflow",
       "goals": {
         "consumerInsight": {
@@ -654,6 +657,7 @@
           "reportFinding": "Concept resonates with target audience, but $35 price point triggers hesitation. Recommend launch at $28 with science-backed proof points."
         },
         "productRnD": {
+          "question": "Scout emerging product trends, generate new concept directions, and validate which route feels strongest for our brand.",
           "scoutPost1": "This matcha protein bar changed my life",
           "scoutPost2": "Why texture matters more than flavor",
           "scoutPost3": "The snack I can't stop buying",
@@ -799,6 +803,7 @@
       "kicker": "DATA ASSETS",
       "title": "Assets of the Subjective World",
       "body": "Callable. Verifiable. Built on real behavioral data.",
+      "openLink": "Open",
       "persona": {
         "title": "AI Persona",
         "description": "Built on real behavioral data and social science models. Each Persona maintains consistent personality, cognitive biases, and decision frameworks. Upload your own interview data to build a private Persona library.",
@@ -986,6 +991,7 @@
       "title": "Ready to Understand Your Users?",
       "body": "Let AI model every consumer's subjective world. The harder problem — we've already started.",
       "cta": "Request a Demo",
+      "ctaLoading": "Opening Demo Flow",
       "secondaryCta": "Read Documentation"
     },
     "hud": {

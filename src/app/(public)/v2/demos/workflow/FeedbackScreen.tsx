@@ -78,7 +78,7 @@ export default function FeedbackScreen({
         className="p-2.5 rounded-lg"
         style={{ background: `${accent}06`, border: `1px solid ${accent}15` }}
       >
-        <span className="font-IBMPlexMono text-xs block mb-1.5" style={{ color: accent }}>
+        <span className="font-IBMPlexMono text-xs block mb-1.5" style={{ color: L.textMuted }}>
           ✓ Strengths
         </span>
         <div className="space-y-1">

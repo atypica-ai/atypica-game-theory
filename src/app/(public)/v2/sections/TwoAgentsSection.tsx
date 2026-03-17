@@ -2,12 +2,24 @@
 
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import ChapterPanel from "../components/ChapterPanel";
 import { CHAPTERS, RESEARCHER_METHOD_KEYS, SIMULATOR_PERSONA_KEYS } from "../content";
 import FocusGroupDemo from "../demos/FocusGroupDemo";
 import PersonaBuilderDemo from "../demos/PersonaBuilderDemo";
 
 const copy = CHAPTERS[2];
+const RESEARCHER_METHOD_LINKS = {
+  oneToOne: "/persona",
+  oneToMany: "/newstudy",
+  expertDiscussion: "/panel",
+  focusGroup: "/panel",
+  multiParty: null,
+  observation: null,
+} as const;
+
+const SIMULATOR_PERSONA_LINK = "/persona";
+const SIMULATOR_SAGE_LINK = "/sage";
 
 export default function TwoAgentsSection({
   register,
@@ -65,17 +77,23 @@ export default function TwoAgentsSection({
                 </div>
                 <div className="grid gap-2">
                   {SIMULATOR_PERSONA_KEYS.map((personaKey) => (
-                    <div
+                    <Link
                       key={personaKey}
+                      href={SIMULATOR_PERSONA_LINK}
                       className="border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600"
                     >
-                      <div className="text-sm font-medium">
-                        {t(`twoAgents.simulator.${personaKey}.label`)}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="text-sm font-medium">
+                          {t(`twoAgents.simulator.${personaKey}.label`)}
+                        </div>
+                        <span className="font-IBMPlexMono text-[10px] uppercase tracking-[0.12em] text-zinc-500">
+                          {t("twoAgents.openLink")} ↗
+                        </span>
                       </div>
                       <div className="text-sm leading-normal text-zinc-300 mt-1">
                         {t(`twoAgents.simulator.${personaKey}.description`)}
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -85,14 +103,22 @@ export default function TwoAgentsSection({
                 <div className="font-IBMPlexMono text-xs tracking-[0.12em] uppercase text-zinc-400 mb-2">
                   {t("twoAgents.simulator.sageLabel")}
                 </div>
-                <div className="border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600">
-                  <div className="text-sm font-medium">
-                    {t("twoAgents.simulator.expert.label")}
+                <Link
+                  href={SIMULATOR_SAGE_LINK}
+                  className="block border border-zinc-800 p-3 px-4 transition-colors duration-200 hover:border-zinc-600"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="text-sm font-medium">
+                      {t("twoAgents.simulator.expert.label")}
+                    </div>
+                    <span className="font-IBMPlexMono text-[10px] uppercase tracking-[0.12em] text-zinc-500">
+                      {t("twoAgents.openLink")} ↗
+                    </span>
                   </div>
                   <div className="text-sm leading-normal text-zinc-300 mt-1">
                     {t("twoAgents.simulator.expert.description")}
                   </div>
-                </div>
+                </Link>
               </div>
             </div>
 
@@ -110,17 +136,45 @@ export default function TwoAgentsSection({
               </div>
 
               <div className="grid gap-1.5">
-                {RESEARCHER_METHOD_KEYS.map((methodKey, i) => (
-                  <div
-                    key={methodKey}
-                    className="flex items-center gap-2.5 border border-zinc-800 py-2.5 px-3.5 text-sm transition-colors duration-200 hover:border-zinc-600"
-                  >
-                    <span className="font-IBMPlexMono text-xs text-zinc-300 min-w-[18px]">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span>{t(`twoAgents.researcher.${methodKey}`)}</span>
-                  </div>
-                ))}
+                {RESEARCHER_METHOD_KEYS.map((methodKey, i) =>
+                  (() => {
+                    const href = RESEARCHER_METHOD_LINKS[methodKey];
+                    const content = (
+                      <>
+                        <span className="font-IBMPlexMono text-xs text-zinc-300 min-w-[18px]">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          {t(`twoAgents.researcher.${methodKey}`)}
+                        </span>
+                        <span className="font-IBMPlexMono text-[10px] uppercase tracking-[0.12em] text-zinc-500">
+                          {href ? `${t("twoAgents.openLink")} ↗` : t("twoAgents.comingSoon")}
+                        </span>
+                      </>
+                    );
+
+                    if (!href) {
+                      return (
+                        <div
+                          key={methodKey}
+                          className="flex items-center gap-2.5 border border-zinc-800 py-2.5 px-3.5 text-sm text-zinc-500"
+                        >
+                          {content}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <Link
+                        key={methodKey}
+                        href={href}
+                        className="flex items-center gap-2.5 border border-zinc-800 py-2.5 px-3.5 text-sm transition-colors duration-200 hover:border-zinc-600"
+                      >
+                        {content}
+                      </Link>
+                    );
+                  })(),
+                )}
               </div>
             </div>
           </div>

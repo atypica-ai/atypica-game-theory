@@ -1,7 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { createHelloUserChatAction } from "@/app/(public)/pricing/actions";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import { useCallback, useState } from "react";
 
 export default function ClosingSection({
   register,
@@ -9,6 +11,29 @@ export default function ClosingSection({
   register: (el: HTMLElement | null) => void;
 }) {
   const t = useTranslations("HomeAtypicaV2");
+  const locale = useLocale();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const handleRequestDemo = useCallback(async () => {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await createHelloUserChatAction({
+      role: "user",
+      content:
+        locale === "zh-CN"
+          ? "我是企业用户，想了解一下企业版"
+          : "I want to learn about the enterprise plan",
+    });
+
+    if (!result.success) {
+      setIsSubmitting(false);
+      throw result;
+    }
+
+    window.location.href = `/agents/hello/${result.data.id}`;
+  }, [isSubmitting, locale]);
 
   return (
     <section ref={register} className="relative z-2">
@@ -20,15 +45,17 @@ export default function ClosingSection({
           {t("closing.body")}
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
-          <Link
-            href="/pricing"
+          <button
+            type="button"
+            onClick={handleRequestDemo}
+            disabled={isSubmitting}
             className="inline-flex items-center gap-2 h-11 px-6 bg-ghost-green text-black font-medium text-sm tracking-[0.04em] no-underline transition-colors duration-200 hover:bg-[#15b025]"
           >
-            {t("closing.cta")}
+            {isSubmitting ? t("closing.ctaLoading") : t("closing.cta")}
             <span aria-hidden="true">&rarr;</span>
-          </Link>
+          </button>
           <Link
-            href="#"
+            href="/guides"
             className="inline-flex items-center h-11 px-6 border border-zinc-700 text-zinc-300 text-sm tracking-[0.04em] no-underline transition-[color,border-color] duration-200 hover:text-white hover:border-zinc-500"
           >
             {t("closing.secondaryCta")}
