@@ -5,7 +5,7 @@ import { AgentToolConfigArgs, PlainTextToolResult } from "@/ai/tools/types";
 import { AgentRequestConfig, executeBaseAgentRequest } from "@/app/(study)/agents/baseAgentRequest";
 import { waitUntil } from "@vercel/functions";
 import { tool } from "ai";
-import { createUniversalSubAgentConfig } from "./config";
+import { createUniversalSubAgentConfig, type SkillDrivenSubAgentTools } from "./config";
 import { type SubAgentMode } from "./prompt";
 import {
   appendForcedInstruction,
@@ -27,12 +27,12 @@ import {
 type SubAgentConfigFactory = (
   executionContext: SubAgentExecutionContext,
   toolAbortSignal: AbortSignal,
-) => Promise<AgentRequestConfig<any>>;
+) => Promise<AgentRequestConfig<SkillDrivenSubAgentTools>>;
 
 async function createSkillDrivenSubAgentConfig(
   executionContext: SubAgentExecutionContext,
   toolAbortSignal: AbortSignal,
-): Promise<AgentRequestConfig<any>> {
+): Promise<AgentRequestConfig<SkillDrivenSubAgentTools>> {
   const { userId, locale, logger, statReport, userChatId, userChatToken, mode } = executionContext;
   return createUniversalSubAgentConfig({
     userId,
@@ -43,7 +43,7 @@ async function createSkillDrivenSubAgentConfig(
     statReport,
     toolAbortSignal,
     mode,
-  }) as Promise<AgentRequestConfig<any>>;
+  });
 }
 
 async function executeSubAgentWithConfig({

@@ -114,7 +114,7 @@ export async function handleSendMessage(
       await executeUniversalAgent(
         {
           userId,
-          userChat: { id: userChat.id, token: userChat.token, extra: userChat.extra },
+          userChat: { id: userChat.id, token: userChat.token, extra: userChat.extra, context: userChat.context },
           statReport,
           logger,
           locale,

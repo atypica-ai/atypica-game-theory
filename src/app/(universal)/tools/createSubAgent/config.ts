@@ -20,7 +20,7 @@ import type { Locale } from "next-intl";
 import type { Logger } from "pino";
 import { getSubAgentModePrompt, type SubAgentMode } from "./prompt";
 
-type SkillDrivenSubAgentTools = ReturnType<typeof buildSkillDrivenSubAgentTools>;
+export type SkillDrivenSubAgentTools = ReturnType<typeof buildSkillDrivenSubAgentTools>;
 
 function buildSkillDrivenSubAgentTools({
   userId,
