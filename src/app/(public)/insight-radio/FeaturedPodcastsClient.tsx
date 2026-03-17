@@ -149,7 +149,7 @@ export function FeaturedPodcastsClient({
                       </p>
 
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <Button variant="default" asChild className="text-xs h-7 shadow-none">
+                        <Button variant="primary" asChild className="text-xs h-7">
                           <Link href={featuredPodcast.url} target="_blank">
                             <PlayIcon className="size-4" />
                             {t("playPodcast")}
@@ -172,7 +172,7 @@ export function FeaturedPodcastsClient({
               <Volume2Icon className="w-16 h-16 text-muted-foreground bg-muted rounded-full p-4 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">{t("noPodcastsYet")}</h3>
               <p className="text-muted-foreground mb-6">{t("noPodcastsYetDescription")}</p>
-              <Button asChild>
+              <Button variant="primary" asChild>
                 <Link href="/newstudy">{t("startNewStudy")}</Link>
               </Button>
             </div>
@@ -337,7 +337,7 @@ export function FeaturedPodcastsClient({
         <div className="mx-auto max-w-3xl text-center">
           <h3 className="text-2xl md:text-3xl font-bold mb-4">{t("ctaTitle")}</h3>
           <p className="text-muted-foreground mb-8">{t("ctaDescription")}</p>
-          <Button asChild size="lg">
+          <Button variant="primary" asChild size="lg">
             <Link href="/newstudy">{t("createMyPodcast")}</Link>
           </Button>
         </div>

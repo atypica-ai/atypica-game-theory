@@ -133,7 +133,7 @@ export default function SageHomePageClient() {
 
       {/* Upload and Creation Form */}
       <div className="flex flex-col items-center gap-4 max-w-md mx-auto my-4 ">
-        <Button size="lg" asChild className="w-full h-12">
+        <Button variant="primary" size="lg" asChild className="w-full h-12">
           <Link href="/sage/create" prefetch={true}>
             {t("startCreation")}
             <ArrowRightIcon className="h-4 w-4" />

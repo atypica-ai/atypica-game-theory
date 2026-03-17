@@ -134,7 +134,7 @@ function AgentActivityText({ text }: { text: string }) {
   return (
     <div
       ref={scrollRef}
-      className="max-h-[3.75rem] overflow-hidden text-xs text-muted-foreground max-w-sm leading-relaxed"
+      className="max-h-15 overflow-hidden text-xs text-muted-foreground max-w-sm leading-relaxed"
     >
       {text}
     </div>

@@ -90,7 +90,7 @@ export function InsightRadioCard() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          <Button size="sm" className="flex-1 h-8 text-xs rounded-full" asChild>
+          <Button variant="primary" size="sm" className="flex-1 h-8 text-xs rounded-full" asChild>
             <Link href={podcast.url} target="_blank">
               <Volume2Icon className="w-3 h-3" />
               {t("listen")}
@@ -133,7 +133,7 @@ export function InsightRadioCard() {
 
           {/* Actions */}
           <div className="flex items-center gap-1 shrink-0">
-            <Button size="sm" className="h-9 w-9 rounded-full p-0" asChild>
+            <Button variant="primary" size="sm" className="h-9 w-9 rounded-full p-0" asChild>
               <Link href={podcast.url} target="_blank">
                 <Volume2Icon className="w-4 h-4" />
               </Link>

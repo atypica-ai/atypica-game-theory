@@ -76,7 +76,7 @@ export default function InterviewProjectHomePageClient() {
             {t("subtitle")}
           </p>
           <div className="pt-4">
-            <Button size="lg" variant="default" asChild>
+            <Button size="lg" variant="primary" asChild>
               <Link href="/interview/projects" prefetch={true}>
                 {t("getStarted")}
                 <ArrowRight className="h-4 w-4" />
@@ -182,7 +182,7 @@ export default function InterviewProjectHomePageClient() {
                 {t("ctaDescription")}
               </p>
             </div>
-            <Button size="lg" variant="default" asChild>
+            <Button size="lg" variant="primary" asChild>
               <Link href="/interview/projects" prefetch={true}>
                 {t("createFirstProject")}
                 <ArrowRight className="h-4 w-4" />

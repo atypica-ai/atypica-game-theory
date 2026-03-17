@@ -116,7 +116,7 @@ export function PersonaSimulationSection() {
             <p className="text-zinc-600 dark:text-zinc-400">{t("ctaDescription")}</p>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button variant="default" size="lg" className="rounded-full h-12 px-8" asChild>
+            <Button variant="primary" size="lg" className="rounded-full h-12 px-8" asChild>
               <Link href="/persona">{t("learnTechnologyButton")}</Link>
             </Button>
             <Button

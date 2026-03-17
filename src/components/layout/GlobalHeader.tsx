@@ -144,7 +144,7 @@ const GlobalHeader = React.memo(function GlobalHeader({
               <IntercomLauncher />
             ) : sessionStatus != "loading" ? (
               <Button
-                variant="default"
+                variant="primary"
                 size="sm"
                 className="h-8 px-4 scale-90 max-[360px]:hidden"
                 asChild
@@ -555,7 +555,7 @@ const GlobalHeaderDrawer = React.memo(function GlobalHeaderDrawer({
                 href={`/auth/signin?callbackUrl=${encodeURIComponent(signinCallbackUrl)}`}
                 className="w-full"
               >
-                <Button variant="default" className="w-full">
+                <Button variant="primary" className="w-full">
                   <LogInIcon className="h-4 w-4 mr-2" />
                   {t("login")}
                 </Button>
