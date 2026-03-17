@@ -343,7 +343,12 @@ export function PanelHomePage() {
               </p>
             </div>
             <div className="flex flex-col items-center gap-4 max-w-sm mx-auto">
-              <Button variant="primary" size="lg" className="w-full h-12" onClick={() => router.push("/panels")}>
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-full h-12"
+                onClick={() => router.push("/panels")}
+              >
                 {t("cta.createFirst")}
                 <ArrowRight className="h-4 w-4" />
               </Button>

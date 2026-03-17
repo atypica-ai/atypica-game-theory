@@ -16,7 +16,8 @@ export default function AdminUILayout({ children }: { children: React.ReactNode 
     <div className="space-y-6">
       <nav className="flex items-center gap-1 border-b border-border pb-px">
         {tabs.map((tab) => {
-          const isActive = tab.href === "/admin/ui" ? pathname === "/admin/ui" : pathname.startsWith(tab.href);
+          const isActive =
+            tab.href === "/admin/ui" ? pathname === "/admin/ui" : pathname.startsWith(tab.href);
           return (
             <Link
               key={tab.href}

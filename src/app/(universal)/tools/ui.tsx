@@ -2,6 +2,7 @@
 import { ConfirmPanelResearchPlanMessage } from "@/app/(panel)/tools/confirmPanelResearchPlan/ConfirmPanelResearchPlanMessage";
 import { RequestSelectPersonasMessage } from "@/app/(panel)/tools/requestSelectPersonas/RequestSelectPersonasMessage";
 import { UpdatePanelResultMessage } from "@/app/(panel)/tools/updatePanel/UpdatePanelResultMessage";
+import type { UserChatContext } from "@/app/(study)/context/types";
 import { fetchAnalystReportByToken } from "@/app/(study)/study/actions";
 import { GenerateReportResultMessage } from "@/app/(study)/tools/generateReport/GenerateReportResultMessage";
 import { SearchPersonasResultMessage } from "@/app/(study)/tools/searchPersonas/SearchPersonasResultMessage";
@@ -14,7 +15,6 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { TAddUniversalUIToolResult, TUniversalMessageWithTool, UniversalToolName } from "./types";
-import type { UserChatContext } from "@/app/(study)/context/types";
 
 function extractPlainText(toolUIPart: TUniversalMessageWithTool["parts"][number]): string {
   if (!("output" in toolUIPart) || !toolUIPart.output || typeof toolUIPart.output !== "object") {
@@ -249,8 +249,7 @@ export function renderUniversalSubAgentCardsInMessage({
   if (message.role !== "assistant") return null;
 
   const subAgentParts = message.parts.filter(
-    (part): part is SubAgentToolUIPart =>
-      part.type === `tool-${UniversalToolName.createSubAgent}`,
+    (part): part is SubAgentToolUIPart => part.type === `tool-${UniversalToolName.createSubAgent}`,
   );
 
   if (subAgentParts.length === 0) return null;

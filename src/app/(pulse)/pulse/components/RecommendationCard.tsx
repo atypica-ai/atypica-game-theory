@@ -1,15 +1,15 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Loader2Icon, SparklesIcon } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { startFastInsightResearch } from "../actions";
-import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
+import { Loader2Icon, SparklesIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { startFastInsightResearch } from "../actions";
 
 interface RecommendationCardProps {
   pulseId: number;
@@ -86,9 +86,7 @@ export function RecommendationCard({ angle, pulse }: RecommendationCardProps) {
               {formatDate(pulse.createdAt, locale)}
             </span>
           </div>
-          <h3 className="text-sm font-medium text-muted-foreground line-clamp-1">
-            {pulse.title}
-          </h3>
+          <h3 className="text-sm font-medium text-muted-foreground line-clamp-1">{pulse.title}</h3>
           <p className="text-xs text-muted-foreground line-clamp-2">{pulse.content}</p>
         </div>
       </CardContent>

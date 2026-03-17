@@ -77,7 +77,12 @@ export function HeroSection() {
           data-product-tour="homepage-hero"
           className="flex flex-col md:flex-row items-center justify-center gap-8 mb-16"
         >
-          <Button variant="primary" size="lg" className="rounded-full has-[>svg]:px-8 px-8 h-12" asChild>
+          <Button
+            variant="primary"
+            size="lg"
+            className="rounded-full has-[>svg]:px-8 px-8 h-12"
+            asChild
+          >
             <Link href="/newstudy" prefetch={true}>
               {t("startStudyButton")}
               <ChevronRightIcon className="h-3 w-3" />

@@ -63,7 +63,12 @@ export async function Affiliate() {
             <span className="font-bold border-b-2 border-primary"> {t("hero.commission")} </span>
             {t("hero.descriptionSuffix")}
           </p>
-          <Button variant="primary" size="lg" className="rounded-full has-[>svg]:px-8 px-8 h-12" asChild>
+          <Button
+            variant="primary"
+            size="lg"
+            className="rounded-full has-[>svg]:px-8 px-8 h-12"
+            asChild
+          >
             <Link href={t("links.affiliateProgram")} target="_blank" rel="noopener noreferrer">
               {t("hero.cta")}
               <ExternalLinkIcon className="h-4 w-4" />

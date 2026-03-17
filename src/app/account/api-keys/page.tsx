@@ -3,8 +3,8 @@ import { generatePageMetadata } from "@/lib/request/metadata";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { UserApiKeyCard } from "./UserApiKeyCard";
 
 export async function generateMetadata(): Promise<Metadata> {

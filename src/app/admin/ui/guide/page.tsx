@@ -45,7 +45,9 @@ export default function AdminUIGuidePage() {
           ].map((token) => (
             <div key={token.name} className="flex flex-col items-center gap-1.5">
               <div className={cn("size-10 rounded-md", token.cls)} />
-              <span className="text-[10px] text-muted-foreground text-center leading-tight">{token.name}</span>
+              <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                {token.name}
+              </span>
             </div>
           ))}
         </div>
@@ -78,7 +80,9 @@ export default function AdminUIGuidePage() {
         <div className="space-y-3">
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground w-36 shrink-0">CTA / high emphasis</span>
-            <Button variant="primary" size="sm">Get Started</Button>
+            <Button variant="primary" size="sm">
+              Get Started
+            </Button>
             <span className="text-[10px] text-muted-foreground">variant=&quot;primary&quot;</span>
           </div>
           <div className="flex items-center gap-3">
@@ -88,12 +92,16 @@ export default function AdminUIGuidePage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground w-36 shrink-0">Dialog footer</span>
-            <Button variant="outline" size="sm">Cancel</Button>
+            <Button variant="outline" size="sm">
+              Cancel
+            </Button>
             <Button size="sm">Confirm</Button>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground w-36 shrink-0">Icon action</span>
-            <Button variant="ghost" size="icon"><PlusIcon /></Button>
+            <Button variant="ghost" size="icon">
+              <PlusIcon />
+            </Button>
           </div>
         </div>
       </Section>
@@ -103,8 +111,8 @@ export default function AdminUIGuidePage() {
         <div className="p-4 border border-border rounded-lg space-y-4">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">
-              Do NOT use text-primary for emphasis. Green text on white is hard to read.
-              Instead, keep text in foreground colors and add green as decoration.
+              Do NOT use text-primary for emphasis. Green text on white is hard to read. Instead,
+              keep text in foreground colors and add green as decoration.
             </p>
           </div>
 
@@ -129,7 +137,9 @@ export default function AdminUIGuidePage() {
               <CheckIcon className="size-3 text-primary shrink-0 mt-1" />
               <div>
                 <span className="text-xs text-muted-foreground">Underline accent: </span>
-                <span className="text-sm font-semibold border-b-2 border-primary pb-0.5">Highlighted with green underline</span>
+                <span className="text-sm font-semibold border-b-2 border-primary pb-0.5">
+                  Highlighted with green underline
+                </span>
               </div>
             </div>
 
@@ -148,7 +158,9 @@ export default function AdminUIGuidePage() {
               <CheckIcon className="size-3 text-primary shrink-0 mt-1" />
               <div>
                 <span className="text-xs text-muted-foreground">Left border: </span>
-                <span className="text-sm border-l-2 border-primary pl-2">Accented with green left border</span>
+                <span className="text-sm border-l-2 border-primary pl-2">
+                  Accented with green left border
+                </span>
               </div>
             </div>
 
@@ -165,8 +177,8 @@ export default function AdminUIGuidePage() {
           </div>
 
           <p className="text-[10px] text-muted-foreground/60 pt-2 border-t border-border/50">
-            Green as icon color (CheckIcon, decorative dots) is fine.
-            Green as text color is not — use foreground + decoration instead.
+            Green as icon color (CheckIcon, decorative dots) is fine. Green as text color is not —
+            use foreground + decoration instead.
           </p>
         </div>
       </Section>
@@ -229,7 +241,9 @@ export default function AdminUIGuidePage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="w-32 shrink-0">Section label</span>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">tracking label</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+              tracking label
+            </span>
           </div>
         </div>
       </Section>

@@ -51,8 +51,8 @@ export default async function McpDocsPage() {
                 <div className="bg-muted/30 border border-border rounded-lg p-4">
                   <h3 className="text-base font-semibold mb-2">atypica-research Skill</h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Pre-built agent skill ready to use with MCP-compatible AI assistants. Install
-                    it once and start conducting research through natural conversations.
+                    Pre-built agent skill ready to use with MCP-compatible AI assistants. Install it
+                    once and start conducting research through natural conversations.
                   </p>
                   <a href="#agent-skill" className="text-sm font-medium hover:underline">
                     Learn more &rarr;
@@ -247,9 +247,10 @@ export default async function McpDocsPage() {
               <div className="space-y-6">
                 <div>
                   <p className="text-sm text-muted-foreground mb-4">
-                    The <code className="bg-muted px-1 py-0.5 rounded text-xs">atypica-research</code> skill is a pre-configured
-                    agent skill that makes it easy to use atypica&apos;s research capabilities
-                    with MCP-compatible AI assistants.
+                    The{" "}
+                    <code className="bg-muted px-1 py-0.5 rounded text-xs">atypica-research</code>{" "}
+                    skill is a pre-configured agent skill that makes it easy to use atypica&apos;s
+                    research capabilities with MCP-compatible AI assistants.
                   </p>
 
                   <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-6 mb-4">
@@ -262,11 +263,17 @@ export default async function McpDocsPage() {
                         className="block p-4 bg-background/80 border border-border rounded-md hover:border-primary hover:bg-accent/50 transition-all"
                       >
                         <div className="flex items-start gap-3">
-                          <svg className="w-6 h-6 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                          <svg
+                            className="w-6 h-6 mt-0.5 shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                           </svg>
                           <div className="flex-1">
-                            <div className="font-semibold text-sm mb-1 font-mono">bmrlab/atypica-research-skill</div>
+                            <div className="font-semibold text-sm mb-1 font-mono">
+                              bmrlab/atypica-research-skill
+                            </div>
                             <div className="text-xs text-muted-foreground">
                               Direct download • Source code • Issues & contributions
                             </div>
@@ -280,7 +287,9 @@ export default async function McpDocsPage() {
                         className="block p-4 bg-background/80 border border-border rounded-md hover:border-primary hover:bg-accent/50 transition-all"
                       >
                         <div className="flex items-start gap-3">
-                          <div className="w-6 h-6 mt-0.5 shrink-0 flex items-center justify-center text-xl">🎯</div>
+                          <div className="w-6 h-6 mt-0.5 shrink-0 flex items-center justify-center text-xl">
+                            🎯
+                          </div>
                           <div className="flex-1">
                             <div className="font-semibold text-sm mb-1">skill0.io</div>
                             <div className="text-xs text-muted-foreground">
@@ -306,10 +315,12 @@ export default async function McpDocsPage() {
                       >
                         {baseURL}/account/api-keys
                       </Link>{" "}
-                      to create an API key (format: <code className="bg-muted px-1 py-0.5 rounded text-xs">atypica_xxx</code>)
+                      to create an API key (format:{" "}
+                      <code className="bg-muted px-1 py-0.5 rounded text-xs">atypica_xxx</code>)
                     </li>
                     <li>
-                      <strong>Install MCP Server:</strong> Add the server to your AI assistant&apos;s MCP configuration
+                      <strong>Install MCP Server:</strong> Add the server to your AI
+                      assistant&apos;s MCP configuration
                       <div className="bg-muted/50 border border-border rounded-md p-3 mt-2 overflow-x-auto">
                         <pre className="font-mono text-xs">
                           {`# Example command (syntax varies by tool)
@@ -320,7 +331,8 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
                     </li>
                     <li>
                       <strong>Download Skill:</strong> Get the{" "}
-                      <code className="bg-muted px-1 py-0.5 rounded text-xs">atypica-research</code> skill from the download options above
+                      <code className="bg-muted px-1 py-0.5 rounded text-xs">atypica-research</code>{" "}
+                      skill from the download options above
                     </li>
                     <li>
                       <strong>Restart:</strong> Restart your AI assistant to load the new skill
@@ -331,8 +343,8 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
                 <div>
                   <h3 className="text-base font-semibold mb-3">Usage Example</h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Once installed, simply chat with your AI assistant naturally. The skill handles the MCP
-                    protocol communication:
+                    Once installed, simply chat with your AI assistant naturally. The skill handles
+                    the MCP protocol communication:
                   </p>
                   <div className="bg-muted/50 border border-border rounded-md p-4">
                     <div className="space-y-3">
@@ -370,9 +382,7 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
 
             {/* Research Types */}
             <section id="research-types" className="mb-16 scroll-mt-8">
-              <h2 className="text-xl font-bold mb-4 pb-3 border-b border-border">
-                Research Types
-              </h2>
+              <h2 className="text-xl font-bold mb-4 pb-3 border-b border-border">Research Types</h2>
 
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
@@ -429,9 +439,7 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
 
             {/* API Reference */}
             <section id="api-reference" className="mb-16 scroll-mt-8">
-              <h2 className="text-xl font-bold mb-4 pb-3 border-b border-border">
-                API Reference
-              </h2>
+              <h2 className="text-xl font-bold mb-4 pb-3 border-b border-border">API Reference</h2>
 
               <p className="text-sm text-muted-foreground mb-4">
                 For complete API documentation including detailed schemas, error handling, and
@@ -448,7 +456,8 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
 
               <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-md p-4">
                 <p className="text-sm text-foreground mb-3">
-                  <strong>Full API documentation</strong> is included in the skill package with comprehensive guides and reference materials.
+                  <strong>Full API documentation</strong> is included in the skill package with
+                  comprehensive guides and reference materials.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <a
@@ -458,7 +467,7 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
                     className="inline-flex items-center gap-2 px-3 py-1.5 bg-background border border-border rounded-md text-xs font-mono hover:border-primary transition-colors"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                     </svg>
                     bmrlab/atypica-research-skill
                   </a>
@@ -503,7 +512,7 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
                       className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/50 border border-border rounded-md text-xs font-mono hover:border-primary hover:bg-accent transition-colors"
                     >
                       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                       </svg>
                       bmrlab/atypica-research-skill
                     </a>

@@ -2,7 +2,14 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -67,28 +74,46 @@ export default function AdminUIComponentsPage() {
           <Button size="sm">Small</Button>
           <Button>Default</Button>
           <Button size="lg">Large</Button>
-          <Button size="icon"><PlusIcon /></Button>
+          <Button size="icon">
+            <PlusIcon />
+          </Button>
         </Row>
         <Row label="primary">
-          <Button variant="primary" size="sm">Small</Button>
+          <Button variant="primary" size="sm">
+            Small
+          </Button>
           <Button variant="primary">Primary</Button>
-          <Button variant="primary" size="lg">Large</Button>
-          <Button variant="primary" size="icon"><PlusIcon /></Button>
+          <Button variant="primary" size="lg">
+            Large
+          </Button>
+          <Button variant="primary" size="icon">
+            <PlusIcon />
+          </Button>
         </Row>
         <Row label="secondary">
-          <Button variant="secondary" size="sm">Small</Button>
+          <Button variant="secondary" size="sm">
+            Small
+          </Button>
           <Button variant="secondary">Default</Button>
         </Row>
         <Row label="outline">
-          <Button variant="outline" size="sm"><DownloadIcon /> Export</Button>
+          <Button variant="outline" size="sm">
+            <DownloadIcon /> Export
+          </Button>
           <Button variant="outline">Outline</Button>
         </Row>
         <Row label="ghost">
-          <Button variant="ghost" size="sm">Ghost</Button>
-          <Button variant="ghost" size="icon"><SettingsIcon /></Button>
+          <Button variant="ghost" size="sm">
+            Ghost
+          </Button>
+          <Button variant="ghost" size="icon">
+            <SettingsIcon />
+          </Button>
         </Row>
         <Row label="destructive">
-          <Button variant="destructive" size="sm"><Trash2Icon /> Delete</Button>
+          <Button variant="destructive" size="sm">
+            <Trash2Icon /> Delete
+          </Button>
           <Button variant="destructive">Destructive</Button>
         </Row>
         <Row label="link">
@@ -96,8 +121,12 @@ export default function AdminUIComponentsPage() {
         </Row>
         <Row label="disabled">
           <Button disabled>Default</Button>
-          <Button variant="primary" disabled>Primary</Button>
-          <Button variant="outline" disabled>Outline</Button>
+          <Button variant="primary" disabled>
+            Primary
+          </Button>
+          <Button variant="outline" disabled>
+            Outline
+          </Button>
         </Row>
       </Section>
 
@@ -240,7 +269,9 @@ export default function AdminUIComponentsPage() {
       <Section title="Tooltip">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm"><CopyIcon /> Hover me</Button>
+            <Button variant="outline" size="sm">
+              <CopyIcon /> Hover me
+            </Button>
           </TooltipTrigger>
           <TooltipContent>Uses bg-foreground, not primary</TooltipContent>
         </Tooltip>
