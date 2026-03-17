@@ -29,7 +29,7 @@ export default async function UserApiKeyPage() {
         <h1 className="text-2xl font-bold mb-2">API Configuration</h1>
         <p className="text-muted-foreground text-sm">
           Manage your personal API key for programmatic access.{" "}
-          <Link href="/docs/mcp" className="text-primary hover:underline">
+          <Link href="/docs/mcp" className="font-medium hover:underline">
             View documentation
           </Link>
         </p>

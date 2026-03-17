@@ -43,7 +43,7 @@ export default async function McpDocsPage() {
                     MCP-compatible client to access atypica&apos;s research capabilities
                     programmatically.
                   </p>
-                  <a href="#mcp-server" className="text-sm text-primary hover:underline">
+                  <a href="#mcp-server" className="text-sm font-medium hover:underline">
                     Learn more &rarr;
                   </a>
                 </div>
@@ -54,7 +54,7 @@ export default async function McpDocsPage() {
                     Pre-built agent skill ready to use with MCP-compatible AI assistants. Install
                     it once and start conducting research through natural conversations.
                   </p>
-                  <a href="#agent-skill" className="text-sm text-primary hover:underline">
+                  <a href="#agent-skill" className="text-sm font-medium hover:underline">
                     Learn more &rarr;
                   </a>
                 </div>
@@ -185,7 +185,7 @@ export default async function McpDocsPage() {
                       href="/account/api-keys"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline"
+                      className="font-medium hover:underline"
                     >
                       account settings
                     </Link>
@@ -302,7 +302,7 @@ export default async function McpDocsPage() {
                         href="/account/api-keys"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className="font-medium hover:underline"
                       >
                         {baseURL}/account/api-keys
                       </Link>{" "}
@@ -487,7 +487,7 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
                     href="/account/api-keys"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline"
+                    className="font-medium hover:underline"
                   >
                     account settings
                   </Link>
@@ -520,7 +520,7 @@ mcp add --transport http atypica-research ${baseURL}/mcp/study \\
 
                 <p>
                   <strong>Questions?</strong> Contact us through{" "}
-                  <Link href="/about" className="text-primary hover:underline">
+                  <Link href="/about" className="font-medium hover:underline">
                     our support channels
                   </Link>
                 </p>

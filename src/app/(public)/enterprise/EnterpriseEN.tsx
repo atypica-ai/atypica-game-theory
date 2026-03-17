@@ -103,7 +103,7 @@ export function EnterpriseEN() {
       <section className="py-20 md:py-28 bg-muted/30 px-4">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+            <p className="text-sm font-semibold text-muted-foreground tracking-widest uppercase mb-4">
               Core Platform
             </p>
             <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4">
@@ -207,7 +207,7 @@ export function EnterpriseEN() {
       <section className="py-20 md:py-28 px-4">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+            <p className="text-sm font-semibold text-muted-foreground tracking-widest uppercase mb-4">
               Enterprise Capabilities
             </p>
             <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4">
@@ -314,7 +314,7 @@ export function EnterpriseEN() {
       <section className="py-20 md:py-28 bg-muted/30 px-4">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+            <p className="text-sm font-semibold text-muted-foreground tracking-widest uppercase mb-4">
               Dedicated Support
             </p>
             <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4">

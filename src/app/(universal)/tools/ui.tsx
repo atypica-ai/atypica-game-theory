@@ -232,7 +232,7 @@ function UniversalSubAgentTaskCard({
           )}
         </div>
       ) : null}
-      <div className="text-xs text-primary">{t("taskProgressOpen")}</div>
+      <div className="text-xs font-medium">{t("taskProgressOpen")}</div>
     </button>
   );
 }

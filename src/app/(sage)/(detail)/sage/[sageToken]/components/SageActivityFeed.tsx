@@ -130,7 +130,7 @@ export function SageActivityFeed() {
                     {activity.link && (
                       <Link
                         href={activity.link.href}
-                        className="text-[10px] font-medium text-primary hover:underline mt-0.5 inline-block"
+                        className="text-[10px] font-medium hover:underline mt-0.5 inline-block"
                       >
                         {activity.link.label} →
                       </Link>

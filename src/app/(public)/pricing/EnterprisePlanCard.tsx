@@ -56,7 +56,7 @@ export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) 
         </Button>
         <Link
           href="/enterprise"
-          className="block text-center text-sm text-primary hover:underline mb-4"
+          className="block text-center text-sm font-medium hover:underline mb-4"
         >
           {t("learnMore")}
         </Link>

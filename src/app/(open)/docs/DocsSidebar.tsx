@@ -80,8 +80,8 @@ export function DocsSidebar() {
                 <Link
                   href={section.href}
                   className={cn(
-                    "block py-1 hover:text-primary transition-colors",
-                    pathname === section.href ? "text-primary font-semibold" : "text-foreground",
+                    "block py-1 hover:text-foreground transition-colors",
+                    pathname === section.href ? "font-semibold" : "text-muted-foreground",
                   )}
                 >
                   {section.title}
@@ -104,7 +104,7 @@ export function DocsSidebar() {
                     href={item.href}
                     className={cn(
                       "block py-1 hover:underline transition-colors",
-                      item.primary ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                      item.primary ? "font-medium" : "text-muted-foreground hover:text-foreground",
                     )}
                   >
                     {item.label}
@@ -142,8 +142,8 @@ export function MobileDocsNav() {
               <Link
                 href={section.href}
                 className={cn(
-                  "block py-1 hover:text-primary transition-colors",
-                  pathname === section.href ? "text-primary font-semibold" : "text-foreground",
+                  "block py-1 hover:text-foreground transition-colors",
+                  pathname === section.href ? "font-semibold" : "text-muted-foreground",
                 )}
               >
                 {section.title}
@@ -166,7 +166,7 @@ export function MobileDocsNav() {
                   href={item.href}
                   className={cn(
                     "block py-1 hover:underline transition-colors",
-                    item.primary ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                    item.primary ? "font-medium" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {item.label}

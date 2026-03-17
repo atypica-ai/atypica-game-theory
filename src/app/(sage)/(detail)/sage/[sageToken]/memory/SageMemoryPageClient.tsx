@@ -107,7 +107,7 @@ export function SageMemoryPageClient({
                   </span>
                   <Link
                     href={`/sage/interview/${item.sourceChat.token}`}
-                    className="inline-flex items-center gap-1 text-primary hover:underline"
+                    className="inline-flex items-center gap-1 font-medium hover:underline"
                   >
                     {t("viewSourceInterview")}
                     <ExternalLink className="size-3" />

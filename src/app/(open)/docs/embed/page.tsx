@@ -39,7 +39,7 @@ export default async function EmbedDocsPage() {
                   <p className="text-sm text-muted-foreground mb-3">
                     Use the impersonation login URL to automatically authenticate users. You can
                     obtain the login URL from the{" "}
-                    <Link href="/docs/api#impersonation" className="text-primary hover:underline">
+                    <Link href="/docs/api#impersonation" className="font-medium hover:underline">
                       Impersonation API endpoint
                     </Link>
                     .

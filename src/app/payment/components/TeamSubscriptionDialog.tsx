@@ -209,7 +209,7 @@ export const TeamSubscriptionDialog = ({
               {isUnlimited ? (
                 <>
                   <Infinity className="size-3 text-primary" />
-                  <span className="font-semibold text-primary">{t("unlimitedTokens")}</span>
+                  <span className="font-semibold text-foreground">{t("unlimitedTokens")}</span>
                 </>
               ) : (
                 <>

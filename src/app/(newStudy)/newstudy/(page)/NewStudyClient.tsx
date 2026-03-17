@@ -33,7 +33,7 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
           href="/user/memory-builder"
           className="group flex items-center gap-4 py-3 px-4 mt-4 sm:mt-8 mb-8 sm:mb-16 rounded-lg bg-zinc-100 dark:bg-zinc-800"
         >
-          <span className="size-1.5 rounded-full bg-ghost-green shrink-0" />
+          <span className="size-1.5 rounded-full bg-ghost-green shrink-0 shadow-[0_0_4px] shadow-ghost-green animate-pulse" />
           <div className="flex-1 min-w-0">
             <span className="text-sm font-medium">{tHp("title")}</span>
             <p className="text-xs text-muted-foreground mt-0.5">{tHp("description")}</p>
@@ -55,7 +55,7 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
           <Link
             prefetch={true}
             href="/featured-studies"
-            className="text-primary underline-offset-4 hover:underline"
+            className="font-medium underline-offset-4 hover:underline"
           >
             {t("viewFeaturedStudies")}
           </Link>
@@ -63,7 +63,7 @@ export function NewStudyClient({ initialBrief }: { initialBrief?: string }) {
           <Link
             prefetch={true}
             href="/studies"
-            className="text-primary underline-offset-4 hover:underline"
+            className="font-medium underline-offset-4 hover:underline"
           >
             {t("viewMyProjects")}
           </Link>

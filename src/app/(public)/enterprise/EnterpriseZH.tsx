@@ -102,7 +102,7 @@ export function EnterpriseZH() {
       <section className="py-20 md:py-28 bg-muted/30 px-4">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+            <p className="text-sm font-semibold text-muted-foreground tracking-widest uppercase mb-4">
               核心平台
             </p>
             <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4 zh:tracking-wide">
@@ -194,7 +194,7 @@ export function EnterpriseZH() {
       <section className="py-20 md:py-28 px-4">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+            <p className="text-sm font-semibold text-muted-foreground tracking-widest uppercase mb-4">
               企业能力
             </p>
             <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4 zh:tracking-wide">
@@ -299,7 +299,7 @@ export function EnterpriseZH() {
       <section className="py-20 md:py-28 bg-muted/30 px-4">
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-4">
+            <p className="text-sm font-semibold text-muted-foreground tracking-widest uppercase mb-4">
               专属支持
             </p>
             <h2 className="font-EuclidCircularA font-medium text-4xl md:text-5xl tracking-tight mb-4 zh:tracking-wide">

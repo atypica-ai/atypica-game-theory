@@ -149,7 +149,7 @@ export function TeamApiKeyCard({ team, isOwner }: { team: Team; isOwner: boolean
             </CardTitle>
             <CardDescription className="mt-1.5">
               {t("description")}{" "}
-              <Link href="/docs/api" className="text-primary hover:underline" target="_blank">
+              <Link href="/docs/api" className="font-medium hover:underline" target="_blank">
                 {t("viewDocsLink")}
               </Link>
             </CardDescription>

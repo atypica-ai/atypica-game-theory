@@ -114,7 +114,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             href={extra.originalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline"
+            className="font-medium hover:underline"
           >
             {readOnSubstack}
           </a>

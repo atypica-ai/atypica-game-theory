@@ -324,7 +324,7 @@ export function TeamDetailPageClient({ team, isOwner }: { team: Team; isOwner: b
                           <div className="flex flex-col">
                             <span>{member.name}</span>
                             {memberIsOwner && (
-                              <span className="flex items-center gap-1 text-xs text-primary font-normal sm:hidden">
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground font-normal sm:hidden">
                                 <CrownIcon className="w-3 h-3" /> {t("table.ownerBadge")}
                               </span>
                             )}

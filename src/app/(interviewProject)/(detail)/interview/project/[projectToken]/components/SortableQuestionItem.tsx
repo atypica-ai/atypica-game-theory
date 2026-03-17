@@ -55,7 +55,7 @@ export function SortableQuestionItem({
           </button>
         )}
         <div className="bg-primary/20 rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">
-          <span className="text-xs font-medium text-primary">{index + 1}</span>
+          <span className="text-xs font-medium text-primary-foreground">{index + 1}</span>
         </div>
         <p className="text-sm leading-relaxed wrap-break-word">{question.text}</p>
       </div>

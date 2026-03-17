@@ -26,7 +26,7 @@ export const EndInterviewMessage: FC<InterviewCompleteMessageProps> = ({ toolInv
           </div>
         </>
       ) : (
-        <div className="flex items-center justify-center gap-2 text-sm font-medium text-primary">
+        <div className="flex items-center justify-center gap-2 text-sm font-medium">
           <span>{t("completed")}</span>
         </div>
       )}

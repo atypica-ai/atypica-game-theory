@@ -104,14 +104,14 @@ export function RequestSelectPersonasMessage({
     <>
       <div className="space-y-3">
         {personas.length > 0 ? (
-          <div className="space-y-1 max-h-[320px] overflow-y-auto overflow-x-hidden scrollbar-thin">
+          <div className="space-y-1 max-h-80 overflow-y-auto overflow-x-hidden scrollbar-thin">
             {personas.map((persona) => (
               <div
                 key={persona.id}
-                className="group flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors min-w-0"
+                className="group flex flex-wrap items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors min-w-0"
               >
                 <HippyGhostAvatar seed={persona.id} className="size-6 shrink-0" />
-                <div className="flex-1 min-w-0 flex items-baseline gap-2">
+                <div className="flex-1 min-w-0 flex items-baseline gap-2 truncate">
                   <span className="text-sm font-medium truncate">{persona.name}</span>
                   {persona.tags?.length > 0 && (
                     <span className="text-[11px] text-muted-foreground/60 truncate">

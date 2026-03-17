@@ -52,7 +52,7 @@ export default async function ApiDocsPage() {
                     href="/team/api-keys"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium"
+                    className="font-medium hover:underline"
                   >
                     team management dashboard
                   </Link>
@@ -289,7 +289,7 @@ export default async function ApiDocsPage() {
                   <table className="w-full">
                     <tbody>
                       <tr>
-                        <td className="font-mono text-xs text-primary pr-4 py-1">userId</td>
+                        <td className="font-mono text-xs font-medium pr-4 py-1">userId</td>
                         <td className="text-sm text-muted-foreground pr-4 py-1">number</td>
                         <td className="text-sm text-foreground py-1">Team member user ID</td>
                       </tr>

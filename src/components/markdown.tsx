@@ -92,7 +92,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline wrap-break-word"
+          className="font-medium underline underline-offset-4 hover:opacity-70 wrap-break-word"
           {...props}
         >
           {children}

@@ -28,9 +28,9 @@ export const PrivacyAgreement: FC<PrivacyAgreementProps> = ({
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
-            <p className="text-sm font-medium text-primary">{t("privacyTitle")}</p>
+            <p className="text-sm font-medium">{t("privacyTitle")}</p>
           </div>
-          <p className="mt-1 text-sm text-primary/80">{t("privacyDescription")}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("privacyDescription")}</p>
         </div>
       </label>
     </div>

@@ -129,7 +129,7 @@ export const HighPrecisionPersonaMethodology: FC = () => {
                   className="flex justify-between items-center p-2 bg-muted/30 rounded"
                 >
                   <span className="font-medium">{item.method}</span>
-                  <span className="text-primary font-semibold">{item.score}</span>
+                  <span className="font-semibold">{item.score}</span>
                 </div>
               ))}
             </div>

@@ -111,7 +111,7 @@ export default async function BlogPage({
                   </div>
 
                   <div className="space-y-3">
-                    <h2 className="text-2xl font-semibold group-hover:text-primary transition-colors">
+                    <h2 className="text-2xl font-semibold group-hover:text-foreground transition-colors">
                       {article.title}
                     </h2>
                     {article.publishedAt && (
@@ -126,7 +126,7 @@ export default async function BlogPage({
                         )}
                       </time>
                     )}
-                    <span className="ml-2 inline-block text-sm text-primary group-hover:underline">
+                    <span className="ml-2 inline-block text-sm font-medium group-hover:underline">
                       {readMore}
                     </span>
                   </div>

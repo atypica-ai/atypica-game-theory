@@ -51,7 +51,7 @@ export function RecommendationCard({ angle, pulse }: RecommendationCardProps) {
       <CardContent className="p-6 space-y-4">
         {/* Angle - Primary information */}
         <div className="space-y-2">
-          <p className="text-sm font-medium text-primary italic leading-relaxed">
+          <p className="text-sm font-medium italic leading-relaxed border-l-2 border-primary pl-3">
             {angle}
           </p>
         </div>
