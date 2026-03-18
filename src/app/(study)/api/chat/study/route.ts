@@ -182,25 +182,25 @@ export async function POST(req: Request) {
       await executeBaseAgentRequest(
         agentContext,
         (toolAbortSignal) => createPlanModeAgentConfig({ ...configParams, toolAbortSignal }),
-        streamWriter,
+        { streamWriter },
       );
     } else if (userChat.context.analystKind === AnalystKind.productRnD) {
       await executeBaseAgentRequest(
         agentContext,
         (toolAbortSignal) => createProductRnDAgentConfig({ ...configParams, toolAbortSignal }),
-        streamWriter,
+        { streamWriter },
       );
     } else if (userChat.context.analystKind === AnalystKind.fastInsight) {
       await executeBaseAgentRequest(
         agentContext,
         (toolAbortSignal) => createFastInsightAgentConfig({ ...configParams, toolAbortSignal }),
-        streamWriter,
+        { streamWriter },
       );
     } else {
       await executeBaseAgentRequest(
         agentContext,
         (toolAbortSignal) => createStudyAgentConfig({ ...configParams, toolAbortSignal }),
-        streamWriter,
+        { streamWriter },
       );
     }
   };

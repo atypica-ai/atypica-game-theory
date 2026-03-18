@@ -169,7 +169,7 @@ export async function handleSendMessage(
 
     try {
       // Execute agent based on analyst.kind - same logic as route.ts
-      // No streamWriter needed for MCP (synchronous execution)
+      // No streamWriter needed for MCP
       if (!userChat.context.analystKind) {
         await executeBaseAgentRequest(agentContext, (toolAbortSignal) =>
           createPlanModeAgentConfig({ ...configParams, toolAbortSignal }),
@@ -204,7 +204,7 @@ export async function handleSendMessage(
         structuredContent: {
           messageId,
           role: newMessage.role,
-          status: "completed",
+          status: "completed", // TODO: 这个值其实语义上不明确，此时不是 completed 而是正在执行中
           attachmentCount: attachments?.length ?? 0,
         },
       };

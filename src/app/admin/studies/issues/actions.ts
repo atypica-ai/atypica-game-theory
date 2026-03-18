@@ -258,25 +258,25 @@ export async function retryStudy(studyUserChatId: number): Promise<ServerActionR
           await executeBaseAgentRequest(
             agentContext,
             (toolAbortSignal) => createProductRnDAgentConfig({ ...configParams, toolAbortSignal }),
-            streamWriter,
+            { streamWriter },
           );
         } else if (studyUserChat.context.analystKind === AnalystKind.fastInsight) {
           await executeBaseAgentRequest(
             agentContext,
             (toolAbortSignal) => createFastInsightAgentConfig({ ...configParams, toolAbortSignal }),
-            streamWriter,
+            { streamWriter },
           );
         } else if (studyUserChat.context.analystKind) {
           await executeBaseAgentRequest(
             agentContext,
             (toolAbortSignal) => createStudyAgentConfig({ ...configParams, toolAbortSignal }),
-            streamWriter,
+            { streamWriter },
           );
         } else {
           await executeBaseAgentRequest(
             agentContext,
             (toolAbortSignal) => createPlanModeAgentConfig({ ...configParams, toolAbortSignal }),
-            streamWriter,
+            { streamWriter },
           );
         }
       },

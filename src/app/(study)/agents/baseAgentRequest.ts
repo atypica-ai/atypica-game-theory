@@ -85,8 +85,12 @@ export interface BaseStepContext {
 export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = StudyToolSet>(
   baseContext: BaseAgentContext,
   createAgentConfig: (toolAbortSignal: AbortSignal) => Promise<AgentRequestConfig<TOOLS>>,
-  streamWriter?: UIMessageStreamWriter,
-  options?: { executionMode?: "detached" | "blocking" },
+  options?: {
+    // 和 ClientMessagePayload 的 executionMode 对齐
+    // TODO: 如果是 sync 还需要 abortSignal 和 req.signal 关联, 之后再加
+    executionMode?: "sync" | "background";
+    streamWriter?: UIMessageStreamWriter;
+  },
 ) {
   const { userId, studyUserChatId, userChatContext, locale, logger, statReport } = baseContext;
 
@@ -338,27 +342,25 @@ export async function executeBaseAgentRequest<TOOLS extends StudyToolSet = Study
   });
 
   // =============================================================================
-  // Phase 5: Consume Stream
+  // Phase 5: Consume Stream, Forward Stream
   // =============================================================================
 
-  const consume = async () => {
-    try {
-      await streamTextResult.consumeStream();
-      logger.info("study consumeStream completed");
-    } catch (error) {
-      logger.error({ msg: "study consumeStream error", error: (error as Error).message });
-    }
-  };
-
-  if (options?.executionMode === "blocking") {
-    await consume();
-  } else {
-    after(consume());
-  }
-
-  streamWriter?.merge(
+  options?.streamWriter?.merge(
     streamTextResult.toUIMessageStream({
       generateMessageId: () => streamingMessage.id,
     }),
   );
+
+  // 这里不再使用 after，而是在调用的地方使用，以自行决定是要 sync 还是 background
+  const streamTextResultPromise = streamTextResult
+    .consumeStream()
+    .then(() => logger.info("study consumeStream completed"))
+    .catch((error) =>
+      logger.error({ msg: "study consumeStream error", error: (error as Error).message }),
+    );
+  if (options?.executionMode === "sync") {
+    await streamTextResultPromise;
+  } else {
+    after(streamTextResultPromise);
+  }
 }

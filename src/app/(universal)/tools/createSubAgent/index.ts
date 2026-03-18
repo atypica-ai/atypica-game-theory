@@ -71,8 +71,7 @@ async function executeSubAgentWithConfig({
       statReport,
     },
     async (toolAbortSignal) => createConfig(executionContext, toolAbortSignal),
-    undefined,
-    { executionMode: "blocking" },
+    { executionMode: "sync" },
   );
 }
 
