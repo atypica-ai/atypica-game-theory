@@ -72,10 +72,17 @@ on:
 jobs:
   publish-research:
     runs-on: ubuntu-latest
-    # Note: paths filter in 'on' section already ensures this job only runs when
-    # atypica-research files change. The if condition is redundant but kept for clarity.
-    # Alternative: remove if condition entirely, rely on paths filter + always run both jobs
-    if: contains(github.event.head_commit.modified, 'src/app/(open)/skills/atypica-research/') || github.event_name == 'workflow_dispatch'
+    # Note: paths filter in 'on' section already ensures this workflow only triggers when
+    # research or agent skill files change. We intentionally let both jobs start and rely on
+    # the downstream git diff check to no-op the unrelated repo.
+    #
+    # The old job-level `if` is kept here as a comment for reference because it looks reasonable
+    # at first glance, but it is wrong for push events:
+    # - `github.event.head_commit.modified` is an array of full file paths from only the HEAD commit
+    # - `contains(array, 'dir/')` checks for an exact array element, not a prefix match
+    # - result: the workflow triggers via `on.push.paths`, but both jobs evaluate to skipped
+    #
+    # if: contains(github.event.head_commit.modified, 'src/app/(open)/skills/atypica-research/') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout main repo
         uses: actions/checkout@v4
@@ -135,10 +142,17 @@ jobs:
 
   publish-agent:
     runs-on: ubuntu-latest
-    # Note: paths filter in 'on' section already ensures this job only runs when
-    # atypica-agent files change. The if condition is redundant but kept for clarity.
-    # Alternative: remove if condition entirely, rely on paths filter + always run both jobs
-    if: contains(github.event.head_commit.modified, 'src/app/(open)/skills/atypica-agent/') || github.event_name == 'workflow_dispatch'
+    # Note: paths filter in 'on' section already ensures this workflow only triggers when
+    # research or agent skill files change. We intentionally let both jobs start and rely on
+    # the downstream git diff check to no-op the unrelated repo.
+    #
+    # The old job-level `if` is kept here as a comment for reference because it looks reasonable
+    # at first glance, but it is wrong for push events:
+    # - `github.event.head_commit.modified` is an array of full file paths from only the HEAD commit
+    # - `contains(array, 'dir/')` checks for an exact array element, not a prefix match
+    # - result: the workflow triggers via `on.push.paths`, but both jobs evaluate to skipped
+    #
+    # if: contains(github.event.head_commit.modified, 'src/app/(open)/skills/atypica-agent/') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout main repo
         uses: actions/checkout@v4

@@ -44,7 +44,7 @@ export function createStudyMcpServer(): McpServer {
     {
       title: "Create Study Session",
       description:
-        "Create a new study/research session. Omit 'kind' to enter Plan Mode where AI will decide the research type.",
+        "Create a new study session from an initial user message. The session starts without a fixed study type, and the agent may first clarify the plan before continuing.",
       inputSchema: createStudyInputSchema,
     },
     handleCreateStudy,
@@ -54,7 +54,8 @@ export function createStudyMcpServer(): McpServer {
     "atypica_study_send_message",
     {
       title: "Send Message to Study",
-      description: "Send a user message to an existing study session. Supports both user and assistant roles. For addToolResult pattern, provide message.id to update existing message.",
+      description:
+        "Send or continue a study turn. Supports both user and assistant roles, persists the message, starts or resumes study-agent execution asynchronously, and returns after the run is accepted. Poll atypica_study_get_messages for progress and pending interactions.",
       inputSchema: sendMessageInputSchema,
     },
     handleSendMessage,
@@ -105,7 +106,8 @@ export function createStudyMcpServer(): McpServer {
     "atypica_persona_search",
     {
       title: "Search AI Personas",
-      description: "Search for AI personas by query or filter by tier",
+      description:
+        "Search personas by text query, optionally limiting to the caller's private personas. Without a query, returns the latest available personas visible to the caller.",
       inputSchema: searchPersonasInputSchema,
     },
     handleSearchPersonas,

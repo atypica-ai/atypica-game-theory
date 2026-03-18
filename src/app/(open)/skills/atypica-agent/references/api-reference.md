@@ -71,7 +71,7 @@ Create a new universal chat session.
 
 ### atypica_universal_send_message
 
-Send message to chat session and execute AI synchronously (10-120 seconds).
+Send or continue a universal or study chat turn. The message is persisted first, then the universal agent starts or resumes in background. Use `atypica_universal_get_messages` to monitor progress.
 
 **IMPORTANT**: Two distinct input types based on use case.
 
@@ -132,7 +132,7 @@ Send message to chat session and execute AI synchronously (10-120 seconds).
   structuredContent: {
     messageId: string,
     role: "user" | "assistant",
-    status: "completed" | "saved_no_ai" | "ai_failed",
+    status: "running" | "saved_no_ai" | "ai_failed",
     reason?: string,        // Present if status is "saved_no_ai"
     error?: string          // Present if status is "ai_failed"
   }
@@ -140,9 +140,9 @@ Send message to chat session and execute AI synchronously (10-120 seconds).
 ```
 
 **Status Values**:
-- `"completed"` - AI executed successfully
+- `"running"` - Message saved and agent execution started or resumed in background
 - `"saved_no_ai"` - Message saved, quota exceeded, no AI execution
-- `"ai_failed"` - AI execution failed, message saved, can retry
+- `"ai_failed"` - AI startup failed before the background run could continue
 
 ---
 
@@ -165,9 +165,7 @@ Retrieve conversation history from universal or study chat session.
 {
   content: [{ type: "text", text: string }],
   structuredContent: {
-    userChatToken: string,
     isRunning: boolean,     // true = AI executing, false = can interact
-    messageCount: number,
     messages: Array<{
       messageId: string,
       role: "user" | "assistant",
@@ -211,7 +209,7 @@ List user's historical universal chat sessions.
 ```typescript
 {
   page?: number,      // Default 1
-  pageSize?: number   // Default 10, max 100
+  pageSize?: number   // Default 20, max 100
 }
 ```
 
@@ -318,14 +316,15 @@ Search AI personas using semantic embedding similarity.
 ```typescript
 {
   query?: string,   // Optional: semantic search query
-  tier?: 0 | 1 | 2 | 3,  // Optional: quality filter (higher = better)
+  privateOnly?: boolean,  // Optional: true = only your own private personas
   limit?: number    // Default 10, max 50
 }
 ```
 
 **Search Logic**:
-- With `query`: Uses pgvector embedding distance (semantic similarity)
-- Without `query`: Returns user's personas sorted by creation time
+- With `query`: Uses indexed text search over visible personas
+- Without `query`: Returns the latest visible personas
+- `privateOnly: true`: Restricts results to the caller's own private personas
 
 **Output Schema**:
 ```typescript
@@ -350,7 +349,7 @@ Search AI personas using semantic embedding similarity.
 // Semantic search
 {
   "query": "young tech enthusiasts",  // Matches "programmers", "geeks", etc.
-  "tier": 2,
+  "privateOnly": true,
   "limit": 10
 }
 ```
@@ -635,7 +634,7 @@ console.log(personaDetails.structuredContent.prompt);  // Full persona descripti
 
 ### Timeout Handling
 
-If `sendMessage` times out (>2-5 minutes):
+If your MCP client times out or disconnects while calling `sendMessage`:
 
 ```typescript
 try {
@@ -672,7 +671,7 @@ try {
 
 - API calls follow standard rate limits
 - Token consumption tracked per user
-- `sendMessage` blocks until AI completes (10-120s)
+- `sendMessage` returns after the run is accepted; execution continues in background and often finishes within 10-120s
 - Concurrent chat sessions: No hard limit
 
 ### Data Privacy

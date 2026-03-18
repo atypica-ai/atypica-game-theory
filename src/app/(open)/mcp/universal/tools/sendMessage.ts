@@ -123,7 +123,7 @@ export async function handleSendMessage(
       );
 
       logger.info({
-        msg: "Universal agent completed via MCP",
+        msg: "Universal agent execution started via MCP",
         messageId,
         universalChatId,
       });
@@ -132,13 +132,13 @@ export async function handleSendMessage(
         content: [
           {
             type: "text",
-            text: "Message sent and agent completed. Use get_messages to retrieve the conversation.",
+            text: "Message sent and agent execution started. Use get_messages to monitor progress and retrieve the conversation.",
           },
         ],
         structuredContent: {
           messageId,
           role: newMessage.role,
-          status: "completed",
+          status: "running",
           attachmentCount: attachments?.length ?? 0,
         },
       };

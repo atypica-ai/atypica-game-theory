@@ -82,7 +82,7 @@ const result = await callTool("atypica_universal_create", {
 });
 const userChatToken = result.structuredContent.token;
 
-// 2. Send message (triggers AI - may take 10-120s)
+// 2. Send message (starts the agent run; completion usually takes 10-120s in background)
 await callTool("atypica_universal_send_message", {
   userChatToken,
   message: {
@@ -152,7 +152,7 @@ if (reportTool?.output?.reportToken) {
   }
   ```
 
-**atypica_universal_send_message** - Send message and execute AI (10-120s)
+**atypica_universal_send_message** - Send message and start/continue agent execution
 - Two input types:
   - User text: `{ userChatToken, message: { role: "user", lastPart: { type: "text", text } } }`
   - Tool result: See "User Interactions" section
@@ -161,12 +161,15 @@ if (reportTool?.output?.reportToken) {
   {
     messageId: string;           // Message identifier
     role: "user" | "assistant";  // Message role
-    status: "completed" | "saved_no_ai" | "ai_failed";
+    status: "running" | "saved_no_ai" | "ai_failed";
     attachmentCount?: number;    // Number of attachments (if any)
     error?: string;              // Error message (if status is "ai_failed")
     reason?: string;             // Reason (if status is "saved_no_ai")
   }
   ```
+- Notes:
+  - `running` means the message was saved and the agent started/resumed in background
+  - Poll `atypica_universal_get_messages` until `isRunning` becomes `false`
 
 **atypica_universal_get_messages** - Retrieve conversation history and execution status
 - Input: `{ userChatToken: string, tail?: number }`
@@ -175,7 +178,6 @@ if (reportTool?.output?.reportToken) {
   ```typescript
   {
     isRunning: boolean;  // true = AI executing, false = can interact
-    messageCount: number;
     messages: Array<{
       messageId: string;
       role: "user" | "assistant";
@@ -194,7 +196,7 @@ if (reportTool?.output?.reportToken) {
   ```typescript
   {
     page?: number;      // Default: 1
-    pageSize?: number;  // Default: 10, max: 100
+    pageSize?: number;  // Default: 20, max: 100
   }
   ```
 - Returns:
@@ -265,12 +267,13 @@ if (reportTool?.output?.reportToken) {
 - Input:
   ```typescript
   {
-    query?: string;    // Search query (uses embedding similarity if provided)
-    tier?: number;     // Filter by tier (0-3)
+    query?: string;        // Text query for name/source matching
+    privateOnly?: boolean; // true = only your own private personas
     limit?: number;    // Max results (default: 10, max: 50)
   }
   ```
-- Uses embedding similarity for semantic matching
+- With `query`, uses indexed text search
+- Without `query`, returns the latest personas visible to you (public + your private, unless `privateOnly` is true)
 - Returns:
   ```typescript
   {
@@ -547,10 +550,10 @@ The Universal Agent combines all research capabilities in one flexible interface
 
 ## Best Practices
 
-1. **Async execution**: Call `sendMessage` asynchronously (10-120s duration)
+1. **Async execution**: `sendMessage` starts or resumes the run, then returns while the agent continues in background
 2. **Poll for interactions**: After each `sendMessage`, check `getMessages` for pending tool calls
-3. **Error handling**: Check `status` field: `"completed" | "saved_no_ai" | "ai_failed"`
-4. **Semantic search**: Use natural language queries in `search_personas` (embedding-based)
+3. **Error handling**: Check `status` field: `"running" | "saved_no_ai" | "ai_failed"`
+4. **Persona search**: Use natural language queries in `search_personas`, or `privateOnly: true` to limit results to your own personas
 5. **Tail parameter**: Start with 3-5 for efficiency, increase if more context needed
 
 ## Performance Expectations

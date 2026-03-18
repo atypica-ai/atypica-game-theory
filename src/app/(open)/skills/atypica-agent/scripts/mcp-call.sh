@@ -6,12 +6,12 @@
 #   mcp-call.sh <tool_name> <json_args> [options]
 #
 # Examples:
-#   mcp-call.sh atypica_study_create '{"content":"Research coffee preferences"}'
-#   mcp-call.sh atypica_study_get_messages '{"userChatToken":"abc123","tail":10}'
+#   mcp-call.sh atypica_universal_create '{"content":"Research coffee preferences"}'
+#   mcp-call.sh atypica_universal_get_messages '{"userChatToken":"abc123","tail":10}'
 #
 # Environment:
 #   ATYPICA_TOKEN    - API token from https://atypica.ai/account/settings
-#   ATYPICA_ENDPOINT - API endpoint (default: https://atypica.ai/mcp/study)
+#   ATYPICA_ENDPOINT - API endpoint (default: https://atypica.ai/mcp/universal)
 #
 # Options:
 #   -t, --token      API token (overrides ATYPICA_TOKEN)
@@ -31,7 +31,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-ENDPOINT=${ATYPICA_ENDPOINT:-https://atypica.ai/mcp/study}
+ENDPOINT=${ATYPICA_ENDPOINT:-https://atypica.ai/mcp/universal}
 OUTPUT_FORMAT="auto"
 OUTPUT_FILE=""
 VERBOSE=false
@@ -44,7 +44,7 @@ Usage: mcp-call.sh <tool_name> <json_args> [options]
 Call MCP tools directly via HTTP API.
 
 Arguments:
-  tool_name    MCP tool name (e.g., atypica_study_create)
+  tool_name    MCP tool name (e.g., atypica_universal_create)
   json_args    JSON-encoded arguments (e.g., '{"content":"Test"}')
 
 Options:
@@ -56,39 +56,39 @@ Options:
 
 Environment Variables:
   ATYPICA_TOKEN     API token from https://atypica.ai/account/settings
-  ATYPICA_ENDPOINT  API endpoint (default: https://atypica.ai/mcp/study)
+  ATYPICA_ENDPOINT  API endpoint (default: https://atypica.ai/mcp/universal)
 
 Examples:
   # Set token
   export ATYPICA_TOKEN="atypica_xxx"
 
   # Create research session
-  mcp-call.sh atypica_study_create '{"content":"Research coffee preferences"}'
+  mcp-call.sh atypica_universal_create '{"content":"Research coffee preferences"}'
 
   # Get messages with tail parameter
-  mcp-call.sh atypica_study_get_messages '{"userChatToken":"abc123","tail":10}'
+  mcp-call.sh atypica_universal_get_messages '{"userChatToken":"abc123","tail":10}'
 
   # Pass token as option
-  mcp-call.sh atypica_study_list '{}' -t "atypica_xxx"
+  mcp-call.sh atypica_universal_list '{}' -t "atypica_xxx"
 
   # Force JSON output
-  mcp-call.sh atypica_study_create '{"content":"Test"}' -o json
+  mcp-call.sh atypica_universal_create '{"content":"Test"}' -o json
 
   # Write output to file
-  mcp-call.sh atypica_study_get_messages '{"userChatToken":"abc"}' -f result.json
+  mcp-call.sh atypica_universal_get_messages '{"userChatToken":"abc"}' -f result.json
 
 Available Tools:
-  atypica_study_create           - Create research session
-  atypica_study_send_message     - Send message and execute AI
-  atypica_study_get_messages     - Get conversation history
-  atypica_study_list             - List historical sessions
-  atypica_study_get_report       - Get research report
-  atypica_study_get_podcast      - Get podcast content
-  atypica_persona_search         - Search AI personas
-  atypica_persona_get            - Get persona details
+  atypica_universal_create           - Create universal chat
+  atypica_universal_send_message     - Send message and start agent execution
+  atypica_universal_get_messages     - Get conversation history
+  atypica_universal_list             - List historical chats
+  atypica_universal_get_report       - Get research report
+  atypica_universal_get_podcast      - Get podcast content
+  atypica_universal_search_personas  - Search AI personas
+  atypica_universal_get_persona      - Get persona details
 
 Documentation:
-  https://github.com/bmrlab/atypica-research-skill
+  https://atypica.ai/docs/mcp
 
 EOF
   exit 1

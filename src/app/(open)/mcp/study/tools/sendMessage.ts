@@ -189,7 +189,7 @@ export async function handleSendMessage(
       }
 
       logger.info({
-        msg: "AI response completed via MCP",
+        msg: "AI execution started via MCP",
         messageId,
         studyUserChatId,
       });
@@ -198,13 +198,13 @@ export async function handleSendMessage(
         content: [
           {
             type: "text",
-            text: `Message sent and AI response completed. Use get_messages to retrieve the conversation.`,
+            text: `Message sent and AI execution started. Use get_messages to monitor progress and retrieve the conversation.`,
           },
         ],
         structuredContent: {
           messageId,
           role: newMessage.role,
-          status: "completed", // TODO: 这个值其实语义上不明确，此时不是 completed 而是正在执行中
+          status: "running",
           attachmentCount: attachments?.length ?? 0,
         },
       };

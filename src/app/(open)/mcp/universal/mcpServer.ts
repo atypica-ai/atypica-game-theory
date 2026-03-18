@@ -56,7 +56,7 @@ export function createUniversalMcpServer(): McpServer {
     {
       title: "Send Message to Universal Chat",
       description:
-        "Send a user message to an existing universal or study chat. Runs the universal agent (blocking). For addToolResult pattern, provide message.id to update existing message.",
+        "Send or continue a universal or study chat turn. Persists the message, starts or resumes universal-agent execution asynchronously, and returns after the run is accepted. For addToolResult flows, provide message.id to update the existing assistant message and poll atypica_universal_get_messages for progress.",
       inputSchema: sendMessageInputSchema,
     },
     handleSendMessage,
@@ -107,7 +107,8 @@ export function createUniversalMcpServer(): McpServer {
     "atypica_universal_search_personas",
     {
       title: "Search Personas",
-      description: "Search for personas by query, tier, or list all available personas",
+      description:
+        "Search personas by text query, optionally limiting results to the caller's private personas. Without a query, returns the latest available personas visible to the caller.",
       inputSchema: searchPersonasInputSchema,
     },
     handleSearchPersonas,
