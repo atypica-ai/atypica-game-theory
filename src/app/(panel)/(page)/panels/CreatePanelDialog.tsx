@@ -325,14 +325,17 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
     const stepLabel = stepLabels[phase] ?? "";
 
     return (
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-xs text-muted-foreground/70 font-medium uppercase tracking-wider">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground font-medium tracking-wide">
           <span>{stepLabel}</span>
-          <span>{percent}%</span>
+          <span className="tabular-nums">{percent}%</span>
         </div>
-        <div className="h-1 bg-muted rounded-full overflow-hidden">
+        <div className="h-1 bg-primary/10 rounded-full overflow-hidden">
           <div
-            className="h-full bg-foreground/12 rounded-full transition-all duration-500 ease-out"
+            className={cn(
+              "h-full rounded-full transition-all duration-700 ease-out",
+              phase === "completed" ? "bg-primary" : "bg-primary/60",
+            )}
             style={{ width: `${percent}%` }}
           />
         </div>
@@ -355,33 +358,35 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 mt-3">
+          <div className="space-y-5 mt-4">
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t("ListPage.createPlaceholder")}
-              className="min-h-[100px] text-sm resize-none"
+              className="min-h-[110px] text-sm resize-none"
               autoFocus
             />
 
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">
+            <div className="space-y-3">
+              <p className="text-[11px] text-muted-foreground font-medium tracking-wide">
                 {t("ListPage.selectMode")}
               </p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => handleLaunchAgent("auto")}
                   disabled={creating || !description.trim()}
                   className={cn(
-                    "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
-                    "hover:border-foreground/20 hover:bg-accent transition-all",
+                    "flex flex-col items-center gap-2.5 p-5 rounded-xl border border-border",
+                    "hover:border-primary/30 hover:bg-primary/5 transition-all duration-200",
                     "text-left group",
-                    (creating || !description.trim()) && "opacity-50 pointer-events-none",
+                    (creating || !description.trim()) && "opacity-40 pointer-events-none",
                   )}
                 >
-                  <SparklesIcon className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  <span className="text-xs font-medium">{t("ListPage.autoSearch")}</span>
-                  <span className="text-xs text-muted-foreground/70 text-center leading-relaxed">
+                  <div className="flex items-center justify-center size-8 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
+                    <SparklesIcon className="size-4 text-primary/70 group-hover:text-primary transition-colors" />
+                  </div>
+                  <span className="text-sm font-medium">{t("ListPage.autoSearch")}</span>
+                  <span className="text-xs text-muted-foreground/60 text-center leading-relaxed">
                     {t("ListPage.autoSearchDesc")}
                   </span>
                 </button>
@@ -389,15 +394,17 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
                   onClick={() => handleLaunchAgent("manual")}
                   disabled={creating || !description.trim()}
                   className={cn(
-                    "flex flex-col items-center gap-2 p-4 rounded-lg border border-border",
-                    "hover:border-foreground/20 transition-all",
+                    "flex flex-col items-center gap-2.5 p-5 rounded-xl border border-border",
+                    "hover:border-foreground/15 hover:bg-muted/50 transition-all duration-200",
                     "text-left group",
-                    (creating || !description.trim()) && "opacity-50 pointer-events-none",
+                    (creating || !description.trim()) && "opacity-40 pointer-events-none",
                   )}
                 >
-                  <HandIcon className="size-4 text-muted-foreground" />
-                  <span className="text-xs font-medium">{t("ListPage.manualSelect")}</span>
-                  <span className="text-xs text-muted-foreground/70 text-center leading-relaxed">
+                  <div className="flex items-center justify-center size-8 rounded-lg bg-muted group-hover:bg-accent transition-colors">
+                    <HandIcon className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </div>
+                  <span className="text-sm font-medium">{t("ListPage.manualSelect")}</span>
+                  <span className="text-xs text-muted-foreground/60 text-center leading-relaxed">
                     {t("ListPage.manualSelectDesc")}
                   </span>
                 </button>
@@ -405,7 +412,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
 
               <Link
                 href="/persona"
-                className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs text-muted-foreground/70 hover:text-foreground hover:bg-muted/40 transition-colors"
               >
                 <UploadIcon className="size-3.5" />
                 {t("ListPage.importFromPDF")}
@@ -414,8 +421,8 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
             </div>
 
             {creating && (
-              <div className="flex items-center justify-center gap-2 py-2">
-                <Loader2Icon className="size-3.5 animate-spin text-muted-foreground" />
+              <div className="flex items-center justify-center gap-2 py-3">
+                <Loader2Icon className="size-3.5 animate-spin text-primary/60" />
                 <span className="text-xs text-muted-foreground">{t("ListPage.creating")}</span>
               </div>
             )}
@@ -438,12 +445,14 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
               {t("CreatePanelWizard.error")}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            <div className="flex items-center justify-center size-12 rounded-full bg-destructive/10">
-              <AlertCircleIcon className="size-6 text-destructive" />
+          <div className="flex flex-col items-center justify-center py-8 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center justify-center size-12 rounded-full bg-destructive/8">
+              <AlertCircleIcon className="size-5 text-destructive/70" />
             </div>
             {errorMessage && (
-              <p className="text-xs text-muted-foreground text-center max-w-sm">{errorMessage}</p>
+              <p className="text-xs text-muted-foreground text-center max-w-sm leading-relaxed">
+                {errorMessage}
+              </p>
             )}
             <Button variant="outline" size="sm" onClick={resetWizard}>
               {t("CreatePanelWizard.retry")}
@@ -461,10 +470,12 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
               {t("ListPage.createNewPanel")}
             </DialogTitle>
           </DialogHeader>
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-5">
             {renderProgressBar(phase)}
-            <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center py-8 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+              <div className="flex items-center justify-center size-10 rounded-full bg-primary/8">
+                <Loader2Icon className="size-4 animate-spin text-primary/60" />
+              </div>
               <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.searching")}</p>
               <AgentActivityText text={agentText} />
             </div>
@@ -492,7 +503,7 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
               {t("CreatePanelWizard.selectPersonas")}
             </DialogTitle>
           </DialogHeader>
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-5">
             {renderProgressBar(phase)}
             <div className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
               <RequestSelectPersonasMessage
@@ -513,10 +524,12 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
               {t("ListPage.createNewPanel")}
             </DialogTitle>
           </DialogHeader>
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-5">
             {renderProgressBar(phase)}
-            <div className="flex flex-col items-center justify-center py-6 gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-              <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center py-8 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+              <div className="flex items-center justify-center size-10 rounded-full bg-primary/8">
+                <Loader2Icon className="size-4 animate-spin text-primary/60" />
+              </div>
               <p className="text-sm text-muted-foreground">{t("CreatePanelWizard.saving")}</p>
               <AgentActivityText text={agentText} />
             </div>
@@ -533,33 +546,33 @@ export function CreatePanelDialog({ open, onOpenChange, onPanelCreated }: Create
               {t("CreatePanelWizard.completed")}
             </DialogTitle>
           </DialogHeader>
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-5">
             {renderProgressBar(phase)}
-            <div className="flex flex-col items-center justify-center py-4 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+            <div className="flex flex-col items-center justify-center py-6 gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
               <div className="relative flex items-center justify-center">
-                <div className="absolute w-32 h-32 rounded-full bg-primary blur-[50px] opacity-10" />
-                <div className="relative flex items-center justify-center size-12 rounded-full bg-primary/10">
-                  <CheckCircle2Icon className="size-6 text-primary" />
+                <div className="absolute w-36 h-36 rounded-full bg-primary blur-[60px] opacity-[0.08]" />
+                <div className="relative flex items-center justify-center size-14 rounded-full bg-primary/10">
+                  <CheckCircle2Icon className="size-7 text-primary" />
                 </div>
               </div>
               {creationStatus.panelTitle && (
-                <p className="text-sm font-medium">{creationStatus.panelTitle}</p>
+                <p className="text-sm font-medium mt-1">{creationStatus.panelTitle}</p>
               )}
               {typeof creationStatus.personaCount === "number" && (
                 <p className="text-xs text-muted-foreground">
                   {t("CreatePanelWizard.personaCount", { count: creationStatus.personaCount })}
                 </p>
               )}
-              <div className="flex flex-col items-center gap-2 mt-2">
+              <div className="flex flex-col items-center gap-2.5 mt-1">
                 {creationStatus.panelId && (
-                  <Button asChild size="sm" className="gap-1.5">
+                  <Button asChild size="sm" variant="primary" className="gap-1.5 px-5">
                     <Link href={`/panel/${creationStatus.panelId}`}>
                       {t("CreatePanelWizard.viewPanel")}
                     </Link>
                   </Button>
                 )}
                 {autoCloseCountdown !== null && autoCloseCountdown > 0 && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground/60">
                     {t("CreatePanelWizard.redirecting", { seconds: autoCloseCountdown })}
                   </p>
                 )}
