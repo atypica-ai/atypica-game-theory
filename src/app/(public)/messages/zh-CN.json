@@ -63,6 +63,7 @@
     "cannotSwitchFromSuperToPro": "不支持从Super版切换到Pro版",
     "cannotSwitchFromSuperToMax": "不支持从Super版切换到Max版",
     "switchToPersonalUserToContinue": "切换到个人账户继续",
+    "manageViaAwsMarketplace": "请通过 AWS Marketplace 管理您的订阅",
     "createTeam": "创建团队",
     "contactSales": "联系销售",
     "learnMore": "了解更多",

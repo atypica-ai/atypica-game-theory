@@ -14,9 +14,10 @@ import Link from "next/link";
 
 interface EnterprisePlanCardProps {
   onContactSales: () => void;
+  isAwsMarketplaceUser?: boolean;
 }
 
-export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) {
+export function EnterprisePlanCard({ onContactSales, isAwsMarketplaceUser }: EnterprisePlanCardProps) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
 
@@ -51,9 +52,15 @@ export function EnterprisePlanCard({ onContactSales }: EnterprisePlanCardProps) 
         </div>
       </CardHeader>
       <CardContent className="grow space-y-4">
-        <Button className="w-full mb-2" onClick={onContactSales}>
-          {t("contactSales")}
-        </Button>
+        {isAwsMarketplaceUser ? (
+          <Button className="w-full mb-2 text-xs" disabled>
+            {t("manageViaAwsMarketplace")}
+          </Button>
+        ) : (
+          <Button className="w-full mb-2" onClick={onContactSales}>
+            {t("contactSales")}
+          </Button>
+        )}
         <Link
           href="/enterprise"
           className="block text-center text-sm font-medium hover:underline mb-4"

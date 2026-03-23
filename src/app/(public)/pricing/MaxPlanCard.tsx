@@ -9,6 +9,7 @@ interface MaxPlanCardProps {
   productPrices: TProductPrices;
   activeSubscription: Subscription | null;
   userType: UserType;
+  isAwsMarketplaceUser?: boolean;
   onUpgrade: () => void;
   onPurchaseTokens: () => void;
 }
@@ -17,6 +18,7 @@ export function MaxPlanCard({
   productPrices,
   activeSubscription,
   userType,
+  isAwsMarketplaceUser,
   onUpgrade,
   onPurchaseTokens,
 }: MaxPlanCardProps) {
@@ -48,7 +50,11 @@ export function MaxPlanCard({
         </div>
       </CardHeader>
       <CardContent className="grow space-y-4">
-        {userType !== "Personal" ? (
+        {isAwsMarketplaceUser ? (
+          <Button className="w-full mb-6 text-xs" disabled>
+            {t("manageViaAwsMarketplace")}
+          </Button>
+        ) : userType !== "Personal" ? (
           <Button className="w-full mb-6 text-xs" disabled>
             {t("switchToPersonalUserToContinue")}
           </Button>

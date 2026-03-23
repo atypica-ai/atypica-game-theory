@@ -1,5 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchActiveSubscription } from "@/app/account/lib";
+import { fetchActiveSubscription, isAwsMarketplaceUser } from "@/app/account/lib";
 import { fetchProductPricesAction } from "@/app/payment/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
@@ -31,15 +31,18 @@ async function PricingPage() {
   if (session?.user) {
     const userId = session.user.id;
 
-    const [{ activeSubscription, stripeSubscriptionId, userType }, team] = await Promise.all([
-      fetchActiveSubscription({ userId }),
-      session.userType === "TeamMember" && session.team?.id
-        ? prisma.team.findUnique({
-            where: { id: session.team.id },
-            select: { id: true, name: true, seats: true },
-          })
-        : Promise.resolve(null),
-    ]);
+    const [{ activeSubscription, stripeSubscriptionId, userType }, team, isAws] = await Promise.all(
+      [
+        fetchActiveSubscription({ userId }),
+        session.userType === "TeamMember" && session.team?.id
+          ? prisma.team.findUnique({
+              where: { id: session.team.id },
+              select: { id: true, name: true, seats: true },
+            })
+          : Promise.resolve(null),
+        isAwsMarketplaceUser(userId),
+      ],
+    );
 
     return (
       <PricingPageClient
@@ -48,6 +51,7 @@ async function PricingPage() {
         stripeSubscriptionId={stripeSubscriptionId}
         userType={userType}
         team={team}
+        isAwsMarketplaceUser={isAws}
       />
     );
   } else {

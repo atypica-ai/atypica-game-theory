@@ -9,6 +9,7 @@ interface SuperPlanCardProps {
   productPrices: TProductPrices;
   activeSubscription: Subscription | null;
   userType: UserType;
+  isAwsMarketplaceUser?: boolean;
   onUpgrade: () => void;
 }
 
@@ -16,6 +17,7 @@ export function SuperPlanCard({
   productPrices,
   activeSubscription,
   userType,
+  isAwsMarketplaceUser,
   onUpgrade,
 }: SuperPlanCardProps) {
   const locale = useLocale();
@@ -47,7 +49,11 @@ export function SuperPlanCard({
         </div>
       </CardHeader>
       <CardContent className="grow space-y-4">
-        {userType !== "Personal" ? (
+        {isAwsMarketplaceUser ? (
+          <Button className="w-full mb-6 text-xs" disabled>
+            {t("manageViaAwsMarketplace")}
+          </Button>
+        ) : userType !== "Personal" ? (
           <Button className="w-full mb-6 text-xs" disabled>
             {t("switchToPersonalUserToContinue")}
           </Button>
