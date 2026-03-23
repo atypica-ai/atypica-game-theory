@@ -135,10 +135,10 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
 
       const { personalUser } = validation;
 
-      // Create session and redirect (login as Personal User)
+      // Create session and redirect through callback (checks onboarding status)
       const sessionToken = await createSessionToken(personalUser);
       const response = setSessionAndRedirect({
-        redirectUrl: "/account",
+        redirectUrl: "/auth/callback?callbackUrl=%2Faccount",
         sessionToken,
         userId: personalUser.id,
         baseUrl: await getRequestOrigin(),
@@ -191,10 +191,10 @@ async function handleRegister(req: NextRequest): Promise<NextResponse> {
       teamId: team.id,
     });
 
-    // Step 5: Set session and redirect to account (login as Personal User)
+    // Step 5: Set session and redirect through callback for onboarding (login as Personal User)
     const sessionToken = await createSessionToken(personalUser);
     let response = setSessionAndRedirect({
-      redirectUrl: "/account",
+      redirectUrl: "/auth/callback?callbackUrl=%2Faccount",
       sessionToken,
       userId: personalUser.id,
       baseUrl: await getRequestOrigin(),
