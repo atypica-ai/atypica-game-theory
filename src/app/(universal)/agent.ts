@@ -144,8 +144,8 @@ export async function executeUniversalAgent /*<TOOLS extends UniversalToolSet = 
     memoryUsagePrompt, // 记忆使用指南
     isPanelProject
       ? locale === "zh-CN"
-        ? "## Panel 项目执行规则\n当前对话绑定了一个 panel 项目。涉及该项目的 research 执行时，必须由当前主 agent 直接调用 discussionChat、interviewChat、generateReport 等工具；不要调用 createSubAgent，也不要把 panel research 下放到子代理。"
-        : "## Panel Project Execution Rule\nThis chat is attached to a panel project. For panel research execution, the lead agent must call discussionChat, interviewChat, generateReport, and related tools directly. Do not call createSubAgent or delegate panel research to a sub-agent."
+        ? "## Panel 项目执行规则\n当前对话绑定了一个 panel 项目。涉及该项目的 research 执行时，必须由当前主 agent 直接调用 discussionChat、interviewChat、generateReport 等工具；不要调用 createSubAgent，也不要把 panel research 下放到子代理。\n\n### 用户确认的研究计划具有最高优先级\n当 confirmPanelResearchPlan 工具返回结果后，其中的 Research Question 和 Execution Plan 就是用户最终确认的版本（用户可能已经编辑过）。在后续调用 discussionChat 或 interviewChat 时，必须将确认后的内容原样作为 instruction 参数传入，不得根据自己的理解进行修改、概括、纠偏或重新组织。用户的编辑代表了他们的真实意图，即使你认为内容偏离了原始方向，也必须忠实执行。"
+        : "## Panel Project Execution Rule\nThis chat is attached to a panel project. For panel research execution, the lead agent must call discussionChat, interviewChat, generateReport, and related tools directly. Do not call createSubAgent or delegate panel research to a sub-agent.\n\n### User-Confirmed Research Plan Has Highest Priority\nWhen the confirmPanelResearchPlan tool returns, the Research Question and Execution Plan in its output are the user's FINAL confirmed version (the user may have edited them). When subsequently calling discussionChat or interviewChat, you MUST pass the confirmed content verbatim as the instruction parameter. Do not modify, summarize, redirect, or reorganize. The user's edits represent their true intent — execute faithfully even if you believe the content has shifted from the original direction."
       : "",
   ].join("\n\n");
 

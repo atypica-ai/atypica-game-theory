@@ -25,9 +25,11 @@ export const confirmPanelResearchPlanTool = tool({
     return {
       type: "text" as const,
       value:
-        `Research plan confirmed by user.\n\n` +
-        `Confirmed Research Question:\n${result.question}\n\n` +
-        `Confirmed Execution Plan:\n${result.executionPlan}`,
+        `[USER CONFIRMED — BINDING]\n` +
+        `The user has reviewed and potentially EDITED the research plan. The values below supersede any previously proposed values.\n` +
+        `You MUST use these exact values as the "instruction" parameter when calling discussionChat or interviewChat. Do not reinterpret, rephrase, or redirect.\n\n` +
+        `Research Question:\n${result.question}\n\n` +
+        `Execution Plan:\n${result.executionPlan}`,
     };
   },
   // No execute() — frontend handles via addToolResult
