@@ -26,14 +26,12 @@ export default function PricingPageClient({
   activeSubscription,
   userType,
   team,
-  isAwsMarketplaceUser,
 }: {
   productPrices: TProductPrices;
   activeSubscription: Subscription | null;
   stripeSubscriptionId: string | null;
   userType: UserType;
   team: Pick<Team, "id" | "name" | "seats"> | null;
-  isAwsMarketplaceUser?: boolean;
 }) {
   const locale = useLocale();
   const t = useTranslations("PricingPage");
@@ -116,12 +114,11 @@ export default function PricingPageClient({
 
         <TabsContent value="individual">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FreePlanCard activeSubscription={activeSubscription} isAwsMarketplaceUser={isAwsMarketplaceUser} />
+            <FreePlanCard activeSubscription={activeSubscription} />
             <ProPlanCard
               productPrices={productPrices}
               activeSubscription={activeSubscription}
               userType={userType}
-              isAwsMarketplaceUser={isAwsMarketplaceUser}
               onUpgrade={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.pro })}
               onPurchaseTokens={() => setIsTokensDialogOpen(true)}
             />
@@ -129,7 +126,6 @@ export default function PricingPageClient({
               productPrices={productPrices}
               activeSubscription={activeSubscription}
               userType={userType}
-              isAwsMarketplaceUser={isAwsMarketplaceUser}
               onUpgrade={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.max })}
               onPurchaseTokens={() => setIsTokensDialogOpen(true)}
             />
@@ -142,14 +138,12 @@ export default function PricingPageClient({
               productPrices={productPrices}
               activeSubscription={activeSubscription}
               userType={userType}
-              isAwsMarketplaceUser={isAwsMarketplaceUser}
               onUpgrade={() => setIsSubscriptionDialogOpen({ plan: SubscriptionPlan.super })}
             />
             <SuperTeamPlanCard
               productPrices={productPrices}
               userType={userType}
               activeSubscription={activeSubscription}
-              isAwsMarketplaceUser={isAwsMarketplaceUser}
               onPurchase={
                 team
                   ? () => setIsTeamSubscriptionDialogOpen({ plan: SubscriptionPlan.superteam })
@@ -165,14 +159,13 @@ export default function PricingPageClient({
               productPrices={productPrices}
               userType={userType}
               activeSubscription={activeSubscription}
-              isAwsMarketplaceUser={isAwsMarketplaceUser}
               onPurchase={
                 team
                   ? () => setIsTeamSubscriptionDialogOpen({ plan: SubscriptionPlan.team })
                   : undefined
               }
             />
-            <EnterprisePlanCard onContactSales={sayHelloToSales} isAwsMarketplaceUser={isAwsMarketplaceUser} />
+            <EnterprisePlanCard onContactSales={sayHelloToSales} />
           </div>
         </TabsContent>
       </Tabs>

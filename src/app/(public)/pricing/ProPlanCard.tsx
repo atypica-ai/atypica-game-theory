@@ -9,7 +9,6 @@ interface ProPlanCardProps {
   productPrices: TProductPrices;
   activeSubscription: Subscription | null;
   userType: UserType;
-  isAwsMarketplaceUser?: boolean;
   onUpgrade: () => void;
   onPurchaseTokens: () => void;
 }
@@ -18,7 +17,6 @@ export function ProPlanCard({
   productPrices,
   activeSubscription,
   userType,
-  isAwsMarketplaceUser,
   onUpgrade,
   onPurchaseTokens,
 }: ProPlanCardProps) {
@@ -50,11 +48,7 @@ export function ProPlanCard({
         </div>
       </CardHeader>
       <CardContent className="grow space-y-4">
-        {isAwsMarketplaceUser ? (
-          <Button className="w-full mb-6 text-xs" disabled>
-            {t("manageViaAwsMarketplace")}
-          </Button>
-        ) : userType !== "Personal" ? (
+        {userType !== "Personal" ? (
           <Button className="w-full mb-6 text-xs" disabled>
             {t("switchToPersonalUserToContinue")}
           </Button>

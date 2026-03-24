@@ -10,7 +10,6 @@ interface TeamPlanCardProps {
   productPrices: TProductPrices;
   userType: UserType;
   activeSubscription: Subscription | null;
-  isAwsMarketplaceUser?: boolean;
   onPurchase?: () => void;
 }
 
@@ -18,7 +17,6 @@ export function TeamPlanCard({
   productPrices,
   userType,
   activeSubscription,
-  isAwsMarketplaceUser,
   onPurchase,
 }: TeamPlanCardProps) {
   const locale = useLocale();
@@ -65,11 +63,7 @@ export function TeamPlanCard({
         </div>
       </CardHeader>
       <CardContent className="grow space-y-4">
-        {isAwsMarketplaceUser ? (
-          <Button className="w-full mb-6 text-xs" disabled>
-            {t("manageViaAwsMarketplace")}
-          </Button>
-        ) : userType === "TeamMember" && onPurchase ? (
+        {userType === "TeamMember" && onPurchase ? (
           activeSubscription?.plan === "team" || activeSubscription?.plan === "superteam" ? (
             <Button className="w-full mb-6" disabled variant="secondary">
               {activeSubscription.plan === "team" ? t("purchasedTeam") : t("purchasedSuperTeam")}

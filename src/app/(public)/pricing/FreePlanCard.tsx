@@ -8,10 +8,9 @@ import Link from "next/link";
 
 interface FreePlanCardProps {
   activeSubscription: Subscription | null;
-  isAwsMarketplaceUser?: boolean;
 }
 
-export function FreePlanCard({ activeSubscription, isAwsMarketplaceUser }: FreePlanCardProps) {
+export function FreePlanCard({ activeSubscription }: FreePlanCardProps) {
   const t = useTranslations("PricingPage");
 
   return (
@@ -29,11 +28,7 @@ export function FreePlanCard({ activeSubscription, isAwsMarketplaceUser }: FreeP
         </div>
       </CardHeader>
       <CardContent className="grow space-y-4">
-        {isAwsMarketplaceUser ? (
-          <Button className="w-full mb-6 text-xs" disabled>
-            {t("manageViaAwsMarketplace")}
-          </Button>
-        ) : activeSubscription ? (
+        {activeSubscription ? (
           <Button className="w-full mb-6" disabled>
             {t("getStarted")}
           </Button>

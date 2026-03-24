@@ -8,6 +8,7 @@ import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
+import { AwsMarketplacePricingView } from "./AwsMarketplacePricingView";
 import PricingPageClient from "./PricingPageClient";
 
 // PricingPage 需要 fetchProductPricesAction 访问一下数据库
@@ -26,23 +27,25 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function PricingPage() {
-  const productPrices = await fetchProductPricesAction();
   const session = await getServerSession(authOptions);
   if (session?.user) {
     const userId = session.user.id;
+    const isAws = await isAwsMarketplaceUser(userId);
 
-    const [{ activeSubscription, stripeSubscriptionId, userType }, team, isAws] = await Promise.all(
-      [
-        fetchActiveSubscription({ userId }),
-        session.userType === "TeamMember" && session.team?.id
-          ? prisma.team.findUnique({
-              where: { id: session.team.id },
-              select: { id: true, name: true, seats: true },
-            })
-          : Promise.resolve(null),
-        isAwsMarketplaceUser(userId),
-      ],
-    );
+    if (isAws) {
+      return <AwsMarketplacePricingView />;
+    }
+
+    const [{ activeSubscription, stripeSubscriptionId, userType }, team] = await Promise.all([
+      fetchActiveSubscription({ userId }),
+      session.userType === "TeamMember" && session.team?.id
+        ? prisma.team.findUnique({
+            where: { id: session.team.id },
+            select: { id: true, name: true, seats: true },
+          })
+        : Promise.resolve(null),
+    ]);
+    const productPrices = await fetchProductPricesAction();
 
     return (
       <PricingPageClient
@@ -51,10 +54,10 @@ async function PricingPage() {
         stripeSubscriptionId={stripeSubscriptionId}
         userType={userType}
         team={team}
-        isAwsMarketplaceUser={isAws}
       />
     );
   } else {
+    const productPrices = await fetchProductPricesAction();
     return (
       <PricingPageClient
         productPrices={productPrices}

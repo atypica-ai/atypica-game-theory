@@ -63,7 +63,15 @@
     "cannotSwitchFromSuperToPro": "不支持从Super版切换到Pro版",
     "cannotSwitchFromSuperToMax": "不支持从Super版切换到Max版",
     "switchToPersonalUserToContinue": "切换到个人账户继续",
-    "manageViaAwsMarketplace": "请通过 AWS Marketplace 管理您的订阅",
+    "awsMarketplace": {
+      "badge": "AWS Marketplace 订阅",
+      "title": "您的订阅由 AWS Marketplace 管理",
+      "description": "当前价格页仅适用于官网直接订阅用户。",
+      "cardTitle": "请前往 AWS 管理",
+      "cardDescription": "账单和订阅变更请在 AWS Marketplace 中处理。",
+      "goToAws": "前往 AWS",
+      "goToAccount": "返回账户页"
+    },
     "createTeam": "创建团队",
     "contactSales": "联系销售",
     "learnMore": "了解更多",
