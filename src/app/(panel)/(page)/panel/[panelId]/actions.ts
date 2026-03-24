@@ -153,8 +153,8 @@ ${personaList}
 请按以下步骤执行：
 1. 根据研究问题，制定一个对话计划：你打算跟这些用户聊什么话题、问什么问题、怎么引导讨论
    注意：计划内容只需要包含对话策略（话题、问题、讨论流程），不要提及时间预估、准备步骤、报告生成等技术步骤
-2. 调用 confirmPanelResearchPlan 工具，展示对话计划给用户确认
-3. 用户确认后，根据研究类型调用对应工具：
+2. 调用 confirmPanelResearchPlan 工具，展示对话计划给用户确认。用户可能修改研究问题或执行大纲；一旦用户提交确认，以该工具**最终输出**为准，后续步骤不得再按你未修改前的草案执行。
+3. 用户确认后，根据研究类型调用对应工具。调用 discussionChat / interviewChat 时，必须把确认后的研究问题与执行计划作为 instruction 的核心依据（仅可做小幅格式整理），紧贴用户确认的 brief：
    - 焦点小组: discussionChat (personaIds: [${personas.map((p) => p.id).join(", ")}])
    - 用户访谈: interviewChat (personas: [${personas.map((p) => `{id: ${p.id}, name: "${p.name}"}`).join(", ")}])
    - 专家访谈: interviewChat (专家模式，同上)
@@ -172,8 +172,8 @@ ${personaList}
 Please follow these steps:
 1. Based on the research question, create a conversation plan: what topics to explore with the personas, what questions to ask, and how to guide the discussion
    Note: the plan should ONLY cover conversation strategy (topics, questions, discussion flow). Do NOT mention time estimates, preparation steps, or report generation.
-2. Call confirmPanelResearchPlan tool to show the conversation plan for user confirmation
-3. After user confirms, call the corresponding tool based on research type:
+2. Call confirmPanelResearchPlan to show the plan for user confirmation. The user may edit the question or execution outline; once they submit, the tool **final output** is authoritative—do not follow your pre-confirmation draft afterward.
+3. After confirmation, call the corresponding tool. For discussionChat / interviewChat, the "instruction" must be grounded in the confirmed question and execution plan (minor formatting only; stay faithful to the user-confirmed brief):
    - Focus Group: discussionChat (personaIds: [${personas.map((p) => p.id).join(", ")}])
    - User Interview: interviewChat (personas: [${personas.map((p) => `{id: ${p.id}, name: "${p.name}"}`).join(", ")}])
    - Expert Interview: interviewChat (expert mode, same as above)
