@@ -1,14 +1,14 @@
 /**
- * Create a test AWS Marketplace user for local development
+ * Create a test AWS Marketplace user for local development.
  *
  * This script creates a fake AWS Marketplace user without calling the real AWS Entitlement API.
  * It mimics what createAWSMarketplaceUserWithTeam() does, but skips the AWS API sync step.
  *
  * Usage:
- *   pnpm tsx scripts/admin/create-aws-test-user.ts <customer-identifier>
+ *   pnpm tsx scripts/utils/create-aws-test-user.ts <customer-identifier>
  *
  * Example:
- *   pnpm tsx scripts/admin/create-aws-test-user.ts test-customer-001
+ *   pnpm tsx scripts/utils/create-aws-test-user.ts test-customer-001
  *
  * The user will be created with:
  *   - Email: <customer-identifier>@aws.atypica.ai
@@ -22,16 +22,31 @@
  */
 
 import { loadEnvConfig } from "@next/env";
+import { Module } from "module";
 import "../mock-server-only";
+
+const originalRequire = Module.prototype.require;
+Module.prototype.require = function (id: string) {
+  if (id === "next/server") {
+    const actual = originalRequire.apply(this, arguments as any);
+    return {
+      ...actual,
+      after: (fn: () => unknown) => {
+        Promise.resolve().then(() => fn()).catch(() => {});
+      },
+    };
+  }
+  return originalRequire.apply(this, arguments as any);
+};
 
 async function createAwsTestUser(customerIdentifier: string) {
   loadEnvConfig(process.cwd());
 
   const { createPersonalUser } = await import("@/app/(auth)/lib");
+  const { generateImpersonationLoginUrl } = await import("@/app/(auth)/impersonationLogin");
   const { manuallyAddTeamSubscription } = await import("@/app/payment/manualSubscription");
   const { createTeam } = await import("@/app/team/lib");
   const { prisma } = await import("@/prisma/prisma");
-  const { generateImpersonationLoginUrl } = await import("@/app/(auth)/impersonationLogin");
 
   const AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN = "aws.atypica.ai";
   const DEFAULT_QUANTITY = 3;
@@ -40,7 +55,6 @@ async function createAwsTestUser(customerIdentifier: string) {
 
   const email = `${customerIdentifier}@${AWS_MARKETPLACE_FAKE_EMAIL_DOMAIN}`;
 
-  // Check if already exists
   const existing = await prisma.user.findUnique({
     where: { email },
   });
@@ -50,7 +64,6 @@ async function createAwsTestUser(customerIdentifier: string) {
     process.exit(1);
   }
 
-  // 1. Create personal user (no password, email pre-verified)
   const personalUser = await createPersonalUser({
     email,
     password: undefined,
@@ -58,19 +71,16 @@ async function createAwsTestUser(customerIdentifier: string) {
     grantSignupTokens: true,
   });
 
-  // 2. Create team and team member user
   const { team, teamUser } = await createTeam({
     name: `AWS Test Team (${customerIdentifier})`,
     ownerUser: personalUser,
   });
 
-  // 3. Update team seats
   await prisma.team.update({
     where: { id: team.id },
     data: { seats: DEFAULT_QUANTITY },
   });
 
-  // 4. Create AWSMarketplaceCustomer record
   await prisma.aWSMarketplaceCustomer.create({
     data: {
       userId: personalUser.id,
@@ -83,7 +93,6 @@ async function createAwsTestUser(customerIdentifier: string) {
     },
   });
 
-  // 5. Create team subscription (1 month, skips AWS Entitlement API)
   await manuallyAddTeamSubscription({
     teamId: team.id,
     seats: DEFAULT_QUANTITY,
@@ -102,12 +111,7 @@ async function createAwsTestUser(customerIdentifier: string) {
   console.log(`  Team User ID:        ${teamUser.id}`);
   console.log(`  Team User Email:     ${teamUser.email}`);
   console.log(``);
-  const loginUrl = generateImpersonationLoginUrl(
-    teamUser.id,
-    "http://localhost:3000",
-    24,
-    "/pricing",
-  );
+  const loginUrl = generateImpersonationLoginUrl(teamUser.id, "http://localhost:3000", 24, "/pricing");
   console.log(`Login URL (valid 24h):`);
   console.log(`  ${loginUrl}`);
 }
@@ -116,8 +120,8 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length !== 1) {
-    console.error("Usage: pnpm tsx scripts/admin/create-aws-test-user.ts <customer-identifier>");
-    console.error("Example: pnpm tsx scripts/admin/create-aws-test-user.ts test-customer-001");
+    console.error("Usage: pnpm tsx scripts/utils/create-aws-test-user.ts <customer-identifier>");
+    console.error("Example: pnpm tsx scripts/utils/create-aws-test-user.ts test-customer-001");
     process.exit(1);
   }
 

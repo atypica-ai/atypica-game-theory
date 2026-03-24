@@ -481,47 +481,6 @@ async function addTeamSubscription(args: string[]) {
   }
 }
 
-async function genLoginUrl(args: string[]) {
-  loadEnvConfig(process.cwd());
-  const { generateImpersonationLoginUrl } = await import("@/app/(auth)/impersonationLogin");
-  const { prisma } = await import("@/prisma/prisma");
-
-  const params = parseKeyValueArgs(args);
-
-  if (!params.userId && !params.email) {
-    console.error("Error: Provide --userId <id> or --email <email>");
-    process.exit(1);
-  }
-
-  let userId: number;
-
-  if (params.userId) {
-    userId = parseInt(params.userId, 10);
-    if (isNaN(userId)) {
-      console.error(`Error: Invalid userId "${params.userId}"`);
-      process.exit(1);
-    }
-  } else {
-    const user = await prisma.user.findUnique({
-      where: { email: params.email.toLowerCase() },
-      select: { id: true, email: true, teamIdAsMember: true },
-    });
-    if (!user) {
-      console.error(`Error: User with email ${params.email} not found`);
-      process.exit(1);
-    }
-    userId = user.id;
-  }
-
-  const origin = params.origin || "http://localhost:3000";
-  const callbackUrl = params.callbackUrl || "/";
-  const hours = params.hours ? parseInt(params.hours, 10) : 24;
-
-  const url = generateImpersonationLoginUrl(userId, origin, hours, callbackUrl);
-  console.log(`Login URL (valid ${hours}h):`);
-  console.log(`  ${url}`);
-}
-
 async function main() {
   const args = process.argv.slice(2);
 
@@ -536,12 +495,6 @@ async function main() {
     );
     console.error(
       "  pnpm tsx scripts/admin/admintool.ts add-team-subscription --teamId <id> --plan <team|superteam> --seats <number> --start <YYYY-MM-DD> --months <number> [--currency <CNY|USD>]",
-    );
-    console.error(
-      "  pnpm tsx scripts/admin/admintool.ts gen-login-url --userId <id> [--origin <url>] [--callbackUrl <path>] [--hours <n>]",
-    );
-    console.error(
-      "  pnpm tsx scripts/admin/admintool.ts gen-login-url --email <email> [--origin <url>] [--callbackUrl <path>] [--hours <n>]",
     );
     process.exit(1);
   }
@@ -589,14 +542,10 @@ async function main() {
       await addTeamSubscription(args.slice(1));
       break;
 
-    case "gen-login-url":
-      await genLoginUrl(args.slice(1));
-      break;
-
     default:
       console.error(`Unknown command: ${command}`);
       console.error(
-        "Available commands: create-user, make-admin, create-team, list-teams, add-subscription, add-team-subscription, gen-login-url",
+        "Available commands: create-user, make-admin, create-team, list-teams, add-subscription, add-team-subscription",
       );
       process.exit(1);
   }
