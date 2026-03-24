@@ -32,7 +32,14 @@
       "projectsCount": "{count} 个项目",
       "noProjectsYet": "暂无研究项目",
       "searchProjects": "搜索项目...",
-      "projectToken": "项目 {token}"
+      "projectToken": "项目 {token}",
+      "editPanelTitle": "编辑 Panel 名称",
+      "editPanelTitleDescription": "修改后将同步到列表与搜索，并在各使用该 Panel 的页面显示。",
+      "panelTitleLabel": "名称",
+      "save": "保存",
+      "cancel": "取消",
+      "renameSuccess": "名称已更新",
+      "renameFailed": "更新名称失败"
     },
     "DetailPage": {
       "recentProjects": "近期项目",

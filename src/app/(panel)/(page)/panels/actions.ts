@@ -10,6 +10,7 @@ import { mergeExtra } from "@/prisma/utils";
 import { searchProjects as searchProjectsFromMeili } from "@/search/lib/queries";
 import { syncProject as syncProjectToMeili } from "@/search/lib/sync";
 import { waitUntil } from "@vercel/functions";
+import { after } from "next/server";
 import { getLocale } from "next-intl/server";
 
 export interface PersonaPanelWithDetails {
@@ -211,6 +212,44 @@ export async function archivePersonaPanel(
       }),
     );
     return { success: true, data: null };
+  });
+}
+
+const PANEL_TITLE_MAX_LEN = 255;
+
+export async function updatePersonaPanelTitle(
+  panelId: number,
+  title: string,
+): Promise<ServerActionResult<{ title: string }>> {
+  return withAuth(async (user) => {
+    const normalized = title.trim().slice(0, PANEL_TITLE_MAX_LEN);
+
+    const panel = await prisma.personaPanel.findUnique({
+      where: { id: panelId, userId: user.id },
+      select: { id: true },
+    });
+    if (!panel) {
+      return {
+        success: false,
+        code: "not_found",
+        message: "PersonaPanel not found or you don't have permission to update it",
+      };
+    }
+
+    const updated = await prisma.personaPanel.update({
+      where: { id: panelId },
+      data: { title: normalized },
+      select: { title: true },
+    });
+
+    // Meili 同步放 after，避免 waitUntil 阻塞 server action（本地 Meili 不可达时会一直转圈）
+    after(() => {
+      void syncProjectToMeili({ type: "panel", id: panelId }).catch(() => {
+        // syncProject 内已 log
+      });
+    });
+
+    return { success: true, data: { title: updated.title } };
   });
 }
 

@@ -199,6 +199,7 @@ export function PersonaPanelsListClient({
                 panel={panel}
                 onDelete={handleDeletePanel}
                 onArchive={handleArchivePanel}
+                onRenamed={loadPanels}
                 isDeleting={deletingPanelId === panel.id}
               />
             ))}

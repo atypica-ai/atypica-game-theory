@@ -4,11 +4,13 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn, formatDistanceToNow } from "@/lib/utils";
 import type { PersonaExtra } from "@/prisma/client";
-import { ArrowRight, Clock, MessageSquare, Mic, Trash2, Users } from "lucide-react";
+import { ArrowRight, Clock, MessageSquare, Mic, Pencil, Trash2, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { PersonaPanelWithDetails } from "./actions";
+import { EditPanelTitleDialog } from "./EditPanelTitleDialog";
 
 /** Build compact extra summary based on role */
 function buildExtraSummary(extra: PersonaExtra): string {
@@ -34,19 +36,29 @@ export function PanelCard({
   panel,
   onDelete,
   onArchive,
+  onRenamed,
   isDeleting,
 }: {
   panel: PersonaPanelWithDetails;
   onDelete: (panelId: number) => void;
   onArchive?: (panelId: number) => Promise<{ success: boolean }>;
+  onRenamed?: () => void;
   isDeleting: boolean;
 }) {
   const t = useTranslations("PersonaPanel");
+  const [editTitleOpen, setEditTitleOpen] = useState(false);
 
   const hasUsage = panel.usageCount.discussions > 0 || panel.usageCount.interviews > 0;
 
   return (
     <div className="group relative border border-border rounded-lg hover:border-foreground/20 transition-all duration-300 flex flex-col">
+      <EditPanelTitleDialog
+        open={editTitleOpen}
+        onOpenChange={setEditTitleOpen}
+        panelId={panel.id}
+        initialTitle={panel.title}
+        onSaved={() => onRenamed?.()}
+      />
       <Link href={`/panel/${panel.id}`} className="flex p-4 flex-1 flex-col">
         {/* Title — 2 lines */}
         <div className="flex items-center gap-2 mb-1">
@@ -59,7 +71,7 @@ export function PanelCard({
               />
             ))}
           </div>
-          <div className="flex-1 text-sm font-semibold leading-snug line-clamp-2 group-hover:pr-16 transition-[padding]">
+          <div className="flex-1 min-w-0 text-sm font-semibold leading-snug line-clamp-2 max-md:pr-[5.75rem] md:pointer-coarse:pr-[5.75rem] md:pointer-fine:group-hover:pr-[5.75rem] transition-[padding]">
             {panel.title || t("panelId", { id: panel.id })}
           </div>
         </div>
@@ -97,7 +109,7 @@ export function PanelCard({
         )}
 
         {/* Footer: icon stats + arrow */}
-        <div className="flex items-center pt-3 mt-auto border-t border-border/50 text-xs text-muted-foreground gap-3">
+        <div className="flex flex-wrap items-center pt-3 mt-auto border-t border-border/50 text-xs text-muted-foreground gap-x-3 gap-y-1.5 min-w-0">
           <div className="flex items-center gap-1 shrink-0">
             <Users className="size-3" />
             <span>{panel.personas.length}</span>
@@ -122,8 +134,19 @@ export function PanelCard({
         </div>
       </Link>
 
-      {/* Action buttons — top-right, hover only */}
-      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-0.5 opacity-100 md:pointer-fine:opacity-0 md:pointer-fine:group-hover:opacity-100 transition-opacity">
+        <button
+          type="button"
+          title={t("ListPage.editPanelTitle")}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setEditTitleOpen(true);
+          }}
+          className="size-7 rounded-md flex items-center justify-center hover:bg-muted shrink-0"
+        >
+          <Pencil className="size-3.5 text-muted-foreground" />
+        </button>
         {onArchive && <ArchiveButton onArchive={() => onArchive(panel.id)} />}
         {hasUsage ? (
           <button
