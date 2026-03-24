@@ -58,7 +58,12 @@ export function ConfirmPanelResearchPlanMessage({
         confirmed: true,
         question,
         executionPlan,
-        plainText: `Research plan confirmed. Type: ${researchType}, Question: ${question}, Participants: ${personaCount}, Plan: ${executionPlan}`,
+        plainText:
+          `[USER CONFIRMED — BINDING]\n` +
+          `The user has reviewed and potentially EDITED the research plan. The values below supersede any previously proposed values.\n` +
+          `You MUST use these exact values as the "instruction" parameter when calling discussionChat or interviewChat. Do not reinterpret, rephrase, or redirect.\n\n` +
+          `Research Question:\n${question}\n\n` +
+          `Execution Plan:\n${executionPlan}`,
       },
     });
 

@@ -1,11 +1,8 @@
 import "server-only";
 
+import { PlainTextToolResult } from "@/ai/tools/types";
 import { tool } from "ai";
-import {
-  confirmPanelResearchPlanInputSchema,
-  confirmPanelResearchPlanOutputSchema,
-  ConfirmPanelResearchPlanOutput,
-} from "./types";
+import { confirmPanelResearchPlanInputSchema, confirmPanelResearchPlanOutputSchema } from "./types";
 
 /**
  * confirmPanelResearchPlan — human-in-the-loop tool for research plan confirmation.
@@ -21,16 +18,8 @@ export const confirmPanelResearchPlanTool = tool({
     "The tool output contains the FINAL confirmed values which may differ from the originally proposed values — always use the output values for subsequent research execution.",
   inputSchema: confirmPanelResearchPlanInputSchema,
   outputSchema: confirmPanelResearchPlanOutputSchema,
-  toModelOutput: (result: ConfirmPanelResearchPlanOutput) => {
-    return {
-      type: "text" as const,
-      value:
-        `[USER CONFIRMED — BINDING]\n` +
-        `The user has reviewed and potentially EDITED the research plan. The values below supersede any previously proposed values.\n` +
-        `You MUST use these exact values as the "instruction" parameter when calling discussionChat or interviewChat. Do not reinterpret, rephrase, or redirect.\n\n` +
-        `Research Question:\n${result.question}\n\n` +
-        `Execution Plan:\n${result.executionPlan}`,
-    };
+  toModelOutput: (result: PlainTextToolResult) => {
+    return { type: "text" as const, value: result.plainText };
   },
   // No execute() — frontend handles via addToolResult
 });
