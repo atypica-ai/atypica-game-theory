@@ -1,5 +1,5 @@
 import authOptions from "@/app/(auth)/authOptions";
-import { fetchActiveSubscription, isAwsMarketplaceUser } from "@/app/account/lib";
+import { fetchActiveSubscription } from "@/app/account/lib";
 import { fetchProductPricesAction } from "@/app/payment/actions";
 import { PageLoadingFallback } from "@/components/PageLoadingFallback";
 import { generatePageMetadata } from "@/lib/request/metadata";
@@ -30,21 +30,37 @@ async function PricingPage() {
   const session = await getServerSession(authOptions);
   if (session?.user) {
     const userId = session.user.id;
-    const isAws = await isAwsMarketplaceUser(userId);
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { personalUserId: true, teamIdAsMember: true },
+    });
 
-    if (isAws) {
+    const [{ activeSubscription, stripeSubscriptionId, userType }, team, awsCustomer] =
+      user.teamIdAsMember
+        ? await Promise.all([
+            fetchActiveSubscription({ teamId: user.teamIdAsMember }),
+            prisma.team.findUnique({
+              where: { id: user.teamIdAsMember },
+              select: { id: true, name: true, seats: true },
+            }),
+            prisma.aWSMarketplaceCustomer.findUnique({
+              where: { userId: user.personalUserId! },
+              select: { id: true },
+            }),
+          ])
+        : await Promise.all([
+            fetchActiveSubscription({ userId }),
+            Promise.resolve(null),
+            prisma.aWSMarketplaceCustomer.findUnique({
+              where: { userId },
+              select: { id: true },
+            }),
+          ]);
+
+    if (awsCustomer) {
       return <AwsMarketplacePricingView />;
     }
 
-    const [{ activeSubscription, stripeSubscriptionId, userType }, team] = await Promise.all([
-      fetchActiveSubscription({ userId }),
-      session.userType === "TeamMember" && session.team?.id
-        ? prisma.team.findUnique({
-            where: { id: session.team.id },
-            select: { id: true, name: true, seats: true },
-          })
-        : Promise.resolve(null),
-    ]);
     const productPrices = await fetchProductPricesAction();
 
     return (

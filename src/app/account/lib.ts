@@ -98,29 +98,3 @@ export async function fetchActiveSubscription({
     userType,
   };
 }
-
-/**
- * 检查用户是否是 AWS Marketplace 用户
- * @param userId - 当前用户的 ID（可能是 Personal User 或 Team Member User 的 ID）
- * @returns 是否是 AWS Marketplace 用户
- */
-export async function isAwsMarketplaceUser(userId: number): Promise<boolean> {
-  // 如果是 Team Member User，需要先找到对应的 Personal User
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { personalUserId: true },
-  });
-
-  if (!user) {
-    return false;
-  }
-
-  // 使用 Personal User 的 ID 来查询 AWS Marketplace Customer
-  const personalUserId = user.personalUserId || userId;
-  const awsCustomer = await prisma.aWSMarketplaceCustomer.findUnique({
-    where: { userId: personalUserId },
-    select: { id: true },
-  });
-
-  return !!awsCustomer;
-}
