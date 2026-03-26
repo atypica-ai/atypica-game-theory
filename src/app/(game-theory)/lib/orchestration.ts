@@ -47,16 +47,20 @@ export async function runGameSession({
   const gameType = getGameType(session.gameType);
   const personaIds = session.personaIds as number[];
 
-  // Load personas
-  const personas = await prisma.persona.findMany({
+  // Load personas, then reorder to match personaIds order.
+  // findMany does not guarantee result order, so we must sort explicitly.
+  const personasUnordered = await prisma.persona.findMany({
     where: { id: { in: personaIds } },
   });
 
-  if (personas.length !== personaIds.length) {
+  if (personasUnordered.length !== personaIds.length) {
     throw new Error(
-      `Some personas not found. Expected ${personaIds.length}, got ${personas.length}`,
+      `Some personas not found. Expected ${personaIds.length}, got ${personasUnordered.length}`,
     );
   }
+
+  const personaMap = new Map(personasUnordered.map((p) => [p.id, p]));
+  const personas = personaIds.map((id) => personaMap.get(id)!);
 
   // Assign player IDs in order
   const playerIds = personaIds.map((_, i) => `player_${String.fromCharCode(65 + i)}`); // player_A, player_B, ...

@@ -19,5 +19,5 @@ export function calculateRoundPayoffs(
     }
     actions[playerId] = record.actions[0];
   }
-  return gameType.payoffFunction(actions as Record<string, never>);
+  return gameType.payoffFunction(actions);
 }

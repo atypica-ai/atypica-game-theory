@@ -43,17 +43,21 @@ export function formatTimelineForPlayer(
       lines.push(round.system);
     }
 
-    // Show each player's move for this round
-    for (const [pid, record] of Object.entries(round.players)) {
+    // Iterate over all participants (not just those who have acted) so that
+    // players yet to move appear as "[waiting...]" rather than being invisible.
+    for (const participant of timeline.meta.participants) {
+      const pid = participant.playerId;
+      const record = round.players[pid];
       const isMe = pid === playerId;
-      const participant = timeline.meta.participants.find((p) => p.playerId === pid);
-      const label = isMe ? "You" : (participant?.name ?? pid);
+      const label = isMe ? "You" : participant.name;
 
       if (isCurrent && !isMe && options.hideCurrentRound) {
         // Hide other players' moves in the current round until all have acted
         lines.push(`${label}: [waiting for their move...]`);
         continue;
       }
+
+      if (!record) continue; // No record yet for a non-current round would be unexpected
 
       // Show words (but never other players' thoughts)
       if (record.words) {
