@@ -1,136 +1,223 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { PLAYER_COLORS } from "../PlayerCard";
 
-interface ReplayIntroProps {
-  gameTypeName: string; // e.g. "PRISONER'S DILEMMA"
-  onComplete: () => void;
+interface Participant {
+  personaId: number;
+  name: string;
+  playerId: string;
 }
 
-type Stage = "typewriter" | "badge" | "begin" | "done";
+interface ReplayIntroProps {
+  gameTypeName: string;
+  participants: Participant[];
+  onStart: () => void;
+}
 
-const CHAR_DELAY = 60; // ms per character
+type Stage = "title" | "arena" | "ready";
 
-export function ReplayIntro({ gameTypeName, onComplete }: ReplayIntroProps) {
-  const [stage, setStage] = useState<Stage>("typewriter");
-  const [charCount, setCharCount] = useState(0);
+export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntroProps) {
+  const [stage, setStage] = useState<Stage>("title");
   const [isDismissed, setIsDismissed] = useState(false);
 
-  const upperName = gameTypeName.toUpperCase();
-
-  // Typewriter: advance one character at a time
+  // Title → arena after 900ms
   useEffect(() => {
-    if (stage !== "typewriter") return;
-    if (charCount >= upperName.length) {
-      // Finished typing — move to badge stage after brief hold
-      const timer = setTimeout(() => setStage("badge"), 400);
-      return () => clearTimeout(timer);
-    }
-    const timer = setTimeout(() => setCharCount((c) => c + 1), CHAR_DELAY);
-    return () => clearTimeout(timer);
-  }, [stage, charCount, upperName.length]);
-
-  // Badge stage — hold 800ms then show BEGIN
-  useEffect(() => {
-    if (stage !== "badge") return;
-    const timer = setTimeout(() => setStage("begin"), 800);
-    return () => clearTimeout(timer);
+    if (stage !== "title") return;
+    const t = setTimeout(() => setStage("arena"), 900);
+    return () => clearTimeout(t);
   }, [stage]);
 
-  // Begin stage — hold 300ms then fire onComplete
+  // Arena → ready after participants have entered (stagger 300ms each + 600ms settle)
   useEffect(() => {
-    if (stage !== "begin") return;
-    const timer = setTimeout(() => {
-      setStage("done");
-      setIsDismissed(true);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [stage]);
+    if (stage !== "arena") return;
+    const delay = participants.length * 300 + 600;
+    const t = setTimeout(() => setStage("ready"), delay);
+    return () => clearTimeout(t);
+  }, [stage, participants.length]);
 
-  // Notify parent after exit animation
-  useEffect(() => {
-    if (isDismissed) {
-      const timer = setTimeout(onComplete, 400); // wait for fade-out
-      return () => clearTimeout(timer);
-    }
-  }, [isDismissed, onComplete]);
-
-  // Allow click or ESC to skip
+  // ESC key: skip animations, jump to ready immediately
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !isDismissed) {
-        setIsDismissed(true);
-      }
+      if (e.key === "Escape" && !isDismissed) setStage("ready");
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [isDismissed]);
 
-  const handleClick = () => {
-    if (!isDismissed) setIsDismissed(true);
+  const dismiss = () => {
+    if (isDismissed) return;
+    setIsDismissed(true);
+    // Small delay for exit animation, then call onStart
+    setTimeout(onStart, 400);
   };
+
+  const isTwoPlayer = participants.length === 2;
 
   return (
     <AnimatePresence>
       {!isDismissed && (
         <motion.div
-          className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#09090b] cursor-pointer select-none"
+          className="absolute inset-0 z-50 flex flex-col bg-[#09090b] select-none"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          onClick={handleClick}
-          aria-hidden
         >
-          {/* Game type name — typewriter reveal */}
-          <div className="flex items-center justify-center mb-8 h-8">
-            <span className="font-IBMPlexMono text-sm tracking-[0.22em] uppercase text-zinc-300">
-              {upperName.slice(0, charCount)}
-              {/* Blinking cursor */}
-              {charCount < upperName.length && (
-                <motion.span
-                  className="inline-block w-[2px] h-[1em] bg-zinc-500 align-middle ml-0.5"
-                  animate={{ opacity: [1, 0] }}
-                  transition={{ duration: 0.6, repeat: Infinity, repeatType: "reverse" }}
-                />
-              )}
+          {/* ── Top: game type label ────────────────────────────── */}
+          <div className="flex items-center justify-between px-8 h-[52px] border-b border-white/[0.05]">
+            <div className="flex items-center gap-3">
+              <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-zinc-700">
+                Game Theory
+              </span>
+              <span className="w-px h-3 bg-zinc-800" />
+              <span className="font-EuclidCircularA text-sm font-medium text-white">
+                {gameTypeName}
+              </span>
+            </div>
+            <span className="font-IBMPlexMono text-[9px] tracking-[0.2em] uppercase text-[#1bff1b]/60">
+              Replay
             </span>
           </div>
 
-          {/* REPLAY badge — fades in after typewriter */}
-          <AnimatePresence>
-            {(stage === "badge" || stage === "begin" || stage === "done") && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="flex items-center gap-2 border border-[rgba(27,255,27,0.3)] bg-zinc-900/80 backdrop-blur-sm px-4 py-2"
-              >
+          {/* ── Center: arena ───────────────────────────────────── */}
+          <div className="flex-1 flex flex-col items-center justify-center gap-12 px-8">
+            {/* ARENA label */}
+            <AnimatePresence>
+              {stage !== "title" && (
                 <motion.span
-                  className="w-1.5 h-1.5 rounded-full bg-[#1bff1b]"
-                  animate={{ opacity: [1, 0.4, 1] }}
-                  transition={{ duration: 1.6, repeat: Infinity }}
-                />
-                <span className="font-IBMPlexMono text-xs tracking-[0.2em] uppercase text-[#1bff1b]">
-                  Replay
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="font-IBMPlexMono text-[9px] tracking-[0.28em] uppercase text-zinc-700"
+                >
+                  Arena
+                </motion.span>
+              )}
+            </AnimatePresence>
 
-          {/* ESC hint — appears with badge */}
-          <AnimatePresence>
-            {(stage === "badge" || stage === "begin") && (
+            {/* Participants row */}
+            <div
+              className="flex items-center gap-6"
+              style={{ justifyContent: isTwoPlayer ? "center" : "center", flexWrap: "wrap" }}
+            >
+              {participants.map((participant, idx) => {
+                const color = PLAYER_COLORS[idx] ?? "#ffffff";
+                return (
+                  <React.Fragment key={participant.playerId}>
+                    {/* VS divider — only between 2-player participants, rendered before idx===1 */}
+                    {isTwoPlayer && idx === 1 && (
+                      <AnimatePresence>
+                        {stage !== "title" && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.35, delay: 0.7 }}
+                            className="self-stretch flex flex-col items-center justify-center gap-1 px-4"
+                          >
+                            <div className="flex-1 w-px bg-zinc-800" />
+                            <span className="font-IBMPlexMono text-[9px] tracking-[0.2em] uppercase text-zinc-700">
+                              vs
+                            </span>
+                            <div className="flex-1 w-px bg-zinc-800" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    )}
+
+                    {/* Participant card */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 28 }}
+                      animate={stage !== "title" ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
+                      transition={{ duration: 0.55, delay: idx * 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="flex flex-col items-center gap-4 relative w-44"
+                    >
+                      {/* Color bar above avatar */}
+                      <div className="w-[2px] h-6" style={{ backgroundColor: `${color}60` }} />
+
+                      {/* Avatar */}
+                      <div
+                        className="relative"
+                        style={{
+                          filter: `drop-shadow(0 0 24px ${color}30)`,
+                        }}
+                      >
+                        <HippyGhostAvatar seed={participant.personaId} className="size-20" />
+                        {/* Outer ring */}
+                        <motion.div
+                          className="absolute inset-0 rounded-full"
+                          style={{ border: `1px solid ${color}25` }}
+                          animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0, 0.6] }}
+                          transition={{ duration: 3, delay: idx * 0.4, repeat: Infinity }}
+                        />
+                      </div>
+
+                      {/* Name */}
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="font-EuclidCircularA text-xl font-medium text-white text-center">
+                          {participant.name}
+                        </span>
+                        <span
+                          className="font-IBMPlexMono text-[9px] tracking-[0.18em] uppercase"
+                          style={{ color: `${color}70` }}
+                        >
+                          {participant.playerId}
+                        </span>
+                      </div>
+
+                      {/* Color dot */}
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+                    </motion.div>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+
+            {/* Participant count for 3+ players */}
+            {!isTwoPlayer && stage !== "title" && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                className="absolute bottom-8 font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-700"
+                transition={{ duration: 0.4, delay: participants.length * 0.3 + 0.2 }}
+                className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-700"
               >
-                Click anywhere to skip
+                {participants.length} Players
               </motion.span>
             )}
-          </AnimatePresence>
+
+            {/* START button */}
+            <AnimatePresence>
+              {stage === "ready" && (
+                <motion.button
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  onClick={dismiss}
+                  className="mt-4 h-11 px-10 bg-[#1bff1b] text-black font-medium text-sm tracking-[0.06em] hover:bg-[#1bff1b]/90 transition-colors"
+                >
+                  Start →
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ── Bottom: ESC hint ─────────────────────────────────── */}
+          <div className="h-12 flex items-center justify-center">
+            <AnimatePresence>
+              {stage !== "ready" && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-800"
+                >
+                  ESC to skip
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
