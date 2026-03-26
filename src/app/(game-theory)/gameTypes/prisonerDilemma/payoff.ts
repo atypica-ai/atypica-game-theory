@@ -1,9 +1,12 @@
 import { PrisonerDilemmaAction } from "./schema";
 
-// Classic Prisoner's Dilemma payoff matrix (years in prison, so lower = better)
-// Both cooperate: each gets -1 (minor sentence)
-// Both defect: each gets -2 (moderate sentence)
-// One defects, one cooperates: defector gets 0 (goes free), cooperator gets -3 (max sentence)
+// Payoff matrix from Dal Bó & Fréchette (2011) "easy" treatment:
+//   (C,C) = 51, 51  — mutual cooperation
+//   (C,D) = 22, 63  — sucker / temptation
+//   (D,C) = 63, 22  — temptation / sucker
+//   (D,D) = 39, 39  — mutual defection
+// Satisfies PD conditions: T(63) > R(51) > P(39) > S(22), and 2R(102) > T+S(85)
+// K = (T-R)/(R-S) = 12/29 ≈ 0.41 — moderate temptation, cooperation is strategically meaningful
 
 export function prisonerDilemmaPayoff(
   actions: Record<string, PrisonerDilemmaAction>,
@@ -18,13 +21,13 @@ export function prisonerDilemmaPayoff(
   const actionB = actions[idB].action;
 
   if (actionA === "cooperate" && actionB === "cooperate") {
-    return { [idA]: -1, [idB]: -1 };
-  } else if (actionA === "defect" && actionB === "defect") {
-    return { [idA]: -2, [idB]: -2 };
+    return { [idA]: 51, [idB]: 51 };
+  } else if (actionA === "cooperate" && actionB === "defect") {
+    return { [idA]: 22, [idB]: 63 };
   } else if (actionA === "defect" && actionB === "cooperate") {
-    return { [idA]: 0, [idB]: -3 };
+    return { [idA]: 63, [idB]: 22 };
   } else {
-    // actionA === "cooperate" && actionB === "defect"
-    return { [idA]: -3, [idB]: 0 };
+    // both defect
+    return { [idA]: 39, [idB]: 39 };
   }
 }

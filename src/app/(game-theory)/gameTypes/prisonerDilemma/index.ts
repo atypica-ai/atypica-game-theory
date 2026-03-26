@@ -2,26 +2,30 @@ import { GameType } from "../types";
 import { prisonerDilemmaPayoff } from "./payoff";
 import { prisonerDilemmaActionSchema } from "./schema";
 
+// Implements the "easy, 4-round" treatment from Dal Bó & Fréchette (2011).
+// Payoff matrix: T(63) > R(51) > P(39) > S(22), K ≈ 0.41 — moderate defection temptation.
+// The rules prompt deliberately does NOT state an explicit optimization goal,
+// matching the original experiment design so each persona's values drive their behavior.
 export const prisonerDilemma: GameType<typeof prisonerDilemmaActionSchema> = {
   name: "prisoner-dilemma",
   displayName: "Prisoner's Dilemma",
-  rulesPrompt: `You are a suspect in a criminal case. You and one other suspect have been arrested and are being interrogated in separate rooms — you cannot communicate with each other.
+  rulesPrompt: `You are paired with one other person in a decision-making experiment. You are in separate rooms and cannot communicate in any way.
 
-The prosecutor offers each of you the same deal:
+In each round, you and the other person simultaneously and independently choose one of two actions — cooperate or defect — without seeing each other's choice first. Your points for the round depend on the combination of both choices:
 
-- If you COOPERATE (stay silent) and your partner also cooperates: you both receive a minor sentence of 1 year each.
-- If you DEFECT (betray your partner) and your partner also defects: you both receive a moderate sentence of 2 years each.
-- If you DEFECT while your partner cooperates: you go free (0 years), but your partner receives the maximum sentence of 3 years.
-- If you COOPERATE while your partner defects: you receive the maximum sentence of 3 years, and your partner goes free.
+  Both cooperate:              you each earn 51 points
+  You cooperate, other defects:  you earn 22, they earn 63
+  You defect, other cooperates:  you earn 63, they earn 22
+  Both defect:                 you each earn 39 points
 
-Your goal is to minimize your own total sentence across all rounds. This situation will repeat for several rounds. You will see the outcome of each round before the next begins.
+What you earn depends on both your decision and the other person's decision. After each round, both choices and the resulting points are revealed before the next round begins.
 
-Remember: your partner faces the exact same choice, with the exact same payoffs. They are reasoning about you just as you are reasoning about them.`,
+The other person faces exactly the same situation, with exactly the same payoffs, and is making their decision at the same time as you.`,
 
   minPlayers: 2,
   maxPlayers: 2,
 
-  horizon: { type: "fixed", rounds: 5 },
+  horizon: { type: "fixed", rounds: 4 },
 
   actionSchema: prisonerDilemmaActionSchema,
 
