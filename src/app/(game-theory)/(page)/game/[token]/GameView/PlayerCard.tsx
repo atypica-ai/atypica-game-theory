@@ -1,77 +1,296 @@
 "use client";
 
+import { PlayerRecord } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
-import { PlayerRecord } from "@/app/(game-theory)/types";
+import { AnimatePresence, motion } from "motion/react";
+
+// Player A = ghost-green, Player B = blue
+export const PLAYER_COLORS = ["#1bff1b", "#3b82f6"];
+
+// Action badge colors
+const ACTION_STYLE: Record<string, { color: string; bg: string; label: string }> = {
+  cooperate: { color: "#1bff1b", bg: "rgba(27,255,27,0.05)", label: "COOPERATE" },
+  defect: { color: "#fb923c", bg: "rgba(251,146,60,0.05)", label: "DEFECT" },
+};
 
 interface PlayerCardProps {
   personaId: number;
   personaName: string;
   playerId: string;
+  playerIndex: number;
   record: PlayerRecord | undefined;
   payoff: number | undefined;
-  isWaiting?: boolean;
+  cumulativeScore: number;
+  isCurrentRound: boolean;
 }
 
 export function PlayerCard({
   personaId,
   personaName,
   playerId,
+  playerIndex,
   record,
   payoff,
-  isWaiting,
+  cumulativeScore,
+  isCurrentRound,
 }: PlayerCardProps) {
+  const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
   const hasActed = !!record && record.actions.length > 0;
+  const action = hasActed ? (record.actions[0] as Record<string, string>) : null;
+  const actionKey = action?.action ?? "";
+  const actionStyle = ACTION_STYLE[actionKey];
 
   return (
-    <div className="flex flex-col gap-2 p-3 rounded-lg border border-border bg-card">
-      <div className="flex items-center gap-2.5">
-        <HippyGhostAvatar seed={personaId} className="size-8 shrink-0" />
-        <div className="flex flex-col min-w-0 flex-1">
-          <span className="text-sm font-medium truncate">{personaName}</span>
-          <span className="text-[10px] text-muted-foreground">{playerId}</span>
-        </div>
-        {payoff !== undefined && (
-          <span
-            className={cn(
-              "text-sm font-mono font-bold",
-              payoff > 0 ? "text-green-500" : payoff < 0 ? "text-red-500" : "text-muted-foreground",
-            )}
-          >
-            {payoff > 0 ? "+" : ""}
-            {payoff}
-          </span>
-        )}
-      </div>
+    <div className="relative flex flex-col h-full overflow-hidden bg-[#09090b]">
+      {/* Player-color left bar */}
+      <div className="absolute left-0 top-0 h-full w-[3px]" style={{ backgroundColor: color }} />
 
-      {isWaiting && !hasActed ? (
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Loader2 className="size-3 animate-spin" />
-          <span>Deciding...</span>
-        </div>
-      ) : hasActed ? (
-        <div className="space-y-1">
-          {record.words && (
-            <p className="text-xs text-foreground/80 leading-relaxed line-clamp-3">{record.words}</p>
-          )}
-          <div className="flex flex-wrap gap-1">
-            {record.actions.map((action, i) => (
-              <div key={i} className="flex flex-wrap gap-1">
-                {Object.entries(action).map(([k, v]) => (
-                  <span
-                    key={k}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-muted border border-border"
-                  >
-                    <span className="text-muted-foreground">{k}:</span>
-                    <span className="font-medium">{String(v)}</span>
-                  </span>
-                ))}
-              </div>
-            ))}
+      <div className="pl-8 pr-6 pt-8 pb-6 flex flex-col h-full">
+        {/* Identity */}
+        <div className="flex items-center gap-3 mb-5">
+          <HippyGhostAvatar seed={personaId} className="size-9 shrink-0" />
+          <div className="min-w-0">
+            <div className="font-EuclidCircularA text-lg font-medium text-white leading-none truncate">
+              {personaName}
+            </div>
+            <div
+              className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase mt-0.5"
+              style={{ color: `${color}60` }}
+            >
+              {playerId}
+            </div>
           </div>
         </div>
-      ) : null}
+
+        {/* Cumulative score — the number the spectator tracks */}
+        <div className="mb-6">
+          <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700 block mb-1">
+            Score
+          </span>
+          <motion.div
+            key={cumulativeScore}
+            initial={{ opacity: 0.5, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <span
+              className="font-EuclidCircularA text-5xl font-light leading-none tabular-nums"
+              style={{ color }}
+            >
+              {cumulativeScore}
+            </span>
+          </motion.div>
+        </div>
+
+        {/* State area — the drama */}
+        <div className="flex-1 min-h-0">
+          <AnimatePresence mode="wait">
+            {isCurrentRound && !hasActed ? (
+              /* ── DELIBERATING ─────────────────────────────────────── */
+              <motion.div
+                key="deliberating"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col gap-3"
+              >
+                <div className="flex items-center gap-2.5">
+                  {[0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ backgroundColor: color }}
+                      animate={{ opacity: [0.15, 1, 0.15] }}
+                      transition={{ duration: 1.4, delay: i * 0.25, repeat: Infinity }}
+                    />
+                  ))}
+                  <span
+                    className="font-IBMPlexMono text-[10px] tracking-[0.18em] uppercase"
+                    style={{ color: `${color}50` }}
+                  >
+                    Deliberating
+                  </span>
+                </div>
+                {/* Ghost watermark */}
+                <div
+                  className="font-EuclidCircularA font-light text-[6rem] leading-none select-none mt-2"
+                  style={{ color: `${color}08` }}
+                  aria-hidden
+                >
+                  ?
+                </div>
+              </motion.div>
+            ) : hasActed ? (
+              /* ── ACTED ────────────────────────────────────────────── */
+              <motion.div
+                key="acted"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+                className="flex flex-col gap-4 overflow-y-auto"
+              >
+                {/* Private reasoning — the spectator's exclusive window */}
+                {record.reasoning && (
+                  <div
+                    className="p-3 border border-white/[0.04]"
+                    style={{ background: "rgba(27,255,27,0.02)" }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span
+                        className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase"
+                        style={{ color: "rgba(27,255,27,0.3)" }}
+                      >
+                        Intercepted · Private
+                      </span>
+                      <span
+                        className="w-1 h-1 rounded-full"
+                        style={{ backgroundColor: "rgba(27,255,27,0.3)" }}
+                      />
+                    </div>
+                    <p className="font-IBMPlexMono text-[10px] leading-relaxed text-zinc-500 line-clamp-5">
+                      {record.reasoning}
+                    </p>
+                  </div>
+                )}
+
+                {/* Decision badge */}
+                {actionStyle && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.94 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.25, delay: 0.1 }}
+                  >
+                    <span
+                      className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700 block mb-2"
+                    >
+                      Decision
+                    </span>
+                    <div
+                      className="inline-flex items-center px-4 py-2 border"
+                      style={{
+                        borderColor: `${actionStyle.color}35`,
+                        background: actionStyle.bg,
+                      }}
+                    >
+                      <span
+                        className="font-IBMPlexMono text-sm tracking-[0.14em] uppercase font-medium"
+                        style={{ color: actionStyle.color }}
+                      >
+                        {actionStyle.label}
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Round payoff delta */}
+                {payoff !== undefined && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                    className="flex items-baseline gap-2"
+                  >
+                    <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700">
+                      This round
+                    </span>
+                    <span
+                      className="font-EuclidCircularA text-2xl font-light tabular-nums"
+                      style={{
+                        color:
+                          payoff >= 51
+                            ? "#1bff1b"
+                            : payoff >= 39
+                              ? "#d97706"
+                              : "#ef4444",
+                      }}
+                    >
+                      +{payoff}
+                    </span>
+                  </motion.div>
+                )}
+
+                {/* Words (if game allows speech) */}
+                {record.words && (
+                  <p className="font-InstrumentSerif italic text-sm text-zinc-400 leading-relaxed border-l-2 border-white/[0.06] pl-3">
+                    &ldquo;{record.words}&rdquo;
+                  </p>
+                )}
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function PlayerCardIdle({
+  personaId,
+  personaName,
+  playerId,
+  playerIndex,
+  cumulativeScore,
+}: Omit<PlayerCardProps, "record" | "payoff" | "isCurrentRound">) {
+  const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
+  return (
+    <div className="relative flex flex-col h-full bg-[#09090b]">
+      <div className="absolute left-0 top-0 h-full w-[3px]" style={{ backgroundColor: color }} />
+      <div className="pl-8 pr-6 pt-8 pb-6 flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <HippyGhostAvatar seed={personaId} className="size-9 shrink-0" />
+          <div className="min-w-0">
+            <div className="font-EuclidCircularA text-lg font-medium text-white truncate">{personaName}</div>
+            <div className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase mt-0.5" style={{ color: `${color}60` }}>
+              {playerId}
+            </div>
+          </div>
+        </div>
+        <div>
+          <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700 block mb-1">Score</span>
+          <span className="font-EuclidCircularA text-5xl font-light leading-none tabular-nums" style={{ color }}>
+            {cumulativeScore}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function PlayerCardCompact({
+  personaId,
+  personaName,
+  playerIndex,
+  record,
+  payoff,
+}: Pick<PlayerCardProps, "personaId" | "personaName" | "playerIndex" | "record" | "payoff">) {
+  const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
+  const action = record?.actions[0] as Record<string, string> | undefined;
+  const actionKey = action?.action ?? "";
+  const actionStyle = ACTION_STYLE[actionKey];
+
+  return (
+    <div className={cn("flex items-center gap-3 px-5 py-3 flex-1 min-w-0 bg-[#09090b]")}>
+      <HippyGhostAvatar seed={personaId} className="size-5 shrink-0" />
+      <span
+        className="font-EuclidCircularA text-xs font-medium truncate"
+        style={{ color: `${color}cc` }}
+      >
+        {personaName}
+      </span>
+      {actionStyle && (
+        <span
+          className="font-IBMPlexMono text-[9px] tracking-[0.12em] uppercase shrink-0"
+          style={{ color: actionStyle.color }}
+        >
+          {actionStyle.label}
+        </span>
+      )}
+      {payoff !== undefined && (
+        <span className="font-EuclidCircularA text-sm font-light tabular-nums shrink-0 text-zinc-500 ml-auto">
+          +{payoff}
+        </span>
+      )}
     </div>
   );
 }

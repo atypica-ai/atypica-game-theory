@@ -16,9 +16,5 @@ export default async function GameSessionPage({
     return <NotFound />;
   }
 
-  return (
-    <div className="flex flex-col h-screen bg-background">
-      <GameView initialData={result.data} token={token} />
-    </div>
-  );
+  return <GameView initialData={result.data} token={token} />;
 }

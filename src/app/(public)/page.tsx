@@ -1,5 +1,5 @@
-import HomePageClient from "./home-v3/HomePageClient";
+import { GameTheoryHome } from "@/app/(game-theory)/(page)/HomeView";
 
-export default async function Home() {
-  return <HomePageClient />;
+export default function Home() {
+  return <GameTheoryHome />;
 }

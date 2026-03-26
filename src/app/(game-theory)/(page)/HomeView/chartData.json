@@ -1,0 +1,18 @@
+{
+  "prisoner-dilemma": {
+    "displayName": "Prisoner's Dilemma",
+    "accentColor": "#1bff1b",
+    "humanSource": "Dal Bó & Fréchette (2011), n=358",
+    "personaSource": "atypica.AI (mock)",
+    "actions": [
+      { "label": "Cooperate", "human": 0.40, "persona": 0.62 },
+      { "label": "Defect",    "human": 0.60, "persona": 0.38 }
+    ],
+    "byRound": [
+      { "round": 1, "human": 0.50, "persona": 0.72 },
+      { "round": 2, "human": 0.44, "persona": 0.66 },
+      { "round": 3, "human": 0.38, "persona": 0.60 },
+      { "round": 4, "human": 0.30, "persona": 0.52 }
+    ]
+  }
+}
