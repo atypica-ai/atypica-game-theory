@@ -8,9 +8,14 @@ export interface GamePersonaSession {
 
 // A single player's move in a round
 export interface PlayerRecord {
-  thoughts: string | null; // internal reasoning — never shown to other players
-  words: string | null; // speech / pre-action text — visible to others after round ends
-  actions: Record<string, unknown>[]; // tool-call inputs; exactly one per round
+  // Private reasoning — never shown to other players.
+  // Auto-populated when the action schema contains a "reasoning" field (which should be placed first).
+  reasoning: string | null;
+  // Public speech before the action — visible to other players after the round ends.
+  // Null for games where players cannot communicate (e.g. Prisoner's Dilemma).
+  words: string | null;
+  // Tool-call inputs with the "reasoning" field stripped out — exactly one per round.
+  actions: Record<string, unknown>[];
 }
 
 // A complete round
