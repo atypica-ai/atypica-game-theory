@@ -5,7 +5,7 @@ import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
 import { Persona } from "@/prisma/client";
-import { generateText, stepCountIs, tool } from "ai";
+import { generateText, stepCountIs, tool, zodSchema } from "ai";
 import { Locale } from "next-intl";
 import { Logger } from "pino";
 import z from "zod/v3";
@@ -16,11 +16,12 @@ import { formatTimelineForPlayer } from "./formatting";
 /**
  * Build the action tool for a single game session from the game type's action schema.
  * Players MUST call this tool exactly once per round.
+ * The tool input is read back via .input on the tool call, typed as Record<string, unknown>.
  */
-function buildActionTool<A extends z.ZodTypeAny>(gameType: GameType<A>) {
+function buildActionTool(gameType: GameType) {
   return tool({
     description: `Submit your action for this round. You MUST call this tool exactly once. Think carefully about your strategy before acting.`,
-    parameters: gameType.actionSchema,
+    inputSchema: zodSchema(gameType.actionSchema),
     execute: async (input) => input,
   });
 }
@@ -76,17 +77,19 @@ export async function generatePlayerMove({
     abortSignal,
   });
 
-  // Collect all text across steps as "words" (visible speech before the action)
-  const words = steps
-    .flatMap((s) => s.text)
-    .join("")
-    .trim() || null;
-
-  // Collect tool call inputs as actions
-  const actions = steps
+  // Extract all three PlayerRecord fields from the single tool call input.
+  // "reasoning" → private, never shown to other players.
+  // "words"     → public speech, shown to other players after the round ends.
+  // everything else → the actual game move, always shown after the round ends.
+  const toolInput = steps
     .flatMap((s) => s.toolCalls)
-    .filter((tc) => tc.toolName === "submitAction")
-    .map((tc) => tc.input as Record<string, unknown>);
+    .find((tc) => tc.toolName === "submitAction")?.input as Record<string, unknown> | undefined;
+
+  const reasoning = typeof toolInput?.reasoning === "string" ? toolInput.reasoning : null;
+  const words = typeof toolInput?.words === "string" ? toolInput.words : null;
+  const actions = toolInput
+    ? [Object.fromEntries(Object.entries(toolInput).filter(([k]) => k !== "reasoning" && k !== "words"))]
+    : [];
 
   // Report token usage
   const { tokens, extra } = calculateStepTokensUsage({ usage, providerMetadata });
@@ -106,7 +109,7 @@ export async function generatePlayerMove({
   });
 
   return {
-    thoughts: null, // reasoning is internal to the model; we don't expose it
+    reasoning,
     words,
     actions,
   };
