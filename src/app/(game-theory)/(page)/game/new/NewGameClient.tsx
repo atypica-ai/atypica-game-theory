@@ -104,7 +104,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
   })();
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white flex flex-col">
+    <div className="h-screen bg-[#09090b] text-white flex flex-col overflow-hidden">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <motion.header
@@ -132,14 +132,14 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
       </motion.header>
 
       {/* ── Two-column main ─────────────────────────────────────────────── */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-px bg-white/[0.04]">
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-px bg-white/[0.04]">
 
         {/* ── Left: Game Type ───────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.08 }}
-          className="bg-[#09090b] p-8 lg:p-12"
+          className="bg-[#09090b] p-8 lg:p-12 overflow-y-auto"
         >
           <div className="flex items-center gap-3 mb-10">
             <span className="font-IBMPlexMono text-xs tracking-[0.18em] text-ghost-green">01</span>
