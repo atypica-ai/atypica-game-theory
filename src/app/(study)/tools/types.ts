@@ -22,6 +22,7 @@ import { AudienceCallResult, AudienceCallToolInput } from "./audienceCall/types"
 import { BuildPersonaToolInput, BuildPersonaToolResult } from "./buildPersona/types";
 import { CreateSubAgentResult, CreateSubAgentToolInput } from "./createSubAgent/types";
 import { DiscussionChatResult, DiscussionChatToolInput } from "./discussionChat/types";
+import { PlayGameResult, PlayGameToolInput } from "./playGame/types";
 import { GeneratePodcastResult, GeneratePodcastToolInput } from "./generatePodcast/types";
 import { GenerateReportResult, GenerateReportToolInput } from "./generateReport/types";
 import {
@@ -43,6 +44,7 @@ export enum StudyToolName {
   planPodcast = "planPodcast",
   interviewChat = "interviewChat",
   discussionChat = "discussionChat",
+  playGame = "playGame",
   generateReport = "generateReport",
   generatePodcast = "generatePodcast",
   deepResearch = "deepResearch",
@@ -95,6 +97,7 @@ export type StudyUITools = {
   [StudyToolName.planPodcast]: { input: PlanPodcastToolInput; output: PlanPodcastResult };
   [StudyToolName.interviewChat]: { input: InterviewChatToolInput; output: InterviewChatResult };
   [StudyToolName.discussionChat]: { input: DiscussionChatToolInput; output: DiscussionChatResult };
+  [StudyToolName.playGame]: { input: PlayGameToolInput; output: PlayGameResult };
   [StudyToolName.generateReport]: { input: GenerateReportToolInput; output: GenerateReportResult };
   [StudyToolName.generatePodcast]: {
     input: GeneratePodcastToolInput;

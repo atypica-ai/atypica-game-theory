@@ -10,6 +10,7 @@ import { audienceCallTool } from "./audienceCall";
 import { buildPersonaTool } from "./buildPersona";
 import { createSubAgentTool } from "./createSubAgent";
 import { discussionChatTool } from "./discussionChat";
+import { playGameTool } from "./playGame";
 import { generatePodcastTool } from "./generatePodcast";
 import { generateReportTool } from "./generateReport";
 import { interviewChatTool } from "./interviewChat";
@@ -34,6 +35,7 @@ export type StudyToolSet = Partial<{
   [StudyToolName.buildPersona]: ReturnType<typeof buildPersonaTool>;
   [StudyToolName.interviewChat]: ReturnType<typeof interviewChatTool>;
   [StudyToolName.discussionChat]: ReturnType<typeof discussionChatTool>;
+  [StudyToolName.playGame]: ReturnType<typeof playGameTool>;
   [StudyToolName.generateReport]: ReturnType<typeof generateReportTool>;
   [StudyToolName.generatePodcast]: ReturnType<typeof generatePodcastTool>;
   [StudyToolName.planStudy]: ReturnType<typeof planStudyTool>;
@@ -59,6 +61,7 @@ export {
   makeStudyPlanTool,
   planPodcastTool,
   planStudyTool,
+  playGameTool,
   requestInteractionTool,
   saveAnalystTool,
   scoutSocialTrendsTool,
