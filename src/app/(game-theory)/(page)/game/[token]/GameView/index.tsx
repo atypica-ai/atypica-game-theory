@@ -106,12 +106,26 @@ export function GameView({
           )}
         </div>
 
-        {/* Right: round counter + live status */}
+        {/* Right: round counter + live status + share */}
         <div className="flex items-center gap-5">
           {!isPending && currentRoundNumber > 0 && (
             <span className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-600">
               Round {currentRoundNumber}
             </span>
+          )}
+          {isCompleted && (
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  void navigator.clipboard.writeText(
+                    `${window.location.origin}/game/${token}/replay`,
+                  );
+                }
+              }}
+              className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-600 hover:text-[#1bff1b]/60 transition-colors"
+            >
+              Share Replay
+            </button>
           )}
           <div className="flex items-center gap-2">
             <motion.span
