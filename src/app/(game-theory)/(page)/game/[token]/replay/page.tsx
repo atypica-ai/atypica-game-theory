@@ -1,6 +1,6 @@
 import { fetchGameSession } from "@/app/(game-theory)/actions";
 import { NotFound } from "@/components/NotFound";
-import { ReplayView } from "../GameView/ReplayView";
+import { GameView } from "../GameView";
 
 export const dynamic = "force-dynamic";
 
@@ -17,5 +17,5 @@ export default async function GameReplayPage({
     return <NotFound />;
   }
 
-  return <ReplayView initialData={result.data} />;
+  return <GameView initialData={result.data} token={token} replay={true} />;
 }

@@ -14,6 +14,8 @@ const ACTION_STYLE: Record<string, { color: string; bg: string; label: string }>
   defect: { color: "#fb923c", bg: "rgba(251,146,60,0.05)", label: "DEFECT" },
 };
 
+export type PlayerResultState = "winner" | "loser" | "tie";
+
 interface PlayerCardProps {
   personaId: number;
   personaName: string;
@@ -23,6 +25,7 @@ interface PlayerCardProps {
   payoff: number | undefined;
   cumulativeScore: number;
   isCurrentRound: boolean;
+  resultState?: PlayerResultState;
 }
 
 export function PlayerCard({
@@ -34,6 +37,7 @@ export function PlayerCard({
   payoff,
   cumulativeScore,
   isCurrentRound,
+  resultState,
 }: PlayerCardProps) {
   const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
   const hasActed = !!record && record.actions.length > 0;
@@ -41,10 +45,28 @@ export function PlayerCard({
   const actionKey = action?.action ?? "";
   const actionStyle = ACTION_STYLE[actionKey];
 
+  const isWinner = resultState === "winner";
+  const isLoser = resultState === "loser";
+  const isTie = resultState === "tie";
+
   return (
-    <div className="relative flex flex-col h-full overflow-hidden bg-[#09090b]">
-      {/* Player-color left bar */}
-      <div className="absolute left-0 top-0 h-full w-[3px]" style={{ backgroundColor: color }} />
+    <div
+      className={cn(
+        "relative flex flex-col h-full overflow-hidden bg-[#09090b] transition-opacity duration-700",
+        isLoser && "opacity-50",
+      )}
+    >
+      {/* Player-color left bar — pulses for winner */}
+      <motion.div
+        className="absolute left-0 top-0 h-full w-[3px]"
+        style={{ backgroundColor: color }}
+        animate={
+          isWinner
+            ? { boxShadow: [`0 0 0px ${color}`, `0 0 14px ${color}`, `0 0 0px ${color}`] }
+            : {}
+        }
+        transition={{ duration: 2, repeat: Infinity }}
+      />
 
       <div className="pl-8 pr-6 pt-8 pb-6 flex flex-col h-full">
         {/* Identity */}
@@ -63,7 +85,41 @@ export function PlayerCard({
           </div>
         </div>
 
-        {/* Cumulative score — the number the spectator tracks */}
+        {/* Result badge — winner / tie */}
+        <AnimatePresence>
+          {(isWinner || isTie) && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex items-center gap-2 mb-3"
+            >
+              {isWinner && (
+                <>
+                  <motion.span
+                    className="w-1 h-1 rounded-full"
+                    style={{ backgroundColor: color }}
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1.8, repeat: Infinity }}
+                  />
+                  <span
+                    className="font-IBMPlexMono text-[8px] tracking-[0.2em] uppercase"
+                    style={{ color }}
+                  >
+                    Winner
+                  </span>
+                </>
+              )}
+              {isTie && (
+                <span className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase text-zinc-600">
+                  Tie
+                </span>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Cumulative score */}
         <div className="mb-6">
           <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700 block mb-1">
             Score
@@ -75,8 +131,12 @@ export function PlayerCard({
             transition={{ duration: 0.3 }}
           >
             <span
-              className="font-EuclidCircularA text-5xl font-light leading-none tabular-nums"
-              style={{ color }}
+              className="font-EuclidCircularA font-light leading-none tabular-nums"
+              style={{
+                color,
+                fontSize: isWinner ? "3.75rem" : "3rem",
+                filter: isWinner ? `drop-shadow(0 0 18px ${color}80)` : undefined,
+              }}
             >
               {cumulativeScore}
             </span>
@@ -161,9 +221,7 @@ export function PlayerCard({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.25, delay: 0.1 }}
                   >
-                    <span
-                      className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700 block mb-2"
-                    >
+                    <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700 block mb-2">
                       Decision
                     </span>
                     <div
@@ -198,11 +256,7 @@ export function PlayerCard({
                       className="font-EuclidCircularA text-2xl font-light tabular-nums"
                       style={{
                         color:
-                          payoff >= 51
-                            ? "#1bff1b"
-                            : payoff >= 39
-                              ? "#d97706"
-                              : "#ef4444",
+                          payoff >= 51 ? "#1bff1b" : payoff >= 39 ? "#d97706" : "#ef4444",
                       }}
                     >
                       +{payoff}
@@ -231,24 +285,92 @@ export function PlayerCardIdle({
   playerId,
   playerIndex,
   cumulativeScore,
+  resultState,
 }: Omit<PlayerCardProps, "record" | "payoff" | "isCurrentRound">) {
   const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
+  const isWinner = resultState === "winner";
+  const isLoser = resultState === "loser";
+  const isTie = resultState === "tie";
+
   return (
-    <div className="relative flex flex-col h-full bg-[#09090b]">
-      <div className="absolute left-0 top-0 h-full w-[3px]" style={{ backgroundColor: color }} />
+    <div
+      className={cn(
+        "relative flex flex-col h-full bg-[#09090b] transition-opacity duration-700",
+        isLoser && "opacity-50",
+      )}
+    >
+      <motion.div
+        className="absolute left-0 top-0 h-full w-[3px]"
+        style={{ backgroundColor: color }}
+        animate={
+          isWinner
+            ? { boxShadow: [`0 0 0px ${color}`, `0 0 14px ${color}`, `0 0 0px ${color}`] }
+            : {}
+        }
+        transition={{ duration: 2, repeat: Infinity }}
+      />
       <div className="pl-8 pr-6 pt-8 pb-6 flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <HippyGhostAvatar seed={personaId} className="size-9 shrink-0" />
           <div className="min-w-0">
-            <div className="font-EuclidCircularA text-lg font-medium text-white truncate">{personaName}</div>
-            <div className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase mt-0.5" style={{ color: `${color}60` }}>
+            <div className="font-EuclidCircularA text-lg font-medium text-white truncate">
+              {personaName}
+            </div>
+            <div
+              className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase mt-0.5"
+              style={{ color: `${color}60` }}
+            >
               {playerId}
             </div>
           </div>
         </div>
+
+        {/* Result badge */}
+        <AnimatePresence>
+          {(isWinner || isTie) && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex items-center gap-2"
+            >
+              {isWinner && (
+                <>
+                  <motion.span
+                    className="w-1 h-1 rounded-full"
+                    style={{ backgroundColor: color }}
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1.8, repeat: Infinity }}
+                  />
+                  <span
+                    className="font-IBMPlexMono text-[8px] tracking-[0.2em] uppercase"
+                    style={{ color }}
+                  >
+                    Winner
+                  </span>
+                </>
+              )}
+              {isTie && (
+                <span className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase text-zinc-600">
+                  Tie
+                </span>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div>
-          <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700 block mb-1">Score</span>
-          <span className="font-EuclidCircularA text-5xl font-light leading-none tabular-nums" style={{ color }}>
+          <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700 block mb-1">
+            Score
+          </span>
+          <span
+            className="font-EuclidCircularA font-light leading-none tabular-nums"
+            style={{
+              color,
+              fontSize: isWinner ? "3.75rem" : "3rem",
+              filter: isWinner ? `drop-shadow(0 0 18px ${color}80)` : undefined,
+            }}
+          >
             {cumulativeScore}
           </span>
         </div>

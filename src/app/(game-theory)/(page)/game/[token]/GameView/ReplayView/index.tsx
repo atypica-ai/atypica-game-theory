@@ -4,8 +4,7 @@ import { GameSessionDetail } from "@/app/(game-theory)/actions";
 import { GameSessionTimeline } from "@/app/(game-theory)/types";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo } from "react";
-import { PlayerCard, PlayerCardIdle, PLAYER_COLORS } from "../PlayerCard";
-import { RoundView } from "../RoundView";
+import { PlayerCard, PlayerCardIdle, PlayerResultState, PLAYER_COLORS } from "../PlayerCard";
 import { ReplayIntro } from "./ReplayIntro";
 import { useGameReplay } from "./useGameReplay";
 
@@ -36,13 +35,14 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
     phase,
   } = displayState;
 
-  // The round currently being replayed (either in-progress or last shown)
-  const displayRoundId = currentRoundId ?? showPayoffsForRound;
-  const displayRound = displayRoundId !== null
-    ? (allRounds.find((r) => r.roundId === displayRoundId) ?? null)
-    : null;
+  const isComplete = phase === "complete";
 
-  // Cumulative scores from completed rounds only
+  // The round currently being replayed
+  const displayRoundId = currentRoundId ?? showPayoffsForRound;
+  const displayRound =
+    displayRoundId !== null ? (allRounds.find((r) => r.roundId === displayRoundId) ?? null) : null;
+
+  // Cumulative scores from completed rounds only (grows as replay advances)
   const cumulativeScores = useMemo(() => {
     const scores: Record<string, number> = {};
     for (const r of visibleCompletedRounds) {
@@ -53,36 +53,53 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
     return scores;
   }, [visibleCompletedRounds]);
 
-  const replayRoundNumber = displayRound?.roundId ?? visibleCompletedRounds.length;
-  const isComplete = phase === "complete";
-
-  // Winner (shown when replay reaches the end)
-  const winner = useMemo(() => {
-    if (!isComplete || participants.length === 0) return null;
-    const allCompletedRounds = allRounds.filter((r) => Object.keys(r.payoffs).length > 0);
-    const finalScores: Record<string, number> = {};
-    for (const r of allCompletedRounds) {
-      for (const [pid, v] of Object.entries(r.payoffs)) {
-        finalScores[pid] = (finalScores[pid] ?? 0) + v;
+  // Final scores (full game — used only when complete)
+  const finalScores = useMemo(() => {
+    const scores: Record<string, number> = {};
+    for (const r of allRounds) {
+      for (const [pid, v] of Object.entries(r.payoffs ?? {})) {
+        scores[pid] = (scores[pid] ?? 0) + v;
       }
     }
+    return scores;
+  }, [allRounds]);
+
+  const { winner, winnerIndex } = useMemo(() => {
+    if (!isComplete || participants.length === 0) return { winner: null, winnerIndex: -1 };
     const maxScore = Math.max(...participants.map((p) => finalScores[p.playerId] ?? 0));
     const leaders = participants.filter((p) => (finalScores[p.playerId] ?? 0) === maxScore);
-    if (leaders.length === participants.length) return "TIE";
-    return leaders[0].name;
-  }, [isComplete, participants, allRounds]);
+    if (leaders.length === participants.length) return { winner: "TIE" as const, winnerIndex: -1 };
+    const idx = participants.indexOf(leaders[0]);
+    return { winner: leaders[0].name, winnerIndex: idx };
+  }, [isComplete, participants, finalScores]);
+
+  const winnerColor =
+    winner && winner !== "TIE" ? (PLAYER_COLORS[winnerIndex] ?? "#1bff1b") : "#d97706";
+
+  function getResultState(playerId: string): PlayerResultState | undefined {
+    if (!isComplete) return undefined;
+    if (winner === "TIE") return "tie";
+    const p = participants.find((x) => x.playerId === playerId);
+    if (!p) return undefined;
+    return p.name === winner ? "winner" : "loser";
+  }
+
+  const replayRoundNumber = displayRound?.roundId ?? visibleCompletedRounds.length;
+
+  // When complete, show final scores; otherwise show replay-accumulated scores
+  const displayScores = isComplete ? finalScores : cumulativeScores;
 
   return (
     <div className="h-screen flex flex-col bg-[#09090b] overflow-hidden relative">
-      {/* ── Intro overlay ──────────────────────────────────────────── */}
+      {/* ── Arena intro overlay ───────────────────────────────────── */}
       <ReplayIntro
         gameTypeName={formatGameTypeName(gameType)}
-        onComplete={startPlayback}
+        participants={participants}
+        onStart={startPlayback}
       />
 
       {/* ── Header ────────────────────────────────────────────────── */}
       <header className="shrink-0 h-[52px] flex items-center justify-between px-8 border-b border-white/[0.05]">
-        {/* Left: game identity */}
         <div className="flex items-center gap-3">
           <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-zinc-700">
             Game Theory
@@ -91,17 +108,8 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
           <span className="font-EuclidCircularA text-sm font-medium text-white">
             {formatGameTypeName(gameType)}
           </span>
-          {isComplete && winner && (
-            <>
-              <span className="w-px h-3 bg-zinc-800" />
-              <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-500">
-                {winner === "TIE" ? "Tied" : `${winner} wins`}
-              </span>
-            </>
-          )}
         </div>
 
-        {/* Right: round indicator + replay badge */}
         <div className="flex items-center gap-5">
           {replayRoundNumber > 0 && (
             <span className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-600">
@@ -109,7 +117,6 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
             </span>
           )}
 
-          {/* REPLAY badge — always visible, replaces live dot */}
           <div className="flex items-center gap-2">
             <span className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-600">
               {isComplete ? "Complete" : isIntroComplete ? "Replay" : "Ready"}
@@ -126,7 +133,6 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
             />
           </div>
 
-          {/* Share link for this replay */}
           <button
             onClick={() => {
               if (typeof window !== "undefined") {
@@ -142,6 +148,34 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
         </div>
       </header>
 
+      {/* ── Result banner (appears when complete) ─────────────────── */}
+      <AnimatePresence>
+        {isComplete && winner && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="shrink-0 h-8 flex items-center justify-center gap-4 border-b border-white/[0.04]"
+            style={{ background: `${winnerColor}08` }}
+          >
+            <div
+              className="flex-1 h-px max-w-24"
+              style={{ backgroundColor: `${winnerColor}20` }}
+            />
+            <span
+              className="font-IBMPlexMono text-[10px] tracking-[0.22em] uppercase"
+              style={{ color: winnerColor }}
+            >
+              {winner === "TIE" ? "Tie · Equal Scores" : `${winner} · Wins`}
+            </span>
+            <div
+              className="flex-1 h-px max-w-24"
+              style={{ backgroundColor: `${winnerColor}20` }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── Player arena ──────────────────────────────────────────── */}
       <div
         className="flex-1 min-h-0 grid gap-px"
@@ -151,11 +185,12 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
         }}
       >
         {participants.map((participant, idx) => {
+          const resultState = getResultState(participant.playerId);
+          const cumScore = displayScores[participant.playerId] ?? 0;
           const isDeliberating = playersDeliberating.has(participant.playerId);
           const isRevealed = playersRevealed.has(participant.playerId);
-          const cumScore = cumulativeScores[participant.playerId] ?? 0;
 
-          // Idle — before any round starts
+          // Idle — before any round or between rounds and not in active set
           if (!isDeliberating && !isRevealed && !displayRound) {
             return (
               <PlayerCardIdle
@@ -165,6 +200,7 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
                 playerId={participant.playerId}
                 playerIndex={idx}
                 cumulativeScore={cumScore}
+                resultState={resultState}
               />
             );
           }
@@ -182,11 +218,12 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
                 payoff={undefined}
                 cumulativeScore={cumScore}
                 isCurrentRound={true}
+                resultState={resultState}
               />
             );
           }
 
-          // Revealed — show action (with payoff if payoffs step reached)
+          // Revealed — show action (payoff only after payoff step)
           if (isRevealed && displayRound) {
             const record = displayRound.players[participant.playerId];
             const payoff =
@@ -204,11 +241,12 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
                 payoff={payoff}
                 cumulativeScore={cumScore}
                 isCurrentRound={true}
+                resultState={resultState}
               />
             );
           }
 
-          // In-round but not yet deliberating or revealed (earlier players are out, later haven't started)
+          // In active round but not yet reached this player's step
           if (displayRound) {
             return (
               <PlayerCardIdle
@@ -218,6 +256,7 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
                 playerId={participant.playerId}
                 playerIndex={idx}
                 cumulativeScore={cumScore}
+                resultState={resultState}
               />
             );
           }
@@ -230,70 +269,19 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
               playerId={participant.playerId}
               playerIndex={idx}
               cumulativeScore={cumScore}
+              resultState={resultState}
             />
           );
         })}
       </div>
 
-      {/* ── History strip ─────────────────────────────────────────── */}
-      {visibleCompletedRounds.length > 0 && timeline.meta && (
-        <div className="shrink-0 border-t border-white/[0.05]">
-          {/* Header row */}
-          <div className="flex items-center justify-between px-8 h-9 border-b border-white/[0.04]">
-            <div className="flex items-center gap-3">
-              <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-zinc-700">
-                History
-              </span>
-              <span className="font-IBMPlexMono text-[8px] text-zinc-800">
-                {visibleCompletedRounds.length} round
-                {visibleCompletedRounds.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-            {/* Cumulative scores per player */}
-            <div className="flex items-center gap-5">
-              {participants.map((p, idx) => {
-                const color = PLAYER_COLORS[idx] ?? "#ffffff";
-                return (
-                  <span
-                    key={p.playerId}
-                    className="font-IBMPlexMono text-[9px] tabular-nums"
-                    style={{ color: `${color}80` }}
-                  >
-                    {p.name.split(" ")[0]}&nbsp;{cumulativeScores[p.playerId] ?? 0}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Scrollable round log — newest at top */}
-          <div className="overflow-y-auto flex flex-col gap-px" style={{ maxHeight: "220px" }}>
-            <AnimatePresence initial={false}>
-              {[...visibleCompletedRounds].reverse().map((round) => (
-                <motion.div
-                  key={round.roundId}
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <RoundView round={round} meta={timeline.meta!} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
-      )}
-
-      {/* ── Replay control bar ────────────────────────────────────── */}
+      {/* ── Control bar — Skip only (no round nav during replay) ──── */}
       <div className="shrink-0 h-10 flex items-center gap-4 px-6 border-t border-white/[0.05]">
         {/* Progress track */}
         <div className="flex-1 relative h-px bg-zinc-800">
           <div
             className="absolute left-0 top-0 h-full transition-none"
-            style={{
-              width: `${progress}%`,
-              backgroundColor: "rgba(27,255,27,0.6)",
-            }}
+            style={{ width: `${progress}%`, backgroundColor: "rgba(27,255,27,0.6)" }}
           />
           <input
             type="range"
@@ -305,7 +293,6 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
           />
         </div>
 
-        {/* Progress percentage */}
         <span className="font-IBMPlexMono text-[9px] tracking-[0.1em] text-zinc-700 tabular-nums w-7 text-right">
           {Math.round(progress)}%
         </span>
