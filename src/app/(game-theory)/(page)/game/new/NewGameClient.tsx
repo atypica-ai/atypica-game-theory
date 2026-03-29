@@ -230,13 +230,14 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                       <div className="grid grid-cols-2 gap-px bg-white/[0.05] w-fit text-left">
                         {(
                           [
-                            { label: "Rabbit", pts: 10, note: "always", color: "text-zinc-200", bg: "bg-[#09090b]" },
-                            { label: "Stag · succeed", pts: 25, note: "≥T hunters", color: "text-ghost-green", bg: "bg-ghost-green/[0.05]" },
-                            { label: "Stag · fail", pts: 0, note: "<T hunters", color: "text-zinc-600", bg: "bg-[#09090b]" },
+                            { label: "Rabbit · hunt succeeds", pts: 35, note: "10 private + 25 public", color: "text-ghost-green", bg: "bg-ghost-green/[0.05]" },
+                            { label: "Rabbit · hunt fails", pts: 10, note: "always safe", color: "text-zinc-200", bg: "bg-[#09090b]" },
+                            { label: "Stag · hunt succeeds", pts: 25, note: "≥T hunters", color: "text-zinc-400", bg: "bg-[#09090b]" },
+                            { label: "Stag · hunt fails", pts: 0, note: "<T hunters", color: "text-zinc-600", bg: "bg-[#09090b]" },
                           ] as const
                         ).map(({ label, pts, note, color, bg }) => (
                           <Fragment key={label}>
-                            <div className={`${bg} px-4 py-4 min-w-[140px] flex items-center`}>
+                            <div className={`${bg} px-4 py-4 min-w-[160px] flex items-center`}>
                               <span className="font-IBMPlexMono text-[9px] tracking-[0.12em] uppercase text-zinc-600">
                                 {label}
                               </span>
@@ -251,7 +252,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                         ))}
                       </div>
                       <p className="font-IBMPlexMono text-[9px] tracking-[0.10em] uppercase text-zinc-700 mt-3">
-                        T = roundup(40% × N) · e.g. 4 players in a group of 10
+                        T = roundup(40% × N) · e.g. 2 in a group of 4, 4 in a group of 10
                       </p>
                     </div>
                   )}
