@@ -318,6 +318,109 @@ export type ResearchTemplateExtra = Partial<{
   tags: string[]; // Research method tags
 }>;
 
+// ── Character Profile ─────────────────────────────────────────────────────────
+// A general psychological profile derived from research into FBI profiling,
+// Hogan Assessments, Enneagram, MBTI cognitive functions, adult attachment theory,
+// Schwartz values, and Kegan developmental stages.
+// This is NOT a game-theory optimizer — it captures the full texture of a human
+// psyche so that behavior in any context (game, interview, conversation) emerges
+// naturally from who the person is.
+
+export type CharacterProfile = {
+  // ── Core: WHY they are who they are ────────────────────────────────────────
+  // The fear-desire engine at the center of the character.
+  // Source: Enneagram + Schwartz Basic Human Values
+  core: {
+    primaryFear: string; // e.g. "being abandoned without support"
+    primaryDesire: string; // e.g. "to be needed and indispensable to others"
+    defensiveStrategy: string; // e.g. "gives generously to create bonds, tracks reciprocity unconsciously"
+    dominantValues: [string, string, string]; // Top 3 from Schwartz: Security, Benevolence, Power, Achievement, etc.
+    valueTension: string | null; // e.g. "Power vs. Benevolence — wants influence but fears being seen as selfish"
+  };
+
+  // ── Style: HOW they show up day-to-day ─────────────────────────────────────
+  // Observable, continuous trait scores.
+  // Source: Big Five / Hogan HPI
+  style: {
+    openness: number; // 0–100: curiosity, imagination, comfort with novelty
+    conscientiousness: number; // 0–100: organization, follow-through, self-discipline
+    extraversion: number; // 0–100: social energy, assertiveness, expressiveness
+    agreeableness: number; // 0–100: warmth, trust of others, conflict-avoidance
+    emotionalStability: number; // 0–100: inverse of neuroticism; calm under pressure
+    ambition: number; // 0–100: drive to lead, win, advance (Hogan HPI — distinct from extraversion)
+  };
+
+  // ── Relational: HOW they handle vulnerability, trust, and betrayal ──────────
+  // Governs all cooperative and competitive dynamics.
+  // Source: Adult Attachment Theory (Bartholomew & Horowitz)
+  relational: {
+    attachmentStyle: "secure" | "anxious" | "dismissing" | "fearful";
+    attachmentAnxiety: number; // 0–100: fear of abandonment, hypervigilance about relationship security
+    attachmentAvoidance: number; // 0–100: discomfort with closeness, preference for self-sufficiency
+    trustStance:
+      | "trusts until proven wrong"
+      | "cautiously extends trust"
+      | "trust must be earned"
+      | "assumes ulterior motives";
+  };
+
+  // ── Cognition: HOW they process information and decide ───────────────────────
+  // Source: MBTI cognitive functions + Mayer-Salovey-Caruso EI model
+  cognition: {
+    informationStyle:
+      | "concrete-sequential" // trusts facts, patterns, prior precedent
+      | "concrete-adaptive" // facts-based but acts fluidly in the moment
+      | "abstract-systematic" // builds principles and systems from patterns
+      | "abstract-intuitive"; // hunches, possibilities, big-picture leaps
+    decisionCriteria:
+      | "logic-and-efficiency" // Te: what works, what produces results
+      | "internal-consistency" // Ti: what is precisely and coherently true
+      | "group-harmony" // Fe: what keeps relationships and group intact
+      | "personal-values"; // Fi: what aligns with who I fundamentally am
+    emotionalPerception: number; // 0–100: accurately reads emotions in others (MSCEIT Branch 1)
+    emotionalRegulation: number; // 0–100: stays functional under emotional pressure (MSCEIT Branch 4)
+  };
+
+  // ── Shadow: WHO they become under stress ────────────────────────────────────
+  // The amplified strength that overshoots when guard is down or stakes are high.
+  // This is the most predictive layer for crisis behavior.
+  // Source: Hogan HDS (11 derailers) + Enneagram stress arrow + FBI behavioral typology
+  shadow: {
+    primaryDerailer:
+      | "excitable" // emotionally volatile; swings from idealization to abandonment
+      | "skeptical" // cynicism hardens into distrust; challenges everyone's motives
+      | "cautious" // fear of failure freezes decisions; avoids exposure
+      | "reserved" // goes cold and unreachable; ignores emotional signals
+      | "leisurely" // passive-aggressive; quietly obstructs; appears cooperative
+      | "bold" // arrogant; feels rules don't apply; dismisses feedback
+      | "mischievous" // tests limits; charm without substance; strategic manipulation
+      | "colorful" // dramatic; impulsive; poor follow-through
+      | "diligent" // perfectionist; micromanages; punishes deviation
+      | "dutiful"; // over-compliant; can't refuse; follows bad orders
+    secondaryDerailer?: CharacterProfile["shadow"]["primaryDerailer"];
+    stressTrigger: string; // what activates the shadow, e.g. "perceived disrespect" or "loss of control"
+    shadowExpression: "organized" // shadow is consistent, deliberate, strategic
+      | "disorganized"; // shadow is reactive, chaotic, unpredictable
+  };
+
+  // ── Development: HOW complex their self-awareness is ────────────────────────
+  // Determines behavioral flexibility and whether a type is a destiny or a tendency.
+  // Source: Kegan's Orders of Mind / Loevinger's Ego Development
+  development: {
+    level:
+      | "impulsive" // driven by immediate needs; minimal self-reflection (Kegan 2nd)
+      | "self-protective" // pure self-interest; rules are for others (Loevinger E2)
+      | "socialized" // governed by relationships and group norms (Kegan 3rd — most common)
+      | "self-authoring" // has own principles; consistent independent of social pressure (Kegan 4th)
+      | "self-transforming"; // holds multiple frameworks simultaneously; rare (Kegan 5th)
+    moralAuthority:
+      | "external-rules" // does what they're told or what's normal
+      | "relational" // does what keeps important relationships intact
+      | "principled" // does what their own values demand, regardless of opinion
+      | "contextual"; // reasons from multiple frameworks; resists single-answer morality
+  };
+};
+
 export type PersonaExtra = Partial<{
   role: "consumer" | "buyer" | "expert"; // Persona role: consumer (B2C), buyer (B2B), expert (domain specialist)
   quote: string; // First-person quote reflecting personality and preferences (~120 Chinese chars or ~80 English words)
@@ -329,6 +432,7 @@ export type PersonaExtra = Partial<{
   organization: string; // Organization (for buyer & expert) - e.g. "500-1000 employees", "Tsinghua University"
   experience: string; // Experience/seniority (mainly for expert) - e.g. "10 years"
   archived: boolean; // 归档标记
+  characterProfile: CharacterProfile; // Deep psychological profile for rich simulation across any context
 }>;
 
 export type PersonaPanelExtra = Partial<{
