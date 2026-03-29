@@ -1,14 +1,8 @@
 import z from "zod/v3";
 
-// No "words" field — players in this game cannot communicate with each other.
-// "reasoning" is placed first so the model commits its thought process before choosing an action.
-// "reasoning" is private and never shown to other players.
+// No "reasoning" field — reasoning is captured from the model's native thinking output,
+// not as a tool parameter. This keeps the action clean and unambiguous.
 export const prisonerDilemmaActionSchema = z.object({
-  reasoning: z
-    .string()
-    .describe(
-      "Your private strategic reasoning before deciding. Consider past rounds and the other player's pattern. This is never shown to the other player.",
-    ),
   action: z
     .enum(["cooperate", "defect"])
     .describe(

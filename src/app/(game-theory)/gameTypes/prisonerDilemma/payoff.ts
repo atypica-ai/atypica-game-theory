@@ -9,14 +9,14 @@ import { PrisonerDilemmaAction } from "./schema";
 // K = (T-R)/(R-S) = 12/29 ≈ 0.41 — moderate temptation, cooperation is strategically meaningful
 
 export function prisonerDilemmaPayoff(
-  actions: Record<string, PrisonerDilemmaAction>,
-): Record<string, number> {
-  const playerIds = Object.keys(actions);
-  if (playerIds.length !== 2) {
+  actions: Record<number, PrisonerDilemmaAction>,
+): Record<number, number> {
+  const ids = Object.keys(actions).map(Number);
+  if (ids.length !== 2) {
     throw new Error("Prisoner's Dilemma requires exactly 2 players");
   }
 
-  const [idA, idB] = playerIds;
+  const [idA, idB] = ids;
   const actionA = actions[idA].action;
   const actionB = actions[idB].action;
 

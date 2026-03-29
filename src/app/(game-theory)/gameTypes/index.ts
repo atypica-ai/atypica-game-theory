@@ -1,11 +1,13 @@
 import { GameType } from "./types";
 import { prisonerDilemma } from "./prisonerDilemma";
+import { stagHunt } from "./stagHunt";
 
 // Registry of all available game types.
 // Stored without a base-type annotation so TypeScript retains each entry's concrete generic.
 // Key must match GameType.name.
 export const gameTypeRegistry = {
   [prisonerDilemma.name]: prisonerDilemma,
+  [stagHunt.name]: stagHunt,
 };
 
 export function getGameType(name: string): GameType {
@@ -18,4 +20,4 @@ export function getGameType(name: string): GameType {
   return gt;
 }
 
-export { prisonerDilemma };
+export { prisonerDilemma, stagHunt };
