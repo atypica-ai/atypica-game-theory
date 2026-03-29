@@ -2,25 +2,28 @@ import "server-only";
 
 import { prisma } from "@/prisma/prisma";
 import { Logger } from "pino";
-import { GameSessionTimeline } from "../types";
+import { GameSessionExtra, GameTimeline } from "../types";
 
 export async function saveGameTimeline({
   token,
   timeline,
   status,
+  extra,
   logger,
 }: {
   token: string;
-  timeline: GameSessionTimeline;
+  timeline: GameTimeline;
   status?: string;
+  extra?: GameSessionExtra;
   logger: Logger;
 }): Promise<void> {
   try {
     await prisma.gameSession.update({
       where: { token },
       data: {
-        timeline: timeline as object,
+        timeline: timeline as object[],
         ...(status ? { status } : {}),
+        ...(extra ? { extra: extra as object } : {}),
       },
     });
   } catch (error) {

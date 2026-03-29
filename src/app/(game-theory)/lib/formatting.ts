@@ -1,105 +1,207 @@
 import "server-only";
 
-import { GameSessionTimeline } from "../types";
+import {
+  GameSessionParticipant,
+  GameTimeline,
+  PersonaDecisionEvent,
+  PersonaDiscussionEvent,
+  RoundResultEvent,
+} from "../types";
+
+// ── Shared helpers ───────────────────────────────────────────────────────────
+
+function labelFor(personaId: number, viewerPersonaId: number, participants: GameSessionParticipant[]): string {
+  if (personaId === viewerPersonaId) return "You";
+  return participants.find((p) => p.personaId === personaId)?.name ?? `Player ${personaId}`;
+}
+
+function renderDecision(event: PersonaDecisionEvent, label: string): string {
+  return `${label}'s decision: ${JSON.stringify(event.content)}`;
+}
+
+function renderDiscussion(event: PersonaDiscussionEvent, label: string): string {
+  return `${label}: ${event.content}`;
+}
+
+function cumulativeScores(
+  resultEvents: RoundResultEvent[],
+  participants: GameSessionParticipant[],
+  viewerPersonaId: number,
+): string {
+  const totals: Record<number, number> = {};
+  for (const e of resultEvents) {
+    for (const [id, v] of Object.entries(e.payoffs)) {
+      const numId = Number(id);
+      totals[numId] = (totals[numId] ?? 0) + v;
+    }
+  }
+  if (Object.keys(totals).length === 0) return "";
+  const parts = Object.entries(totals).map(([id, v]) => {
+    const label = labelFor(Number(id), viewerPersonaId, participants);
+    return `${label}: ${v}`;
+  });
+  return `Cumulative scores: ${parts.join(" | ")}`;
+}
+
+// ── Discussion phase formatter ───────────────────────────────────────────────
 
 /**
- * Format the game timeline as a text prompt for a specific player.
+ * Format timeline for a player during the discussion phase of a round.
  *
- * Visibility rules:
- * - Game rules (timeline.system): always visible
- * - Previous rounds: all words, actions, payoffs visible; thoughts from others hidden
- * - Current round (if any): own moves visible; if simultaneousReveal=true, peers' moves hidden
+ * Visibility:
+ * - All system events
+ * - All persona-discussion events across ALL rounds (full cross-round memory)
+ *   — own reasoning visible, others' reasoning hidden
+ * - All persona-decision events from PREVIOUS rounds
+ *   — own reasoning visible, others' reasoning hidden
+ * - No current-round decisions yet (they haven't been made)
  */
-export function formatTimelineForPlayer(
-  timeline: GameSessionTimeline,
-  playerId: string,
-  options: { hideCurrentRound: boolean },
+export function formatTimelineForDiscussion(
+  timeline: GameTimeline,
+  viewerPersonaId: number,
+  participants: GameSessionParticipant[],
+  currentRound: number,
 ): string {
   const lines: string[] = [];
 
-  lines.push("=== GAME RULES ===");
-  lines.push(timeline.system);
-  lines.push("");
+  for (const event of timeline) {
+    switch (event.type) {
+      case "system":
+        lines.push(event.content);
+        lines.push("");
+        break;
 
-  const participants = timeline.meta.participants
-    .map((p) => `${p.playerId === playerId ? "You" : p.name} (${p.playerId})`)
-    .join(", ");
-  lines.push(`Players: ${participants}`);
-  lines.push("");
+      case "persona-discussion": {
+        const label = labelFor(event.personaId, viewerPersonaId, participants);
+        if (event.reasoning && event.personaId === viewerPersonaId) {
+          lines.push(`[Your reasoning] ${event.reasoning}`);
+        }
+        lines.push(`[Round ${event.round} discussion] ${renderDiscussion(event, label)}`);
+        lines.push("");
+        break;
+      }
 
-  if (timeline.rounds.length === 0) {
-    lines.push("No rounds have been played yet. This is round 1.");
-    return lines.join("\n");
+      case "persona-decision": {
+        // Only include decisions from previous rounds
+        if (event.round >= currentRound) break;
+        const label = labelFor(event.personaId, viewerPersonaId, participants);
+        if (event.reasoning && event.personaId === viewerPersonaId) {
+          lines.push(`[Your reasoning] ${event.reasoning}`);
+        }
+        lines.push(`[Round ${event.round}] ${renderDecision(event, label)}`);
+        lines.push("");
+        break;
+      }
+
+      case "round-result": {
+        if (event.round >= currentRound) break;
+        const parts = Object.entries(event.payoffs).map(([id, v]) => {
+          const label = labelFor(Number(id), viewerPersonaId, participants);
+          return `${label}: ${v}`;
+        });
+        lines.push(`[Round ${event.round} payoffs] ${parts.join(" | ")}`);
+        lines.push("");
+        break;
+      }
+    }
   }
 
-  // For all rounds except the current (last) round, show full info
-  // For the current round, apply hideCurrentRound logic
-  const currentRoundIndex = timeline.rounds.length - 1;
-
-  timeline.rounds.forEach((round, index) => {
-    const isCurrent = index === currentRoundIndex;
-    lines.push(`=== ROUND ${round.roundId} ===`);
-    if (round.system) {
-      lines.push(round.system);
-    }
-
-    // Iterate over all participants (not just those who have acted) so that
-    // players yet to move appear as "[waiting...]" rather than being invisible.
-    for (const participant of timeline.meta.participants) {
-      const pid = participant.playerId;
-      const record = round.players[pid];
-      const isMe = pid === playerId;
-      const label = isMe ? "You" : participant.name;
-
-      if (isCurrent && !isMe && options.hideCurrentRound) {
-        // Hide other players' moves in the current round until all have acted
-        lines.push(`${label}: [waiting for their move...]`);
-        continue;
-      }
-
-      if (!record) continue; // No record yet for a non-current round would be unexpected
-
-      // Show words (but never other players' thoughts)
-      if (record.words) {
-        lines.push(`${label}: ${record.words}`);
-      }
-      // Show actions
-      if (record.actions.length > 0) {
-        const actionSummary = record.actions
-          .map((a) => JSON.stringify(a, null, 0))
-          .join(", ");
-        lines.push(`${label}'s action: ${actionSummary}`);
-      }
-    }
-
-    // Show payoffs if available (only for completed rounds)
-    if (!isCurrent && Object.keys(round.payoffs).length > 0) {
-      const payoffLines = Object.entries(round.payoffs).map(([pid, v]) => {
-        const participant = timeline.meta.participants.find((p) => p.playerId === pid);
-        const label = pid === playerId ? "You" : (participant?.name ?? pid);
-        return `${label}: ${v}`;
-      });
-      lines.push(`Payoffs: ${payoffLines.join(" | ")}`);
-    }
-
+  // Cumulative scores from all completed rounds
+  const resultEvents = timeline.filter(
+    (e): e is RoundResultEvent => e.type === "round-result" && e.round < currentRound,
+  );
+  const scores = cumulativeScores(resultEvents, participants, viewerPersonaId);
+  if (scores) {
+    lines.push(scores);
     lines.push("");
-  });
+  }
 
-  // Cumulative score
-  const cumulative: Record<string, number> = {};
-  for (const round of timeline.rounds) {
-    for (const [pid, v] of Object.entries(round.payoffs)) {
-      cumulative[pid] = (cumulative[pid] ?? 0) + v;
+  return lines.join("\n").trim();
+}
+
+// ── Decision phase formatter ─────────────────────────────────────────────────
+
+/**
+ * Format timeline for a player during the decision phase of a round.
+ *
+ * Visibility:
+ * - All system events
+ * - All persona-discussion events from all rounds (including current)
+ *   — others' reasoning always hidden
+ * - All persona-decision events from previous rounds — others' reasoning hidden
+ * - Current-round decisions: if simultaneousReveal=true, only own decision visible;
+ *   otherwise all current-round decisions visible
+ */
+export function formatTimelineForDecision(
+  timeline: GameTimeline,
+  viewerPersonaId: number,
+  participants: GameSessionParticipant[],
+  currentRound: number,
+  simultaneousReveal: boolean,
+): string {
+  const lines: string[] = [];
+
+  for (const event of timeline) {
+    switch (event.type) {
+      case "system":
+        lines.push(event.content);
+        lines.push("");
+        break;
+
+      case "persona-discussion": {
+        const label = labelFor(event.personaId, viewerPersonaId, participants);
+        // Never show others' reasoning
+        if (event.reasoning && event.personaId === viewerPersonaId) {
+          lines.push(`[Your reasoning] ${event.reasoning}`);
+        }
+        lines.push(`[Round ${event.round} discussion] ${renderDiscussion(event, label)}`);
+        lines.push("");
+        break;
+      }
+
+      case "persona-decision": {
+        const label = labelFor(event.personaId, viewerPersonaId, participants);
+        const isCurrentRound = event.round === currentRound;
+        const isOtherPlayer = event.personaId !== viewerPersonaId;
+
+        // Hide other players' current-round decisions when simultaneousReveal is on
+        if (isCurrentRound && isOtherPlayer && simultaneousReveal) {
+          lines.push(`[Round ${event.round}] ${label}: [decision pending...]`);
+          lines.push("");
+          break;
+        }
+
+        // Never show others' reasoning
+        if (event.reasoning && event.personaId === viewerPersonaId) {
+          lines.push(`[Your reasoning] ${event.reasoning}`);
+        }
+        lines.push(`[Round ${event.round}] ${renderDecision(event, label)}`);
+        lines.push("");
+        break;
+      }
+
+      case "round-result": {
+        if (event.round >= currentRound) break;
+        const parts = Object.entries(event.payoffs).map(([id, v]) => {
+          const label = labelFor(Number(id), viewerPersonaId, participants);
+          return `${label}: ${v}`;
+        });
+        lines.push(`[Round ${event.round} payoffs] ${parts.join(" | ")}`);
+        lines.push("");
+        break;
+      }
     }
   }
-  if (Object.keys(cumulative).length > 0) {
-    const scoreLines = Object.entries(cumulative).map(([pid, v]) => {
-      const participant = timeline.meta.participants.find((p) => p.playerId === pid);
-      const label = pid === playerId ? "You" : (participant?.name ?? pid);
-      return `${label}: ${v}`;
-    });
-    lines.push(`Cumulative scores: ${scoreLines.join(" | ")}`);
+
+  // Cumulative scores from all completed rounds
+  const resultEvents = timeline.filter(
+    (e): e is RoundResultEvent => e.type === "round-result" && e.round < currentRound,
+  );
+  const scores = cumulativeScores(resultEvents, participants, viewerPersonaId);
+  if (scores) {
+    lines.push(scores);
+    lines.push("");
   }
 
-  return lines.join("\n");
+  return lines.join("\n").trim();
 }

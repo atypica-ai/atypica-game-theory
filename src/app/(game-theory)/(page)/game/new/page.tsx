@@ -14,6 +14,7 @@ export default async function NewGamePage() {
   const gameTypes: GameTypeInfo[] = Object.values(gameTypeRegistry).map((gt) => ({
     name: gt.name,
     displayName: gt.displayName,
+    tagline: gt.tagline,
     minPlayers: gt.minPlayers,
     maxPlayers: gt.maxPlayers,
     horizonLabel:
@@ -22,6 +23,7 @@ export default async function NewGamePage() {
         : gt.horizon.type === "indefinite"
           ? `INDEFINITE · δ=${gt.horizon.discountFactor}`
           : "CONDITION-BASED",
+    discussionRounds: gt.discussionRounds,
   }));
 
   return <NewGameClient gameTypes={gameTypes} personas={personas} />;

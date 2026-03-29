@@ -1,6 +1,6 @@
 "use client";
 
-import { PlayerRecord } from "@/app/(game-theory)/types";
+import { PersonaDecisionEvent } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 // Player A = ghost-green, Player B = blue
 export const PLAYER_COLORS = ["#1bff1b", "#3b82f6"];
 
-// Action badge colors
+// Action badge colors — extend this map when adding new game types
 const ACTION_STYLE: Record<string, { color: string; bg: string; label: string }> = {
   cooperate: { color: "#1bff1b", bg: "rgba(27,255,27,0.05)", label: "COOPERATE" },
   defect: { color: "#fb923c", bg: "rgba(251,146,60,0.05)", label: "DEFECT" },
@@ -19,9 +19,8 @@ export type PlayerResultState = "winner" | "loser" | "tie";
 interface PlayerCardProps {
   personaId: number;
   personaName: string;
-  playerId: string;
   playerIndex: number;
-  record: PlayerRecord | undefined;
+  decision: PersonaDecisionEvent | null | undefined;
   payoff: number | undefined;
   cumulativeScore: number;
   isCurrentRound: boolean;
@@ -31,18 +30,16 @@ interface PlayerCardProps {
 export function PlayerCard({
   personaId,
   personaName,
-  playerId,
   playerIndex,
-  record,
+  decision,
   payoff,
   cumulativeScore,
   isCurrentRound,
   resultState,
 }: PlayerCardProps) {
   const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
-  const hasActed = !!record && record.actions.length > 0;
-  const action = hasActed ? (record.actions[0] as Record<string, string>) : null;
-  const actionKey = action?.action ?? "";
+  const hasDecided = !!decision;
+  const actionKey = (decision?.content as Record<string, string> | undefined)?.action ?? "";
   const actionStyle = ACTION_STYLE[actionKey];
 
   const isWinner = resultState === "winner";
@@ -75,12 +72,6 @@ export function PlayerCard({
           <div className="min-w-0">
             <div className="font-EuclidCircularA text-lg font-medium text-white leading-none truncate">
               {personaName}
-            </div>
-            <div
-              className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase mt-0.5"
-              style={{ color: `${color}60` }}
-            >
-              {playerId}
             </div>
           </div>
         </div>
@@ -143,10 +134,10 @@ export function PlayerCard({
           </motion.div>
         </div>
 
-        {/* State area — the drama */}
+        {/* State area */}
         <div className="flex-1 min-h-0">
           <AnimatePresence mode="wait">
-            {isCurrentRound && !hasActed ? (
+            {isCurrentRound && !hasDecided ? (
               /* ── DELIBERATING ─────────────────────────────────────── */
               <motion.div
                 key="deliberating"
@@ -172,7 +163,6 @@ export function PlayerCard({
                     Deliberating
                   </span>
                 </div>
-                {/* Ghost watermark */}
                 <div
                   className="font-EuclidCircularA font-light text-[6rem] leading-none select-none mt-2"
                   style={{ color: `${color}08` }}
@@ -181,17 +171,17 @@ export function PlayerCard({
                   ?
                 </div>
               </motion.div>
-            ) : hasActed ? (
-              /* ── ACTED ────────────────────────────────────────────── */
+            ) : hasDecided ? (
+              /* ── DECIDED ──────────────────────────────────────────── */
               <motion.div
-                key="acted"
+                key="decided"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35 }}
                 className="flex flex-col gap-4 overflow-y-auto"
               >
-                {/* Private reasoning — the spectator's exclusive window */}
-                {record.reasoning && (
+                {/* Private reasoning — spectator's exclusive window */}
+                {decision.reasoning && (
                   <div
                     className="p-3 border border-white/[0.04]"
                     style={{ background: "rgba(27,255,27,0.02)" }}
@@ -209,7 +199,7 @@ export function PlayerCard({
                       />
                     </div>
                     <p className="font-IBMPlexMono text-[10px] leading-relaxed text-zinc-500 line-clamp-5">
-                      {record.reasoning}
+                      {decision.reasoning}
                     </p>
                   </div>
                 )}
@@ -263,13 +253,6 @@ export function PlayerCard({
                     </span>
                   </motion.div>
                 )}
-
-                {/* Words (if game allows speech) */}
-                {record.words && (
-                  <p className="font-InstrumentSerif italic text-sm text-zinc-400 leading-relaxed border-l-2 border-white/[0.06] pl-3">
-                    &ldquo;{record.words}&rdquo;
-                  </p>
-                )}
               </motion.div>
             ) : null}
           </AnimatePresence>
@@ -282,11 +265,16 @@ export function PlayerCard({
 export function PlayerCardIdle({
   personaId,
   personaName,
-  playerId,
   playerIndex,
   cumulativeScore,
   resultState,
-}: Omit<PlayerCardProps, "record" | "payoff" | "isCurrentRound">) {
+}: {
+  personaId: number;
+  personaName: string;
+  playerIndex: number;
+  cumulativeScore: number;
+  resultState?: PlayerResultState;
+}) {
   const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
   const isWinner = resultState === "winner";
   const isLoser = resultState === "loser";
@@ -316,16 +304,9 @@ export function PlayerCardIdle({
             <div className="font-EuclidCircularA text-lg font-medium text-white truncate">
               {personaName}
             </div>
-            <div
-              className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase mt-0.5"
-              style={{ color: `${color}60` }}
-            >
-              {playerId}
-            </div>
           </div>
         </div>
 
-        {/* Result badge */}
         <AnimatePresence>
           {(isWinner || isTie) && (
             <motion.div
@@ -383,16 +364,21 @@ export function PlayerCardCompact({
   personaId,
   personaName,
   playerIndex,
-  record,
+  decision,
   payoff,
-}: Pick<PlayerCardProps, "personaId" | "personaName" | "playerIndex" | "record" | "payoff">) {
+}: {
+  personaId: number;
+  personaName: string;
+  playerIndex: number;
+  decision: PersonaDecisionEvent | null | undefined;
+  payoff: number | undefined;
+}) {
   const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
-  const action = record?.actions[0] as Record<string, string> | undefined;
-  const actionKey = action?.action ?? "";
+  const actionKey = (decision?.content as Record<string, string> | undefined)?.action ?? "";
   const actionStyle = ACTION_STYLE[actionKey];
 
   return (
-    <div className={cn("flex items-center gap-3 px-5 py-3 flex-1 min-w-0 bg-[#09090b]")}>
+    <div className="flex items-center gap-3 px-5 py-3 flex-1 min-w-0 bg-[#09090b]">
       <HippyGhostAvatar seed={personaId} className="size-5 shrink-0" />
       <span
         className="font-EuclidCircularA text-xs font-medium truncate"

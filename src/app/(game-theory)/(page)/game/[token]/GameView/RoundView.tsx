@@ -1,15 +1,17 @@
 "use client";
 
-import { GameSessionMeta, RoundRecord } from "@/app/(game-theory)/types";
+import { GameSessionParticipant, PersonaDecisionEvent } from "@/app/(game-theory)/types";
 import { PlayerCardCompact } from "./PlayerCard";
 
 interface RoundViewProps {
-  round: RoundRecord;
-  meta: GameSessionMeta;
+  roundId: number;
+  participants: GameSessionParticipant[];
+  decisions: Map<number, PersonaDecisionEvent>; // personaId → event
+  payoffs: Record<number, number>;
 }
 
-export function RoundView({ round, meta }: RoundViewProps) {
-  const totalPayoff = Object.values(round.payoffs).reduce((acc, v) => acc + v, 0);
+export function RoundView({ roundId, participants, decisions, payoffs }: RoundViewProps) {
+  const totalPayoff = Object.values(payoffs).reduce((acc, v) => acc + v, 0);
 
   return (
     <div className="flex items-stretch gap-px bg-[rgba(255,255,255,0.015)]">
@@ -19,29 +21,25 @@ export function RoundView({ round, meta }: RoundViewProps) {
           R
         </span>
         <span className="font-EuclidCircularA text-base font-light text-zinc-600 leading-none">
-          {round.roundId}
+          {roundId}
         </span>
       </div>
 
-      {/* Player compact cards — one per participant */}
+      {/* Player compact cards */}
       <div className="flex flex-1 gap-px min-w-0">
-        {meta.participants.map((participant, idx) => {
-          const record = round.players[participant.playerId];
-          const payoff = round.payoffs[participant.playerId];
-          return (
-            <PlayerCardCompact
-              key={participant.playerId}
-              personaId={participant.personaId}
-              personaName={participant.name}
-              playerIndex={idx}
-              record={record}
-              payoff={payoff}
-            />
-          );
-        })}
+        {participants.map((participant, idx) => (
+          <PlayerCardCompact
+            key={participant.personaId}
+            personaId={participant.personaId}
+            personaName={participant.name}
+            playerIndex={idx}
+            decision={decisions.get(participant.personaId) ?? null}
+            payoff={payoffs[participant.personaId]}
+          />
+        ))}
       </div>
 
-      {/* Combined payoff — rightmost column */}
+      {/* Combined payoff */}
       <div className="flex items-center justify-center w-16 shrink-0 bg-[#09090b] px-3">
         <span className="font-IBMPlexMono text-[9px] text-zinc-700 tabular-nums">
           Σ{totalPayoff}

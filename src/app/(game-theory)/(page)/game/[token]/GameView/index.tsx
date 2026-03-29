@@ -1,7 +1,13 @@
 "use client";
 
 import { fetchGameSession, GameSessionDetail } from "@/app/(game-theory)/actions";
-import { GameSessionTimeline } from "@/app/(game-theory)/types";
+import {
+  GameSessionParticipant,
+  GameTimeline,
+  PersonaDecisionEvent,
+  PersonaDiscussionEvent,
+  RoundResultEvent,
+} from "@/app/(game-theory)/types";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
@@ -15,6 +21,42 @@ function formatGameTypeName(key: string): string {
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
     .join(" ");
 }
+
+// ── Event-derived helpers ────────────────────────────────────────────────────
+
+function getDecision(
+  events: GameTimeline,
+  personaId: number,
+  round: number,
+): PersonaDecisionEvent | null {
+  return (
+    (events.find(
+      (e) => e.type === "persona-decision" && e.personaId === personaId && e.round === round,
+    ) as PersonaDecisionEvent | undefined) ?? null
+  );
+}
+
+function getRoundDecisions(
+  events: GameTimeline,
+  round: number,
+): Map<number, PersonaDecisionEvent> {
+  const map = new Map<number, PersonaDecisionEvent>();
+  for (const e of events) {
+    if (e.type === "persona-decision" && e.round === round) {
+      map.set(e.personaId, e as PersonaDecisionEvent);
+    }
+  }
+  return map;
+}
+
+function getRoundPayoffs(events: GameTimeline, round: number): Record<number, number> {
+  const e = events.find(
+    (ev): ev is RoundResultEvent => ev.type === "round-result" && ev.round === round,
+  );
+  return e?.payoffs ?? {};
+}
+
+// ── GameView entry point ─────────────────────────────────────────────────────
 
 export function GameView({
   initialData,
@@ -30,6 +72,8 @@ export function GameView({
   }
   return <GameLiveView initialData={initialData} token={token} />;
 }
+
+// ── Live view ────────────────────────────────────────────────────────────────
 
 function GameLiveView({
   initialData,
@@ -55,56 +99,72 @@ function GameLiveView({
 
   const session = data ?? initialData;
   const { status, gameType } = session;
-  const timeline = session.timeline as GameSessionTimeline;
-
-  const participants = timeline.meta?.participants ?? [];
-  const allRounds = timeline.rounds ?? [];
-
-  const completedRounds = useMemo(
-    () => allRounds.filter((r) => Object.keys(r.payoffs).length > 0),
+  const events = session.events;
+  const participants: GameSessionParticipant[] = useMemo(
+    () => session.extra?.participants ?? [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(allRounds)],
+    [JSON.stringify(session.extra?.participants)],
   );
 
-  const activeRound = useMemo(() => {
-    if (allRounds.length === 0) return null;
-    const last = allRounds[allRounds.length - 1];
-    return Object.keys(last.payoffs).length === 0 ? last : null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(allRounds)]);
+  // ── Derive round state from flat events ───────────────────────────────────
 
-  // ── Round browsing ─────────────────────────────────────────────────────
-  // null = live/latest view; number = index into completedRounds
+  const completedRoundIds = useMemo(() => {
+    const ids = events
+      .filter((e): e is RoundResultEvent => e.type === "round-result")
+      .map((e) => e.round)
+      .sort((a, b) => a - b);
+    return ids;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(events)]);
+
+  const activeRoundId = useMemo(() => {
+    // A round is "active" if it has any player activity (discussion OR decision) but no round-result.
+    // Including discussion events ensures games with a discussion phase show the round as active
+    // even before any decisions have been made.
+    const roundsWithActivity = new Set(
+      events
+        .filter(
+          (e): e is PersonaDecisionEvent | PersonaDiscussionEvent =>
+            e.type === "persona-decision" || e.type === "persona-discussion",
+        )
+        .map((e) => e.round),
+    );
+    const completedSet = new Set(completedRoundIds);
+    const active = [...roundsWithActivity].filter((r) => !completedSet.has(r));
+    return active.length > 0 ? Math.max(...active) : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(events), completedRoundIds]);
+
+  // ── Round browsing ────────────────────────────────────────────────────────
+  // null = live/latest view; number = index into completedRoundIds
   const [browseIndex, setBrowseIndex] = useState<number | null>(null);
   const [showHistory, setShowHistory] = useState(false);
 
-  // Clamp browseIndex when completedRounds changes (e.g. new round arrives)
   useEffect(() => {
-    if (browseIndex !== null && browseIndex >= completedRounds.length) {
-      setBrowseIndex(completedRounds.length > 0 ? completedRounds.length - 1 : null);
+    if (browseIndex !== null && browseIndex >= completedRoundIds.length) {
+      setBrowseIndex(completedRoundIds.length > 0 ? completedRoundIds.length - 1 : null);
     }
-  }, [browseIndex, completedRounds.length]);
+  }, [browseIndex, completedRoundIds.length]);
 
   const prevRound = useCallback(() => {
     if (browseIndex === null) {
-      if (completedRounds.length > 0) setBrowseIndex(completedRounds.length - 1);
+      if (completedRoundIds.length > 0) setBrowseIndex(completedRoundIds.length - 1);
     } else if (browseIndex > 0) {
       setBrowseIndex((b) => (b ?? 1) - 1);
     }
-  }, [browseIndex, completedRounds.length]);
+  }, [browseIndex, completedRoundIds.length]);
 
   const nextRound = useCallback(() => {
     if (browseIndex === null) return;
-    if (browseIndex < completedRounds.length - 1) {
+    if (browseIndex < completedRoundIds.length - 1) {
       setBrowseIndex((b) => (b ?? 0) + 1);
     } else {
-      setBrowseIndex(null); // back to latest
+      setBrowseIndex(null);
     }
-  }, [browseIndex, completedRounds.length]);
+  }, [browseIndex, completedRoundIds.length]);
 
   const skipToLatest = useCallback(() => setBrowseIndex(null), []);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") prevRound();
@@ -114,34 +174,40 @@ function GameLiveView({
     return () => window.removeEventListener("keydown", handleKey);
   }, [prevRound, nextRound]);
 
-  // The round to actually display in the arena
-  const browsingRound =
+  // The round ID currently displayed in the arena
+  const displayRoundId =
     browseIndex !== null
-      ? (completedRounds[browseIndex] ?? null)
-      : (activeRound ?? completedRounds[completedRounds.length - 1] ?? null);
+      ? (completedRoundIds[browseIndex] ?? null)
+      : (activeRoundId ?? (completedRoundIds[completedRoundIds.length - 1] ?? null));
 
   const isLiveView = browseIndex === null;
-  const isCurrentRoundActive = isLiveView && !!activeRound;
+  const isCurrentRoundActive = isLiveView && activeRoundId !== null;
 
-  // ── Scores ─────────────────────────────────────────────────────────────
+  // ── Scores ────────────────────────────────────────────────────────────────
+
   const cumulativeScores = useMemo(() => {
-    const scores: Record<string, number> = {};
-    for (const r of completedRounds) {
-      for (const [pid, v] of Object.entries(r.payoffs)) {
-        scores[pid] = (scores[pid] ?? 0) + v;
+    const scores: Record<number, number> = {};
+    for (const e of events) {
+      if (e.type === "round-result") {
+        for (const [id, v] of Object.entries(e.payoffs)) {
+          const numId = Number(id);
+          scores[numId] = (scores[numId] ?? 0) + v;
+        }
       }
     }
     return scores;
-  }, [completedRounds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(events)]);
 
   const isCompleted = status === "completed";
   const isPending = status === "pending" || participants.length === 0;
 
-  // ── Winner ──────────────────────────────────────────────────────────────
+  // ── Winner ────────────────────────────────────────────────────────────────
+
   const { winner, winnerIndex } = useMemo(() => {
     if (!isCompleted || participants.length === 0) return { winner: null, winnerIndex: -1 };
-    const maxScore = Math.max(...participants.map((p) => cumulativeScores[p.playerId] ?? 0));
-    const leaders = participants.filter((p) => (cumulativeScores[p.playerId] ?? 0) === maxScore);
+    const maxScore = Math.max(...participants.map((p) => cumulativeScores[p.personaId] ?? 0));
+    const leaders = participants.filter((p) => (cumulativeScores[p.personaId] ?? 0) === maxScore);
     if (leaders.length === participants.length) return { winner: "TIE" as const, winnerIndex: -1 };
     const idx = participants.indexOf(leaders[0]);
     return { winner: leaders[0].name, winnerIndex: idx };
@@ -150,30 +216,27 @@ function GameLiveView({
   const winnerColor =
     winner && winner !== "TIE" ? (PLAYER_COLORS[winnerIndex] ?? "#1bff1b") : "#d97706";
 
-  function getResultState(playerId: string): PlayerResultState | undefined {
+  function getResultState(personaId: number): PlayerResultState | undefined {
     if (!isCompleted) return undefined;
     if (winner === "TIE") return "tie";
-    const p = participants.find((x) => x.playerId === playerId);
+    const p = participants.find((x) => x.personaId === personaId);
     if (!p) return undefined;
     return p.name === winner ? "winner" : "loser";
   }
 
-  const currentRoundNumber = activeRound?.roundId ?? completedRounds.length;
-
-  const canGoPrev = browseIndex === null ? completedRounds.length > 0 : browseIndex > 0;
+  const currentRoundNumber = activeRoundId ?? completedRoundIds.length;
+  const canGoPrev = browseIndex === null ? completedRoundIds.length > 0 : browseIndex > 0;
   const canGoNext = browseIndex !== null;
 
   const roundLabel = (() => {
-    if (isLiveView && activeRound) return "Live";
-    const roundId = browsingRound?.roundId;
-    return roundId !== undefined ? `R${roundId} · ${completedRounds.length}` : "";
+    if (isLiveView && activeRoundId !== null) return "Live";
+    return displayRoundId !== null ? `R${displayRoundId} · ${completedRoundIds.length}` : "";
   })();
 
   return (
     <div className="h-screen flex flex-col bg-[#09090b] relative">
       {/* ── Header ──────────────────────────────────────────────── */}
       <header className="shrink-0 h-[52px] flex items-center justify-between px-8 border-b border-white/[0.05] relative z-10">
-        {/* Left: game identity */}
         <div className="flex items-center gap-3">
           <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-zinc-700">
             Game Theory
@@ -184,15 +247,13 @@ function GameLiveView({
           </span>
         </div>
 
-        {/* Right: controls */}
         <div className="flex items-center gap-5">
           {!isPending && currentRoundNumber > 0 && (
             <span className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-600">
               Round {currentRoundNumber}
             </span>
           )}
-          {/* History toggle */}
-          {completedRounds.length > 0 && (
+          {completedRoundIds.length > 0 && (
             <button
               onClick={() => setShowHistory((h) => !h)}
               className={`font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase transition-colors ${
@@ -240,12 +301,10 @@ function GameLiveView({
       <AnimatePresence>
         {showHistory && (
           <>
-            {/* Backdrop */}
             <div
               className="absolute inset-0 z-20 top-[52px]"
               onClick={() => setShowHistory(false)}
             />
-            {/* Panel */}
             <motion.div
               className="absolute top-[52px] right-0 z-30 w-72 max-h-[60vh] flex flex-col border-l border-b border-white/[0.06] bg-[#0a0a0d]/96 backdrop-blur-md overflow-hidden"
               initial={{ opacity: 0, y: -6 }}
@@ -253,14 +312,13 @@ function GameLiveView({
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.18 }}
             >
-              {/* Panel header */}
               <div className="flex items-center justify-between px-5 h-9 border-b border-white/[0.04] shrink-0">
                 <div className="flex items-center gap-3">
                   <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-zinc-700">
                     History
                   </span>
                   <span className="font-IBMPlexMono text-[8px] text-zinc-800">
-                    {completedRounds.length} round{completedRounds.length !== 1 ? "s" : ""}
+                    {completedRoundIds.length} round{completedRoundIds.length !== 1 ? "s" : ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-4">
@@ -268,20 +326,25 @@ function GameLiveView({
                     const color = PLAYER_COLORS[idx] ?? "#ffffff";
                     return (
                       <span
-                        key={p.playerId}
+                        key={p.personaId}
                         className="font-IBMPlexMono text-[9px] tabular-nums"
                         style={{ color: `${color}80` }}
                       >
-                        {p.name.split(" ")[0]}&nbsp;{cumulativeScores[p.playerId] ?? 0}
+                        {p.name.split(" ")[0]}&nbsp;{cumulativeScores[p.personaId] ?? 0}
                       </span>
                     );
                   })}
                 </div>
               </div>
-              {/* Round list */}
               <div className="overflow-y-auto flex flex-col gap-px">
-                {[...completedRounds].reverse().map((round) => (
-                  <RoundView key={round.roundId} round={round} meta={timeline.meta!} />
+                {[...completedRoundIds].reverse().map((roundId) => (
+                  <RoundView
+                    key={roundId}
+                    roundId={roundId}
+                    participants={participants}
+                    decisions={getRoundDecisions(events, roundId)}
+                    payoffs={getRoundPayoffs(events, roundId)}
+                  />
                 ))}
               </div>
             </motion.div>
@@ -299,7 +362,6 @@ function GameLiveView({
             className="shrink-0 h-8 flex items-center justify-center gap-4 border-b border-white/[0.04]"
             style={{ background: `${winnerColor}08` }}
           >
-            {/* Left rule */}
             <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${winnerColor}20` }} />
             <span
               className="font-IBMPlexMono text-[10px] tracking-[0.22em] uppercase"
@@ -307,13 +369,12 @@ function GameLiveView({
             >
               {winner === "TIE" ? "Tie · Equal Scores" : `${winner} · Wins`}
             </span>
-            {/* Right rule */}
             <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${winnerColor}20` }} />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Player arena + side nav arrows ──────────────────────── */}
+      {/* ── Player arena ────────────────────────────────────────── */}
       <div className="flex-1 min-h-0 relative">
         <div
           className="absolute inset-0 grid gap-px overflow-hidden"
@@ -323,10 +384,7 @@ function GameLiveView({
           }}
         >
           {isPending ? (
-            <div
-              className="col-span-full flex flex-col items-center justify-center gap-4"
-              style={{ gridColumn: "1 / -1" }}
-            >
+            <div className="col-span-full flex flex-col items-center justify-center gap-4">
               <div className="flex items-center gap-2.5">
                 {[0, 1, 2].map((i) => (
                   <motion.span
@@ -343,16 +401,15 @@ function GameLiveView({
             </div>
           ) : (
             participants.map((participant, idx) => {
-              const resultState = getResultState(participant.playerId);
-              const cumScore = cumulativeScores[participant.playerId] ?? 0;
+              const resultState = getResultState(participant.personaId);
+              const cumScore = cumulativeScores[participant.personaId] ?? 0;
 
-              if (!browsingRound) {
+              if (displayRoundId === null) {
                 return (
                   <PlayerCardIdle
-                    key={participant.playerId}
+                    key={participant.personaId}
                     personaId={participant.personaId}
                     personaName={participant.name}
-                    playerId={participant.playerId}
                     playerIndex={idx}
                     cumulativeScore={cumScore}
                     resultState={resultState}
@@ -360,15 +417,17 @@ function GameLiveView({
                 );
               }
 
+              const decision = getDecision(events, participant.personaId, displayRoundId);
+              const payoffs = getRoundPayoffs(events, displayRoundId);
+
               return (
                 <PlayerCard
-                  key={participant.playerId}
+                  key={participant.personaId}
                   personaId={participant.personaId}
                   personaName={participant.name}
-                  playerId={participant.playerId}
                   playerIndex={idx}
-                  record={browsingRound.players[participant.playerId]}
-                  payoff={browsingRound.payoffs[participant.playerId]}
+                  decision={decision}
+                  payoff={payoffs[participant.personaId]}
                   cumulativeScore={cumScore}
                   isCurrentRound={isCurrentRoundActive}
                   resultState={resultState}
@@ -378,7 +437,6 @@ function GameLiveView({
           )}
         </div>
 
-        {/* ── Left arrow overlay ──────────────────────────────── */}
         <AnimatePresence>
           {canGoPrev && (
             <motion.button
@@ -397,7 +455,6 @@ function GameLiveView({
           )}
         </AnimatePresence>
 
-        {/* ── Right arrow overlay ─────────────────────────────── */}
         <AnimatePresence>
           {canGoNext && (
             <motion.button
@@ -418,11 +475,10 @@ function GameLiveView({
       </div>
 
       {/* ── Round indicator bar ──────────────────────────────────── */}
-      {completedRounds.length > 0 && (
+      {completedRoundIds.length > 0 && (
         <div className="shrink-0 h-10 flex items-center justify-center border-t border-white/[0.05] relative">
-          {/* Round label */}
           <div className="flex items-center gap-2">
-            {isLiveView && activeRound && (
+            {isLiveView && activeRoundId !== null && (
               <motion.span
                 className="w-1 h-1 rounded-full bg-[#1bff1b]"
                 animate={{ opacity: [1, 0.3, 1] }}
@@ -434,7 +490,6 @@ function GameLiveView({
             </span>
           </div>
 
-          {/* Back to latest when browsing */}
           <AnimatePresence>
             {!isLiveView && (
               <motion.button
@@ -445,7 +500,7 @@ function GameLiveView({
                 onClick={skipToLatest}
                 className="absolute right-6 font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-600 hover:text-zinc-400 transition-colors"
               >
-                {activeRound ? "Live ↑" : "Latest ↑"}
+                {activeRoundId !== null ? "Live ↑" : "Latest ↑"}
               </motion.button>
             )}
           </AnimatePresence>

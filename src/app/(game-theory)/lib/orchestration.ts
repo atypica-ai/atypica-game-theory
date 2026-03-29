@@ -6,12 +6,15 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { getGameType } from "../gameTypes";
 import { Horizon } from "../gameTypes/types";
-import { GamePersonaSession, GameSessionMeta, GameSessionTimeline, RoundRecord } from "../types";
-import { buildGamePersonaSession, generatePlayerMove } from "./generation";
+import { GameSessionExtra, GameTimeline } from "../types";
+import { buildGamePersonaSession, generatePlayerDecision, generatePlayerDiscussion } from "./generation";
+import { formatTimelineForDecision, formatTimelineForDiscussion } from "./formatting";
 import { calculateRoundPayoffs } from "./payoff";
 import { saveGameTimeline } from "./persistence";
 
-function shouldTerminate(horizon: Horizon, roundId: number, timeline: GameSessionTimeline): boolean {
+// ── Termination check ────────────────────────────────────────────────────────
+
+function shouldTerminate(horizon: Horizon, roundId: number, timeline: GameTimeline): boolean {
   switch (horizon.type) {
     case "fixed":
       return roundId >= horizon.rounds;
@@ -22,9 +25,23 @@ function shouldTerminate(horizon: Horizon, roundId: number, timeline: GameSessio
   }
 }
 
+// ── Fisher-Yates shuffle (in-place) ─────────────────────────────────────────
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── Main game loop ───────────────────────────────────────────────────────────
+
 /**
- * Main game loop. Runs all rounds of a game session, persisting the timeline after each player's move.
- * Called from playGameTool after the GameSession record is created.
+ * Main game loop. Runs all rounds of a game session, persisting the timeline after
+ * each player's action so the frontend can poll for live progress.
+ * Called from playGameTool (or createGameSession) after the GameSession record is created.
  */
 export async function runGameSession({
   gameSessionToken,
@@ -38,8 +55,7 @@ export async function runGameSession({
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
-}): Promise<GameSessionTimeline> {
-  // Load game session from DB
+}): Promise<GameTimeline> {
   const session = await prisma.gameSession.findUniqueOrThrow({
     where: { token: gameSessionToken },
   });
@@ -47,8 +63,7 @@ export async function runGameSession({
   const gameType = getGameType(session.gameType);
   const personaIds = session.personaIds as number[];
 
-  // Load personas, then reorder to match personaIds order.
-  // findMany does not guarantee result order, so we must sort explicitly.
+  // Load personas and preserve the personaIds order (findMany does not guarantee order)
   const personasUnordered = await prisma.persona.findMany({
     where: { id: { in: personaIds } },
   });
@@ -62,31 +77,29 @@ export async function runGameSession({
   const personaMap = new Map(personasUnordered.map((p) => [p.id, p]));
   const personas = personaIds.map((id) => personaMap.get(id)!);
 
-  // Assign player IDs in order
-  const playerIds = personaIds.map((_, i) => `player_${String.fromCharCode(65 + i)}`); // player_A, player_B, ...
-
-  const personaSessions: GamePersonaSession[] = personas.map((persona, i) =>
-    buildGamePersonaSession({ persona, playerId: playerIds[i], locale }),
+  const personaSessions = personas.map((persona) =>
+    buildGamePersonaSession({ persona, locale }),
   );
 
-  const meta: GameSessionMeta = {
+  // Participants list — stored in extra, not timeline
+  const participants: GameSessionExtra["participants"] = personas.map((p) => ({
+    personaId: p.id,
+    name: p.name,
+  }));
+
+  const extra: GameSessionExtra = {
     gameType: session.gameType,
-    participants: personas.map((p, i) => ({
-      personaId: p.id,
-      name: p.name,
-      playerId: playerIds[i],
-    })),
+    participants,
   };
 
-  // Initialize timeline
-  const timeline: GameSessionTimeline = {
-    meta,
-    system: gameType.rulesPrompt,
-    rounds: [],
-  };
+  // Initialize the flat timeline
+  const timeline: GameTimeline = [];
 
-  // Mark as running
-  await saveGameTimeline({ token: gameSessionToken, timeline, status: "running", logger });
+  // Game-level rules announcement (no round)
+  timeline.push({ type: "system", content: gameType.rulesPrompt });
+
+  // Mark as running and store participants in extra
+  await saveGameTimeline({ token: gameSessionToken, timeline, status: "running", extra, logger });
 
   let roundId = 1;
 
@@ -97,56 +110,136 @@ export async function runGameSession({
 
     logger.info({ msg: "Starting game round", roundId, gameType: session.gameType });
 
-    // Initialize round record
-    const round: RoundRecord = {
-      roundId,
-      system:
-        locale === "zh-CN"
-          ? `第 ${roundId} 轮开始。每位玩家请做出本轮决策。`
-          : `Round ${roundId} begins. Each player must now make their decision.`,
-      players: {},
-      payoffs: {},
-    };
+    // Round-level system announcement
+    const roundAnnouncement =
+      locale === "zh-CN"
+        ? `第 ${roundId} 轮开始。${gameType.discussionRounds > 0 ? "讨论阶段开始，每位玩家可以自由发言。" : "每位玩家请做出本轮决策。"}`
+        : `Round ${roundId} begins. ${gameType.discussionRounds > 0 ? "Discussion phase: each player may speak freely before deciding." : "Each player must now make their decision."}`;
 
-    // Add round to timeline (with empty players) so frontend shows it started
-    timeline.rounds.push(round);
+    timeline.push({ type: "system", content: roundAnnouncement, round: roundId });
     await saveGameTimeline({ token: gameSessionToken, timeline, logger });
 
-    // Each player acts sequentially
-    for (const personaSession of personaSessions) {
-      if (abortSignal.aborted) {
-        throw new Error("Game session aborted");
+    // ── Discussion phase (optional) ─────────────────────────────────────────
+
+    if (gameType.discussionRounds > 0) {
+      logger.info({ msg: "Starting discussion phase", roundId, discussionRounds: gameType.discussionRounds });
+
+      for (let turn = 0; turn < gameType.discussionRounds; turn++) {
+        if (abortSignal.aborted) throw new Error("Game session aborted");
+
+        // Randomize speaker order each turn for fairness
+        const speakerOrder = shuffle(personaSessions);
+        logger.info({ msg: "Discussion turn begin", roundId, turn, speakerOrder: speakerOrder.map((p) => p.personaId) });
+
+        for (const personaSession of speakerOrder) {
+          if (abortSignal.aborted) throw new Error("Game session aborted");
+
+          logger.info({ msg: "Generating discussion message", roundId, turn, personaId: personaSession.personaId });
+
+          const context = formatTimelineForDiscussion(
+            timeline,
+            personaSession.personaId,
+            participants,
+            roundId,
+          );
+
+          let reasoning: string | null;
+          let content: string;
+          try {
+            ({ reasoning, content } = await generatePlayerDiscussion({
+              personaSession,
+              formattedContext: context,
+              round: roundId,
+              locale,
+              abortSignal,
+              statReport,
+              logger: logger.child({ personaId: personaSession.personaId }),
+            }));
+          } catch (err) {
+            logger.error({ msg: "Discussion generation failed", roundId, turn, personaId: personaSession.personaId, error: (err as Error).message });
+            throw err;
+          }
+
+          timeline.push({
+            type: "persona-discussion",
+            personaId: personaSession.personaId,
+            personaName: personaSession.personaName,
+            reasoning,
+            content,
+            round: roundId,
+          });
+
+          await saveGameTimeline({ token: gameSessionToken, timeline, logger });
+        }
       }
 
-      const playerRecord = await generatePlayerMove({
+      logger.info({ msg: "Discussion phase complete", roundId });
+    }
+
+    // ── Decision phase ──────────────────────────────────────────────────────
+
+    for (const personaSession of personaSessions) {
+      if (abortSignal.aborted) throw new Error("Game session aborted");
+
+      const context = formatTimelineForDecision(
+        timeline,
+        personaSession.personaId,
+        participants,
+        roundId,
+        gameType.simultaneousReveal,
+      );
+
+      const { reasoning, content } = await generatePlayerDecision({
         personaSession,
         gameType,
-        timeline,
+        formattedContext: context,
+        round: roundId,
         locale,
         abortSignal,
         statReport,
-        logger: logger.child({ playerId: personaSession.playerId }),
+        logger: logger.child({ personaId: personaSession.personaId }),
       });
 
-      round.players[personaSession.playerId] = playerRecord;
+      timeline.push({
+        type: "persona-decision",
+        personaId: personaSession.personaId,
+        personaName: personaSession.personaName,
+        reasoning,
+        content,
+        round: roundId,
+      });
 
-      // Persist after each player so frontend can show partial round progress
+      // Persist after each player so frontend shows partial round progress
       await saveGameTimeline({ token: gameSessionToken, timeline, logger });
     }
 
-    // Calculate payoffs for this round
-    round.payoffs = calculateRoundPayoffs(gameType, round.players);
+    // ── Payoffs ─────────────────────────────────────────────────────────────
 
-    logger.info({
-      msg: "Round completed",
-      roundId,
-      payoffs: round.payoffs,
+    const payoffs = calculateRoundPayoffs(gameType, timeline, roundId);
+
+    timeline.push({ type: "round-result", round: roundId, payoffs });
+
+    // Human-readable round summary
+    const payoffSummary = Object.entries(payoffs)
+      .map(([id, v]) => {
+        const name = participants.find((p) => p.personaId === Number(id))?.name ?? `Player ${id}`;
+        return `${name}: ${v}`;
+      })
+      .join(", ");
+    timeline.push({
+      type: "system",
+      content:
+        locale === "zh-CN"
+          ? `第 ${roundId} 轮结果 — ${payoffSummary}`
+          : `Round ${roundId} results — ${payoffSummary}`,
+      round: roundId,
     });
 
-    // Persist final round state with payoffs
+    logger.info({ msg: "Round completed", roundId, payoffs });
     await saveGameTimeline({ token: gameSessionToken, timeline, logger });
 
-    // Check termination
+    // ── Termination check ───────────────────────────────────────────────────
+
     if (shouldTerminate(gameType.horizon, roundId, timeline)) {
       break;
     }
@@ -154,10 +247,15 @@ export async function runGameSession({
     roundId++;
   }
 
-  // Mark as completed
+  // Final system message
+  timeline.push({
+    type: "system",
+    content: locale === "zh-CN" ? "游戏结束。" : "Game complete.",
+  });
+
   await saveGameTimeline({ token: gameSessionToken, timeline, status: "completed", logger });
 
-  logger.info({ msg: "Game session completed", rounds: timeline.rounds.length });
+  logger.info({ msg: "Game session completed", totalRounds: roundId });
 
   return timeline;
 }

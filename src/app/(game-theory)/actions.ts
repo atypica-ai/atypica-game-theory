@@ -8,14 +8,14 @@ import type { Persona } from "@/prisma/client";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
 import { gameTypeRegistry } from "./gameTypes";
 import { runGameSession } from "./lib";
-import { GameSessionTimeline } from "./types";
+import { GameSessionExtra, GameTimeline } from "./types";
 
 export interface GameSessionDetail {
   token: string;
   gameType: string;
   status: string;
-  timeline: GameSessionTimeline;
-  personas: { id: number; name: string }[];
+  events: GameTimeline;
+  extra: GameSessionExtra;
 }
 
 /**
@@ -34,7 +34,7 @@ export async function fetchGameSession(token: string): Promise<
         gameType: true,
         status: true,
         timeline: true,
-        personaIds: true,
+        extra: true,
       },
     });
 
@@ -42,14 +42,8 @@ export async function fetchGameSession(token: string): Promise<
       return { success: false, message: "Game session not found" };
     }
 
-    const personaIds = Array.isArray(session.personaIds)
-      ? session.personaIds.filter((id): id is number => typeof id === "number")
-      : [];
-
-    const personas = await prisma.persona.findMany({
-      where: { id: { in: personaIds } },
-      select: { id: true, name: true },
-    });
+    const events = Array.isArray(session.timeline) ? (session.timeline as GameTimeline) : [];
+    const extra = (session.extra ?? {}) as GameSessionExtra;
 
     return {
       success: true,
@@ -57,8 +51,8 @@ export async function fetchGameSession(token: string): Promise<
         token: session.token,
         gameType: session.gameType,
         status: session.status,
-        timeline: (session.timeline ?? {}) as GameSessionTimeline,
-        personas,
+        events,
+        extra,
       },
     };
   } catch (error) {
@@ -86,6 +80,20 @@ export async function createGameSession(
       };
     }
 
+    // Load persona names for the extra field
+    const personas = await prisma.persona.findMany({
+      where: { id: { in: personaIds } },
+      select: { id: true, name: true },
+    });
+
+    const personaMap = new Map(personas.map((p) => [p.id, p]));
+    const participants = personaIds.map((id) => ({
+      personaId: id,
+      name: personaMap.get(id)?.name ?? `Persona ${id}`,
+    }));
+
+    const initialExtra: GameSessionExtra = { gameType: gameTypeName, participants };
+
     const token = generateToken(16);
 
     await prisma.gameSession.create({
@@ -93,7 +101,8 @@ export async function createGameSession(
         token,
         gameType: gameTypeName,
         personaIds,
-        timeline: {},
+        timeline: [],
+        extra: initialExtra as object,
         status: "pending",
       },
     });

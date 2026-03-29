@@ -13,9 +13,11 @@ import { Fragment, useEffect, useState, useTransition } from "react";
 export type GameTypeInfo = {
   name: string;
   displayName: string;
+  tagline: string;
   minPlayers: number;
   maxPlayers: number;
   horizonLabel: string;
+  discussionRounds: number;
 };
 
 // Payoff matrix for Prisoner's Dilemma (Dal Bó & Fréchette 2011, easy treatment)
@@ -182,7 +184,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                     {gt.displayName}
                   </h2>
                   <p className="font-InstrumentSerif italic text-xl text-zinc-500 mb-8">
-                    &ldquo;Can you trust a stranger you&apos;ll never speak to?&rdquo;
+                    &ldquo;{gt.tagline}&rdquo;
                   </p>
                   <div className="flex items-center gap-8 mb-10">
                     <div>
@@ -204,9 +206,55 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                         {gt.horizonLabel}
                       </span>
                     </div>
+                    {gt.discussionRounds > 0 && (
+                      <>
+                        <div className="w-px h-6 bg-white/[0.06]" />
+                        <div>
+                          <span className="font-IBMPlexMono text-[10px] tracking-[0.14em] uppercase text-zinc-600 block mb-1.5">
+                            Discussion
+                          </span>
+                          <span className="font-IBMPlexMono text-sm text-zinc-300">
+                            {gt.discussionRounds} round{gt.discussionRounds !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
 
-                  {/* Payoff matrix — gap-px grid (§15 of style.md) */}
+                  {/* Payoff display — game-type specific */}
+                  {gt.name === "stag-hunt" && (
+                    <div>
+                      <span className="font-IBMPlexMono text-[10px] tracking-[0.14em] uppercase text-zinc-600 block mb-4">
+                        Payoff Structure
+                      </span>
+                      <div className="grid grid-cols-2 gap-px bg-white/[0.05] w-fit text-left">
+                        {(
+                          [
+                            { label: "Rabbit", pts: 10, note: "always", color: "text-zinc-200", bg: "bg-[#09090b]" },
+                            { label: "Stag · succeed", pts: 25, note: "≥T hunters", color: "text-ghost-green", bg: "bg-ghost-green/[0.05]" },
+                            { label: "Stag · fail", pts: 0, note: "<T hunters", color: "text-zinc-600", bg: "bg-[#09090b]" },
+                          ] as const
+                        ).map(({ label, pts, note, color, bg }) => (
+                          <Fragment key={label}>
+                            <div className={`${bg} px-4 py-4 min-w-[140px] flex items-center`}>
+                              <span className="font-IBMPlexMono text-[9px] tracking-[0.12em] uppercase text-zinc-600">
+                                {label}
+                              </span>
+                            </div>
+                            <div className={`${bg} px-5 py-4`}>
+                              <span className={`font-EuclidCircularA text-2xl font-light block leading-none mb-1 ${color}`}>
+                                {pts}
+                              </span>
+                              <span className="font-IBMPlexMono text-[9px] text-zinc-700">{note}</span>
+                            </div>
+                          </Fragment>
+                        ))}
+                      </div>
+                      <p className="font-IBMPlexMono text-[9px] tracking-[0.10em] uppercase text-zinc-700 mt-3">
+                        T = roundup(40% × N) · e.g. 4 players in a group of 10
+                      </p>
+                    </div>
+                  )}
                   {gt.name === "prisoner-dilemma" && (
                     <div>
                       <span className="font-IBMPlexMono text-[10px] tracking-[0.14em] uppercase text-zinc-600 block mb-4">
@@ -304,7 +352,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
           {/* ── Search input ─────────────────────────────────────────────── */}
           <div className="relative mb-4">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 font-IBMPlexMono text-[10px] tracking-[0.14em] text-zinc-600 pointer-events-none select-none">
-              //
+              {"//"}
             </span>
             <input
               type="text"

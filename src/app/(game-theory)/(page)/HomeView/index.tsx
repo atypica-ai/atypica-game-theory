@@ -53,7 +53,6 @@ function LiveBadge() {
 // ── Game type tab ──────────────────────────────────────────────
 
 function GameTab({
-  gameKey,
   label,
   accentColor,
   active,

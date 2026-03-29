@@ -1,7 +1,11 @@
 "use client";
 
 import { GameSessionDetail } from "@/app/(game-theory)/actions";
-import { GameSessionTimeline } from "@/app/(game-theory)/types";
+import {
+  GameSessionParticipant,
+  PersonaDecisionEvent,
+  RoundResultEvent,
+} from "@/app/(game-theory)/types";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo } from "react";
 import { PlayerCard, PlayerCardIdle, PlayerResultState, PLAYER_COLORS } from "../PlayerCard";
@@ -16,58 +20,64 @@ function formatGameTypeName(key: string): string {
 }
 
 export function ReplayView({ initialData }: { initialData: GameSessionDetail }) {
-  const { gameType, token } = initialData;
-  const timeline = initialData.timeline as GameSessionTimeline;
+  const { gameType, token, events, extra } = initialData;
+  const participants: GameSessionParticipant[] = useMemo(
+    () => extra?.participants ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(extra?.participants)],
+  );
 
-  const participants = timeline.meta?.participants ?? [];
-  const allRounds = timeline.rounds ?? [];
-
-  const { displayState, isIntroComplete, startPlayback, skipToEnd, seek } =
-    useGameReplay(timeline);
+  const { displayState, isIntroComplete, startPlayback, skipToEnd, seek } = useGameReplay(
+    events,
+    participants,
+  );
 
   const {
     currentRoundId,
     playersDeliberating,
     playersRevealed,
     showPayoffsForRound,
-    visibleCompletedRounds,
+    visibleCompletedRoundIds,
     progress,
     phase,
   } = displayState;
 
   const isComplete = phase === "complete";
 
-  // The round currently being replayed
-  const displayRoundId = currentRoundId ?? showPayoffsForRound;
-  const displayRound =
-    displayRoundId !== null ? (allRounds.find((r) => r.roundId === displayRoundId) ?? null) : null;
-
-  // Cumulative scores from completed rounds only (grows as replay advances)
+  // Cumulative scores accumulated as replay advances (only completed visible rounds)
   const cumulativeScores = useMemo(() => {
-    const scores: Record<string, number> = {};
-    for (const r of visibleCompletedRounds) {
-      for (const [pid, v] of Object.entries(r.payoffs)) {
-        scores[pid] = (scores[pid] ?? 0) + v;
+    const scores: Record<number, number> = {};
+    for (const e of events) {
+      if (e.type === "round-result" && visibleCompletedRoundIds.has(e.round)) {
+        const ev = e as RoundResultEvent;
+        for (const [id, v] of Object.entries(ev.payoffs)) {
+          const numId = Number(id);
+          scores[numId] = (scores[numId] ?? 0) + v;
+        }
       }
     }
     return scores;
-  }, [visibleCompletedRounds]);
+  }, [events, visibleCompletedRoundIds]);
 
-  // Final scores (full game — used only when complete)
+  // Final scores (used only when complete)
   const finalScores = useMemo(() => {
-    const scores: Record<string, number> = {};
-    for (const r of allRounds) {
-      for (const [pid, v] of Object.entries(r.payoffs ?? {})) {
-        scores[pid] = (scores[pid] ?? 0) + v;
+    const scores: Record<number, number> = {};
+    for (const e of events) {
+      if (e.type === "round-result") {
+        const ev = e as RoundResultEvent;
+        for (const [id, v] of Object.entries(ev.payoffs)) {
+          const numId = Number(id);
+          scores[numId] = (scores[numId] ?? 0) + v;
+        }
       }
     }
     return scores;
-  }, [allRounds]);
+  }, [events]);
 
   const { winner, winnerIndex } = useMemo(() => {
     if (!isComplete || participants.length === 0) return { winner: null, winnerIndex: -1 };
-    const maxScore = Math.max(...participants.map((p) => finalScores[p.playerId] ?? 0));
-    const leaders = participants.filter((p) => (finalScores[p.playerId] ?? 0) === maxScore);
+    const maxScore = Math.max(...participants.map((p) => finalScores[p.personaId] ?? 0));
+    const leaders = participants.filter((p) => (finalScores[p.personaId] ?? 0) === maxScore);
     if (leaders.length === participants.length) return { winner: "TIE" as const, winnerIndex: -1 };
     const idx = participants.indexOf(leaders[0]);
     return { winner: leaders[0].name, winnerIndex: idx };
@@ -76,22 +86,43 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
   const winnerColor =
     winner && winner !== "TIE" ? (PLAYER_COLORS[winnerIndex] ?? "#1bff1b") : "#d97706";
 
-  function getResultState(playerId: string): PlayerResultState | undefined {
+  function getResultState(personaId: number): PlayerResultState | undefined {
     if (!isComplete) return undefined;
     if (winner === "TIE") return "tie";
-    const p = participants.find((x) => x.playerId === playerId);
+    const p = participants.find((x) => x.personaId === personaId);
     if (!p) return undefined;
     return p.name === winner ? "winner" : "loser";
   }
 
-  const replayRoundNumber = displayRound?.roundId ?? visibleCompletedRounds.length;
-
-  // When complete, show final scores; otherwise show replay-accumulated scores
   const displayScores = isComplete ? finalScores : cumulativeScores;
+
+  // Find a decision event for a persona in the current replay round
+  function getDecisionForReplay(personaId: number): PersonaDecisionEvent | null {
+    if (currentRoundId === null) return null;
+    return (
+      (events.find(
+        (e) =>
+          e.type === "persona-decision" &&
+          e.personaId === personaId &&
+          e.round === currentRoundId,
+      ) as PersonaDecisionEvent | undefined) ?? null
+    );
+  }
+
+  // Payoff for a persona in the current replay round (only if payoffs are being shown)
+  function getPayoffForReplay(personaId: number): number | undefined {
+    if (showPayoffsForRound === null) return undefined;
+    const e = events.find(
+      (ev): ev is RoundResultEvent =>
+        ev.type === "round-result" && ev.round === showPayoffsForRound,
+    );
+    return e?.payoffs[personaId];
+  }
+
+  const replayRoundNumber = currentRoundId ?? visibleCompletedRoundIds.size;
 
   return (
     <div className="h-screen flex flex-col bg-[#09090b] overflow-hidden relative">
-      {/* ── Arena intro overlay ───────────────────────────────────── */}
       <ReplayIntro
         gameTypeName={formatGameTypeName(gameType)}
         participants={participants}
@@ -148,7 +179,7 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
         </div>
       </header>
 
-      {/* ── Result banner (appears when complete) ─────────────────── */}
+      {/* ── Result banner ─────────────────────────────────────────── */}
       <AnimatePresence>
         {isComplete && winner && (
           <motion.div
@@ -158,20 +189,14 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
             className="shrink-0 h-8 flex items-center justify-center gap-4 border-b border-white/[0.04]"
             style={{ background: `${winnerColor}08` }}
           >
-            <div
-              className="flex-1 h-px max-w-24"
-              style={{ backgroundColor: `${winnerColor}20` }}
-            />
+            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${winnerColor}20` }} />
             <span
               className="font-IBMPlexMono text-[10px] tracking-[0.22em] uppercase"
               style={{ color: winnerColor }}
             >
               {winner === "TIE" ? "Tie · Equal Scores" : `${winner} · Wins`}
             </span>
-            <div
-              className="flex-1 h-px max-w-24"
-              style={{ backgroundColor: `${winnerColor}20` }}
-            />
+            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${winnerColor}20` }} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -185,19 +210,17 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
         }}
       >
         {participants.map((participant, idx) => {
-          const resultState = getResultState(participant.playerId);
-          const cumScore = displayScores[participant.playerId] ?? 0;
-          const isDeliberating = playersDeliberating.has(participant.playerId);
-          const isRevealed = playersRevealed.has(participant.playerId);
+          const resultState = getResultState(participant.personaId);
+          const cumScore = displayScores[participant.personaId] ?? 0;
+          const isDeliberating = playersDeliberating.has(participant.personaId);
+          const isRevealed = playersRevealed.has(participant.personaId);
 
-          // Idle — before any round or between rounds and not in active set
-          if (!isDeliberating && !isRevealed && !displayRound) {
+          if (!isDeliberating && !isRevealed && currentRoundId === null) {
             return (
               <PlayerCardIdle
-                key={participant.playerId}
+                key={participant.personaId}
                 personaId={participant.personaId}
                 personaName={participant.name}
-                playerId={participant.playerId}
                 playerIndex={idx}
                 cumulativeScore={cumScore}
                 resultState={resultState}
@@ -205,16 +228,14 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
             );
           }
 
-          // Deliberating — spinner
           if (isDeliberating) {
             return (
               <PlayerCard
-                key={participant.playerId}
+                key={participant.personaId}
                 personaId={participant.personaId}
                 personaName={participant.name}
-                playerId={participant.playerId}
                 playerIndex={idx}
-                record={{ reasoning: null, words: null, actions: [] }}
+                decision={null}
                 payoff={undefined}
                 cumulativeScore={cumScore}
                 isCurrentRound={true}
@@ -223,22 +244,15 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
             );
           }
 
-          // Revealed — show action (payoff only after payoff step)
-          if (isRevealed && displayRound) {
-            const record = displayRound.players[participant.playerId];
-            const payoff =
-              showPayoffsForRound === displayRound.roundId
-                ? displayRound.payoffs[participant.playerId]
-                : undefined;
+          if (isRevealed) {
             return (
               <PlayerCard
-                key={participant.playerId}
+                key={participant.personaId}
                 personaId={participant.personaId}
                 personaName={participant.name}
-                playerId={participant.playerId}
                 playerIndex={idx}
-                record={record}
-                payoff={payoff}
+                decision={getDecisionForReplay(participant.personaId)}
+                payoff={getPayoffForReplay(participant.personaId)}
                 cumulativeScore={cumScore}
                 isCurrentRound={true}
                 resultState={resultState}
@@ -246,27 +260,11 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
             );
           }
 
-          // In active round but not yet reached this player's step
-          if (displayRound) {
-            return (
-              <PlayerCardIdle
-                key={participant.playerId}
-                personaId={participant.personaId}
-                personaName={participant.name}
-                playerId={participant.playerId}
-                playerIndex={idx}
-                cumulativeScore={cumScore}
-                resultState={resultState}
-              />
-            );
-          }
-
           return (
             <PlayerCardIdle
-              key={participant.playerId}
+              key={participant.personaId}
               personaId={participant.personaId}
               personaName={participant.name}
-              playerId={participant.playerId}
               playerIndex={idx}
               cumulativeScore={cumScore}
               resultState={resultState}
@@ -275,9 +273,8 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
         })}
       </div>
 
-      {/* ── Control bar — Skip only (no round nav during replay) ──── */}
+      {/* ── Control bar ───────────────────────────────────────────── */}
       <div className="shrink-0 h-10 flex items-center gap-4 px-6 border-t border-white/[0.05]">
-        {/* Progress track */}
         <div className="flex-1 relative h-px bg-zinc-800">
           <div
             className="absolute left-0 top-0 h-full transition-none"
@@ -297,7 +294,6 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
           {Math.round(progress)}%
         </span>
 
-        {/* Skip to end */}
         {!isComplete && (
           <button
             onClick={skipToEnd}

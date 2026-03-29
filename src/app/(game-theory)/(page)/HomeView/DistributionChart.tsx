@@ -24,7 +24,6 @@ export interface GameChartData {
 }
 
 const HUMAN_COLOR = "#3b82f6";
-const PERSONA_COLOR = "rgba(27,255,27,0.4)";
 const PERSONA_COLOR_SOLID = "#1bff1b";
 
 // ── Bar Chart ──────────────────────────────────────────────────

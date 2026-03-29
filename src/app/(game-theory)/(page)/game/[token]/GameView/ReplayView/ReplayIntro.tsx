@@ -1,19 +1,14 @@
 "use client";
 
-import { motion, AnimatePresence } from "motion/react";
-import React, { useEffect, useState } from "react";
+import { GameSessionParticipant } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { AnimatePresence, motion } from "motion/react";
+import React, { useEffect, useState } from "react";
 import { PLAYER_COLORS } from "../PlayerCard";
-
-interface Participant {
-  personaId: number;
-  name: string;
-  playerId: string;
-}
 
 interface ReplayIntroProps {
   gameTypeName: string;
-  participants: Participant[];
+  participants: GameSessionParticipant[];
   onStart: () => void;
 }
 
@@ -23,14 +18,12 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
   const [stage, setStage] = useState<Stage>("title");
   const [isDismissed, setIsDismissed] = useState(false);
 
-  // Title → arena after 900ms
   useEffect(() => {
     if (stage !== "title") return;
     const t = setTimeout(() => setStage("arena"), 900);
     return () => clearTimeout(t);
   }, [stage]);
 
-  // Arena → ready after participants have entered (stagger 300ms each + 600ms settle)
   useEffect(() => {
     if (stage !== "arena") return;
     const delay = participants.length * 300 + 600;
@@ -38,7 +31,6 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
     return () => clearTimeout(t);
   }, [stage, participants.length]);
 
-  // ESC key: skip animations, jump to ready immediately
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !isDismissed) setStage("ready");
@@ -50,7 +42,6 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
   const dismiss = () => {
     if (isDismissed) return;
     setIsDismissed(true);
-    // Small delay for exit animation, then call onStart
     setTimeout(onStart, 400);
   };
 
@@ -65,7 +56,6 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
         >
-          {/* ── Top: game type label ────────────────────────────── */}
           <div className="flex items-center justify-between px-8 h-[52px] border-b border-white/[0.05]">
             <div className="flex items-center gap-3">
               <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-zinc-700">
@@ -81,9 +71,7 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
             </span>
           </div>
 
-          {/* ── Center: arena ───────────────────────────────────── */}
           <div className="flex-1 flex flex-col items-center justify-center gap-12 px-8">
-            {/* ARENA label */}
             <AnimatePresence>
               {stage !== "title" && (
                 <motion.span
@@ -97,16 +85,11 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
               )}
             </AnimatePresence>
 
-            {/* Participants row */}
-            <div
-              className="flex items-center gap-6"
-              style={{ justifyContent: isTwoPlayer ? "center" : "center", flexWrap: "wrap" }}
-            >
+            <div className="flex items-center gap-6" style={{ flexWrap: "wrap" }}>
               {participants.map((participant, idx) => {
                 const color = PLAYER_COLORS[idx] ?? "#ffffff";
                 return (
-                  <React.Fragment key={participant.playerId}>
-                    {/* VS divider — only between 2-player participants, rendered before idx===1 */}
+                  <React.Fragment key={participant.personaId}>
                     {isTwoPlayer && idx === 1 && (
                       <AnimatePresence>
                         {stage !== "title" && (
@@ -126,25 +109,16 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
                       </AnimatePresence>
                     )}
 
-                    {/* Participant card */}
                     <motion.div
                       initial={{ opacity: 0, y: 28 }}
                       animate={stage !== "title" ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
                       transition={{ duration: 0.55, delay: idx * 0.3, ease: [0.22, 1, 0.36, 1] }}
                       className="flex flex-col items-center gap-4 relative w-44"
                     >
-                      {/* Color bar above avatar */}
                       <div className="w-[2px] h-6" style={{ backgroundColor: `${color}60` }} />
 
-                      {/* Avatar */}
-                      <div
-                        className="relative"
-                        style={{
-                          filter: `drop-shadow(0 0 24px ${color}30)`,
-                        }}
-                      >
+                      <div className="relative" style={{ filter: `drop-shadow(0 0 24px ${color}30)` }}>
                         <HippyGhostAvatar seed={participant.personaId} className="size-20" />
-                        {/* Outer ring */}
                         <motion.div
                           className="absolute inset-0 rounded-full"
                           style={{ border: `1px solid ${color}25` }}
@@ -153,20 +127,12 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
                         />
                       </div>
 
-                      {/* Name */}
                       <div className="flex flex-col items-center gap-1">
                         <span className="font-EuclidCircularA text-xl font-medium text-white text-center">
                           {participant.name}
                         </span>
-                        <span
-                          className="font-IBMPlexMono text-[9px] tracking-[0.18em] uppercase"
-                          style={{ color: `${color}70` }}
-                        >
-                          {participant.playerId}
-                        </span>
                       </div>
 
-                      {/* Color dot */}
                       <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
                     </motion.div>
                   </React.Fragment>
@@ -174,7 +140,6 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
               })}
             </div>
 
-            {/* Participant count for 3+ players */}
             {!isTwoPlayer && stage !== "title" && (
               <motion.span
                 initial={{ opacity: 0 }}
@@ -186,7 +151,6 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
               </motion.span>
             )}
 
-            {/* START button */}
             <AnimatePresence>
               {stage === "ready" && (
                 <motion.button
@@ -202,7 +166,6 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
             </AnimatePresence>
           </div>
 
-          {/* ── Bottom: ESC hint ─────────────────────────────────── */}
           <div className="h-12 flex items-center justify-center">
             <AnimatePresence>
               {stage !== "ready" && (

@@ -69,14 +69,7 @@ export function ConfirmPanelResearchPlanMessage({
 
     setConfirmed(true);
     setSubmitting(false);
-  }, [
-    addToolResult,
-    question,
-    executionPlan,
-    toolInvocation.toolCallId,
-    researchType,
-    personaCount,
-  ]);
+  }, [addToolResult, question, executionPlan, toolInvocation.toolCallId]);
 
   // Output available or just confirmed — read-only summary
   if (confirmed || toolInvocation.state === "output-available") {

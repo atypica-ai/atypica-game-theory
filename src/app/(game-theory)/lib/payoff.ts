@@ -1,23 +1,30 @@
 import "server-only";
 
 import { GameType } from "../gameTypes/types";
-import { RoundRecord } from "../types";
+import { GameTimeline, PersonaDecisionEvent } from "../types";
 
 /**
  * Calculate payoffs for a completed round.
- * Reads each player's first action from round.players and passes to gameType.payoffFunction.
- * Returns a Record<playerId, number> payoff map.
+ * Filters persona-decision events for the given round, extracts each player's action,
+ * and passes them to gameType.payoffFunction.
  */
 export function calculateRoundPayoffs(
   gameType: GameType,
-  roundPlayers: RoundRecord["players"],
-): Record<string, number> {
-  const actions: Record<string, unknown> = {};
-  for (const [playerId, record] of Object.entries(roundPlayers)) {
-    if (record.actions.length === 0) {
-      throw new Error(`Player ${playerId} has no action in this round`);
-    }
-    actions[playerId] = record.actions[0];
+  timeline: GameTimeline,
+  round: number,
+): Record<number, number> {
+  const decisions = timeline.filter(
+    (e): e is PersonaDecisionEvent => e.type === "persona-decision" && e.round === round,
+  );
+
+  if (decisions.length === 0) {
+    throw new Error(`No decisions found for round ${round}`);
   }
+
+  const actions: Record<number, unknown> = {};
+  for (const event of decisions) {
+    actions[event.personaId] = event.content;
+  }
+
   return gameType.payoffFunction(actions);
 }
