@@ -33,7 +33,7 @@ interface PMFBarShapeProps {
   width?: number;
   height?: number;
   human?: number; // passed from data entry by Recharts
-  ai?: number; // bar value (same as height / chartH)
+  ai?: number; // bar value
   aiColor: string;
 }
 
@@ -65,11 +65,11 @@ function PMFBarShape({ x, y, width, height, human, ai, aiColor }: PMFBarShapePro
         width={barW}
         height={height}
         fill={aiColor}
-        fillOpacity={0.65}
+        fillOpacity={0.7}
       />
-      {/* Human reference stick — thin, on top */}
+      {/* Human reference stick — thin, white, always on top */}
       {humanH > 0 && (
-        <rect x={cx - 1.5} y={humanY} width={3} height={humanH} fill="white" fillOpacity={0.9} />
+        <rect x={cx - 1.5} y={humanY} width={3} height={humanH} fill="white" fillOpacity={0.95} />
       )}
     </g>
   );
@@ -79,37 +79,38 @@ function PMFBarShape({ x, y, width, height, human, ai, aiColor }: PMFBarShapePro
 
 export function PMFChart({ title, subtitle, bins, aiColor }: PMFChartProps) {
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-3">
       {/* Title */}
       <div>
-        <span className="font-IBMPlexMono text-[8px] tracking-[0.14em] uppercase text-zinc-500 block">
+        <span className="font-IBMPlexMono text-[9px] tracking-[0.12em] uppercase text-zinc-300 block font-medium">
           {title}
         </span>
         {subtitle && (
-          <span className="font-IBMPlexMono text-[7px] tracking-[0.1em] uppercase text-zinc-700 block mt-0.5">
+          <span className="font-IBMPlexMono text-[7px] tracking-[0.1em] uppercase text-zinc-600 block mt-0.5">
             {subtitle}
           </span>
         )}
       </div>
 
       {/* Recharts BarChart */}
-      <ResponsiveContainer width="100%" height={120}>
-        <BarChart data={bins} margin={{ top: 8, right: 4, bottom: 18, left: 24 }} barCategoryGap="20%">
+      <ResponsiveContainer width="100%" height={130}>
+        <BarChart data={bins} margin={{ top: 8, right: 4, bottom: 22, left: 26 }} barCategoryGap="22%">
           <CartesianGrid vertical={false} stroke="#27272a" strokeWidth={0.5} />
           <XAxis
             dataKey="label"
-            tick={{ fontFamily: "IBMPlexMono", fontSize: 7, fill: "#52525b" }}
+            tick={{ fontFamily: "IBMPlexMono", fontSize: 8, fill: "#a1a1aa" }}
             axisLine={false}
             tickLine={false}
+            interval={0}
           />
           <YAxis
             domain={[0, 1]}
             tickCount={3}
-            tickFormatter={(v: number) => `${Math.round(v * 100)}`}
-            tick={{ fontFamily: "IBMPlexMono", fontSize: 6, fill: "#52525b" }}
+            tickFormatter={(v: number) => `${Math.round(v * 100)}%`}
+            tick={{ fontFamily: "IBMPlexMono", fontSize: 7, fill: "#71717a" }}
             axisLine={false}
             tickLine={false}
-            width={22}
+            width={28}
           />
           <Bar
             dataKey="ai"

@@ -7,12 +7,14 @@ const AI_COLOR = "#d97706";
 // ── Human reference data ───────────────────────────────────────────────────────
 // Source: Battalio, Samuelson & Van Huyck (2001) — "Optimization Incentives and
 // Coordination Failure in Laboratory Stag Hunt Games" — approximate values.
-// NOTE: our free-rider variant differs from classic stag hunt; these are directional
-// references only. n≈84, 3 rounds.
+// NOTE: our free-rider variant (public good + private rabbit) differs from classic
+// stag hunt; directional reference only. n≈84, 3 rounds.
+//
+// Reward schedule: stag+success=25, stag+fail=0, rabbit+success=35, rabbit+fail=10
 
 // ── AI persona data ────────────────────────────────────────────────────────────
 // Source: atypica.AI mock — TODO replace with live aggregation from game sessions
-// AI personas begin optimistic (high stag), adapt faster to free-rider equilibrium.
+// AI begins optimistic (high stag), adapts faster toward free-rider equilibrium.
 
 const overallBins: PMFBin[] = [
   { label: "Stag", human: 0.38, ai: 0.52 },
@@ -24,14 +26,28 @@ const round1Bins: PMFBin[] = [
   { label: "Rabbit", human: 0.48, ai: 0.32 },
 ];
 
-const round2Bins: PMFBin[] = [
-  { label: "Stag", human: 0.37, ai: 0.50 },
-  { label: "Rabbit", human: 0.63, ai: 0.50 },
+// Per-round payoff distribution — all 4 possible outcomes in a single round:
+//   0  = chose stag, hunt failed (not enough stag hunters)
+//  10  = chose rabbit, hunt failed (private reward only)
+//  25  = chose stag, hunt succeeded
+//  35  = chose rabbit, hunt succeeded (private 10 + public 25 free-rider bonus)
+const avgRewardBins: PMFBin[] = [
+  { label: "0",  human: 0.14, ai: 0.09 },
+  { label: "10", human: 0.48, ai: 0.34 },
+  { label: "25", human: 0.13, ai: 0.22 },
+  { label: "35", human: 0.25, ai: 0.35 },
 ];
 
-const round3Bins: PMFBin[] = [
-  { label: "Stag", human: 0.30, ai: 0.42 },
-  { label: "Rabbit", human: 0.70, ai: 0.58 },
+// Max reward per player across all rounds — distribution of each player's best round:
+//   0  = stag hunter, hunt always failed
+//  10  = rabbit hunter, hunt never succeeded
+//  25  = stag hunter, achieved at least one successful hunt
+//  35  = rabbit hunter, free-rode at least one successful hunt (dominant strategy peak)
+const maxRewardBins: PMFBin[] = [
+  { label: "0",  human: 0.06, ai: 0.03 },
+  { label: "10", human: 0.34, ai: 0.22 },
+  { label: "25", human: 0.21, ai: 0.26 },
+  { label: "35", human: 0.39, ai: 0.49 },
 ];
 
 const outcomeBins: PMFBin[] = [
@@ -40,16 +56,16 @@ const outcomeBins: PMFBin[] = [
 ];
 
 const panels: { title: string; subtitle?: string; bins: PMFBin[] }[] = [
-  { title: "Overall", subtitle: "All Rounds", bins: overallBins },
-  { title: "Round 1", bins: round1Bins },
-  { title: "Round 2", bins: round2Bins },
-  { title: "Round 3", bins: round3Bins },
-  { title: "Hunt Outcome", subtitle: "Success Rate", bins: outcomeBins },
+  { title: "All Rounds", subtitle: "Aggregate", bins: overallBins },
+  { title: "Round 1", subtitle: "No prior history", bins: round1Bins },
+  { title: "Avg. Reward", subtitle: "Per-round payoff", bins: avgRewardBins },
+  { title: "Max Reward", subtitle: "Best single round", bins: maxRewardBins },
+  { title: "Hunt Outcome", subtitle: "Success rate", bins: outcomeBins },
 ];
 
 export function StagHuntDistributionView() {
   return (
-    <div className="p-8 flex flex-col gap-5">
+    <div className="px-10 pb-10 flex flex-col gap-5">
       {/* Chart grid */}
       <div className="grid grid-cols-5 gap-px bg-zinc-800">
         {panels.map(({ title, subtitle, bins }) => (
@@ -62,11 +78,11 @@ export function StagHuntDistributionView() {
       {/* Source attribution */}
       <div className="flex items-center gap-3">
         <span className="w-1.5 h-1.5 rounded-full bg-zinc-800 shrink-0" />
-        <span className="font-IBMPlexMono text-[7px] tracking-[0.1em] uppercase text-zinc-700">
+        <span className="font-IBMPlexMono text-[7px] tracking-[0.1em] uppercase text-zinc-600">
           Human: Battalio, Samuelson &amp; Van Huyck (2001) · n≈84 · directional reference
         </span>
         <span className="w-px h-3 bg-zinc-800 shrink-0" />
-        <span className="font-IBMPlexMono text-[7px] tracking-[0.1em] uppercase text-zinc-700">
+        <span className="font-IBMPlexMono text-[7px] tracking-[0.1em] uppercase text-zinc-600">
           AI: atypica.AI personas · mock data
         </span>
       </div>
