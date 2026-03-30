@@ -190,8 +190,6 @@ export function PlayerDetailPanel({
   completedRoundIds,
   activeRoundId,
   cumulativeScores,
-  winners,
-  isFullTie,
   onClose,
 }: PlayerDetailPanelProps) {
   const isOpen = personaId !== null;

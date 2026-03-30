@@ -1,13 +1,9 @@
 "use server";
 
-import type { StatReporter } from "@/ai/tools/types";
-import { rootLogger } from "@/lib/logging";
-import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import type { Persona } from "@/prisma/client";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
-import { gameTypeRegistry } from "./gameTypes";
-import { runGameSession } from "./lib";
+import { launchGameSession } from "./lib";
 import { GameSessionExtra, GameTimeline } from "./types";
 
 export interface GameSessionDetail {
@@ -69,58 +65,7 @@ export async function createGameSession(
   personaIds: number[],
 ): Promise<{ success: true; token: string } | { success: false; message: string }> {
   try {
-    const gameType = gameTypeRegistry[gameTypeName];
-    if (!gameType) {
-      return { success: false, message: `Unknown game type: "${gameTypeName}"` };
-    }
-    if (personaIds.length < gameType.minPlayers || personaIds.length > gameType.maxPlayers) {
-      return {
-        success: false,
-        message: `${gameType.displayName} requires ${gameType.minPlayers}–${gameType.maxPlayers} players, got ${personaIds.length}`,
-      };
-    }
-
-    // Load persona names for the extra field
-    const personas = await prisma.persona.findMany({
-      where: { id: { in: personaIds } },
-      select: { id: true, name: true },
-    });
-
-    const personaMap = new Map(personas.map((p) => [p.id, p]));
-    const participants = personaIds.map((id) => ({
-      personaId: id,
-      name: personaMap.get(id)?.name ?? `Persona ${id}`,
-    }));
-
-    const initialExtra: GameSessionExtra = { gameType: gameTypeName, participants };
-
-    const token = generateToken(16);
-
-    await prisma.gameSession.create({
-      data: {
-        token,
-        gameType: gameTypeName,
-        personaIds,
-        timeline: [],
-        extra: initialExtra as object,
-        status: "pending",
-      },
-    });
-
-    const noopStatReport: StatReporter = async () => {};
-    const logger = rootLogger.child({ gameSessionToken: token, gameType: gameTypeName });
-
-    // Fire and forget — the session page polls for updates
-    runGameSession({
-      gameSessionToken: token,
-      locale: "en-US",
-      abortSignal: new AbortController().signal,
-      statReport: noopStatReport,
-      logger,
-    }).catch((err: Error) => {
-      logger.error({ msg: "Game session failed", error: err.message });
-    });
-
+    const { token } = await launchGameSession(gameTypeName, personaIds); // useAfter: true (default)
     return { success: true, token };
   } catch (error) {
     return { success: false, message: (error as Error).message };

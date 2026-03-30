@@ -60,4 +60,5 @@ export interface GameSessionParticipant {
 export interface GameSessionExtra {
   gameType: string;
   participants: GameSessionParticipant[];
+  error?: string; // set on failure, never on success
 }

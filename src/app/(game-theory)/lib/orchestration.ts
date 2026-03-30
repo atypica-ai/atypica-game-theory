@@ -11,6 +11,7 @@ import { buildGamePersonaSession, generatePlayerDecision, generatePlayerDiscussi
 import { formatTimelineForDecision, formatTimelineForDiscussion } from "./formatting";
 import { calculateRoundPayoffs } from "./payoff";
 import { saveGameTimeline } from "./persistence";
+import { failGameSessionRun } from "./runtime";
 
 // ── Shared context type ───────────────────────────────────────────────────────
 
@@ -165,6 +166,7 @@ export async function runGameSession({
   statReport: StatReporter;
   logger: Logger;
 }): Promise<GameTimeline> {
+  try {
   const session = await prisma.gameSession.findUniqueOrThrow({
     where: { token: gameSessionToken },
   });
@@ -240,4 +242,12 @@ export async function runGameSession({
 
   logger.info({ msg: "Game session completed", totalRounds: roundId });
   return timeline;
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    logger.error({ msg: "Game session failed", error: error.message });
+    await failGameSessionRun(gameSessionToken, error).catch((dbErr) =>
+      logger.error({ msg: "Failed to record game session failure", error: (dbErr as Error).message }),
+    );
+    throw error;
+  }
 }
