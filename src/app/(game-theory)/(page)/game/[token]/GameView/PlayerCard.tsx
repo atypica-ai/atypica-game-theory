@@ -5,7 +5,7 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 
-// 10 unique accent colors — one per player slot, from the style.md palette
+// 10 unique accent colors — one per player slot
 export const PLAYER_COLORS = [
   "#1bff1b", // ghost-green
   "#3b82f6", // blue
@@ -19,17 +19,17 @@ export const PLAYER_COLORS = [
   "#ef4444", // red
 ];
 
-// Action badge styles — extend when adding new game types
+// Action badge styles
 export const ACTION_STYLE: Record<string, { color: string; bg: string; label: string }> = {
-  cooperate: { color: "#1bff1b", bg: "rgba(27,255,27,0.05)",   label: "COOPERATE" },
-  defect:    { color: "#fb923c", bg: "rgba(251,146,60,0.05)",  label: "DEFECT"    },
-  stag:      { color: "#22d3ee", bg: "rgba(34,211,238,0.05)",  label: "STAG"      },
-  rabbit:    { color: "#f59e0b", bg: "rgba(245,158,11,0.05)",  label: "RABBIT"    },
+  cooperate: { color: "#1bff1b", bg: "rgba(27,255,27,0.06)",   label: "COOPERATE" },
+  defect:    { color: "#fb923c", bg: "rgba(251,146,60,0.06)",  label: "DEFECT"    },
+  stag:      { color: "#22d3ee", bg: "rgba(34,211,238,0.06)",  label: "STAG"      },
+  rabbit:    { color: "#f59e0b", bg: "rgba(245,158,11,0.06)",  label: "RABBIT"    },
 };
 
 export type PlayerResultState = "winner" | "loser" | "tie";
 
-interface PlayerNodeProps {
+interface PlayerCard2Props {
   personaId: number;
   personaName: string;
   playerIndex: number;
@@ -43,11 +43,11 @@ interface PlayerNodeProps {
 }
 
 /**
- * Compact player dossier card. Supports 3 live status states:
- *   deliberating → discussing → decided
- * Adapts to any number of players in an auto-fill grid.
+ * Portrait-style player card for the 2-column game grid.
+ * Score is the hero element — large, player-colored, center-aligned.
+ * Status strip at bottom shows current round state.
  */
-export function PlayerNode({
+export function PlayerCard2({
   personaId,
   personaName,
   playerIndex,
@@ -58,17 +58,17 @@ export function PlayerNode({
   isCurrentRound,
   resultState,
   onClick,
-}: PlayerNodeProps) {
+}: PlayerCard2Props) {
   const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
   const isWinner = resultState === "winner";
   const isLoser  = resultState === "loser";
+  const isTie    = resultState === "tie";
 
   const hasDecided   = !!decision;
   const hasDiscussed = !!lastDiscussion;
   const actionKey    = (decision?.content as Record<string, string> | undefined)?.action ?? "";
   const actionStyle  = ACTION_STYLE[actionKey];
 
-  // Three live states; "idle" when there's nothing to show (e.g. pre-game or history round with no data)
   const statusState: "deliberating" | "discussing" | "decided" | "idle" =
     hasDecided
       ? "decided"
@@ -82,33 +82,38 @@ export function PlayerNode({
     <button
       onClick={onClick}
       className={cn(
-        "relative flex flex-col h-full bg-[#09090b] text-left",
-        "transition-colors duration-300 hover:bg-zinc-900/50 group cursor-pointer",
+        "relative flex flex-col bg-[#09090b] text-left h-[180px]",
+        "transition-colors duration-300 hover:bg-zinc-900/60 group cursor-pointer overflow-hidden",
         isLoser && "opacity-40",
       )}
     >
-      {/* Player-color left accent bar — glows for winner */}
+      {/* Top accent border in player color */}
       <motion.div
-        className="absolute left-0 top-0 h-full w-[3px]"
+        className="absolute top-0 left-0 right-0 h-[3px] z-10"
         style={{ backgroundColor: color }}
         animate={
           isWinner
-            ? { boxShadow: [`0 0 0px ${color}`, `0 0 18px ${color}`, `0 0 0px ${color}`] }
+            ? { boxShadow: [`0 0 0px ${color}`, `0 0 16px ${color}80`, `0 0 0px ${color}`] }
             : {}
         }
         transition={{ duration: 2, repeat: Infinity }}
       />
 
-      <div className="pl-5 pr-4 pt-4 pb-4 flex flex-col h-full gap-3 min-h-0">
-        {/* ── Identity row ─────────────────────────────────── */}
-        <div className="flex items-start gap-2.5">
-          <HippyGhostAvatar seed={personaId} className="size-7 shrink-0 mt-0.5" />
+      <div className="flex flex-col h-full pt-4 px-5 pb-4 gap-0">
+        {/* ── Identity row ──────────────────────────────── */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div
+            className="shrink-0 rounded-full p-[2px]"
+            style={{ backgroundColor: `${color}20` }}
+          >
+            <HippyGhostAvatar seed={personaId} className="size-7" />
+          </div>
           <div className="flex-1 min-w-0">
             <div className="font-EuclidCircularA text-sm font-medium text-white leading-tight truncate">
               {personaName}
             </div>
             <AnimatePresence>
-              {(isWinner || resultState === "tie") && (
+              {(isWinner || isTie) && (
                 <motion.div
                   initial={{ opacity: 0, y: -2 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -132,26 +137,28 @@ export function PlayerNode({
               )}
             </AnimatePresence>
           </div>
+        </div>
 
-          {/* Cumulative score — top right, player-colored */}
+        {/* ── Score — the hero ──────────────────────────── */}
+        <div className="flex-1 flex items-center justify-center">
           <motion.span
             key={cumulativeScore}
-            initial={{ opacity: 0.4, y: 4 }}
+            initial={{ opacity: 0.5, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-            className="font-EuclidCircularA font-light tabular-nums leading-none shrink-0"
+            transition={{ duration: 0.3 }}
+            className="font-EuclidCircularA font-light tabular-nums leading-none select-none"
             style={{
               color,
-              fontSize: isWinner ? "2rem" : "1.75rem",
-              filter: isWinner ? `drop-shadow(0 0 12px ${color}60)` : undefined,
+              fontSize: isWinner ? "3.5rem" : "3rem",
+              filter: isWinner ? `drop-shadow(0 0 16px ${color}60)` : undefined,
             }}
           >
             {cumulativeScore}
           </motion.span>
         </div>
 
-        {/* ── Status area ───────────────────────────────────── */}
-        <div className="flex-1 min-h-0 flex flex-col justify-end">
+        {/* ── Status strip ──────────────────────────────── */}
+        <div className="shrink-0 h-7 flex items-center">
           <AnimatePresence mode="wait">
             {statusState === "deliberating" && (
               <motion.div
@@ -173,7 +180,7 @@ export function PlayerNode({
                   ))}
                 </div>
                 <span
-                  className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase"
+                  className="font-IBMPlexMono text-[8px] tracking-[0.16em] uppercase"
                   style={{ color: `${color}50` }}
                 >
                   Deliberating
@@ -184,13 +191,13 @@ export function PlayerNode({
             {statusState === "discussing" && (
               <motion.div
                 key="discussing"
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col gap-1.5"
+                className="flex items-center gap-2 w-full"
               >
                 <span
-                  className="font-IBMPlexMono text-[8px] tracking-[0.14em] uppercase px-1.5 py-0.5 border w-fit"
+                  className="shrink-0 font-IBMPlexMono text-[8px] tracking-[0.14em] uppercase px-1.5 py-0.5 border"
                   style={{
                     color: "#f59e0b",
                     borderColor: "rgba(245,158,11,0.25)",
@@ -199,8 +206,8 @@ export function PlayerNode({
                 >
                   Speaking
                 </span>
-                <p className="font-InstrumentSerif italic text-[11px] text-zinc-400 leading-snug line-clamp-2">
-                  &ldquo;{lastDiscussion!.content}&rdquo;
+                <p className="font-EuclidCircularA text-[11px] text-zinc-500 truncate leading-none">
+                  {lastDiscussion!.content}
                 </p>
               </motion.div>
             )}
@@ -208,15 +215,14 @@ export function PlayerNode({
             {statusState === "decided" && (
               <motion.div
                 key="decided"
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.28 }}
-                className="flex items-center justify-between gap-2"
+                transition={{ duration: 0.22 }}
+                className="flex items-center justify-between gap-2 w-full"
               >
-                {/* Action badge */}
                 <div
-                  className="inline-flex items-center px-2.5 py-1 border"
+                  className="inline-flex items-center px-2 py-1 border"
                   style={
                     actionStyle
                       ? { borderColor: `${actionStyle.color}35`, background: actionStyle.bg }
@@ -231,10 +237,9 @@ export function PlayerNode({
                   </span>
                 </div>
 
-                {/* Round payoff */}
                 {payoff !== undefined && (
                   <span
-                    className="font-EuclidCircularA text-xl font-light tabular-nums"
+                    className="font-EuclidCircularA text-base font-light tabular-nums"
                     style={{ color: payoff > 0 ? "#1bff1b" : "#ef4444" }}
                   >
                     +{payoff}
@@ -248,8 +253,8 @@ export function PlayerNode({
 
       {/* Bottom hover accent */}
       <div
-        className="absolute bottom-0 left-3 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ backgroundColor: `${color}18` }}
+        className="absolute bottom-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{ backgroundColor: `${color}20` }}
       />
     </button>
   );

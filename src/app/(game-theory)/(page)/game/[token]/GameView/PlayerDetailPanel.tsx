@@ -178,6 +178,8 @@ interface PlayerDetailPanelProps {
   completedRoundIds: number[];
   activeRoundId: number | null;
   cumulativeScores: Record<number, number>;
+  winners: GameSessionParticipant[];
+  isFullTie: boolean;
   onClose: () => void;
 }
 
@@ -188,6 +190,8 @@ export function PlayerDetailPanel({
   completedRoundIds,
   activeRoundId,
   cumulativeScores,
+  winners,
+  isFullTie,
   onClose,
 }: PlayerDetailPanelProps) {
   const isOpen = personaId !== null;

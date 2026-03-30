@@ -11,19 +11,11 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import { PlayerNode, PLAYER_COLORS, PlayerResultState } from "./PlayerCard";
+import { ActivityFeed } from "./ActivityFeed";
+import { PlayerCard2, PLAYER_COLORS, PlayerResultState } from "./PlayerCard";
 import { PlayerDetailPanel } from "./PlayerDetailPanel";
 import { ReplayView } from "./ReplayView";
 import { RoundPill } from "./RoundView";
-
-// ── Grid column strategy ──────────────────────────────────────────────────────
-// Target ~2 rows for larger counts; single row for small counts.
-// Index = player count - 1.
-const COLS_BY_COUNT = [1, 2, 3, 2, 3, 3, 4, 4, 5, 5];
-
-function getGridCols(n: number): number {
-  return COLS_BY_COUNT[Math.min(n, 10) - 1] ?? 5;
-}
 
 // ── Event-derived helpers ─────────────────────────────────────────────────────
 
@@ -160,52 +152,55 @@ function GameLiveView({
 
   // ── UI state ──────────────────────────────────────────────────────────────
 
-  // null = live view; number = pinned to a specific completed round
+  // null = live view; number = pinned to a specific round in feed
   const [displayRoundId, setDisplayRoundId] = useState<number | null>(null);
   // null = panel closed
   const [selectedPersonaId, setSelectedPersonaId] = useState<number | null>(null);
 
   const isLiveView = displayRoundId === null;
 
-  // The round whose data is shown in the player grid
-  const shownRoundId =
-    displayRoundId ??
-    activeRoundId ??
-    (completedRoundIds.length > 0 ? completedRoundIds[completedRoundIds.length - 1] : null);
-
-  // isCurrentRound = true only when live-viewing the active in-progress round
+  // isCurrentRound = true when live-viewing the active in-progress round
   const isCurrentRound = isLiveView && activeRoundId !== null;
 
-  // ── Completion / winner ───────────────────────────────────────────────────
+  // ── Completion / winners (supports co-winners) ────────────────────────────
 
   const isCompleted = status === "completed";
   const isPending = status === "pending" || participants.length === 0;
 
-  const { winner, winnerIndex } = useMemo(() => {
-    if (!isCompleted || participants.length === 0) return { winner: null, winnerIndex: -1 };
+  const winners = useMemo(() => {
+    if (!isCompleted || participants.length === 0) return [] as GameSessionParticipant[];
     const maxScore = Math.max(...participants.map((p) => cumulativeScores[p.personaId] ?? 0));
     const leaders = participants.filter((p) => (cumulativeScores[p.personaId] ?? 0) === maxScore);
-    if (leaders.length === participants.length) return { winner: "TIE" as const, winnerIndex: -1 };
-    const idx = participants.indexOf(leaders[0]);
-    return { winner: leaders[0].name, winnerIndex: idx };
+    if (leaders.length === participants.length) return [] as GameSessionParticipant[]; // full tie
+    return leaders;
   }, [isCompleted, participants, cumulativeScores]);
 
-  const winnerColor =
-    winner && winner !== "TIE" ? (PLAYER_COLORS[winnerIndex] ?? "#1bff1b") : "#d97706";
+  const isFullTie = isCompleted && participants.length > 0 && winners.length === 0;
 
   function getResultState(personaId: number): PlayerResultState | undefined {
     if (!isCompleted) return undefined;
-    if (winner === "TIE") return "tie";
-    const p = participants.find((x) => x.personaId === personaId);
-    if (!p) return undefined;
-    return p.name === winner ? "winner" : "loser";
+    if (isFullTie) return "tie";
+    return winners.some((w) => w.personaId === personaId) ? "winner" : "loser";
   }
 
-  // ── Grid layout ───────────────────────────────────────────────────────────
+  // ── Result banner ─────────────────────────────────────────────────────────
 
-  const cols = getGridCols(Math.max(participants.length, 1));
+  const bannerText = useMemo(() => {
+    if (!isCompleted) return null;
+    if (isFullTie) return { text: "Tie · Equal Scores", color: "#d97706" };
+    if (winners.length === 1) {
+      const winnerIdx = participants.indexOf(winners[0]);
+      return {
+        text: `${winners[0].name} · Wins`,
+        color: PLAYER_COLORS[winnerIdx] ?? "#1bff1b",
+      };
+    }
+    // Multiple co-winners
+    const names = winners.map((w) => w.name).join(" & ");
+    return { text: `${names} · Win`, color: "#1bff1b" };
+  }, [isCompleted, isFullTie, winners, participants]);
 
-  // ── History bar ───────────────────────────────────────────────────────────
+  // ── History bar rounds ────────────────────────────────────────────────────
 
   const historyBarRounds: { roundId: number; isLiveRound: boolean }[] = [
     ...completedRoundIds.map((r) => ({ roundId: r, isLiveRound: false })),
@@ -214,6 +209,10 @@ function GameLiveView({
 
   const currentRoundNumber =
     activeRoundId ?? (completedRoundIds.length > 0 ? completedRoundIds[completedRoundIds.length - 1] : 0);
+
+  // ── Player cards: show current active round state ─────────────────────────
+
+  const shownRoundId = activeRoundId ?? (completedRoundIds.length > 0 ? completedRoundIds[completedRoundIds.length - 1] : null);
 
   return (
     <div className="h-screen flex flex-col bg-[#09090b] relative overflow-hidden">
@@ -271,94 +270,103 @@ function GameLiveView({
 
       {/* ── Result banner ───────────────────────────────────────────────────── */}
       <AnimatePresence>
-        {isCompleted && winner && (
+        {bannerText && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="shrink-0 h-8 flex items-center justify-center gap-4 border-b border-white/[0.04]"
-            style={{ background: `${winnerColor}08` }}
+            style={{ background: `${bannerText.color}08` }}
           >
-            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${winnerColor}20` }} />
+            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${bannerText.color}20` }} />
             <span
               className="font-IBMPlexMono text-[10px] tracking-[0.22em] uppercase"
-              style={{ color: winnerColor }}
+              style={{ color: bannerText.color }}
             >
-              {winner === "TIE" ? "Tie · Equal Scores" : `${winner} · Wins`}
+              {bannerText.text}
             </span>
-            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${winnerColor}20` }} />
+            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${bannerText.color}20` }} />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Player grid ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 relative">
-        {isPending ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-            <div className="flex items-center gap-2.5">
-              {[0, 1, 2].map((i) => (
-                <motion.span
-                  key={i}
-                  className="w-1.5 h-1.5 rounded-full bg-zinc-700"
-                  animate={{ opacity: [0.15, 1, 0.15] }}
-                  transition={{ duration: 1.4, delay: i * 0.25, repeat: Infinity }}
-                />
-              ))}
+      {/* ── Main body: player grid (left) + activity feed (right) ──────────── */}
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        {/* Left: 2-column player grid */}
+        <div className="flex-1 min-w-0 relative overflow-hidden">
+          {isPending ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+              <div className="flex items-center gap-2.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="w-1.5 h-1.5 rounded-full bg-zinc-700"
+                    animate={{ opacity: [0.15, 1, 0.15] }}
+                    transition={{ duration: 1.4, delay: i * 0.25, repeat: Infinity }}
+                  />
+                ))}
+              </div>
+              <span className="font-IBMPlexMono text-[9px] tracking-[0.22em] uppercase text-zinc-700">
+                Awaiting players
+              </span>
             </div>
-            <span className="font-IBMPlexMono text-[9px] tracking-[0.22em] uppercase text-zinc-700">
-              Awaiting players
-            </span>
-          </div>
-        ) : (
-          <div
-            className="absolute inset-0 grid gap-px overflow-hidden"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.03)",
-              gridTemplateColumns: `repeat(${cols}, 1fr)`,
-              gridAutoRows: "1fr",
-            }}
-          >
-            {participants.map((participant, idx) => {
-              const decision = shownRoundId
-                ? getDecision(events, participant.personaId, shownRoundId)
-                : null;
-              const lastDiscussion = shownRoundId
-                ? getLastDiscussion(events, participant.personaId, shownRoundId)
-                : null;
-              const payoffs = shownRoundId ? getRoundPayoffs(events, shownRoundId) : {};
+          ) : (
+            <div
+              className="absolute inset-0 grid grid-cols-2 gap-px overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              style={{ backgroundColor: "rgba(255,255,255,0.03)" }}
+            >
+              {participants.map((participant, idx) => {
+                const decision = shownRoundId
+                  ? getDecision(events, participant.personaId, shownRoundId)
+                  : null;
+                const lastDiscussion = shownRoundId
+                  ? getLastDiscussion(events, participant.personaId, shownRoundId)
+                  : null;
+                const payoffs = shownRoundId ? getRoundPayoffs(events, shownRoundId) : {};
 
-              return (
-                <PlayerNode
-                  key={participant.personaId}
-                  personaId={participant.personaId}
-                  personaName={participant.name}
-                  playerIndex={idx}
-                  decision={decision}
-                  lastDiscussion={lastDiscussion}
-                  payoff={payoffs[participant.personaId]}
-                  cumulativeScore={cumulativeScores[participant.personaId] ?? 0}
-                  isCurrentRound={isCurrentRound}
-                  resultState={getResultState(participant.personaId)}
-                  onClick={() =>
-                    setSelectedPersonaId((prev) =>
-                      prev === participant.personaId ? null : participant.personaId,
-                    )
-                  }
-                />
-              );
-            })}
-          </div>
-        )}
+                return (
+                  <PlayerCard2
+                    key={participant.personaId}
+                    personaId={participant.personaId}
+                    personaName={participant.name}
+                    playerIndex={idx}
+                    decision={decision}
+                    lastDiscussion={lastDiscussion}
+                    payoff={payoffs[participant.personaId]}
+                    cumulativeScore={cumulativeScores[participant.personaId] ?? 0}
+                    isCurrentRound={isCurrentRound}
+                    resultState={getResultState(participant.personaId)}
+                    onClick={() =>
+                      setSelectedPersonaId((prev) =>
+                        prev === participant.personaId ? null : participant.personaId,
+                      )
+                    }
+                  />
+                );
+              })}
+            </div>
+          )}
 
-        {/* Detail panel — overlays the grid */}
-        <PlayerDetailPanel
-          personaId={selectedPersonaId}
-          participants={participants}
+          {/* Detail panel — slides over the player grid */}
+          <PlayerDetailPanel
+            personaId={selectedPersonaId}
+            participants={participants}
+            events={events}
+            completedRoundIds={completedRoundIds}
+            activeRoundId={activeRoundId}
+            cumulativeScores={cumulativeScores}
+            winners={winners}
+            isFullTie={isFullTie}
+            onClose={() => setSelectedPersonaId(null)}
+          />
+        </div>
+
+        {/* Right: Activity feed */}
+        <ActivityFeed
           events={events}
-          completedRoundIds={completedRoundIds}
+          participants={participants}
+          displayRoundId={displayRoundId}
           activeRoundId={activeRoundId}
-          cumulativeScores={cumulativeScores}
-          onClose={() => setSelectedPersonaId(null)}
         />
       </div>
 
@@ -384,7 +392,7 @@ function GameLiveView({
 
           <div className="flex-1" />
 
-          {/* Return to live shortcut (shown when browsing history while game is running) */}
+          {/* Return to live shortcut */}
           <AnimatePresence>
             {!isLiveView && activeRoundId !== null && (
               <motion.button

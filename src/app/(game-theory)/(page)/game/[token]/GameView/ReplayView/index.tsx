@@ -8,7 +8,7 @@ import {
 } from "@/app/(game-theory)/types";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo } from "react";
-import { PlayerNode, PlayerResultState, PLAYER_COLORS } from "../PlayerCard";
+import { PlayerCard2, PlayerResultState, PLAYER_COLORS } from "../PlayerCard";
 import { ReplayIntro } from "./ReplayIntro";
 import { useGameReplay } from "./useGameReplay";
 
@@ -216,7 +216,7 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
           const isRevealed = playersRevealed.has(participant.personaId);
 
           return (
-            <PlayerNode
+            <PlayerCard2
               key={participant.personaId}
               personaId={participant.personaId}
               personaName={participant.name}
