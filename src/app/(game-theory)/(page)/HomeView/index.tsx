@@ -1,40 +1,20 @@
 "use client";
 
+import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useState } from "react";
-import chartDataRaw from "./chartData.json";
-import { DistributionChart, GameChartData } from "./DistributionChart";
+import { GameDistributionView } from "./DistributionChart";
 
-type ChartRegistry = Record<string, GameChartData>;
-const chartData = chartDataRaw as ChartRegistry;
-const gameKeys = Object.keys(chartData);
+// ── Per-game accent colors ────────────────────────────────────────────────────
+const GAME_ACCENT: Record<string, string> = {
+  "prisoner-dilemma": "#1bff1b",
+  "stag-hunt": "#d97706",
+};
 
-// ── Fade-in helper ─────────────────────────────────────────────
+const gameTypes = Object.values(gameTypeRegistry);
 
-function FadeIn({
-  children,
-  delay = 0,
-  className,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  className?: string;
-}) {
-  return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// ── Live badge ─────────────────────────────────────────────────
-
+// ── Live badge ────────────────────────────────────────────────────────────────
 function LiveBadge() {
   return (
     <span className="inline-flex items-center gap-2 border border-ghost-green/[0.3] bg-zinc-800/80 backdrop-blur-sm px-3 py-1">
@@ -50,52 +30,15 @@ function LiveBadge() {
   );
 }
 
-// ── Game type tab ──────────────────────────────────────────────
-
-function GameTab({
-  label,
-  accentColor,
-  active,
-  onClick,
-}: {
-  gameKey: string;
-  label: string;
-  accentColor: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2 px-3 py-1.5 transition-colors"
-      style={{
-        borderBottom: active ? `1px solid ${accentColor}` : "1px solid transparent",
-      }}
-    >
-      <span
-        className="w-1.5 h-1.5 rounded-full shrink-0"
-        style={{ backgroundColor: active ? accentColor : "#3f3f46" }}
-      />
-      <span
-        className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase transition-colors"
-        style={{ color: active ? "#e4e4e7" : "#52525b" }}
-      >
-        {label}
-      </span>
-    </button>
-  );
-}
-
-// ── Main homepage ──────────────────────────────────────────────
-
+// ── Main homepage ─────────────────────────────────────────────────────────────
 export function GameTheoryHome() {
-  const [activeGame, setActiveGame] = useState(gameKeys[0]);
-  const active = chartData[activeGame];
+  const [activeGame, setActiveGame] = useState(gameTypes[0]?.name ?? "prisoner-dilemma");
+  const accentColor = GAME_ACCENT[activeGame] ?? "#1bff1b";
 
   return (
-    <div className="h-screen flex flex-col bg-[#09090b] overflow-hidden">
-      {/* ── Header ────────────────────────────────────────────── */}
-      <header className="shrink-0 h-[52px] flex items-center justify-between px-8 border-b border-white/[0.05]">
+    <div className="min-h-screen flex flex-col bg-[#09090b]">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <header className="h-[52px] flex items-center justify-between px-8 border-b border-white/[0.05] shrink-0">
         <div className="flex items-center gap-3">
           <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-ghost-green">
             01
@@ -108,131 +51,108 @@ export function GameTheoryHome() {
         <LiveBadge />
       </header>
 
-      {/* ── Body: split ─────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 grid gap-px" style={{ gridTemplateColumns: "38% 1fr", backgroundColor: "rgba(255,255,255,0.04)" }}>
-        {/* LEFT: identity + intro */}
-        <div className="bg-zinc-900 flex flex-col justify-between px-10 py-10 overflow-hidden relative">
-          {/* Ghost index watermark */}
-          <div
-            className="pointer-events-none absolute right-6 bottom-4 font-EuclidCircularA text-[7rem] leading-none select-none"
-            style={{ color: "rgba(9,9,11,0.08)", fontWeight: 300 }}
-            aria-hidden="true"
-          >
-            GT
+      {/* ── Hero strip ─────────────────────────────────────────────────────── */}
+      <div className="relative px-10 py-7 border-b border-white/[0.05] shrink-0 overflow-hidden">
+        {/* GT watermark */}
+        <div
+          className="pointer-events-none select-none absolute right-8 top-1/2 -translate-y-1/2 font-EuclidCircularA leading-none"
+          style={{ fontSize: "6.5rem", color: "rgba(255,255,255,0.025)", fontWeight: 300 }}
+          aria-hidden
+        >
+          GT
+        </div>
+
+        <div className="flex items-end justify-between relative z-10">
+          {/* Headline + sub-text */}
+          <div>
+            <span className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase text-zinc-600 block mb-3">
+              Behavioral Divergence Analysis
+            </span>
+            <h1 className="font-EuclidCircularA text-[1.9rem] font-medium leading-[1.1] text-white mb-2.5">
+              Does AI strategy{" "}
+              <span className="font-InstrumentSerif italic" style={{ color: "#1bff1b" }}>
+                mirror
+              </span>{" "}
+              human instinct?
+            </h1>
+            <p className="text-sm text-zinc-500 leading-relaxed max-w-sm">
+              Run structured experiments with AI personas. Compare their strategic distributions
+              against decades of human behavioral research.
+            </p>
           </div>
 
-          {/* Top content */}
-          <div className="flex flex-col gap-6 relative z-10">
-            <FadeIn delay={0.1}>
-              <span className="font-IBMPlexMono text-[9px] tracking-[0.18em] uppercase text-zinc-600">
-                Game Theory Lab
-              </span>
-            </FadeIn>
-
-            <FadeIn delay={0.2}>
-              <h1 className="font-EuclidCircularA text-[2.6rem] font-medium leading-[1.05] text-white">
-                Does strategy{" "}
-                <span className="font-InstrumentSerif italic text-ghost-green">emerge</span>
-                {" "}from AI?
-              </h1>
-            </FadeIn>
-
-            <FadeIn delay={0.3}>
-              <p className="text-sm text-zinc-400 leading-relaxed max-w-xs">
-                Run structured game theory experiments with AI personas. See how they cooperate,
-                defect, and reason under strategic pressure — compared to decades of human research.
-              </p>
-            </FadeIn>
-
-            <FadeIn delay={0.4}>
-              <div className="flex items-center gap-5 pt-1">
-                {[
-                  { value: "12", label: "Experiments" },
-                  { value: "8", label: "Personas" },
-                  { value: "1", label: "Game type" },
-                ].map((stat, i) => (
-                  <div key={stat.label} className="flex flex-col gap-0.5">
-                    <span
-                      className="font-EuclidCircularA text-2xl font-light"
-                      style={{ color: i === 0 ? "#1bff1b" : i === 1 ? "#3b82f6" : "#d97706" }}
-                    >
-                      {stat.value}
-                    </span>
-                    <span className="font-IBMPlexMono text-[8px] tracking-[0.12em] uppercase text-zinc-600">
-                      {stat.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </FadeIn>
-          </div>
-
-          {/* Bottom CTAs */}
-          <FadeIn delay={0.5} className="relative z-10 flex items-center gap-3">
+          {/* CTAs */}
+          <div className="flex items-center gap-3 shrink-0 mb-0.5">
             <Link
               href="/game/new"
-              className="h-10 px-5 bg-ghost-green text-black font-medium text-sm tracking-[0.04em] inline-flex items-center"
+              className="h-9 px-5 bg-ghost-green text-black font-medium text-xs tracking-[0.05em] inline-flex items-center"
             >
-              Start Experiment →
+              Run Experiment →
             </Link>
             <Link
               href="/game/"
-              className="h-10 px-5 border border-zinc-700 text-zinc-300 text-sm tracking-[0.04em] inline-flex items-center"
+              className="h-9 px-5 border border-zinc-700 text-zinc-400 text-xs tracking-[0.05em] inline-flex items-center"
             >
-              View Results
+              Past Results
             </Link>
-          </FadeIn>
-        </div>
-
-        {/* RIGHT: distribution charts */}
-        <div className="bg-[#09090b] flex flex-col overflow-hidden">
-          {/* Game type tabs */}
-          <div className="shrink-0 flex items-center gap-0 border-b border-white/[0.05] px-8">
-            {gameKeys.map((key) => (
-              <GameTab
-                key={key}
-                gameKey={key}
-                label={chartData[key].displayName}
-                accentColor={chartData[key].accentColor}
-                active={activeGame === key}
-                onClick={() => setActiveGame(key)}
-              />
-            ))}
           </div>
+        </div>
+      </div>
 
-          {/* Chart area */}
-          <div className="flex-1 min-h-0 px-10 py-8 flex flex-col justify-between overflow-auto">
-            {/* Chart header */}
-            <div className="flex items-center justify-between mb-5 shrink-0">
-              <div className="flex items-center gap-3">
+      {/* ── Tab strip + legend ──────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-8 border-b border-white/[0.05] shrink-0">
+        {/* Game type tabs */}
+        <div className="flex items-center">
+          {gameTypes.map((gt) => {
+            const color = GAME_ACCENT[gt.name] ?? "#1bff1b";
+            const isActive = activeGame === gt.name;
+            return (
+              <button
+                key={gt.name}
+                onClick={() => setActiveGame(gt.name)}
+                className="flex items-center gap-2 px-4 py-3 transition-colors"
+                style={{
+                  borderBottom: isActive ? `1px solid ${color}` : "1px solid transparent",
+                }}
+              >
                 <span
-                  className="h-px w-4 inline-block shrink-0"
-                  style={{ backgroundColor: active.accentColor }}
+                  className="w-1.5 h-1.5 rounded-full shrink-0 transition-colors"
+                  style={{ backgroundColor: isActive ? color : "#3f3f46" }}
                 />
-                <span className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-400">
-                  Human vs. AI Persona · Behavior Distribution
+                <span
+                  className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase transition-colors"
+                  style={{ color: isActive ? "#e4e4e7" : "#52525b" }}
+                >
+                  {gt.displayName}
                 </span>
-              </div>
-            </div>
+              </button>
+            );
+          })}
+        </div>
 
-            {/* Chart */}
-            <div className="flex-1 min-h-0">
-              <DistributionChart data={active} />
-            </div>
-
-            {/* Source attribution */}
-            <div className="shrink-0 mt-4 flex items-center gap-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-zinc-700 shrink-0" />
-              <span className="font-IBMPlexMono text-[8px] tracking-[0.1em] text-zinc-700">
-                Human data: {active.humanSource}
-              </span>
-              <span className="w-px h-3 bg-zinc-800" />
-              <span className="font-IBMPlexMono text-[8px] tracking-[0.1em] text-zinc-700">
-                Persona data: {active.personaSource}
-              </span>
-            </div>
+        {/* Legend */}
+        <div className="flex items-center gap-5 pr-2">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-4 h-[9px] shrink-0"
+              style={{ backgroundColor: accentColor, opacity: 0.65 }}
+            />
+            <span className="font-IBMPlexMono text-[7px] tracking-[0.1em] uppercase text-zinc-600">
+              AI Persona
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-[3px] h-[9px] bg-white/90 shrink-0" />
+            <span className="font-InstrumentSerif italic text-[10px] text-zinc-600">
+              Human Reference
+            </span>
           </div>
         </div>
+      </div>
+
+      {/* ── Distribution view ───────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        <GameDistributionView gameType={activeGame} />
       </div>
     </div>
   );
