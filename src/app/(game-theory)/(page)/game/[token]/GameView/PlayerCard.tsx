@@ -1,6 +1,6 @@
 "use client";
 
-import { PersonaDecisionEvent, PersonaDiscussionEvent } from "@/app/(game-theory)/types";
+import { GameSessionParticipant, PersonaDecisionEvent, PersonaDiscussionEvent } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
@@ -256,6 +256,80 @@ export function PlayerCard2({
         className="absolute bottom-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{ backgroundColor: `${color}20` }}
       />
+    </button>
+  );
+}
+
+// ── Scoreboard row — compact right panel ──────────────────────────────────────
+
+interface ScoreboardRowProps {
+  participant: GameSessionParticipant;
+  playerIndex: number;
+  score: number;
+  rank: number;
+  resultState?: PlayerResultState;
+  onClick: () => void;
+}
+
+export function ScoreboardRow({
+  participant,
+  playerIndex,
+  score,
+  rank,
+  resultState,
+  onClick,
+}: ScoreboardRowProps) {
+  const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
+  const isWinner = resultState === "winner";
+  const isLoser  = resultState === "loser";
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "w-full flex items-center gap-3 px-4 h-12 hover:bg-white/[0.02] transition-colors group",
+        isLoser && "opacity-40",
+      )}
+    >
+      {/* Rank */}
+      <span className="font-IBMPlexMono text-[10px] tabular-nums text-zinc-700 w-4 shrink-0 text-right">
+        {rank}
+      </span>
+
+      {/* Avatar with color ring for winner */}
+      <div
+        className="shrink-0 rounded-full p-[1.5px]"
+        style={{ backgroundColor: isWinner ? `${color}40` : "transparent" }}
+      >
+        <HippyGhostAvatar seed={participant.personaId} className="size-6" />
+      </div>
+
+      {/* Name */}
+      <span className="font-EuclidCircularA text-sm font-medium flex-1 min-w-0 truncate text-left group-hover:text-white transition-colors"
+        style={{ color: isWinner ? "white" : "#a1a1aa" }}>
+        {participant.name}
+      </span>
+
+      {/* Winner dot */}
+      {isWinner && (
+        <motion.span
+          className="w-1 h-1 rounded-full shrink-0"
+          style={{ backgroundColor: color }}
+          animate={{ opacity: [1, 0.3, 1] }}
+          transition={{ duration: 1.8, repeat: Infinity }}
+        />
+      )}
+
+      {/* Score */}
+      <span
+        className="font-EuclidCircularA text-lg font-light tabular-nums shrink-0"
+        style={{
+          color,
+          filter: isWinner ? `drop-shadow(0 0 8px ${color}50)` : undefined,
+        }}
+      >
+        {score}
+      </span>
     </button>
   );
 }
