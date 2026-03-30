@@ -8,7 +8,7 @@ import {
 } from "@/app/(game-theory)/types";
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo } from "react";
-import { PlayerCard, PlayerCardIdle, PlayerResultState, PLAYER_COLORS } from "../PlayerCard";
+import { PlayerNode, PlayerResultState, PLAYER_COLORS } from "../PlayerCard";
 import { ReplayIntro } from "./ReplayIntro";
 import { useGameReplay } from "./useGameReplay";
 
@@ -215,59 +215,19 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
           const isDeliberating = playersDeliberating.has(participant.personaId);
           const isRevealed = playersRevealed.has(participant.personaId);
 
-          if (!isDeliberating && !isRevealed && currentRoundId === null) {
-            return (
-              <PlayerCardIdle
-                key={participant.personaId}
-                personaId={participant.personaId}
-                personaName={participant.name}
-                playerIndex={idx}
-                cumulativeScore={cumScore}
-                resultState={resultState}
-              />
-            );
-          }
-
-          if (isDeliberating) {
-            return (
-              <PlayerCard
-                key={participant.personaId}
-                personaId={participant.personaId}
-                personaName={participant.name}
-                playerIndex={idx}
-                decision={null}
-                payoff={undefined}
-                cumulativeScore={cumScore}
-                isCurrentRound={true}
-                resultState={resultState}
-              />
-            );
-          }
-
-          if (isRevealed) {
-            return (
-              <PlayerCard
-                key={participant.personaId}
-                personaId={participant.personaId}
-                personaName={participant.name}
-                playerIndex={idx}
-                decision={getDecisionForReplay(participant.personaId)}
-                payoff={getPayoffForReplay(participant.personaId)}
-                cumulativeScore={cumScore}
-                isCurrentRound={true}
-                resultState={resultState}
-              />
-            );
-          }
-
           return (
-            <PlayerCardIdle
+            <PlayerNode
               key={participant.personaId}
               personaId={participant.personaId}
               personaName={participant.name}
               playerIndex={idx}
+              decision={isRevealed ? getDecisionForReplay(participant.personaId) : null}
+              lastDiscussion={null}
+              payoff={isRevealed ? getPayoffForReplay(participant.personaId) : undefined}
               cumulativeScore={cumScore}
+              isCurrentRound={isDeliberating || isRevealed}
               resultState={resultState}
+              onClick={() => {}}
             />
           );
         })}

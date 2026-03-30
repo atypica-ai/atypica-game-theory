@@ -1,50 +1,54 @@
 "use client";
 
-import { GameSessionParticipant, PersonaDecisionEvent } from "@/app/(game-theory)/types";
-import { PlayerCardCompact } from "./PlayerCard";
+import { motion } from "motion/react";
 
-interface RoundViewProps {
+interface RoundPillProps {
   roundId: number;
-  participants: GameSessionParticipant[];
-  decisions: Map<number, PersonaDecisionEvent>; // personaId → event
-  payoffs: Record<number, number>;
+  payoffSum: number | null; // null = round in progress (no result yet)
+  isViewing: boolean;       // currently displayed in the arena
+  isLive: boolean;          // this is the active in-progress round
+  onClick: () => void;
 }
 
-export function RoundView({ roundId, participants, decisions, payoffs }: RoundViewProps) {
-  const totalPayoff = Object.values(payoffs).reduce((acc, v) => acc + v, 0);
-
+/**
+ * Compact round pill for the history bar.
+ * Active/live round gets ghost-green styling and a pulsing dot.
+ */
+export function RoundPill({ roundId, payoffSum, isViewing, isLive, onClick }: RoundPillProps) {
   return (
-    <div className="flex items-stretch gap-px bg-[rgba(255,255,255,0.015)]">
-      {/* Round label */}
-      <div className="flex flex-col items-center justify-center w-12 shrink-0 gap-0.5 bg-[#09090b] py-2">
-        <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-zinc-700">
-          R
-        </span>
-        <span className="font-EuclidCircularA text-base font-light text-zinc-600 leading-none">
-          {roundId}
-        </span>
-      </div>
-
-      {/* Player compact cards */}
-      <div className="flex flex-1 gap-px min-w-0">
-        {participants.map((participant, idx) => (
-          <PlayerCardCompact
-            key={participant.personaId}
-            personaId={participant.personaId}
-            personaName={participant.name}
-            playerIndex={idx}
-            decision={decisions.get(participant.personaId) ?? null}
-            payoff={payoffs[participant.personaId]}
-          />
-        ))}
-      </div>
-
-      {/* Combined payoff */}
-      <div className="flex items-center justify-center w-16 shrink-0 bg-[#09090b] px-3">
-        <span className="font-IBMPlexMono text-[9px] text-zinc-700 tabular-nums">
-          Σ{totalPayoff}
-        </span>
-      </div>
-    </div>
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 px-3 h-full border-r border-white/[0.04] shrink-0 transition-colors duration-200"
+      style={{
+        color: isViewing ? (isLive ? "#1bff1b" : "rgba(255,255,255,0.7)") : "#52525b",
+        background: isViewing
+          ? isLive
+            ? "rgba(27,255,27,0.04)"
+            : "rgba(255,255,255,0.03)"
+          : "transparent",
+      }}
+    >
+      {isLive && (
+        <motion.span
+          className="w-1 h-1 rounded-full shrink-0"
+          style={{ backgroundColor: "#1bff1b" }}
+          animate={{ opacity: [1, 0.25, 1] }}
+          transition={{ duration: 1.6, repeat: Infinity }}
+        />
+      )}
+      <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase tabular-nums whitespace-nowrap">
+        R{roundId}
+        {payoffSum !== null ? (
+          <span className="opacity-50 ml-1">· {payoffSum}</span>
+        ) : (
+          <span
+            className="ml-1"
+            style={{ color: isLive ? "#1bff1b" : "inherit", opacity: isLive ? 0.7 : 0.4 }}
+          >
+            · live
+          </span>
+        )}
+      </span>
+    </button>
   );
 }
