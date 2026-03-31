@@ -124,28 +124,29 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
 
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header
-        className="shrink-0 h-[52px] flex items-center justify-between px-6 border-b"
+        className="shrink-0 border-b"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
+        <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "1200px" }}>
         <div className="flex items-center gap-2">
           <span
-            className="text-[11px]"
+            className="text-[13px]"
             style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
           >
             Game Theory Lab
           </span>
-          <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
+          <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
           <span
-            className="text-[13px] font-[600]"
+            className="text-[15px] font-[600]"
             style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
           >
             {formatGameTypeName(gameType)}
           </span>
           {replayRoundNumber > 0 && (
             <>
-              <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
+              <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
               <span
-                className="inline-flex items-center px-2 py-0.5 text-[11px] border"
+                className="inline-flex items-center px-2.5 py-0.5 text-[12px] border"
                 style={{
                   borderRadius: "9999px",
                   color: "var(--gt-t2)",
@@ -168,7 +169,7 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
                 );
               }
             }}
-            className="text-[11px] transition-colors hover:underline"
+            className="text-[13px] transition-colors hover:underline"
             style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
           >
             Copy Link
@@ -183,7 +184,7 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
             }}
           >
             <span
-              className="text-[11px] font-[500]"
+              className="text-[12px] font-[500]"
               style={{
                 color: isComplete ? "var(--gt-t3)" : "var(--gt-blue)",
                 fontFamily: "IBMPlexMono, monospace",
@@ -193,6 +194,7 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
               {isComplete ? "Complete" : isIntroComplete ? "Replay" : "Ready"}
             </span>
           </div>
+        </div>
         </div>
       </header>
 
@@ -219,9 +221,11 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
       </AnimatePresence>
 
       {/* ── Player arena ───────────────────────────────────────────── */}
+      <div className="flex-1 min-h-0 flex items-center justify-center py-8 px-8">
       <div
-        className="flex-1 min-h-0 p-5 grid gap-4"
+        className="w-full grid gap-6"
         style={{
+          maxWidth: "1200px",
           gridTemplateColumns: `repeat(${Math.max(participants.length, 1)}, 1fr)`,
         }}
       >
@@ -248,12 +252,14 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
           );
         })}
       </div>
+      </div>
 
       {/* ── Control bar ────────────────────────────────────────────── */}
       <div
-        className="shrink-0 h-11 flex items-center gap-4 px-6 border-t"
+        className="shrink-0 border-t"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
+      <div className="mx-auto flex items-center gap-4 h-12 px-8" style={{ maxWidth: "1200px" }}>
         {/* Progress track */}
         <div className="flex-1 relative h-[3px] rounded-full" style={{ background: "var(--gt-border)" }}>
           <div
@@ -271,7 +277,7 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
         </div>
 
         <span
-          className="tabular-nums w-7 text-right text-[11px]"
+          className="tabular-nums w-8 text-right text-[12px]"
           style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
         >
           {Math.round(progress)}%
@@ -280,12 +286,13 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
         {!isComplete && (
           <button
             onClick={skipToEnd}
-            className="text-[11px] transition-colors hover:underline"
+            className="text-[12px] transition-colors hover:underline"
             style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
           >
             Skip →
           </button>
         )}
+      </div>
       </div>
     </div>
   );

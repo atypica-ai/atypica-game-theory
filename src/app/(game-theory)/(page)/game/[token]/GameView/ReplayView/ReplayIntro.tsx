@@ -59,37 +59,39 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
         >
           {/* Header */}
           <div
-            className="flex items-center justify-between px-6 h-[52px] border-b"
+            className="border-b"
             style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
           >
-            <div className="flex items-center gap-2">
+            <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "1200px" }}>
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[13px]"
+                  style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+                >
+                  Game Theory Lab
+                </span>
+                <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
+                <span
+                  className="text-[15px] font-[600]"
+                  style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+                >
+                  {gameTypeName}
+                </span>
+              </div>
               <span
-                className="text-[11px]"
-                style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+                className="text-[12px] px-3 py-1 border"
+                style={{
+                  borderRadius: "9999px",
+                  color: "var(--gt-blue)",
+                  borderColor: "var(--gt-blue-border)",
+                  background: "var(--gt-blue-bg)",
+                  fontFamily: "IBMPlexMono, monospace",
+                  letterSpacing: "0.06em",
+                }}
               >
-                Game Theory Lab
-              </span>
-              <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
-              <span
-                className="text-[13px] font-[600]"
-                style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-              >
-                {gameTypeName}
+                Replay
               </span>
             </div>
-            <span
-              className="text-[11px] px-2.5 py-1 border"
-              style={{
-                borderRadius: "9999px",
-                color: "var(--gt-blue)",
-                borderColor: "var(--gt-blue-border)",
-                background: "var(--gt-blue-bg)",
-                fontFamily: "IBMPlexMono, monospace",
-                letterSpacing: "0.06em",
-              }}
-            >
-              Replay
-            </span>
           </div>
 
           {/* Main content */}
@@ -133,18 +135,18 @@ export function ReplayIntro({ gameTypeName, participants, onStart }: ReplayIntro
                       initial={{ opacity: 0, y: 20 }}
                       animate={stage !== "title" ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                       transition={{ duration: 0.4, delay: idx * 0.25, ease: [0.22, 1, 0.36, 1] }}
-                      className="flex flex-col items-center gap-3 w-40 border"
+                      className="flex flex-col items-center gap-4 w-52 border"
                       style={{
                         background: "var(--gt-surface)",
                         border: "1px solid var(--gt-border)",
                         borderRadius: "0.375rem",
                         borderTop: `3px solid ${color}`,
-                        padding: "1.25rem 1rem",
+                        padding: "1.75rem 1.5rem",
                       }}
                     >
-                      <HippyGhostAvatar seed={participant.personaId} className="size-14 rounded-full" />
+                      <HippyGhostAvatar seed={participant.personaId} className="size-16 rounded-full" />
                       <span
-                        className="text-[14px] font-[600] text-center leading-tight"
+                        className="text-[16px] font-[600] text-center leading-tight"
                         style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
                       >
                         {participant.name}

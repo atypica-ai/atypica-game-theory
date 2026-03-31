@@ -85,31 +85,31 @@ function RoundSection({
 
       {/* Discussions */}
       {discussions.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <span
-            className="text-[10px] uppercase"
+            className="text-[11px] uppercase"
             style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
           >
             Discussion
           </span>
           {discussions.map((d, i) => (
-            <div key={i} className="flex flex-col gap-1">
+            <div key={i} className="flex flex-col gap-1.5">
               <p
-                className="text-[13px] italic leading-relaxed"
+                className="text-[14px] italic leading-relaxed"
                 style={{ color: "var(--gt-t2)", fontFamily: "'Instrument Serif', Georgia, serif" }}
               >
                 &ldquo;{d.content}&rdquo;
               </p>
               {d.reasoning && (
-                <div className="pl-3 border-l mt-1" style={{ borderColor: "var(--gt-border-md)" }}>
+                <div className="pl-4 border-l mt-1" style={{ borderColor: "var(--gt-border-md)" }}>
                   <p
-                    className="text-[10px] uppercase mb-1"
+                    className="text-[11px] uppercase mb-1"
                     style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
                   >
                     Inner monologue
                   </p>
                   <p
-                    className="text-[11px] italic leading-relaxed"
+                    className="text-[13px] italic leading-relaxed"
                     style={{ color: "var(--gt-t3)", fontFamily: "'Instrument Serif', Georgia, serif" }}
                   >
                     {d.reasoning}
@@ -123,9 +123,9 @@ function RoundSection({
 
       {/* Decision */}
       {decision && (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           <span
-            className="text-[10px] uppercase"
+            className="text-[11px] uppercase"
             style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
           >
             Decision
@@ -134,7 +134,7 @@ function RoundSection({
             <ActionPill actionKey={actionKey} />
             {payoff !== null && (
               <span
-                className="text-[20px] font-[600] tabular-nums leading-none"
+                className="text-[22px] font-[600] tabular-nums leading-none"
                 style={{ color: payoff >= 0 ? "var(--gt-pos)" : "var(--gt-neg)", letterSpacing: "var(--gt-tracking-tight)" }}
               >
                 {payoff > 0 ? "+" : ""}{payoff}
@@ -142,15 +142,15 @@ function RoundSection({
             )}
           </div>
           {decision.reasoning && (
-            <div className="pl-3 border-l mt-1" style={{ borderColor: "var(--gt-border-md)" }}>
+            <div className="pl-4 border-l mt-1" style={{ borderColor: "var(--gt-border-md)" }}>
               <p
-                className="text-[10px] uppercase mb-1"
+                className="text-[11px] uppercase mb-1"
                 style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
               >
                 Reasoning
               </p>
               <p
-                className="text-[11px] italic leading-relaxed"
+                className="text-[13px] italic leading-relaxed"
                 style={{ color: "var(--gt-t3)", fontFamily: "'Instrument Serif', Georgia, serif" }}
               >
                 {decision.reasoning}
@@ -229,7 +229,7 @@ export function PlayerDetailPanel({
           >
             {/* Header */}
             <div
-              className="shrink-0 flex items-start gap-3 px-5 py-4 border-b"
+              className="shrink-0 flex items-start gap-4 px-6 py-5 border-b"
               style={{ borderColor: "var(--gt-border)" }}
             >
               <HippyGhostAvatar seed={personaId} className="size-10 shrink-0 rounded-full" />
@@ -271,7 +271,7 @@ export function PlayerDetailPanel({
               {allRounds.map((roundId) => (
                 <div
                   key={roundId}
-                  className="px-5 py-4 border-b"
+                  className="px-6 py-5 border-b"
                   style={{ borderColor: "var(--gt-border)" }}
                 >
                   <RoundSection
@@ -298,16 +298,16 @@ export function PlayerDetailPanel({
             {/* Footer summary */}
             {completedRoundIds.length > 0 && (
               <div
-                className="shrink-0 border-t px-5 py-4"
+                className="shrink-0 border-t px-6 py-5"
                 style={{ borderColor: "var(--gt-border)", background: "var(--gt-row-alt)" }}
               >
                 <span
-                  className="text-[10px] uppercase block mb-2"
+                  className="text-[11px] uppercase block mb-3"
                   style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
                 >
                   Round Summary
                 </span>
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                   {[...completedRoundIds].reverse().map((roundId) => {
                     const dec = getDecision(events, personaId, roundId);
                     const pay = getRoundPayoff(events, personaId, roundId);
@@ -315,7 +315,7 @@ export function PlayerDetailPanel({
                     return (
                       <div key={roundId} className="flex items-center gap-3">
                         <span
-                          className="text-[11px] uppercase w-5 shrink-0"
+                          className="text-[12px] uppercase w-6 shrink-0"
                           style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
                         >
                           R{roundId}
@@ -323,11 +323,11 @@ export function PlayerDetailPanel({
                         {ak ? (
                           <ActionPill actionKey={ak} />
                         ) : (
-                          <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>—</span>
+                          <span className="text-[12px]" style={{ color: "var(--gt-t4)" }}>—</span>
                         )}
                         {pay !== null && (
                           <span
-                            className="text-[12px] font-[600] tabular-nums ml-auto"
+                            className="text-[13px] font-[600] tabular-nums ml-auto"
                             style={{ color: pay >= 0 ? "var(--gt-pos)" : "var(--gt-neg)" }}
                           >
                             {pay > 0 ? "+" : ""}{pay}

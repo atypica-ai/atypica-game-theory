@@ -218,33 +218,36 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
     >
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header
-        className="shrink-0 h-[52px] flex items-center px-6 border-b gap-2"
+        className="shrink-0 border-b"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
-        <Link
-          href="/"
-          className="text-[11px] transition-colors hover:underline"
-          style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-        >
-          Game Theory Lab
-        </Link>
-        <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
-        <span
-          className="text-[13px] font-[600]"
-          style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-        >
-          New Experiment
-        </span>
+        <div className="mx-auto flex items-center h-[60px] px-8 gap-2" style={{ maxWidth: "1100px" }}>
+          <Link
+            href="/"
+            className="text-[13px] transition-colors hover:underline"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+          >
+            Game Theory Lab
+          </Link>
+          <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
+          <span
+            className="text-[15px] font-[600]"
+            style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+          >
+            New Experiment
+          </span>
+        </div>
       </header>
 
-      {/* ── Two-column body ─────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 flex overflow-hidden">
+      {/* ── Two-column body — centered at max-width ──────────────────────── */}
+      <div className="flex-1 min-h-0 flex overflow-hidden justify-center">
+      <div className="flex overflow-hidden w-full" style={{ maxWidth: "1100px" }}>
 
         {/* ── Left: Game Type ─────────────────────────────────────────── */}
         <div className="flex-[1.5] flex flex-col overflow-y-auto border-r" style={{ borderColor: "var(--gt-border)" }}>
-          <div className="px-6 pt-5 pb-3 border-b" style={{ borderColor: "var(--gt-border)" }}>
+          <div className="px-8 pt-6 pb-4 border-b" style={{ borderColor: "var(--gt-border)" }}>
             <span
-              className="text-[11px] uppercase"
+              className="text-[12px] uppercase"
               style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
             >
               01 · Game Type
@@ -269,21 +272,21 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                       background: isSelected ? "var(--gt-surface)" : "transparent",
                     }}
                   >
-                    <div className="flex-1 px-5 py-4">
-                      <div className="flex items-center gap-3 mb-1">
+                    <div className="flex-1 px-8 py-6">
+                      <div className="flex items-center gap-3 mb-2">
                         <span
-                          className="text-[14px] font-[600] leading-tight"
+                          className="text-[17px] font-[600] leading-tight"
                           style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
                         >
                           {gt.displayName}
                         </span>
                       </div>
-                      <p className="text-[12px] mb-2" style={{ color: "var(--gt-t2)" }}>
+                      <p className="text-[13px] mb-3" style={{ color: "var(--gt-t2)" }}>
                         {gt.tagline}
                       </p>
                       <div className="flex items-center gap-3">
                         <span
-                          className="text-[11px]"
+                          className="text-[12px]"
                           style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
                         >
                           {gt.minPlayers === gt.maxPlayers
@@ -292,7 +295,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                         </span>
                         <span className="w-px h-3" style={{ background: "var(--gt-border-md)" }} />
                         <span
-                          className="text-[11px]"
+                          className="text-[12px]"
                           style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
                         >
                           {gt.horizonLabel}
@@ -301,7 +304,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                           <>
                             <span className="w-px h-3" style={{ background: "var(--gt-border-md)" }} />
                             <span
-                              className="text-[11px]"
+                              className="text-[12px]"
                               style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
                             >
                               {gt.discussionRounds}× discuss
@@ -311,7 +314,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                       </div>
                     </div>
                     <div
-                      className="shrink-0 w-8 flex items-center justify-center h-full pt-5"
+                      className="shrink-0 w-10 flex items-center justify-center h-full pt-7"
                       style={{ color: "var(--gt-t4)" }}
                     >
                       {isSelected ? "▴" : "▾"}
@@ -321,11 +324,11 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                   {/* Expanded payoff details */}
                   {isSelected && (
                     <div
-                      className="px-6 py-4 border-b"
+                      className="px-8 py-6 border-b"
                       style={{ borderColor: "var(--gt-border)", background: "var(--gt-row-alt)" }}
                     >
                       <span
-                        className="text-[10px] uppercase block mb-1"
+                        className="text-[11px] uppercase block mb-2"
                         style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
                       >
                         Payoff Structure
@@ -368,11 +371,11 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
         {/* ── Right: Participants ───────────────────────────────────────── */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <div
-            className="px-6 pt-5 pb-3 border-b flex items-center justify-between"
+            className="px-8 pt-6 pb-4 border-b flex items-center justify-between"
             style={{ borderColor: "var(--gt-border)" }}
           >
             <span
-              className="text-[11px] uppercase"
+              className="text-[12px] uppercase"
               style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
             >
               02 · Participants
@@ -389,13 +392,13 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
           </div>
 
           {/* Search input — bottom-border only */}
-          <div className="px-6 pt-4 pb-2">
+          <div className="px-8 pt-5 pb-3">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search personas…"
-              className="w-full bg-transparent text-[13px] pb-2 outline-none transition-colors"
+              className="w-full bg-transparent text-[14px] pb-2 outline-none transition-colors"
               style={{
                 color: "var(--gt-t1)",
                 borderBottom: "1px solid var(--gt-border-md)",
@@ -404,7 +407,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
             />
           </div>
 
-          <div className="px-6 pb-2 flex items-center justify-between">
+          <div className="px-8 pb-3 flex items-center justify-between">
             <span
               className="text-[10px] uppercase"
               style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.06em" }}
@@ -447,20 +450,20 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                       borderColor: "var(--gt-border)",
                       borderLeft: isSelected ? "3px solid var(--gt-blue)" : "3px solid transparent",
                       background: isSelected ? "var(--gt-blue-bg)" : "transparent",
-                      padding: "10px 16px",
+                      padding: "14px 28px",
                     }}
                   >
-                    <HippyGhostAvatar seed={persona.id} className="size-7 rounded-full shrink-0" />
+                    <HippyGhostAvatar seed={persona.id} className="size-8 rounded-full shrink-0" />
                     <div className="flex-1 min-w-0">
                       <span
-                        className={cn("text-[13px] font-[500] block truncate leading-snug")}
+                        className={cn("text-[14px] font-[500] block truncate leading-snug")}
                         style={{ color: isSelected ? "var(--gt-blue)" : "var(--gt-t1)" }}
                       >
                         {persona.name}
                       </span>
                       {persona.source && (
                         <span
-                          className="text-[10px] truncate block mt-0.5"
+                          className="text-[11px] truncate block mt-0.5"
                           style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
                         >
                           {persona.source}
@@ -485,12 +488,14 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
           </div>
         </div>
       </div>
+      </div>
 
       {/* ── Bottom bar ──────────────────────────────────────────────────── */}
       <div
-        className="shrink-0 border-t px-6 py-4 flex items-center justify-between"
+        className="shrink-0 border-t"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
+      <div className="mx-auto flex items-center justify-between py-4 px-8" style={{ maxWidth: "1100px" }}>
         <div>
           {error ? (
             <span className="text-[12px]" style={{ color: "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}>
@@ -529,6 +534,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
             "Launch Experiment →"
           )}
         </button>
+      </div>
       </div>
     </div>
   );

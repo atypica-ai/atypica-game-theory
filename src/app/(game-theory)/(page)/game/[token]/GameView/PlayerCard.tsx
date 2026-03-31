@@ -118,21 +118,21 @@ export function ScoreboardRow({
       )}
     >
       {/* Rank */}
-      <td className="w-8 pl-4 pr-2 py-2.5 text-right tabular-nums text-[12px] text-[var(--gt-t4)]">
+      <td className="w-10 pl-6 pr-3 py-4 text-right tabular-nums text-[13px] text-[var(--gt-t4)]">
         {rank}
       </td>
 
       {/* Player */}
-      <td className="py-2.5 pr-4">
-        <div className="flex items-center gap-2.5">
+      <td className="py-4 pr-6">
+        <div className="flex items-center gap-3">
           <div
             className="shrink-0 rounded-full p-[2px]"
             style={{ outline: isWinner ? `2px solid ${color}` : undefined, outlineOffset: 1 }}
           >
-            <HippyGhostAvatar seed={participant.personaId} className="size-6 rounded-full" />
+            <HippyGhostAvatar seed={participant.personaId} className="size-7 rounded-full" />
           </div>
           <span
-            className="text-[13px] font-[500] truncate"
+            className="text-[14px] font-[500] truncate"
             style={{ color: isWinner ? color : "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
           >
             {participant.name}
@@ -142,12 +142,12 @@ export function ScoreboardRow({
 
       {/* Per-round action + payoff */}
       {roundActions.map(({ roundId, actionKey, payoff }) => (
-        <td key={roundId} className="py-2.5 px-3">
-          <div className="flex items-center gap-1.5">
-            {actionKey ? <ActionPill actionKey={actionKey} /> : <span className="text-[var(--gt-t4)] text-[12px]">—</span>}
+        <td key={roundId} className="py-4 px-4">
+          <div className="flex items-center gap-2">
+            {actionKey ? <ActionPill actionKey={actionKey} /> : <span className="text-[var(--gt-t4)] text-[13px]">—</span>}
             {payoff !== null && (
               <span
-                className="text-[12px] tabular-nums"
+                className="text-[13px] tabular-nums"
                 style={{ color: payoff >= 0 ? "var(--gt-pos)" : "var(--gt-neg)" }}
               >
                 {payoff > 0 ? "+" : ""}{payoff}
@@ -158,9 +158,9 @@ export function ScoreboardRow({
       ))}
 
       {/* Total score */}
-      <td className="py-2.5 pl-3 pr-4 text-right">
+      <td className="py-4 pl-4 pr-6 text-right">
         <span
-          className="text-[15px] font-[600] tabular-nums"
+          className="text-[17px] font-[600] tabular-nums"
           style={{
             color,
             letterSpacing: "var(--gt-tracking-tight)",

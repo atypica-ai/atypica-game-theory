@@ -19,7 +19,7 @@ export function RoundPill({ roundId, payoffSum, isViewing, isLive, onClick }: Ro
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 px-4 h-full text-[12px] font-[500] transition-colors duration-150 border-b-2 shrink-0 whitespace-nowrap",
+        "flex items-center gap-1.5 px-5 h-full text-[13px] font-[500] transition-colors duration-150 border-b-2 shrink-0 whitespace-nowrap",
         isViewing
           ? "border-[var(--gt-blue)] text-[var(--gt-blue)]"
           : "border-transparent text-[var(--gt-t3)] hover:text-[var(--gt-t2)]",

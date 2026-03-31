@@ -86,22 +86,23 @@ function GameLeaderboard({
   }, [completedRoundIds, activeRoundId]);
 
   return (
-    <div className="border-b overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ borderColor: "var(--gt-border)" }}>
+    <div className="border-b" style={{ borderColor: "var(--gt-border)" }}>
+      <div className="mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ maxWidth: "1200px" }}>
       <table className="w-full text-left" style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ background: "var(--gt-row-alt)", borderBottom: "1px solid var(--gt-border)" }}>
-            <th className="w-8 pl-4 pr-2 py-2 text-right tabular-nums text-[10px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
+            <th className="w-10 pl-6 pr-3 py-3 text-right tabular-nums text-[11px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
               #
             </th>
-            <th className="py-2 pr-4 text-[10px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
+            <th className="py-3 pr-6 text-[11px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
               Player
             </th>
             {displayRounds.map((r) => (
-              <th key={r} className="py-2 px-3 text-[10px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
+              <th key={r} className="py-3 px-4 text-[11px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
                 R{r}
               </th>
             ))}
-            <th className="py-2 pl-3 pr-4 text-right text-[10px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
+            <th className="py-3 pl-4 pr-6 text-right text-[11px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
               Score
             </th>
           </tr>
@@ -129,6 +130,7 @@ function GameLeaderboard({
           })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -265,29 +267,30 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <header
-        className="shrink-0 h-[52px] flex items-center justify-between px-6 border-b z-10"
+        className="shrink-0 border-b z-10"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
+        <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "1200px" }}>
         <div className="flex items-center gap-2">
           <Link
             href="/"
-            className="text-[11px] transition-colors hover:underline"
+            className="text-[13px] transition-colors hover:underline"
             style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
           >
             Game Theory Lab
           </Link>
-          <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
+          <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
           <span
-            className="text-[13px] font-[600]"
+            className="text-[15px] font-[600]"
             style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
           >
             {formatGameTypeName(gameType)}
           </span>
           {!isPending && currentRoundNumber > 0 && (
             <>
-              <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
+              <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
               <span
-                className="inline-flex items-center px-2 py-0.5 text-[11px] font-[500] border"
+                className="inline-flex items-center px-2.5 py-0.5 text-[12px] font-[500] border"
                 style={{
                   borderRadius: "9999px",
                   color: "var(--gt-t2)",
@@ -311,7 +314,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
                   );
                 }
               }}
-              className="text-[11px] transition-colors hover:underline"
+              className="text-[13px] transition-colors hover:underline"
               style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
             >
               Share Replay
@@ -338,7 +341,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
               }}
             />
             <span
-              className="text-[11px] font-[500]"
+              className="text-[12px] font-[500]"
               style={{
                 color: isCompleted ? "var(--gt-t3)" : isPending ? "var(--gt-t3)" : "var(--gt-blue)",
                 fontFamily: "IBMPlexMono, monospace",
@@ -348,6 +351,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
               {isCompleted ? "Complete" : isPending ? "Pending" : "Live"}
             </span>
           </div>
+        </div>
         </div>
       </header>
 
@@ -387,13 +391,13 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
       {/* ── Round tabs ──────────────────────────────────────────────────────── */}
       {historyBarRounds.length > 0 && (
         <div
-          className="shrink-0 h-10 border-b flex items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="shrink-0 h-11 border-b flex items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
         >
           {/* "All" tab */}
           <button
             onClick={() => setDisplayRoundId(null)}
-            className="flex items-center gap-1 px-4 h-full text-[12px] font-[500] border-b-2 shrink-0 transition-colors"
+            className="flex items-center gap-1 px-5 h-full text-[13px] font-[500] border-b-2 shrink-0 transition-colors"
             style={{
               borderBottomColor: isLiveView ? "var(--gt-blue)" : "transparent",
               color: isLiveView ? "var(--gt-blue)" : "var(--gt-t3)",
