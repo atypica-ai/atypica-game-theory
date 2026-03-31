@@ -13,10 +13,7 @@ import { ReplayIntro } from "./ReplayIntro";
 import { useGameReplay } from "./useGameReplay";
 
 function formatGameTypeName(key: string): string {
-  return key
-    .split("-")
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join(" ");
+  return key.split("-").map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
 }
 
 export function ReplayView({ initialData }: { initialData: GameSessionDetail }) {
@@ -44,7 +41,6 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
 
   const isComplete = phase === "complete";
 
-  // Cumulative scores accumulated as replay advances (only completed visible rounds)
   const cumulativeScores = useMemo(() => {
     const scores: Record<number, number> = {};
     for (const e of events) {
@@ -59,7 +55,6 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
     return scores;
   }, [events, visibleCompletedRoundIds]);
 
-  // Final scores (used only when complete)
   const finalScores = useMemo(() => {
     const scores: Record<number, number> = {};
     for (const e of events) {
@@ -84,7 +79,7 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
   }, [isComplete, participants, finalScores]);
 
   const winnerColor =
-    winner && winner !== "TIE" ? (PLAYER_COLORS[winnerIndex] ?? "#1bff1b") : "#d97706";
+    winner && winner !== "TIE" ? (PLAYER_COLORS[winnerIndex] ?? "var(--gt-pos)") : "var(--gt-warn)";
 
   function getResultState(personaId: number): PlayerResultState | undefined {
     if (!isComplete) return undefined;
@@ -96,7 +91,6 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
 
   const displayScores = isComplete ? finalScores : cumulativeScores;
 
-  // Find a decision event for a persona in the current replay round
   function getDecisionForReplay(personaId: number): PersonaDecisionEvent | null {
     if (currentRoundId === null) return null;
     return (
@@ -109,7 +103,6 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
     );
   }
 
-  // Payoff for a persona in the current replay round (only if payoffs are being shown)
   function getPayoffForReplay(personaId: number): number | undefined {
     if (showPayoffsForRound === null) return undefined;
     const e = events.find(
@@ -122,48 +115,51 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
   const replayRoundNumber = currentRoundId ?? visibleCompletedRoundIds.size;
 
   return (
-    <div className="h-screen flex flex-col bg-[#09090b] overflow-hidden relative">
+    <div className="h-screen flex flex-col overflow-hidden relative" style={{ background: "var(--gt-bg)" }}>
       <ReplayIntro
         gameTypeName={formatGameTypeName(gameType)}
         participants={participants}
         onStart={startPlayback}
       />
 
-      {/* ── Header ────────────────────────────────────────────────── */}
-      <header className="shrink-0 h-[52px] flex items-center justify-between px-8 border-b border-white/[0.05]">
-        <div className="flex items-center gap-3">
-          <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-zinc-700">
-            Game Theory
+      {/* ── Header ─────────────────────────────────────────────────── */}
+      <header
+        className="shrink-0 h-[52px] flex items-center justify-between px-6 border-b"
+        style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className="text-[11px]"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+          >
+            Game Theory Lab
           </span>
-          <span className="w-px h-3 bg-zinc-800" />
-          <span className="font-EuclidCircularA text-sm font-medium text-white">
+          <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
+          <span
+            className="text-[13px] font-[600]"
+            style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+          >
             {formatGameTypeName(gameType)}
           </span>
+          {replayRoundNumber > 0 && (
+            <>
+              <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
+              <span
+                className="inline-flex items-center px-2 py-0.5 text-[11px] border"
+                style={{
+                  borderRadius: "9999px",
+                  color: "var(--gt-t2)",
+                  borderColor: "var(--gt-border-md)",
+                  fontFamily: "IBMPlexMono, monospace",
+                }}
+              >
+                R{replayRoundNumber}
+              </span>
+            </>
+          )}
         </div>
 
-        <div className="flex items-center gap-5">
-          {replayRoundNumber > 0 && (
-            <span className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-600">
-              Round {replayRoundNumber}
-            </span>
-          )}
-
-          <div className="flex items-center gap-2">
-            <span className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-600">
-              {isComplete ? "Complete" : isIntroComplete ? "Replay" : "Ready"}
-            </span>
-            <motion.span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: isComplete ? "#3f3f46" : "#1bff1b" }}
-              animate={
-                isIntroComplete && !isComplete
-                  ? { boxShadow: ["0 0 0px #1bff1b", "0 0 8px #1bff1b", "0 0 0px #1bff1b"] }
-                  : {}
-              }
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          </div>
-
+        <div className="flex items-center gap-4">
           <button
             onClick={() => {
               if (typeof window !== "undefined") {
@@ -172,40 +168,60 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
                 );
               }
             }}
-            className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-700 hover:text-zinc-400 transition-colors"
+            className="text-[11px] transition-colors hover:underline"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
           >
             Copy Link
           </button>
+
+          <div
+            className="flex items-center gap-2 px-2.5 py-1 border"
+            style={{
+              borderRadius: "9999px",
+              borderColor: isComplete ? "var(--gt-border-md)" : "var(--gt-blue-border)",
+              background: isComplete ? "transparent" : "var(--gt-blue-bg)",
+            }}
+          >
+            <span
+              className="text-[11px] font-[500]"
+              style={{
+                color: isComplete ? "var(--gt-t3)" : "var(--gt-blue)",
+                fontFamily: "IBMPlexMono, monospace",
+                letterSpacing: "0.06em",
+              }}
+            >
+              {isComplete ? "Complete" : isIntroComplete ? "Replay" : "Ready"}
+            </span>
+          </div>
         </div>
       </header>
 
-      {/* ── Result banner ─────────────────────────────────────────── */}
+      {/* ── Result banner ──────────────────────────────────────────── */}
       <AnimatePresence>
         {isComplete && winner && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="shrink-0 h-8 flex items-center justify-center gap-4 border-b border-white/[0.04]"
-            style={{ background: `${winnerColor}08` }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="shrink-0 h-8 flex items-center justify-center gap-4 border-b"
+            style={{ borderColor: "var(--gt-border)", background: `${winnerColor}0d` }}
           >
-            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${winnerColor}20` }} />
+            <div className="flex-1 h-px max-w-16" style={{ backgroundColor: `${winnerColor}30` }} />
             <span
-              className="font-IBMPlexMono text-[10px] tracking-[0.22em] uppercase"
-              style={{ color: winnerColor }}
+              className="text-[12px] font-[600]"
+              style={{ color: winnerColor, letterSpacing: "var(--gt-tracking-tight)" }}
             >
-              {winner === "TIE" ? "Tie · Equal Scores" : `${winner} · Wins`}
+              {winner === "TIE" ? "Tie · Equal Scores" : `${winner} wins`}
             </span>
-            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${winnerColor}20` }} />
+            <div className="flex-1 h-px max-w-16" style={{ backgroundColor: `${winnerColor}30` }} />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Player arena ──────────────────────────────────────────── */}
+      {/* ── Player arena ───────────────────────────────────────────── */}
       <div
-        className="flex-1 min-h-0 grid gap-px"
+        className="flex-1 min-h-0 p-5 grid gap-4"
         style={{
-          backgroundColor: "rgba(255,255,255,0.035)",
           gridTemplateColumns: `repeat(${Math.max(participants.length, 1)}, 1fr)`,
         }}
       >
@@ -233,12 +249,16 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
         })}
       </div>
 
-      {/* ── Control bar ───────────────────────────────────────────── */}
-      <div className="shrink-0 h-10 flex items-center gap-4 px-6 border-t border-white/[0.05]">
-        <div className="flex-1 relative h-px bg-zinc-800">
+      {/* ── Control bar ────────────────────────────────────────────── */}
+      <div
+        className="shrink-0 h-11 flex items-center gap-4 px-6 border-t"
+        style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+      >
+        {/* Progress track */}
+        <div className="flex-1 relative h-[3px] rounded-full" style={{ background: "var(--gt-border)" }}>
           <div
-            className="absolute left-0 top-0 h-full transition-none"
-            style={{ width: `${progress}%`, backgroundColor: "rgba(27,255,27,0.6)" }}
+            className="absolute left-0 top-0 h-full rounded-full transition-none"
+            style={{ width: `${progress}%`, backgroundColor: "var(--gt-blue)" }}
           />
           <input
             type="range"
@@ -250,14 +270,18 @@ export function ReplayView({ initialData }: { initialData: GameSessionDetail }) 
           />
         </div>
 
-        <span className="font-IBMPlexMono text-[9px] tracking-[0.1em] text-zinc-700 tabular-nums w-7 text-right">
+        <span
+          className="tabular-nums w-7 text-right text-[11px]"
+          style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+        >
           {Math.round(progress)}%
         </span>
 
         {!isComplete && (
           <button
             onClick={skipToEnd}
-            className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-600 hover:text-zinc-400 transition-colors"
+            className="text-[11px] transition-colors hover:underline"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
           >
             Skip →
           </button>

@@ -1,33 +1,179 @@
 "use client";
 
-import { GameSessionParticipant, PersonaDecisionEvent, PersonaDiscussionEvent } from "@/app/(game-theory)/types";
+import {
+  GameSessionParticipant,
+  PersonaDecisionEvent,
+  PersonaDiscussionEvent,
+} from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "motion/react";
 
-// 10 unique accent colors — one per player slot
+// ── Player color palette — works on warm white surfaces ───────────────────────
 export const PLAYER_COLORS = [
-  "#1bff1b", // ghost-green
-  "#3b82f6", // blue
-  "#d97706", // amber
-  "#8b5cf6", // violet
-  "#22d3ee", // cyan
-  "#f59e0b", // yellow
-  "#93c5fd", // sky
-  "#f472b6", // pink
-  "#fb923c", // orange
-  "#ef4444", // red
+  "hsl(208 77% 42%)",  // deep blue
+  "hsl(350 60% 48%)",  // merlot
+  "hsl(152 55% 36%)",  // forest green
+  "hsl(35 80% 50%)",   // amber
+  "hsl(270 55% 48%)",  // purple
+  "hsl(180 55% 36%)",  // teal
+  "hsl(12 70% 50%)",   // coral
+  "hsl(80 45% 38%)",   // olive
+  "hsl(220 50% 52%)",  // periwinkle
+  "hsl(320 55% 48%)",  // magenta
 ];
 
-// Action badge styles
-export const ACTION_STYLE: Record<string, { color: string; bg: string; label: string }> = {
-  cooperate: { color: "#1bff1b", bg: "rgba(27,255,27,0.06)",   label: "COOPERATE" },
-  defect:    { color: "#fb923c", bg: "rgba(251,146,60,0.06)",  label: "DEFECT"    },
-  stag:      { color: "#22d3ee", bg: "rgba(34,211,238,0.06)",  label: "STAG"      },
-  rabbit:    { color: "#f59e0b", bg: "rgba(245,158,11,0.06)",  label: "RABBIT"    },
+// ── Action badge styles — pills, semantic colors ──────────────────────────────
+export const ACTION_STYLE: Record<
+  string,
+  { color: string; bg: string; border: string; label: string }
+> = {
+  cooperate: {
+    color: "var(--gt-pos)",
+    bg: "var(--gt-pos-bg)",
+    border: "hsl(125 49% 43% / 0.25)",
+    label: "Cooperate",
+  },
+  defect: {
+    color: "var(--gt-neg)",
+    bg: "var(--gt-neg-bg)",
+    border: "hsl(2 63% 54% / 0.25)",
+    label: "Defect",
+  },
+  stag: {
+    color: "var(--gt-blue)",
+    bg: "var(--gt-blue-bg)",
+    border: "var(--gt-blue-border)",
+    label: "Stag",
+  },
+  rabbit: {
+    color: "var(--gt-warn)",
+    bg: "var(--gt-warn-bg)",
+    border: "hsl(48 93% 45% / 0.3)",
+    label: "Rabbit",
+  },
 };
 
 export type PlayerResultState = "winner" | "loser" | "tie";
+
+// ── Action pill ───────────────────────────────────────────────────────────────
+export function ActionPill({ actionKey }: { actionKey: string }) {
+  const style = ACTION_STYLE[actionKey];
+  return (
+    <span
+      className="inline-flex items-center px-2 py-0.5 text-[11px] font-medium leading-none whitespace-nowrap"
+      style={
+        style
+          ? {
+              borderRadius: "9999px",
+              border: `1px solid ${style.border}`,
+              background: style.bg,
+              color: style.color,
+            }
+          : {
+              borderRadius: "9999px",
+              border: "1px solid var(--gt-border-md)",
+              background: "transparent",
+              color: "var(--gt-t3)",
+            }
+      }
+    >
+      {style?.label ?? actionKey ?? "—"}
+    </span>
+  );
+}
+
+// ── Scoreboard row — leaderboard table row ────────────────────────────────────
+
+interface ScoreboardRowProps {
+  participant: GameSessionParticipant;
+  playerIndex: number;
+  score: number;
+  rank: number;
+  roundActions: Array<{ roundId: number; actionKey: string; payoff: number | null }>;
+  resultState?: PlayerResultState;
+  onClick: () => void;
+}
+
+export function ScoreboardRow({
+  participant,
+  playerIndex,
+  score,
+  rank,
+  roundActions,
+  resultState,
+  onClick,
+}: ScoreboardRowProps) {
+  const color = PLAYER_COLORS[playerIndex] ?? PLAYER_COLORS[0];
+  const isWinner = resultState === "winner";
+  const isLoser = resultState === "loser";
+
+  return (
+    <tr
+      onClick={onClick}
+      className={cn(
+        "cursor-pointer transition-colors duration-150",
+        rank % 2 === 0 ? "bg-[var(--gt-row-alt)]" : "bg-[var(--gt-surface)]",
+        "hover:bg-[hsl(208_77%_52%_/_0.04)]",
+        isLoser && "opacity-50",
+      )}
+    >
+      {/* Rank */}
+      <td className="w-8 pl-4 pr-2 py-2.5 text-right tabular-nums text-[12px] text-[var(--gt-t4)]">
+        {rank}
+      </td>
+
+      {/* Player */}
+      <td className="py-2.5 pr-4">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="shrink-0 rounded-full p-[2px]"
+            style={{ outline: isWinner ? `2px solid ${color}` : undefined, outlineOffset: 1 }}
+          >
+            <HippyGhostAvatar seed={participant.personaId} className="size-6 rounded-full" />
+          </div>
+          <span
+            className="text-[13px] font-[500] truncate"
+            style={{ color: isWinner ? color : "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+          >
+            {participant.name}
+          </span>
+        </div>
+      </td>
+
+      {/* Per-round action + payoff */}
+      {roundActions.map(({ roundId, actionKey, payoff }) => (
+        <td key={roundId} className="py-2.5 px-3">
+          <div className="flex items-center gap-1.5">
+            {actionKey ? <ActionPill actionKey={actionKey} /> : <span className="text-[var(--gt-t4)] text-[12px]">—</span>}
+            {payoff !== null && (
+              <span
+                className="text-[12px] tabular-nums"
+                style={{ color: payoff >= 0 ? "var(--gt-pos)" : "var(--gt-neg)" }}
+              >
+                {payoff > 0 ? "+" : ""}{payoff}
+              </span>
+            )}
+          </div>
+        </td>
+      ))}
+
+      {/* Total score */}
+      <td className="py-2.5 pl-3 pr-4 text-right">
+        <span
+          className="text-[15px] font-[600] tabular-nums"
+          style={{
+            color,
+            letterSpacing: "var(--gt-tracking-tight)",
+          }}
+        >
+          {score}
+        </span>
+      </td>
+    </tr>
+  );
+}
+
+// ── PlayerCard2 — for replay arena grid ───────────────────────────────────────
 
 interface PlayerCard2Props {
   personaId: number;
@@ -42,11 +188,6 @@ interface PlayerCard2Props {
   onClick: () => void;
 }
 
-/**
- * Portrait-style player card for the 2-column game grid.
- * Score is the hero element — large, player-colored, center-aligned.
- * Status strip at bottom shows current round state.
- */
 export function PlayerCard2({
   personaId,
   personaName,
@@ -59,277 +200,114 @@ export function PlayerCard2({
   resultState,
   onClick,
 }: PlayerCard2Props) {
-  const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
+  const color = PLAYER_COLORS[playerIndex] ?? PLAYER_COLORS[0];
   const isWinner = resultState === "winner";
-  const isLoser  = resultState === "loser";
-  const isTie    = resultState === "tie";
+  const isLoser = resultState === "loser";
 
-  const hasDecided   = !!decision;
+  const actionKey = (decision?.content as Record<string, string> | undefined)?.action ?? "";
+  const hasDecided = !!decision;
   const hasDiscussed = !!lastDiscussion;
-  const actionKey    = (decision?.content as Record<string, string> | undefined)?.action ?? "";
-  const actionStyle  = ACTION_STYLE[actionKey];
 
-  const statusState: "deliberating" | "discussing" | "decided" | "idle" =
-    hasDecided
-      ? "decided"
-      : isCurrentRound && hasDiscussed
-        ? "discussing"
-        : isCurrentRound
-          ? "deliberating"
-          : "idle";
+  const statusState: "deliberating" | "discussing" | "decided" | "idle" = hasDecided
+    ? "decided"
+    : isCurrentRound && hasDiscussed
+      ? "discussing"
+      : isCurrentRound
+        ? "deliberating"
+        : "idle";
 
   return (
     <button
       onClick={onClick}
       className={cn(
-        "relative flex flex-col bg-[#09090b] text-left h-[180px]",
-        "transition-colors duration-300 hover:bg-zinc-900/60 group cursor-pointer overflow-hidden",
+        "flex flex-col bg-[var(--gt-surface)] border border-[var(--gt-border)] text-left",
+        "transition-colors duration-150 hover:border-[var(--gt-border-md)] group overflow-hidden",
         isLoser && "opacity-40",
       )}
+      style={{ borderRadius: "0.375rem" }}
     >
-      {/* Top accent border in player color */}
-      <motion.div
-        className="absolute top-0 left-0 right-0 h-[3px] z-10"
-        style={{ backgroundColor: color }}
-        animate={
-          isWinner
-            ? { boxShadow: [`0 0 0px ${color}`, `0 0 16px ${color}80`, `0 0 0px ${color}`] }
-            : {}
-        }
-        transition={{ duration: 2, repeat: Infinity }}
-      />
+      {/* Top color strip */}
+      <div className="h-[3px] w-full" style={{ backgroundColor: color }} />
 
-      <div className="flex flex-col h-full pt-4 px-5 pb-4 gap-0">
-        {/* ── Identity row ──────────────────────────────── */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div
-            className="shrink-0 rounded-full p-[2px]"
-            style={{ backgroundColor: `${color}20` }}
-          >
-            <HippyGhostAvatar seed={personaId} className="size-7" />
-          </div>
+      <div className="flex flex-col flex-1 p-4 gap-0">
+        {/* Identity */}
+        <div className="flex items-center gap-2.5 mb-3">
+          <HippyGhostAvatar seed={personaId} className="size-7 rounded-full shrink-0" />
           <div className="flex-1 min-w-0">
-            <div className="font-EuclidCircularA text-sm font-medium text-white leading-tight truncate">
+            <div
+              className="text-[13px] font-[600] truncate leading-tight"
+              style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+            >
               {personaName}
             </div>
-            <AnimatePresence>
-              {(isWinner || isTie) && (
-                <motion.div
-                  initial={{ opacity: 0, y: -2 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-1.5 mt-0.5"
-                >
-                  {isWinner && (
-                    <motion.span
-                      className="w-1 h-1 rounded-full"
-                      style={{ backgroundColor: color }}
-                      animate={{ opacity: [1, 0.3, 1] }}
-                      transition={{ duration: 1.8, repeat: Infinity }}
-                    />
-                  )}
-                  <span
-                    className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase"
-                    style={{ color: isWinner ? color : "#52525b" }}
-                  >
-                    {isWinner ? "Winner" : "Tie"}
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {isWinner && (
+              <div className="text-[11px] mt-0.5" style={{ color: "var(--gt-pos)" }}>
+                Winner
+              </div>
+            )}
+            {resultState === "tie" && (
+              <div className="text-[11px] mt-0.5" style={{ color: "var(--gt-warn)" }}>
+                Tie
+              </div>
+            )}
           </div>
         </div>
 
-        {/* ── Score — the hero ──────────────────────────── */}
-        <div className="flex-1 flex items-center justify-center">
-          <motion.span
-            key={cumulativeScore}
-            initial={{ opacity: 0.5, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="font-EuclidCircularA font-light tabular-nums leading-none select-none"
+        {/* Score — hero element */}
+        <div className="flex-1 flex items-center justify-center py-2">
+          <span
+            className="font-[600] tabular-nums leading-none select-none"
             style={{
               color,
-              fontSize: isWinner ? "3.5rem" : "3rem",
-              filter: isWinner ? `drop-shadow(0 0 16px ${color}60)` : undefined,
+              fontSize: isWinner ? "3rem" : "2.5rem",
+              letterSpacing: "var(--gt-tracking-tight)",
             }}
           >
             {cumulativeScore}
-          </motion.span>
+          </span>
         </div>
 
-        {/* ── Status strip ──────────────────────────────── */}
-        <div className="shrink-0 h-7 flex items-center">
-          <AnimatePresence mode="wait">
-            {statusState === "deliberating" && (
-              <motion.div
-                key="deliberating"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2"
+        {/* Status strip */}
+        <div className="h-7 flex items-center">
+          {statusState === "deliberating" && (
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ backgroundColor: color }}
+              />
+              <span className="text-[11px] font-[500]" style={{ color: "var(--gt-t3)" }}>
+                Deliberating…
+              </span>
+            </div>
+          )}
+          {statusState === "discussing" && (
+            <div className="flex items-center gap-2 min-w-0 w-full">
+              <span
+                className="text-[11px] font-[500] shrink-0"
+                style={{ color: "var(--gt-warn)" }}
               >
-                <div className="flex items-center gap-1">
-                  {[0, 1, 2].map((i) => (
-                    <motion.span
-                      key={i}
-                      className="w-1 h-1 rounded-full"
-                      style={{ backgroundColor: color }}
-                      animate={{ opacity: [0.15, 0.9, 0.15] }}
-                      transition={{ duration: 1.4, delay: i * 0.22, repeat: Infinity }}
-                    />
-                  ))}
-                </div>
+                Speaking
+              </span>
+              <span className="text-[11px] text-[var(--gt-t4)] truncate italic">
+                {lastDiscussion!.content}
+              </span>
+            </div>
+          )}
+          {statusState === "decided" && (
+            <div className="flex items-center justify-between gap-2 w-full">
+              <ActionPill actionKey={actionKey} />
+              {payoff !== undefined && (
                 <span
-                  className="font-IBMPlexMono text-[8px] tracking-[0.16em] uppercase"
-                  style={{ color: `${color}50` }}
+                  className="text-[13px] font-[600] tabular-nums"
+                  style={{ color: payoff >= 0 ? "var(--gt-pos)" : "var(--gt-neg)" }}
                 >
-                  Deliberating
+                  {payoff > 0 ? "+" : ""}{payoff}
                 </span>
-              </motion.div>
-            )}
-
-            {statusState === "discussing" && (
-              <motion.div
-                key="discussing"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2 w-full"
-              >
-                <span
-                  className="shrink-0 font-IBMPlexMono text-[8px] tracking-[0.14em] uppercase px-1.5 py-0.5 border"
-                  style={{
-                    color: "#f59e0b",
-                    borderColor: "rgba(245,158,11,0.25)",
-                    background: "rgba(245,158,11,0.04)",
-                  }}
-                >
-                  Speaking
-                </span>
-                <p className="font-EuclidCircularA text-[11px] text-zinc-500 truncate leading-none">
-                  {lastDiscussion!.content}
-                </p>
-              </motion.div>
-            )}
-
-            {statusState === "decided" && (
-              <motion.div
-                key="decided"
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.22 }}
-                className="flex items-center justify-between gap-2 w-full"
-              >
-                <div
-                  className="inline-flex items-center px-2 py-1 border"
-                  style={
-                    actionStyle
-                      ? { borderColor: `${actionStyle.color}35`, background: actionStyle.bg }
-                      : { borderColor: "rgba(255,255,255,0.08)", background: "transparent" }
-                  }
-                >
-                  <span
-                    className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase font-medium"
-                    style={{ color: actionStyle?.color ?? "#71717a" }}
-                  >
-                    {(actionStyle?.label ?? actionKey) || "—"}
-                  </span>
-                </div>
-
-                {payoff !== undefined && (
-                  <span
-                    className="font-EuclidCircularA text-base font-light tabular-nums"
-                    style={{ color: payoff > 0 ? "#1bff1b" : "#ef4444" }}
-                  >
-                    +{payoff}
-                  </span>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+              )}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Bottom hover accent */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ backgroundColor: `${color}20` }}
-      />
-    </button>
-  );
-}
-
-// ── Scoreboard row — compact right panel ──────────────────────────────────────
-
-interface ScoreboardRowProps {
-  participant: GameSessionParticipant;
-  playerIndex: number;
-  score: number;
-  rank: number;
-  resultState?: PlayerResultState;
-  onClick: () => void;
-}
-
-export function ScoreboardRow({
-  participant,
-  playerIndex,
-  score,
-  rank,
-  resultState,
-  onClick,
-}: ScoreboardRowProps) {
-  const color = PLAYER_COLORS[playerIndex] ?? "#ffffff";
-  const isWinner = resultState === "winner";
-  const isLoser  = resultState === "loser";
-
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "w-full flex items-center gap-3 px-4 h-12 hover:bg-white/[0.02] transition-colors group",
-        isLoser && "opacity-40",
-      )}
-    >
-      {/* Rank */}
-      <span className="font-IBMPlexMono text-[10px] tabular-nums text-zinc-700 w-4 shrink-0 text-right">
-        {rank}
-      </span>
-
-      {/* Avatar with color ring for winner */}
-      <div
-        className="shrink-0 rounded-full p-[1.5px]"
-        style={{ backgroundColor: isWinner ? `${color}40` : "transparent" }}
-      >
-        <HippyGhostAvatar seed={participant.personaId} className="size-6" />
-      </div>
-
-      {/* Name */}
-      <span className="font-EuclidCircularA text-sm font-medium flex-1 min-w-0 truncate text-left group-hover:text-white transition-colors"
-        style={{ color: isWinner ? "white" : "#a1a1aa" }}>
-        {participant.name}
-      </span>
-
-      {/* Winner dot */}
-      {isWinner && (
-        <motion.span
-          className="w-1 h-1 rounded-full shrink-0"
-          style={{ backgroundColor: color }}
-          animate={{ opacity: [1, 0.3, 1] }}
-          transition={{ duration: 1.8, repeat: Infinity }}
-        />
-      )}
-
-      {/* Score */}
-      <span
-        className="font-EuclidCircularA text-lg font-light tabular-nums shrink-0"
-        style={{
-          color,
-          filter: isWinner ? `drop-shadow(0 0 8px ${color}50)` : undefined,
-        }}
-      >
-        {score}
-      </span>
     </button>
   );
 }

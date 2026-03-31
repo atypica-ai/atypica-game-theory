@@ -1,56 +1,58 @@
 "use client";
 
 import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
-import { motion } from "motion/react";
+import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { GameDistributionView } from "./DistributionChart";
 
-// ── Per-game accent colors ────────────────────────────────────────────────────
-const GAME_ACCENT: Record<string, string> = {
-  "prisoner-dilemma": "#1bff1b",
-  "stag-hunt": "#d97706",
-};
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-// ── Per-game intro descriptions ───────────────────────────────────────────────
-// Plain, readable, no point values. Meant to spark curiosity, not explain rules.
-const GAME_DESCRIPTION: Record<string, string> = {
-  "prisoner-dilemma":
-    "Two players must each choose — cooperate or defect — simultaneously, with no communication and no binding promises. If both cooperate, both benefit. If one defects while the other trusts, the defector wins at their partner's expense. The game repeats across rounds, and the central tension never changes: can mutual trust survive the constant pull of self-interest?",
-  "stag-hunt":
-    "Each player secretly decides whether to join a group stag hunt or slip away and chase rabbits alone. The hunt only succeeds if enough players commit — but if it does, everyone gets the reward, even those who chose rabbit. You can play it safe with a guaranteed return, or bet on collective action and risk walking away with nothing. The harder question: do you trust the others to show up?",
-};
+function formatHorizon(gt: GameType): string {
+  if (gt.horizon.type === "fixed") return `${gt.horizon.rounds} rounds`;
+  if (gt.horizon.type === "indefinite") return `δ=${gt.horizon.discountFactor}`;
+  return "condition-based";
+}
 
-const gameTypes = Object.values(gameTypeRegistry);
+function formatPlayers(gt: GameType): string {
+  return gt.minPlayers === gt.maxPlayers
+    ? `${gt.minPlayers} players`
+    : `${gt.minPlayers}–${gt.maxPlayers} players`;
+}
 
-// ── Live badge ────────────────────────────────────────────────────────────────
-function LiveBadge() {
+// ── Stat chip ─────────────────────────────────────────────────────────────────
+
+function StatChip({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-2 border border-ghost-green/[0.3] bg-zinc-800/80 backdrop-blur-sm px-3 py-1">
-      <motion.span
-        className="w-1.5 h-1.5 rounded-full bg-ghost-green"
-        animate={{ opacity: [1, 0.4, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      />
-      <span className="font-IBMPlexMono text-[8px] tracking-[0.17em] uppercase text-ghost-green">
-        Live System
-      </span>
+    <span
+      className="inline-flex items-center px-2 py-0.5 text-[11px] border"
+      style={{
+        borderRadius: "9999px",
+        border: "1px solid var(--gt-border-md)",
+        color: "var(--gt-t3)",
+        fontFamily: "IBMPlexMono, monospace",
+        letterSpacing: "0.04em",
+      }}
+    >
+      {children}
     </span>
   );
 }
 
 // ── Legend ────────────────────────────────────────────────────────────────────
+
 function Legend() {
   return (
-    <div className="flex items-center gap-6">
+    <div className="flex items-center gap-5">
       <div className="flex items-center gap-2">
-        <div className="w-4 h-[9px] shrink-0 bg-zinc-400" style={{ opacity: 0.65 }} />
-        <span className="font-IBMPlexMono text-[8px] tracking-[0.12em] uppercase text-zinc-400">
+        <div className="w-3 h-2.5 rounded-sm opacity-75" style={{ background: "hsl(208 77% 52%)" }} />
+        <span className="text-[11px]" style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}>
           AI Persona
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <div className="w-[3px] h-[9px] bg-white/90 shrink-0" />
-        <span className="font-InstrumentSerif italic text-[11px] text-zinc-400">
+        <div className="w-0.5 h-2.5" style={{ background: "hsl(30 8% 75%)" }} />
+        <span className="text-[11px] italic" style={{ color: "var(--gt-t3)", fontFamily: "'Instrument Serif', Georgia, serif" }}>
           Human Reference
         </span>
       </div>
@@ -58,135 +60,111 @@ function Legend() {
   );
 }
 
-// ── Game type section header ──────────────────────────────────────────────────
-function GameTypeHeader({
-  name,
-  displayName,
-  description,
-  accentColor,
-}: {
-  name: string;
-  displayName: string;
-  description: string;
-  accentColor: string;
-}) {
+// ── Game card ─────────────────────────────────────────────────────────────────
+
+function GameCard({ gt }: { gt: GameType }) {
+  const horizon = formatHorizon(gt);
+  const players = formatPlayers(gt);
+
   return (
-    <div className="px-10 pt-10 pb-5 flex items-start justify-between gap-12">
-      <div className="flex flex-col gap-2 max-w-xl">
-        {/* Name row */}
-        <div className="flex items-center gap-3">
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ backgroundColor: accentColor }}
-          />
-          <span
-            className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase"
-            style={{ color: accentColor }}
-          >
-            {name}
-          </span>
-        </div>
-        {/* Display name */}
-        <h2 className="font-EuclidCircularA text-xl font-medium text-white leading-tight">
-          {displayName}
+    <div
+      className="flex flex-col border"
+      style={{
+        background: "var(--gt-surface)",
+        border: "1px solid var(--gt-border)",
+        borderRadius: "0.375rem",
+        overflow: "hidden",
+      }}
+    >
+      {/* Card header */}
+      <div className="px-5 pt-5 pb-4 border-b" style={{ borderColor: "var(--gt-border)" }}>
+        <h2
+          className="text-[15px] font-[600] mb-2 leading-tight"
+          style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+        >
+          {gt.displayName}
         </h2>
-        {/* Plain readable description */}
-        <p className="text-sm text-zinc-400 leading-relaxed">
-          {description}
+        <p
+          className="text-[12px] mb-3 leading-snug"
+          style={{ color: "var(--gt-t2)" }}
+        >
+          {gt.tagline}
         </p>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <StatChip>{players}</StatChip>
+          <StatChip>{horizon}</StatChip>
+          {gt.discussionRounds > 0 && (
+            <StatChip>
+              {gt.discussionRounds} discussion {gt.discussionRounds === 1 ? "round" : "rounds"}
+            </StatChip>
+          )}
+        </div>
       </div>
-      {/* Legend — right-aligned, top-aligned */}
-      <div className="shrink-0 pt-1">
-        <Legend />
+
+      {/* Distribution area */}
+      <div className="flex-1 p-5">
+        <GameDistributionView gameType={gt.name} />
       </div>
     </div>
   );
 }
 
-// ── Main homepage ─────────────────────────────────────────────────────────────
+// ── Main export ───────────────────────────────────────────────────────────────
+
 export function GameTheoryHome() {
+  const gameTypes = Object.values(gameTypeRegistry) as unknown as GameType[];
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#09090b]">
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
+
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="h-[52px] flex items-center justify-between px-8 border-b border-white/[0.05] shrink-0">
+      <header
+        className="shrink-0 h-[52px] flex items-center justify-between px-8 border-b"
+        style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+      >
         <div className="flex items-center gap-3">
-          <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-ghost-green">
-            01
-          </span>
-          <span className="w-px h-3 bg-zinc-800" />
-          <span className="font-EuclidCircularA text-sm font-medium text-white">
+          <span
+            className="text-[12px] font-[600]"
+            style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+          >
             Game Theory Lab
           </span>
+          <span className="w-px h-3.5" style={{ background: "var(--gt-border-md)" }} />
+          <span className="text-[11px]" style={{ color: "var(--gt-t3)" }}>
+            AI vs human behavioral analysis
+          </span>
         </div>
-        <LiveBadge />
+
+        <div className="flex items-center gap-4">
+          <Legend />
+          <Link
+            href="/game/new"
+            className="h-8 px-4 text-[12px] font-[500] inline-flex items-center transition-opacity hover:opacity-80"
+            style={{
+              background: "var(--gt-blue)",
+              color: "white",
+              borderRadius: "0.375rem",
+              letterSpacing: "var(--gt-tracking-tight)",
+            }}
+          >
+            New Experiment →
+          </Link>
+        </div>
       </header>
 
-      {/* ── Hero strip ─────────────────────────────────────────────────────── */}
-      <div className="relative px-10 py-8 border-b border-white/[0.05] shrink-0 overflow-hidden">
-        {/* GT watermark */}
+      {/* ── Game grid ──────────────────────────────────────────────────────── */}
+      <main className="flex-1 p-6">
         <div
-          className="pointer-events-none select-none absolute right-8 top-1/2 -translate-y-1/2 font-EuclidCircularA leading-none"
-          style={{ fontSize: "6.5rem", color: "rgba(255,255,255,0.025)", fontWeight: 300 }}
-          aria-hidden
+          className="grid gap-4"
+          style={{
+            gridTemplateColumns: "repeat(auto-fill, minmax(560px, 1fr))",
+          }}
         >
-          GT
+          {gameTypes.map((gt) => (
+            <GameCard key={gt.name} gt={gt} />
+          ))}
         </div>
-
-        <div className="flex items-center justify-between relative z-10">
-          {/* Headline + sub-text */}
-          <div>
-            <span className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase text-zinc-500 block mb-3">
-              Behavioral Divergence Analysis
-            </span>
-            <h1 className="font-EuclidCircularA text-[1.9rem] font-medium leading-[1.1] text-white mb-3">
-              Does AI strategy{" "}
-              <span className="font-InstrumentSerif italic" style={{ color: "#1bff1b" }}>
-                mirror
-              </span>{" "}
-              human instinct?
-            </h1>
-            <p className="text-sm text-zinc-400 leading-relaxed max-w-sm">
-              Each chart compares action probabilities between AI personas and human subjects from
-              academic experiments. Colored bars = AI. Thin white lines = humans.
-            </p>
-          </div>
-
-          {/* CTAs */}
-          <div className="flex flex-col items-end gap-3 shrink-0">
-            <Link
-              href="/game/new"
-              className="h-9 px-5 bg-ghost-green text-black font-medium text-xs tracking-[0.05em] inline-flex items-center"
-            >
-              Run Experiment →
-            </Link>
-            <Link
-              href="/game/"
-              className="h-9 px-5 border border-zinc-700 text-zinc-400 text-xs tracking-[0.05em] inline-flex items-center"
-            >
-              Past Results
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Game type sections — flat, in order ────────────────────────────── */}
-      {gameTypes.map((gt, i) => {
-        const accentColor = GAME_ACCENT[gt.name] ?? "#1bff1b";
-        return (
-          <section
-            key={gt.name}
-            className={i > 0 ? "border-t border-white/[0.05]" : undefined}
-          >
-            <GameTypeHeader
-              name={gt.name}
-              displayName={gt.displayName}
-              description={GAME_DESCRIPTION[gt.name] ?? gt.tagline}
-              accentColor={accentColor}
-            />
-            <GameDistributionView gameType={gt.name} />
-          </section>
-        );
-      })}
+      </main>
     </div>
   );
 }

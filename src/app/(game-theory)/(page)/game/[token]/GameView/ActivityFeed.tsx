@@ -8,11 +8,10 @@ import {
   RoundResultEvent,
 } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
-import { ACTION_STYLE, PLAYER_COLORS } from "./PlayerCard";
+import { useState, useEffect, useRef } from "react";
+import { ActionPill, PLAYER_COLORS } from "./PlayerCard";
 
-// ── Data model ─────────────────────────────────────────────────────────────────
+// ── Data model ────────────────────────────────────────────────────────────────
 
 type RoundData = {
   roundId: number;
@@ -45,27 +44,10 @@ function groupEventsByRound(events: GameTimeline): RoundData[] {
 
 function getPlayerColor(participants: GameSessionParticipant[], personaId: number): string {
   const idx = participants.findIndex((p) => p.personaId === personaId);
-  return PLAYER_COLORS[idx] ?? "#ffffff";
+  return PLAYER_COLORS[idx] ?? PLAYER_COLORS[0];
 }
 
-// ── Reasoning block ─────────────────────────────────────────────────────────────
-
-function ReasoningBlock({ text }: { text: string }) {
-  return (
-    <div className="mt-2.5 pl-3 border-l-2" style={{ borderColor: "rgba(27,255,27,0.15)" }}>
-      <p className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase mb-1.5"
-        style={{ color: "rgba(27,255,27,0.3)" }}>
-        Inner monologue
-      </p>
-      <p className="font-InstrumentSerif italic text-[13px] leading-relaxed"
-        style={{ color: "rgba(27,255,27,0.35)" }}>
-        {text}
-      </p>
-    </div>
-  );
-}
-
-// ── Single discussion message (collapsible) ────────────────────────────────────
+// ── Discussion message ────────────────────────────────────────────────────────
 
 function DiscussionMessage({
   event,
@@ -78,51 +60,51 @@ function DiscussionMessage({
   const color = getPlayerColor(participants, event.personaId);
 
   return (
-    <button
-      onClick={() => setExpanded((v) => !v)}
-      className="w-full text-left group py-2"
-    >
+    <button onClick={() => setExpanded((v) => !v)} className="w-full text-left group py-2">
       <div className="flex items-start gap-2.5">
-        <HippyGhostAvatar seed={event.personaId} className="size-5 shrink-0 mt-0.5" />
+        <HippyGhostAvatar seed={event.personaId} className="size-5 shrink-0 mt-0.5 rounded-full" />
         <div className="flex-1 min-w-0">
-          <span
-            className="font-EuclidCircularA text-[11px] font-medium"
-            style={{ color }}
-          >
+          <span className="text-[12px] font-[500] block mb-0.5" style={{ color }}>
             {event.personaName}
           </span>
-          <AnimatePresence mode="wait" initial={false}>
-            {!expanded ? (
-              <motion.p
-                key="preview"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.1 }}
-                className="font-InstrumentSerif italic text-[13px] leading-snug text-zinc-600 truncate mt-0.5"
+          {!expanded ? (
+            <p
+              className="text-[12px] truncate italic"
+              style={{ color: "var(--gt-t2)", fontFamily: "'Instrument Serif', Georgia, serif" }}
+            >
+              &ldquo;{event.content}&rdquo;
+            </p>
+          ) : (
+            <div>
+              <p
+                className="text-[13px] italic leading-relaxed"
+                style={{ color: "var(--gt-t1)", fontFamily: "'Instrument Serif', Georgia, serif" }}
               >
                 &ldquo;{event.content}&rdquo;
-              </motion.p>
-            ) : (
-              <motion.div
-                key="full"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="mt-0.5"
-              >
-                <p className="font-InstrumentSerif italic text-[14px] leading-relaxed text-zinc-200">
-                  &ldquo;{event.content}&rdquo;
-                </p>
-                {event.reasoning && <ReasoningBlock text={event.reasoning} />}
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </p>
+              {event.reasoning && (
+                <div
+                  className="mt-2 pl-3 border-l"
+                  style={{ borderColor: "var(--gt-border-md)" }}
+                >
+                  <p
+                    className="text-[10px] uppercase mb-1"
+                    style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
+                  >
+                    Inner monologue
+                  </p>
+                  <p
+                    className="text-[11px] italic leading-relaxed"
+                    style={{ color: "var(--gt-t3)", fontFamily: "'Instrument Serif', Georgia, serif" }}
+                  >
+                    {event.reasoning}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <span
-          className="shrink-0 font-IBMPlexMono text-[9px] text-zinc-700 group-hover:text-zinc-500 transition-colors mt-0.5 leading-none"
-        >
+        <span className="shrink-0 text-[10px] mt-0.5 transition-colors" style={{ color: "var(--gt-t4)" }}>
           {expanded ? "▴" : "▾"}
         </span>
       </div>
@@ -130,7 +112,7 @@ function DiscussionMessage({
   );
 }
 
-// ── Round card ─────────────────────────────────────────────────────────────────
+// ── Round card ────────────────────────────────────────────────────────────────
 
 function RoundCard({
   data,
@@ -141,7 +123,6 @@ function RoundCard({
   participants: GameSessionParticipant[];
   isLive: boolean;
 }) {
-  // Discussion open for live rounds; collapsed for completed
   const [discussionOpen, setDiscussionOpen] = useState(isLive);
 
   const hasDiscussion = data.discussions.length > 0;
@@ -149,163 +130,142 @@ function RoundCard({
   const hasResult = data.result !== null;
 
   return (
-    <div className="border border-white/[0.06]" style={{ background: "#0b0b0e" }}>
-      {/* ── Card header ──────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-5 h-9 border-b border-white/[0.04]">
-        <span className="font-IBMPlexMono text-[9px] tracking-[0.22em] uppercase text-zinc-500">
-          Round {data.roundId}
+    <div className="flex gap-4">
+      {/* Left — round label (lab-notebook style) */}
+      <div className="shrink-0 w-8 pt-3 flex flex-col items-end gap-1.5">
+        <span
+          className="text-[11px] font-[600] uppercase"
+          style={{
+            color: isLive ? "var(--gt-blue)" : "var(--gt-t4)",
+            fontFamily: "IBMPlexMono, monospace",
+            letterSpacing: "0.06em",
+          }}
+        >
+          R{data.roundId}
         </span>
-        {isLive ? (
-          <div className="flex items-center gap-1.5">
-            <motion.span
-              className="w-1 h-1 rounded-full"
-              style={{ backgroundColor: "#1bff1b" }}
-              animate={{ opacity: [1, 0.3, 1] }}
-              transition={{ duration: 1.6, repeat: Infinity }}
-            />
-            <span className="font-IBMPlexMono text-[8px] tracking-[0.16em] uppercase"
-              style={{ color: "rgba(27,255,27,0.6)" }}>
-              Live
-            </span>
-          </div>
-        ) : hasResult ? (
-          <span className="font-IBMPlexMono text-[8px] tracking-[0.14em] uppercase text-zinc-700">
-            Complete
-          </span>
-        ) : null}
+        {isLive && (
+          <span
+            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ backgroundColor: "var(--gt-blue)" }}
+          />
+        )}
       </div>
 
-      {/* ── Discussion toggle ─────────────────────────────────── */}
-      {hasDiscussion && (
-        <div>
-          <button
-            onClick={() => setDiscussionOpen((v) => !v)}
-            className="w-full flex items-center gap-3 px-5 h-9 hover:bg-white/[0.02] transition-colors border-b border-white/[0.03]"
-          >
-            {/* Stacked avatars */}
-            <div className="flex -space-x-1.5 shrink-0">
-              {[...new Set(data.discussions.map((d) => d.personaId))].slice(0, 5).map((pid) => (
-                <div
-                  key={pid}
-                  className="rounded-full border border-[#0b0b0e] size-4 overflow-hidden"
-                >
-                  <HippyGhostAvatar seed={pid} className="size-4" />
-                </div>
-              ))}
-            </div>
-            <span className="flex-1 font-IBMPlexMono text-[8px] tracking-[0.14em] uppercase text-zinc-600 text-left">
-              {data.discussions.length} {data.discussions.length === 1 ? "exchange" : "exchanges"}
-            </span>
-            <span className="font-IBMPlexMono text-[9px] text-zinc-700 shrink-0">
-              {discussionOpen ? "▴" : "▾"}
-            </span>
-          </button>
-
-          <AnimatePresence initial={false}>
-            {discussionOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.22, ease: "easeInOut" }}
-                className="overflow-hidden"
-              >
-                <div className="px-5 divide-y divide-white/[0.03]">
-                  {data.discussions.map((d, i) => (
-                    <DiscussionMessage key={i} event={d} participants={participants} />
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {/* ── Decisions grid ────────────────────────────────────── */}
-      {hasDecisions && (
-        <div className="px-5 py-3 border-t border-white/[0.04]">
-          <p className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase text-zinc-700 mb-2.5">
-            Decisions
-          </p>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-            {data.decisions.map((d) => {
-              const color = getPlayerColor(participants, d.personaId);
-              const actionKey = (d.content as Record<string, string>).action ?? "";
-              const actionStyle = ACTION_STYLE[actionKey];
-              return (
-                <div key={d.personaId} className="flex items-center gap-1.5 min-w-0">
-                  <HippyGhostAvatar seed={d.personaId} className="size-4 shrink-0" />
-                  <span
-                    className="font-EuclidCircularA text-[10px] font-medium truncate flex-1 min-w-0"
-                    style={{ color }}
-                  >
-                    {d.personaName}
-                  </span>
+      {/* Right — events */}
+      <div
+        className="flex-1 border rounded-[0.375rem] overflow-hidden mb-3"
+        style={{ border: "1px solid var(--gt-border)", background: "var(--gt-surface)" }}
+      >
+        {/* Discussion section */}
+        {hasDiscussion && (
+          <div>
+            <button
+              onClick={() => setDiscussionOpen((v) => !v)}
+              className="w-full flex items-center gap-3 px-4 h-9 border-b transition-colors hover:bg-[var(--gt-row-alt)]"
+              style={{ borderColor: "var(--gt-border)" }}
+            >
+              <div className="flex -space-x-1.5 shrink-0">
+                {[...new Set(data.discussions.map((d) => d.personaId))].slice(0, 5).map((pid) => (
                   <div
-                    className="inline-flex items-center px-1.5 py-0.5 border shrink-0"
-                    style={
-                      actionStyle
-                        ? { borderColor: `${actionStyle.color}35`, background: actionStyle.bg }
-                        : { borderColor: "rgba(255,255,255,0.08)", background: "transparent" }
-                    }
+                    key={pid}
+                    className="rounded-full border size-4 overflow-hidden"
+                    style={{ borderColor: "var(--gt-surface)" }}
                   >
+                    <HippyGhostAvatar seed={pid} className="size-4" />
+                  </div>
+                ))}
+              </div>
+              <span
+                className="flex-1 text-[11px] text-left"
+                style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.04em" }}
+              >
+                {data.discussions.length} {data.discussions.length === 1 ? "exchange" : "exchanges"}
+              </span>
+              <span className="text-[10px]" style={{ color: "var(--gt-t4)" }}>
+                {discussionOpen ? "▴" : "▾"}
+              </span>
+            </button>
+            {discussionOpen && (
+              <div className="px-4 divide-y" style={{ borderColor: "var(--gt-border)" }}>
+                {data.discussions.map((d, i) => (
+                  <DiscussionMessage key={i} event={d} participants={participants} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Decisions */}
+        {hasDecisions && (
+          <div
+            className={hasDiscussion ? "border-t px-4 py-3" : "px-4 py-3"}
+            style={{ borderColor: "var(--gt-border)" }}
+          >
+            <p
+              className="text-[10px] uppercase mb-2"
+              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
+            >
+              Decisions
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+              {data.decisions.map((d) => {
+                const color = getPlayerColor(participants, d.personaId);
+                const actionKey = (d.content as Record<string, string>).action ?? "";
+                return (
+                  <div key={d.personaId} className="flex items-center gap-1.5 min-w-0">
+                    <HippyGhostAvatar seed={d.personaId} className="size-4 shrink-0 rounded-full" />
+                    <span className="text-[11px] font-[500] truncate" style={{ color }}>
+                      {d.personaName}
+                    </span>
+                    <ActionPill actionKey={actionKey} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Result */}
+        {hasResult && data.result && (
+          <div
+            className="border-t px-4 py-3"
+            style={{ borderColor: "var(--gt-border)", background: "var(--gt-row-alt)" }}
+          >
+            <p
+              className="text-[10px] uppercase mb-2"
+              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
+            >
+              Result
+            </p>
+            <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+              {participants.map((p) => {
+                const payoff = data.result!.payoffs[p.personaId];
+                if (payoff === undefined) return null;
+                const color = getPlayerColor(participants, p.personaId);
+                return (
+                  <div key={p.personaId} className="flex items-center gap-1.5">
+                    <HippyGhostAvatar seed={p.personaId} className="size-4 shrink-0 rounded-full" />
+                    <span className="text-[11px] font-[500] truncate" style={{ color }}>
+                      {p.name}
+                    </span>
                     <span
-                      className="font-IBMPlexMono text-[8px] tracking-[0.1em] uppercase"
-                      style={{ color: actionStyle?.color ?? "#71717a" }}
+                      className="text-[13px] font-[600] tabular-nums"
+                      style={{ color: payoff >= 0 ? "var(--gt-pos)" : "var(--gt-neg)" }}
                     >
-                      {(actionStyle?.label ?? actionKey) || "—"}
+                      {payoff > 0 ? "+" : ""}{payoff}
                     </span>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* ── Round result ──────────────────────────────────────── */}
-      {hasResult && data.result && (
-        <div
-          className="px-5 py-3 border-t border-white/[0.04]"
-          style={{ background: "rgba(27,255,27,0.02)" }}
-        >
-          <p
-            className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase mb-2.5"
-            style={{ color: "rgba(27,255,27,0.4)" }}
-          >
-            Result
-          </p>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-            {participants.map((p) => {
-              const payoff = data.result!.payoffs[p.personaId];
-              if (payoff === undefined) return null;
-              const color = getPlayerColor(participants, p.personaId);
-              return (
-                <div key={p.personaId} className="flex items-center gap-1.5">
-                  <HippyGhostAvatar seed={p.personaId} className="size-4 shrink-0" />
-                  <span
-                    className="font-EuclidCircularA text-[10px] truncate flex-1 min-w-0"
-                    style={{ color }}
-                  >
-                    {p.name}
-                  </span>
-                  <span
-                    className="font-EuclidCircularA text-sm font-light tabular-nums shrink-0"
-                    style={{ color: payoff > 0 ? "#1bff1b" : "#ef4444" }}
-                  >
-                    +{payoff}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
-// ── Main export ────────────────────────────────────────────────────────────────
+// ── Main export ───────────────────────────────────────────────────────────────
 
 export interface GameFeedProps {
   events: GameTimeline;
@@ -323,7 +283,6 @@ export function GameFeed({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [userScrolled, setUserScrolled] = useState(false);
 
-  // Auto-scroll to bottom on new events
   useEffect(() => {
     if (!userScrolled && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -342,18 +301,20 @@ export function GameFeed({
 
   if (rounds.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex-1 flex flex-col items-center justify-center gap-2">
+        <div className="flex items-center gap-1.5">
           {[0, 1, 2].map((i) => (
-            <motion.span
+            <span
               key={i}
-              className="w-1.5 h-1.5 rounded-full bg-zinc-700"
-              animate={{ opacity: [0.15, 1, 0.15] }}
-              transition={{ duration: 1.4, delay: i * 0.25, repeat: Infinity }}
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ backgroundColor: "var(--gt-border-md)", animationDelay: `${i * 0.25}s` }}
             />
           ))}
         </div>
-        <span className="font-IBMPlexMono text-[9px] tracking-[0.22em] uppercase text-zinc-700">
+        <span
+          className="text-[11px] uppercase"
+          style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.12em" }}
+        >
           Awaiting activity
         </span>
       </div>
@@ -365,7 +326,7 @@ export function GameFeed({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex-1 overflow-y-auto px-5 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {rounds.map((roundData) => (
           <RoundCard
@@ -377,14 +338,14 @@ export function GameFeed({
         ))}
       </div>
 
-      {/* Jump to latest button */}
       {userScrolled && (
         <button
           onClick={() => {
             setUserScrolled(false);
             if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
           }}
-          className="shrink-0 h-7 flex items-center justify-center gap-1.5 border-t border-white/[0.05] font-IBMPlexMono text-[8px] tracking-[0.16em] uppercase text-zinc-600 hover:text-zinc-300 transition-colors"
+          className="shrink-0 h-7 flex items-center justify-center gap-1.5 border-t text-[11px] transition-colors hover:bg-[var(--gt-row-alt)]"
+          style={{ borderColor: "var(--gt-border)", color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
         >
           ↓ Latest
         </button>

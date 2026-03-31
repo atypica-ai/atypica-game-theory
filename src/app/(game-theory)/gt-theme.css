@@ -1,0 +1,38 @@
+/* ── Game Theory Design System ───────────────────────────────────────────────
+   Academic / arena.ai inspired.
+   All color values MUST go through these variables — never hardcode in components.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Surfaces */
+  --gt-bg:        hsl(36 45% 98%);
+  --gt-surface:   hsl(0 0% 100%);
+  --gt-row-alt:   hsl(33 31% 94%);
+
+  /* Borders */
+  --gt-border:    hsl(30 5% 88%);
+  --gt-border-md: hsl(30 8% 80%);
+
+  /* Text — 4-level hierarchy, color only, no size/weight changes within data */
+  --gt-t1: hsl(24 6% 17%);
+  --gt-t2: hsl(30 7% 36%);
+  --gt-t3: hsl(35 6% 50%);
+  --gt-t4: hsl(37 5% 64%);
+
+  /* Interactive — ONE blue, nothing else is interactive */
+  --gt-blue:      hsl(208 77% 52%);
+  --gt-blue-bg:   hsl(208 77% 52% / 0.08);
+  --gt-blue-border: hsl(208 77% 52% / 0.3);
+
+  /* Semantic outcomes */
+  --gt-pos:  hsl(125 49% 43%);
+  --gt-pos-bg: hsl(125 49% 43% / 0.08);
+  --gt-neg:  hsl(2 63% 54%);
+  --gt-neg-bg: hsl(2 63% 54% / 0.08);
+  --gt-warn: hsl(48 93% 45%);
+  --gt-warn-bg: hsl(48 93% 45% / 0.08);
+
+  /* Typography */
+  --gt-tracking-tight: -0.025em;
+  --gt-tracking-wide:  0.06em;
+}

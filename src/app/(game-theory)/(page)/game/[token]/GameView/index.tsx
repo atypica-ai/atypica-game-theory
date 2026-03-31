@@ -8,7 +8,7 @@ import {
   PersonaDiscussionEvent,
   RoundResultEvent,
 } from "@/app/(game-theory)/types";
-import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { GameFeed } from "./ActivityFeed";
@@ -30,11 +30,16 @@ function getRoundPayoffSum(events: GameTimeline, round: number): number {
   return Object.values(getRoundPayoffs(events, round)).reduce((acc, v) => acc + v, 0);
 }
 
+function getDecisionForRound(events: GameTimeline, personaId: number, round: number): string {
+  const e = events.find(
+    (ev): ev is PersonaDecisionEvent =>
+      ev.type === "persona-decision" && ev.personaId === personaId && ev.round === round,
+  );
+  return e ? ((e.content as Record<string, string>).action ?? "") : "";
+}
+
 function formatGameTypeName(key: string): string {
-  return key
-    .split("-")
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join(" ");
+  return key.split("-").map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
 }
 
 // ── GameView entry point ──────────────────────────────────────────────────────
@@ -52,15 +57,85 @@ export function GameView({
   return <GameLiveView initialData={initialData} token={token} />;
 }
 
+// ── Leaderboard table ─────────────────────────────────────────────────────────
+
+interface LeaderboardProps {
+  rankedParticipants: Array<{ p: GameSessionParticipant; i: number }>;
+  events: GameTimeline;
+  cumulativeScores: Record<number, number>;
+  completedRoundIds: number[];
+  activeRoundId: number | null;
+  getResultState: (personaId: number) => PlayerResultState | undefined;
+  onSelectPersona: (personaId: number) => void;
+}
+
+function GameLeaderboard({
+  rankedParticipants,
+  events,
+  cumulativeScores,
+  completedRoundIds,
+  activeRoundId,
+  getResultState,
+  onSelectPersona,
+}: LeaderboardProps) {
+  // All rounds with any data (completed + active)
+  const displayRounds = useMemo(() => {
+    const ids = new Set([...completedRoundIds]);
+    if (activeRoundId !== null) ids.add(activeRoundId);
+    return Array.from(ids).sort((a, b) => a - b);
+  }, [completedRoundIds, activeRoundId]);
+
+  return (
+    <div className="border-b overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ borderColor: "var(--gt-border)" }}>
+      <table className="w-full text-left" style={{ borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ background: "var(--gt-row-alt)", borderBottom: "1px solid var(--gt-border)" }}>
+            <th className="w-8 pl-4 pr-2 py-2 text-right tabular-nums text-[10px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
+              #
+            </th>
+            <th className="py-2 pr-4 text-[10px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
+              Player
+            </th>
+            {displayRounds.map((r) => (
+              <th key={r} className="py-2 px-3 text-[10px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
+                R{r}
+              </th>
+            ))}
+            <th className="py-2 pl-3 pr-4 text-right text-[10px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
+              Score
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rankedParticipants.map(({ p, i }, rank) => {
+            const roundActions = displayRounds.map((roundId) => ({
+              roundId,
+              actionKey: getDecisionForRound(events, p.personaId, roundId),
+              payoff: completedRoundIds.includes(roundId) ? (getRoundPayoffs(events, roundId)[p.personaId] ?? null) : null,
+            }));
+
+            return (
+              <ScoreboardRow
+                key={p.personaId}
+                participant={p}
+                playerIndex={i}
+                score={cumulativeScores[p.personaId] ?? 0}
+                rank={rank + 1}
+                roundActions={roundActions}
+                resultState={getResultState(p.personaId)}
+                onClick={() => onSelectPersona(p.personaId)}
+              />
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // ── Live view ─────────────────────────────────────────────────────────────────
 
-function GameLiveView({
-  initialData,
-  token,
-}: {
-  initialData: GameSessionDetail;
-  token: string;
-}) {
+function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; token: string }) {
   const { data } = useSWR(
     ["game:session", token],
     async () => {
@@ -130,7 +205,7 @@ function GameLiveView({
   const [selectedPersonaId, setSelectedPersonaId] = useState<number | null>(null);
   const isLiveView = displayRoundId === null;
 
-  // ── Completion / co-winner support ────────────────────────────────────────
+  // ── Completion ────────────────────────────────────────────────────────────
 
   const isCompleted = status === "completed";
   const isPending = status === "pending" || participants.length === 0;
@@ -139,7 +214,7 @@ function GameLiveView({
     if (!isCompleted || participants.length === 0) return [] as GameSessionParticipant[];
     const maxScore = Math.max(...participants.map((p) => cumulativeScores[p.personaId] ?? 0));
     const leaders = participants.filter((p) => (cumulativeScores[p.personaId] ?? 0) === maxScore);
-    if (leaders.length === participants.length) return [] as GameSessionParticipant[]; // full tie
+    if (leaders.length === participants.length) return [] as GameSessionParticipant[];
     return leaders;
   }, [isCompleted, participants, cumulativeScores]);
 
@@ -153,27 +228,17 @@ function GameLiveView({
 
   // ── Result banner ─────────────────────────────────────────────────────────
 
-  const bannerText = useMemo(() => {
+  const bannerData = useMemo(() => {
     if (!isCompleted) return null;
-    if (isFullTie) return { text: "Tie · Equal Scores", color: "#d97706" };
+    if (isFullTie) return { text: "Tie · Equal Scores", color: "var(--gt-warn)" };
     if (winners.length === 1) {
       const idx = participants.indexOf(winners[0]);
-      return { text: `${winners[0].name} · Wins`, color: PLAYER_COLORS[idx] ?? "#1bff1b" };
+      return { text: `${winners[0].name} wins`, color: PLAYER_COLORS[idx] ?? "var(--gt-pos)" };
     }
-    return { text: `${winners.map((w) => w.name).join(" & ")} · Win`, color: "#1bff1b" };
+    return { text: `${winners.map((w) => w.name).join(" & ")} win`, color: "var(--gt-pos)" };
   }, [isCompleted, isFullTie, winners, participants]);
 
-  // ── History bar ───────────────────────────────────────────────────────────
-
-  const historyBarRounds = [
-    ...completedRoundIds.map((r) => ({ roundId: r, isLiveRound: false })),
-    ...(activeRoundId !== null ? [{ roundId: activeRoundId, isLiveRound: true }] : []),
-  ];
-
-  const currentRoundNumber =
-    activeRoundId ?? (completedRoundIds.length > 0 ? completedRoundIds[completedRoundIds.length - 1] : 0);
-
-  // ── Scoreboard (sorted by score desc, stable) ─────────────────────────────
+  // ── Scoreboard ────────────────────────────────────────────────────────────
 
   const rankedParticipants = useMemo(() => {
     return [...participants]
@@ -184,26 +249,59 @@ function GameLiveView({
       });
   }, [participants, cumulativeScores]);
 
+  // ── Round tabs ────────────────────────────────────────────────────────────
+
+  const historyBarRounds = [
+    ...completedRoundIds.map((r) => ({ roundId: r, isLiveRound: false })),
+    ...(activeRoundId !== null ? [{ roundId: activeRoundId, isLiveRound: true }] : []),
+  ];
+
+  const currentRoundNumber =
+    activeRoundId ??
+    (completedRoundIds.length > 0 ? completedRoundIds[completedRoundIds.length - 1] : 0);
+
   return (
-    <div className="h-screen flex flex-col bg-[#09090b] overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden" style={{ background: "var(--gt-bg)" }}>
+
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <header className="shrink-0 h-[52px] flex items-center justify-between px-8 border-b border-white/[0.05] z-10">
-        <div className="flex items-center gap-3">
-          <span className="font-IBMPlexMono text-[8px] tracking-[0.22em] uppercase text-zinc-700">
-            Game Theory
-          </span>
-          <span className="w-px h-3 bg-zinc-800" />
-          <span className="font-EuclidCircularA text-sm font-medium text-white">
+      <header
+        className="shrink-0 h-[52px] flex items-center justify-between px-6 border-b z-10"
+        style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+      >
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="text-[11px] transition-colors hover:underline"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+          >
+            Game Theory Lab
+          </Link>
+          <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
+          <span
+            className="text-[13px] font-[600]"
+            style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+          >
             {formatGameTypeName(gameType)}
           </span>
+          {!isPending && currentRoundNumber > 0 && (
+            <>
+              <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>/</span>
+              <span
+                className="inline-flex items-center px-2 py-0.5 text-[11px] font-[500] border"
+                style={{
+                  borderRadius: "9999px",
+                  color: "var(--gt-t2)",
+                  borderColor: "var(--gt-border-md)",
+                  fontFamily: "IBMPlexMono, monospace",
+                }}
+              >
+                R{currentRoundNumber}
+              </span>
+            </>
+          )}
         </div>
 
-        <div className="flex items-center gap-5">
-          {!isPending && currentRoundNumber > 0 && (
-            <span className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-600">
-              Round {currentRoundNumber}
-            </span>
-          )}
+        <div className="flex items-center gap-4">
           {isCompleted && (
             <button
               onClick={() => {
@@ -213,23 +311,40 @@ function GameLiveView({
                   );
                 }
               }}
-              className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-600 hover:text-[#1bff1b]/60 transition-colors"
+              className="text-[11px] transition-colors hover:underline"
+              style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
             >
               Share Replay
             </button>
           )}
-          <div className="flex items-center gap-2">
-            <motion.span
+
+          <div
+            className="flex items-center gap-2 px-2.5 py-1 border"
+            style={{
+              borderRadius: "9999px",
+              borderColor: isCompleted ? "var(--gt-border-md)" : "var(--gt-blue-border)",
+              background: isCompleted ? "transparent" : "var(--gt-blue-bg)",
+            }}
+          >
+            <span
               className="w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: isCompleted ? "#3f3f46" : isPending ? "#3f3f46" : "#1bff1b" }}
-              animate={
-                !isCompleted && !isPending
-                  ? { boxShadow: ["0 0 0px #1bff1b", "0 0 8px #1bff1b", "0 0 0px #1bff1b"] }
-                  : {}
-              }
-              transition={{ duration: 2, repeat: Infinity }}
+              style={{
+                backgroundColor: isCompleted
+                  ? "var(--gt-t4)"
+                  : isPending
+                    ? "var(--gt-t4)"
+                    : "var(--gt-blue)",
+                animation: !isCompleted && !isPending ? "pulse 2s infinite" : undefined,
+              }}
             />
-            <span className="font-IBMPlexMono text-[9px] tracking-[0.16em] uppercase text-zinc-600">
+            <span
+              className="text-[11px] font-[500]"
+              style={{
+                color: isCompleted ? "var(--gt-t3)" : isPending ? "var(--gt-t3)" : "var(--gt-blue)",
+                fontFamily: "IBMPlexMono, monospace",
+                letterSpacing: "0.06em",
+              }}
+            >
               {isCompleted ? "Complete" : isPending ? "Pending" : "Live"}
             </span>
           </div>
@@ -237,112 +352,62 @@ function GameLiveView({
       </header>
 
       {/* ── Result banner ───────────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {bannerText && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="shrink-0 h-8 flex items-center justify-center gap-4 border-b border-white/[0.04]"
-            style={{ background: `${bannerText.color}08` }}
+      {bannerData && (
+        <div
+          className="shrink-0 h-8 flex items-center justify-center gap-4 border-b"
+          style={{ borderColor: "var(--gt-border)", background: `${bannerData.color}0d` }}
+        >
+          <div className="flex-1 h-px max-w-16" style={{ backgroundColor: `${bannerData.color}30` }} />
+          <span
+            className="text-[12px] font-[600]"
+            style={{
+              color: bannerData.color,
+              letterSpacing: "var(--gt-tracking-tight)",
+            }}
           >
-            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${bannerText.color}20` }} />
-            <span
-              className="font-IBMPlexMono text-[10px] tracking-[0.22em] uppercase"
-              style={{ color: bannerText.color }}
-            >
-              {bannerText.text}
-            </span>
-            <div className="flex-1 h-px max-w-24" style={{ backgroundColor: `${bannerText.color}20` }} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Main body ───────────────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 flex overflow-hidden">
-        {/* Left: Game feed — the main stage */}
-        <div className="flex-1 min-w-0 relative overflow-hidden">
-          {isPending ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-              <div className="flex items-center gap-2.5">
-                {[0, 1, 2].map((i) => (
-                  <motion.span
-                    key={i}
-                    className="w-1.5 h-1.5 rounded-full bg-zinc-700"
-                    animate={{ opacity: [0.15, 1, 0.15] }}
-                    transition={{ duration: 1.4, delay: i * 0.25, repeat: Infinity }}
-                  />
-                ))}
-              </div>
-              <span className="font-IBMPlexMono text-[9px] tracking-[0.22em] uppercase text-zinc-700">
-                Awaiting players
-              </span>
-            </div>
-          ) : (
-            <GameFeed
-              events={events}
-              participants={participants}
-              displayRoundId={displayRoundId}
-              activeRoundId={activeRoundId}
-            />
-          )}
-
-          {/* Detail panel overlays the feed */}
-          <PlayerDetailPanel
-            personaId={selectedPersonaId}
-            participants={participants}
-            events={events}
-            completedRoundIds={completedRoundIds}
-            activeRoundId={activeRoundId}
-            cumulativeScores={cumulativeScores}
-            winners={winners}
-            isFullTie={isFullTie}
-            onClose={() => setSelectedPersonaId(null)}
-          />
+            {bannerData.text}
+          </span>
+          <div className="flex-1 h-px max-w-16" style={{ backgroundColor: `${bannerData.color}30` }} />
         </div>
+      )}
 
-        {/* Right: Compact scoreboard */}
-        <div className="w-[220px] shrink-0 border-l border-white/[0.05] flex flex-col">
-          <div className="shrink-0 h-9 flex items-center px-4 border-b border-white/[0.04]">
-            <span className="font-IBMPlexMono text-[8px] tracking-[0.2em] uppercase text-zinc-700">
-              Scores
-            </span>
-          </div>
-          <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden divide-y divide-white/[0.03]">
-            {isPending ? (
-              <div className="flex items-center justify-center h-16">
-                <span className="font-IBMPlexMono text-[8px] tracking-[0.18em] uppercase text-zinc-800">
-                  —
-                </span>
-              </div>
-            ) : (
-              rankedParticipants.map(({ p, i }, rank) => (
-                <ScoreboardRow
-                  key={p.personaId}
-                  participant={p}
-                  playerIndex={i}
-                  score={cumulativeScores[p.personaId] ?? 0}
-                  rank={rank + 1}
-                  resultState={getResultState(p.personaId)}
-                  onClick={() =>
-                    setSelectedPersonaId((prev) => (prev === p.personaId ? null : p.personaId))
-                  }
-                />
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+      {/* ── Leaderboard table ────────────────────────────────────────────────── */}
+      {!isPending && (
+        <GameLeaderboard
+          rankedParticipants={rankedParticipants}
+          events={events}
+          cumulativeScores={cumulativeScores}
+          completedRoundIds={completedRoundIds}
+          activeRoundId={activeRoundId}
+          getResultState={getResultState}
+          onSelectPersona={(id) => setSelectedPersonaId((prev) => (prev === id ? null : id))}
+        />
+      )}
 
-      {/* ── Round history bar ────────────────────────────────────────────────── */}
+      {/* ── Round tabs ──────────────────────────────────────────────────────── */}
       {historyBarRounds.length > 0 && (
-        <div className="shrink-0 h-10 border-t border-white/[0.05] flex items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div
+          className="shrink-0 h-10 border-b flex items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+        >
+          {/* "All" tab */}
+          <button
+            onClick={() => setDisplayRoundId(null)}
+            className="flex items-center gap-1 px-4 h-full text-[12px] font-[500] border-b-2 shrink-0 transition-colors"
+            style={{
+              borderBottomColor: isLiveView ? "var(--gt-blue)" : "transparent",
+              color: isLiveView ? "var(--gt-blue)" : "var(--gt-t3)",
+            }}
+          >
+            All
+          </button>
+
           {historyBarRounds.map(({ roundId, isLiveRound }) => (
             <RoundPill
               key={roundId}
               roundId={roundId}
               payoffSum={isLiveRound ? null : getRoundPayoffSum(events, roundId)}
-              isViewing={isLiveRound ? isLiveView : displayRoundId === roundId}
+              isViewing={isLiveRound ? false : displayRoundId === roundId}
               isLive={isLiveRound}
               onClick={() => {
                 if (isLiveRound) {
@@ -355,28 +420,51 @@ function GameLiveView({
           ))}
 
           <div className="flex-1" />
-
-          <AnimatePresence>
-            {!isLiveView && activeRoundId !== null && (
-              <motion.button
-                initial={{ opacity: 0, x: 8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 8 }}
-                transition={{ duration: 0.18 }}
-                onClick={() => setDisplayRoundId(null)}
-                className="shrink-0 flex items-center gap-1.5 px-4 h-full border-l border-white/[0.04] font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase text-zinc-600 hover:text-[#1bff1b]/70 transition-colors"
-              >
-                <motion.span
-                  className="w-1 h-1 rounded-full bg-[#1bff1b]"
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ duration: 1.6, repeat: Infinity }}
-                />
-                Live
-              </motion.button>
-            )}
-          </AnimatePresence>
         </div>
       )}
+
+      {/* ── Activity feed ───────────────────────────────────────────────────── */}
+      <div className="flex-1 min-h-0 relative overflow-hidden">
+        {isPending ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: "var(--gt-border-md)" }}
+                />
+              ))}
+            </div>
+            <span
+              className="text-[11px] uppercase"
+              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.12em" }}
+            >
+              Awaiting players
+            </span>
+          </div>
+        ) : (
+          <GameFeed
+            events={events}
+            participants={participants}
+            displayRoundId={displayRoundId}
+            activeRoundId={activeRoundId}
+          />
+        )}
+
+        {/* Detail panel overlays feed */}
+        <PlayerDetailPanel
+          personaId={selectedPersonaId}
+          participants={participants}
+          events={events}
+          completedRoundIds={completedRoundIds}
+          activeRoundId={activeRoundId}
+          cumulativeScores={cumulativeScores}
+          winners={winners}
+          isFullTie={isFullTie}
+          onClose={() => setSelectedPersonaId(null)}
+        />
+      </div>
     </div>
   );
 }

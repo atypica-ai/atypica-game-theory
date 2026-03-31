@@ -1,54 +1,44 @@
 "use client";
 
-import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
 
-interface RoundPillProps {
+interface RoundTabProps {
   roundId: number;
-  payoffSum: number | null; // null = round in progress (no result yet)
-  isViewing: boolean;       // currently displayed in the arena
-  isLive: boolean;          // this is the active in-progress round
+  payoffSum: number | null; // null = in-progress
+  isViewing: boolean;
+  isLive: boolean;
   onClick: () => void;
 }
 
 /**
- * Compact round pill for the history bar.
- * Active/live round gets ghost-green styling and a pulsing dot.
+ * Category-tab style round selector — bottom-border indicator in --gt-blue.
+ * No background fill; matches arena.ai tab pattern exactly.
  */
-export function RoundPill({ roundId, payoffSum, isViewing, isLive, onClick }: RoundPillProps) {
+export function RoundPill({ roundId, payoffSum, isViewing, isLive, onClick }: RoundTabProps) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-3 h-full border-r border-white/[0.04] shrink-0 transition-colors duration-200"
-      style={{
-        color: isViewing ? (isLive ? "#1bff1b" : "rgba(255,255,255,0.7)") : "#52525b",
-        background: isViewing
-          ? isLive
-            ? "rgba(27,255,27,0.04)"
-            : "rgba(255,255,255,0.03)"
-          : "transparent",
-      }}
+      className={cn(
+        "flex items-center gap-1.5 px-4 h-full text-[12px] font-[500] transition-colors duration-150 border-b-2 shrink-0 whitespace-nowrap",
+        isViewing
+          ? "border-[var(--gt-blue)] text-[var(--gt-blue)]"
+          : "border-transparent text-[var(--gt-t3)] hover:text-[var(--gt-t2)]",
+      )}
     >
       {isLive && (
-        <motion.span
-          className="w-1 h-1 rounded-full shrink-0"
-          style={{ backgroundColor: "#1bff1b" }}
-          animate={{ opacity: [1, 0.25, 1] }}
-          transition={{ duration: 1.6, repeat: Infinity }}
+        <span
+          className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
+          style={{ backgroundColor: "var(--gt-blue)" }}
         />
       )}
-      <span className="font-IBMPlexMono text-[9px] tracking-[0.14em] uppercase tabular-nums whitespace-nowrap">
+      <span className="tracking-[0.04em]" style={{ fontFamily: '"IBM Plex Mono", monospace' }}>
         R{roundId}
-        {payoffSum !== null ? (
-          <span className="opacity-50 ml-1">· {payoffSum}</span>
-        ) : (
-          <span
-            className="ml-1"
-            style={{ color: isLive ? "#1bff1b" : "inherit", opacity: isLive ? 0.7 : 0.4 }}
-          >
-            · live
-          </span>
-        )}
       </span>
+      {payoffSum !== null ? (
+        <span className="text-[var(--gt-t4)] text-[11px] tabular-nums">· {payoffSum}</span>
+      ) : isLive ? (
+        <span className="text-[11px]" style={{ color: "var(--gt-blue)" }}>· live</span>
+      ) : null}
     </button>
   );
 }

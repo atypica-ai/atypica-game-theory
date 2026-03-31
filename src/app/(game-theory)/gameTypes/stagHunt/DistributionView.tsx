@@ -2,7 +2,7 @@
 
 import { PMFBin, PMFChart } from "@/app/(game-theory)/(page)/HomeView/PMFChart";
 
-const AI_COLOR = "#d97706";
+const AI_COLOR = "hsl(208 77% 52%)"; // --gt-blue
 
 // ── Human reference data ───────────────────────────────────────────────────────
 // Source: Battalio, Samuelson & Van Huyck (2001) — "Optimization Incentives and
@@ -67,9 +67,9 @@ export function StagHuntDistributionView() {
   return (
     <div className="px-10 pb-10 flex flex-col gap-5">
       {/* Chart grid */}
-      <div className="grid grid-cols-5 gap-px bg-zinc-800">
+      <div className="grid grid-cols-5 gap-px" style={{ backgroundColor: "var(--gt-border)" }}>
         {panels.map(({ title, subtitle, bins }) => (
-          <div key={title} className="bg-[#09090b] p-5">
+          <div key={title} className="p-4" style={{ background: "var(--gt-surface)" }}>
             <PMFChart title={title} subtitle={subtitle} bins={bins} aiColor={AI_COLOR} />
           </div>
         ))}
@@ -77,12 +77,12 @@ export function StagHuntDistributionView() {
 
       {/* Source attribution */}
       <div className="flex items-center gap-3">
-        <span className="w-1.5 h-1.5 rounded-full bg-zinc-800 shrink-0" />
-        <span className="font-IBMPlexMono text-[7px] tracking-[0.1em] uppercase text-zinc-600">
+        <span className="w-1 h-1 rounded-full shrink-0" style={{ background: "var(--gt-border-md)" }} />
+        <span className="font-[IBMPlexMono,monospace] text-[10px] tracking-[0.06em]" style={{ color: "var(--gt-t4)" }}>
           Human: Battalio, Samuelson &amp; Van Huyck (2001) · n≈84 · directional reference
         </span>
-        <span className="w-px h-3 bg-zinc-800 shrink-0" />
-        <span className="font-IBMPlexMono text-[7px] tracking-[0.1em] uppercase text-zinc-600">
+        <span className="w-px h-3 shrink-0" style={{ background: "var(--gt-border-md)" }} />
+        <span className="font-[IBMPlexMono,monospace] text-[10px] tracking-[0.06em]" style={{ color: "var(--gt-t4)" }}>
           AI: atypica.AI personas · mock data
         </span>
       </div>
