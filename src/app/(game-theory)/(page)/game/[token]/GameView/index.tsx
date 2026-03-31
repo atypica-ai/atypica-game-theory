@@ -3,7 +3,6 @@
 import { fetchGameSession, GameSessionDetail } from "@/app/(game-theory)/actions";
 import {
   GameSessionParticipant,
-  GameTimeline,
   PersonaDecisionEvent,
   PersonaDiscussionEvent,
   RoundResultEvent,
@@ -11,35 +10,33 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import { GameFeed } from "./ActivityFeed";
-import { PlayerResultState, PLAYER_COLORS, ScoreboardRow } from "./PlayerCard";
-import { PlayerDetailPanel } from "./PlayerDetailPanel";
+import { groupEventsByRound, RoundDetailView } from "./ActivityFeed";
+import { ParticipantTile, PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
 import { ReplayView } from "./ReplayView";
 import { RoundPill } from "./RoundView";
 
-// ── Event helpers ─────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getRoundPayoffs(events: GameTimeline, round: number): Record<number, number> {
-  const e = events.find(
-    (ev): ev is RoundResultEvent => ev.type === "round-result" && ev.round === round,
-  );
-  return e?.payoffs ?? {};
+function getRoundPayoffSum(
+  round: ReturnType<typeof groupEventsByRound>[number],
+): number {
+  if (!round.result) return 0;
+  return Object.values(round.result.payoffs).reduce((acc, v) => acc + v, 0);
 }
 
-function getRoundPayoffSum(events: GameTimeline, round: number): number {
-  return Object.values(getRoundPayoffs(events, round)).reduce((acc, v) => acc + v, 0);
-}
-
-function getDecisionForRound(events: GameTimeline, personaId: number, round: number): string {
-  const e = events.find(
-    (ev): ev is PersonaDecisionEvent =>
-      ev.type === "persona-decision" && ev.personaId === personaId && ev.round === round,
-  );
+function getDecisionForRound(
+  decisions: ReturnType<typeof groupEventsByRound>[number]["decisions"],
+  personaId: number,
+): string {
+  const e = decisions.find((d) => d.personaId === personaId);
   return e ? ((e.content as Record<string, string>).action ?? "") : "";
 }
 
 function formatGameTypeName(key: string): string {
-  return key.split("-").map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+  return key
+    .split("-")
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(" ");
 }
 
 // ── GameView entry point ──────────────────────────────────────────────────────
@@ -55,84 +52,6 @@ export function GameView({
 }) {
   if (replay) return <ReplayView initialData={initialData} />;
   return <GameLiveView initialData={initialData} token={token} />;
-}
-
-// ── Leaderboard table ─────────────────────────────────────────────────────────
-
-interface LeaderboardProps {
-  rankedParticipants: Array<{ p: GameSessionParticipant; i: number }>;
-  events: GameTimeline;
-  cumulativeScores: Record<number, number>;
-  completedRoundIds: number[];
-  activeRoundId: number | null;
-  getResultState: (personaId: number) => PlayerResultState | undefined;
-  onSelectPersona: (personaId: number) => void;
-}
-
-function GameLeaderboard({
-  rankedParticipants,
-  events,
-  cumulativeScores,
-  completedRoundIds,
-  activeRoundId,
-  getResultState,
-  onSelectPersona,
-}: LeaderboardProps) {
-  // All rounds with any data (completed + active)
-  const displayRounds = useMemo(() => {
-    const ids = new Set([...completedRoundIds]);
-    if (activeRoundId !== null) ids.add(activeRoundId);
-    return Array.from(ids).sort((a, b) => a - b);
-  }, [completedRoundIds, activeRoundId]);
-
-  return (
-    <div className="border-b" style={{ borderColor: "var(--gt-border)" }}>
-      <div className="mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ maxWidth: "1200px" }}>
-      <table className="w-full text-left" style={{ borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "var(--gt-row-alt)", borderBottom: "1px solid var(--gt-border)" }}>
-            <th className="w-10 pl-6 pr-3 py-3 text-right tabular-nums text-[11px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
-              #
-            </th>
-            <th className="py-3 pr-6 text-[11px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
-              Player
-            </th>
-            {displayRounds.map((r) => (
-              <th key={r} className="py-3 px-4 text-[11px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
-                R{r}
-              </th>
-            ))}
-            <th className="py-3 pl-4 pr-6 text-right text-[11px] font-normal uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}>
-              Score
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rankedParticipants.map(({ p, i }, rank) => {
-            const roundActions = displayRounds.map((roundId) => ({
-              roundId,
-              actionKey: getDecisionForRound(events, p.personaId, roundId),
-              payoff: completedRoundIds.includes(roundId) ? (getRoundPayoffs(events, roundId)[p.personaId] ?? null) : null,
-            }));
-
-            return (
-              <ScoreboardRow
-                key={p.personaId}
-                participant={p}
-                playerIndex={i}
-                score={cumulativeScores[p.personaId] ?? 0}
-                rank={rank + 1}
-                roundActions={roundActions}
-                resultState={getResultState(p.personaId)}
-                onClick={() => onSelectPersona(p.personaId)}
-              />
-            );
-          })}
-        </tbody>
-      </table>
-      </div>
-    </div>
-  );
 }
 
 // ── Live view ─────────────────────────────────────────────────────────────────
@@ -201,11 +120,45 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(events)]);
 
+  // All events grouped by round
+  const allRoundData = useMemo(
+    () => groupEventsByRound(events),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(events)],
+  );
+
+  // Players deliberating = in active round but haven't posted a decision yet
+  const playersDeliberating = useMemo(() => {
+    if (activeRoundId === null) return new Set<number>();
+    const decided = new Set(
+      events
+        .filter(
+          (e): e is PersonaDecisionEvent =>
+            e.type === "persona-decision" && e.round === activeRoundId,
+        )
+        .map((e) => e.personaId),
+    );
+    return new Set(
+      participants.filter((p) => !decided.has(p.personaId)).map((p) => p.personaId),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(events), activeRoundId, participants]);
+
   // ── UI state ──────────────────────────────────────────────────────────────
 
-  const [displayRoundId, setDisplayRoundId] = useState<number | null>(null);
-  const [selectedPersonaId, setSelectedPersonaId] = useState<number | null>(null);
-  const isLiveView = displayRoundId === null;
+  // null = auto-follow active round; number = user locked to specific round
+  const [manualRoundId, setManualRoundId] = useState<number | null>(null);
+
+  // Derived selected round: manual choice → active round → most recent completed
+  const selectedRoundId =
+    manualRoundId ?? activeRoundId ?? completedRoundIds.at(-1) ?? null;
+
+  const selectedRoundData =
+    selectedRoundId !== null
+      ? (allRoundData.find((r) => r.roundId === selectedRoundId) ?? null)
+      : null;
+
+  const isLiveRound = selectedRoundId === activeRoundId && activeRoundId !== null;
 
   // ── Completion ────────────────────────────────────────────────────────────
 
@@ -240,27 +193,21 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
     return { text: `${winners.map((w) => w.name).join(" & ")} win`, color: "var(--gt-pos)" };
   }, [isCompleted, isFullTie, winners, participants]);
 
-  // ── Scoreboard ────────────────────────────────────────────────────────────
+  // ── Round nav ─────────────────────────────────────────────────────────────
 
-  const rankedParticipants = useMemo(() => {
-    return [...participants]
-      .map((p, i) => ({ p, i }))
-      .sort((a, b) => {
-        const diff = (cumulativeScores[b.p.personaId] ?? 0) - (cumulativeScores[a.p.personaId] ?? 0);
-        return diff !== 0 ? diff : a.i - b.i;
-      });
-  }, [participants, cumulativeScores]);
-
-  // ── Round tabs ────────────────────────────────────────────────────────────
-
-  const historyBarRounds = [
-    ...completedRoundIds.map((r) => ({ roundId: r, isLiveRound: false })),
-    ...(activeRoundId !== null ? [{ roundId: activeRoundId, isLiveRound: true }] : []),
+  const navRounds = [
+    ...completedRoundIds.map((r) => ({ roundId: r, isLive: false })),
+    ...(activeRoundId !== null ? [{ roundId: activeRoundId, isLive: true }] : []),
   ];
 
   const currentRoundNumber =
     activeRoundId ??
     (completedRoundIds.length > 0 ? completedRoundIds[completedRoundIds.length - 1] : 0);
+
+  // Prev / next for round nav arrows
+  const selectedIdx = navRounds.findIndex((r) => r.roundId === selectedRoundId);
+  const canGoPrev = selectedIdx > 0;
+  const canGoNext = selectedIdx < navRounds.length - 1;
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ background: "var(--gt-bg)" }}>
@@ -270,88 +217,95 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
         className="shrink-0 border-b z-10"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
-        <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "1200px" }}>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/"
-            className="text-[13px] transition-colors hover:underline"
-            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-          >
-            Game Theory Lab
-          </Link>
-          <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
-          <span
-            className="text-[15px] font-[600]"
-            style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-          >
-            {formatGameTypeName(gameType)}
-          </span>
-          {!isPending && currentRoundNumber > 0 && (
-            <>
-              <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
-              <span
-                className="inline-flex items-center px-2.5 py-0.5 text-[12px] font-[500] border"
-                style={{
-                  borderRadius: "9999px",
-                  color: "var(--gt-t2)",
-                  borderColor: "var(--gt-border-md)",
-                  fontFamily: "IBMPlexMono, monospace",
-                }}
-              >
-                R{currentRoundNumber}
-              </span>
-            </>
-          )}
-        </div>
-
-        <div className="flex items-center gap-4">
-          {isCompleted && (
-            <button
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  void navigator.clipboard.writeText(
-                    `${window.location.origin}/game/${token}/replay`,
-                  );
-                }
-              }}
+        <div
+          className="mx-auto flex items-center justify-between h-[60px] px-8"
+          style={{ maxWidth: "1200px" }}
+        >
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
               className="text-[13px] transition-colors hover:underline"
               style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
             >
-              Share Replay
-            </button>
-          )}
+              Game Theory Lab
+            </Link>
+            <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
+            <span
+              className="text-[15px] font-[600]"
+              style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+            >
+              {formatGameTypeName(gameType)}
+            </span>
+            {!isPending && currentRoundNumber > 0 && (
+              <>
+                <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
+                <span
+                  className="inline-flex items-center px-2.5 py-0.5 text-[12px] font-[500] border"
+                  style={{
+                    borderRadius: "9999px",
+                    color: "var(--gt-t2)",
+                    borderColor: "var(--gt-border-md)",
+                    fontFamily: "IBMPlexMono, monospace",
+                  }}
+                >
+                  R{currentRoundNumber}
+                </span>
+              </>
+            )}
+          </div>
 
-          <div
-            className="flex items-center gap-2 px-2.5 py-1 border"
-            style={{
-              borderRadius: "9999px",
-              borderColor: isCompleted ? "var(--gt-border-md)" : "var(--gt-blue-border)",
-              background: isCompleted ? "transparent" : "var(--gt-blue-bg)",
-            }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full"
+          <div className="flex items-center gap-4">
+            {isCompleted && (
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    void navigator.clipboard.writeText(
+                      `${window.location.origin}/game/${token}/replay`,
+                    );
+                  }
+                }}
+                className="text-[13px] transition-colors hover:underline"
+                style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+              >
+                Share Replay
+              </button>
+            )}
+
+            <div
+              className="flex items-center gap-2 px-2.5 py-1 border"
               style={{
-                backgroundColor: isCompleted
-                  ? "var(--gt-t4)"
-                  : isPending
-                    ? "var(--gt-t4)"
-                    : "var(--gt-blue)",
-                animation: !isCompleted && !isPending ? "pulse 2s infinite" : undefined,
-              }}
-            />
-            <span
-              className="text-[12px] font-[500]"
-              style={{
-                color: isCompleted ? "var(--gt-t3)" : isPending ? "var(--gt-t3)" : "var(--gt-blue)",
-                fontFamily: "IBMPlexMono, monospace",
-                letterSpacing: "0.06em",
+                borderRadius: "9999px",
+                borderColor: isCompleted ? "var(--gt-border-md)" : "var(--gt-blue-border)",
+                background: isCompleted ? "transparent" : "var(--gt-blue-bg)",
               }}
             >
-              {isCompleted ? "Complete" : isPending ? "Pending" : "Live"}
-            </span>
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  backgroundColor: isCompleted
+                    ? "var(--gt-t4)"
+                    : isPending
+                      ? "var(--gt-t4)"
+                      : "var(--gt-blue)",
+                  animation: !isCompleted && !isPending ? "pulse 2s infinite" : undefined,
+                }}
+              />
+              <span
+                className="text-[12px] font-[500]"
+                style={{
+                  color: isCompleted
+                    ? "var(--gt-t3)"
+                    : isPending
+                      ? "var(--gt-t3)"
+                      : "var(--gt-blue)",
+                  fontFamily: "IBMPlexMono, monospace",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                {isCompleted ? "Complete" : isPending ? "Pending" : "Live"}
+              </span>
+            </div>
           </div>
-        </div>
         </div>
       </header>
 
@@ -364,10 +318,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
           <div className="flex-1 h-px max-w-16" style={{ backgroundColor: `${bannerData.color}30` }} />
           <span
             className="text-[12px] font-[600]"
-            style={{
-              color: bannerData.color,
-              letterSpacing: "var(--gt-tracking-tight)",
-            }}
+            style={{ color: bannerData.color, letterSpacing: "var(--gt-tracking-tight)" }}
           >
             {bannerData.text}
           </span>
@@ -375,99 +326,169 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
         </div>
       )}
 
-      {/* ── Leaderboard table ────────────────────────────────────────────────── */}
-      {!isPending && (
-        <GameLeaderboard
-          rankedParticipants={rankedParticipants}
-          events={events}
-          cumulativeScores={cumulativeScores}
-          completedRoundIds={completedRoundIds}
-          activeRoundId={activeRoundId}
-          getResultState={getResultState}
-          onSelectPersona={(id) => setSelectedPersonaId((prev) => (prev === id ? null : id))}
-        />
-      )}
-
-      {/* ── Round tabs ──────────────────────────────────────────────────────── */}
-      {historyBarRounds.length > 0 && (
+      {/* ── Participant strip ────────────────────────────────────────────────── */}
+      {!isPending && participants.length > 0 && (
         <div
-          className="shrink-0 h-11 border-b flex items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+          className="shrink-0 border-b"
+          style={{ borderColor: "var(--gt-border)", background: "var(--gt-bg)" }}
         >
-          {/* "All" tab */}
-          <button
-            onClick={() => setDisplayRoundId(null)}
-            className="flex items-center gap-1 px-5 h-full text-[13px] font-[500] border-b-2 shrink-0 transition-colors"
-            style={{
-              borderBottomColor: isLiveView ? "var(--gt-blue)" : "transparent",
-              color: isLiveView ? "var(--gt-blue)" : "var(--gt-t3)",
-            }}
+          <div
+            className="mx-auto flex items-center gap-3 px-8 py-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            style={{ maxWidth: "1200px" }}
           >
-            All
-          </button>
+            {participants.map((p, i) => {
+              const roundData = selectedRoundData;
+              const actionKey = roundData
+                ? getDecisionForRound(roundData.decisions, p.personaId)
+                : "";
+              const isDeliberating = isLiveRound && playersDeliberating.has(p.personaId);
 
-          {historyBarRounds.map(({ roundId, isLiveRound }) => (
-            <RoundPill
-              key={roundId}
-              roundId={roundId}
-              payoffSum={isLiveRound ? null : getRoundPayoffSum(events, roundId)}
-              isViewing={isLiveRound ? false : displayRoundId === roundId}
-              isLive={isLiveRound}
-              onClick={() => {
-                if (isLiveRound) {
-                  setDisplayRoundId(null);
-                } else {
-                  setDisplayRoundId((prev) => (prev === roundId ? null : roundId));
-                }
-              }}
-            />
-          ))}
-
-          <div className="flex-1" />
+              return (
+                <ParticipantTile
+                  key={p.personaId}
+                  participant={p}
+                  playerIndex={i}
+                  score={cumulativeScores[p.personaId] ?? 0}
+                  actionKey={actionKey || undefined}
+                  isDeliberating={isDeliberating}
+                  resultState={getResultState(p.personaId)}
+                />
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* ── Activity feed ───────────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 relative overflow-hidden">
+      {/* ── Round navigation bar ─────────────────────────────────────────────── */}
+      {navRounds.length > 0 && (
+        <div
+          className="shrink-0 h-11 border-b flex items-stretch"
+          style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+        >
+          {/* Prev arrow */}
+          <button
+            onClick={() => {
+              if (canGoPrev) {
+                setManualRoundId(navRounds[selectedIdx - 1].roundId);
+              }
+            }}
+            disabled={!canGoPrev}
+            className="shrink-0 px-4 h-full flex items-center text-[13px] transition-colors border-r"
+            style={{
+              color: canGoPrev ? "var(--gt-t2)" : "var(--gt-border-md)",
+              borderColor: "var(--gt-border)",
+              fontFamily: "IBMPlexMono, monospace",
+              cursor: canGoPrev ? "pointer" : "default",
+            }}
+          >
+            ←
+          </button>
+
+          {/* Round pills — scrollable */}
+          <div className="flex-1 flex items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {/* Live tab */}
+            {activeRoundId !== null && (
+              <button
+                onClick={() => setManualRoundId(null)}
+                className="flex items-center gap-1.5 px-5 h-full text-[13px] font-[500] border-b-2 shrink-0 transition-colors"
+                style={{
+                  borderBottomColor:
+                    manualRoundId === null ? "var(--gt-blue)" : "transparent",
+                  color:
+                    manualRoundId === null ? "var(--gt-blue)" : "var(--gt-t3)",
+                  fontFamily: "IBMPlexMono, monospace",
+                }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ backgroundColor: "var(--gt-blue)" }}
+                />
+                Live
+              </button>
+            )}
+
+            {navRounds.map(({ roundId, isLive }) => {
+              const roundDataItem = allRoundData.find((r) => r.roundId === roundId);
+              const payoffSum = !isLive && roundDataItem ? getRoundPayoffSum(roundDataItem) : null;
+              return (
+                <RoundPill
+                  key={roundId}
+                  roundId={roundId}
+                  payoffSum={payoffSum}
+                  isViewing={manualRoundId === roundId}
+                  isLive={isLive}
+                  onClick={() => {
+                    if (isLive) {
+                      setManualRoundId(null);
+                    } else {
+                      setManualRoundId((prev) => (prev === roundId ? null : roundId));
+                    }
+                  }}
+                />
+              );
+            })}
+
+            <div className="flex-1" />
+          </div>
+
+          {/* Next arrow */}
+          <button
+            onClick={() => {
+              if (canGoNext) {
+                const next = navRounds[selectedIdx + 1];
+                if (next.isLive) {
+                  setManualRoundId(null);
+                } else {
+                  setManualRoundId(next.roundId);
+                }
+              }
+            }}
+            disabled={!canGoNext}
+            className="shrink-0 px-4 h-full flex items-center text-[13px] transition-colors border-l"
+            style={{
+              color: canGoNext ? "var(--gt-t2)" : "var(--gt-border-md)",
+              borderColor: "var(--gt-border)",
+              fontFamily: "IBMPlexMono, monospace",
+              cursor: canGoNext ? "pointer" : "default",
+            }}
+          >
+            →
+          </button>
+        </div>
+      )}
+
+      {/* ── Round content area ───────────────────────────────────────────────── */}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         {isPending ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+          <div className="flex-1 flex flex-col items-center justify-center gap-3">
             <div className="flex items-center gap-1.5">
               {[0, 1, 2].map((i) => (
                 <span
                   key={i}
-                  className="w-1.5 h-1.5 rounded-full"
+                  className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: "var(--gt-border-md)" }}
                 />
               ))}
             </div>
             <span
-              className="text-[11px] uppercase"
-              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.12em" }}
+              className="text-[12px] uppercase"
+              style={{
+                color: "var(--gt-t4)",
+                fontFamily: "IBMPlexMono, monospace",
+                letterSpacing: "0.12em",
+              }}
             >
               Awaiting players
             </span>
           </div>
         ) : (
-          <GameFeed
-            events={events}
+          <RoundDetailView
+            roundData={selectedRoundData}
             participants={participants}
-            displayRoundId={displayRoundId}
-            activeRoundId={activeRoundId}
+            isLive={isLiveRound}
+            playersDeliberating={playersDeliberating}
           />
         )}
-
-        {/* Detail panel overlays feed */}
-        <PlayerDetailPanel
-          personaId={selectedPersonaId}
-          participants={participants}
-          events={events}
-          completedRoundIds={completedRoundIds}
-          activeRoundId={activeRoundId}
-          cumulativeScores={cumulativeScores}
-          winners={winners}
-          isFullTie={isFullTie}
-          onClose={() => setSelectedPersonaId(null)}
-        />
       </div>
     </div>
   );

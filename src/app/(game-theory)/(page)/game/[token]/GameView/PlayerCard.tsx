@@ -173,6 +173,108 @@ export function ScoreboardRow({
   );
 }
 
+// ── Participant tile — video-conference style strip ───────────────────────────
+
+export interface ParticipantTileProps {
+  participant: GameSessionParticipant;
+  playerIndex: number;
+  score: number;
+  actionKey?: string;
+  isDeliberating?: boolean;
+  resultState?: PlayerResultState;
+  isSelected?: boolean;
+  onClick?: () => void;
+}
+
+export function ParticipantTile({
+  participant,
+  playerIndex,
+  score,
+  actionKey,
+  isDeliberating,
+  resultState,
+  isSelected,
+  onClick,
+}: ParticipantTileProps) {
+  const color = PLAYER_COLORS[playerIndex] ?? PLAYER_COLORS[0];
+  const isWinner = resultState === "winner";
+  const isLoser = resultState === "loser";
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center text-center shrink-0 overflow-hidden transition-all duration-150",
+        isLoser ? "opacity-40" : "opacity-100",
+      )}
+      style={{
+        background: "var(--gt-surface)",
+        border: `1px solid ${isSelected ? color : "var(--gt-border)"}`,
+        borderRadius: "0.5rem",
+        width: "110px",
+        outline: isSelected ? `2px solid ${color}` : undefined,
+        outlineOffset: isSelected ? "2px" : undefined,
+      }}
+    >
+      {/* Top color strip */}
+      <div className="w-full h-[3px] shrink-0" style={{ backgroundColor: color }} />
+
+      <div className="flex flex-col items-center gap-1.5 px-3 py-3 w-full">
+        {/* Avatar */}
+        <div
+          className="rounded-full"
+          style={{
+            outline: isWinner ? `2px solid ${color}` : undefined,
+            outlineOffset: isWinner ? 2 : undefined,
+          }}
+        >
+          <HippyGhostAvatar seed={participant.personaId} className="size-10 rounded-full" />
+        </div>
+
+        {/* Name */}
+        <span
+          className="text-[11px] font-[500] w-full truncate leading-tight"
+          style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+        >
+          {participant.name}
+        </span>
+
+        {/* Score */}
+        <span
+          className="text-[18px] font-[600] tabular-nums leading-none"
+          style={{ color, letterSpacing: "var(--gt-tracking-tight)" }}
+        >
+          {score}
+        </span>
+
+        {/* Status / Action */}
+        <div className="h-5 flex items-center justify-center">
+          {isDeliberating ? (
+            <div className="flex items-center gap-1">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="w-1 h-1 rounded-full animate-pulse"
+                  style={{ backgroundColor: color, animationDelay: `${i * 0.2}s` }}
+                />
+              ))}
+            </div>
+          ) : actionKey ? (
+            <ActionPill actionKey={actionKey} />
+          ) : (
+            <span
+              className="text-[11px]"
+              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
+            >
+              —
+            </span>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+}
+
 // ── PlayerCard2 — for replay arena grid ───────────────────────────────────────
 
 interface PlayerCard2Props {

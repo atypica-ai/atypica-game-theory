@@ -8,19 +8,19 @@ import {
   RoundResultEvent,
 } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { ActionPill, PLAYER_COLORS } from "./PlayerCard";
 
 // ── Data model ────────────────────────────────────────────────────────────────
 
-type RoundData = {
+export type RoundData = {
   roundId: number;
   discussions: PersonaDiscussionEvent[];
   decisions: PersonaDecisionEvent[];
   result: RoundResultEvent | null;
 };
 
-function groupEventsByRound(events: GameTimeline): RoundData[] {
+export function groupEventsByRound(events: GameTimeline): RoundData[] {
   const map = new Map<number, RoundData>();
 
   for (const e of events) {
@@ -47,217 +47,56 @@ function getPlayerColor(participants: GameSessionParticipant[], personaId: numbe
   return PLAYER_COLORS[idx] ?? PLAYER_COLORS[0];
 }
 
-// ── Discussion message ────────────────────────────────────────────────────────
+// ── Discussion entry ──────────────────────────────────────────────────────────
 
-function DiscussionMessage({
+function DiscussionEntry({
   event,
   participants,
 }: {
   event: PersonaDiscussionEvent;
   participants: GameSessionParticipant[];
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [showReasoning, setShowReasoning] = useState(false);
   const color = getPlayerColor(participants, event.personaId);
 
   return (
-    <button onClick={() => setExpanded((v) => !v)} className="w-full text-left group py-2">
-      <div className="flex items-start gap-3">
-        <HippyGhostAvatar seed={event.personaId} className="size-6 shrink-0 mt-0.5 rounded-full" />
-        <div className="flex-1 min-w-0">
-          <span className="text-[13px] font-[500] block mb-1" style={{ color }}>
+    <div className="flex gap-4 px-6 py-5 border-b last:border-b-0" style={{ borderColor: "var(--gt-border)" }}>
+      <HippyGhostAvatar seed={event.personaId} className="size-9 rounded-full shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-[14px] font-[500]" style={{ color }}>
             {event.personaName}
           </span>
-          {!expanded ? (
-            <p
-              className="text-[13px] truncate italic"
-              style={{ color: "var(--gt-t2)", fontFamily: "'Instrument Serif', Georgia, serif" }}
+          {event.reasoning && (
+            <button
+              onClick={() => setShowReasoning((v) => !v)}
+              className="text-[11px] transition-colors hover:underline"
+              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
             >
-              &ldquo;{event.content}&rdquo;
-            </p>
-          ) : (
-            <div>
-              <p
-                className="text-[14px] italic leading-relaxed"
-                style={{ color: "var(--gt-t1)", fontFamily: "'Instrument Serif', Georgia, serif" }}
-              >
-                &ldquo;{event.content}&rdquo;
-              </p>
-              {event.reasoning && (
-                <div
-                  className="mt-3 pl-4 border-l"
-                  style={{ borderColor: "var(--gt-border-md)" }}
-                >
-                  <p
-                    className="text-[11px] uppercase mb-1"
-                    style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
-                  >
-                    Inner monologue
-                  </p>
-                  <p
-                    className="text-[13px] italic leading-relaxed"
-                    style={{ color: "var(--gt-t3)", fontFamily: "'Instrument Serif', Georgia, serif" }}
-                  >
-                    {event.reasoning}
-                  </p>
-                </div>
-              )}
-            </div>
+              {showReasoning ? "hide thoughts" : "show thoughts"}
+            </button>
           )}
         </div>
-        <span className="shrink-0 text-[10px] mt-0.5 transition-colors" style={{ color: "var(--gt-t4)" }}>
-          {expanded ? "▴" : "▾"}
-        </span>
-      </div>
-    </button>
-  );
-}
-
-// ── Round card ────────────────────────────────────────────────────────────────
-
-function RoundCard({
-  data,
-  participants,
-  isLive,
-}: {
-  data: RoundData;
-  participants: GameSessionParticipant[];
-  isLive: boolean;
-}) {
-  const [discussionOpen, setDiscussionOpen] = useState(isLive);
-
-  const hasDiscussion = data.discussions.length > 0;
-  const hasDecisions = data.decisions.length > 0;
-  const hasResult = data.result !== null;
-
-  return (
-    <div className="flex gap-4">
-      {/* Left — round label (lab-notebook style) */}
-      <div className="shrink-0 w-10 pt-4 flex flex-col items-end gap-1.5">
-        <span
-          className="text-[12px] font-[600] uppercase"
-          style={{
-            color: isLive ? "var(--gt-blue)" : "var(--gt-t4)",
-            fontFamily: "IBMPlexMono, monospace",
-            letterSpacing: "0.06em",
-          }}
+        <p
+          className="text-[15px] italic leading-relaxed"
+          style={{ color: "var(--gt-t1)", fontFamily: "'Instrument Serif', Georgia, serif" }}
         >
-          R{data.roundId}
-        </span>
-        {isLive && (
-          <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ backgroundColor: "var(--gt-blue)" }}
-          />
-        )}
-      </div>
-
-      {/* Right — events */}
-      <div
-        className="flex-1 border rounded-[0.375rem] overflow-hidden mb-3"
-        style={{ border: "1px solid var(--gt-border)", background: "var(--gt-surface)" }}
-      >
-        {/* Discussion section */}
-        {hasDiscussion && (
-          <div>
-            <button
-              onClick={() => setDiscussionOpen((v) => !v)}
-              className="w-full flex items-center gap-3 px-5 h-11 border-b transition-colors hover:bg-[var(--gt-row-alt)]"
-              style={{ borderColor: "var(--gt-border)" }}
-            >
-              <div className="flex -space-x-1.5 shrink-0">
-                {[...new Set(data.discussions.map((d) => d.personaId))].slice(0, 5).map((pid) => (
-                  <div
-                    key={pid}
-                    className="rounded-full border size-5 overflow-hidden"
-                    style={{ borderColor: "var(--gt-surface)" }}
-                  >
-                    <HippyGhostAvatar seed={pid} className="size-5" />
-                  </div>
-                ))}
-              </div>
-              <span
-                className="flex-1 text-[12px] text-left"
-                style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.04em" }}
-              >
-                {data.discussions.length} {data.discussions.length === 1 ? "exchange" : "exchanges"}
-              </span>
-              <span className="text-[11px]" style={{ color: "var(--gt-t4)" }}>
-                {discussionOpen ? "▴" : "▾"}
-              </span>
-            </button>
-            {discussionOpen && (
-              <div className="px-5 divide-y" style={{ borderColor: "var(--gt-border)" }}>
-                {data.discussions.map((d, i) => (
-                  <DiscussionMessage key={i} event={d} participants={participants} />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Decisions */}
-        {hasDecisions && (
-          <div
-            className={hasDiscussion ? "border-t px-5 py-4" : "px-5 py-4"}
-            style={{ borderColor: "var(--gt-border)" }}
-          >
+          &ldquo;{event.content}&rdquo;
+        </p>
+        {showReasoning && event.reasoning && (
+          <div className="mt-3 pl-4 border-l" style={{ borderColor: "var(--gt-border-md)" }}>
             <p
-              className="text-[11px] uppercase mb-3"
+              className="text-[11px] uppercase mb-1.5"
               style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
             >
-              Decisions
+              Inner monologue
             </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {data.decisions.map((d) => {
-                const color = getPlayerColor(participants, d.personaId);
-                const actionKey = (d.content as Record<string, string>).action ?? "";
-                return (
-                  <div key={d.personaId} className="flex items-center gap-2 min-w-0">
-                    <HippyGhostAvatar seed={d.personaId} className="size-5 shrink-0 rounded-full" />
-                    <span className="text-[13px] font-[500] truncate" style={{ color }}>
-                      {d.personaName}
-                    </span>
-                    <ActionPill actionKey={actionKey} />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Result */}
-        {hasResult && data.result && (
-          <div
-            className="border-t px-5 py-4"
-            style={{ borderColor: "var(--gt-border)", background: "var(--gt-row-alt)" }}
-          >
             <p
-              className="text-[11px] uppercase mb-3"
-              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
+              className="text-[13px] italic leading-relaxed"
+              style={{ color: "var(--gt-t3)", fontFamily: "'Instrument Serif', Georgia, serif" }}
             >
-              Result
+              {event.reasoning}
             </p>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              {participants.map((p) => {
-                const payoff = data.result!.payoffs[p.personaId];
-                if (payoff === undefined) return null;
-                const color = getPlayerColor(participants, p.personaId);
-                return (
-                  <div key={p.personaId} className="flex items-center gap-2">
-                    <HippyGhostAvatar seed={p.personaId} className="size-5 shrink-0 rounded-full" />
-                    <span className="text-[13px] font-[500] truncate" style={{ color }}>
-                      {p.name}
-                    </span>
-                    <span
-                      className="text-[15px] font-[600] tabular-nums"
-                      style={{ color: payoff >= 0 ? "var(--gt-pos)" : "var(--gt-neg)" }}
-                    >
-                      {payoff > 0 ? "+" : ""}{payoff}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         )}
       </div>
@@ -265,54 +104,35 @@ function RoundCard({
   );
 }
 
-// ── Main export ───────────────────────────────────────────────────────────────
+// ── Round detail view ─────────────────────────────────────────────────────────
 
-export interface GameFeedProps {
-  events: GameTimeline;
+export interface RoundDetailViewProps {
+  roundData: RoundData | null;
   participants: GameSessionParticipant[];
-  displayRoundId: number | null;
-  activeRoundId: number | null;
+  isLive: boolean;
+  playersDeliberating: Set<number>;
 }
 
-export function GameFeed({
-  events,
+export function RoundDetailView({
+  roundData,
   participants,
-  displayRoundId,
-  activeRoundId,
-}: GameFeedProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [userScrolled, setUserScrolled] = useState(false);
-
-  useEffect(() => {
-    if (!userScrolled && scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [events.length, userScrolled]);
-
-  function handleScroll() {
-    const el = scrollRef.current;
-    if (!el) return;
-    setUserScrolled(el.scrollHeight - el.scrollTop - el.clientHeight > 40);
-  }
-
-  const allRounds = groupEventsByRound(events);
-  const rounds =
-    displayRoundId !== null ? allRounds.filter((r) => r.roundId === displayRoundId) : allRounds;
-
-  if (rounds.length === 0) {
+  isLive,
+  playersDeliberating,
+}: RoundDetailViewProps) {
+  if (!roundData) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-2">
+      <div className="flex-1 flex flex-col items-center justify-center gap-3">
         <div className="flex items-center gap-1.5">
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              className="w-2 h-2 rounded-full animate-pulse"
               style={{ backgroundColor: "var(--gt-border-md)", animationDelay: `${i * 0.25}s` }}
             />
           ))}
         </div>
         <span
-          className="text-[11px] uppercase"
+          className="text-[12px] uppercase"
           style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.12em" }}
         >
           Awaiting activity
@@ -321,37 +141,218 @@ export function GameFeed({
     );
   }
 
-  return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        <div className="mx-auto px-8 py-6" style={{ maxWidth: "1200px" }}>
-        {rounds.map((roundData) => (
-          <RoundCard
-            key={roundData.roundId}
-            data={roundData}
-            participants={participants}
-            isLive={roundData.roundId === activeRoundId && roundData.result === null}
-          />
-        ))}
-        </div>
-      </div>
+  const hasDiscussion = roundData.discussions.length > 0;
+  const hasDecisions = roundData.decisions.length > 0;
+  const hasResult = roundData.result !== null;
 
-      {userScrolled && (
-        <button
-          onClick={() => {
-            setUserScrolled(false);
-            if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-          }}
-          className="shrink-0 h-7 flex items-center justify-center gap-1.5 border-t text-[11px] transition-colors hover:bg-[var(--gt-row-alt)]"
-          style={{ borderColor: "var(--gt-border)", color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-        >
-          ↓ Latest
-        </button>
-      )}
+  const deliberatingParticipants = isLive
+    ? participants.filter((p) => playersDeliberating.has(p.personaId))
+    : [];
+
+  return (
+    <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mx-auto py-8 px-6" style={{ maxWidth: "800px" }}>
+
+        {/* ── Round header ─────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <span
+              className="text-[13px] font-[600] uppercase"
+              style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.12em" }}
+            >
+              Round {roundData.roundId}
+            </span>
+            {isLive && !hasResult && (
+              <span
+                className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 border"
+                style={{
+                  borderRadius: "9999px",
+                  color: "var(--gt-blue)",
+                  borderColor: "var(--gt-blue-border)",
+                  background: "var(--gt-blue-bg)",
+                  fontFamily: "IBMPlexMono, monospace",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ backgroundColor: "var(--gt-blue)" }}
+                />
+                live
+              </span>
+            )}
+          </div>
+          {hasResult && roundData.result && (
+            <span className="text-[13px]" style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}>
+              pool{" "}
+              <span className="font-[600]" style={{ color: "var(--gt-t1)" }}>
+                {Object.values(roundData.result.payoffs).reduce((a, v) => a + v, 0)}
+              </span>
+            </span>
+          )}
+        </div>
+
+        {/* ── Deliberating status ───────────────────────────────────────── */}
+        {deliberatingParticipants.length > 0 && (
+          <div className="mb-8 flex items-center gap-2 flex-wrap">
+            {deliberatingParticipants.map((p) => {
+              const color = getPlayerColor(participants, p.personaId);
+              return (
+                <div
+                  key={p.personaId}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 border"
+                  style={{
+                    borderRadius: "9999px",
+                    borderColor: "var(--gt-border)",
+                    background: "var(--gt-surface)",
+                  }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: color }} />
+                  <span className="text-[12px] font-[500]" style={{ color }}>
+                    {p.name}
+                  </span>
+                  <span
+                    className="text-[11px]"
+                    style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
+                  >
+                    deliberating
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Discussion ───────────────────────────────────────────────── */}
+        {hasDiscussion && (
+          <section className="mb-8">
+            <p
+              className="text-[11px] uppercase mb-3"
+              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
+            >
+              Discussion
+            </p>
+            <div
+              className="overflow-hidden"
+              style={{
+                border: "1px solid var(--gt-border)",
+                borderRadius: "0.5rem",
+                background: "var(--gt-surface)",
+              }}
+            >
+              {roundData.discussions.map((d, i) => (
+                <DiscussionEntry key={i} event={d} participants={participants} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Decisions ────────────────────────────────────────────────── */}
+        {hasDecisions && (
+          <section className="mb-8">
+            <p
+              className="text-[11px] uppercase mb-3"
+              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
+            >
+              Decisions
+            </p>
+            <div
+              className="overflow-hidden"
+              style={{
+                border: "1px solid var(--gt-border)",
+                borderRadius: "0.5rem",
+                background: "var(--gt-surface)",
+              }}
+            >
+              {roundData.decisions.map((d) => {
+                const color = getPlayerColor(participants, d.personaId);
+                const actionKey = (d.content as Record<string, string>).action ?? "";
+                return (
+                  <div
+                    key={d.personaId}
+                    className="flex items-start gap-4 px-6 py-5 border-b last:border-b-0"
+                    style={{ borderColor: "var(--gt-border)" }}
+                  >
+                    <HippyGhostAvatar
+                      seed={d.personaId}
+                      className="size-9 rounded-full shrink-0 mt-0.5"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[14px] font-[500]" style={{ color }}>
+                          {d.personaName}
+                        </span>
+                        <ActionPill actionKey={actionKey} />
+                      </div>
+                      {d.reasoning && (
+                        <p
+                          className="text-[13px] italic leading-relaxed"
+                          style={{
+                            color: "var(--gt-t3)",
+                            fontFamily: "'Instrument Serif', Georgia, serif",
+                          }}
+                        >
+                          {d.reasoning}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ── Payoffs ──────────────────────────────────────────────────── */}
+        {hasResult && roundData.result && (
+          <section>
+            <p
+              className="text-[11px] uppercase mb-3"
+              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
+            >
+              Payoffs
+            </p>
+            <div
+              className="overflow-hidden"
+              style={{
+                border: "1px solid var(--gt-border)",
+                borderRadius: "0.5rem",
+                background: "var(--gt-surface)",
+              }}
+            >
+              {participants.map((p) => {
+                const payoff = roundData.result!.payoffs[p.personaId];
+                if (payoff === undefined) return null;
+                const color = getPlayerColor(participants, p.personaId);
+                return (
+                  <div
+                    key={p.personaId}
+                    className="flex items-center gap-4 px-6 py-5 border-b last:border-b-0"
+                    style={{ borderColor: "var(--gt-border)" }}
+                  >
+                    <HippyGhostAvatar seed={p.personaId} className="size-9 rounded-full shrink-0" />
+                    <span
+                      className="flex-1 text-[15px] font-[500] truncate"
+                      style={{ color }}
+                    >
+                      {p.name}
+                    </span>
+                    <span
+                      className="text-[32px] font-[600] tabular-nums leading-none"
+                      style={{
+                        color: payoff >= 0 ? "var(--gt-pos)" : "var(--gt-neg)",
+                        letterSpacing: "var(--gt-tracking-tight)",
+                      }}
+                    >
+                      {payoff > 0 ? "+" : ""}{payoff}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
