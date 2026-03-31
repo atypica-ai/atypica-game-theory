@@ -1,325 +1,189 @@
-# V2 Style — Design Essence
+# arena.ai/leaderboard — Design Essence
 
-> Rules: if you remove any of these, the page no longer looks like itself.
+> Rules where removing any one makes the interface look like something else.
 
----
-
-## 1. Background
-
-**`#09090b`** — not "dark", not "black". This specific near-void tone. Warmer than pure black, darker than zinc-900. Everything lives on top of it.
-
-```tsx
-<main className="bg-[#09090b] text-white">
-```
+Source: CSS extracted from compiled stylesheets (`04fed9dded315e5b.css`), rendered HTML structure, and WebFetch visual analysis.
 
 ---
 
-## 2. The Three-Font System
+## 1. Surface Color: Warm Off-White, Not Neutral
 
-All three must coexist. Remove any one and the system collapses.
-
-| Font | Role | Feel |
-|------|------|------|
-| `EuclidCircularA` | Headlines, large stats | Clean, geometric, modern sans |
-| `IBMPlexMono` | Labels, chapter numbers, metadata | System, technical, precise |
-| `InstrumentSerif` italic | Quotes, emotional accent words | Human voice, contrast |
-
----
-
-## 3. Mono Labels: ALL CAPS + Wide Tracking
-
-Every label, chapter number, badge, and metadata string follows this exact pattern:
-
-```tsx
-// Chapter number — brand accent
-<span className="font-IBMPlexMono text-xs tracking-[0.18em] text-ghost-green">01</span>
-
-// Category label — muted
-<span className="font-IBMPlexMono text-xs tracking-[0.14em] uppercase text-zinc-500">
-  TWO WORLDS
-</span>
-```
-
-Rules: `font-IBMPlexMono` + `text-xs` + `uppercase` + tracking between `0.12em`–`0.18em`. Never larger than `text-xs` for a label.
-
----
-
-## 4. Ghost Green as the Brand Accent
-
-**`#1bff1b`** — defined as `--ghost-green`. One color. Everything else is white or zinc-grey.
+The light mode background is `hsl(36 45% 98%)` — a peachy warm tint, not gray-white or pure white. This warmth pervades every surface layer.
 
 ```css
---ghost-green: #1bff1b;
+--surface-primary: 36 45% 98%;    /* page background */
+--surface-secondary: 0 0% 100%;   /* card/panel inset — pure white by contrast */
+--surface-tertiary: 33 31% 94%;   /* slightly deeper warm tint for alternating rows */
 ```
 
-It appears in exactly these roles:
-- Chapter numbers in the nav and section headers
-- Active/current state in the sticky nav
-- Primary CTA background (with `text-black`)
-- The "subjective" or emotional accent word inside a headline (dark sections only)
-- The live-indicator dot (pulsing badge)
+Dark mode flips to `hsl(60 3% 14%)` — a warm near-black (the same warm cast, just inverted).
 
-The rule: **one brand accent, used precisely**. Anything else that needs color uses a per-item accent (see §5).
+The rule: surfaces are never neutral grey. The warmth is the brand temperature.
 
 ---
 
-## 5. Per-Item Accent Color System
+## 2. The HSL Semantic Token Architecture
 
-Every categorical item — use case, data asset, story, agent — gets its own color. That color is applied consistently through four micro-elements:
+Every color is a named semantic variable, never a hardcoded hex. This is the architectural decision that makes theming work:
+
+```css
+/* Text scale — four levels */
+--text-primary:    24 6% 17%   /* high contrast, main content */
+--text-secondary:  30 7% 24%   /* supporting content */
+--text-tertiary:   35 6% 38%   /* labels, metadata */
+--text-muted:      37 5% 52%   /* disabled, placeholders */
+
+/* Interactive states */
+--interactive-link:     208 77% 52%   /* all clickable text/icons */
+--interactive-positive: 125 49% 43%  /* scores going up, correct */
+--interactive-negative: 2 63% 54%    /* scores going down, wrong */
+--interactive-warning:  48 93% 45%   /* caution states */
+
+/* Borders */
+--border-faint: 30 5% 93%  /* hairline dividers */
+```
+
+The rule: no raw color values anywhere in component code. Every color reference goes through a semantic variable.
+
+---
+
+## 3. Typography: BaselGrotesk + Book Weight
+
+The primary font is **BaselGrotesk** — a custom geometric grotesque, not Inter or system-ui. Matched with **BaselGrotesk-Mono** for numeric/code content.
+
+```css
+--font-basel-grotesk: "BaselGrotesk", ...;
+--font-basel-grotesk-mono: "BaselGrotesk-Mono", ...;
+```
+
+The distinctive weight choice: `font-weight: 450` ("book") — an intermediate between regular (400) and medium (500). This gives body text a slightly denser, more typeset feel than typical web defaults.
+
+```css
+/* weight scale */
+400  /* normal — captions, secondary text */
+450  /* book — body text, table cells */
+500  /* medium — subheadings */
+600  /* semibold — headings, important labels */
+700  /* bold — primary headings */
+```
+
+The rule: body text uses `450`, not `400`. The difference is subtle but uniform.
+
+---
+
+## 4. Text Hierarchy Through Color, Not Weight
+
+The four-level `--text-*` scale is the primary hierarchy tool. Weight only changes at structural boundaries (heading vs. body), not within the data table itself.
 
 ```tsx
-// 1. A tiny colored dot
-<span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accent }} />
-
-// 2. A short horizontal dash rule (section divider)
-<span className="h-px w-4" style={{ backgroundColor: accent }} />
-
-// 3. The large stat value
-<span className="font-EuclidCircularA text-5xl font-light" style={{ color: accent }}>
-  10,000+
-</span>
-
-// 4. A left-edge bar on story cards
-<div className="absolute left-0 top-0 h-full w-1.5" style={{ backgroundColor: accent }} />
+/* A model row in the leaderboard */
+<td className="text-[--text-primary]">Claude Opus 4</td>      /* model name */
+<td className="text-[--text-secondary]">Anthropic</td>         /* org */
+<td className="text-[--text-tertiary]">1,248 votes</td>        /* votes */
+<td className="text-[--text-muted]">—</td>                     /* missing data */
 ```
 
-This system makes every card distinct without breaking the monochrome field. The colors used: ghost-green, `#3b82f6`, `#d97706`, `#8b5cf6`, `#22d3ee`, `#f59e0b`, `#93c5fd`, `#f472b6`, `#fb923c`.
+The rule: visual hierarchy within dense data tables is entirely communicated through color shade, not size or weight variation.
 
 ---
 
-## 6. InstrumentSerif Italic = Human Voice
+## 5. Single Interactive Color: Blue
 
-The serif italic is used for anything that represents a human speaking or feeling — quotes and emotional accent words inside headlines. It is not restricted to one location.
+All interactive elements — links, active tabs, hover states — use one color: `hsl(208 77% 52%)`. Nothing else is interactive-blue.
 
-```tsx
-// Emotional accent word inside a headline (dark section → ghost green)
-<h1 className="font-EuclidCircularA text-8xl font-medium">
-  Understand{" "}
-  <span className="italic font-InstrumentSerif text-ghost-green">people</span>
-  , not just data
-</h1>
-
-// Pull quote in a section (dark → white)
-<h2 className="font-InstrumentSerif italic text-5xl text-white">
-  &ldquo;{quote}&rdquo;
-</h2>
-
-// Story card blockquote (light section → zinc-900)
-<p className="font-InstrumentSerif text-[1.35rem] italic text-zinc-900">
-  &ldquo;{quote}&rdquo;
-</p>
+```css
+--interactive-link: 208 77% 52%;  /* light mode */
+--interactive-link: 208 100% 58%; /* dark mode — slightly brighter */
 ```
 
-The serif italic is always ghost green only on dark backgrounds when it's an accent word in a headline. In quotes and on light backgrounds it takes the local text color.
+The rule: blue = clickable/active. No secondary interactive color.
 
 ---
 
-## 7. Chapter Navigation Pattern
+## 6. Semantic Green/Red for Outcomes
 
-The sticky left nav is structural identity:
+Score comparisons, win rates, and performance deltas use semantic color — not grey or neutral:
 
-```
-01  TWO WORLDS
-02  WORLD MODEL       ← active: number = ghost-green, label = zinc-100
-03  TWO AGENTS
-04  WORKFLOW
-05  DATA ASSETS
-06  SOLUTIONS
+```css
+--interactive-positive: 125 49% 43%;  /* score increase, win */
+--interactive-negative: 2 63% 54%;    /* score decrease, loss */
 ```
 
-- Numbers: `font-IBMPlexMono text-xs` — inactive `text-zinc-600`, active `text-ghost-green`
-- Labels: `font-IBMPlexMono text-xs uppercase` — inactive `text-zinc-600`, active `text-zinc-100`
-- No other navigation exists during the chapters scroll.
+These appear as small indicators next to numeric values. The rule: data outcome always gets a semantic color. Never grey for a delta.
 
 ---
 
-## 8. Section Containers: Dark vs. Warm White
+## 7. Pill Border-Radius for Badges, Consistent Rounding Elsewhere
 
-Two surface variants create rhythm through the page. Each chapter picks one.
+Category tags and rank badges use `9999px` (full pill). Everything else uses a consistent small-to-medium rounding scale:
 
-```tsx
-// Dark panel — most chapters
-<div className="bg-zinc-900 p-12">
-
-// Warm white panel — contrast section (Use Cases)
-<div className="bg-[#fafaf8] text-gray-900 p-12">
+```css
+/* Component radius scale */
+0.25rem   /* sm — input fields, table cells */
+0.375rem  /* md — buttons, cards */
+0.5rem    /* lg — panels, dropdowns */
+9999px    /* full — badges, tags, pills */
 ```
 
-The light surface is warm off-white `#fafaf8`, never pure white. It has its own inner token set: `border-zinc-200`, `bg-white/75` for cards, `text-zinc-500` for muted text.
+The rule: interactive items (buttons, inputs) use `0.375rem`. Category/status badges are always pills (`9999px`). No sharp corners.
 
 ---
 
-## 9. CTA Buttons — Sharp Corners
+## 8. Tab Navigation: Inset Bottom Border as Active Indicator
 
-Two types, used consistently. **Zero border-radius. No shadow. No gradient.**
+The category tabs (Text, Code, Vision, etc.) use an inset bottom border — not an underline, not a background fill:
 
-```tsx
-// Primary — solid ghost green, black text
-<button className="h-11 px-6 bg-ghost-green text-black font-medium text-sm tracking-[0.04em]">
-  Start Research →
-</button>
+```css
+/* Active tab */
+box-shadow: inset 0 -1px 0 0 hsl(var(--border-faint));
 
-// Secondary ghost — transparent, zinc border
-<button className="h-11 px-6 border border-zinc-700 text-zinc-300 text-sm tracking-[0.04em]">
-  Learn more
-</button>
+/* Active state upgrades to interactive-link color */
+border-bottom: 2px solid hsl(var(--interactive-link));
 ```
+
+The rule: tab selection = bottom border in `--interactive-link` blue. Never a background highlight.
 
 ---
 
-## 10. Ghost Green Status Badge
+## 9. Motion: Functional, Not Expressive
 
-When something is "live", it gets this specific treatment — pulsing dot + ghost-green border at low opacity + dark backdrop:
+This is a data tool, not a marketing page. Transitions are minimal and utilitarian:
+- Tab switches: no animation, instant content swap
+- Sorting: no animated reordering
+- Theme toggle: no transition
 
-```tsx
-<span className="border border-ghost-green/[0.3] bg-zinc-800/80 backdrop-blur-sm font-IBMPlexMono text-xs tracking-[0.17em] uppercase text-ghost-green">
-  <motion.span
-    className="w-1.5 h-1.5 rounded-full bg-ghost-green"
-    animate={{ opacity: [1, 0.4, 1] }}
-    transition={{ duration: 2, repeat: Infinity }}
-  />
-  LIVE SYSTEM
-</span>
-```
+The rule: if motion would distract from reading data, there is none. Only hover state color transitions exist.
 
 ---
 
-## 11. Font Weight as Information
+## 10. Negative Letter-Spacing on Headlines
 
-EuclidCircularA is used at two weights with distinct semantic roles — never interchangeably:
+Display text and category headings use slightly tight tracking:
 
-```tsx
-// font-light → decorative, large, atmospheric (stats, ghost numbers)
-<span className="font-EuclidCircularA text-5xl font-light" style={{ color: accent }}>
-  10,000+
-</span>
-
-// font-medium → structural, headings, CTAs
-<h2 className="font-EuclidCircularA text-5xl font-medium leading-[1.1]">
-  {title}
-</h2>
+```css
+letter-spacing: -0.025em;  /* tight — headlines, model names */
+letter-spacing: 0.025em;   /* wide — all-caps labels */
 ```
 
-Body text uses no weight class at all (default/regular). Color handles hierarchy in the body — weight is only varied at the display scale.
+The rule: headlines track tight (`-0.025em`). All-caps labels track wide (`+0.025em`). Body text uses the default.
 
 ---
 
-## 12. Ghost Green Opacity System
-
-Ghost green never appears at one opacity level — it appears at a gradient of opacities that communicate proximity to "live/active":
-
-| Usage | Opacity | Example |
-|-------|---------|---------|
-| Interactive: CTA, dot, chapter number | full `#1bff1b` | `bg-ghost-green`, `text-ghost-green` |
-| Borders around active states | 30% | `border-ghost-green/[0.3]` |
-| Sub-labels, secondary accent text | 60% | `text-ghost-green/60` |
-| Table cell tints, background washes | 3–6% | `bg-ghost-green/[0.03]` |
-| SVG chart data (stated line) | 40% stroke | `stroke="rgba(27,255,27,0.4)"` |
-
-The rule: **full opacity = you can interact with it or it is the brand signal**. Lower opacity = context, data, reference.
-
----
-
-## 13. Motion: whileInView Entrance
-
-Every content block below the hero uses an identical entrance pattern — it does not exist without this:
-
-```tsx
-<motion.div
-  initial={{ opacity: 0, y: 24 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true, margin: "-80px" }}
-  transition={{ duration: 0.5 }}
->
-```
-
-Rules: always `y: 24`, always `opacity: 0→1`, `duration: 0.5`, fires once. This creates the feeling that the system is revealing itself as you scroll — not "animation" but "activation".
-
-The hero has its own separate motion: scroll-driven parallax that scales the background image up and fades both image and text out as you leave:
-
-```tsx
-const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
-const bgOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
-const textY = useTransform(scrollYProgress, [0, 0.7], [0, -60]);
-```
-
----
-
-## 14. Fixed Scene Background System
-
-Behind all chapters there is a fixed-position layer of AI-generated images — one per chapter — that crossfade with a 1.2s transition as the active chapter changes:
-
-```tsx
-// Fixed, full-viewport, pointer-events-none
-<div className="fixed inset-0 z-1 pointer-events-none">
-  <Image
-    className={cn(
-      "object-cover opacity-0 transition-opacity duration-1200 ease-in-out",
-      isDark ? "filter: grayscale(0.4) brightness(0.6); mix-blend-mode: screen"
-             : "filter: grayscale(0.5) contrast(1.05) brightness(0.9); mix-blend-mode: multiply",
-      isActive && "opacity-15",
-    )}
-  />
-</div>
-```
-
-The image is nearly invisible (`opacity-15`) but it creates a distinct atmospheric texture for each chapter. Dark chapters use `mix-blend-mode: screen`, light chapters use `mix-blend-mode: multiply`. Without this the page is a flat dark field with no depth.
-
----
-
-## 15. Gap-as-Divider Grid
-
-A recurring spatial technique: `gap-px` with a background color equal to the desired divider color. The gap pixels become 1px lines between cells.
-
-```tsx
-// Creates razor-thin zinc-800 dividers between grid cells
-<div className="grid grid-cols-2 gap-px bg-zinc-800">
-  <div className="bg-zinc-900 p-6">...</div>
-  <div className="bg-zinc-900 p-6">...</div>
-</div>
-
-// Light surface variant
-<div className="grid grid-cols-3 gap-px bg-zinc-200">
-  <div className="bg-white p-4">...</div>
-</div>
-```
-
-Used for the World Model layer grid, the cross-analysis example cards, and data tables. The visual result is a seamless tiled surface with hairline separators — distinct from bordered cards.
-
----
-
-## 16. Ghost Index Watermark
-
-Story cards contain a large ghost number positioned top-right, nearly invisible:
-
-```tsx
-<div
-  className="pointer-events-none absolute right-5 top-5 font-EuclidCircularA text-[6rem] leading-none text-zinc-950/[0.06]"
-  aria-hidden="true"
->
-  01
-</div>
-```
-
-`text-zinc-950/[0.06]` on a near-white background — 6% opacity. It communicates sequence without competing with content. This is EuclidCircularA `font-light` at max scale used purely as texture.
-
----
-
-## Summary Table
+## Summary
 
 | Decision | Value |
 |----------|-------|
-| Background | `#09090b` |
-| Brand accent | `#1bff1b` ghost green — one color, used at 5 opacity levels |
-| Display font | `EuclidCircularA` — geometric sans |
-| Label font | `IBMPlexMono` — ALL CAPS, `tracking-[0.12em–0.18em]`, always `text-xs` |
-| Human-voice font | `InstrumentSerif` italic — quotes and emotional headline accents |
-| Font weight | `font-light` = decorative/stats; `font-medium` = structural/headings |
-| Item accent system | colored dot + dash + stat value + left bar, per category |
-| Corners | Sharp — no border-radius on interactive elements |
-| Light surface | Warm off-white `#fafaf8`, not pure white |
-| Secondary text | Zinc scale only — color = hierarchy, weight only varies at display scale |
-| Motion | `whileInView` y+opacity entrance everywhere; hero scroll parallax |
-| Atmosphere | Fixed-position scene images at `opacity-15` crossfading per chapter |
-| Grid dividers | `gap-px bg-zinc-800` — the gap pixel becomes the 1px border |
-| Ghost watermark | `text-[6rem] text-zinc-950/[0.06]` index number as background texture |
+| Light surface | `hsl(36 45% 98%)` — warm peachy off-white |
+| Dark surface | `hsl(60 3% 14%)` — warm near-black |
+| Primary font | `BaselGrotesk` — custom geometric grotesque |
+| Mono font | `BaselGrotesk-Mono` — matched mono |
+| Body weight | `450` "book" — not standard `400` |
+| Color architecture | All HSL semantic variables — no hardcoded values in components |
+| Text hierarchy | 4 levels (primary → muted) — color only, not size/weight |
+| Interactive color | `hsl(208 77% 52%)` blue — the only interactive color |
+| Outcome color | Green `hsl(125 49% 43%)` / Red `hsl(2 63% 54%)` for deltas |
+| Badges | `border-radius: 9999px` pill always |
+| Buttons/cards | `border-radius: 0.375rem` |
+| Motion | None — data tool, not expressive UI |
+| Tab indicator | Inset bottom border, never background highlight |
+| Headline tracking | `-0.025em` tight |
