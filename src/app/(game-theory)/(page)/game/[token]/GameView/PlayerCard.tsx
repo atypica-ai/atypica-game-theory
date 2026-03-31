@@ -179,7 +179,6 @@ export interface ParticipantTileProps {
   participant: GameSessionParticipant;
   playerIndex: number;
   score: number;
-  actionKey?: string;
   isDeliberating?: boolean;
   resultState?: PlayerResultState;
   isSelected?: boolean;
@@ -190,7 +189,6 @@ export function ParticipantTile({
   participant,
   playerIndex,
   score,
-  actionKey,
   isDeliberating,
   resultState,
   isSelected,
@@ -247,9 +245,9 @@ export function ParticipantTile({
           {score}
         </span>
 
-        {/* Status / Action */}
-        <div className="h-5 flex items-center justify-center">
-          {isDeliberating ? (
+        {/* Deliberating indicator */}
+        {isDeliberating && (
+          <div className="h-4 flex items-center justify-center">
             <div className="flex items-center gap-1">
               {[0, 1, 2].map((i) => (
                 <span
@@ -259,17 +257,8 @@ export function ParticipantTile({
                 />
               ))}
             </div>
-          ) : actionKey ? (
-            <ActionPill actionKey={actionKey} />
-          ) : (
-            <span
-              className="text-[11px]"
-              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
-            >
-              —
-            </span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </button>
   );

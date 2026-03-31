@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { groupEventsByRound, RoundDetailView } from "./ActivityFeed";
-import { ParticipantTile, PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
+import { PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
 import { ReplayView } from "./ReplayView";
 import { RoundPill } from "./RoundView";
 
@@ -24,12 +24,20 @@ function getRoundPayoffSum(
   return Object.values(round.result.payoffs).reduce((acc, v) => acc + v, 0);
 }
 
-function getDecisionForRound(
-  decisions: ReturnType<typeof groupEventsByRound>[number]["decisions"],
-  personaId: number,
-): string {
-  const e = decisions.find((d) => d.personaId === personaId);
-  return e ? ((e.content as Record<string, string>).action ?? "") : "";
+function getScoresUpToRound(
+  allRoundData: ReturnType<typeof groupEventsByRound>,
+  upToRoundId: number,
+): Record<number, number> {
+  const scores: Record<number, number> = {};
+  for (const round of allRoundData) {
+    if (round.roundId > upToRoundId) break;
+    if (round.result) {
+      for (const [id, v] of Object.entries(round.result.payoffs)) {
+        scores[Number(id)] = (scores[Number(id)] ?? 0) + v;
+      }
+    }
+  }
+  return scores;
 }
 
 function formatGameTypeName(key: string): string {
@@ -326,39 +334,6 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
         </div>
       )}
 
-      {/* ── Participant strip ────────────────────────────────────────────────── */}
-      {!isPending && participants.length > 0 && (
-        <div
-          className="shrink-0 border-b"
-          style={{ borderColor: "var(--gt-border)", background: "var(--gt-bg)" }}
-        >
-          <div
-            className="mx-auto flex items-center gap-3 px-8 py-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            style={{ maxWidth: "1200px" }}
-          >
-            {participants.map((p, i) => {
-              const roundData = selectedRoundData;
-              const actionKey = roundData
-                ? getDecisionForRound(roundData.decisions, p.personaId)
-                : "";
-              const isDeliberating = isLiveRound && playersDeliberating.has(p.personaId);
-
-              return (
-                <ParticipantTile
-                  key={p.personaId}
-                  participant={p}
-                  playerIndex={i}
-                  score={cumulativeScores[p.personaId] ?? 0}
-                  actionKey={actionKey || undefined}
-                  isDeliberating={isDeliberating}
-                  resultState={getResultState(p.personaId)}
-                />
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* ── Round navigation bar ─────────────────────────────────────────────── */}
       {navRounds.length > 0 && (
         <div
@@ -485,8 +460,10 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
           <RoundDetailView
             roundData={selectedRoundData}
             participants={participants}
+            scoresForRound={selectedRoundId !== null ? getScoresUpToRound(allRoundData, selectedRoundId) : cumulativeScores}
             isLive={isLiveRound}
             playersDeliberating={playersDeliberating}
+            getResultState={getResultState}
           />
         )}
       </div>
