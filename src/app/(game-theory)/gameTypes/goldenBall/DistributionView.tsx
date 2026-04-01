@@ -1,7 +1,6 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { GameSessionStats } from "../../types";
 import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, pctLabelFmt, SourceAttribution } from "../AcademicChart";
 
 // ── Human reference data ───────────────────────────────────────────────────────
@@ -23,7 +22,7 @@ const data = [
 const pctFmt = (v: number) => `${Math.round(v * 100)}%`;
 const TooltipContent = makeTooltip(pctFmt);
 
-export function GoldenBallDistributionView(_props: { sessionStats?: GameSessionStats }) {
+export function GoldenBallDistributionView() {
   return (
     <div className="p-6 flex flex-col gap-4">
       <ChartPanel

@@ -1,9 +1,4 @@
 import type { Locale as LocaleType } from "next-intl";
-import type * as panel from "../app/(panel)/types";
-import type * as persona from "../app/(persona)/types";
-import type * as sage from "../app/(sage)/types";
-import type * as study from "../app/(study)/context/types";
-import type * as tokens from "../tokens/types";
 import type * as client from "./client";
 
 // https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types/working-with-json-fields#typed-json-fields
@@ -30,7 +25,6 @@ declare global {
     type AnalystPodcastExtra = client.AnalystPodcastExtra;
 
     // User Chat and Chat Message
-    type UserChatContext = study.UserChatContext;
     type UserChatExtra = client.UserChatExtra;
     type ChatMessagePart = client.ChatMessagePart;
     type ChatMessageAttachment = client.ChatMessageAttachment;
@@ -39,7 +33,6 @@ declare global {
     // Subscription and Tokens
     type SubscriptionExtra = client.SubscriptionExtra;
     type TokensAccountExtra = client.TokensAccountExtra;
-    type TokensLogResourceType = tokens.TokensLogResourceType;
     type TokensLogExtra = client.TokensLogExtra;
 
     // Image and Attachment
@@ -48,7 +41,6 @@ declare global {
 
     // Persona
     type PersonaExtra = client.PersonaExtra;
-    type PersonaImportAnalysis = persona.PersonaImportAnalysis;
     type PersonaImportExtra = client.PersonaImportExtra;
     type PersonaPanelExtra = client.PersonaPanelExtra;
 
@@ -59,24 +51,11 @@ declare global {
     type InterviewReportExtra = client.InterviewReportExtra;
 
     // Discussion
-    type DiscussionTimelineEvent = panel.DiscussionTimelineEvent;
     type DiscussionTimelineExtra = client.DiscussionTimelineExtra;
 
     // Blog and Research Template
     type BlogArticleExtra = client.BlogArticleExtra;
     type ResearchTemplateExtra = client.ResearchTemplateExtra;
-
-    // Sage
-    type SageAvatar = sage.SageAvatar;
-    type SageExtra = sage.SageExtra;
-    type SageSourceType = sage.SageSourceType;
-    type SageSourceContent = sage.SageSourceContent;
-    type SageSourceExtra = sage.SageSourceExtra;
-    type SageKnowledgeGapSeverity = sage.SageKnowledgeGapSeverity;
-    type SageKnowledgeGapExtra = sage.SageKnowledgeGapExtra;
-    type SageInterviewExtra = sage.SageInterviewExtra;
-    type SageChatExtra = sage.SageChatExtra;
-    type WorkingMemoryItem = sage.WorkingMemoryItem;
 
     // Pulse
     type PulseExtra = client.PulseExtra;
