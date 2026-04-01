@@ -133,20 +133,13 @@ export function BeautyContestDistributionView({
               strokeDasharray="4 3"
               label={{ value: "L2=22", position: "insideTopLeft", fontSize: 8, fontFamily: TICK_FONT, fill: AXIS_COLOR, dy: -4 }}
             />
-            {/* This game's winning choice — solid amber line, label sits inside chart area */}
+            {/* This game's winning choice — amber line + pill badge */}
             {winningBin !== null && winningChoice !== null && (
               <ReferenceLine
                 x={winningBin}
                 stroke={SESSION_COLOR}
                 strokeWidth={2}
-                label={{
-                  value: `This game: ${winningChoice}`,
-                  position: "top",
-                  fontSize: 8,
-                  fontFamily: TICK_FONT,
-                  fill: SESSION_COLOR,
-                  dy: -2,
-                }}
+                label={<WinningBadge choice={winningChoice} />}
               />
             )}
             {/* Human bars — dim all bins except the winning one when session data is present */}
