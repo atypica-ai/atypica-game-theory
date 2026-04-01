@@ -1019,6 +1019,19 @@ model GameSession {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
+model Tournament {
+  id         Int      @id @default(autoincrement())
+  token      String   @unique @db.VarChar(64)
+  personaIds Json     @default("[]")
+  /// [TournamentState]
+  state      Json     @default("{}")
+  status     String   @default("pending") @db.VarChar(32)
+  extra      Json     @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
 // TODO: 推荐功能暂缓，启用时取消注释并生成 migration
 // model UserPulseRecommendation {
 //   id             Int  @id @default(autoincrement())
