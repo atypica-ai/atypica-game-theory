@@ -4,12 +4,6 @@ import createNextIntlPlugin from "next-intl/plugin";
 const nextConfig: NextConfig = {
   output: "standalone",
   devIndicators: false,
-  // Include docs in standalone output for documentation pages
-  outputFileTracingIncludes: {
-    "/(public)/(docs)/features/[slug]": ["./docs/**/*"],
-    "/(public)/(docs)/faq/[slug]": ["./docs/**/*"],
-    "/(public)/(docs)/guides/[slug]": ["./docs/**/*"],
-  },
   webpack: (config, { isServer, webpack }) => {
     if (isServer) {
       // Ensure WebSocket library is handled correctly on server side

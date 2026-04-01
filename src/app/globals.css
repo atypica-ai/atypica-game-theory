@@ -207,5 +207,3 @@
 .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: theme(--color-zinc-600);
 }
-
-@import "../components/ai-elements/streamdown.css";

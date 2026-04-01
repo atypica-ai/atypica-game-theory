@@ -3,56 +3,8 @@ import { getRequestConfig } from "next-intl/server";
 import { cookies, headers } from "next/headers";
 import { VALID_LOCALES } from "./routing";
 
-const getMessages = async (locale: string) => {
-  const [
-    messages,
-    authMessages,
-    interviewProjectMessages,
-    personaMessages,
-    panelMessages,
-    pulseMessages,
-    sageMessages,
-    studyMessages,
-    publicMessages,
-    solutionsMessages,
-    accountMessages,
-    teamMessages,
-    universalMessages,
-  ] = await Promise.all([
-    import(`../../messages/${locale}.json`),
-    import(`../app/(auth)/messages/${locale}.json`),
-    import(`../app/(interviewProject)/messages/${locale}.json`),
-    import(`../app/(persona)/messages/${locale}.json`),
-    import(`../app/(panel)/messages/${locale}.json`),
-    import(`../app/(pulse)/messages/${locale}.json`),
-    import(`../app/(sage)/messages/${locale}.json`),
-    import(`../app/(study)/messages/${locale}.json`),
-    import(`../app/(public)/messages/${locale}.json`),
-    import(`../app/(public)/(solutions)/messages/${locale}.json`),
-    import(`../app/account/messages/${locale}.json`),
-    import(`../app/team/messages/${locale}.json`),
-    import(`../app/(universal)/messages/${locale}.json`),
-  ]);
-  return {
-    ...messages.default,
-    ...authMessages.default,
-    ...interviewProjectMessages.default,
-    ...personaMessages.default,
-    ...panelMessages.default,
-    ...pulseMessages.default,
-    ...sageMessages.default,
-    ...studyMessages.default,
-    ...publicMessages.default,
-    ...solutionsMessages.default,
-    ...accountMessages.default,
-    ...teamMessages.default,
-    ...universalMessages.default,
-  };
-};
-
 export default getRequestConfig(async ({ locale }) => {
   if (!locale) {
-    // Get locale from cookie or header
     const [cookieLocale, headerLocale] = await Promise.all([cookies(), headers()]).then(
       ([cookies, headers]) => [cookies.get("locale")?.value, headers.get("x-locale")],
     );
@@ -61,6 +13,6 @@ export default getRequestConfig(async ({ locale }) => {
   }
   return {
     locale,
-    messages: await getMessages(locale),
+    messages: (await import(`../../messages/${locale}.json`)).default,
   };
 });
