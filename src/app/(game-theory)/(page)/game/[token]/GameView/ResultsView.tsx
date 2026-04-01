@@ -1,7 +1,7 @@
 "use client";
 
 import { GameDistributionView } from "@/app/(game-theory)/(page)/HomeView/DistributionChart";
-import { GameSessionParticipant } from "@/app/(game-theory)/types";
+import { GameSessionParticipant, GameTimeline } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
@@ -42,6 +42,7 @@ interface ResultsViewProps {
   winners: GameSessionParticipant[];
   isFullTie: boolean;
   gameType: string;
+  events: GameTimeline;
 }
 
 export function ResultsView({
@@ -50,6 +51,7 @@ export function ResultsView({
   winners,
   isFullTie,
   gameType,
+  events,
 }: ResultsViewProps) {
   useEffect(() => {
     const end = Date.now() + 4500;
@@ -266,7 +268,7 @@ export function ResultsView({
               overflow: "hidden",
             }}
           >
-            <GameDistributionView gameType={gameType} />
+            <GameDistributionView gameType={gameType} sessionStats={{ events }} />
           </div>
         </section>
 

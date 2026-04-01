@@ -1,5 +1,6 @@
 "use client";
 
+import type { GameSessionStats } from "@/app/(game-theory)/types";
 import { distributionRegistry } from "@/app/(game-theory)/gameTypes/distributionRegistry";
 
 /**
@@ -7,7 +8,13 @@ import { distributionRegistry } from "@/app/(game-theory)/gameTypes/distribution
  * To customize what's shown for a game type, edit its DistributionView.tsx file
  * in gameTypes/{name}/DistributionView.tsx.
  */
-export function GameDistributionView({ gameType }: { gameType: string }) {
+export function GameDistributionView({
+  gameType,
+  sessionStats,
+}: {
+  gameType: string;
+  sessionStats?: GameSessionStats;
+}) {
   const View = distributionRegistry[gameType];
 
   if (!View) {
@@ -20,5 +27,5 @@ export function GameDistributionView({ gameType }: { gameType: string }) {
     );
   }
 
-  return <View />;
+  return <View sessionStats={sessionStats} />;
 }

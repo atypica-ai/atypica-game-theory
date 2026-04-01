@@ -478,6 +478,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
           </div>
         ) : showResults ? (
           <ResultsView
+            events={events}
             participants={participants}
             cumulativeScores={cumulativeScores}
             winners={winners}

@@ -50,6 +50,9 @@ export type GameTimelineEvent =
 // The full timeline is an ordered flat array of events
 export type GameTimeline = GameTimelineEvent[];
 
+// Session data passed to distribution views for "this game" overlays
+export type GameSessionStats = { events: GameTimeline };
+
 // ── Extra field stored alongside the session ────────────────────────────────
 
 export interface GameSessionParticipant {
