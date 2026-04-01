@@ -23,7 +23,7 @@ Examples (4 players):
 After each round, all choices and scores are revealed to everyone before the next round.
 
 The game lasts 3 rounds. The player with the highest cumulative score wins.
-WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOREVER.`,
+WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOREVER. If all tied with the same score, all will be pruned.`,
 
   minPlayers: 4,
   maxPlayers: 10,

@@ -42,7 +42,7 @@ export function PrisonerDilemmaDistributionView() {
               tickLine={false}
               width={30}
             />
-            <Tooltip content={<TooltipContent />} cursor={{ fill: `${GRID_COLOR}60` }} />
+            <Tooltip content={<TooltipContent />} cursor={{ fill: GRID_COLOR, fillOpacity: 0.35 }} />
             <Bar dataKey="human" name="Human" fill={HUMAN_COLOR} fillOpacity={0.80} radius={[3, 3, 0, 0]}>
               <LabelList dataKey="human" position="top" formatter={pctLabelFmt} style={{ fontSize: 9, fontFamily: "IBMPlexMono,monospace", fill: HUMAN_COLOR }} />
             </Bar>
