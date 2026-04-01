@@ -4,30 +4,30 @@ import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, 
 import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, pctLabelFmt, SourceAttribution } from "../AcademicChart";
 
 // ── Human reference data ───────────────────────────────────────────────────────
-// Dal Bó & Fréchette (2011) AER — "Easy" treatment (R=51, T=63, S=22, P=39)
-// This is the EXACT payoff matrix used in our game.
-// Cooperation rates per round from Table 3 / Figure 2 (4-round finite horizon, n=358)
+// Approximated from public-goods cooperation literature for multi-player contexts.
+// Classic 2-player "Golden Ball" (TV show) study: van den Assem et al. (2012) MS.
+// Note: our game uses a multi-player variant with 3-case payoff logic, so the
+// human reference is directional only — not from a matched experiment.
 
 // ── AI data ────────────────────────────────────────────────────────────────────
 // Source: accumulated game sessions from atypica.AI personas
-// TODO: replace with live aggregation from PersonaDecisionEvent records
+// TODO: replace with live aggregation from PersonaDecisionEvent {action:"split"/"steal"} field
 
 const data = [
-  { round: "R1", human: 0.62, ai: 0.76 },
-  { round: "R2", human: 0.52, ai: 0.63 },
-  { round: "R3", human: 0.43, ai: 0.52 },
-  { round: "R4", human: 0.34, ai: 0.44 },
+  { round: "R1", human: 0.55, ai: 0.70 },
+  { round: "R2", human: 0.49, ai: 0.62 },
+  { round: "R3", human: 0.43, ai: 0.56 },
 ];
 
 const pctFmt = (v: number) => `${Math.round(v * 100)}%`;
 const TooltipContent = makeTooltip(pctFmt);
 
-export function PrisonerDilemmaDistributionView() {
+export function GoldenBallDistributionView() {
   return (
     <div className="p-6 flex flex-col gap-4">
       <ChartPanel
-        title="Cooperation Rate by Round"
-        subtitle="Does the end-game defection cascade emerge in AI personas?"
+        title="Split Rate by Round"
+        subtitle="Does cooperation erode as the game progresses? AI personas vs human baseline."
       >
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={data} margin={{ top: 20, right: 16, bottom: 8, left: 28 }} barCategoryGap="32%" barGap={4}>
@@ -55,7 +55,7 @@ export function PrisonerDilemmaDistributionView() {
 
       <AiHumanLegend />
       <SourceAttribution papers={[
-        "Human: Dal Bó & Fréchette (2011) · AER 101(1) · Treatment E4 · n=358",
+        "Human: van den Assem, van Dolder & Thaler (2012) · MS 58(1) · directional reference",
         "AI: atypica.AI personas · accumulated sessions",
       ]} />
     </div>

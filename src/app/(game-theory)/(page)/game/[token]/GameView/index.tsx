@@ -13,6 +13,7 @@ import useSWR from "swr";
 import { groupEventsByRound, RoundDetailView } from "./ActivityFeed";
 import { PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
 import { ReplayView } from "./ReplayView";
+import { ResultsView } from "./ResultsView";
 import { RoundPill } from "./RoundView";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -201,6 +202,9 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
     return { text: `${winners.map((w) => w.name).join(" & ")} win`, color: "var(--gt-pos)" };
   }, [isCompleted, isFullTie, winners, participants]);
 
+  // Show results screen when game is completed and no round is manually selected
+  const showResults = isCompleted && manualRoundId === null;
+
   // ── Round nav ─────────────────────────────────────────────────────────────
 
   const navRounds = [
@@ -212,10 +216,13 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
     activeRoundId ??
     (completedRoundIds.length > 0 ? completedRoundIds[completedRoundIds.length - 1] : 0);
 
-  // Prev / next for round nav arrows
-  const selectedIdx = navRounds.findIndex((r) => r.roundId === selectedRoundId);
-  const canGoPrev = selectedIdx > 0;
-  const canGoNext = selectedIdx < navRounds.length - 1;
+  // Virtual index: rounds 0..n-1, results = n
+  const effectiveIdx = showResults
+    ? navRounds.length
+    : navRounds.findIndex((r) => r.roundId === selectedRoundId);
+  const maxIdx = isCompleted ? navRounds.length : navRounds.length - 1;
+  const canGoPrev = effectiveIdx > 0;
+  const canGoNext = effectiveIdx < maxIdx;
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ background: "var(--gt-bg)" }}>
@@ -343,8 +350,13 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
           {/* Prev arrow */}
           <button
             onClick={() => {
-              if (canGoPrev) {
-                setManualRoundId(navRounds[selectedIdx - 1].roundId);
+              if (!canGoPrev) return;
+              if (showResults) {
+                // From results → last completed round
+                const last = completedRoundIds.at(-1);
+                if (last !== undefined) setManualRoundId(last);
+              } else {
+                setManualRoundId(navRounds[effectiveIdx - 1].roundId);
               }
             }}
             disabled={!canGoPrev}
@@ -367,17 +379,12 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
                 onClick={() => setManualRoundId(null)}
                 className="flex items-center gap-1.5 px-5 h-full text-[13px] font-[500] border-b-2 shrink-0 transition-colors"
                 style={{
-                  borderBottomColor:
-                    manualRoundId === null ? "var(--gt-blue)" : "transparent",
-                  color:
-                    manualRoundId === null ? "var(--gt-blue)" : "var(--gt-t3)",
+                  borderBottomColor: manualRoundId === null && !isCompleted ? "var(--gt-blue)" : "transparent",
+                  color: manualRoundId === null && !isCompleted ? "var(--gt-blue)" : "var(--gt-t3)",
                   fontFamily: "IBMPlexMono, monospace",
                 }}
               >
-                <span
-                  className="w-1.5 h-1.5 rounded-full animate-pulse"
-                  style={{ backgroundColor: "var(--gt-blue)" }}
-                />
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "var(--gt-blue)" }} />
                 Live
               </button>
             )}
@@ -393,15 +400,27 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
                   isViewing={manualRoundId === roundId}
                   isLive={isLive}
                   onClick={() => {
-                    if (isLive) {
-                      setManualRoundId(null);
-                    } else {
-                      setManualRoundId((prev) => (prev === roundId ? null : roundId));
-                    }
+                    if (isLive) setManualRoundId(null);
+                    else setManualRoundId((prev) => (prev === roundId ? null : roundId));
                   }}
                 />
               );
             })}
+
+            {/* Results tab — only when game complete */}
+            {isCompleted && (
+              <button
+                onClick={() => setManualRoundId(null)}
+                className="flex items-center gap-1.5 px-5 h-full text-[13px] font-[500] border-b-2 shrink-0 transition-colors"
+                style={{
+                  borderBottomColor: showResults ? "var(--gt-pos)" : "transparent",
+                  color: showResults ? "var(--gt-pos)" : "var(--gt-t3)",
+                  fontFamily: "IBMPlexMono, monospace",
+                }}
+              >
+                Results
+              </button>
+            )}
 
             <div className="flex-1" />
           </div>
@@ -409,13 +428,14 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
           {/* Next arrow */}
           <button
             onClick={() => {
-              if (canGoNext) {
-                const next = navRounds[selectedIdx + 1];
-                if (next.isLive) {
-                  setManualRoundId(null);
-                } else {
-                  setManualRoundId(next.roundId);
-                }
+              if (!canGoNext) return;
+              if (effectiveIdx === navRounds.length - 1 && isCompleted) {
+                // Last round → results
+                setManualRoundId(null);
+              } else {
+                const next = navRounds[effectiveIdx + 1];
+                if (next.isLive) setManualRoundId(null);
+                else setManualRoundId(next.roundId);
               }
             }}
             disabled={!canGoNext}
@@ -456,6 +476,14 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
               Awaiting players
             </span>
           </div>
+        ) : showResults ? (
+          <ResultsView
+            participants={participants}
+            cumulativeScores={cumulativeScores}
+            winners={winners}
+            isFullTie={isFullTie}
+            gameType={gameType}
+          />
         ) : (
           <RoundDetailView
             roundData={selectedRoundData}
