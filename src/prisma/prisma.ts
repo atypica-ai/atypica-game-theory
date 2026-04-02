@@ -1,4 +1,3 @@
-import "dotenv/config";
 import "server-only";
 import "./dbtype"; // 这里需要引入一下
 
