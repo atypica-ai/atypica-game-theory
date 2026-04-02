@@ -16,6 +16,7 @@ const bodySchema = z
     personaIds: z.array(z.number().int().positive()).min(1).optional(),
     randomPersonaCount: z.number().int().min(1).optional(),
     sessions: z.number().int().min(1).max(20).default(1),
+    discussionRounds: z.number().int().min(0).optional(),
   })
   .refine((d) => d.personaIds !== undefined || d.randomPersonaCount !== undefined, {
     message: "Either personaIds or randomPersonaCount is required",
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   }
 
-  const { gameType, personaIds, randomPersonaCount, sessions } = parsed.data;
+  const { gameType, personaIds, randomPersonaCount, sessions, discussionRounds } = parsed.data;
 
   // Validate game type early so we can return a clean 400 before queuing
   try {
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             (await pickRandomPersonaIds(
               randomPersonaCount ?? getGameType(gameType).minPlayers,
             ));
-          const { token } = await launchGameSession(gameType, ids);
+          const { token } = await launchGameSession(gameType, ids, { discussionRounds });
           logger.info({ msg: "Game session launched", token, gameType, personaIds: ids, index: i });
         } catch (error) {
           const message = (error as Error).message;
