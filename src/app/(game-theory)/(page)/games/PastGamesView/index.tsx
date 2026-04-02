@@ -17,6 +17,7 @@ import { SessionListItem } from "@/app/(game-theory)/actions";
 import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import { GameSessionParticipant } from "@/app/(game-theory)/types";
+import { AI_COLOR, GRID_COLOR } from "@/app/(game-theory)/gameTypes/AcademicChart";
 import { computeOutcome, formatDateShort, type OutcomeResult } from "./utils";
 
 const GAME_TYPES = Object.values(gameTypeRegistry) as unknown as GameType[];
@@ -89,42 +90,48 @@ function ParticipantChip({ name }: { name: string }) {
   );
 }
 
-function OutcomeCell({ outcome, participants }: { outcome: OutcomeResult | null; participants: GameSessionParticipant[] }) {
+function OutcomeCell({ outcome }: { outcome: OutcomeResult | null }) {
   if (!outcome) return <span style={{ color: "var(--gt-t4)", fontSize: "12px" }}>—</span>;
 
-  if (outcome.isFullTie) {
-    return <span className="text-[12px] font-[500]" style={{ color: "var(--gt-warn)" }}>Tie</span>;
+  // Build frequency map: score value → count of players
+  const freq = new Map<number, number>();
+  for (const score of Object.values(outcome.scores)) {
+    freq.set(score, (freq.get(score) ?? 0) + 1);
   }
 
+  const scoreValues = [...freq.keys()].sort((a, b) => a - b);
+  if (scoreValues.length === 0) return <span style={{ color: "var(--gt-t4)", fontSize: "12px" }}>—</span>;
+
+  const maxVal = scoreValues[scoreValues.length - 1];
+  const maxCount = Math.max(...freq.values());
+
+  const W = 120;
+  const H = 28;
+  const BAR_W = 4;
+
   return (
-    <div className="flex flex-col gap-0.5">
-      {participants.map((p) => {
-        const isWinner = outcome.winners.some((w) => w.personaId === p.personaId);
-        const score = outcome.scores[p.personaId] ?? 0;
+    <svg width={W} height={H} style={{ display: "block", overflow: "visible" }}>
+      <line x1={0} y1={H} x2={W} y2={H} stroke={GRID_COLOR} strokeWidth={1} />
+      {scoreValues.map((val) => {
+        const count = freq.get(val) ?? 0;
+        // X: map score value linearly across [0, W - BAR_W]
+        const xFrac = maxVal > 0 ? val / maxVal : 0.5;
+        const x = xFrac * (W - BAR_W);
+        const barH = Math.max((count / maxCount) * H, 2);
         return (
-          <div key={p.personaId} className="flex items-center gap-1.5">
-            <span
-              className="text-[12px] font-[500] tabular-nums"
-              style={{ color: isWinner ? "var(--gt-pos)" : "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-            >
-              {score}
-            </span>
-            <span
-              className="text-[12px]"
-              style={{
-                color: isWinner ? "var(--gt-t1)" : "var(--gt-t3)",
-                maxWidth: "120px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {p.name}
-            </span>
-          </div>
+          <rect
+            key={val}
+            x={x}
+            y={H - barH}
+            width={BAR_W}
+            height={barH}
+            fill={AI_COLOR}
+            rx={1}
+            ry={1}
+          />
         );
       })}
-    </div>
+    </svg>
   );
 }
 
@@ -303,9 +310,7 @@ const columns = [
     id: "outcome",
     enableSorting: false,
     enableColumnFilter: false,
-    cell: (info) => (
-      <OutcomeCell outcome={info.getValue()} participants={info.row.original.participants} />
-    ),
+    cell: (info) => <OutcomeCell outcome={info.getValue()} />,
   }),
   columnHelper.accessor("status", {
     id: "status",
@@ -455,7 +460,7 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
                 </th>
 
                 {/* Outcome */}
-                <th className="px-5 pt-4 pb-3 text-left align-bottom" style={{ width: "200px" }}>
+                <th className="px-5 pt-4 pb-3 text-left align-bottom" style={{ width: "160px" }}>
                   <HeaderLabel>Outcome</HeaderLabel>
                 </th>
 
