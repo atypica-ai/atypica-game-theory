@@ -164,6 +164,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [discussionRounds, setDiscussionRounds] = useState<number | undefined>(undefined);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [personas, setPersonas] = useState<PersonaForPicker[]>(initialPersonas);
@@ -202,7 +203,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
     if (!canLaunch) return;
     setIsLaunching(true);
     setError(null);
-    const result = await createGameSession(selectedGameType, selectedIds);
+    const result = await createGameSession(selectedGameType, selectedIds, discussionRounds);
     if (!result.success) {
       setError(result.message);
       setIsLaunching(false);
@@ -510,6 +511,46 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                 ? `Select ${required - selectedIds.length} more participant${required - selectedIds.length !== 1 ? "s" : ""}`
                 : "Ready to launch"}
             </span>
+          )}
+        </div>
+
+        {/* Discussion rounds toggle */}
+        <div className="flex items-center gap-3">
+          <label
+            className="flex items-center gap-2 cursor-pointer select-none"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "12px" }}
+          >
+            <input
+              type="checkbox"
+              checked={discussionRounds !== undefined}
+              onChange={(e) => setDiscussionRounds(e.target.checked ? 1 : undefined)}
+              style={{ accentColor: "var(--gt-blue)", cursor: "pointer" }}
+            />
+            discussion
+          </label>
+          {discussionRounds !== undefined && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setDiscussionRounds(Math.max(0, discussionRounds - 1))}
+                className="w-5 h-5 flex items-center justify-center transition-colors hover:opacity-70"
+                style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
+              >
+                −
+              </button>
+              <span
+                className="w-4 text-center tabular-nums"
+                style={{ color: "var(--gt-t1)", fontFamily: "IBMPlexMono, monospace", fontSize: "13px" }}
+              >
+                {discussionRounds}
+              </span>
+              <button
+                onClick={() => setDiscussionRounds(discussionRounds + 1)}
+                className="w-5 h-5 flex items-center justify-center transition-colors hover:opacity-70"
+                style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
+              >
+                +
+              </button>
+            </div>
           )}
         </div>
 

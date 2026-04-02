@@ -1,6 +1,6 @@
 import "server-only";
 
-import { defaultProviderOptions, llm } from "@/ai/provider";
+import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
 import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
@@ -57,7 +57,7 @@ export async function generatePlayerDiscussion({
   logger.info({ msg: "Calling LLM for discussion", personaId: personaSession.personaId, round });
 
   const { text, reasoning, usage, providerMetadata } = await generateText({
-    model: llm("gemini-3-flash"),
+    model: llm(personaSession.modelName),
     providerOptions: defaultProviderOptions(),
     system: personaSession.systemPrompt,
     messages: [{ role: "user", content: `${formattedContext}\n\n---\n\n${task}` }],
@@ -123,7 +123,7 @@ export async function generatePlayerDecision({
       : `This is round ${round}. Carefully read the game state above, consider your strategy, then submit your decision by calling the action tool. You MUST call the action tool exactly once.`;
 
   const { steps, reasoning, usage, providerMetadata } = await generateText({
-    model: llm("gemini-3-flash"),
+    model: llm(personaSession.modelName),
     providerOptions: defaultProviderOptions(),
     system: personaSession.systemPrompt,
     messages: [{ role: "user", content: `${formattedContext}\n\n---\n\n${task}` }],
@@ -175,13 +175,16 @@ export async function generatePlayerDecision({
 export function buildGamePersonaSession({
   persona,
   locale,
+  modelName,
 }: {
   persona: Persona;
   locale: Locale;
+  modelName: LLMModelName;
 }): GamePersonaSession {
   return {
     personaId: persona.id,
     personaName: persona.name,
     systemPrompt: personaAgentSystem({ persona, locale }),
+    modelName,
   };
 }

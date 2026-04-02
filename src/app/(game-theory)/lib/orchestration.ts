@@ -21,6 +21,7 @@ interface PhaseContext {
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
+  discussionRounds: number; // effective value for this session
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -59,9 +60,9 @@ async function runDiscussionPhase(
   roundId: number,
   ctx: PhaseContext,
 ) {
-  ctx.logger.info({ msg: "Starting discussion phase", roundId, discussionRounds: gameType.discussionRounds });
+  ctx.logger.info({ msg: "Starting discussion phase", roundId, discussionRounds: ctx.discussionRounds });
 
-  for (let turn = 0; turn < gameType.discussionRounds; turn++) {
+  for (let turn = 0; turn < ctx.discussionRounds; turn++) {
     if (ctx.abortSignal.aborted) throw new Error("Game session aborted");
 
     const speakerOrder = shuffle(personaSessions);
@@ -183,11 +184,27 @@ export async function runGameSession({
 
   const personaMap = new Map(personasUnordered.map((p) => [p.id, p]));
   const personas = personaIds.map((id) => personaMap.get(id)!);
-  const personaSessions = personas.map((persona) => buildGamePersonaSession({ persona, locale }));
+
+  const sessionExtra = session.extra as GameSessionExtra;
+  const personaModels = sessionExtra.personaModels ?? {};
+
+  const personaSessions = personas.map((persona) =>
+    buildGamePersonaSession({
+      persona,
+      locale,
+      modelName: personaModels[persona.id] ?? "gemini-3-flash",
+    }),
+  );
 
   const participants: GameSessionExtra["participants"] = personas.map((p) => ({ personaId: p.id, name: p.name }));
-  const extra: GameSessionExtra = { gameType: session.gameType, participants };
-  const ctx: PhaseContext = { gameSessionToken, locale, abortSignal, statReport, logger };
+  const extra: GameSessionExtra = {
+    gameType: session.gameType,
+    participants,
+    personaModels: sessionExtra.personaModels,
+    ...(sessionExtra.discussionRounds !== undefined ? { discussionRounds: sessionExtra.discussionRounds } : {}),
+  };
+  const discussionRounds = sessionExtra.discussionRounds ?? gameType.discussionRounds;
+  const ctx: PhaseContext = { gameSessionToken, locale, abortSignal, statReport, logger, discussionRounds };
 
   // Initialize timeline with rules announcement, mark as running
   const timeline: GameTimeline = [];
@@ -203,13 +220,13 @@ export async function runGameSession({
 
     const roundAnnouncement =
       locale === "zh-CN"
-        ? `第 ${roundId} 轮开始。${gameType.discussionRounds > 0 ? "讨论阶段开始，每位玩家可以自由发言。" : "每位玩家请做出本轮决策。"}`
-        : `Round ${roundId} begins. ${gameType.discussionRounds > 0 ? "Discussion phase: each player may speak freely before deciding." : "Each player must now make their decision."}`;
+        ? `第 ${roundId} 轮开始。${ctx.discussionRounds > 0 ? "讨论阶段开始，每位玩家可以自由发言。" : "每位玩家请做出本轮决策。"}`
+        : `Round ${roundId} begins. ${ctx.discussionRounds > 0 ? "Discussion phase: each player may speak freely before deciding." : "Each player must now make their decision."}`;
 
     timeline.push({ type: "system", content: roundAnnouncement, round: roundId });
     await saveGameTimeline({ token: gameSessionToken, timeline, logger });
 
-    if (gameType.discussionRounds > 0) {
+    if (ctx.discussionRounds > 0) {
       await runDiscussionPhase(timeline, gameType, personaSessions, participants, roundId, ctx);
     }
 

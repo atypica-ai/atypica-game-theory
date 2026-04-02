@@ -63,9 +63,10 @@ export async function fetchGameSession(token: string): Promise<
 export async function createGameSession(
   gameTypeName: string,
   personaIds: number[],
+  discussionRounds?: number,
 ): Promise<{ success: true; token: string } | { success: false; message: string }> {
   try {
-    const { token } = await launchGameSession(gameTypeName, personaIds); // useAfter: true (default)
+    const { token } = await launchGameSession(gameTypeName, personaIds, { discussionRounds });
     return { success: true, token };
   } catch (error) {
     return { success: false, message: (error as Error).message };

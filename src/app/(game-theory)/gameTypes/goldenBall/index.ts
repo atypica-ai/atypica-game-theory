@@ -35,5 +35,5 @@ WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOR
   payoffFunction: goldenBallPayoff,
 
   simultaneousReveal: true,
-  discussionRounds: 1,
+  discussionRounds: 0,
 };

@@ -1,8 +1,11 @@
+import { LLMModelName } from "@/ai/provider";
+
 // Runtime-only persona session (not persisted)
 export interface GamePersonaSession {
   personaId: number;
   personaName: string;
   systemPrompt: string;
+  modelName: LLMModelName;
 }
 
 // ── Timeline event types ────────────────────────────────────────────────────
@@ -63,5 +66,7 @@ export interface GameSessionParticipant {
 export interface GameSessionExtra {
   gameType: string;
   participants: GameSessionParticipant[];
+  personaModels?: Record<number, LLMModelName>; // personaId → assigned model
+  discussionRounds?: number; // session-level override; undefined = use game type default
   error?: string; // set on failure, never on success
 }

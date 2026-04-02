@@ -8,6 +8,7 @@ import { prisma } from "@/prisma/prisma";
 import { getGameType } from "../gameTypes";
 import { GameSessionExtra } from "../types";
 import { runGameSession } from "./orchestration";
+import { assignRandomPersonaModels } from "./personaModels";
 import { startGameSessionRun } from "./runtime";
 
 /**
@@ -24,7 +25,7 @@ import { startGameSessionRun } from "./runtime";
 export async function launchGameSession(
   gameTypeName: string,
   personaIds: number[],
-  opts?: { useAfter?: boolean },
+  opts?: { useAfter?: boolean; discussionRounds?: number },
 ): Promise<{ token: string; run: Promise<void> }> {
   const useAfter = opts?.useAfter !== false; // default true
 
@@ -46,7 +47,13 @@ export async function launchGameSession(
   }));
 
   const token = generateToken(16);
-  const initialExtra: GameSessionExtra = { gameType: gameTypeName, participants };
+  const personaModels = assignRandomPersonaModels(personaIds);
+  const initialExtra: GameSessionExtra = {
+    gameType: gameTypeName,
+    participants,
+    personaModels,
+    ...(opts?.discussionRounds !== undefined ? { discussionRounds: opts.discussionRounds } : {}),
+  };
 
   await prisma.gameSession.create({
     data: {
