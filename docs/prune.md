@@ -447,6 +447,40 @@ ws                      zustand
 
 ---
 
-### Remaining stages (not yet done)
+---
 
-- **Stage 5 — Prisma schema pruning**: Delete ~35 unused DB models (keep only `User`, `Persona`, `GameSession`, `Tournament`, `AgentStatistics`). Requires `prisma migrate dev` + `prisma generate` + E2E game test. Most disruptive — do last.
+### Stage 5 — Prisma schema pruning + new database
+
+**Method**: Rewrote `prisma/schema.prisma` from 1049 lines to ~120 lines, keeping only the 5 models game-theory needs. Squashed all 23 prior migrations into a single clean init. Created a dedicated `game_theory_dev` database.
+
+**Models deleted** (~35 removed): `Memory`, `UserChat`, `UserChatMessage`, `Analyst`, `AnalystReport`, `InterviewProject`, `InterviewSession`, `Subscription`, `PaymentRecord`, `TokensAccount`, `TokensAccountDeposit`, `ApiKey`, `BlogArticle`, `Podcast`, `ResearchTemplate`, `ScoutTask`, `PanelSession`, `Pulse`, `SageTopic`, `SagePost`, `AgentSkill`, `AwsMarketplaceEntitlement`, `ReportTemplate`, `AgentStatistics`, `PersonaImport`, `ResearchReport`, and all their enums.
+
+**Models kept**: `Team`, `User`, `Persona`, `GameSession`, `Tournament`.
+
+**`Persona` schema changes**: Removed `scoutUserChatId` and `personaImportId` FK fields (referenced deleted models). All related back-relations removed from `User` and `Team`.
+
+**`src/prisma/dbtype.ts`**: Stripped from 15 type declarations to 5 — only `TeamExtra`, `PersonaExtra`, `GameSessionTimeline` (= `GameTimeline`), `TournamentState`, `Locale`. Aliased `TournamentState` import as `TournamentStateType` to avoid name collision with the namespace declaration.
+
+**Migration squash steps**:
+1. Deleted all 23 migration folders (`find ./prisma/migrations -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +`)
+2. Created `prisma/migrations/20260402000000_init/` with SQL generated via `prisma migrate diff --from-empty --to-schema`
+3. Manually replaced the auto-generated B-tree embedding index with the correct HNSW index (`USING hnsw ("embedding" halfvec_cosine_ops) WITH (m = 16, ef_construction = 64)`)
+4. Applied SQL directly to new DB, then ran `prisma migrate resolve --applied 20260402000000_init`
+
+**New database**: Created `game_theory_dev` and `game_theory_dev_shadow` in the existing Docker PostgreSQL container (`postgres-atypica`). The project no longer shares the `atypica_dev_v2` database.
+
+**Persona data import**: Imported 10 game personas from `game-personas.sql` dump. The dump contained stale columns (`scoutUserChatId`, `personaImportId`) — handled by temporarily adding them during import, then dropping them after. `userId` values referencing non-existent users were nulled out.
+
+**Type errors surfaced by `prisma generate`** (all fixed):
+- `scripts/_poll-game.ts`: `GameTimeline as Record<string,unknown>[]` → cast through `unknown`
+- `src/app/(game-theory)/lib/persistence.ts`: `timeline as object[]` → removed cast (type already correct)
+- `src/app/(game-theory)/tournament/lib/persistence.ts`: `state as object` → removed cast
+- `src/app/(game-theory)/tournament/lib/launch.ts`: `state: {}` → `state: { stages: [] }` (required field)
+
+**Verification**: `pnpm build` clean. ✓
+
+**New `.env` DB config**:
+```env
+DATABASE_URL=postgresql://atypica:atypica@localhost:5432/game_theory_dev
+SHADOW_DATABASE_URL=postgresql://atypica:atypica@localhost:5432/game_theory_dev_shadow
+```
