@@ -231,3 +231,222 @@ These directories have no files in the required set:
 | Deletable (API routes) | ~4 dirs |
 | Deletable (shared libs, partial) | ~200+ |
 | Prisma schema (separate stage) | — |
+
+---
+
+## Execution Log
+
+All stages below were executed sequentially. Each stage ended with a clean `pnpm build` before proceeding.
+
+---
+
+### Stage 0 — Prerequisite edits (auto-processed files)
+
+**Logic**: Next.js compiles certain files regardless of whether game-theory routes import them. These files had import chains into deletable code, so they had to be edited first. Only after all 9 edits were complete could any bulk deletion begin.
+
+**Files edited and changes made**:
+
+| File | Change |
+|------|--------|
+| `src/app/layout.tsx` | Removed `<Embed>` (→ `(system)/embed`), `<AuthProvider>` (→ `(auth)`), `<Stars>`, `<Analytics>` (→ `lib/analytics`), `generatePageMetadata` (→ `lib/request/metadata` → `lib/attachments/s3`). Replaced with static `metadata` export. Kept `ThemeProvider`, `NextIntlClientProvider`, `Toaster`, fonts. |
+| `src/middleware.ts` | Removed tolt/utm acquisition tracking (→ `lib/analytics`), removed maintenance mode check (→ `lib/request/maintenance`). Kept locale handling, ping handler, security headers. |
+| `src/i18n/global.ts` | Stripped 10+ route-group JSON imports. Kept only root `messages/zh-CN.json`. TypeScript resolves these statically — any missing JSON = immediate build failure. |
+| `src/i18n/request.ts` | Simplified `getMessages` to only load root locale JSON files (`messages/zh-CN.json`, `messages/en-US.json`). Removed per-route-group message merging. |
+| `src/app/sitemap.ts` | Replaced with minimal 2-URL sitemap (`/` and `/game/new`). Old version imported docs-config from `(public)/(docs)/`. |
+| `src/app/not-found.tsx` | Removed `DefaultLayout` wrapper (→ `components/layout`). Now just `<NotFound />` directly. |
+| `src/app/forbidden.tsx` | Same as not-found — removed `DefaultLayout`. |
+| `src/app/globals.css` | Removed `@import "../components/ai-elements/streamdown.css"` (PostCSS resolves `@import` at build time). |
+| `next.config.ts` | Removed `outputFileTracingIncludes` for `(public)/(docs)` routes. |
+
+**Verification**: `pnpm build` clean after all 9 edits. ✓
+
+---
+
+### Stage 1 — Bulk route group deletion
+
+**Logic**: With all prerequisite files edited, the 20 safe route groups had no remaining import chains from kept code. All could be bulk-deleted in one pass.
+
+**Deleted**:
+```
+src/app/(agents)/
+src/app/(aws)/
+src/app/(deepResearch)/
+src/app/(interviewProject)/
+src/app/(memory)/
+src/app/(newStudy)/
+src/app/(open)/
+src/app/(panel)/
+src/app/(podcast)/
+src/app/(public)/
+src/app/(redirect)/
+src/app/(sage)/
+src/app/(study)/
+src/app/(universal)/
+src/app/account/
+src/app/admin/
+src/app/blog/
+src/app/deck/
+src/app/payment/
+src/app/team/
+src/app/api/format-content/
+src/app/api/imagegen/
+src/app/api/internal/
+src/app/api/transcribe/
+```
+
+**Partial deletions** (kept one file each):
+- `src/app/(persona)/` — deleted everything except `prompt/personaAgent.ts` (game-theory imports it for persona invocation system prompt)
+- `src/app/(pulse)/` — deleted everything; `heat/types.ts` was the only kept file, but `PulsePostData` type was inlined into `prisma/client.ts` to eliminate the dependency entirely
+- `src/app/(system)/` — deleted everything except `cdn/lib.ts` (provides `proxiedImageCdnUrl` used by `lib/utils.ts`)
+
+**Verification**: `pnpm build` clean after deletions. ✓
+
+---
+
+### Stage 2 — Shared library pruning
+
+**Logic**: After route deletions, many files in `src/ai/`, `src/lib/`, `src/components/`, etc. were no longer reachable. Prerequisite: simplify `src/ai/tools/types.ts` first (it had relative imports into `./experts/` and `./user/` for `BasicUITools`).
+
+**Prerequisite edit**:
+- `src/ai/tools/types.ts` — removed `BasicUITools`, `GenericInputType`, and the relative imports that referenced `./experts/` and `./user/`. Kept `StatReporter`, `AgentToolConfigArgs`, `PlainTextToolResult`, `PlainTextUITools`, `TMessageWithPlainTextTool`, `BasicToolName`.
+
+**Deleted**:
+```
+src/ai/embedding.ts
+src/ai/messageUtils.ts
+src/ai/tools/experts/
+src/ai/tools/mcp/
+src/ai/tools/readAttachment/   (all except prompt.ts — kept)
+src/ai/tools/social/
+src/ai/tools/user/
+src/ai/prompt/                 (all except systemConfig.ts — kept)
+src/email/
+src/lib/analytics/
+src/lib/apiKey/
+src/lib/attachments/
+src/lib/mcp/
+src/lib/proxy/                 (all except fetch.ts — kept)
+src/lib/request/               (all except deployRegion.ts and headers.ts — kept)
+src/lib/tokens/
+src/lib/userChat/
+src/tokens/
+src/components/ai-elements/
+src/components/chat/
+src/components/layout/
+src/hooks/
+src/sandbox/
+src/types/
+```
+
+**Note**: `src/search/` was kept — game-theory `/game/new` uses Meilisearch persona search.
+
+**Verification**: `pnpm build` failed with:
+```
+./src/app/api/health/[apiName]/route.ts
+Module not found: Can't resolve '@/ai/embedding'
+Module not found: Can't resolve '@/ai/tools/social'
+Module not found: Can't resolve '@/email/lib'
+Module not found: Can't resolve '@/ai/tools/experts/webSearch'
+```
+
+`api/health/` was in the "keep" list but its 200-line handler tested social tools, email, embedding, and webSearch — all deleted. Fixed by replacing with a minimal handler (ping, database, LLM only). ✓
+
+**Second build failure** — `src/prisma/dbtype.ts` imported from `(panel)/types`, `(persona)/types`, `(sage)/types`, `(study)/context/types`, `../tokens/types` — all deleted. Fixed by removing those imports and their corresponding `PrismaJson` type declarations (panel discussion, sage, study context, tokens log resource types). ✓
+
+**Third build failure** — `scripts/**/*.ts` is included in `tsconfig.json`, so TypeScript checks all scripts at build time. Several script files imported deleted modules:
+- `scripts/admin/admintool.ts` → `@/app/(auth)/lib`, `@/app/team/lib`, `@/app/payment/manualSubscription` — deleted `scripts/admin/` entirely
+- `scripts/utils/create-aws-test-user.ts` → `@/app/(auth)/lib` — deleted
+- `scripts/utils/payment-stats-v2.ts` → payment modules — deleted
+- `scripts/utils/payment-stats.ts` → `../../src/tokens/types` — deleted
+- `scripts/utils/extract-persona-attributes.ts` → `@/app/(persona)/lib` — deleted
+- `scripts/utils/rescore-personas.ts` → `@/app/(persona)/lib` — deleted
+- `scripts/archive/**/*.ts` → various deleted modules — deleted `scripts/archive/` entirely
+- `scripts/dumps/**/*.ts` → `@/app/(interviewProject)/types` — deleted `scripts/dumps/` entirely
+
+**DistributionView lint failures** — 3 modified `DistributionView.tsx` files (goldenBall, prisonerDilemma, stagHunt) had `_props: { sessionStats?: GameSessionStats }` parameters declared but never used. Removed the unused parameter and the now-unused `GameSessionStats` import. ✓
+
+**Final `pnpm build` output** (clean):
+```
+Route (app)                Size   First Load JS
+/                         17.7 kB  239 kB
+/_not-found                137 B   103 kB
+/api/game/run              137 B   103 kB
+/api/health/[apiName]      137 B   103 kB
+/game/[token]              142 B   311 kB
+/game/[token]/replay       142 B   311 kB
+/game/new                 4.31 kB  126 kB
+/manifest.json               0 B     0 B
+/robots.txt                137 B   103 kB
+/sitemap.xml               137 B   103 kB
+```
+
+✓ All 10 expected routes present. Build clean.
+
+---
+
+---
+
+### Stage 3 — i18n messages cleanup
+
+**Logic**: `messages/zh-CN.json` and `messages/en-US.json` had 13 top-level keys. A `grep` of all kept source files for `useTranslations`/`getTranslations` found only two callers:
+- `src/components/NotFound.tsx` → `"NotFoundPage"`
+- `src/components/Forbidden.tsx` → `"ForbiddenPage"`
+
+All other keys (`FeaturedStudiesPage`, `ScoutPage`, `PaymentPage`, `Components`, `Maintenance`, `NewStudyChatPage`, `FileUploadLimits`, `MemoryBuilder`, `MyPodcastsPage`, `Archive`) were deleted from both locale files. Both files reduced from 468 lines to ~14 lines each.
+
+**Verification**: `pnpm build` clean. ✓
+
+---
+
+### Stage 4 — package.json dependency pruning
+
+**Method**: Scanned all kept source files for npm package imports; compared against `package.json`. Removed all packages with no remaining callers in `src/` or `scripts/`.
+
+**Packages removed from `dependencies`**:
+```
+@ai-sdk/anthropic       @ai-sdk/mcp              @ai-sdk/openai
+@ai-sdk/react           @aws-sdk/client-marketplace-entitlement-service
+@aws-sdk/client-marketplace-metering               @aws-sdk/s3-request-presigner
+@dnd-kit/core           @dnd-kit/sortable         @dnd-kit/utilities
+@google-analytics/data  @hookform/resolvers        @modelcontextprotocol/sdk
+@next/third-parties     @radix-ui/react-accordion  @radix-ui/react-alert-dialog
+@radix-ui/react-avatar  @radix-ui/react-checkbox   @radix-ui/react-collapsible
+@radix-ui/react-dialog  @radix-ui/react-dropdown-menu  @radix-ui/react-label
+@radix-ui/react-popover @radix-ui/react-progress   @radix-ui/react-radio-group
+@radix-ui/react-select  @radix-ui/react-separator  @radix-ui/react-slider
+@radix-ui/react-switch  @radix-ui/react-tabs       @radix-ui/react-tooltip
+@radix-ui/react-use-controllable-state             @segment/analytics-next
+@segment/analytics-node @smithy/node-http-handler  @stripe/stripe-js
+@tavily/core            @types/ws                  @vercel/functions
+bash-tool               bcryptjs                   d3-hierarchy
+date-fns                dotenv                     framer-motion
+google-auth-library     groq-sdk                   hpagent
+jose                    js-cookie                  js-yaml
+jszip                   just-bash                  motion
+music-metadata          next-auth                  nodemailer
+plyr                    plyr-react                 qrcode.react
+react-day-picker        react-hook-form            react-markdown
+remark-gfm              rss-parser                 shiki
+sns-validator           streamdown                 stripe
+use-debounce            uuid                       vaul
+ws                      zustand
+```
+
+**Packages removed from `devDependencies`**:
+```
+@types/nodemailer  @types/sns-validator  socket.io-client
+```
+
+**Scripts section**: Removed `admintool` and `analytics` entries (both referenced deleted `scripts/admin/` files).
+
+**Kept `@aws-sdk/client-s3`**: `scripts/utils/public-assets.ts` uploads static assets to S3; script is still present.
+
+**Only 1 Radix UI package kept**: `@radix-ui/react-slot` (used by `src/components/ui/button.tsx`). All other Radix UI components were dropped with the deleted chat/layout/study UI.
+
+**Verification**: `pnpm build` clean (packages still in node_modules; pruning takes effect on next `pnpm install`). ✓
+
+---
+
+### Remaining stages (not yet done)
+
+- **Stage 5 — Prisma schema pruning**: Delete ~35 unused DB models (keep only `User`, `Persona`, `GameSession`, `Tournament`, `AgentStatistics`). Requires `prisma migrate dev` + `prisma generate` + E2E game test. Most disruptive — do last.
