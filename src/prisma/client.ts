@@ -425,7 +425,7 @@ export type PersonaExtra = Partial<{
   role: "consumer" | "buyer" | "expert"; // Persona role: consumer (B2C), buyer (B2B), expert (domain specialist)
   quote: string; // First-person quote reflecting personality and preferences (~120 Chinese chars or ~80 English words)
   // Common fields - use 2-3 fields based on role
-  ageRange: "0-17" | "18-24" | "25-34" | "35-44" | "45-54" | "55-64" | "65+"; // Age range (mainly for consumer)
+  age: number; // Specific age integer 18–80
   location: string; // Location format: English "City, Country" (e.g. "Shanghai, China") or Chinese "国家城市" (e.g. "中国上海")
   industry: string; // Industry/domain (for buyer & expert) - e.g. "FinTech", "AI"
   title: string; // Job title/role (all types) - e.g. "Stay-at-home Parents", "IT Procurement Manager", "Senior Researcher"
