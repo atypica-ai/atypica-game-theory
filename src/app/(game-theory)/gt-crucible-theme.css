@@ -1,0 +1,115 @@
+/* ── THE CRUCIBLE — Execution Chamber Design System ──────────────────────────
+   Kill board. Surveillance grid. No mercy.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --cr-bg:          #050505;
+  --cr-surface:     #0a0a0a;
+  --cr-grid-line:   #7a0000;         /* blood-red prison bars */
+
+  --cr-red:         #e01b1b;
+  --cr-red-hot:     #ff3030;
+  --cr-amber:       #c8a000;
+  --cr-white:       #f2f2f2;
+  --cr-dim:         #444444;
+  --cr-faint:       #1e1e1e;
+
+  --cr-font-display: var(--cr-font-oswald, 'Oswald'), sans-serif;
+  --cr-font-mono:    var(--cr-font-space, 'Space Mono'), monospace;
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes cr-scanline {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes cr-glitch-h {
+  0%   { clip-path: inset(31% 0 40% 0); transform: skewX(0deg) translateX(0); }
+  10%  { clip-path: inset(70% 0 5% 0);  transform: skewX(-2deg) translateX(-6px); }
+  20%  { clip-path: inset(5% 0 80% 0);  transform: skewX(1deg) translateX(5px); }
+  30%  { clip-path: inset(45% 0 40% 0); transform: skewX(0deg) translateX(0); }
+  40%  { clip-path: inset(10% 0 60% 0); transform: skewX(-1deg) translateX(4px); }
+  50%  { clip-path: inset(80% 0 2% 0);  transform: skewX(2deg) translateX(-5px); }
+  60%  { clip-path: inset(30% 0 55% 0); transform: skewX(0deg) translateX(0); }
+  70%  { clip-path: inset(60% 0 20% 0); transform: skewX(-2deg) translateX(6px); }
+  80%  { clip-path: inset(15% 0 70% 0); transform: skewX(1deg) translateX(-3px); }
+  90%  { clip-path: inset(50% 0 35% 0); transform: skewX(0deg) translateX(0); }
+  100% { clip-path: inset(25% 0 60% 0); transform: skewX(-1deg) translateX(4px); }
+}
+
+@keyframes cr-glitch-v {
+  0%   { clip-path: inset(42% 0 30% 0); transform: translateX(3px); }
+  25%  { clip-path: inset(8% 0 75% 0);  transform: translateX(-5px); }
+  50%  { clip-path: inset(65% 0 12% 0); transform: translateX(4px); }
+  75%  { clip-path: inset(20% 0 55% 0); transform: translateX(-3px); }
+  100% { clip-path: inset(48% 0 38% 0); transform: translateX(2px); }
+}
+
+@keyframes cr-blink {
+  0%, 49%, 100% { opacity: 1; }
+  50%, 98%      { opacity: 0; }
+}
+
+@keyframes cr-pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(224, 27, 27, 0.7); }
+  50%       { opacity: 0.6; box-shadow: 0 0 0 6px rgba(224, 27, 27, 0); }
+}
+
+@keyframes cr-cell-flash {
+  0%, 100% { background: rgba(224, 27, 27, 0); }
+  50%       { background: rgba(224, 27, 27, 0.08); }
+}
+
+/* ── Scanline sweep effect ────────────────────────────────────────────────── */
+.cr-scanline-sweep::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(200, 0, 0, 0.04) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 20;
+  animation: cr-scanline 6s linear infinite;
+}
+
+/* ── Glitch title ─────────────────────────────────────────────────────────── */
+.cr-title-glitch {
+  position: relative;
+  display: block;
+}
+.cr-title-glitch::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: #ff3030;
+  font: inherit;
+  letter-spacing: inherit;
+  animation: cr-glitch-h 5s infinite step-start;
+  opacity: 0.6;
+}
+.cr-title-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: #00a0ff;
+  font: inherit;
+  letter-spacing: inherit;
+  animation: cr-glitch-v 7s infinite step-start;
+  opacity: 0.4;
+}
+
+/* ── Ghost cell hover ─────────────────────────────────────────────────────── */
+.cr-ghost-cell:hover .cr-cell-overlay {
+  background: rgba(224, 27, 27, 0.35) !important;
+}
+.cr-ghost-cell:hover .cr-cell-id {
+  color: #ff3030 !important;
+}
