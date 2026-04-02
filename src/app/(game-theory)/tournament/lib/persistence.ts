@@ -21,7 +21,7 @@ export async function saveTournamentState({
     await prisma.tournament.update({
       where: { token },
       data: {
-        state: state as object,
+        state: state,
         ...(status ? { status } : {}),
         ...(extra ? { extra: extra as object } : {}),
       },

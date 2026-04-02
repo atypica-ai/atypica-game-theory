@@ -13,7 +13,7 @@ async function main() {
       select: { status: true, timeline: true, extra: true, updatedAt: true },
     });
 
-    const events = Array.isArray(session?.timeline) ? (session!.timeline as Record<string, unknown>[]) : [];
+    const events = Array.isArray(session?.timeline) ? (session!.timeline as unknown as Record<string, unknown>[]) : [];
     const extra = (session?.extra ?? {}) as { error?: string };
     console.log(
       `[${new Date().toISOString()}] status=${session?.status} events=${events.length}`,

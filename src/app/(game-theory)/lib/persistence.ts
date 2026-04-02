@@ -21,7 +21,7 @@ export async function saveGameTimeline({
     await prisma.gameSession.update({
       where: { token },
       data: {
-        timeline: timeline as object[],
+        timeline: timeline,
         ...(status ? { status } : {}),
         ...(extra ? { extra: extra as object } : {}),
       },

@@ -40,7 +40,7 @@ export async function launchTournament(
     data: {
       token,
       personaIds,
-      state: {},
+      state: { stages: [] },
       status: "pending",
       extra: {},
     },
