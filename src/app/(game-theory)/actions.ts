@@ -107,6 +107,77 @@ export async function fetchPersonasForGame(): Promise<
 // Search personas by text query using Meilisearch, falling back to recents.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Fetch all game sessions (for the past games browser).
+// ---------------------------------------------------------------------------
+
+export interface SessionListItem {
+  token: string;
+  gameType: string;
+  status: string;
+  events: GameTimeline;
+  extra: GameSessionExtra;
+  createdAt: string; // ISO 8601 — serializable as server→client prop
+}
+
+export async function fetchAllSessions(): Promise<
+  { success: true; data: SessionListItem[] } | { success: false; message: string }
+> {
+  try {
+    const sessions = await prisma.gameSession.findMany({
+      select: {
+        token: true,
+        gameType: true,
+        status: true,
+        timeline: true,
+        extra: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 300,
+    });
+    return {
+      success: true,
+      data: sessions.map((s) => ({
+        token: s.token,
+        gameType: s.gameType,
+        status: s.status,
+        events: Array.isArray(s.timeline) ? (s.timeline as GameTimeline) : [],
+        extra: (s.extra ?? {}) as GameSessionExtra,
+        createdAt: s.createdAt.toISOString(),
+      })),
+    };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Count sessions per game type (for home page game cards).
+// ---------------------------------------------------------------------------
+
+export async function fetchSessionCountsByGameType(): Promise<
+  { success: true; data: Record<string, number> } | { success: false; message: string }
+> {
+  try {
+    const counts = await prisma.gameSession.groupBy({
+      by: ["gameType"],
+      _count: { id: true },
+    });
+    const result: Record<string, number> = {};
+    for (const row of counts) {
+      result[row.gameType] = row._count.id;
+    }
+    return { success: true, data: result };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Search personas by text query using Meilisearch, falling back to recents.
+// ---------------------------------------------------------------------------
+
 export async function searchPersonasForGame(searchQuery: string): Promise<
   { success: true; data: PersonaForPicker[] } | { success: false; message: string }
 > {

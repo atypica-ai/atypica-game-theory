@@ -62,7 +62,7 @@ function Legend() {
 
 // ── Game card ─────────────────────────────────────────────────────────────────
 
-function GameCard({ gt }: { gt: GameType }) {
+function GameCard({ gt, sessionCount }: { gt: GameType; sessionCount: number }) {
   const horizon = formatHorizon(gt);
   const players = formatPlayers(gt);
 
@@ -105,13 +105,33 @@ function GameCard({ gt }: { gt: GameType }) {
       <div className="px-8 py-6">
         <GameDistributionView gameType={gt.name} />
       </div>
+
+      {/* Past games footer */}
+      <div
+        className="px-8 py-4 border-t flex items-center justify-between"
+        style={{ borderColor: "var(--gt-border)" }}
+      >
+        <span
+          className="text-[12px]"
+          style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
+        >
+          {sessionCount} {sessionCount === 1 ? "session" : "sessions"} recorded
+        </span>
+        <Link
+          href="/games"
+          className="text-[13px] font-[500] transition-opacity hover:opacity-70"
+          style={{ color: "var(--gt-blue)", letterSpacing: "var(--gt-tracking-tight)" }}
+        >
+          Past games →
+        </Link>
+      </div>
     </div>
   );
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-export function GameTheoryHome() {
+export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string, number> }) {
   const gameTypes = Object.values(gameTypeRegistry) as unknown as GameType[];
 
   return (
@@ -139,21 +159,7 @@ export function GameTheoryHome() {
             </span>
           </div>
 
-          <div className="flex items-center gap-6">
-            <Legend />
-            <Link
-              href="/game/new"
-              className="h-9 px-5 text-[13px] font-[500] inline-flex items-center transition-opacity hover:opacity-80"
-              style={{
-                background: "var(--gt-blue)",
-                color: "white",
-                borderRadius: "0.375rem",
-                letterSpacing: "var(--gt-tracking-tight)",
-              }}
-            >
-              New Experiment →
-            </Link>
-          </div>
+          <Legend />
         </div>
       </header>
 
@@ -167,7 +173,7 @@ export function GameTheoryHome() {
           }}
         >
           {gameTypes.map((gt) => (
-            <GameCard key={gt.name} gt={gt} />
+            <GameCard key={gt.name} gt={gt} sessionCount={sessionCounts[gt.name] ?? 0} />
           ))}
         </div>
       </main>

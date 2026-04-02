@@ -25,6 +25,7 @@
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "@radix-ui/react-slot": "^1.2.4",
+    "@tanstack/react-table": "^8.21.3",
     "@types/canvas-confetti": "^1.9.0",
     "ai": "^5.0.107",
     "canvas-confetti": "^1.9.4",
