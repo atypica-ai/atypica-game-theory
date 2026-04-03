@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "prisma migrate dev && prisma generate",
+    "postinstall": "prisma generate",
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK=1 DATABASE_URL=${DATABASE_URL_UNPOOLED:-$DATABASE_URL} prisma migrate deploy && next build",
     "start": "next start",
     "test": "vitest",
     "lint": "next lint --max-warnings 0",
