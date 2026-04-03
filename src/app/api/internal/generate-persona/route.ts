@@ -2,6 +2,7 @@ import { generatePersonaFromProfile, generateRandomCharacterProfile } from "@/ap
 import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
+import type { BaseLogger } from "pino";
 import { after } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -19,7 +20,7 @@ async function generateOnePersona(
   locale: "zh-CN" | "en-US",
   index: number,
   jobId: string,
-  logger: ReturnType<typeof rootLogger.child>,
+  logger: BaseLogger,
 ) {
   const { age, title, tags, ...profile } = generateRandomCharacterProfile();
 
