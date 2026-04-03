@@ -2,6 +2,7 @@ import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { launchGameSession } from "@/app/(game-theory)/lib/launch";
 import { rootLogger } from "@/lib/logging";
 import { prisma } from "@/prisma/prisma";
+import type { BaseLogger } from "pino";
 import { after } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -33,7 +34,7 @@ function randomDiscussionRounds(): number | undefined {
   return randomInt(1, 3);
 }
 
-async function launchRandomSession(index: number, logger: ReturnType<typeof rootLogger.child>) {
+async function launchRandomSession(index: number, logger: BaseLogger) {
   const gameType = ALL_GAME_TYPES[Math.floor(Math.random() * ALL_GAME_TYPES.length)];
   const playerCount = randomInt(gameType.minPlayers, gameType.maxPlayers);
   const personaIds = await pickRandomPersonaIds(playerCount);
