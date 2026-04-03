@@ -177,3 +177,44 @@ export function formatDateFull(isoString: string): string {
   const d = new Date(isoString);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
+
+// ── Relative time ("Today 14:32", "Yesterday", "Mon 09:15", "Mar 28") ─────────
+
+export function formatRelativeTime(isoString: string): string {
+  const d = new Date(isoString);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+  const time = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  if (diffDays === 0) return `Today ${time}`;
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) {
+    return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()] + ` ${time}`;
+  }
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+// ── Initials from name ────────────────────────────────────────────────────────
+
+export function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+// ── Reward spread classification ──────────────────────────────────────────────
+
+export type SpreadCategory = "dominant" | "even";
+
+export function classifySpread(scores: number[]): SpreadCategory {
+  if (scores.length <= 1) return "even";
+  const sorted = [...scores].sort((a, b) => a - b);
+  const max = sorted[sorted.length - 1];
+  if (max === 0) return "even";
+
+  // Dominant: top score is more than 2× the second-highest, or top takes >50% of total
+  if (sorted.length >= 2 && max > 2 * sorted[sorted.length - 2]) return "dominant";
+  const total = sorted.reduce((a, b) => a + b, 0);
+  if (total > 0 && max / total > 0.5) return "dominant";
+
+  return "even";
+}

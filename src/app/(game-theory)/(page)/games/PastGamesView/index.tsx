@@ -1,46 +1,89 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  flexRender,
-  createColumnHelper,
-  type SortingState,
-  type ColumnFiltersState,
-  type FilterFn,
-} from "@tanstack/react-table";
 import { SessionListItem } from "@/app/(game-theory)/actions";
 import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import { GameSessionParticipant } from "@/app/(game-theory)/types";
-import { AI_COLOR, GRID_COLOR } from "@/app/(game-theory)/gameTypes/AcademicChart";
-import { computeOutcome, formatDateShort, type OutcomeResult } from "./utils";
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import {
+  computeOutcome,
+  classifySpread,
+  formatRelativeTime,
+  type SpreadCategory,
+} from "./utils";
 
 const GAME_TYPES = Object.values(gameTypeRegistry) as unknown as GameType[];
 
+// ── Spread config ─────────────────────────────────────────────────────────────
+// Taller bar = more opaque (matching reference HTML pattern)
+
+const SPREAD_BARS: Record<SpreadCategory, Array<{ h: number; opacity: number }>> = {
+  // Dominant: last bar very tall → most opaque; short bars → low opacity
+  dominant: [
+    { h: 3, opacity: 0.30 },
+    { h: 4, opacity: 0.35 },
+    { h: 3, opacity: 0.30 },
+    { h: 5, opacity: 0.40 },
+    { h: 20, opacity: 1.0 },
+  ],
+  // Even: middle bar tallest → most opaque; edges shorter → lower opacity
+  even: [
+    { h: 7,  opacity: 0.50 },
+    { h: 13, opacity: 0.70 },
+    { h: 20, opacity: 1.0  },
+    { h: 15, opacity: 0.80 },
+    { h: 8,  opacity: 0.55 },
+  ],
+};
+
+const SPREAD_COLOR: Record<SpreadCategory, { bar: string; label: string }> = {
+  dominant: { bar: "#E24B4A", label: "#A32D2D" },
+  even:     { bar: "#185FA5", label: "var(--color-text-secondary)" },
+};
+
+// ── Grid columns ──────────────────────────────────────────────────────────────
+// 6 columns — all fr-based so they share space proportionally (no single 1fr hog)
+// Desktop: Game | Winner+participants | Top score | Reward spread | Status | View
+// Mobile:  Game | View  (others hidden)
+
+const DESKTOP_COLS = "1.5fr 3fr 1fr 2fr 1fr 0.8fr";
+const MOBILE_COLS  = "1fr auto";
+
 // ── Precomputed row data ──────────────────────────────────────────────────────
 
-interface SessionTableRow {
+interface SessionRow {
   token: string;
   gameType: string;
   gameTypeDisplay: string;
   status: string;
   createdAt: string;
   participants: GameSessionParticipant[];
-  participantNames: string; // joined for filtering
-  outcome: OutcomeResult | null;
+  participantNames: string;
+  winners: GameSessionParticipant[];
+  isFullTie: boolean;
+  topScore: number | null;
+  spreadCategory: SpreadCategory | null;
 }
 
-function buildRows(sessions: SessionListItem[]): SessionTableRow[] {
+function buildRows(sessions: SessionListItem[]): SessionRow[] {
   return sessions
     .filter((s) => s.status !== "failed")
     .map((s) => {
       const participants = s.extra.participants ?? [];
       const gt = (gameTypeRegistry as unknown as Record<string, GameType>)[s.gameType];
+      const outcome = s.status === "completed" ? computeOutcome(s.events, participants) : null;
+
+      let topScore: number | null = null;
+      let spreadCategory: SpreadCategory | null = null;
+
+      if (outcome) {
+        const scoreVals = Object.values(outcome.scores);
+        topScore = scoreVals.length > 0 ? Math.max(...scoreVals) : null;
+        spreadCategory = classifySpread(scoreVals);
+      }
+
       return {
         token: s.token,
         gameType: s.gameType,
@@ -49,128 +92,210 @@ function buildRows(sessions: SessionListItem[]): SessionTableRow[] {
         createdAt: s.createdAt,
         participants,
         participantNames: participants.map((p) => p.name).join(" "),
-        outcome: s.status === "completed" ? computeOutcome(s.events, participants) : null,
+        winners: outcome?.winners ?? [],
+        isFullTie: outcome?.isFullTie ?? false,
+        topScore,
+        spreadCategory,
       };
-    });
+    })
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-// ── Custom filter functions ───────────────────────────────────────────────────
+// ── Cell components ───────────────────────────────────────────────────────────
 
-const participantFilter: FilterFn<SessionTableRow> = (row, _columnId, filterValue: string) => {
-  if (!filterValue) return true;
-  return row.original.participantNames.toLowerCase().includes(filterValue.toLowerCase());
-};
-
-const statusFilter: FilterFn<SessionTableRow> = (row, _columnId, filterValue: string) => {
-  if (!filterValue || filterValue === "all") return true;
-  return row.original.status === filterValue;
-};
-
-const gameTypeFilterFn: FilterFn<SessionTableRow> = (row, _columnId, filterValue: string) => {
-  if (!filterValue || filterValue === "all") return true;
-  return row.original.gameType === filterValue;
-};
-
-// ── Cell renderers ────────────────────────────────────────────────────────────
-
-function ParticipantChip({ name }: { name: string }) {
+function GameCell({ display, createdAt }: { display: string; createdAt: string }) {
   return (
-    <span
-      className="inline-flex items-center px-2 py-0.5 text-[11px] mr-1 mb-0.5"
-      style={{
-        borderRadius: "9999px",
-        border: "1px solid var(--gt-border-md)",
-        color: "var(--gt-t2)",
-        background: "var(--gt-bg)",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {name}
-    </span>
+    <div>
+      <div style={{ fontWeight: 500, fontSize: "13px", color: "var(--color-text-primary)" }}>
+        {display}
+      </div>
+      <div style={{ fontSize: "11px", color: "var(--color-text-tertiary)", marginTop: "1px" }}>
+        {formatRelativeTime(createdAt)}
+      </div>
+    </div>
   );
 }
 
-function OutcomeCell({ outcome }: { outcome: OutcomeResult | null }) {
-  if (!outcome) return <span style={{ color: "var(--gt-t4)", fontSize: "12px" }}>—</span>;
+function Avatar({
+  participant,
+  overlap = false,
+}: {
+  participant: GameSessionParticipant;
+  overlap?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        width: "22px",
+        height: "22px",
+        borderRadius: "50%",
+        overflow: "hidden",
+        flexShrink: 0,
+        ...(overlap
+          ? { marginLeft: "-7px", boxShadow: "0 0 0 1.5px var(--color-background-primary)" }
+          : {}),
+      }}
+    >
+      <HippyGhostAvatar seed={participant.personaId} className="size-full" />
+    </div>
+  );
+}
 
-  // Build frequency map: score value → count of players
-  const freq = new Map<number, number>();
-  for (const score of Object.values(outcome.scores)) {
-    freq.set(score, (freq.get(score) ?? 0) + 1);
+// Shows winner avatar(s) + label — all-participants logic was removed intentionally.
+function WinnersCell({
+  winners,
+  isFullTie,
+  participants,
+}: {
+  winners: GameSessionParticipant[];
+  isFullTie: boolean;
+  participants: GameSessionParticipant[];
+}) {
+  if (isFullTie) {
+    const shown = participants.slice(0, 2);
+    const rest = participants.length - shown.length;
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <div style={{ display: "flex" }}>
+          {shown.map((p, i) => (
+            <Avatar key={p.personaId} participant={p} overlap={i > 0} />
+          ))}
+        </div>
+        <span style={{ fontSize: "13px", color: "var(--color-text-primary)" }}>Full tie</span>
+        {rest > 0 && (
+          <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>
+            &amp; {rest} others
+          </span>
+        )}
+      </div>
+    );
   }
 
-  const scoreValues = [...freq.keys()].sort((a, b) => a - b);
-  if (scoreValues.length === 0) return <span style={{ color: "var(--gt-t4)", fontSize: "12px" }}>—</span>;
+  if (winners.length === 0) {
+    return (
+      <span style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>
+        {participants.map((p) => p.name).join(", ")}
+      </span>
+    );
+  }
 
-  const maxVal = scoreValues[scoreValues.length - 1];
-  const maxCount = Math.max(...freq.values());
-
-  const W = 120;
-  const H = 28;
-  const BAR_W = 4;
-
+  const otherCount = participants.length - winners.length;
   return (
-    <svg width={W} height={H} style={{ display: "block", overflow: "visible" }}>
-      <line x1={0} y1={H} x2={W} y2={H} stroke={GRID_COLOR} strokeWidth={1} />
-      {scoreValues.map((val) => {
-        const count = freq.get(val) ?? 0;
-        // X: map score value linearly across [0, W - BAR_W]
-        const xFrac = maxVal > 0 ? val / maxVal : 0.5;
-        const x = xFrac * (W - BAR_W);
-        const barH = Math.max((count / maxCount) * H, 2);
-        return (
-          <rect
-            key={val}
-            x={x}
-            y={H - barH}
-            width={BAR_W}
-            height={barH}
-            fill={AI_COLOR}
-            rx={1}
-            ry={1}
-          />
-        );
-      })}
-    </svg>
+    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+      <div style={{ display: "flex" }}>
+        {winners.map((p, i) => (
+          <Avatar key={p.personaId} participant={p} overlap={i > 0} />
+        ))}
+      </div>
+      <span style={{ fontSize: "13px", color: "var(--color-text-primary)" }}>
+        {winners.length === 1 ? winners[0].name : `${winners.length}-way tie`}
+      </span>
+      {otherCount > 0 && (
+        <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>
+          &amp; {otherCount} other{otherCount !== 1 ? "s" : ""}
+        </span>
+      )}
+    </div>
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const cfg =
-    status === "completed"
-      ? { color: "var(--gt-pos)", bg: "var(--gt-pos-bg)", label: "Completed" }
-      : status === "running"
-        ? { color: "var(--gt-blue)", bg: "var(--gt-blue-bg)", label: "Running" }
-        : { color: "var(--gt-t3)", bg: "transparent", label: status };
-
+function TopScoreCell({ score }: { score: number | null }) {
+  if (score === null)
+    return <span style={{ color: "var(--color-text-tertiary)", fontSize: "13px" }}>—</span>;
   return (
-    <span
-      className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-[500]"
-      style={{
-        borderRadius: "9999px",
-        color: cfg.color,
-        background: cfg.bg,
-        border: `1px solid ${cfg.color}40`,
-        fontFamily: "IBMPlexMono, monospace",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {cfg.label}
+    <span style={{ fontWeight: 500, fontSize: "13px", color: "var(--color-text-primary)" }}>
+      {score} pts
     </span>
   );
 }
 
-// ── Header controls ───────────────────────────────────────────────────────────
+function SpreadCell({ category }: { category: SpreadCategory | null }) {
+  if (!category)
+    return <span style={{ color: "var(--color-text-tertiary)", fontSize: "13px" }}>—</span>;
+
+  const cfg  = SPREAD_COLOR[category];
+  const bars = SPREAD_BARS[category];
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height: "22px" }}>
+        {bars.map((bar, i) => (
+          <div
+            key={i}
+            style={{
+              width: "5px",
+              height: `${bar.h}px`,
+              background: cfg.bar,
+              opacity: bar.opacity,
+              borderRadius: "1px",
+            }}
+          />
+        ))}
+      </div>
+      <span style={{ fontSize: "11px", color: cfg.label }}>{category}</span>
+    </div>
+  );
+}
+
+// Status and View are now separate columns.
+function StatusCell({ status }: { status: string }) {
+  if (status === "running") {
+    return (
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "3px",
+          fontSize: "11px",
+          fontWeight: 500,
+          padding: "2px 7px",
+          borderRadius: "10px",
+          background: "var(--color-background-danger)",
+          color: "var(--color-text-danger)",
+        }}
+      >
+        <span
+          style={{
+            width: "5px",
+            height: "5px",
+            borderRadius: "50%",
+            background: "currentColor",
+            display: "inline-block",
+          }}
+        />
+        Live
+      </span>
+    );
+  }
+  return (
+    <span style={{ fontSize: "11px", color: "var(--color-text-success)" }}>Done</span>
+  );
+}
+
+function ViewCell({ token }: { token: string }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <Link
+        href={`/game/${token}`}
+        style={{ fontSize: "12px", color: "var(--color-text-info)", cursor: "pointer" }}
+      >
+        View →
+      </Link>
+    </div>
+  );
+}
+
+// ── Header label ──────────────────────────────────────────────────────────────
 
 function HeaderLabel({ children }: { children: React.ReactNode }) {
   return (
     <span
-      className="text-[10px] uppercase block mb-1.5"
       style={{
-        color: "var(--gt-t4)",
-        fontFamily: "IBMPlexMono, monospace",
-        letterSpacing: "0.08em",
-        fontWeight: 400,
+        fontSize: "10px",
+        fontWeight: 500,
+        color: "var(--color-text-tertiary)",
+        textTransform: "uppercase",
+        letterSpacing: "0.07em",
       }}
     >
       {children}
@@ -178,202 +303,109 @@ function HeaderLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SortHeader({
-  label,
-  sorted,
-  onToggle,
-}: {
-  label: string;
-  sorted: false | "asc" | "desc";
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      className="flex items-center gap-1 group"
-      style={{ background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}
-    >
-      <HeaderLabel>{label}</HeaderLabel>
-      <span
-        className="text-[10px] mb-1.5"
-        style={{ color: sorted ? "var(--gt-blue)" : "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
-      >
-        {sorted === "asc" ? "↑" : sorted === "desc" ? "↓" : "↕"}
-      </span>
-    </button>
-  );
-}
+// ── Filters ───────────────────────────────────────────────────────────────────
 
-function SelectFilter({
-  label,
-  value,
-  options,
-  onChange,
+function FilterBar({
+  gameTypeFilter,
+  statusFilter,
+  participantSearch,
+  onGameType,
+  onStatus,
+  onSearch,
 }: {
-  label: string;
-  value: string;
-  options: { value: string; label: string }[];
-  onChange: (v: string) => void;
+  gameTypeFilter: string;
+  statusFilter: string;
+  participantSearch: string;
+  onGameType: (v: string) => void;
+  onStatus: (v: string) => void;
+  onSearch: (v: string) => void;
 }) {
+  const selectStyle: React.CSSProperties = {
+    fontSize: "12px",
+    padding: "4px 8px",
+    background: "var(--gt-bg)",
+    border: "1px solid var(--gt-border)",
+    borderRadius: "6px",
+    color: "var(--gt-t2)",
+    fontFamily: "inherit",
+    cursor: "pointer",
+    outline: "none",
+  };
+
   return (
-    <div>
-      <HeaderLabel>{label}</HeaderLabel>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="text-[12px] px-2 py-1 outline-none"
-        style={{
-          background: "var(--gt-bg)",
-          border: "1px solid var(--gt-border)",
-          borderRadius: "0.375rem",
-          color: value && value !== "all" ? "var(--gt-blue)" : "var(--gt-t2)",
-          fontFamily: "inherit",
-          cursor: "pointer",
-          appearance: "none",
-          paddingRight: "20px",
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "right 6px center",
-        }}
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        padding: "12px 16px",
+        borderBottom: "0.5px solid var(--color-border-secondary, var(--gt-border))",
+        flexWrap: "wrap",
+      }}
+    >
+      <select value={gameTypeFilter} onChange={(e) => onGameType(e.target.value)} style={selectStyle}>
+        <option value="all">All games</option>
+        {GAME_TYPES.map((gt) => (
+          <option key={gt.name} value={gt.name}>
+            {gt.displayName}
           </option>
         ))}
       </select>
-    </div>
-  );
-}
 
-function SearchFilter({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <HeaderLabel>{label}</HeaderLabel>
+      <select value={statusFilter} onChange={(e) => onStatus(e.target.value)} style={selectStyle}>
+        <option value="all">All status</option>
+        <option value="completed">Completed</option>
+        <option value="running">Running</option>
+      </select>
+
       <input
         type="text"
-        placeholder="Search…"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="text-[12px] px-2 py-1 outline-none"
-        style={{
-          background: "var(--gt-bg)",
-          border: "1px solid var(--gt-border)",
-          borderRadius: "0.375rem",
-          color: "var(--gt-t1)",
-          fontFamily: "inherit",
-          width: "140px",
-        }}
+        placeholder="Search participants…"
+        value={participantSearch}
+        onChange={(e) => onSearch(e.target.value)}
+        style={{ ...selectStyle, width: "180px", color: "var(--gt-t1)" }}
       />
     </div>
   );
 }
-
-// ── Column definitions ────────────────────────────────────────────────────────
-
-const columnHelper = createColumnHelper<SessionTableRow>();
-
-const columns = [
-  columnHelper.accessor("createdAt", {
-    id: "date",
-    enableSorting: true,
-    enableColumnFilter: false,
-    cell: (info) => (
-      <span style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "12px", whiteSpace: "nowrap" }}>
-        {formatDateShort(info.getValue())}
-      </span>
-    ),
-  }),
-  columnHelper.accessor("gameType", {
-    id: "gameType",
-    enableSorting: false,
-    filterFn: gameTypeFilterFn,
-    cell: (info) => (
-      <span style={{ color: "var(--gt-t2)", fontSize: "13px", whiteSpace: "nowrap" }}>
-        {info.row.original.gameTypeDisplay}
-      </span>
-    ),
-  }),
-  columnHelper.accessor("participantNames", {
-    id: "participants",
-    enableSorting: false,
-    filterFn: participantFilter,
-    cell: (info) => (
-      <div className="flex flex-wrap">
-        {info.row.original.participants.length > 0
-          ? info.row.original.participants.map((p) => <ParticipantChip key={p.personaId} name={p.name} />)
-          : <span style={{ color: "var(--gt-t4)", fontSize: "12px" }}>—</span>}
-      </div>
-    ),
-  }),
-  columnHelper.accessor("outcome", {
-    id: "outcome",
-    enableSorting: false,
-    enableColumnFilter: false,
-    cell: (info) => <OutcomeCell outcome={info.getValue()} />,
-  }),
-  columnHelper.accessor("status", {
-    id: "status",
-    enableSorting: false,
-    filterFn: statusFilter,
-    cell: (info) => <StatusBadge status={info.getValue()} />,
-  }),
-  columnHelper.display({
-    id: "view",
-    cell: (info) => (
-      <Link
-        href={`/game/${info.row.original.token}`}
-        className="text-[13px] font-[500] hover:opacity-70 transition-opacity"
-        style={{ color: "var(--gt-blue)", whiteSpace: "nowrap" }}
-      >
-        View →
-      </Link>
-    ),
-  }),
-];
 
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
   const rows = useMemo(() => buildRows(sessions), [sessions]);
 
-  const [sorting, setSorting] = useState<SortingState>([{ id: "date", desc: true }]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [gameTypeFilter, setGameTypeFilter]     = useState("all");
+  const [statusFilter, setStatusFilter]         = useState("all");
+  const [participantSearch, setParticipantSearch] = useState("");
+  const [isMobile, setIsMobile]                 = useState(false);
 
-  const table = useReactTable({
-    data: rows,
-    columns,
-    state: { sorting, columnFilters },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-  });
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
-  const getFilterValue = (colId: string) =>
-    (columnFilters.find((f) => f.id === colId)?.value as string) ?? "";
+  const filtered = useMemo(() => {
+    return rows.filter((r) => {
+      if (gameTypeFilter !== "all" && r.gameType !== gameTypeFilter) return false;
+      if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (participantSearch && !r.participantNames.toLowerCase().includes(participantSearch.toLowerCase()))
+        return false;
+      return true;
+    });
+  }, [rows, gameTypeFilter, statusFilter, participantSearch]);
 
-  const setFilter = (colId: string, value: string) => {
-    setColumnFilters((prev) =>
-      value && value !== "all"
-        ? [...prev.filter((f) => f.id !== colId), { id: colId, value }]
-        : prev.filter((f) => f.id !== colId),
-    );
+  const cols = isMobile ? MOBILE_COLS : DESKTOP_COLS;
+
+  const rowStyle: React.CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: cols,
+    alignItems: "center",
+    columnGap: "12px",
+    padding: "10px 16px",
+    borderBottom: "0.5px solid var(--color-border-tertiary, var(--gt-border))",
   };
-
-  const dateSort = sorting.find((s) => s.id === "date");
-
-  const gameTypeOptions = [
-    { value: "all", label: "All games" },
-    ...GAME_TYPES.map((gt) => ({ value: gt.name, label: gt.displayName })),
-  ];
-
-  const statusOptions = [
-    { value: "all", label: "All" },
-    { value: "completed", label: "Completed" },
-    { value: "running", label: "Running" },
-  ];
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
@@ -403,8 +435,8 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
               Past Games
             </span>
           </div>
-          <span style={{ color: "var(--gt-t3)", fontSize: "13px" }}>
-            {table.getFilteredRowModel().rows.length} sessions
+          <span style={{ color: "var(--gt-t3)", fontSize: "13px", fontFamily: "IBMPlexMono, monospace" }}>
+            {filtered.length} sessions
           </span>
         </div>
       </header>
@@ -421,104 +453,78 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
             overflow: "hidden",
           }}
         >
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr
+          <FilterBar
+            gameTypeFilter={gameTypeFilter}
+            statusFilter={statusFilter}
+            participantSearch={participantSearch}
+            onGameType={setGameTypeFilter}
+            onStatus={setStatusFilter}
+            onSearch={setParticipantSearch}
+          />
+
+          {/* Table header */}
+          <div
+            style={{
+              ...rowStyle,
+              padding: "0 16px 6px",
+              borderBottom: "0.5px solid var(--color-border-secondary, var(--gt-border))",
+              marginTop: "8px",
+            }}
+          >
+            <HeaderLabel>Game</HeaderLabel>
+            {!isMobile && <HeaderLabel>Winner &amp; participants</HeaderLabel>}
+            {!isMobile && <HeaderLabel>Top score</HeaderLabel>}
+            {!isMobile && <HeaderLabel>Reward spread</HeaderLabel>}
+            {!isMobile && <HeaderLabel>Status</HeaderLabel>}
+            <span />
+          </div>
+
+          {/* Rows */}
+          {filtered.length === 0 ? (
+            <div
+              style={{
+                padding: "64px 0",
+                textAlign: "center",
+                fontSize: "13px",
+                color: "var(--gt-t4)",
+              }}
+            >
+              No sessions match the current filters.
+            </div>
+          ) : (
+            filtered.map((row) => (
+              <div key={row.token} style={rowStyle}>
+                <GameCell display={row.gameTypeDisplay} createdAt={row.createdAt} />
+                {!isMobile && (
+                  <WinnersCell
+                    winners={row.winners}
+                    isFullTie={row.isFullTie}
+                    participants={row.participants}
+                  />
+                )}
+                {!isMobile && <TopScoreCell score={row.topScore} />}
+                {!isMobile && <SpreadCell category={row.spreadCategory} />}
+                {!isMobile && <StatusCell status={row.status} />}
+                <ViewCell token={row.token} />
+              </div>
+            ))
+          )}
+
+          {filtered.length > 0 && (
+            <div
+              style={{
+                padding: "10px 16px",
+                borderTop: "0.5px solid var(--color-border-tertiary, var(--gt-border))",
+              }}
+            >
+              <span
                 style={{
-                  borderBottom: "1px solid var(--gt-border)",
-                  background: "var(--gt-surface)",
+                  color: "var(--gt-t4)",
+                  fontFamily: "IBMPlexMono, monospace",
+                  fontSize: "11px",
                 }}
               >
-                {/* Date */}
-                <th className="px-5 pt-4 pb-3 text-left align-bottom" style={{ width: "90px" }}>
-                  <SortHeader
-                    label="Date"
-                    sorted={dateSort ? (dateSort.desc ? "desc" : "asc") : false}
-                    onToggle={() =>
-                      setSorting([{ id: "date", desc: dateSort ? !dateSort.desc : true }])
-                    }
-                  />
-                </th>
-
-                {/* Game type */}
-                <th className="px-5 pt-4 pb-3 text-left align-bottom" style={{ width: "180px" }}>
-                  <SelectFilter
-                    label="Game"
-                    value={getFilterValue("gameType") || "all"}
-                    options={gameTypeOptions}
-                    onChange={(v) => setFilter("gameType", v)}
-                  />
-                </th>
-
-                {/* Participants */}
-                <th className="px-5 pt-4 pb-3 text-left align-bottom">
-                  <SearchFilter
-                    label="Participants"
-                    value={getFilterValue("participants")}
-                    onChange={(v) => setFilter("participants", v)}
-                  />
-                </th>
-
-                {/* Outcome */}
-                <th className="px-5 pt-4 pb-3 text-left align-bottom" style={{ width: "160px" }}>
-                  <HeaderLabel>Outcome</HeaderLabel>
-                </th>
-
-                {/* Status */}
-                <th className="px-5 pt-4 pb-3 text-left align-bottom" style={{ width: "130px" }}>
-                  <SelectFilter
-                    label="Status"
-                    value={getFilterValue("status") || "all"}
-                    options={statusOptions}
-                    onChange={(v) => setFilter("status", v)}
-                  />
-                </th>
-
-                {/* View */}
-                <th className="px-5 pt-4 pb-3" style={{ width: "60px" }} />
-              </tr>
-            </thead>
-
-            <tbody>
-              {table.getRowModel().rows.length === 0 ? (
-                <tr>
-                  <td colSpan={6}>
-                    <div
-                      className="py-16 text-center text-[13px]"
-                      style={{ color: "var(--gt-t4)" }}
-                    >
-                      No sessions match the current filters.
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                table.getRowModel().rows.map((row, i) => (
-                  <tr
-                    key={row.id}
-                    className="border-b"
-                    style={{
-                      borderColor: "var(--gt-border)",
-                      background: i % 2 === 1 ? "var(--gt-row-alt)" : "transparent",
-                    }}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-5 py-3 align-top">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-
-          {table.getRowModel().rows.length > 0 && (
-            <div
-              className="px-5 py-3 border-t"
-              style={{ borderColor: "var(--gt-border)" }}
-            >
-              <span style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", fontSize: "11px" }}>
-                {table.getFilteredRowModel().rows.length} of {rows.length} sessions
+                {filtered.length} of {rows.length} sessions
               </span>
             </div>
           )}
