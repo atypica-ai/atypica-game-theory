@@ -80,13 +80,19 @@ const google = (modelId: string) => {
 
 function parseGoogleCredentials() {
   const base64 = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64?.trim();
+  console.error(">>> parseGoogleCredentials called <<<");
+  console.error(`Base64 exists: ${!!base64}, length: ${base64?.length || 0}`);
+
   if (base64) {
     try {
       const decoded = Buffer.from(base64, "base64").toString("utf8").trim();
+      console.error(`Decoded length: ${decoded.length}`);
       const parsed = JSON.parse(decoded);
+      console.error(`Successfully parsed! client_email: ${parsed.client_email}`);
       rootLogger.info({ msg: "[Vertex Auth] Using base64 credentials", clientEmail: parsed.client_email });
       return parsed;
     } catch (error) {
+      console.error(">>> PARSE ERROR <<<", error);
       rootLogger.error({ msg: "[Vertex Auth] Failed to parse base64 credentials", error });
       return undefined;
     }
@@ -141,6 +147,11 @@ function vertex() {
 function vertexGlobal() {
   if (!_vertexGlobal) {
     const authOptions = getGoogleAuthOptions();
+    console.error(">>> CREATING VERTEX GLOBAL CLIENT <<<");
+    console.error(`Project: ${process.env.GOOGLE_VERTEX_PROJECT}`);
+    console.error(`Has Auth Options: ${!!authOptions}`);
+    console.error(`Auth has credentials: ${!!authOptions?.credentials}`);
+    console.error(`Auth client_email: ${authOptions?.credentials?.client_email}`);
     rootLogger.info({ msg: "[Vertex Global] Creating client", project: process.env.GOOGLE_VERTEX_PROJECT, hasAuth: !!authOptions });
     _vertexGlobal = createVertex({
       location: "global",
@@ -257,7 +268,18 @@ export type LLMModelName =
 export function llm(modelName: LLMModelName) {
   const openai = openAICompatible;
   const deployRegion = getDeployRegion();
-  rootLogger.info({ msg: "[LLM Provider] Selection", modelName, deployRegion, hasVertexCreds: hasVertexCredentials() });
+  const hasVertexCreds = hasVertexCredentials();
+
+  // CRITICAL DEBUG - Always visible in Vercel logs
+  console.error("=== LLM PROVIDER DEBUG ===");
+  console.error(`Model: ${modelName}`);
+  console.error(`Deploy Region: ${deployRegion}`);
+  console.error(`Has Vertex Creds: ${hasVertexCreds}`);
+  console.error(`Base64 Env Exists: ${!!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64}`);
+  console.error(`Base64 Length: ${process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64?.length || 0}`);
+  console.error("=========================");
+
+  rootLogger.info({ msg: "[LLM Provider] Selection", modelName, deployRegion, hasVertexCreds });
   if (deployRegion === "mainland") {
     switch (modelName) {
       case "gpt-4o":
@@ -384,6 +406,7 @@ export function llm(modelName: LLMModelName) {
       rootLogger.info({ msg: "[LLM Provider] Using Vertex Global", model: "gemini-2.5-flash-image" });
       return vertexGlobal()("gemini-2.5-flash-image");
     case "gemini-3-flash":
+      console.error(">>> RETURNING VERTEX GLOBAL FOR gemini-3-flash-preview <<<");
       rootLogger.info({ msg: "[LLM Provider] Using Vertex Global", model: "gemini-3-flash-preview" });
       return vertexGlobal()("gemini-3-flash-preview");
     case "gemini-3.1-pro":
