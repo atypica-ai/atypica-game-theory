@@ -6,13 +6,27 @@ import { ProxyAgent, fetch as nodeFetch } from "undici";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function proxiedFetch(url: any, init?: any): Promise<any> {
+  // CRITICAL DEBUG - Log EVERY HTTP call
+  const urlString = typeof url === 'string' ? url : url?.toString();
+  console.error(">>> PROXIED FETCH CALLED <<<");
+  console.error(`>>> URL: ${urlString} <<<`);
+  console.error(`>>> Method: ${init?.method || 'GET'} <<<`);
+
   rootLogger.debug({ msg: "proxiedFetch", url, settings: init });
   const proxyUrl = process.env.FETCH_HTTPS_PROXY;
   const proxyAgent = proxyUrl ? new ProxyAgent(proxyUrl) : undefined;
-  return nodeFetch(url, {
-    ...init,
-    dispatcher: proxyAgent,
-  });
+
+  try {
+    const response = await nodeFetch(url, {
+      ...init,
+      dispatcher: proxyAgent,
+    });
+    console.error(`>>> FETCH SUCCEEDED: ${response.status} ${response.statusText} <<<`);
+    return response;
+  } catch (error) {
+    console.error(`>>> FETCH FAILED: ${error instanceof Error ? error.message : String(error)} <<<`);
+    throw error;
+  }
 }
 
 // Vertex provider 里授权的部分没有用 fetch，使用的是 https 库
