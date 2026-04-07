@@ -78,13 +78,15 @@ const google = (modelId: string) => {
 };
 
 const vertex = createVertex({
-  location: process.env.GOOGLE_VERTEX_LOCATION,
   project: process.env.GOOGLE_VERTEX_PROJECT,
+  location: process.env.GOOGLE_VERTEX_LOCATION,
   googleAuthOptions: {
-    credentials: {
-      client_email: process.env.GOOGLE_VERTEX_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_VERTEX_PRIVATE_KEY,
-    },
+    credentials: JSON.parse(
+      Buffer.from(
+        process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64!,
+        'base64'
+      ).toString()
+    ),
   },
   fetch: proxiedFetch,
 });
@@ -93,22 +95,26 @@ const vertexGlobal = createVertex({
   location: "global",
   project: process.env.GOOGLE_VERTEX_PROJECT,
   googleAuthOptions: {
-    credentials: {
-      client_email: process.env.GOOGLE_VERTEX_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_VERTEX_PRIVATE_KEY,
-    },
+    credentials: JSON.parse(
+      Buffer.from(
+        process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64!,
+        'base64'
+      ).toString()
+    ),
   },
   fetch: proxiedFetch,
 });
 
 const vertexClaude = createVertexAnthropic({
   location: process.env.GOOGLE_VERTEX_CLAUDE_LOCATION,
-  project: process.env.GOOGLE_VERTEX_CLAUDE_PROJECT,
+  project: process.env.GOOGLE_VERTEX_PROJECT,
   googleAuthOptions: {
-    credentials: {
-      client_email: process.env.GOOGLE_VERTEX_CLAUDE_CLIENT_EMAIL,
-      private_key: process.env.GOOGLE_VERTEX_CLAUDE_PRIVATE_KEY,
-    },
+    credentials: JSON.parse(
+      Buffer.from(
+        process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64!,
+        'base64'
+      ).toString()
+    ),
   },
   fetch: proxiedFetch,
 });
