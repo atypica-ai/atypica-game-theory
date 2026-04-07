@@ -32,4 +32,6 @@ export interface GameType<A extends z.ZodTypeAny = z.ZodTypeAny> {
   // Number of discussion rounds before each decision phase.
   // 0 = no discussion. Each discussion round: all players speak once in random order.
   discussionRounds: number;
+  // If true: players act one-by-one in random order, seeing prior decisions in timeline
+  sequential?: boolean;
 }
