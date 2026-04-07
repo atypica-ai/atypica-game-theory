@@ -23,6 +23,12 @@ Most games in this system support:
 
 ## Implemented Games
 
+**Total Implemented: 6 games**
+- 4 originally implemented: Stag Hunt, Beauty Contest, Prisoner's Dilemma, Golden Ball
+- 2 newly implemented (2026-04-07): All-Pay Auction, Volunteer's Dilemma
+
+---
+
 ### 1. Stag Hunt (Free-Rider Variant) ✅
 
 **Status**: Implemented (`src/app/(game-theory)/gameTypes/stagHunt/`)
@@ -181,11 +187,13 @@ These values are from published academic experiments, not arbitrary. The K value
 
 These games have been researched and evaluated for potential implementation. They are ordered by recommendation strength.
 
+**Note**: All-Pay Auction (#5) and Volunteer's Dilemma (#6) are now implemented as of 2026-04-07.
+
 ---
 
-### 5. All-Pay Auction ⭐⭐⭐⭐⭐ HIGHLY RECOMMENDED
+### 5. All-Pay Auction ⭐⭐⭐⭐⭐ HIGHLY RECOMMENDED ✅
 
-**Status**: Not yet implemented
+**Status**: Implemented (`src/app/(game-theory)/gameTypes/allPayAuction/`)
 
 **Players**: 2-10 players
 
@@ -232,9 +240,9 @@ This game creates **escalation dynamics**:
 
 ---
 
-### 6. Volunteer's Dilemma ⭐⭐⭐⭐
+### 6. Volunteer's Dilemma ⭐⭐⭐⭐ ✅
 
-**Status**: Not yet implemented
+**Status**: Implemented (`src/app/(game-theory)/gameTypes/volunteerDilemma/`)
 
 **Players**: 3-10 players
 
@@ -912,13 +920,13 @@ Multiple prisoners are tied on trolley tracks. Each prisoner has a lever:
 ## Summary and Implementation Priority
 
 ### Top Priority (Highly Recommended) ⭐⭐⭐⭐⭐
-1. **All-Pay Auction** - Clear winners, strong AI-human differences, high competitiveness
-2. **Beauty Contest** - Already implemented, excellent for reasoning depth research
-3. **Stag Hunt (Free-Rider)** - Already implemented, rich dynamics
+1. **All-Pay Auction** - ✅ Already implemented, clear winners, strong AI-human differences, high competitiveness
+2. **Beauty Contest** - ✅ Already implemented, excellent for reasoning depth research
+3. **Stag Hunt (Free-Rider)** - ✅ Already implemented, rich dynamics
 
 ### Second Priority (Recommended) ⭐⭐⭐⭐
-4. **Volunteer's Dilemma** - Good but needs careful implementation (use lottery rule)
-5. **Golden Ball** - Already implemented, could benefit from adding discussion rounds
+4. **Volunteer's Dilemma** - ✅ Already implemented with lottery rule (free-riders have advantage)
+5. **Golden Ball** - ✅ Already implemented, could benefit from adding discussion rounds
 
 ### Lower Priority (Consider with modifications) ⭐⭐⭐
 6. **Weakest Link** - Interesting but tends toward ties, needs asymmetry
@@ -990,5 +998,5 @@ Multiple prisoners are tied on trolley tracks. Each prisoner has a lever:
 
 ---
 
-**Last Updated**: 2026-04-07 (Added 7 game theory games + 4 philosophical dilemmas)
+**Last Updated**: 2026-04-07 (Implemented 2 new games: All-Pay Auction, Volunteer's Dilemma. Added 11 games to documentation: 7 game theory + 4 philosophical dilemmas)
 
