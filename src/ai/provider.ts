@@ -346,7 +346,7 @@ export function llm(modelName: LLMModelName) {
     case "gpt-5":
       return azureEastUS2("gpt-5");
     case "gpt-5-mini":
-      return azureEastUS2("gpt-5-mini");
+      return openai(modelName);
     case "gpt-5-mini-responses":
       return azureEastUS2.responses("gpt-5-mini");
     case "gpt-5-nano":
