@@ -323,12 +323,7 @@ export function llm(modelName: LLMModelName) {
       case "gemini-3-flash":
       case "gemini-3.1-pro":
       case "gemini-3-pro-image":
-        if (hasVertexCredentials()) {
-          break;
-        } else {
-          rootLogger.warn({ msg: "[LLM Provider] Falling back to litellm - no Vertex credentials", modelName });
-          return openai(modelName);
-        }
+        break
       case "grok-4-1-fast-non-reasoning":
       case "grok-4-1-fast-reasoning":
         if (process.env.XAI_API_KEY) {
