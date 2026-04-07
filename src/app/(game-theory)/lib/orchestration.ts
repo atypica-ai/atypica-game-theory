@@ -103,10 +103,10 @@ async function runDiscussionPhase(
 // ── Decision phase ────────────────────────────────────────────────────────────
 
 /**
- * Decision phase: all players decide in parallel from a shared timeline snapshot.
- * Since decisions are simultaneous, no player needs to wait for another's choice.
- * Results are appended in original player order for a deterministic timeline.
- * Single DB save after all decisions (truly simultaneous — no incremental visibility).
+ * Decision phase: players make decisions either sequentially or in parallel.
+ * - Sequential (gameType.sequential=true): Players act one-by-one in random order,
+ *   each seeing prior decisions. Used for turn-based games like Ultimatum Game.
+ * - Parallel (default): All players decide simultaneously from a shared snapshot.
  */
 async function runDecisionPhase(
   timeline: GameTimeline,
@@ -116,14 +116,16 @@ async function runDecisionPhase(
   roundId: number,
   ctx: PhaseContext,
 ) {
-  ctx.logger.info({ msg: "Starting decision phase", roundId, players: personaSessions.map((p) => p.personaId) });
+  ctx.logger.info({ msg: "Starting decision phase", roundId, sequential: gameType.sequential, players: personaSessions.map((p) => p.personaId) });
 
-  // Snapshot before any decisions — each player formats context from the same state
-  const snapshot = [...timeline];
+  if (gameType.sequential) {
+    // Sequential execution: players act one by one in random order
+    const shuffled = shuffle(personaSessions);
 
-  const results = await Promise.all(
-    personaSessions.map(async (personaSession) => {
-      const context = formatTimelineForDecision(snapshot, personaSession.personaId, participants, roundId, gameType.simultaneousReveal);
+    for (const personaSession of shuffled) {
+      if (ctx.abortSignal.aborted) throw new Error("Game session aborted");
+
+      const context = formatTimelineForDecision(timeline, personaSession.personaId, participants, roundId, false);
       const { reasoning, content } = await generatePlayerDecision({
         personaSession,
         gameType,
@@ -134,16 +136,47 @@ async function runDecisionPhase(
         statReport: ctx.statReport,
         logger: ctx.logger.child({ personaId: personaSession.personaId }),
       });
-      return { personaSession, reasoning, content };
-    }),
-  );
 
-  // Append in original player order for a deterministic timeline
-  for (const { personaSession, reasoning, content } of results) {
-    timeline.push({ type: "persona-decision", personaId: personaSession.personaId, personaName: personaSession.personaName, reasoning, content, round: roundId });
+      // Append immediately so next player sees it
+      timeline.push({
+        type: "persona-decision",
+        personaId: personaSession.personaId,
+        personaName: personaSession.personaName,
+        reasoning,
+        content,
+        round: roundId
+      });
+      await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
+    }
+  } else {
+    // Parallel execution: all players decide simultaneously from shared snapshot
+    const snapshot = [...timeline];
+
+    const results = await Promise.all(
+      personaSessions.map(async (personaSession) => {
+        const context = formatTimelineForDecision(snapshot, personaSession.personaId, participants, roundId, gameType.simultaneousReveal);
+        const { reasoning, content } = await generatePlayerDecision({
+          personaSession,
+          gameType,
+          formattedContext: context,
+          round: roundId,
+          locale: ctx.locale,
+          abortSignal: ctx.abortSignal,
+          statReport: ctx.statReport,
+          logger: ctx.logger.child({ personaId: personaSession.personaId }),
+        });
+        return { personaSession, reasoning, content };
+      }),
+    );
+
+    // Append in original player order for a deterministic timeline
+    for (const { personaSession, reasoning, content } of results) {
+      timeline.push({ type: "persona-decision", personaId: personaSession.personaId, personaName: personaSession.personaName, reasoning, content, round: roundId });
+    }
+
+    await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
   }
 
-  await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
   ctx.logger.info({ msg: "Decision phase complete", roundId });
 }
 
