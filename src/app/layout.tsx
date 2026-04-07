@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { getDeployRegion } from "@/lib/request/deployRegion";
@@ -55,17 +56,19 @@ export default async function RootLayout({
             strategy="beforeInteractive"
           />
         )}
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <NextIntlClientProvider>
-            {children}
-            <Toaster richColors={true} />
-          </NextIntlClientProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <NextIntlClientProvider>
+              {children}
+              <Toaster richColors={true} />
+            </NextIntlClientProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );
