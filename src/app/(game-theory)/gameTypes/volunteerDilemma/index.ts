@@ -35,8 +35,7 @@ After each round, all choices and the selected volunteer (if any) are revealed b
 
 The game lasts 3 rounds. The player with the highest cumulative score wins.
 WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOREVER.
-
-Strategic tension: Everyone wants someone ELSE to volunteer. But if everyone thinks this way, nobody volunteers and everyone loses. Free-riders have the highest expected payoff — but only if volunteers exist.`,
+`,
 
   minPlayers: 3,
   maxPlayers: 10,

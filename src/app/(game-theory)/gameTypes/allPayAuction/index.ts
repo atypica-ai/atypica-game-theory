@@ -29,8 +29,7 @@ After each round, all bids and resulting payoffs are revealed before the next ro
 
 The game lasts 3 rounds. The player with the highest cumulative score wins.
 WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOREVER.
-
-Strategy tip: This is a trap for escalation. Once you've bid, that cost is sunk. Others may bid higher to "not waste" their bid. Rational play suggests bidding very low or zero — but will you resist the temptation when others bid?`,
+`,
 
   minPlayers: 4,
   maxPlayers: 10,
