@@ -14,7 +14,7 @@ const data = [
   { strategy: "Balanced [2,2,2,0]",       human: 0.30, ai: 0.28 },
   { strategy: "Spread [2,2,1,1]",         human: 0.20, ai: 0.32 },
   { strategy: "Weighted [3,2,1,0]",       human: 0.15, ai: 0.15 },
-};
+];
 
 const pctFmt = (v: number) => `${Math.round(v * 100)}%`;
 const TooltipContent = makeTooltip(pctFmt);
