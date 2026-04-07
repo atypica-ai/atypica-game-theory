@@ -1,8 +1,8 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { GameSessionStats } from "../../types";
-import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, SourceAttribution } from "../AcademicChart";
+import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import type { GameSessionStats, PersonaDecisionEvent } from "../../types";
+import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, SourceAttribution, TICK_FONT } from "../AcademicChart";
 
 // ── Research data ──────────────────────────────────────────────────────────────
 // Experimental evidence shows systematic overbidding in all-pay auctions.
@@ -19,14 +19,35 @@ const data = [
   { bin: "100+",   human: 0.20, ai: 0.01 },
 ];
 
+// ── Session overlay helpers ────────────────────────────────────────────────────
+
+function getR1AverageBid(events: GameSessionStats["events"]): number | null {
+  const r1 = events.filter(
+    (e): e is PersonaDecisionEvent => e.type === "persona-decision" && e.round === 1,
+  );
+  if (r1.length === 0) return null;
+  const bids = r1.map((d) => (d.content as { bid: number }).bid);
+  return Math.round(bids.reduce((a, b) => a + b, 0) / bids.length);
+}
+
+function getBinLabel(bid: number): string {
+  if (bid >= 100) return "100+";
+  const low = Math.floor(bid / 20) * 20;
+  return `${low}–${low + 19}`;
+}
+
+const SESSION_COLOR = "hsl(45 90% 52%)";
+
 const pctFmt = (v: number) => `${Math.round(v * 100)}%`;
 const TooltipContent = makeTooltip(pctFmt);
 
 export function AllPayAuctionDistributionView({
-  sessionStats: _sessionStats,
+  sessionStats,
 }: {
   sessionStats?: GameSessionStats;
 }) {
+  const avgBid = sessionStats ? getR1AverageBid(sessionStats.events) : null;
+  const avgBin = avgBid !== null ? getBinLabel(avgBid) : null;
   return (
     <div className="p-6 flex flex-col gap-4">
       <ChartPanel
@@ -53,8 +74,40 @@ export function AllPayAuctionDistributionView({
               width={30}
             />
             <Tooltip content={<TooltipContent />} cursor={{ fill: GRID_COLOR, fillOpacity: 0.35 }} />
-            <Bar dataKey="human" name="Human" fill={HUMAN_COLOR} radius={[2, 2, 0, 0]} fillOpacity={0.80} />
-            <Bar dataKey="ai" name="AI" fill={AI_COLOR} radius={[2, 2, 0, 0]} fillOpacity={0.85} />
+            {/* This game's average bid marker */}
+            {avgBin !== null && avgBid !== null && (
+              <ReferenceLine
+                x={avgBin}
+                stroke={SESSION_COLOR}
+                strokeWidth={2}
+                label={{
+                  value: `This game · avg ${avgBid}`,
+                  position: "top",
+                  fontSize: 9,
+                  fontFamily: TICK_FONT,
+                  fill: SESSION_COLOR,
+                  dy: -8,
+                }}
+              />
+            )}
+            {/* Human bars — dim all bins except the one containing this game's average */}
+            <Bar dataKey="human" name="Human" fill={HUMAN_COLOR} radius={[2, 2, 0, 0]}>
+              {data.map((entry) => (
+                <Cell
+                  key={entry.bin}
+                  fillOpacity={avgBin === null || entry.bin === avgBin ? 0.80 : 0.18}
+                />
+              ))}
+            </Bar>
+            {/* AI bars — same dimming */}
+            <Bar dataKey="ai" name="AI" fill={AI_COLOR} radius={[2, 2, 0, 0]}>
+              {data.map((entry) => (
+                <Cell
+                  key={entry.bin}
+                  fillOpacity={avgBin === null || entry.bin === avgBin ? 0.85 : 0.18}
+                />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </ChartPanel>
