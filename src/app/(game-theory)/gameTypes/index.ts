@@ -5,6 +5,7 @@ import { beautyContest } from "./beautyContest";
 import { goldenBall } from "./goldenBall";
 import { allPayAuction } from "./allPayAuction";
 import { volunteerDilemma } from "./volunteerDilemma";
+import { publicGoods } from "./publicGoods";
 
 // Registry of all available game types.
 // Stored without a base-type annotation so TypeScript retains each entry's concrete generic.
@@ -16,6 +17,7 @@ export const gameTypeRegistry = {
   [goldenBall.name]: goldenBall,
   [allPayAuction.name]: allPayAuction,
   [volunteerDilemma.name]: volunteerDilemma,
+  [publicGoods.name]: publicGoods,
 };
 
 export function getGameType(name: string): GameType {
@@ -28,4 +30,4 @@ export function getGameType(name: string): GameType {
   return gt;
 }
 
-export { prisonerDilemma, stagHunt, beautyContest, goldenBall, allPayAuction, volunteerDilemma };
+export { prisonerDilemma, stagHunt, beautyContest, goldenBall, allPayAuction, volunteerDilemma, publicGoods };
