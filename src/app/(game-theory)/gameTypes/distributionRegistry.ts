@@ -7,6 +7,7 @@ import { StagHuntDistributionView } from "./stagHunt/DistributionView";
 import { AllPayAuctionDistributionView } from "./allPayAuction/DistributionView";
 import { VolunteerDilemmaDistributionView } from "./volunteerDilemma/DistributionView";
 import { PublicGoodsDistributionView } from "./publicGoods/DistributionView";
+import { ColonelBlottoDistributionView } from "./colonelBlotto/DistributionView";
 
 export type { GameSessionStats };
 
@@ -26,4 +27,5 @@ export const distributionRegistry: Record<string, ComponentType<{ sessionStats?:
   "all-pay-auction":  AllPayAuctionDistributionView,
   "volunteer-dilemma": VolunteerDilemmaDistributionView,
   "public-goods":     PublicGoodsDistributionView,
+  "colonel-blotto":   ColonelBlottoDistributionView,
 };
