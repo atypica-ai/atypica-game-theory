@@ -79,6 +79,17 @@ model UserProfile {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
+model VerificationCode {
+  id        Int      @id @default(autoincrement())
+  email     String   @db.VarChar(255)
+  code      String   @db.VarChar(6)
+  expiresAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([email, code])
+  @@index([expiresAt])
+}
+
 model Persona {
   id     Int    @id @default(autoincrement())
   token  String @unique @db.VarChar(64)
