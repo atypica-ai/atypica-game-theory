@@ -1,5 +1,5 @@
 import { rootLogger } from "@/lib/logging";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 export interface EmailOptions {
   to: string;
@@ -9,39 +9,22 @@ export interface EmailOptions {
 }
 
 /**
- * Creates and returns a configured email transporter
- */
-export function createTransporter() {
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST!,
-    port: parseInt(process.env.EMAIL_PORT!),
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER!,
-      pass: process.env.EMAIL_PASSWORD!,
-    },
-  });
-}
-
-/**
- * Sends an email using the configured transporter
+ * Sends an email using Resend
  */
 export async function sendEmail(
   options: EmailOptions,
   { throwError = false }: { throwError?: boolean } = {},
 ): Promise<void> {
-  const transporter = createTransporter();
-
-  const mailOptions = {
-    from: process.env.EMAIL_DEFAULT_FROM,
-    to: options.to,
-    subject: options.subject,
-    text: options.text,
-    html: options.html,
-  };
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
-    await transporter.sendMail(mailOptions);
+    await resend.emails.send({
+      from: process.env.RESEND_FROM!,
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
+    });
     rootLogger.info(
       `Email successfully delivered to ${options.to} with subject: "${options.subject}"`,
     );
