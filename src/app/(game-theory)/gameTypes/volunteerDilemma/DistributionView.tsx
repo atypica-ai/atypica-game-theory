@@ -5,24 +5,21 @@ import type { GameSessionStats } from "../../types";
 import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, SourceAttribution } from "../AcademicChart";
 
 // ── Research data ──────────────────────────────────────────────────────────────
-// Experimental evidence shows systematic overbidding in all-pay auctions.
-// Gneezy & Smorodinsky (2006) and others document average bids exceeding Nash equilibrium.
-// Nash equilibrium: bid = (n-1)/n × value. For n=4, Nash ≈ 0.75 × 100 = 75.
-// Observed: humans tend to bid 80-100 (escalation trap), AI may bid closer to Nash.
+// Diekmann (1985, 1993) and Franzen (1995) experimental results.
+// Volunteer rate varies with group size (smaller groups → higher volunteer rate).
+// Humans show heterogeneity: some "let-me-do-it" altruists, some never volunteer.
+// AI may exhibit more rational mixing or follow Nash equilibrium probabilities.
+// Symmetric Nash: p* = 1 - (C/(B-0))^(1/(n-1)). For B=50, C=30, n=5: p* ≈ 0.37.
 
 const data = [
-  { bin: "0–19",   human: 0.05, ai: 0.18 },
-  { bin: "20–39",  human: 0.08, ai: 0.25 },
-  { bin: "40–59",  human: 0.12, ai: 0.28 },
-  { bin: "60–79",  human: 0.20, ai: 0.22 },
-  { bin: "80–99",  human: 0.35, ai: 0.06 },
-  { bin: "100+",   human: 0.20, ai: 0.01 },
+  { action: "Volunteer",     human: 0.45, ai: 0.38 },
+  { action: "Not Volunteer", human: 0.55, ai: 0.62 },
 ];
 
 const pctFmt = (v: number) => `${Math.round(v * 100)}%`;
 const TooltipContent = makeTooltip(pctFmt);
 
-export function AllPayAuctionDistributionView({
+export function VolunteerDilemmaDistributionView({
   sessionStats: _sessionStats,
 }: {
   sessionStats?: GameSessionStats;
@@ -30,27 +27,27 @@ export function AllPayAuctionDistributionView({
   return (
     <div className="p-6 flex flex-col gap-4">
       <ChartPanel
-        title="Bid Distribution — Round 1"
-        subtitle="PMF of first-round bids (prize = 100). Humans show escalation bias, AI closer to Nash."
+        title="Volunteer Rate — Round 1"
+        subtitle="Probability of volunteering (N=5). Humans show higher volunteering due to altruism."
       >
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={data} margin={{ top: 12, right: 40, bottom: 8, left: 28 }} barCategoryGap="16%" barGap={2}>
+          <BarChart data={data} margin={{ top: 12, right: 40, bottom: 8, left: 48 }} barCategoryGap="24%" barGap={4}>
             <CartesianGrid vertical={false} stroke={GRID_COLOR} strokeWidth={0.75} />
             <XAxis
-              dataKey="bin"
-              tick={{ ...axisTickProps, fontSize: 9 }}
+              dataKey="action"
+              tick={{ ...axisTickProps, fontSize: 10 }}
               axisLine={false}
               tickLine={false}
               interval={0}
             />
             <YAxis
               tickFormatter={pctFmt}
-              domain={[0, 0.40]}
+              domain={[0, 0.70]}
               tickCount={4}
               tick={axisTickProps}
               axisLine={false}
               tickLine={false}
-              width={30}
+              width={36}
             />
             <Tooltip content={<TooltipContent />} cursor={{ fill: GRID_COLOR, fillOpacity: 0.35 }} />
             <Bar dataKey="human" name="Human" fill={HUMAN_COLOR} radius={[2, 2, 0, 0]} fillOpacity={0.80} />
@@ -61,7 +58,7 @@ export function AllPayAuctionDistributionView({
 
       <AiHumanLegend />
       <SourceAttribution papers={[
-        "Human: Gneezy & Smorodinsky (2006) · Games Econ Behav · overbidding pattern",
+        "Human: Diekmann (1985, 1993), Franzen (1995) · volunteer rate experiments",
         "AI: atypica.AI personas · accumulated sessions",
       ]} />
     </div>
