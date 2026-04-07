@@ -77,47 +77,74 @@ const google = (modelId: string) => {
   return googleGenerativeAI(modelId);
 };
 
-const vertex = createVertex({
-  project: process.env.GOOGLE_VERTEX_PROJECT,
-  location: process.env.GOOGLE_VERTEX_LOCATION,
-  googleAuthOptions: {
-    credentials: JSON.parse(
-      Buffer.from(
-        process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64!,
-        'base64'
-      ).toString()
-    ),
-  },
-  fetch: proxiedFetch,
-});
+function parseGoogleCredentials() {
+  const base64 = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64?.trim();
+  if (base64) {
+    const decoded = Buffer.from(base64, "base64").toString("utf8").trim();
+    return JSON.parse(decoded);
+  }
+  const json = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON?.trim();
+  if (json) {
+    return JSON.parse(json);
+  }
+  return undefined;
+}
 
-const vertexGlobal = createVertex({
-  location: "global",
-  project: process.env.GOOGLE_VERTEX_PROJECT,
-  googleAuthOptions: {
-    credentials: JSON.parse(
-      Buffer.from(
-        process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64!,
-        'base64'
-      ).toString()
-    ),
-  },
-  fetch: proxiedFetch,
-});
+function getGoogleAuthOptions() {
+  const credentials = parseGoogleCredentials();
+  if (!credentials) {
+    return undefined;
+  }
+  return { credentials };
+}
 
-const vertexClaude = createVertexAnthropic({
-  location: process.env.GOOGLE_VERTEX_CLAUDE_LOCATION,
-  project: process.env.GOOGLE_VERTEX_PROJECT,
-  googleAuthOptions: {
-    credentials: JSON.parse(
-      Buffer.from(
-        process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64!,
-        'base64'
-      ).toString()
-    ),
-  },
-  fetch: proxiedFetch,
-});
+function hasVertexCredentials() {
+  return Boolean(
+    process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 ||
+      process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON ||
+      process.env.GOOGLE_VERTEX_PRIVATE_KEY
+  );
+}
+
+let _vertex: ReturnType<typeof createVertex> | null = null;
+let _vertexGlobal: ReturnType<typeof createVertex> | null = null;
+let _vertexClaude: ReturnType<typeof createVertexAnthropic> | null = null;
+
+function vertex() {
+  if (!_vertex) {
+    _vertex = createVertex({
+      project: process.env.GOOGLE_VERTEX_PROJECT,
+      location: process.env.GOOGLE_VERTEX_LOCATION,
+      googleAuthOptions: getGoogleAuthOptions(),
+      fetch: proxiedFetch,
+    });
+  }
+  return _vertex;
+}
+
+function vertexGlobal() {
+  if (!_vertexGlobal) {
+    _vertexGlobal = createVertex({
+      location: "global",
+      project: process.env.GOOGLE_VERTEX_PROJECT,
+      googleAuthOptions: getGoogleAuthOptions(),
+      fetch: proxiedFetch,
+    });
+  }
+  return _vertexGlobal;
+}
+
+function vertexClaude() {
+  if (!_vertexClaude) {
+    _vertexClaude = createVertexAnthropic({
+      location: process.env.GOOGLE_VERTEX_CLAUDE_LOCATION,
+      project: process.env.GOOGLE_VERTEX_PROJECT,
+      googleAuthOptions: getGoogleAuthOptions(),
+      fetch: proxiedFetch,
+    });
+  }
+  return _vertexClaude;
+}
 
 const xai = createXai({
   apiKey: process.env.XAI_API_KEY,
@@ -255,7 +282,7 @@ export function llm(modelName: LLMModelName) {
       case "gemini-3-flash":
       case "gemini-3.1-pro":
       case "gemini-3-pro-image":
-        if (process.env.GOOGLE_VERTEX_PRIVATE_KEY) {
+        if (hasVertexCredentials()) {
           break;
         } else {
           return openai(modelName);
@@ -326,21 +353,21 @@ export function llm(modelName: LLMModelName) {
     // case "gemini-2.5-pro":
     //   return google("gemini-2.5-pro-preview-03-25");
     case "claude-haiku-4-5":
-      return vertexClaude("claude-haiku-4-5");
+      return vertexClaude()("claude-haiku-4-5");
     case "claude-sonnet-4-6":
-      return vertexClaude("claude-sonnet-4-6");
+      return vertexClaude()("claude-sonnet-4-6");
     // case "gemini-2.5-flash":
     //   return vertex("gemini-2.5-flash");
     // case "gemini-2.5-pro":
     //   return vertex("gemini-2.5-pro");
     case "gemini-2.5-flash-image":
-      return vertexGlobal("gemini-2.5-flash-image");
+      return vertexGlobal()("gemini-2.5-flash-image");
     case "gemini-3-flash":
-      return vertexGlobal("gemini-3-flash-preview");
+      return vertexGlobal()("gemini-3-flash-preview");
     case "gemini-3.1-pro":
-      return vertexGlobal("gemini-3.1-pro-preview");
+      return vertexGlobal()("gemini-3.1-pro-preview");
     case "gemini-3-pro-image":
-      return vertexGlobal("gemini-3-pro-image-preview");
+      return vertexGlobal()("gemini-3-pro-image-preview");
     case "grok-4-1-fast-non-reasoning":
       return xai.responses("grok-4-1-fast-non-reasoning");
     case "grok-4-1-fast-reasoning":
@@ -363,8 +390,8 @@ export function imageModel(modelName: ImageModelName) {
     case "gpt-image-1":
       return azure.imageModel("gpt-image-1");
     case "imagen-4.0-ultra":
-      return vertex.image("imagen-4.0-ultra-generate-001");
+      return vertex().image("imagen-4.0-ultra-generate-001");
     case "imagen-4.0":
-      return vertex.image("imagen-4.0-generate-001");
+      return vertex().image("imagen-4.0-generate-001");
   }
 }
