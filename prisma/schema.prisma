@@ -59,10 +59,24 @@ model User {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
+  profile  UserProfile?
   personas Persona[]
 
   // 唯一定位一个 personal user 在一个 team 里对应的 team member 身份
   @@unique([teamIdAsMember, personalUserId])
+}
+
+model UserProfile {
+  id        Int  @id @default(autoincrement())
+  userId    Int  @unique
+  user      User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  /// [UserLastLogin]
+  lastLogin Json @default("{}")
+  /// [UserProfileExtra]
+  extra     Json @default("{}")
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model Persona {
