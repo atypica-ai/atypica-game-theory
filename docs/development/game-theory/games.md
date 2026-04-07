@@ -23,9 +23,9 @@ Most games in this system support:
 
 ## Implemented Games
 
-**Total Implemented: 6 games**
+**Total Implemented: 9 games**
 - 4 originally implemented: Stag Hunt, Beauty Contest, Prisoner's Dilemma, Golden Ball
-- 2 newly implemented (2026-04-07): All-Pay Auction, Volunteer's Dilemma
+- 5 newly implemented (2026-04-07): All-Pay Auction, Volunteer's Dilemma, Public Goods, Colonel Blotto, Trolley Problem
 
 ---
 
@@ -353,9 +353,9 @@ Players choose an effort level (e.g., 1-7). Everyone's reward is based on the **
 
 ---
 
-### 8. Public Goods Game / Tragedy of Commons ⭐⭐⭐
+### 8. Public Goods Game / Tragedy of Commons ⭐⭐⭐ ✅
 
-**Status**: Not yet implemented
+**Status**: Implemented (`src/app/(game-theory)/gameTypes/publicGoods/`)
 
 **Players**: 4-10 players
 
@@ -679,9 +679,9 @@ Player 1: Passive          -5, +5                 0, 0
 
 ---
 
-### 16. Colonel Blotto Game (Resource Allocation)
+### 16. Colonel Blotto Game (Resource Allocation) ✅
 
-**Status**: Not yet implemented
+**Status**: Implemented (`src/app/(game-theory)/gameTypes/colonelBlotto/`)
 
 **Players**: 2 players (classic), can extend to N players
 
@@ -751,9 +751,9 @@ Players simultaneously choose Rock, Paper, or Scissors:
 
 These games focus on moral reasoning rather than strategic optimization. They reveal differences in ethical frameworks and value systems between AI and humans.
 
-### 18. Trolley Problem (Classic) ⭐⭐⭐⭐
+### 18. Trolley Problem (Classic) ⭐⭐⭐⭐ ✅
 
-**Status**: Not yet implemented
+**Status**: Implemented (combined with #19, see `src/app/(game-theory)/gameTypes/trolleyProblem/`)
 
 **Players**: 1 player makes choice (can be multiplayer voting)
 
@@ -792,9 +792,9 @@ A runaway trolley is heading toward 5 people tied on the tracks. You stand next 
 
 ---
 
-### 19. Trolley Problem - Fat Man Variant (Active Killing) ⭐⭐⭐⭐
+### 19. Trolley Problem - Fat Man Variant (Active Killing) ⭐⭐⭐⭐ ✅
 
-**Status**: Not yet implemented
+**Status**: Implemented (combined with #18, see `src/app/(game-theory)/gameTypes/trolleyProblem/`)
 
 **Players**: 1 player (or voting)
 
