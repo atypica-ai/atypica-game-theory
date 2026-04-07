@@ -80,13 +80,28 @@ const google = (modelId: string) => {
 function parseGoogleCredentials() {
   const base64 = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64?.trim();
   if (base64) {
-    const decoded = Buffer.from(base64, "base64").toString("utf8").trim();
-    return JSON.parse(decoded);
+    try {
+      const decoded = Buffer.from(base64, "base64").toString("utf8").trim();
+      const parsed = JSON.parse(decoded);
+      console.log("[Vertex Auth] Using base64 credentials, client_email:", parsed.client_email);
+      return parsed;
+    } catch (error) {
+      console.error("[Vertex Auth] Failed to parse base64 credentials:", error);
+      return undefined;
+    }
   }
   const json = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON?.trim();
   if (json) {
-    return JSON.parse(json);
+    try {
+      const parsed = JSON.parse(json);
+      console.log("[Vertex Auth] Using JSON credentials, client_email:", parsed.client_email);
+      return parsed;
+    } catch (error) {
+      console.error("[Vertex Auth] Failed to parse JSON credentials:", error);
+      return undefined;
+    }
   }
+  console.warn("[Vertex Auth] No credentials found");
   return undefined;
 }
 
@@ -124,10 +139,12 @@ function vertex() {
 
 function vertexGlobal() {
   if (!_vertexGlobal) {
+    const authOptions = getGoogleAuthOptions();
+    console.log(`[Vertex Global] Creating client with project: ${process.env.GOOGLE_VERTEX_PROJECT}, hasAuth: ${!!authOptions}`);
     _vertexGlobal = createVertex({
       location: "global",
       project: process.env.GOOGLE_VERTEX_PROJECT,
-      googleAuthOptions: getGoogleAuthOptions(),
+      googleAuthOptions: authOptions,
       fetch: proxiedFetch,
     });
   }
@@ -239,6 +256,7 @@ export type LLMModelName =
 export function llm(modelName: LLMModelName) {
   const openai = openAICompatible;
   const deployRegion = getDeployRegion();
+  console.log(`[LLM Provider] Model: ${modelName}, Region: ${deployRegion}, HasVertexCreds: ${hasVertexCredentials()}`);
   if (deployRegion === "mainland") {
     switch (modelName) {
       case "gpt-4o":
@@ -285,6 +303,7 @@ export function llm(modelName: LLMModelName) {
         if (hasVertexCredentials()) {
           break;
         } else {
+          console.warn(`[LLM Provider] Falling back to litellm for ${modelName} - no Vertex credentials`);
           return openai(modelName);
         }
       case "grok-4-1-fast-non-reasoning":
@@ -361,12 +380,16 @@ export function llm(modelName: LLMModelName) {
     // case "gemini-2.5-pro":
     //   return vertex("gemini-2.5-pro");
     case "gemini-2.5-flash-image":
+      console.log(`[LLM Provider] Using Vertex Global for gemini-2.5-flash-image`);
       return vertexGlobal()("gemini-2.5-flash-image");
     case "gemini-3-flash":
+      console.log(`[LLM Provider] Using Vertex Global for gemini-3-flash-preview`);
       return vertexGlobal()("gemini-3-flash-preview");
     case "gemini-3.1-pro":
+      console.log(`[LLM Provider] Using Vertex Global for gemini-3.1-pro-preview`);
       return vertexGlobal()("gemini-3.1-pro-preview");
     case "gemini-3-pro-image":
+      console.log(`[LLM Provider] Using Vertex Global for gemini-3-pro-image-preview`);
       return vertexGlobal()("gemini-3-pro-image-preview");
     case "grok-4-1-fast-non-reasoning":
       return xai.responses("grok-4-1-fast-non-reasoning");
