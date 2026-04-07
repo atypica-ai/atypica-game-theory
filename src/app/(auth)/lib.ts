@@ -13,7 +13,11 @@ export interface UserLastLogin {
   timestamp: number;
   clientIp: string;
   userAgent?: string;
-  geo?: string;
+  geo?: Partial<{
+    country: string;
+    countryCode: string;
+    city: string;
+  }>;
   locale?: string;
   provider?: "email-password";
 }
