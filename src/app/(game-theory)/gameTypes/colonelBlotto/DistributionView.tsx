@@ -1,7 +1,6 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { GameSessionStats } from "../../types";
 import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, SourceAttribution } from "../AcademicChart";
 
 // ── Research data ──────────────────────────────────────────────────────────────
@@ -19,11 +18,7 @@ const data = [
 const pctFmt = (v: number) => `${Math.round(v * 100)}%`;
 const TooltipContent = makeTooltip(pctFmt);
 
-export function ColonelBlottoDistributionView({
-  sessionStats: _sessionStats,
-}: {
-  sessionStats?: GameSessionStats;
-}) {
+export function ColonelBlottoDistributionView() {
   return (
     <div className="p-6 flex flex-col gap-4">
       <ChartPanel
