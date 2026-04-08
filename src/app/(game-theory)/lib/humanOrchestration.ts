@@ -17,8 +17,8 @@ import { buildGamePersonaSession } from "./generation";
 import { PlayerHandler, runGameLoop } from "./gameLoop";
 import { getDefaultAction, shuffle } from "./helpers";
 import { waitForHumanSignal } from "./humanSignal";
-import { refreshTimeline, saveGameTimeline } from "./persistence";
-import { AIDecisionResult, generateAIDecision, generateAIDiscussionTurn, PhaseContext } from "./phases";
+import { appendTimelineEvents, refreshTimeline, saveGameTimeline } from "./persistence";
+import { generateAIDecision, generateAIDiscussionTurn, PhaseContext } from "./phases";
 
 // ── Human-aware player handler ──────────────────────────────────────────────
 
@@ -129,61 +129,55 @@ const humanAwareHandler: PlayerHandler = {
         }
       }
     } else {
-      // Parallel mode: human wait runs IN PARALLEL with AI decisions
+      // ── Parallel mode: each decision saved individually for progressive reveal ──
       const snapshot = [...current];
       const aiSessions = personaSessions.filter((p) => !p.isHuman);
       const humanSession = personaSessions.find((p) => p.isHuman);
 
-      const aiResultsPromise = Promise.all(
-        aiSessions.map((s) => generateAIDecision(snapshot, s, gameType, participants, roundId, ctx)),
-      );
+      // Each AI decision saves to DB individually as it completes
+      const aiDecisionPromises = aiSessions.map(async (s) => {
+        const result = await generateAIDecision(snapshot, s, gameType, participants, roundId, ctx);
+        await appendTimelineEvents(ctx.gameSessionToken, [{
+          type: "persona-decision" as const,
+          personaId: result.personaSession.personaId,
+          personaName: result.personaSession.personaName,
+          reasoning: result.reasoning,
+          content: result.content,
+          round: roundId,
+        }]);
+        return result;
+      });
 
-      let humanResultPromise: Promise<Record<string, unknown>> | undefined;
+      // Human signal resolves → save canonical decision immediately
+      let humanCanonicalPromise: Promise<void> | undefined;
       if (humanSession) {
         const requestId = crypto.randomUUID();
         const expiresAt = Date.now() + (ctx.humanTimeoutMs ?? 30_000);
         current.push({ type: "human-decision-pending", round: roundId, requestId, expiresAt });
         await saveGameTimeline({ token: ctx.gameSessionToken, timeline: current, logger: ctx.logger });
 
-        humanResultPromise = waitForHumanSignal(requestId, ctx.humanTimeoutMs ?? 30_000)
-          .then((result) => (typeof result === "object" && result !== null) ? result : getDefaultAction(gameType));
+        humanCanonicalPromise = waitForHumanSignal(requestId, ctx.humanTimeoutMs ?? 30_000)
+          .then(async (result) => {
+            const content = (typeof result === "object" && result !== null) ? result : getDefaultAction(gameType);
+            await appendTimelineEvents(ctx.gameSessionToken, [{
+              type: "persona-decision" as const,
+              personaId: HUMAN_PLAYER_ID,
+              personaName: humanSession.personaName,
+              reasoning: null,
+              content,
+              round: roundId,
+            }]);
+          });
       }
 
-      const [aiResults, humanContent] = await Promise.all([
-        aiResultsPromise,
-        humanResultPromise ?? Promise.resolve(undefined),
+      // Wait for all decisions to be individually saved
+      await Promise.all([
+        ...aiDecisionPromises,
+        humanCanonicalPromise ?? Promise.resolve(),
       ]);
 
-      const fresh = await refreshTimeline(ctx.gameSessionToken);
-
-      const aiResultMap = new Map<number, AIDecisionResult>(aiResults.map((r) => [r.personaSession.personaId, r]));
-      for (const personaSession of personaSessions) {
-        if (personaSession.isHuman && humanContent) {
-          fresh.push({
-            type: "persona-decision",
-            personaId: HUMAN_PLAYER_ID,
-            personaName: personaSession.personaName,
-            reasoning: null,
-            content: humanContent,
-            round: roundId,
-          });
-        } else {
-          const r = aiResultMap.get(personaSession.personaId);
-          if (r) {
-            fresh.push({
-              type: "persona-decision",
-              personaId: r.personaSession.personaId,
-              personaName: r.personaSession.personaName,
-              reasoning: r.reasoning,
-              content: r.content,
-              round: roundId,
-            });
-          }
-        }
-      }
-
-      await saveGameTimeline({ token: ctx.gameSessionToken, timeline: fresh, logger: ctx.logger });
-      current = fresh;
+      // Refresh timeline — now contains all individually-saved decisions
+      current = await refreshTimeline(ctx.gameSessionToken);
     }
 
     ctx.logger.info({ msg: "Decision phase complete (human)", roundId });

@@ -112,21 +112,28 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
 
   const pendingHumanTurn = useMemo((): PendingHumanTurn | null => {
     if (!isCurrentUserHuman) return null;
-    const now = Date.now();
     // Scan from end — pending events are recent (near the tail)
     for (let i = events.length - 1; i >= 0; i--) {
       const e = events[i];
       if (
         (e.type === "human-discussion-pending" || e.type === "human-decision-pending") &&
-        e.expiresAt > now &&
         !submittedRequests.has(e.requestId)
       ) {
+        // Skip if already submitted in timeline
         const alreadySubmitted = events.some(
           (s) =>
             (s.type === "human-discussion-submitted" || s.type === "human-decision-submitted") &&
             s.requestId === e.requestId,
         );
-        if (!alreadySubmitted) return e;
+        if (alreadySubmitted) continue;
+
+        // Skip if orchestration already processed (canonical decision/discussion exists)
+        const hasCanonical = e.type === "human-decision-pending"
+          ? events.some((s) => s.type === "persona-decision" && s.personaId === HUMAN_PLAYER_ID && "round" in s && s.round === e.round)
+          : events.some((s) => s.type === "persona-discussion" && s.personaId === HUMAN_PLAYER_ID && "round" in s && s.round === e.round);
+        if (hasCanonical) continue;
+
+        return e;
       }
     }
     return null;
