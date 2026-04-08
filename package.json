@@ -10,7 +10,8 @@
     "test": "vitest",
     "lint": "next lint --max-warnings 0",
     "lint:fix": "next lint --max-warnings 0 --fix",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "admintool": "tsx scripts/admintool.ts"
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^3.0.67",

@@ -43,8 +43,7 @@ export function SignInPageClient({ callbackUrl }: { callbackUrl: string }) {
         email,
         password,
       });
-      // Redirect to callback page to check onboarding status
-      window.location.replace(`/auth/callback?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      window.location.replace(callbackUrl);
     } catch (error) {
       const errMsg = (error as Error).message;
       if (errMsg === "EMAIL_NOT_VERIFIED") {
@@ -135,9 +134,7 @@ export function SignInPageClient({ callbackUrl }: { callbackUrl: string }) {
                   variant="outline"
                   className="w-full h-10"
                   onClick={() =>
-                    signIn("google", {
-                      callbackUrl: `/auth/callback?callbackUrl=${encodeURIComponent(callbackUrl)}`,
-                    })
+                    signIn("google", { callbackUrl })
                   }
                   type="button"
                 >

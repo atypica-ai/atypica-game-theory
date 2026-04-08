@@ -14,7 +14,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import { groupEventsByRound, RoundDetailView } from "./ActivityFeed";
+import { groupEventsByRound, RoundData, RoundDetailView } from "./ActivityFeed";
 import { HumanTurnDialog, PendingHumanTurn } from "./HumanTurnDialog";
 import { PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
 import { ReplayView } from "./ReplayView";
@@ -202,10 +202,19 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
   const selectedRoundId =
     manualRoundId ?? activeRoundId ?? completedRoundIds.at(-1) ?? null;
 
-  const selectedRoundData =
-    selectedRoundId !== null
-      ? (allRoundData.find((r) => r.roundId === selectedRoundId) ?? null)
-      : null;
+  // When the active round has only human-pending events (no persona events yet),
+  // groupEventsByRound returns nothing for that round. Synthesize a skeleton so
+  // RoundDetailView shows player cards in deliberating state instead of "Awaiting activity".
+  const selectedRoundData = useMemo((): RoundData | null => {
+    if (selectedRoundId === null) return null;
+    const found = allRoundData.find((r) => r.roundId === selectedRoundId);
+    if (found) return found;
+    if (selectedRoundId === activeRoundId) {
+      return { roundId: selectedRoundId, discussions: [], decisions: [], result: null };
+    }
+    return null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRoundId, allRoundData, activeRoundId]);
 
   const isLiveRound = selectedRoundId === activeRoundId && activeRoundId !== null;
 
