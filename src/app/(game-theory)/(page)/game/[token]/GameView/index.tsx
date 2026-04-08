@@ -13,7 +13,7 @@ import {
 import { AnimatePresence } from "motion/react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { groupEventsByRound, RoundData, RoundDetailView } from "./ActivityFeed";
 import { HumanInputPanel, PendingHumanTurn } from "./HumanInputPanel";
@@ -177,10 +177,12 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
     [JSON.stringify(events)],
   );
 
-  // Players deliberating = in active round but haven't posted a decision yet
+  // Players deliberating = in active round but haven't posted a decision yet.
+  // For the human player, also check human-decision-submitted (which exists before
+  // orchestration converts it to the canonical persona-decision event).
   const playersDeliberating = useMemo(() => {
     if (activeRoundId === null) return new Set<number>();
-    const decided = new Set(
+    const decided = new Set<number>(
       events
         .filter(
           (e): e is PersonaDecisionEvent =>
@@ -188,6 +190,9 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
         )
         .map((e) => e.personaId),
     );
+    if (events.some((e) => e.type === "human-decision-submitted" && e.round === activeRoundId)) {
+      decided.add(HUMAN_PLAYER_ID);
+    }
     return new Set(
       participants.filter((p) => !decided.has(p.personaId)).map((p) => p.personaId),
     );
@@ -199,9 +204,31 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
   // null = auto-follow active round; number = user locked to specific round
   const [manualRoundId, setManualRoundId] = useState<number | null>(null);
 
-  // Derived selected round: manual choice → active round → most recent completed
+  // displayRoundId lags activeRoundId by 2.5s when a round advances.
+  // This holds the view on the just-completed round so players see the
+  // decision reveal and payoffs before the next round starts.
+  const [displayRoundId, setDisplayRoundId] = useState<number | null>(null);
+  const prevActiveRoundId = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (activeRoundId === null) return;
+    if (prevActiveRoundId.current === activeRoundId) return; // no change
+    const prev = prevActiveRoundId.current;
+    prevActiveRoundId.current = activeRoundId;
+
+    if (prev === null) {
+      // First round starting — follow immediately
+      setDisplayRoundId(activeRoundId);
+    } else {
+      // Round advanced — hold on completed round for reveal, then follow
+      const timer = setTimeout(() => setDisplayRoundId(activeRoundId), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [activeRoundId]);
+
+  // Derived selected round: manual choice → display (lagged) round → most recent completed
   const selectedRoundId =
-    manualRoundId ?? activeRoundId ?? completedRoundIds.at(-1) ?? null;
+    manualRoundId ?? displayRoundId ?? completedRoundIds.at(-1) ?? null;
 
   // When the active round has only human-pending events (no persona events yet),
   // groupEventsByRound returns nothing for that round. Synthesize a skeleton so
@@ -426,7 +453,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
             {/* Live tab */}
             {activeRoundId !== null && (
               <button
-                onClick={() => setManualRoundId(null)}
+                onClick={() => { setManualRoundId(null); setDisplayRoundId(activeRoundId); }}
                 className="flex items-center gap-1.5 px-5 h-full text-[13px] font-[500] border-b-2 shrink-0 transition-colors"
                 style={{
                   borderBottomColor: manualRoundId === null && !isCompleted ? "var(--gt-blue)" : "transparent",

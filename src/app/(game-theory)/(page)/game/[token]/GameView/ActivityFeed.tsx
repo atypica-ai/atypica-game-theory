@@ -4,6 +4,8 @@ import {
   GameSessionParticipant,
   GameTimeline,
   HUMAN_PLAYER_ID,
+  HumanDecisionSubmittedEvent,
+  HumanDiscussionSubmittedEvent,
   PersonaDecisionEvent,
   PersonaDiscussionEvent,
   RoundResultEvent,
@@ -24,6 +26,7 @@ export type RoundData = {
 export function groupEventsByRound(events: GameTimeline): RoundData[] {
   const map = new Map<number, RoundData>();
 
+  // Pass 1: canonical events — source of truth for display
   for (const e of events) {
     if (e.type === "persona-discussion") {
       const r = map.get(e.round) ?? { roundId: e.round, discussions: [], decisions: [], result: null };
@@ -40,7 +43,48 @@ export function groupEventsByRound(events: GameTimeline): RoundData[] {
     }
   }
 
+  // Pass 2: provisional human events — fill gaps where orchestration hasn't
+  // written the canonical event yet (window between human submit and batch write)
+  for (const e of events) {
+    if (e.type === "human-decision-submitted") {
+      const r = map.get(e.round);
+      if (r && !r.decisions.some((d) => d.personaId === HUMAN_PLAYER_ID)) {
+        r.decisions.push(synthesizeDecision(e));
+      }
+    } else if (e.type === "human-discussion-submitted") {
+      const r = map.get(e.round);
+      if (r && !r.discussions.some((d) => d.personaId === HUMAN_PLAYER_ID)) {
+        r.discussions.push(synthesizeDiscussion(e));
+      }
+    }
+  }
+
   return Array.from(map.values()).sort((a, b) => a.roundId - b.roundId);
+}
+
+// Synthesize display-compatible canonical shapes from human submission events.
+// These are only used as provisional placeholders until orchestration writes
+// the real persona-decision / persona-discussion event.
+function synthesizeDecision(e: HumanDecisionSubmittedEvent): PersonaDecisionEvent {
+  return {
+    type: "persona-decision",
+    round: e.round,
+    personaId: HUMAN_PLAYER_ID,
+    personaName: "You",
+    reasoning: null,
+    content: e.content,
+  };
+}
+
+function synthesizeDiscussion(e: HumanDiscussionSubmittedEvent): PersonaDiscussionEvent {
+  return {
+    type: "persona-discussion",
+    round: e.round,
+    personaId: HUMAN_PLAYER_ID,
+    personaName: "You",
+    reasoning: null,
+    content: e.content,
+  };
 }
 
 // ── Decision extraction ───────────────────────────────────────────────────────
