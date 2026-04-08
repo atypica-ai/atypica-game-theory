@@ -45,11 +45,11 @@ const humanAwareHandler: PlayerHandler = {
 
         if (personaSession.isHuman) {
           const requestId = crypto.randomUUID();
-          const expiresAt = Date.now() + ctx.humanTimeoutMs;
+          const expiresAt = Date.now() + (ctx.humanTimeoutMs ?? 30_000);
           current.push({ type: "human-discussion-pending", round: roundId, requestId, expiresAt });
           await saveGameTimeline({ token: ctx.gameSessionToken, timeline: current, logger: ctx.logger });
 
-          const result = await waitForHumanSignal(requestId, ctx.humanTimeoutMs);
+          const result = await waitForHumanSignal(requestId, ctx.humanTimeoutMs ?? 30_000);
           const content = typeof result === "string" && result.trim() ? result.trim() : "(said nothing)";
 
           // Re-sync from DB to preserve server action writes
@@ -79,7 +79,7 @@ const humanAwareHandler: PlayerHandler = {
     timeline: GameTimeline,
     gameType: GameType,
     personaSessions: GamePersonaSession[],
-    _participants: GameSessionParticipant[],
+    participants: GameSessionParticipant[],
     roundId: number,
     ctx: PhaseContext,
   ): Promise<GameTimeline> {
@@ -95,11 +95,11 @@ const humanAwareHandler: PlayerHandler = {
 
         if (personaSession.isHuman) {
           const requestId = crypto.randomUUID();
-          const expiresAt = Date.now() + ctx.humanTimeoutMs;
+          const expiresAt = Date.now() + (ctx.humanTimeoutMs ?? 30_000);
           current.push({ type: "human-decision-pending", round: roundId, requestId, expiresAt });
           await saveGameTimeline({ token: ctx.gameSessionToken, timeline: current, logger: ctx.logger });
 
-          const result = await waitForHumanSignal(requestId, ctx.humanTimeoutMs);
+          const result = await waitForHumanSignal(requestId, ctx.humanTimeoutMs ?? 30_000);
           const content = (typeof result === "object" && result !== null) ? result : getDefaultAction(gameType);
 
           const fresh = await refreshTimeline(ctx.gameSessionToken);
@@ -115,7 +115,7 @@ const humanAwareHandler: PlayerHandler = {
           current = fresh;
         } else {
           const { reasoning, content } = await generateAIDecision(
-            current, personaSession, gameType, _participants, roundId, ctx,
+            current, personaSession, gameType, participants, roundId, ctx,
           );
           current.push({
             type: "persona-decision",
@@ -135,17 +135,17 @@ const humanAwareHandler: PlayerHandler = {
       const humanSession = personaSessions.find((p) => p.isHuman);
 
       const aiResultsPromise = Promise.all(
-        aiSessions.map((s) => generateAIDecision(snapshot, s, gameType, _participants, roundId, ctx)),
+        aiSessions.map((s) => generateAIDecision(snapshot, s, gameType, participants, roundId, ctx)),
       );
 
       let humanResultPromise: Promise<Record<string, unknown>> | undefined;
       if (humanSession) {
         const requestId = crypto.randomUUID();
-        const expiresAt = Date.now() + ctx.humanTimeoutMs;
+        const expiresAt = Date.now() + (ctx.humanTimeoutMs ?? 30_000);
         current.push({ type: "human-decision-pending", round: roundId, requestId, expiresAt });
         await saveGameTimeline({ token: ctx.gameSessionToken, timeline: current, logger: ctx.logger });
 
-        humanResultPromise = waitForHumanSignal(requestId, ctx.humanTimeoutMs)
+        humanResultPromise = waitForHumanSignal(requestId, ctx.humanTimeoutMs ?? 30_000)
           .then((result) => (typeof result === "object" && result !== null) ? result : getDefaultAction(gameType));
       }
 

@@ -156,7 +156,7 @@ export async function runGameSession({
     ...(sessionExtra.discussionRounds !== undefined ? { discussionRounds: sessionExtra.discussionRounds } : {}),
   };
   const discussionRounds = sessionExtra.discussionRounds ?? gameType.discussionRounds;
-  const ctx: PhaseContext = { gameSessionToken, locale, abortSignal, statReport, logger, discussionRounds, humanTimeoutMs: 30_000 };
+  const ctx: PhaseContext = { gameSessionToken, locale, abortSignal, statReport, logger, discussionRounds };
 
   const timeline: GameTimeline = [{ type: "system", content: gameType.rulesPrompt }];
   await saveGameTimeline({ token: gameSessionToken, timeline, status: "running", extra, logger });

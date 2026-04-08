@@ -17,8 +17,8 @@ export interface PhaseContext {
   statReport: StatReporter;
   logger: Logger;
   discussionRounds: number;
-  /** Timeout for human input in milliseconds. Defaults to 30_000. */
-  humanTimeoutMs: number;
+  /** Timeout for human input in milliseconds. Only used by HumanAwareHandler. Defaults to 30_000. */
+  humanTimeoutMs?: number;
 }
 
 // ── AI discussion turn ───────────────────────────────────────────────────────
