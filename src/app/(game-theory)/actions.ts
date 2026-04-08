@@ -124,9 +124,12 @@ export async function submitHumanDiscussion(
     }
 
     const timeline = (Array.isArray(row.timeline) ? row.timeline : []) as GameTimeline;
+    const pendingEvent = timeline.find(
+      (e) => e.type === "human-discussion-pending" && e.requestId === requestId,
+    );
     const event: HumanDiscussionSubmittedEvent = {
       type: "human-discussion-submitted",
-      round: 0, // round field is informational; orchestration matches by requestId
+      round: pendingEvent?.round ?? 0,
       requestId,
       content: content.trim() || "(said nothing)",
     };
@@ -178,9 +181,12 @@ export async function submitHumanDecision(
     }
 
     const timeline = (Array.isArray(row.timeline) ? row.timeline : []) as GameTimeline;
+    const pendingEvent = timeline.find(
+      (e) => e.type === "human-decision-pending" && e.requestId === requestId,
+    );
     const event: HumanDecisionSubmittedEvent = {
       type: "human-decision-submitted",
-      round: 0, // informational; orchestration matches by requestId
+      round: pendingEvent?.round ?? 0,
       requestId,
       content: parsed.data as Record<string, unknown>,
     };

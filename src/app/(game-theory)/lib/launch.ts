@@ -7,6 +7,7 @@ import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { getGameType } from "../gameTypes";
 import { GameSessionExtra, HUMAN_PLAYER_ID } from "../types";
+import { runHumanGameSession } from "./humanOrchestration";
 import { runGameSession } from "./orchestration";
 import { assignRandomPersonaModels } from "./personaModels";
 import { startGameSessionRun } from "./runtime";
@@ -160,7 +161,7 @@ export async function launchHumanGameSession(
   const noopStatReport: StatReporter = async () => {};
   const logger = rootLogger.child({ gameSessionToken: token, gameType: gameTypeName, humanUserId });
 
-  const runPromise: Promise<void> = runGameSession({
+  const runPromise: Promise<void> = runHumanGameSession({
     gameSessionToken: token,
     locale: "en-US",
     abortSignal: new AbortController().signal,

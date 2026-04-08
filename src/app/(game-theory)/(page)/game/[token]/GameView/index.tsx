@@ -3,17 +3,13 @@
 import { fetchGameSession, GameSessionDetail } from "@/app/(game-theory)/actions";
 import {
   GameSessionParticipant,
+  GameTimelineEvent,
   HUMAN_PLAYER_ID,
-  HumanDecisionPendingEvent,
-  HumanDiscussionPendingEvent,
-  PersonaDecisionEvent,
-  PersonaDiscussionEvent,
-  RoundResultEvent,
 } from "@/app/(game-theory)/types";
 import { AnimatePresence } from "motion/react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { groupEventsByRound, RoundData, RoundDetailView } from "./ActivityFeed";
 import { HumanInputPanel, PendingHumanTurn } from "./HumanInputPanel";
@@ -22,19 +18,30 @@ import { ReplayView } from "./ReplayView";
 import { ResultsView } from "./ResultsView";
 import { RoundPill } from "./RoundView";
 
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export type GamePhase = "starting" | "discussion" | "decision" | "reveal" | "completed";
+
+interface GameState {
+  latestRound: number;
+  completedRounds: number[];
+  activeRound: number | null;
+  phase: GamePhase;
+  rounds: RoundData[];
+  scores: Record<number, number>;
+  decidedPlayers: Set<number>;
+  discussedPlayers: Set<number>;
+  discussionCount: number;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getRoundPayoffSum(
-  round: ReturnType<typeof groupEventsByRound>[number],
-): number {
+function getRoundPayoffSum(round: RoundData): number {
   if (!round.result) return 0;
   return Object.values(round.result.payoffs).reduce((acc, v) => acc + v, 0);
 }
 
-function getScoresUpToRound(
-  allRoundData: ReturnType<typeof groupEventsByRound>,
-  upToRoundId: number,
-): Record<number, number> {
+function getScoresUpToRound(allRoundData: RoundData[], upToRoundId: number): Record<number, number> {
   const scores: Record<number, number> = {};
   for (const round of allRoundData) {
     if (round.roundId > upToRoundId) break;
@@ -52,6 +59,85 @@ function formatGameTypeName(key: string): string {
     .split("-")
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
     .join(" ");
+}
+
+function hasRound(e: GameTimelineEvent): e is GameTimelineEvent & { round: number } {
+  return "round" in e && typeof e.round === "number";
+}
+
+function deriveGameState(events: GameTimelineEvent[], isCompleted: boolean): GameState {
+  // 1. Find highest round in ANY event
+  let latestRound = 0;
+  for (const e of events) {
+    if (hasRound(e) && e.round > latestRound) latestRound = e.round;
+  }
+
+  // 2. Completed rounds
+  const completedRoundSet = new Set<number>();
+  for (const e of events) {
+    if (e.type === "round-result") completedRoundSet.add(e.round);
+  }
+  const completedRounds = [...completedRoundSet].sort((a, b) => a - b);
+
+  // 3. Active round
+  const activeRound = latestRound > 0 && !completedRoundSet.has(latestRound) ? latestRound : null;
+
+  // 4. Phase detection for active round
+  let phase: GamePhase = isCompleted ? "completed" : "starting";
+  if (!isCompleted && activeRound !== null) {
+    let hasDecision = false;
+    let hasDiscussion = false;
+    let hasResult = false;
+    for (const e of events) {
+      if (!hasRound(e) || e.round !== activeRound) continue;
+      if (e.type === "round-result") hasResult = true;
+      if (e.type === "persona-decision" || e.type === "human-decision-pending") hasDecision = true;
+      if (e.type === "persona-discussion" || e.type === "human-discussion-pending") hasDiscussion = true;
+    }
+    if (hasResult) phase = "reveal";
+    else if (hasDecision) phase = "decision";
+    else if (hasDiscussion) phase = "discussion";
+    else phase = "starting";
+  }
+
+  // 5. Grouped round data
+  const rounds = groupEventsByRound(events);
+
+  // 6. Cumulative scores
+  const scores: Record<number, number> = {};
+  for (const e of events) {
+    if (e.type === "round-result") {
+      for (const [id, v] of Object.entries(e.payoffs)) {
+        scores[Number(id)] = (scores[Number(id)] ?? 0) + v;
+      }
+    }
+  }
+
+  // 7. Per-player status in active round
+  const decidedPlayers = new Set<number>();
+  const discussedPlayers = new Set<number>();
+  if (activeRound !== null) {
+    for (const e of events) {
+      if (hasRound(e) && e.round === activeRound) {
+        if (e.type === "persona-decision") decidedPlayers.add(e.personaId);
+        if (e.type === "human-decision-submitted") decidedPlayers.add(HUMAN_PLAYER_ID);
+        if (e.type === "persona-discussion") discussedPlayers.add(e.personaId);
+        if (e.type === "human-discussion-submitted") discussedPlayers.add(HUMAN_PLAYER_ID);
+      }
+    }
+  }
+
+  return {
+    latestRound,
+    completedRounds,
+    activeRound,
+    phase,
+    rounds,
+    scores,
+    decidedPlayers,
+    discussedPlayers,
+    discussionCount: discussedPlayers.size,
+  };
 }
 
 // ── GameView entry point ──────────────────────────────────────────────────────
@@ -103,33 +189,15 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
     [JSON.stringify(session.extra?.participants)],
   );
 
-  // ── Round state ───────────────────────────────────────────────────────────
+  // ── Unified game state ─────────────────────────────────────────────────────
 
-  const completedRoundIds = useMemo(() => {
-    return events
-      .filter((e): e is RoundResultEvent => e.type === "round-result")
-      .map((e) => e.round)
-      .sort((a, b) => a - b);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(events)]);
+  const isCompleted = status === "completed";
 
-  const activeRoundId = useMemo(() => {
-    const roundsWithActivity = new Set(
-      events
-        .filter(
-          (e): e is PersonaDecisionEvent | PersonaDiscussionEvent | HumanDiscussionPendingEvent | HumanDecisionPendingEvent =>
-            e.type === "persona-decision" ||
-            e.type === "persona-discussion" ||
-            e.type === "human-discussion-pending" ||
-            e.type === "human-decision-pending",
-        )
-        .map((e) => e.round),
-    );
-    const completedSet = new Set(completedRoundIds);
-    const active = [...roundsWithActivity].filter((r) => !completedSet.has(r));
-    return active.length > 0 ? Math.max(...active) : null;
+  const gameState = useMemo(
+    () => deriveGameState(events, isCompleted),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(events), completedRoundIds]);
+    [JSON.stringify(events), isCompleted],
+  );
 
   // ── Human turn detection ────────────────────────────────────────────────
   const humanParticipant = participants.find((p) => p.personaId === HUMAN_PLAYER_ID);
@@ -144,7 +212,6 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
         e.expiresAt > now &&
         !locallySubmittedIds.has(e.requestId)
       ) {
-        // Check that no submitted event matches this requestId
         const alreadySubmitted = events.some(
           (s) =>
             (s.type === "human-discussion-submitted" || s.type === "human-decision-submitted") &&
@@ -157,107 +224,67 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(events), isCurrentUserHuman, locallySubmittedIds]);
 
-  const cumulativeScores = useMemo(() => {
-    const scores: Record<number, number> = {};
-    for (const e of events) {
-      if (e.type === "round-result") {
-        for (const [id, v] of Object.entries(e.payoffs)) {
-          scores[Number(id)] = (scores[Number(id)] ?? 0) + v;
-        }
-      }
-    }
-    return scores;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(events)]);
-
-  // All events grouped by round
-  const allRoundData = useMemo(
-    () => groupEventsByRound(events),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(events)],
-  );
-
-  // Players deliberating = in active round but haven't posted a decision yet.
-  // For the human player, also check human-decision-submitted (which exists before
-  // orchestration converts it to the canonical persona-decision event).
+  // Players deliberating = in active round, decision phase, not yet decided
   const playersDeliberating = useMemo(() => {
-    if (activeRoundId === null) return new Set<number>();
-    const decided = new Set<number>(
-      events
-        .filter(
-          (e): e is PersonaDecisionEvent =>
-            e.type === "persona-decision" && e.round === activeRoundId,
-        )
-        .map((e) => e.personaId),
-    );
-    if (events.some((e) => e.type === "human-decision-submitted" && e.round === activeRoundId)) {
-      decided.add(HUMAN_PLAYER_ID);
-    }
+    if (!gameState.activeRound) return new Set<number>();
     return new Set(
-      participants.filter((p) => !decided.has(p.personaId)).map((p) => p.personaId),
+      participants.filter((p) => !gameState.decidedPlayers.has(p.personaId)).map((p) => p.personaId),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(events), activeRoundId, participants]);
+  }, [gameState.activeRound, gameState.decidedPlayers, participants]);
 
-  // ── UI state ──────────────────────────────────────────────────────────────
+  // ── Round selection ──────────────────────────────────────────────────────
 
-  // null = auto-follow active round; number = user locked to specific round
   const [manualRoundId, setManualRoundId] = useState<number | null>(null);
 
-  // displayRoundId lags activeRoundId by 2.5s when a round advances.
-  // This holds the view on the just-completed round so players see the
-  // decision reveal and payoffs before the next round starts.
-  const [displayRoundId, setDisplayRoundId] = useState<number | null>(null);
-  const prevActiveRoundId = useRef<number | null>(null);
+  // Reveal hold: when a round just completed and a new round is starting,
+  // hold the view on the completed round for 2.5s before advancing.
+  const [revealHoldRound, setRevealHoldRound] = useState<number | null>(null);
 
   useEffect(() => {
-    if (activeRoundId === null) return;
-    if (prevActiveRoundId.current === activeRoundId) return; // no change
-    const prev = prevActiveRoundId.current;
-    prevActiveRoundId.current = activeRoundId;
-
-    if (prev === null) {
-      // First round starting — follow immediately
-      setDisplayRoundId(activeRoundId);
-    } else {
-      // Round advanced — hold on completed round for reveal, then follow
-      const timer = setTimeout(() => setDisplayRoundId(activeRoundId), 2500);
-      return () => clearTimeout(timer);
+    const lastCompleted = gameState.completedRounds.at(-1);
+    if (lastCompleted && gameState.activeRound && gameState.activeRound > lastCompleted) {
+      if (revealHoldRound !== lastCompleted) {
+        setRevealHoldRound(lastCompleted);
+        const timer = setTimeout(() => setRevealHoldRound(null), 2500);
+        return () => clearTimeout(timer);
+      }
+    } else if (!gameState.activeRound) {
+      setRevealHoldRound(null);
     }
-  }, [activeRoundId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.completedRounds, gameState.activeRound]);
 
-  // Derived selected round: manual choice → display (lagged) round → most recent completed
-  const selectedRoundId =
-    manualRoundId ?? displayRoundId ?? completedRoundIds.at(-1) ?? null;
+  const autoRoundId = gameState.activeRound ?? gameState.completedRounds.at(-1) ?? null;
 
-  // When the active round has only human-pending events (no persona events yet),
-  // groupEventsByRound returns nothing for that round. Synthesize a skeleton so
-  // RoundDetailView shows player cards in deliberating state instead of "Awaiting activity".
+  // Skip reveal hold when the player has an active turn or just submitted —
+  // they need to see the current round, not the previous one's results.
+  const skipRevealHold = isCurrentUserHuman && (!!pendingHumanTurn || locallySubmittedIds.size > 0);
+  const selectedRoundId = manualRoundId ?? (skipRevealHold ? null : revealHoldRound) ?? autoRoundId;
+
+  // Always provide round data — synthesize skeleton for rounds with only system events
   const selectedRoundData = useMemo((): RoundData | null => {
     if (selectedRoundId === null) return null;
-    const found = allRoundData.find((r) => r.roundId === selectedRoundId);
+    const found = gameState.rounds.find((r) => r.roundId === selectedRoundId);
     if (found) return found;
-    if (selectedRoundId === activeRoundId) {
+    if (selectedRoundId <= gameState.latestRound) {
       return { roundId: selectedRoundId, discussions: [], decisions: [], result: null };
     }
     return null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRoundId, allRoundData, activeRoundId]);
+  }, [selectedRoundId, gameState.rounds, gameState.latestRound]);
 
-  const isLiveRound = selectedRoundId === activeRoundId && activeRoundId !== null;
+  const isLiveRound = selectedRoundId === gameState.activeRound && gameState.activeRound !== null;
 
   // ── Completion ────────────────────────────────────────────────────────────
 
-  const isCompleted = status === "completed";
   const isPending = status === "pending" || participants.length === 0;
 
   const winners = useMemo(() => {
     if (!isCompleted || participants.length === 0) return [] as GameSessionParticipant[];
-    const maxScore = Math.max(...participants.map((p) => cumulativeScores[p.personaId] ?? 0));
-    const leaders = participants.filter((p) => (cumulativeScores[p.personaId] ?? 0) === maxScore);
+    const maxScore = Math.max(...participants.map((p) => gameState.scores[p.personaId] ?? 0));
+    const leaders = participants.filter((p) => (gameState.scores[p.personaId] ?? 0) === maxScore);
     if (leaders.length === participants.length) return [] as GameSessionParticipant[];
     return leaders;
-  }, [isCompleted, participants, cumulativeScores]);
+  }, [isCompleted, participants, gameState.scores]);
 
   const isFullTie = isCompleted && participants.length > 0 && winners.length === 0;
 
@@ -285,13 +312,13 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
   // ── Round nav ─────────────────────────────────────────────────────────────
 
   const navRounds = [
-    ...completedRoundIds.map((r) => ({ roundId: r, isLive: false })),
-    ...(activeRoundId !== null ? [{ roundId: activeRoundId, isLive: true }] : []),
+    ...gameState.completedRounds.map((r) => ({ roundId: r, isLive: false })),
+    ...(gameState.activeRound !== null ? [{ roundId: gameState.activeRound, isLive: true }] : []),
   ];
 
   const currentRoundNumber =
-    activeRoundId ??
-    (completedRoundIds.length > 0 ? completedRoundIds[completedRoundIds.length - 1] : 0);
+    gameState.activeRound ??
+    (gameState.completedRounds.length > 0 ? gameState.completedRounds[gameState.completedRounds.length - 1] : 0);
 
   // Virtual index: rounds 0..n-1, results = n
   const effectiveIdx = showResults
@@ -430,7 +457,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
               if (!canGoPrev) return;
               if (showResults) {
                 // From results → last completed round
-                const last = completedRoundIds.at(-1);
+                const last = gameState.completedRounds.at(-1);
                 if (last !== undefined) setManualRoundId(last);
               } else {
                 setManualRoundId(navRounds[effectiveIdx - 1].roundId);
@@ -451,9 +478,9 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
           {/* Round pills — scrollable */}
           <div className="flex-1 flex items-stretch overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {/* Live tab */}
-            {activeRoundId !== null && (
+            {gameState.activeRound !== null && (
               <button
-                onClick={() => { setManualRoundId(null); setDisplayRoundId(activeRoundId); }}
+                onClick={() => { setManualRoundId(null); }}
                 className="flex items-center gap-1.5 px-5 h-full text-[13px] font-[500] border-b-2 shrink-0 transition-colors"
                 style={{
                   borderBottomColor: manualRoundId === null && !isCompleted ? "var(--gt-blue)" : "transparent",
@@ -467,7 +494,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
             )}
 
             {navRounds.map(({ roundId, isLive }) => {
-              const roundDataItem = allRoundData.find((r) => r.roundId === roundId);
+              const roundDataItem = gameState.rounds.find((r) => r.roundId === roundId);
               const payoffSum = !isLive && roundDataItem ? getRoundPayoffSum(roundDataItem) : null;
               return (
                 <RoundPill
@@ -557,7 +584,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
           <ResultsView
             events={events}
             participants={participants}
-            cumulativeScores={cumulativeScores}
+            cumulativeScores={gameState.scores}
             winners={winners}
             isFullTie={isFullTie}
             gameType={gameType}
@@ -566,11 +593,16 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
           <RoundDetailView
             roundData={selectedRoundData}
             participants={participants}
-            scoresForRound={selectedRoundId !== null ? getScoresUpToRound(allRoundData, selectedRoundId) : cumulativeScores}
+            scoresForRound={selectedRoundId !== null ? getScoresUpToRound(gameState.rounds, selectedRoundId) : gameState.scores}
             isLive={isLiveRound}
+            phase={isLiveRound ? gameState.phase : (selectedRoundData?.result ? "reveal" : "starting")}
+            discussionCount={isLiveRound ? gameState.discussionCount : (selectedRoundData?.discussions.length ?? 0)}
+            totalPlayers={participants.length}
+            isHumanPlayer={isCurrentUserHuman}
+            pendingHumanTurn={pendingHumanTurn}
             playersDeliberating={playersDeliberating}
+            discussedPlayers={isLiveRound ? gameState.discussedPlayers : new Set<number>()}
             getResultState={getResultState}
-            forceExpandDiscussion={!!pendingHumanTurn && pendingHumanTurn.type === "human-discussion-pending"}
           />
         )}
 
@@ -583,8 +615,7 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
               token={token}
               gameTypeName={gameType}
               participants={participants}
-              events={events}
-              currentScores={cumulativeScores}
+              currentScores={gameState.scores}
               onSubmitted={() => {
                 setLocallySubmittedIds((prev) => new Set([...prev, pendingHumanTurn.requestId]));
               }}

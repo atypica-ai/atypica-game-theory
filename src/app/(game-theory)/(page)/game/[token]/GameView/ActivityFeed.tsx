@@ -12,6 +12,8 @@ import {
 } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useEffect, useState } from "react";
+import type { GamePhase } from "./index";
+import type { PendingHumanTurn } from "./HumanInputPanel";
 import { PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
 
 // ── Data model ────────────────────────────────────────────────────────────────
@@ -44,18 +46,21 @@ export function groupEventsByRound(events: GameTimeline): RoundData[] {
   }
 
   // Pass 2: provisional human events — fill gaps where orchestration hasn't
-  // written the canonical event yet (window between human submit and batch write)
+  // written the canonical event yet (window between human submit and batch write).
+  // Creates round entries if none exist (e.g. only human-*-submitted, no canonical yet).
   for (const e of events) {
     if (e.type === "human-decision-submitted") {
-      const r = map.get(e.round);
-      if (r && !r.decisions.some((d) => d.personaId === HUMAN_PLAYER_ID)) {
+      const r = map.get(e.round) ?? { roundId: e.round, discussions: [], decisions: [], result: null };
+      if (!r.decisions.some((d) => d.personaId === HUMAN_PLAYER_ID)) {
         r.decisions.push(synthesizeDecision(e));
       }
+      map.set(e.round, r);
     } else if (e.type === "human-discussion-submitted") {
-      const r = map.get(e.round);
-      if (r && !r.discussions.some((d) => d.personaId === HUMAN_PLAYER_ID)) {
+      const r = map.get(e.round) ?? { roundId: e.round, discussions: [], decisions: [], result: null };
+      if (!r.discussions.some((d) => d.personaId === HUMAN_PLAYER_ID)) {
         r.discussions.push(synthesizeDiscussion(e));
       }
+      map.set(e.round, r);
     }
   }
 
@@ -145,6 +150,8 @@ function DecisionBadge({ decision }: { decision: DecisionDisplay }) {
 
 // ── Player card — unified identity + round state ──────────────────────────────
 
+type CardStatus = "idle" | "speaking" | "pending" | "thinking" | "decided";
+
 function PlayerCard({
   participant,
   playerIndex,
@@ -153,6 +160,10 @@ function PlayerCard({
   payoff,
   isDeliberating,
   resultState,
+  lastDiscussion,
+  hasSpoken,
+  isDiscussionPhase,
+  isDecisionPhase,
 }: {
   participant: GameSessionParticipant;
   playerIndex: number;
@@ -161,6 +172,10 @@ function PlayerCard({
   payoff: number | undefined;
   isDeliberating: boolean;
   resultState: PlayerResultState | undefined;
+  lastDiscussion: PersonaDiscussionEvent | undefined;
+  hasSpoken: boolean;
+  isDiscussionPhase: boolean;
+  isDecisionPhase: boolean;
 }) {
   const color = PLAYER_COLORS[playerIndex] ?? PLAYER_COLORS[0];
   const isWinner = resultState === "winner";
@@ -170,6 +185,13 @@ function PlayerCard({
   const hasPayoff = payoff !== undefined;
   const decisionDisplay = hasDecision ? extractDecision(decision!.content) : null;
   const avatarSeed = isHuman ? (participant.userId ?? 0) : participant.personaId;
+
+  // Derive card status
+  let cardStatus: CardStatus = "idle";
+  if (hasDecision) cardStatus = "decided";
+  else if (isDecisionPhase && isDeliberating) cardStatus = "thinking";
+  else if (isDiscussionPhase && hasSpoken) cardStatus = "speaking";
+  else if (isDiscussionPhase && !hasSpoken) cardStatus = "pending";
 
   return (
     <div
@@ -242,40 +264,35 @@ function PlayerCard({
         className="flex flex-col items-center justify-center gap-1.5 px-5 py-4 border-t min-h-[64px]"
         style={{ borderColor: "var(--gt-border)" }}
       >
-        {!hasDecision && isDeliberating && (
-          <div className="flex items-center gap-1.5">
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                className="w-2 h-2 rounded-full animate-pulse"
-                style={{ backgroundColor: color, animationDelay: `${i * 0.18}s` }}
-              />
-            ))}
-          </div>
+        {cardStatus === "idle" && (
+          <span className="text-[13px]" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>—</span>
         )}
 
-        {!hasDecision && !isDeliberating && (
+        {(cardStatus === "pending" || cardStatus === "speaking") && (
           <span
-            className="text-[13px]"
-            style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
+            className="text-[11px] font-[500]"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.04em" }}
           >
-            —
+            Discussing
           </span>
         )}
 
-        {hasDecision && decisionDisplay && (
-          <div
-            className="flex flex-col items-center gap-1.5"
-            style={{ animation: "gtFadeUp 0.25s ease-out" }}
+        {cardStatus === "thinking" && (
+          <span
+            className="text-[11px] font-[500]"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.04em" }}
           >
+            Deciding
+          </span>
+        )}
+
+        {cardStatus === "decided" && decisionDisplay && (
+          <div className="flex flex-col items-center gap-1.5" style={{ animation: "gtFadeUp 0.25s ease-out" }}>
             <DecisionBadge decision={decisionDisplay} />
             {hasPayoff && (
               <span
                 className="text-[14px] font-[700] tabular-nums leading-none"
-                style={{
-                  color: payoff! >= 0 ? "var(--gt-pos)" : "var(--gt-neg)",
-                  fontFamily: "IBMPlexMono, monospace",
-                }}
+                style={{ color: payoff! >= 0 ? "var(--gt-pos)" : "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}
               >
                 {payoff! > 0 ? "+" : ""}{payoff}
               </span>
@@ -358,6 +375,64 @@ function DiscussionEntry({
   );
 }
 
+// ── Phase strip ──────────────────────────────────────────────────────────────
+
+function PhaseStrip({
+  phase,
+  discussionCount,
+  totalPlayers,
+  isHumanPlayer,
+  hasHumanPendingDiscussion,
+  hasHumanPendingDecision,
+}: {
+  phase: GamePhase;
+  discussionCount: number;
+  totalPlayers: number;
+  isHumanPlayer: boolean;
+  hasHumanPendingDiscussion: boolean;
+  hasHumanPendingDecision: boolean;
+}) {
+  const mono = { fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.06em" };
+
+  if (phase === "discussion") {
+    const detail = isHumanPlayer && hasHumanPendingDiscussion
+      ? <span style={{ color: "var(--gt-blue)", ...mono }} className="text-[12px] font-[500]">Your turn</span>
+      : <span style={{ color: "var(--gt-t4)", ...mono }} className="text-[12px]">{discussionCount} of {totalPlayers} spoken</span>;
+    return (
+      <span className="inline-flex items-center gap-2">
+        <span className="text-[12px] font-[500] uppercase" style={{ color: "var(--gt-t3)", ...mono }}>Discussion</span>
+        <span className="text-[12px]" style={{ color: "var(--gt-t4)" }}>·</span>
+        {detail}
+      </span>
+    );
+  }
+
+  if (phase === "decision") {
+    const detail = isHumanPlayer && hasHumanPendingDecision
+      ? <span style={{ color: "var(--gt-blue)", ...mono }} className="text-[12px] font-[500]">Your move</span>
+      : <span style={{ color: "var(--gt-t4)", ...mono }} className="text-[12px]">Waiting for all players</span>;
+    return (
+      <span className="inline-flex items-center gap-2">
+        <span className="text-[12px] font-[500] uppercase" style={{ color: "var(--gt-t3)", ...mono }}>Decision</span>
+        <span className="text-[12px]" style={{ color: "var(--gt-t4)" }}>·</span>
+        {detail}
+      </span>
+    );
+  }
+
+  if (phase === "reveal") {
+    return <span className="text-[12px] font-[500] uppercase" style={{ color: "var(--gt-pos)", ...mono }}>Results</span>;
+  }
+
+  // "starting"
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "var(--gt-blue)" }} />
+      <span className="text-[12px] font-[500]" style={{ color: "var(--gt-blue)", ...mono }}>Starting</span>
+    </span>
+  );
+}
+
 // ── Round detail view ─────────────────────────────────────────────────────────
 
 export interface RoundDetailViewProps {
@@ -365,9 +440,14 @@ export interface RoundDetailViewProps {
   participants: GameSessionParticipant[];
   scoresForRound: Record<number, number>;
   isLive: boolean;
+  phase: GamePhase;
+  discussionCount: number;
+  totalPlayers: number;
+  isHumanPlayer: boolean;
+  pendingHumanTurn: PendingHumanTurn | null;
   playersDeliberating: Set<number>;
+  discussedPlayers: Set<number>;
   getResultState: (personaId: number) => PlayerResultState | undefined;
-  forceExpandDiscussion?: boolean;
 }
 
 export function RoundDetailView({
@@ -375,16 +455,26 @@ export function RoundDetailView({
   participants,
   scoresForRound,
   isLive,
+  phase,
+  discussionCount,
+  totalPlayers,
+  isHumanPlayer,
+  pendingHumanTurn,
   playersDeliberating,
+  discussedPlayers,
   getResultState,
-  forceExpandDiscussion,
 }: RoundDetailViewProps) {
-  const [showDiscussion, setShowDiscussion] = useState(forceExpandDiscussion ?? false);
+  const isDiscussionPhase = isLive && phase === "discussion";
+  const isDecisionPhase = isLive && phase === "decision";
+  const hasHumanPendingDiscussion = !!pendingHumanTurn && pendingHumanTurn.type === "human-discussion-pending";
+  const hasHumanPendingDecision = !!pendingHumanTurn && pendingHumanTurn.type === "human-decision-pending";
 
-  // Auto-expand when human discussion turn becomes active
+  // Auto-expand discussion during live discussion phase or when human has a pending turn
+  const [showDiscussion, setShowDiscussion] = useState(isDiscussionPhase || hasHumanPendingDiscussion);
+
   useEffect(() => {
-    if (forceExpandDiscussion) setShowDiscussion(true);
-  }, [forceExpandDiscussion]);
+    if (isDiscussionPhase || hasHumanPendingDiscussion) setShowDiscussion(true);
+  }, [isDiscussionPhase, hasHumanPendingDiscussion]);
 
   if (!roundData) {
     return (
@@ -421,9 +511,9 @@ export function RoundDetailView({
       <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="mx-auto py-8 px-8" style={{ maxWidth: "960px" }}>
 
-          {/* ── Round header ───────────────────────────────────────────── */}
+          {/* ── Round header + phase strip ────────────────────────────── */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <span
                 className="text-[13px] font-[600] uppercase"
                 style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.12em" }}
@@ -431,20 +521,17 @@ export function RoundDetailView({
                 Round {roundData.roundId}
               </span>
               {isLive && !hasResult && (
-                <span
-                  className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 border"
-                  style={{
-                    borderRadius: "9999px",
-                    color: "var(--gt-blue)",
-                    borderColor: "var(--gt-blue-border)",
-                    background: "var(--gt-blue-bg)",
-                    fontFamily: "IBMPlexMono, monospace",
-                    letterSpacing: "0.06em",
-                  }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: "var(--gt-blue)" }} />
-                  live
-                </span>
+                <>
+                  <span className="text-[12px]" style={{ color: "var(--gt-t4)" }}>·</span>
+                  <PhaseStrip
+                    phase={phase}
+                    discussionCount={discussionCount}
+                    totalPlayers={totalPlayers}
+                    isHumanPlayer={isHumanPlayer}
+                    hasHumanPendingDiscussion={hasHumanPendingDiscussion}
+                    hasHumanPendingDecision={hasHumanPendingDecision}
+                  />
+                </>
               )}
             </div>
             {hasResult && roundData.result && (
@@ -470,9 +557,14 @@ export function RoundDetailView({
                   payoff={roundData.result?.payoffs[p.personaId]}
                   isDeliberating={isLive && playersDeliberating.has(p.personaId)}
                   resultState={getResultState(p.personaId)}
+                  lastDiscussion={roundData.discussions.filter((d) => d.personaId === p.personaId).at(-1)}
+                  hasSpoken={discussedPlayers.has(p.personaId)}
+                  isDiscussionPhase={isDiscussionPhase}
+                  isDecisionPhase={isDecisionPhase}
                 />
               ))}
             </div>
+
           </section>
 
           {/* ── Discussion — collapsed by default ─────────────────────── */}
@@ -507,6 +599,36 @@ export function RoundDetailView({
                   {roundData.discussions.map((d, i) => (
                     <DiscussionEntry key={i} event={d} participants={participants} />
                   ))}
+                  {/* Typing indicator — shows next speaker generating */}
+                  {isDiscussionPhase && (() => {
+                    const nextSpeaker = participants.find((p) => !discussedPlayers.has(p.personaId));
+                    if (!nextSpeaker) return null;
+                    const idx = participants.findIndex((p) => p.personaId === nextSpeaker.personaId);
+                    const speakerColor = PLAYER_COLORS[idx] ?? PLAYER_COLORS[0];
+                    const seed = nextSpeaker.personaId === HUMAN_PLAYER_ID ? (nextSpeaker.userId ?? 0) : nextSpeaker.personaId;
+                    return (
+                      <div className="flex gap-3 px-5 py-4" style={{ borderTop: "1px solid var(--gt-border)" }}>
+                        <HippyGhostAvatar seed={seed} className="size-8 rounded-full shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <span
+                            className="text-[13px] font-[500]"
+                            style={{ color: speakerColor, fontFamily: "var(--gt-font-outfit), system-ui, sans-serif", letterSpacing: "var(--gt-tracking-tight)" }}
+                          >
+                            {nextSpeaker.name}
+                          </span>
+                          <div className="flex items-center gap-1 mt-1.5">
+                            {[0, 1, 2].map((i) => (
+                              <span
+                                key={i}
+                                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                                style={{ backgroundColor: "var(--gt-t4)", animationDelay: `${i * 0.25}s` }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </section>

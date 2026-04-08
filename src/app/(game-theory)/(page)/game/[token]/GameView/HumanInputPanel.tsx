@@ -6,7 +6,6 @@ import {
 } from "@/app/(game-theory)/actions";
 import {
   GameSessionParticipant,
-  GameTimeline,
   HumanDecisionPendingEvent,
   HumanDiscussionPendingEvent,
 } from "@/app/(game-theory)/types";
@@ -502,7 +501,6 @@ export function HumanInputPanel({
   token,
   gameTypeName,
   participants,
-  events: _events,
   currentScores,
   onSubmitted,
 }: {
@@ -510,7 +508,6 @@ export function HumanInputPanel({
   token: string;
   gameTypeName: string;
   participants: GameSessionParticipant[];
-  events: GameTimeline;
   currentScores: Record<number, number>;
   onSubmitted: () => void;
 }) {
