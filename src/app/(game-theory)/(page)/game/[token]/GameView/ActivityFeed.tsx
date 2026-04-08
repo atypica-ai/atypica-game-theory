@@ -9,7 +9,7 @@ import {
   RoundResultEvent,
 } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
 
 // ── Data model ────────────────────────────────────────────────────────────────
@@ -323,6 +323,7 @@ export interface RoundDetailViewProps {
   isLive: boolean;
   playersDeliberating: Set<number>;
   getResultState: (personaId: number) => PlayerResultState | undefined;
+  forceExpandDiscussion?: boolean;
 }
 
 export function RoundDetailView({
@@ -332,8 +333,14 @@ export function RoundDetailView({
   isLive,
   playersDeliberating,
   getResultState,
+  forceExpandDiscussion,
 }: RoundDetailViewProps) {
-  const [showDiscussion, setShowDiscussion] = useState(false);
+  const [showDiscussion, setShowDiscussion] = useState(forceExpandDiscussion ?? false);
+
+  // Auto-expand when human discussion turn becomes active
+  useEffect(() => {
+    if (forceExpandDiscussion) setShowDiscussion(true);
+  }, [forceExpandDiscussion]);
 
   if (!roundData) {
     return (

@@ -10,12 +10,13 @@ import {
   PersonaDiscussionEvent,
   RoundResultEvent,
 } from "@/app/(game-theory)/types";
+import { AnimatePresence } from "motion/react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { groupEventsByRound, RoundData, RoundDetailView } from "./ActivityFeed";
-import { HumanTurnDialog, PendingHumanTurn } from "./HumanTurnDialog";
+import { HumanInputPanel, PendingHumanTurn } from "./HumanInputPanel";
 import { PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
 import { ReplayView } from "./ReplayView";
 import { ResultsView } from "./ResultsView";
@@ -275,21 +276,6 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ background: "var(--gt-bg)" }}>
-
-      {/* ── Human turn dialog ─────────────────────────────────────────────── */}
-      <HumanTurnDialog
-        pendingTurn={pendingHumanTurn}
-        token={token}
-        gameTypeName={gameType}
-        participants={participants}
-        events={events}
-        currentScores={cumulativeScores}
-        onSubmitted={() => {
-          if (pendingHumanTurn) {
-            setLocallySubmittedIds((prev) => new Set([...prev, pendingHumanTurn.requestId]));
-          }
-        }}
-      />
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <header
@@ -557,8 +543,27 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
             isLive={isLiveRound}
             playersDeliberating={playersDeliberating}
             getResultState={getResultState}
+            forceExpandDiscussion={!!pendingHumanTurn && pendingHumanTurn.type === "human-discussion-pending"}
           />
         )}
+
+        {/* ── Human turn inline panel — slides up at bottom, game stays visible ── */}
+        <AnimatePresence>
+          {pendingHumanTurn && !showResults && !isPending && (
+            <HumanInputPanel
+              key={pendingHumanTurn.requestId}
+              pendingTurn={pendingHumanTurn}
+              token={token}
+              gameTypeName={gameType}
+              participants={participants}
+              events={events}
+              currentScores={cumulativeScores}
+              onSubmitted={() => {
+                setLocallySubmittedIds((prev) => new Set([...prev, pendingHumanTurn.requestId]));
+              }}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
