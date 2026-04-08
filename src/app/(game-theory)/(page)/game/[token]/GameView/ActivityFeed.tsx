@@ -3,6 +3,7 @@
 import {
   GameSessionParticipant,
   GameTimeline,
+  HUMAN_PLAYER_ID,
   PersonaDecisionEvent,
   PersonaDiscussionEvent,
   RoundResultEvent,
@@ -120,16 +121,20 @@ function PlayerCard({
   const color = PLAYER_COLORS[playerIndex] ?? PLAYER_COLORS[0];
   const isWinner = resultState === "winner";
   const isLoser = resultState === "loser";
+  const isHuman = participant.personaId === HUMAN_PLAYER_ID;
   const hasDecision = !!decision;
   const hasPayoff = payoff !== undefined;
   const decisionDisplay = hasDecision ? extractDecision(decision!.content) : null;
+  const avatarSeed = isHuman ? (participant.userId ?? 0) : participant.personaId;
 
   return (
     <div
       className="flex flex-col overflow-hidden transition-all duration-300"
       style={{
         background: "var(--gt-surface)",
-        border: `1px solid ${isWinner ? color : "var(--gt-border)"}`,
+        border: isHuman
+          ? `1.5px dashed ${isWinner ? color : "var(--gt-border-md)"}`
+          : `1px solid ${isWinner ? color : "var(--gt-border)"}`,
         borderRadius: "0.625rem",
         opacity: isLoser ? 0.45 : 1,
         boxShadow: isWinner ? `0 0 0 1px ${color}, 0 8px 32px ${color}22` : undefined,
@@ -141,19 +146,33 @@ function PlayerCard({
       {/* Identity + score */}
       <div className="flex flex-col items-center gap-2 px-5 pt-6 pb-5">
         <div
-          className="rounded-full"
+          className="rounded-full relative"
           style={{
             outline: isWinner ? `2px solid ${color}` : undefined,
             outlineOffset: isWinner ? 3 : undefined,
           }}
         >
-          <HippyGhostAvatar seed={participant.personaId} className="size-12 rounded-full" />
+          <HippyGhostAvatar seed={avatarSeed} className="size-12 rounded-full" />
+          {isHuman && (
+            <span
+              className="absolute -bottom-1 -right-1 text-[9px] font-[600] px-1.5 py-0.5 leading-none"
+              style={{
+                background: "var(--gt-blue)",
+                color: "white",
+                borderRadius: "9999px",
+                fontFamily: "IBMPlexMono, monospace",
+                letterSpacing: "0.06em",
+              }}
+            >
+              YOU
+            </span>
+          )}
         </div>
 
         <span
           className="text-[15px] font-[600] text-center leading-tight"
           style={{
-            color: isWinner ? color : "var(--gt-t1)",
+            color: isWinner ? color : isHuman ? "var(--gt-blue)" : "var(--gt-t1)",
             fontFamily: "var(--gt-font-outfit), system-ui, sans-serif",
             letterSpacing: "var(--gt-tracking-tight)",
           }}
@@ -236,13 +255,16 @@ function DiscussionEntry({
   const [showReasoning, setShowReasoning] = useState(false);
   const idx = participants.findIndex((p) => p.personaId === event.personaId);
   const color = PLAYER_COLORS[idx] ?? PLAYER_COLORS[0];
+  const isHumanEntry = event.personaId === HUMAN_PLAYER_ID;
+  const participant = participants.find((p) => p.personaId === event.personaId);
+  const avatarSeed = isHumanEntry ? (participant?.userId ?? 0) : event.personaId;
 
   return (
     <div
       className="flex gap-3 px-5 py-4 border-b last:border-b-0"
       style={{ borderColor: "var(--gt-border)" }}
     >
-      <HippyGhostAvatar seed={event.personaId} className="size-8 rounded-full shrink-0 mt-0.5" />
+      <HippyGhostAvatar seed={avatarSeed} className="size-8 rounded-full shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1.5">
           <span

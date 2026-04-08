@@ -3,14 +3,19 @@
 import { fetchGameSession, GameSessionDetail } from "@/app/(game-theory)/actions";
 import {
   GameSessionParticipant,
+  HUMAN_PLAYER_ID,
+  HumanDecisionPendingEvent,
+  HumanDiscussionPendingEvent,
   PersonaDecisionEvent,
   PersonaDiscussionEvent,
   RoundResultEvent,
 } from "@/app/(game-theory)/types";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { groupEventsByRound, RoundDetailView } from "./ActivityFeed";
+import { HumanTurnDialog, PendingHumanTurn } from "./HumanTurnDialog";
 import { PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
 import { ReplayView } from "./ReplayView";
 import { ResultsView } from "./ResultsView";
@@ -66,6 +71,12 @@ export function GameView({
 // ── Live view ─────────────────────────────────────────────────────────────────
 
 function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; token: string }) {
+  const { data: authSession } = useSession();
+  const currentUserId = authSession?.user?.id ?? null;
+
+  // Track locally-submitted request IDs so dialog closes immediately without waiting for SWR
+  const [locallySubmittedIds, setLocallySubmittedIds] = useState<ReadonlySet<string>>(new Set());
+
   const { data } = useSWR(
     ["game:session", token],
     async () => {
@@ -105,8 +116,11 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
     const roundsWithActivity = new Set(
       events
         .filter(
-          (e): e is PersonaDecisionEvent | PersonaDiscussionEvent =>
-            e.type === "persona-decision" || e.type === "persona-discussion",
+          (e): e is PersonaDecisionEvent | PersonaDiscussionEvent | HumanDiscussionPendingEvent | HumanDecisionPendingEvent =>
+            e.type === "persona-decision" ||
+            e.type === "persona-discussion" ||
+            e.type === "human-discussion-pending" ||
+            e.type === "human-decision-pending",
         )
         .map((e) => e.round),
     );
@@ -115,6 +129,32 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
     return active.length > 0 ? Math.max(...active) : null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(events), completedRoundIds]);
+
+  // ── Human turn detection ────────────────────────────────────────────────
+  const humanParticipant = participants.find((p) => p.personaId === HUMAN_PLAYER_ID);
+  const isCurrentUserHuman = humanParticipant?.userId != null && humanParticipant.userId === currentUserId;
+
+  const pendingHumanTurn = useMemo((): PendingHumanTurn | null => {
+    if (!isCurrentUserHuman) return null;
+    const now = Date.now();
+    for (const e of events) {
+      if (
+        (e.type === "human-discussion-pending" || e.type === "human-decision-pending") &&
+        e.expiresAt > now &&
+        !locallySubmittedIds.has(e.requestId)
+      ) {
+        // Check that no submitted event matches this requestId
+        const alreadySubmitted = events.some(
+          (s) =>
+            (s.type === "human-discussion-submitted" || s.type === "human-decision-submitted") &&
+            s.requestId === e.requestId,
+        );
+        if (!alreadySubmitted) return e;
+      }
+    }
+    return null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(events), isCurrentUserHuman, locallySubmittedIds]);
 
   const cumulativeScores = useMemo(() => {
     const scores: Record<number, number> = {};
@@ -226,6 +266,21 @@ function GameLiveView({ initialData, token }: { initialData: GameSessionDetail; 
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ background: "var(--gt-bg)" }}>
+
+      {/* ── Human turn dialog ─────────────────────────────────────────────── */}
+      <HumanTurnDialog
+        pendingTurn={pendingHumanTurn}
+        token={token}
+        gameTypeName={gameType}
+        participants={participants}
+        events={events}
+        currentScores={cumulativeScores}
+        onSubmitted={() => {
+          if (pendingHumanTurn) {
+            setLocallySubmittedIds((prev) => new Set([...prev, pendingHumanTurn.requestId]));
+          }
+        }}
+      />
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <header

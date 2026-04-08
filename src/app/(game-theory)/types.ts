@@ -1,11 +1,16 @@
 import { LLMModelName } from "@/ai/provider";
 
+// Reserved personaId for human players (all real persona IDs are positive integers)
+export const HUMAN_PLAYER_ID = -1;
+
 // Runtime-only persona session (not persisted)
 export interface GamePersonaSession {
-  personaId: number;
+  personaId: number; // HUMAN_PLAYER_ID (-1) for human players
   personaName: string;
   systemPrompt: string;
   modelName: LLMModelName;
+  isHuman?: true; // set only when personaId === HUMAN_PLAYER_ID
+  userId?: number; // set only for human players
 }
 
 // ── Timeline event types ────────────────────────────────────────────────────
@@ -44,11 +49,44 @@ export interface RoundResultEvent {
   payoffs: Record<number, number>; // personaId → payoff value
 }
 
+// Human turn — orchestration writes "pending" to signal UI; UI submits "submitted" back
+export interface HumanDiscussionPendingEvent {
+  type: "human-discussion-pending";
+  round: number;
+  requestId: string; // unique per request, used to match submitted event
+  expiresAt: number; // unix ms
+}
+
+export interface HumanDiscussionSubmittedEvent {
+  type: "human-discussion-submitted";
+  round: number;
+  requestId: string;
+  content: string;
+}
+
+export interface HumanDecisionPendingEvent {
+  type: "human-decision-pending";
+  round: number;
+  requestId: string;
+  expiresAt: number;
+}
+
+export interface HumanDecisionSubmittedEvent {
+  type: "human-decision-submitted";
+  round: number;
+  requestId: string;
+  content: Record<string, unknown>; // same shape as PersonaDecisionEvent.content
+}
+
 export type GameTimelineEvent =
   | SystemEvent
   | PersonaDiscussionEvent
   | PersonaDecisionEvent
-  | RoundResultEvent;
+  | RoundResultEvent
+  | HumanDiscussionPendingEvent
+  | HumanDiscussionSubmittedEvent
+  | HumanDecisionPendingEvent
+  | HumanDecisionSubmittedEvent;
 
 // The full timeline is an ordered flat array of events
 export type GameTimeline = GameTimelineEvent[];
@@ -59,8 +97,9 @@ export type GameSessionStats = { events: GameTimeline };
 // ── Extra field stored alongside the session ────────────────────────────────
 
 export interface GameSessionParticipant {
-  personaId: number;
+  personaId: number; // HUMAN_PLAYER_ID (-1) for human players
   name: string;
+  userId?: number; // set for human players to identify them
 }
 
 export interface GameSessionExtra {

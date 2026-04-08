@@ -1,11 +1,12 @@
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
 import { Locale } from "next-intl";
+import withAuth from "next-auth/middleware";
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
   matcher: [
-    "/((?!api|mcp|cdn/proxy-image|cdn/proxy-object|_next/static|_next/image|_public|_pages|favicon.ico|manifest.json|sitemap.xml|robots.txt|llm.txt).*)",
+    "/((?!api|mcp|auth|cdn/proxy-image|cdn/proxy-object|_next/static|_next/image|_public|_pages|favicon.ico|manifest.json|sitemap.xml|robots.txt|llm.txt).*)",
   ],
 };
 

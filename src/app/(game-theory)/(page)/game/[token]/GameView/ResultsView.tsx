@@ -1,13 +1,17 @@
 "use client";
 
 import { GameDistributionView } from "@/app/(game-theory)/(page)/HomeView/DistributionChart";
-import { GameSessionParticipant, GameTimeline } from "@/app/(game-theory)/types";
+import { GameSessionParticipant, GameTimeline, HUMAN_PLAYER_ID } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
 import { PLAYER_COLORS } from "./PlayerCard";
 
 const RAINBOW = ["#ff595e", "#ff924c", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#f72585"];
+
+function avatarSeed(p: GameSessionParticipant): number {
+  return p.personaId === HUMAN_PLAYER_ID ? (p.userId ?? 0) : p.personaId;
+}
 
 function SingleWinner({
   winner,
@@ -24,7 +28,7 @@ function SingleWinner({
         className="rounded-full"
         style={{ outline: `3px solid ${color}`, outlineOffset: 5, boxShadow: `0 0 36px ${color}28` }}
       >
-        <HippyGhostAvatar seed={winner.personaId} className="size-20 rounded-full" />
+        <HippyGhostAvatar seed={avatarSeed(winner)} className="size-20 rounded-full" />
       </div>
       <span
         className="text-[26px] font-[700] mt-1"
@@ -96,7 +100,7 @@ export function ResultsView({
                   const color = PLAYER_COLORS[idx] ?? PLAYER_COLORS[0];
                   return (
                     <div key={p.personaId} className="flex flex-col items-center gap-2">
-                      <HippyGhostAvatar seed={p.personaId} className="size-14 rounded-full" />
+                      <HippyGhostAvatar seed={avatarSeed(p)} className="size-14 rounded-full" />
                       <span
                         className="text-[14px] font-[600]"
                         style={{
@@ -129,7 +133,7 @@ export function ResultsView({
                     return (
                       <div key={w.personaId} className="flex flex-col items-center gap-3">
                         <div className="rounded-full" style={{ outline: `3px solid ${color}`, outlineOffset: 4 }}>
-                          <HippyGhostAvatar seed={w.personaId} className="size-16 rounded-full" />
+                          <HippyGhostAvatar seed={avatarSeed(w)} className="size-16 rounded-full" />
                         </div>
                         <span
                           className="text-[18px] font-[700]"
@@ -195,7 +199,7 @@ export function ResultsView({
                     {rank + 1}
                   </span>
                   <HippyGhostAvatar
-                    seed={p.personaId}
+                    seed={avatarSeed(p)}
                     className="size-8 rounded-full shrink-0"
                   />
                   <span

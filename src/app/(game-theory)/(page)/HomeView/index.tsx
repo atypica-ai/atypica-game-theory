@@ -5,6 +5,7 @@ import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { GameDistributionView } from "./DistributionChart";
+import { useSession } from "next-auth/react";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -133,6 +134,7 @@ function GameCard({ gt, sessionCount }: { gt: GameType; sessionCount: number }) 
 
 export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string, number> }) {
   const gameTypes = Object.values(gameTypeRegistry) as unknown as GameType[];
+  const { data: session } = useSession();
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
@@ -155,11 +157,28 @@ export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string
             </span>
             <span className="w-px h-4" style={{ background: "var(--gt-border-md)" }} />
             <span className="text-[13px]" style={{ color: "var(--gt-t3)" }}>
-              AI vs human behavioral analysis
+              Observe AI · Play yourself
             </span>
           </div>
 
-          <Legend />
+          <div className="flex items-center gap-5">
+            <Legend />
+
+            {/* Play button */}
+            <Link
+              href={session?.user ? "/play/new" : "/auth/signin?callbackUrl=%2Fplay%2Fnew"}
+              className="flex items-center gap-1.5 h-8 px-4 text-[13px] font-[500] transition-opacity hover:opacity-80"
+              style={{
+                background: "var(--gt-blue)",
+                color: "white",
+                borderRadius: "0.375rem",
+                letterSpacing: "var(--gt-tracking-tight)",
+                fontFamily: "var(--gt-font-outfit), system-ui, sans-serif",
+              }}
+            >
+              Play ↗
+            </Link>
+          </div>
         </div>
       </header>
 

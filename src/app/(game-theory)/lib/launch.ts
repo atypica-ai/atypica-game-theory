@@ -6,7 +6,7 @@ import { rootLogger } from "@/lib/logging";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { getGameType } from "../gameTypes";
-import { GameSessionExtra } from "../types";
+import { GameSessionExtra, HUMAN_PLAYER_ID } from "../types";
 import { runGameSession } from "./orchestration";
 import { assignRandomPersonaModels } from "./personaModels";
 import { startGameSessionRun } from "./runtime";
@@ -84,6 +84,92 @@ export async function launchGameSession(
       // failGameSessionRun is already called inside runGameSession's catch block.
       // This outer catch prevents unhandled-rejection noise in after() context.
       logger.error({ msg: "Game session run failed (outer catch)", error: err.message });
+    });
+
+  if (useAfter) {
+    after(runPromise);
+  }
+
+  return { token, run: runPromise };
+}
+
+/**
+ * Creates a game session where a human user participates as one of the players.
+ * The human takes the first slot; remaining slots are filled with random AI personas.
+ * personaIds in the DB stores only the AI persona IDs (human is tracked in extra.participants).
+ */
+export async function launchHumanGameSession(
+  gameTypeName: string,
+  humanUserId: number,
+  humanUserName: string,
+  opts?: { useAfter?: boolean; discussionRounds?: number },
+): Promise<{ token: string; run: Promise<void> }> {
+  const useAfter = opts?.useAfter !== false;
+
+  const gameType = getGameType(gameTypeName);
+  const aiCount = gameType.minPlayers - 1; // human takes 1 slot
+
+  if (aiCount < 1) {
+    throw new Error(`${gameType.displayName} requires at least 2 players to support a human participant`);
+  }
+
+  // Pick random AI personas from the most recent pool
+  const pool = await prisma.persona.findMany({
+    select: { id: true, name: true },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+
+  if (pool.length < aiCount) {
+    throw new Error(`Not enough personas available (need ${aiCount}, found ${pool.length})`);
+  }
+
+  // Shuffle and take aiCount
+  const shuffled = pool.sort(() => Math.random() - 0.5).slice(0, aiCount);
+  const aiPersonaIds = shuffled.map((p) => p.id);
+
+  // Build participants: human first, then AI personas
+  const participants: GameSessionExtra["participants"] = [
+    { personaId: HUMAN_PLAYER_ID, name: humanUserName, userId: humanUserId },
+    ...shuffled.map((p) => ({ personaId: p.id, name: p.name })),
+  ];
+
+  const token = generateToken(16);
+  const personaModels = assignRandomPersonaModels(aiPersonaIds);
+  const initialExtra: GameSessionExtra = {
+    gameType: gameTypeName,
+    participants,
+    personaModels,
+    ...(opts?.discussionRounds !== undefined ? { discussionRounds: opts.discussionRounds } : {}),
+  };
+
+  // Store only AI persona IDs in the DB field (human is in extra.participants)
+  await prisma.gameSession.create({
+    data: {
+      token,
+      gameType: gameTypeName,
+      personaIds: aiPersonaIds,
+      timeline: [],
+      extra: initialExtra as object,
+      status: "pending",
+    },
+  });
+
+  await startGameSessionRun(token);
+
+  const noopStatReport: StatReporter = async () => {};
+  const logger = rootLogger.child({ gameSessionToken: token, gameType: gameTypeName, humanUserId });
+
+  const runPromise: Promise<void> = runGameSession({
+    gameSessionToken: token,
+    locale: "en-US",
+    abortSignal: new AbortController().signal,
+    statReport: noopStatReport,
+    logger,
+  })
+    .then(() => undefined)
+    .catch((err: Error) => {
+      logger.error({ msg: "Human game session run failed (outer catch)", error: err.message });
     });
 
   if (useAfter) {

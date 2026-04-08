@@ -6,7 +6,7 @@ import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { getGameType } from "../gameTypes";
 import { GameType, Horizon } from "../gameTypes/types";
-import { GamePersonaSession, GameSessionExtra, GameSessionParticipant, GameTimeline } from "../types";
+import { GamePersonaSession, GameSessionExtra, GameSessionParticipant, GameTimeline, HUMAN_PLAYER_ID } from "../types";
 import { buildGamePersonaSession, generatePlayerDecision, generatePlayerDiscussion } from "./generation";
 import { formatTimelineForDecision, formatTimelineForDiscussion } from "./formatting";
 import { calculateRoundPayoffs } from "./payoff";
@@ -46,6 +46,51 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Poll the timeline every 1s until a human-*-submitted event with the given requestId appears.
+ * Returns the submitted content, or null if the timeout elapses.
+ */
+async function waitForHumanInput(
+  token: string,
+  requestId: string,
+  timeoutMs: number,
+): Promise<string | Record<string, unknown> | null> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    await sleep(1_000);
+    const row = await prisma.gameSession.findUnique({ where: { token }, select: { timeline: true } });
+    if (!row) return null;
+    const timeline = Array.isArray(row.timeline) ? (row.timeline as GameTimeline) : [];
+    for (const e of timeline) {
+      if (e.type === "human-discussion-submitted" && e.requestId === requestId) return e.content;
+      if (e.type === "human-decision-submitted" && e.requestId === requestId) return e.content;
+    }
+  }
+  return null;
+}
+
+/**
+ * Returns the first valid action from a game type's action schema as a fallback
+ * when a human player's turn times out.
+ */
+function getDefaultAction(gameType: GameType): Record<string, unknown> {
+  // Parse the schema to get its shape; extract the first enum value if present
+  const shape = (gameType.actionSchema as { shape?: Record<string, unknown> }).shape;
+  if (shape) {
+    for (const [key, field] of Object.entries(shape)) {
+      const f = field as { _def?: { values?: string[] } };
+      if (f._def?.values && f._def.values.length > 0) {
+        return { [key]: f._def.values[0] };
+      }
+    }
+  }
+  return {};
+}
+
 // ── Discussion phase ──────────────────────────────────────────────────────────
 
 /**
@@ -71,8 +116,24 @@ async function runDiscussionPhase(
     for (const personaSession of speakerOrder) {
       if (ctx.abortSignal.aborted) throw new Error("Game session aborted");
 
-      ctx.logger.info({ msg: "Generating discussion message", roundId, turn, personaId: personaSession.personaId });
+      ctx.logger.info({ msg: "Generating discussion message", roundId, turn, personaId: personaSession.personaId, isHuman: personaSession.isHuman });
 
+      // ── Human player: emit pending event and wait for UI submission ──────
+      if (personaSession.isHuman) {
+        const requestId = crypto.randomUUID();
+        const expiresAt = Date.now() + 30_000;
+        timeline.push({ type: "human-discussion-pending", round: roundId, requestId, expiresAt });
+        await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
+
+        const result = await waitForHumanInput(ctx.gameSessionToken, requestId, 30_000);
+        const content = typeof result === "string" && result.trim() ? result.trim() : "(said nothing)";
+
+        timeline.push({ type: "persona-discussion", personaId: HUMAN_PLAYER_ID, personaName: personaSession.personaName, reasoning: null, content, round: roundId });
+        await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
+        continue;
+      }
+
+      // ── AI player: generate via LLM ──────────────────────────────────────
       const context = formatTimelineForDiscussion(timeline, personaSession.personaId, participants, roundId);
 
       let reasoning: string | null;
@@ -125,6 +186,22 @@ async function runDecisionPhase(
     for (const personaSession of shuffled) {
       if (ctx.abortSignal.aborted) throw new Error("Game session aborted");
 
+      // ── Human player turn ─────────────────────────────────────────────
+      if (personaSession.isHuman) {
+        const requestId = crypto.randomUUID();
+        const expiresAt = Date.now() + 30_000;
+        timeline.push({ type: "human-decision-pending", round: roundId, requestId, expiresAt });
+        await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
+
+        const result = await waitForHumanInput(ctx.gameSessionToken, requestId, 30_000);
+        const content = (typeof result === "object" && result !== null) ? result : getDefaultAction(gameType);
+
+        timeline.push({ type: "persona-decision", personaId: HUMAN_PLAYER_ID, personaName: personaSession.personaName, reasoning: null, content, round: roundId });
+        await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
+        continue;
+      }
+
+      // ── AI player turn ────────────────────────────────────────────────
       const context = formatTimelineForDecision(timeline, personaSession.personaId, participants, roundId, false);
       const { reasoning, content } = await generatePlayerDecision({
         personaSession,
@@ -149,11 +226,15 @@ async function runDecisionPhase(
       await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
     }
   } else {
-    // Parallel execution: all players decide simultaneously from shared snapshot
+    // Parallel execution: all players decide simultaneously from shared snapshot.
+    // Human is handled separately (pending→wait), AI players run in parallel.
     const snapshot = [...timeline];
+    const aiSessions = personaSessions.filter((p) => !p.isHuman);
+    const humanSession = personaSessions.find((p) => p.isHuman);
 
-    const results = await Promise.all(
-      personaSessions.map(async (personaSession) => {
+    // Start AI decisions in parallel
+    const aiResultsPromise = Promise.all(
+      aiSessions.map(async (personaSession) => {
         const context = formatTimelineForDecision(snapshot, personaSession.personaId, participants, roundId, gameType.simultaneousReveal);
         const { reasoning, content } = await generatePlayerDecision({
           personaSession,
@@ -169,9 +250,40 @@ async function runDecisionPhase(
       }),
     );
 
+    // Start human turn in parallel with AI (emit pending immediately)
+    let humanResult: { reasoning: null; content: Record<string, unknown> } | undefined;
+    let humanPendingRequestId: string | undefined;
+    let humanExpiresAt = 0;
+    if (humanSession) {
+      const requestId = crypto.randomUUID();
+      humanPendingRequestId = requestId;
+      humanExpiresAt = Date.now() + 30_000;
+      timeline.push({ type: "human-decision-pending", round: roundId, requestId, expiresAt: humanExpiresAt });
+      await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
+    }
+
+    // Await AI first
+    const aiResults = await aiResultsPromise;
+
+    // Then wait for human (using remaining time from expiresAt so countdown stays honest)
+    if (humanSession && humanPendingRequestId) {
+      const remaining = humanExpiresAt - Date.now();
+      const result = remaining > 0 ? await waitForHumanInput(ctx.gameSessionToken, humanPendingRequestId, remaining) : null;
+      const content = (typeof result === "object" && result !== null) ? result : getDefaultAction(gameType);
+      humanResult = { reasoning: null, content };
+    }
+
     // Append in original player order for a deterministic timeline
-    for (const { personaSession, reasoning, content } of results) {
-      timeline.push({ type: "persona-decision", personaId: personaSession.personaId, personaName: personaSession.personaName, reasoning, content, round: roundId });
+    const aiResultMap = new Map(aiResults.map((r) => [r.personaSession.personaId, r]));
+    for (const personaSession of personaSessions) {
+      if (personaSession.isHuman && humanResult) {
+        timeline.push({ type: "persona-decision", personaId: HUMAN_PLAYER_ID, personaName: personaSession.personaName, reasoning: null, content: humanResult.content, round: roundId });
+      } else {
+        const r = aiResultMap.get(personaSession.personaId);
+        if (r) {
+          timeline.push({ type: "persona-decision", personaId: r.personaSession.personaId, personaName: r.personaSession.personaName, reasoning: r.reasoning, content: r.content, round: roundId });
+        }
+      }
     }
 
     await saveGameTimeline({ token: ctx.gameSessionToken, timeline, logger: ctx.logger });
@@ -206,30 +318,43 @@ export async function runGameSession({
   });
 
   const gameType = getGameType(session.gameType);
-  const personaIds = session.personaIds as number[];
+  const sessionExtra = session.extra as GameSessionExtra;
 
-  // Load personas and preserve the personaIds order (findMany does not guarantee order)
-  const personasUnordered = await prisma.persona.findMany({ where: { id: { in: personaIds } } });
+  // participants is the source of truth (already stored in extra at launch, includes human slot)
+  const participants: GameSessionParticipant[] = sessionExtra.participants ?? [];
 
-  if (personasUnordered.length !== personaIds.length) {
-    throw new Error(`Some personas not found. Expected ${personaIds.length}, got ${personasUnordered.length}`);
+  // Load AI personas (those with positive personaIds)
+  const aiPersonaIds = participants.filter((p) => p.personaId > 0).map((p) => p.personaId);
+  const personasUnordered = await prisma.persona.findMany({ where: { id: { in: aiPersonaIds } } });
+
+  if (personasUnordered.length !== aiPersonaIds.length) {
+    throw new Error(`Some personas not found. Expected ${aiPersonaIds.length}, got ${personasUnordered.length}`);
   }
 
   const personaMap = new Map(personasUnordered.map((p) => [p.id, p]));
-  const personas = personaIds.map((id) => personaMap.get(id)!);
-
-  const sessionExtra = session.extra as GameSessionExtra;
   const personaModels = sessionExtra.personaModels ?? {};
 
-  const personaSessions = personas.map((persona) =>
-    buildGamePersonaSession({
+  // Build personaSessions in the same order as participants
+  const personaSessions: GamePersonaSession[] = participants.map((p) => {
+    if (p.personaId === HUMAN_PLAYER_ID) {
+      return {
+        personaId: HUMAN_PLAYER_ID,
+        personaName: p.name,
+        systemPrompt: "",
+        modelName: "gemini-3-flash",
+        isHuman: true,
+        userId: p.userId,
+      };
+    }
+    const persona = personaMap.get(p.personaId)!;
+    return buildGamePersonaSession({
       persona,
       locale,
       modelName: personaModels[persona.id] ?? "gemini-3-flash",
-    }),
-  );
+    });
+  });
 
-  const participants: GameSessionExtra["participants"] = personas.map((p) => ({ personaId: p.id, name: p.name }));
+  // Keep participants as stored in extra (preserves human slot and name)
   const extra: GameSessionExtra = {
     gameType: session.gameType,
     participants,

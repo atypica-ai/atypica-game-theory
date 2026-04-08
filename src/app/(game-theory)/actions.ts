@@ -1,10 +1,13 @@
 "use server";
 
+import authOptions from "@/app/(auth)/authOptions";
 import { prisma } from "@/prisma/prisma";
 import type { Persona } from "@/prisma/client";
 import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries";
-import { launchGameSession } from "./lib";
-import { GameSessionExtra, GameTimeline } from "./types";
+import { getServerSession } from "next-auth/next";
+import { launchGameSession, launchHumanGameSession } from "./lib";
+import { getGameType } from "./gameTypes";
+import { GameSessionExtra, GameTimeline, HUMAN_PLAYER_ID, HumanDecisionSubmittedEvent, HumanDiscussionSubmittedEvent } from "./types";
 
 export interface GameSessionDetail {
   token: string;
@@ -68,6 +71,127 @@ export async function createGameSession(
   try {
     const { token } = await launchGameSession(gameTypeName, personaIds, { discussionRounds });
     return { success: true, token };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Create a game session where the authenticated user is a participant.
+// ---------------------------------------------------------------------------
+
+export async function createHumanGameSession(
+  gameTypeName: string,
+  discussionRounds?: number,
+): Promise<{ success: true; token: string } | { success: false; message: string }> {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { success: false, message: "Authentication required" };
+    }
+    const { token } = await launchHumanGameSession(gameTypeName, session.user.id, session.user.name ?? "You", { discussionRounds });
+    return { success: true, token };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Submit the authenticated user's discussion message for their pending turn.
+// ---------------------------------------------------------------------------
+
+export async function submitHumanDiscussion(
+  token: string,
+  content: string,
+  requestId: string,
+): Promise<{ success: true } | { success: false; message: string }> {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const row = await prisma.gameSession.findUnique({
+      where: { token },
+      select: { timeline: true, extra: true },
+    });
+    if (!row) return { success: false, message: "Game session not found" };
+
+    const extra = (row.extra ?? {}) as GameSessionExtra;
+    const humanParticipant = extra.participants?.find((p) => p.personaId === HUMAN_PLAYER_ID);
+    if (!humanParticipant || humanParticipant.userId !== session.user.id) {
+      return { success: false, message: "Not a participant in this game" };
+    }
+
+    const timeline = (Array.isArray(row.timeline) ? row.timeline : []) as GameTimeline;
+    const event: HumanDiscussionSubmittedEvent = {
+      type: "human-discussion-submitted",
+      round: 0, // round field is informational; orchestration matches by requestId
+      requestId,
+      content: content.trim() || "(said nothing)",
+    };
+    timeline.push(event);
+
+    await prisma.gameSession.update({
+      where: { token },
+      data: { timeline },
+    });
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Submit the authenticated user's decision for their pending turn.
+// ---------------------------------------------------------------------------
+
+export async function submitHumanDecision(
+  token: string,
+  action: Record<string, unknown>,
+  requestId: string,
+): Promise<{ success: true } | { success: false; message: string }> {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return { success: false, message: "Authentication required" };
+    }
+
+    const row = await prisma.gameSession.findUnique({
+      where: { token },
+      select: { timeline: true, extra: true, gameType: true },
+    });
+    if (!row) return { success: false, message: "Game session not found" };
+
+    const extra = (row.extra ?? {}) as GameSessionExtra;
+    const humanParticipant = extra.participants?.find((p) => p.personaId === HUMAN_PLAYER_ID);
+    if (!humanParticipant || humanParticipant.userId !== session.user.id) {
+      return { success: false, message: "Not a participant in this game" };
+    }
+
+    // Validate action against game type schema
+    const gameType = getGameType(row.gameType);
+    const parsed = gameType.actionSchema.safeParse(action);
+    if (!parsed.success) {
+      return { success: false, message: `Invalid action: ${parsed.error.message}` };
+    }
+
+    const timeline = (Array.isArray(row.timeline) ? row.timeline : []) as GameTimeline;
+    const event: HumanDecisionSubmittedEvent = {
+      type: "human-decision-submitted",
+      round: 0, // informational; orchestration matches by requestId
+      requestId,
+      content: parsed.data as Record<string, unknown>,
+    };
+    timeline.push(event);
+
+    await prisma.gameSession.update({
+      where: { token },
+      data: { timeline },
+    });
+
+    return { success: true };
   } catch (error) {
     return { success: false, message: (error as Error).message };
   }
