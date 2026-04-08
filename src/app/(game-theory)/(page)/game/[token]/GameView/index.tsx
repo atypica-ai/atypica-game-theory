@@ -3,8 +3,14 @@
 import { GameSessionDetail } from "@/app/(game-theory)/actions";
 import {
   GameSessionParticipant,
+  GameTimeline,
   GameTimelineEvent,
   HUMAN_PLAYER_ID,
+  HumanDecisionSubmittedEvent,
+  HumanDiscussionSubmittedEvent,
+  PersonaDecisionEvent,
+  PersonaDiscussionEvent,
+  RoundResultEvent,
 } from "@/app/(game-theory)/types";
 import { ReplayView } from "./ReplayView";
 
@@ -26,9 +32,9 @@ export interface GameState {
 
 export type RoundData = {
   roundId: number;
-  discussions: import("@/app/(game-theory)/types").PersonaDiscussionEvent[];
-  decisions: import("@/app/(game-theory)/types").PersonaDecisionEvent[];
-  result: import("@/app/(game-theory)/types").RoundResultEvent | null;
+  discussions: PersonaDiscussionEvent[];
+  decisions: PersonaDecisionEvent[];
+  result: RoundResultEvent | null;
 };
 
 // ── Shared helpers ──────────────────────────────────────────────────────────
@@ -140,14 +146,6 @@ export function deriveGameState(events: GameTimelineEvent[], isCompleted: boolea
 }
 
 // ── Event grouping ──────────────────────────────────────────────────────────
-
-import {
-  GameTimeline,
-  HumanDecisionSubmittedEvent,
-  HumanDiscussionSubmittedEvent,
-  PersonaDecisionEvent,
-  PersonaDiscussionEvent,
-} from "@/app/(game-theory)/types";
 
 export function groupEventsByRound(events: GameTimeline): RoundData[] {
   const map = new Map<number, RoundData>();
