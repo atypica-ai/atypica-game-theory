@@ -7,6 +7,8 @@ import { searchPersonas as searchPersonasFromMeili } from "@/search/lib/queries"
 import { getServerSession } from "next-auth/next";
 import { launchGameSession, launchHumanGameSession } from "./lib";
 import { getGameType } from "./gameTypes";
+import { signalHumanInput } from "./lib/humanSignal";
+import { appendTimelineEvents } from "./lib/persistence";
 import { GameSessionExtra, GameTimeline, HUMAN_PLAYER_ID, HumanDecisionSubmittedEvent, HumanDiscussionSubmittedEvent } from "./types";
 
 export interface GameSessionDetail {
@@ -123,22 +125,29 @@ export async function submitHumanDiscussion(
       return { success: false, message: "Not a participant in this game" };
     }
 
+    // Dedup: if already submitted for this requestId, return success (idempotent)
     const timeline = (Array.isArray(row.timeline) ? row.timeline : []) as GameTimeline;
+    const alreadySubmitted = timeline.some(
+      (e) => e.type === "human-discussion-submitted" && e.requestId === requestId,
+    );
+    if (alreadySubmitted) return { success: true };
+
     const pendingEvent = timeline.find(
       (e) => e.type === "human-discussion-pending" && e.requestId === requestId,
     );
+    const trimmed = content.trim() || "(said nothing)";
     const event: HumanDiscussionSubmittedEvent = {
       type: "human-discussion-submitted",
       round: pendingEvent?.round ?? 0,
       requestId,
-      content: content.trim() || "(said nothing)",
+      content: trimmed,
     };
-    timeline.push(event);
 
-    await prisma.gameSession.update({
-      where: { token },
-      data: { timeline },
-    });
+    // Atomic append — no read-modify-write race
+    await appendTimelineEvents(token, [event]);
+
+    // Signal the orchestration loop instantly (no DB polling needed)
+    signalHumanInput(requestId, trimmed);
 
     return { success: true };
   } catch (error) {
@@ -173,6 +182,13 @@ export async function submitHumanDecision(
       return { success: false, message: "Not a participant in this game" };
     }
 
+    // Dedup: if already submitted for this requestId, return success (idempotent)
+    const timeline = (Array.isArray(row.timeline) ? row.timeline : []) as GameTimeline;
+    const alreadySubmitted = timeline.some(
+      (e) => e.type === "human-decision-submitted" && e.requestId === requestId,
+    );
+    if (alreadySubmitted) return { success: true };
+
     // Validate action against game type schema
     const gameType = getGameType(row.gameType);
     const parsed = gameType.actionSchema.safeParse(action);
@@ -180,7 +196,6 @@ export async function submitHumanDecision(
       return { success: false, message: `Invalid action: ${parsed.error.message}` };
     }
 
-    const timeline = (Array.isArray(row.timeline) ? row.timeline : []) as GameTimeline;
     const pendingEvent = timeline.find(
       (e) => e.type === "human-decision-pending" && e.requestId === requestId,
     );
@@ -190,12 +205,12 @@ export async function submitHumanDecision(
       requestId,
       content: parsed.data as Record<string, unknown>,
     };
-    timeline.push(event);
 
-    await prisma.gameSession.update({
-      where: { token },
-      data: { timeline },
-    });
+    // Atomic append — no read-modify-write race
+    await appendTimelineEvents(token, [event]);
+
+    // Signal the orchestration loop instantly (no DB polling needed)
+    signalHumanInput(requestId, parsed.data as Record<string, unknown>);
 
     return { success: true };
   } catch (error) {
