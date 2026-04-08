@@ -234,6 +234,7 @@ function DiscussionInput({
 }) {
   const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { secondsLeft, progress } = useCountdown(event.expiresAt);
 
@@ -253,8 +254,14 @@ function DiscussionInput({
     async (skip = false) => {
       if (submitting) return;
       setSubmitting(true);
-      await submitHumanDiscussion(token, skip ? "" : text, event.requestId);
-      onSubmitted();
+      setError(null);
+      const result = await submitHumanDiscussion(token, skip ? "" : text, event.requestId);
+      if (result.success) {
+        onSubmitted();
+      } else {
+        setSubmitting(false);
+        setError(result.message);
+      }
     },
     [submitting, text, token, event.requestId, onSubmitted],
   );
@@ -288,6 +295,12 @@ function DiscussionInput({
             opacity: submitting ? 0.5 : 1,
           }}
         />
+
+        {error && (
+          <p className="text-[12px]" style={{ color: "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}>
+            {error}
+          </p>
+        )}
 
         <div className="flex items-center justify-end gap-3">
           <button
@@ -338,6 +351,7 @@ function DecisionInput({
   const [submitting, setSubmitting] = useState(false);
   const [chosen, setChosen] = useState<string | null>(null);
   const [numericValue, setNumericValue] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const { secondsLeft, progress } = useCountdown(event.expiresAt);
 
   const actionConfigs = GAME_ACTION_CONFIGS[gameTypeName];
@@ -357,8 +371,15 @@ function DecisionInput({
       if (submitting) return;
       setSubmitting(true);
       setChosen(key);
-      await submitHumanDecision(token, { action: key }, event.requestId);
-      onSubmitted();
+      setError(null);
+      const result = await submitHumanDecision(token, { action: key }, event.requestId);
+      if (result.success) {
+        onSubmitted();
+      } else {
+        setSubmitting(false);
+        setChosen(null);
+        setError(result.message);
+      }
     },
     [submitting, token, event.requestId, onSubmitted],
   );
@@ -367,8 +388,14 @@ function DecisionInput({
     const num = parseFloat(numericValue);
     if (isNaN(num) || submitting) return;
     setSubmitting(true);
-    await submitHumanDecision(token, { number: num }, event.requestId);
-    onSubmitted();
+    setError(null);
+    const result = await submitHumanDecision(token, { number: num }, event.requestId);
+    if (result.success) {
+      onSubmitted();
+    } else {
+      setSubmitting(false);
+      setError(result.message);
+    }
   }, [numericValue, submitting, token, event.requestId, onSubmitted]);
 
   const humanParticipant = participants.find((p) => p.personaId === -1);
@@ -382,6 +409,11 @@ function DecisionInput({
       progress={progress}
     >
       <div className="px-8 py-5 flex flex-col gap-3">
+        {error && (
+          <p className="text-[12px]" style={{ color: "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}>
+            {error}
+          </p>
+        )}
         {/* Score context */}
         <div className="flex items-center justify-between mb-1">
           <span

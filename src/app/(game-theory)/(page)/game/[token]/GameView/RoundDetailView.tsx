@@ -80,7 +80,6 @@ function PlayerCard({
   payoff,
   isDeliberating,
   resultState,
-  lastDiscussion,
   hasSpoken,
   isDiscussionPhase,
   isDecisionPhase,
@@ -92,7 +91,6 @@ function PlayerCard({
   payoff: number | undefined;
   isDeliberating: boolean;
   resultState: PlayerResultState | undefined;
-  lastDiscussion: PersonaDiscussionEvent | undefined;
   hasSpoken: boolean;
   isDiscussionPhase: boolean;
   isDecisionPhase: boolean;
@@ -389,12 +387,13 @@ export function RoundDetailView({
   const hasHumanPendingDiscussion = !!pendingHumanTurn && pendingHumanTurn.type === "human-discussion-pending";
   const hasHumanPendingDecision = !!pendingHumanTurn && pendingHumanTurn.type === "human-decision-pending";
 
-  // Auto-expand discussion during live discussion phase or when human has a pending turn
-  const [showDiscussion, setShowDiscussion] = useState(isDiscussionPhase || hasHumanPendingDiscussion);
+  // Discussion toggle: derived from phase + user override, resets per round
+  const defaultExpanded = isDiscussionPhase || hasHumanPendingDiscussion;
+  const [userToggle, setUserToggle] = useState<boolean | null>(null);
+  const showDiscussion = userToggle ?? defaultExpanded;
 
-  useEffect(() => {
-    if (isDiscussionPhase || hasHumanPendingDiscussion) setShowDiscussion(true);
-  }, [isDiscussionPhase, hasHumanPendingDiscussion]);
+  // Reset user override when round changes
+  useEffect(() => { setUserToggle(null); }, [roundData?.roundId]);
 
   if (!roundData) {
     return (
@@ -477,7 +476,6 @@ export function RoundDetailView({
                   payoff={roundData.result?.payoffs[p.personaId]}
                   isDeliberating={isLive && playersDeliberating.has(p.personaId)}
                   resultState={getResultState(p.personaId)}
-                  lastDiscussion={roundData.discussions.filter((d) => d.personaId === p.personaId).at(-1)}
                   hasSpoken={discussedPlayers.has(p.personaId)}
                   isDiscussionPhase={isDiscussionPhase}
                   isDecisionPhase={isDecisionPhase}
@@ -491,7 +489,7 @@ export function RoundDetailView({
           {hasDiscussion && (
             <section>
               <button
-                onClick={() => setShowDiscussion((v) => !v)}
+                onClick={() => setUserToggle((v) => v === null ? !defaultExpanded : !v)}
                 className="flex items-center gap-2 mb-3 w-full text-left"
               >
                 <span
