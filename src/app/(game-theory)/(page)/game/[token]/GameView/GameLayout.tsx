@@ -61,7 +61,7 @@ export function GameLayout({
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <header
-        className="shrink-0 border-b z-10"
+        className="shrink-0 border-b z-10 overflow-visible"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
         <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "1200px" }}>
@@ -94,7 +94,7 @@ export function GameLayout({
             >
               ?
               <span
-                className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-1.5 whitespace-nowrap px-2 py-1 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+                className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-1.5 z-50 whitespace-nowrap px-2 py-1 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{
                   background: "var(--gt-t1)",
                   color: "var(--gt-surface)",
