@@ -1,9 +1,8 @@
 "use client";
 
 import {
-  submitHumanDecision,
   submitHumanDiscussion,
-} from "@/app/(game-theory)/actions";
+} from "@/app/(game-theory)/humanActions";
 import {
   HUMAN_PLAYER_ID,
   PersonaDecisionEvent,
@@ -11,45 +10,12 @@ import {
 } from "@/app/(game-theory)/types";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DecisionInput } from "./DecisionInput";
 
-// ── Action configuration ──────────────────────────────────────────────────────
-
-type ActionConfig = {
-  key: string;
-  label: string;
-  hint: string;
-  color: string;
-  bg: string;
-  border: string;
-};
-
-const GAME_ACTION_CONFIGS: Record<string, ActionConfig[]> = {
-  "prisoner-dilemma": [
-    { key: "cooperate", label: "Cooperate", hint: "Mutual gain — if both cooperate", color: "var(--gt-pos)", bg: "var(--gt-pos-bg)", border: "hsl(125 49% 43% / 0.3)" },
-    { key: "defect", label: "Defect", hint: "Max gain — if they cooperate", color: "var(--gt-neg)", bg: "var(--gt-neg-bg)", border: "hsl(2 63% 54% / 0.3)" },
-  ],
-  "stag-hunt": [
-    { key: "stag", label: "Stag", hint: "High reward — requires enough hunters", color: "var(--gt-blue)", bg: "var(--gt-blue-bg)", border: "var(--gt-blue-border)" },
-    { key: "rabbit", label: "Rabbit", hint: "Safe fallback — lower but guaranteed", color: "var(--gt-warn)", bg: "var(--gt-warn-bg)", border: "hsl(48 93% 45% / 0.3)" },
-  ],
-  "golden-ball": [
-    { key: "split", label: "Split", hint: "Share the prize equally", color: "var(--gt-pos)", bg: "var(--gt-pos-bg)", border: "hsl(125 49% 43% / 0.3)" },
-    { key: "steal", label: "Steal", hint: "Take everything — if they split", color: "var(--gt-neg)", bg: "var(--gt-neg-bg)", border: "hsl(2 63% 54% / 0.3)" },
-  ],
-  "volunteer-dilemma": [
-    { key: "volunteer", label: "Volunteer", hint: "Bear the cost for the group", color: "var(--gt-pos)", bg: "var(--gt-pos-bg)", border: "hsl(125 49% 43% / 0.3)" },
-    { key: "free-ride", label: "Free-ride", hint: "Benefit without contributing", color: "var(--gt-neg)", bg: "var(--gt-neg-bg)", border: "hsl(2 63% 54% / 0.3)" },
-  ],
-  "trolley-problem": [
-    { key: "pull", label: "Pull", hint: "Act — redirect harm to one", color: "var(--gt-neg)", bg: "var(--gt-neg-bg)", border: "hsl(2 63% 54% / 0.3)" },
-    { key: "dont-pull", label: "Don't pull", hint: "Inaction — harm stays on many", color: "var(--gt-warn)", bg: "var(--gt-warn-bg)", border: "hsl(48 93% 45% / 0.3)" },
-  ],
-};
-
-// ── Timer hook (frontend-only, 30s hard timer) ──────────────────────────────
+// ── Timer hooks (exported for DecisionInput) ────────────────────────────────
 
 /** Visual-only countdown — no callbacks, no dependency issues */
-function useCountdown(durationMs: number): { secondsLeft: number; progress: number } {
+export function useCountdown(durationMs: number): { secondsLeft: number; progress: number } {
   const [now, setNow] = useState(() => Date.now());
   const startRef = useRef(Date.now());
 
@@ -63,7 +29,7 @@ function useCountdown(durationMs: number): { secondsLeft: number; progress: numb
 }
 
 /** Hard deadline — fires a ref-based callback once, immune to stale closures and dep changes */
-function useDeadline(durationMs: number, callbackRef: React.RefObject<(() => void) | null>) {
+export function useDeadline(durationMs: number, callbackRef: React.RefObject<(() => void) | null>) {
   useEffect(() => {
     const id = setTimeout(() => {
       callbackRef.current?.();
@@ -73,9 +39,9 @@ function useDeadline(durationMs: number, callbackRef: React.RefObject<(() => voi
   }, []); // truly empty — fires exactly once on mount
 }
 
-// ── Shared panel shell ────────────────────────────────────────────────────────
+// ── Shared panel shell (exported for DecisionInput) ─────────────────────────
 
-function PanelShell({
+export function PanelShell({
   label,
   round,
   secondsLeft,
@@ -117,7 +83,7 @@ function PanelShell({
   );
 }
 
-// ── Discussion input ──────────────────────────────────────────────────────────
+// ── Discussion input ────────────────────────────────────────────────────────
 
 function DiscussionInput({
   token,
@@ -191,124 +157,7 @@ function DiscussionInput({
   );
 }
 
-// ── Decision input ────────────────────────────────────────────────────────────
-
-function DecisionInput({
-  token,
-  roundId,
-  gameTypeName,
-  currentScores,
-  onSubmitted,
-}: {
-  token: string;
-  roundId: number;
-  gameTypeName: string;
-  currentScores: Record<number, number>;
-  onSubmitted: (event: PersonaDecisionEvent) => void;
-}) {
-  const submittedRef = useRef(false);
-  const [chosen, setChosen] = useState<string | null>(null);
-  const [numericValue, setNumericValue] = useState("");
-
-  const actionConfigs = GAME_ACTION_CONFIGS[gameTypeName];
-
-  const submitAction = useCallback((action: Record<string, unknown>) => {
-    if (submittedRef.current) return;
-    submittedRef.current = true;
-    if ("action" in action) setChosen(action.action as string);
-    onSubmitted({
-      type: "persona-decision",
-      personaId: HUMAN_PLAYER_ID,
-      personaName: "You",
-      reasoning: null,
-      content: action,
-      round: roundId,
-    });
-    void submitHumanDecision(token, action, roundId);
-  }, [token, roundId, onSubmitted]);
-
-  // Ref always points to latest submitAction — immune to stale closures
-  const submitRef = useRef(submitAction);
-  submitRef.current = submitAction;
-  const defaultAction = actionConfigs?.[0]?.key;
-  const deadlineRef = useRef(() => {
-    if (defaultAction) {
-      submitRef.current({ action: defaultAction });
-    } else {
-      submitRef.current({ number: 0 });
-    }
-  });
-  useDeadline(30_000, deadlineRef);
-
-  const { secondsLeft, progress } = useCountdown(30_000);
-
-  const humanScore = currentScores[HUMAN_PLAYER_ID] ?? 0;
-
-  return (
-    <PanelShell label="Your Move" round={roundId} secondsLeft={secondsLeft} progress={progress}>
-      <div className="px-8 py-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[12px]" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>your score</span>
-          <span className="text-[15px] font-[700] tabular-nums" style={{ color: "var(--gt-t1)", fontFamily: "IBMPlexMono, monospace" }}>{humanScore}</span>
-        </div>
-        {actionConfigs ? (
-          <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${actionConfigs.length}, minmax(0, 1fr))` }}>
-            {actionConfigs.map((cfg) => {
-              const isChosen = chosen === cfg.key;
-              return (
-                <button
-                  key={cfg.key}
-                  onClick={() => submitAction({ action: cfg.key })}
-                  className="flex flex-col items-start gap-2 px-5 py-4 border text-left transition-all"
-                  style={{
-                    borderRadius: "0.5rem",
-                    border: `1.5px solid ${isChosen ? cfg.color : cfg.border}`,
-                    background: isChosen ? cfg.bg : "transparent",
-                    cursor: "pointer",
-                    boxShadow: isChosen ? `0 0 0 1px ${cfg.color}` : undefined,
-                    transform: isChosen ? "scale(1.01)" : undefined,
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  <span className="text-[15px] font-[600] leading-tight" style={{ color: cfg.color, fontFamily: "var(--gt-font-outfit), system-ui, sans-serif", letterSpacing: "var(--gt-tracking-tight)" }}>{cfg.label}</span>
-                  <span className="text-[12px] leading-snug" style={{ color: "var(--gt-t3)", fontFamily: "'Instrument Serif', Georgia, serif", fontStyle: "italic" }}>{cfg.hint}</span>
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            <input
-              type="number"
-              value={numericValue}
-              onChange={(e) => setNumericValue(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && numericValue.trim()) submitAction({ number: parseFloat(numericValue) }); }}
-              placeholder="Enter a value…"
-              autoFocus
-              className="w-full bg-transparent outline-none tabular-nums text-center pb-2"
-              style={{ fontSize: "20px", fontWeight: 600, color: "var(--gt-t1)", fontFamily: "IBMPlexMono, monospace", borderBottom: "2px solid var(--gt-border-md)", caretColor: "var(--gt-blue)" }}
-            />
-            <button
-              onClick={() => { if (numericValue.trim()) submitAction({ number: parseFloat(numericValue) }); }}
-              disabled={!numericValue.trim() || isNaN(parseFloat(numericValue))}
-              className="h-10 px-6 text-[13px] font-[500] w-full transition-opacity"
-              style={{
-                background: numericValue.trim() ? "var(--gt-blue)" : "var(--gt-border-md)",
-                color: numericValue.trim() ? "white" : "var(--gt-t4)",
-                borderRadius: "0.375rem",
-                cursor: numericValue.trim() ? "pointer" : "not-allowed",
-              }}
-            >
-              Submit
-            </button>
-          </div>
-        )}
-      </div>
-    </PanelShell>
-  );
-}
-
-// ── Main export ───────────────────────────────────────────────────────────────
+// ── Main export ─────────────────────────────────────────────────────────────
 
 export type HumanTurnRequest = { type: "discussion" | "decision"; roundId: number };
 
