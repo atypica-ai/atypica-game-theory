@@ -85,13 +85,8 @@ function NumberField({
   disabled: boolean;
   compact?: boolean;
 }) {
-  const clamp = (raw: string) => {
-    const n = parseInt(raw, 10);
-    if (isNaN(n)) return raw;
-    if (n < field.min) return String(field.min);
-    if (n > field.max) return String(field.max);
-    return String(n);
-  };
+  const n = parseInt(value, 10);
+  const outOfRange = value !== "" && !isNaN(n) && (n < field.min || n > field.max);
 
   return (
     <div className={compact ? "flex flex-col items-center gap-1" : "flex flex-col gap-2"}>
@@ -102,9 +97,6 @@ function NumberField({
         type="number"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        onBlur={(e) => onChange(clamp(e.target.value))}
-        min={field.min}
-        max={field.max}
         step={field.step ?? 1}
         disabled={disabled}
         autoFocus={!compact}
@@ -112,20 +104,25 @@ function NumberField({
         style={{
           fontSize: compact ? "16px" : "20px",
           fontWeight: 600,
-          color: "var(--gt-t1)",
+          color: outOfRange ? "var(--gt-neg)" : "var(--gt-t1)",
           fontFamily: "IBMPlexMono, monospace",
-          borderBottom: "2px solid var(--gt-border-md)",
+          borderBottom: `2px solid ${outOfRange ? "var(--gt-neg)" : "var(--gt-border-md)"}`,
           caretColor: "var(--gt-blue)",
         }}
       />
-      {field.hint && !compact && (
+      {outOfRange ? (
+        <span className="text-[11px]" style={{ color: "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}>
+          Enter an integer from {field.min} to {field.max}
+        </span>
+      ) : field.hint && !compact ? (
         <span className="text-[11px]" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>
           {field.hint}
         </span>
+      ) : (
+        <span className="text-[10px] tabular-nums" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>
+          {field.min}–{field.max}
+        </span>
       )}
-      <span className="text-[10px] tabular-nums" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>
-        {field.min}–{field.max}
-      </span>
     </div>
   );
 }
@@ -238,12 +235,16 @@ export function DecisionInput({
     }
   }, [setValue, isSingleEnumOnly, submitAction]);
 
-  // Check if form is complete enough to submit
+  // Check if form is complete and all values are in range
   const isFormComplete = (() => {
     for (const f of config.fields) {
       const raw = formValues[f.key];
       if (f.type === "enum" && !raw) return false;
-      if (f.type === "number" && (raw === "" || isNaN(parseInt(raw, 10)))) return false;
+      if (f.type === "number") {
+        if (raw === "") return false;
+        const n = parseInt(raw, 10);
+        if (isNaN(n) || n < f.min || n > f.max) return false;
+      }
     }
     return true;
   })();
