@@ -162,6 +162,9 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   // Tracks whether AI decisions have completed (set by effect, read by human callback)
   const aiDoneRef = useRef(false);
 
+  // Buffer AI decision events — only flushed to `events` after human submits (prevents peeking)
+  const aiDecisionBufferRef = useRef<GameTimelineEvent[]>([]);
+
   // Error state for displaying failures
   const [error, setError] = useState<string | null>(null);
 
@@ -231,8 +234,9 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
           case "decision": {
             aiDoneRef.current = false;
             humanDoneRef.current = false;
+            aiDecisionBufferRef.current = [];
             setHumanTurn({ type: "decision", roundId: step.roundId });
-            // Fire individual fetch() calls — truly parallel, each flips as it resolves
+            // Fire individual fetch() calls — truly parallel, buffered until human submits
             const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
             let completedCount = 0;
             await Promise.all(
@@ -245,12 +249,17 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
                   });
                   const data = await res.json();
                   if (!cancelled && data.success) {
-                    appendEvents(data.event);
+                    aiDecisionBufferRef.current.push(data.event);
                   }
                 } finally {
                   completedCount++;
                   if (completedCount === aiParticipants.length) {
                     aiDoneRef.current = true;
+                    // If human already submitted, flush now
+                    if (humanDoneRef.current) {
+                      appendEvents(...aiDecisionBufferRef.current);
+                      aiDecisionBufferRef.current = [];
+                    }
                   }
                 }
               }),
@@ -311,22 +320,26 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
 
   const onHumanDecisionSubmitted = useCallback(
     (event: PersonaDecisionEvent) => {
-      appendEvents(event);
       setHumanTurn(null);
       humanDoneRef.current = true;
-      // If AI decisions already completed, settle immediately
       if (aiDoneRef.current) {
+        // AI already done — flush buffer + human event together, then settle
+        appendEvents(...aiDecisionBufferRef.current, event);
+        aiDecisionBufferRef.current = [];
         setStep({ phase: "settling", roundId: event.round });
+      } else {
+        // AI still in flight — append human event, buffer will flush when AI completes
+        appendEvents(event);
       }
-      // Otherwise, the effect will settle when AI completes (see below)
     },
     [appendEvents],
   );
 
-  // When AI decisions complete AND human already submitted → settle
+  // When AI decisions complete AND human already submitted → flush + settle
   useEffect(() => {
     if (step.phase !== "decision" || !("roundId" in step)) return;
-    if (aiDoneRef.current && humanDoneRef.current) {
+    if (aiDoneRef.current && humanDoneRef.current && aiDecisionBufferRef.current.length === 0) {
+      // Buffer already flushed (by the AI completion path) — settle
       setStep({ phase: "settling", roundId: step.roundId });
     }
   }, [events, step]);

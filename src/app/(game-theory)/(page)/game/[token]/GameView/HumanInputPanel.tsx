@@ -48,20 +48,38 @@ const GAME_ACTION_CONFIGS: Record<string, ActionConfig[]> = {
 
 // ── Timer hook (frontend-only, 30s hard timer) ──────────────────────────────
 
-function useCountdown(durationMs = 30_000): { secondsLeft: number; progress: number; expired: boolean } {
-  const expiresAtRef = useRef(Date.now() + durationMs);
+function useCountdown(durationMs: number, onExpire: () => void): { secondsLeft: number; progress: number } {
   const [now, setNow] = useState(() => Date.now());
+  const startRef = useRef(Date.now());
+  const firedRef = useRef(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, []);
 
-  const msLeft = Math.max(0, expiresAtRef.current - now);
+  // Hard deadline — fires callback once via setTimeout, immune to stale closures
+  useEffect(() => {
+    const remaining = startRef.current + durationMs - Date.now();
+    if (remaining <= 0 && !firedRef.current) {
+      firedRef.current = true;
+      onExpire();
+      return;
+    }
+    const id = setTimeout(() => {
+      if (!firedRef.current) {
+        firedRef.current = true;
+        onExpire();
+      }
+    }, Math.max(0, remaining));
+    return () => clearTimeout(id);
+  }, [durationMs, onExpire]);
+
+  const msLeft = Math.max(0, startRef.current + durationMs - now);
   const secondsLeft = Math.ceil(msLeft / 1000);
   const progress = msLeft / durationMs;
 
-  return { secondsLeft, progress, expired: msLeft === 0 };
+  return { secondsLeft, progress };
 }
 
 // ── Shared panel shell ────────────────────────────────────────────────────────
@@ -120,24 +138,13 @@ function DiscussionInput({
   onSubmitted: (event: PersonaDiscussionEvent) => void;
 }) {
   const [text, setText] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const submittedRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { secondsLeft, progress, expired } = useCountdown(30_000);
 
-  useEffect(() => { textareaRef.current?.focus(); }, []);
-
-  // Auto-submit (skip) on timeout
-  useEffect(() => {
-    if (expired && !submitting) void handleSubmit(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expired]);
-
-  const handleSubmit = useCallback((skip = false) => {
-    if (submitting) return;
-    setSubmitting(true);
-    const content = skip ? "" : text;
+  const submit = useCallback((content: string) => {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
     const trimmed = content.trim() || "(said nothing)";
-    // Optimistic: dismiss immediately, persist in background
     onSubmitted({
       type: "persona-discussion",
       personaId: HUMAN_PLAYER_ID,
@@ -147,7 +154,12 @@ function DiscussionInput({
       round: roundId,
     });
     void submitHumanDiscussion(token, content, roundId);
-  }, [submitting, text, token, roundId, onSubmitted]);
+  }, [token, roundId, onSubmitted]);
+
+  const onExpire = useCallback(() => submit(""), [submit]);
+  const { secondsLeft, progress } = useCountdown(30_000, onExpire);
+
+  useEffect(() => { textareaRef.current?.focus(); }, []);
 
   return (
     <PanelShell label="Your Turn to Speak" round={roundId} secondsLeft={secondsLeft} progress={progress}>
@@ -156,27 +168,26 @@ function DiscussionInput({
           ref={textareaRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) void handleSubmit(false); }}
+          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(text); }}
           placeholder="What will you say to the others?"
           rows={3}
-          disabled={submitting}
           className="w-full resize-none bg-transparent outline-none leading-relaxed"
-          style={{ fontSize: "14px", color: "var(--gt-t1)", fontFamily: "var(--gt-font-outfit), system-ui, sans-serif", caretColor: "var(--gt-blue)", opacity: submitting ? 0.5 : 1 }}
+          style={{ fontSize: "14px", color: "var(--gt-t1)", fontFamily: "var(--gt-font-outfit), system-ui, sans-serif", caretColor: "var(--gt-blue)" }}
         />
         <div className="flex items-center justify-end gap-3">
-          <button onClick={() => void handleSubmit(true)} disabled={submitting} className="text-[12px] transition-opacity hover:opacity-60" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>skip</button>
+          <button onClick={() => submit("")} className="text-[12px] transition-opacity hover:opacity-60" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>skip</button>
           <button
-            onClick={() => void handleSubmit(false)}
-            disabled={submitting || !text.trim()}
+            onClick={() => submit(text)}
+            disabled={!text.trim()}
             className="h-8 px-5 text-[13px] font-[500] transition-all"
             style={{
-              background: text.trim() && !submitting ? "var(--gt-blue)" : "var(--gt-border)",
-              color: text.trim() && !submitting ? "white" : "var(--gt-t4)",
+              background: text.trim() ? "var(--gt-blue)" : "var(--gt-border)",
+              color: text.trim() ? "white" : "var(--gt-t4)",
               borderRadius: "0.375rem",
-              cursor: text.trim() && !submitting ? "pointer" : "not-allowed",
+              cursor: text.trim() ? "pointer" : "not-allowed",
             }}
           >
-            {submitting ? "Sending…" : "Send ↵"}
+            Send ↵
           </button>
         </div>
       </div>
@@ -199,52 +210,32 @@ function DecisionInput({
   currentScores: Record<number, number>;
   onSubmitted: (event: PersonaDecisionEvent) => void;
 }) {
-  const [submitting, setSubmitting] = useState(false);
+  const submittedRef = useRef(false);
   const [chosen, setChosen] = useState<string | null>(null);
   const [numericValue, setNumericValue] = useState("");
-  const { secondsLeft, progress, expired } = useCountdown(30_000);
 
   const actionConfigs = GAME_ACTION_CONFIGS[gameTypeName];
 
-  // Auto-submit first option on timeout
-  useEffect(() => {
-    if (expired && !submitting) {
-      if (actionConfigs?.[0]) void handleEnumSubmit(actionConfigs[0].key);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expired]);
-
-  const handleEnumSubmit = useCallback((key: string) => {
-    if (submitting) return;
-    setSubmitting(true);
-    setChosen(key);
-    // Optimistic: dismiss immediately, persist in background
+  const submitAction = useCallback((action: Record<string, unknown>) => {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
+    if ("action" in action) setChosen(action.action as string);
     onSubmitted({
       type: "persona-decision",
       personaId: HUMAN_PLAYER_ID,
       personaName: "You",
       reasoning: null,
-      content: { action: key },
+      content: action,
       round: roundId,
     });
-    void submitHumanDecision(token, { action: key }, roundId);
-  }, [submitting, token, roundId, onSubmitted]);
+    void submitHumanDecision(token, action, roundId);
+  }, [token, roundId, onSubmitted]);
 
-  const handleNumericSubmit = useCallback(() => {
-    const num = parseFloat(numericValue);
-    if (isNaN(num) || submitting) return;
-    setSubmitting(true);
-    // Optimistic: dismiss immediately, persist in background
-    onSubmitted({
-      type: "persona-decision",
-      personaId: HUMAN_PLAYER_ID,
-      personaName: "You",
-      reasoning: null,
-      content: { number: num },
-      round: roundId,
-    });
-    void submitHumanDecision(token, { number: num }, roundId);
-  }, [numericValue, submitting, token, roundId, onSubmitted]);
+  const onExpire = useCallback(() => {
+    if (actionConfigs?.[0]) submitAction({ action: actionConfigs[0].key });
+  }, [actionConfigs, submitAction]);
+
+  const { secondsLeft, progress } = useCountdown(30_000, onExpire);
 
   const humanScore = currentScores[HUMAN_PLAYER_ID] ?? 0;
 
@@ -262,15 +253,13 @@ function DecisionInput({
               return (
                 <button
                   key={cfg.key}
-                  onClick={() => void handleEnumSubmit(cfg.key)}
-                  disabled={submitting}
+                  onClick={() => submitAction({ action: cfg.key })}
                   className="flex flex-col items-start gap-2 px-5 py-4 border text-left transition-all"
                   style={{
                     borderRadius: "0.5rem",
                     border: `1.5px solid ${isChosen ? cfg.color : cfg.border}`,
                     background: isChosen ? cfg.bg : "transparent",
-                    opacity: submitting && !isChosen ? 0.35 : 1,
-                    cursor: submitting ? "not-allowed" : "pointer",
+                    cursor: "pointer",
                     boxShadow: isChosen ? `0 0 0 1px ${cfg.color}` : undefined,
                     transform: isChosen ? "scale(1.01)" : undefined,
                     transition: "all 0.15s ease",
@@ -288,15 +277,15 @@ function DecisionInput({
               type="number"
               value={numericValue}
               onChange={(e) => setNumericValue(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") void handleNumericSubmit(); }}
+              onKeyDown={(e) => { if (e.key === "Enter" && numericValue.trim()) submitAction({ number: parseFloat(numericValue) }); }}
               placeholder="Enter a value…"
               autoFocus
               className="w-full bg-transparent outline-none tabular-nums text-center pb-2"
               style={{ fontSize: "20px", fontWeight: 600, color: "var(--gt-t1)", fontFamily: "IBMPlexMono, monospace", borderBottom: "2px solid var(--gt-border-md)", caretColor: "var(--gt-blue)" }}
             />
             <button
-              onClick={() => void handleNumericSubmit()}
-              disabled={submitting || !numericValue.trim() || isNaN(parseFloat(numericValue))}
+              onClick={() => { if (numericValue.trim()) submitAction({ number: parseFloat(numericValue) }); }}
+              disabled={!numericValue.trim() || isNaN(parseFloat(numericValue))}
               className="h-10 px-6 text-[13px] font-[500] w-full transition-opacity"
               style={{
                 background: numericValue.trim() ? "var(--gt-blue)" : "var(--gt-border-md)",
@@ -305,7 +294,7 @@ function DecisionInput({
                 cursor: numericValue.trim() ? "pointer" : "not-allowed",
               }}
             >
-              {submitting ? "Submitting…" : "Submit"}
+              Submit
             </button>
           </div>
         )}
