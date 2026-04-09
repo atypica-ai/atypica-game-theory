@@ -232,7 +232,11 @@ function DecisionInput({
   submitRef.current = submitAction;
   const defaultAction = actionConfigs?.[0]?.key;
   const deadlineRef = useRef(() => {
-    if (defaultAction) submitRef.current({ action: defaultAction });
+    if (defaultAction) {
+      submitRef.current({ action: defaultAction });
+    } else {
+      submitRef.current({ number: 0 });
+    }
   });
   useDeadline(30_000, deadlineRef);
 
