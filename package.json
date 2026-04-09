@@ -20,7 +20,6 @@
     "@ai-sdk/google": "^2.0.44",
     "@ai-sdk/google-vertex": "^3.0.86",
     "@ai-sdk/openai-compatible": "^1.0.28",
-    "@ai-sdk/perplexity": "^2.0.21",
     "@ai-sdk/xai": "^2.0.54",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",

@@ -10,13 +10,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createVertex } from "@ai-sdk/google-vertex";
 import { createVertexAnthropic } from "@ai-sdk/google-vertex/anthropic";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { createPerplexity } from "@ai-sdk/perplexity";
 import { createXai } from "@ai-sdk/xai";
-
-const perplexity = createPerplexity({
-  apiKey: process.env.PERPLEXITY_API_KEY,
-  fetch: proxiedFetch,
-});
 
 const openAICompatible = createOpenAICompatible({
   name: "litellm",
@@ -262,8 +256,7 @@ export type LLMModelName =
   | "grok-4-1-fast-reasoning"
   | "deepseek-v3"
   | "deepseek-r1"
-  | "qwen3-235b-a22b"
-  | "sonar-pro";
+  | "qwen3-235b-a22b";
 
 export function llm(modelName: LLMModelName) {
   const openai = openAICompatible;
@@ -420,8 +413,6 @@ export function llm(modelName: LLMModelName) {
       return deepseek("Pro/deepseek-ai/DeepSeek-R1");
     case "qwen3-235b-a22b":
       return siliconflow("Qwen/Qwen3-235B-A22B");
-    case "sonar-pro":
-      return perplexity("sonar-pro");
   }
 }
 

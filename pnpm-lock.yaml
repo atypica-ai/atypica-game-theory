@@ -31,9 +31,6 @@ importers:
       '@ai-sdk/openai-compatible':
         specifier: ^1.0.28
         version: 1.0.28(zod@4.1.13)
-      '@ai-sdk/perplexity':
-        specifier: ^2.0.21
-        version: 2.0.21(zod@4.1.13)
       '@ai-sdk/xai':
         specifier: ^2.0.54
         version: 2.0.54(zod@4.1.13)
@@ -271,12 +268,6 @@ packages:
 
   '@ai-sdk/openai@2.0.77':
     resolution: {integrity: sha512-lEJ9vyWSU5VLo+6Msr6r32RnABf4SRxPSV3Hz1Yb5yt43bWYxbBzwaDNYGhJaDL6rCgfUVvcIf5TKiiEuVd4EQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/perplexity@2.0.21':
-    resolution: {integrity: sha512-eyADmcZ2Fz2p3cLEB2Cnm2msW6vxsRQPXuqJ+AWPwSBQLxx58o/wNkF2XRYzipqSxWyOinuIUNBa1Is13GE2ow==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -4782,12 +4773,6 @@ snapshots:
       zod: 4.1.13
 
   '@ai-sdk/openai@2.0.77(zod@4.1.13)':
-    dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.18(zod@4.1.13)
-      zod: 4.1.13
-
-  '@ai-sdk/perplexity@2.0.21(zod@4.1.13)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.18(zod@4.1.13)
