@@ -7,8 +7,8 @@ import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
 import { getGameType } from "../gameTypes";
 import { GameSessionExtra, HUMAN_PLAYER_ID } from "../types";
-import { runHumanGameSession } from "./humanOrchestration";
 import { runGameSession } from "./orchestration";
+import { saveGameTimeline } from "./persistence";
 import { assignRandomPersonaModels } from "./personaModels";
 import { startGameSessionRun } from "./runtime";
 
@@ -95,18 +95,18 @@ export async function launchGameSession(
 }
 
 /**
- * Creates a game session where a human user participates as one of the players.
- * The human takes the first slot; remaining slots are filled with random AI personas.
- * personaIds in the DB stores only the AI persona IDs (human is tracked in extra.participants).
+ * Creates a human game session. The human takes the first slot; remaining slots
+ * are filled with random AI personas. Timeline is initialized with rules prompt.
+ *
+ * Unlike AI-only games, NO background orchestration is started. The frontend
+ * drives the game loop via individual server action calls (frontend-powered model).
  */
 export async function launchHumanGameSession(
   gameTypeName: string,
   humanUserId: number,
   humanUserName: string,
-  opts?: { useAfter?: boolean; discussionRounds?: number },
-): Promise<{ token: string; run: Promise<void> }> {
-  const useAfter = opts?.useAfter !== false;
-
+  opts?: { discussionRounds?: number },
+): Promise<{ token: string }> {
   const gameType = getGameType(gameTypeName);
   const aiCount = gameType.minPlayers - 1; // human takes 1 slot
 
@@ -144,7 +144,6 @@ export async function launchHumanGameSession(
     ...(opts?.discussionRounds !== undefined ? { discussionRounds: opts.discussionRounds } : {}),
   };
 
-  // Store only AI persona IDs in the DB field (human is in extra.participants)
   await prisma.gameSession.create({
     data: {
       token,
@@ -158,24 +157,15 @@ export async function launchHumanGameSession(
 
   await startGameSessionRun(token);
 
-  const noopStatReport: StatReporter = async () => {};
+  // Initialize timeline with rules prompt — frontend drives everything after this
   const logger = rootLogger.child({ gameSessionToken: token, gameType: gameTypeName, humanUserId });
-
-  const runPromise: Promise<void> = runHumanGameSession({
-    gameSessionToken: token,
-    locale: "en-US",
-    abortSignal: new AbortController().signal,
-    statReport: noopStatReport,
+  await saveGameTimeline({
+    token,
+    timeline: [{ type: "system", content: gameType.rulesPrompt }],
+    status: "running",
+    extra: initialExtra,
     logger,
-  })
-    .then(() => undefined)
-    .catch((err: Error) => {
-      logger.error({ msg: "Human game session run failed (outer catch)", error: err.message });
-    });
+  });
 
-  if (useAfter) {
-    after(runPromise);
-  }
-
-  return { token, run: runPromise };
+  return { token };
 }

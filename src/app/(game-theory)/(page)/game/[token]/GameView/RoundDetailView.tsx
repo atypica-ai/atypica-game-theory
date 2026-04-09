@@ -9,8 +9,10 @@ import {
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useEffect, useState } from "react";
 import type { GamePhase, RoundData } from "./index";
-import type { PendingHumanTurn } from "./HumanInputPanel";
 import { PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
+
+/** Minimal pending turn shape — compatible with both backend-driven and frontend-driven models */
+export type PendingHumanTurn = { type: string; round: number } | null;
 
 // ── Decision extraction ───────────────────────────────────────────────────────
 
@@ -362,7 +364,7 @@ export interface RoundDetailViewProps {
   discussionCount: number;
   totalPlayers: number;
   isHumanPlayer: boolean;
-  pendingHumanTurn: PendingHumanTurn | null;
+  pendingHumanTurn: PendingHumanTurn;
   playersDeliberating: Set<number>;
   discussedPlayers: Set<number>;
   getResultState: (personaId: number) => PlayerResultState | undefined;

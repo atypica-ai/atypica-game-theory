@@ -6,8 +6,6 @@ import {
   GameTimeline,
   GameTimelineEvent,
   HUMAN_PLAYER_ID,
-  HumanDecisionSubmittedEvent,
-  HumanDiscussionSubmittedEvent,
   PersonaDecisionEvent,
   PersonaDiscussionEvent,
   RoundResultEvent,
@@ -96,8 +94,8 @@ export function deriveGameState(events: GameTimelineEvent[], isCompleted: boolea
     for (const e of events) {
       if (!hasRound(e) || e.round !== activeRound) continue;
       if (e.type === "round-result") hasResult = true;
-      if (e.type === "persona-decision" || e.type === "human-decision-pending") hasDecision = true;
-      if (e.type === "persona-discussion" || e.type === "human-discussion-pending") hasDiscussion = true;
+      if (e.type === "persona-decision") hasDecision = true;
+      if (e.type === "persona-discussion") hasDiscussion = true;
     }
     if (hasResult) phase = "reveal";
     else if (hasDecision) phase = "decision";
@@ -125,9 +123,7 @@ export function deriveGameState(events: GameTimelineEvent[], isCompleted: boolea
     for (const e of events) {
       if (hasRound(e) && e.round === activeRound) {
         if (e.type === "persona-decision") decidedPlayers.add(e.personaId);
-        if (e.type === "human-decision-submitted") decidedPlayers.add(HUMAN_PLAYER_ID);
         if (e.type === "persona-discussion") discussedPlayers.add(e.personaId);
-        if (e.type === "human-discussion-submitted") discussedPlayers.add(HUMAN_PLAYER_ID);
       }
     }
   }
@@ -167,47 +163,7 @@ export function groupEventsByRound(events: GameTimeline): RoundData[] {
     }
   }
 
-  // Pass 2: provisional human events — fill gaps where orchestration hasn't
-  // written the canonical event yet
-  for (const e of events) {
-    if (e.type === "human-decision-submitted") {
-      const r = map.get(e.round) ?? { roundId: e.round, discussions: [], decisions: [], result: null };
-      if (!r.decisions.some((d) => d.personaId === HUMAN_PLAYER_ID)) {
-        r.decisions.push(synthesizeDecision(e));
-      }
-      map.set(e.round, r);
-    } else if (e.type === "human-discussion-submitted") {
-      const r = map.get(e.round) ?? { roundId: e.round, discussions: [], decisions: [], result: null };
-      if (!r.discussions.some((d) => d.personaId === HUMAN_PLAYER_ID)) {
-        r.discussions.push(synthesizeDiscussion(e));
-      }
-      map.set(e.round, r);
-    }
-  }
-
   return Array.from(map.values()).sort((a, b) => a.roundId - b.roundId);
-}
-
-function synthesizeDecision(e: HumanDecisionSubmittedEvent): PersonaDecisionEvent {
-  return {
-    type: "persona-decision",
-    round: e.round,
-    personaId: HUMAN_PLAYER_ID,
-    personaName: "You",
-    reasoning: null,
-    content: e.content,
-  };
-}
-
-function synthesizeDiscussion(e: HumanDiscussionSubmittedEvent): PersonaDiscussionEvent {
-  return {
-    type: "persona-discussion",
-    round: e.round,
-    personaId: HUMAN_PLAYER_ID,
-    personaName: "You",
-    reasoning: null,
-    content: e.content,
-  };
 }
 
 // ── Lazy-loaded views ───────────────────────────────────────────────────────
