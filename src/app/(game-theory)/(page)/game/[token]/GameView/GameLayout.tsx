@@ -18,7 +18,6 @@ export interface GameLayoutProps {
   bannerData: { text: string; color: string } | null;
   navRounds: { roundId: number; isLive: boolean }[];
   rounds: RoundData[];
-  selectedRoundId: number | null;
   manualRoundId: number | null;
   showResults: boolean;
   canGoPrev: boolean;
@@ -45,7 +44,6 @@ export function GameLayout({
   bannerData,
   navRounds,
   rounds,
-  selectedRoundId,
   manualRoundId,
   showResults,
   canGoPrev,

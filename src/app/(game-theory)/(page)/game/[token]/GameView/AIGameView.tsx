@@ -154,7 +154,6 @@ export function AIGameView({ initialData, token }: { initialData: GameSessionDet
       bannerData={bannerData}
       navRounds={navRounds}
       rounds={gameState.rounds}
-      selectedRoundId={selectedRoundId}
       manualRoundId={manualRoundId}
       showResults={showResults}
       canGoPrev={canGoPrev}

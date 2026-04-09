@@ -1,17 +1,19 @@
 # Repository Guidelines
 
-This document helps contributors make effective, consistent changes to atypica-llm-app.
+This document helps contributors make effective, consistent changes to the Game Theory Lab codebase.
 
 ## Project Structure & Module Organization
 
-- `src/app/` (App Router): feature groups in route segments `(study)`, `(agents)`, `(persona)`, `(interviewProject)`, `(auth)`; API routes live here too.
-- `src/ai/`: LLM tools, message utilities, agent logic.
-- `src/components/`, `src/hooks/`, `src/lib/`: UI, hooks, shared utilities and configs.
-- `src/prisma/`: Prisma client wrapper (`prisma.ts`); do not edit generated client in `src/prisma/client/`.
-- `prisma/`: schema and seeds (`prisma/seed.ts`).
-- `__tests__/`: Vitest unit/integration tests.
-- `scripts/`: maintenance tools (`admintool.ts`, `analytics-report.ts`).
-- `docs/`, `public/`: documentation and static assets.
+- `src/app/(game-theory)/` (App Router): Game engine, pages, server actions, game types, tournament system.
+- `src/app/(auth)/`: Authentication (signin, signup, verify, password reset).
+- `src/app/(persona)/`: Persona prompt generation for AI personas.
+- `src/app/api/`: Internal API routes (game-run, game-session, health checks).
+- `src/ai/`: Multi-provider LLM routing, token usage tracking.
+- `src/components/`, `src/lib/`: UI kit (Radix/Tailwind), shared utilities.
+- `src/prisma/`: Prisma client wrapper (`prisma.ts`); do not edit generated client in `src/prisma/generated/`.
+- `prisma/`: Schema and migrations.
+- `scripts/`: Game runner, persona seeder, admin tools.
+- `docs/`, `public/`: Documentation and static assets.
 
 ## Build, Test, and Development Commands
 
@@ -22,7 +24,7 @@ This document helps contributors make effective, consistent changes to atypica-l
 - Build/Start: `pnpm build` · `pnpm start`
 - Tests (Vitest/jsdom): `pnpm test`
 - Lint/Format: `pnpm lint` · `pnpm lint:fix` · `pnpm format`
-- Admin tools: `pnpm admintool …` (see `scripts/admintool.ts`)
+- Game scripts: `pnpm tsx scripts/run-games.ts`, `pnpm tsx scripts/seed-game-personas.ts`
 
 ## Coding Style & Naming Conventions
 
@@ -48,4 +50,4 @@ This document helps contributors make effective, consistent changes to atypica-l
 
 - Never commit secrets; use `.env` based on `.env.example`.
 - Database URLs required for Prisma; `postinstall` runs `prisma generate`.
-- When changing schema, include migration + seed updates, and note rollout steps.
+- When changing schema, include migration and note rollout steps.

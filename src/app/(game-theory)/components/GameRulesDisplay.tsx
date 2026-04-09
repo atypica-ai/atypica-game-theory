@@ -100,7 +100,7 @@ function PrisonerDilemmaRules() {
     <>
       <Overview>
         You and one opponent each choose to <strong>Cooperate</strong> or <strong>Defect</strong> — simultaneously,
-        without seeing each other's choice. Your points depend on the combination of both decisions.
+        without seeing each other&apos;s choice. Your points depend on the combination of both decisions.
       </Overview>
 
       <Section label="Payoff Matrix">

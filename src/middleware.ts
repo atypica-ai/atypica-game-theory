@@ -1,7 +1,6 @@
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { getRequestClientIp, getRequestOrigin } from "@/lib/request/headers";
 import { Locale } from "next-intl";
-import withAuth from "next-auth/middleware";
 import { NextRequest, NextResponse } from "next/server";
 
 export const config = {
