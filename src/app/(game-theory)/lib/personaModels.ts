@@ -3,8 +3,7 @@ import "server-only";
 import { LLMModelName } from "@/ai/provider";
 
 export const GAME_PERSONA_MODELS: LLMModelName[] = [
-  // "claude-haiku-4-5",
-  "gemini-3-flash",
+  "gemini-3-flash-preview",
   "gpt-5-mini",
 ];
 
