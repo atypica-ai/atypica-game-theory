@@ -82,13 +82,11 @@ export function GameLayout({
             </span>
             <button
               onClick={() => setRulesOpen(true)}
-              className="group relative w-5 h-5 flex items-center justify-center rounded-full border transition-colors hover:text-[var(--gt-blue)] hover:border-[var(--gt-blue-border)] hover:bg-[var(--gt-blue-bg)] active:scale-90"
+              className="group relative w-5 h-5 flex items-center justify-center rounded-full border cursor-pointer transition-colors text-[var(--gt-t4)] border-[var(--gt-border-md)] hover:text-[var(--gt-blue)] hover:border-[var(--gt-blue-border)] hover:bg-[var(--gt-blue-bg)] active:scale-90"
               style={{
                 fontSize: "11px",
                 fontFamily: "IBMPlexMono, monospace",
                 fontWeight: 500,
-                color: "var(--gt-t4)",
-                borderColor: "var(--gt-border-md)",
                 lineHeight: 1,
               }}
             >
