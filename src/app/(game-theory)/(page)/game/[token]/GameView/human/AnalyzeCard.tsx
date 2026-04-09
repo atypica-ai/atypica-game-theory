@@ -105,7 +105,7 @@ export function AnalyzeCard({
       <div className="flex items-center gap-3 mb-8">
         <div
           className="w-10 h-10 rounded-md flex items-center justify-center"
-          style={{ background: "var(--gt-row-alt)", color: "var(--gt-blue)" }}
+          style={{ background: "var(--gt-row-alt)", color: "var(--gt-ink)" }}
         >
           <BarChart3 size={20} />
         </div>

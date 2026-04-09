@@ -21,7 +21,7 @@ const VARIANT_COLORS: Record<HumanInputFieldVariant, { color: string; bg: string
   positive: { color: "var(--gt-pos)", bg: "var(--gt-pos-bg)", border: "hsl(125 49% 43% / 0.3)" },
   negative: { color: "var(--gt-neg)", bg: "var(--gt-neg-bg)", border: "hsl(2 63% 54% / 0.3)" },
   warning:  { color: "var(--gt-warn)", bg: "var(--gt-warn-bg)", border: "hsl(48 93% 45% / 0.3)" },
-  neutral:  { color: "var(--gt-blue)", bg: "var(--gt-blue-bg)", border: "var(--gt-blue-border)" },
+  neutral:  { color: "var(--gt-ink)", bg: "hsl(210 20% 15% / 0.06)", border: "hsl(210 20% 15% / 0.2)" },
 };
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -133,7 +133,7 @@ export function CommitmentCard({
   })();
 
   const barColor =
-    progress < 0.15 ? "var(--gt-neg)" : progress < 0.4 ? "var(--gt-warn)" : "var(--gt-blue)";
+    progress < 0.15 ? "var(--gt-neg)" : progress < 0.4 ? "var(--gt-warn)" : "var(--gt-ink)";
 
   const humanScore = currentScores[HUMAN_PLAYER_ID] ?? 0;
 
@@ -155,7 +155,7 @@ export function CommitmentCard({
         <div className="flex items-center gap-3 mb-8">
           <div
             className="w-10 h-10 rounded-md flex items-center justify-center"
-            style={{ background: "var(--gt-row-alt)", color: "var(--gt-blue)" }}
+            style={{ background: "var(--gt-row-alt)", color: "var(--gt-ink)" }}
           >
             <Target size={20} />
           </div>
@@ -360,7 +360,7 @@ function NumberFieldUI({
             color: outOfRange ? "var(--gt-neg)" : "var(--gt-t1)",
             fontFamily: "IBMPlexMono, monospace",
             borderBottom: `2px solid ${outOfRange ? "var(--gt-neg)" : "var(--gt-border-md)"}`,
-            caretColor: "var(--gt-blue)",
+            caretColor: "var(--gt-ink)",
           }}
         />
         <span
@@ -380,7 +380,7 @@ function NumberFieldUI({
         <div
           className="text-5xl font-bold mb-2 tabular-nums"
           style={{
-            color: outOfRange ? "var(--gt-neg)" : "var(--gt-blue)",
+            color: outOfRange ? "var(--gt-neg)" : "var(--gt-ink)",
             fontFamily: "IBMPlexMono, monospace",
           }}
         >
@@ -406,7 +406,7 @@ function NumberFieldUI({
           className="w-full h-2 rounded-lg appearance-none cursor-pointer"
           style={{
             background: "var(--gt-row-alt)",
-            accentColor: "var(--gt-blue)",
+            accentColor: "var(--gt-ink)",
           }}
         />
         <div

@@ -34,9 +34,9 @@ export function PhaseProgress({ phase, hasDiscussion }: PhaseProgressProps) {
               initial={false}
               animate={{
                 backgroundColor:
-                  isActive || isPast ? "var(--gt-blue)" : "var(--gt-surface)",
+                  isActive || isPast ? "var(--gt-ink)" : "var(--gt-surface)",
                 borderColor:
-                  isActive || isPast ? "var(--gt-blue)" : "var(--gt-border-md)",
+                  isActive || isPast ? "var(--gt-ink)" : "var(--gt-border-md)",
                 scale: isActive ? 1.2 : 1,
               }}
               className="w-3 h-3 rounded-full border-2"

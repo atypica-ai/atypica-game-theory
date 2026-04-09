@@ -20,12 +20,12 @@ import type { GameTimeline, GameTimelineEvent } from "@/app/(game-theory)/types"
 import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { deriveGameState, RoundData } from "./index";
-import { ResultsView } from "./ResultsView";
 import { PhaseProgress, VisualPhase } from "./human/PhaseProgress";
 import { RoundProgress } from "./human/RoundProgress";
 import { DiscussionCard } from "./human/DiscussionCard";
 import { CommitmentCard } from "./human/CommitmentCard";
 import { AnalyzeCard } from "./human/AnalyzeCard";
+import { FinalResultsCard } from "./human/FinalResultsCard";
 
 const SILENT_DISCUSSION = "(said nothing)";
 
@@ -434,14 +434,12 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
             />
           )}
           {visualPhase === "completed" && (
-            <ResultsView
+            <FinalResultsCard
               key="results"
-              events={events}
               participants={participants}
               cumulativeScores={gameState.scores}
               winners={winners}
               isFullTie={isFullTie}
-              gameType={gameTypeName}
             />
           )}
         </AnimatePresence>

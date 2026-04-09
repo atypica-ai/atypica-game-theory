@@ -124,7 +124,7 @@ export function DiscussionCard({
                 className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${isUser ? "rounded-tr-none" : "rounded-tl-none"}`}
                 style={
                   isUser
-                    ? { background: "var(--gt-blue)", color: "white", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
+                    ? { background: "var(--gt-ink)", color: "white", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
                     : { background: "var(--gt-row-alt)", color: "var(--gt-t2)", border: "1px solid var(--gt-border)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }
                 }
               >
@@ -164,7 +164,7 @@ export function DiscussionCard({
           /* Human hasn't spoken yet — show input */
           <form onSubmit={handleFormSubmit}>
             <div
-              className="flex items-center gap-2 rounded-full px-4 py-1 border transition-colors focus-within:border-[var(--gt-blue)]"
+              className="flex items-center gap-2 rounded-full px-4 py-1 border transition-colors focus-within:border-[var(--gt-ink)]"
               style={{ background: "var(--gt-row-alt)", borderColor: "var(--gt-border)" }}
             >
               <input
@@ -176,14 +176,14 @@ export function DiscussionCard({
                 style={{ color: "var(--gt-t1)" }}
                 autoFocus
               />
-              <button type="submit" className="p-1 transition-transform hover:scale-110" style={{ color: "var(--gt-blue)" }}>
+              <button type="submit" className="p-1 transition-transform hover:scale-110" style={{ color: "var(--gt-ink)" }}>
                 <Send size={18} />
               </button>
             </div>
             <button
               type="button"
               onClick={() => handleSend("")}
-              className="w-full mt-2 text-[10px] font-bold uppercase transition-colors hover:text-[var(--gt-blue)]"
+              className="w-full mt-2 text-[10px] font-bold uppercase transition-colors hover:text-[var(--gt-ink)]"
               style={{ letterSpacing: "0.1em", color: "var(--gt-t4)" }}
             >
               Say nothing

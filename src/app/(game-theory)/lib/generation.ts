@@ -3,7 +3,7 @@ import "server-only";
 import { defaultProviderOptions, llm, LLMModelName } from "@/ai/provider";
 import { StatReporter } from "@/ai/tools/types";
 import { calculateStepTokensUsage } from "@/ai/usage";
-import { personaAgentSystem } from "@/app/(persona)/prompt/personaAgent";
+import { gamePersonaAgentSystem } from "@/app/(persona)/prompt/gamePersonaAgent";
 import { Persona } from "@/prisma/client";
 import { generateText, stepCountIs, tool, zodSchema } from "ai";
 import { Locale } from "next-intl";
@@ -51,8 +51,8 @@ export async function generatePlayerDiscussion({
 }): Promise<{ reasoning: string | null; content: string }> {
   const task =
     locale === "zh-CN"
-      ? `这是第 ${round} 轮的讨论阶段。你可以自由表达你的想法、意图或策略考量。其他玩家可以看到你说的内容（但看不到你的内部推理）。`
-      : `This is the discussion phase for round ${round}. You may freely express your thoughts, intentions, or strategic considerations. Other players will see what you say (but not your internal reasoning).`;
+      ? `这是第 ${round} 轮的讨论阶段。其他玩家可以看到你说的内容（但看不到你的内心想法）。说你想说的——可以谈判、欺骗、施压或结盟。**回复不超过 3 句话。**`
+      : `This is the discussion phase for round ${round}. Other players will see what you say (but not your internal reasoning). Say what serves your goal — negotiate, bluff, pressure, or ally. **Keep your reply to 3 sentences or fewer.**`;
 
   logger.info({ msg: "Calling LLM for discussion", personaId: personaSession.personaId, round });
 
@@ -184,7 +184,7 @@ export function buildGamePersonaSession({
   return {
     personaId: persona.id,
     personaName: persona.name,
-    systemPrompt: personaAgentSystem({ persona, locale }),
+    systemPrompt: gamePersonaAgentSystem({ persona, locale }),
     modelName,
   };
 }

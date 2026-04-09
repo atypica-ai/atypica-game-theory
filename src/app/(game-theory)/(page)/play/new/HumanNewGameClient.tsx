@@ -291,7 +291,7 @@ export function HumanNewGameClient({
           <div className="flex items-center gap-3 mb-6">
             <div
               className="w-10 h-10 rounded-md flex items-center justify-center"
-              style={{ background: "var(--gt-row-alt)", color: "var(--gt-blue)" }}
+              style={{ background: "var(--gt-row-alt)", color: "var(--gt-ink)" }}
             >
               <Info size={20} />
             </div>
@@ -307,9 +307,9 @@ export function HumanNewGameClient({
                   className="text-[11px] px-2 py-0.5 border"
                   style={{
                     borderRadius: "9999px",
-                    color: "var(--gt-blue)",
-                    borderColor: "var(--gt-blue-border)",
-                    background: "var(--gt-blue-bg)",
+                    color: "var(--gt-ink)",
+                    borderColor: "hsl(210 20% 15% / 0.2)",
+                    background: "hsl(210 20% 15% / 0.06)",
                     fontFamily: "IBMPlexMono, monospace",
                   }}
                 >

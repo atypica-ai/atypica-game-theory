@@ -26,7 +26,7 @@ export function RoundProgress({ round, totalRounds, gameTypeName }: RoundProgres
                 background: isCompleted
                   ? "var(--gt-pos)"
                   : isCurrent
-                    ? "var(--gt-blue)"
+                    ? "var(--gt-ink)"
                     : "var(--gt-border-md)",
               }}
             />
@@ -45,7 +45,7 @@ export function RoundProgress({ round, totalRounds, gameTypeName }: RoundProgres
       >
         <span>{formatName(gameTypeName)}</span>
         <span style={{ color: "var(--gt-border-md)" }}>|</span>
-        <span style={{ color: "var(--gt-blue)" }}>
+        <span style={{ color: "var(--gt-ink)" }}>
           Round {round}{totalRounds ? ` of ${totalRounds}` : ""}
         </span>
       </div>
