@@ -75,7 +75,6 @@ export async function launchGameSession(
 
   const runPromise: Promise<void> = runGameSession({
     gameSessionToken: token,
-    locale: "en-US",
     abortSignal: new AbortController().signal,
     statReport: noopStatReport,
     logger,

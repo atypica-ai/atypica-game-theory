@@ -48,7 +48,7 @@ async function validateHumanParticipant(token: string) {
 async function buildPersonaSessionForAction(personaId: number, extra: GameSessionExtra) {
   const persona = await prisma.persona.findUniqueOrThrow({ where: { id: personaId } });
   const modelName = extra.personaModels?.[personaId] ?? "gemini-3-flash";
-  return buildGamePersonaSession({ persona, locale: "en-US", modelName });
+  return buildGamePersonaSession({ persona, modelName });
 }
 
 // ---------------------------------------------------------------------------
@@ -99,7 +99,6 @@ export async function runAIDiscussionFor(
     const logger = rootLogger.child({ gameSessionToken: token, personaId });
     const ctx = {
       gameSessionToken: token,
-      locale: "en-US" as const,
       abortSignal: new AbortController().signal,
       statReport: async () => {},
       logger,

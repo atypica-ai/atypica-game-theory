@@ -1,7 +1,6 @@
 import "server-only";
 
 import { StatReporter } from "@/ai/tools/types";
-import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { GameType } from "../gameTypes/types";
 import { GamePersonaSession, GameSessionParticipant, GameTimeline } from "../types";
@@ -12,7 +11,6 @@ import { generatePlayerDecision, generatePlayerDiscussion } from "./generation";
 
 export interface PhaseContext {
   gameSessionToken: string;
-  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
@@ -40,7 +38,6 @@ export async function generateAIDiscussionTurn(
     personaSession,
     formattedContext: context,
     round: roundId,
-    locale: ctx.locale,
     abortSignal: ctx.abortSignal,
     statReport: ctx.statReport,
     logger: ctx.logger.child({ personaId: personaSession.personaId }),
@@ -83,7 +80,6 @@ export async function generateAIDecision(
     gameType,
     formattedContext: context,
     round: roundId,
-    locale: ctx.locale,
     abortSignal: ctx.abortSignal,
     statReport: ctx.statReport,
     logger: ctx.logger.child({ personaId: personaSession.personaId }),

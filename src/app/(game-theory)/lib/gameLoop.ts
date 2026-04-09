@@ -72,7 +72,7 @@ export async function runGameLoop({
   initialTimeline,
   ctx,
 }: GameLoopParams): Promise<GameTimeline> {
-  const { locale, abortSignal, logger, discussionRounds } = ctx;
+  const { abortSignal, logger, discussionRounds } = ctx;
 
   let timeline = initialTimeline;
   let roundId = 1;
@@ -83,10 +83,7 @@ export async function runGameLoop({
 
       logger.info({ msg: "Starting game round", roundId, gameType: gameType.name });
 
-      const roundAnnouncement =
-        locale === "zh-CN"
-          ? `第 ${roundId} 轮开始。${discussionRounds > 0 ? "讨论阶段开始，每位玩家可以自由发言。" : "每位玩家请做出本轮决策。"}`
-          : `Round ${roundId} begins. ${discussionRounds > 0 ? "Discussion phase: each player may speak freely before deciding." : "Each player must now make their decision."}`;
+      const roundAnnouncement = `Round ${roundId} begins. ${discussionRounds > 0 ? "Discussion phase: each player may speak freely before deciding." : "Each player must now make their decision."}`;
 
       timeline.push({ type: "system", content: roundAnnouncement, round: roundId });
       await saveGameTimeline({ token: gameSessionToken, timeline, logger });
@@ -108,7 +105,7 @@ export async function runGameLoop({
         .join(", ");
       timeline.push({
         type: "system",
-        content: locale === "zh-CN" ? `第 ${roundId} 轮结果 — ${payoffSummary}` : `Round ${roundId} results — ${payoffSummary}`,
+        content: `Round ${roundId} results — ${payoffSummary}`,
         round: roundId,
       });
 
@@ -119,7 +116,7 @@ export async function runGameLoop({
       roundId++;
     }
 
-    timeline.push({ type: "system", content: locale === "zh-CN" ? "游戏结束。" : "Game complete." });
+    timeline.push({ type: "system", content: "Game complete." });
     await saveGameTimeline({ token: gameSessionToken, timeline, status: "completed", logger });
 
     logger.info({ msg: "Game session completed", totalRounds: roundId });

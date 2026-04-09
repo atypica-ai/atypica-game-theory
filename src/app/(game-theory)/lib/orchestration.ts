@@ -2,7 +2,6 @@ import "server-only";
 
 import { StatReporter } from "@/ai/tools/types";
 import { prisma } from "@/prisma/prisma";
-import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { getGameType } from "../gameTypes";
 import { GameType } from "../gameTypes/types";
@@ -108,13 +107,11 @@ const aiPlayerHandler: PlayerHandler = {
  */
 export async function runGameSession({
   gameSessionToken,
-  locale,
   abortSignal,
   statReport,
   logger,
 }: {
   gameSessionToken: string;
-  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
@@ -139,7 +136,6 @@ export async function runGameSession({
     const persona = personaMap.get(id)!;
     return buildGamePersonaSession({
       persona,
-      locale,
       modelName: personaModels[persona.id] ?? "gemini-3-flash",
     });
   });
@@ -156,7 +152,7 @@ export async function runGameSession({
     ...(sessionExtra.discussionRounds !== undefined ? { discussionRounds: sessionExtra.discussionRounds } : {}),
   };
   const discussionRounds = sessionExtra.discussionRounds ?? gameType.discussionRounds;
-  const ctx: PhaseContext = { gameSessionToken, locale, abortSignal, statReport, logger, discussionRounds };
+  const ctx: PhaseContext = { gameSessionToken, abortSignal, statReport, logger, discussionRounds };
 
   const timeline: GameTimeline = [{ type: "system", content: gameType.rulesPrompt }];
   await saveGameTimeline({ token: gameSessionToken, timeline, status: "running", extra, logger });

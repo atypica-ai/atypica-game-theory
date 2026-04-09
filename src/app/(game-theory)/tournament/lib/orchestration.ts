@@ -3,7 +3,6 @@ import "server-only";
 import type { StatReporter } from "@/ai/tools/types";
 import { generateToken } from "@/lib/utils";
 import { prisma } from "@/prisma/prisma";
-import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { GameSessionExtra } from "../../types";
 import { runGameSession } from "../../lib/orchestration";
@@ -24,7 +23,6 @@ const STAGE_3 = { stageNumber: 3, gameTypeName: "beauty-contest" };
 
 interface RunContext {
   tournamentToken: string;
-  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
@@ -116,7 +114,6 @@ async function runStage(
   await runBatched(gameSessionTokens, concurrency, (token) =>
     runGameSession({
       gameSessionToken: token,
-      locale: ctx.locale,
       abortSignal: ctx.abortSignal,
       statReport: ctx.statReport,
       logger: ctx.logger.child({ gameSessionToken: token }),
@@ -142,7 +139,6 @@ async function runStage(
  */
 export async function runTournament({
   tournamentToken,
-  locale,
   abortSignal,
   statReport,
   logger,
@@ -150,7 +146,7 @@ export async function runTournament({
   const tournament = await prisma.tournament.findUniqueOrThrow({ where: { token: tournamentToken } });
   const initialPersonaIds = tournament.personaIds as number[];
   const state: TournamentState = { stages: [] };
-  const ctx: RunContext = { tournamentToken, locale, abortSignal, statReport, logger };
+  const ctx: RunContext = { tournamentToken, abortSignal, statReport, logger };
 
   try {
     // Stage 1 — Stag Hunt
@@ -178,10 +174,9 @@ export async function runTournament({
 
     await runGameSession({
       gameSessionToken: finalToken,
-      locale,
-      abortSignal,
-      statReport,
-      logger: logger.child({ gameSessionToken: finalToken }),
+      abortSignal: ctx.abortSignal,
+      statReport: ctx.statReport,
+      logger: ctx.logger.child({ gameSessionToken: finalToken }),
     });
 
     finalStageState.status = "completed";

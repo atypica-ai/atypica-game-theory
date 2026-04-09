@@ -6,7 +6,6 @@ import { calculateStepTokensUsage } from "@/ai/usage";
 import { gamePersonaAgentSystem } from "@/app/(persona)/prompt/gamePersonaAgent";
 import { Persona } from "@/prisma/client";
 import { generateText, stepCountIs, tool, zodSchema } from "ai";
-import { Locale } from "next-intl";
 import { Logger } from "pino";
 import { GameType } from "../gameTypes/types";
 import { GamePersonaSession } from "../types";
@@ -36,7 +35,6 @@ export async function generatePlayerDiscussion({
   personaSession,
   formattedContext,
   round,
-  locale,
   abortSignal,
   statReport,
   logger,
@@ -44,15 +42,11 @@ export async function generatePlayerDiscussion({
   personaSession: GamePersonaSession;
   formattedContext: string;
   round: number;
-  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
 }): Promise<{ reasoning: string | null; content: string }> {
-  const task =
-    locale === "zh-CN"
-      ? `这是第 ${round} 轮的讨论阶段。其他玩家可以看到你说的内容（但看不到你的内心想法）。说你想说的——可以谈判、欺骗、施压或结盟。**回复不超过 3 句话。**`
-      : `This is the discussion phase for round ${round}. Other players will see what you say (but not your internal reasoning). Say what serves your goal — negotiate, bluff, pressure, or ally. **Keep your reply to 3 sentences or fewer.**`;
+  const task = `This is the discussion phase for round ${round}. Other players will see what you say (but not your internal reasoning). Use this chance to negotiate, lie, manipulate, communicate or anything. Respond as ${personaSession.personaName} would — 3 sentences or fewer.`;
 
   logger.info({ msg: "Calling LLM for discussion", personaId: personaSession.personaId, round });
 
@@ -101,7 +95,6 @@ export async function generatePlayerDecision({
   gameType,
   formattedContext,
   round,
-  locale,
   abortSignal,
   statReport,
   logger,
@@ -110,17 +103,13 @@ export async function generatePlayerDecision({
   gameType: GameType;
   formattedContext: string;
   round: number;
-  locale: Locale;
   abortSignal: AbortSignal;
   statReport: StatReporter;
   logger: Logger;
 }): Promise<{ reasoning: string | null; content: Record<string, unknown> }> {
   const actionTool = buildActionTool(gameType);
 
-  const task =
-    locale === "zh-CN"
-      ? `这是第 ${round} 轮。请仔细阅读上面的游戏状态，思考你的策略，然后通过调用行动工具提交你的决策。你必须调用行动工具一次。`
-      : `This is round ${round}. Carefully read the game state above, consider your strategy, then submit your decision by calling the action tool. You MUST call the action tool exactly once.`;
+  const task = `This is round ${round}. Carefully read the game state above, consider your strategy, then submit your decision by calling the action tool. You MUST call the action tool exactly once.`;
 
   const { steps, reasoning, usage, providerMetadata } = await generateText({
     model: llm(personaSession.modelName),
@@ -174,17 +163,15 @@ export async function generatePlayerDecision({
  */
 export function buildGamePersonaSession({
   persona,
-  locale,
   modelName,
 }: {
   persona: Persona;
-  locale: Locale;
   modelName: LLMModelName;
 }): GamePersonaSession {
   return {
     personaId: persona.id,
     personaName: persona.name,
-    systemPrompt: gamePersonaAgentSystem({ persona, locale }),
+    systemPrompt: gamePersonaAgentSystem({ persona }),
     modelName,
   };
 }

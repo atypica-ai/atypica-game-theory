@@ -53,7 +53,6 @@ export async function launchTournament(
 
   const runPromise: Promise<void> = runTournament({
     tournamentToken: token,
-    locale: "en-US",
     abortSignal: new AbortController().signal,
     statReport: noopStatReport,
     logger,
