@@ -235,7 +235,7 @@ export function AnalyzeCard({
           className="btn-lab w-full mt-8 flex items-center justify-center gap-2 text-xl py-4"
         >
           {isFinalRound ? (
-            <>VIEW FINAL RESULTS <Trophy size={20} /></>
+            <>FINALIZE EXPERIMENT <Trophy size={20} /></>
           ) : (
             <>PROCEED TO <span className="font-black">ROUND {roundId + 1}</span> <RefreshCw size={20} /></>
           )}

@@ -285,13 +285,12 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
               { type: "round-result", round: step.roundId, payoffs: res.payoffs },
               { type: "system", content: `Round ${step.roundId} results.`, round: step.roundId },
             );
+            // Always go to reveal — user clicks PROCEED or FINALIZE
             if (res.isTerminated) {
               await completeHumanGame(token);
               setStatus("completed");
-              setStep({ phase: "completed" });
-            } else {
-              setStep({ phase: "reveal", roundId: step.roundId });
             }
+            setStep({ phase: "reveal", roundId: step.roundId });
             break;
           }
         }
@@ -361,7 +360,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   }, [step]);
 
   const handleViewFinalResults = useCallback(() => {
-    setStatus("completed");
     setStep({ phase: "completed" });
   }, []);
 
