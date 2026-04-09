@@ -58,8 +58,8 @@ export interface GameType<A extends z.ZodTypeAny = z.ZodTypeAny> {
   minPlayers: number;
   maxPlayers: number;
   horizon: Horizon;
-  // Zod schema for the action tool — must NOT include a "reasoning" field
-  // (reasoning is captured from the model's native reasoning output, never as a tool parameter)
+  // Zod schema for the action tool — defines only the game-specific decision fields.
+  // A `reasoning` field is prepended automatically by buildActionTool and stripped before payoff.
   actionSchema: A;
   // Keys are personaId (number). Receives one action per player per round.
   payoffFunction: (actions: Record<number, z.infer<A>>) => Record<number, number>;
