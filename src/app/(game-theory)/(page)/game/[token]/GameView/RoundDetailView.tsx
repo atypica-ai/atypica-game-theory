@@ -365,6 +365,8 @@ export interface RoundDetailViewProps {
   totalPlayers: number;
   isHumanPlayer: boolean;
   pendingHumanTurn: PendingHumanTurn;
+  /** When true, AI decision content is hidden (human hasn't submitted yet) */
+  maskDecisions?: boolean;
   playersDeliberating: Set<number>;
   discussedPlayers: Set<number>;
   getResultState: (personaId: number) => PlayerResultState | undefined;
@@ -380,6 +382,7 @@ export function RoundDetailView({
   totalPlayers,
   isHumanPlayer,
   pendingHumanTurn,
+  maskDecisions,
   playersDeliberating,
   discussedPlayers,
   getResultState,
@@ -468,21 +471,29 @@ export function RoundDetailView({
               className="grid gap-4"
               style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
             >
-              {participants.map((p, i) => (
-                <PlayerCard
-                  key={p.personaId}
-                  participant={p}
-                  playerIndex={i}
-                  score={scoresForRound[p.personaId] ?? 0}
-                  decision={roundData.decisions.find((d) => d.personaId === p.personaId)}
-                  payoff={roundData.result?.payoffs[p.personaId]}
-                  isDeliberating={isLive && playersDeliberating.has(p.personaId)}
-                  resultState={getResultState(p.personaId)}
-                  hasSpoken={discussedPlayers.has(p.personaId)}
-                  isDiscussionPhase={isDiscussionPhase}
-                  isDecisionPhase={isDecisionPhase}
-                />
-              ))}
+              {participants.map((p, i) => {
+                const isHuman = p.personaId === HUMAN_PLAYER_ID;
+                const rawDecision = roundData.decisions.find((d) => d.personaId === p.personaId);
+                // Mask AI decisions while human is still deciding
+                const decision = (maskDecisions && !isHuman) ? undefined : rawDecision;
+                // Show AI as "thinking" when their decision exists but is masked
+                const isMaskedThinking = maskDecisions && !isHuman && !!rawDecision;
+                return (
+                  <PlayerCard
+                    key={p.personaId}
+                    participant={p}
+                    playerIndex={i}
+                    score={scoresForRound[p.personaId] ?? 0}
+                    decision={decision}
+                    payoff={roundData.result?.payoffs[p.personaId]}
+                    isDeliberating={isMaskedThinking || (isLive && playersDeliberating.has(p.personaId))}
+                    resultState={getResultState(p.personaId)}
+                    hasSpoken={discussedPlayers.has(p.personaId)}
+                    isDiscussionPhase={isDiscussionPhase}
+                    isDecisionPhase={isDecisionPhase}
+                  />
+                );
+              })}
             </div>
 
           </section>
