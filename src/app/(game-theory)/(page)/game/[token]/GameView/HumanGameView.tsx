@@ -2,7 +2,7 @@
 
 import { GameSessionDetail } from "@/app/(game-theory)/actions";
 import {
-  runNextAIDiscussion,
+  runAIDiscussionFor,
   startHumanRound,
   settleHumanRound,
   completeHumanGame,
@@ -162,6 +162,9 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   // Tracks whether AI decisions have completed (set by effect, read by human callback)
   const aiDoneRef = useRef(false);
 
+  // Tracks which AI persona is currently generating a discussion turn
+  const [currentSpeakerId, setCurrentSpeakerId] = useState<number | null>(null);
+
   // Error state for displaying failures
   const [error, setError] = useState<string | null>(null);
 
@@ -214,14 +217,21 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
           }
 
           case "aiDiscussion": {
-            while (!cancelled) {
-              const res = await runNextAIDiscussion(token, step.roundId);
+            // Frontend controls speaker order — shuffle AI participants
+            const aiParticipants = participants
+              .filter((p) => p.personaId !== HUMAN_PLAYER_ID)
+              .sort(() => Math.random() - 0.5);
+
+            for (const ai of aiParticipants) {
+              if (cancelled) break;
+              setCurrentSpeakerId(ai.personaId);
+              const res = await runAIDiscussionFor(token, ai.personaId, step.roundId);
               if (cancelled) break;
               if (!res.success) { setError(res.message); break; }
-              if (res.done) break;
               appendEvents(res.event);
             }
             if (!cancelled) {
+              setCurrentSpeakerId(null);
               setHumanTurn({ type: "discussion", roundId: step.roundId });
               setStep({ phase: "humanDiscussion", roundId: step.roundId });
             }
@@ -470,6 +480,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
           maskDecisions={humanTurn?.type === "decision"}
           playersDeliberating={playersDeliberating}
           discussedPlayers={isLiveRound ? gameState.discussedPlayers : new Set<number>()}
+          currentSpeakerId={isLiveRound ? currentSpeakerId : null}
           getResultState={getResultState}
         />
       )}

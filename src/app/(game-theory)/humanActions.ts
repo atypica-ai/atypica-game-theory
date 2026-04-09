@@ -78,55 +78,40 @@ export async function startHumanRound(
 }
 
 // ---------------------------------------------------------------------------
-// Run one AI discussion turn — find next AI who hasn't spoken this round
+// Run AI discussion for a specific persona (frontend controls speaker order)
 // ---------------------------------------------------------------------------
 
-export async function runNextAIDiscussion(
+export async function runAIDiscussionFor(
   token: string,
+  personaId: number,
   roundId: number,
 ): Promise<
-  | { success: true; done: false; event: PersonaDiscussionEvent }
-  | { success: true; done: true }
+  | { success: true; event: PersonaDiscussionEvent }
   | { success: false; message: string }
 > {
   try {
-    const { extra, timeline } = await validateHumanParticipant(token);
+    const { extra } = await validateHumanParticipant(token);
     const participants = extra.participants ?? [];
 
-    // Find AI personas who haven't spoken in this round
-    const spokenIds = new Set(
-      timeline
-        .filter((e): e is PersonaDiscussionEvent => e.type === "persona-discussion" && e.round === roundId)
-        .map((e) => e.personaId),
-    );
-    const nextAI = participants.find((p) => p.personaId !== HUMAN_PLAYER_ID && !spokenIds.has(p.personaId));
-    if (!nextAI) return { success: true, done: true };
+    const personaSession = await buildPersonaSessionForAction(personaId, extra);
 
-    const personaSession = await buildPersonaSessionForAction(nextAI.personaId, extra);
-
-    // Read fresh timeline for LLM context
     const freshTimeline = await refreshTimeline(token);
-    const logger = rootLogger.child({ gameSessionToken: token, personaId: nextAI.personaId });
-    const noopStatReport = async () => {};
+    const logger = rootLogger.child({ gameSessionToken: token, personaId });
     const ctx = {
       gameSessionToken: token,
       locale: "en-US" as const,
       abortSignal: new AbortController().signal,
-      statReport: noopStatReport,
+      statReport: async () => {},
       logger,
       discussionRounds: extra.discussionRounds ?? getGameType(extra.gameType).discussionRounds,
     };
 
-    // generateAIDiscussionTurn appends to the array in-memory
     await generateAIDiscussionTurn(freshTimeline, personaSession, participants, roundId, ctx);
 
-    // The event is the last item generateAIDiscussionTurn pushed
     const event = freshTimeline[freshTimeline.length - 1] as PersonaDiscussionEvent;
-
-    // Persist atomically
     await appendTimelineEvents(token, [event]);
 
-    return { success: true, done: false, event };
+    return { success: true, event };
   } catch (error) {
     return { success: false, message: (error as Error).message };
   }

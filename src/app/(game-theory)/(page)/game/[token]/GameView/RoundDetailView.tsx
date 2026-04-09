@@ -369,6 +369,8 @@ export interface RoundDetailViewProps {
   maskDecisions?: boolean;
   playersDeliberating: Set<number>;
   discussedPlayers: Set<number>;
+  /** PersonaId of the AI currently generating a discussion turn (frontend-controlled order) */
+  currentSpeakerId?: number | null;
   getResultState: (personaId: number) => PlayerResultState | undefined;
 }
 
@@ -385,6 +387,7 @@ export function RoundDetailView({
   maskDecisions,
   playersDeliberating,
   discussedPlayers,
+  currentSpeakerId,
   getResultState,
 }: RoundDetailViewProps) {
   const isDiscussionPhase = isLive && phase === "discussion";
@@ -530,9 +533,12 @@ export function RoundDetailView({
                   {roundData.discussions.map((d, i) => (
                     <DiscussionEntry key={i} event={d} participants={participants} />
                   ))}
-                  {/* Typing indicator — shows next speaker generating */}
+                  {/* Typing indicator — shows the speaker currently generating */}
                   {isDiscussionPhase && (() => {
-                    const nextSpeaker = participants.find((p) => !discussedPlayers.has(p.personaId));
+                    // Use frontend-provided currentSpeakerId if available, else fall back to guess
+                    const nextSpeaker = currentSpeakerId != null
+                      ? participants.find((p) => p.personaId === currentSpeakerId)
+                      : participants.find((p) => !discussedPlayers.has(p.personaId));
                     if (!nextSpeaker) return null;
                     const idx = participants.findIndex((p) => p.personaId === nextSpeaker.personaId);
                     const speakerColor = PLAYER_COLORS[idx] ?? PLAYER_COLORS[0];
