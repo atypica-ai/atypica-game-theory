@@ -151,13 +151,18 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   const isCompleted = status === "completed";
   const gameState = useMemo(() => deriveGameState(events, isCompleted), [events, isCompleted]);
 
-  // Game step state machine
-  const [step, setStep] = useState<GameStep>(() =>
+  // Game step state machine + human turn — derived together on mount for correct resume
+  const [initialStep] = useState(() =>
     deriveInitialStep(events, participants, status, discussionRounds),
   );
+  const [step, setStep] = useState<GameStep>(initialStep);
 
-  // Human turn state — set when waiting for human input
-  const [humanTurn, setHumanTurn] = useState<{ type: "discussion" | "decision"; roundId: number } | null>(null);
+  // Human turn state — initialized from step for resume scenarios
+  const [humanTurn, setHumanTurn] = useState<{ type: "discussion" | "decision"; roundId: number } | null>(() => {
+    if (initialStep.phase === "humanDiscussion") return { type: "discussion", roundId: initialStep.roundId };
+    if (initialStep.phase === "decision") return { type: "decision", roundId: initialStep.roundId };
+    return null;
+  });
 
   // Tracks whether AI decisions have completed (set by effect, read by human callback)
   const aiDoneRef = useRef(false);
@@ -217,9 +222,15 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
           }
 
           case "aiDiscussion": {
-            // Frontend controls speaker order — shuffle AI participants
+            // Frontend controls speaker order — shuffle AI who haven't spoken yet
+            // (on resume, some AI may have already spoken this round)
+            const spokenIds = new Set(
+              events
+                .filter((e): e is PersonaDiscussionEvent => e.type === "persona-discussion" && e.round === step.roundId)
+                .map((e) => e.personaId),
+            );
             const aiParticipants = participants
-              .filter((p) => p.personaId !== HUMAN_PLAYER_ID)
+              .filter((p) => p.personaId !== HUMAN_PLAYER_ID && !spokenIds.has(p.personaId))
               .sort(() => Math.random() - 0.5);
 
             for (const ai of aiParticipants) {
