@@ -3,7 +3,6 @@
 import {
   GameSessionDetail,
   runNextAIDiscussion,
-  runAllAIDecisions,
   startHumanRound,
   settleHumanRound,
   completeHumanGame,
@@ -233,12 +232,29 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
             aiDoneRef.current = false;
             humanDoneRef.current = false;
             setHumanTurn({ type: "decision", roundId: step.roundId });
-            // Single server action — all AI LLM calls run in parallel server-side
-            const aiRes = await runAllAIDecisions(token, step.roundId);
-            if (!cancelled && aiRes.success) {
-              appendEvents(...aiRes.events);
-              aiDoneRef.current = true;
-            }
+            // Fire individual fetch() calls — truly parallel, each flips as it resolves
+            const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
+            let completedCount = 0;
+            await Promise.all(
+              aiParticipants.map(async (p) => {
+                try {
+                  const res = await fetch("/api/internal/game-ai-decision", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token, personaId: p.personaId, roundId: step.roundId }),
+                  });
+                  const data = await res.json();
+                  if (!cancelled && data.success) {
+                    appendEvents(data.event);
+                  }
+                } finally {
+                  completedCount++;
+                  if (completedCount === aiParticipants.length) {
+                    aiDoneRef.current = true;
+                  }
+                }
+              }),
+            );
             break;
           }
 
