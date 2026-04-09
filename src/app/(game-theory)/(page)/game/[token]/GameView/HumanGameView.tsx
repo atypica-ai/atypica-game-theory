@@ -22,7 +22,6 @@ import {
   deriveGameState,
   RoundData,
 } from "./index";
-import { PLAYER_COLORS } from "./PlayerCard";
 import { ResultsView } from "./ResultsView";
 import { PhaseProgress, VisualPhase } from "./human/PhaseProgress";
 import { RoundProgress } from "./human/RoundProgress";
@@ -404,7 +403,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
               participants={participants}
               currentSpeakerId={currentSpeakerId}
               humanTurnActive={humanTurn?.type === "discussion"}
-              roundId={currentRound}
               onSendMessage={handleSendDiscussion}
               onSkipToDecision={handleSkipToDecision}
             />

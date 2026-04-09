@@ -17,7 +17,6 @@ interface DiscussionCardProps {
   participants: GameSessionParticipant[];
   currentSpeakerId: number | null;
   humanTurnActive: boolean;
-  roundId: number;
   onSendMessage: (content: string) => void;
   onSkipToDecision: () => void;
 }
@@ -27,7 +26,6 @@ export function DiscussionCard({
   participants,
   currentSpeakerId,
   humanTurnActive,
-  roundId,
   onSendMessage,
   onSkipToDecision,
 }: DiscussionCardProps) {

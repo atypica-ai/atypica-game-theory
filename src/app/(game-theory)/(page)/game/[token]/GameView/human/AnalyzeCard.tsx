@@ -9,7 +9,6 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { BarChart3, Cpu, RefreshCw, Trophy, User } from "lucide-react";
 import { motion } from "motion/react";
 import type { RoundData } from "../index";
-import { PLAYER_COLORS } from "../PlayerCard";
 
 // ── Decision display ─────────────────────────────────────────────────────────
 
@@ -122,7 +121,7 @@ export function AnalyzeCard({
         >
           Participant Outcomes
         </h3>
-        {participants.map((p, i) => {
+        {participants.map((p) => {
           const isWinner = winnerIds.has(p.personaId);
           const isHuman = p.personaId === HUMAN_PLAYER_ID;
           const payoff = payoffs[p.personaId] ?? 0;
