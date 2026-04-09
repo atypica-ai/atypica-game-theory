@@ -82,26 +82,28 @@ export function GameLayout({
             </span>
             <button
               onClick={() => setRulesOpen(true)}
-              className="group relative flex items-center gap-1.5"
+              className="group relative w-5 h-5 flex items-center justify-center rounded-full border transition-colors hover:text-[var(--gt-blue)] hover:border-[var(--gt-blue-border)] hover:bg-[var(--gt-blue-bg)] active:scale-90"
+              style={{
+                fontSize: "11px",
+                fontFamily: "IBMPlexMono, monospace",
+                fontWeight: 500,
+                color: "var(--gt-t4)",
+                borderColor: "var(--gt-border-md)",
+                lineHeight: 1,
+              }}
             >
+              ?
               <span
-                className="w-5 h-5 flex items-center justify-center rounded-full border transition-colors group-hover:text-[var(--gt-blue)] group-hover:border-[var(--gt-blue-border)] group-hover:bg-[var(--gt-blue-bg)] group-active:scale-90"
+                className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-1.5 whitespace-nowrap px-2 py-1 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{
-                  fontSize: "11px",
+                  background: "var(--gt-t1)",
+                  color: "var(--gt-surface)",
+                  borderRadius: "0.25rem",
                   fontFamily: "IBMPlexMono, monospace",
-                  fontWeight: 500,
-                  color: "var(--gt-t4)",
-                  borderColor: "var(--gt-border-md)",
-                  lineHeight: 1,
+                  letterSpacing: "0.02em",
                 }}
               >
-                ?
-              </span>
-              <span
-                className="text-[11px] opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ color: "var(--gt-blue)", fontFamily: "IBMPlexMono, monospace" }}
-              >
-                rules
+                Game rules
               </span>
             </button>
             {!isPending && currentRoundNumber > 0 && (
