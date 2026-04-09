@@ -1,12 +1,12 @@
 "use client";
 
+import { GameSessionDetail } from "@/app/(game-theory)/actions";
 import {
-  GameSessionDetail,
   runNextAIDiscussion,
   startHumanRound,
   settleHumanRound,
   completeHumanGame,
-} from "@/app/(game-theory)/actions";
+} from "@/app/(game-theory)/humanActions";
 import { GameSessionParticipant, HUMAN_PLAYER_ID, PersonaDecisionEvent, PersonaDiscussionEvent } from "@/app/(game-theory)/types";
 import { AnimatePresence } from "motion/react";
 import { useSession } from "next-auth/react";
