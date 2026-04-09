@@ -12,6 +12,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useCountdown, useDeadline } from "../HumanInputPanel";
 import { PLAYER_COLORS } from "../PlayerCard";
 
+/** Duration for human discussion input before auto-skip (ms) */
+const DISCUSSION_DEADLINE_MS = 30_000;
+/** Effectively infinite — disables the timer when human turn is not active */
+const TIMER_DISABLED = 24 * 60 * 60 * 1000;
+
 interface DiscussionCardProps {
   discussions: PersonaDiscussionEvent[];
   participants: GameSessionParticipant[];
@@ -55,12 +60,13 @@ export function DiscussionCard({
     handleSend(inputText);
   };
 
-  // Deadline for auto-skip (30s)
+  // Deadline for auto-skip
+  const timerMs = humanTurnActive ? DISCUSSION_DEADLINE_MS : TIMER_DISABLED;
   const submitRef = useRef(handleSend);
   submitRef.current = handleSend;
   const deadlineRef = useRef(() => submitRef.current(""));
-  useDeadline(humanTurnActive ? 30_000 : 999_999_999, deadlineRef);
-  const { secondsLeft, progress } = useCountdown(humanTurnActive ? 30_000 : 999_999_999);
+  useDeadline(timerMs, deadlineRef);
+  const { secondsLeft, progress } = useCountdown(timerMs);
 
   // Typing indicator speaker info
   const typingSpeaker =

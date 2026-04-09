@@ -15,6 +15,9 @@ import { motion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
 import { useCountdown, useDeadline } from "../HumanInputPanel";
 
+/** Duration for human decision input before auto-submit (ms) */
+const DECISION_DEADLINE_MS = 30_000;
+
 // ── Variant colors ────────────────────────────────────────────────────────────
 
 const VARIANT_COLORS: Record<HumanInputFieldVariant, { color: string; bg: string; border: string }> = {
@@ -101,8 +104,8 @@ export function CommitmentCard({
   const submitRef = useRef(submitAction);
   submitRef.current = submitAction;
   const deadlineRef = useRef(() => submitRef.current(config.defaultAction));
-  useDeadline(30_000, deadlineRef);
-  const { secondsLeft, progress } = useCountdown(30_000);
+  useDeadline(DECISION_DEADLINE_MS, deadlineRef);
+  const { secondsLeft, progress } = useCountdown(DECISION_DEADLINE_MS);
 
   // Field classification
   const numberFields = config.fields.filter(

@@ -16,6 +16,9 @@ import {
   PersonaDiscussionEvent,
 } from "@/app/(game-theory)/types";
 import type { GameTimeline, GameTimelineEvent } from "@/app/(game-theory)/types";
+
+/** Fallback content when human skips their discussion turn */
+const SILENT_DISCUSSION = "(said nothing)";
 import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -99,6 +102,8 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   const discussionRounds = initialData.extra?.discussionRounds ?? 0;
   const gameType = useMemo(() => getGameType(gameTypeName), [gameTypeName]);
   const totalRounds = gameType.horizon.type === "fixed" ? gameType.horizon.rounds : null;
+  const humanParticipant = participants.find((p) => p.personaId === HUMAN_PLAYER_ID);
+  const humanName = humanParticipant?.name ?? "You";
 
   // ── Event timeline (local, append-only) ───────────────────────────────
   const [events, setEvents] = useState<GameTimeline>(initialData.events);
@@ -294,11 +299,11 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   const handleSendDiscussion = useCallback(
     (content: string) => {
       if (!humanTurn || humanTurn.type !== "discussion") return;
-      const trimmed = content.trim() || "(said nothing)";
+      const trimmed = content.trim() || SILENT_DISCUSSION;
       const event: PersonaDiscussionEvent = {
         type: "persona-discussion",
         personaId: HUMAN_PLAYER_ID,
-        personaName: "You",
+        personaName: humanName,
         reasoning: null,
         content: trimmed,
         round: humanTurn.roundId,
@@ -308,7 +313,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       setStep({ phase: "decision", roundId: humanTurn.roundId });
       void submitHumanDiscussion(token, content, humanTurn.roundId);
     },
-    [token, humanTurn, appendEvents],
+    [token, humanTurn, humanName, appendEvents],
   );
 
   const handleSkipToDecision = useCallback(() => {
@@ -330,7 +335,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       const event: PersonaDecisionEvent = {
         type: "persona-decision",
         personaId: HUMAN_PLAYER_ID,
-        personaName: "You",
+        personaName: humanName,
         reasoning: null,
         content: action,
         round: humanTurn.roundId,
@@ -342,7 +347,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
         setStep({ phase: "settling", roundId: humanTurn.roundId });
       }
     },
-    [humanTurn, appendEvents],
+    [humanTurn, humanName, appendEvents],
   );
 
   const handleProceed = useCallback(() => {

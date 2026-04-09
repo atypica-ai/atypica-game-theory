@@ -9,6 +9,7 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { BarChart3, Cpu, RefreshCw, Trophy, User } from "lucide-react";
 import { motion } from "motion/react";
 import type { RoundData } from "../index";
+import { ACTION_STYLE } from "../PlayerCard";
 
 // ── Decision display ─────────────────────────────────────────────────────────
 
@@ -26,19 +27,6 @@ function extractDecision(content: unknown): DecisionDisplay {
   return { type: "raw", text: first !== undefined ? String(first) : "?" };
 }
 
-const ACTION_LABELS: Record<string, string> = {
-  cooperate: "Cooperate",
-  defect: "Defect",
-  stag: "Stag",
-  rabbit: "Rabbit",
-  split: "Split",
-  steal: "Steal",
-  volunteer: "Volunteer",
-  abstain: "Abstain",
-  pull: "Pull",
-  stay: "Stay",
-};
-
 function DecisionBadge({ decision }: { decision: DecisionDisplay }) {
   if (decision.type === "numeric") {
     return (
@@ -51,9 +39,10 @@ function DecisionBadge({ decision }: { decision: DecisionDisplay }) {
     );
   }
   const key = decision.type === "named" ? decision.key : decision.text;
+  const style = ACTION_STYLE[key];
   return (
-    <span className="text-sm font-medium" style={{ color: "var(--gt-t2)" }}>
-      {ACTION_LABELS[key] ?? key}
+    <span className="text-sm font-medium" style={{ color: style?.color ?? "var(--gt-t2)" }}>
+      {style?.label ?? key}
     </span>
   );
 }
