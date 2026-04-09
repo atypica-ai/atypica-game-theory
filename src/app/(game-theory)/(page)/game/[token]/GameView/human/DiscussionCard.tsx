@@ -6,44 +6,40 @@ import {
   PersonaDiscussionEvent,
 } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
-import { MessageSquare, Clock, Send } from "lucide-react";
+import { MessageSquare, Clock, Send, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useCountdown, useDeadline } from "../HumanInputPanel";
 import { PLAYER_COLORS } from "../PlayerCard";
-
-/** Duration for human discussion input before auto-skip (ms) */
-const DISCUSSION_DEADLINE_MS = 30_000;
-/** Effectively infinite — disables the timer when human turn is not active */
-const TIMER_DISABLED = 24 * 60 * 60 * 1000;
 
 interface DiscussionCardProps {
   discussions: PersonaDiscussionEvent[];
   participants: GameSessionParticipant[];
   currentSpeakerId: number | null;
-  humanTurnActive: boolean;
+  /** Human has already submitted their message this round */
+  humanHasSpoken: boolean;
+  /** All participants (AI + human) have spoken */
+  allSpoken: boolean;
   onSendMessage: (content: string) => void;
-  onSkipToDecision: () => void;
+  onProceedToDecision: () => void;
 }
 
 export function DiscussionCard({
   discussions,
   participants,
   currentSpeakerId,
-  humanTurnActive,
+  humanHasSpoken,
+  allSpoken,
   onSendMessage,
-  onSkipToDecision,
+  onProceedToDecision,
 }: DiscussionCardProps) {
   const [inputText, setInputText] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const submittedRef = useRef(false);
+  const submittedRef = useRef(humanHasSpoken);
 
-  // Auto-scroll on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [discussions.length, currentSpeakerId]);
 
-  // Submit handler
   const handleSend = useCallback(
     (text: string) => {
       if (submittedRef.current) return;
@@ -60,22 +56,16 @@ export function DiscussionCard({
     handleSend(inputText);
   };
 
-  // Deadline for auto-skip
-  const timerMs = humanTurnActive ? DISCUSSION_DEADLINE_MS : TIMER_DISABLED;
-  const submitRef = useRef(handleSend);
-  submitRef.current = handleSend;
-  const deadlineRef = useRef(() => submitRef.current(""));
-  useDeadline(timerMs, deadlineRef);
-  const { secondsLeft, progress } = useCountdown(timerMs);
-
-  // Typing indicator speaker info
-  const typingSpeaker =
-    currentSpeakerId != null
-      ? participants.find((p) => p.personaId === currentSpeakerId)
-      : null;
+  // Typing indicator
+  const typingSpeaker = currentSpeakerId != null
+    ? participants.find((p) => p.personaId === currentSpeakerId)
+    : null;
   const typingSpeakerIdx = typingSpeaker
     ? participants.findIndex((p) => p.personaId === typingSpeaker.personaId)
     : -1;
+
+  const spokenCount = discussions.length;
+  const totalCount = participants.length;
 
   return (
     <motion.div
@@ -85,21 +75,6 @@ export function DiscussionCard({
       exit={{ opacity: 0, y: -10 }}
       className="card-lab flex flex-col h-[500px]"
     >
-      {/* Timer bar (only when human turn active) */}
-      {humanTurnActive && (
-        <div className="h-[3px] w-full" style={{ background: "var(--gt-border)" }}>
-          <div
-            className="h-full"
-            style={{
-              width: `${progress * 100}%`,
-              background:
-                progress < 0.15 ? "var(--gt-neg)" : progress < 0.4 ? "var(--gt-warn)" : "var(--gt-blue)",
-              transition: "width 0.25s linear, background 0.6s",
-            }}
-          />
-        </div>
-      )}
-
       {/* Header */}
       <div
         className="px-4 py-3 border-b flex items-center justify-between"
@@ -107,30 +82,22 @@ export function DiscussionCard({
       >
         <div className="flex items-center gap-2">
           <MessageSquare size={16} style={{ color: "var(--gt-t3)" }} />
-          <span
-            className="text-xs font-bold uppercase"
-            style={{ letterSpacing: "0.1em", color: "var(--gt-t2)" }}
-          >
+          <span className="text-xs font-bold uppercase" style={{ letterSpacing: "0.1em", color: "var(--gt-t2)" }}>
             Discussion Channel
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {humanTurnActive && (
-            <span
-              className="text-[11px] tabular-nums"
-              style={{
-                color: progress < 0.4 ? "var(--gt-warn)" : "var(--gt-t4)",
-                fontFamily: "IBMPlexMono, monospace",
-              }}
-            >
-              {secondsLeft}s
-            </span>
-          )}
+          <span
+            className="text-[10px] tabular-nums"
+            style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
+          >
+            {spokenCount} / {totalCount} spoken
+          </span>
           <div
             className="flex items-center gap-1 text-[10px]"
             style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
           >
-            <Clock size={12} /> LIVE SESSION
+            <Clock size={12} /> LIVE
           </div>
         </div>
       </div>
@@ -148,33 +115,17 @@ export function DiscussionCard({
           return (
             <div key={i} className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}>
               <div className="flex items-center gap-2 mb-1">
-                {!isUser && (
-                  <HippyGhostAvatar seed={seed} className="size-5 rounded-full" />
-                )}
-                <span
-                  className="text-[10px] font-bold"
-                  style={{ color: isUser ? "var(--gt-t3)" : color }}
-                >
+                {!isUser && <HippyGhostAvatar seed={seed} className="size-5 rounded-full" />}
+                <span className="text-[10px] font-bold" style={{ color: isUser ? "var(--gt-t3)" : color }}>
                   {isUser ? "You" : msg.personaName}
                 </span>
               </div>
               <div
-                className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${
-                  isUser ? "rounded-tr-none" : "rounded-tl-none"
-                }`}
+                className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${isUser ? "rounded-tr-none" : "rounded-tl-none"}`}
                 style={
                   isUser
-                    ? {
-                        background: "var(--gt-blue)",
-                        color: "white",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                      }
-                    : {
-                        background: "var(--gt-row-alt)",
-                        color: "var(--gt-t2)",
-                        border: "1px solid var(--gt-border)",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                      }
+                    ? { background: "var(--gt-blue)", color: "white", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }
+                    : { background: "var(--gt-row-alt)", color: "var(--gt-t2)", border: "1px solid var(--gt-border)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }
                 }
               >
                 {msg.content}
@@ -186,17 +137,9 @@ export function DiscussionCard({
         {/* Typing indicator */}
         {typingSpeaker && (
           <div className="flex items-start gap-2">
-            <HippyGhostAvatar
-              seed={typingSpeaker.personaId}
-              className="size-5 rounded-full mt-0.5"
-            />
+            <HippyGhostAvatar seed={typingSpeaker.personaId} className="size-5 rounded-full mt-0.5" />
             <div>
-              <span
-                className="text-[10px] font-bold"
-                style={{
-                  color: PLAYER_COLORS[typingSpeakerIdx] ?? PLAYER_COLORS[0],
-                }}
-              >
+              <span className="text-[10px] font-bold" style={{ color: PLAYER_COLORS[typingSpeakerIdx] ?? PLAYER_COLORS[0] }}>
                 {typingSpeaker.name}
               </span>
               <div className="flex items-center gap-1 mt-1">
@@ -204,10 +147,7 @@ export function DiscussionCard({
                   <span
                     key={i}
                     className="w-1.5 h-1.5 rounded-full animate-pulse"
-                    style={{
-                      backgroundColor: "var(--gt-t4)",
-                      animationDelay: `${i * 0.25}s`,
-                    }}
+                    style={{ backgroundColor: "var(--gt-t4)", animationDelay: `${i * 0.25}s` }}
                   />
                 ))}
               </div>
@@ -218,20 +158,14 @@ export function DiscussionCard({
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input area */}
-      <form
-        onSubmit={handleFormSubmit}
-        className="p-4 border-t"
-        style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
-      >
-        {humanTurnActive && !submittedRef.current ? (
-          <>
+      {/* Footer: input OR proceed button */}
+      <div className="p-4 border-t" style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}>
+        {!humanHasSpoken ? (
+          /* Human hasn't spoken yet — show input */
+          <form onSubmit={handleFormSubmit}>
             <div
               className="flex items-center gap-2 rounded-full px-4 py-1 border transition-colors focus-within:border-[var(--gt-blue)]"
-              style={{
-                background: "var(--gt-row-alt)",
-                borderColor: "var(--gt-border)",
-              }}
+              style={{ background: "var(--gt-row-alt)", borderColor: "var(--gt-border)" }}
             >
               <input
                 type="text"
@@ -242,40 +176,48 @@ export function DiscussionCard({
                 style={{ color: "var(--gt-t1)" }}
                 autoFocus
               />
-              <button
-                type="submit"
-                className="p-1 transition-transform hover:scale-110"
-                style={{ color: "var(--gt-blue)" }}
-              >
+              <button type="submit" className="p-1 transition-transform hover:scale-110" style={{ color: "var(--gt-blue)" }}>
                 <Send size={18} />
               </button>
             </div>
             <button
               type="button"
               onClick={() => handleSend("")}
-              className="w-full mt-3 text-[10px] font-bold uppercase transition-colors hover:text-[var(--gt-blue)]"
-              style={{
-                letterSpacing: "0.1em",
-                color: "var(--gt-t4)",
-              }}
+              className="w-full mt-2 text-[10px] font-bold uppercase transition-colors hover:text-[var(--gt-blue)]"
+              style={{ letterSpacing: "0.1em", color: "var(--gt-t4)" }}
             >
-              Skip to Decision Phase
+              Say nothing
             </button>
-          </>
+          </form>
         ) : (
+          /* Human has spoken — show proceed button (disabled until all spoken) */
           <button
-            type="button"
-            onClick={onSkipToDecision}
-            className="w-full text-[10px] font-bold uppercase transition-colors hover:text-[var(--gt-blue)]"
-            style={{
-              letterSpacing: "0.1em",
-              color: "var(--gt-t4)",
-            }}
+            onClick={onProceedToDecision}
+            disabled={!allSpoken}
+            className="btn-lab w-full flex items-center justify-center gap-2"
           >
-            Skip to Decision Phase
+            {allSpoken ? (
+              <>PROCEED TO DECISION <ChevronRight size={18} /></>
+            ) : (
+              <span
+                className="flex items-center gap-2 text-[11px] uppercase"
+                style={{ fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.08em" }}
+              >
+                <span className="flex items-center gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="w-1 h-1 rounded-full animate-pulse"
+                      style={{ backgroundColor: "white", animationDelay: `${i * 0.2}s` }}
+                    />
+                  ))}
+                </span>
+                Discussing ({spokenCount} / {totalCount})
+              </span>
+            )}
           </button>
         )}
-      </form>
+      </div>
     </motion.div>
   );
 }

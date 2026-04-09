@@ -31,23 +31,22 @@ const SILENT_DISCUSSION = "(said nothing)";
 
 // ── Game step types ────────────────────────────────────────────────────────
 //
-// The step machine drives the game loop. Key change from the original:
-//   "watching" is a new phase — human submitted their decision, now watching
-//   AI decisions arrive one-by-one on the AnalyzeCard.
+// "discussion" — single phase for AI + human concurrent discussion.
+//   AI speakers fire one-by-one in a loop (decoupled from step machine via
+//   fireAIDiscussions ref). Human can submit at any time. Their message
+//   writes to DB atomically and appears before the in-flight AI's response.
+//   After human speaks, a PROCEED button appears (disabled until all done).
 //
-// AI decision fetches are decoupled from the step machine: they are fired
-// as a standalone promise chain stored in a ref, so changing step does NOT
-// cancel them. Each AI response calls appendEvents(), which triggers a
-// React re-render and the AnalyzeCard shows the new decision live.
+// "watching" — human submitted decision, AI decisions streaming in on AnalyzeCard.
+//   AI decision fetches continue independently. Each arrival re-renders the card.
 
 type GameStep =
   | { phase: "roundStart"; roundId: number }
-  | { phase: "aiDiscussion"; roundId: number }
-  | { phase: "humanDiscussion"; roundId: number }
-  | { phase: "decision"; roundId: number }    // human sees CommitmentCard
-  | { phase: "watching"; roundId: number }     // human submitted, AI still deciding
-  | { phase: "settling"; roundId: number }     // payoff calculation in flight
-  | { phase: "reveal"; roundId: number }       // results shown, PROCEED button
+  | { phase: "discussion"; roundId: number }    // AI loop + human input concurrent
+  | { phase: "decision"; roundId: number }      // human sees CommitmentCard
+  | { phase: "watching"; roundId: number }       // human submitted, AI still deciding
+  | { phase: "settling"; roundId: number }       // payoff calculation in flight
+  | { phase: "reveal"; roundId: number }         // results shown, PROCEED button
   | { phase: "completed" };
 
 // ── Derive initial step from timeline (for resume / page refresh) ─────────
@@ -76,21 +75,21 @@ function deriveInitialStep(
     (e): e is PersonaDecisionEvent => e.type === "persona-decision" && e.round === roundId,
   );
   const humanDecided = decisions.some((d) => d.personaId === HUMAN_PLAYER_ID);
-
   if (decisions.length === participants.length) return { phase: "settling", roundId };
   if (humanDecided) return { phase: "watching", roundId };
   if (decisions.length > 0) return { phase: "decision", roundId };
 
-  const discussions = events.filter(
-    (e): e is PersonaDiscussionEvent => e.type === "persona-discussion" && e.round === roundId,
-  );
-  const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
-  const spokenAI = discussions.filter((d) => d.personaId !== HUMAN_PLAYER_ID);
-  const humanSpoken = discussions.some((d) => d.personaId === HUMAN_PLAYER_ID);
-
+  // Check discussion state
   if (discussionRounds > 0) {
-    if (spokenAI.length < aiParticipants.length) return { phase: "aiDiscussion", roundId };
-    if (!humanSpoken) return { phase: "humanDiscussion", roundId };
+    const discussions = events.filter(
+      (e): e is PersonaDiscussionEvent => e.type === "persona-discussion" && e.round === roundId,
+    );
+    const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
+    const allAISpoken = discussions.filter((d) => d.personaId !== HUMAN_PLAYER_ID).length >= aiParticipants.length;
+    const humanSpoken = discussions.some((d) => d.personaId === HUMAN_PLAYER_ID);
+
+    // If not everyone has spoken, stay in discussion
+    if (!allAISpoken || !humanSpoken) return { phase: "discussion", roundId };
   }
 
   return { phase: "decision", roundId };
@@ -99,7 +98,6 @@ function deriveInitialStep(
 // ── Component ──────────────────────────────────────────────────────────────
 
 export function HumanGameView({ initialData, token }: { initialData: GameSessionDetail; token: string }) {
-  // ── Core derived data ─────────────────────────────────────────────────
   const participants: GameSessionParticipant[] = useMemo(
     () => initialData.extra?.participants ?? [],
     [initialData.extra?.participants],
@@ -111,7 +109,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   const humanParticipant = participants.find((p) => p.personaId === HUMAN_PLAYER_ID);
   const humanName = humanParticipant?.name ?? "You";
 
-  // ── Event timeline (local, append-only) ───────────────────────────────
+  // ── Event timeline ────────────────────────────────────────────────────
   const [events, setEvents] = useState<GameTimeline>(initialData.events);
   const eventsRef = useRef(events);
   eventsRef.current = events;
@@ -127,13 +125,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   const stepRef = useRef(step);
   stepRef.current = step;
 
-  const [humanTurn, setHumanTurn] = useState<{ type: "discussion" | "decision"; roundId: number } | null>(() => {
-    const initial = deriveInitialStep(events, participants, status, discussionRounds);
-    if (initial.phase === "humanDiscussion") return { type: "discussion", roundId: initial.roundId };
-    if (initial.phase === "decision") return { type: "decision", roundId: initial.roundId };
-    return null;
-  });
-
   const [currentSpeakerId, setCurrentSpeakerId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -143,17 +134,57 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
     setEvents(next);
   }, []);
 
-  // ── AI decision fetcher (decoupled from step machine) ─────────────────
+  // ── AI discussion fetcher (decoupled — survives step changes) ─────────
   //
-  // Fired once when entering "decision" phase. The promises continue running
-  // even when step changes to "watching". Each AI response immediately
-  // appends to events, causing live updates on the AnalyzeCard.
-  // When all AI finish, we check if we can auto-settle.
+  // Fires AI speakers one-by-one. Each call reads fresh timeline from DB,
+  // so if the human submitted mid-flight, the NEXT AI speaker sees it.
+  // The human's atomic DB write lands before the in-flight AI's write
+  // because the AI hasn't finished generating yet.
+
+  const aiDiscussionRoundRef = useRef<number>(-1);
+  const aiDiscussionDoneRef = useRef(false);
+
+  const fireAIDiscussions = useCallback((roundId: number) => {
+    if (aiDiscussionRoundRef.current === roundId) return;
+    aiDiscussionRoundRef.current = roundId;
+    aiDiscussionDoneRef.current = false;
+
+    const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
+
+    (async () => {
+      const remaining = [...aiParticipants];
+      // Shuffle for random speaker order
+      for (let i = remaining.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+      }
+
+      for (const p of remaining) {
+        setCurrentSpeakerId(p.personaId);
+        try {
+          const res = await runAIDiscussionFor(token, p.personaId, roundId);
+          if (res.success) {
+            appendEvents(res.event);
+          }
+          // On failure: skip this speaker, continue with next
+        } catch {
+          // Individual failure — continue
+        }
+      }
+
+      setCurrentSpeakerId(null);
+      aiDiscussionDoneRef.current = true;
+      // Force a re-render so DiscussionCard picks up allSpoken
+      setEvents((prev) => [...prev]);
+    })();
+  }, [participants, token, appendEvents]);
+
+  // ── AI decision fetcher (decoupled — survives step changes) ───────────
 
   const aiDecisionRoundRef = useRef<number>(-1);
 
   const fireAIDecisions = useCallback((roundId: number) => {
-    if (aiDecisionRoundRef.current === roundId) return; // already in flight
+    if (aiDecisionRoundRef.current === roundId) return;
     aiDecisionRoundRef.current = roundId;
 
     const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
@@ -173,13 +204,10 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
         }
       }),
     ).then(() => {
-      // All AI done. If human already submitted (watching/settling), trigger settle.
       const currentStep = stepRef.current;
       if (currentStep.phase === "watching" && "roundId" in currentStep && currentStep.roundId === roundId) {
         setStep({ phase: "settling", roundId });
       }
-      // If still in "decision" phase, the handleDecisionSubmit will catch it
-      // by checking all decisions are present.
     });
   }, [participants, token, appendEvents]);
 
@@ -190,8 +218,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   const visualPhase: VisualPhase = useMemo(() => {
     switch (step.phase) {
       case "roundStart": return discussionRounds > 0 ? "discussion" : "commitment";
-      case "aiDiscussion":
-      case "humanDiscussion": return "discussion";
+      case "discussion": return "discussion";
       case "decision": return "commitment";
       case "watching":
       case "settling":
@@ -206,18 +233,22 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   }, [gameState.rounds, currentRound]);
 
   const isFinalRound = totalRounds !== null && currentRound >= totalRounds;
-
   const isAllDecided = currentRoundData.decisions.length === participants.length;
   const hasResult = currentRoundData.result !== null;
 
+  const humanHasSpoken = useMemo(() =>
+    currentRoundData.discussions.some((d) => d.personaId === HUMAN_PLAYER_ID),
+    [currentRoundData.discussions],
+  );
+  const allSpoken = useMemo(() => {
+    const spokenIds = new Set(currentRoundData.discussions.map((d) => d.personaId));
+    return participants.every((p) => spokenIds.has(p.personaId));
+  }, [currentRoundData.discussions, participants]);
+
   // ── Step machine effect ───────────────────────────────────────────────
-  //
-  // Handles: roundStart, aiDiscussion, decision (setup only), settling.
-  // Does NOT handle: humanDiscussion (waits for user), watching (passive),
-  // reveal (waits for user click), completed.
 
   useEffect(() => {
-    const passive = ["completed", "humanDiscussion", "watching", "reveal"];
+    const passive = ["completed", "watching", "reveal"];
     if (passive.includes(step.phase)) return;
 
     let cancelled = false;
@@ -231,46 +262,18 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
             if (!res.success) { setError(res.message); break; }
             appendEvents({ type: "system", content: `Round ${step.roundId} begins.`, round: step.roundId });
             setStep(discussionRounds > 0
-              ? { phase: "aiDiscussion", roundId: step.roundId }
+              ? { phase: "discussion", roundId: step.roundId }
               : { phase: "decision", roundId: step.roundId });
             break;
           }
 
-          case "aiDiscussion": {
-            while (!cancelled) {
-              const currentEvents = eventsRef.current;
-              const spokenIds = new Set(
-                currentEvents
-                  .filter((e): e is PersonaDiscussionEvent => e.type === "persona-discussion" && e.round === step.roundId)
-                  .map((e) => e.personaId),
-              );
-              const remaining = participants.filter(
-                (p) => p.personaId !== HUMAN_PLAYER_ID && !spokenIds.has(p.personaId),
-              );
-              if (remaining.length === 0) break;
-
-              const next = remaining[Math.floor(Math.random() * remaining.length)];
-              setCurrentSpeakerId(next.personaId);
-
-              const res = await runAIDiscussionFor(token, next.personaId, step.roundId);
-              if (cancelled) break;
-              if (!res.success) { setError(res.message); break; }
-              appendEvents(res.event);
-            }
-            if (!cancelled) {
-              setCurrentSpeakerId(null);
-              setHumanTurn({ type: "discussion", roundId: step.roundId });
-              setStep({ phase: "humanDiscussion", roundId: step.roundId });
-            }
+          case "discussion": {
+            fireAIDiscussions(step.roundId);
             break;
           }
 
           case "decision": {
-            // Setup: show CommitmentCard and fire AI decisions in background
-            setHumanTurn({ type: "decision", roundId: step.roundId });
             fireAIDecisions(step.roundId);
-            // Effect ends here — AI fetches run independently via fireAIDecisions.
-            // Human submission handled by handleDecisionSubmit callback.
             break;
           }
 
@@ -305,54 +308,40 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
 
   const handleSendDiscussion = useCallback(
     (content: string) => {
-      if (!humanTurn || humanTurn.type !== "discussion") return;
+      if (step.phase !== "discussion" || !("roundId" in step)) return;
       const trimmed = content.trim() || SILENT_DISCUSSION;
-      const event: PersonaDiscussionEvent = {
+      appendEvents({
         type: "persona-discussion",
         personaId: HUMAN_PLAYER_ID,
         personaName: humanName,
         reasoning: null,
         content: trimmed,
-        round: humanTurn.roundId,
-      };
-      appendEvents(event);
-      setHumanTurn(null);
-      setStep({ phase: "decision", roundId: humanTurn.roundId });
-      void submitHumanDiscussion(token, content, humanTurn.roundId);
+        round: step.roundId,
+      });
+      void submitHumanDiscussion(token, content, step.roundId);
     },
-    [token, humanTurn, humanName, appendEvents],
+    [token, step, humanName, appendEvents],
   );
 
-  const handleSkipToDecision = useCallback(() => {
-    if (humanTurn?.type === "discussion") {
-      handleSendDiscussion("");
-    } else if ("roundId" in step) {
-      setCurrentSpeakerId(null);
-      setHumanTurn(null);
+  const handleProceedToDecision = useCallback(() => {
+    if (step.phase === "discussion" && "roundId" in step) {
       setStep({ phase: "decision", roundId: step.roundId });
     }
-  }, [humanTurn, handleSendDiscussion, step]);
+  }, [step]);
 
   const handleDecisionSubmit = useCallback(
     (action: Record<string, unknown>) => {
-      if (!humanTurn || humanTurn.type !== "decision") return;
-      const roundId = humanTurn.roundId;
-      const event: PersonaDecisionEvent = {
+      if (step.phase !== "decision" || !("roundId" in step)) return;
+      const roundId = step.roundId;
+      appendEvents({
         type: "persona-decision",
         personaId: HUMAN_PLAYER_ID,
         personaName: humanName,
         reasoning: null,
         content: action,
         round: roundId,
-      };
-      appendEvents(event);
-      setHumanTurn(null);
-
-      // Persist to DB, then transition. We go to "watching" immediately
-      // so the user sees the AnalyzeCard with decisions streaming in.
-      // The DB write must land before settling reads the timeline.
+      });
       void submitHumanDecision(token, action, roundId).then(() => {
-        // Check if all AI already finished while we were writing
         const currentEvents = eventsRef.current;
         const allDecisions = currentEvents.filter(
           (e): e is PersonaDecisionEvent => e.type === "persona-decision" && e.round === roundId,
@@ -361,11 +350,9 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
           setStep({ phase: "settling", roundId });
         }
       });
-
-      // Immediately show AnalyzeCard — don't wait for DB write
       setStep({ phase: "watching", roundId });
     },
-    [token, humanTurn, humanName, appendEvents, participants.length],
+    [token, step, humanName, appendEvents, participants.length],
   );
 
   const handleProceed = useCallback(() => {
@@ -398,12 +385,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
         <div className="card-lab p-8 max-w-md text-center">
           <p className="text-[13px] font-medium mb-2" style={{ color: "var(--gt-neg)" }}>Error</p>
           <p className="text-[12px] mb-4" style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}>{error}</p>
-          <button
-            onClick={() => { setError(null); setStep((s) => ({ ...s })); }}
-            className="btn-lab px-6"
-          >
-            Retry
-          </button>
+          <button onClick={() => { setError(null); setStep((s) => ({ ...s })); }} className="btn-lab px-6">Retry</button>
         </div>
       </div>
     );
@@ -414,7 +396,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       {visualPhase !== "completed" && (
         <PhaseProgress phase={visualPhase} hasDiscussion={discussionRounds > 0} />
       )}
-
       <div className="w-full max-w-xl">
         <AnimatePresence mode="wait">
           {visualPhase === "discussion" && (
@@ -423,12 +404,12 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
               discussions={currentRoundData.discussions}
               participants={participants}
               currentSpeakerId={currentSpeakerId}
-              humanTurnActive={humanTurn?.type === "discussion"}
+              humanHasSpoken={humanHasSpoken}
+              allSpoken={allSpoken}
               onSendMessage={handleSendDiscussion}
-              onSkipToDecision={handleSkipToDecision}
+              onProceedToDecision={handleProceedToDecision}
             />
           )}
-
           {visualPhase === "commitment" && (
             <CommitmentCard
               key={`commit-${currentRound}`}
@@ -441,7 +422,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
               onSubmit={handleDecisionSubmit}
             />
           )}
-
           {visualPhase === "analyze" && (
             <AnalyzeCard
               key={`analyze-${currentRound}`}
@@ -455,7 +435,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
               onProceed={isFinalRound ? handleViewFinalResults : handleProceed}
             />
           )}
-
           {visualPhase === "completed" && (
             <ResultsView
               key="results"
@@ -468,13 +447,8 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
             />
           )}
         </AnimatePresence>
-
         {visualPhase !== "completed" && (
-          <RoundProgress
-            round={currentRound}
-            totalRounds={totalRounds}
-            gameTypeName={gameTypeName}
-          />
+          <RoundProgress round={currentRound} totalRounds={totalRounds} gameTypeName={gameTypeName} />
         )}
       </div>
     </div>
