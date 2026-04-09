@@ -5,10 +5,11 @@ import {
   PersonaForPicker,
   searchPersonasForGame,
 } from "@/app/(game-theory)/actions";
+import { GameRulesDisplay } from "@/app/(game-theory)/components/GameRulesDisplay";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 
 export type GameTypeInfo = {
@@ -22,139 +23,9 @@ export type GameTypeInfo = {
   rules?: string;
 };
 
-// Payoff matrix data
-const PD_PAYOFFS: Record<string, Record<string, { you: number; them: number }>> = {
-  cooperate: {
-    cooperate: { you: 51, them: 51 },
-    defect: { you: 22, them: 63 },
-  },
-  defect: {
-    cooperate: { you: 63, them: 22 },
-    defect: { you: 39, them: 39 },
-  },
-};
-
 interface NewGameClientProps {
   gameTypes: GameTypeInfo[];
   personas: PersonaForPicker[];
-}
-
-// ── Payoff table: Prisoner's Dilemma ─────────────────────────────────────────
-
-function PDPayoffTable() {
-  return (
-    <table
-      className="text-left border-collapse w-fit mt-3"
-      style={{ border: "1px solid var(--gt-border)" }}
-    >
-      <thead>
-        <tr>
-          <th
-            className="px-3 py-2 text-[10px] font-normal"
-            style={{ background: "var(--gt-row-alt)", color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", borderRight: "1px solid var(--gt-border)", borderBottom: "1px solid var(--gt-border)" }}
-          />
-          {(["Cooperate", "Defect"] as const).map((col) => (
-            <th
-              key={col}
-              className="px-4 py-2 text-[10px] font-normal uppercase"
-              style={{ background: "var(--gt-row-alt)", color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.08em", borderBottom: "1px solid var(--gt-border)", borderRight: "1px solid var(--gt-border)" }}
-            >
-              {col}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {(["cooperate", "defect"] as const).map((row) => (
-          <tr key={row}>
-            <td
-              className="px-3 py-2 text-[10px] font-normal uppercase"
-              style={{ background: "var(--gt-row-alt)", color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.08em", borderRight: "1px solid var(--gt-border)", borderBottom: "1px solid var(--gt-border)" }}
-            >
-              {row.charAt(0).toUpperCase() + row.slice(1)}
-            </td>
-            {(["cooperate", "defect"] as const).map((col) => {
-              const cell = PD_PAYOFFS[row][col];
-              const isTempt = row === "defect" && col === "cooperate";
-              const isSucker = row === "cooperate" && col === "defect";
-              return (
-                <td
-                  key={col}
-                  className="px-4 py-2"
-                  style={{
-                    background: isTempt ? "var(--gt-pos-bg)" : isSucker ? "var(--gt-neg-bg)" : "var(--gt-surface)",
-                    borderRight: "1px solid var(--gt-border)",
-                    borderBottom: "1px solid var(--gt-border)",
-                  }}
-                >
-                  <span
-                    className="text-[16px] font-[600] block leading-none tabular-nums"
-                    style={{
-                      color: isTempt ? "var(--gt-pos)" : isSucker ? "var(--gt-neg)" : "var(--gt-t1)",
-                      letterSpacing: "var(--gt-tracking-tight)",
-                    }}
-                  >
-                    {cell.you}
-                  </span>
-                  <span className="text-[10px] mt-0.5 block" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>
-                    / {cell.them}
-                  </span>
-                </td>
-              );
-            })}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-// ── Payoff table: Stag Hunt ───────────────────────────────────────────────────
-
-function StagHuntPayoffTable() {
-  const rows = [
-    { label: "Stag · hunt succeeds", pts: 25, note: "≥T hunters", variant: "pos" as const },
-    { label: "Stag · hunt fails", pts: 0, note: "<T hunters", variant: "neg" as const },
-    { label: "Rabbit · hunt succeeds", pts: 35, note: "free-ride bonus", variant: "warn" as const },
-    { label: "Rabbit · hunt fails", pts: 10, note: "private reward", variant: "neutral" as const },
-  ];
-
-  return (
-    <table
-      className="text-left border-collapse w-full mt-3"
-      style={{ border: "1px solid var(--gt-border)" }}
-    >
-      <tbody>
-        {rows.map((row, idx) => (
-          <tr key={row.label} style={{ background: idx % 2 === 0 ? "var(--gt-surface)" : "var(--gt-row-alt)" }}>
-            <td
-              className="px-3 py-2 text-[11px]"
-              style={{ color: "var(--gt-t2)", borderRight: "1px solid var(--gt-border)", borderBottom: "1px solid var(--gt-border)" }}
-            >
-              {row.label}
-            </td>
-            <td
-              className="px-4 py-2 tabular-nums font-[600] text-[16px]"
-              style={{
-                color: row.variant === "pos" ? "var(--gt-pos)" : row.variant === "neg" ? "var(--gt-neg)" : row.variant === "warn" ? "var(--gt-warn)" : "var(--gt-t1)",
-                borderRight: "1px solid var(--gt-border)",
-                borderBottom: "1px solid var(--gt-border)",
-                letterSpacing: "var(--gt-tracking-tight)",
-              }}
-            >
-              {row.pts}
-            </td>
-            <td
-              className="px-3 py-2 text-[10px]"
-              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", borderBottom: "1px solid var(--gt-border)" }}
-            >
-              {row.note}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -323,45 +194,13 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                     </div>
                   </button>
 
-                  {/* Expanded payoff details */}
+                  {/* Expanded rules */}
                   {isSelected && (
                     <div
                       className="px-8 py-6 border-b"
                       style={{ borderColor: "var(--gt-border)", background: "var(--gt-row-alt)" }}
                     >
-                      <span
-                        className="text-[11px] uppercase block mb-2"
-                        style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
-                      >
-                        Payoff Structure
-                      </span>
-                      {gt.name === "prisoner-dilemma" && (
-                        <>
-                          <PDPayoffTable />
-                          <p
-                            className="text-[10px] mt-2"
-                            style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
-                          >
-                            Row = your choice · Col = their choice · large = your points
-                          </p>
-                        </>
-                      )}
-                      {gt.name === "stag-hunt" && (
-                        <>
-                          <StagHuntPayoffTable />
-                          <p
-                            className="text-[10px] mt-2"
-                            style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
-                          >
-                            T = roundup(40% × N)
-                          </p>
-                        </>
-                      )}
-                      {gt.name !== "prisoner-dilemma" && gt.name !== "stag-hunt" && (
-                        <p className="text-[12px] mt-2 italic" style={{ color: "var(--gt-t2)", fontFamily: "'Instrument Serif', Georgia, serif" }}>
-                          See game rules for payoff details.
-                        </p>
-                      )}
+                      <GameRulesDisplay gameTypeName={gt.name} />
                     </div>
                   )}
                 </div>

@@ -226,6 +226,15 @@ export function HumanNewGameClient({
                       {isSelected ? "▴" : "▾"}
                     </div>
                   </button>
+                  {/* Expanded rules */}
+                  {isSelected && (
+                    <div
+                      className="px-8 py-6 border-b"
+                      style={{ borderColor: "var(--gt-border)", background: "var(--gt-row-alt)" }}
+                    >
+                      <GameRulesDisplay gameTypeName={gt.name} />
+                    </div>
+                  )}
                 </div>
               );
             })}
