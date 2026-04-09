@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { GameTypeInfo } from "../../game/new/NewGameClient";
-import { GameRulesDisplay } from "./GameRulesDisplay";
+import { GameRulesDisplay } from "@/app/(game-theory)/components/GameRulesDisplay";
 
 export function HumanNewGameClient({
   gameTypes,

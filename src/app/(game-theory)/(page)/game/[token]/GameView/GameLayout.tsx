@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { RoundPill } from "./RoundView";
 import { getRoundPayoffSum, RoundData } from "./index";
 import { formatGameTypeName } from "./index";
+import { GameRulesDisplay } from "@/app/(game-theory)/components/GameRulesDisplay";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -52,6 +54,8 @@ export function GameLayout({
   onSelectRound,
   children,
 }: GameLayoutProps) {
+  const [rulesOpen, setRulesOpen] = useState(false);
+
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ background: "var(--gt-bg)" }}>
 
@@ -76,6 +80,21 @@ export function GameLayout({
             >
               {formatGameTypeName(gameType)}
             </span>
+            <button
+              onClick={() => setRulesOpen(true)}
+              className="w-5 h-5 flex items-center justify-center rounded-full border transition-colors hover:text-[var(--gt-blue)] hover:border-[var(--gt-blue-border)]"
+              style={{
+                fontSize: "11px",
+                fontFamily: "IBMPlexMono, monospace",
+                fontWeight: 500,
+                color: "var(--gt-t4)",
+                borderColor: "var(--gt-border-md)",
+                lineHeight: 1,
+              }}
+              title="Game rules"
+            >
+              ?
+            </button>
             {!isPending && currentRoundNumber > 0 && (
               <>
                 <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
@@ -267,6 +286,52 @@ export function GameLayout({
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         {children}
       </div>
+
+      {/* ── Rules dialog ───────────────────────────────────────────────────── */}
+      {rulesOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "hsl(24 6% 17% / 0.25)" }}
+          onClick={() => setRulesOpen(false)}
+        >
+          <div
+            className="relative w-full mx-4 border overflow-hidden flex flex-col"
+            style={{
+              maxWidth: "640px",
+              maxHeight: "80vh",
+              background: "var(--gt-surface)",
+              borderColor: "var(--gt-border)",
+              borderRadius: "0.5rem",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Dialog header */}
+            <div
+              className="shrink-0 flex items-center justify-between px-6 py-4 border-b"
+              style={{ borderColor: "var(--gt-border)" }}
+            >
+              <span
+                className="text-[15px] font-[600]"
+                style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+              >
+                {formatGameTypeName(gameType)}
+              </span>
+              <button
+                onClick={() => setRulesOpen(false)}
+                className="w-6 h-6 flex items-center justify-center rounded transition-colors hover:bg-[var(--gt-row-alt)]"
+                style={{ color: "var(--gt-t3)", fontSize: "16px", lineHeight: 1 }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Dialog body */}
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <GameRulesDisplay gameTypeName={gameType} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
