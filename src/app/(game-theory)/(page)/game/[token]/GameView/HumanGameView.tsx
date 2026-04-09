@@ -445,7 +445,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       bannerData={bannerData}
       navRounds={navRounds}
       rounds={gameState.rounds}
-      selectedRoundId={selectedRoundId}
       manualRoundId={roundNav.manualRoundId}
       showResults={showResults}
       canGoPrev={canGoPrev}

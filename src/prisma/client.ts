@@ -1,35 +1,19 @@
 export * from "./generated/browser"; // 导出前端可以用的类型，包含 enum 和 models
-// export * from "./generated/enums";
-// export * from "./generated/models";  // 只包含类似 UserModel 这样的对象，没有 User
-
-import { V4MessagePart, V5MessagePart } from "@/ai/v4";
 
 /**
- * Enums
+ * Types for Prisma JSON fields — only types used by kept models
  */
 
-// nothing
-
-/**
- * Types
- */
-
-export type UserType = "Personal" | "TeamMember";
-
-export type UserOnboardingData = Partial<{
-  usageType: "work" | "personal";
-  role: string;
-  industry: string;
-  companyName: string;
-  howDidYouHear: string;
-  completedAt: string; // ISOString
-}>;
-
-// deprecated
-export type DeprecatedUserExtra = Partial<{
-  // stripeCustomerId: string; // dropped, see payment/(stripe)/create.ts
-  onboarding: UserOnboardingData;
-  lastTrack: number; // timestamp of last trackUser
+export type UserLastLogin = Partial<{
+  timestamp: number;
+  clientIp: string;
+  userAgent: string;
+  geo: Partial<{
+    country: string;
+    countryCode: string;
+    city: string;
+  }>;
+  provider: "email-password" | "impersonation" | "team-switch" | "google" | "aws-marketplace";
 }>;
 
 export type UserProfileExtra = Partial<{
@@ -53,450 +37,102 @@ export type UserProfileExtra = Partial<{
       capturedAt?: string;
     };
   };
-  tolt?: {
-    via: string; // referral code from ?via=xxx
-    capturedAt?: string;
-    customerId?: string; // Tolt customer ID (set after signup tracking)
-    partnerId?: string; // Tolt partner ID
-    clickId?: string; // Tolt click ID
-  };
 }>;
 
-export type UserLastLogin = Partial<{
-  timestamp: number;
-  clientIp: string;
-  userAgent: string;
-  geo: Partial<{
-    country: string;
-    countryCode: string;
-    city: string;
-  }>;
-  provider: "email-password" | "impersonation" | "team-switch" | "google" | "aws-marketplace";
-}>;
-
-export type AnalystReportExtra = Partial<{
-  title: string;
-  description: string;
-  userChatToken: string;
-  analystKind: string; //AnalystKind;
-  coverObjectUrl: string;
-  // s3SignedCoverObjectUrl: string | null;
-  // s3SignedCoverObjectUrlExpiresAt: number | null; // timestamp millis
-  pdfObjectUrl: string;
-  // s3SignedPdfObjectUrl: string;
-  // s3SignedPdfObjectUrlExpiresAt: number; // timestamp millis
-}>;
-
-export type UserChatExtra = Partial<{
-  // 客户端信息
-  clientIp: string;
-  userAgent: string;
-  locale: string;
-  geo: Partial<{
-    country: string;
-    countryCode: string;
-    city: string;
-  }>;
-  // user chat 通用信息
-  feedback: {
-    rating: string;
-    submittedAt: string;
-  };
-  // Runtime execution ownership marker. If present, this chat is currently running in background.
-  runId: string;
-  error: string;
-  archived: boolean; // 归档标记
-  // 下一步操作建议（从 Analyst.extra 迁移过来）
-  recommendedStudies: {
-    questions?: Array<{
-      title: string;
-      brief: string;
-    }>;
-    generatedAt?: string;
-    processing?: string; // 存储开始时间戳 Date.now().toString()
-  };
-  /**
-   * @deprecated 以下字段已迁移到 UserChat.context
-   * 迁移脚本: scripts/archive/legacy/2026-01/migrate-to-context-driven.sql (迁移 8)
-   * 请改用 UserChatContext 中的对应字段
-   */
-  // referenceUserChats: string[]; // 已迁移到 context.referenceUserChats
-  // researchTemplateId: number; // 已迁移到 context.researchTemplateId
-  // newStudyUserChatToken: string; // 已迁移到 context.newStudyUserChatToken
-  // briefUserChatId: number; // 已迁移到 context.briefUserChatId
-  // deepResearchExpert: "grok" | "trendExplorer"; // 已迁移到 context.deepResearchExpert
-}>; // & Record<string, string | number>
-
-// for extra field on ChatStatistics and UserTokensLog
+// for extra field on AgentStatistics / token usage tracking
 export type AgentStatisticsExtra = {
   reportedBy: string;
 } & Record<string, unknown>;
 
-export type ChatMessageAttachment = {
-  objectUrl: string; // s3 object url without signature
-  name: string;
-  mimeType: string;
-  size: number; // bytes
-};
-
-export type ChatMessagePart = V4MessagePart | V5MessagePart;
-
-export type ImageGenerationExtra = Partial<{
-  ratio: string;
-  reportToken: string;
-  midjourney: { urls: string[] };
-  // s3SignedUrl: string;
-  // s3SignedUrlExpiresAt: number; // timestamp millis
-  error: string;
-}>;
-
-export type AttachmentFileExtra = Partial<{
-  // s3SignedUrl: string;
-  // s3SignedUrlExpiresAt: number; // timestamp millis
-  processing:
-    | {
-        startsAt: number;
-      }
-    | false;
-  compressedText: string;
-  error: string;
-}>;
-
-export type PersonaImportExtra = Partial<{
-  error: string;
-  // processing: boolean;
-  processing:
-    | {
-        startsAt: number; // timestamp, typeof Date.now()
-        parseAttachment: boolean;
-        buildPersonaPrompt: boolean;
-        analyzeCompleteness: boolean;
-      }
-    | false;
-}>;
-
-export type InterviewProjectQuestion = {
-  text: string;
-  image?: ChatMessageAttachment; // 使用标准的 attachment 结构
-  questionType?: "open" | "single-choice" | "multiple-choice";
-  hint?: string; // AI 处理问题的自然语言提示
-  options?: Array<string | { text: string }>; // 选择题的选项（支持旧格式兼容）
-};
-
-export type InterviewProjectExtra = Partial<{
-  error: string;
-  processing: boolean;
-  permanentShareToken: string; // 永久链接令牌，用于验证永久链接
-  archived: boolean; // 归档标记
-}>;
-
-export type InterviewSessionExtra = Partial<{
-  error: string; // 错误信息
-  ongoing: boolean; // 是否正在进行中
-  startsAt: number; // 开始时间戳（首次消息时设置）
-  pdfObjectUrl: string; // PDF文件的S3对象URL
-  preferredLanguage: string; // 用户偏好的访谈语言
-  personalInfo: Array<{ label: string; text: string }>; // 个人信息字段（灵活结构）
-  questions: Array<{
-    text: string;
-    image?: ChatMessageAttachment; // 问题图片
-    questionType?: "open" | "single-choice" | "multiple-choice";
-    hint?: string; // AI 处理问题的自然语言提示
-    options?: Array<string | { text: string }>; // 选择题的选项（支持旧格式兼容）
-  }>; // 问题列表快照（创建 Session 时从 Project 复制）
-}>;
-
-export type InterviewReportExtra = Partial<{
-  sessions: Array<{
-    id: number;
-    title: string;
-  }>;
-  pdfObjectUrl: string;
-  error: string; // 错误信息
-}>;
-
-export type AnalystPodcastExtra = Partial<{
-  userChatToken: string;
-
-  metadata: {
-    title?: string;
-    mimeType?: string; // 默认是 audio/mpeg，但是还是保存下来
-    duration?: number; // 音频时长，单位：秒
-    size?: number; // 文件大小，单位：字节
-    showNotes?: string; // 播客节目说明
-    coverObjectUrl?: string; // 封面图片
-  };
-
-  // Podcast kind determination by LLM with reasoning
-  kindDetermination: {
-    kind: "deepDive" | "opinionOriented" | "fastInsight" | "debate";
-    reason: string;
-    systemPrompt?: string; // 覆盖 systemPrompt
-  };
-
-  // S3 签名URL缓存（音频文件）
-  // s3SignedUrl: string;
-  // s3SignedUrlExpiresAt: number; // timestamp millis
-
-  // 处理状态 - 参考 PersonaImportExtra 的详细模式
-  processing:
-    | {
-        startsAt: number; // timestamp, typeof Date.now()
-        scriptGeneration: boolean; // 脚本生成是否完成
-        audioGeneration: boolean; // 音频生成是否完成
-      }
-    | false; // false 表示未开始或已完成
-
-  // 错误信息 - 保持与其他 extra 一致
-  error: string;
-}>;
-
-// AnalystExtra 和 UserChatExtra 的关系是：
-// 研究开始前的额外信息，都存 UserChatExtra，是发起研究或者需求相关对的
-// 研究结束后的额外信息，都存 AnalystExtra，是产物或者下一步动作相关
-// export type AnalystExtra = Partial<{
-//   /**
-//    * @deprecated 已迁移到 UserChat.extra
-//    * 使用 UserChatExtra.recommendedStudies 代替
-//    * 迁移脚本: scripts/archive/legacy/2026-01/migrate-to-context-driven.sql (迁移 7)
-//    */
-//   // recommendedStudies: {
-//   //   questions: Array<{
-//   //     title: string;
-//   //     brief: string;
-//   //   }>;
-//   //   generatedAt?: string;
-//   //   processing?: string; // 存储开始时间戳 Date.now().toString()
-//   // };
-// }>;
-
-export type SubscriptionExtra = Partial<{
-  seats: number;
-}>;
-
-export type TokensAccountExtra = Partial<{
-  unlimitedTokens: boolean;
-}>;
-
-export type TokensLogExtra = Partial<
-  AgentStatisticsExtra & {
-    noCharge: boolean;
-  }
->;
-
 export type TeamExtra = Partial<{
   unlimitedSeats: boolean;
-}>;
-
-export type ApiKeyExtra = Partial<{
-  createdByEmail: string; // Email of the creator
-}>;
-
-export type FeaturedItemExtra = Partial<{
-  title: string;
-  description: string;
-  coverObjectUrl: string;
-  url: string;
-  category: string; // report 的 analyst.kind, podcast 暂时没有不需要设置
-  tags: string; // 逗号分隔的标签字符串
-}>;
-
-export enum FeaturedItemResourceType {
-  StudyUserChat = "StudyUserChat",
-  AnalystReport = "AnalystReport",
-  AnalystPodcast = "AnalystPodcast",
-}
-
-export type BlogArticleExtra = Partial<{
-  contentType: "html" | "markdown";
-  coverSrc: string;
-  originalUrl: string; // Substack 原文链接
-}>;
-
-export type ResearchTemplateExtra = Partial<{
-  useCount: number; // 使用次数统计
-  tags: string[]; // Research method tags
 }>;
 
 // ── Character Profile ─────────────────────────────────────────────────────────
 // A general psychological profile derived from research into FBI profiling,
 // Hogan Assessments, Enneagram, MBTI cognitive functions, adult attachment theory,
 // Schwartz values, and Kegan developmental stages.
-// This is NOT a game-theory optimizer — it captures the full texture of a human
-// psyche so that behavior in any context (game, interview, conversation) emerges
-// naturally from who the person is.
 
 export type CharacterProfile = {
-  // ── Core: WHY they are who they are ────────────────────────────────────────
-  // The fear-desire engine at the center of the character.
-  // Source: Enneagram + Schwartz Basic Human Values
   core: {
-    primaryFear: string; // e.g. "being abandoned without support"
-    primaryDesire: string; // e.g. "to be needed and indispensable to others"
-    defensiveStrategy: string; // e.g. "gives generously to create bonds, tracks reciprocity unconsciously"
-    dominantValues: [string, string, string]; // Top 3 from Schwartz: Security, Benevolence, Power, Achievement, etc.
-    valueTension: string | null; // e.g. "Power vs. Benevolence — wants influence but fears being seen as selfish"
+    primaryFear: string;
+    primaryDesire: string;
+    defensiveStrategy: string;
+    dominantValues: [string, string, string];
+    valueTension: string | null;
   };
-
-  // ── Style: HOW they show up day-to-day ─────────────────────────────────────
-  // Observable, continuous trait scores.
-  // Source: Big Five / Hogan HPI
   style: {
-    openness: number; // 0–100: curiosity, imagination, comfort with novelty
-    conscientiousness: number; // 0–100: organization, follow-through, self-discipline
-    extraversion: number; // 0–100: social energy, assertiveness, expressiveness
-    agreeableness: number; // 0–100: warmth, trust of others, conflict-avoidance
-    emotionalStability: number; // 0–100: inverse of neuroticism; calm under pressure
-    ambition: number; // 0–100: drive to lead, win, advance (Hogan HPI — distinct from extraversion)
+    openness: number;
+    conscientiousness: number;
+    extraversion: number;
+    agreeableness: number;
+    emotionalStability: number;
+    ambition: number;
   };
-
-  // ── Relational: HOW they handle vulnerability, trust, and betrayal ──────────
-  // Governs all cooperative and competitive dynamics.
-  // Source: Adult Attachment Theory (Bartholomew & Horowitz)
   relational: {
     attachmentStyle: "secure" | "anxious" | "dismissing" | "fearful";
-    attachmentAnxiety: number; // 0–100: fear of abandonment, hypervigilance about relationship security
-    attachmentAvoidance: number; // 0–100: discomfort with closeness, preference for self-sufficiency
+    attachmentAnxiety: number;
+    attachmentAvoidance: number;
     trustStance:
       | "trusts until proven wrong"
       | "cautiously extends trust"
       | "trust must be earned"
       | "assumes ulterior motives";
   };
-
-  // ── Cognition: HOW they process information and decide ───────────────────────
-  // Source: MBTI cognitive functions + Mayer-Salovey-Caruso EI model
   cognition: {
     informationStyle:
-      | "concrete-sequential" // trusts facts, patterns, prior precedent
-      | "concrete-adaptive" // facts-based but acts fluidly in the moment
-      | "abstract-systematic" // builds principles and systems from patterns
-      | "abstract-intuitive"; // hunches, possibilities, big-picture leaps
+      | "concrete-sequential"
+      | "concrete-adaptive"
+      | "abstract-systematic"
+      | "abstract-intuitive";
     decisionCriteria:
-      | "logic-and-efficiency" // Te: what works, what produces results
-      | "internal-consistency" // Ti: what is precisely and coherently true
-      | "group-harmony" // Fe: what keeps relationships and group intact
-      | "personal-values"; // Fi: what aligns with who I fundamentally am
-    emotionalPerception: number; // 0–100: accurately reads emotions in others (MSCEIT Branch 1)
-    emotionalRegulation: number; // 0–100: stays functional under emotional pressure (MSCEIT Branch 4)
+      | "logic-and-efficiency"
+      | "internal-consistency"
+      | "group-harmony"
+      | "personal-values";
+    emotionalPerception: number;
+    emotionalRegulation: number;
   };
-
-  // ── Shadow: WHO they become under stress ────────────────────────────────────
-  // The amplified strength that overshoots when guard is down or stakes are high.
-  // This is the most predictive layer for crisis behavior.
-  // Source: Hogan HDS (11 derailers) + Enneagram stress arrow + FBI behavioral typology
   shadow: {
     primaryDerailer:
-      | "excitable" // emotionally volatile; swings from idealization to abandonment
-      | "skeptical" // cynicism hardens into distrust; challenges everyone's motives
-      | "cautious" // fear of failure freezes decisions; avoids exposure
-      | "reserved" // goes cold and unreachable; ignores emotional signals
-      | "leisurely" // passive-aggressive; quietly obstructs; appears cooperative
-      | "bold" // arrogant; feels rules don't apply; dismisses feedback
-      | "mischievous" // tests limits; charm without substance; strategic manipulation
-      | "colorful" // dramatic; impulsive; poor follow-through
-      | "diligent" // perfectionist; micromanages; punishes deviation
-      | "dutiful"; // over-compliant; can't refuse; follows bad orders
+      | "excitable"
+      | "skeptical"
+      | "cautious"
+      | "reserved"
+      | "leisurely"
+      | "bold"
+      | "mischievous"
+      | "colorful"
+      | "diligent"
+      | "dutiful";
     secondaryDerailer?: CharacterProfile["shadow"]["primaryDerailer"];
-    stressTrigger: string; // what activates the shadow, e.g. "perceived disrespect" or "loss of control"
-    shadowExpression: "organized" // shadow is consistent, deliberate, strategic
-      | "disorganized"; // shadow is reactive, chaotic, unpredictable
+    stressTrigger: string;
+    shadowExpression: "organized" | "disorganized";
   };
-
-  // ── Development: HOW complex their self-awareness is ────────────────────────
-  // Determines behavioral flexibility and whether a type is a destiny or a tendency.
-  // Source: Kegan's Orders of Mind / Loevinger's Ego Development
   development: {
     level:
-      | "impulsive" // driven by immediate needs; minimal self-reflection (Kegan 2nd)
-      | "self-protective" // pure self-interest; rules are for others (Loevinger E2)
-      | "socialized" // governed by relationships and group norms (Kegan 3rd — most common)
-      | "self-authoring" // has own principles; consistent independent of social pressure (Kegan 4th)
-      | "self-transforming"; // holds multiple frameworks simultaneously; rare (Kegan 5th)
+      | "impulsive"
+      | "self-protective"
+      | "socialized"
+      | "self-authoring"
+      | "self-transforming";
     moralAuthority:
-      | "external-rules" // does what they're told or what's normal
-      | "relational" // does what keeps important relationships intact
-      | "principled" // does what their own values demand, regardless of opinion
-      | "contextual"; // reasons from multiple frameworks; resists single-answer morality
+      | "external-rules"
+      | "relational"
+      | "principled"
+      | "contextual";
   };
 };
 
 export type PersonaExtra = Partial<{
-  role: "consumer" | "buyer" | "expert"; // Persona role: consumer (B2C), buyer (B2B), expert (domain specialist)
-  quote: string; // First-person quote reflecting personality and preferences (~120 Chinese chars or ~80 English words)
-  // Common fields - use 2-3 fields based on role
-  age: number; // Specific age integer 18–80
-  location: string; // Location format: English "City, Country" (e.g. "Shanghai, China") or Chinese "国家城市" (e.g. "中国上海")
-  industry: string; // Industry/domain (for buyer & expert) - e.g. "FinTech", "AI"
-  title: string; // Job title/role (all types) - e.g. "Stay-at-home Parents", "IT Procurement Manager", "Senior Researcher"
-  organization: string; // Organization (for buyer & expert) - e.g. "500-1000 employees", "Tsinghua University"
-  experience: string; // Experience/seniority (mainly for expert) - e.g. "10 years"
-  archived: boolean; // 归档标记
-  characterProfile: CharacterProfile; // Deep psychological profile for rich simulation across any context
+  role: "consumer" | "buyer" | "expert";
+  quote: string;
+  age: number;
+  location: string;
+  industry: string;
+  title: string;
+  organization: string;
+  experience: string;
+  archived: boolean;
+  characterProfile: CharacterProfile;
 }>;
-
-export type PersonaPanelExtra = Partial<{
-  processing:
-    | {
-        startsAt: number; // timestamp, typeof Date.now()
-      }
-    | false; // false 表示未开始或已完成
-  error: string; // 错误信息
-  archived: boolean; // 归档标记
-}>;
-
-export type DiscussionTimelineExtra = Partial<{
-  error: string | null; // Error message if processing failed
-  moderatorSystem: string; // Moderator system prompt
-}>;
-
-export type AgentSkillExtra = Partial<{
-  // 来源信息
-  source: "upload" | "sage"; // 技能来源
-  sourceId: number; // 如果来自 Sage，记录 Sage ID
-
-  // 本地缓存路径（运行时计算，不持久化到数据库）
-  // 格式: /tmp/skills/{userId}/{skillName} 或 {cwd}/skills/{userId}/{skillName}
-  // localPath: string; // 注释：可以通过 userId 和 name 构建，无需存储
-}>;
-
-// Removed
-// export type ProductExtra = Partial<{
-//   stripePriceId: string;
-// }>;
-// export type UserSubscriptionExtra = Partial<{
-//   // ... pingxx invoice data tbd
-//   paymentRecordId: number;
-//   invoice: Stripe.Invoice;
-// }>;
-// export type TokensAccountExtra = Partial<{
-//   activeUserSubscriptionId: number;
-// }>;
-
-// Pulse
-import type { PulsePostData } from "@/app/(pulse)/heat/types";
-
-export type PulseExtra = Partial<{
-  posts: PulsePostData[];
-  carriedOverDays: number;
-  matchedYesterdayPulseId: number;
-  error: {
-    reason: string;
-    details: string;
-    stack?: string;
-    timestamp: string;
-  };
-}>;
-
-// 只覆盖这个不够，findUnique 返回的类型还是原来的
-// import { User as UserPrisma } from "@/prisma/client/index";
-// export type User = Omit<UserPrisma, "lastLogin"> & {
-//   lastLogin: UserLastLogin;
-// };
-// import { AnalystReport as AnalystReportPrisma } from "@/prisma/client/index";
-// export type AnalystReport = Omit<AnalystReportPrisma, "extra"> & {
-//   extra: {
-//     coverObjectUrl?: string;
-//     pdfObjectUrl?: string;
-//   } | null;
-// };
