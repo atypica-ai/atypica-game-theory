@@ -415,8 +415,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
               key={`commit-${currentRound}`}
               roundId={currentRound}
               gameTypeName={gameTypeName}
-              participants={participants}
-              aiReadySet={new Set<number>()}
               currentScores={gameState.scores}
               isSettling={false}
               onSubmit={handleDecisionSubmit}

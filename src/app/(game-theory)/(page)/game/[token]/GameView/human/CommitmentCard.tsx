@@ -6,11 +6,8 @@ import type {
   HumanInputField,
   HumanInputFieldVariant,
 } from "@/app/(game-theory)/gameTypes/types";
-import {
-  GameSessionParticipant,
-  HUMAN_PLAYER_ID,
-} from "@/app/(game-theory)/types";
-import { Cpu, Target } from "lucide-react";
+import { HUMAN_PLAYER_ID } from "@/app/(game-theory)/types";
+import { Target } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
 import { useCountdown, useDeadline } from "../HumanInputPanel";
@@ -32,8 +29,6 @@ const VARIANT_COLORS: Record<HumanInputFieldVariant, { color: string; bg: string
 interface CommitmentCardProps {
   roundId: number;
   gameTypeName: string;
-  participants: GameSessionParticipant[];
-  aiReadySet: Set<number>;
   currentScores: Record<number, number>;
   isSettling: boolean;
   onSubmit: (action: Record<string, unknown>) => void;
@@ -44,8 +39,6 @@ interface CommitmentCardProps {
 export function CommitmentCard({
   roundId,
   gameTypeName,
-  participants,
-  aiReadySet,
   currentScores,
   isSettling,
   onSubmit,
@@ -142,7 +135,6 @@ export function CommitmentCard({
   const barColor =
     progress < 0.15 ? "var(--gt-neg)" : progress < 0.4 ? "var(--gt-warn)" : "var(--gt-blue)";
 
-  const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
   const humanScore = currentScores[HUMAN_PLAYER_ID] ?? 0;
 
   return (
@@ -226,57 +218,6 @@ export function CommitmentCard({
             ))
           )}
 
-          {/* AI Status Grid */}
-          {aiParticipants.length > 0 && (
-            <div
-              className="grid gap-3 pt-4"
-              style={{ gridTemplateColumns: `repeat(${Math.min(aiParticipants.length, 4)}, minmax(0, 1fr))` }}
-            >
-              {aiParticipants.map((p) => {
-                const isReady = aiReadySet.has(p.personaId);
-                return (
-                  <div
-                    key={p.personaId}
-                    className="p-3 rounded-md border flex flex-col items-center gap-2"
-                    style={{
-                      background: "var(--gt-row-alt)",
-                      borderColor: "var(--gt-border)",
-                    }}
-                  >
-                    <Cpu
-                      size={14}
-                      className={isReady ? "" : "animate-pulse"}
-                      style={{ color: isReady ? "var(--gt-pos)" : "var(--gt-t4)" }}
-                    />
-                    <span
-                      className="text-[9px] font-bold uppercase truncate w-full text-center"
-                      style={{ color: "var(--gt-t3)", letterSpacing: "-0.02em" }}
-                    >
-                      {p.name}
-                    </span>
-                    <span
-                      className="text-[8px] font-bold px-1.5 py-0.5 rounded-full border"
-                      style={
-                        isReady
-                          ? {
-                              background: "var(--gt-pos-bg)",
-                              borderColor: "hsl(125 49% 43% / 0.2)",
-                              color: "var(--gt-pos)",
-                            }
-                          : {
-                              background: "var(--gt-surface)",
-                              borderColor: "var(--gt-border-md)",
-                              color: "var(--gt-t4)",
-                            }
-                      }
-                    >
-                      {isReady ? "READY" : "THINKING"}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* Validation error */}
