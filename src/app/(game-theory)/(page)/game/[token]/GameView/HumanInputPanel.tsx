@@ -48,38 +48,29 @@ const GAME_ACTION_CONFIGS: Record<string, ActionConfig[]> = {
 
 // ── Timer hook (frontend-only, 30s hard timer) ──────────────────────────────
 
-function useCountdown(durationMs: number, onExpire: () => void): { secondsLeft: number; progress: number } {
+/** Visual-only countdown — no callbacks, no dependency issues */
+function useCountdown(durationMs: number): { secondsLeft: number; progress: number } {
   const [now, setNow] = useState(() => Date.now());
   const startRef = useRef(Date.now());
-  const firedRef = useRef(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, []);
 
-  // Hard deadline — fires callback once via setTimeout, immune to stale closures
-  useEffect(() => {
-    const remaining = startRef.current + durationMs - Date.now();
-    if (remaining <= 0 && !firedRef.current) {
-      firedRef.current = true;
-      onExpire();
-      return;
-    }
-    const id = setTimeout(() => {
-      if (!firedRef.current) {
-        firedRef.current = true;
-        onExpire();
-      }
-    }, Math.max(0, remaining));
-    return () => clearTimeout(id);
-  }, [durationMs, onExpire]);
-
   const msLeft = Math.max(0, startRef.current + durationMs - now);
-  const secondsLeft = Math.ceil(msLeft / 1000);
-  const progress = msLeft / durationMs;
+  return { secondsLeft: Math.ceil(msLeft / 1000), progress: msLeft / durationMs };
+}
 
-  return { secondsLeft, progress };
+/** Hard deadline — fires a ref-based callback once, immune to stale closures and dep changes */
+function useDeadline(durationMs: number, callbackRef: React.RefObject<(() => void) | null>) {
+  useEffect(() => {
+    const id = setTimeout(() => {
+      callbackRef.current?.();
+    }, durationMs);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // truly empty — fires exactly once on mount
 }
 
 // ── Shared panel shell ────────────────────────────────────────────────────────
@@ -156,8 +147,13 @@ function DiscussionInput({
     void submitHumanDiscussion(token, content, roundId);
   }, [token, roundId, onSubmitted]);
 
-  const onExpire = useCallback(() => submit(""), [submit]);
-  const { secondsLeft, progress } = useCountdown(30_000, onExpire);
+  // Ref always points to latest submit — immune to stale closures
+  const submitRef = useRef(submit);
+  submitRef.current = submit;
+  const deadlineRef = useRef(() => submitRef.current(""));
+  useDeadline(30_000, deadlineRef);
+
+  const { secondsLeft, progress } = useCountdown(30_000);
 
   useEffect(() => { textareaRef.current?.focus(); }, []);
 
@@ -231,11 +227,16 @@ function DecisionInput({
     void submitHumanDecision(token, action, roundId);
   }, [token, roundId, onSubmitted]);
 
-  const onExpire = useCallback(() => {
-    if (actionConfigs?.[0]) submitAction({ action: actionConfigs[0].key });
-  }, [actionConfigs, submitAction]);
+  // Ref always points to latest submitAction — immune to stale closures
+  const submitRef = useRef(submitAction);
+  submitRef.current = submitAction;
+  const defaultAction = actionConfigs?.[0]?.key;
+  const deadlineRef = useRef(() => {
+    if (defaultAction) submitRef.current({ action: defaultAction });
+  });
+  useDeadline(30_000, deadlineRef);
 
-  const { secondsLeft, progress } = useCountdown(30_000, onExpire);
+  const { secondsLeft, progress } = useCountdown(30_000);
 
   const humanScore = currentScores[HUMAN_PLAYER_ID] ?? 0;
 
