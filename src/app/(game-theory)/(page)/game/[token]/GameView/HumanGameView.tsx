@@ -146,6 +146,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   // Local events — the frontend appends as each server action returns (no polling)
   const [events, setEvents] = useState<GameTimeline>(initialData.events);
   const eventsRef = useRef(events);
+  // Sync ref on render (covers external state updates like initial load)
   eventsRef.current = events;
   const [status, setStatus] = useState(initialData.status);
 
@@ -199,9 +200,13 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
 
   // ── Step machine effects ──────────────────────────────────────────────
 
-  // Helper: append events to local state
+  // Helper: append events to local state.
+  // Updates eventsRef immediately so async loops read fresh state
+  // without waiting for a React re-render.
   const appendEvents = useCallback((...newEvents: GameTimelineEvent[]) => {
-    setEvents((prev) => [...prev, ...newEvents]);
+    const next = [...eventsRef.current, ...newEvents];
+    eventsRef.current = next;
+    setEvents(next);
   }, []);
 
   useEffect(() => {
