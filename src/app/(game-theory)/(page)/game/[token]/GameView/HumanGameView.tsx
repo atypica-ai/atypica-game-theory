@@ -1,27 +1,34 @@
 "use client";
 
 import { GameSessionDetail } from "@/app/(game-theory)/actions";
+import { getGameType } from "@/app/(game-theory)/gameTypes";
 import {
   runAIDiscussionFor,
   startHumanRound,
   settleHumanRound,
   completeHumanGame,
+  submitHumanDiscussion,
 } from "@/app/(game-theory)/humanActions";
-import { GameSessionParticipant, HUMAN_PLAYER_ID, PersonaDecisionEvent, PersonaDiscussionEvent } from "@/app/(game-theory)/types";
+import {
+  GameSessionParticipant,
+  HUMAN_PLAYER_ID,
+  PersonaDecisionEvent,
+  PersonaDiscussionEvent,
+} from "@/app/(game-theory)/types";
+import type { GameTimeline, GameTimelineEvent } from "@/app/(game-theory)/types";
 import { AnimatePresence } from "motion/react";
-import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { GameLayout } from "./GameLayout";
-import { HumanInputPanel } from "./HumanInputPanel";
-import { PLAYER_COLORS, PlayerResultState } from "./PlayerCard";
-import { RoundDetailView } from "./RoundDetailView";
-import { ResultsView } from "./ResultsView";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   deriveGameState,
-  getScoresUpToRound,
   RoundData,
 } from "./index";
-import type { GameTimeline, GameTimelineEvent } from "@/app/(game-theory)/types";
+import { PLAYER_COLORS } from "./PlayerCard";
+import { ResultsView } from "./ResultsView";
+import { PhaseProgress, VisualPhase } from "./human/PhaseProgress";
+import { RoundProgress } from "./human/RoundProgress";
+import { DiscussionCard } from "./human/DiscussionCard";
+import { CommitmentCard } from "./human/CommitmentCard";
+import { AnalyzeCard } from "./human/AnalyzeCard";
 
 // ── Game step types ────────────────────────────────────────────────────────
 
@@ -29,12 +36,12 @@ type GameStep =
   | { phase: "roundStart"; roundId: number }
   | { phase: "aiDiscussion"; roundId: number }
   | { phase: "humanDiscussion"; roundId: number }
-  | { phase: "decision"; roundId: number }       // human + AI in parallel
+  | { phase: "decision"; roundId: number }
   | { phase: "settling"; roundId: number }
   | { phase: "reveal"; roundId: number }
   | { phase: "completed" };
 
-// ── Derive initial step from timeline (for resume) ─────────────────────────
+// ── Derive initial step from timeline ─────────────────────────────────────
 
 function deriveInitialStep(
   events: GameTimelineEvent[],
@@ -44,7 +51,6 @@ function deriveInitialStep(
 ): GameStep {
   if (status === "completed") return { phase: "completed" };
 
-  // Find latest round
   let latestRound = 0;
   for (const e of events) {
     if ("round" in e && typeof e.round === "number" && e.round > latestRound) {
@@ -52,34 +58,21 @@ function deriveInitialStep(
     }
   }
 
-  // No rounds yet — start round 1
   if (latestRound === 0) return { phase: "roundStart", roundId: 1 };
 
   const roundId = latestRound;
 
-  // Check if round has results
   const hasResult = events.some(
     (e) => e.type === "round-result" && e.round === roundId,
   );
-  if (hasResult) {
-    // Round complete — check if game should continue (start next round)
-    // We'll let the reveal phase handle the transition
-    return { phase: "reveal", roundId };
-  }
+  if (hasResult) return { phase: "reveal", roundId };
 
-  // Check decisions
   const decisions = events.filter(
     (e): e is PersonaDecisionEvent => e.type === "persona-decision" && e.round === roundId,
   );
-  if (decisions.length === participants.length) {
-    return { phase: "settling", roundId };
-  }
-  if (decisions.length > 0) {
-    // Some decisions exist — we're in decision phase
-    return { phase: "decision", roundId };
-  }
+  if (decisions.length === participants.length) return { phase: "settling", roundId };
+  if (decisions.length > 0) return { phase: "decision", roundId };
 
-  // Check discussions
   const discussions = events.filter(
     (e): e is PersonaDiscussionEvent => e.type === "persona-discussion" && e.round === roundId,
   );
@@ -88,129 +81,105 @@ function deriveInitialStep(
   const humanSpoken = discussions.some((d) => d.personaId === HUMAN_PLAYER_ID);
 
   if (discussionRounds > 0) {
-    if (spokenAI.length < aiParticipants.length) {
-      return { phase: "aiDiscussion", roundId };
-    }
-    if (!humanSpoken) {
-      return { phase: "humanDiscussion", roundId };
-    }
+    if (spokenAI.length < aiParticipants.length) return { phase: "aiDiscussion", roundId };
+    if (!humanSpoken) return { phase: "humanDiscussion", roundId };
   }
 
-  // Discussion complete (or none) — start decisions
   return { phase: "decision", roundId };
-}
-
-// ── Round navigation reducer ───────────────────────────────────────────────
-
-type RoundNavState = {
-  manualRoundId: number | null;
-  revealHoldRound: number | null;
-};
-
-type RoundNavAction =
-  | { type: "SELECT_ROUND"; roundId: number | null }
-  | { type: "ROUND_COMPLETED"; completedRoundId: number }
-  | { type: "REVEAL_HOLD_EXPIRED" }
-  | { type: "GAME_COMPLETED" };
-
-function roundNavReducer(state: RoundNavState, action: RoundNavAction): RoundNavState {
-  switch (action.type) {
-    case "SELECT_ROUND":
-      return { ...state, manualRoundId: action.roundId };
-    case "ROUND_COMPLETED":
-      if (state.manualRoundId !== null) return state;
-      return { ...state, revealHoldRound: action.completedRoundId };
-    case "REVEAL_HOLD_EXPIRED":
-      return { ...state, revealHoldRound: null };
-    case "GAME_COMPLETED":
-      return { manualRoundId: null, revealHoldRound: null };
-  }
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
 
 export function HumanGameView({ initialData, token }: { initialData: GameSessionDetail; token: string }) {
-  const { data: authSession } = useSession();
-  const currentUserId = authSession?.user?.id ?? null;
-
-  // ── Core state ─────────────────────────────────────────────────────────
+  // ── Core derived data ─────────────────────────────────────────────────
   const participants: GameSessionParticipant[] = useMemo(
     () => initialData.extra?.participants ?? [],
     [initialData.extra?.participants],
   );
-  const humanParticipant = participants.find((p) => p.personaId === HUMAN_PLAYER_ID);
-  const isCurrentUserHuman = humanParticipant?.userId != null && humanParticipant.userId === currentUserId;
   const gameTypeName = initialData.gameType;
   const discussionRounds = initialData.extra?.discussionRounds ?? 0;
+  const gameType = useMemo(() => getGameType(gameTypeName), [gameTypeName]);
+  const totalRounds = gameType.horizon.type === "fixed" ? gameType.horizon.rounds : null;
 
-  // Local events — the frontend appends as each server action returns (no polling)
+  // ── Event timeline (local, append-only) ───────────────────────────────
   const [events, setEvents] = useState<GameTimeline>(initialData.events);
   const eventsRef = useRef(events);
-  // Sync ref on render (covers external state updates like initial load)
   eventsRef.current = events;
   const [status, setStatus] = useState(initialData.status);
 
-  // Derive game state from local events
   const isCompleted = status === "completed";
   const gameState = useMemo(() => deriveGameState(events, isCompleted), [events, isCompleted]);
 
-  // Game step state machine + human turn — derived together on mount for correct resume
-  const [initialStep] = useState(() =>
+  // ── State machine ─────────────────────────────────────────────────────
+  const [step, setStep] = useState<GameStep>(() =>
     deriveInitialStep(events, participants, status, discussionRounds),
   );
-  const [step, setStep] = useState<GameStep>(initialStep);
 
-  // Human turn state — initialized from step for resume scenarios
   const [humanTurn, setHumanTurn] = useState<{ type: "discussion" | "decision"; roundId: number } | null>(() => {
-    if (initialStep.phase === "humanDiscussion") return { type: "discussion", roundId: initialStep.roundId };
-    if (initialStep.phase === "decision") return { type: "decision", roundId: initialStep.roundId };
+    const initial = deriveInitialStep(events, participants, status, discussionRounds);
+    if (initial.phase === "humanDiscussion") return { type: "discussion", roundId: initial.roundId };
+    if (initial.phase === "decision") return { type: "decision", roundId: initial.roundId };
     return null;
   });
 
-  // Tracks whether AI decisions have completed (set by effect, read by human callback)
   const aiDoneRef = useRef(false);
-
-  // Tracks which AI persona is currently generating a discussion turn
+  const humanDoneRef = useRef(false);
   const [currentSpeakerId, setCurrentSpeakerId] = useState<number | null>(null);
-
-  // Error state for displaying failures
   const [error, setError] = useState<string | null>(null);
 
-  // ── Round navigation ───────────────────────────────────────────────────
-  const [roundNav, dispatchRoundNav] = useReducer(roundNavReducer, {
-    manualRoundId: null,
-    revealHoldRound: null,
-  });
+  // ── Helpers ────────────────────────────────────────────────────────────
 
-  const autoRoundId = gameState.activeRound ?? gameState.completedRounds.at(-1) ?? null;
-  const selectedRoundId = roundNav.manualRoundId ?? roundNav.revealHoldRound ?? autoRoundId;
-
-  const selectedRoundData = useMemo((): RoundData | null => {
-    if (selectedRoundId === null) return null;
-    const found = gameState.rounds.find((r) => r.roundId === selectedRoundId);
-    if (found) return found;
-    if (selectedRoundId <= gameState.latestRound) {
-      return { roundId: selectedRoundId, discussions: [], decisions: [], result: null };
-    }
-    return null;
-  }, [selectedRoundId, gameState.rounds, gameState.latestRound]);
-
-  const isLiveRound = selectedRoundId !== null && step.phase !== "completed" &&
-    "roundId" in step && selectedRoundId === step.roundId;
-
-  // ── Step machine effects ──────────────────────────────────────────────
-
-  // Helper: append events to local state.
-  // Updates eventsRef immediately so async loops read fresh state
-  // without waiting for a React re-render.
   const appendEvents = useCallback((...newEvents: GameTimelineEvent[]) => {
     const next = [...eventsRef.current, ...newEvents];
     eventsRef.current = next;
     setEvents(next);
   }, []);
 
+  // ── Derive visual phase ───────────────────────────────────────────────
+
+  const currentRound = "roundId" in step ? step.roundId : (gameState.completedRounds.at(-1) ?? 1);
+
+  const visualPhase: VisualPhase = useMemo(() => {
+    switch (step.phase) {
+      case "roundStart": return discussionRounds > 0 ? "discussion" : "commitment";
+      case "aiDiscussion":
+      case "humanDiscussion": return "discussion";
+      case "decision":
+      case "settling": return "commitment";
+      case "reveal": return "analyze";
+      case "completed": return "completed";
+    }
+  }, [step.phase, discussionRounds]);
+
+  // ── AI readiness for commitment card ──────────────────────────────────
+
+  const aiReadySet = useMemo(() => {
+    const set = new Set<number>();
+    if ("roundId" in step) {
+      for (const e of events) {
+        if (e.type === "persona-decision" && e.round === step.roundId && e.personaId !== HUMAN_PLAYER_ID) {
+          set.add(e.personaId);
+        }
+      }
+    }
+    return set;
+  }, [events, step]);
+
+  // ── Current round data ────────────────────────────────────────────────
+
+  const currentRoundData = useMemo((): RoundData => {
+    const found = gameState.rounds.find((r) => r.roundId === currentRound);
+    return found ?? { roundId: currentRound, discussions: [], decisions: [], result: null };
+  }, [gameState.rounds, currentRound]);
+
+  // ── Determine if this is the final round ──────────────────────────────
+
+  const isFinalRound = totalRounds !== null && currentRound >= totalRounds;
+
+  // ── Step machine effects ──────────────────────────────────────────────
+
   useEffect(() => {
-    if (step.phase === "completed" || step.phase === "humanDiscussion") return;
+    if (step.phase === "completed" || step.phase === "humanDiscussion" || step.phase === "reveal") return;
 
     let cancelled = false;
 
@@ -229,8 +198,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
           }
 
           case "aiDiscussion": {
-            // Pick one random unspeaking AI at a time using fresh state.
-            // On resume, already-spoken AI are skipped via eventsRef.
             while (!cancelled) {
               const currentEvents = eventsRef.current;
               const spokenIds = new Set(
@@ -243,7 +210,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
               );
               if (remaining.length === 0) break;
 
-              // Pick a random next speaker
               const next = remaining[Math.floor(Math.random() * remaining.length)];
               setCurrentSpeakerId(next.personaId);
 
@@ -264,8 +230,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
             aiDoneRef.current = false;
             humanDoneRef.current = false;
             setHumanTurn({ type: "decision", roundId: step.roundId });
-            // Fire individual fetch() calls — truly parallel, each appends immediately
-            // (RoundDetailView masks content until human submits)
             const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
             let completedCount = 0;
             await Promise.all(
@@ -304,17 +268,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
               setStatus("completed");
               setStep({ phase: "completed" });
             } else {
-              dispatchRoundNav({ type: "ROUND_COMPLETED", completedRoundId: step.roundId });
               setStep({ phase: "reveal", roundId: step.roundId });
-            }
-            break;
-          }
-
-          case "reveal": {
-            await new Promise((r) => setTimeout(r, 2500));
-            if (!cancelled) {
-              dispatchRoundNav({ type: "REVEAL_HOLD_EXPIRED" });
-              setStep({ phase: "roundStart", roundId: step.roundId + 1 });
             }
             break;
           }
@@ -328,32 +282,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
-  // ── Human submission callbacks ─────────────────────────────────────────
-
-  const onHumanDiscussionSubmitted = useCallback(
-    (event: PersonaDiscussionEvent) => {
-      appendEvents(event);
-      setHumanTurn(null);
-      // All discussions done → move to decision phase
-      setStep({ phase: "decision", roundId: event.round });
-    },
-    [appendEvents],
-  );
-
-  const humanDoneRef = useRef(false);
-
-  const onHumanDecisionSubmitted = useCallback(
-    (event: PersonaDecisionEvent) => {
-      appendEvents(event);
-      setHumanTurn(null);
-      humanDoneRef.current = true;
-      if (aiDoneRef.current) {
-        setStep({ phase: "settling", roundId: event.round });
-      }
-    },
-    [appendEvents],
-  );
-
   // When AI decisions complete AND human already submitted → settle
   useEffect(() => {
     if (step.phase !== "decision" || !("roundId" in step)) return;
@@ -362,16 +290,73 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
     }
   }, [events, step]);
 
-  // ── Completion data ────────────────────────────────────────────────────
+  // ── Human callbacks ───────────────────────────────────────────────────
 
-  const isPending = status === "pending" || participants.length === 0;
+  const handleSendDiscussion = useCallback(
+    (content: string) => {
+      if (!humanTurn || humanTurn.type !== "discussion") return;
+      const trimmed = content.trim() || "(said nothing)";
+      const event: PersonaDiscussionEvent = {
+        type: "persona-discussion",
+        personaId: HUMAN_PLAYER_ID,
+        personaName: "You",
+        reasoning: null,
+        content: trimmed,
+        round: humanTurn.roundId,
+      };
+      appendEvents(event);
+      setHumanTurn(null);
+      setStep({ phase: "decision", roundId: humanTurn.roundId });
+      void submitHumanDiscussion(token, content, humanTurn.roundId);
+    },
+    [token, humanTurn, appendEvents],
+  );
 
-  const playersDeliberating = useMemo(() => {
-    if (step.phase !== "decision" || !("roundId" in step)) return new Set<number>();
-    return new Set(
-      participants.filter((p) => !gameState.decidedPlayers.has(p.personaId)).map((p) => p.personaId),
-    );
-  }, [step, gameState.decidedPlayers, participants]);
+  const handleSkipToDecision = useCallback(() => {
+    if (humanTurn?.type === "discussion") {
+      handleSendDiscussion("");
+    } else {
+      // AI still speaking — force advance
+      if ("roundId" in step) {
+        setCurrentSpeakerId(null);
+        setHumanTurn(null);
+        setStep({ phase: "decision", roundId: step.roundId });
+      }
+    }
+  }, [humanTurn, handleSendDiscussion, step]);
+
+  const handleDecisionSubmit = useCallback(
+    (action: Record<string, unknown>) => {
+      if (!humanTurn || humanTurn.type !== "decision") return;
+      const event: PersonaDecisionEvent = {
+        type: "persona-decision",
+        personaId: HUMAN_PLAYER_ID,
+        personaName: "You",
+        reasoning: null,
+        content: action,
+        round: humanTurn.roundId,
+      };
+      appendEvents(event);
+      setHumanTurn(null);
+      humanDoneRef.current = true;
+      if (aiDoneRef.current) {
+        setStep({ phase: "settling", roundId: humanTurn.roundId });
+      }
+    },
+    [humanTurn, appendEvents],
+  );
+
+  const handleProceed = useCallback(() => {
+    if (step.phase !== "reveal") return;
+    setStep({ phase: "roundStart", roundId: step.roundId + 1 });
+  }, [step]);
+
+  const handleViewFinalResults = useCallback(() => {
+    setStatus("completed");
+    setStep({ phase: "completed" });
+  }, []);
+
+  // ── Completion data ───────────────────────────────────────────────────
 
   const winners = useMemo(() => {
     if (!isCompleted || participants.length === 0) return [] as GameSessionParticipant[];
@@ -383,143 +368,94 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
 
   const isFullTie = isCompleted && participants.length > 0 && winners.length === 0;
 
-  function getResultState(personaId: number): PlayerResultState | undefined {
-    if (!isCompleted) return undefined;
-    if (isFullTie) return "tie";
-    return winners.some((w) => w.personaId === personaId) ? "winner" : "loser";
-  }
+  // ── Render ────────────────────────────────────────────────────────────
 
-  const bannerData = useMemo(() => {
-    if (!isCompleted) return null;
-    if (isFullTie) return { text: "Tie · Equal Scores", color: "var(--gt-warn)" };
-    if (winners.length === 1) {
-      const idx = participants.indexOf(winners[0]);
-      return { text: `${winners[0].name} wins`, color: PLAYER_COLORS[idx] ?? "var(--gt-pos)" };
-    }
-    return { text: `${winners.map((w) => w.name).join(" & ")} win`, color: "var(--gt-pos)" };
-  }, [isCompleted, isFullTie, winners, participants]);
-
-  const showResults = isCompleted && roundNav.manualRoundId === null;
-
-  // ── Phase for display ──────────────────────────────────────────────────
-  const displayPhase = (() => {
-    if (!isLiveRound) return selectedRoundData?.result ? "reveal" as const : "starting" as const;
-    switch (step.phase) {
-      case "aiDiscussion":
-      case "humanDiscussion":
-        return "discussion" as const;
-      case "decision":
-        return "decision" as const;
-      case "settling":
-      case "reveal":
-        return "reveal" as const;
-      default:
-        return "starting" as const;
-    }
-  })();
-
-  // ── Round nav data ─────────────────────────────────────────────────────
-  const navRounds = [
-    ...gameState.completedRounds.map((r) => ({ roundId: r, isLive: false })),
-    ...(gameState.activeRound !== null ? [{ roundId: gameState.activeRound, isLive: true }] : []),
-  ];
-
-  const currentRoundNumber = "roundId" in step ? step.roundId : (gameState.completedRounds.at(-1) ?? 0);
-
-  const effectiveIdx = showResults
-    ? navRounds.length
-    : navRounds.findIndex((r) => r.roundId === selectedRoundId);
-  const maxIdx = isCompleted ? navRounds.length : navRounds.length - 1;
-  const canGoPrev = effectiveIdx > 0;
-  const canGoNext = effectiveIdx < maxIdx;
-
-  // ── Render ─────────────────────────────────────────────────────────────
-
-  return (
-    <GameLayout
-      token={token}
-      gameType={gameTypeName}
-      isCompleted={isCompleted}
-      isPending={isPending}
-      currentRoundNumber={currentRoundNumber}
-      bannerData={bannerData}
-      navRounds={navRounds}
-      rounds={gameState.rounds}
-      manualRoundId={roundNav.manualRoundId}
-      showResults={showResults}
-      canGoPrev={canGoPrev}
-      canGoNext={canGoNext}
-      effectiveIdx={effectiveIdx}
-      onSelectRound={(roundId) => dispatchRoundNav({ type: "SELECT_ROUND", roundId })}
-    >
-      {error ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8">
-          <span className="text-[13px] font-[500]" style={{ color: "var(--gt-neg)" }}>Error</span>
-          <span className="text-[12px] text-center" style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", maxWidth: "400px" }}>{error}</span>
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "var(--gt-bg)" }}>
+        <div className="card-lab p-8 max-w-md text-center">
+          <p className="text-[13px] font-medium mb-2" style={{ color: "var(--gt-neg)" }}>Error</p>
+          <p className="text-[12px] mb-4" style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}>{error}</p>
           <button
             onClick={() => { setError(null); setStep((s) => ({ ...s })); }}
-            className="mt-2 px-4 py-1.5 text-[12px]"
-            style={{ color: "var(--gt-blue)", fontFamily: "IBMPlexMono, monospace" }}
+            className="btn-lab px-6"
           >
             Retry
           </button>
         </div>
-      ) : isPending ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3">
-          <div className="flex items-center gap-1.5">
-            {[0, 1, 2].map((i) => (
-              <span key={i} className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--gt-border-md)" }} />
-            ))}
-          </div>
-          <span className="text-[12px] uppercase" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.12em" }}>
-            Awaiting players
-          </span>
-        </div>
-      ) : showResults ? (
-        <ResultsView
-          events={events}
-          participants={participants}
-          cumulativeScores={gameState.scores}
-          winners={winners}
-          isFullTie={isFullTie}
-          gameType={gameTypeName}
-        />
-      ) : (
-        <RoundDetailView
-          roundData={selectedRoundData}
-          participants={participants}
-          scoresForRound={selectedRoundId !== null ? getScoresUpToRound(gameState.rounds, selectedRoundId) : gameState.scores}
-          isLive={isLiveRound}
-          phase={displayPhase}
-          discussionCount={isLiveRound ? gameState.discussionCount : (selectedRoundData?.discussions.length ?? 0)}
-          totalPlayers={participants.length}
-          isHumanPlayer={isCurrentUserHuman}
-          pendingHumanTurn={humanTurn ? {
-            type: humanTurn.type === "discussion" ? "human-discussion-pending" : "human-decision-pending",
-            round: humanTurn.roundId,
-          } : null}
-          maskDecisions={humanTurn?.type === "decision"}
-          playersDeliberating={playersDeliberating}
-          discussedPlayers={isLiveRound ? gameState.discussedPlayers : new Set<number>()}
-          currentSpeakerId={isLiveRound ? currentSpeakerId : null}
-          getResultState={getResultState}
-        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "var(--gt-bg)" }}>
+      {/* Phase progress (hidden during results) */}
+      {visualPhase !== "completed" && (
+        <PhaseProgress phase={visualPhase} hasDiscussion={discussionRounds > 0} />
       )}
 
-      {/* ── Human input panel ────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {humanTurn && !showResults && !isPending && (
-          <HumanInputPanel
-            key={`${humanTurn.type}-${humanTurn.roundId}`}
-            humanTurn={humanTurn}
-            token={token}
+      {/* Main card area */}
+      <div className="w-full max-w-xl">
+        <AnimatePresence mode="wait">
+          {visualPhase === "discussion" && (
+            <DiscussionCard
+              key={`disc-${currentRound}`}
+              discussions={currentRoundData.discussions}
+              participants={participants}
+              currentSpeakerId={currentSpeakerId}
+              humanTurnActive={humanTurn?.type === "discussion"}
+              roundId={currentRound}
+              onSendMessage={handleSendDiscussion}
+              onSkipToDecision={handleSkipToDecision}
+            />
+          )}
+
+          {visualPhase === "commitment" && (
+            <CommitmentCard
+              key={`commit-${currentRound}`}
+              roundId={currentRound}
+              gameTypeName={gameTypeName}
+              participants={participants}
+              aiReadySet={aiReadySet}
+              currentScores={gameState.scores}
+              isSettling={step.phase === "settling"}
+              onSubmit={handleDecisionSubmit}
+            />
+          )}
+
+          {visualPhase === "analyze" && (
+            <AnalyzeCard
+              key={`analyze-${currentRound}`}
+              roundId={currentRound}
+              roundData={currentRoundData}
+              participants={participants}
+              isFinalRound={isFinalRound}
+              onProceed={isFinalRound ? handleViewFinalResults : handleProceed}
+            />
+          )}
+
+          {visualPhase === "completed" && (
+            <ResultsView
+              key="results"
+              events={events}
+              participants={participants}
+              cumulativeScores={gameState.scores}
+              winners={winners}
+              isFullTie={isFullTie}
+              gameType={gameTypeName}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Round progress footer (hidden during results) */}
+        {visualPhase !== "completed" && (
+          <RoundProgress
+            round={currentRound}
+            totalRounds={totalRounds}
             gameTypeName={gameTypeName}
-            currentScores={gameState.scores}
-            onDiscussionSubmitted={onHumanDiscussionSubmitted}
-            onDecisionSubmitted={onHumanDecisionSubmitted}
           />
         )}
-      </AnimatePresence>
-    </GameLayout>
+      </div>
+    </div>
   );
 }
