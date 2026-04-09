@@ -3,7 +3,7 @@
 import {
   GameSessionDetail,
   runNextAIDiscussion,
-  runAIDecision,
+  runAllAIDecisions,
   startHumanRound,
   settleHumanRound,
   completeHumanGame,
@@ -11,7 +11,7 @@ import {
 import { GameSessionParticipant, HUMAN_PLAYER_ID, PersonaDecisionEvent, PersonaDiscussionEvent } from "@/app/(game-theory)/types";
 import { AnimatePresence } from "motion/react";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { GameLayout } from "./GameLayout";
 import { HumanInputPanel } from "./HumanInputPanel";
 import { PLAYER_COLORS, PlayerResultState } from "./PlayerCard";
@@ -160,6 +160,9 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   // Human turn state — set when waiting for human input
   const [humanTurn, setHumanTurn] = useState<{ type: "discussion" | "decision"; roundId: number } | null>(null);
 
+  // Tracks whether AI decisions have completed (set by effect, read by human callback)
+  const aiDoneRef = useRef(false);
+
   // Error state for displaying failures
   const [error, setError] = useState<string | null>(null);
 
@@ -227,14 +230,15 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
           }
 
           case "decision": {
+            aiDoneRef.current = false;
+            humanDoneRef.current = false;
             setHumanTurn({ type: "decision", roundId: step.roundId });
-            const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
-            const aiPromises = aiParticipants.map(async (p) => {
-              const res = await runAIDecision(token, p.personaId, step.roundId);
-              if (!cancelled && res.success) appendEvents(res.event);
-              return res;
-            });
-            await Promise.all(aiPromises);
+            // Single server action — all AI LLM calls run in parallel server-side
+            const aiRes = await runAllAIDecisions(token, step.roundId);
+            if (!cancelled && aiRes.success) {
+              appendEvents(...aiRes.events);
+              aiDoneRef.current = true;
+            }
             break;
           }
 
@@ -287,39 +291,29 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
     [appendEvents],
   );
 
+  const humanDoneRef = useRef(false);
+
   const onHumanDecisionSubmitted = useCallback(
     (event: PersonaDecisionEvent) => {
       appendEvents(event);
       setHumanTurn(null);
-      // Check if all players decided (AI decisions may still be in-flight)
-      // We need to check after a tick to see if AI results arrived
-      setTimeout(() => {
-        setEvents((currentEvents) => {
-          const roundId = event.round;
-          const decisions = currentEvents.filter(
-            (e): e is PersonaDecisionEvent => e.type === "persona-decision" && e.round === roundId,
-          );
-          if (decisions.length >= participants.length) {
-            setStep({ phase: "settling", roundId });
-          }
-          return currentEvents; // no change
-        });
-      }, 500);
+      humanDoneRef.current = true;
+      // If AI decisions already completed, settle immediately
+      if (aiDoneRef.current) {
+        setStep({ phase: "settling", roundId: event.round });
+      }
+      // Otherwise, the effect will settle when AI completes (see below)
     },
-    [appendEvents, participants.length],
+    [appendEvents],
   );
 
-  // Also check for all-decided after AI decisions arrive
+  // When AI decisions complete AND human already submitted → settle
   useEffect(() => {
     if (step.phase !== "decision" || !("roundId" in step)) return;
-    const roundId = step.roundId;
-    const decisions = events.filter(
-      (e): e is PersonaDecisionEvent => e.type === "persona-decision" && e.round === roundId,
-    );
-    if (decisions.length >= participants.length && humanTurn === null) {
-      setStep({ phase: "settling", roundId });
+    if (aiDoneRef.current && humanDoneRef.current) {
+      setStep({ phase: "settling", roundId: step.roundId });
     }
-  }, [events, step, participants.length, humanTurn]);
+  }, [events, step]);
 
   // ── Completion data ────────────────────────────────────────────────────
 

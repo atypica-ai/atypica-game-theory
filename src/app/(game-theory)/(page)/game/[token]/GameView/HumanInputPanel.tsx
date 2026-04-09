@@ -121,7 +121,6 @@ function DiscussionInput({
 }) {
   const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { secondsLeft, progress, expired } = useCountdown(30_000);
 
@@ -133,26 +132,21 @@ function DiscussionInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expired]);
 
-  const handleSubmit = useCallback(async (skip = false) => {
+  const handleSubmit = useCallback((skip = false) => {
     if (submitting) return;
     setSubmitting(true);
-    setError(null);
     const content = skip ? "" : text;
-    const result = await submitHumanDiscussion(token, content, roundId);
-    if (result.success) {
-      const trimmed = content.trim() || "(said nothing)";
-      onSubmitted({
-        type: "persona-discussion",
-        personaId: HUMAN_PLAYER_ID,
-        personaName: "You",
-        reasoning: null,
-        content: trimmed,
-        round: roundId,
-      });
-    } else {
-      setSubmitting(false);
-      setError(result.message);
-    }
+    const trimmed = content.trim() || "(said nothing)";
+    // Optimistic: dismiss immediately, persist in background
+    onSubmitted({
+      type: "persona-discussion",
+      personaId: HUMAN_PLAYER_ID,
+      personaName: "You",
+      reasoning: null,
+      content: trimmed,
+      round: roundId,
+    });
+    void submitHumanDiscussion(token, content, roundId);
   }, [submitting, text, token, roundId, onSubmitted]);
 
   return (
@@ -169,7 +163,6 @@ function DiscussionInput({
           className="w-full resize-none bg-transparent outline-none leading-relaxed"
           style={{ fontSize: "14px", color: "var(--gt-t1)", fontFamily: "var(--gt-font-outfit), system-ui, sans-serif", caretColor: "var(--gt-blue)", opacity: submitting ? 0.5 : 1 }}
         />
-        {error && <p className="text-[12px]" style={{ color: "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}>{error}</p>}
         <div className="flex items-center justify-end gap-3">
           <button onClick={() => void handleSubmit(true)} disabled={submitting} className="text-[12px] transition-opacity hover:opacity-60" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>skip</button>
           <button
@@ -209,7 +202,6 @@ function DecisionInput({
   const [submitting, setSubmitting] = useState(false);
   const [chosen, setChosen] = useState<string | null>(null);
   const [numericValue, setNumericValue] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const { secondsLeft, progress, expired } = useCountdown(30_000);
 
   const actionConfigs = GAME_ACTION_CONFIGS[gameTypeName];
@@ -222,47 +214,36 @@ function DecisionInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expired]);
 
-  const handleEnumSubmit = useCallback(async (key: string) => {
+  const handleEnumSubmit = useCallback((key: string) => {
     if (submitting) return;
     setSubmitting(true);
     setChosen(key);
-    setError(null);
-    const result = await submitHumanDecision(token, { action: key }, roundId);
-    if (result.success) {
-      onSubmitted({
-        type: "persona-decision",
-        personaId: HUMAN_PLAYER_ID,
-        personaName: "You",
-        reasoning: null,
-        content: { action: key },
-        round: roundId,
-      });
-    } else {
-      setSubmitting(false);
-      setChosen(null);
-      setError(result.message);
-    }
+    // Optimistic: dismiss immediately, persist in background
+    onSubmitted({
+      type: "persona-decision",
+      personaId: HUMAN_PLAYER_ID,
+      personaName: "You",
+      reasoning: null,
+      content: { action: key },
+      round: roundId,
+    });
+    void submitHumanDecision(token, { action: key }, roundId);
   }, [submitting, token, roundId, onSubmitted]);
 
-  const handleNumericSubmit = useCallback(async () => {
+  const handleNumericSubmit = useCallback(() => {
     const num = parseFloat(numericValue);
     if (isNaN(num) || submitting) return;
     setSubmitting(true);
-    setError(null);
-    const result = await submitHumanDecision(token, { number: num }, roundId);
-    if (result.success) {
-      onSubmitted({
-        type: "persona-decision",
-        personaId: HUMAN_PLAYER_ID,
-        personaName: "You",
-        reasoning: null,
-        content: { number: num },
-        round: roundId,
-      });
-    } else {
-      setSubmitting(false);
-      setError(result.message);
-    }
+    // Optimistic: dismiss immediately, persist in background
+    onSubmitted({
+      type: "persona-decision",
+      personaId: HUMAN_PLAYER_ID,
+      personaName: "You",
+      reasoning: null,
+      content: { number: num },
+      round: roundId,
+    });
+    void submitHumanDecision(token, { number: num }, roundId);
   }, [numericValue, submitting, token, roundId, onSubmitted]);
 
   const humanScore = currentScores[HUMAN_PLAYER_ID] ?? 0;
@@ -270,7 +251,6 @@ function DecisionInput({
   return (
     <PanelShell label="Your Move" round={roundId} secondsLeft={secondsLeft} progress={progress}>
       <div className="px-8 py-5 flex flex-col gap-3">
-        {error && <p className="text-[12px]" style={{ color: "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}>{error}</p>}
         <div className="flex items-center justify-between mb-1">
           <span className="text-[12px]" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>your score</span>
           <span className="text-[15px] font-[700] tabular-nums" style={{ color: "var(--gt-t1)", fontFamily: "IBMPlexMono, monospace" }}>{humanScore}</span>

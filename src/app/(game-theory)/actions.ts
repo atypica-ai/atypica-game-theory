@@ -304,6 +304,65 @@ export async function runAIDecision(
 }
 
 // ---------------------------------------------------------------------------
+// Run ALL AI decisions in parallel — single server action to avoid client queue
+// ---------------------------------------------------------------------------
+
+export async function runAllAIDecisions(
+  token: string,
+  roundId: number,
+): Promise<
+  | { success: true; events: PersonaDecisionEvent[] }
+  | { success: false; message: string }
+> {
+  try {
+    const { extra } = await validateHumanParticipant(token);
+    const participants = extra.participants ?? [];
+    const gameType = getGameType(extra.gameType);
+
+    // Snapshot timeline ONCE before any decisions (simultaneous reveal)
+    const snapshot = await refreshTimeline(token);
+
+    const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
+
+    // Build all persona sessions in parallel
+    const sessions = await Promise.all(
+      aiParticipants.map((p) => buildPersonaSessionForAction(p.personaId, extra)),
+    );
+
+    // Generate all decisions in parallel
+    const results = await Promise.all(
+      sessions.map((personaSession) => {
+        const logger = rootLogger.child({ gameSessionToken: token, personaId: personaSession.personaId });
+        const ctx = {
+          gameSessionToken: token,
+          locale: "en-US" as const,
+          abortSignal: new AbortController().signal,
+          statReport: async () => {},
+          logger,
+          discussionRounds: extra.discussionRounds ?? gameType.discussionRounds,
+        };
+        return generateAIDecision(snapshot, personaSession, gameType, participants, roundId, ctx);
+      }),
+    );
+
+    const events: PersonaDecisionEvent[] = results.map((r) => ({
+      type: "persona-decision" as const,
+      personaId: r.personaSession.personaId,
+      personaName: r.personaSession.personaName,
+      reasoning: r.reasoning,
+      content: r.content,
+      round: roundId,
+    }));
+
+    // Persist all at once
+    await appendTimelineEvents(token, events);
+    return { success: true, events };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Submit human decision — append canonical persona-decision directly
 // ---------------------------------------------------------------------------
 
