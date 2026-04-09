@@ -145,6 +145,8 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
 
   // Local events — the frontend appends as each server action returns (no polling)
   const [events, setEvents] = useState<GameTimeline>(initialData.events);
+  const eventsRef = useRef(events);
+  eventsRef.current = events;
   const [status, setStatus] = useState(initialData.status);
 
   // Derive game state from local events
@@ -222,21 +224,25 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
           }
 
           case "aiDiscussion": {
-            // Frontend controls speaker order — shuffle AI who haven't spoken yet
-            // (on resume, some AI may have already spoken this round)
-            const spokenIds = new Set(
-              events
-                .filter((e): e is PersonaDiscussionEvent => e.type === "persona-discussion" && e.round === step.roundId)
-                .map((e) => e.personaId),
-            );
-            const aiParticipants = participants
-              .filter((p) => p.personaId !== HUMAN_PLAYER_ID && !spokenIds.has(p.personaId))
-              .sort(() => Math.random() - 0.5);
+            // Pick one random unspeaking AI at a time using fresh state.
+            // On resume, already-spoken AI are skipped via eventsRef.
+            while (!cancelled) {
+              const currentEvents = eventsRef.current;
+              const spokenIds = new Set(
+                currentEvents
+                  .filter((e): e is PersonaDiscussionEvent => e.type === "persona-discussion" && e.round === step.roundId)
+                  .map((e) => e.personaId),
+              );
+              const remaining = participants.filter(
+                (p) => p.personaId !== HUMAN_PLAYER_ID && !spokenIds.has(p.personaId),
+              );
+              if (remaining.length === 0) break;
 
-            for (const ai of aiParticipants) {
-              if (cancelled) break;
-              setCurrentSpeakerId(ai.personaId);
-              const res = await runAIDiscussionFor(token, ai.personaId, step.roundId);
+              // Pick a random next speaker
+              const next = remaining[Math.floor(Math.random() * remaining.length)];
+              setCurrentSpeakerId(next.personaId);
+
+              const res = await runAIDiscussionFor(token, next.personaId, step.roundId);
               if (cancelled) break;
               if (!res.success) { setError(res.message); break; }
               appendEvents(res.event);
