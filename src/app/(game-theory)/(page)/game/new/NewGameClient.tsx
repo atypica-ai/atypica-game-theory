@@ -19,6 +19,7 @@ export type GameTypeInfo = {
   maxPlayers: number;
   horizonLabel: string;
   discussionRounds: number;
+  rules?: string;
 };
 
 // Payoff matrix data

@@ -29,6 +29,7 @@ export default async function PlayNewPage() {
           ? `INDEFINITE · δ=${gt.horizon.discountFactor}`
           : "CONDITION-BASED",
     discussionRounds: gt.discussionRounds,
+    rules: gt.rulesPrompt,
   }));
 
   return (

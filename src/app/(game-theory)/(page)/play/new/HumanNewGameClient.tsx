@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { GameTypeInfo } from "../../game/new/NewGameClient";
+import { GameRulesDisplay } from "./GameRulesDisplay";
 
 export function HumanNewGameClient({
   gameTypes,
@@ -19,6 +20,7 @@ export function HumanNewGameClient({
   const [discussionRounds, setDiscussionRounds] = useState<number | undefined>(undefined);
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<"select" | "prepare">("select");
 
   const activeGameType = gameTypes.find((g) => g.name === selectedGameType);
   const aiOpponents = (activeGameType?.minPlayers ?? 2) - 1;
@@ -36,224 +38,326 @@ export function HumanNewGameClient({
     router.push(`/game/${result.token}`);
   }
 
-  return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ background: "var(--gt-bg)" }}>
+  // ── Shared header ──────────────────────────────────────────────────────
+  const header = (
+    <header
+      className="shrink-0 border-b"
+      style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+    >
+      <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "960px" }}>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="text-[13px] transition-colors hover:underline"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+          >
+            Game Theory Lab
+          </Link>
+          <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
+          <span
+            className="text-[15px] font-[600]"
+            style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+          >
+            {step === "select" ? "Choose Your Arena" : activeGameType?.displayName ?? "Game Rules"}
+          </span>
+        </div>
 
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <header
-        className="shrink-0 border-b"
-        style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+        {/* Player identity */}
+        <div className="flex items-center gap-2">
+          <span
+            className="text-[12px] px-2.5 py-1 border"
+            style={{
+              borderRadius: "9999px",
+              color: "var(--gt-blue)",
+              borderColor: "var(--gt-blue-border)",
+              background: "var(--gt-blue-bg)",
+              fontFamily: "IBMPlexMono, monospace",
+              letterSpacing: "0.04em",
+            }}
+          >
+            {user.name}
+          </span>
+        </div>
+      </div>
+    </header>
+  );
+
+  // ── Discussion toggle (shared between both views) ──────────────────────
+  const discussionToggle = (
+    <div className="flex items-center gap-3">
+      <label
+        className="flex items-center gap-2 cursor-pointer select-none"
+        style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "12px" }}
       >
-        <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "960px" }}>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="text-[13px] transition-colors hover:underline"
-              style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-            >
-              Game Theory Lab
-            </Link>
-            <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
-            <span
-              className="text-[15px] font-[600]"
-              style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-            >
-              Choose Your Arena
-            </span>
-          </div>
+        <input
+          type="checkbox"
+          checked={discussionRounds !== undefined}
+          onChange={(e) => setDiscussionRounds(e.target.checked ? 1 : undefined)}
+          style={{ accentColor: "var(--gt-blue)", cursor: "pointer" }}
+        />
+        discussion
+      </label>
+      {discussionRounds !== undefined && (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setDiscussionRounds(Math.max(0, discussionRounds - 1))}
+            className="w-5 h-5 flex items-center justify-center hover:opacity-70"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
+          >
+            −
+          </button>
+          <span className="w-4 text-center tabular-nums" style={{ color: "var(--gt-t1)", fontFamily: "IBMPlexMono, monospace", fontSize: "13px" }}>
+            {discussionRounds}
+          </span>
+          <button
+            onClick={() => setDiscussionRounds(discussionRounds + 1)}
+            className="w-5 h-5 flex items-center justify-center hover:opacity-70"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
+          >
+            +
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
-          {/* Player identity */}
-          <div className="flex items-center gap-2">
-            <span
-              className="text-[12px] px-2.5 py-1 border"
+  // ── SELECT step ────────────────────────────────────────────────────────
+  if (step === "select") {
+    return (
+      <div className="h-screen flex flex-col overflow-hidden" style={{ background: "var(--gt-bg)" }}>
+        {header}
+
+        {/* Intro strip */}
+        <div
+          className="shrink-0 border-b"
+          style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+        >
+          <div className="mx-auto py-6 px-8" style={{ maxWidth: "960px" }}>
+            <p
+              className="text-[15px] leading-relaxed"
               style={{
-                borderRadius: "9999px",
-                color: "var(--gt-blue)",
-                borderColor: "var(--gt-blue-border)",
-                background: "var(--gt-blue-bg)",
-                fontFamily: "IBMPlexMono, monospace",
-                letterSpacing: "0.04em",
+                color: "var(--gt-t2)",
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontStyle: "italic",
               }}
             >
-              {user.name}
-            </span>
+              You will play as one of the participants. AI personas will fill the remaining seats.
+              Watch how your choices compare — and contrast — with theirs.
+            </p>
           </div>
         </div>
-      </header>
 
-      {/* ── Intro strip ─────────────────────────────────────────────────── */}
+        {/* Game type selector */}
+        <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mx-auto" style={{ maxWidth: "960px" }}>
+            <div className="px-8 pt-6 pb-3">
+              <span
+                className="text-[11px] uppercase"
+                style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
+              >
+                Select a game
+              </span>
+            </div>
+
+            {gameTypes.map((gt) => {
+              const isSelected = selectedGameType === gt.name;
+              const aiCount = gt.minPlayers - 1;
+
+              return (
+                <div key={gt.name}>
+                  <button
+                    onClick={() => setSelectedGameType(gt.name)}
+                    className={cn(
+                      "w-full flex items-start text-left border-b transition-colors",
+                      isSelected ? "" : "hover:bg-[var(--gt-row-alt)]",
+                    )}
+                    style={{
+                      borderColor: "var(--gt-border)",
+                      borderLeft: isSelected ? "3px solid var(--gt-blue)" : "3px solid transparent",
+                      background: isSelected ? "var(--gt-surface)" : "transparent",
+                    }}
+                  >
+                    <div className="flex-1 px-8 py-6">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span
+                          className="text-[18px] font-[600] leading-tight"
+                          style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+                        >
+                          {gt.displayName}
+                        </span>
+                        {/* Player composition badge */}
+                        <span
+                          className="text-[11px] px-2.5 py-1 border shrink-0"
+                          style={{
+                            borderRadius: "9999px",
+                            color: isSelected ? "var(--gt-blue)" : "var(--gt-t4)",
+                            borderColor: isSelected ? "var(--gt-blue-border)" : "var(--gt-border)",
+                            background: isSelected ? "var(--gt-blue-bg)" : "transparent",
+                            fontFamily: "IBMPlexMono, monospace",
+                          }}
+                        >
+                          You + {aiCount} AI
+                        </span>
+                      </div>
+                      <p className="text-[14px] leading-relaxed mb-3" style={{ color: "var(--gt-t2)" }}>
+                        {gt.tagline}
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="text-[12px]"
+                          style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+                        >
+                          {gt.horizonLabel}
+                        </span>
+                        {gt.discussionRounds > 0 && (
+                          <>
+                            <span className="w-px h-3" style={{ background: "var(--gt-border-md)" }} />
+                            <span
+                              className="text-[12px]"
+                              style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+                            >
+                              {gt.discussionRounds}× discuss
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="shrink-0 w-10 flex items-center justify-center pt-7 pr-4" style={{ color: "var(--gt-t4)" }}>
+                      {isSelected ? "▴" : "▾"}
+                    </div>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div
+          className="shrink-0 border-t"
+          style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+        >
+          <div className="mx-auto flex items-center justify-between py-4 px-8" style={{ maxWidth: "960px" }}>
+            <div>
+              <span className="text-[12px]" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>
+                {activeGameType
+                  ? `You vs ${aiOpponents} AI opponent${aiOpponents !== 1 ? "s" : ""}`
+                  : "Select a game to continue"}
+              </span>
+            </div>
+
+            {discussionToggle}
+
+            <button
+              onClick={() => { if (selectedGameType) setStep("prepare"); }}
+              disabled={!selectedGameType}
+              className="h-9 px-6 text-[13px] font-[500] transition-opacity"
+              style={{
+                background: selectedGameType ? "var(--gt-blue)" : "var(--gt-row-alt)",
+                color: selectedGameType ? "white" : "var(--gt-t4)",
+                borderRadius: "0.375rem",
+                cursor: selectedGameType ? "pointer" : "not-allowed",
+                letterSpacing: "var(--gt-tracking-tight)",
+                border: selectedGameType ? "none" : "1px solid var(--gt-border-md)",
+              }}
+            >
+              Enter the game →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── PREPARE step ───────────────────────────────────────────────────────
+  return (
+    <div className="h-screen flex flex-col overflow-hidden" style={{ background: "var(--gt-bg)" }}>
+      {header}
+
+      {/* Title strip */}
       <div
         className="shrink-0 border-b"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
         <div className="mx-auto py-6 px-8" style={{ maxWidth: "960px" }}>
           <p
-            className="text-[15px] leading-relaxed"
+            className="text-[15px] leading-relaxed mb-3"
             style={{
               color: "var(--gt-t2)",
               fontFamily: "'Instrument Serif', Georgia, serif",
               fontStyle: "italic",
             }}
           >
-            You will play as one of the participants. AI personas will fill the remaining seats.
-            Watch how your choices compare — and contrast — with theirs.
+            {activeGameType?.tagline}
           </p>
-        </div>
-      </div>
-
-      {/* ── Game type selector ───────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="mx-auto" style={{ maxWidth: "960px" }}>
-          <div className="px-8 pt-6 pb-3">
+          <div className="flex items-center gap-3">
             <span
-              className="text-[11px] uppercase"
-              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
+              className="text-[11px] px-2.5 py-1 border"
+              style={{
+                borderRadius: "9999px",
+                color: "var(--gt-blue)",
+                borderColor: "var(--gt-blue-border)",
+                background: "var(--gt-blue-bg)",
+                fontFamily: "IBMPlexMono, monospace",
+              }}
             >
-              Select a game
+              You + {aiOpponents} AI
             </span>
-          </div>
-
-          {gameTypes.map((gt) => {
-            const isSelected = selectedGameType === gt.name;
-            const aiCount = gt.minPlayers - 1;
-
-            return (
-              <div key={gt.name}>
-                <button
-                  onClick={() => setSelectedGameType(gt.name)}
-                  className={cn(
-                    "w-full flex items-start text-left border-b transition-colors",
-                    isSelected ? "" : "hover:bg-[var(--gt-row-alt)]",
-                  )}
-                  style={{
-                    borderColor: "var(--gt-border)",
-                    borderLeft: isSelected ? "3px solid var(--gt-blue)" : "3px solid transparent",
-                    background: isSelected ? "var(--gt-surface)" : "transparent",
-                  }}
+            <span
+              className="text-[12px]"
+              style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+            >
+              {activeGameType?.horizonLabel}
+            </span>
+            {(activeGameType?.discussionRounds ?? 0) > 0 && (
+              <>
+                <span className="w-px h-3" style={{ background: "var(--gt-border-md)" }} />
+                <span
+                  className="text-[12px]"
+                  style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
                 >
-                  <div className="flex-1 px-8 py-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span
-                        className="text-[18px] font-[600] leading-tight"
-                        style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-                      >
-                        {gt.displayName}
-                      </span>
-                      {/* Player composition badge */}
-                      <span
-                        className="text-[11px] px-2.5 py-1 border shrink-0"
-                        style={{
-                          borderRadius: "9999px",
-                          color: isSelected ? "var(--gt-blue)" : "var(--gt-t4)",
-                          borderColor: isSelected ? "var(--gt-blue-border)" : "var(--gt-border)",
-                          background: isSelected ? "var(--gt-blue-bg)" : "transparent",
-                          fontFamily: "IBMPlexMono, monospace",
-                        }}
-                      >
-                        You + {aiCount} AI
-                      </span>
-                    </div>
-                    <p className="text-[14px] leading-relaxed mb-3" style={{ color: "var(--gt-t2)" }}>
-                      {gt.tagline}
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="text-[12px]"
-                        style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-                      >
-                        {gt.horizonLabel}
-                      </span>
-                      {gt.discussionRounds > 0 && (
-                        <>
-                          <span className="w-px h-3" style={{ background: "var(--gt-border-md)" }} />
-                          <span
-                            className="text-[12px]"
-                            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-                          >
-                            {gt.discussionRounds}× discuss
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="shrink-0 w-10 flex items-center justify-center pt-7 pr-4" style={{ color: "var(--gt-t4)" }}>
-                    {isSelected ? "▴" : "▾"}
-                  </div>
-                </button>
-              </div>
-            );
-          })}
+                  {activeGameType?.discussionRounds}× discuss
+                </span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ── Bottom bar ──────────────────────────────────────────────────── */}
+      {/* Rules body */}
+      <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mx-auto px-8 pt-6 pb-12" style={{ maxWidth: "960px" }}>
+          <GameRulesDisplay gameTypeName={selectedGameType} />
+        </div>
+      </div>
+
+      {/* Bottom bar */}
       <div
         className="shrink-0 border-t"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
         <div className="mx-auto flex items-center justify-between py-4 px-8" style={{ maxWidth: "960px" }}>
-          <div>
-            {error ? (
-              <span className="text-[12px]" style={{ color: "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}>
-                {error}
-              </span>
-            ) : (
-              <span className="text-[12px]" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>
-                {activeGameType
-                  ? `You vs ${aiOpponents} AI opponent${aiOpponents !== 1 ? "s" : ""}`
-                  : "Select a game to continue"}
-              </span>
-            )}
-          </div>
+          <button
+            onClick={() => setStep("select")}
+            className="text-[13px] transition-colors hover:underline"
+            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+          >
+            ← Back
+          </button>
 
-          {/* Discussion rounds toggle */}
-          <div className="flex items-center gap-3">
-            <label
-              className="flex items-center gap-2 cursor-pointer select-none"
-              style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "12px" }}
-            >
-              <input
-                type="checkbox"
-                checked={discussionRounds !== undefined}
-                onChange={(e) => setDiscussionRounds(e.target.checked ? 1 : undefined)}
-                style={{ accentColor: "var(--gt-blue)", cursor: "pointer" }}
-              />
-              discussion
-            </label>
-            {discussionRounds !== undefined && (
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setDiscussionRounds(Math.max(0, discussionRounds - 1))}
-                  className="w-5 h-5 flex items-center justify-center hover:opacity-70"
-                  style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
-                >
-                  −
-                </button>
-                <span className="w-4 text-center tabular-nums" style={{ color: "var(--gt-t1)", fontFamily: "IBMPlexMono, monospace", fontSize: "13px" }}>
-                  {discussionRounds}
-                </span>
-                <button
-                  onClick={() => setDiscussionRounds(discussionRounds + 1)}
-                  className="w-5 h-5 flex items-center justify-center hover:opacity-70"
-                  style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
-                >
-                  +
-                </button>
-              </div>
-            )}
-          </div>
+          {discussionToggle}
 
           <button
             onClick={() => void handleEnter()}
-            disabled={isLaunching || !selectedGameType}
+            disabled={isLaunching}
             className="h-9 px-6 text-[13px] font-[500] transition-opacity"
             style={{
-              background: selectedGameType && !isLaunching ? "var(--gt-blue)" : "var(--gt-row-alt)",
-              color: selectedGameType && !isLaunching ? "white" : "var(--gt-t4)",
+              background: isLaunching ? "var(--gt-row-alt)" : "var(--gt-blue)",
+              color: isLaunching ? "var(--gt-t4)" : "white",
               borderRadius: "0.375rem",
-              cursor: selectedGameType && !isLaunching ? "pointer" : "not-allowed",
+              cursor: isLaunching ? "not-allowed" : "pointer",
               letterSpacing: "var(--gt-tracking-tight)",
-              border: selectedGameType ? "none" : "1px solid var(--gt-border-md)",
+              border: isLaunching ? "1px solid var(--gt-border-md)" : "none",
             }}
           >
             {isLaunching ? (
@@ -261,11 +365,25 @@ export function HumanNewGameClient({
                 Entering…
               </span>
             ) : (
-              "Enter the game →"
+              "Start game →"
             )}
           </button>
         </div>
       </div>
+
+      {/* Error display */}
+      {error && (
+        <div
+          className="shrink-0 border-t px-8 py-2"
+          style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+        >
+          <div className="mx-auto" style={{ maxWidth: "960px" }}>
+            <span className="text-[12px]" style={{ color: "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}>
+              {error}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
