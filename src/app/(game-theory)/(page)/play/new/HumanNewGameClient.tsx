@@ -18,7 +18,6 @@ export function HumanNewGameClient({
 }) {
   const router = useRouter();
   const [selectedGameType, setSelectedGameType] = useState(gameTypes[0]?.name ?? "");
-  const [discussionRounds, setDiscussionRounds] = useState<number | undefined>(undefined);
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<"select" | "prepare">("select");
@@ -30,7 +29,7 @@ export function HumanNewGameClient({
     if (isLaunching || !selectedGameType) return;
     setIsLaunching(true);
     setError(null);
-    const result = await createHumanGameSession(selectedGameType, discussionRounds);
+    const result = await createHumanGameSession(selectedGameType);
     if (!result.success) {
       setError(result.message);
       setIsLaunching(false);
@@ -81,45 +80,6 @@ export function HumanNewGameClient({
         </div>
       </div>
     </header>
-  );
-
-  // ── Discussion toggle (shared between both views) ──────────────────────
-  const discussionToggle = (
-    <div className="flex items-center gap-3">
-      <label
-        className="flex items-center gap-2 cursor-pointer select-none"
-        style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "12px" }}
-      >
-        <input
-          type="checkbox"
-          checked={discussionRounds !== undefined}
-          onChange={(e) => setDiscussionRounds(e.target.checked ? 1 : undefined)}
-          style={{ accentColor: "var(--gt-blue)", cursor: "pointer" }}
-        />
-        discussion
-      </label>
-      {discussionRounds !== undefined && (
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setDiscussionRounds(Math.max(0, discussionRounds - 1))}
-            className="w-5 h-5 flex items-center justify-center hover:opacity-70"
-            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
-          >
-            −
-          </button>
-          <span className="w-4 text-center tabular-nums" style={{ color: "var(--gt-t1)", fontFamily: "IBMPlexMono, monospace", fontSize: "13px" }}>
-            {discussionRounds}
-          </span>
-          <button
-            onClick={() => setDiscussionRounds(discussionRounds + 1)}
-            className="w-5 h-5 flex items-center justify-center hover:opacity-70"
-            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
-          >
-            +
-          </button>
-        </div>
-      )}
-    </div>
   );
 
   // ── SELECT step ────────────────────────────────────────────────────────
@@ -256,8 +216,6 @@ export function HumanNewGameClient({
               </span>
             </div>
 
-            {discussionToggle}
-
             <button
               onClick={() => { if (selectedGameType) setStep("prepare"); }}
               disabled={!selectedGameType}
@@ -354,7 +312,6 @@ export function HumanNewGameClient({
             >
               ← Change game
             </button>
-            {discussionToggle}
           </div>
 
           {/* Start button */}
