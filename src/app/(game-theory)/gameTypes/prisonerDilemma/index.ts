@@ -1,3 +1,4 @@
+import { gameRules } from "../rules";
 import { GameType } from "../types";
 import { prisonerDilemmaPayoff } from "./payoff";
 import { prisonerDilemmaActionSchema } from "./schema";
@@ -10,18 +11,7 @@ export const prisonerDilemma: GameType<typeof prisonerDilemmaActionSchema> = {
   name: "prisoner-dilemma",
   displayName: "Prisoner's Dilemma",
   tagline: "Can you trust a stranger you'll never speak to?",
-  rulesPrompt: `You are paired with one other person in a decision-making experiment. You are in separate rooms and cannot communicate in any way.
-
-In each round, you and the other person simultaneously and independently choose one of two actions — cooperate or defect — without seeing each other's choice first. Your points for the round depend on the combination of both choices:
-
-  Both cooperate:              you each earn 51 points
-  You cooperate, other defects:  you earn 22, they earn 63
-  You defect, other cooperates:  you earn 63, they earn 22
-  Both defect:                 you each earn 39 points
-
-What you earn depends on both your decision and the other person's decision. After each round, both choices and the resulting points are revealed before the next round begins.
-
-The other person faces exactly the same situation, with exactly the same payoffs, and is making their decision at the same time as you.`,
+  rulesPrompt: gameRules["prisoner-dilemma"],
 
   minPlayers: 2,
   maxPlayers: 2,
