@@ -34,4 +34,17 @@ WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOR
 
   simultaneousReveal: true,
   discussionRounds: 1,
+
+  humanInput: {
+    fields: [{
+      type: "number",
+      key: "number",
+      label: "Your Number",
+      min: 0,
+      max: 100,
+      step: 1,
+      hint: "Closest to ⅔ of the group average wins.",
+    }],
+    defaultAction: { number: 50 },
+  },
 };

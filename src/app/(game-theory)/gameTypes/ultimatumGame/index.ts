@@ -34,4 +34,28 @@ This is a ONE-ROUND game. Make your choice carefully.`,
   sequential: true, // Players act one-by-one
   simultaneousReveal: false,
   discussionRounds: 0,
+
+  humanInput: {
+    fields: [
+      {
+        type: "enum",
+        key: "action",
+        options: [
+          { value: "propose", label: "Propose", hint: "You decide the split", variant: "positive" as const },
+          { value: "accept", label: "Accept", hint: "Accept their offer", variant: "positive" as const },
+          { value: "reject", label: "Reject", hint: "Both get nothing", variant: "negative" as const },
+        ],
+      },
+      {
+        type: "number",
+        key: "proposerShare",
+        label: "Your Share",
+        min: 0,
+        max: 100,
+        step: 1,
+        hint: "How much you keep out of 100 (other player gets the rest).",
+      },
+    ],
+    defaultAction: { action: "propose", proposerShare: 50 },
+  },
 };

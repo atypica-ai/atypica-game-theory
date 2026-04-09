@@ -37,4 +37,16 @@ WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOR
 
   simultaneousReveal: true, // players choose secretly — reveal only after all have decided
   discussionRounds: 1,      // one discussion round (all players speak once) before each decision
+
+  humanInput: {
+    fields: [{
+      type: "enum",
+      key: "action",
+      options: [
+        { value: "stag", label: "Stag", hint: "High reward — requires enough hunters", variant: "positive" },
+        { value: "rabbit", label: "Rabbit", hint: "Safe fallback — lower but guaranteed", variant: "warning" },
+      ],
+    }],
+    defaultAction: { action: "stag" },
+  },
 };

@@ -64,4 +64,28 @@ The game lasts 1 round only. Points reflect consistency and alignment, not "winn
 
   simultaneousReveal: true, // decisions are private until all choose
   discussionRounds: 1,      // one discussion round to debate ethical frameworks
+
+  humanInput: {
+    fields: [
+      {
+        type: "enum",
+        key: "classicScenario",
+        label: "Classic Trolley",
+        options: [
+          { value: "pull_lever", label: "Pull lever", hint: "Divert — kill 1, save 5", variant: "warning" },
+          { value: "do_nothing", label: "Do nothing", hint: "Inaction — 5 die", variant: "neutral" },
+        ],
+      },
+      {
+        type: "enum",
+        key: "fatManScenario",
+        label: "Fat Man Variant",
+        options: [
+          { value: "push_man", label: "Push", hint: "Push him — kill 1, save 5", variant: "negative" },
+          { value: "do_nothing", label: "Do nothing", hint: "Inaction — 5 die", variant: "neutral" },
+        ],
+      },
+    ],
+    defaultAction: { classicScenario: "do_nothing", fatManScenario: "do_nothing" },
+  },
 };

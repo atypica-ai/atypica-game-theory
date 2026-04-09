@@ -49,4 +49,17 @@ WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOR
 
   simultaneousReveal: true, // contributions are secret until all players decide
   discussionRounds: 1,      // one discussion round before each contribution - can you build trust?
+
+  humanInput: {
+    fields: [{
+      type: "number",
+      key: "contribution",
+      label: "Contribution",
+      min: 0,
+      max: 20,
+      step: 1,
+      hint: "Pool is multiplied 1.6× and split equally. You keep the rest.",
+    }],
+    defaultAction: { contribution: 10 },
+  },
 };

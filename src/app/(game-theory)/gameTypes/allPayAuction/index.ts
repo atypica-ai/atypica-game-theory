@@ -42,4 +42,17 @@ WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOR
 
   simultaneousReveal: true, // bids are secret until all players submit
   discussionRounds: 1,      // one discussion round before each bid - psychological warfare
+
+  humanInput: {
+    fields: [{
+      type: "number",
+      key: "bid",
+      label: "Your Bid",
+      min: 0,
+      max: 150,
+      step: 1,
+      hint: "Prize is 100 pts. Everyone pays their bid — even losers.",
+    }],
+    defaultAction: { bid: 0 },
+  },
 };

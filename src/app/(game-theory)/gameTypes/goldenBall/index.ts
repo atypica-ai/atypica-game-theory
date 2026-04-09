@@ -36,4 +36,16 @@ WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOR
 
   simultaneousReveal: true,
   discussionRounds: 0,
+
+  humanInput: {
+    fields: [{
+      type: "enum",
+      key: "action",
+      options: [
+        { value: "split", label: "Split", hint: "Share the prize equally", variant: "positive" },
+        { value: "steal", label: "Steal", hint: "Take everything — if they split", variant: "negative" },
+      ],
+    }],
+    defaultAction: { action: "split" },
+  },
 };

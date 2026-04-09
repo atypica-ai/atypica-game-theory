@@ -48,4 +48,16 @@ WARNING: at the end of the game, anyone with the lowest score will be PRUNED FOR
 
   simultaneousReveal: true, // choices are secret until all decide
   discussionRounds: 1,      // one discussion round - can you coordinate? Or will you defect?
+
+  humanInput: {
+    fields: [{
+      type: "enum",
+      key: "action",
+      options: [
+        { value: "volunteer", label: "Volunteer", hint: "Bear the cost for the group", variant: "positive" },
+        { value: "not_volunteer", label: "Free-ride", hint: "Benefit without contributing", variant: "negative" },
+      ],
+    }],
+    defaultAction: { action: "volunteer" },
+  },
 };

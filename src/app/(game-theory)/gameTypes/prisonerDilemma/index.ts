@@ -34,4 +34,16 @@ The other person faces exactly the same situation, with exactly the same payoffs
 
   simultaneousReveal: true, // players act without seeing each other's current-round choice
   discussionRounds: 0,      // no discussion — players cannot communicate before deciding
+
+  humanInput: {
+    fields: [{
+      type: "enum",
+      key: "action",
+      options: [
+        { value: "cooperate", label: "Cooperate", hint: "Mutual gain — if both cooperate", variant: "positive" },
+        { value: "defect", label: "Defect", hint: "Max gain — if they cooperate", variant: "negative" },
+      ],
+    }],
+    defaultAction: { action: "cooperate" },
+  },
 };

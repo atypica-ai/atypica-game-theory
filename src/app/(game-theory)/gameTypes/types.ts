@@ -15,6 +15,41 @@ export type Horizon =
       maxRounds: number; // safety cap
     };
 
+// ── Human input configuration ────────────────────────────────────────────────
+
+export type HumanInputFieldVariant = "positive" | "negative" | "warning" | "neutral";
+
+export type HumanInputField =
+  | {
+      type: "enum";
+      key: string;
+      label?: string; // group label for multi-enum (e.g., "Classic Scenario")
+      options: {
+        value: string;
+        label: string;
+        hint: string;
+        variant?: HumanInputFieldVariant; // default "neutral"
+      }[];
+    }
+  | {
+      type: "number";
+      key: string;
+      label: string;
+      min: number;
+      max: number;
+      step?: number; // default 1
+      hint?: string;
+    };
+
+export interface HumanInputConfig {
+  fields: HumanInputField[];
+  defaultAction: Record<string, unknown>;
+  /** Cross-field validation — return error message or null */
+  validate?: (values: Record<string, unknown>) => string | null;
+}
+
+// ── Game type definition ─────────────────────────────────────────────────────
+
 export interface GameType<A extends z.ZodTypeAny = z.ZodTypeAny> {
   name: string; // e.g. "prisoner-dilemma"
   displayName: string;
@@ -34,4 +69,6 @@ export interface GameType<A extends z.ZodTypeAny = z.ZodTypeAny> {
   discussionRounds: number;
   // If true: players act one-by-one in random order, seeing prior decisions in timeline
   sequential?: boolean;
+  // Human player input form config — defines field types, constraints, and auto-submit defaults
+  humanInput: HumanInputConfig;
 }
