@@ -428,7 +428,7 @@ export function RoundDetailView({
     );
   }
 
-  const hasDiscussion = roundData.discussions.length > 0;
+  const hasDiscussion = roundData.discussions.length > 0 || (isDiscussionPhase && currentSpeakerId != null);
   const hasResult = roundData.result !== null;
   const cols = participants.length <= 2 ? 2 : participants.length === 3 ? 3 : 4;
 
@@ -512,7 +512,7 @@ export function RoundDetailView({
                   className="text-[11px] uppercase"
                   style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
                 >
-                  Discussion ({roundData.discussions.length})
+                  Discussion{roundData.discussions.length > 0 ? ` (${roundData.discussions.length})` : ""}
                 </span>
                 <span
                   className="text-[13px] transition-transform duration-150"
