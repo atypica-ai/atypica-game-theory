@@ -7,6 +7,7 @@ import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import { GameSessionParticipant } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { UserMenu } from "../../components/UserMenu";
 import {
   computeOutcome,
   classifySpread,
@@ -435,9 +436,12 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
               Past Games
             </span>
           </div>
-          <span style={{ color: "var(--gt-t3)", fontSize: "13px", fontFamily: "IBMPlexMono, monospace" }}>
-            {filtered.length} sessions
-          </span>
+          <div className="flex items-center gap-4">
+            <span style={{ color: "var(--gt-t3)", fontSize: "13px", fontFamily: "IBMPlexMono, monospace" }}>
+              {filtered.length} sessions
+            </span>
+            <UserMenu />
+          </div>
         </div>
       </header>
 

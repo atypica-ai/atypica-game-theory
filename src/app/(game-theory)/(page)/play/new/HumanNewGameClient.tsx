@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { GameTypeInfo } from "../../game/new/NewGameClient";
 import { GameRulesDisplay } from "@/app/(game-theory)/components/GameRulesDisplay";
+import { UserMenu } from "../../components/UserMenu";
 
 export function HumanNewGameClient({
   gameTypes,
@@ -62,8 +63,7 @@ export function HumanNewGameClient({
           </span>
         </div>
 
-        {/* Player identity */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span
             className="text-[12px] px-2.5 py-1 border"
             style={{
@@ -77,6 +77,7 @@ export function HumanNewGameClient({
           >
             {user.name}
           </span>
+          <UserMenu />
         </div>
       </div>
     </header>

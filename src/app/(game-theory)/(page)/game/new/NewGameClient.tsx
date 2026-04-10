@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { UserMenu } from "../../components/UserMenu";
 
 export type GameTypeInfo = {
   name: string;
@@ -94,21 +95,24 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
         className="shrink-0 border-b"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
-        <div className="mx-auto flex items-center h-[60px] px-8 gap-2" style={{ maxWidth: "1100px" }}>
-          <Link
-            href="/"
-            className="text-[13px] transition-colors hover:underline"
-            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-          >
-            Game Theory Lab
-          </Link>
-          <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
-          <span
-            className="text-[15px] font-[600]"
-            style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-          >
-            New Experiment
-          </span>
+        <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "1100px" }}>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="text-[13px] transition-colors hover:underline"
+              style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
+            >
+              Game Theory Lab
+            </Link>
+            <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
+            <span
+              className="text-[15px] font-[600]"
+              style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+            >
+              New Experiment
+            </span>
+          </div>
+          <UserMenu />
         </div>
       </header>
 
