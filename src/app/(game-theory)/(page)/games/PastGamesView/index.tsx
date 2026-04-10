@@ -7,6 +7,7 @@ import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import { GameSessionParticipant } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { useIsMobile } from "@/lib/useIsMobile";
 import { UserMenu } from "../../components/UserMenu";
 import {
   computeOutcome,
@@ -359,7 +360,7 @@ function FilterBar({
         placeholder="Search participants…"
         value={participantSearch}
         onChange={(e) => onSearch(e.target.value)}
-        style={{ ...selectStyle, width: "180px", color: "var(--gt-t1)" }}
+        style={{ ...selectStyle, flex: 1, minWidth: "120px", color: "var(--gt-t1)" }}
       />
     </div>
   );
@@ -373,14 +374,8 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
   const [gameTypeFilter, setGameTypeFilter]     = useState("all");
   const [statusFilter, setStatusFilter]         = useState("all");
   const [participantSearch, setParticipantSearch] = useState("");
-  const [isMobile, setIsMobile]                 = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+  const isMobile = useIsMobile();
+  const [expandedToken, setExpandedToken]       = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return rows.filter((r) => {
@@ -424,7 +419,7 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
         <div
-          className="mx-auto flex items-center justify-between h-[60px] px-8"
+          className="mx-auto flex items-center justify-between h-[60px] px-4 sm:px-8"
           style={{ maxWidth: "1200px" }}
         >
           <div className="flex items-center gap-2">
@@ -462,7 +457,7 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
       </header>
 
       {/* Content */}
-      <main className="flex-1 py-10 px-8">
+      <main className="flex-1 py-10 px-4 sm:px-8">
         <div
           className="mx-auto"
           style={{
@@ -504,31 +499,113 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
               No sessions match the current filters.
             </div>
           ) : (
-            filtered.map((row) => (
-              <div key={row.token} style={rowStyle}>
-                <GameCell display={row.gameTypeDisplay} createdAt={row.createdAt} />
-                {!isMobile && (
+            filtered.map((row) => {
+              if (isMobile) {
+                const isExpanded = expandedToken === row.token;
+                return (
+                  <div key={row.token} style={{ borderBottom: "0.5px solid var(--gt-border)" }}>
+                    {/* Tappable summary row */}
+                    <button
+                      onClick={() => setExpandedToken(isExpanded ? null : row.token)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        width: "100%",
+                        padding: "10px 16px",
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                    >
+                      <GameCell display={row.gameTypeDisplay} createdAt={row.createdAt} />
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {row.status === "running" && (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "3px",
+                              fontSize: "11px",
+                              fontWeight: 500,
+                              padding: "2px 7px",
+                              borderRadius: "10px",
+                              background: "var(--gt-neg-bg)",
+                              color: "var(--gt-neg)",
+                            }}
+                          >
+                            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "currentColor", display: "inline-block" }} />
+                            Live
+                          </span>
+                        )}
+                        <span
+                          style={{
+                            fontSize: "13px",
+                            color: "var(--gt-t4)",
+                            transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+                            transition: "transform 0.15s",
+                            display: "inline-block",
+                          }}
+                        >
+                          ›
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Expanded details */}
+                    {isExpanded && (
+                      <div
+                        style={{
+                          padding: "0 16px 12px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: "10px", color: "var(--gt-t4)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.07em" }}>Winner</span>
+                          <span style={{ fontSize: "13px" }}>
+                            <ParticipantsCell status={row.status} winners={row.winners} isFullTie={row.isFullTie} participants={row.participants} />
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: "10px", color: "var(--gt-t4)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.07em" }}>Top score</span>
+                          <TopScoreCell score={row.topScore} />
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: "10px", color: "var(--gt-t4)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.07em" }}>Spread</span>
+                          <SpreadCell category={row.spreadCategory} />
+                        </div>
+                        <div style={{ marginTop: "4px" }}>
+                          <Link
+                            href={`/game/${row.token}`}
+                            style={{ fontSize: "12px", color: "var(--gt-blue)" }}
+                          >
+                            View game →
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <div key={row.token} style={rowStyle}>
+                  <GameCell display={row.gameTypeDisplay} createdAt={row.createdAt} />
                   <ParticipantsCell
                     status={row.status}
                     winners={row.winners}
                     isFullTie={row.isFullTie}
                     participants={row.participants}
                   />
-                )}
-                {!isMobile && <TopScoreCell score={row.topScore} />}
-                {!isMobile && <SpreadCell category={row.spreadCategory} />}
-                {isMobile ? (
-                  <Link
-                    href={`/game/${row.token}`}
-                    style={{ fontSize: "12px", color: "var(--gt-blue)", textAlign: "right" }}
-                  >
-                    View →
-                  </Link>
-                ) : (
+                  <TopScoreCell score={row.topScore} />
+                  <SpreadCell category={row.spreadCategory} />
                   <StatusActionCell status={row.status} token={row.token} />
-                )}
-              </div>
-            ))
+                </div>
+              );
+            })
           )}
 
           {filtered.length > 0 && (
