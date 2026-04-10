@@ -437,9 +437,18 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <span style={{ color: "var(--gt-t3)", fontSize: "13px", fontFamily: "IBMPlexMono, monospace" }}>
-              {filtered.length} sessions
-            </span>
+            <Link
+              href="/play/new"
+              className="flex items-center h-8 px-4 text-[13px] font-[500] transition-opacity hover:opacity-80"
+              style={{
+                background: "var(--gt-blue)",
+                color: "white",
+                borderRadius: "0.375rem",
+                letterSpacing: "-0.025em",
+              }}
+            >
+              Play
+            </Link>
             <UserMenu />
           </div>
         </div>

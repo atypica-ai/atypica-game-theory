@@ -160,8 +160,19 @@ export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string
             </span>
           </div>
 
-          <div className="flex items-center gap-5">
-            <Legend />
+          <div className="flex items-center gap-4">
+            <Link
+              href="/play/new"
+              className="flex items-center h-8 px-4 text-[13px] font-[500] transition-opacity hover:opacity-80"
+              style={{
+                background: "var(--gt-blue)",
+                color: "white",
+                borderRadius: "0.375rem",
+                letterSpacing: "var(--gt-tracking-tight)",
+              }}
+            >
+              Play
+            </Link>
             <UserMenu />
           </div>
         </div>
@@ -169,6 +180,9 @@ export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string
 
       {/* ── Game grid — centered, max-width, generous breathing room ────── */}
       <main className="flex-1 py-12 px-8">
+        <div className="mx-auto mb-8" style={{ maxWidth: "1200px" }}>
+          <Legend />
+        </div>
         <div
           className="mx-auto grid gap-8"
           style={{

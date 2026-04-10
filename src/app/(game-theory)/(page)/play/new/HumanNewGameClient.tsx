@@ -12,10 +12,8 @@ import { UserMenu } from "../../components/UserMenu";
 
 export function HumanNewGameClient({
   gameTypes,
-  user,
 }: {
   gameTypes: GameTypeInfo[];
-  user: { id: number; name: string };
 }) {
   const router = useRouter();
   const [selectedGameType, setSelectedGameType] = useState(gameTypes[0]?.name ?? "");
@@ -63,22 +61,7 @@ export function HumanNewGameClient({
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span
-            className="text-[12px] px-2.5 py-1 border"
-            style={{
-              borderRadius: "9999px",
-              color: "var(--gt-blue)",
-              borderColor: "var(--gt-blue-border)",
-              background: "var(--gt-blue-bg)",
-              fontFamily: "IBMPlexMono, monospace",
-              letterSpacing: "0.04em",
-            }}
-          >
-            {user.name}
-          </span>
-          <UserMenu />
-        </div>
+        <UserMenu />
       </div>
     </header>
   );

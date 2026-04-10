@@ -32,10 +32,5 @@ export default async function PlayNewPage() {
     rules: gt.rulesPrompt,
   }));
 
-  return (
-    <HumanNewGameClient
-      gameTypes={gameTypes}
-      user={{ id: session.user.id, name: session.user.name ?? "You" }}
-    />
-  );
+  return <HumanNewGameClient gameTypes={gameTypes} />;
 }
