@@ -10,7 +10,7 @@ export function RoundProgress({ round, totalRounds, gameTypeName }: RoundProgres
   const bars = totalRounds ?? round; // show only known rounds for indefinite games
 
   return (
-    <div className="mt-8 flex flex-col items-center">
+    <div className="flex flex-col items-center w-full max-w-md">
       {/* Round bars */}
       <div className="flex items-center gap-2 mb-2">
         {Array.from({ length: bars }, (_, i) => {

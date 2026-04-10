@@ -379,7 +379,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "var(--gt-bg)" }}>
+      <div className="h-screen flex items-center justify-center p-6" style={{ background: "var(--gt-bg)" }}>
         <div className="card-lab p-8 max-w-md text-center">
           <p className="text-[13px] font-medium mb-2" style={{ color: "var(--gt-neg)" }}>Error</p>
           <p className="text-[12px] mb-4" style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}>{error}</p>
@@ -389,62 +389,78 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
     );
   }
 
+  const showChrome = visualPhase !== "completed";
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: "var(--gt-bg)" }}>
-      {visualPhase !== "completed" && (
-        <PhaseProgress phase={visualPhase} hasDiscussion={discussionRounds > 0} />
+    <div className="h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
+      {/* ── Top zone: phase progress (fixed at ~20%) ──────────────────── */}
+      {showChrome && (
+        <div className="shrink-0 flex items-end justify-center" style={{ height: "20vh", paddingBottom: "1rem" }}>
+          <PhaseProgress phase={visualPhase} hasDiscussion={discussionRounds > 0} />
+        </div>
       )}
-      <div className="w-full max-w-xl">
-        <AnimatePresence mode="wait">
-          {visualPhase === "discussion" && (
-            <DiscussionCard
-              key={`disc-${currentRound}`}
-              discussions={currentRoundData.discussions}
-              participants={participants}
-              currentSpeakerId={currentSpeakerId}
-              humanHasSpoken={humanHasSpoken}
-              allSpoken={allSpoken}
-              onSendMessage={handleSendDiscussion}
-              onProceedToDecision={handleProceedToDecision}
-            />
-          )}
-          {visualPhase === "commitment" && (
-            <CommitmentCard
-              key={`commit-${currentRound}`}
-              roundId={currentRound}
-              gameTypeName={gameTypeName}
-              currentScores={gameState.scores}
-              isSettling={false}
-              onSubmit={handleDecisionSubmit}
-            />
-          )}
-          {visualPhase === "analyze" && (
-            <AnalyzeCard
-              key={`analyze-${currentRound}`}
-              roundId={currentRound}
-              roundData={currentRoundData}
-              participants={participants}
-              isAllDecided={isAllDecided}
-              isSettling={step.phase === "settling"}
-              hasResult={hasResult}
-              isFinalRound={isFinalRound}
-              onProceed={isFinalRound ? handleViewFinalResults : handleProceed}
-            />
-          )}
-          {visualPhase === "completed" && (
-            <FinalResultsCard
-              key="results"
-              participants={participants}
-              cumulativeScores={gameState.scores}
-              winners={winners}
-              isFullTie={isFullTie}
-            />
-          )}
-        </AnimatePresence>
-        {visualPhase !== "completed" && (
-          <RoundProgress round={currentRound} totalRounds={totalRounds} gameTypeName={gameTypeName} />
-        )}
+
+      {/* ── Middle zone: card area (fills remaining space, scrollable) ── */}
+      <div
+        className="flex-1 min-h-0 flex items-start justify-center overflow-y-auto px-6"
+        style={{ paddingTop: showChrome ? "0" : "10vh" }}
+      >
+        <div className="w-full max-w-xl py-4">
+          <AnimatePresence mode="wait">
+            {visualPhase === "discussion" && (
+              <DiscussionCard
+                key={`disc-${currentRound}`}
+                discussions={currentRoundData.discussions}
+                participants={participants}
+                currentSpeakerId={currentSpeakerId}
+                humanHasSpoken={humanHasSpoken}
+                allSpoken={allSpoken}
+                onSendMessage={handleSendDiscussion}
+                onProceedToDecision={handleProceedToDecision}
+              />
+            )}
+            {visualPhase === "commitment" && (
+              <CommitmentCard
+                key={`commit-${currentRound}`}
+                roundId={currentRound}
+                gameTypeName={gameTypeName}
+                currentScores={gameState.scores}
+                isSettling={false}
+                onSubmit={handleDecisionSubmit}
+              />
+            )}
+            {visualPhase === "analyze" && (
+              <AnalyzeCard
+                key={`analyze-${currentRound}`}
+                roundId={currentRound}
+                roundData={currentRoundData}
+                participants={participants}
+                isAllDecided={isAllDecided}
+                isSettling={step.phase === "settling"}
+                hasResult={hasResult}
+                isFinalRound={isFinalRound}
+                onProceed={isFinalRound ? handleViewFinalResults : handleProceed}
+              />
+            )}
+            {visualPhase === "completed" && (
+              <FinalResultsCard
+                key="results"
+                participants={participants}
+                cumulativeScores={gameState.scores}
+                winners={winners}
+                isFullTie={isFullTie}
+              />
+            )}
+          </AnimatePresence>
+        </div>
       </div>
+
+      {/* ── Bottom zone: round progress (fixed at ~20%) ───────────────── */}
+      {showChrome && (
+        <div className="shrink-0 flex items-start justify-center" style={{ height: "20vh", paddingTop: "1rem" }}>
+          <RoundProgress round={currentRound} totalRounds={totalRounds} gameTypeName={gameTypeName} />
+        </div>
+      )}
     </div>
   );
 }

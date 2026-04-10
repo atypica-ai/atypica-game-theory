@@ -17,36 +17,47 @@ export function PhaseProgress({ phase, hasDiscussion }: PhaseProgressProps) {
   const activeIdx = steps.indexOf(phase as (typeof steps)[number]);
 
   return (
-    <div className="flex items-center justify-between w-full max-w-md mb-8 relative">
+    <div className="flex items-center justify-between w-full max-w-md relative">
       {/* Connector line */}
       <div
-        className="absolute top-1/2 left-0 w-full h-px -translate-y-1/2 z-0"
+        className="absolute top-[6px] left-0 w-full h-px z-0"
         style={{ background: "var(--gt-border-md)" }}
       />
 
       {steps.map((step, i) => {
-        const isActive = phase === step;
+        const isCurrent = phase === step;
         const isPast = activeIdx > i;
+        // Current: indigo filled, Past: grey filled, Future: hollow
+        const dotBg = isCurrent
+          ? "var(--gt-indigo)"
+          : isPast
+            ? "var(--gt-done)"
+            : "var(--gt-surface)";
+        const dotBorder = isCurrent
+          ? "var(--gt-indigo)"
+          : isPast
+            ? "var(--gt-done)"
+            : "var(--gt-border-md)";
+        const labelColor = isCurrent
+          ? "var(--gt-indigo)"
+          : isPast
+            ? "var(--gt-t3)"
+            : "var(--gt-t4)";
 
         return (
           <div key={step} className="relative z-10 flex flex-col items-center">
             <motion.div
               initial={false}
               animate={{
-                backgroundColor:
-                  isActive || isPast ? "var(--gt-ink)" : "var(--gt-surface)",
-                borderColor:
-                  isActive || isPast ? "var(--gt-ink)" : "var(--gt-border-md)",
-                scale: isActive ? 1.2 : 1,
+                backgroundColor: dotBg,
+                borderColor: dotBorder,
+                scale: isCurrent ? 1.3 : 1,
               }}
               className="w-3 h-3 rounded-full border-2"
             />
             <span
               className="text-[10px] mt-2 font-bold uppercase"
-              style={{
-                color: isActive ? "var(--gt-t1)" : "var(--gt-t4)",
-                letterSpacing: "-0.02em",
-              }}
+              style={{ color: labelColor, letterSpacing: "-0.02em" }}
             >
               {STEP_LABELS[step]}
             </span>

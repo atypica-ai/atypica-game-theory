@@ -148,6 +148,8 @@ export async function generatePlayerDecision({
 
   const task = `This is round ${round}. Carefully read the game state above, consider your strategy, then submit your decision by calling the action tool. You MUST call the action tool exactly once.`;
 
+  logger.info({ msg: "Calling LLM for decision", personaId: personaSession.personaId, round, model: personaSession.modelName });
+
   const { steps, reasoning, usage, providerMetadata } = await generateText({
     model: llm(personaSession.modelName),
     providerOptions: defaultProviderOptions(),
@@ -178,6 +180,7 @@ export async function generatePlayerDecision({
     msg: "Player decision generated",
     personaId: personaSession.personaId,
     round,
+    model: personaSession.modelName,
     decision: content,
     ...extra,
   });

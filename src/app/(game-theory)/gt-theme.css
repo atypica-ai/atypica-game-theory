@@ -39,6 +39,10 @@
   /* Primary interactive — charcoal/slate (matching reference) */
   --gt-ink:       hsl(210 20% 15%);
   --gt-ink-hover: hsl(210 20% 25%);
+
+  /* Phase indicator — indigo for active phase */
+  --gt-indigo:    hsl(230 60% 50%);
+  --gt-done:      hsl(210 8% 62%);
 }
 
 /* ── Reference-aligned component classes ──────────────────────────────────── */
