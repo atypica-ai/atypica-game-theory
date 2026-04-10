@@ -13,7 +13,24 @@ function validateInternalAuth(request: NextRequest): boolean {
 
 const bodySchema = z.object({
   count: z.number().int().min(1).max(50).default(1),
+  concurrency: z.number().int().min(1).max(10).default(3),
 });
+
+async function runConcurrent<T>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T, index: number) => Promise<void>,
+): Promise<void> {
+  const queue = items.map((item, i) => ({ item, i }));
+  async function worker() {
+    while (queue.length > 0) {
+      const next = queue.shift();
+      if (!next) break;
+      await fn(next.item, next.i);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+}
 
 const ALL_GAME_TYPES = Object.values(gameTypeRegistry);
 
@@ -72,24 +89,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   }
 
-  const { count } = parsed.data;
+  const { count, concurrency } = parsed.data;
 
   after(async () => {
-    logger.info({ msg: "Random game run job started", count });
+    logger.info({ msg: "Random game run job started", count, concurrency });
     let succeeded = 0;
     let failed = 0;
 
-    await Promise.all(
-      Array.from({ length: count }, async (_, i) => {
-        try {
-          await launchRandomSession(i, logger);
-          succeeded++;
-        } catch (error) {
-          failed++;
-          logger.error({ msg: "Random session launch failed", index: i, error: (error as Error).message });
-        }
-      }),
-    );
+    await runConcurrent(Array.from({ length: count }, (_, i) => i), concurrency, async (_, i) => {
+      try {
+        await launchRandomSession(i, logger);
+        succeeded++;
+      } catch (error) {
+        failed++;
+        logger.error({ msg: "Random session launch failed", index: i, error: (error as Error).message });
+      }
+    });
 
     logger.info({ msg: "Random game run job completed", count, succeeded, failed });
   });
@@ -99,7 +114,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       success: true,
       status: "processing",
       count,
-      message: `Launching ${count} fully-random session(s) in background.`,
+      concurrency,
+      message: `Launching ${count} random session(s) in background (concurrency=${concurrency}).`,
       timestamp: new Date().toISOString(),
     },
     { status: 202 },

@@ -14,7 +14,24 @@ function validateInternalAuth(request: NextRequest): boolean {
 const bodySchema = z.object({
   count: z.number().int().min(1).max(100).default(1),
   locale: z.enum(["zh-CN", "en-US"]).default("en-US"),
+  concurrency: z.number().int().min(1).max(10).default(5),
 });
+
+async function runConcurrent<T>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T, index: number) => Promise<void>,
+): Promise<void> {
+  const queue = items.map((item, i) => ({ item, i }));
+  async function worker() {
+    while (queue.length > 0) {
+      const next = queue.shift();
+      if (!next) break;
+      await fn(next.item, next.i);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+}
 
 async function generateOnePersona(
   locale: "zh-CN" | "en-US",
@@ -65,28 +82,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   }
 
-  const { count, locale } = parsed.data;
+  const { count, locale, concurrency } = parsed.data;
   const jobId = generateToken(8);
 
-  logger.info({ msg: "Persona generation job queued", count, locale, jobId });
+  logger.info({ msg: "Persona generation job queued", count, locale, concurrency, jobId });
 
   after(async () => {
-    logger.info({ msg: "Persona generation job started", count, locale, jobId });
+    logger.info({ msg: "Persona generation job started", count, locale, concurrency, jobId });
     let succeeded = 0;
     let failed = 0;
 
-    await Promise.all(
-      Array.from({ length: count }, async (_, i) => {
-        try {
-          await generateOnePersona(locale, i, jobId, logger);
-          succeeded++;
-        } catch (error) {
-          failed++;
-          const message = error instanceof Error ? error.message : "Unknown error";
-          logger.error({ msg: "Failed to generate persona", index: i, jobId, error: message });
-        }
-      }),
-    );
+    await runConcurrent(Array.from({ length: count }, (_, i) => i), concurrency, async (_, i) => {
+      try {
+        await generateOnePersona(locale, i, jobId, logger);
+        succeeded++;
+      } catch (error) {
+        failed++;
+        const message = error instanceof Error ? error.message : "Unknown error";
+        logger.error({ msg: "Failed to generate persona", index: i, jobId, error: message });
+      }
+    });
 
     logger.info({ msg: "Persona generation job completed", jobId, succeeded, failed });
   });
@@ -98,7 +113,8 @@ export async function POST(request: NextRequest) {
       status: "processing",
       count,
       locale,
-      message: `Generating ${count} persona(s) in background. Check server logs for progress (jobId: ${jobId}).`,
+      concurrency,
+      message: `Generating ${count} persona(s) in background (concurrency=${concurrency}). jobId: ${jobId}`,
       timestamp: new Date().toISOString(),
     },
     { status: 202 },
