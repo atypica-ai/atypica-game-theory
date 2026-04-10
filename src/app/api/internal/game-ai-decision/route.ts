@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const gameType = getGameType(extra.gameType);
     const persona = await prisma.persona.findUniqueOrThrow({ where: { id: personaId } });
     const modelName = extra.personaModels?.[personaId] ?? "gemini-3-flash";
-    const personaSession = buildGamePersonaSession({ persona, locale: "en-US", modelName });
+    const personaSession = buildGamePersonaSession({ persona, modelName });
 
     const snapshot = await refreshTimeline(token);
     const logger = rootLogger.child({ gameSessionToken: token, personaId });
