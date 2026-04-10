@@ -13,10 +13,10 @@ export function RulesPopover({ gameTypeName, gameDisplayName }: RulesPopoverProp
 
   return (
     <>
-      {/* Floating ? button */}
+      {/* Floating ? button — positioned below phase progress on mobile */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed top-4 right-4 z-40 group w-7 h-7 flex items-center justify-center rounded-full border cursor-pointer transition-colors text-[var(--gt-t4)] border-[var(--gt-border-md)] bg-[var(--gt-surface)] hover:text-[var(--gt-ink)] hover:border-[var(--gt-ink)] active:scale-90"
+        className="fixed top-14 sm:top-4 right-4 z-40 group w-7 h-7 flex items-center justify-center rounded-full border cursor-pointer transition-colors text-[var(--gt-t4)] border-[var(--gt-border-md)] bg-[var(--gt-surface)] hover:text-[var(--gt-ink)] hover:border-[var(--gt-ink)] active:scale-90"
         style={{
           fontSize: "12px",
           fontFamily: "IBMPlexMono, monospace",

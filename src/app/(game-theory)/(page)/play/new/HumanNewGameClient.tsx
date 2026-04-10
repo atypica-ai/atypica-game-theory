@@ -44,13 +44,14 @@ export function HumanNewGameClient({
       style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
     >
       <div className="mx-auto flex items-center justify-between h-[60px] px-4 sm:px-8" style={{ maxWidth: "960px" }}>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <Link
             href="/"
-            className="text-[13px] transition-colors hover:underline"
+            className="text-[13px] transition-colors hover:underline shrink-0"
             style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
           >
-            Game Theory Lab
+            <span className="hidden sm:inline">Game Theory Lab</span>
+            <span className="sm:hidden">GTL</span>
           </Link>
           <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
           <span

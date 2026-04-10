@@ -50,7 +50,7 @@ export function UserMenu() {
       >
         <HippyGhostAvatar seed={user.id} className="size-7 rounded-full" />
         <span
-          className="text-sm font-medium"
+          className="text-sm font-medium hidden sm:inline"
           style={{
             color: "var(--gt-t1)",
             letterSpacing: "var(--gt-tracking-tight)",

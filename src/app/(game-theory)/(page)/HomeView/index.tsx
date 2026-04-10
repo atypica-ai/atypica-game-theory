@@ -160,7 +160,7 @@ export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link
               href="/play/new"
               className="flex items-center h-8 px-4 text-[13px] font-[500] transition-opacity hover:opacity-80"

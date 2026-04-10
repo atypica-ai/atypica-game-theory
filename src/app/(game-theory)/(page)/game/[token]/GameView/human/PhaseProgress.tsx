@@ -29,7 +29,7 @@ export function PhaseProgress({ phase, hasDiscussion }: PhaseProgressProps) {
   const current = phaseIndex(phase);
 
   return (
-    <div className="flex items-center justify-between w-full max-w-md relative">
+    <div className="flex items-center justify-between w-full max-w-xs sm:max-w-md relative px-4 sm:px-0">
       <div
         className="absolute top-[6px] left-0 w-full h-px z-0"
         style={{ background: "var(--gt-border-md)" }}
