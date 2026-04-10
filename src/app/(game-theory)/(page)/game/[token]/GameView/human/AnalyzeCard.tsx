@@ -99,10 +99,10 @@ export function AnalyzeCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="card-lab p-8"
+      className="card-lab p-4 sm:p-8"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-5 sm:mb-8">
         <div
           className="w-10 h-10 rounded-md flex items-center justify-center"
           style={{ background: "var(--gt-row-alt)", color: "var(--gt-ink)" }}
@@ -152,7 +152,7 @@ export function AnalyzeCard({
               }}
             >
               {/* Left: identity */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 {isHuman ? (
                   <User size={14} style={{ color: "var(--gt-t3)" }} />
                 ) : (
@@ -160,7 +160,7 @@ export function AnalyzeCard({
                 )}
                 <HippyGhostAvatar seed={seed} className="size-6 rounded-full" />
                 <span
-                  className={`text-sm ${isWinner ? "font-bold" : ""}`}
+                  className={`text-sm truncate ${isWinner ? "font-bold" : ""}`}
                   style={{
                     color: isWinner ? "var(--gt-t1)" : "var(--gt-t2)",
                     fontFamily: "var(--gt-font-outfit), system-ui, sans-serif",
@@ -179,7 +179,7 @@ export function AnalyzeCard({
               </div>
 
               {/* Right: decision + payoff OR waiting indicator */}
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3 sm:gap-6 shrink-0">
                 {decisionDisplay ? (
                   <>
                     <div className="text-right">
@@ -189,7 +189,7 @@ export function AnalyzeCard({
                       </div>
                     </div>
                     {payoff !== undefined && (
-                      <div className="text-right w-12">
+                      <div className="text-right w-10 sm:w-12">
                         <div
                           className="text-xs font-bold tabular-nums"
                           style={{
@@ -232,7 +232,7 @@ export function AnalyzeCard({
       {hasResult ? (
         <button
           onClick={onProceed}
-          className="btn-lab w-full mt-8 flex items-center justify-center gap-2 text-xl py-4"
+          className="btn-lab w-full mt-5 sm:mt-8 flex items-center justify-center gap-2 text-xl py-4"
         >
           {isFinalRound ? (
             <>FINALIZE EXPERIMENT <Trophy size={20} /></>
@@ -242,7 +242,7 @@ export function AnalyzeCard({
         </button>
       ) : (
         <div
-          className="mt-8 text-center text-[11px] uppercase"
+          className="mt-5 sm:mt-8 text-center text-[11px] uppercase"
           style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
         >
           {isSettling

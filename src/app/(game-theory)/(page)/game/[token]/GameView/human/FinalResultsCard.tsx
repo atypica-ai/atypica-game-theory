@@ -62,10 +62,10 @@ export function FinalResultsCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="card-lab p-8"
+      className="card-lab p-4 sm:p-8"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-5 sm:mb-8">
         <div
           className="w-10 h-10 rounded-md flex items-center justify-center"
           style={{ background: "var(--gt-row-alt)", color: "var(--gt-ink)" }}
@@ -93,7 +93,7 @@ export function FinalResultsCard({
 
       {/* Winner showcase */}
       {!isFullTie && winners.length > 0 && (
-        <div className="flex items-center justify-center gap-6 mb-8">
+        <div className="flex items-center justify-center gap-4 sm:gap-6 mb-5 sm:mb-8">
           {winners.map((w) => {
             const score = cumulativeScores[w.personaId] ?? 0;
             return (

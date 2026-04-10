@@ -73,7 +73,7 @@ export function DiscussionCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="card-lab flex flex-col h-[500px]"
+      className="card-lab flex flex-col h-[380px] sm:h-[500px]"
     >
       {/* Header */}
       <div

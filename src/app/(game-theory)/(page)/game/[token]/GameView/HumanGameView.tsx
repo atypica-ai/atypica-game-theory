@@ -30,6 +30,8 @@ import { FinalResultsCard } from "./human/FinalResultsCard";
 import { ErrorDialog } from "./human/ErrorDialog";
 import { RulesPopover } from "./human/RulesPopover";
 
+import { useIsMobile } from "@/lib/useIsMobile";
+
 const SILENT_DISCUSSION = "(said nothing)";
 
 // ── Game step types ────────────────────────────────────────────────────────
@@ -421,6 +423,8 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   // ── Render ────────────────────────────────────────────────────────────
 
   const showChrome = visualPhase !== "completed";
+  const isMobile = useIsMobile();
+  const chromeHeight = isMobile ? "8vh" : "15vh";
 
   return (
     <div className="h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
@@ -434,7 +438,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       )}
       {/* ── Top zone: phase progress (fixed at ~15%) ──────────────────── */}
       {showChrome && (
-        <div className="shrink-0 flex items-end justify-center" style={{ height: "15vh", paddingBottom: "1rem" }}>
+        <div className="shrink-0 flex items-end justify-center" style={{ height: chromeHeight, paddingBottom: "1rem" }}>
           <PhaseProgress phase={visualPhase} hasDiscussion={discussionRounds > 0} />
         </div>
       )}
@@ -496,7 +500,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
 
       {/* ── Bottom zone: round progress (fixed at ~15%) ───────────────── */}
       {showChrome && (
-        <div className="shrink-0 flex items-start justify-center" style={{ height: "15vh", paddingTop: "1rem" }}>
+        <div className="shrink-0 flex items-start justify-center" style={{ height: chromeHeight, paddingTop: "1rem" }}>
           <RoundProgress round={currentRound} totalRounds={totalRounds} gameTypeName={gameTypeName} />
         </div>
       )}

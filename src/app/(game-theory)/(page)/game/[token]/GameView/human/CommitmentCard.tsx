@@ -150,9 +150,9 @@ export function CommitmentCard({
         <div className="h-full" style={{ width: `${progress * 100}%`, background: barColor, transition: "width 0.25s linear, background 0.6s" }} />
       </div>
 
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-5 sm:mb-8">
           <div
             className="w-10 h-10 rounded-md flex items-center justify-center"
             style={{ background: "var(--gt-row-alt)", color: "var(--gt-ink)" }}
@@ -245,7 +245,7 @@ export function CommitmentCard({
           <button
             onClick={handleSubmit}
             disabled={!isFormComplete || disabled}
-            className="btn-lab w-full mt-8 flex items-center justify-center gap-2 text-lg"
+            className="btn-lab w-full mt-5 sm:mt-8 flex items-center justify-center gap-2 text-lg"
           >
             {isSettling ? "Submitting..." : "SUBMIT DECISION"}
           </button>
