@@ -27,6 +27,8 @@ export const stagHunt: GameType<typeof stagHuntActionSchema> = {
   simultaneousReveal: true, // players choose secretly — reveal only after all have decided
   discussionRounds: 1,      // one discussion round (all players speak once) before each decision
 
+  decisionGuidance: "Hunt stag for a big payoff — but only if enough players join you. Rabbit is safe but modest. The question: can you count on the group to coordinate?",
+
   humanInput: {
     fields: [{
       type: "enum",

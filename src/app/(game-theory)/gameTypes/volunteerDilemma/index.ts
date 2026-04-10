@@ -26,6 +26,8 @@ export const volunteerDilemma: GameType<typeof volunteerDilemmaActionSchema> = {
   simultaneousReveal: true, // choices are secret until all decide
   discussionRounds: 1,      // one discussion round - can you coordinate? Or will you defect?
 
+  decisionGuidance: "If at least one player volunteers, everyone benefits \u2014 but volunteering has a cost. If nobody steps up, everyone gets nothing. Will you take one for the team?",
+
   humanInput: {
     fields: [{
       type: "enum",

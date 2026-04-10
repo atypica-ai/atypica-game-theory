@@ -28,6 +28,7 @@ import { CommitmentCard } from "./human/CommitmentCard";
 import { AnalyzeCard } from "./human/AnalyzeCard";
 import { FinalResultsCard } from "./human/FinalResultsCard";
 import { ErrorDialog } from "./human/ErrorDialog";
+import { RulesPopover } from "./human/RulesPopover";
 
 const SILENT_DISCUSSION = "(said nothing)";
 
@@ -426,6 +427,10 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       {/* Error dialog — overlay on top of current game state */}
       {error && (
         <ErrorDialog message={error} onRetry={handleRetry} onAbort={handleAbort} />
+      )}
+      {/* Rules ? button — floating top-right */}
+      {showChrome && (
+        <RulesPopover gameTypeName={gameTypeName} gameDisplayName={gameType.displayName} />
       )}
       {/* ── Top zone: phase progress (fixed at ~15%) ──────────────────── */}
       {showChrome && (

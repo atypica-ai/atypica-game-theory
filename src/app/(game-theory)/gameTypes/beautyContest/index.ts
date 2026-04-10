@@ -23,6 +23,8 @@ export const beautyContest: GameType<typeof beautyContestActionSchema> = {
   simultaneousReveal: true,
   discussionRounds: 1,
 
+  decisionGuidance: "Pick a number 0\u2013100. The winner is closest to \u2154 of the group\u2019s average. Think about what others will guess \u2014 then think one level deeper.",
+
   humanInput: {
     fields: [{
       type: "number",

@@ -26,6 +26,8 @@ export const colonelBlotto: GameType<typeof colonelBlottoActionSchema> = {
   simultaneousReveal: true, // allocations are secret until all players decide
   discussionRounds: 1,      // one discussion round — signal or deceive about your strategy
 
+  decisionGuidance: "Distribute exactly 6 troops across 4 battlefields. Whoever deploys more troops wins that field. Win the most battlefields to win the round.",
+
   humanInput: {
     fields: [
       { type: "number", key: "battlefield1", label: "BF 1", min: 0, max: 3, step: 1 },

@@ -80,11 +80,19 @@ export function DiscussionCard({
         className="px-4 py-3 border-b flex items-center justify-between"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-row-alt)" }}
       >
-        <div className="flex items-center gap-2">
-          <MessageSquare size={16} style={{ color: "var(--gt-t3)" }} />
-          <span className="text-xs font-bold uppercase" style={{ letterSpacing: "0.1em", color: "var(--gt-t2)" }}>
-            Discussion Channel
-          </span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <MessageSquare size={16} style={{ color: "var(--gt-t3)" }} />
+            <span className="text-xs font-bold uppercase" style={{ letterSpacing: "0.1em", color: "var(--gt-t2)" }}>
+              Discussion Channel
+            </span>
+          </div>
+          <p
+            className="text-[11px] leading-snug pl-6"
+            style={{ color: "var(--gt-t3)", fontFamily: "'Instrument Serif', Georgia, serif", fontStyle: "italic" }}
+          >
+            Communicate, negotiate, or bluff — shape the table before decisions lock in.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <span

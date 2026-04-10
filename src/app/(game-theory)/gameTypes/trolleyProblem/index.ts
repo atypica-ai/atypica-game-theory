@@ -26,6 +26,8 @@ export const trolleyProblem: GameType<typeof trolleyProblemActionSchema> = {
   simultaneousReveal: true, // decisions are private until all choose
   discussionRounds: 1,      // one discussion round to debate ethical frameworks
 
+  decisionGuidance: "Two moral dilemmas: the classic lever and the fat-man variant. No payoff matrix \u2014 just your ethical instinct. Your answers reveal your moral framework to the group.",
+
   humanInput: {
     fields: [
       {

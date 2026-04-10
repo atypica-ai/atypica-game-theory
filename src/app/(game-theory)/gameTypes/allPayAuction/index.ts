@@ -26,6 +26,8 @@ export const allPayAuction: GameType<typeof allPayAuctionActionSchema> = {
   simultaneousReveal: true, // bids are secret until all players submit
   discussionRounds: 1,      // one discussion round before each bid - psychological warfare
 
+  decisionGuidance: "Bid for a 100-point prize. Highest bidder wins \u2014 but every player pays their bid, win or lose. Overbid and you burn points; underbid and you lose your stake.",
+
   humanInput: {
     fields: [{
       type: "number",

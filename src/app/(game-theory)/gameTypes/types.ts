@@ -70,6 +70,8 @@ export interface GameType<A extends z.ZodTypeAny = z.ZodTypeAny> {
   discussionRounds: number;
   // If true: players act one-by-one in random order, seeing prior decisions in timeline
   sequential?: boolean;
+  /** 1-3 line guidance shown to human players during the decision phase */
+  decisionGuidance: string;
   // Human player input form config — defines field types, constraints, and auto-submit defaults
   humanInput: HumanInputConfig;
 }

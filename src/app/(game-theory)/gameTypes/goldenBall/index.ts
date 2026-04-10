@@ -23,6 +23,8 @@ export const goldenBall: GameType<typeof goldenBallActionSchema> = {
   simultaneousReveal: true,
   discussionRounds: 0,
 
+  decisionGuidance: "Split shares the pool equally. Steal takes everything — unless the other player also steals, then nobody gets a thing. One shot, no take-backs.",
+
   humanInput: {
     fields: [{
       type: "enum",

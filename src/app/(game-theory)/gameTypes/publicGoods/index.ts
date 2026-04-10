@@ -26,6 +26,8 @@ export const publicGoods: GameType<typeof publicGoodsActionSchema> = {
   simultaneousReveal: true, // contributions are secret until all players decide
   discussionRounds: 1,      // one discussion round before each contribution - can you build trust?
 
+  decisionGuidance: "Contribute to the shared pool \u2014 it gets multiplied 1.6\u00d7 and split equally. Contributing nothing lets you free-ride. But if everyone free-rides, the pool stays empty.",
+
   humanInput: {
     fields: [{
       type: "number",

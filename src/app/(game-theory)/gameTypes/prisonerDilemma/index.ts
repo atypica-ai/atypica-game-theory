@@ -26,6 +26,8 @@ export const prisonerDilemma: GameType<typeof prisonerDilemmaActionSchema> = {
   simultaneousReveal: true, // players act without seeing each other's current-round choice
   discussionRounds: 0,      // no discussion — players cannot communicate before deciding
 
+  decisionGuidance: "Both players choose at once. Mutual cooperation pays well, but defecting against a cooperator is the jackpot. If both defect, everyone suffers. Trust — or exploit?",
+
   humanInput: {
     fields: [{
       type: "enum",

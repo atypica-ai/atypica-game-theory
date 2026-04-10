@@ -180,6 +180,16 @@ export function CommitmentCard({
           </div>
         </div>
 
+        {/* Decision guidance */}
+        {gameType.decisionGuidance && (
+          <p
+            className="text-[13px] leading-relaxed mb-6"
+            style={{ color: "var(--gt-t2)", fontFamily: "'Instrument Serif', Georgia, serif", fontStyle: "italic" }}
+          >
+            {gameType.decisionGuidance}
+          </p>
+        )}
+
         <div className="space-y-8">
           {/* Enum fields */}
           {enumFields.map((field) => (

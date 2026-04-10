@@ -26,6 +26,8 @@ export const ultimatumGame: GameType<typeof ultimatumGameActionSchema> = {
   simultaneousReveal: false,
   discussionRounds: 0,
 
+  decisionGuidance: "The proposer divides 100 points; the responder accepts or rejects. Rejection means both get zero. How much is \u201cfair enough\u201d to avoid spite?",
+
   humanInput: {
     fields: [
       {
