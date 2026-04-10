@@ -7,6 +7,7 @@ import {
   PersonaDiscussionEvent,
 } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
+import { useIsMobile } from "@/lib/useIsMobile";
 import { useEffect, useState } from "react";
 import type { GamePhase, RoundData } from "./index";
 import { PlayerResultState, PLAYER_COLORS } from "./PlayerCard";
@@ -430,13 +431,14 @@ export function RoundDetailView({
 
   const hasDiscussion = roundData.discussions.length > 0 || (isDiscussionPhase && currentSpeakerId != null);
   const hasResult = roundData.result !== null;
-  const cols = participants.length <= 2 ? 2 : participants.length === 3 ? 3 : 4;
+  const isMobile = useIsMobile();
+  const cols = isMobile ? 2 : participants.length <= 2 ? 2 : participants.length === 3 ? 3 : 4;
 
   return (
     <>
       <style>{`@keyframes gtFadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="mx-auto py-8 px-8" style={{ maxWidth: "960px" }}>
+        <div className="mx-auto py-5 px-4 sm:py-8 sm:px-8" style={{ maxWidth: "960px" }}>
 
           {/* ── Round header + phase strip ────────────────────────────── */}
           <div className="flex items-center justify-between mb-6">

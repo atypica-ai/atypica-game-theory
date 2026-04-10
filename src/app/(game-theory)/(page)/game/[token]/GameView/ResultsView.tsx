@@ -88,7 +88,7 @@ export function ResultsView({
 
   return (
     <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div className="mx-auto py-10 px-8" style={{ maxWidth: "960px" }}>
+      <div className="mx-auto py-10 px-4 sm:px-8" style={{ maxWidth: "960px" }}>
 
         {/* ── Winner section ─────────────────────────────────────────────── */}
         <section className="mb-10 flex flex-col items-center text-center">
@@ -126,7 +126,7 @@ export function ResultsView({
             <>
               {/* Multiple co-winners */}
               {winners.length > 1 && (
-                <div className="flex items-end gap-8 mb-4">
+                <div className="flex items-end gap-4 sm:gap-8 mb-4">
                   {winners.map((w) => {
                     const idx = participants.findIndex((x) => x.personaId === w.personaId);
                     const color = PLAYER_COLORS[idx] ?? PLAYER_COLORS[0];
@@ -203,7 +203,7 @@ export function ResultsView({
                     className="size-8 rounded-full shrink-0"
                   />
                   <span
-                    className="text-[14px] font-[500] w-32 truncate shrink-0"
+                    className="text-[14px] font-[500] w-20 sm:w-32 truncate shrink-0"
                     style={{
                       color: isWinner ? color : "var(--gt-t1)",
                       fontFamily: "var(--gt-font-outfit), system-ui, sans-serif",
