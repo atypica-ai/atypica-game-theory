@@ -6,7 +6,8 @@ import { prisma } from "@/prisma/prisma";
 import { compare } from "bcryptjs";
 import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { authLogger, recordAndTrackLastLogin } from "./lib";
+import GoogleProvider from "next-auth/providers/google";
+import { authLogger, createPersonalUser, recordAndTrackLastLogin } from "./lib";
 
 const authOptions: NextAuthOptions = {
   logger: {
@@ -105,6 +106,17 @@ const authOptions: NextAuthOptions = {
         };
       },
     }),
+    GoogleProvider({
+      clientId: process.env.OAUTH_GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.OAUTH_GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
+    }),
   ],
   callbacks: {
     session: ({ session, token }) => {
@@ -124,6 +136,39 @@ const authOptions: NextAuthOptions = {
         };
       }
       return token;
+    },
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google") {
+        if (!user.email) {
+          authLogger.error({
+            msg: "Google auth: email missing from profile",
+            account: JSON.stringify(account),
+          });
+          throw new Error("EMAIL_NOT_FOUND");
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!(profile as any)?.email_verified) {
+          throw new Error("EMAIL_NOT_VERIFIED");
+        }
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+        if (!existingUser) {
+          const newUser = await createPersonalUser({
+            name: user.name ?? undefined,
+            email: user.email,
+            emailVerified: new Date(),
+          });
+          user.id = newUser.id;
+        } else {
+          if (existingUser.teamIdAsMember) {
+            throw new Error("TEAM_MEMBER_NOT_ALLOWED");
+          }
+          user.id = existingUser.id;
+        }
+        recordAndTrackLastLogin({ userId: user.id as number, provider: "google" });
+      }
+      return true;
     },
   },
 };

@@ -19,7 +19,7 @@ export interface UserLastLogin {
     city: string;
   }>;
   locale?: string;
-  provider?: "email-password";
+  provider?: "email-password" | "google";
 }
 
 export const authClientInfo = async (): Promise<
@@ -46,7 +46,7 @@ async function _recordLastLogin({
   provider,
 }: {
   userId: number;
-  provider?: "email-password";
+  provider?: "email-password" | "google";
 }): Promise<UserLastLogin | void> {
   try {
     const clientInfo = await authClientInfo();
@@ -76,23 +76,25 @@ export function recordAndTrackLastLogin({
   provider,
 }: {
   userId: number;
-  provider: "email-password";
+  provider: "email-password" | "google";
 }) {
   // Run in background, don't await
   _recordLastLogin({ userId, provider }).catch(() => {});
 }
 
 export async function createPersonalUser({
+  name: providedName,
   email,
   password,
   emailVerified,
 }: {
+  name?: string;
   email: string;
   password?: string;
   emailVerified?: Date;
 }) {
   email = email.toLowerCase();
-  const name = email.split("@")[0];
+  const name = providedName?.trim() || email.split("@")[0];
   const hashedPassword = password ? await hash(password, 10) : "";
 
   const user = await prisma.$transaction(async (tx) => {
