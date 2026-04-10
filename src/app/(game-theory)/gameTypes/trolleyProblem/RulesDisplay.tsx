@@ -1,14 +1,10 @@
 "use client";
 
-import { Overview, Section } from "../../components/rulesHelpers";
+import { Section } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
     <>
-      <Overview>
-        A runaway trolley is coming. What is the <strong>value of a life</strong>?
-      </Overview>
-
       <Section label="How to play">
         <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
           <li>You face two scenarios — each asks you to choose between action and inaction.</li>

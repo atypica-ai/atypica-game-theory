@@ -10,6 +10,7 @@ export const allPayAuction: GameType<typeof allPayAuctionActionSchema> = {
   name: "all-pay-auction",
   displayName: "All-Pay Auction",
   tagline: "The winner takes the prize — but everyone pays their bid.",
+  punchline: "The only auction where losing still costs you everything.",
 
   rulesPrompt: gameRules["all-pay-auction"],
 

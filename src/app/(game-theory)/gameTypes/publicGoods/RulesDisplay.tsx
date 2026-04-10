@@ -1,14 +1,10 @@
 "use client";
 
-import { Overview, Section } from "../../components/rulesHelpers";
+import { Section } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
     <>
-      <Overview>
-        Will you contribute to the community or be a <strong>free rider</strong>?
-      </Overview>
-
       <Section label="How to play">
         <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
           <li>Each round you get <strong>20 tokens</strong>. Put any amount into a shared pot.</li>

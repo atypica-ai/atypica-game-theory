@@ -11,6 +11,7 @@ export const stagHunt: GameType<typeof stagHuntActionSchema> = {
   name: "stag-hunt",
   displayName: "Stag Hunt",
   tagline: "Why risk the hunt when you can pocket both rewards for free?",
+  punchline: "Go for the big prize together, or play it safe alone?",
 
   rulesPrompt: gameRules["stag-hunt"],
 

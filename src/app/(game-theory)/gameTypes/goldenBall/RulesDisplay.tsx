@@ -1,14 +1,10 @@
 "use client";
 
-import { Overview, Section } from "../../components/rulesHelpers";
+import { Section } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
     <>
-      <Overview>
-        The ultimate test of <strong>friendship</strong> and <strong>greed</strong>.
-      </Overview>
-
       <Section label="How to play">
         <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
           <li>There&apos;s a shared pot of <strong>50 points</strong>.</li>

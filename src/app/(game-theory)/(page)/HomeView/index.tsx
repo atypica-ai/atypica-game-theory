@@ -89,7 +89,7 @@ function GameCard({ gt, sessionCount }: { gt: GameType; sessionCount: number }) 
           className="text-[14px] mb-5 leading-relaxed"
           style={{ color: "var(--gt-t2)" }}
         >
-          {gt.tagline}
+          {gt.punchline}
         </p>
         <div className="flex items-center gap-2 flex-wrap">
           <StatChip>{players}</StatChip>

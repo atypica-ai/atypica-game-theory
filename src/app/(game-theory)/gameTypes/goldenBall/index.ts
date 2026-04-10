@@ -7,6 +7,7 @@ export const goldenBall: GameType<typeof goldenBallActionSchema> = {
   name: "golden-ball",
   displayName: "Golden Ball",
   tagline: "Everyone can share — or one person can take it all.",
+  punchline: "The ultimate test of friendship and greed.",
 
   rulesPrompt: gameRules["golden-ball"],
 

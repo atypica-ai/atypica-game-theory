@@ -10,6 +10,7 @@ export const trolleyProblem: GameType<typeof trolleyProblemActionSchema> = {
   name: "trolley-problem",
   displayName: "Trolley Problem",
   tagline: "Two moral dilemmas — where do you draw the line?",
+  punchline: "A runaway trolley is coming. What is the value of a life?",
 
   rulesPrompt: gameRules["trolley-problem"],
 

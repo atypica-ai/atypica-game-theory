@@ -145,7 +145,7 @@ export function HumanNewGameClient({
                         </span>
                       </div>
                       <p className="text-[14px] leading-relaxed mb-3" style={{ color: "var(--gt-t2)" }}>
-                        {gt.tagline}
+                        {gt.punchline}
                       </p>
                       <div className="flex items-center gap-3">
                         <span
@@ -276,7 +276,7 @@ export function HumanNewGameClient({
               fontStyle: "italic",
             }}
           >
-            {activeGameType?.tagline}
+            {activeGameType?.punchline}
           </p>
 
           {/* Rules */}

@@ -1,14 +1,10 @@
 "use client";
 
-import { Overview, Section } from "../../components/rulesHelpers";
+import { Section } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
     <>
-      <Overview>
-        Someone has to do the dirty work. Will it be <strong>you</strong>?
-      </Overview>
-
       <Section label="How to play">
         <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
           <li>The group needs <strong>at least one volunteer</strong> to step up.</li>

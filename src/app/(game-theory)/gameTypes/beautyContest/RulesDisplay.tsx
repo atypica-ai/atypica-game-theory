@@ -1,14 +1,10 @@
 "use client";
 
-import { Overview, Section } from "../../components/rulesHelpers";
+import { Section } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
     <>
-      <Overview>
-        It&apos;s not about what you like, it&apos;s about what you think <strong>everyone else</strong> thinks.
-      </Overview>
-
       <Section label="How to play">
         <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
           <li>Everyone picks a number between <strong>0</strong> and <strong>100</strong>.</li>

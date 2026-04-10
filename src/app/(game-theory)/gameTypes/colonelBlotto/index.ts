@@ -10,6 +10,7 @@ export const colonelBlotto: GameType<typeof colonelBlottoActionSchema> = {
   name: "colonel-blotto",
   displayName: "Colonel Blotto",
   tagline: "Allocate your troops wisely — concentrate or spread?",
+  punchline: "Strategy is about where you choose NOT to fight.",
 
   rulesPrompt: gameRules["colonel-blotto"],
 

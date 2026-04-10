@@ -9,6 +9,7 @@ export const ultimatumGame: GameType<typeof ultimatumGameActionSchema> = {
   name: "ultimatum-game",
   displayName: "Ultimatum Game",
   tagline: "Divide the money — if they accept",
+  punchline: "How much is \"fair\" enough for you?",
 
   rulesPrompt: gameRules["ultimatum-game"],
 

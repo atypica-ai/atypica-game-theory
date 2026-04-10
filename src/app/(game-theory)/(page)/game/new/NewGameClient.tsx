@@ -17,6 +17,7 @@ export type GameTypeInfo = {
   name: string;
   displayName: string;
   tagline: string;
+  punchline: string;
   minPlayers: number;
   maxPlayers: number;
   horizonLabel: string;
@@ -173,7 +174,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                         </span>
                       </div>
                       <p className="text-[13px] mb-3" style={{ color: "var(--gt-t2)" }}>
-                        {gt.tagline}
+                        {gt.punchline}
                       </p>
                       <div className="flex items-center gap-3">
                         <span

@@ -10,6 +10,7 @@ export const publicGoods: GameType<typeof publicGoodsActionSchema> = {
   name: "public-goods",
   displayName: "Public Goods Game",
   tagline: "Contribute to the common good — or free-ride and let others pay?",
+  punchline: "Will you contribute to the community or be a free rider?",
 
   rulesPrompt: gameRules["public-goods"],
 

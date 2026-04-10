@@ -54,6 +54,7 @@ export interface GameType<A extends z.ZodTypeAny = z.ZodTypeAny> {
   name: string; // e.g. "prisoner-dilemma"
   displayName: string;
   tagline: string; // one-line description shown in the game picker UI
+  punchline: string; // short hook displayed under game title in UI cards
   rulesPrompt: string; // natural language rules shown to all players as context
   minPlayers: number;
   maxPlayers: number;

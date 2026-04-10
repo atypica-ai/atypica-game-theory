@@ -11,6 +11,7 @@ export const prisonerDilemma: GameType<typeof prisonerDilemmaActionSchema> = {
   name: "prisoner-dilemma",
   displayName: "Prisoner's Dilemma",
   tagline: "Can you trust a stranger you'll never speak to?",
+  punchline: "Can you trust your partner when betrayal is so tempting?",
   rulesPrompt: gameRules["prisoner-dilemma"],
 
   minPlayers: 2,

@@ -7,6 +7,7 @@ export const beautyContest: GameType<typeof beautyContestActionSchema> = {
   name: "beauty-contest",
   displayName: "Beauty Contest",
   tagline: "Don't pick what you think is best — pick what you think others think is best.",
+  punchline: "It's not about what you like — it's about what you think everyone else thinks.",
 
   rulesPrompt: gameRules["beauty-contest"],
 

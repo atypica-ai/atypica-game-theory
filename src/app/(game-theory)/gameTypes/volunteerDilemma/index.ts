@@ -10,6 +10,7 @@ export const volunteerDilemma: GameType<typeof volunteerDilemmaActionSchema> = {
   name: "volunteer-dilemma",
   displayName: "Volunteer's Dilemma",
   tagline: "Someone must volunteer — but who wants to be the one who pays?",
+  punchline: "Someone has to do the dirty work. Will it be you?",
 
   rulesPrompt: gameRules["volunteer-dilemma"],
 

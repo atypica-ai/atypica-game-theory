@@ -15,6 +15,7 @@ export default async function NewGamePage() {
     name: gt.name,
     displayName: gt.displayName,
     tagline: gt.tagline,
+    punchline: gt.punchline,
     minPlayers: gt.minPlayers,
     maxPlayers: gt.maxPlayers,
     horizonLabel:
