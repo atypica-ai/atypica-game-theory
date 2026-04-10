@@ -427,16 +427,16 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       {error && (
         <ErrorDialog message={error} onRetry={handleRetry} onAbort={handleAbort} />
       )}
-      {/* ── Top zone: phase progress (fixed at ~20%) ──────────────────── */}
+      {/* ── Top zone: phase progress (fixed at ~15%) ──────────────────── */}
       {showChrome && (
-        <div className="shrink-0 flex items-end justify-center" style={{ height: "20vh", paddingBottom: "1rem" }}>
+        <div className="shrink-0 flex items-end justify-center" style={{ height: "15vh", paddingBottom: "1rem" }}>
           <PhaseProgress phase={visualPhase} hasDiscussion={discussionRounds > 0} />
         </div>
       )}
 
-      {/* ── Middle zone: card area (fills remaining space, scrollable) ── */}
+      {/* ── Middle zone: card area (fills remaining space, vertically centered, scrollable) ── */}
       <div
-        className="flex-1 min-h-0 flex items-start justify-center overflow-y-auto px-6"
+        className="flex-1 min-h-0 flex items-center justify-center overflow-y-auto px-6"
         style={{ paddingTop: showChrome ? "0" : "10vh" }}
       >
         <div className="w-full max-w-xl py-4">
@@ -489,9 +489,9 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
         </div>
       </div>
 
-      {/* ── Bottom zone: round progress (fixed at ~20%) ───────────────── */}
+      {/* ── Bottom zone: round progress (fixed at ~15%) ───────────────── */}
       {showChrome && (
-        <div className="shrink-0 flex items-start justify-center" style={{ height: "20vh", paddingTop: "1rem" }}>
+        <div className="shrink-0 flex items-start justify-center" style={{ height: "15vh", paddingTop: "1rem" }}>
           <RoundProgress round={currentRound} totalRounds={totalRounds} gameTypeName={gameTypeName} />
         </div>
       )}
