@@ -20,6 +20,8 @@ const instrumentSerif = Instrument_Serif({
 
 export const viewport: Viewport = {
   themeColor: "black",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export const metadata: Metadata = {
