@@ -73,8 +73,9 @@ export async function generatePlayerDiscussion({
 }): Promise<{ reasoning: string | null; content: string }> {
   const task = `This is the discussion phase for round ${round}. Call the discussion tool once: first write your private reasoning, then your message to the other players (3 sentences or fewer).`;
 
-  logger.info({ msg: "Calling LLM for discussion", personaId: personaSession.personaId, round });
+  logger.info({ msg: "Calling LLM for discussion", personaId: personaSession.personaId, round, model: personaSession.modelName });
 
+  const discussionStart = Date.now();
   const { steps, usage, providerMetadata } = await generateText({
     model: llm(personaSession.modelName),
     providerOptions: defaultProviderOptions(),
@@ -85,6 +86,11 @@ export async function generatePlayerDiscussion({
     stopWhen: stepCountIs(2),
     temperature: 0.7,
     abortSignal,
+  }).catch((err: unknown) => {
+    const elapsed = Date.now() - discussionStart;
+    const errMsg = err instanceof Error ? err.message : String(err);
+    logger.error({ msg: "LLM error during discussion", personaId: personaSession.personaId, round, model: personaSession.modelName, elapsed, error: errMsg });
+    throw err;
   });
 
   logger.info({ msg: "LLM returned for discussion", personaId: personaSession.personaId, round });
@@ -150,6 +156,7 @@ export async function generatePlayerDecision({
 
   logger.info({ msg: "Calling LLM for decision", personaId: personaSession.personaId, round, model: personaSession.modelName });
 
+  const decisionStart = Date.now();
   const { steps, reasoning, usage, providerMetadata } = await generateText({
     model: llm(personaSession.modelName),
     providerOptions: defaultProviderOptions(),
@@ -160,6 +167,11 @@ export async function generatePlayerDecision({
     stopWhen: stepCountIs(2),
     temperature: 0.7,
     abortSignal,
+  }).catch((err: unknown) => {
+    const elapsed = Date.now() - decisionStart;
+    const errMsg = err instanceof Error ? err.message : String(err);
+    logger.error({ msg: "LLM error during decision", personaId: personaSession.personaId, round, model: personaSession.modelName, elapsed, error: errMsg });
+    throw err;
   });
 
   const rawInput = steps
