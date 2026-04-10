@@ -43,7 +43,7 @@ const SPREAD_COLOR: Record<SpreadCategory, { bar: string; label: string }> = {
 
 // ── Grid: 5 columns matching reference layout ────────────────────────────────
 
-const COLS = "130px 1fr 80px 120px 100px";
+const COLS = "1.2fr 1.5fr 0.8fr 1fr 1fr";
 
 // ── Precomputed row data ─────────────────────────────────────────────────────
 
