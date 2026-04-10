@@ -4,45 +4,45 @@ import { motion } from "motion/react";
 
 export type VisualPhase = "discussion" | "commitment" | "analyze" | "completed";
 
+const ALL_STEPS = ["discussion", "commitment", "analyze"] as const;
+type Step = (typeof ALL_STEPS)[number];
+
+const STEP_LABELS: Record<Step, string> = {
+  discussion: "Discussion",
+  commitment: "Commitment",
+  analyze: "Analyze",
+};
+
+/** Map any VisualPhase to a numeric index within ALL_STEPS (completed = past all) */
+function phaseIndex(phase: VisualPhase): number {
+  if (phase === "completed") return ALL_STEPS.length;
+  return ALL_STEPS.indexOf(phase);
+}
+
 interface PhaseProgressProps {
   phase: VisualPhase;
   hasDiscussion: boolean;
 }
 
 export function PhaseProgress({ phase, hasDiscussion }: PhaseProgressProps) {
-  const steps = hasDiscussion
-    ? (["discussion", "commitment", "analyze"] as const)
-    : (["commitment", "analyze"] as const);
-
-  const activeIdx = steps.indexOf(phase as (typeof steps)[number]);
+  const steps = hasDiscussion ? ALL_STEPS : ALL_STEPS.filter((s) => s !== "discussion");
+  const current = phaseIndex(phase);
 
   return (
     <div className="flex items-center justify-between w-full max-w-md relative">
-      {/* Connector line */}
       <div
         className="absolute top-[6px] left-0 w-full h-px z-0"
         style={{ background: "var(--gt-border-md)" }}
       />
 
-      {steps.map((step, i) => {
-        const isCurrent = phase === step;
-        const isPast = activeIdx > i;
-        // Current: indigo filled, Past: grey filled, Future: hollow
-        const dotBg = isCurrent
-          ? "var(--gt-indigo)"
-          : isPast
-            ? "var(--gt-done)"
-            : "var(--gt-surface)";
-        const dotBorder = isCurrent
-          ? "var(--gt-indigo)"
-          : isPast
-            ? "var(--gt-done)"
-            : "var(--gt-border-md)";
-        const labelColor = isCurrent
-          ? "var(--gt-indigo)"
-          : isPast
-            ? "var(--gt-t3)"
-            : "var(--gt-t4)";
+      {steps.map((step) => {
+        const idx = phaseIndex(step);
+        const isCurrent = idx === current;
+        const isPast = idx < current;
+
+        const dotBg = isCurrent ? "var(--gt-indigo)" : isPast ? "var(--gt-done)" : "var(--gt-surface)";
+        const dotBorder = isCurrent ? "var(--gt-indigo)" : isPast ? "var(--gt-done)" : "var(--gt-border-md)";
+        const labelColor = isCurrent ? "var(--gt-indigo)" : isPast ? "var(--gt-t3)" : "var(--gt-t4)";
 
         return (
           <div key={step} className="relative z-10 flex flex-col items-center">
@@ -67,9 +67,3 @@ export function PhaseProgress({ phase, hasDiscussion }: PhaseProgressProps) {
     </div>
   );
 }
-
-const STEP_LABELS: Record<string, string> = {
-  discussion: "Discussion",
-  commitment: "Commitment",
-  analyze: "Analyze",
-};
