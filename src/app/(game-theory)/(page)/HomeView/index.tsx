@@ -78,7 +78,7 @@ function GameCard({ gt, sessionCount }: { gt: GameType; sessionCount: number }) 
       }}
     >
       {/* Card header — generous padding, large text */}
-      <div className="px-8 pt-8 pb-6 border-b" style={{ borderColor: "var(--gt-border)" }}>
+      <div className="px-5 pt-6 pb-4 sm:px-8 sm:pt-8 sm:pb-6 border-b" style={{ borderColor: "var(--gt-border)" }}>
         <h2
           className="text-[22px] font-[600] mb-3 leading-tight"
           style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
@@ -103,13 +103,13 @@ function GameCard({ gt, sessionCount }: { gt: GameType; sessionCount: number }) 
       </div>
 
       {/* Distribution charts — comfortable breathing room */}
-      <div className="px-8 py-6">
+      <div className="px-5 py-4 sm:px-8 sm:py-6">
         <GameDistributionView gameType={gt.name} />
       </div>
 
       {/* Past games footer */}
       <div
-        className="px-8 py-4 border-t flex items-center justify-between"
+        className="px-5 py-3 sm:px-8 sm:py-4 border-t flex items-center justify-between"
         style={{ borderColor: "var(--gt-border)" }}
       >
         <span
@@ -144,7 +144,7 @@ export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
         <div
-          className="mx-auto flex items-center justify-between h-[60px] px-8"
+          className="mx-auto flex items-center justify-between h-[60px] px-4 sm:px-8"
           style={{ maxWidth: "1200px" }}
         >
           <div className="flex items-center gap-3">
@@ -154,8 +154,8 @@ export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string
             >
               Game Theory Lab
             </span>
-            <span className="w-px h-4" style={{ background: "var(--gt-border-md)" }} />
-            <span className="text-[13px]" style={{ color: "var(--gt-t3)" }}>
+            <span className="w-px h-4 hidden sm:block" style={{ background: "var(--gt-border-md)" }} />
+            <span className="text-[13px] hidden sm:block" style={{ color: "var(--gt-t3)" }}>
               Observe AI · Play yourself
             </span>
           </div>
@@ -179,15 +179,15 @@ export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string
       </header>
 
       {/* ── Game grid — centered, max-width, generous breathing room ────── */}
-      <main className="flex-1 py-12 px-8">
+      <main className="flex-1 py-8 px-4 sm:py-12 sm:px-8">
         <div className="mx-auto mb-8" style={{ maxWidth: "1200px" }}>
           <Legend />
         </div>
         <div
-          className="mx-auto grid gap-8"
+          className="mx-auto grid gap-6 sm:gap-8"
           style={{
             maxWidth: "1200px",
-            gridTemplateColumns: "repeat(auto-fill, minmax(520px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 520px), 1fr))",
           }}
         >
           {gameTypes.map((gt) => (
