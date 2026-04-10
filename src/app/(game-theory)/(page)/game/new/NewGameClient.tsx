@@ -7,6 +7,7 @@ import {
 } from "@/app/(game-theory)/actions";
 import { GameRulesDisplay } from "@/app/(game-theory)/components/GameRulesDisplay";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/lib/useIsMobile";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
@@ -44,6 +45,8 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
   const [personas, setPersonas] = useState<PersonaForPicker[]>(initialPersonas);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const isMobile = useIsMobile();
+  const [mobilePanel, setMobilePanel] = useState<"game" | "participants">("game");
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -96,7 +99,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
         className="shrink-0 border-b"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
-        <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "1100px" }}>
+        <div className="mx-auto flex items-center justify-between h-[60px] px-4 sm:px-8" style={{ maxWidth: "1100px" }}>
           <div className="flex items-center gap-2">
             <Link
               href="/"
@@ -131,13 +134,54 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
         </div>
       </header>
 
+      {/* ── Mobile tab bar ─────────────────────────────────────────────── */}
+      {isMobile && (
+        <div
+          className="shrink-0 flex border-b"
+          style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+        >
+          <button
+            onClick={() => setMobilePanel("game")}
+            className="flex-1 py-3 text-[12px] uppercase font-[500] border-b-2 transition-colors"
+            style={{
+              borderBottomColor: mobilePanel === "game" ? "var(--gt-blue)" : "transparent",
+              color: mobilePanel === "game" ? "var(--gt-blue)" : "var(--gt-t4)",
+              fontFamily: "IBMPlexMono, monospace",
+              letterSpacing: "0.1em",
+            }}
+          >
+            01 · Game Type
+          </button>
+          <button
+            onClick={() => setMobilePanel("participants")}
+            className="flex-1 py-3 text-[12px] uppercase font-[500] border-b-2 transition-colors"
+            style={{
+              borderBottomColor: mobilePanel === "participants" ? "var(--gt-blue)" : "transparent",
+              color: mobilePanel === "participants" ? "var(--gt-blue)" : "var(--gt-t4)",
+              fontFamily: "IBMPlexMono, monospace",
+              letterSpacing: "0.1em",
+            }}
+          >
+            02 · Participants ({selectedIds.length}/{required})
+          </button>
+        </div>
+      )}
+
       {/* ── Two-column body — centered at max-width ──────────────────────── */}
       <div className="flex-1 min-h-0 flex overflow-hidden justify-center">
       <div className="flex overflow-hidden w-full" style={{ maxWidth: "1100px" }}>
 
         {/* ── Left: Game Type ─────────────────────────────────────────── */}
-        <div className="flex-[1.5] flex flex-col overflow-y-auto border-r" style={{ borderColor: "var(--gt-border)" }}>
-          <div className="px-8 pt-6 pb-4 border-b" style={{ borderColor: "var(--gt-border)" }}>
+        <div
+          className="flex flex-col overflow-y-auto sm:border-r"
+          style={{
+            borderColor: "var(--gt-border)",
+            flex: isMobile ? undefined : "1.5",
+            display: isMobile && mobilePanel !== "game" ? "none" : "flex",
+            width: isMobile ? "100%" : undefined,
+          }}
+        >
+          <div className="px-4 sm:px-8 pt-6 pb-4 border-b hidden sm:block" style={{ borderColor: "var(--gt-border)" }}>
             <span
               className="text-[12px] uppercase"
               style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
@@ -164,7 +208,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                       background: isSelected ? "var(--gt-surface)" : "transparent",
                     }}
                   >
-                    <div className="flex-1 px-8 py-6">
+                    <div className="flex-1 px-4 sm:px-8 py-6">
                       <div className="flex items-center gap-3 mb-2">
                         <span
                           className="text-[17px] font-[600] leading-tight"
@@ -216,7 +260,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
                   {/* Expanded rules */}
                   {isSelected && (
                     <div
-                      className="px-8 py-6 border-b"
+                      className="px-4 sm:px-8 py-6 border-b"
                       style={{ borderColor: "var(--gt-border)", background: "var(--gt-row-alt)" }}
                     >
                       <GameRulesDisplay gameTypeName={gt.name} />
@@ -229,9 +273,16 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
         </div>
 
         {/* ── Right: Participants ───────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div
+          className="flex flex-col overflow-hidden"
+          style={{
+            flex: isMobile ? undefined : "1",
+            display: isMobile && mobilePanel !== "participants" ? "none" : "flex",
+            width: isMobile ? "100%" : undefined,
+          }}
+        >
           <div
-            className="px-8 pt-6 pb-4 border-b flex items-center justify-between"
+            className="px-4 sm:px-8 pt-6 pb-4 border-b flex items-center justify-between hidden sm:flex"
             style={{ borderColor: "var(--gt-border)" }}
           >
             <span
@@ -252,7 +303,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
           </div>
 
           {/* Search input — bottom-border only */}
-          <div className="px-8 pt-5 pb-3">
+          <div className="px-4 sm:px-8 pt-5 pb-3">
             <input
               type="text"
               value={searchQuery}
@@ -267,7 +318,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
             />
           </div>
 
-          <div className="px-8 pb-3 flex items-center justify-between">
+          <div className="px-4 sm:px-8 pb-3 flex items-center justify-between">
             <span
               className="text-[10px] uppercase"
               style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.06em" }}
@@ -355,7 +406,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
         className="shrink-0 border-t"
         style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
       >
-      <div className="mx-auto flex items-center justify-between py-4 px-8" style={{ maxWidth: "1100px" }}>
+      <div className="mx-auto flex items-center justify-between gap-3 py-4 px-4 sm:px-8 flex-wrap" style={{ maxWidth: "1100px" }}>
         <div>
           {error ? (
             <span className="text-[12px]" style={{ color: "var(--gt-neg)", fontFamily: "IBMPlexMono, monospace" }}>

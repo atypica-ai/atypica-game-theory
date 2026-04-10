@@ -43,7 +43,7 @@ export function HumanNewGameClient({
       className="shrink-0 border-b"
       style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
     >
-      <div className="mx-auto flex items-center justify-between h-[60px] px-8" style={{ maxWidth: "960px" }}>
+      <div className="mx-auto flex items-center justify-between h-[60px] px-4 sm:px-8" style={{ maxWidth: "960px" }}>
         <div className="flex items-center gap-2">
           <Link
             href="/"
@@ -77,7 +77,7 @@ export function HumanNewGameClient({
           className="shrink-0 border-b"
           style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
         >
-          <div className="mx-auto py-6 px-8" style={{ maxWidth: "960px" }}>
+          <div className="mx-auto py-6 px-4 sm:px-8" style={{ maxWidth: "960px" }}>
             <p
               className="text-[15px] leading-relaxed"
               style={{
@@ -95,7 +95,7 @@ export function HumanNewGameClient({
         {/* Game type selector */}
         <div className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="mx-auto" style={{ maxWidth: "960px" }}>
-            <div className="px-8 pt-6 pb-3">
+            <div className="px-4 sm:px-8 pt-6 pb-3">
               <span
                 className="text-[11px] uppercase"
                 style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace", letterSpacing: "0.1em" }}
@@ -122,7 +122,7 @@ export function HumanNewGameClient({
                       background: isSelected ? "var(--gt-surface)" : "transparent",
                     }}
                   >
-                    <div className="flex-1 px-8 py-6">
+                    <div className="flex-1 px-4 sm:px-8 py-6">
                       <div className="flex items-center gap-3 mb-2">
                         <span
                           className="text-[18px] font-[600] leading-tight"
@@ -174,7 +174,7 @@ export function HumanNewGameClient({
                   {/* Expanded rules */}
                   {isSelected && (
                     <div
-                      className="px-8 py-6 border-b"
+                      className="px-4 sm:px-8 py-6 border-b"
                       style={{ borderColor: "var(--gt-border)", background: "var(--gt-row-alt)" }}
                     >
                       <GameRulesDisplay gameTypeName={gt.name} />
@@ -191,7 +191,7 @@ export function HumanNewGameClient({
           className="shrink-0 border-t"
           style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
         >
-          <div className="mx-auto flex items-center justify-between py-4 px-8" style={{ maxWidth: "960px" }}>
+          <div className="mx-auto flex items-center justify-between py-4 px-4 sm:px-8" style={{ maxWidth: "960px" }}>
             <div>
               <span className="text-[12px]" style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}>
                 {activeGameType
@@ -228,7 +228,7 @@ export function HumanNewGameClient({
       style={{ background: "var(--gt-bg)" }}
     >
       <div className="w-full max-w-xl">
-        <div className="card-lab p-8">
+        <div className="card-lab p-5 sm:p-8">
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
             <div
