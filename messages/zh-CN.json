@@ -58,7 +58,14 @@
       "showPassword": "Show password",
       "hidePassword": "Hide password",
       "orContinueWith": "Or continue with",
-      "signInWithAWS": "Sign in with AWS"
+      "signInWithGoogle": "Sign in with Google",
+      "namePlaceholder": "用户名",
+      "nameTooShort": "用户名至少需要2个字符"
+    },
+    "UserMenu": {
+      "signIn": "登录",
+      "account": "账户",
+      "signOut": "退出"
     },
     "Verify": {
       "title": "Verify Email",
@@ -98,5 +105,27 @@
       "backToSignIn": "Back to Sign In",
       "token": "token"
     }
+  },
+  "Account": {
+    "title": "账户",
+    "description": "管理你的个人资料和设置",
+    "backToHome": "返回首页",
+    "emailLabel": "邮箱",
+    "emailDescription": "邮箱地址不可更改。",
+    "nameLabel": "用户名",
+    "namePlaceholder": "输入用户名",
+    "nameDescription": "你的公开显示名称。",
+    "nameUpdateSuccess": "用户名已更新",
+    "nameUpdateError": "更新用户名失败",
+    "passwordTitle": "修改密码",
+    "newPasswordLabel": "新密码",
+    "confirmPasswordLabel": "确认密码",
+    "passwordDescription": "至少8个字符。",
+    "passwordMismatch": "两次密码输入不一致",
+    "passwordUpdateSuccess": "密码已更新",
+    "passwordUpdateError": "更新密码失败",
+    "saveChanges": "保存",
+    "saving": "保存中...",
+    "updatePassword": "更新密码"
   }
 }

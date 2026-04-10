@@ -58,7 +58,14 @@
       "showPassword": "Show password",
       "hidePassword": "Hide password",
       "orContinueWith": "Or continue with",
-      "signInWithAWS": "Sign in with AWS"
+      "signInWithGoogle": "Sign in with Google",
+      "namePlaceholder": "Username",
+      "nameTooShort": "Username must be at least 2 characters"
+    },
+    "UserMenu": {
+      "signIn": "Sign In",
+      "account": "Account",
+      "signOut": "Sign Out"
     },
     "Verify": {
       "title": "Verify Email",
@@ -98,5 +105,27 @@
       "backToSignIn": "Back to Sign In",
       "token": "token"
     }
+  },
+  "Account": {
+    "title": "Account",
+    "description": "Manage your profile and settings",
+    "backToHome": "Back to Home",
+    "emailLabel": "EMAIL",
+    "emailDescription": "Your email cannot be changed.",
+    "nameLabel": "USERNAME",
+    "namePlaceholder": "Enter username",
+    "nameDescription": "Your public display name.",
+    "nameUpdateSuccess": "Username updated",
+    "nameUpdateError": "Failed to update username",
+    "passwordTitle": "CHANGE PASSWORD",
+    "newPasswordLabel": "New password",
+    "confirmPasswordLabel": "Confirm password",
+    "passwordDescription": "Minimum 8 characters.",
+    "passwordMismatch": "Passwords do not match",
+    "passwordUpdateSuccess": "Password updated",
+    "passwordUpdateError": "Failed to update password",
+    "saveChanges": "Save",
+    "saving": "Saving...",
+    "updatePassword": "Update Password"
   }
 }
