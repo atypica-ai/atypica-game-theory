@@ -2,8 +2,9 @@
 import { FitToViewport } from "@/components/layout/FitToViewport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@radix-ui/react-dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Shield, ShieldCheck, ShieldX } from "lucide-react";
+import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +15,7 @@ import { signUp } from "./actions";
 export function SignUpPageClient({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter();
   const t = useTranslations("Auth.SignUp");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -68,6 +70,10 @@ export function SignUpPageClient({ callbackUrl }: { callbackUrl: string }) {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (name.trim().length < 2) {
+      setError(t("nameTooShort"));
+      return;
+    }
     if (password !== confirmPassword) {
       setError(t("passwordMismatch"));
       return;
@@ -80,6 +86,7 @@ export function SignUpPageClient({ callbackUrl }: { callbackUrl: string }) {
     try {
       setError("");
       const result = await signUp({
+        name: name.trim(),
         email,
         password,
       });
@@ -112,6 +119,19 @@ export function SignUpPageClient({ callbackUrl }: { callbackUrl: string }) {
               {error}
             </div>
           )}
+          <div>
+            <Input
+              id="name"
+              placeholder={t("namePlaceholder")}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="h-10"
+              required
+              minLength={2}
+              maxLength={64}
+            />
+          </div>
           <div>
             <Input
               id="email"
@@ -258,13 +278,13 @@ export function SignUpPageClient({ callbackUrl }: { callbackUrl: string }) {
               <Button
                 variant="outline"
                 className="w-full h-10"
-                onClick={() => {
-                  window.open("https://signin.aws.amazon.com/console", "_blank");
-                }}
+                onClick={() =>
+                  signIn("google", { callbackUrl })
+                }
                 type="button"
               >
-                <Image src="/_public/icon-aws.png" alt="AWS" width={20} height={20} />
-                <span>{t("signInWithAWS")}</span>
+                <Image src="/_public/icon-google.png" alt="Google" width={20} height={20} />
+                <span>{t("signInWithGoogle")}</span>
               </Button>
             </>
           )}

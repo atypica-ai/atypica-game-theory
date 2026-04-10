@@ -5,14 +5,14 @@ import { ServerActionResult } from "@/lib/serverAction";
 import { prisma } from "@/prisma/prisma";
 
 export async function signUp({
+  name,
   email,
   password,
 }: {
+  name: string;
   email: string;
   password: string;
 }): Promise<ServerActionResult<{ id: number; email: string }>> {
-  
-
   email = email.toLowerCase();
 
   const exists = await prisma.user.findUnique({
@@ -26,7 +26,7 @@ export async function signUp({
     };
   }
 
-  const user = await createPersonalUser({ email, password });
+  const user = await createPersonalUser({ name, email, password });
 
   try {
     await sendVerificationCode(user.email);
