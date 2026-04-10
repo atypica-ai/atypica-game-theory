@@ -153,6 +153,9 @@ export async function fetchAllSessions(): Promise<
   { success: true; data: SessionListItem[] } | { success: false; message: string }
 > {
   try {
+    const session = await getServerSession(authOptions);
+    const currentUserId = session?.user?.id;
+
     const sessions = await prisma.gameSession.findMany({
       select: {
         token: true,
@@ -165,9 +168,20 @@ export async function fetchAllSessions(): Promise<
       orderBy: { createdAt: "desc" },
       take: 300,
     });
+
+    // Filter: show AI-only (public) games + games the current user participates in
+    const filtered = sessions.filter((s) => {
+      const extra = (s.extra ?? {}) as GameSessionExtra;
+      const participants = extra.participants ?? [];
+      const hasHuman = participants.some((p) => p.userId != null);
+      if (!hasHuman) return true; // AI-only game — visible to everyone
+      // Human game — only visible to the participant
+      return currentUserId != null && participants.some((p) => p.userId === currentUserId);
+    });
+
     return {
       success: true,
-      data: sessions.map((s) => ({
+      data: filtered.map((s) => ({
         token: s.token,
         gameType: s.gameType,
         status: s.status,
