@@ -1,6 +1,6 @@
 "use client";
 
-import { Overview, Section, Insight } from "../../components/rulesHelpers";
+import { Overview, Section } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
@@ -11,22 +11,16 @@ export function RulesDisplay() {
 
       <Section label="How to play">
         <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
-          <li>Player A is given <strong>$100</strong>.</li>
-          <li>Player A offers a portion (e.g. $20) to Player B.</li>
-          <li>Player B can <strong>ACCEPT</strong> or <strong>REJECT</strong>.</li>
+          <li>One player proposes how to split <strong>100 points</strong>.</li>
+          <li>The other player can <strong>Accept</strong> or <strong>Reject</strong>.</li>
+          <li>If rejected, <strong>both</strong> get zero.</li>
         </ol>
       </Section>
 
       <Section label="The goal">
         <p className="text-[13px] leading-relaxed" style={{ color: "var(--gt-t2)" }}>
-          If B accepts, the split happens. If B rejects, <strong>BOTH</strong> get $0.
+          Strike a deal. If it falls through, nobody gets anything.
         </p>
-      </Section>
-
-      <Section label="Fun fact">
-        <Insight>
-          People often reject &quot;unfair&quot; offers even if it means getting nothing.
-        </Insight>
       </Section>
     </>
   );

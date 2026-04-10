@@ -1,6 +1,6 @@
 "use client";
 
-import { Overview, Section, Insight } from "../../components/rulesHelpers";
+import { Overview, Section } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
@@ -11,9 +11,9 @@ export function RulesDisplay() {
 
       <Section label="How to play">
         <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
-          <li>Everyone bids for an item.</li>
-          <li>The <strong>highest bidder</strong> wins the item.</li>
-          <li><strong>CRITICAL</strong>: Everyone must pay their bid, even if they lose!</li>
+          <li>A prize worth <strong>100 points</strong> is up for grabs.</li>
+          <li>Everyone secretly bids <strong>0–150</strong>. Highest bid wins.</li>
+          <li><strong>Everyone</strong> pays their bid — win or lose.</li>
         </ol>
       </Section>
 
@@ -21,12 +21,6 @@ export function RulesDisplay() {
         <p className="text-[13px] leading-relaxed" style={{ color: "var(--gt-t2)" }}>
           Win the prize without spending more than it&apos;s worth.
         </p>
-      </Section>
-
-      <Section label="Fun fact">
-        <Insight>
-          Explains why people keep fighting in &quot;sunk cost&quot; situations.
-        </Insight>
       </Section>
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Overview, Section, Insight } from "../../components/rulesHelpers";
+import { Overview, Section } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
@@ -11,16 +11,16 @@ export function RulesDisplay() {
 
       <Section label="How to play">
         <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
-          <li>A small task needs doing (e.g. fixing a light).</li>
-          <li>If <strong>AT LEAST ONE</strong> person volunteers, everyone else gets a benefit.</li>
-          <li>The volunteer pays a small cost. If <strong>NO ONE</strong> volunteers, everyone loses big.</li>
+          <li>The group needs <strong>at least one volunteer</strong> to step up.</li>
+          <li>If someone volunteers, everyone gets the reward — but the volunteer pays a cost.</li>
+          <li>If <strong>nobody</strong> volunteers, everyone gets nothing.</li>
         </ol>
       </Section>
 
       <Section label="The goal">
-        <Insight>
-          Hope someone else does it, but don&apos;t let everyone fail!
-        </Insight>
+        <p className="text-[13px] leading-relaxed" style={{ color: "var(--gt-t2)" }}>
+          Hope someone else does it — but don&apos;t let everyone fail.
+        </p>
       </Section>
     </>
   );
