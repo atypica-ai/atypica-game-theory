@@ -404,6 +404,8 @@ export function RoundDetailView({
   // Reset user override when round changes
   useEffect(() => { setUserToggle(null); }, [roundData?.roundId]);
 
+  const isMobile = useIsMobile();
+
   if (!roundData) {
     return (
       <>
@@ -431,7 +433,6 @@ export function RoundDetailView({
 
   const hasDiscussion = roundData.discussions.length > 0 || (isDiscussionPhase && currentSpeakerId != null);
   const hasResult = roundData.result !== null;
-  const isMobile = useIsMobile();
   const cols = isMobile ? 2 : participants.length <= 2 ? 2 : participants.length === 3 ? 3 : 4;
 
   return (
