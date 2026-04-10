@@ -152,29 +152,30 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
     const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
 
     (async () => {
-      const remaining = [...aiParticipants];
-      // Shuffle for random speaker order
-      for (let i = remaining.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
-      }
+      // Sequential: pick a random unspeaking AI each iteration.
+      // Re-check eventsRef each time so we see human's message if they spoke mid-loop.
+      while (true) {
+        const spokenIds = new Set(
+          eventsRef.current
+            .filter((e): e is PersonaDiscussionEvent => e.type === "persona-discussion" && e.round === roundId)
+            .map((e) => e.personaId),
+        );
+        const remaining = aiParticipants.filter((p) => !spokenIds.has(p.personaId));
+        if (remaining.length === 0) break;
 
-      for (const p of remaining) {
-        setCurrentSpeakerId(p.personaId);
+        const next = remaining[Math.floor(Math.random() * remaining.length)];
+        setCurrentSpeakerId(next.personaId);
         try {
-          const res = await runAIDiscussionFor(token, p.personaId, roundId);
-          if (res.success) {
-            appendEvents(res.event);
-          }
-          // On failure: skip this speaker, continue with next
+          const res = await runAIDiscussionFor(token, next.personaId, roundId);
+          if (res.success) appendEvents(res.event);
         } catch {
-          // Individual failure — continue
+          // Individual failure — continue with next
         }
       }
 
       setCurrentSpeakerId(null);
       aiDiscussionDoneRef.current = true;
-      // Force a re-render so DiscussionCard picks up allSpoken
+      // Force re-render so DiscussionCard picks up allSpoken
       setEvents((prev) => [...prev]);
     })();
   }, [participants, token, appendEvents]);
