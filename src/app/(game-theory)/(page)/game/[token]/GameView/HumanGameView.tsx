@@ -103,8 +103,8 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
     [initialData.extra?.participants],
   );
   const gameTypeName = initialData.gameType;
-  const discussionRounds = initialData.extra?.discussionRounds ?? 0;
   const gameType = useMemo(() => getGameType(gameTypeName), [gameTypeName]);
+  const discussionRounds = initialData.extra?.discussionRounds ?? gameType.discussionRounds;
   const totalRounds = gameType.horizon.type === "fixed" ? gameType.horizon.rounds : null;
   const humanParticipant = participants.find((p) => p.personaId === HUMAN_PLAYER_ID);
   const humanName = humanParticipant?.name ?? "You";
