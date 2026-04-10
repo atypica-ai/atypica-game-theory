@@ -2,9 +2,9 @@ import "server-only";
 
 import { llm } from "@/ai/provider";
 import { CharacterProfile } from "@/prisma/client";
-import { generateObject } from "ai";
+import { generateText, stepCountIs, tool, zodSchema } from "ai";
 import { Locale } from "next-intl";
-import { z } from "zod";
+import { z } from "zod/v3";
 
 const outputSchema = z.object({
   name: z.string().describe("Full name, first + last. Not famous. Not generic."),
@@ -116,6 +116,12 @@ Psychological profile:
 ${profileJson}`;
 }
 
+const outputTool = tool({
+  description: "Output the generated persona.",
+  inputSchema: zodSchema(outputSchema),
+  execute: async (input) => input,
+});
+
 export async function generatePersonaFromProfile(
   profile: CharacterProfile,
   age: number,
@@ -126,12 +132,23 @@ export async function generatePersonaFromProfile(
   name: string;
   quote: string;
 }> {
-  const { object } = await generateObject({
+  const { steps } = await generateText({
     model: llm("claude-sonnet-4-5"),
-    schema: outputSchema,
     system: buildSystemPrompt(locale),
-    messages: [{ role: "user", content: buildUserMessage(profile, age, title, locale) }],
+    messages: [
+      {
+        role: "user",
+        content: buildUserMessage(profile, age, title, locale) + "\n\nCall the output tool with your result.",
+      },
+    ],
+    tools: { output: outputTool },
+    toolChoice: "required",
+    stopWhen: stepCountIs(2),
   });
 
-  return object;
+  const toolCall = steps.flatMap((s) => s.toolCalls).find((tc) => tc.toolName === "output");
+  if (!toolCall) {
+    throw new Error("Persona generation failed: model did not call the output tool");
+  }
+  return toolCall.input as { prompt: string; name: string; quote: string };
 }
