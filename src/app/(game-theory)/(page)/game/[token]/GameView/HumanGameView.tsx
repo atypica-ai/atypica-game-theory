@@ -9,6 +9,7 @@ import {
   completeHumanGame,
   submitHumanDiscussion,
   submitHumanDecision,
+  abortHumanGame,
 } from "@/app/(game-theory)/humanActions";
 import {
   GameSessionParticipant,
@@ -26,6 +27,7 @@ import { DiscussionCard } from "./human/DiscussionCard";
 import { CommitmentCard } from "./human/CommitmentCard";
 import { AnalyzeCard } from "./human/AnalyzeCard";
 import { FinalResultsCard } from "./human/FinalResultsCard";
+import { ErrorDialog } from "./human/ErrorDialog";
 
 const SILENT_DISCUSSION = "(said nothing)";
 
@@ -364,6 +366,19 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
     setStep({ phase: "completed" });
   }, []);
 
+  // Error recovery: retry re-triggers current step; abort ends the game
+  const handleRetry = useCallback(() => {
+    setError(null);
+    // Re-trigger the current step by creating a new object reference
+    setStep((s) => ({ ...s }));
+  }, []);
+
+  const handleAbort = useCallback(() => {
+    void abortHumanGame(token, error ?? "Game aborted by player").then(() => {
+      window.location.href = "/play/new";
+    });
+  }, [token, error]);
+
   // ── Completion data ───────────────────────────────────────────────────
 
   const winners = useMemo(() => {
@@ -378,22 +393,14 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
 
   // ── Render ────────────────────────────────────────────────────────────
 
-  if (error) {
-    return (
-      <div className="h-screen flex items-center justify-center p-6" style={{ background: "var(--gt-bg)" }}>
-        <div className="card-lab p-8 max-w-md text-center">
-          <p className="text-[13px] font-medium mb-2" style={{ color: "var(--gt-neg)" }}>Error</p>
-          <p className="text-[12px] mb-4" style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}>{error}</p>
-          <button onClick={() => { setError(null); setStep((s) => ({ ...s })); }} className="btn-lab px-6">Retry</button>
-        </div>
-      </div>
-    );
-  }
-
   const showChrome = visualPhase !== "completed";
 
   return (
     <div className="h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
+      {/* Error dialog — overlay on top of current game state */}
+      {error && (
+        <ErrorDialog message={error} onRetry={handleRetry} onAbort={handleAbort} />
+      )}
       {/* ── Top zone: phase progress (fixed at ~20%) ──────────────────── */}
       {showChrome && (
         <div className="shrink-0 flex items-end justify-center" style={{ height: "20vh", paddingBottom: "1rem" }}>

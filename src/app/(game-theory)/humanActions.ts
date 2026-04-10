@@ -9,6 +9,7 @@ import { buildGamePersonaSession } from "./lib/generation";
 import { shouldTerminate } from "./lib/helpers";
 import { calculateRoundPayoffs } from "./lib/payoff";
 import { appendTimelineEvents, refreshTimeline, saveGameTimeline } from "./lib/persistence";
+import { failGameSessionRun } from "./lib/runtime";
 import { generateAIDiscussionTurn } from "./lib/phases";
 import {
   GameSessionExtra,
@@ -233,6 +234,23 @@ export async function completeHumanGame(
     timeline.push({ type: "system", content: "Game complete." });
     const logger = rootLogger.child({ gameSessionToken: token });
     await saveGameTimeline({ token, timeline, status: "completed", logger });
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Abort game — mark session as failed
+// ---------------------------------------------------------------------------
+
+export async function abortHumanGame(
+  token: string,
+  reason: string,
+): Promise<{ success: true } | { success: false; message: string }> {
+  try {
+    await validateHumanParticipant(token);
+    await failGameSessionRun(token, reason);
     return { success: true };
   } catch (error) {
     return { success: false, message: (error as Error).message };
