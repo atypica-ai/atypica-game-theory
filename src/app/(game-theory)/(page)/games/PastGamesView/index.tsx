@@ -18,10 +18,8 @@ import {
 const GAME_TYPES = Object.values(gameTypeRegistry) as unknown as GameType[];
 
 // ── Spread config ─────────────────────────────────────────────────────────────
-// Taller bar = more opaque (matching reference HTML pattern)
 
 const SPREAD_BARS: Record<SpreadCategory, Array<{ h: number; opacity: number }>> = {
-  // Dominant: last bar very tall → most opaque; short bars → low opacity
   dominant: [
     { h: 3, opacity: 0.30 },
     { h: 4, opacity: 0.35 },
@@ -29,7 +27,6 @@ const SPREAD_BARS: Record<SpreadCategory, Array<{ h: number; opacity: number }>>
     { h: 5, opacity: 0.40 },
     { h: 20, opacity: 1.0 },
   ],
-  // Even: middle bar tallest → most opaque; edges shorter → lower opacity
   even: [
     { h: 7,  opacity: 0.50 },
     { h: 13, opacity: 0.70 },
@@ -41,18 +38,14 @@ const SPREAD_BARS: Record<SpreadCategory, Array<{ h: number; opacity: number }>>
 
 const SPREAD_COLOR: Record<SpreadCategory, { bar: string; label: string }> = {
   dominant: { bar: "#E24B4A", label: "#A32D2D" },
-  even:     { bar: "#185FA5", label: "var(--color-text-secondary)" },
+  even:     { bar: "#185FA5", label: "var(--gt-t3)" },
 };
 
-// ── Grid columns ──────────────────────────────────────────────────────────────
-// 6 columns — all fr-based so they share space proportionally (no single 1fr hog)
-// Desktop: Game | Winner+participants | Top score | Reward spread | Status | View
-// Mobile:  Game | View  (others hidden)
+// ── Grid: 5 columns matching reference layout ────────────────────────────────
 
-const DESKTOP_COLS = "1.5fr 3fr 1fr 2fr 1fr 0.8fr";
-const MOBILE_COLS  = "1fr auto";
+const COLS = "130px 1fr 80px 120px 100px";
 
-// ── Precomputed row data ──────────────────────────────────────────────────────
+// ── Precomputed row data ─────────────────────────────────────────────────────
 
 interface SessionRow {
   token: string;
@@ -102,15 +95,15 @@ function buildRows(sessions: SessionListItem[]): SessionRow[] {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-// ── Cell components ───────────────────────────────────────────────────────────
+// ── Cell components ──────────────────────────────────────────────────────────
 
 function GameCell({ display, createdAt }: { display: string; createdAt: string }) {
   return (
     <div>
-      <div style={{ fontWeight: 500, fontSize: "13px", color: "var(--color-text-primary)" }}>
+      <div style={{ fontWeight: 500, fontSize: "13px", color: "var(--gt-t1)" }}>
         {display}
       </div>
-      <div style={{ fontSize: "11px", color: "var(--color-text-tertiary)", marginTop: "1px" }}>
+      <div style={{ fontSize: "11px", color: "var(--gt-t4)", marginTop: "1px" }}>
         {formatRelativeTime(createdAt)}
       </div>
     </div>
@@ -127,13 +120,13 @@ function Avatar({
   return (
     <div
       style={{
-        width: "22px",
-        height: "22px",
+        width: "20px",
+        height: "20px",
         borderRadius: "50%",
         overflow: "hidden",
         flexShrink: 0,
         ...(overlap
-          ? { marginLeft: "-7px", boxShadow: "0 0 0 1.5px var(--color-background-primary)" }
+          ? { marginLeft: "-6px", boxShadow: "0 0 0 1.5px var(--gt-surface)" }
           : {}),
       }}
     >
@@ -142,16 +135,29 @@ function Avatar({
   );
 }
 
-// Shows winner avatar(s) + label — all-participants logic was removed intentionally.
-function WinnersCell({
+function ParticipantsCell({
+  status,
   winners,
   isFullTie,
   participants,
 }: {
+  status: string;
   winners: GameSessionParticipant[];
   isFullTie: boolean;
   participants: GameSessionParticipant[];
 }) {
+  // Live / not completed — no avatar, just text
+  if (status !== "completed") {
+    const first = participants[0]?.name ?? "—";
+    const rest = participants.length - 1;
+    return (
+      <span style={{ fontSize: "12px", color: "var(--gt-t4)" }}>
+        {first}{rest > 0 && ` & ${rest} others`}
+      </span>
+    );
+  }
+
+  // Full tie
   if (isFullTie) {
     const shown = participants.slice(0, 2);
     const rest = participants.length - shown.length;
@@ -162,9 +168,9 @@ function WinnersCell({
             <Avatar key={p.personaId} participant={p} overlap={i > 0} />
           ))}
         </div>
-        <span style={{ fontSize: "13px", color: "var(--color-text-primary)" }}>Full tie</span>
+        <span style={{ fontSize: "13px", color: "var(--gt-t1)" }}>Full tie</span>
         {rest > 0 && (
-          <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>
+          <span style={{ fontSize: "11px", color: "var(--gt-t4)" }}>
             &amp; {rest} others
           </span>
         )}
@@ -172,14 +178,18 @@ function WinnersCell({
     );
   }
 
+  // No winners determined
   if (winners.length === 0) {
+    const first = participants[0]?.name ?? "—";
+    const rest = participants.length - 1;
     return (
-      <span style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>
-        {participants.map((p) => p.name).join(", ")}
+      <span style={{ fontSize: "12px", color: "var(--gt-t4)" }}>
+        {first}{rest > 0 && ` & ${rest} others`}
       </span>
     );
   }
 
+  // Winner(s)
   const otherCount = participants.length - winners.length;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -188,11 +198,11 @@ function WinnersCell({
           <Avatar key={p.personaId} participant={p} overlap={i > 0} />
         ))}
       </div>
-      <span style={{ fontSize: "13px", color: "var(--color-text-primary)" }}>
+      <span style={{ fontSize: "13px", color: "var(--gt-t1)" }}>
         {winners.length === 1 ? winners[0].name : `${winners.length}-way tie`}
       </span>
       {otherCount > 0 && (
-        <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>
+        <span style={{ fontSize: "11px", color: "var(--gt-t4)" }}>
           &amp; {otherCount} other{otherCount !== 1 ? "s" : ""}
         </span>
       )}
@@ -202,9 +212,9 @@ function WinnersCell({
 
 function TopScoreCell({ score }: { score: number | null }) {
   if (score === null)
-    return <span style={{ color: "var(--color-text-tertiary)", fontSize: "13px" }}>—</span>;
+    return <span style={{ color: "var(--gt-t4)", fontSize: "13px" }}>—</span>;
   return (
-    <span style={{ fontWeight: 500, fontSize: "13px", color: "var(--color-text-primary)" }}>
+    <span style={{ fontWeight: 500, fontSize: "13px", color: "var(--gt-t1)" }}>
       {score} pts
     </span>
   );
@@ -212,7 +222,7 @@ function TopScoreCell({ score }: { score: number | null }) {
 
 function SpreadCell({ category }: { category: SpreadCategory | null }) {
   if (!category)
-    return <span style={{ color: "var(--color-text-tertiary)", fontSize: "13px" }}>—</span>;
+    return <span style={{ color: "var(--gt-t4)", fontSize: "13px" }}>—</span>;
 
   const cfg  = SPREAD_COLOR[category];
   const bars = SPREAD_BARS[category];
@@ -238,47 +248,50 @@ function SpreadCell({ category }: { category: SpreadCategory | null }) {
   );
 }
 
-// Status and View are now separate columns.
-function StatusCell({ status }: { status: string }) {
+function StatusActionCell({ status, token }: { status: string; token: string }) {
   if (status === "running") {
     return (
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "3px",
-          fontSize: "11px",
-          fontWeight: 500,
-          padding: "2px 7px",
-          borderRadius: "10px",
-          background: "var(--color-background-danger)",
-          color: "var(--color-text-danger)",
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
         <span
           style={{
-            width: "5px",
-            height: "5px",
-            borderRadius: "50%",
-            background: "currentColor",
-            display: "inline-block",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "3px",
+            fontSize: "11px",
+            fontWeight: 500,
+            padding: "2px 7px",
+            borderRadius: "10px",
+            background: "var(--gt-neg-bg)",
+            color: "var(--gt-neg)",
           }}
-        />
-        Live
-      </span>
+        >
+          <span
+            style={{
+              width: "5px",
+              height: "5px",
+              borderRadius: "50%",
+              background: "currentColor",
+              display: "inline-block",
+            }}
+          />
+          Live
+        </span>
+        <Link
+          href={`/game/${token}`}
+          style={{ fontSize: "12px", color: "var(--gt-blue)", cursor: "pointer" }}
+        >
+          View →
+        </Link>
+      </div>
     );
   }
-  return (
-    <span style={{ fontSize: "11px", color: "var(--color-text-success)" }}>Done</span>
-  );
-}
 
-function ViewCell({ token }: { token: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
+      <span style={{ fontSize: "11px", color: "var(--gt-pos)" }}>Done</span>
       <Link
         href={`/game/${token}`}
-        style={{ fontSize: "12px", color: "var(--color-text-info)", cursor: "pointer" }}
+        style={{ fontSize: "12px", color: "var(--gt-blue)", cursor: "pointer" }}
       >
         View →
       </Link>
@@ -286,25 +299,7 @@ function ViewCell({ token }: { token: string }) {
   );
 }
 
-// ── Header label ──────────────────────────────────────────────────────────────
-
-function HeaderLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      style={{
-        fontSize: "10px",
-        fontWeight: 500,
-        color: "var(--color-text-tertiary)",
-        textTransform: "uppercase",
-        letterSpacing: "0.07em",
-      }}
-    >
-      {children}
-    </span>
-  );
-}
-
-// ── Filters ───────────────────────────────────────────────────────────────────
+// ── Filters ──────────────────────────────────────────────────────────────────
 
 function FilterBar({
   gameTypeFilter,
@@ -340,7 +335,7 @@ function FilterBar({
         alignItems: "center",
         gap: "12px",
         padding: "12px 16px",
-        borderBottom: "0.5px solid var(--color-border-secondary, var(--gt-border))",
+        borderBottom: "0.5px solid var(--gt-border)",
         flexWrap: "wrap",
       }}
     >
@@ -370,7 +365,7 @@ function FilterBar({
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Main component ───────────────────────────────────────────────────────────
 
 export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
   const rows = useMemo(() => buildRows(sessions), [sessions]);
@@ -397,15 +392,27 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
     });
   }, [rows, gameTypeFilter, statusFilter, participantSearch]);
 
-  const cols = isMobile ? MOBILE_COLS : DESKTOP_COLS;
-
   const rowStyle: React.CSSProperties = {
     display: "grid",
-    gridTemplateColumns: cols,
+    gridTemplateColumns: isMobile ? "1fr auto" : COLS,
     alignItems: "center",
     columnGap: "12px",
     padding: "10px 16px",
-    borderBottom: "0.5px solid var(--color-border-tertiary, var(--gt-border))",
+    borderBottom: "0.5px solid var(--gt-border)",
+    fontSize: "13px",
+    color: "var(--gt-t1)",
+  };
+
+  const headerStyle: React.CSSProperties = {
+    ...rowStyle,
+    padding: "0 16px 6px",
+    borderBottom: "0.5px solid var(--gt-border-md)",
+    marginTop: "8px",
+    fontSize: "10px",
+    fontWeight: 500,
+    color: "var(--gt-t4)",
+    textTransform: "uppercase",
+    letterSpacing: "0.07em",
   };
 
   return (
@@ -476,20 +483,12 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
           />
 
           {/* Table header */}
-          <div
-            style={{
-              ...rowStyle,
-              padding: "0 16px 6px",
-              borderBottom: "0.5px solid var(--color-border-secondary, var(--gt-border))",
-              marginTop: "8px",
-            }}
-          >
-            <HeaderLabel>Game</HeaderLabel>
-            {!isMobile && <HeaderLabel>Winner &amp; participants</HeaderLabel>}
-            {!isMobile && <HeaderLabel>Top score</HeaderLabel>}
-            {!isMobile && <HeaderLabel>Reward spread</HeaderLabel>}
-            {!isMobile && <HeaderLabel>Status</HeaderLabel>}
-            <span />
+          <div style={headerStyle}>
+            <span>Game</span>
+            {!isMobile && <span>Winner &amp; participants</span>}
+            {!isMobile && <span>Top score</span>}
+            {!isMobile && <span>Reward spread</span>}
+            {!isMobile && <span style={{ textAlign: "right" }}></span>}
           </div>
 
           {/* Rows */}
@@ -509,7 +508,8 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
               <div key={row.token} style={rowStyle}>
                 <GameCell display={row.gameTypeDisplay} createdAt={row.createdAt} />
                 {!isMobile && (
-                  <WinnersCell
+                  <ParticipantsCell
+                    status={row.status}
                     winners={row.winners}
                     isFullTie={row.isFullTie}
                     participants={row.participants}
@@ -517,19 +517,22 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
                 )}
                 {!isMobile && <TopScoreCell score={row.topScore} />}
                 {!isMobile && <SpreadCell category={row.spreadCategory} />}
-                {!isMobile && <StatusCell status={row.status} />}
-                <ViewCell token={row.token} />
+                {isMobile ? (
+                  <Link
+                    href={`/game/${row.token}`}
+                    style={{ fontSize: "12px", color: "var(--gt-blue)", textAlign: "right" }}
+                  >
+                    View →
+                  </Link>
+                ) : (
+                  <StatusActionCell status={row.status} token={row.token} />
+                )}
               </div>
             ))
           )}
 
           {filtered.length > 0 && (
-            <div
-              style={{
-                padding: "10px 16px",
-                borderTop: "0.5px solid var(--color-border-tertiary, var(--gt-border))",
-              }}
-            >
+            <div style={{ padding: "10px 16px" }}>
               <span
                 style={{
                   color: "var(--gt-t4)",
