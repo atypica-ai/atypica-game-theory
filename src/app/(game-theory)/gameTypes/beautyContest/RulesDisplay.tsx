@@ -1,28 +1,31 @@
 "use client";
 
-import { Overview, Section, OutcomeTable, Insight } from "../../components/rulesHelpers";
+import { Overview, Section, Insight } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
     <>
       <Overview>
-        Everyone secretly picks a number from <strong>0 to 100</strong>.
-        The winner is whoever gets closest to <strong>⅔ of the group&apos;s average</strong>.
+        It&apos;s not about what you like, it&apos;s about what you think <strong>everyone else</strong> thinks.
       </Overview>
 
-      <Section label="Quick example">
-        <OutcomeTable rows={[
-          { label: "4 players pick 20, 40, 60, 80", pts: "avg = 50", note: "Add up, divide by players", variant: "neutral" },
-          { label: "⅔ of 50", pts: "≈ 33", note: "This is the magic target", variant: "pos" },
-          { label: "40 is the closest pick", pts: "50 pts", note: "That player wins the pot!", variant: "pos" },
-        ]} />
+      <Section label="How to play">
+        <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
+          <li>Everyone picks a number between <strong>0</strong> and <strong>100</strong>.</li>
+          <li>We calculate the <strong>average</strong> of all chosen numbers.</li>
+          <li>The target is <strong style={{ color: "var(--gt-blue)" }}>⅔ of that average</strong>.</li>
+        </ol>
       </Section>
 
-      <Section label="How to win">
+      <Section label="The goal">
+        <p className="text-[13px] leading-relaxed" style={{ color: "var(--gt-t2)" }}>
+          Be the person closest to the target. If the average is 60, the target is 40!
+        </p>
+      </Section>
+
+      <Section label="Fun fact">
         <Insight>
-          Don&apos;t just guess a number — guess what <em>everyone else</em> will guess, then aim for ⅔ of that.
-          But they&apos;re doing the same thing... so the smart number keeps getting lower.
-          Winner(s) split 50 points. Everyone else gets 0. 3 rounds.
+          Named after a Keynesian theory about stock markets.
         </Insight>
       </Section>
     </>

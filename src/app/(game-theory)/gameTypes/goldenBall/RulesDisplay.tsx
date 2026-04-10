@@ -6,24 +6,29 @@ export function RulesDisplay() {
   return (
     <>
       <Overview>
-        There&apos;s a pot of <strong>50 points</strong> on the table.
-        Each round, everyone secretly picks: <strong>Split</strong> (share nicely)
-        or <strong>Steal</strong> (grab it all).
+        The ultimate test of <strong>friendship</strong> and <strong>greed</strong>.
       </Overview>
 
-      <Section label="What happens">
+      <Section label="How to play">
+        <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
+          <li>Two players face a jackpot.</li>
+          <li>You both choose: <strong>SPLIT</strong> or <strong>STEAL</strong>.</li>
+          <li>If both Split: 50/50. If one Steals: They get 100%. If both Steal: 0%.</li>
+        </ol>
+      </Section>
+
+      <Section label="Payoff table">
         <OutcomeTable rows={[
-          { label: "Everyone picks Split", pts: "50 ÷ N", note: "Shared equally — everyone wins", variant: "pos" },
-          { label: "Exactly 1 person Steals", pts: "50 / 0", note: "Stealer takes it all, rest get nothing", variant: "neg" },
-          { label: "2+ people Steal", pts: "0 / share", note: "Stealers cancel out, Splitters share!", variant: "warn" },
+          { label: "Both Split", pts: "50% / 50%", note: "Fair share", variant: "pos" },
+          { label: "You Split, They Steal", pts: "0% / 100%", note: "You lose it all", variant: "neg" },
+          { label: "You Steal, They Split", pts: "100% / 0%", note: "You take it all", variant: "warn" },
+          { label: "Both Steal", pts: "0% / 0%", note: "Nobody wins", variant: "neutral" },
         ]} />
       </Section>
 
-      <Section label="The twist">
+      <Section label="The goal">
         <Insight>
-          Being the only thief is very profitable. But if even one other person also steals,
-          the thieves get nothing and the honest players win.
-          Greed only works if you&apos;re the only greedy one. 3 rounds.
+          Walk away with the most money.
         </Insight>
       </Section>
     </>

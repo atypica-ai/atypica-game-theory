@@ -6,25 +6,29 @@ export function RulesDisplay() {
   return (
     <>
       <Overview>
-        You and one partner are in separate rooms — no talking allowed.
-        Each round, you both secretly pick: <strong>Cooperate</strong> (help each other)
-        or <strong>Defect</strong> (betray the other).
+        Can you trust your partner when <strong>betrayal</strong> is so tempting?
       </Overview>
 
-      <Section label="What happens">
+      <Section label="How to play">
+        <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
+          <li>Two players are &quot;arrested&quot;.</li>
+          <li>You can stay <strong>SILENT</strong> (Cooperate) or <strong>BETRAY</strong> (Defect).</li>
+          <li>Your sentence depends on both your choices.</li>
+        </ol>
+      </Section>
+
+      <Section label="Payoff table">
         <OutcomeTable rows={[
-          { label: "You both cooperate", pts: "51 each", note: "Best for both of you", variant: "pos" },
-          { label: "You defect, they cooperate", pts: "63 / 22", note: "You win big, they get burned", variant: "warn" },
-          { label: "You cooperate, they defect", pts: "22 / 63", note: "You get burned, they win big", variant: "neg" },
-          { label: "You both defect", pts: "39 each", note: "Worse than cooperating together", variant: "neutral" },
+          { label: "Both Silent", pts: "1 yr / 1 yr", note: "Best for both", variant: "pos" },
+          { label: "You Silent, They Betray", pts: "3 yrs / 0 yrs", note: "You take the fall", variant: "neg" },
+          { label: "You Betray, They Silent", pts: "0 yrs / 3 yrs", note: "They take the fall", variant: "warn" },
+          { label: "Both Betray", pts: "2 yrs / 2 yrs", note: "Mutual punishment", variant: "neutral" },
         ]} />
       </Section>
 
-      <Section label="How to think about it">
+      <Section label="The goal">
         <Insight>
-          Working together pays the most — but stabbing your partner in the back is always tempting.
-          The catch? If you both betray, you both end up worse off.
-          4 rounds. After each round you see what the other person did.
+          Minimize your jail time.
         </Insight>
       </Section>
     </>

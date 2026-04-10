@@ -1,65 +1,31 @@
 "use client";
 
-import { Overview, Section, OutcomeTable, Insight, MONO, headerCell, numCell, tableBorder } from "../../components/rulesHelpers";
+import { Overview, Section, Insight } from "../../components/rulesHelpers";
 
 export function RulesDisplay() {
   return (
     <>
       <Overview>
-        You&apos;re a general with <strong>6 soldiers</strong> and <strong>4 battlefields</strong>.
-        Place your soldiers across the fields (0–3 per field, must total 6).
-        Whoever has the most soldiers on a field wins that field.
+        Strategy is about where you choose <strong>NOT</strong> to fight.
       </Overview>
 
-      <Section label="Scoring">
-        <OutcomeTable rows={[
-          { label: "Win a battlefield", pts: 10, note: "You had the most troops there", variant: "pos" },
-          { label: "Tie for most troops", pts: 5, note: "Points split between tied players", variant: "warn" },
-          { label: "Lose a battlefield", pts: 0, note: "Opponent had more troops", variant: "neg" },
-        ]} />
+      <Section label="How to play">
+        <ol className="list-decimal list-inside space-y-1 text-[13px]" style={{ color: "var(--gt-t2)" }}>
+          <li>You have <strong>100 soldiers</strong> to distribute across 10 &quot;castles&quot;.</li>
+          <li>Your opponent does the same secretly.</li>
+          <li>You win a castle if you have <strong>more soldiers</strong> there than your opponent.</li>
+        </ol>
       </Section>
 
-      <Section label="Example plans">
-        <table className="text-left border-collapse w-full" style={{ border: tableBorder }}>
-          <thead>
-            <tr>
-              {["Plan", "F1", "F2", "F3", "F4", "Idea"].map((h) => (
-                <th key={h} className="px-3 py-2 font-normal" style={headerCell}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              { name: "All-in on two", alloc: [3, 3, 0, 0], idea: "Win 2 fields hard" },
-              { name: "Spread out", alloc: [2, 2, 1, 1], idea: "Contest everything" },
-              { name: "Sneak attack", alloc: [3, 1, 1, 1], idea: "One big + surprise" },
-            ].map((row, idx) => (
-              <tr key={row.name} style={{ background: idx % 2 === 0 ? "var(--gt-surface)" : "var(--gt-row-alt)" }}>
-                <td className="px-3 py-2 text-[11px]" style={{ color: "var(--gt-t2)", borderRight: tableBorder, borderBottom: tableBorder }}>
-                  {row.name}
-                </td>
-                {row.alloc.map((v, i) => (
-                  <td
-                    key={i}
-                    className="px-3 py-2 text-center"
-                    style={{ ...numCell, fontSize: "14px", color: v === 0 ? "var(--gt-t4)" : "var(--gt-t1)", borderRight: tableBorder, borderBottom: tableBorder }}
-                  >
-                    {v}
-                  </td>
-                ))}
-                <td className="px-3 py-2 text-[10px]" style={{ color: "var(--gt-t4)", fontFamily: MONO, borderBottom: tableBorder }}>
-                  {row.idea}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <Section label="The goal">
+        <p className="text-[13px] leading-relaxed" style={{ color: "var(--gt-t2)" }}>
+          Win the most castles overall.
+        </p>
       </Section>
 
-      <Section label="Strategy">
+      <Section label="Fun fact">
         <Insight>
-          Go big on a few fields to guarantee wins? Or spread thin to contest everything?
-          The trick is guessing where your opponents will put their soldiers. 3 rounds.
+          Used to model everything from military strategy to political campaigning.
         </Insight>
       </Section>
     </>
