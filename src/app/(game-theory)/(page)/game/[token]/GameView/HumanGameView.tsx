@@ -147,7 +147,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   const aiDiscussionDoneRef = useRef(false);
 
   const fireAIDiscussions = useCallback((roundId: number) => {
-    if (aiDiscussionRoundRef.current === roundId) return;
+    // Reset guard so retries can re-enter
     aiDiscussionRoundRef.current = roundId;
     aiDiscussionDoneRef.current = false;
 
@@ -169,9 +169,17 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
         setCurrentSpeakerId(next.personaId);
         try {
           const res = await runAIDiscussionFor(token, next.personaId, roundId);
-          if (res.success) appendEvents(res.event);
-        } catch {
-          // Individual failure — continue with next
+          if (res.success) {
+            appendEvents(res.event);
+          } else {
+            setCurrentSpeakerId(null);
+            setError(`${next.name} failed to respond: ${res.message}`);
+            return; // Stop loop — ErrorDialog will show, user can Retry
+          }
+        } catch (err) {
+          setCurrentSpeakerId(null);
+          setError(`${next.name} failed to respond: ${(err as Error).message}`);
+          return;
         }
       }
 
@@ -187,13 +195,21 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   const aiDecisionRoundRef = useRef<number>(-1);
 
   const fireAIDecisions = useCallback((roundId: number) => {
-    if (aiDecisionRoundRef.current === roundId) return;
+    // Reset guard so retries can re-enter
     aiDecisionRoundRef.current = roundId;
 
     const aiParticipants = participants.filter((p) => p.personaId !== HUMAN_PLAYER_ID);
 
+    // Fire decisions for AI that haven't decided yet (supports retry after partial failure)
+    const alreadyDecided = new Set(
+      eventsRef.current
+        .filter((e): e is PersonaDecisionEvent => e.type === "persona-decision" && e.round === roundId)
+        .map((e) => e.personaId),
+    );
+    const pending = aiParticipants.filter((p) => !alreadyDecided.has(p.personaId));
+
     Promise.all(
-      aiParticipants.map(async (p) => {
+      pending.map(async (p) => {
         try {
           const res = await fetch("/api/internal/game-ai-decision", {
             method: "POST",
@@ -201,9 +217,14 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
             body: JSON.stringify({ token, personaId: p.personaId, roundId }),
           });
           const data = await res.json();
-          if (data.success) appendEvents(data.event);
-        } catch {
-          // Individual AI failure — others continue
+          if (data.success) {
+            appendEvents(data.event);
+          } else {
+            throw new Error(data.message ?? "AI decision failed");
+          }
+        } catch (err) {
+          setError(`${p.name} failed to decide: ${(err as Error).message}`);
+          throw err; // Propagate so Promise.all rejects
         }
       }),
     ).then(() => {
@@ -211,6 +232,8 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       if (currentStep.phase === "watching" && "roundId" in currentStep && currentStep.roundId === roundId) {
         setStep({ phase: "settling", roundId });
       }
+    }).catch(() => {
+      // Error already set above — ErrorDialog will show
     });
   }, [participants, token, appendEvents]);
 
@@ -369,6 +392,9 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
   // Error recovery: retry re-triggers current step; abort ends the game
   const handleRetry = useCallback(() => {
     setError(null);
+    // Reset round guards so fetchers can re-enter on retry
+    aiDiscussionRoundRef.current = -1;
+    aiDecisionRoundRef.current = -1;
     // Re-trigger the current step by creating a new object reference
     setStep((s) => ({ ...s }));
   }, []);
