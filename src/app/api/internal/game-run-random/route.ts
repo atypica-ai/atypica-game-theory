@@ -45,10 +45,10 @@ async function pickRandomPersonaIds(count: number): Promise<number[]> {
   return personas.map((p) => p.id);
 }
 
-/** 50% no discussion override, 50% enable 1 round of discussion */
-function randomDiscussionRounds(): number | undefined {
-  if (Math.random() < 0.5) return undefined;
-  return 1;
+/** For games with discussion enabled: 50% keep default (1), 50% disable (0). Games with no discussion always stay at 0. */
+function randomDiscussionRounds(gameTypeDefault: number): number | undefined {
+  if (gameTypeDefault === 0) return undefined; // respect no-discussion games
+  return Math.random() < 0.5 ? 0 : undefined; // 50% off, 50% use default
 }
 
 async function launchRandomSession(index: number, logger: BaseLogger) {
@@ -62,7 +62,7 @@ async function launchRandomSession(index: number, logger: BaseLogger) {
     );
   }
 
-  const discussionRounds = randomDiscussionRounds();
+  const discussionRounds = randomDiscussionRounds(gameType.discussionRounds);
   const { token } = await launchGameSession(gameType.name, personaIds, { discussionRounds });
 
   logger.info({
