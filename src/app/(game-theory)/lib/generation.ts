@@ -95,14 +95,35 @@ export async function generatePlayerDiscussion({
 
   logger.info({ msg: "LLM returned for discussion", personaId: personaSession.personaId, round });
 
-  const toolInput = steps
+  let toolInput = steps
     .flatMap((s) => s.toolCalls)
     .find((tc) => tc.toolName === "speak")?.input as { reasoning: string; message: string } | undefined;
 
+  // One retry if the model failed to call the speak tool
   if (!toolInput) {
-    throw new Error(
-      `Persona ${personaSession.personaId} did not call the speak tool in round ${round}`,
-    );
+    logger.error({ msg: "Speak tool not called, retrying once", personaId: personaSession.personaId, round, model: personaSession.modelName });
+
+    const retryResult = await generateText({
+      model: llm(personaSession.modelName),
+      providerOptions: defaultProviderOptions(),
+      system: personaSession.systemPrompt,
+      messages: [{ role: "user", content: `${formattedContext}\n\n---\n\n${task}` }],
+      tools: { speak: discussionTool },
+      toolChoice: "required",
+      stopWhen: stepCountIs(2),
+      temperature: 0.7,
+      abortSignal,
+    });
+
+    toolInput = retryResult.steps
+      .flatMap((s) => s.toolCalls)
+      .find((tc) => tc.toolName === "speak")?.input as { reasoning: string; message: string } | undefined;
+
+    if (!toolInput) {
+      throw new Error(
+        `Persona ${personaSession.personaId} did not call the speak tool in round ${round} (after retry)`,
+      );
+    }
   }
 
   const { tokens, extra } = calculateStepTokensUsage({ usage, providerMetadata });
@@ -174,14 +195,35 @@ export async function generatePlayerDecision({
     throw err;
   });
 
-  const rawInput = steps
+  let rawInput = steps
     .flatMap((s) => s.toolCalls)
     .find((tc) => tc.toolName === "submitAction")?.input as Record<string, unknown> | undefined;
 
+  // One retry if the model failed to call the action tool
   if (!rawInput) {
-    throw new Error(
-      `Persona ${personaSession.personaId} did not call the action tool in round ${round}`,
-    );
+    logger.error({ msg: "Action tool not called, retrying once", personaId: personaSession.personaId, round, model: personaSession.modelName });
+
+    const retryResult = await generateText({
+      model: llm(personaSession.modelName),
+      providerOptions: defaultProviderOptions(),
+      system: personaSession.systemPrompt,
+      messages: [{ role: "user", content: `${formattedContext}\n\n---\n\n${task}` }],
+      tools: { submitAction: actionTool },
+      toolChoice: "required",
+      stopWhen: stepCountIs(2),
+      temperature: 0.7,
+      abortSignal,
+    });
+
+    rawInput = retryResult.steps
+      .flatMap((s) => s.toolCalls)
+      .find((tc) => tc.toolName === "submitAction")?.input as Record<string, unknown> | undefined;
+
+    if (!rawInput) {
+      throw new Error(
+        `Persona ${personaSession.personaId} did not call the action tool in round ${round} (after retry)`,
+      );
+    }
   }
 
   // Strip `reasoning` from content — it's private and must not reach the payoff function.
