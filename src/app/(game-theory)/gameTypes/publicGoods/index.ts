@@ -15,7 +15,7 @@ export const publicGoods: GameType<typeof publicGoodsActionSchema> = {
   rulesPrompt: gameRules["public-goods"],
 
   minPlayers: 4,
-  maxPlayers: 10,
+  maxPlayers: 6,
 
   horizon: { type: "fixed", rounds: 3 },
 

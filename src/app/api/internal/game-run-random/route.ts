@@ -45,10 +45,10 @@ async function pickRandomPersonaIds(count: number): Promise<number[]> {
   return personas.map((p) => p.id);
 }
 
-/** 60% no discussion, 40% randomly 1–3 rounds */
+/** 50% no discussion override, 50% enable 1 round of discussion */
 function randomDiscussionRounds(): number | undefined {
-  if (Math.random() < 0.6) return undefined;
-  return randomInt(1, 3);
+  if (Math.random() < 0.5) return undefined;
+  return 1;
 }
 
 async function launchRandomSession(index: number, logger: BaseLogger) {

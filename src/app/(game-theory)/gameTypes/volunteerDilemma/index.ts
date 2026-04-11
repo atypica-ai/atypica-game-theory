@@ -15,7 +15,7 @@ export const volunteerDilemma: GameType<typeof volunteerDilemmaActionSchema> = {
   rulesPrompt: gameRules["volunteer-dilemma"],
 
   minPlayers: 3,
-  maxPlayers: 10,
+  maxPlayers: 6,
 
   horizon: { type: "fixed", rounds: 3 },
 

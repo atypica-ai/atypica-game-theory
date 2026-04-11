@@ -425,7 +425,7 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
           )}
         </div>
 
-        {/* Discussion rounds toggle */}
+        {/* Discussion toggle (on = 1 round, off = use game default) */}
         <div className="flex items-center gap-3">
           <label
             className="flex items-center gap-2 cursor-pointer select-none"
@@ -439,30 +439,6 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
             />
             discussion
           </label>
-          {discussionRounds !== undefined && (
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setDiscussionRounds(Math.max(0, discussionRounds - 1))}
-                className="w-5 h-5 flex items-center justify-center transition-colors hover:opacity-70"
-                style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
-              >
-                −
-              </button>
-              <span
-                className="w-4 text-center tabular-nums"
-                style={{ color: "var(--gt-t1)", fontFamily: "IBMPlexMono, monospace", fontSize: "13px" }}
-              >
-                {discussionRounds}
-              </span>
-              <button
-                onClick={() => setDiscussionRounds(discussionRounds + 1)}
-                className="w-5 h-5 flex items-center justify-center transition-colors hover:opacity-70"
-                style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace", fontSize: "14px" }}
-              >
-                +
-              </button>
-            </div>
-          )}
         </div>
 
         <button

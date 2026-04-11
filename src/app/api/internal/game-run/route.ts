@@ -16,7 +16,7 @@ const bodySchema = z
     personaIds: z.array(z.number().int().positive()).min(1).optional(),
     randomPersonaCount: z.number().int().min(1).optional(),
     sessions: z.number().int().min(1).max(20).default(1),
-    discussionRounds: z.number().int().min(0).optional(),
+    discussionRounds: z.number().int().min(0).max(1).optional(),
   })
   .refine((d) => d.personaIds !== undefined || d.randomPersonaCount !== undefined, {
     message: "Either personaIds or randomPersonaCount is required",

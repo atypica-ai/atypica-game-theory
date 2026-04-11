@@ -15,7 +15,7 @@ export const colonelBlotto: GameType<typeof colonelBlottoActionSchema> = {
   rulesPrompt: gameRules["colonel-blotto"],
 
   minPlayers: 3,
-  maxPlayers: 8,
+  maxPlayers: 6,
 
   horizon: { type: "fixed", rounds: 3 },
 

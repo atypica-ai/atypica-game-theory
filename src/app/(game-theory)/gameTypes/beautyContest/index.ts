@@ -12,7 +12,7 @@ export const beautyContest: GameType<typeof beautyContestActionSchema> = {
   rulesPrompt: gameRules["beauty-contest"],
 
   minPlayers: 4,
-  maxPlayers: 10,
+  maxPlayers: 6,
 
   horizon: { type: "fixed", rounds: 3 },
 
