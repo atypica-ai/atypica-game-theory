@@ -259,15 +259,6 @@ function DiscussionEntry({
           >
             {event.personaName}
           </span>
-          {event.reasoning && (
-            <button
-              onClick={() => setShowReasoning((v) => !v)}
-              className="text-[11px] transition-colors hover:underline"
-              style={{ color: "var(--gt-t4)", fontFamily: "IBMPlexMono, monospace" }}
-            >
-              {showReasoning ? "hide" : "thoughts"}
-            </button>
-          )}
         </div>
         <p
           className="text-[13px] leading-relaxed"
@@ -278,17 +269,69 @@ function DiscussionEntry({
         >
           &ldquo;{event.content}&rdquo;
         </p>
-        {showReasoning && event.reasoning && (
-          <div className="mt-2 pl-3 border-l" style={{ borderColor: "var(--gt-border-md)" }}>
-            <p
-              className="text-[12px] leading-relaxed"
+        {/* Reasoning strip — subtle clickable bar hinting at hidden strategic thoughts */}
+        {event.reasoning && (
+          <div className="mt-2">
+            <button
+              onClick={() => setShowReasoning((v) => !v)}
+              className="group flex items-center gap-2 w-full text-left py-1.5 px-2.5 rounded transition-colors"
               style={{
-                color: "var(--gt-t3)",
-                fontFamily: "var(--gt-font-outfit), system-ui, sans-serif",
+                background: showReasoning ? `${color}0a` : "transparent",
               }}
+              onMouseEnter={(e) => { if (!showReasoning) e.currentTarget.style.background = "var(--gt-row-alt)"; }}
+              onMouseLeave={(e) => { if (!showReasoning) e.currentTarget.style.background = "transparent"; }}
             >
-              {event.reasoning}
-            </p>
+              <span
+                className="text-[10px] transition-transform duration-200"
+                style={{
+                  color,
+                  display: "inline-block",
+                  transform: showReasoning ? "rotate(90deg)" : "rotate(0deg)",
+                }}
+              >
+                ▸
+              </span>
+              <span
+                className="text-[10px] uppercase font-[600]"
+                style={{
+                  color: showReasoning ? color : "var(--gt-t4)",
+                  fontFamily: "IBMPlexMono, monospace",
+                  letterSpacing: "0.08em",
+                  transition: "color 0.15s",
+                }}
+              >
+                Inner reasoning
+              </span>
+              {!showReasoning && (
+                <span
+                  className="text-[10px] truncate flex-1"
+                  style={{
+                    color: "var(--gt-t4)",
+                    fontFamily: "IBMPlexMono, monospace",
+                    opacity: 0.6,
+                  }}
+                >
+                  — {event.reasoning.slice(0, 60)}{event.reasoning.length > 60 ? "…" : ""}
+                </span>
+              )}
+            </button>
+            {showReasoning && (
+              <div
+                className="mt-1 ml-2 pl-3 border-l-2 py-1"
+                style={{ borderColor: color }}
+              >
+                <p
+                  className="text-[12px] leading-relaxed"
+                  style={{
+                    color: "var(--gt-t3)",
+                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontStyle: "italic",
+                  }}
+                >
+                  {event.reasoning}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
