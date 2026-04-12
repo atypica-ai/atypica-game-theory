@@ -2,20 +2,10 @@
 
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { GameSessionStats, PersonaDecisionEvent } from "../../types";
+import type { StatsData } from "../../lib/stats/types";
 import { AI_COLOR, AiHumanLegend, AXIS_COLOR, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, SourceAttribution, TICK_FONT } from "../AcademicChart";
 
-// ── Human reference data ───────────────────────────────────────────────────────
-// Nagel (1995) AER — p-beauty contest (p = 2/3), Round 1
-// Winning choice = the guess closest to ⅔ × group mean.
-// With R1 mean ≈ 37, the winning target ≈ 24.7 → winners cluster in L2 zone (20–29).
-// L1-zone choices (30–39) win when the group is unsophisticated.
-// Reconstructed from Figure 1 distribution; winning-choice PMF derived analytically.
-
-// ── AI data ────────────────────────────────────────────────────────────────────
-// AI personas think ahead more → winning AI choices skew toward the L2–L3 zone.
-// TODO: replace with live aggregation from PersonaDecisionEvent {number} field
-
-const data = [
+const mockData = [
   { bin: "0–9",   human: 0.05, ai: 0.12 },
   { bin: "10–19", human: 0.15, ai: 0.32 },
   { bin: "20–29", human: 0.38, ai: 0.31 },
@@ -27,6 +17,11 @@ const data = [
   { bin: "80–89", human: 0.00, ai: 0.00 },
   { bin: "90–100",human: 0.00, ai: 0.00 },
 ];
+
+function toChartData(agg?: StatsData) {
+  if (!agg) return mockData;
+  return agg.rows.map((r) => ({ bin: r.label, human: r.values.human ?? 0, ai: r.values.ai ?? 0 }));
+}
 
 // ── Session overlay helpers ────────────────────────────────────────────────────
 
@@ -86,9 +81,12 @@ const TooltipContent = makeTooltip(pctFmt);
 
 export function BeautyContestDistributionView({
   sessionStats,
+  aggregateData,
 }: {
   sessionStats?: GameSessionStats;
+  aggregateData?: StatsData;
 }) {
+  const chartData = toChartData(aggregateData);
   const winningChoice = sessionStats ? getR1WinningChoice(sessionStats.events) : null;
   const winningBin = winningChoice !== null ? getBinLabel(winningChoice) : null;
 
@@ -99,7 +97,7 @@ export function BeautyContestDistributionView({
         subtitle="PMF of round-winning guesses (closest to ⅔ × mean). Lower choices signal deeper strategic reasoning."
       >
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={data} margin={{ top: 32, right: 40, bottom: 8, left: 28 }} barCategoryGap="16%" barGap={2}>
+          <BarChart data={chartData} margin={{ top: 32, right: 40, bottom: 8, left: 28 }} barCategoryGap="16%" barGap={2}>
             <CartesianGrid vertical={false} stroke={GRID_COLOR} strokeWidth={0.75} />
             <XAxis
               dataKey="bin"
@@ -144,7 +142,7 @@ export function BeautyContestDistributionView({
             )}
             {/* Human bars — dim all bins except the winning one when session data is present */}
             <Bar dataKey="human" name="Human" fill={HUMAN_COLOR} radius={[2, 2, 0, 0]}>
-              {data.map((entry) => (
+              {chartData.map((entry) => (
                 <Cell
                   key={entry.bin}
                   fillOpacity={winningBin === null || entry.bin === winningBin ? 0.80 : 0.18}
@@ -153,7 +151,7 @@ export function BeautyContestDistributionView({
             </Bar>
             {/* AI bars — same dimming */}
             <Bar dataKey="ai" name="AI" fill={AI_COLOR} radius={[2, 2, 0, 0]}>
-              {data.map((entry) => (
+              {chartData.map((entry) => (
                 <Cell
                   key={entry.bin}
                   fillOpacity={winningBin === null || entry.bin === winningBin ? 0.85 : 0.18}

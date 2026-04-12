@@ -2,15 +2,10 @@
 
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { GameSessionStats, PersonaDecisionEvent } from "../../types";
+import type { StatsData } from "../../lib/stats/types";
 import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, SourceAttribution, TICK_FONT } from "../AcademicChart";
 
-// ── Research data ──────────────────────────────────────────────────────────────
-// Experimental evidence shows systematic overbidding in all-pay auctions.
-// Gneezy & Smorodinsky (2006) and others document average bids exceeding Nash equilibrium.
-// Nash equilibrium: bid = (n-1)/n × value. For n=4, Nash ≈ 0.75 × 100 = 75.
-// Observed: humans tend to bid 80-100 (escalation trap), AI may bid closer to Nash.
-
-const data = [
+const mockData = [
   { bin: "0–19",   human: 0.05, ai: 0.18 },
   { bin: "20–39",  human: 0.08, ai: 0.25 },
   { bin: "40–59",  human: 0.12, ai: 0.28 },
@@ -19,7 +14,10 @@ const data = [
   { bin: "100+",   human: 0.20, ai: 0.01 },
 ];
 
-// ── Session overlay helpers ────────────────────────────────────────────────────
+function toChartData(agg?: StatsData) {
+  if (!agg) return mockData;
+  return agg.rows.map((r) => ({ bin: r.label, human: r.values.human ?? 0, ai: r.values.ai ?? 0 }));
+}
 
 function getR1AverageBid(events: GameSessionStats["events"]): number | null {
   const r1 = events.filter(
@@ -43,9 +41,12 @@ const TooltipContent = makeTooltip(pctFmt);
 
 export function AllPayAuctionDistributionView({
   sessionStats,
+  aggregateData,
 }: {
   sessionStats?: GameSessionStats;
+  aggregateData?: StatsData;
 }) {
+  const chartData = toChartData(aggregateData);
   const avgBid = sessionStats ? getR1AverageBid(sessionStats.events) : null;
   const avgBin = avgBid !== null ? getBinLabel(avgBid) : null;
   return (
@@ -55,7 +56,7 @@ export function AllPayAuctionDistributionView({
         subtitle="PMF of first-round bids (prize = 100). Humans show escalation bias, AI closer to Nash."
       >
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={data} margin={{ top: 12, right: 40, bottom: 8, left: 28 }} barCategoryGap="16%" barGap={2}>
+          <BarChart data={chartData} margin={{ top: 12, right: 40, bottom: 8, left: 28 }} barCategoryGap="16%" barGap={2}>
             <CartesianGrid vertical={false} stroke={GRID_COLOR} strokeWidth={0.75} />
             <XAxis
               dataKey="bin"
@@ -74,7 +75,6 @@ export function AllPayAuctionDistributionView({
               width={30}
             />
             <Tooltip content={<TooltipContent />} cursor={{ fill: GRID_COLOR, fillOpacity: 0.35 }} />
-            {/* This game's average bid marker */}
             {avgBin !== null && avgBid !== null && (
               <ReferenceLine
                 x={avgBin}
@@ -90,18 +90,16 @@ export function AllPayAuctionDistributionView({
                 }}
               />
             )}
-            {/* Human bars — dim all bins except the one containing this game's average */}
             <Bar dataKey="human" name="Human" fill={HUMAN_COLOR} radius={[2, 2, 0, 0]}>
-              {data.map((entry) => (
+              {chartData.map((entry) => (
                 <Cell
                   key={entry.bin}
                   fillOpacity={avgBin === null || entry.bin === avgBin ? 0.80 : 0.18}
                 />
               ))}
             </Bar>
-            {/* AI bars — same dimming */}
             <Bar dataKey="ai" name="AI" fill={AI_COLOR} radius={[2, 2, 0, 0]}>
-              {data.map((entry) => (
+              {chartData.map((entry) => (
                 <Cell
                   key={entry.bin}
                   fillOpacity={avgBin === null || entry.bin === avgBin ? 0.85 : 0.18}

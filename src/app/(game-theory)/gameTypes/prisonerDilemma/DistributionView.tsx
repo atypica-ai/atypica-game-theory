@@ -1,28 +1,25 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import type { StatsData } from "../../lib/stats/types";
 import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, pctLabelFmt, SourceAttribution } from "../AcademicChart";
 
-// ── Human reference data ───────────────────────────────────────────────────────
-// Dal Bó & Fréchette (2011) AER — "Easy" treatment (R=51, T=63, S=22, P=39)
-// This is the EXACT payoff matrix used in our game.
-// Cooperation rates per round from Table 3 / Figure 2 (4-round finite horizon, n=358)
-
-// ── AI data ────────────────────────────────────────────────────────────────────
-// Source: accumulated game sessions from atypica.AI personas
-// TODO: replace with live aggregation from PersonaDecisionEvent records
-
-const data = [
+const mockData = [
   { round: "R1", human: 0.62, ai: 0.76 },
   { round: "R2", human: 0.52, ai: 0.63 },
   { round: "R3", human: 0.43, ai: 0.52 },
   { round: "R4", human: 0.34, ai: 0.44 },
 ];
 
+function toChartData(agg?: StatsData) {
+  if (!agg) return mockData;
+  return agg.rows.map((r) => ({ round: r.label, human: r.values.human ?? 0, ai: r.values.ai ?? 0 }));
+}
+
 const pctFmt = (v: number) => `${Math.round(v * 100)}%`;
 const TooltipContent = makeTooltip(pctFmt);
 
-export function PrisonerDilemmaDistributionView() {
+export function PrisonerDilemmaDistributionView({ aggregateData }: { aggregateData?: StatsData }) {
   return (
     <div className="p-6 flex flex-col gap-4">
       <ChartPanel
@@ -30,7 +27,7 @@ export function PrisonerDilemmaDistributionView() {
         subtitle="Does the end-game defection cascade emerge in AI personas?"
       >
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={data} margin={{ top: 20, right: 16, bottom: 8, left: 28 }} barCategoryGap="32%" barGap={4}>
+          <BarChart data={toChartData(aggregateData)} margin={{ top: 20, right: 16, bottom: 8, left: 28 }} barCategoryGap="32%" barGap={4}>
             <CartesianGrid vertical={false} stroke={GRID_COLOR} strokeWidth={0.75} />
             <XAxis dataKey="round" tick={axisTickProps} axisLine={false} tickLine={false} />
             <YAxis

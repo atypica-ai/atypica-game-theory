@@ -2,24 +2,32 @@
 
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { GameSessionStats, PersonaDecisionEvent } from "../../types";
+import type { StatsData } from "../../lib/stats/types";
 import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, SourceAttribution, TICK_FONT } from "../AcademicChart";
 
-// ── Research data ──────────────────────────────────────────────────────────────
-// Foot (1967), Thomson (1976, 1985) empirical findings.
-// Classic: 70-80% pull lever. Fat Man: only 10-20% push.
-// Same outcome (1 dies, 5 saved), but different moral intuitions.
-
-const dataClassic = [
+const mockClassic = [
   { action: "Pull Lever", human: 0.75, ai: 0.85 },
   { action: "Do Nothing", human: 0.25, ai: 0.15 },
 ];
 
-const dataFatMan = [
+const mockFatMan = [
   { action: "Push Man", human: 0.15, ai: 0.60 },
   { action: "Do Nothing", human: 0.85, ai: 0.40 },
 ];
 
-// ── Session overlay helpers ────────────────────────────────────────────────────
+function toChartData(agg?: StatsData): { classic: typeof mockClassic; fatMan: typeof mockFatMan } {
+  if (!agg) return { classic: mockClassic, fatMan: mockFatMan };
+  const classic = agg.rows
+    .filter((r) => r.label.startsWith("Classic:"))
+    .map((r) => ({ action: r.label.replace("Classic: ", ""), human: r.values.human ?? 0, ai: r.values.ai ?? 0 }));
+  const fatMan = agg.rows
+    .filter((r) => r.label.startsWith("Fat Man:"))
+    .map((r) => ({ action: r.label.replace("Fat Man: ", ""), human: r.values.human ?? 0, ai: r.values.ai ?? 0 }));
+  return {
+    classic: classic.length > 0 ? classic : mockClassic,
+    fatMan: fatMan.length > 0 ? fatMan : mockFatMan,
+  };
+}
 
 function getVoteRates(events: GameSessionStats["events"]): {
   classicPull: number;
@@ -48,9 +56,12 @@ const TooltipContent = makeTooltip(pctFmt);
 
 export function TrolleyProblemDistributionView({
   sessionStats,
+  aggregateData,
 }: {
   sessionStats?: GameSessionStats;
+  aggregateData?: StatsData;
 }) {
+  const { classic: dataClassic, fatMan: dataFatMan } = toChartData(aggregateData);
   const rates = sessionStats ? getVoteRates(sessionStats.events) : null;
 
   return (

@@ -2,6 +2,7 @@
 
 import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { GameType } from "@/app/(game-theory)/gameTypes/types";
+import type { StatsData } from "@/app/(game-theory)/lib/stats/types";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { GameDistributionView } from "./DistributionChart";
@@ -63,7 +64,7 @@ function Legend() {
 
 // ── Game card ─────────────────────────────────────────────────────────────────
 
-function GameCard({ gt, sessionCount }: { gt: GameType; sessionCount: number }) {
+function GameCard({ gt, sessionCount, aggregateData }: { gt: GameType; sessionCount: number; aggregateData?: StatsData }) {
   const horizon = formatHorizon(gt);
   const players = formatPlayers(gt);
 
@@ -104,7 +105,7 @@ function GameCard({ gt, sessionCount }: { gt: GameType; sessionCount: number }) 
 
       {/* Distribution charts — comfortable breathing room */}
       <div className="px-5 py-4 sm:px-8 sm:py-6">
-        <GameDistributionView gameType={gt.name} />
+        <GameDistributionView gameType={gt.name} aggregateData={aggregateData} />
       </div>
 
       {/* Past games footer */}
@@ -132,7 +133,7 @@ function GameCard({ gt, sessionCount }: { gt: GameType; sessionCount: number }) 
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string, number> }) {
+export function GameTheoryHome({ sessionCounts, distributionStats }: { sessionCounts: Record<string, number>; distributionStats: Record<string, StatsData> }) {
   const gameTypes = Object.values(gameTypeRegistry) as unknown as GameType[];
 
   return (
@@ -191,7 +192,7 @@ export function GameTheoryHome({ sessionCounts }: { sessionCounts: Record<string
           }}
         >
           {gameTypes.map((gt) => (
-            <GameCard key={gt.name} gt={gt} sessionCount={sessionCounts[gt.name] ?? 0} />
+            <GameCard key={gt.name} gt={gt} sessionCount={sessionCounts[gt.name] ?? 0} aggregateData={distributionStats[`distribution:${gt.name}`]} />
           ))}
         </div>
       </main>

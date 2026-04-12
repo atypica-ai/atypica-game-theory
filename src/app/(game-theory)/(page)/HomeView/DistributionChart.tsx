@@ -1,19 +1,20 @@
 "use client";
 
 import type { GameSessionStats } from "@/app/(game-theory)/types";
+import type { StatsData } from "@/app/(game-theory)/lib/stats/types";
 import { distributionRegistry } from "@/app/(game-theory)/gameTypes/distributionRegistry";
 
 /**
  * Thin wrapper — renders the active game type's distribution view from the registry.
- * To customize what's shown for a game type, edit its DistributionView.tsx file
- * in gameTypes/{name}/DistributionView.tsx.
  */
 export function GameDistributionView({
   gameType,
   sessionStats,
+  aggregateData,
 }: {
   gameType: string;
   sessionStats?: GameSessionStats;
+  aggregateData?: StatsData;
 }) {
   const View = distributionRegistry[gameType];
 
@@ -27,5 +28,5 @@ export function GameDistributionView({
     );
   }
 
-  return <View sessionStats={sessionStats} />;
+  return <View sessionStats={sessionStats} aggregateData={aggregateData} />;
 }
