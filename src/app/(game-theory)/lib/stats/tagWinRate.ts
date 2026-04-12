@@ -34,18 +34,13 @@ export function computeTagWinRate(
       label: tag,
       values: {
         winRate: stat.games > 0 ? stat.wins / stat.games : 0,
-        personas: stat.personas,
-        gamesPlayed: stat.games,
       },
+      meta: { personas: stat.personas, gamesPlayed: stat.games },
     }))
     .sort((a, b) => b.values.winRate - a.values.winRate);
 
   return {
-    columns: [
-      { key: "winRate", label: "Win Rate", format: "percent" },
-      { key: "personas", label: "Personas", format: "integer" },
-      { key: "gamesPlayed", label: "Games Played", format: "integer" },
-    ],
+    columns: [{ key: "winRate", label: "Win Rate", format: "percent" }],
     rows,
   };
 }

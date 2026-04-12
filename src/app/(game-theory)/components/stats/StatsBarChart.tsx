@@ -4,14 +4,14 @@ import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, 
 import type { StatsData } from "../../lib/stats/types";
 import { axisTickProps, ChartPanel, GRID_COLOR, makeTooltip, TICK_FONT } from "../../gameTypes/AcademicChart";
 
-// Color palette for multi-series bars
+// Muted academic palette — lower saturation, warm-compatible
 const SERIES_COLORS = [
-  "hsl(208 77% 52%)", // blue
-  "hsl(142 50% 45%)", // green
-  "hsl(30 80% 55%)",  // orange
-  "hsl(280 50% 55%)", // purple
-  "hsl(0 65% 55%)",   // red
-  "hsl(190 60% 45%)", // teal
+  "hsl(208 55% 52%)", // steel blue
+  "hsl(25 50% 52%)",  // sienna
+  "hsl(155 35% 46%)", // sage
+  "hsl(270 32% 56%)", // lavender
+  "hsl(0 40% 52%)",   // dusty rose
+  "hsl(190 38% 46%)", // teal
 ];
 
 function formatValue(v: number, format?: string): string {

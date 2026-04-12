@@ -78,95 +78,33 @@ export function StatsLeaderboard({
                   {col.label}
                 </th>
               ))}
-              {/* Tags column if any row has tags in meta */}
-              {rows.some((r) => r.meta?.tags && (r.meta.tags as string[]).length > 0) && (
-                <th
-                  className="text-left px-3 py-2"
-                  style={{ color: "var(--gt-t4)", fontWeight: 500 }}
-                >
-                  Tags
-                </th>
-              )}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => {
-              const tags = (row.meta?.tags as string[] | undefined) ?? [];
-              const model = row.meta?.model as string | undefined;
-              const isHuman = row.meta?.isHuman as boolean | undefined;
-              return (
-                <tr
-                  key={row.label + i}
-                  style={{
-                    borderBottom: i < rows.length - 1 ? "1px solid var(--gt-border)" : undefined,
-                  }}
-                >
-                  <td className="px-3 py-2" style={{ color: "var(--gt-t4)" }}>
-                    {i + 1}
+            {rows.map((row, i) => (
+              <tr
+                key={row.label + i}
+                style={{
+                  borderBottom: i < rows.length - 1 ? "1px solid var(--gt-border)" : undefined,
+                }}
+              >
+                <td className="px-3 py-2" style={{ color: "var(--gt-t4)" }}>
+                  {i + 1}
+                </td>
+                <td className="px-3 py-2 font-[500]" style={{ color: "var(--gt-t1)" }}>
+                  {row.label}
+                </td>
+                {data.columns.map((col) => (
+                  <td
+                    key={col.key}
+                    className="text-right px-3 py-2 tabular-nums"
+                    style={{ color: "var(--gt-t2)" }}
+                  >
+                    {formatValue(row.values[col.key] ?? 0, col.format)}
                   </td>
-                  <td className="px-3 py-2" style={{ color: "var(--gt-t1)" }}>
-                    <div className="flex items-center gap-2">
-                      <span className="font-[500]">{row.label}</span>
-                      {isHuman && (
-                        <span
-                          className="text-[9px] px-1.5 py-0.5 rounded"
-                          style={{
-                            background: "var(--gt-blue)",
-                            color: "white",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Human
-                        </span>
-                      )}
-                      {model && (
-                        <span
-                          className="text-[9px] px-1.5 py-0.5 rounded"
-                          style={{
-                            background: "var(--gt-border-md)",
-                            color: "var(--gt-t3)",
-                          }}
-                        >
-                          {model}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  {data.columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className="text-right px-3 py-2 tabular-nums"
-                      style={{ color: "var(--gt-t2)" }}
-                    >
-                      {formatValue(row.values[col.key] ?? 0, col.format)}
-                    </td>
-                  ))}
-                  {rows.some((r) => r.meta?.tags && (r.meta.tags as string[]).length > 0) && (
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {tags.slice(0, 3).map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-[9px] px-1.5 py-0.5 rounded"
-                            style={{
-                              background: "var(--gt-border)",
-                              color: "var(--gt-t3)",
-                            }}
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {tags.length > 3 && (
-                          <span className="text-[9px]" style={{ color: "var(--gt-t4)" }}>
-                            +{tags.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

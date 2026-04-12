@@ -48,13 +48,13 @@ export function computeOverallLeaderboard(
         label: name,
         values: {
           winRate: wr.games > 0 ? wr.wins / wr.games : 0,
-          gamesPlayed: wr.games,
-          wins: wr.wins,
         },
         meta: {
           personaId: pid,
           isHuman,
           tags: meta?.tags ?? [],
+          gamesPlayed: wr.games,
+          wins: wr.wins,
           ...(model ? { model } : {}),
         },
       };
@@ -62,11 +62,7 @@ export function computeOverallLeaderboard(
     .sort((a, b) => b.values.winRate - a.values.winRate);
 
   return {
-    columns: [
-      { key: "winRate", label: "Win Rate", format: "percent" },
-      { key: "gamesPlayed", label: "Games Played", format: "integer" },
-      { key: "wins", label: "Wins", format: "integer" },
-    ],
+    columns: [{ key: "winRate", label: "Win Rate", format: "percent" }],
     rows,
   };
 }

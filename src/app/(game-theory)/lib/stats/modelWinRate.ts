@@ -66,17 +66,17 @@ export function computeModelWinRate(sessions: ParsedSession[]): StatsData {
       label: modelLabel(model),
       values: {
         winRate: agg.gameCount > 0 ? agg.sumRates / agg.gameCount : 0,
-        gamesPlayed: agg.totalGames,
       },
-      meta: { model: model as LLMModelName },
+      meta: {
+        model: model as LLMModelName,
+        gamesPlayed: agg.totalGames,
+        totalWins: agg.totalWins,
+      },
     }))
     .sort((a, b) => b.values.winRate - a.values.winRate);
 
   return {
-    columns: [
-      { key: "winRate", label: "Win Rate", format: "percent" },
-      { key: "gamesPlayed", label: "Games Played", format: "integer" },
-    ],
+    columns: [{ key: "winRate", label: "Win Rate", format: "percent" }],
     rows,
   };
 }

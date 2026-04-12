@@ -56,6 +56,54 @@ function SectionNav({ items, activeId }: { items: NavItem[]; activeId: string })
   );
 }
 
+/* ── Compact horizontal bar display (for small datasets like 3 models) ───────── */
+
+function HorizontalWinRate({ data }: { data: StatsData }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {data.rows.map((row, i) => {
+        const rate = row.values.winRate ?? 0;
+        return (
+          <div key={row.label} className="flex items-center gap-3">
+            <span
+              className="text-[11px] w-4 text-right tabular-nums shrink-0"
+              style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}
+            >
+              {i + 1}
+            </span>
+            <span
+              className="text-[13px] font-[500] w-[120px] sm:w-[140px] shrink-0 truncate"
+              style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+            >
+              {row.label}
+            </span>
+            <div
+              className="flex-1 h-[20px] relative overflow-hidden"
+              style={{ background: "var(--gt-border)", borderRadius: "0.25rem" }}
+            >
+              <div
+                className="absolute inset-y-0 left-0"
+                style={{
+                  width: `${rate * 100}%`,
+                  background: "var(--gt-blue)",
+                  borderRadius: "0.25rem",
+                  opacity: 0.75,
+                }}
+              />
+            </div>
+            <span
+              className="text-[15px] font-[600] tabular-nums w-[48px] text-right shrink-0"
+              style={{ color: "var(--gt-t1)", fontFamily: TICK_FONT }}
+            >
+              {Math.round(rate * 100)}%
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ── Reusable pieces ─────────────────────────────────────────────────────────── */
 
 function Card({ children }: { children: React.ReactNode }) {
@@ -197,12 +245,7 @@ export function StatsPageView({
                 {modelCount > 0 && ` · ${modelCount} models compared`}
               </p>
               <Card>
-                <StatsBarChart
-                  data={modelWinRate!}
-                  title="Win rate across all game types"
-                  subtitle="Each game type contributes equally to the average"
-                  height={320}
-                />
+                <HorizontalWinRate data={modelWinRate!} />
               </Card>
             </section>
           )}
