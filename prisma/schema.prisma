@@ -147,3 +147,12 @@ model Tournament {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
+
+model GameStats {
+  id           Int      @id @default(autoincrement())
+  key          String   @unique @db.VarChar(128)
+  /// [StatsData]
+  data         Json     @default("{}")
+  sessionCount Int      @default(0)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+}

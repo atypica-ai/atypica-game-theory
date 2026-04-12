@@ -10,6 +10,7 @@ import {
   GameSessionExtra,
   GameTimeline,
 } from "./types";
+import type { StatsData } from "./lib/stats/types";
 
 export interface GameSessionDetail {
   token: string;
@@ -256,6 +257,39 @@ export async function searchPersonasForGame(searchQuery: string): Promise<
         tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
       })),
     };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Fetch pre-computed stats from the GameStats table.
+// ---------------------------------------------------------------------------
+
+export async function fetchGameStats(key: string): Promise<
+  { success: true; data: StatsData } | { success: false; message: string }
+> {
+  try {
+    const row = await prisma.gameStats.findUnique({ where: { key } });
+    if (!row) return { success: false, message: `Stats not found: ${key}` };
+    return { success: true, data: row.data as unknown as StatsData };
+  } catch (error) {
+    return { success: false, message: (error as Error).message };
+  }
+}
+
+export async function fetchGameStatsBatch(keys: string[]): Promise<
+  { success: true; data: Record<string, StatsData> } | { success: false; message: string }
+> {
+  try {
+    const rows = await prisma.gameStats.findMany({
+      where: { key: { in: keys } },
+    });
+    const result: Record<string, StatsData> = {};
+    for (const row of rows) {
+      result[row.key] = row.data as unknown as StatsData;
+    }
+    return { success: true, data: result };
   } catch (error) {
     return { success: false, message: (error as Error).message };
   }

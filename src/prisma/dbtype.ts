@@ -1,4 +1,5 @@
 import type { GameTimeline } from "@/app/(game-theory)/types";
+import type { StatsData as StatsDataType } from "@/app/(game-theory)/lib/stats/types";
 import type { TournamentState as TournamentStateType } from "@/app/(game-theory)/tournament/types";
 import type { Locale as LocaleType } from "next-intl";
 import type * as client from "./client";
@@ -19,6 +20,9 @@ declare global {
 
     // Tournament
     type TournamentState = TournamentStateType;
+
+    // GameStats
+    type StatsData = StatsDataType;
 
     // Locale (used in Persona.locale)
     type Locale = LocaleType;
