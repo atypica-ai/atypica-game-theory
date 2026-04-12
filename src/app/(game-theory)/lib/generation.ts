@@ -30,6 +30,14 @@ export const discussionTool = tool({
 
 // ── Action tool ─────────────────────────────────────────────────────────────
 
+/** Unwrap ZodEffects (.refine / .transform) to reach the inner ZodObject shape. */
+function getObjectShape(schema: z.ZodTypeAny): z.ZodRawShape {
+  if (schema instanceof z.ZodEffects) {
+    return getObjectShape(schema._def.schema as z.ZodTypeAny);
+  }
+  return (schema as z.ZodObject<z.ZodRawShape>).shape;
+}
+
 /**
  * Build the action tool for a game type.
  * Prepends a private `reasoning` field (not stored in game content) so the model
@@ -40,7 +48,7 @@ export function buildActionTool(gameType: GameType) {
     reasoning: z
       .string()
       .describe("Your private strategic reasoning before deciding. NOT shown to other players."),
-    ...(gameType.actionSchema as z.ZodObject<z.ZodRawShape>).shape,
+    ...getObjectShape(gameType.actionSchema),
   });
   return tool({
     description: `Submit your decision for this round. You MUST call this tool exactly once.`,
