@@ -163,6 +163,13 @@ export function GameTheoryHome({ sessionCounts, distributionStats }: { sessionCo
 
           <div className="flex items-center gap-3 sm:gap-4">
             <Link
+              href="/stats"
+              className="text-[13px] font-[500] transition-opacity hover:opacity-70"
+              style={{ color: "var(--gt-t2)", letterSpacing: "var(--gt-tracking-tight)" }}
+            >
+              Stats
+            </Link>
+            <Link
               href="/play/new"
               className="flex items-center h-8 px-4 text-[13px] font-[500] transition-opacity hover:opacity-80"
               style={{
