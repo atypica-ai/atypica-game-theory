@@ -67,6 +67,10 @@ export function computeWinRecords(sessions: ParsedSession[]): Map<number, WinRec
         .map(([pid]) => pid),
     );
 
+    // Skip sessions with majority ties (winners > N/2) — not informative
+    const playerCount = cumulativePayoffs.size;
+    if (winners.size > playerCount / 2) continue;
+
     for (const pid of cumulativePayoffs.keys()) {
       const existing = records.get(pid) ?? { wins: 0, games: 0 };
       existing.games += 1;
