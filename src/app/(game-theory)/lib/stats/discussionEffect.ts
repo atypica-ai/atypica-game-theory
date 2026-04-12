@@ -47,6 +47,9 @@ function computeDiscussionComparison(
   const withDec = getR1Decisions(withDiscussion);
   const withoutDec = getR1Decisions(withoutDiscussion);
 
+  const withVal = withDec.length > 0 ? metric(withDec) : 0;
+  const withoutVal = withoutDec.length > 0 ? metric(withoutDec) : 0;
+
   return {
     columns: [
       { key: "with", label: "With Discussion", format: "percent" },
@@ -56,8 +59,8 @@ function computeDiscussionComparison(
       {
         label: metricLabel,
         values: {
-          with: withDec.length > 0 ? metric(withDec) : 0,
-          without: withoutDec.length > 0 ? metric(withoutDec) : 0,
+          with: Number.isNaN(withVal) ? 0 : withVal,
+          without: Number.isNaN(withoutVal) ? 0 : withoutVal,
         },
       },
     ],
@@ -86,8 +89,10 @@ const meanGuess: MetricExtractor = (decs) => {
 };
 
 const meanBid: MetricExtractor = (decs) => {
-  const bids = decs.map((d) => (d.content as { bid: number }).bid);
-  return bids.reduce((a, b) => a + b, 0) / bids.length / 150; // normalize to 0-1
+  const bids = decs
+    .map((d) => (d.content as { bid: number }).bid)
+    .filter((b): b is number => typeof b === "number" && !Number.isNaN(b));
+  return bids.length > 0 ? bids.reduce((a, b) => a + b, 0) / bids.length / 150 : 0;
 };
 
 // ── Exports per game type ───────────────────────────────────────────────────
@@ -100,12 +105,18 @@ export const discussionEffectComputers: Record<string, (sessions: ParsedSession[
   "colonel-blotto": (s) => {
     // For Blotto, we compute concentration as a proxy metric
     const conc: MetricExtractor = (decs) => {
-      const concentrations = decs.map((d) => {
-        const c = d.content as { battlefield1: number; battlefield2: number; battlefield3: number; battlefield4: number };
-        const sorted = [c.battlefield1, c.battlefield2, c.battlefield3, c.battlefield4].sort((a, b) => b - a);
-        return sorted[0] / 6; // max allocation as fraction of total
-      });
-      return concentrations.reduce((a, b) => a + b, 0) / concentrations.length;
+      const concentrations = decs
+        .map((d) => {
+          const c = d.content as { battlefield1: number; battlefield2: number; battlefield3: number; battlefield4: number };
+          const vals = [c.battlefield1, c.battlefield2, c.battlefield3, c.battlefield4];
+          if (vals.some((v) => typeof v !== "number" || Number.isNaN(v))) return null;
+          vals.sort((a, b) => b - a);
+          return vals[0] / 6; // max allocation as fraction of total
+        })
+        .filter((v): v is number => v !== null);
+      return concentrations.length > 0
+        ? concentrations.reduce((a, b) => a + b, 0) / concentrations.length
+        : 0;
     };
     return computeDiscussionComparison(s, conc, "Concentration (max alloc / total)");
   },

@@ -101,7 +101,7 @@ function computeR1MeanByModel(
 
   for (const { decision, model } of getDecisionsWithModel(sessions, 1)) {
     const val = extractor(decision);
-    if (val === null) continue;
+    if (val == null || Number.isNaN(val)) continue;
     const stat = modelSums.get(model) ?? { sum: 0, count: 0 };
     stat.sum += val;
     stat.count += 1;
