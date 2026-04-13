@@ -29,9 +29,8 @@ export function StatsLeaderboard({
 
   const rows = data.rows.slice(0, maxRows);
 
-  // Show Job / Tags columns when any row carries persona metadata
+  // Show Title column when any row carries persona source metadata
   const hasSource = rows.some((r) => r.meta?.source);
-  const hasTags = rows.some((r) => Array.isArray(r.meta?.tags) && (r.meta.tags as string[]).length > 0);
 
   return (
     <div className="flex flex-col gap-3">
@@ -79,15 +78,7 @@ export function StatsLeaderboard({
                   className="text-left px-3 py-2"
                   style={{ color: "var(--gt-t4)", fontWeight: 500 }}
                 >
-                  Job
-                </th>
-              )}
-              {hasTags && (
-                <th
-                  className="text-left px-3 py-2"
-                  style={{ color: "var(--gt-t4)", fontWeight: 500 }}
-                >
-                  Tags
+                  Title
                 </th>
               )}
               {data.columns.map((col) => (
@@ -126,25 +117,6 @@ export function StatsLeaderboard({
                     style={{ color: "var(--gt-t3)" }}
                   >
                     {(row.meta?.source as string) || "—"}
-                  </td>
-                )}
-                {hasTags && (
-                  <td className="px-3 py-2">
-                    <div className="flex flex-wrap gap-1">
-                      {((row.meta?.tags as string[]) ?? []).map((tag) => (
-                        <span
-                          key={tag}
-                          className="inline-block px-1.5 py-0.5 rounded text-[10px]"
-                          style={{
-                            background: "var(--gt-row-alt)",
-                            color: "var(--gt-t3)",
-                            border: "1px solid var(--gt-border)",
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
                   </td>
                 )}
                 {data.columns.map((col) => (
