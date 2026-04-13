@@ -5,10 +5,10 @@ import type { StatsData } from "../../lib/stats/types";
 import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, pctLabelFmt, SourceAttribution } from "../AcademicChart";
 
 const mockData = [
-  { round: "R1", human: 0.62, ai: 0.76 },
-  { round: "R2", human: 0.52, ai: 0.63 },
-  { round: "R3", human: 0.43, ai: 0.52 },
-  { round: "R4", human: 0.34, ai: 0.44 },
+  { round: "R1", human: 0.38, ai: 0.24 },
+  { round: "R2", human: 0.48, ai: 0.37 },
+  { round: "R3", human: 0.57, ai: 0.48 },
+  { round: "R4", human: 0.66, ai: 0.56 },
 ];
 
 function toChartData(agg?: StatsData) {
@@ -23,8 +23,8 @@ export function PrisonerDilemmaDistributionView({ aggregateData }: { aggregateDa
   return (
     <div className="p-6 flex flex-col gap-4">
       <ChartPanel
-        title="Cooperation Rate by Round"
-        subtitle="Does the end-game defection cascade emerge in AI personas?"
+        title="Betrayal Rate by Round"
+        subtitle="Do AI personas betray more as the endgame approaches?"
       >
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={toChartData(aggregateData)} margin={{ top: 20, right: 16, bottom: 8, left: 28 }} barCategoryGap="32%" barGap={4}>

@@ -33,19 +33,20 @@ const HUMAN_COL_TEMPLATE = (source: string) => ({
   format: "percent" as const,
 });
 
-// ── Prisoner's Dilemma: cooperation rate by round ───────────────────────────
+// ── Prisoner's Dilemma: betrayal rate by round ──────────────────────────────
 // Human: Dal Bo & Frechette 2011, AER — Easy treatment, 4-round finite horizon
+// Betrayal rate = 1 − cooperation rate
 
-const PD_HUMAN = [0.62, 0.52, 0.43, 0.34]; // R1–R4
+const PD_HUMAN = [0.38, 0.48, 0.57, 0.66]; // R1–R4 (defect rates)
 
 export function computePrisonerDilemma(sessions: ParsedSession[]): StatsData {
   const byRound = getDecisionsByRound(sessions);
   const rows = [1, 2, 3, 4].map((round, i) => {
     const decisions = byRound.get(round) ?? [];
-    const coopCount = decisions.filter(
-      (d) => (d.content as { action: string }).action === "cooperate",
+    const defectCount = decisions.filter(
+      (d) => (d.content as { action: string }).action === "defect",
     ).length;
-    const aiRate = decisions.length > 0 ? coopCount / decisions.length : 0;
+    const aiRate = decisions.length > 0 ? defectCount / decisions.length : 0;
     return { label: `R${round}`, values: { ai: aiRate, human: PD_HUMAN[i] } };
   });
 
