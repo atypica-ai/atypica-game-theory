@@ -56,6 +56,7 @@ export function StatsLeaderboard({
   if (data.rows.length === 0) return null;
 
   const hasTitle = rows.some((r) => r.meta?.title);
+  const hasTags = rows.some((r) => Array.isArray(r.meta?.tags) && (r.meta.tags as string[]).length > 0);
 
   return (
     <div className="flex flex-col gap-3">
@@ -132,6 +133,14 @@ export function StatsLeaderboard({
                   Title
                 </th>
               )}
+              {hasTags && (
+                <th
+                  className="text-left px-3 py-2"
+                  style={{ color: "var(--gt-t4)", fontWeight: 500 }}
+                >
+                  Tags
+                </th>
+              )}
               {data.columns.map((col) => (
                 <th
                   key={col.key}
@@ -147,7 +156,7 @@ export function StatsLeaderboard({
             {rows.length === 0 ? (
               <tr>
                 <td
-                  colSpan={2 + (hasTitle ? 1 : 0) + data.columns.length}
+                  colSpan={2 + (hasTitle ? 1 : 0) + (hasTags ? 1 : 0) + data.columns.length}
                   className="px-3 py-8 text-center"
                   style={{ color: "var(--gt-t4)" }}
                 >
@@ -179,6 +188,25 @@ export function StatsLeaderboard({
                       style={{ color: "var(--gt-t3)" }}
                     >
                       {(row.meta?.title as string) || "—"}
+                    </td>
+                  )}
+                  {hasTags && (
+                    <td className="px-3 py-2">
+                      <div className="flex flex-wrap gap-1">
+                        {((row.meta?.tags as string[]) ?? []).map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-block px-1.5 py-0.5 rounded text-[10px]"
+                            style={{
+                              background: "var(--gt-row-alt)",
+                              color: "var(--gt-t3)",
+                              border: "1px solid var(--gt-border)",
+                            }}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
                     </td>
                   )}
                   {data.columns.map((col) => (
