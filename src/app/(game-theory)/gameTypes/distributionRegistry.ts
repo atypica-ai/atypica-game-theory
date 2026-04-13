@@ -10,6 +10,7 @@ import { VolunteerDilemmaDistributionView } from "./volunteerDilemma/Distributio
 import { PublicGoodsDistributionView } from "./publicGoods/DistributionView";
 import { ColonelBlottoDistributionView } from "./colonelBlotto/DistributionView";
 import { TrolleyProblemDistributionView } from "./trolleyProblem/DistributionView";
+import { UltimatumGameDistributionView } from "./ultimatumGame/DistributionView";
 
 export type { GameSessionStats };
 
@@ -31,4 +32,5 @@ export const distributionRegistry: Record<string, ComponentType<DistributionView
   "public-goods":     PublicGoodsDistributionView,
   "colonel-blotto":   ColonelBlottoDistributionView,
   "trolley-problem":  TrolleyProblemDistributionView,
+  "ultimatum-game":   UltimatumGameDistributionView,
 };
