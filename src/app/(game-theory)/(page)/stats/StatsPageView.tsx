@@ -5,6 +5,8 @@ import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import type { StatsData } from "@/app/(game-theory)/lib/stats/types";
 import { StatsBarChart } from "@/app/(game-theory)/components/stats/StatsBarChart";
 import { ModelLeaderboard, StatsLeaderboard } from "@/app/(game-theory)/components/stats/StatsLeaderboard";
+import { CompactModelGrid } from "@/app/(game-theory)/components/stats/CompactModelGrid";
+import { CompactDiscussionGrid } from "@/app/(game-theory)/components/stats/CompactDiscussionGrid";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -211,24 +213,11 @@ export function StatsPageView({
               >
                 Key behavioral metric per game, broken down by model
               </p>
-              <div
-                className="grid gap-6"
-                style={{
-                  gridTemplateColumns:
-                    "repeat(auto-fill, minmax(min(100%, 520px), 1fr))",
-                }}
-              >
-                {gameTypes.map((gt) => {
-                  const key = `model-comparison:${gt}`;
-                  const data = modelComparisons[key];
-                  if (!data || data.rows.length === 0) return null;
-                  return (
-                    <Card key={gt}>
-                      <StatsBarChart data={data} title={getDisplayName(gt)} height={240} />
-                    </Card>
-                  );
-                })}
-              </div>
+              <CompactModelGrid
+                modelComparisons={modelComparisons}
+                gameTypes={gameTypes}
+                getDisplayName={getDisplayName}
+              />
             </section>
           )}
 
@@ -265,30 +254,13 @@ export function StatsPageView({
                     className="text-[11px] mb-4"
                     style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}
                   >
-                    With pre-decision discussion vs without
+                    Does pre-decision discussion change behavior?
                   </p>
-                  <div
-                    className="grid gap-6"
-                    style={{
-                      gridTemplateColumns:
-                        "repeat(auto-fill, minmax(min(100%, 520px), 1fr))",
-                    }}
-                  >
-                    {discussionGames.map((gt) => {
-                      const key = `discussion-effect:${gt}`;
-                      const data = discussionEffects[key];
-                      if (!data || data.rows.length === 0) return null;
-                      return (
-                        <Card key={gt}>
-                          <StatsBarChart
-                            data={data}
-                            title={getDisplayName(gt)}
-                            height={200}
-                          />
-                        </Card>
-                      );
-                    })}
-                  </div>
+                  <CompactDiscussionGrid
+                    discussionEffects={discussionEffects}
+                    discussionGames={discussionGames}
+                    getDisplayName={getDisplayName}
+                  />
                 </div>
               )}
 
