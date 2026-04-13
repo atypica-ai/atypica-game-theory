@@ -168,11 +168,19 @@ export function computePublicGoods(sessions: ParsedSession[]): StatsData {
   };
 }
 
-// ── Ultimatum Game: offer distribution (Round 1 only) ───────────────────────
-// Human: Guth et al. 1982 — proposer offers
+// ── Ultimatum Game: offer distribution + rejection rate ─────────────────────
+// Two panels in one StatsData:
+//   ai_offer / human_offer  — proposer's offer distribution
+//   ai_reject / human_reject — responder's rejection rate per offer bin
+//
+// Human offer distribution: Andreoni, Castillo & Petrie (2003) AER 93(3)
+//   >50% equal splits, 12% subgame-perfect (near-0), avg offer ≈ 38% to responder
+// Human rejection rates: Yamagishi et al. (2012) PNAS 109(52)
+//   Offers 0–19%: 53%, 20–29%: 45%, 30–39%: 21%, 40–49%: 8%, 50%+: 3%
 
 const UG_BINS = ["0–19%", "20–29%", "30–39%", "40–49%", "50%+"];
-const UG_HUMAN = [0.05, 0.08, 0.15, 0.35, 0.37];
+const UG_HUMAN_OFFER  = [0.12, 0.05, 0.08, 0.25, 0.50];
+const UG_HUMAN_REJECT = [0.53, 0.45, 0.21, 0.08, 0.03];
 
 function ugBinIndex(proposerShare: number): number {
   // proposerShare = what proposer keeps. Offer to responder = 100 - proposerShare.
@@ -185,25 +193,57 @@ function ugBinIndex(proposerShare: number): number {
 }
 
 export function computeUltimatumGame(sessions: ParsedSession[]): StatsData {
-  const r1 = getDecisions(sessions, 1);
-  const counts = new Array(5).fill(0) as number[];
-  let proposerCount = 0;
+  const offerCounts  = new Array(5).fill(0) as number[];
+  const rejectCounts = new Array(5).fill(0) as number[];
+  const pairCounts   = new Array(5).fill(0) as number[];
+  let proposerTotal = 0;
 
-  for (const d of r1) {
-    const content = d.content as { action: string; proposerShare?: number };
-    if (content.action !== "propose" || content.proposerShare === undefined) continue;
-    counts[ugBinIndex(content.proposerShare)] += 1;
-    proposerCount += 1;
+  for (const session of sessions) {
+    const r1 = session.timeline.filter(
+      (e): e is PersonaDecisionEvent => e.type === "persona-decision" && e.round === 1,
+    );
+
+    const proposerEvent = r1.find(
+      (d) => (d.content as { action: string }).action === "propose",
+    );
+    const responderEvent = r1.find((d) => {
+      const a = (d.content as { action: string }).action;
+      return a === "accept" || a === "reject";
+    });
+
+    if (!proposerEvent) continue;
+    const pContent = proposerEvent.content as { action: string; proposerShare?: number };
+    if (pContent.proposerShare === undefined) continue;
+
+    const bin = ugBinIndex(pContent.proposerShare);
+    offerCounts[bin]++;
+    proposerTotal++;
+
+    if (responderEvent) {
+      pairCounts[bin]++;
+      if ((responderEvent.content as { action: string }).action === "reject") {
+        rejectCounts[bin]++;
+      }
+    }
   }
 
-  const total = proposerCount || 1;
-  const rows = UG_BINS.map((bin, i) => ({
-    label: bin,
-    values: { ai: counts[i] / total, human: UG_HUMAN[i] },
+  const rows = UG_BINS.map((label, i) => ({
+    label,
+    values: {
+      ai_offer:     proposerTotal     > 0 ? offerCounts[i]  / proposerTotal  : 0,
+      human_offer:  UG_HUMAN_OFFER[i],
+      ai_reject:    pairCounts[i]     > 0 ? rejectCounts[i] / pairCounts[i]  : 0,
+      human_reject: UG_HUMAN_REJECT[i],
+    },
   }));
 
   return {
-    columns: [AI_COL, HUMAN_COL_TEMPLATE("Guth et al. 1982")],
+    columns: [
+      { key: "ai_offer",     label: "AI Personas (offer %)",         format: "percent" },
+      { key: "human_offer",  label: "Human offer — Andreoni 2003",   format: "percent" },
+      { key: "ai_reject",    label: "AI Personas (rejection rate)",  format: "percent" },
+      { key: "human_reject", label: "Human rejection — PNAS 2012",   format: "percent" },
+    ],
     rows,
   };
 }
