@@ -50,10 +50,6 @@ const pct = (v: number) => `${Math.round(v * 100)}%`;
 const pctLabelFmt = (v: unknown) =>
   v == null || typeof v === "boolean" ? "" : `${Math.round(Number(v) * 100)}%`;
 
-// Strip trailing "%" from bin labels (e.g. "0–19%" → "0–19", "50%+" → "50+")
-// so the X-axis reads as plain numbers; context is given by the label below.
-const stripPct = (v: string) => v.replace(/%$/, "").replace("%+", "+");
-
 // ── Layout helpers ────────────────────────────────────────────────────────────
 
 function YLabel({ text }: { text: string }) {
@@ -99,12 +95,11 @@ function OfferTooltip(raw: unknown) {
 
   const aiPct    = Math.round((payload.find((p) => p.dataKey === "ai")?.value    ?? 0) * 100);
   const humanPct = Math.round((payload.find((p) => p.dataKey === "human")?.value ?? 0) * 100);
-  const pts = stripPct(label ?? "");
 
   return (
     <div style={TT}>
       <p style={{ color: "var(--gt-t2)", fontWeight: 600, marginBottom: 2 }}>
-        Offered {pts} pts of its money
+        Offered {label} of its wealth
       </p>
       <div style={HR} />
       <p style={{ color: AI_COLOR,    marginBottom: 2 }}>AI:    {aiPct}% of games</p>
@@ -131,12 +126,11 @@ function RejectTooltip(raw: unknown) {
 
   const aiPct    = Math.round((payload.find((p) => p.dataKey === "ai")?.value    ?? 0) * 100);
   const humanPct = Math.round((payload.find((p) => p.dataKey === "human")?.value ?? 0) * 100);
-  const pts = stripPct(label ?? "");
 
   return (
     <div style={TT}>
       <p style={{ color: "var(--gt-t2)", fontWeight: 600, marginBottom: 2 }}>
-        Received {pts} pts — said no…
+        Rejected offer of {label} of their wealth
       </p>
       <div style={HR} />
       <p style={{ color: AI_COLOR,    marginBottom: 2 }}>AI:    {aiPct}% of the time</p>
