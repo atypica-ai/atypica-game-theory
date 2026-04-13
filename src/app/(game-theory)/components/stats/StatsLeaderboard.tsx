@@ -120,67 +120,38 @@ export function ModelLeaderboard({
         <table className="w-full text-left" style={{ borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: "var(--gt-row-alt)" }}>
-              <th
-                className="px-4 py-3 border-b"
-                style={{
-                  borderColor: "var(--gt-border)",
-                  fontSize: 10,
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.025em",
-                  color: "var(--gt-t3)",
-                  width: 56,
-                }}
-              >
-                Rank
-              </th>
-              <th
-                className="px-4 py-3 border-b"
-                style={{
-                  borderColor: "var(--gt-border)",
-                  fontSize: 10,
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.025em",
-                  color: "var(--gt-t3)",
-                  width: 220,
-                }}
-              >
-                Model
-              </th>
-              <th
-                className="px-4 py-3 border-b"
-                style={{
-                  borderColor: "var(--gt-border)",
-                  fontSize: 10,
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.025em",
-                  color: "var(--gt-t3)",
-                }}
-              >
-                Win Rate Performance
-              </th>
-              <th
-                className="px-4 py-3 border-b text-right"
-                style={{
-                  borderColor: "var(--gt-border)",
-                  fontSize: 10,
-                  fontWeight: 500,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.025em",
-                  color: "var(--gt-t3)",
-                  width: 120,
-                }}
-              >
-                Avg. Payoff
-              </th>
+              {(
+                [
+                  { label: "Rank", width: 52, align: "left" as const },
+                  { label: "Model", width: 200, align: "left" as const },
+                  { label: "Win Rate", align: "left" as const },
+                  { label: "Avg. Payoff", width: 100, align: "right" as const },
+                  { label: "Games", width: 72, align: "right" as const },
+                ] as const
+              ).map((col) => (
+                <th
+                  key={col.label}
+                  className={`px-4 py-3 border-b text-${col.align}`}
+                  style={{
+                    borderColor: "var(--gt-border)",
+                    fontSize: 10,
+                    fontWeight: 500,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.025em",
+                    color: "var(--gt-t3)",
+                    ...("width" in col ? { width: col.width } : {}),
+                  }}
+                >
+                  {col.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="text-sm">
             {rows.map((row, i) => {
               const rate = row.values.winRate ?? 0;
               const avgPayoff = (row.meta?.avgPayoff as number) ?? 0;
+              const games = (row.meta?.gamesPlayed as number) ?? 0;
               return (
                 <tr
                   key={row.label}
@@ -191,12 +162,14 @@ export function ModelLeaderboard({
                   onMouseEnter={(e) => (e.currentTarget.style.background = "var(--gt-row-alt)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                 >
+                  {/* Rank */}
                   <td
                     className="px-4 py-3"
                     style={{ fontFamily: TICK_FONT, color: "var(--gt-t4)", fontSize: 12 }}
                   >
                     {String(i + 1).padStart(2, "0")}
                   </td>
+                  {/* Model */}
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
                       <span
@@ -217,8 +190,9 @@ export function ModelLeaderboard({
                       </span>
                     </div>
                   </td>
+                  {/* Win Rate — primary metric, gets the bar */}
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <div
                         className="flex-1 h-[12px] overflow-hidden"
                         style={{
@@ -240,7 +214,7 @@ export function ModelLeaderboard({
                         style={{
                           fontFamily: TICK_FONT,
                           fontSize: 12,
-                          width: 40,
+                          width: 36,
                           color: "var(--gt-t1)",
                         }}
                       >
@@ -248,11 +222,19 @@ export function ModelLeaderboard({
                       </span>
                     </div>
                   </td>
+                  {/* Avg. Payoff — secondary metric */}
                   <td
                     className="px-4 py-3 text-right tabular-nums"
-                    style={{ fontFamily: TICK_FONT, color: "var(--gt-t2)", fontSize: 13 }}
+                    style={{ fontFamily: TICK_FONT, color: "var(--gt-t2)", fontSize: 12 }}
                   >
                     {avgPayoff.toFixed(1)}
+                  </td>
+                  {/* Games — tertiary, de-emphasized */}
+                  <td
+                    className="px-4 py-3 text-right tabular-nums"
+                    style={{ fontFamily: TICK_FONT, color: "var(--gt-t4)", fontSize: 11 }}
+                  >
+                    {games}
                   </td>
                 </tr>
               );
