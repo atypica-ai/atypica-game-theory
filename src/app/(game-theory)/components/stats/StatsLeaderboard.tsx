@@ -1,5 +1,6 @@
 "use client";
 
+import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import type { StatsData } from "../../lib/stats/types";
 import { TICK_FONT } from "../../gameTypes/AcademicChart";
 
@@ -92,7 +93,12 @@ export function StatsLeaderboard({
                   {i + 1}
                 </td>
                 <td className="px-3 py-2 font-[500]" style={{ color: "var(--gt-t1)" }}>
-                  {row.label}
+                  <div className="flex items-center gap-2">
+                    {row.meta?.personaId != null && (
+                      <HippyGhostAvatar seed={row.meta.personaId as number} className="size-5 rounded-full shrink-0" />
+                    )}
+                    {row.label}
+                  </div>
                 </td>
                 {data.columns.map((col) => (
                   <td
