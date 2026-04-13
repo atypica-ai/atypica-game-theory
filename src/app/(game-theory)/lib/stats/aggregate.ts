@@ -93,7 +93,7 @@ export async function loadPersonaMeta(personaIds: number[]): Promise<Map<number,
 
   const personas = await prisma.persona.findMany({
     where: { id: { in: personaIds } },
-    select: { id: true, name: true, tags: true },
+    select: { id: true, name: true, source: true, tags: true },
   });
 
   const map = new Map<number, PersonaMeta>();
@@ -101,6 +101,7 @@ export async function loadPersonaMeta(personaIds: number[]): Promise<Map<number,
     map.set(p.id, {
       id: p.id,
       name: p.name,
+      source: p.source,
       tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
     });
   }

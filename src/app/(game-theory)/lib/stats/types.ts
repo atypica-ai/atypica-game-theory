@@ -65,6 +65,7 @@ export interface WinRecord {
 export interface PersonaMeta {
   id: number;
   name: string;
+  source: string;
   tags: string[];
   model?: LLMModelName;
 }
