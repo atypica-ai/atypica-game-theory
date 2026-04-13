@@ -97,14 +97,6 @@ export function ModelLeaderboard({
             Model Performance Leaderboard
           </h2>
         </div>
-        <TogglePills
-          options={[
-            { value: "winrate", label: "Win Rate" },
-            { value: "payoff", label: "Avg. Payoff" },
-          ]}
-          active="winrate"
-          onChange={() => {}}
-        />
       </div>
 
       {/* Table */}
