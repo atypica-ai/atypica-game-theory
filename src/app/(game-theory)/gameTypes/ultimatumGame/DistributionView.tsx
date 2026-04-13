@@ -69,17 +69,11 @@ function YLabel({ text }: { text: string }) {
   );
 }
 
-function XFooter({ center, left, right }: { center: string; left: string; right: string }) {
+function XAxisLabel({ children }: { children: string }) {
   return (
-    <div className="mt-1">
-      <p className="text-center text-[9px]" style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}>
-        {center}
-      </p>
-      <div className="flex items-center justify-between px-6 mt-0.5">
-        <span className="text-[9px]" style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}>← {left}</span>
-        <span className="text-[9px]" style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}>{right} →</span>
-      </div>
-    </div>
+    <p className="text-center text-[9px] mt-1" style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}>
+      {children}
+    </p>
   );
 }
 
@@ -187,13 +181,7 @@ export function UltimatumGameDistributionView({ aggregateData }: { aggregateData
                 barGap={4}
               >
                 <CartesianGrid vertical={false} stroke={GRID_COLOR} strokeWidth={0.75} />
-                <XAxis
-                  dataKey="bin"
-                  tickFormatter={stripPct}
-                  tick={axisTickProps}
-                  axisLine={false}
-                  tickLine={false}
-                />
+                <XAxis dataKey="bin" tick={axisTickProps} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={pct} domain={[0, 0.65]} tickCount={5} tick={axisTickProps} axisLine={false} tickLine={false} width={28} />
                 <Tooltip content={<OfferTooltip />} cursor={{ fill: GRID_COLOR, fillOpacity: 0.35 }} />
                 <Bar dataKey="human" name="Human" fill={HUMAN_COLOR} fillOpacity={0.80} radius={[3, 3, 0, 0]}>
@@ -204,7 +192,7 @@ export function UltimatumGameDistributionView({ aggregateData }: { aggregateData
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <XFooter center="pts offered out of 100" left="kept almost all" right="gave half" />
+            <XAxisLabel>% of wealth offered to other player</XAxisLabel>
           </div>
         </div>
       </div>
@@ -215,7 +203,7 @@ export function UltimatumGameDistributionView({ aggregateData }: { aggregateData
           className="text-[11px] font-[600] leading-tight mb-0.5"
           style={{ color: "var(--gt-t2)", fontFamily: "var(--gt-font-outfit), system-ui", letterSpacing: "var(--gt-tracking-tight)" }}
         >
-          Does AI Say No to an Unfair Deal?
+          Does AI Have Pride? Rejection Rate by Offer Received
         </p>
         <p className="text-[10px] mb-3" style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}>
           Saying no means both walk away empty. 53% of humans still do it — pride over profit.
@@ -231,26 +219,10 @@ export function UltimatumGameDistributionView({ aggregateData }: { aggregateData
                 barGap={4}
               >
                 <CartesianGrid vertical={false} stroke={GRID_COLOR} strokeWidth={0.75} />
-                <XAxis
-                  dataKey="bin"
-                  tickFormatter={stripPct}
-                  tick={axisTickProps}
-                  axisLine={false}
-                  tickLine={false}
-                />
+                <XAxis dataKey="bin" tick={axisTickProps} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={pct} domain={[0, 0.7]} tickCount={5} tick={axisTickProps} axisLine={false} tickLine={false} width={28} />
                 <Tooltip content={<RejectTooltip />} cursor={{ fill: GRID_COLOR, fillOpacity: 0.35 }} />
-                <ReferenceLine
-                  y={0}
-                  stroke="hsl(30 8% 68%)"
-                  strokeDasharray="4 3"
-                  strokeWidth={1}
-                  label={{
-                    value: "rational: never say no",
-                    position: "insideBottomRight",
-                    style: { fontSize: 8, fontFamily: TICK_FONT, fill: "hsl(30 8% 52%)" },
-                  }}
-                />
+                <ReferenceLine y={0} stroke="hsl(30 8% 68%)" strokeDasharray="4 3" strokeWidth={1} />
                 <Bar dataKey="human" name="Human" fill={HUMAN_COLOR} fillOpacity={0.80} radius={[3, 3, 0, 0]}>
                   <LabelList dataKey="human" position="top" formatter={pctLabelFmt} style={{ fontSize: 9, fontFamily: "IBMPlexMono,monospace", fill: HUMAN_COLOR }} />
                 </Bar>
@@ -259,7 +231,7 @@ export function UltimatumGameDistributionView({ aggregateData }: { aggregateData
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <XFooter center="pts offered out of 100" left="unfair offer" right="fair offer" />
+            <XAxisLabel>% of wealth offered to other player</XAxisLabel>
           </div>
         </div>
       </div>
