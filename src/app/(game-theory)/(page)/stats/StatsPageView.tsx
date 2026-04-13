@@ -4,7 +4,7 @@ import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import type { StatsData } from "@/app/(game-theory)/lib/stats/types";
 import { StatsBarChart } from "@/app/(game-theory)/components/stats/StatsBarChart";
-import { StatsLeaderboard } from "@/app/(game-theory)/components/stats/StatsLeaderboard";
+import { ModelLeaderboard, StatsLeaderboard } from "@/app/(game-theory)/components/stats/StatsLeaderboard";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -53,54 +53,6 @@ function SectionNav({ items, activeId }: { items: NavItem[]; activeId: string })
         })}
       </div>
     </nav>
-  );
-}
-
-/* ── Compact horizontal bar display (for small datasets like 3 models) ───────── */
-
-function HorizontalWinRate({ data }: { data: StatsData }) {
-  return (
-    <div className="flex flex-col gap-3">
-      {data.rows.map((row, i) => {
-        const rate = row.values.winRate ?? 0;
-        return (
-          <div key={row.label} className="flex items-center gap-3">
-            <span
-              className="text-[11px] w-4 text-right tabular-nums shrink-0"
-              style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}
-            >
-              {i + 1}
-            </span>
-            <span
-              className="text-[13px] font-[500] w-[120px] sm:w-[140px] shrink-0 truncate"
-              style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-            >
-              {row.label}
-            </span>
-            <div
-              className="flex-1 h-[20px] relative overflow-hidden"
-              style={{ background: "var(--gt-border)", borderRadius: "0.25rem" }}
-            >
-              <div
-                className="absolute inset-y-0 left-0"
-                style={{
-                  width: `${rate * 100}%`,
-                  background: "var(--gt-blue)",
-                  borderRadius: "0.25rem",
-                  opacity: 0.75,
-                }}
-              />
-            </div>
-            <span
-              className="text-[15px] font-[600] tabular-nums w-[48px] text-right shrink-0"
-              style={{ color: "var(--gt-t1)", fontFamily: TICK_FONT }}
-            >
-              {Math.round(rate * 100)}%
-            </span>
-          </div>
-        );
-      })}
-    </div>
   );
 }
 
@@ -228,52 +180,18 @@ export function StatsPageView({
           {/* ── 1. MODEL PERFORMANCE (hero) ───────────────────────────────── */}
           {hasModels && (
             <section id="models" className="scroll-mt-28">
-              <p className="label-caps mb-1">Model Performance</p>
-              <h2
-                className="text-[20px] font-[600] mb-1"
-                style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-              >
-                Overall Win Rate by Model
-              </h2>
-              <p
-                className="text-[12px] mb-6"
-                style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}
-              >
-                Cross-game win rate, normalized per game type
-                {modelCount > 0 && ` · ${modelCount} models compared`}
-              </p>
-              <Card>
-                <HorizontalWinRate data={modelWinRate!} />
-              </Card>
+              <ModelLeaderboard data={modelWinRate!} />
             </section>
           )}
 
           {/* ── 2. RANKINGS ───────────────────────────────────────────────── */}
-          {hasRankings && (
+          {hasRankings && leaderboard && (
             <section id="rankings" className="scroll-mt-28">
-              <p className="label-caps mb-1">Rankings</p>
-              <h2
-                className="text-[20px] font-[600] mb-1"
-                style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-              >
-                Leaderboards
-              </h2>
-              <p
-                className="text-[12px] mb-6"
-                style={{ color: "var(--gt-t4)", fontFamily: TICK_FONT }}
-              >
-                Ranked by win rate across all games played
-                {personaCount > 0 && ` · ${personaCount} personas tracked`}
-              </p>
-              {leaderboard && (
-                <Card>
-                  <StatsLeaderboard
-                    data={leaderboard}
-                    subtitle={`${personaCount} personas tracked · min 2 games per game type`}
-                    filterable
-                  />
-                </Card>
-              )}
+              <StatsLeaderboard
+                data={leaderboard}
+                subtitle={`${personaCount} personas tracked · min 2 games per game type`}
+                filterable
+              />
             </section>
           )}
 
