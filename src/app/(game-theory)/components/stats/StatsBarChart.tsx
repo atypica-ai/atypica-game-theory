@@ -3,16 +3,16 @@
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { StatsData } from "../../lib/stats/types";
 import { axisTickProps, ChartPanel, GRID_COLOR, makeTooltip, TICK_FONT } from "../../gameTypes/AcademicChart";
+import { getModelColor, MODEL_PALETTE } from "../../lib/modelColors";
 
-// Muted academic palette — lower saturation, warm-compatible
-const SERIES_COLORS = [
-  "hsl(208 55% 52%)", // steel blue
-  "hsl(25 50% 52%)",  // sienna
-  "hsl(155 35% 46%)", // sage
-  "hsl(270 32% 56%)", // lavender
-  "hsl(0 40% 52%)",   // dusty rose
-  "hsl(190 38% 46%)", // teal
-];
+/** Resolve color for a column: use stable model color if the key looks like a model, else fall back to palette. */
+function colColor(col: { key: string; label: string }, index: number): string {
+  // Column keys from model-comparison stats are model names (e.g. "gemini-3-flash")
+  // Try the key first, then the label — getModelColor returns a deterministic fallback for unknown names
+  if (col.key.includes("-") || col.key.includes(".")) return getModelColor(col.key);
+  if (col.label.includes("-") || col.label.includes(".")) return getModelColor(col.label);
+  return MODEL_PALETTE[index % MODEL_PALETTE.length];
+}
 
 function formatValue(v: number, format?: string): string {
   if (format === "percent") return `${Math.round(v * 100)}%`;
@@ -94,7 +94,7 @@ export function StatsBarChart({
               key={col.key}
               dataKey={col.key}
               name={col.label}
-              fill={SERIES_COLORS[i % SERIES_COLORS.length]}
+              fill={colColor(col, i)}
               fillOpacity={0.85}
               radius={[3, 3, 0, 0]}
             >
@@ -103,7 +103,7 @@ export function StatsBarChart({
                   dataKey={col.key}
                   position="top"
                   formatter={labelFmt}
-                  style={{ fontSize: 9, fontFamily: TICK_FONT, fill: SERIES_COLORS[i % SERIES_COLORS.length] }}
+                  style={{ fontSize: 9, fontFamily: TICK_FONT, fill: colColor(col, i) }}
                 />
               )}
             </Bar>
@@ -120,7 +120,7 @@ export function StatsBarChart({
                   width: 14,
                   height: 3,
                   borderRadius: 2,
-                  backgroundColor: SERIES_COLORS[i % SERIES_COLORS.length],
+                  backgroundColor: colColor(col, i),
                   flexShrink: 0,
                 }}
               />
