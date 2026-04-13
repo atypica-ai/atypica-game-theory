@@ -13,7 +13,7 @@ function modelLabel(model: string): string {
     "claude-sonnet-4-5": "Claude Sonnet 4.5",
     "gemini-3-flash": "Gemini Flash",
     "gemini-2.5-flash": "Gemini 2.5 Flash",
-    "gpt-4.1-mini": "GPT 4.1 Mini",
+    "gpt-4.1-mini": "GPT Mini",
     "gpt-5-mini": "GPT 5 Mini",
     "gpt-4o": "GPT 4o",
   };
