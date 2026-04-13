@@ -2,18 +2,51 @@ import { computeWinRecords, getPersonaModel } from "./aggregate";
 import type { ParsedSession, StatsData, PersonaMeta } from "./types";
 import { HUMAN_PLAYER_ID } from "../../types";
 
+/** Minimum games per game type for a persona to be eligible */
+const MIN_GAMES_PER_TYPE = 2;
+
 /**
- * Overall leaderboard — ranks all participants by total win rate.
- * Includes both AI personas and human players.
+ * Build the set of persona IDs that have at least MIN_GAMES_PER_TYPE games
+ * in every game type they participated in.
+ */
+function eligiblePersonaIds(sessions: ParsedSession[]): Set<number> {
+  // personaId → gameType → game count
+  const counts = new Map<number, Map<string, number>>();
+
+  for (const s of sessions) {
+    for (const pid of s.personaIds) {
+      let byType = counts.get(pid);
+      if (!byType) { byType = new Map(); counts.set(pid, byType); }
+      byType.set(s.gameType, (byType.get(s.gameType) ?? 0) + 1);
+    }
+  }
+
+  const eligible = new Set<number>();
+  for (const [pid, byType] of counts) {
+    const allQualified = [...byType.values()].every((n) => n >= MIN_GAMES_PER_TYPE);
+    if (allQualified) eligible.add(pid);
+  }
+  return eligible;
+}
+
+/**
+ * Unified leaderboard — ranks all participants by win rate.
+ *
+ * Eligibility: a persona must have >= 2 games in each game type they
+ * participated in. Win rate is computed across all eligible sessions.
+ *
+ * Each row carries `meta.isHuman` so the frontend can filter client-side
+ * between All / AI Only / Human Only.
  */
 export function computeOverallLeaderboard(
   sessions: ParsedSession[],
   personaMeta: Map<number, PersonaMeta>,
 ): StatsData {
+  const eligible = eligiblePersonaIds(sessions);
   const winRecords = computeWinRecords(sessions);
 
   const rows = [...winRecords.entries()]
-    .filter(([, wr]) => wr.games >= 2) // minimum 2 games for meaningful ranking
+    .filter(([pid]) => eligible.has(pid))
     .map(([pid, wr]) => {
       const meta = personaMeta.get(pid);
       const isHuman = pid === HUMAN_PLAYER_ID;
@@ -65,21 +98,5 @@ export function computeOverallLeaderboard(
   return {
     columns: [{ key: "winRate", label: "Win Rate", format: "percent" }],
     rows,
-  };
-}
-
-/**
- * Persona-only leaderboard — AI personas ranked by win rate.
- * Adds model and tags as metadata.
- */
-export function computePersonaLeaderboard(
-  sessions: ParsedSession[],
-  personaMeta: Map<number, PersonaMeta>,
-): StatsData {
-  // Filter out human sessions for persona-only ranking
-  const result = computeOverallLeaderboard(sessions, personaMeta);
-  return {
-    ...result,
-    rows: result.rows.filter((r) => !(r.meta?.isHuman)),
   };
 }

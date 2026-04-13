@@ -127,8 +127,7 @@ export function StatsPageView({
   modelWinRate,
   modelComparisons,
   discussionEffects,
-  overallLeaderboard,
-  personaLeaderboard,
+  leaderboard,
   tagWinRate,
   gameTypes,
   discussionGames,
@@ -136,15 +135,14 @@ export function StatsPageView({
   modelWinRate: StatsData | null;
   modelComparisons: Record<string, StatsData>;
   discussionEffects: Record<string, StatsData>;
-  overallLeaderboard: StatsData | null;
-  personaLeaderboard: StatsData | null;
+  leaderboard: StatsData | null;
   tagWinRate: StatsData | null;
   gameTypes: string[];
   discussionGames: string[];
 }) {
   /* Which sections have data? */
   const hasModels = !!modelWinRate;
-  const hasRankings = !!(overallLeaderboard || personaLeaderboard);
+  const hasRankings = !!leaderboard;
   const hasGames = Object.keys(modelComparisons).length > 0;
   const hasDiscussion = Object.keys(discussionEffects).length > 0;
   const hasTags = !!(tagWinRate && tagWinRate.rows.length > 0);
@@ -188,7 +186,7 @@ export function StatsPageView({
 
   /* Derived counts for subtitles */
   const modelCount = modelWinRate?.rows.length ?? 0;
-  const personaCount = personaLeaderboard?.rows.length ?? 0;
+  const personaCount = leaderboard?.rows.filter((r) => !r.meta?.isHuman).length ?? 0;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
@@ -267,32 +265,15 @@ export function StatsPageView({
                 Ranked by win rate across all games played
                 {personaCount > 0 && ` · ${personaCount} personas tracked`}
               </p>
-              <div
-                className="grid gap-6"
-                style={{
-                  gridTemplateColumns:
-                    "repeat(auto-fill, minmax(min(100%, 520px), 1fr))",
-                }}
-              >
-                {overallLeaderboard && (
-                  <Card>
-                    <StatsLeaderboard
-                      data={overallLeaderboard}
-                      title="Overall Rankings"
-                      subtitle="All participants (AI + human), min 2 games"
-                    />
-                  </Card>
-                )}
-                {personaLeaderboard && (
-                  <Card>
-                    <StatsLeaderboard
-                      data={personaLeaderboard}
-                      title="AI Persona Rankings"
-                      subtitle="AI personas only, ranked by win rate"
-                    />
-                  </Card>
-                )}
-              </div>
+              {leaderboard && (
+                <Card>
+                  <StatsLeaderboard
+                    data={leaderboard}
+                    subtitle={`${personaCount} personas tracked · min 2 games per game type`}
+                    filterable
+                  />
+                </Card>
+              )}
             </section>
           )}
 

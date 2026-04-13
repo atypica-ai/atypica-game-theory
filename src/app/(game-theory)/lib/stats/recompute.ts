@@ -7,7 +7,7 @@ import { distributionComputers } from "./distribution";
 import { modelComparisonComputers } from "./modelComparison";
 import { computeModelWinRate } from "./modelWinRate";
 import { discussionEffectComputers } from "./discussionEffect";
-import { computeOverallLeaderboard, computePersonaLeaderboard } from "./leaderboard";
+import { computeOverallLeaderboard } from "./leaderboard";
 import { computeTagWinRate } from "./tagWinRate";
 import { statsDataSchema } from "./types";
 import type { StatsData } from "./types";
@@ -125,15 +125,6 @@ export async function recomputeAllStats(): Promise<RecomputeResult> {
     await upsertStat("leaderboard:overall", data, allSessions.length);
   } catch (err) {
     const msg = `leaderboard:overall failed: ${(err as Error).message}`;
-    logger.error({ msg });
-    errors.push(msg);
-  }
-
-  try {
-    const data = computePersonaLeaderboard(allSessions, personaMeta);
-    await upsertStat("leaderboard:persona", data, allSessions.length);
-  } catch (err) {
-    const msg = `leaderboard:persona failed: ${(err as Error).message}`;
     logger.error({ msg });
     errors.push(msg);
   }

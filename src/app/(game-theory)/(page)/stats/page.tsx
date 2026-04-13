@@ -18,15 +18,13 @@ export default async function StatsPage() {
     modelWinRate,
     modelCompBatch,
     discussionBatch,
-    overallLeaderboard,
-    personaLeaderboard,
+    leaderboard,
     tagWinRate,
   ] = await Promise.all([
     fetchGameStats("model-winrate:overall"),
     fetchGameStatsBatch(modelCompKeys),
     fetchGameStatsBatch(discussionKeys),
     fetchGameStats("leaderboard:overall"),
-    fetchGameStats("leaderboard:persona"),
     fetchGameStats("tag-winrate:overall"),
   ]);
 
@@ -35,8 +33,7 @@ export default async function StatsPage() {
       modelWinRate={modelWinRate.success ? modelWinRate.data : null}
       modelComparisons={modelCompBatch.success ? modelCompBatch.data : {}}
       discussionEffects={discussionBatch.success ? discussionBatch.data : {}}
-      overallLeaderboard={overallLeaderboard.success ? overallLeaderboard.data : null}
-      personaLeaderboard={personaLeaderboard.success ? personaLeaderboard.data : null}
+      leaderboard={leaderboard.success ? leaderboard.data : null}
       tagWinRate={tagWinRate.success ? tagWinRate.data : null}
       gameTypes={GAME_TYPES}
       discussionGames={DISCUSSION_GAMES}
