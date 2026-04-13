@@ -100,7 +100,7 @@ export function ModelLeaderboard({
         <TogglePills
           options={[
             { value: "winrate", label: "Win Rate" },
-            { value: "games", label: "Games Played" },
+            { value: "payoff", label: "Avg. Payoff" },
           ]}
           active="winrate"
           onChange={() => {}}
@@ -173,14 +173,14 @@ export function ModelLeaderboard({
                   width: 120,
                 }}
               >
-                Games Played
+                Avg. Payoff
               </th>
             </tr>
           </thead>
           <tbody className="text-sm">
             {rows.map((row, i) => {
               const rate = row.values.winRate ?? 0;
-              const games = (row.meta?.gamesPlayed as number) ?? 0;
+              const avgPayoff = (row.meta?.avgPayoff as number) ?? 0;
               return (
                 <tr
                   key={row.label}
@@ -252,7 +252,7 @@ export function ModelLeaderboard({
                     className="px-4 py-3 text-right tabular-nums"
                     style={{ fontFamily: TICK_FONT, color: "var(--gt-t2)", fontSize: 13 }}
                   >
-                    {games}
+                    {avgPayoff.toFixed(1)}
                   </td>
                 </tr>
               );
