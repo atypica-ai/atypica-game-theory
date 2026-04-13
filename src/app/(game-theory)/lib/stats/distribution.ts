@@ -78,19 +78,20 @@ export function computeStagHunt(sessions: ParsedSession[]): StatsData {
   };
 }
 
-// ── Golden Ball: split rate by round ────────────────────────────────────────
+// ── Golden Ball: steal rate by round ────────────────────────────────────────
 // Human: van den Assem et al. 2012
+// Steal rate = 1 − split rate
 
-const GB_HUMAN = [0.55, 0.49, 0.43]; // R1–R3
+const GB_HUMAN = [0.45, 0.51, 0.57]; // R1–R3 (steal rates)
 
 export function computeGoldenBall(sessions: ParsedSession[]): StatsData {
   const byRound = getDecisionsByRound(sessions);
   const rows = [1, 2, 3].map((round, i) => {
     const decisions = byRound.get(round) ?? [];
-    const splitCount = decisions.filter(
-      (d) => (d.content as { action: string }).action === "split",
+    const stealCount = decisions.filter(
+      (d) => (d.content as { action: string }).action === "steal",
     ).length;
-    const aiRate = decisions.length > 0 ? splitCount / decisions.length : 0;
+    const aiRate = decisions.length > 0 ? stealCount / decisions.length : 0;
     return { label: `R${round}`, values: { ai: aiRate, human: GB_HUMAN[i] } };
   });
 

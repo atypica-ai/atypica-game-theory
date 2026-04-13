@@ -5,9 +5,9 @@ import type { StatsData } from "../../lib/stats/types";
 import { AI_COLOR, AiHumanLegend, axisTickProps, ChartPanel, GRID_COLOR, HUMAN_COLOR, makeTooltip, pctLabelFmt, SourceAttribution } from "../AcademicChart";
 
 const mockData = [
-  { round: "R1", human: 0.55, ai: 0.70 },
-  { round: "R2", human: 0.49, ai: 0.62 },
-  { round: "R3", human: 0.43, ai: 0.56 },
+  { round: "R1", human: 0.45, ai: 0.30 },
+  { round: "R2", human: 0.51, ai: 0.38 },
+  { round: "R3", human: 0.57, ai: 0.44 },
 ];
 
 function toChartData(agg?: StatsData) {
@@ -22,8 +22,8 @@ export function GoldenBallDistributionView({ aggregateData }: { aggregateData?: 
   return (
     <div className="p-6 flex flex-col gap-4">
       <ChartPanel
-        title="Split Rate by Round"
-        subtitle="Does cooperation erode as the game progresses? AI personas vs human baseline."
+        title="Steal Rate by Round"
+        subtitle="How often do AI personas take it all — and does greed grow over rounds?"
       >
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={toChartData(aggregateData)} margin={{ top: 20, right: 16, bottom: 8, left: 28 }} barCategoryGap="32%" barGap={4}>
