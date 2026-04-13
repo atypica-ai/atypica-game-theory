@@ -231,7 +231,7 @@ export function UltimatumGameDistributionView({ aggregateData }: { aggregateData
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <XAxisLabel>% of wealth offered to other player</XAxisLabel>
+            <XAxisLabel>% of wealth offered by other player</XAxisLabel>
           </div>
         </div>
       </div>
