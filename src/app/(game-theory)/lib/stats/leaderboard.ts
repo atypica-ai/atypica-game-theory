@@ -52,7 +52,7 @@ export function computeOverallLeaderboard(
         meta: {
           personaId: pid,
           isHuman,
-          source: meta?.source ?? "",
+          title: meta?.title ?? "",
           tags: meta?.tags ?? [],
           gamesPlayed: wr.games,
           wins: wr.wins,

@@ -93,15 +93,16 @@ export async function loadPersonaMeta(personaIds: number[]): Promise<Map<number,
 
   const personas = await prisma.persona.findMany({
     where: { id: { in: personaIds } },
-    select: { id: true, name: true, source: true, tags: true },
+    select: { id: true, name: true, extra: true, tags: true },
   });
 
   const map = new Map<number, PersonaMeta>();
   for (const p of personas) {
+    const extra = (p.extra && typeof p.extra === "object") ? p.extra as Record<string, unknown> : {};
     map.set(p.id, {
       id: p.id,
       name: p.name,
-      source: p.source,
+      title: typeof extra.title === "string" ? extra.title : "",
       tags: Array.isArray(p.tags) ? (p.tags as string[]) : [],
     });
   }

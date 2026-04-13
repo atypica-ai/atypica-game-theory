@@ -29,8 +29,8 @@ export function StatsLeaderboard({
 
   const rows = data.rows.slice(0, maxRows);
 
-  // Show Title column when any row carries persona source metadata
-  const hasSource = rows.some((r) => r.meta?.source);
+  // Show Title column when any row carries persona title metadata
+  const hasTitle = rows.some((r) => r.meta?.title);
 
   return (
     <div className="flex flex-col gap-3">
@@ -73,7 +73,7 @@ export function StatsLeaderboard({
               >
                 Name
               </th>
-              {hasSource && (
+              {hasTitle && (
                 <th
                   className="text-left px-3 py-2"
                   style={{ color: "var(--gt-t4)", fontWeight: 500 }}
@@ -111,12 +111,12 @@ export function StatsLeaderboard({
                     {row.label}
                   </div>
                 </td>
-                {hasSource && (
+                {hasTitle && (
                   <td
                     className="px-3 py-2 max-w-[160px] truncate"
                     style={{ color: "var(--gt-t3)" }}
                   >
-                    {(row.meta?.source as string) || "—"}
+                    {(row.meta?.title as string) || "—"}
                   </td>
                 )}
                 {data.columns.map((col) => (
