@@ -9,9 +9,9 @@
 // ── 10-slot palette ──────────────────────────────────────────────────────────
 
 export const MODEL_PALETTE = [
-  "hsl(208 55% 52%)", // steel blue       — slot 0
-  "hsl(25  50% 52%)", // sienna            — slot 1
-  "hsl(155 35% 46%)", // sage              — slot 2
+  "hsl(25  50% 52%)", // sienna/orange     — slot 0 (claude-haiku)
+  "hsl(208 55% 52%)", // steel blue        — slot 1 (gemini-flash)
+  "hsl(155 35% 46%)", // sage              — slot 2 (gpt-mini)
   "hsl(270 32% 56%)", // lavender          — slot 3
   "hsl(0   40% 52%)", // dusty rose        — slot 4
   "hsl(190 38% 46%)", // teal              — slot 5
