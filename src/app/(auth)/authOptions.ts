@@ -133,7 +133,7 @@ const authOptions: NextAuthOptions = {
         token.id = parseInt(user.id + "");
         token.name = user.name;
       }
-      // Client called update() — refresh name from DB
+      // Client called update() after name change — refresh from DB
       if (trigger === "update") {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id },
