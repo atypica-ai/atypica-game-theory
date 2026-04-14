@@ -139,7 +139,7 @@ export function StatsPageView({
   }, [hasModels, hasRankings, hasGames, hasResearch]);
 
   /* Derived counts for subtitles */
-  const modelCount = modelWinRate?.rows.length ?? 0;
+  // const modelCount = modelWinRate?.rows.length ?? 0;
   const personaCount = leaderboard?.rows.filter((r) => !r.meta?.isHuman).length ?? 0;
 
   return (
