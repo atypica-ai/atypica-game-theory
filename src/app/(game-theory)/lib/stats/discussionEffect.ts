@@ -67,6 +67,39 @@ function computeDiscussionComparison(
   };
 }
 
+/**
+ * For binary-decision games: show both sides of the decision
+ * (e.g., "Choose Stag" + "Choose Hare") so readers see the full shift.
+ */
+function computeDiscussionBinaryBreakdown(
+  sessions: ParsedSession[],
+  predicate: MetricExtractor,
+  labelA: string,
+  labelB: string,
+): StatsData {
+  const { withDiscussion, withoutDiscussion } = splitByDiscussion(sessions);
+
+  const withDec = getR1Decisions(withDiscussion);
+  const withoutDec = getR1Decisions(withoutDiscussion);
+
+  const withRate = withDec.length > 0 ? predicate(withDec) : 0;
+  const withoutRate = withoutDec.length > 0 ? predicate(withoutDec) : 0;
+
+  const safeWith = Number.isNaN(withRate) ? 0 : withRate;
+  const safeWithout = Number.isNaN(withoutRate) ? 0 : withoutRate;
+
+  return {
+    columns: [
+      { key: "with", label: "With Discussion", format: "percent" },
+      { key: "without", label: "Without Discussion", format: "percent" },
+    ],
+    rows: [
+      { label: labelA, values: { with: safeWith, without: safeWithout } },
+      { label: labelB, values: { with: 1 - safeWith, without: 1 - safeWithout } },
+    ],
+  };
+}
+
 // ── Rate extractors ─────────────────────────────────────────────────────────
 
 const stagRate: MetricExtractor = (decs) =>
@@ -99,11 +132,16 @@ const meanBid: MetricExtractor = (decs) => {
 // Only games with discussion support (discussionRounds > 0 default)
 
 export const discussionEffectComputers: Record<string, (sessions: ParsedSession[]) => StatsData> = {
-  "stag-hunt": (s) => computeDiscussionComparison(s, stagRate, "Stag-choice Rate"),
-  "public-goods": (s) => computeDiscussionComparison(s, meanContribution, "Mean Contribution (normalized)"),
-  "beauty-contest": (s) => computeDiscussionComparison(s, meanGuess, "Mean Guess (normalized)"),
+  // Binary-decision games — show both sides of the choice
+  "stag-hunt": (s) => computeDiscussionBinaryBreakdown(s, stagRate, "Choose Stag", "Choose Hare"),
+  "volunteer-dilemma": (s) => computeDiscussionBinaryBreakdown(s, volunteerRate, "Volunteer", "Abstain"),
+  "trolley-problem": (s) => computeDiscussionBinaryBreakdown(s, pullLeverRate, "Pull Lever", "Don't Pull"),
+
+  // Continuous-metric games — single aggregate value
+  "public-goods": (s) => computeDiscussionComparison(s, meanContribution, "Avg. Contribution"),
+  "beauty-contest": (s) => computeDiscussionComparison(s, meanGuess, "Avg. Guess"),
+  "all-pay-auction": (s) => computeDiscussionComparison(s, meanBid, "Avg. Bid"),
   "colonel-blotto": (s) => {
-    // For Blotto, we compute concentration as a proxy metric
     const conc: MetricExtractor = (decs) => {
       const concentrations = decs
         .map((d) => {
@@ -111,16 +149,13 @@ export const discussionEffectComputers: Record<string, (sessions: ParsedSession[
           const vals = [c.battlefield1, c.battlefield2, c.battlefield3, c.battlefield4];
           if (vals.some((v) => typeof v !== "number" || Number.isNaN(v))) return null;
           vals.sort((a, b) => b - a);
-          return vals[0] / 6; // max allocation as fraction of total
+          return vals[0] / 6;
         })
         .filter((v): v is number => v !== null);
       return concentrations.length > 0
         ? concentrations.reduce((a, b) => a + b, 0) / concentrations.length
         : 0;
     };
-    return computeDiscussionComparison(s, conc, "Concentration (max alloc / total)");
+    return computeDiscussionComparison(s, conc, "Top BF Concentration");
   },
-  "volunteer-dilemma": (s) => computeDiscussionComparison(s, volunteerRate, "Volunteer Rate"),
-  "all-pay-auction": (s) => computeDiscussionComparison(s, meanBid, "Mean Bid (normalized)"),
-  "trolley-problem": (s) => computeDiscussionComparison(s, pullLeverRate, "Pull Lever Rate"),
 };
