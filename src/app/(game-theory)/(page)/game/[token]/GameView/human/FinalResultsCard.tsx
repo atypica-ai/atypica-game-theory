@@ -9,6 +9,7 @@ import confetti from "canvas-confetti";
 import { Trophy, Cpu, User } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const CONFETTI_COLORS = ["#ff595e", "#ff924c", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93", "#f72585"];
 
@@ -21,6 +22,7 @@ interface FinalResultsCardProps {
   cumulativeScores: Record<number, number>;
   winners: GameSessionParticipant[];
   isFullTie: boolean;
+  onFinish?: () => void;
 }
 
 export function FinalResultsCard({
@@ -28,7 +30,9 @@ export function FinalResultsCard({
   cumulativeScores,
   winners,
   isFullTie,
+  onFinish,
 }: FinalResultsCardProps) {
+  const router = useRouter();
   // Confetti on mount
   useEffect(() => {
     const end = Date.now() + 4500;
@@ -200,6 +204,14 @@ export function FinalResultsCard({
           );
         })}
       </div>
+
+      {/* Finish button */}
+      <button
+        onClick={onFinish ?? (() => router.push("/play/new"))}
+        className="btn-lab w-full mt-5 sm:mt-8 flex items-center justify-center gap-2 text-xl py-4"
+      >
+        FINISH
+      </button>
     </motion.div>
   );
 }

@@ -446,7 +446,7 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       {/* ── Middle zone: card area (fills remaining space, vertically centered, scrollable) ── */}
       <div
         className="flex-1 min-h-0 flex items-center justify-center overflow-y-auto px-6"
-        style={{ paddingTop: showChrome ? "0" : "10vh" }}
+        style={{ paddingTop: showChrome ? "0" : undefined }}
       >
         <div className="w-full max-w-xl py-4">
           <AnimatePresence mode="wait">
