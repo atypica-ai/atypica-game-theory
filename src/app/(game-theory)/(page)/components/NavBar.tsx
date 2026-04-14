@@ -1,0 +1,67 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { UserMenu } from "./UserMenu";
+
+const NAV_ITEMS = [
+  { label: "Home", href: "/" },
+  { label: "Games", href: "/games" },
+  { label: "Stats", href: "/stats" },
+  { label: "Play", href: "/play/new" },
+] as const;
+
+function isActive(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname.startsWith(href);
+}
+
+export function NavBar() {
+  const pathname = usePathname();
+
+  return (
+    <header
+      className="shrink-0 border-b"
+      style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
+    >
+      <div
+        className="relative mx-auto flex items-center justify-center h-[60px] px-4 sm:px-8"
+        style={{ maxWidth: "1200px" }}
+      >
+        {/* Centered nav pills */}
+        <nav className="flex items-center gap-1">
+          {NAV_ITEMS.map(({ label, href }) => {
+            const active = isActive(pathname, href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="px-4 py-1.5 text-[14px] transition-colors"
+                style={{
+                  borderRadius: "9999px",
+                  fontWeight: active ? 600 : 500,
+                  color: active ? "var(--gt-t1)" : "var(--gt-t3)",
+                  background: active ? "var(--gt-row-alt)" : "transparent",
+                  letterSpacing: "var(--gt-tracking-tight)",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) e.currentTarget.style.color = "var(--gt-t2)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) e.currentTarget.style.color = "var(--gt-t3)";
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* UserMenu — pinned right */}
+        <div className="absolute right-4 sm:right-8">
+          <UserMenu />
+        </div>
+      </div>
+    </header>
+  );
+}

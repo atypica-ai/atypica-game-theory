@@ -3,12 +3,11 @@
 import { createHumanGameSession } from "@/app/(game-theory)/actions";
 import { cn } from "@/lib/utils";
 import { Info, ChevronRight } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { GameTypeInfo } from "../../game/new/NewGameClient";
 import { GameRulesDisplay } from "@/app/(game-theory)/components/GameRulesDisplay";
-import { UserMenu } from "../../components/UserMenu";
+import { NavBar } from "../../components/NavBar";
 
 export function HumanNewGameClient({
   gameTypes,
@@ -37,35 +36,7 @@ export function HumanNewGameClient({
     router.push(`/game/${result.token}`);
   }
 
-  // ── Shared header ──────────────────────────────────────────────────────
-  const header = (
-    <header
-      className="shrink-0 border-b"
-      style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
-    >
-      <div className="mx-auto flex items-center justify-between h-[60px] px-4 sm:px-8" style={{ maxWidth: "960px" }}>
-        <div className="flex items-center gap-2 min-w-0">
-          <Link
-            href="/"
-            className="text-[13px] transition-colors hover:underline shrink-0"
-            style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-          >
-            <span className="hidden sm:inline">Game Theory Lab</span>
-            <span className="sm:hidden">GTL</span>
-          </Link>
-          <span className="text-[13px]" style={{ color: "var(--gt-t4)" }}>/</span>
-          <span
-            className="text-[15px] font-[600]"
-            style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-          >
-            {step === "select" ? "Choose Your Arena" : activeGameType?.displayName ?? "Game Rules"}
-          </span>
-        </div>
-
-        <UserMenu />
-      </div>
-    </header>
-  );
+  const header = <NavBar />;
 
   // ── SELECT step ────────────────────────────────────────────────────────
   if (step === "select") {

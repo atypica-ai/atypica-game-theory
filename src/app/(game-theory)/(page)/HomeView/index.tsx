@@ -7,7 +7,7 @@ import type { StatsData } from "@/app/(game-theory)/lib/stats/types";
 import Link from "next/link";
 import { type ReactNode, useRef, useState } from "react";
 import { GameDistributionView } from "./DistributionChart";
-import { UserMenu } from "../components/UserMenu";
+import { NavBar } from "../components/NavBar";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -193,52 +193,7 @@ export function GameTheoryHome({ sessionCounts, distributionStats }: { sessionCo
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
 
-      {/* ── Header — full width strip, content centered ─────────────────── */}
-      <header
-        className="shrink-0 border-b"
-        style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
-      >
-        <div
-          className="mx-auto flex items-center justify-between h-[60px] px-4 sm:px-8"
-          style={{ maxWidth: "1200px" }}
-        >
-          <div className="flex items-center gap-3">
-            <span
-              className="text-[15px] font-[600]"
-              style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-            >
-              Game Theory Lab
-            </span>
-            <span className="w-px h-4 hidden sm:block" style={{ background: "var(--gt-border-md)" }} />
-            <span className="text-[13px] hidden sm:block" style={{ color: "var(--gt-t3)" }}>
-              Observe AI · Play yourself
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4">
-            <Link
-              href="/stats"
-              className="text-[13px] font-[500] transition-opacity hover:opacity-70"
-              style={{ color: "var(--gt-t2)", letterSpacing: "var(--gt-tracking-tight)" }}
-            >
-              Stats
-            </Link>
-            <Link
-              href="/play/new"
-              className="flex items-center h-8 px-4 text-[13px] font-[500] transition-opacity hover:opacity-80"
-              style={{
-                background: "var(--gt-blue)",
-                color: "white",
-                borderRadius: "0.375rem",
-                letterSpacing: "var(--gt-tracking-tight)",
-              }}
-            >
-              Play
-            </Link>
-            <UserMenu />
-          </div>
-        </div>
-      </header>
+      <NavBar />
 
       {/* ── Game grid — centered, max-width, generous breathing room ────── */}
       <main className="flex-1 py-8 px-4 sm:py-12 sm:px-8">

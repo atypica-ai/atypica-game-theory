@@ -7,8 +7,8 @@ import { StatsBarChart } from "@/app/(game-theory)/components/stats/StatsBarChar
 import { ModelLeaderboard, StatsLeaderboard } from "@/app/(game-theory)/components/stats/StatsLeaderboard";
 import { CompactModelGrid } from "@/app/(game-theory)/components/stats/CompactModelGrid";
 import { CompactDiscussionGrid } from "@/app/(game-theory)/components/stats/CompactDiscussionGrid";
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { NavBar } from "../components/NavBar";
 
 const TICK_FONT = "IBMPlexMono, monospace";
 
@@ -144,30 +144,7 @@ export function StatsPageView({
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <header
-        className="shrink-0 border-b"
-        style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
-      >
-        <div
-          className="mx-auto flex items-center justify-between h-[60px] px-4 sm:px-8"
-          style={{ maxWidth: "1200px" }}
-        >
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="text-[15px] font-[600] hover:opacity-70 transition-opacity"
-              style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-            >
-              Game Theory Lab
-            </Link>
-            <span className="w-px h-4" style={{ background: "var(--gt-border-md)" }} />
-            <span className="text-[13px]" style={{ color: "var(--gt-t3)" }}>
-              Statistics
-            </span>
-          </div>
-        </div>
-      </header>
+      <NavBar />
 
       {/* ── Sticky section nav ────────────────────────────────────────────── */}
       {navItems.length > 1 && <SectionNav items={navItems} activeId={activeId} />}

@@ -8,7 +8,7 @@ import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import { GameSessionParticipant } from "@/app/(game-theory)/types";
 import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useIsMobile } from "@/lib/useIsMobile";
-import { UserMenu } from "../../components/UserMenu";
+import { NavBar } from "../../components/NavBar";
 import {
   computeOutcome,
   classifySpread,
@@ -413,49 +413,7 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
 
-      {/* Header */}
-      <header
-        className="shrink-0 border-b"
-        style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
-      >
-        <div
-          className="mx-auto flex items-center justify-between h-[60px] px-4 sm:px-8"
-          style={{ maxWidth: "1200px" }}
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <Link
-              href="/"
-              className="text-[13px] hover:underline shrink-0"
-              style={{ color: "var(--gt-t3)", fontFamily: "IBMPlexMono, monospace" }}
-            >
-              <span className="hidden sm:inline">Game Theory Lab</span>
-              <span className="sm:hidden">GTL</span>
-            </Link>
-            <span style={{ color: "var(--gt-t4)", fontSize: "13px" }}>/</span>
-            <span
-              className="text-[15px] font-[600]"
-              style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-            >
-              Past Games
-            </span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/play/new"
-              className="flex items-center h-8 px-4 text-[13px] font-[500] transition-opacity hover:opacity-80"
-              style={{
-                background: "var(--gt-blue)",
-                color: "white",
-                borderRadius: "0.375rem",
-                letterSpacing: "-0.025em",
-              }}
-            >
-              Play
-            </Link>
-            <UserMenu />
-          </div>
-        </div>
-      </header>
+      <NavBar />
 
       {/* Content */}
       <main className="flex-1 py-10 px-4 sm:px-8">
