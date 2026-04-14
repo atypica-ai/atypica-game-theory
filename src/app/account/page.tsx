@@ -5,12 +5,14 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { changePassword, getCurrentUser, updateName } from "./actions";
 
 export default function AccountPage() {
   const t = useTranslations("Account");
+  const { update: updateSession } = useSession();
 
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<number>(0);
@@ -42,6 +44,7 @@ export default function AccountPage() {
     const result = await updateName({ name: name.trim() });
     if (result.success) {
       setNameOriginal(name.trim());
+      await updateSession(); // refresh JWT so UserMenu picks up new name
       toast.success(t("nameUpdateSuccess"));
     } else {
       toast.error(t("nameUpdateError"), { description: result.message });

@@ -119,21 +119,27 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    session: ({ session, token }) => {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: parseInt(token.id + ""),
-        },
-      };
-    },
-    jwt: ({ token, user }) => {
+    session: ({ session, token }) => ({
+      ...session,
+      user: {
+        ...session.user,
+        id: token.id,
+        name: token.name,
+      },
+    }),
+    jwt: async ({ token, user, trigger }) => {
+      // Initial sign-in: persist id + name from DB user
       if (user) {
-        return {
-          ...token,
-          id: parseInt(user.id + ""),
-        };
+        token.id = parseInt(user.id + "");
+        token.name = user.name;
+      }
+      // Client called update() — refresh name from DB
+      if (trigger === "update") {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { name: true },
+        });
+        if (dbUser) token.name = dbUser.name;
       }
       return token;
     },
