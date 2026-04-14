@@ -1,10 +1,11 @@
 "use client";
 
+import { GameRulesDisplay } from "@/app/(game-theory)/components/GameRulesDisplay";
 import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import type { StatsData } from "@/app/(game-theory)/lib/stats/types";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { GameDistributionView } from "./DistributionChart";
 import { UserMenu } from "../components/UserMenu";
 
@@ -20,6 +21,56 @@ function formatPlayers(gt: GameType): string {
   return gt.minPlayers === gt.maxPlayers
     ? `${gt.minPlayers} players`
     : `${gt.minPlayers}–${gt.maxPlayers} players`;
+}
+
+// ── Rules hint (hover popover) ───────────────────────────────────────────────
+
+function RulesHint({ gameTypeName }: { gameTypeName: string }) {
+  const [open, setOpen] = useState(false);
+  const timeout = useRef<ReturnType<typeof setTimeout>>(null);
+
+  const show = () => { if (timeout.current) clearTimeout(timeout.current); setOpen(true); };
+  const hide = () => { timeout.current = setTimeout(() => setOpen(false), 120); };
+
+  return (
+    <span className="relative inline-flex items-center" onMouseEnter={show} onMouseLeave={hide}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-6 h-6 flex items-center justify-center rounded-full border cursor-pointer transition-colors shrink-0"
+        style={{
+          fontSize: "13px",
+          fontFamily: "IBMPlexMono, monospace",
+          fontWeight: 600,
+          lineHeight: 1,
+          color: open ? "var(--gt-ink)" : "var(--gt-t4)",
+          borderColor: open ? "var(--gt-ink)" : "var(--gt-border-md)",
+          background: "var(--gt-surface)",
+        }}
+      >
+        ?
+      </button>
+
+      {open && (
+        <div
+          className="absolute left-0 top-full mt-2 z-50 border overflow-y-auto"
+          style={{
+            width: "min(400px, 80vw)",
+            maxHeight: "60vh",
+            background: "var(--gt-surface)",
+            borderColor: "var(--gt-border)",
+            borderRadius: "0.5rem",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+          }}
+          onMouseEnter={show}
+          onMouseLeave={hide}
+        >
+          <div className="px-5 py-4">
+            <GameRulesDisplay gameTypeName={gameTypeName} />
+          </div>
+        </div>
+      )}
+    </span>
+  );
 }
 
 // ── Stat chip ─────────────────────────────────────────────────────────────────
@@ -80,12 +131,15 @@ function GameCard({ gt, sessionCount, aggregateData }: { gt: GameType; sessionCo
     >
       {/* Card header — generous padding, large text */}
       <div className="px-5 pt-6 pb-4 sm:px-8 sm:pt-8 sm:pb-6 border-b" style={{ borderColor: "var(--gt-border)" }}>
-        <h2
-          className="text-[22px] font-[600] mb-3 leading-tight"
-          style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
-        >
-          {gt.displayName}
-        </h2>
+        <div className="flex items-center gap-2 mb-3">
+          <h2
+            className="text-[22px] font-[600] leading-tight"
+            style={{ color: "var(--gt-t1)", letterSpacing: "var(--gt-tracking-tight)" }}
+          >
+            {gt.displayName}
+          </h2>
+          <RulesHint gameTypeName={gt.name} />
+        </div>
         <p
           className="text-[14px] mb-5 leading-relaxed"
           style={{ color: "var(--gt-t2)" }}
