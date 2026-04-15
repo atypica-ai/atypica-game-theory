@@ -28,6 +28,31 @@ export function NavBar() {
         className="relative mx-auto flex items-center justify-center h-12 px-4 sm:px-8"
         style={{ maxWidth: "1200px" }}
       >
+        {/* Logo — pinned left */}
+        <Link href="/" className="absolute left-4 sm:left-8 flex flex-col">
+          <span
+            className="text-[17px] font-medium leading-none"
+            style={{
+              fontFamily: "EuclidCircularA, sans-serif",
+              color: "var(--gt-t1)",
+              letterSpacing: "var(--gt-tracking-tight)",
+            }}
+          >
+            atypica.AI
+          </span>
+          <span
+            className="text-[10px] leading-none mt-1"
+            style={{
+              color: "var(--gt-t4)",
+              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontStyle: "italic",
+              letterSpacing: "0.01em",
+            }}
+          >
+            Game Theory Lab
+          </span>
+        </Link>
+
         {/* Centered nav items */}
         <nav className="flex items-center gap-0.5">
           {NAV_ITEMS.map(({ label, href }) => {
