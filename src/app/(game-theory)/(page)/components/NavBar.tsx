@@ -25,30 +25,35 @@ export function NavBar() {
       style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
     >
       <div
-        className="relative mx-auto flex items-center justify-center h-[60px] px-4 sm:px-8"
+        className="relative mx-auto flex items-center justify-center h-12 px-4 sm:px-8"
         style={{ maxWidth: "1200px" }}
       >
-        {/* Centered nav pills */}
-        <nav className="flex items-center gap-1">
+        {/* Centered nav items */}
+        <nav className="flex items-center gap-0.5">
           {NAV_ITEMS.map(({ label, href }) => {
             const active = isActive(pathname, href);
             return (
               <Link
                 key={href}
                 href={href}
-                className="px-4 py-1.5 text-[14px] transition-colors"
+                className="flex h-9 items-center px-4 text-sm transition-all"
                 style={{
-                  borderRadius: "9999px",
-                  fontWeight: active ? 600 : 500,
+                  borderRadius: "0.375rem",
+                  fontWeight: 400,
                   color: active ? "var(--gt-t1)" : "var(--gt-t3)",
                   background: active ? "var(--gt-row-alt)" : "transparent",
-                  letterSpacing: "var(--gt-tracking-tight)",
                 }}
                 onMouseEnter={(e) => {
-                  if (!active) e.currentTarget.style.color = "var(--gt-t2)";
+                  if (!active) {
+                    e.currentTarget.style.color = "var(--gt-t1)";
+                    e.currentTarget.style.background = "var(--gt-row-alt)";
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  if (!active) e.currentTarget.style.color = "var(--gt-t3)";
+                  if (!active) {
+                    e.currentTarget.style.color = "var(--gt-t3)";
+                    e.currentTarget.style.background = "transparent";
+                  }
                 }}
               >
                 {label}
