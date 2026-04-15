@@ -24,12 +24,9 @@ export function NavBar() {
       className="shrink-0 border-b"
       style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
     >
-      <div
-        className="relative mx-auto flex items-center justify-center h-12 px-4 sm:px-8"
-        style={{ maxWidth: "1200px" }}
-      >
-        {/* Logo — pinned left */}
-        <Link href="/" className="absolute left-4 sm:left-8 flex items-baseline gap-[6px]">
+      <div className="flex items-center justify-between h-12 px-4 sm:px-8">
+        {/* Logo — left */}
+        <Link href="/" className="flex items-baseline gap-[6px] shrink-0">
           <span
             className="text-[17px] font-medium leading-none"
             style={{
@@ -97,8 +94,8 @@ export function NavBar() {
           })}
         </nav>
 
-        {/* UserMenu — pinned right */}
-        <div className="absolute right-4 sm:right-8">
+        {/* UserMenu — right */}
+        <div className="shrink-0">
           <UserMenu />
         </div>
       </div>
