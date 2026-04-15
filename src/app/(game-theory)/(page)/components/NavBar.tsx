@@ -29,7 +29,7 @@ export function NavBar() {
         style={{ maxWidth: "1200px" }}
       >
         {/* Logo — pinned left */}
-        <Link href="/" className="absolute left-4 sm:left-8 flex flex-col">
+        <Link href="/" className="absolute left-4 sm:left-8 flex items-baseline gap-[6px]">
           <span
             className="text-[17px] font-medium leading-none"
             style={{
@@ -38,15 +38,25 @@ export function NavBar() {
               letterSpacing: "var(--gt-tracking-tight)",
             }}
           >
-            atypica.AI
+            atypica
+          </span>
+          <span className="text-[17px] leading-none" style={{ color: "var(--gt-t1)" }}>·</span>
+          <span
+            className="text-[17px] font-medium leading-none"
+            style={{
+              fontFamily: "EuclidCircularA, sans-serif",
+              color: "var(--gt-t1)",
+              letterSpacing: "var(--gt-tracking-tight)",
+            }}
+          >
+            AI
           </span>
           <span
-            className="text-[10px] leading-none mt-1"
+            className="text-[14px] leading-none"
             style={{
-              color: "var(--gt-t4)",
+              color: "var(--gt-t1)",
               fontFamily: "'Instrument Serif', Georgia, serif",
               fontStyle: "italic",
-              letterSpacing: "0.01em",
             }}
           >
             Game Theory Lab
