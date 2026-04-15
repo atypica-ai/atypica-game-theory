@@ -28,35 +28,24 @@ export function NavBar() {
         {/* Logo — left */}
         <Link href="/" className="flex items-baseline gap-[6px] shrink-0">
           <span
-            className="text-[17px] font-medium leading-none"
+            className="text-xl font-medium leading-none"
             style={{
               fontFamily: "EuclidCircularA, sans-serif",
               color: "var(--gt-t1)",
               letterSpacing: "var(--gt-tracking-tight)",
             }}
           >
-            atypica
-          </span>
-          <span className="text-[17px] leading-none" style={{ color: "var(--gt-t1)" }}>·</span>
-          <span
-            className="text-[17px] font-medium leading-none"
-            style={{
-              fontFamily: "EuclidCircularA, sans-serif",
-              color: "var(--gt-t1)",
-              letterSpacing: "var(--gt-tracking-tight)",
-            }}
-          >
-            AI
+            atypica.AI
           </span>
           <span
-            className="text-[14px] leading-none"
+            className="text-xl leading-none"
             style={{
-              color: "var(--gt-t1)",
+              color: "var(--gt-t3)",
               fontFamily: "'Instrument Serif', Georgia, serif",
               fontStyle: "italic",
             }}
           >
-            Game Theory Lab
+            Game Lab
           </span>
         </Link>
 
