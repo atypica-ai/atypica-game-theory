@@ -3,7 +3,7 @@ import { GameType } from "../types";
 import { prisonerDilemmaPayoff } from "./payoff";
 import { prisonerDilemmaActionSchema } from "./schema";
 
-// Implements the "easy, 4-round" treatment from Dal Bó & Fréchette (2011).
+// Implements a 2-round treatment inspired by Dal Bó & Fréchette (2011).
 // Payoff matrix: T(63) > R(51) > P(39) > S(22), K ≈ 0.41 — moderate defection temptation.
 // The rules prompt deliberately does NOT state an explicit optimization goal,
 // matching the original experiment design so each persona's values drive their behavior.
@@ -17,7 +17,7 @@ export const prisonerDilemma: GameType<typeof prisonerDilemmaActionSchema> = {
   minPlayers: 2,
   maxPlayers: 2,
 
-  horizon: { type: "fixed", rounds: 4 },
+  horizon: { type: "fixed", rounds: 2 },
 
   actionSchema: prisonerDilemmaActionSchema,
 
