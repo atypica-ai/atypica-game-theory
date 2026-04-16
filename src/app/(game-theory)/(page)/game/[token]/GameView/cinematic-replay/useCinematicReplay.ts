@@ -211,6 +211,11 @@ export function useCinematicReplay(
     setStarted(true);
   }, [firstRoundId, hasDiscussion, resetStreaming]);
 
+  const skipToEnd = useCallback(() => {
+    setPhase("completed");
+    setStarted(true);
+  }, []);
+
   const startReplay = useCallback(() => {
     setStarted(true);
   }, []);
@@ -246,5 +251,6 @@ export function useCinematicReplay(
     goToRound,
     goToPhase,
     restart,
+    skipToEnd,
   };
 }

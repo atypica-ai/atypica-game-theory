@@ -9,7 +9,7 @@ import { useCallback, useMemo } from "react";
 import { deriveGameState } from "../index";
 import { RulesPopover } from "../human/RulesPopover";
 import { useIsMobile } from "@/lib/useIsMobile";
-import { Info, ChevronRight } from "lucide-react";
+import { Info, ChevronRight, SkipForward } from "lucide-react";
 
 import { useCinematicReplay } from "./useCinematicReplay";
 import { ReplayDiscussionCard } from "./ReplayDiscussionCard";
@@ -43,6 +43,7 @@ export function CinematicReplayView({ initialData }: { initialData: GameSessionD
     goToRound,
     goToPhase,
     restart,
+    skipToEnd,
   } = useCinematicReplay(initialData.events, participants, discussionRounds);
 
   const {
@@ -242,15 +243,27 @@ export function CinematicReplayView({ initialData }: { initialData: GameSessionD
         </div>
       </div>
 
-      {/* ── Bottom zone: clickable round progress ────────────────────── */}
+      {/* ── Bottom zone: clickable round progress + skip to end ────── */}
       {showChrome && (
-        <div className="shrink-0 flex items-start justify-center" style={{ height: chromeHeight, paddingTop: "1rem" }}>
+        <div className="shrink-0 flex items-start justify-center relative" style={{ height: chromeHeight, paddingTop: "1rem" }}>
           <ClickableRoundProgress
             currentRoundId={currentRoundId}
             totalRounds={totalRounds}
             gameTypeName={gameTypeName}
             onRoundClick={goToRound}
           />
+          <button
+            onClick={skipToEnd}
+            className="absolute right-4 sm:right-8 top-4 flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-[10px] font-bold uppercase transition-colors hover:bg-[var(--gt-row-alt)]"
+            style={{
+              borderColor: "var(--gt-border-md)",
+              color: "var(--gt-t3)",
+              fontFamily: "IBMPlexMono, monospace",
+              letterSpacing: "0.05em",
+            }}
+          >
+            Skip to end <SkipForward size={12} />
+          </button>
         </div>
       )}
     </div>

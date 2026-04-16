@@ -11,41 +11,61 @@ interface ReasoningTooltipProps {
 
 export function ReasoningTooltip({ reasoning, color }: ReasoningTooltipProps) {
   const [visible, setVisible] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const iconRef = useRef<HTMLSpanElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
-  const show = useCallback(() => {
-    timerRef.current = setTimeout(() => {
+  const cancelTimers = useCallback(() => {
+    if (showTimerRef.current) clearTimeout(showTimerRef.current);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+  }, []);
+
+  const handleEnter = useCallback(() => {
+    cancelTimers();
+    showTimerRef.current = setTimeout(() => {
       if (iconRef.current) {
         const rect = iconRef.current.getBoundingClientRect();
         setPos({
-          top: rect.top + window.scrollY,
-          left: rect.left + rect.width / 2 + window.scrollX,
+          top: rect.top,
+          left: rect.left + rect.width / 2,
         });
       }
       setVisible(true);
     }, 200);
-  }, []);
+  }, [cancelTimers]);
 
-  const hide = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setVisible(false);
-  }, []);
+  const handleLeave = useCallback(() => {
+    cancelTimers();
+    // Delayed hide — gives user time to move mouse to the tooltip
+    hideTimerRef.current = setTimeout(() => {
+      setVisible(false);
+    }, 150);
+  }, [cancelTimers]);
 
-  // Clean up timer on unmount
+  // When mouse enters the tooltip itself, cancel the hide
+  const handleTooltipEnter = useCallback(() => {
+    cancelTimers();
+  }, [cancelTimers]);
+
+  // When mouse leaves the tooltip, hide
+  const handleTooltipLeave = useCallback(() => {
+    cancelTimers();
+    hideTimerRef.current = setTimeout(() => {
+      setVisible(false);
+    }, 100);
+  }, [cancelTimers]);
+
   useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+    return () => cancelTimers();
+  }, [cancelTimers]);
 
   return (
     <span
       ref={iconRef}
       className="inline-flex items-center"
-      onMouseEnter={show}
-      onMouseLeave={hide}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
     >
       <Brain
         size={14}
@@ -56,7 +76,7 @@ export function ReasoningTooltip({ reasoning, color }: ReasoningTooltipProps) {
         pos &&
         createPortal(
           <div
-            className="fixed z-[9999] w-[320px] max-h-[200px] overflow-y-auto rounded-md border p-3"
+            className="fixed z-[9999] w-[320px] max-h-[240px] overflow-y-auto rounded-md border p-3"
             style={{
               top: pos.top - 8,
               left: pos.left,
@@ -66,8 +86,8 @@ export function ReasoningTooltip({ reasoning, color }: ReasoningTooltipProps) {
               borderLeft: color ? `3px solid ${color}` : undefined,
               boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             }}
-            onMouseEnter={show}
-            onMouseLeave={hide}
+            onMouseEnter={handleTooltipEnter}
+            onMouseLeave={handleTooltipLeave}
           >
             <p
               className="text-[9px] font-bold uppercase mb-1.5"
