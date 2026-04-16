@@ -5,6 +5,7 @@ interface ClickableRoundProgressProps {
   totalRounds: number;
   gameTypeName: string;
   onRoundClick: (roundId: number) => void;
+  onSkipToEnd?: () => void;
 }
 
 function formatName(key: string): string {
@@ -19,10 +20,11 @@ export function ClickableRoundProgress({
   totalRounds,
   gameTypeName,
   onRoundClick,
+  onSkipToEnd,
 }: ClickableRoundProgressProps) {
   return (
     <div className="flex flex-col items-center w-full max-w-md">
-      {/* Round bars */}
+      {/* Round bars + skip to end */}
       <div className="flex items-center gap-2 mb-2">
         {Array.from({ length: totalRounds }, (_, i) => {
           const roundNum = i + 1;
@@ -44,6 +46,19 @@ export function ClickableRoundProgress({
             />
           );
         })}
+        {onSkipToEnd && (
+          <button
+            onClick={onSkipToEnd}
+            className="ml-1 flex items-center cursor-pointer transition-colors hover:text-[var(--gt-ink)]"
+            style={{ color: "var(--gt-t4)" }}
+            title="Skip to end"
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 2.5L8 7L2 11.5V2.5Z" fill="currentColor" />
+              <rect x="10" y="2.5" width="2" height="9" rx="0.5" fill="currentColor" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Metadata */}
