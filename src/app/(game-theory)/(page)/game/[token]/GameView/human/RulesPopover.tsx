@@ -13,31 +13,20 @@ export function RulesPopover({ gameTypeName, gameDisplayName }: RulesPopoverProp
 
   return (
     <>
-      {/* Floating ? button — positioned below phase progress on mobile */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed top-14 sm:top-4 right-4 z-40 group w-7 h-7 flex items-center justify-center rounded-full border cursor-pointer transition-colors text-[var(--gt-t4)] border-[var(--gt-border-md)] bg-[var(--gt-surface)] hover:text-[var(--gt-ink)] hover:border-[var(--gt-ink)] active:scale-90"
+        className="flex items-center gap-1 cursor-pointer transition-colors"
         style={{
-          fontSize: "12px",
+          fontSize: "10px",
           fontFamily: "IBMPlexMono, monospace",
-          fontWeight: 600,
-          lineHeight: 1,
-          boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          color: "var(--gt-t4)",
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--gt-ink)")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--gt-t4)")}
       >
-        ?
-        <span
-          className="pointer-events-none absolute right-full mr-2 top-1/2 -translate-y-1/2 z-50 whitespace-nowrap px-2 py-1 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{
-            background: "var(--gt-t1)",
-            color: "var(--gt-surface)",
-            borderRadius: "0.25rem",
-            fontFamily: "IBMPlexMono, monospace",
-            letterSpacing: "0.02em",
-          }}
-        >
-          Game rules
-        </span>
+        RULES
       </button>
 
       {/* Rules modal */}

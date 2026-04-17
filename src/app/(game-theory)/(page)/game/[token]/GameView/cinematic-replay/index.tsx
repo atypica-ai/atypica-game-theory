@@ -187,8 +187,6 @@ export function CinematicReplayView({ initialData }: { initialData: GameSessionD
   // ── Replay view ─────────────────────────────────────────────────────────
   return (
     <div className="h-screen flex flex-col" style={{ background: "var(--gt-bg)" }}>
-      <RulesPopover gameTypeName={gameTypeName} gameDisplayName={gameType.displayName} />
-
       {/* ── Top zone: clickable phase progress ───────────────────────── */}
       {showChrome && (
         <div className="shrink-0 flex items-end justify-center" style={{ height: chromeHeight, paddingBottom: "1rem" }}>
@@ -206,6 +204,11 @@ export function CinematicReplayView({ initialData }: { initialData: GameSessionD
         style={{ paddingTop: showChrome ? "0" : undefined }}
       >
         <div className="w-full max-w-xl py-4">
+          {showChrome && (
+            <div className="flex justify-end mb-2">
+              <RulesPopover gameTypeName={gameTypeName} gameDisplayName={gameType.displayName} />
+            </div>
+          )}
           <AnimatePresence mode="wait">
             {phase === "discussion" && (
               <ReplayDiscussionCard

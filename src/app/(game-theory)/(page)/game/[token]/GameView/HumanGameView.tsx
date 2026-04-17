@@ -432,10 +432,6 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
       {error && (
         <ErrorDialog message={error} onRetry={handleRetry} onAbort={handleAbort} />
       )}
-      {/* Rules ? button — floating top-right */}
-      {showChrome && (
-        <RulesPopover gameTypeName={gameTypeName} gameDisplayName={gameType.displayName} />
-      )}
       {/* ── Top zone: phase progress (fixed at ~15%) ──────────────────── */}
       {showChrome && (
         <div className="shrink-0 flex items-end justify-center" style={{ height: chromeHeight, paddingBottom: "1rem" }}>
@@ -449,6 +445,11 @@ export function HumanGameView({ initialData, token }: { initialData: GameSession
         style={{ paddingTop: showChrome ? "0" : undefined }}
       >
         <div className="w-full max-w-xl py-4">
+          {showChrome && (
+            <div className="flex justify-end mb-2">
+              <RulesPopover gameTypeName={gameTypeName} gameDisplayName={gameType.displayName} />
+            </div>
+          )}
           <AnimatePresence mode="wait">
             {visualPhase === "discussion" && (
               <DiscussionCard
