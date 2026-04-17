@@ -5,7 +5,8 @@ import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import type { StatsData } from "@/app/(game-theory)/lib/stats/types";
 import Link from "next/link";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useCallback, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { GameDistributionView } from "./DistributionChart";
 import { NavBar } from "../components/NavBar";
 
@@ -28,14 +29,26 @@ function formatPlayers(gt: GameType): string {
 function RulesHint({ gameTypeName }: { gameTypeName: string }) {
   const [open, setOpen] = useState(false);
   const timeout = useRef<ReturnType<typeof setTimeout>>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
 
-  const show = () => { if (timeout.current) clearTimeout(timeout.current); setOpen(true); };
-  const hide = () => { timeout.current = setTimeout(() => setOpen(false), 120); };
+  const show = useCallback(() => {
+    if (timeout.current) clearTimeout(timeout.current);
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 8, left: rect.left });
+    }
+    setOpen(true);
+  }, []);
+  const hide = useCallback(() => {
+    timeout.current = setTimeout(() => setOpen(false), 120);
+  }, []);
 
   return (
-    <span className="relative inline-flex items-center" onMouseEnter={show} onMouseLeave={hide}>
+    <span className="inline-flex items-center" onMouseEnter={show} onMouseLeave={hide}>
       <button
-        onClick={() => setOpen((v) => !v)}
+        ref={btnRef}
+        onClick={() => { if (open) { setOpen(false); } else { show(); } }}
         className="w-6 h-6 flex items-center justify-center rounded-full border cursor-pointer transition-colors shrink-0"
         style={{
           fontSize: "13px",
@@ -50,25 +63,29 @@ function RulesHint({ gameTypeName }: { gameTypeName: string }) {
         ?
       </button>
 
-      {open && (
-        <div
-          className="absolute left-0 top-full mt-2 z-50 border overflow-y-auto"
-          style={{
-            width: "min(400px, 80vw)",
-            maxHeight: "60vh",
-            background: "var(--gt-surface)",
-            borderColor: "var(--gt-border)",
-            borderRadius: "0.5rem",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-          }}
-          onMouseEnter={show}
-          onMouseLeave={hide}
-        >
-          <div className="px-5 py-4">
-            <GameRulesDisplay gameTypeName={gameTypeName} />
-          </div>
-        </div>
-      )}
+      {open && pos &&
+        createPortal(
+          <div
+            className="fixed z-[9999] border overflow-y-auto"
+            style={{
+              top: pos.top,
+              left: pos.left,
+              width: "min(400px, 80vw)",
+              maxHeight: "60vh",
+              background: "var(--gt-surface)",
+              borderColor: "var(--gt-border)",
+              borderRadius: "0.5rem",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            }}
+            onMouseEnter={show}
+            onMouseLeave={hide}
+          >
+            <div className="px-5 py-4">
+              <GameRulesDisplay gameTypeName={gameTypeName} />
+            </div>
+          </div>,
+          document.body,
+        )}
     </span>
   );
 }
