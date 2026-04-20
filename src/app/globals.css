@@ -170,6 +170,30 @@
   font-style: normal;
 }
 
+/* Global light-mode scrollbar — prevents dark OS-default scrollbars */
+* {
+  scrollbar-color: oklch(0.8 0.01 80) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: oklch(0.8 0.01 80);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: oklch(0.7 0.01 80);
+}
+
 /* For Chrome and Firefox */
 .scrollbar-thin {
   scrollbar-width: thin;
