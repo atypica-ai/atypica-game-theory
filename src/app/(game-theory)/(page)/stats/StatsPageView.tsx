@@ -4,6 +4,7 @@ import { gameTypeRegistry } from "@/app/(game-theory)/gameTypes";
 import { GameType } from "@/app/(game-theory)/gameTypes/types";
 import type { StatsData } from "@/app/(game-theory)/lib/stats/types";
 import { StatsBarChart } from "@/app/(game-theory)/components/stats/StatsBarChart";
+import { TagBarTooltip } from "@/app/(game-theory)/components/stats/TagBarTooltip";
 import { ModelLeaderboard, StatsLeaderboard } from "@/app/(game-theory)/components/stats/StatsLeaderboard";
 import { CompactModelGrid } from "@/app/(game-theory)/components/stats/CompactModelGrid";
 import { CompactDiscussionGrid } from "@/app/(game-theory)/components/stats/CompactDiscussionGrid";
@@ -264,6 +265,7 @@ export function StatsPageView({
                       data={tagWinRate!}
                       title="Win rate by tag"
                       subtitle="Do persona traits correlate with strategic success?"
+                      customTooltip={<TagBarTooltip data={tagWinRate!} />}
                     />
                   </Card>
                 </div>

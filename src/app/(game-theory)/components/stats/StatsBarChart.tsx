@@ -30,11 +30,13 @@ export function StatsBarChart({
   title,
   subtitle,
   height = 280,
+  customTooltip,
 }: {
   data: StatsData;
   title?: string;
   subtitle?: string;
   height?: number;
+  customTooltip?: React.ReactElement;
 }) {
   if (data.rows.length === 0) return null;
 
@@ -88,7 +90,7 @@ export function StatsBarChart({
             tickLine={false}
             width={36}
           />
-          <Tooltip content={<TooltipContent />} cursor={{ fill: GRID_COLOR, fillOpacity: 0.35 }} />
+          <Tooltip content={customTooltip ?? <TooltipContent />} cursor={{ fill: GRID_COLOR, fillOpacity: 0.35 }} />
           {data.columns.map((col, i) => (
             <Bar
               key={col.key}

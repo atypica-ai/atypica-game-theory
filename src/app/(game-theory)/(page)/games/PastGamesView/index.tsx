@@ -10,6 +10,11 @@ import HippyGhostAvatar from "@/components/HippyGhostAvatar";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { NavBar } from "../../components/NavBar";
 import {
+  DERAILER_TAG,
+  ATTACHMENT_TAG,
+  DEVELOPMENT_TAG,
+} from "@/app/(persona)/profile/catalog";
+import {
   computeOutcome,
   classifySpread,
   formatRelativeTime,
@@ -56,13 +61,14 @@ interface SessionRow {
   createdAt: string;
   participants: GameSessionParticipant[];
   participantNames: string;
+  participantTags: string[];
   winners: GameSessionParticipant[];
   isFullTie: boolean;
   topScore: number | null;
   spreadCategory: SpreadCategory | null;
 }
 
-function buildRows(sessions: SessionListItem[]): SessionRow[] {
+function buildRows(sessions: SessionListItem[], personaTags: Record<number, string[]>): SessionRow[] {
   return sessions
     .filter((s) => s.status !== "failed")
     .map((s) => {
@@ -79,6 +85,12 @@ function buildRows(sessions: SessionListItem[]): SessionRow[] {
         spreadCategory = classifySpread(scoreVals);
       }
 
+      const tags = new Set<string>();
+      for (const p of participants) {
+        const t = personaTags[p.personaId];
+        if (t) t.forEach((tag) => tags.add(tag));
+      }
+
       return {
         token: s.token,
         gameType: s.gameType,
@@ -87,6 +99,7 @@ function buildRows(sessions: SessionListItem[]): SessionRow[] {
         createdAt: s.createdAt,
         participants,
         participantNames: participants.map((p) => p.name).join(" "),
+        participantTags: [...tags],
         winners: outcome?.winners ?? [],
         isFullTie: outcome?.isFullTie ?? false,
         topScore,
@@ -305,16 +318,20 @@ function StatusActionCell({ status, token }: { status: string; token: string }) 
 function FilterBar({
   gameTypeFilter,
   statusFilter,
+  tagFilter,
   participantSearch,
   onGameType,
   onStatus,
+  onTag,
   onSearch,
 }: {
   gameTypeFilter: string;
   statusFilter: string;
+  tagFilter: string;
   participantSearch: string;
   onGameType: (v: string) => void;
   onStatus: (v: string) => void;
+  onTag: (v: string) => void;
   onSearch: (v: string) => void;
 }) {
   const selectStyle: React.CSSProperties = {
@@ -355,6 +372,25 @@ function FilterBar({
         <option value="running">Running</option>
       </select>
 
+      <select value={tagFilter} onChange={(e) => onTag(e.target.value)} style={selectStyle}>
+        <option value="all">All traits</option>
+        <optgroup label="Failure Mode">
+          {Object.values(DERAILER_TAG).map((tag) => (
+            <option key={tag} value={tag}>{tag}</option>
+          ))}
+        </optgroup>
+        <optgroup label="Attachment">
+          {Object.values(ATTACHMENT_TAG).map((tag) => (
+            <option key={tag} value={tag}>{tag}</option>
+          ))}
+        </optgroup>
+        <optgroup label="Development">
+          {Object.values(DEVELOPMENT_TAG).map((tag) => (
+            <option key={tag} value={tag}>{tag}</option>
+          ))}
+        </optgroup>
+      </select>
+
       <input
         type="text"
         placeholder="Search participants…"
@@ -368,11 +404,12 @@ function FilterBar({
 
 // ── Main component ───────────────────────────────────────────────────────────
 
-export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
-  const rows = useMemo(() => buildRows(sessions), [sessions]);
+export function PastGamesView({ sessions, personaTags }: { sessions: SessionListItem[]; personaTags: Record<number, string[]> }) {
+  const rows = useMemo(() => buildRows(sessions, personaTags), [sessions, personaTags]);
 
   const [gameTypeFilter, setGameTypeFilter]     = useState("all");
   const [statusFilter, setStatusFilter]         = useState("all");
+  const [tagFilter, setTagFilter]               = useState("all");
   const [participantSearch, setParticipantSearch] = useState("");
   const isMobile = useIsMobile();
   const [expandedToken, setExpandedToken]       = useState<string | null>(null);
@@ -381,11 +418,12 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
     return rows.filter((r) => {
       if (gameTypeFilter !== "all" && r.gameType !== gameTypeFilter) return false;
       if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (tagFilter !== "all" && !r.participantTags.includes(tagFilter)) return false;
       if (participantSearch && !r.participantNames.toLowerCase().includes(participantSearch.toLowerCase()))
         return false;
       return true;
     });
-  }, [rows, gameTypeFilter, statusFilter, participantSearch]);
+  }, [rows, gameTypeFilter, statusFilter, tagFilter, participantSearch]);
 
   const rowStyle: React.CSSProperties = {
     display: "grid",
@@ -430,9 +468,11 @@ export function PastGamesView({ sessions }: { sessions: SessionListItem[] }) {
           <FilterBar
             gameTypeFilter={gameTypeFilter}
             statusFilter={statusFilter}
+            tagFilter={tagFilter}
             participantSearch={participantSearch}
             onGameType={setGameTypeFilter}
             onStatus={setStatusFilter}
+            onTag={setTagFilter}
             onSearch={setParticipantSearch}
           />
 

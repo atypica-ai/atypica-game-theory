@@ -12,8 +12,10 @@ export function computeTagWinRate(
 ): StatsData {
   const winRecords = computeWinRecords(sessions);
 
-  // tag → { totalWins, totalGames }
+  // tag → { totalWins, totalGames, personas by id }
   const tagStats = new Map<string, { wins: number; games: number; personas: number }>();
+  // tag → individual persona win records (for top-3)
+  const tagPersonas = new Map<string, { personaId: number; name: string; wins: number; games: number }[]>();
 
   for (const [pid, wr] of winRecords) {
     const meta = personaMeta.get(pid);
@@ -25,18 +27,31 @@ export function computeTagWinRate(
       stat.games += wr.games;
       stat.personas += 1;
       tagStats.set(tag, stat);
+
+      const list = tagPersonas.get(tag) ?? [];
+      list.push({ personaId: pid, name: meta.name, wins: wr.wins, games: wr.games });
+      tagPersonas.set(tag, list);
     }
   }
 
   const rows = [...tagStats.entries()]
-    .filter(([, stat]) => stat.personas >= 5) // minimum sample size
-    .map(([tag, stat]) => ({
-      label: tag,
-      values: {
-        winRate: stat.games > 0 ? stat.wins / stat.games : 0,
-      },
-      meta: { personas: stat.personas, gamesPlayed: stat.games },
-    }))
+    .filter(([, stat]) => stat.personas >= 5)
+    .map(([tag, stat]) => {
+      const personas = tagPersonas.get(tag) ?? [];
+      const topPersonas = personas
+        .filter((p) => p.games >= 2)
+        .sort((a, b) => (b.wins / b.games) - (a.wins / a.games))
+        .slice(0, 3)
+        .map((p) => ({ personaId: p.personaId, name: p.name, winRate: p.wins / p.games }));
+
+      return {
+        label: tag,
+        values: {
+          winRate: stat.games > 0 ? stat.wins / stat.games : 0,
+        },
+        meta: { personas: stat.personas, gamesPlayed: stat.games, topPersonas },
+      };
+    })
     .sort((a, b) => b.values.winRate - a.values.winRate);
 
   return {
