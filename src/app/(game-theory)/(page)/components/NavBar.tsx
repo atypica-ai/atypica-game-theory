@@ -24,32 +24,34 @@ export function NavBar() {
       className="shrink-0 border-b"
       style={{ borderColor: "var(--gt-border)", background: "var(--gt-surface)" }}
     >
-      <div className="flex items-center justify-between h-12 px-4 sm:px-8">
-        {/* Logo — left */}
-        <Link href="/" className="flex items-baseline gap-[6px] shrink-0">
-          <span
-            className="text-xl font-medium leading-none"
-            style={{
-              fontFamily: "EuclidCircularA, sans-serif",
-              color: "var(--gt-t1)",
-              letterSpacing: "var(--gt-tracking-tight)",
-            }}
-          >
-            atypica.AI
-          </span>
-          <span
-            className="text-xl leading-none"
-            style={{
-              color: "var(--gt-t3)",
-              fontFamily: "'Instrument Serif', Georgia, serif",
-              fontStyle: "italic",
-            }}
-          >
-            Game Lab
-          </span>
-        </Link>
+      <div className="flex items-center h-12 px-4 sm:px-8">
+        {/* Logo — left (flex-1 to balance with right section) */}
+        <div className="flex-1 flex items-center">
+          <Link href="/" className="flex items-baseline gap-[6px] shrink-0">
+            <span
+              className="text-xl font-medium leading-none"
+              style={{
+                fontFamily: "EuclidCircularA, sans-serif",
+                color: "var(--gt-t1)",
+                letterSpacing: "var(--gt-tracking-tight)",
+              }}
+            >
+              atypica.AI
+            </span>
+            <span
+              className="text-xl leading-none"
+              style={{
+                color: "var(--gt-t3)",
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontStyle: "italic",
+              }}
+            >
+              Game Lab
+            </span>
+          </Link>
+        </div>
 
-        {/* Centered nav items */}
+        {/* Centered nav — naturally centered by equal flex-1 siblings */}
         <nav className="flex items-center gap-0.5">
           {NAV_ITEMS.map(({ label, href }) => {
             const active = isActive(pathname, href);
@@ -83,8 +85,8 @@ export function NavBar() {
           })}
         </nav>
 
-        {/* UserMenu — right */}
-        <div className="shrink-0">
+        {/* UserMenu — right (flex-1 to balance with left section) */}
+        <div className="flex-1 flex items-center justify-end">
           <UserMenu />
         </div>
       </div>
