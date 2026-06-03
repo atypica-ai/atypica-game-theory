@@ -1,6 +1,7 @@
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import Analytics from "@/lib/analytics";
 import { getDeployRegion } from "@/lib/request/deployRegion";
 import { cn } from "@/lib/utils";
 import type { Metadata, Viewport } from "next";
@@ -71,6 +72,7 @@ export default async function RootLayout({
             </NextIntlClientProvider>
           </ThemeProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
