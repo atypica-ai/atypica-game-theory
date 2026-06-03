@@ -46,3 +46,7 @@ next-env.d.ts
 .cursor
 .codex
 .local
+
+# skills / agents
+.agents
+skills-lock.json
