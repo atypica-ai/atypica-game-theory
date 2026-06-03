@@ -6,6 +6,7 @@ import {
   searchPersonasForGame,
 } from "@/app/(game-theory)/actions";
 import { GameRulesDisplay } from "@/app/(game-theory)/components/GameRulesDisplay";
+import { trackEvent } from "@/lib/analytics/event";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/lib/useIsMobile";
 import Link from "next/link";
@@ -86,6 +87,11 @@ export function NewGameClient({ gameTypes, personas: initialPersonas }: NewGameC
       setIsLaunching(false);
       return;
     }
+    trackEvent("game_created", {
+      game_type: selectedGameType,
+      player_count: selectedIds.length,
+      mode: "ai_vs_ai",
+    });
     router.push(`/game/${result.token}`);
   }
 

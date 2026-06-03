@@ -4,8 +4,9 @@ import { GameSessionDetail } from "@/app/(game-theory)/actions";
 import { getGameType } from "@/app/(game-theory)/gameTypes";
 import { GameSessionParticipant } from "@/app/(game-theory)/types";
 import { GameRulesDisplay } from "@/app/(game-theory)/components/GameRulesDisplay";
+import { trackEvent } from "@/lib/analytics/event";
 import { AnimatePresence } from "motion/react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { deriveGameState } from "../index";
 import { RulesPopover } from "../human/RulesPopover";
 import { useIsMobile } from "@/lib/useIsMobile";
@@ -34,6 +35,10 @@ export function CinematicReplayView({ initialData }: { initialData: GameSessionD
     : gameType.horizon.type === "indefinite"
       ? "Indefinite"
       : "Conditional";
+
+  useEffect(() => {
+    trackEvent("game_replay_viewed", { game_type: gameTypeName });
+  }, [gameTypeName]);
 
   const {
     displayState,

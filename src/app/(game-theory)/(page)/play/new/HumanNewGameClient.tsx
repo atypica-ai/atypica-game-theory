@@ -1,6 +1,7 @@
 "use client";
 
 import { createHumanGameSession } from "@/app/(game-theory)/actions";
+import { trackEvent } from "@/lib/analytics/event";
 import { cn } from "@/lib/utils";
 import { Info, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -33,6 +34,11 @@ export function HumanNewGameClient({
       setIsLaunching(false);
       return;
     }
+    trackEvent("game_created", {
+      game_type: selectedGameType,
+      player_count: (activeGameType?.minPlayers ?? 2),
+      mode: "human_vs_ai",
+    });
     router.push(`/game/${result.token}`);
   }
 

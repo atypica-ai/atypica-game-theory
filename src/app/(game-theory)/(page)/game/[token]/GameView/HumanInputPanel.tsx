@@ -8,6 +8,7 @@ import {
   PersonaDecisionEvent,
   PersonaDiscussionEvent,
 } from "@/app/(game-theory)/types";
+import { trackEvent } from "@/lib/analytics/event";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DecisionInput } from "./DecisionInput";
@@ -181,7 +182,10 @@ export function HumanInputPanel({
       <DiscussionInput
         token={token}
         roundId={humanTurn.roundId}
-        onSubmitted={onDiscussionSubmitted}
+        onSubmitted={(event) => {
+          trackEvent("human_discussion_submitted", { game_type: gameTypeName, round: humanTurn.roundId });
+          onDiscussionSubmitted(event);
+        }}
       />
     );
   }
@@ -192,7 +196,10 @@ export function HumanInputPanel({
       roundId={humanTurn.roundId}
       gameTypeName={gameTypeName}
       currentScores={currentScores}
-      onSubmitted={onDecisionSubmitted}
+      onSubmitted={(event) => {
+        trackEvent("human_decision_submitted", { game_type: gameTypeName, round: humanTurn.roundId });
+        onDecisionSubmitted(event);
+      }}
     />
   );
 }

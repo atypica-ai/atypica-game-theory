@@ -2,6 +2,7 @@
 
 import { fetchGameSession, GameSessionDetail } from "@/app/(game-theory)/actions";
 import { GameSessionParticipant } from "@/app/(game-theory)/types";
+import { trackEvent } from "@/lib/analytics/event";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { GameLayout } from "./GameLayout";
@@ -54,6 +55,18 @@ export function AIGameView({ initialData, token }: { initialData: GameSessionDet
   // ── Round selection ──────────────────────────────────────────────────────
   const [manualRoundId, setManualRoundId] = useState<number | null>(null);
   const [revealHoldRound, setRevealHoldRound] = useState<number | null>(null);
+
+  const completionTrackedRef = useRef(initialData.status === "completed");
+  useEffect(() => {
+    if (isCompleted && !completionTrackedRef.current) {
+      completionTrackedRef.current = true;
+      trackEvent("game_completed", {
+        game_type: gameType,
+        mode: participants.some((p) => p.personaId === -1) ? "human_vs_ai" : "ai_vs_ai",
+        rounds_played: gameState.completedRounds.length,
+      });
+    }
+  }, [isCompleted, gameType, participants, gameState.completedRounds.length]);
 
   // Track last seen completed round count to detect new completions
   const prevCompletedCountRef = useRef(gameState.completedRounds.length);
