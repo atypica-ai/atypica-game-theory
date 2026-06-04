@@ -95,6 +95,7 @@ export async function GET(
       );
     }
 
+
     const config = API_CONFIGS[apiName as keyof typeof API_CONFIGS];
     if (!config) {
       return NextResponse.json({ error: "API not found" }, { status: 404 });

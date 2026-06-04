@@ -120,3 +120,52 @@ ALTER TABLE "Persona" ADD CONSTRAINT "Persona_userId_fkey" FOREIGN KEY ("userId"
 -- AddForeignKey
 ALTER TABLE "Persona" ADD CONSTRAINT "Persona_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
+-- CreateTable
+CREATE TABLE "UserProfile" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "lastLogin" JSONB NOT NULL DEFAULT '{}',
+    "extra" JSONB NOT NULL DEFAULT '{}',
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
+
+    CONSTRAINT "UserProfile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserProfile_userId_key" ON "UserProfile"("userId");
+
+-- AddForeignKey
+ALTER TABLE "UserProfile" ADD CONSTRAINT "UserProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- CreateTable
+CREATE TABLE "VerificationCode" (
+    "id" SERIAL NOT NULL,
+    "email" VARCHAR(255) NOT NULL,
+    "code" VARCHAR(6) NOT NULL,
+    "expiresAt" TIMESTAMPTZ(6) NOT NULL,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "VerificationCode_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE INDEX "VerificationCode_email_code_idx" ON "VerificationCode"("email", "code");
+
+-- CreateIndex
+CREATE INDEX "VerificationCode_expiresAt_idx" ON "VerificationCode"("expiresAt");
+
+-- CreateTable
+CREATE TABLE "GameStats" (
+    "id" SERIAL NOT NULL,
+    "key" VARCHAR(128) NOT NULL,
+    "data" JSONB NOT NULL DEFAULT '{}',
+    "sessionCount" INTEGER NOT NULL DEFAULT 0,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
+
+    CONSTRAINT "GameStats_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "GameStats_key_key" ON "GameStats"("key");
+
